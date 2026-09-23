@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>AI Self Driving Simulator</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
   body { overflow: hidden; background: #000; font-family: 'Rajdhani', sans-serif; cursor: crosshair; }
 
   .ctrl-btn {
@@ -35,6 +29,18 @@
   #routeBtn    { top: 58px; }
   #sensorBtn   { top: 96px; }
   #aiToggleBtn { top: 134px; }
+  #phoneToggleBtn { top: 172px; color:#ffd06c; border-color:#ffd06c88; }
+  #inGamePhone { position:absolute; top:215px; right:20px; z-index:25; width:min(300px,calc(100vw - 40px)); padding:16px; border:3px solid #415a62; border-radius:23px; background:#091b25; color:white; box-shadow:0 18px 40px #0009; font-family:'Rajdhani',sans-serif; }
+  #inGamePhone[hidden] { display:none; }
+  .phone-head { display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid #42626c; font-size:18px; font-weight:700; }
+  .phone-head span { color:#68dac9; font-size:12px; }
+  #inGamePhone p { margin:14px 0 10px; color:#d6e8ec; font-size:15px; }
+  #destinationForm { display:flex; gap:6px; }
+  #destinationInput { flex:1; min-width:0; padding:10px; background:#122f3a; border:1px solid #3a7986; border-radius:7px; color:white; font:15px 'Rajdhani',sans-serif; }
+  #destinationForm button { padding:0 12px; border:0; border-radius:7px; background:#00c3a7; color:#072b2d; font-weight:700; cursor:pointer; }
+  .phone-small-title { margin-top:18px; font-size:11px; letter-spacing:1px; color:#67d5ca; }
+  #phonePlaces { margin-top:5px; line-height:1.8; font-size:15px; }
+  #phoneStatus { margin-top:15px; padding:8px; background:#143440; border-radius:7px; font-size:14px; }
 
   .hud-panel {
     position:absolute; left:20px;
@@ -115,6 +121,8 @@
   #aiBanner.yellow  { background:rgba(255,170,0,0.22);  color:#ffaa00; border:1px solid #ffaa0066; }
   #aiBanner.green   { background:rgba(0,230,118,0.18);  color:#00e676; border:1px solid #00e67666; }
   #aiBanner.collect { background:rgba(255,220,0,0.25);  color:#ffd700; border:1px solid #ffd70088; }
+
+  #frontCameraLabel { position:absolute; top:153px; left:20px; z-index:10; color:#00e5ff; background:rgba(0,8,20,.8); padding:3px 8px; font:9px 'Orbitron',sans-serif; letter-spacing:1px; pointer-events:none; }
 
   #modeOverlay {
     position:absolute; top:50%; left:50%;
@@ -316,127 +324,3 @@
   .corner-tl,.corner-br { position:absolute; width:40px; height:40px; z-index:5; pointer-events:none; }
   .corner-tl { top:10px;left:10px; border-top:2px solid #00e5ff44; border-left:2px solid #00e5ff44; }
   .corner-br { bottom:10px;right:10px; border-bottom:2px solid #00e5ff44; border-right:2px solid #00e5ff44; }
-
-  #gameOver {
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    background:rgba(0,0,0,0.95); border:2px solid #ff3333; border-radius:12px;
-    color:white; padding:50px 70px; text-align:center; display:none; z-index:20;
-    font-family:'Orbitron',sans-serif; box-shadow:0 0 60px #ff333355;
-  }
-  #gameOver h2 { font-size:36px; color:#ff3333; margin-bottom:10px; }
-  #gameOver p  { font-size:14px; color:#aaa; letter-spacing:2px; }
-</style>
-</head>
-<body>
-<div class="corner-tl"></div>
-<div class="corner-br"></div>
-
-<div id="aiStatus">
-  🚗 &nbsp;AI SIMULATOR &nbsp;|&nbsp;
-  MODE: <span id="modeBadge" class="manual">MANUAL</span>
-  &nbsp;|&nbsp; SENSORS: <span style="color:#00e676">ACTIVE</span>
-</div>
-<div id="aiBanner"></div>
-<div id="modeOverlay"></div>
-
-<button class="ctrl-btn" id="viewBtn">⊞ CAMERA</button>
-<button class="ctrl-btn" id="routeBtn">⊕ ROUTE</button>
-<button class="ctrl-btn" id="sensorBtn">◈ SENSORS</button>
-<button class="ctrl-btn" id="aiToggleBtn">🤖 ENABLE AI</button>
-
-<div id="minimapBorder"></div>
-<div id="minimapLabel">◈ MINIMAP</div>
-
-<div id="tlPanel">
-  <span class="hud-label">🚦 NEAREST LIGHT</span>
-  <div class="tl-row"><div class="tl-dot" id="tlDotRed"></div><span class="tl-label">RED — STOP</span></div>
-  <div class="tl-row"><div class="tl-dot" id="tlDotYellow"></div><span class="tl-label">YELLOW — READY</span></div>
-  <div class="tl-row"><div class="tl-dot" id="tlDotGreen"></div><span class="tl-label">GREEN — GO</span></div>
-</div>
-
-<!-- ★ A* VALUES PANEL — visible when ROUTE is ON -->
-<div id="astarPanel">
-  <div class="astar-title">◈ &nbsp;A* ALGORITHM — LIVE VALUES</div>
-  <div class="astar-formula">f(n) &nbsp;=&nbsp; g(n) &nbsp;+&nbsp; h(n)</div>
-
-  <!-- f(n) row -->
-  <div class="astar-row">
-    <span class="astar-key fn">f(n)</span>
-    <span class="astar-desc">Total estimated cost</span>
-    <div class="astar-bar-wrap"><div class="astar-bar-fill fn" id="aBarF" style="width:0%"></div></div>
-    <span class="astar-val fn" id="aValF">—</span>
-  </div>
-
-  <!-- g(n) row -->
-  <div class="astar-row">
-    <span class="astar-key gn">g(n)</span>
-    <span class="astar-desc">Cost from start</span>
-    <div class="astar-bar-wrap"><div class="astar-bar-fill gn" id="aBarG" style="width:0%"></div></div>
-    <span class="astar-val gn" id="aValG">—</span>
-  </div>
-
-  <!-- h(n) row -->
-  <div class="astar-row">
-    <span class="astar-key hn">h(n)</span>
-    <span class="astar-desc">Heuristic to goal</span>
-    <div class="astar-bar-wrap"><div class="astar-bar-fill hn" id="aBarH" style="width:0%"></div></div>
-    <span class="astar-val hn" id="aValH">—</span>
-  </div>
-
-  <!-- Footer: node index info -->
-  <div class="astar-footer">
-    <div>NODE &nbsp;<span id="aNodeIdx">—</span></div>
-    <div>PATH LEN &nbsp;<span id="aPathLen">—</span></div>
-    <div>REMAIN &nbsp;<span id="aRemain">—</span></div>
-  </div>
-
-  <!-- Waypoint table: next 5 nodes -->
-  <table class="astar-table" id="astarTable">
-    <thead>
-      <tr>
-        <th>NODE</th>
-        <th>g(n)</th>
-        <th>h(n)</th>
-        <th>f(n)</th>
-      </tr>
-    </thead>
-    <tbody id="astarTableBody"></tbody>
-  </table>
-</div>
-
-<div class="hud-panel" id="fuelPanel">
-  <div class="hud-label">⛽ Fuel</div>
-  <div class="hud-value" id="fuelVal">100%</div>
-  <div id="fuelBar"><div id="fuelFill"></div></div>
-</div>
-<div class="hud-panel" id="pointPanel">
-  <div class="hud-label">★ Points</div>
-  <div class="hud-value" id="pointVal">0</div>
-</div>
-<div class="hud-panel" id="moneyPanel">
-  <div class="hud-label">₹ Balance</div>
-  <div class="hud-value" id="moneyVal">₹0</div>
-</div>
-<div class="hud-panel" id="speedPanel">
-  <div class="hud-label">◈ Speed</div>
-  <div class="hud-value" id="speedVal">0 km/h</div>
-  <div id="speedBar"><div id="speedFill"></div></div>
-</div>
-<div class="hud-panel" id="fitnessPanel">
-  <div class="hud-label">🧠 AI FITNESS</div>
-  <div class="hud-value" id="fitnessVal">0</div>
-</div>
-
-<div id="sensorPanel">
-  <span class="hud-label">◈ SENSOR RAYS</span>
-  <div id="sensorRows"></div>
-</div>
-
-<div id="gameOver">
-  <h2>GAME OVER</h2>
-  <p id="gameOverMsg">Better luck next time!</p>
-</div>
-
-<script type="module" src="maindemo3.js"></script>
-</body>
-</html>

@@ -1,348 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AI Self Driving Simulator</title>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>Ya Rab Ostorha | Accident Avoidance Simulator</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { overflow: hidden; background: #000; font-family: 'Rajdhani', sans-serif; cursor: crosshair; }
-
-  .ctrl-btn {
-    position: absolute; right: 20px;
-    padding: 10px 22px;
-    background: rgba(0,0,0,0.75); color: #00e5ff;
-    border: 1px solid #00e5ff55;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 11px; letter-spacing: 2px;
-    cursor: pointer; z-index: 10;
-    clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
-    backdrop-filter: blur(8px);
-  }
-  .ctrl-btn:hover { background:#00e5ff; color:#000; border-color:#00e5ff; }
-  #aiToggleBtn { color:#00e676; border-color:#00e67655; }
-  #aiToggleBtn:hover { background:#00e676; color:#000; border-color:#00e676; }
-  #aiToggleBtn.ai-on {
-    background:#00e676; color:#000; border-color:#00e676;
-    animation: pulse-green 1.4s ease-in-out infinite;
-  }
-  @keyframes pulse-green {
-    0%,100% { box-shadow:0 0 10px #00e67666; }
-    50%      { box-shadow:0 0 28px #00e676cc; }
-  }
-
-  #viewBtn     { top: 20px; }
-  #routeBtn    { top: 58px; }
-  #sensorBtn   { top: 96px; }
-  #aiToggleBtn { top: 134px; }
-
-  .hud-panel {
-    position:absolute; left:20px;
-    background:rgba(0,8,20,0.82);
-    border:1px solid rgba(0,229,255,0.25);
-    border-left:3px solid #00e5ff;
-    border-radius:0 8px 8px 0;
-    padding:8px 16px 10px; z-index:10;
-    backdrop-filter:blur(10px); min-width:160px;
-  }
-  .hud-label {
-    font-size:9px; color:#00e5ff;
-    letter-spacing:3px; text-transform:uppercase;
-    margin-bottom:3px; font-family:'Orbitron',sans-serif;
-  }
-  .hud-value {
-    font-family:'Orbitron',sans-serif;
-    font-size:20px; font-weight:700; color:#fff; line-height:1;
-  }
-
-  #fuelPanel  { bottom:280px; }
-  #pointPanel { bottom:225px; }
-  #moneyPanel { bottom:170px; }
-  #moneyPanel .hud-value { color:#ffd700; }
-  #moneyPanel .hud-label { color:#ffd700; }
-  #speedPanel { bottom:115px; }
-  #fitnessPanel { bottom:60px; display:none; }
-  #fitnessPanel .hud-label { color:#00e676; }
-  #fitnessPanel .hud-value { color:#00e676; font-size:16px; }
-
-  #fuelBar,#speedBar {
-    width:130px; height:6px;
-    background:rgba(255,255,255,0.1);
-    border-radius:3px; margin-top:8px; overflow:hidden;
-  }
-  #speedBar { height:4px; }
-  #fuelFill {
-    height:100%; width:100%;
-    background:linear-gradient(90deg,#ff3333,#ffaa00,#00e676);
-    border-radius:3px; transition:width 0.4s;
-  }
-  #speedFill {
-    height:100%; width:0%;
-    background:linear-gradient(90deg,#00e676,#ffaa00,#ff3333);
-    border-radius:2px; transition:width 0.1s;
-  }
-
-  #aiStatus {
-    position:absolute; top:20px; left:50%;
-    transform:translateX(-50%);
-    font-family:'Orbitron',sans-serif;
-    font-size:11px; letter-spacing:3px; color:#00e5ff;
-    background:rgba(0,8,20,0.88);
-    border:1px solid #00e5ff55;
-    padding:7px 24px; border-radius:20px;
-    z-index:10; backdrop-filter:blur(8px); white-space:nowrap;
-    transition:border-color 0.4s,box-shadow 0.4s;
-  }
-  #aiStatus.ai-mode { border-color:#00e67688; box-shadow:0 0 18px #00e67633; }
-  #modeBadge {
-    display:inline-block; padding:2px 10px; border-radius:10px;
-    font-weight:900; font-size:12px; transition:background 0.3s,color 0.3s;
-  }
-  #modeBadge.manual { background:rgba(0,229,255,0.15); color:#00e5ff; }
-  #modeBadge.ai     { background:#00e676; color:#000; animation:pulse-green 1.4s infinite; }
-
-  #aiBanner {
-    position:absolute; top:72px; left:50%;
-    transform:translateX(-50%);
-    font-family:'Orbitron',sans-serif;
-    font-size:13px; letter-spacing:3px;
-    padding:8px 28px; border-radius:20px;
-    z-index:15; display:none;
-    backdrop-filter:blur(10px); white-space:nowrap; font-weight:700;
-    transition:background 0.25s,color 0.25s;
-  }
-  #aiBanner.red     { background:rgba(255,30,30,0.25);  color:#ff4444; border:1px solid #ff444488; }
-  #aiBanner.yellow  { background:rgba(255,170,0,0.22);  color:#ffaa00; border:1px solid #ffaa0066; }
-  #aiBanner.green   { background:rgba(0,230,118,0.18);  color:#00e676; border:1px solid #00e67666; }
-  #aiBanner.collect { background:rgba(255,220,0,0.25);  color:#ffd700; border:1px solid #ffd70088; }
-
-  #modeOverlay {
-    position:absolute; top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    font-family:'Orbitron',sans-serif;
-    font-size:28px; font-weight:900; letter-spacing:6px;
-    padding:20px 50px; border-radius:16px;
-    z-index:30; pointer-events:none;
-    opacity:0; transition:opacity 0.3s;
-  }
-  #modeOverlay.show-ai     { background:rgba(0,230,118,0.18); color:#00e676; border:2px solid #00e676; }
-  #modeOverlay.show-manual { background:rgba(0,229,255,0.12); color:#00e5ff; border:2px solid #00e5ff88; }
-
-  #tlPanel {
-    position:absolute; left:20px; bottom:338px;
-    background:rgba(0,8,20,0.82);
-    border:1px solid rgba(0,229,255,0.25);
-    border-left:3px solid #00e5ff;
-    border-radius:0 8px 8px 0;
-    padding:8px 16px 10px; z-index:10;
-    backdrop-filter:blur(10px); min-width:160px;
-  }
-  #tlPanel .hud-label { margin-bottom:6px; display:block; }
-  .tl-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
-  .tl-dot { width:11px; height:11px; border-radius:50%; background:#333; flex-shrink:0; transition:background 0.3s,box-shadow 0.3s; }
-  .tl-dot.active-red    { background:#ff2244; box-shadow:0 0 8px #ff2244; }
-  .tl-dot.active-yellow { background:#ffaa00; box-shadow:0 0 8px #ffaa00; }
-  .tl-dot.active-green  { background:#00e676; box-shadow:0 0 8px #00e676; }
-  .tl-label { font-family:'Orbitron',sans-serif; font-size:8px; color:#aaa; letter-spacing:1px; }
-
-  #sensorPanel {
-    position:absolute; right:20px; bottom:20px;
-    background:rgba(0,8,20,0.88);
-    border:1px solid rgba(0,229,255,0.3);
-    border-right:3px solid #00e5ff;
-    border-radius:8px 0 0 8px;
-    padding:12px 16px; z-index:10;
-    backdrop-filter:blur(10px); min-width:200px;
-  }
-  #sensorPanel .hud-label { margin-bottom:10px; display:block; }
-  .sensor-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:10px; }
-  .sensor-name { font-family:'Orbitron',sans-serif; font-size:8px; color:#aaa; letter-spacing:1px; width:60px; flex-shrink:0; }
-  .sensor-bar-wrap { flex:1; height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
-  .sensor-bar-fill { height:100%; border-radius:3px; transition:width 0.08s,background 0.08s; }
-  .sensor-dist { font-family:'Orbitron',sans-serif; font-size:8px; color:#00e5ff; width:32px; text-align:right; flex-shrink:0; }
-
-  /* ═══════════════════════════════════════════════
-     ★  A* VALUES PANEL
-     Shows f(n), g(n), h(n) for current path node
-     Appears only when ROUTE is toggled ON
-  ═══════════════════════════════════════════════ */
-  #astarPanel {
-    position: absolute;
-    top: 210px;
-    right: 20px;
-    background: rgba(0,8,20,0.92);
-    border: 1px solid rgba(0,229,255,0.3);
-    border-right: 3px solid #00e5ff;
-    border-radius: 8px 0 0 8px;
-    padding: 12px 16px 14px;
-    z-index: 10;
-    backdrop-filter: blur(12px);
-    min-width: 220px;
-    display: none;         /* hidden until route is shown */
-    transition: opacity 0.3s;
-  }
-
-  #astarPanel .astar-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: #00e5ff;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  /* Formula line: f(n) = g(n) + h(n) */
-  .astar-formula {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    color: rgba(0,229,255,0.55);
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-    text-align: center;
-    padding: 5px 0;
-    border-top: 1px solid rgba(0,229,255,0.12);
-    border-bottom: 1px solid rgba(0,229,255,0.12);
-  }
-
-  /* Each value row: label + bar + number */
-  .astar-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 9px;
-    gap: 8px;
-  }
-  .astar-row:last-child { margin-bottom: 0; }
-
-  .astar-key {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    width: 34px;
-    flex-shrink: 0;
-    letter-spacing: 1px;
-  }
-  .astar-key.fn { color: #ff9f43; }  /* f(n) orange */
-  .astar-key.gn { color: #00e676; }  /* g(n) green  */
-  .astar-key.hn { color: #54a0ff; }  /* h(n) blue   */
-
-  .astar-desc {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 9px;
-    color: rgba(180,210,255,0.6);
-    flex: 1;
-    letter-spacing: 0.5px;
-  }
-
-  .astar-bar-wrap {
-    width: 60px;
-    height: 5px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 3px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .astar-bar-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.25s ease;
-  }
-  .astar-bar-fill.fn { background: #ff9f43; }
-  .astar-bar-fill.gn { background: #00e676; }
-  .astar-bar-fill.hn { background: #54a0ff; }
-
-  .astar-val {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    width: 42px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .astar-val.fn { color: #ff9f43; }
-  .astar-val.gn { color: #00e676; }
-  .astar-val.hn { color: #54a0ff; }
-
-  /* Node info footer */
-  .astar-footer {
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0,229,255,0.12);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 8px;
-    color: rgba(0,229,255,0.45);
-    letter-spacing: 1px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .astar-footer span { color: rgba(255,255,255,0.6); }
-
-  /* Waypoint table — shows next 5 nodes */
-  .astar-table {
-    margin-top: 10px;
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .astar-table th {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 7px;
-    color: rgba(0,229,255,0.5);
-    letter-spacing: 1px;
-    text-align: right;
-    padding: 0 3px 4px;
-    border-bottom: 1px solid rgba(0,229,255,0.15);
-  }
-  .astar-table th:first-child { text-align: left; }
-  .astar-table td {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 8px;
-    color: rgba(200,230,255,0.7);
-    text-align: right;
-    padding: 3px 3px;
-  }
-  .astar-table td:first-child { text-align: left; color: rgba(0,229,255,0.6); }
-  .astar-table tr.current-wp td {
-    color: #fff;
-    background: rgba(0,229,255,0.08);
-    border-radius: 3px;
-  }
-  .astar-table tr.current-wp td:first-child { color: #00e5ff; }
-
-  #minimapBorder { position:absolute; left:14px; bottom:13px; width:132px; height:132px; border:1px solid rgba(0,229,255,0.35); border-radius:4px; z-index:9; pointer-events:none; }
-  #minimapLabel  { position:absolute; bottom:148px; left:20px; font-family:'Orbitron',sans-serif; font-size:8px; color:rgba(0,229,255,0.5); letter-spacing:3px; z-index:10; }
-
-  .corner-tl,.corner-br { position:absolute; width:40px; height:40px; z-index:5; pointer-events:none; }
-  .corner-tl { top:10px;left:10px; border-top:2px solid #00e5ff44; border-left:2px solid #00e5ff44; }
-  .corner-br { bottom:10px;right:10px; border-bottom:2px solid #00e5ff44; border-right:2px solid #00e5ff44; }
-
-  #gameOver {
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    background:rgba(0,0,0,0.95); border:2px solid #ff3333; border-radius:12px;
-    color:white; padding:50px 70px; text-align:center; display:none; z-index:20;
-    font-family:'Orbitron',sans-serif; box-shadow:0 0 60px #ff333355;
-  }
-  #gameOver h2 { font-size:36px; color:#ff3333; margin-bottom:10px; }
-  #gameOver p  { font-size:14px; color:#aaa; letter-spacing:2px; }
-</style>
+<link rel="stylesheet" href="/src/ui/styles.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.152/build/three.module.js"}}</script>
 </head>
 <body>
 <div class="corner-tl"></div>
 <div class="corner-br"></div>
 
 <div id="aiStatus">
-  🚗 &nbsp;AI SIMULATOR &nbsp;|&nbsp;
+  🚗 &nbsp;يارب استرها &nbsp;|&nbsp;
   MODE: <span id="modeBadge" class="manual">MANUAL</span>
   &nbsp;|&nbsp; SENSORS: <span style="color:#00e676">ACTIVE</span>
 </div>
 <div id="aiBanner"></div>
+<div id="frontCameraLabel">◈ FRONT CAMERA</div>
 <div id="modeOverlay"></div>
 
 <button class="ctrl-btn" id="viewBtn">⊞ CAMERA</button>
 <button class="ctrl-btn" id="routeBtn">⊕ ROUTE</button>
 <button class="ctrl-btn" id="sensorBtn">◈ SENSORS</button>
 <button class="ctrl-btn" id="aiToggleBtn">🤖 ENABLE AI</button>
+<button class="ctrl-btn" id="phoneToggleBtn" aria-expanded="false" aria-controls="inGamePhone">📱 التليفون</button>
+<aside id="inGamePhone" hidden dir="rtl" aria-label="تليفون العربية">
+  <div class="phone-head">📱 التليفون <span>يارب استرها</span></div>
+  <p>اكتب المكان اللي عايز تروحه</p>
+  <form id="destinationForm">
+    <input id="destinationInput" type="text" maxlength="100" placeholder="مثلاً: روح السوق" aria-label="اسم المكان" required>
+    <button type="submit">روح</button>
+  </form>
+  <div class="phone-small-title">الأماكن الموجودة</div>
+  <div id="phonePlaces"></div>
+  <div id="phoneStatus" role="status">مستني المكان...</div>
+</aside>
 
 <div id="minimapBorder"></div>
 <div id="minimapLabel">◈ MINIMAP</div>
@@ -414,8 +108,8 @@
   <div class="hud-value" id="pointVal">0</div>
 </div>
 <div class="hud-panel" id="moneyPanel">
-  <div class="hud-label">₹ Balance</div>
-  <div class="hud-value" id="moneyVal">₹0</div>
+  <div class="hud-label">Balance</div>
+  <div class="hud-value" id="moneyVal">0 ج</div>
 </div>
 <div class="hud-panel" id="speedPanel">
   <div class="hud-label">◈ Speed</div>
@@ -432,11 +126,8 @@
   <div id="sensorRows"></div>
 </div>
 
-<div id="gameOver">
-  <h2>GAME OVER</h2>
-  <p id="gameOverMsg">Better luck next time!</p>
-</div>
 
-<script type="module" src="maindemo3.js"></script>
+
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
