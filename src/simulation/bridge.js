@@ -1,6 +1,8 @@
 // Optional same-origin telemetry bridge for future Python perception/policy work.
 // The in-game phone and driving controls run locally in the browser.
 export function createBridge({ renderer, readState }) {
+  const client=crypto.randomUUID();
+  document.body.dataset.telemetryClient=client;
   let enabled = false;
   const capture = document.createElement('canvas');
   capture.width = 480;
@@ -17,7 +19,7 @@ export function createBridge({ renderer, readState }) {
   async function report() {
     if (!enabled) return;
     try {
-      await fetch('/api/state', {
+      await fetch(`/api/state?client=${encodeURIComponent(client)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(readState())
       });

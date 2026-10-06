@@ -10,3 +10,7 @@ The downloaded models are released under [CC0 1.0](https://creativecommons.org/p
 - `models/tuktuks/street-food-tuktuk.glb`: [Street Food Tuk Tuk by 3DAssets.dev](https://3dassets.dev/assets/street-food-market-and-food-trucks-street-food-tuk-tuk-a9641f44)
 
 Keep each Kenney folder's texture alongside its GLB files when editing or replacing models. The 3DAssets.dev GLBs have embedded textures. Blender can import every GLB here for geometry and material changes. `src/simulation/traffic.js` also contains a fallback tuk-tuk assembled from separate editable meshes.
+
+## Visual polish additions
+
+The complete current credit record, including the CC BY 3.0 Motorcycle and Van by Poly by Google, is in [public/assets/ATTRIBUTION.md](../public/assets/ATTRIBUTION.md). Preserve that record with redistributed assets.

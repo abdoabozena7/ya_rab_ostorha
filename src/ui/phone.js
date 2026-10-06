@@ -1,4 +1,4 @@
-import { PLACES, findPlaceInText } from '../simulation/places.js';
+import { PLACES, findPlaceInText } from '../simulation/places.js?v=drive-final';
 
 export function mountPhone(onDestination) {
   const toggle = document.getElementById('phoneToggleBtn');

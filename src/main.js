@@ -1,24 +1,42 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152/build/three.module.js';
-import { findRoute, hasArrived } from './simulation/pathfinding.js';
-import { limitForwardSpeed, guardDynamicMotion, canAdvance } from './simulation/safety.js';
-import { loadCarModel } from './render/car-model.js';
-import { createBridge } from './simulation/bridge.js';
-import { createSensors } from './simulation/sensors.js';
-import { updateAstarPanel } from './ui/astar-panel.js';
-import { createTrafficSystem } from './simulation/traffic.js';
-import { createCity } from './render/city.js';
-import { PLACES } from './simulation/places.js';
-import { addPlaceSigns } from './render/place-signs.js';
-import { mountPhone } from './ui/phone.js';
-import { constrainToRoad, isOnRoad } from './simulation/road-lanes.js';
-import { createPedestrians } from './simulation/pedestrians.js';
+import { findRoute, hasArrived } from './simulation/pathfinding.js?v=drive-final';
+import { loadCarModel } from './render/car-model.js?v=drive-final';
+import { createBridge } from './simulation/bridge.js?v=drive-final';
+import { createSensors } from './simulation/sensors.js?v=drive-final';
+import { updateAstarPanel } from './ui/astar-panel.js?v=drive-final';
+import { createTrafficSystem } from './simulation/traffic.js?v=drive-final';
+import { createCity } from './render/city.js?v=drive-final';
+import { PLACES } from './simulation/places.js?v=drive-final';
+import { addPlaceSigns } from './render/place-signs.js?v=drive-final';
+import { mountPhone } from './ui/phone.js?v=drive-final';
+import { roadLayout, isOnRoad } from './simulation/road-lanes.js?v=drive-final';
+import { createPedestrians } from './simulation/pedestrians.js?v=drive-final';
+import { createFixedStep, STEP_SECONDS, SPEED_TO_KMH } from './simulation/fixed-step.js?v=drive-final';
+import { stepVehicle } from './simulation/vehicle-dynamics.js?v=drive-final';
+import { WORLD_EXTENT, surfaceAt, surfaceAhead, roadHeight } from './simulation/road-conditions.js?v=drive-final';
+import { leadVehicle, nearbyClearance, motionClear, PLAYER_SIZE, collisionRisk } from './simulation/vehicle-geometry.js?v=drive-final';
+import { followingAcceleration, stoppingDistance, safeFollowingSpeed, clamp } from './simulation/longitudinal.js?v=drive-final';
+import { buildDrivingPath, followRoute } from './simulation/route-driver.js?v=drive-final';
+import { createCinematic } from './render/cinematic.js?v=drive-final';
+import { createVehicleAudio } from './render/vehicle-audio.js?v=drive-final';
+import { createIncidentMarkers } from './render/incident-markers.js?v=drive-final';
+import { createChaseCamera } from './render/chase-camera.js?v=drive-final';
+import { createDistrictMap } from './render/district-map.js?v=drive-final';
+import { createCameraLabels } from './render/camera-labels.js?v=drive-final';
+import { updateVisualLOD } from './render/visual-assets.js?v=drive-final';
+import { createFrontFeed } from './render/front-feed.js?v=drive-final';
 
 /* ═══════════════════════════════════════════════════════════════
    SCENE
 ═══════════════════════════════════════════════════════════════ */
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0xb8d8f0, 200, 550);
+const skyCanvas=document.createElement('canvas');skyCanvas.width=2;skyCanvas.height=256;
+const skyContext=skyCanvas.getContext('2d'), skyGradient=skyContext.createLinearGradient(0,0,0,256);
+skyGradient.addColorStop(0,'#75b8eb');skyGradient.addColorStop(1,'#d5e6ea');
+skyContext.fillStyle=skyGradient;skyContext.fillRect(0,0,2,256);
+scene.background = new THREE.CanvasTexture(skyCanvas);
+scene.background.colorSpace=THREE.SRGBColorSpace;
+scene.fog = new THREE.Fog(0xd5e6ea, 160, 350);
 
 let obstacles      = [];
 let safetyWarning  = false;
@@ -26,6 +44,13 @@ let money          = 0;
 let points         = 0;
 let expansionLevel = 0;
 let frameCount     = 0;
+const drivingSettings={cruise:80,throttle:1,brake:1,muted:false};
+const equipment={lights:false,signal:null,hazards:false,horn:false};
+let dynamics={throttle:0,brake:0,acceleration:0,lateralAcceleration:0};
+let currentSurface=surfaceAt(17.5,-40),clearance={gap:Infinity,centimetres:null},plannedSpeed=0;
+let drivingPath=[],drivingCursor=0,tripRemaining=0;
+let autoSignal=null;
+let blockedFrames=0;
 
 let fuel           = 100;
 let petrolBunks    = [];
@@ -49,34 +74,9 @@ let waypointIdx  = 0;
 /* ── Destination collect loop ── */
 let destCollecting   = false;
 
-/* ── Stuck recovery ── */
-let stuckTimer  = 0;
-const STUCK_MAX = 100;
-
-/* ── Collision cooldown ── */
-let colCooldown = 0;
-const COL_FRAMES = 120;
-
-/* ── Smooth obstacle avoidance state ── */
-let smoothAvoidSteer = 0;
-let avoidLockDir     = 0;
-let avoidLockTimer   = 0;
-let stuckEscapeSteer = 0;
-let stuckEscapeFrames= 0;
-const AVOID_LOCK_FRAMES = 40;
-
-/* ── AI Tuning ── */
-const LANE_OFFSET  = 2.5;
-const CRUISE_SPD   = 50/120;
-const TURN_SPD     = 0.06;
-const ACCEL        = 0.005;
-const BRAKE        = 0.018;
-const MAX_STEER    = 0.045;
-const WP_NORMAL    = 5;
-const WP_CORNER    = 3;
-
-/* ── Traffic light constants ── */
-const TL_STOP_LINE = 8;
+/* Existing route diagnostics remain available from the Route button. */
+let stuckTimer=0,colCooldown=0;
+let smoothAvoidSteer=0,avoidLockTimer=0,stuckEscapeFrames=0;
 
 const astarPanel=document.getElementById('astarPanel');
 
@@ -84,14 +84,27 @@ const astarPanel=document.getElementById('astarPanel');
    RENDERER
 ═══════════════════════════════════════════════════════════════ */
 let driverView = false;
-const camera     = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 5000);
-const frontCamera = new THREE.PerspectiveCamera(75, 16/9, 0.1, 600);
-const miniCamera = new THREE.OrthographicCamera(-100,100,100,-100,1,2000);
+const camera     = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 400);
+const frontCamera = new THREE.PerspectiveCamera(75, 16/9, 0.1, 125);
+const districtMap=createDistrictMap(document.getElementById('minimapView'));
+const cameraLabels=createCameraLabels(document.getElementById('frontCameraView'),document.getElementById('cvLatency'));
 const renderer   = new THREE.WebGLRenderer({ antialias: true });
+const frontFeed=createFrontFeed(renderer);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
-renderer.shadowMap.enabled = false;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;
+renderer.info.autoReset = false;
+renderer.domElement.id = 'gameCanvas';
+renderer.domElement.tabIndex = 0;
+renderer.domElement.setAttribute('aria-label', 'Driving simulation. WASD or arrow keys to drive. Space to brake.');
 document.body.appendChild(renderer.domElement);
+const chaseCamera = createChaseCamera(THREE, camera);
+const cinematic=createCinematic(THREE,camera);
+const vehicleAudio=createVehicleAudio();
+const incidentMarkers=createIncidentMarkers(THREE,scene);
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -102,18 +115,19 @@ window.addEventListener('resize', () => {
 /* ═══════════════════════════════════════════════════════════════
    LIGHTING
 ═══════════════════════════════════════════════════════════════ */
-scene.add(new THREE.AmbientLight(0xcce8ff, 0.6));
-const sun = new THREE.DirectionalLight(0xfff5d0, 1.2);
-sun.position.set(150,300,200); sun.castShadow = false;
-sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.near=1; sun.shadow.camera.far=800;
-sun.shadow.camera.left=sun.shadow.camera.bottom=-300;
-sun.shadow.camera.right=sun.shadow.camera.top=300;
-scene.add(sun);
-scene.add(new THREE.HemisphereLight(0x87ceeb,0x3a7d44,0.45));
+const sun = new THREE.DirectionalLight(0xffedce, 1.15);
+sun.position.set(-30,55,-25); sun.castShadow = true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.near=1; sun.shadow.camera.far=150;
+sun.shadow.camera.left=sun.shadow.camera.bottom=-42;
+sun.shadow.camera.right=sun.shadow.camera.top=42;
+sun.shadow.normalBias=0.05;
+sun.shadow.bias=-0.00015;
+scene.add(sun, sun.target);
+const hemisphere=new THREE.HemisphereLight(0xe3f2ff,0x9e8564,1.05);scene.add(hemisphere);
 
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(3000,3000),
-    new THREE.MeshPhongMaterial({ color:0x4a7c59 }));
+    new THREE.MeshStandardMaterial({ color:0xc1ac88, roughness:1 }));
 ground.rotation.x=-Math.PI/2; ground.position.y=-0.06;
 ground.receiveShadow=true; scene.add(ground);
 
@@ -128,7 +142,7 @@ const getCarTrafficLight=()=>trafficSystem.getCarTrafficLight(car,angle);
 ═══════════════════════════════════════════════════════════════ */
 function createPetrolBunks(){
     petrolBunks.forEach(b=>{ scene.remove(b); scene.remove(b.userData.station); }); petrolBunks=[];
-    const rng=100+expansionLevel;
+    const rng=WORLD_EXTENT+expansionLevel;
     [{x:-rng,z:-rng},{x:rng,z:-rng},{x:-rng,z:rng},{x:rng,z:rng}].forEach(pos=>{
         const g=new THREE.Group();
         g.add(new THREE.Mesh(new THREE.BoxGeometry(12,0.2,9),new THREE.MeshPhongMaterial({color:0xcccccc})));
@@ -174,13 +188,14 @@ addPlaceSigns(THREE,scene);
 function createSpawn(){
     spawnPoint=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,0.12,32),
         new THREE.MeshPhongMaterial({color:0x0055ff,emissive:0x0033cc,emissiveIntensity:0.5}));
-    spawnPoint.position.set(17.5,0.07,-40); scene.add(spawnPoint);
+    spawnPoint.position.set(17.5,0.07,-40); spawnPoint.visible=false; scene.add(spawnPoint);
 }
 function createDestination(place=activePlace){
     if(destination) scene.remove(destination);
-    destination=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,0.5,32),
-        new THREE.MeshPhongMaterial({color:0xffdd00,emissive:0xffaa00,emissiveIntensity:0.8}));
-    destination.position.set(place.x,0.3,place.z); scene.add(destination);
+    destination=new THREE.Mesh(new THREE.RingGeometry(1.8,2.2,40),
+        new THREE.MeshBasicMaterial({color:0xe8c958,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false}));
+    destination.rotation.x=-Math.PI/2;
+    destination.position.set(place.x,0.105,place.z); scene.add(destination);
 }
 createSpawn();
 
@@ -188,9 +203,10 @@ createSpawn();
    PLAYER CAR
 ═══════════════════════════════════════════════════════════════ */
 const car=new THREE.Group(); car.position.set(17.5,0.5,-40);
-const pedestrianSystem=createPedestrians(THREE,scene,obstacles,()=>car);
+const pedestrianSystem=createPedestrians(THREE,scene,obstacles,()=>car,()=>npcVehicles);
 const pedestrians=pedestrianSystem.people;
-pedestrianSystem.initPedestrians();
+pedestrianSystem.initPedestrians(WORLD_EXTENT);
+trafficSystem.setPedestrians(pedestrians);
 const fallbackCar=new THREE.Group(); fallbackCar.name='fallback-car'; car.add(fallbackCar);
 const carBody=new THREE.Mesh(new THREE.BoxGeometry(2,0.68,4),new THREE.MeshPhongMaterial({color:0xff2244,shininess:120}));
 carBody.castShadow=true; fallbackCar.add(carBody);
@@ -213,7 +229,8 @@ const tmat=new THREE.MeshPhongMaterial({color:0xff2200,emissive:0xff0000,emissiv
 const bmp=new THREE.Mesh(new THREE.BoxGeometry(2.1,0.22,0.12),new THREE.MeshPhongMaterial({color:0x111111}));
 bmp.position.set(0,-0.24,2.06); fallbackCar.add(bmp);
 scene.add(car);
-loadCarModel(THREE, car, fallbackCar);
+let playerVisual=null;
+loadCarModel(THREE, car, fallbackCar).then(loaded=>{playerVisual=loaded;});
 car.getObjectByName('front-camera-mount').add(frontCamera);
 frontCamera.rotation.y=Math.PI;
 createDestination();
@@ -225,21 +242,26 @@ const RAY_LENGTH=sensorSystem.range;
 
 function protectPlayerMotion() {
     const actors=[...npcVehicles,...pedestrians];
-    const guard=guardDynamicMotion(car.position,angle,speed,actors,2.1);
-    speed=guard.speed;
-    safetyWarning ||=guard.emergency;
-    const end={x:car.position.x+Math.sin(angle)*speed,z:car.position.z+Math.cos(angle)*speed};
-    if(!canAdvance(car.position,end,actors,2.65)) {speed=0; safetyWarning=true;}
+    if(!motionClear(car.position,angle,speed,actors,PLAYER_SIZE,.16)) {
+        speed=0;dynamics.brake=1;dynamics.throttle=0;safetyWarning=true;
+    }
 }
 
 function moveWithoutContact(x,z) {
     const oldX=car.position.x, oldZ=car.position.z;
+    // Reject crossing the district boundary or a curb instead of teleporting.
+    if(!isOnRoad(x,z,WORLD_EXTENT+expansionLevel,aiMode?3.8:3.55)) {
+        speed=0; safetyWarning=true;
+        return false;
+    }
     car.position.x=x; car.position.z=z;
     car.updateMatrixWorld(true);
-    const carBox=new THREE.Box3().setFromObject(car);
+    const carBox=playerBounds();
     for(const obj of obstacles) {
+        if(obj.userData.dynamicActor)continue;
         if(Math.hypot(obj.position.x-x,obj.position.z-z)>15) continue;
-        if(carBox.intersectsBox(new THREE.Box3().setFromObject(obj))) {
+        const obstacleBox=obj.userData.collisionBox??(obj.userData.collisionBox=new THREE.Box3().setFromObject(obj));
+        if(carBox.intersectsBox(obstacleBox)) {
             car.position.x=oldX; car.position.z=oldZ;
             speed=0; safetyWarning=true;
             return false;
@@ -248,12 +270,28 @@ function moveWithoutContact(x,z) {
     return true;
 }
 
+// Stable collision envelope, independent of the asynchronously loaded visual.
+const playerBox = new THREE.Box3();
+function playerBounds() {
+    const sin=Math.abs(Math.sin(angle)), cos=Math.abs(Math.cos(angle));
+    const halfX=cos*.93+sin*2.36, halfZ=sin*.93+cos*2.36;
+    playerBox.min.set(car.position.x-halfX,0.15,car.position.z-halfZ);
+    playerBox.max.set(car.position.x+halfX,1.65,car.position.z+halfZ);
+    return playerBox;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ★  A* PATHFINDING  — axis-aligned only
 ═══════════════════════════════════════════════════════════════ */
 function planRoute(){
     path=findRoute(roadNodes, car.position, destination.position);
-    waypointIdx=1; stuckTimer=0;
+    const roads=roadLayout(WORLD_EXTENT+expansionLevel).roads;
+    drivingPath=buildDrivingPath(path,(p,d)=>{
+      const axis=Math.abs(d.z)>.5?'z':'x',fixed=axis==='z'?p.x:p.z,along=axis==='z'?p.z:p.x;
+      const road=roads.find(r=>r.axis===axis&&Math.abs(r.fixed-fixed)<.1&&along>=r.min&&along<=r.max);
+      return road?.sideStreet?1.5:2.5;
+    });
+    waypointIdx=1;stuckTimer=0;drivingCursor=0;
 }
 function drawPath(){
     hidePath(); if(!routeVisible||!path.length) return;
@@ -265,231 +303,107 @@ function drawPath(){
 }
 function hidePath(){ pathLines.forEach(l=>{ scene.remove(l); l.geometry?.dispose(); }); pathLines=[]; }
 
-/* ── Right-lane offset ── */
-function laneTarget(idx){
-    if(idx<1||idx>=path.length) return { x:path[idx]?.x||0, z:path[idx]?.z||0 };
-    const wp=path[idx], prev=path[idx-1];
-    const dx=wp.x-prev.x, dz=wp.z-prev.z;
-    const len=Math.hypot(dx,dz)||1;
-    return { x:wp.x+(-dz/len)*LANE_OFFSET, z:wp.z+(dx/len)*LANE_OFFSET };
-}
-
-/* ── Corner detection ── */
-function isCornerAt(idx){
-    if(idx<1||idx>=path.length-1) return false;
-    const p0=path[idx-1],p1=path[idx],p2=path[idx+1];
-    const a1=Math.atan2(p1.x-p0.x,p1.z-p0.z);
-    const a2=Math.atan2(p2.x-p1.x,p2.z-p1.z);
-    let diff=a2-a1;
-    while(diff>Math.PI)diff-=2*Math.PI; while(diff<-Math.PI)diff+=2*Math.PI;
-    return Math.abs(diff)>0.35;
-}
-function normAngle(a){ while(a>Math.PI)a-=2*Math.PI; while(a<-Math.PI)a+=2*Math.PI; return a; }
-
 /* ═══════════════════════════════════════════════════════════════
    PHYSICS
 ═══════════════════════════════════════════════════════════════ */
 let speed=0, angle=0;
-const acceleration=0.01, maxSpeed=50/120;
+let steering=0, reverseWait=0;
+let paused=false, cameraVisible=true;
+const simulationClock=createFixedStep();
 let keys={};
 const isPressed=key=>Boolean(keys[key]);
 document.addEventListener('keydown',e=>{
-    if(e.target instanceof HTMLInputElement) return;
-    if(e.key.startsWith('Arrow')) e.preventDefault();
-    keys[e.key]=true;
+    if(e.target.matches('input, textarea, select, [contenteditable="true"]')) return;
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+    keys[e.code]=true;
+    vehicleAudio.unlock();
+    if(e.code==='KeyH')equipment.horn=true;
+    if(e.repeat) return;
+    const equipmentKey={KeyL:'lightsBtn',KeyQ:'leftSignalBtn',KeyE:'rightSignalBtn',KeyF:'hazardsBtn'}[e.code];
+    if(equipmentKey){e.preventDefault();document.getElementById(equipmentKey).click();}
+    if(e.code==='KeyC') { e.preventDefault(); document.getElementById('viewBtn').click(); }
+    if(e.code==='KeyP') { e.preventDefault(); document.getElementById('phoneToggleBtn').click(); }
+    if(e.code==='Digit1') { e.preventDefault(); setAIMode(!aiMode); }
+    if(e.code==='Escape' && document.getElementById('inGamePhone').hidden) togglePause();
 });
-document.addEventListener('keyup',  e=>{ keys[e.key]=false; });
-window.addEventListener('blur',()=>{ keys={}; });
+document.addEventListener('keyup', e=>{ keys[e.code]=false;if(e.code==='KeyH')equipment.horn=false; });
+function clearInput() { keys={};equipment.horn=false;simulationClock.reset(); }
+window.addEventListener('blur',clearInput);
+document.addEventListener('visibilitychange',clearInput);
+document.addEventListener('focusin',e=>{
+    if(e.target.matches('input, textarea, select')) clearInput();
+});
 
-function moveCar(){
-    if(fuel<=0){ speed=0; return; }
-    if(isPressed('ArrowUp'))   speed+=acceleration;
-    if(isPressed('ArrowDown')) speed-=acceleration;
-    speed=Math.max(-maxSpeed/2,Math.min(speed,maxSpeed));
-    if(!isPressed('ArrowUp')&&!isPressed('ArrowDown')) speed*=0.95;
-    if(Math.abs(speed)>0.001){
-        if(isPressed('ArrowLeft'))  angle+=0.03;
-        if(isPressed('ArrowRight')) angle-=0.03;
-        fuel=Math.max(0,fuel-0.005);
+function drivePhysical(automatic) {
+    if(fuel<=0||automatic&&destCollecting){speed=0;dynamics.throttle=0;dynamics.brake=0;return;}
+    const actors=[...npcVehicles,...pedestrians],v=Math.max(0,speed*60);
+    const terrain=surfaceAhead(car.position,angle,v);currentSurface=terrain.surface;
+    const lead=leadVehicle(car.position,angle,actors);
+    const signal=getCarTrafficLight();
+    let gap=lead.gap,leadSpeed=lead.velocity;
+    if(signal&&signal.state!=='green'&&signal.dist>5&&signal.dist-7<gap){gap=signal.dist-7;leadSpeed=0;}
+    // Front ray supplies static geometry; actor following uses oriented hulls.
+    const rayGap=SR[3]*RAY_LENGTH-PLAYER_SIZE.length/2;
+    if(rayGap<gap&&rayGap<RAY_LENGTH-3){gap=rayGap;leadSpeed=Math.min(leadSpeed,v);}
+    let route=null,target=Math.min(drivingSettings.cruise/3.6,terrain.limit);
+    if(automatic) {
+        if(drivingPath.length<2){planRoute();speed=0;return;}
+        route=followRoute(drivingPath,car.position,angle,v,drivingCursor);
+        autoSignal=Math.abs(route.steering)>.08?(route.steering>0?'left':'right'):null;
+        drivingCursor=route.cursor;tripRemaining=route.remaining;
+        waypointIdx=Math.min(path.length-1,Math.floor(drivingCursor/drivingPath.length*path.length));
+        target=Math.min(target,route.limit);
     }
-    const guard=limitForwardSpeed(speed,SR[3]*RAY_LENGTH);
-    speed=guard.speed;
-    safetyWarning=guard.emergency;
-    protectPlayerMotion();
-    if(guard.emergency) showBanner('⚠️  EMERGENCY BRAKING','red');
-    car.rotation.y=angle;
-    moveWithoutContact(car.position.x+Math.sin(angle)*speed,
-        car.position.z+Math.cos(angle)*speed);
+    plannedSpeed=Math.min(target,safeFollowingSpeed(gap,leadSpeed,currentSurface.grip));
+    const acceleration=followingAcceleration(v,Math.max(.1,target),gap,leadSpeed,{grip:currentSurface.grip});
+    const requiredBrake=clamp(-acceleration/(currentSurface.grip*9.81*.92),0,1);
+    const forward=isPressed('KeyW')||isPressed('ArrowUp'),backward=isPressed('KeyS')||isPressed('ArrowDown');
+    const engine=Math.max(1.1,4.7-v*.045);
+    let throttle=automatic?clamp((acceleration+currentSurface.rolling+.00085*v*v)/engine,0,1)*drivingSettings.throttle:forward?drivingSettings.throttle:0;
+    let brake=automatic?requiredBrake:backward&&speed>0?drivingSettings.brake:0;
+    const risk=collisionRisk(car.position,angle,v,actors,PLAYER_SIZE,1.8);
+    const assist=v>plannedSpeed+.7||risk&&risk.ttc<.9;
+    if(assist){brake=Math.max(brake,requiredBrake,risk?.ttc<.9?1:0);throttle=0;}
+    if(speed<0){throttle=forward?drivingSettings.throttle:0;}
+    safetyWarning=Boolean(assist&&brake>.35);
+    const beforeAngle=angle;
+    dynamics=stepVehicle({...dynamics,speed,angle,steering,reverseWait},{
+        forward,backward,throttle,brake,handbrake:isPressed('Space'),
+        left:isPressed('KeyA')||isPressed('ArrowLeft'),right:isPressed('KeyD')||isPressed('ArrowRight'),
+        ...(automatic?{steering:route.steering}:{}),maxKmh:180,surface:currentSurface,
+    });
+    ({speed,angle,steering,reverseWait}=dynamics);
+    protectPlayerMotion();car.rotation.y=angle;
+    if(!moveWithoutContact(car.position.x+Math.sin(angle)*speed,car.position.z+Math.cos(angle)*speed)){
+        angle=beforeAngle;car.rotation.y=angle;dynamics.brake=1;dynamics.throttle=0;
+    }
+    if(Math.abs(speed)>.001)fuel=Math.max(0,fuel-(.00025+dynamics.throttle*.0005));
+    car.userData.velocity={x:car.position.x-lastCarPos.x,z:car.position.z-lastCarPos.z};
+    const moved=car.position.distanceTo(lastCarPos);distanceTravelled+=moved;
+    fitness=Math.floor(distanceTravelled*.5)+points*200;
+    document.getElementById('fitnessVal').textContent=fitness;
+    clearance=nearbyClearance(car.position,angle,actors);
+    blockedFrames=speed<.004?blockedFrames+1:0;
+    if(automatic&&route.remaining<4&&hasArrived(car.position,destination.position)){checkDestination();return;}
+    if(automatic&&destCollecting)showBanner(`وصلت ${activePlace.name}`,'collect');
+    else if(safetyWarning)showBanner('فرملة وقائية · مسافة الأمان','red');
+    else if(gap<18&&speed*60<5)showBanner('زحمة · متابعة الطابور بهدوء','yellow');
+    else if(currentSurface.limit<60)showBanner(`${currentSurface.name} · تهدئة قبل الجزء المتضرر`,'yellow');
+    else if(automatic)showBanner(`قيادة آلية · ${Math.round(tripRemaining)} متر متبقي`,'green');
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   AI DRIVE
-═══════════════════════════════════════════════════════════════ */
-function aiDrive(){
-    if(fuel<=0){ speed=0; return; }
-
-    if(destCollecting){
-        speed=0;
-        showBanner(`📍 وصلت ${activePlace.name}`,'collect');
-        return;
-    }
-
-    if(!path||path.length<2){ planRoute(); return; }
-
-    while(waypointIdx<path.length){
-        const corner=isCornerAt(waypointIdx);
-        const arriveR=corner?WP_CORNER:WP_NORMAL;
-        const lt=laneTarget(waypointIdx);
-        if(Math.hypot(car.position.x-lt.x,car.position.z-lt.z)>arriveR) break;
-        waypointIdx++;
-    }
-    if(waypointIdx>=path.length){ planRoute(); return; }
-
-    const lt=laneTarget(waypointIdx);
-    const desired=Math.atan2(lt.x-car.position.x,lt.z-car.position.z);
-    const angleDiff=normAngle(desired-angle);
-    const steer=Math.max(-MAX_STEER,Math.min(MAX_STEER,angleDiff*0.15));
-
-    const tlResult=getCarTrafficLight();
-    const tlState=tlResult?tlResult.state:null;
-    const tlDist =tlResult?tlResult.dist:Infinity;
-
-    const corner=isCornerAt(waypointIdx);
-    const nextCorn=isCornerAt(waypointIdx+1);
-    const distToWp=Math.hypot(car.position.x-lt.x,car.position.z-lt.z);
-    const frontM=SR[3]*RAY_LENGTH;
-    const fL30=SR[2]*RAY_LENGTH;
-    const fR30=SR[4]*RAY_LENGTH;
-    const sideL=SR[0]*RAY_LENGTH;
-    const sideR=SR[6]*RAY_LENGTH;
-
-    let targetSpeed=CRUISE_SPD;
-    let state='cruise';
-
-    if(tlState==='red'){
-        const blend=Math.max(0,Math.min(1,(tlDist-TL_STOP_LINE)/10));
-        targetSpeed=CRUISE_SPD*blend;
-        state='stop';
-    } else if(tlState==='yellow'){
-        if(tlDist>TL_STOP_LINE){ targetSpeed=CRUISE_SPD*0.15; state='yellow'; }
-    }
-
-    if(state!=='stop'&&state!=='yellow'){
-        if(corner||nextCorn){
-            const blend=Math.min(1,distToWp/20);
-            targetSpeed=TURN_SPD+blend*(targetSpeed-TURN_SPD);
-            state='turn';
-        }
-        if(Math.abs(angleDiff)>0.5){ targetSpeed=Math.min(targetSpeed,TURN_SPD); state='turn'; }
-    }
-
-    let rawAvoid=0;
-    if(state!=='stop'){
-        if(frontM<8){
-            const leftSpace=fL30-frontM;
-            const rightSpace=fR30-frontM;
-            const canPass=Math.max(leftSpace,rightSpace)>2.5;
-            targetSpeed=canPass?TURN_SPD:0;
-            state='obstacle';
-            if(canPass) rawAvoid=(leftSpace>=rightSpace?1:-1)*MAX_STEER*1.35;
-        } else if(frontM<20){
-            const factor=1-(frontM/20);
-            targetSpeed=Math.max(TURN_SPD,targetSpeed*(1-factor*0.6));
-            state='obstacle';
-            if(avoidLockTimer<=0){ avoidLockDir=(fL30>=fR30)?1:-1; avoidLockTimer=AVOID_LOCK_FRAMES; }
-            rawAvoid=avoidLockDir*MAX_STEER*0.6*factor;
-        }
-        if(sideL<6&&sideR>=sideL) rawAvoid-=MAX_STEER*0.25*(1-(sideL/6));
-        if(sideR<6&&sideL>=sideR) rawAvoid+=MAX_STEER*0.25*(1-(sideR/6));
-    }
-    if(avoidLockTimer>0) avoidLockTimer--;
-    else avoidLockDir=0;
-    smoothAvoidSteer+=(rawAvoid-smoothAvoidSteer)*0.12;
-
-    const escapeSteer=stuckEscapeFrames>0?stuckEscapeSteer:0;
-    if(stuckEscapeFrames>0) stuckEscapeFrames--;
-    const finalSteer=Math.max(-MAX_STEER*2.2,Math.min(MAX_STEER*2.2,steer+smoothAvoidSteer+escapeSteer));
-    angle+=finalSteer;
-
-    if(escapeSteer) targetSpeed=Math.min(targetSpeed,TURN_SPD);
-    targetSpeed=Math.max(0,Math.min(CRUISE_SPD,targetSpeed));
-    const brakeRate=(state==='obstacle')?BRAKE*0.35:BRAKE;
-    if(speed<targetSpeed) speed=Math.min(targetSpeed,speed+ACCEL);
-    else                  speed=Math.max(targetSpeed,speed-brakeRate);
-    speed=Math.max(0,speed);
-
-    if(speed>0.001) fuel=Math.max(0,fuel-0.004);
-    const guard=limitForwardSpeed(speed,SR[3]*RAY_LENGTH);
-    speed=guard.speed;
-    safetyWarning=guard.emergency;
-    protectPlayerMotion();
-    car.rotation.y=angle;
-    const next=constrainToRoad(
-        car.position.x+Math.sin(angle)*speed,
-        car.position.z+Math.cos(angle)*speed,
-        100+expansionLevel
-    );
-    moveWithoutContact(next.x,next.z);
-
-    const moved=car.position.distanceTo(lastCarPos);
-    if((state==='obstacle'||safetyWarning)&&speed<0.01&&moved<0.006){
-        stuckTimer++;
-        if(stuckTimer===60){
-            stuckEscapeSteer=(fL30>=fR30?1:-1)*MAX_STEER*1.8;
-            stuckEscapeFrames=75;
-        }
-        if(stuckTimer>STUCK_MAX*3){planRoute();stuckTimer=0;stuckEscapeFrames=0;}
-    } else { stuckTimer=0; }
-
-    distanceTravelled+=moved;
-    fitness=Math.floor(distanceTravelled*0.5)+points*200;
-    document.getElementById('fitnessVal').innerText=fitness;
-
-    if(safetyWarning)        showBanner('⚠️  EMERGENCY BRAKING','red');
-    else if(state==='obstacle')   showBanner('⚠️  OBSTACLE — SLOWING','yellow');
-    else if(state==='stop')  showBanner('🔴  RED LIGHT — STOPPED','red');
-    else if(state==='yellow')showBanner('🟡  YELLOW — READY TO GO','yellow');
-    else if(state==='turn')  showBanner('🔄  TURNING','yellow');
-    else                     showBanner('🟢  FOLLOWING ROUTE','green');
-}
+function moveCar(){drivePhysical(false);}
+function aiDrive(){drivePhysical(true);}
 
 function showBanner(text,cls){
     const b=document.getElementById('aiBanner');
     b.textContent=text; b.className=cls; b.style.display='block';
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   COLLISION
-═══════════════════════════════════════════════════════════════ */
-function checkCollision(){
-    if(colCooldown>0){ colCooldown--; return; }
-    const carBox=new THREE.Box3().setFromObject(car);
-    for(const obj of obstacles){
-        if(Math.hypot(obj.position.x-car.position.x,obj.position.z-car.position.z)>15) continue;
-        const ob=new THREE.Box3().setFromObject(obj);
-        if(!carBox.intersectsBox(ob)) continue;
-        money-=100; fitness-=50;
-        speed*=0.2;
-        const ox=(carBox.max.x-ob.min.x<ob.max.x-carBox.min.x)?(carBox.max.x-ob.min.x):-(ob.max.x-carBox.min.x);
-        const oz=(carBox.max.z-ob.min.z<ob.max.z-carBox.min.z)?(carBox.max.z-ob.min.z):-(ob.max.z-carBox.min.z);
-        if(Math.abs(ox)<Math.abs(oz)) car.position.x-=ox*1.05;
-        else                          car.position.z-=oz*1.05;
-        if(aiMode){
-            const corrected=constrainToRoad(car.position.x,car.position.z,100+expansionLevel);
-            car.position.x=corrected.x;
-            car.position.z=corrected.z;
-            waypointIdx=Math.min(waypointIdx+3,path.length-1);
-            stuckTimer=0;
-        }
-        colCooldown=COL_FRAMES; break;
-    }
-}
-
 function checkDestination(){
     if(destCollecting||namedTripComplete||!destination) return;
     if(hasArrived(car.position,destination.position)){
         money+=500; points+=1; fitness+=300;
-        if(points%5===0){ expansionLevel+=80; buildCitySegment(expansionLevel); pedestrianSystem.initPedestrians(100+expansionLevel); }
+
         namedTripComplete=true;
         destCollecting=true;
         speed=0;
@@ -498,13 +412,23 @@ function checkDestination(){
 }
 
 function updateUI(){
-    const kmh=Math.abs(speed)*120;
-    document.getElementById('speedVal').innerText =kmh.toFixed(1)+' km/h';
+    const kmh=Math.abs(speed)*SPEED_TO_KMH;
+    document.querySelector('#mission .eyebrow').textContent=aiMode?'AUTO NAVIGATION':'FREE DRIVE';
+    document.getElementById('speedVal').innerText =kmh.toFixed(0);
+    document.getElementById('surfaceName').textContent=currentSurface.name;
+    document.getElementById('clearanceValue').textContent=`أقرب خلوص ${clearance.centimetres??'—'} سم`;
+    document.getElementById('stopDistance').textContent=`مسافة التوقف ${stoppingDistance(kmh/3.6,currentSurface.grip).toFixed(2)} م`;
+    document.getElementById('throttleMeter').value=dynamics.throttle;
+    document.getElementById('brakeMeter').value=dynamics.brake;
+    const event=trafficSystem.incidents.active[0];
+    document.getElementById('incidentStatus').textContent=event?`${event.name} · ${Math.ceil(trafficSystem.incidents.remaining(event))} ث`:'الطريق مفتوح · ظروف عشوائية';
+    document.getElementById('gearVal').textContent = speed < -0.001 ? 'R' : 'D';
+    document.getElementById('cityStatus').textContent = `1.28 km corridor · ${npcVehicles.length} vehicles · ${pedestrians.length} pedestrians`;
     document.getElementById('moneyVal').innerText =money+' ج';
     document.getElementById('pointVal').innerText =points;
     document.getElementById('fuelVal').innerText  =Math.floor(fuel)+'%';
     document.getElementById('fuelFill').style.width  =Math.floor(fuel)+'%';
-    document.getElementById('speedFill').style.width =Math.min(100,(kmh/50)*100)+'%';
+    document.getElementById('speedFill').style.width =Math.min(100,(kmh/180)*100)+'%';
 }
 
 /* Traffic HUD */
@@ -551,18 +475,21 @@ function flashOverlay(isAI){
 }
 function setAIMode(on){
     aiMode=on;
-    aiToggleBtn.textContent=on?'🕹️  MANUAL MODE':'🤖 ENABLE AI';
+    autoSignal=null;
+    clearInput(); steering=0; reverseWait=0;
+    aiToggleBtn.textContent=on?'Auto':'Manual';
     aiToggleBtn.className  =on?'ctrl-btn ai-on':'ctrl-btn';
     modeBadge.textContent  =on?'AI AUTO':'MANUAL';
     modeBadge.className    =on?'ai':'manual';
     aiStatusEl.className   =on?'ai-mode':'';
     fitnessPanel.style.display=on?'block':'none';
     if(on){
+        document.getElementById('missionText').textContent=`Destination · ${activePlace.name}`;
         distanceTravelled=0; fitness=0; stuckTimer=0;
         stuckEscapeFrames=0; smoothAvoidSteer=0; avoidLockTimer=0;
-        colCooldown=0; destCollecting=namedTripComplete;
+        colCooldown=0; destCollecting=namedTripComplete;dynamics.throttle=0;dynamics.brake=0;
         document.getElementById('fitnessVal').innerText='0';
-        routeVisible=true;
+        routeVisible=false;
         if(speed<0) speed=0;
         planRoute();
     } else {
@@ -578,6 +505,7 @@ mountPhone(place=>{
     destCollecting=false;
     speed=0;
     createDestination(place);
+    document.getElementById('missionText').textContent=`Destination · ${place.name}`;
     routeVisible=true;
     if(aiMode){ planRoute(); drawPath(); }
     else setAIMode(true);
@@ -586,23 +514,32 @@ mountPhone(place=>{
 const bridge=createBridge({
     renderer,
     readState: ()=>({
-        speedKmh: Number((Math.abs(speed)*120).toFixed(1)),
+        speedKmh: Number((Math.abs(speed)*SPEED_TO_KMH).toFixed(1)),
         fuel: Math.floor(fuel),
         mode: aiMode?'auto':'manual',
         safety: safetyWarning?'emergency-brake':'clear',
-        position: {x:Number(car.position.x.toFixed(1)), z:Number(car.position.z.toFixed(1))},
-        onRoad: isOnRoad(car.position.x,car.position.z,100+expansionLevel),
-        sensorsM: SR.map(value=>Number((value*RAY_LENGTH).toFixed(1))),
+        position: {x:Number(car.position.x.toFixed(2)), z:Number(car.position.z.toFixed(2))},
+        clearanceCm:clearance.centimetres,
+        throttle:Number(dynamics.throttle.toFixed(3)),brake:Number(dynamics.brake.toFixed(3)),
+        surface:currentSurface.name,grip:currentSurface.grip,
+        stoppingDistanceM:Number(stoppingDistance(Math.abs(speed)*60,currentSurface.grip).toFixed(2)),
+        requestedSpeedKmh:drivingSettings.cruise,plannedSpeedKmh:Number((plannedSpeed*3.6).toFixed(1)),
+        cinematic:cinematic.active,timeScale:cinematic.scale,cinematicEvents:cinematic.events,equipment,
+        tripRemainingM:Math.round(tripRemaining),
+        incidents:trafficSystem.incidents.active.map(e=>({id:e.id,type:e.type,remaining:Math.ceil(trafficSystem.incidents.remaining(e))})),
+        onRoad: isOnRoad(car.position.x,car.position.z,WORLD_EXTENT+expansionLevel),
+        sensorsM: SR.map(value=>Number((value*RAY_LENGTH).toFixed(2))),
         light: getCarTrafficLight()?.state ?? null,
         destination: {id:activePlace.id,x:activePlace.x,z:activePlace.z},
         actors: [...npcVehicles,...pedestrians]
             .filter(actor=>Math.hypot(actor.group.position.x-car.position.x,actor.group.position.z-car.position.z)<45)
             .map(actor=>({
-                type:actor.kind??'pedestrian',
-                x:Number(actor.group.position.x.toFixed(1)),
-                z:Number(actor.group.position.z.toFixed(1)),
-                vx:Number(actor.velocity.x.toFixed(2)),
-                vz:Number(actor.velocity.z.toFixed(2)),
+                type:actor.kind??'pedestrian',id:actor.index,
+                width:actor.width,length:actor.length,heading:actor.group.rotation.y,
+                x:Number(actor.group.position.x.toFixed(2)),
+                z:Number(actor.group.position.z.toFixed(2)),
+                vx:Number((actor.velocity.x*60).toFixed(2)),
+                vz:Number((actor.velocity.z*60).toFixed(2)),
                 radius:actor.radius
             }))
     })
@@ -612,75 +549,217 @@ const bridge=createBridge({
    ANIMATION LOOP
 ═══════════════════════════════════════════════════════════════ */
 let previousFrameAt=performance.now();
-function animate(timestamp=performance.now()){
-    const deltaSeconds=Math.min(0.05,Math.max(0,(timestamp-previousFrameAt)/1000));
-    const frameScale=deltaSeconds*60;
-    previousFrameAt=timestamp;
-    requestAnimationFrame(animate);
+let performanceAt=previousFrameAt, renderedFrames=0, renderFrame=0;
+let simulationCost=0,renderCost=0,trafficCost=0,pedestrianCost=0,playerCost=0;
+function simulate(){
+    const started=performance.now();
     lastCarPos.copy(car.position);
     safetyWarning=false;
 
-    trafficLights.forEach(tl=>tl.update(frameScale));
-    npcVehicles.forEach(v=>v.update(frameScale));
-    pedestrians.forEach(person=>person.update(frameCount,deltaSeconds,frameScale));
-    sensorSystem.update(car,angle,obstacles);
-        aiMode ? aiDrive() : moveCar();
-        updateUI();
-        checkCollision();
+    trafficSystem.tickEvents(STEP_SECONDS);
+    trafficLights.forEach(tl=>tl.update(1));
+    npcVehicles.forEach(v=>{
+      const near=Math.hypot(v.group.position.x-car.position.x,v.group.position.z-car.position.z)<70;
+      const period=near?2:6;
+      if(frameCount%period===v.index%period)v.update(period);
+    });
+    trafficCost+=(performance.now()-started-trafficCost)*.1;
+    const pedestriansStarted=performance.now();
+    pedestrians.forEach(person=>{
+      const period=Math.hypot(person.group.position.x-car.position.x,person.group.position.z-car.position.z)<55?2:12;
+      if(frameCount%period===person.index%period)person.update(frameCount,STEP_SECONDS*period,period);
+    });
+    pedestrianCost+=(performance.now()-pedestriansStarted-pedestrianCost)*.1;
+    const playerStarted=performance.now();
+    car.updateMatrixWorld();
+    if(frameCount%12===0)sensorSystem.update(car,angle,obstacles);
+    if(frameCount%6===0)cinematic.detect(car.position,angle,speed*60,[...npcVehicles,...pedestrians]);
+        aiMode && !isPressed('Space') ? aiDrive() : moveCar();
+
         checkDestination();
         checkPetrolBunk();
-        updateTrafficHUD();
-        updateAstarPanel({routeVisible,path,waypointIdx,destination});
+    playerCost+=(performance.now()-playerStarted-playerCost)*.1;
 
         if(routeVisible&&frameCount%15===0){ if(!aiMode) path=findRoute(roadNodes,car.position,destination.position); drawPath(); }
-        if(!routeVisible) hidePath();
     frameCount++;
 
-    if(destination){ destination.rotation.y+=0.03; destination.position.y=0.3+Math.sin(frameCount*0.06)*0.22; }
+    if(destination)destination.material.opacity=.68+Math.sin(frameCount*.04)*.12;
     if(spawnPoint)  spawnPoint.rotation.y-=0.02;
+    simulationCost+=(performance.now()-started-simulationCost)*.1;
+}
 
-    if(!driverView){
-        camera.position.set(car.position.x-Math.sin(angle)*15,8,car.position.z-Math.cos(angle)*15);
-        camera.lookAt(car.position);
-    } else {
-        camera.position.set(car.position.x+Math.sin(angle)*2,car.position.y+1.5,car.position.z+Math.cos(angle)*2);
-        camera.lookAt(car.position.x+Math.sin(angle)*20,car.position.y,car.position.z+Math.cos(angle)*20);
+function viewportFor(id) {
+    const bounds=document.getElementById(id).getBoundingClientRect();
+    return {x:bounds.left,y:window.innerHeight-bounds.bottom,width:bounds.width,height:bounds.height};
+}
+
+function animate(timestamp=performance.now()){
+    const elapsed=Math.max(0,(timestamp-previousFrameAt)/1000);
+    const deltaSeconds=Math.min(0.1,elapsed);
+    previousFrameAt=timestamp;
+    requestAnimationFrame(animate);
+    // Background browser tabs can suspend rAF entirely. Do not count that
+    // sleep as a rendered frame or a performance sample.
+    if(document.hidden || elapsed>1) {
+        performanceAt=timestamp; renderedFrames=0;
+        simulationClock.reset();
+        document.getElementById('performance').textContent='Measuring FPS…';
+        if(document.hidden) return;
     }
-    miniCamera.position.set(car.position.x,300,car.position.z);
-    miniCamera.lookAt(car.position);
+    if(!paused && !document.hidden) simulationClock.advance(deltaSeconds*cinematic.scale,simulate);
+    else simulationClock.reset();
+    renderFrame++;
+    if(renderFrame%12===0)updateVisualLOD(scene,car.position);
+    if(renderFrame%30===0) {
+        for(const actor of [...npcVehicles,...pedestrians]) {
+            const nearby=actor.group.position.distanceToSquared(car.position)<60*60;
+            actor.group.traverse(part=>{if(part.isMesh) part.castShadow=nearby;});
+        }
+    }
+    if(renderFrame%6===0) {
+        updateUI();
+        updateTrafficHUD();
+        updateAstarPanel({routeVisible,path,waypointIdx,destination});
+    }
+    const displaySteer=steering;
+    if(!paused) {
+      const simDelta=deltaSeconds*cinematic.scale;
+      playerVisual?.update(simDelta,speed,displaySteer,dynamics.brake>.08||safetyWarning,{
+        ...dynamics,...equipment,signal:equipment.signal??autoSignal,hazards:equipment.hazards||cinematic.active,time:frameCount/60,height:roadHeight(car.position.x,car.position.z),
+        wheelHeights:[[-.89,-1.39],[-.89,1.39],[.89,-1.39],[.89,1.39]].map(([x,z])=>roadHeight(car.position.x+x*Math.cos(angle)+z*Math.sin(angle),car.position.z-x*Math.sin(angle)+z*Math.cos(angle))),
+      });
+      chaseCamera.update(car,angle,deltaSeconds,driverView,speed,displaySteer);
+      cinematic.update(deltaSeconds,car,angle);
+      incidentMarkers.update(trafficSystem.incidents.active,frameCount/60);
+    }
+    vehicleAudio.update(speed*60,dynamics.throttle,currentSurface.roughness,equipment.horn,paused||drivingSettings.muted,cinematic.scale);
+    sun.position.set(car.position.x-30,55,car.position.z-25);
+    sun.target.position.copy(car.position);
+    sun.target.updateMatrixWorld();
+    if(renderFrame%3===0)districtMap.update(car,angle,WORLD_EXTENT+expansionLevel,path,destination,npcVehicles);
 
     const cW=window.innerWidth, cH=window.innerHeight;
+    const renderStarted=performance.now();
+    renderer.info.reset();
+    renderer.shadowMap.needsUpdate=renderFrame%2===0;
     renderer.setScissorTest(false);
     renderer.setViewport(0,0,cW,cH);
+    // A following vehicle can sit inside the chase camera. Hide only those
+    // near-camera visuals for this pass; physics and the front feed keep them.
+    const cameraOccluders=driverView?[]:npcVehicles.filter(v=>v.group.visible&&Math.hypot(v.group.position.x-camera.position.x,v.group.position.z-camera.position.z)<4.3);
+    cameraOccluders.forEach(v=>{v.group.visible=false;});
     renderer.render(scene,camera);
-    const frontViewport={x:20,y:Math.max(20,cH-272),width:200,height:112};
+    cameraOccluders.forEach(v=>{v.group.visible=true;});
     renderer.setScissorTest(true);
-    renderer.setScissor(frontViewport.x,frontViewport.y,frontViewport.width,frontViewport.height);
-    renderer.setViewport(frontViewport.x,frontViewport.y,frontViewport.width,frontViewport.height);
-    sensorSystem.withoutDebug(()=>renderer.render(scene,frontCamera));
-    renderer.setScissor(20,cH-140,120,120);
-    renderer.setViewport(20,cH-140,120,120);
-    renderer.render(scene,miniCamera);
+    const frontViewport=viewportFor('frontCameraView');
+    if(cameraVisible) {
+        frontFeed.render(timestamp,scene,frontCamera,frontViewport,sensorSystem.withoutDebug,
+            ()=>cameraLabels.update(frontCamera,[...npcVehicles,...pedestrians],obstacles));
+    }
     renderer.setScissorTest(false);
-    if(frameCount%30===0) bridge.sendFrame(frontViewport);
+    renderCost+=(performance.now()-renderStarted-renderCost)*.1;
+    if(cameraVisible && renderFrame%30===0) bridge.sendFrame(frontViewport);
+    renderedFrames++;
+    if(timestamp-performanceAt>=1000) {
+        const fps=renderedFrames*1000/(timestamp-performanceAt);
+        document.getElementById('performance').textContent=`${fps.toFixed(0)} FPS · ${(1000/fps).toFixed(1)} ms/frame`;
+        document.getElementById('renderStats').textContent=`${renderer.info.render.calls} calls · ${Math.round(renderer.info.render.triangles/1000)}k tris · sim ${simulationCost.toFixed(1)}ms (${trafficCost.toFixed(1)}/${pedestrianCost.toFixed(1)}/${playerCost.toFixed(1)}) · render ${renderCost.toFixed(1)}ms`;
+        renderedFrames=0; performanceAt=timestamp;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════
    BUTTONS
 ═══════════════════════════════════════════════════════════════ */
-document.getElementById('viewBtn').onclick  = ()=>{ driverView=!driverView; };
+document.getElementById('viewBtn').onclick  = ()=>{
+    driverView=!driverView;
+    document.getElementById('viewBtn').textContent=driverView?'Front view · C':'Chase view · C';
+    chaseCamera.reset();
+};
 document.getElementById('routeBtn').onclick = ()=>{
-    if(aiMode) return;
     routeVisible=!routeVisible;
     if(!routeVisible){
         hidePath();
         astarPanel.style.display='none';   // hide A* panel when route hidden
     } else {
-        path=findRoute(roadNodes, car.position, destination.position);
+        if(!aiMode)path=findRoute(roadNodes, car.position, destination.position);
         drawPath();
     }
 };
 document.getElementById('sensorBtn').onclick = ()=>sensorSystem.toggle();
 aiToggleBtn.onclick = ()=>{ setAIMode(!aiMode); };
 
+function togglePause() {
+    paused=!paused;
+    clearInput();
+    document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';
+    document.getElementById('pauseScreen').hidden=!paused;
+    document.getElementById('simulationState').textContent=paused?'Paused':'Live simulation';
+}
+document.getElementById('pauseBtn').onclick=togglePause;
+document.getElementById('resumeBtn').onclick=togglePause;
+document.getElementById('hideCameraBtn').onclick=()=>{
+    cameraVisible=!cameraVisible;
+    document.getElementById('cameraCard').hidden=!cameraVisible;
+    document.getElementById('hideCameraBtn').textContent=cameraVisible?'Hide camera':'Show camera';
+};
+document.getElementById('resetBtn').onclick=()=>{
+    setAIMode(false);
+    speed=0; angle=0; steering=0; reverseWait=0; fuel=100;dynamics={throttle:0,brake:0,acceleration:0,lateralAcceleration:0};cinematic.reset();
+    car.position.set(17.5,0.5,-40); car.rotation.y=0;
+    namedTripComplete=false; destCollecting=false;
+    // Restore agents as well, ensuring the original spawn remains clear.
+    initTraffic(); pedestrianSystem.initPedestrians(WORLD_EXTENT+expansionLevel);
+    chaseCamera.reset();
+    document.getElementById('missionText').textContent='Choose a destination on the phone';
+    if(paused) togglePause();
+    renderer.domElement.focus();
+};
+
+const settingsPanel=document.getElementById('driveSettings');
+document.getElementById('driveSettingsBtn').onclick=()=>{
+  settingsPanel.hidden=!settingsPanel.hidden;
+  document.getElementById('driveSettingsBtn').setAttribute('aria-expanded',String(!settingsPanel.hidden));
+};
+for(const [id,key,output,divisor,unit] of [['cruiseSpeed','cruise','cruiseOutput',1,' كم/س'],['throttlePressure','throttle','throttleOutput',100,'%'],['brakePressure','brake','brakeOutput',100,'%']]) {
+  document.getElementById(id).oninput=e=>{drivingSettings[key]=Number(e.target.value)/divisor;document.getElementById(output).textContent=e.target.value+unit;};
+}
+document.getElementById('trafficDensity').onchange=e=>trafficSystem.setDensity(Number(e.target.value));
+document.getElementById('randomEvents').onchange=e=>trafficSystem.setConditions(e.target.checked);
+document.getElementById('cinematicEnabled').onchange=e=>cinematic.setEnabled(e.target.checked);
+document.getElementById('muteAudio').onchange=e=>drivingSettings.muted=e.target.checked;
+document.getElementById('incidentBtn').onclick=()=>trafficSystem.trigger('braking');
+document.getElementById('longTripBtn').onclick=()=>{
+  activePlace=PLACES.find(p=>p.id==='north-gate');namedTripComplete=false;destCollecting=false;
+  createDestination(activePlace);setAIMode(true);settingsPanel.hidden=true;document.getElementById('driveSettingsBtn').setAttribute('aria-expanded','false');
+};
+document.getElementById('nearMissBtn').onclick=()=>{
+  if(paused)togglePause();
+  car.position.set(17.5,.5,350);angle=0;car.rotation.y=0;speed=60/216;steering=0;reverseWait=0;
+  dynamics={throttle:0,brake:0,acceleration:0,lateralAcceleration:0};cinematic.reset();chaseCamera.reset();
+  trafficSystem.prepareNearMiss();activePlace=PLACES.find(p=>p.id==='north-gate');
+  namedTripComplete=false;destCollecting=false;createDestination(activePlace);setAIMode(true);
+  sensorSystem.update(car,angle,obstacles);
+  settingsPanel.hidden=true;document.getElementById('driveSettingsBtn').setAttribute('aria-expanded','false');
+};
+function updateEquipmentButtons(){
+  document.getElementById('lightsBtn').setAttribute('aria-pressed',String(equipment.lights));
+  document.getElementById('leftSignalBtn').setAttribute('aria-pressed',String(equipment.signal==='left'));
+  document.getElementById('rightSignalBtn').setAttribute('aria-pressed',String(equipment.signal==='right'));
+  document.getElementById('hazardsBtn').setAttribute('aria-pressed',String(equipment.hazards));
+}
+document.getElementById('lightsBtn').onclick=()=>{equipment.lights=!equipment.lights;updateEquipmentButtons();};
+for(const [id,side] of [['leftSignalBtn','left'],['rightSignalBtn','right']])document.getElementById(id).onclick=()=>{equipment.signal=equipment.signal===side?null:side;updateEquipmentButtons();};
+document.getElementById('hazardsBtn').onclick=()=>{equipment.hazards=!equipment.hazards;updateEquipmentButtons();};
+const hornButton=document.getElementById('hornBtn');
+hornButton.onpointerdown=e=>{vehicleAudio.unlock();equipment.horn=true;hornButton.setPointerCapture(e.pointerId);};
+hornButton.onpointerup=hornButton.onpointercancel=()=>equipment.horn=false;
+hornButton.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();vehicleAudio.unlock();equipment.horn=true;}};
+hornButton.onkeyup=()=>equipment.horn=false;
+document.addEventListener('pointerdown',()=>vehicleAudio.unlock(),{once:true});
+document.getElementById('nightMode').onchange=e=>{
+  const night=e.target.checked;sun.intensity=night?.13:1.15;hemisphere.intensity=night?.20:1.05;
+  scene.background=night?new THREE.Color(0x142737):new THREE.CanvasTexture(skyCanvas);
+  scene.fog.color.setHex(night?0x142737:0xd5e6ea);equipment.lights=night;updateEquipmentButtons();
+};
 animate();

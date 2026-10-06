@@ -6,7 +6,7 @@ import threading
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote, urlsplit, parse_qs
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +20,7 @@ class Store:
         self.state = {"connected": False, "speedKmh": 0, "fuel": 100, "mode": "manual"}
         self.state_at = 0.0
         self.frame = b""
+        self.clients = {}
 
 
 STORE = Store()
@@ -28,6 +29,11 @@ STORE = Store()
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
+
+    def end_headers(self):
+        if not urlsplit(self.path).path.startswith('/api/'):
+            self.send_header('Cache-Control', 'no-cache')
+        super().end_headers()
 
     def _json(self, status, value):
         body = json.dumps(value).encode("utf-8")
@@ -52,8 +58,11 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(200, {"ok": True, "service": "ya-rab-ostorha-simulator"})
         if path == "/api/state":
             with STORE.lock:
-                state = STORE.state.copy()
-                state["connected"] = state["connected"] and time.monotonic() - STORE.state_at < 2
+                client = parse_qs(urlsplit(self.path).query).get('client', [''])[0]
+                record = STORE.clients.get(client) if client else None
+                state = (record['state'] if record else {'connected': False} if client else STORE.state).copy()
+                at = record['at'] if record else 0 if client else STORE.state_at
+                state["connected"] = state["connected"] and time.monotonic() - at < 2
             return self._json(200, state)
         if path == "/api/frame":
             with STORE.lock:
@@ -86,12 +95,20 @@ class Handler(SimpleHTTPRequestHandler):
             if not isinstance(data, dict):
                 raise ValueError("Expected JSON object")
             if path == "/api/state":
-                allowed = {"speedKmh", "fuel", "mode", "safety", "position", "onRoad", "sensorsM", "light", "destination", "actors"}
+                allowed = {"speedKmh", "fuel", "mode", "safety", "position", "onRoad", "sensorsM", "light", "destination", "actors",
+                           "clearanceCm", "throttle", "brake", "surface", "grip", "stoppingDistanceM",
+                           "requestedSpeedKmh", "plannedSpeedKmh", "cinematic", "timeScale", "cinematicEvents", "equipment", "tripRemainingM", "incidents"}
                 if set(data) - allowed:
                     raise ValueError("Unknown state field")
                 with STORE.lock:
                     STORE.state = {**data, "connected": True}
                     STORE.state_at = time.monotonic()
+                    client = parse_qs(urlsplit(self.path).query).get('client', [''])[0][:80]
+                    if client:
+                        STORE.clients[client] = {'state': STORE.state.copy(), 'at': STORE.state_at}
+                        if len(STORE.clients) > 16:
+                            oldest = min(STORE.clients, key=lambda key: STORE.clients[key]['at'])
+                            del STORE.clients[oldest]
                 return self._json(200, {"ok": True})
             return self._json(404, {"error": "Unknown API endpoint"})
         except (ValueError, json.JSONDecodeError) as error:

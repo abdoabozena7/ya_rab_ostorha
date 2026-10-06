@@ -5,6 +5,8 @@ export const PLACES = Object.freeze([
   { id: 'hospital', name: 'المستشفى', x: -20, z: 70 },
   { id: 'university', name: 'الجامعة', x: 100, z: 100 },
   { id: 'corniche', name: 'الكورنيش', x: -100, z: -60 },
+  { id: 'north-gate', name: 'البوابة الشمالية', x: 20, z: 620 },
+  { id: 'south-gate', name: 'البوابة الجنوبية', x: -20, z: -620 },
 ]);
 
 const normalize = (value) => value.normalize('NFKC').toLowerCase()

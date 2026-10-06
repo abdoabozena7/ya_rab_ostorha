@@ -41,6 +41,27 @@ class ApiTests(unittest.TestCase):
             self.request("/api/state", {"unknown": "value"})
         self.assertEqual(raised.exception.code, 400)
 
+    def test_browser_sessions_do_not_overwrite_each_others_measurements(self):
+        self.request('/api/state?client=current', {'speedKmh': 32, 'clearanceCm': 146})
+        self.request('/api/state?client=old-preview', {'speedKmh': 0})
+        data = self.request('/api/state?client=current')
+        self.assertEqual(data['speedKmh'], 32)
+        self.assertEqual(data['clearanceCm'], 146)
+        self.assertFalse(self.request('/api/state?client=missing')['connected'])
+
+    def test_physical_measurements_and_incidents_round_trip(self):
+        self.request('/api/state', {'speedKmh': 45, 'clearanceCm': 123,
+                     'throttle': 0.45, 'brake': 0.2, 'surface': 'wet', 'grip': 0.48,
+                     'stoppingDistanceM': 22.73, 'requestedSpeedKmh': 100,
+                     'plannedSpeedKmh': 45, 'cinematic': True, 'timeScale': 0.22,
+                     'equipment': {'lights': True, 'signal': 'left'}, 'tripRemainingM': 612,
+                     'incidents': [{'id': 1, 'type': 'braking', 'remaining': 7}]})
+        data = self.request('/api/state')
+        self.assertEqual(data['clearanceCm'], 123)
+        self.assertEqual(data['equipment']['signal'], 'left')
+        self.assertEqual(data['timeScale'], 0.22)
+        self.assertEqual(data['incidents'][0]['type'], 'braking')
+
     def test_git_files_not_exposed(self):
         with self.assertRaises(HTTPError) as raised:
             self.request("/.git/HEAD")

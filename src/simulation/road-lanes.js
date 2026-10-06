@@ -4,6 +4,17 @@ const INNER_X = [-100, -70, -20, 20, 50, 100];
 const INNER_Z = [-100, -60, -20, 20, 70, 100];
 
 export function roadLayout(extent = 100) {
+  if(extent>=600) {
+    const core=roadLayout(100);
+    // Two continuous arterial routes, with a return link at each end. Avoid
+    // expanding the inner grid into thousands of fully detailed blocks.
+    for(const x of [-20,20])for(const sign of [-1,1])core.roads.push({axis:'z',fixed:x,
+      min:sign<0?-extent:100,max:sign<0?-100:extent,width:14,arterial:true});
+    for(const z of [-extent,extent])core.roads.push({axis:'x',fixed:z,min:-20,max:20,width:14,arterial:true});
+    core.zs.push(-extent,extent);
+    core.roads.forEach(r=>{if(r.sideStreet)r.width=6.4;});
+    return core;
+  }
   const outer = [];
   for (let n = 140; n <= extent; n += 40) outer.push(-n, n);
   const xs = [...new Set([...INNER_X, ...outer])].sort((a, b) => a - b);
@@ -41,7 +52,7 @@ function nearestOnRoad(x, z, extent, halfWidth) {
 }
 
 export function isOnRoad(x, z, extent, halfWidth = 4) {
-  if (Math.abs(x) > extent || Math.abs(z) > extent) return false;
+  if (Math.abs(x) > extent+halfWidth || Math.abs(z) > extent+halfWidth) return false;
   return nearestOnRoad(x, z, extent, halfWidth)?.edge <= 0;
 }
 
