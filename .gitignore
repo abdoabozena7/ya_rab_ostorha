@@ -23,3 +23,5 @@ __pycache__/
 *.pyc
 output/
 .playwright-cli/
+.beamng-sdk-audit/
+.venv/

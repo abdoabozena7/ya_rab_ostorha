@@ -23,10 +23,11 @@ export function fitVisual(template, width, length, height) {
   return root;
 }
 
-// NPC vehicles and repeated scenery have no animated parts. Bake their node
-// transforms and combine meshes sharing a material; retain the original GLBs.
+// Bake node transforms relative to the existing parent, so attached vehicle
+// parts don't accidentally include the car's world position a second time.
 export function mergeStaticVisual(template) {
   const groups=new Map(),root=new THREE.Group();template.updateMatrixWorld(true);
+  const parentInverse=template.parent?template.parent.matrixWorld.clone().invert():new THREE.Matrix4();
   template.traverse(part=>{
     if(!part.isMesh||Array.isArray(part.material))return;
     const key=part.material.uuid;
@@ -39,7 +40,7 @@ export function mergeStaticVisual(template) {
       for(let i=0;i<attribute.count;i++)for(let c=0;c<attribute.itemSize;c++)values[i*attribute.itemSize+c]=attribute[getters[c]](i);
       geometry.setAttribute(name,new THREE.BufferAttribute(values,attribute.itemSize));
     }
-    geometry.applyMatrix4(part.matrixWorld);
+    geometry.applyMatrix4(new THREE.Matrix4().multiplyMatrices(parentInverse,part.matrixWorld));
     groups.get(key).geometry.push(geometry);
   });
   groups.forEach(({material,geometry})=>{

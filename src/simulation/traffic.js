@@ -11,7 +11,7 @@ export function createTrafficSystem(THREE, scene, obstacles, getExpansionLevel, 
   const vehicles = [];
   const lights = [];
   const incidents=createIncidents(42);
-  let conditionsEnabled=true, density=1;
+  let conditionsEnabled=false, density=1;
   let districtRoads=[];
   let pedestrians=[];
   let protectedSpawn={x:17.5,z:-40};
@@ -102,6 +102,7 @@ export function createTrafficSystem(THREE, scene, obstacles, getExpansionLevel, 
       this.obeySignals=true;
       this.wrongWay=false;
       this.group=new THREE.Group();
+      this.dynamicWheels=[];
       this.group.userData.dynamicActor=true;
       this.group.userData.width=this.width;this.group.userData.length=this.length;
       const color=colors[index%colors.length];
@@ -155,6 +156,12 @@ export function createTrafficSystem(THREE, scene, obstacles, getExpansionLevel, 
       visual.position.y=-box.min.y*variedScale+0.08;
       visual.traverse(part=>{if(part.isMesh)part.castShadow=true;});
       this.group.clear(); this.group.add(visual);
+      this.dynamicWheels=[];
+      visual.traverse(pivot=>{if(pivot.userData.wheel)this.dynamicWheels.push({pivot,
+        spin:pivot.getObjectByName('wheel-spin'),radius:pivot.userData.wheel.radiusM*variedScale,
+        front:pivot.userData.wheel.front});});
+      const front=this.dynamicWheels.filter(w=>w.front),rear=this.dynamicWheels.filter(w=>!w.front);
+      this.wheelbase=front.length&&rear.length?Math.abs(front[0].pivot.position.z-rear[0].pivot.position.z)*variedScale:2.5;
     }
     update(frameScale=1) {
       const dt=frameScale/60,previous={x:this.group.position.x,z:this.group.position.z};
@@ -217,6 +224,13 @@ export function createTrafficSystem(THREE, scene, obstacles, getExpansionLevel, 
         this.group.rotation.y=this.road.axis==='z'?(this.direction>0?0:Math.PI):(this.direction>0?Math.PI/2:-Math.PI/2);
       }
       this.velocity=wrapped?{x:0,z:0}:{x:(this.group.position.x-previous.x)/frameScale,z:(this.group.position.z-previous.z)/frameScale};
+      const moved=wrapped?0:Math.hypot(this.group.position.x-previous.x,this.group.position.z-previous.z);
+      const yaw=Math.atan2(Math.sin(this.group.rotation.y-oldHeading),Math.cos(this.group.rotation.y-oldHeading));
+      const steering=moved>.001?Math.max(-.65,Math.min(.65,Math.atan(this.wheelbase*yaw/moved))):0;
+      for(const wheel of this.dynamicWheels){
+        wheel.spin.rotation.x+=moved/Math.max(.05,wheel.radius);
+        wheel.pivot.rotation.y=wheel.front?steering:0;
+      }
       this.group.visible=!player||Math.hypot(this.group.position.x-player.position.x,this.group.position.z-player.position.z)<190;
     }
   }

@@ -78,6 +78,9 @@ i { display:inline-block; width:5px; height:5px; border-radius:50%; background:#
 #tlPanel { top:127px; right:28px; width:182px; } .tl-row { display:flex; gap:7px; margin-top:7px; align-items:center; font-size:8px; }
 .tl-dot { width:8px; height:8px; border-radius:50%; background:#627173; } .active-red { background:#ee766c; } .active-yellow { background:#ebca54; } .active-green { background:#74bd98; }
 #sensorPanel { top:255px; right:28px; width:220px; } #renderStats { font-size:9px; color:var(--muted); margin-bottom:10px; }
+#sensorPanel { width:300px; max-height:calc(100vh - 280px); overflow:auto; }
+#providerStatus { color:#e6c463; font-size:11px; margin-bottom:8px; }
+#debugTelemetry { white-space:pre-line; font:10px/1.5 Consolas,monospace; color:#d7e5e8; margin-bottom:10px; }
 .sensor-row { display:flex; gap:8px; align-items:center; margin-top:8px; font-size:8px; } .sensor-name { width:42px; } .sensor-bar-wrap { flex:1; height:4px; background:#ffffff20; } .sensor-bar-fill { height:100%; } .sensor-dist { width:34px; text-align:right; }
 #astarPanel { display:none; top:127px; left:28px; width:290px; }
 .astar-title { color:var(--yellow); font-size:9px; margin-bottom:9px; } .astar-formula { color:var(--muted); font-size:10px; margin-bottom:10px; }
@@ -120,6 +123,9 @@ i { display:inline-block; width:5px; height:5px; border-radius:50%; background:#
 }
 
 .asset-credits { display:block; margin-top:12px; color:var(--muted); font-size:9px; }
+#authoritativeCamera { position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#102027; }
+#cameraUnavailable { position:absolute;inset:0;background:#102027e8;color:#dce7e7;display:grid;place-items:center;font-size:11px;text-align:center; }
+#authoritativeCamera[hidden], #cameraUnavailable[hidden] { display:none; }
 
 /* Physical driving tools stay out of the centre of the road. */
 #driveSettingsBtn {position:absolute;right:28px;top:125px;z-index:16;font-size:11px;padding:10px 13px;}

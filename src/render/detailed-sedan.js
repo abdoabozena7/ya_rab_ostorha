@@ -2,6 +2,7 @@ import { mergeStaticVisual } from './visual-assets.js?v=drive-final';
 // Original editable sedan: 4.72 m long, 1.86 m wide, 2.78 m wheelbase.
 export function buildDetailedSedan(THREE,car,fallback) {
   const root=new THREE.Group();let body=new THREE.Group();root.name='detailed-sedan';root.position.y=-.42;root.add(body);car.add(root);fallback.visible=false;
+  const cabin=new THREE.Group();root.add(cabin);
   const paint=new THREE.MeshPhysicalMaterial({color:0xdbae26,metalness:.55,roughness:.24,clearcoat:1,clearcoatRoughness:.15});
   const dark=new THREE.MeshStandardMaterial({color:0x161b20,roughness:.56});
   const glass=new THREE.MeshPhysicalMaterial({color:0x182d39,metalness:.35,roughness:.12,clearcoat:1});
@@ -14,15 +15,15 @@ export function buildDetailedSedan(THREE,car,fallback) {
   const mesh=(geometry,material,parent=body)=>{const m=new THREE.Mesh(geometry,material);m.castShadow=true;m.receiveShadow=false;parent.add(m);return m;};
   const box=(w,h,l,x,y,z,material,parent=body)=>{const m=mesh(new THREE.BoxGeometry(w,h,l),material,parent);m.position.set(x,y,z);return m;};
   const line=(points,material=dark,r=.012,parent=body)=>mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),Math.max(8,points.length*4),r,5,false),material,parent);
-  const quad=(points,material)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points.flat(),3));g.setIndex([0,1,2,0,2,3]);g.computeVertexNormals();const m=mesh(g,material);m.material.side=THREE.DoubleSide;return m;};
-  function shell(rings,material) {
+  const quad=(points,material,parent=body)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points.flat(),3));g.setIndex([0,1,2,0,2,3]);g.computeVertexNormals();const m=mesh(g,material,parent);m.material.side=THREE.DoubleSide;return m;};
+  function shell(rings,material,parent=body) {
     const vertices=[],indices=[];
     for(const [z,w,lo,hi] of rings)for(const [x,y] of [[-w*.8,lo],[-w,lo+(hi-lo)*.25],[-w*.99,hi-(hi-lo)*.17],[-w*.8,hi],[w*.8,hi],[w*.99,hi-(hi-lo)*.17],[w,lo+(hi-lo)*.25],[w*.8,lo]])vertices.push(x,y,z);
     for(let i=0;i<rings.length-1;i++)for(let j=0;j<8;j++) {
       const a=i*8+j,b=(i+1)*8+j,n=(j+1)%8;indices.push(a,b,i*8+n,b,(i+1)*8+n,i*8+n);
     }
     for(let j=1;j<7;j++){indices.push(0,j,j+1);const end=(rings.length-1)*8;indices.push(end,end+j+1,end+j);}
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return mesh(g,material);
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return mesh(g,material,parent);
   }
   const profile=[[-2.36,.77,.35,.77],[-2.18,.91,.32,.86],[-1.7,.93,.31,.96],[-.6,.93,.3,1.01],[.6,.92,.3,1.00],[1.55,.92,.32,.85],[2.13,.88,.34,.74],[2.36,.73,.4,.67]];
   const bodyRings=[];
@@ -35,13 +36,13 @@ export function buildDetailedSedan(THREE,car,fallback) {
   }
   shell(bodyRings,paint);box(1.44,.13,3.4,0,.33,0,dark);
   // A smoothly tapered cabin, with individual glazing and physical pillars.
-  shell([[-1.48,.76,.88,.93],[-.86,.72,.92,1.42],[-.55,.71,.94,1.48],[.44,.68,.94,1.46],[1.14,.76,.86,.92]],paint);
-  quad([[-.65,1.475,.46],[.65,1.475,.46],[.73,.96,1.15],[-.73,.96,1.15]],glass);
-  quad([[.69,1.44,-.89],[-.69,1.44,-.89],[-.73,.985,-1.47],[.73,.985,-1.47]],glass);
+  shell([[-1.48,.76,.88,.93],[-.86,.72,.92,1.42],[-.55,.71,.94,1.48],[.44,.68,.94,1.46],[1.14,.76,.86,.92]],paint,cabin);
+  quad([[-.65,1.475,.46],[.65,1.475,.46],[.73,.96,1.15],[-.73,.96,1.15]],glass,cabin);
+  quad([[.69,1.44,-.89],[-.69,1.44,-.89],[-.73,.985,-1.47],[.73,.985,-1.47]],glass,cabin);
   for(const side of [-1,1]) {
     const x=side*.735;
-    quad([[x,.98,-1.29],[side*.705,1.36,-.84],[side*.697,1.415,-.18],[side*.77,.98,-.18]],glass);
-    quad([[side*.77,.98,-.08],[side*.686,1.415,-.08],[side*.661,1.41,.40],[side*.745,.95,1.04]],glass);
+    quad([[x,.98,-1.29],[side*.705,1.36,-.84],[side*.697,1.415,-.18],[side*.77,.98,-.18]],glass,cabin);
+    quad([[side*.77,.98,-.08],[side*.686,1.415,-.08],[side*.661,1.41,.40],[side*.745,.95,1.04]],glass,cabin);
     line([[side*.78,.955,-1.40],[side*.80,.968,-.1],[side*.785,.94,1.12]],chrome,.015);
     // Door gaps follow the side surface, handles and mirrors are separate.
     for(const z of [-1.39,-.13,1.10])line([[side*.89,.85,z],[side*.93,.61,z],[side*.88,.36,z]],dark,.008);
@@ -107,8 +108,29 @@ export function buildDetailedSedan(THREE,car,fallback) {
     light.target.position.set(x,0,35);root.add(light,light.target);lights.push(light);
   }
   const cameraMount=new THREE.Group();cameraMount.name='front-camera-mount';cameraMount.position.set(0,1.02,1.2);car.add(cameraMount);
+  // Lightweight cockpit landmarks; the dash remains part of the existing car.
+  box(1.43,.16,.48,0,.88,.67,dark,root);
+  for(const x of [-.46,.46]) {
+    box(.48,.15,.48,x,.59,-.45,dark,root);
+    box(.48,.58,.12,x,.87,-.68,dark,root);
+  }
+  const steeringWheel=new THREE.Group();
+  steeringWheel.position.set(-.42,1.01,.39);
+  root.add(steeringWheel);
+  const steeringRim=mesh(new THREE.TorusGeometry(.18,.024,8,28),dark,steeringWheel);
+  steeringRim.rotation.x=.25;
+  box(.31,.025,.025,0,0,0,chrome,steeringWheel);
+  box(.025,.31,.025,0,0,0,chrome,steeringWheel);
+  box(.28,.09,.025,0,1.34,.62,dark,root);
+  const gaugeCanvas=document.createElement('canvas');gaugeCanvas.width=256;gaugeCanvas.height=96;
+  const gaugeContext=gaugeCanvas.getContext('2d'),gaugeTexture=new THREE.CanvasTexture(gaugeCanvas);
+  gaugeTexture.colorSpace=THREE.SRGBColorSpace;
+  const gauge=mesh(new THREE.PlaneGeometry(.48,.16),new THREE.MeshBasicMaterial({map:gaugeTexture,side:THREE.DoubleSide}),root);
+  gauge.position.set(-.42,1.015,.68);gauge.rotation.y=Math.PI;
+  let lastGaugeAt=-Infinity;
   const combined=mergeStaticVisual(body);root.remove(body);body=combined;root.add(body);
-  return {visual:root,cameraMount,update(dt,speed,steering,braking,state={}) {
+  const cabinMerged=mergeStaticVisual(cabin);cabin.clear();cabin.add(cabinMerged);
+  return {visual:root,cameraMount,setCameraMode(mode){cabin.visible=mode!=='cockpit';body.visible=mode!=='cockpit';},update(dt,speed,steering,braking,state={}) {
     if(dt<=0)return;const v=speed*60;
     const response=1-Math.exp(-dt*8),heights=state.wheelHeights??[0,0,0,0],bounce=heights.reduce((a,b)=>a+b,0)/4;
     body.position.y+=(bounce-body.position.y)*response;
@@ -116,7 +138,22 @@ export function buildDetailedSedan(THREE,car,fallback) {
     const roadRoll=(heights[2]+heights[3]-heights[0]-heights[1])/(2*1.78);
     body.rotation.x+=((Math.max(-.065,Math.min(.065,-(state.acceleration??0)*.008+roadPitch)))-body.rotation.x)*response;
     body.rotation.z+=((Math.max(-.075,Math.min(.075,(state.lateralAcceleration??0)*.009+roadRoll)))-body.rotation.z)*response;
-    wheels.forEach((w,i)=>{w.spin.rotation.x+=v*dt/.35;w.pivot.rotation.y=w.front?steering:0;w.pivot.position.y=.35+(state.wheelHeights?.[i]??bounce);});
+    cabin.position.copy(body.position);cabin.rotation.copy(body.rotation);
+    steeringWheel.rotation.z=steering*8;
+    if(state.telemetry&&(state.time??0)-lastGaugeAt>.1) {
+      lastGaugeAt=state.time??0;const t=state.telemetry;
+      gaugeContext.fillStyle='#121c22';gaugeContext.fillRect(0,0,256,96);
+      gaugeContext.fillStyle='#e6d69d';gaugeContext.font='bold 27px monospace';
+      gaugeContext.fillText(`${Math.round(Math.abs(t.speedMps)*3.6)} km/h`,8,33);
+      gaugeContext.font='18px monospace';gaugeContext.fillText(`${Math.round(t.engineRPM)} rpm  ${t.gear}`,8,60);
+      gaugeContext.fillText(`Fuel ${Math.round(t.fuelLevelL/t.fuelCapacityL*100)}%`,8,84);gaugeTexture.needsUpdate=true;
+    }
+    wheels.forEach((w,i)=>{
+      const physical=state.wheels?.[i];
+      w.spin.rotation.x=physical?.angleRad??(w.spin.rotation.x+v*dt/.35);
+      w.pivot.rotation.y=physical?.steeringAngleRad??(w.front?steering:0);
+      w.pivot.position.y=.35+(state.wheelHeights?.[i]??bounce);
+    });
     const blink=Math.sin((state.time??0)*Math.PI*3)>0;
     red.emissiveIntensity=braking||state.brake>.08?3:state.lights?.55:.12;
     white.emissiveIntensity=state.lights?3:.22;reverse.emissiveIntensity=speed<-.001?2:0;

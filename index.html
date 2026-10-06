@@ -20,7 +20,7 @@
 <div id="cityStatus">Loading test district…</div>
 <div id="aiBanner" role="status"></div>
 <div id="modeOverlay"></div>
-<div id="cameraCard"><div id="frontCameraLabel">Front camera <span><i></i> LIVE</span></div><div id="frontCameraView"></div><div class="camera-caption"><span title="Boxes projected from known simulation geometry, not a neural detector">GROUND TRUTH</span><span id="cameraFps">— FPS</span><span id="cvLatency" title="CPU time to project and draw ground-truth boxes">GT · — ms</span></div></div>
+<div id="cameraCard"><div id="frontCameraLabel">Front camera <span id="cameraActivity"><i></i> LIVE</span></div><div id="frontCameraView"><img id="authoritativeCamera" alt="BeamNG mounted front camera" hidden><span id="cameraUnavailable" hidden>Waiting for BeamNG camera</span></div><div class="camera-caption"><span id="cameraSource" title="Browser scene geometry; boxes appear in Debug mode">DEV SCENE VIEW</span><span id="cameraFps">— FPS</span><span id="cvLatency" title="CPU time to project known browser objects">GT · — ms</span></div></div>
 <div id="driveReadout"><div id="speedPanel"><span id="speedVal">0</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">D</span><span class="divider"></span><button id="aiToggleBtn" class="ctrl-btn" title="Switch manual / auto (1)">Manual</button><kbd>1</kbd><span id="modeBadge" hidden>MANUAL</span></div></div>
 <div id="runtime"><i></i><span id="simulationState">Live simulation</span><span id="performance">Measuring FPS…</span></div>
 <div id="drivingHelp"><span><kbd>W A S D</kbd> Drive</span><span><kbd>SPACE</kbd> Brake</span><button id="viewBtn">Chase view · C</button></div>
@@ -32,12 +32,12 @@
   <label>قوة ضغط البنزين <output id="throttleOutput">100%</output><input id="throttlePressure" type="range" min="10" max="100" step="5" value="100" aria-label="قوة ضغط البنزين"></label>
   <label>قوة ضغط الفرامل <output id="brakeOutput">100%</output><input id="brakePressure" type="range" min="10" max="100" step="5" value="100" aria-label="قوة ضغط الفرامل"></label>
   <label>كثافة المرور <select id="trafficDensity" aria-label="كثافة المرور"><option value=".6">خفيفة</option><option value="1" selected>ساعة الذروة</option><option value="1.4">زحمة شديدة</option></select></label>
-  <label class="check"><input id="randomEvents" type="checkbox" checked> ظروف عشوائية بتعمل زحمة</label>
-  <label class="check"><input id="cinematicEnabled" type="checkbox" checked> تصوير بطيء عند خطر اصطدام</label>
+  <label class="check" title="Deferred until after Phase 1"><input id="randomEvents" type="checkbox" disabled> ظروف عشوائية بتعمل زحمة</label>
+  <label class="check" title="Simulation runs at normal time in Phase 1"><input id="cinematicEnabled" type="checkbox" disabled> تصوير بطيء عند خطر اصطدام</label>
   <label class="check"><input id="nightMode" type="checkbox"> وقت الغروب والكشافات</label>
   <label class="check"><input id="muteAudio" type="checkbox"> كتم صوت العربية</label>
-  <button id="incidentBtn">موقف مفاجئ في الطريق</button><button id="longTripBtn">رحلة طويلة · البوابة الشمالية</button>
-  <button id="nearMissBtn">تجربة تفادي سينمائية · إعادة ضبط الرحلة</button>
+  <button id="incidentBtn" disabled title="Deferred until after Phase 1">موقف مفاجئ في الطريق</button><button id="longTripBtn">رحلة طويلة · البوابة الشمالية</button>
+  <button id="nearMissBtn" disabled title="Deferred until after Phase 1">تجربة تفادي سينمائية · إعادة ضبط الرحلة</button>
   <p>١ وحدة = ١ متر. المسافة بين حدود أجسام المحاكاة بالسنتيمتر. السرعة المطلوبة سقف؛ السائق الآلي يخفّضها حسب الأمان والتماسك.</p>
 </aside>
 <div id="physicalTelemetry" dir="rtl"><b id="surfaceName">أسفلت</b><span id="clearanceValue">الخلوص — سم</span><span id="stopDistance">مسافة توقف — م</span><div class="pedals"><label>بنزين <meter id="throttleMeter" min="0" max="1" value="0"></meter></label><label>فرامل <meter id="brakeMeter" min="0" max="1" value="0"></meter></label></div><span id="incidentStatus">الطريق مفتوح</span></div>
@@ -134,6 +134,8 @@
 </div>
 
 <div id="sensorPanel"><div id="renderStats"></div>
+  <div id="providerStatus">Development mock · unvalidated physics</div>
+  <div id="debugTelemetry" aria-live="off"></div>
   <span class="hud-label">◈ SENSOR RAYS</span>
   <div id="sensorRows"></div>
   <a class="asset-credits" href="/public/assets/ATTRIBUTION.md" target="_blank" rel="noopener">Asset credits &amp; licenses</a>

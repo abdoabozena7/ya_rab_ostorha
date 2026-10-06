@@ -12,7 +12,9 @@ import { mountPhone } from './ui/phone.js?v=drive-final';
 import { roadLayout, isOnRoad } from './simulation/road-lanes.js?v=drive-final';
 import { createPedestrians } from './simulation/pedestrians.js?v=drive-final';
 import { createFixedStep, STEP_SECONDS, SPEED_TO_KMH } from './simulation/fixed-step.js?v=drive-final';
-import { stepVehicle } from './simulation/vehicle-dynamics.js?v=drive-final';
+import { DevelopmentMockProvider } from './simulation/provider.js';
+import { BeamNGProvider } from './simulation/beamng-provider.js';
+import { telemetryText } from './ui/telemetry.js';
 import { WORLD_EXTENT, surfaceAt, surfaceAhead, roadHeight } from './simulation/road-conditions.js?v=drive-final';
 import { leadVehicle, nearbyClearance, motionClear, PLAYER_SIZE, collisionRisk } from './simulation/vehicle-geometry.js?v=drive-final';
 import { followingAcceleration, stoppingDistance, safeFollowingSpeed, clamp } from './simulation/longitudinal.js?v=drive-final';
@@ -53,6 +55,10 @@ let autoSignal=null;
 let blockedFrames=0;
 
 let fuel           = 100;
+const remoteSimulation=new URLSearchParams(location.search).get('provider')==='beamng';
+const simulationProvider = remoteSimulation ? new BeamNGProvider() : new DevelopmentMockProvider();
+if(remoteSimulation)simulationProvider.connect();
+let vehicleTelemetry = simulationProvider.getVehicleState();
 let petrolBunks    = [];
 let isRefilling    = false;
 let spawnPoint, destination;
@@ -83,7 +89,8 @@ const astarPanel=document.getElementById('astarPanel');
 /* ═══════════════════════════════════════════════════════════════
    RENDERER
 ═══════════════════════════════════════════════════════════════ */
-let driverView = false;
+let cameraMode = 'chase';
+const cameraModes=['chase','cockpit','hood','frontSensor'];
 const camera     = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 400);
 const frontCamera = new THREE.PerspectiveCamera(75, 16/9, 0.1, 125);
 const districtMap=createDistrictMap(document.getElementById('minimapView'));
@@ -103,6 +110,7 @@ renderer.domElement.setAttribute('aria-label', 'Driving simulation. WASD or arro
 document.body.appendChild(renderer.domElement);
 const chaseCamera = createChaseCamera(THREE, camera);
 const cinematic=createCinematic(THREE,camera);
+cinematic.setEnabled(false);
 const vehicleAudio=createVehicleAudio();
 const incidentMarkers=createIncidentMarkers(THREE,scene);
 
@@ -173,7 +181,7 @@ function checkPetrolBunk(){
             if(Number.isInteger(amt)&&amt>0){
                 const added=Math.min(amt,Math.ceil(100-fuel));
                 const cost=added*10;
-                if(money>=cost){fuel=Math.min(100,fuel+added);money-=cost;}
+                if(money>=cost){fuel=Math.min(100,fuel+added);simulationProvider.setFuelLitres(fuel/100*simulationProvider.fuelCapacity);money-=cost;}
                 else alert('Not enough money!');
             }
             setTimeout(()=>{ isRefilling=false; },3000);
@@ -243,6 +251,7 @@ const RAY_LENGTH=sensorSystem.range;
 function protectPlayerMotion() {
     const actors=[...npcVehicles,...pedestrians];
     if(!motionClear(car.position,angle,speed,actors,PLAYER_SIZE,.16)) {
+        // Swept clearance is preventative, not a measured collision impulse.
         speed=0;dynamics.brake=1;dynamics.throttle=0;safetyWarning=true;
     }
 }
@@ -251,6 +260,7 @@ function moveWithoutContact(x,z) {
     const oldX=car.position.x, oldZ=car.position.z;
     // Reject crossing the district boundary or a curb instead of teleporting.
     if(!isOnRoad(x,z,WORLD_EXTENT+expansionLevel,aiMode?3.8:3.55)) {
+        simulationProvider.recordCollision({speedMps:speed*60,direction:'front',position:{x,z},component:'body'});
         speed=0; safetyWarning=true;
         return false;
     }
@@ -262,6 +272,7 @@ function moveWithoutContact(x,z) {
         if(Math.hypot(obj.position.x-x,obj.position.z-z)>15) continue;
         const obstacleBox=obj.userData.collisionBox??(obj.userData.collisionBox=new THREE.Box3().setFromObject(obj));
         if(carBox.intersectsBox(obstacleBox)) {
+            simulationProvider.recordCollision({speedMps:speed*60,direction:'front',position:{x,z},component:'front'});
             car.position.x=oldX; car.position.z=oldZ;
             speed=0; safetyWarning=true;
             return false;
@@ -324,10 +335,12 @@ document.addEventListener('keydown',e=>{
     if(e.code==='KeyC') { e.preventDefault(); document.getElementById('viewBtn').click(); }
     if(e.code==='KeyP') { e.preventDefault(); document.getElementById('phoneToggleBtn').click(); }
     if(e.code==='Digit1') { e.preventDefault(); setAIMode(!aiMode); }
+    if(remoteSimulation&&({KeyR:-1,KeyN:0,KeyG:1}[e.code])!==undefined)
+        simulationProvider.setGear({KeyR:-1,KeyN:0,KeyG:1}[e.code]);
     if(e.code==='Escape' && document.getElementById('inGamePhone').hidden) togglePause();
 });
 document.addEventListener('keyup', e=>{ keys[e.code]=false;if(e.code==='KeyH')equipment.horn=false; });
-function clearInput() { keys={};equipment.horn=false;simulationClock.reset(); }
+function clearInput() { keys={};equipment.horn=false;simulationClock.reset();if(remoteSimulation)simulationProvider.releaseControls(); }
 window.addEventListener('blur',clearInput);
 document.addEventListener('visibilitychange',clearInput);
 document.addEventListener('focusin',e=>{
@@ -335,7 +348,7 @@ document.addEventListener('focusin',e=>{
 });
 
 function drivePhysical(automatic) {
-    if(fuel<=0||automatic&&destCollecting){speed=0;dynamics.throttle=0;dynamics.brake=0;return;}
+    if(automatic&&destCollecting){speed=0;dynamics.throttle=0;dynamics.brake=0;return;}
     const actors=[...npcVehicles,...pedestrians],v=Math.max(0,speed*60);
     const terrain=surfaceAhead(car.position,angle,v);currentSurface=terrain.surface;
     const lead=leadVehicle(car.position,angle,actors);
@@ -362,22 +375,28 @@ function drivePhysical(automatic) {
     let throttle=automatic?clamp((acceleration+currentSurface.rolling+.00085*v*v)/engine,0,1)*drivingSettings.throttle:forward?drivingSettings.throttle:0;
     let brake=automatic?requiredBrake:backward&&speed>0?drivingSettings.brake:0;
     const risk=collisionRisk(car.position,angle,v,actors,PLAYER_SIZE,1.8);
-    const assist=v>plannedSpeed+.7||risk&&risk.ttc<.9;
+    const assist=automatic&&(v>plannedSpeed+.7||risk&&risk.ttc<.9);
     if(assist){brake=Math.max(brake,requiredBrake,risk?.ttc<.9?1:0);throttle=0;}
     if(speed<0){throttle=forward?drivingSettings.throttle:0;}
     safetyWarning=Boolean(assist&&brake>.35);
     const beforeAngle=angle;
-    dynamics=stepVehicle({...dynamics,speed,angle,steering,reverseWait},{
+    const beforeWheelAngles=[...simulationProvider.wheelAngles];
+    Object.assign(simulationProvider.state,{speed,angle,steering,reverseWait});
+    vehicleTelemetry=simulationProvider.step({
         forward,backward,throttle,brake,handbrake:isPressed('Space'),
         left:isPressed('KeyA')||isPressed('ArrowLeft'),right:isPressed('KeyD')||isPressed('ArrowRight'),
         ...(automatic?{steering:route.steering}:{}),maxKmh:180,surface:currentSurface,
     });
+    dynamics=simulationProvider.state;
     ({speed,angle,steering,reverseWait}=dynamics);
     protectPlayerMotion();car.rotation.y=angle;
     if(!moveWithoutContact(car.position.x+Math.sin(angle)*speed,car.position.z+Math.cos(angle)*speed)){
         angle=beforeAngle;car.rotation.y=angle;dynamics.brake=1;dynamics.throttle=0;
     }
-    if(Math.abs(speed)>.001)fuel=Math.max(0,fuel-(.00025+dynamics.throttle*.0005));
+    simulationProvider.state.speed=speed;
+    if(speed===0){simulationProvider.wheelAngularVelocity.fill(0);simulationProvider.wheelAngles=beforeWheelAngles;}
+    vehicleTelemetry=simulationProvider.getVehicleState();
+    fuel=100*vehicleTelemetry.fuelLevelL/vehicleTelemetry.fuelCapacityL;
     car.userData.velocity={x:car.position.x-lastCarPos.x,z:car.position.z-lastCarPos.z};
     const moved=car.position.distanceTo(lastCarPos);distanceTravelled+=moved;
     fitness=Math.floor(distanceTravelled*.5)+points*200;
@@ -412,23 +431,32 @@ function checkDestination(){
 }
 
 function updateUI(){
-    const kmh=Math.abs(speed)*SPEED_TO_KMH;
+    const kmh=Number.isFinite(vehicleTelemetry.speedMps)?Math.abs(vehicleTelemetry.speedMps)*3.6:null;
     document.querySelector('#mission .eyebrow').textContent=aiMode?'AUTO NAVIGATION':'FREE DRIVE';
-    document.getElementById('speedVal').innerText =kmh.toFixed(0);
-    document.getElementById('surfaceName').textContent=currentSurface.name;
-    document.getElementById('clearanceValue').textContent=`أقرب خلوص ${clearance.centimetres??'—'} سم`;
-    document.getElementById('stopDistance').textContent=`مسافة التوقف ${stoppingDistance(kmh/3.6,currentSurface.grip).toFixed(2)} م`;
-    document.getElementById('throttleMeter').value=dynamics.throttle;
-    document.getElementById('brakeMeter').value=dynamics.brake;
+    document.getElementById('speedVal').innerText =kmh==null?'—':kmh.toFixed(0);
+    document.getElementById('surfaceName').textContent=remoteSimulation?'BeamNG telemetry':currentSurface.name;
+    document.getElementById('clearanceValue').textContent=remoteSimulation?'City view: preview only':`أقرب خلوص ${clearance.centimetres??'—'} سم`;
+    document.getElementById('stopDistance').textContent=remoteSimulation?'Stopping distance: unmeasured':`مسافة التوقف ${stoppingDistance((kmh??0)/3.6,currentSurface.grip).toFixed(2)} م (estimate)`;
+    document.getElementById('throttleMeter').value=vehicleTelemetry.throttle??0;
+    document.getElementById('brakeMeter').value=vehicleTelemetry.brake??0;
     const event=trafficSystem.incidents.active[0];
-    document.getElementById('incidentStatus').textContent=event?`${event.name} · ${Math.ceil(trafficSystem.incidents.remaining(event))} ث`:'الطريق مفتوح · ظروف عشوائية';
-    document.getElementById('gearVal').textContent = speed < -0.001 ? 'R' : 'D';
-    document.getElementById('cityStatus').textContent = `1.28 km corridor · ${npcVehicles.length} vehicles · ${pedestrians.length} pedestrians`;
+    document.getElementById('incidentStatus').textContent=remoteSimulation?'R reverse · N neutral · G drive':'الطريق مفتوح · مرور طبيعي';
+    document.getElementById('gearVal').textContent = vehicleTelemetry.gear??'—';
+    document.getElementById('cityStatus').textContent = `${remoteSimulation?'City preview · ':''}1.28 km corridor · ${npcVehicles.length} vehicles · ${pedestrians.length} pedestrians`;
+    if(!remoteSimulation)document.getElementById('cameraActivity').lastChild.nodeValue=paused?' PAUSED':' LIVE';
     document.getElementById('moneyVal').innerText =money+' ج';
     document.getElementById('pointVal').innerText =points;
-    document.getElementById('fuelVal').innerText  =Math.floor(fuel)+'%';
-    document.getElementById('fuelFill').style.width  =Math.floor(fuel)+'%';
-    document.getElementById('speedFill').style.width =Math.min(100,(kmh/180)*100)+'%';
+    document.getElementById('fuelVal').innerText  =Number.isFinite(fuel)?Math.floor(fuel)+'%':'—';
+    document.getElementById('fuelFill').style.width  =(Number.isFinite(fuel)?Math.floor(fuel):0)+'%';
+    document.getElementById('speedFill').style.width =Math.min(100,((kmh??0)/180)*100)+'%';
+    const providerLabel=remoteSimulation?(simulationProvider.connected&&!simulationProvider.fresh?'BeamNG telemetry stale':simulationProvider.status):'Development mock · unvalidated physics';
+    document.getElementById('simulationState').textContent=paused?'Paused':providerLabel;
+    document.getElementById('providerStatus').textContent=providerLabel;
+    if(document.body.classList.contains('debug-visible')) {
+        document.getElementById('debugTelemetry').textContent=telemetryText(vehicleTelemetry,{
+            renderFPS:measuredRenderFPS,remote:remoteSimulation,latencyMs:simulationProvider.latencyMs,
+            sensorRates:simulationProvider.sensorRates,sensorErrors:simulationProvider.sensorErrors});
+    }
 }
 
 /* Traffic HUD */
@@ -474,6 +502,7 @@ function flashOverlay(isAI){
     setTimeout(()=>{ modeOverlay.style.opacity='0'; },1600);
 }
 function setAIMode(on){
+    if(remoteSimulation)on=false;
     aiMode=on;
     autoSignal=null;
     clearInput(); steering=0; reverseWait=0;
@@ -511,9 +540,10 @@ mountPhone(place=>{
     else setAIMode(true);
 });
 
-const bridge=createBridge({
+const bridge=remoteSimulation?{sendFrame(){}}:createBridge({
     renderer,
     readState: ()=>({
+        simulationTime:vehicleTelemetry.timestamp,physicsTick:vehicleTelemetry.physicsTick,
         speedKmh: Number((Math.abs(speed)*SPEED_TO_KMH).toFixed(1)),
         fuel: Math.floor(fuel),
         mode: aiMode?'auto':'manual',
@@ -549,7 +579,7 @@ const bridge=createBridge({
    ANIMATION LOOP
 ═══════════════════════════════════════════════════════════════ */
 let previousFrameAt=performance.now();
-let performanceAt=previousFrameAt, renderedFrames=0, renderFrame=0;
+let performanceAt=previousFrameAt, renderedFrames=0, renderFrame=0,measuredRenderFPS=null;
 let simulationCost=0,renderCost=0,trafficCost=0,pedestrianCost=0,playerCost=0;
 function simulate(){
     const started=performance.now();
@@ -606,7 +636,11 @@ function animate(timestamp=performance.now()){
         document.getElementById('performance').textContent='Measuring FPS…';
         if(document.hidden) return;
     }
-    if(!paused && !document.hidden) simulationClock.advance(deltaSeconds*cinematic.scale,simulate);
+    if(remoteSimulation) {
+        vehicleTelemetry=simulationProvider.getVehicleState();
+        fuel=vehicleTelemetry.fuelCapacityL>0?100*vehicleTelemetry.fuelLevelL/vehicleTelemetry.fuelCapacityL:null;
+    }
+    if(!remoteSimulation && !paused && !document.hidden) simulationClock.advance(deltaSeconds,simulate);
     else simulationClock.reset();
     renderFrame++;
     if(renderFrame%12===0)updateVisualLOD(scene,car.position);
@@ -618,17 +652,19 @@ function animate(timestamp=performance.now()){
     }
     if(renderFrame%6===0) {
         updateUI();
-        updateTrafficHUD();
+        if(!remoteSimulation)updateTrafficHUD();
         updateAstarPanel({routeVisible,path,waypointIdx,destination});
     }
     const displaySteer=steering;
     if(!paused) {
       const simDelta=deltaSeconds*cinematic.scale;
-      playerVisual?.update(simDelta,speed,displaySteer,dynamics.brake>.08||safetyWarning,{
+      if(!remoteSimulation)playerVisual?.update(simDelta,speed,displaySteer,dynamics.brake>.08||safetyWarning,{
         ...dynamics,...equipment,signal:equipment.signal??autoSignal,hazards:equipment.hazards||cinematic.active,time:frameCount/60,height:roadHeight(car.position.x,car.position.z),
+        wheels:vehicleTelemetry.wheels,
+        telemetry:vehicleTelemetry,
         wheelHeights:[[-.89,-1.39],[-.89,1.39],[.89,-1.39],[.89,1.39]].map(([x,z])=>roadHeight(car.position.x+x*Math.cos(angle)+z*Math.sin(angle),car.position.z-x*Math.sin(angle)+z*Math.cos(angle))),
       });
-      chaseCamera.update(car,angle,deltaSeconds,driverView,speed,displaySteer);
+      chaseCamera.update(car,angle,deltaSeconds,cameraMode,speed,displaySteer,frontCamera);
       cinematic.update(deltaSeconds,car,angle);
       incidentMarkers.update(trafficSystem.incidents.active,frameCount/60);
     }
@@ -646,15 +682,18 @@ function animate(timestamp=performance.now()){
     renderer.setViewport(0,0,cW,cH);
     // A following vehicle can sit inside the chase camera. Hide only those
     // near-camera visuals for this pass; physics and the front feed keep them.
-    const cameraOccluders=driverView?[]:npcVehicles.filter(v=>v.group.visible&&Math.hypot(v.group.position.x-camera.position.x,v.group.position.z-camera.position.z)<4.3);
+    const cameraOccluders=cameraMode!=='chase'?[]:npcVehicles.filter(v=>v.group.visible&&Math.hypot(v.group.position.x-camera.position.x,v.group.position.z-camera.position.z)<4.3);
     cameraOccluders.forEach(v=>{v.group.visible=false;});
+    playerVisual?.setCameraMode(cameraMode);
     renderer.render(scene,camera);
+    playerVisual?.setCameraMode('chase');
     cameraOccluders.forEach(v=>{v.group.visible=true;});
     renderer.setScissorTest(true);
     const frontViewport=viewportFor('frontCameraView');
-    if(cameraVisible) {
+    if(cameraVisible&&!remoteSimulation) {
         frontFeed.render(timestamp,scene,frontCamera,frontViewport,sensorSystem.withoutDebug,
-            ()=>cameraLabels.update(frontCamera,[...npcVehicles,...pedestrians],obstacles));
+            ()=>cameraLabels.update(frontCamera,
+                document.body.classList.contains('debug-visible')?[...npcVehicles,...pedestrians]:[],obstacles));
     }
     renderer.setScissorTest(false);
     renderCost+=(performance.now()-renderStarted-renderCost)*.1;
@@ -662,6 +701,7 @@ function animate(timestamp=performance.now()){
     renderedFrames++;
     if(timestamp-performanceAt>=1000) {
         const fps=renderedFrames*1000/(timestamp-performanceAt);
+        measuredRenderFPS=fps;
         document.getElementById('performance').textContent=`${fps.toFixed(0)} FPS · ${(1000/fps).toFixed(1)} ms/frame`;
         document.getElementById('renderStats').textContent=`${renderer.info.render.calls} calls · ${Math.round(renderer.info.render.triangles/1000)}k tris · sim ${simulationCost.toFixed(1)}ms (${trafficCost.toFixed(1)}/${pedestrianCost.toFixed(1)}/${playerCost.toFixed(1)}) · render ${renderCost.toFixed(1)}ms`;
         renderedFrames=0; performanceAt=timestamp;
@@ -672,8 +712,8 @@ function animate(timestamp=performance.now()){
    BUTTONS
 ═══════════════════════════════════════════════════════════════ */
 document.getElementById('viewBtn').onclick  = ()=>{
-    driverView=!driverView;
-    document.getElementById('viewBtn').textContent=driverView?'Front view · C':'Chase view · C';
+    cameraMode=cameraModes[(cameraModes.indexOf(cameraMode)+1)%cameraModes.length];
+    document.getElementById('viewBtn').textContent=`${{chase:'Chase',cockpit:'Cockpit',hood:'Hood',frontSensor:'Front sensor'}[cameraMode]} view · C`;
     chaseCamera.reset();
 };
 document.getElementById('routeBtn').onclick = ()=>{
@@ -686,12 +726,15 @@ document.getElementById('routeBtn').onclick = ()=>{
         drawPath();
     }
 };
-document.getElementById('sensorBtn').onclick = ()=>sensorSystem.toggle();
+document.getElementById('sensorBtn').onclick = ()=>{
+    if(remoteSimulation)document.body.classList.toggle('debug-visible');else sensorSystem.toggle();
+};
 aiToggleBtn.onclick = ()=>{ setAIMode(!aiMode); };
 
 function togglePause() {
     paused=!paused;
     clearInput();
+    if(remoteSimulation)simulationProvider.setPaused(paused);
     document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';
     document.getElementById('pauseScreen').hidden=!paused;
     document.getElementById('simulationState').textContent=paused?'Paused':'Live simulation';
@@ -704,8 +747,9 @@ document.getElementById('hideCameraBtn').onclick=()=>{
     document.getElementById('hideCameraBtn').textContent=cameraVisible?'Hide camera':'Show camera';
 };
 document.getElementById('resetBtn').onclick=()=>{
+    if(remoteSimulation){simulationProvider.resetVehicle();return;}
     setAIMode(false);
-    speed=0; angle=0; steering=0; reverseWait=0; fuel=100;dynamics={throttle:0,brake:0,acceleration:0,lateralAcceleration:0};cinematic.reset();
+    speed=0; angle=0; steering=0; reverseWait=0; fuel=100;simulationProvider.resetVehicle();vehicleTelemetry=simulationProvider.getVehicleState();dynamics=simulationProvider.state;cinematic.reset();
     car.position.set(17.5,0.5,-40); car.rotation.y=0;
     namedTripComplete=false; destCollecting=false;
     // Restore agents as well, ensuring the original spawn remains clear.
@@ -762,4 +806,46 @@ document.getElementById('nightMode').onchange=e=>{
   scene.background=night?new THREE.Color(0x142737):new THREE.CanvasTexture(skyCanvas);
   scene.fog.color.setHex(night?0x142737:0xd5e6ea);equipment.lights=night;updateEquipmentButtons();
 };
+if(remoteSimulation) {
+    document.getElementById('aiToggleBtn').disabled=true;
+    document.getElementById('longTripBtn').disabled=true;
+    document.getElementById('trafficDensity').disabled=true;
+    document.querySelector('#minimapBorder .map-caption').textContent='CITY PREVIEW · UNREGISTERED';
+    document.getElementById('cameraSource').textContent='BEAMNG RGB';
+    document.getElementById('cameraSource').title='Mounted simulator sensor. Camera and city preview use different worlds.';
+    document.getElementById('cvLatency').title='Sensor acquisition timestamp, or scenario time at poll if unavailable';
+    const image=document.getElementById('authoritativeCamera'),notice=document.getElementById('cameraUnavailable');
+    let loading=false,lastCameraReceipt=null,frameURL=null;
+    image.onerror=()=>{loading=false;notice.hidden=false;notice.textContent='BeamNG camera unavailable';};
+    image.onload=()=>{loading=false;image.hidden=false;notice.hidden=true;};
+    setInterval(()=>{
+        const active=!paused&&!document.hidden;
+        simulationProvider.updateControls({
+            throttle:active&&(isPressed('KeyW')||isPressed('ArrowUp'))?drivingSettings.throttle:0,
+            brake:!active||isPressed('KeyS')||isPressed('ArrowDown')?drivingSettings.brake:0,
+            steering:active?Number(isPressed('KeyA')||isPressed('ArrowLeft'))-Number(isPressed('KeyD')||isPressed('ArrowRight')):0,
+            parkingbrake:active&&isPressed('Space')?1:0,
+        });
+        const frame=simulationProvider.sensorMetadata.frontCamera;
+        const fresh=simulationProvider.fresh&&frame?.frameAvailable&&
+            simulationProvider.telemetry.receivedMonotonic-frame.receivedMonotonic<.75&&!simulationProvider.sensorErrors.frontCamera;
+        document.getElementById('cameraActivity').lastChild.nodeValue=fresh?' LIVE':' STALE';
+        if(!fresh){notice.hidden=false;notice.textContent='BeamNG camera unavailable / stale';}
+        if(fresh&&cameraVisible&&!loading&&lastCameraReceipt!==frame.receivedMonotonic){
+            lastCameraReceipt=frame.receivedMonotonic;loading=true;
+            fetch(`/api/simulation/camera.jpg?frame=${lastCameraReceipt}`).then(async response=>{
+                if(!response.ok)throw new Error('Camera frame unavailable');
+                const blob=await response.blob();
+                if(frameURL)URL.revokeObjectURL(frameURL);frameURL=URL.createObjectURL(blob);image.src=frameURL;
+                const acquisition=response.headers.get('X-Sensor-Time'),poll=response.headers.get('X-Simulation-Time-At-Poll');
+                document.getElementById('cvLatency').textContent=acquisition!=null?`t ${Number(acquisition).toFixed(3)}s`:
+                    poll!=null?`poll ${Number(poll).toFixed(3)}s`:'t unavailable';
+            }).catch(()=>image.onerror());
+        }
+        const rate=simulationProvider.sensorRates.frontCamera;
+        document.getElementById('cameraFps').textContent=rate==null?'— Hz':`${rate.toFixed(1)} poll Hz`;
+        if(!fresh)document.getElementById('cvLatency').textContent='frame stale';
+    },50);
+    window.addEventListener('pagehide',()=>simulationProvider.close());
+}
 animate();

@@ -3,6 +3,30 @@ import { loadVisual, fitVisual, mergeStaticVisual } from './visual-assets.js?v=d
 
 const paint=['#c15640','#e5d9bd','#638679','#6a7f96','#b58e63','#d5b948'];
 const recolored=new Map();
+function preserveWheels(visual) {
+  visual.updateMatrixWorld(true);
+  const inverse=visual.matrixWorld.clone().invert(),nodes=[];
+  visual.traverse(node=>{
+    if(!node.name.toLowerCase().startsWith('wheel-'))return;
+    let parent=node.parent;
+    while(parent&&parent!==visual){if(parent.name.toLowerCase().startsWith('wheel-'))return;parent=parent.parent;}
+    nodes.push(node);
+  });
+  const root=new THREE.Group();
+  for(const node of nodes) {
+    const bounds=new THREE.Box3().setFromObject(node),center=bounds.getCenter(new THREE.Vector3()).applyMatrix4(inverse);
+    const size=bounds.getSize(new THREE.Vector3());
+    const pivot=new THREE.Group(),spin=new THREE.Group(),copy=node.clone(true);
+    pivot.name=`wheel-pivot-${node.name}`;spin.name='wheel-spin';pivot.position.copy(center);
+    pivot.userData.wheel={radiusM:Math.max(size.y,size.z)/2,front:node.name.includes('front')};
+    copy.matrix.copy(new THREE.Matrix4().makeTranslation(-center.x,-center.y,-center.z)
+      .multiply(inverse).multiply(node.matrixWorld));copy.matrixAutoUpdate=false;
+    spin.add(copy);pivot.add(spin);root.add(pivot);
+    const combined=mergeStaticVisual(spin);spin.clear();spin.add(combined);
+    node.removeFromParent();
+  }
+  root.add(mergeStaticVisual(visual));root.userData={...visual.userData};return root;
+}
 function paletteMaterial(source,variant,type) {
   const key=`${source.map?.image?.src||source.uuid}:${variant}:${type}`;
   if(recolored.has(key))return recolored.get(key);
@@ -46,7 +70,7 @@ export async function loadTrafficVisuals() {
       person.position.set(0,.45,-.15);visual.add(person);
     }
     visual.userData.visualKind=name==='microbus'?'microbus':name==='motorcycle'?'motorcycle':name==='truck-flat'?'pickup':name==='delivery'?'van':name==='taxi'?'taxi':'car';
-    return mergeStaticVisual(visual);
+    return preserveWheels(visual);
   });
 }
 
@@ -62,5 +86,5 @@ export function tukTukVisual(source) {
     }
     part.material=materials.get(part.material.name);
   });
-  return mergeStaticVisual(model);
+  return preserveWheels(model);
 }

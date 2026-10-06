@@ -33,8 +33,9 @@ export function createCameraLabels(element,latencyElement) {
       const label=actor.visualKind|| (actor.kind==='tuktuk'?'tuk-tuk':actor.road&&'crossing' in actor?'person':'car');
       const color=label==='person'?'#ed938a':label==='tuk-tuk'||label==='motorcycle'?'#e6c463':'#8ccdde';
       context.strokeStyle=color;context.lineWidth=1;context.strokeRect(left,top,right-left,bottom-top);
-      context.font='9px Arial';const labelWidth=context.measureText(label).width+5;
-      context.fillStyle=color;context.fillRect(left,top-11,labelWidth,11);context.fillStyle='#16323b';context.fillText(label,left+2,top-3);drawn++;
+      const caption=`${label} #${actor.index} · ${distance.toFixed(2)} m`;
+      context.font='9px Arial';const labelWidth=context.measureText(caption).width+5;
+      context.fillStyle=color;context.fillRect(left,top-11,labelWidth,11);context.fillStyle='#16323b';context.fillText(caption,left+2,top-3);drawn++;
     }
     latencyElement.textContent=`GT · ${(performance.now()-start).toFixed(1)} ms`;
   }};

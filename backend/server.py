@@ -17,7 +17,7 @@ MAX_FRAME = 400_000
 class Store:
     def __init__(self):
         self.lock = threading.Lock()
-        self.state = {"connected": False, "speedKmh": 0, "fuel": 100, "mode": "manual"}
+        self.state = {"connected": False, "source": "development-mock", "speedKmh": 0, "fuel": 100, "mode": "manual"}
         self.state_at = 0.0
         self.frame = b""
         self.clients = {}
@@ -52,10 +52,46 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = unquote(urlsplit(self.path).path)
+        provider = getattr(self.server, "simulation_service", None)
         if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/")):
             return self._json(404, {"error": "Not found"})
         if path == "/api/health":
-            return self._json(200, {"ok": True, "service": "ya-rab-ostorha-simulator"})
+            return self._json(200, {"ok": True, "service": "ya-rab-ostorha-simulator",
+                                    "beamngConnected": bool(provider and provider.snapshot()["connected"])})
+        if path == "/api/simulation/status":
+            return self._json(200, {"provider": "beamng" if provider else "development-mock",
+                                    "beamngConnected": bool(provider and provider.snapshot()["connected"]),
+                                    "websocketPort": getattr(self.server, "websocket_port", None),
+                                    "worldAlignedWithBrowser": False})
+        if path.startswith("/api/simulation/"):
+            if provider is None:
+                return self._json(503, {"error": "BeamNG provider is not running"})
+            try:
+                if path == "/api/simulation/state":
+                    return self._json(200, provider.get_vehicle_state())
+                if path == "/api/simulation/sensor":
+                    name = parse_qs(urlsplit(self.path).query).get("name", [""])[0]
+                    return self._json(200, provider.get_sensor_frame(name))
+                if path == "/api/simulation/camera.jpg":
+                    frame, metadata = provider.get_camera_frame()
+                    if not frame:
+                        return self._json(503, {"error": "No camera frame yet"})
+                    self.send_response(200)
+                    self.send_header("Content-Type", "image/jpeg")
+                    self.send_header("Cache-Control", "no-store")
+                    self.send_header("Content-Length", str(len(frame)))
+                    for key, header in (("sensorTimestamp", "X-Sensor-Time"),
+                                        ("simulationTimeAtPoll", "X-Simulation-Time-At-Poll"),
+                                        ("receivedMonotonic", "X-Received-Monotonic")):
+                        if metadata and metadata.get(key) is not None:
+                            self.send_header(header, str(metadata[key]))
+                    self.end_headers()
+                    return self.wfile.write(frame)
+            except KeyError:
+                return self._json(404, {"error": "Unknown sensor"})
+            except RuntimeError as error:
+                return self._json(503, {"error": str(error)})
+            return self._json(404, {"error": "Unknown simulation endpoint"})
         if path == "/api/state":
             with STORE.lock:
                 client = parse_qs(urlsplit(self.path).query).get('client', [''])[0]
@@ -80,6 +116,23 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         path = urlsplit(self.path).path
         try:
+            if path.startswith("/api/simulation/"):
+                provider = getattr(self.server, "simulation_service", None)
+                if provider is None:
+                    return self._json(503, {"error": "BeamNG provider is not running"})
+                data = self._read_json()
+                if not isinstance(data, dict):
+                    raise ValueError("Expected JSON object")
+                if path == "/api/simulation/control":
+                    bridge = getattr(self.server, "websocket_bridge", None)
+                    if bridge and bridge.controller_lock.locked():
+                        return self._json(409, {"error": "Browser connection controls this vehicle"})
+                    provider.set_controls(**data)
+                    return self._json(200, {"ok": True})
+                if path == "/api/simulation/reset":
+                    provider.reset_vehicle()
+                    return self._json(200, {"ok": True})
+                return self._json(404, {"error": "Unknown simulation endpoint"})
             if path == "/api/frame":
                 size = int(self.headers.get("Content-Length", "0"))
                 if not 0 < size <= MAX_FRAME or self.headers.get("Content-Type") != "image/jpeg":
@@ -97,11 +150,11 @@ class Handler(SimpleHTTPRequestHandler):
             if path == "/api/state":
                 allowed = {"speedKmh", "fuel", "mode", "safety", "position", "onRoad", "sensorsM", "light", "destination", "actors",
                            "clearanceCm", "throttle", "brake", "surface", "grip", "stoppingDistanceM",
-                           "requestedSpeedKmh", "plannedSpeedKmh", "cinematic", "timeScale", "cinematicEvents", "equipment", "tripRemainingM", "incidents"}
+                           "requestedSpeedKmh", "plannedSpeedKmh", "cinematic", "timeScale", "cinematicEvents", "equipment", "tripRemainingM", "incidents", "simulationTime", "physicsTick"}
                 if set(data) - allowed:
                     raise ValueError("Unknown state field")
                 with STORE.lock:
-                    STORE.state = {**data, "connected": True}
+                    STORE.state = {**data, "source": "development-mock", "connected": True}
                     STORE.state_at = time.monotonic()
                     client = parse_qs(urlsplit(self.path).query).get('client', [''])[0][:80]
                     if client:
@@ -119,10 +172,40 @@ def main():
     parser = argparse.ArgumentParser(description="Ya Rab Ostorha local simulator server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--beamng-home", help="BeamNG.tech installation directory")
+    parser.add_argument("--beamng-user", help="BeamNG.tech user directory")
+    parser.add_argument("--sensor-config", help="JSON file overriding named sensor configuration fields")
+    parser.add_argument("--beamng-port", type=int, default=25252)
+    parser.add_argument("--websocket-port", type=int, default=8001)
+    parser.add_argument("--traffic-count", type=int, choices=range(0,21), default=5, metavar="0..20",
+                        help="Normal BeamNG traffic vehicles; use 0 for isolated acceptance tests")
+    parser.add_argument("--beamng-connect", action="store_true", help="Connect to an already running BeamNG.tech")
     args = parser.parse_args()
     server = ThreadingHTTPServer((args.host, args.port), Handler)
+    if args.beamng_home:
+        from .beamng_provider import BeamNGProvider, load_sensor_config
+        from .simulation_service import SimulationService
+        from .websocket_bridge import WebSocketBridge
+        provider = BeamNGProvider(args.beamng_home, args.beamng_user,
+                                                port=args.beamng_port,
+                                                launch=not args.beamng_connect,
+                                                sensor_config=load_sensor_config(args.sensor_config) if args.sensor_config else None,
+                                                traffic_count=args.traffic_count)
+        server.simulation_service = SimulationService(provider)
+        server.websocket_port = args.websocket_port
+        server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host,
+                                                   args.websocket_port, args.port)
+        server.simulation_service.start()
+        server.websocket_bridge.start()
     print(f"Simulator: http://{args.host}:{args.port}/")
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    finally:
+        if getattr(server, "websocket_bridge", None):
+            server.websocket_bridge.close()
+        if getattr(server, "simulation_service", None):
+            server.simulation_service.close()
+        server.server_close()
 
 
 if __name__ == "__main__":

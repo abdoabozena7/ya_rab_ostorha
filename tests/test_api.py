@@ -35,6 +35,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(data["speedKmh"], 22)
         self.assertEqual(data["actors"][0]["type"], "pedestrian")
         self.assertTrue(data["connected"])
+        self.assertEqual(data["source"], "development-mock")
 
     def test_unknown_state_fields_rejected(self):
         with self.assertRaises(HTTPError) as raised:
@@ -66,6 +67,14 @@ class ApiTests(unittest.TestCase):
         with self.assertRaises(HTTPError) as raised:
             self.request("/.git/HEAD")
         self.assertEqual(raised.exception.code, 404)
+
+    def test_beamng_endpoints_do_not_silently_return_mock_data(self):
+        status = self.request('/api/simulation/status')
+        self.assertFalse(status['beamngConnected'])
+        self.assertFalse(status['worldAlignedWithBrowser'])
+        with self.assertRaises(HTTPError) as raised:
+            self.request('/api/simulation/state')
+        self.assertEqual(raised.exception.code, 503)
 
 
 if __name__ == "__main__":

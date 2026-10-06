@@ -5,13 +5,33 @@ export function createChaseCamera(THREE, camera) {
   let initialized = false;
   return {
     reset() { initialized = false; },
-    update(car, angle, dt, frontView, speed=0, steering=0) {
+    update(car, angle, dt, mode='chase', speed=0, steering=0, frontSensorCamera=null) {
       const forwardX = Math.sin(angle), forwardZ = Math.cos(angle);
       const pace=Math.min(1,Math.abs(speed)*216/50);
       const fov=58+pace*5;
       camera.fov+=(fov-camera.fov)*(1-Math.exp(-2*dt));
       camera.updateProjectionMatrix();
-      if (frontView) {
+      if (mode==='frontSensor' && frontSensorCamera) {
+        frontSensorCamera.updateMatrixWorld(true);
+        frontSensorCamera.getWorldPosition(camera.position);
+        frontSensorCamera.getWorldQuaternion(camera.quaternion);
+        camera.fov=frontSensorCamera.fov;
+        camera.updateProjectionMatrix();
+        initialized=false;
+        return;
+      }
+      if (mode==='cockpit' || mode==='hood') {
+        const offset=mode==='cockpit'?-.34:2.0;
+        const eyeX=mode==='cockpit'?-.38:0;
+        camera.position.set(car.position.x+forwardX*offset+forwardZ*eyeX,
+          car.position.y+(mode==='cockpit'?.77:.88),
+          car.position.z+forwardZ*offset-forwardX*eyeX);
+        camera.lookAt(car.position.x+forwardX*30,car.position.y+(mode==='cockpit'?.68:.85),
+          car.position.z+forwardZ*30);
+        initialized=false;
+        return;
+      }
+      if (mode==='front') {
         camera.position.set(car.position.x + forwardX * 2.15, 1.65, car.position.z + forwardZ * 2.15);
         camera.lookAt(car.position.x + forwardX * 25, 1.4, car.position.z + forwardZ * 25);
         initialized = false;
