@@ -2,7 +2,7 @@ import math
 import time
 import unittest
 from backend.simulation_service import SimulationService
-from backend.telemetry import TelemetryMapper
+from unittest.mock import MagicMock
 
 
 class ServiceTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class ServiceTests(unittest.TestCase):
 
     def test_stale_cached_state_is_disconnected(self):
         service = SimulationService(None)
-        service.state = {"source": "beamng"}
+        service.state = {"source": "carla"}
         service.state_at = time.monotonic()-2
         self.assertFalse(service.snapshot()["connected"])
         service.state_at = time.monotonic()
@@ -35,7 +35,7 @@ class ServiceTests(unittest.TestCase):
 
     def test_camera_bytes_and_metadata_are_copied_as_one_frame(self):
         service = SimulationService(None)
-        service.state = {"source": "beamng"}
+        service.state = {"source": "carla"}
         service.state_at = time.monotonic()
         service.frame = b'jpeg'
         service.frame_metadata = {"sensorTimestamp": 12.5}
@@ -46,7 +46,7 @@ class ServiceTests(unittest.TestCase):
 
     def test_disabled_sensors_do_not_poll_or_create_placeholder_measurements(self):
         service = SimulationService(None)
-        self.assertEqual(service.SENSOR_POLL_HZ, {})
+        self.assertEqual(service.sensor_rates, {})
         self.assertEqual(service.snapshot()["sensors"], {})
 
     def test_stale_connection_suspends_commands_and_camera_reads(self):
@@ -59,36 +59,41 @@ class ServiceTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             service.get_camera_frame()
 
+    def test_worker_steps_before_reading_native_frame_and_rejects_mismatch(self):
+        provider = MagicMock()
+        provider.sensor_manager = None
+        provider.get_vehicle_state.return_value = {'source': 'carla', 'frame': 3}
+        provider.get_world_state.return_value = {'source': 'carla', 'frame': 3}
+        provider.get_sensor_state.return_value = {}
+        provider.get_camera_frame.return_value = (None, None)
+        service = SimulationService(provider)
+        service._iteration()
+        calls = [call[0] for call in provider.mock_calls]
+        self.assertLess(calls.index('step'), calls.index('get_vehicle_state'))
+        self.assertTrue(service.snapshot()['connected'])
+        provider.get_world_state.return_value = {'source': 'carla', 'frame': 4}
+        with self.assertRaisesRegex(RuntimeError, 'one native frame'):
+            service._iteration()
 
-class TelemetryTests(unittest.TestCase):
-    def test_actual_electrics_and_state_are_authoritative(self):
-        mapper = TelemetryMapper()
-        state = {"vel": [0, -10, 0], "dir": [0, -1, 0], "pos": [10, 20, 2]}
-        electrics = {"fuel_volume": 30, "fuel_capacity": 60, "rpm": 2500,
-                     "running": True, "gear_index": 3, "steering": 180}
-        first = mapper.map(state, electrics, {"damage": 5000}, 1)
-        self.assertEqual(first["speedMps"], 10)
-        self.assertEqual(first["fuelLevelL"], 30)
-        self.assertAlmostEqual(first["steeringWheelAngleRad"], math.pi)
-        self.assertIsNone(first["steeringAngleRad"])
-        self.assertEqual(first["damageTotal"], 5000)
-        self.assertIsNone(first["damage"]["engine"])
-        state["vel"] = [0, -8, 0]
-        electrics["fuel_volume"] = 29.999
-        second = mapper.map(state, electrics, {}, 1.5)
-        self.assertAlmostEqual(second["accelerationMps2"], -4)
-        self.assertAlmostEqual(second["instantConsumptionLph"], 7.2)
+    def test_failure_closes_provider_and_clears_observations(self):
+        provider = MagicMock(fixed_delta=.05, cleanup_errors=[])
+        provider.step.side_effect = RuntimeError('native server disconnected')
+        service = SimulationService(provider)
+        service.set_controls(throttle=.8)
+        service.start()
+        service.thread.join(timeout=2)
+        self.assertFalse(service.thread.is_alive())
+        self.assertFalse(service.snapshot()['connected'])
+        self.assertIsNone(service.snapshot()['vehicle'])
+        self.assertIn('server disconnected', service.snapshot()['error'])
+        self.assertEqual(service.effective_controls()['throttle'], 0)
+        provider.close.assert_called_once()
 
-    def test_missing_measurements_are_not_decorative_defaults(self):
-        t = TelemetryMapper().map({}, {}, {}, None)
-        for field in ("speedMps", "engineRPM", "engineRunning", "fuelLevelL", "physicsTick"):
-            self.assertIsNone(t[field])
-        self.assertTrue(all(w["rpm"] is None for w in t["wheels"]))
-
-    def test_refills_and_clock_resets_do_not_create_negative_consumption(self):
-        mapper = TelemetryMapper()
-        mapper.map({}, {"fuel_volume": 10}, {}, 1)
-        t = mapper.map({}, {"fuel_volume": 20}, {}, 2)
-        self.assertIsNone(t["instantConsumptionLph"])
-        mapper.map({}, {"fuel_volume": 20}, {}, .1)
-        self.assertEqual(mapper.fuel_used, 0)
+    def test_close_cleans_provider_even_without_started_worker(self):
+        provider = MagicMock(cleanup_errors=[])
+        service = SimulationService(provider)
+        service.state = {'source': 'carla'}
+        service.state_at = time.monotonic()
+        service.close()
+        provider.close.assert_called_once()
+        self.assertFalse(service.snapshot()['connected'])

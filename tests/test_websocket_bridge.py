@@ -5,13 +5,13 @@ import unittest
 from backend.simulation_service import SimulationService
 
 
-@unittest.skipUnless(importlib.util.find_spec('websockets'), 'Optional BeamNG environment not installed')
+@unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
     def test_stream_controls_exclusive_owner_and_release_on_disconnect(self):
         from websockets.sync.client import connect
         from backend.websocket_bridge import WebSocketBridge
         service = SimulationService(None)
-        service.state = {"source": "beamng", "speedMps": 0}
+        service.state = {"source": "carla", "speedMps": 0}
         service.state_at = time.monotonic()
         bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
         bridge.start()

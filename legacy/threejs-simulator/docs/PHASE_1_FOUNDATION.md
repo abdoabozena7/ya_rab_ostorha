@@ -1,4 +1,4 @@
-> HISTORICAL / SUPERSEDED: the two-world synchronization proposal and production mock mode below are retired. See [the current migration](../../../docs/BEAMNG_MIGRATION.md).
+> HISTORICAL / SUPERSEDED: the two-world synchronization proposal and production mock mode below are retired. See [the current migration](../../../docs/CARLA_MIGRATION.md).
 
 # Phase 1 foundation: audit and open acceptance gates
 

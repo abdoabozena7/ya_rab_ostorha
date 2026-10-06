@@ -1,9 +1,9 @@
-import { SimulationClient } from './simulation-client.js';
+import { BeamNGProvider } from './beamng-provider.js';
 import { DrivingControls } from './controls.js';
 import { telemetryText } from './telemetry.js';
 
 const $ = id => document.getElementById(id);
-const provider = new SimulationClient(), controls = new DrivingControls();
+const provider = new BeamNGProvider(), controls = new DrivingControls();
 const numeric = (value, suffix = '', digits = 1) => Number.isFinite(value) ? `${value.toFixed(digits)}${suffix}` : '—';
 let wasControllable = false, paused = false, lastGear = null, cameraReceipt = null;
 let cameraUrl = null, cameraRequest = null, cameraGeneration = 0;
@@ -36,23 +36,22 @@ async function updateCamera(metadata) {
     if (cameraUrl) URL.revokeObjectURL(cameraUrl);
     cameraUrl = URL.createObjectURL(blob); cameraReceipt = metadata.receivedMonotonic;
     $('authoritativeCamera').src = cameraUrl; $('authoritativeCamera').hidden = false;
-    $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = 'CARLA RGB';
+    $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = 'BEAMNG RGB';
     const timestamp = response.headers.get('X-Sensor-Time');
     $('cameraTimestamp').textContent = timestamp === null ? 't unavailable' : `t ${Number(timestamp).toFixed(3)} s`;
-    $('cameraMetadata').textContent = `Frame ${response.headers.get('X-Sensor-Frame') ?? '—'} · FOV ${metadata.fovDeg ?? '—'}° · mount ${JSON.stringify(metadata.mountTransform ?? null)}`;
+    $('cameraMetadata').textContent = `FOV ${metadata.fovDeg ?? '—'}° · mount ${JSON.stringify(metadata.positionVehicleM ?? null)}`;
   } catch (error) { if (error.name !== 'AbortError') clearCamera(); }
   finally { if (cameraRequest === request) cameraRequest = null; }
 }
 
 function refresh() {
-  if (provider.connected && !provider.fresh) provider.disconnect('CARLA telemetry stale; commands suspended');
   const state = provider.getVehicleState(), live = provider.fresh;
   const controllable = live && provider.controller && document.hasFocus() && !document.hidden;
   if (wasControllable !== controllable) {
     clearControls(); wasControllable = controllable;
     if (!live) { paused = false; $('pauseBtn').textContent = 'Pause'; }
   }
-  const connectedLabel = `CARLA — ${live ? 'CONNECTED' : provider.phase === 'CONNECTED' ? 'DISCONNECTED' : provider.phase}`;
+  const connectedLabel = live ? 'BEAMNG CONNECTED' : 'BEAMNG NOT AVAILABLE';
   $('cityStatus').textContent = connectedLabel; $('cityStatus').dataset.connected = String(live);
   $('simulationState').textContent = connectedLabel; $('connectionDot').classList.toggle('connected', live);
   $('connectionDetail').textContent = provider.status;
@@ -61,26 +60,26 @@ function refresh() {
   $('speedVal').textContent = numeric(state.speedMps == null ? null : Math.abs(state.speedMps) * 3.6, '', 0);
   $('speedFill').style.width = `${Number.isFinite(state.speedMps) ? Math.min(100, Math.abs(state.speedMps) * 3.6 / 2) : 0}%`;
   $('gearVal').textContent = state.gear ?? '—';
-  $('versionVal').textContent = provider.world.version ?? '—';
-  $('mapVal').textContent = provider.world.map?.split('/').at(-1) ?? '—';
-  $('frameVal').textContent = state.frame ?? '—';
+  $('rpmVal').textContent = numeric(state.engineRPM, '', 0);
+  $('engineVal').textContent = state.engineRunning == null ? '—' : state.engineRunning ? 'Running' : 'Stopped';
+  $('fuelVal').textContent = numeric(state.fuelLevelL, ' L');
   $('throttleVal').textContent = numeric(state.throttle == null ? null : state.throttle * 100, '%');
   $('brakeVal').textContent = numeric(state.brake == null ? null : state.brake * 100, '%');
-  $('steerVal').textContent = numeric(state.steeringInput);
+  $('steerVal').textContent = numeric(state.steeringWheelAngleRad == null ? null : state.steeringWheelAngleRad * 180 / Math.PI, '°');
   $('accelVal').textContent = numeric(state.accelerationMps2, ' m/s²');
   $('timeVal').textContent = numeric(state.timestamp, ' s', 3);
-  $('reverseVal').textContent = state.reverse == null ? '—' : state.reverse ? 'Yes' : 'No';
+  $('damageVal').textContent = numeric(state.damageTotal);
   $('positionVal').textContent = state.positionWorldM ? `X/Y/Z ${state.positionWorldM.map(v => numeric(v)).join(' / ')} m` : 'Position unavailable';
-  $('headingVal').textContent = Number.isFinite(state.headingRad) ? `Heading ${numeric(state.headingRad * 180 / Math.PI, '°')} from +X toward +Y` : 'Heading unavailable';
-  $('minimapView').firstElementChild.textContent = live ? 'Road geometry pending' : 'CARLA map not loaded';
+  $('headingVal').textContent = Number.isFinite(state.headingRad) ? `Heading ${numeric(state.headingRad * 180 / Math.PI, '°')} from +Y` : 'Heading unavailable';
+  $('minimapView').firstElementChild.textContent = live ? 'Road geometry pending' : 'BeamNG map not loaded';
   $('performance').textContent = `RTT ${numeric(provider.latencyMs, ' ms')}`;
   for (const id of ['pauseBtn', 'resetBtn', 'gearSelect']) $(id).disabled = !controllable;
   $('controlStatus').textContent = !live ? 'Controls unavailable' : !provider.controller ? 'Read only · another dashboard owns controls' : !controllable ? 'Focus this dashboard to drive' : paused ? 'Pause requested · commands released' : 'Keyboard controls active';
   const sensors = Object.keys(provider.sensorMetadata);
-  $('sensorStatus').textContent = sensors.length ? sensors.map(name => `${name}: ${provider.sensorErrors[name] ? 'error' : 'receiving'}`).join(' · ') : live ? 'Sensor suite disabled for the first connection checkpoint.' : 'RGB · Depth · Radar · LiDAR · IMU · GNSS · Collision: unavailable';
-  $('cameraFps').textContent = `${numeric(provider.sensorRates.frontCamera)} Hz`;
+  $('sensorStatus').textContent = sensors.length ? sensors.map(name => `${name}: ${provider.sensorErrors[name] ? 'error' : 'receiving'}`).join(' · ') : live ? 'Sensor suite disabled for the first connection checkpoint.' : 'Waiting for BeamNG sensors.';
+  $('cameraFps').textContent = `${numeric(provider.sensorRates.frontCamera)} poll Hz`;
   $('debugTelemetry').textContent = telemetryText(state, {remote: true, latencyMs: provider.latencyMs,
-    sensorRates: provider.sensorRates, sensorErrors: provider.sensorErrors, world: provider.world});
+    sensorRates: provider.sensorRates, sensorErrors: provider.sensorErrors});
   if (controllable && !paused) {
     const command = controls.sample(state.speedMps, performance.now());
     if (command.gear !== lastGear) { provider.setGear(command.gear); lastGear = command.gear; }

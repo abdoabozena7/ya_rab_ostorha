@@ -10,59 +10,59 @@
 </head>
 <body class="control-center">
   <header id="brand"><span class="brand-eyebrow">SIMULATION CONTROL <span>01</span></span><h1>YA RAB OSTORHA</h1><p>Driving simulation <span lang="ar">· يارب استرها</span></p></header>
-  <div id="mission"><span class="mission-icon">↗</span><div><span class="eyebrow">FREE DRIVE</span><div id="missionText">One vehicle · BeamNG.tech</div></div></div>
+  <div id="mission"><span class="mission-icon">↗</span><div><span class="eyebrow">FREE DRIVE</span><div id="missionText">One vehicle · CARLA</div></div></div>
   <nav id="toolbar" aria-label="Simulator tools">
     <button class="ctrl-btn" id="phoneToggleBtn" aria-expanded="false" aria-controls="inGamePhone">Phone <kbd>P</kbd></button>
     <button class="ctrl-btn" id="routeBtn" aria-expanded="false" aria-controls="routePanel">Route</button>
     <button class="ctrl-btn" id="sensorBtn" aria-expanded="false" aria-controls="sensorPanel">Debug</button>
   </nav>
-  <div id="cityStatus" role="status">BEAMNG NOT AVAILABLE</div>
+  <div id="cityStatus" role="status">CARLA — DISCONNECTED</div>
 
   <main id="simulationCenter">
-    <span class="eyebrow">SIMULATION</span>
-    <h2>BeamNG.tech</h2>
+    <span class="eyebrow">SIMULATION PROVIDER</span>
+    <h2>CARLA</h2>
     <p id="connectionDetail">Waiting for the simulation backend.</p>
-    <p class="simulation-hint">Drive and view the vehicle in the BeamNG window. This dashboard sends controls and displays its telemetry.</p>
+    <p class="simulation-hint">Drive and view the vehicle in the CARLA window. This dashboard sends controls and displays its telemetry.</p>
     <div class="dashboard-values" aria-label="Vehicle telemetry">
-      <div><span>RPM</span><strong id="rpmVal">—</strong></div>
-      <div><span>ENGINE</span><strong id="engineVal">—</strong></div>
-      <div><span>FUEL</span><strong id="fuelVal">—</strong></div>
+      <div><span>CARLA VERSION</span><strong id="versionVal">—</strong></div>
+      <div><span>MAP</span><strong id="mapVal">—</strong></div>
+      <div><span>FRAME</span><strong id="frameVal">—</strong></div>
       <div><span>THROTTLE</span><strong id="throttleVal">—</strong></div>
       <div><span>BRAKE</span><strong id="brakeVal">—</strong></div>
-      <div><span>STEERING WHEEL</span><strong id="steerVal">—</strong></div>
+      <div><span>STEERING INPUT · RIGHT +</span><strong id="steerVal">—</strong></div>
       <div><span>ACCELERATION</span><strong id="accelVal">—</strong></div>
       <div><span>SIMULATION TIME</span><strong id="timeVal">—</strong></div>
-      <div><span>DAMAGE · SDK UNITS</span><strong id="damageVal">—</strong></div>
+      <div><span>REVERSE</span><strong id="reverseVal">—</strong></div>
     </div>
     <div class="session-controls">
       <label for="gearSelect">Transmission</label>
       <select id="gearSelect" disabled><option value="D">D · Automatic</option><option value="N">N · Neutral</option><option value="R">R · Reverse</option></select>
       <span id="controlStatus">Controls unavailable</span>
     </div>
-    <div class="sensor-summary"><span class="eyebrow">SENSORS</span><p id="sensorStatus">Waiting for BeamNG sensors.</p></div>
+    <div class="sensor-summary"><span class="eyebrow">SENSORS</span><p id="sensorStatus">RGB · Depth · Radar · LiDAR · IMU · GNSS · Collision: unavailable</p></div>
     <div id="validationNotice">Connection checkpoint pending · native driving and physics validation required</div>
   </main>
 
   <section id="cameraCard" aria-label="Front camera">
     <div id="frontCameraLabel">Front camera <span id="cameraActivity">UNAVAILABLE</span></div>
-    <div id="frontCameraView"><img id="authoritativeCamera" alt="BeamNG mounted front camera" hidden><span id="cameraUnavailable">Waiting for BeamNG camera</span></div>
-    <div class="camera-caption"><span id="cameraSource">BEAMNG SENSOR</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
+    <div id="frontCameraView"><img id="authoritativeCamera" alt="CARLA mounted front camera" hidden><span id="cameraUnavailable">Waiting for CARLA camera</span></div>
+    <div class="camera-caption"><span id="cameraSource">CARLA SENSOR</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
     <p id="cameraMetadata">FOV / transform unavailable</p>
   </section>
   <div id="driveReadout"><div id="speedPanel"><span id="speedVal">—</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">—</span><span class="divider"></span><span>Manual</span></div></div>
-  <div id="runtime"><i id="connectionDot"></i><span id="simulationState">BEAMNG NOT AVAILABLE</span><span id="performance">RTT —</span></div>
+  <div id="runtime"><i id="connectionDot"></i><span id="simulationState">CARLA — DISCONNECTED</span><span id="performance">RTT —</span></div>
   <div id="drivingHelp"><span><kbd>W A S D</kbd> Drive</span><span><kbd>S</kbd> Brake / reverse</span><span><kbd>SPACE</kbd> Handbrake</span></div>
   <div id="bottomActions"><button id="hideCameraBtn">Hide camera</button><button id="pauseBtn" disabled>Pause</button><button id="resetBtn" disabled>Reset vehicle</button></div>
 
   <aside id="inGamePhone" hidden aria-label="Vehicle session">
     <div class="phone-head">Phone <span lang="ar">يارب استرها</span></div>
-    <p id="phoneStatus">BeamNG.tech session unavailable</p>
+    <p id="phoneStatus">CARLA session unavailable</p>
     <button id="reconnectBtn">Reconnect dashboard</button>
     <p>Keep this dashboard focused for keyboard controls. Controls release when focus is lost.</p>
   </aside>
-  <aside id="routePanel" hidden aria-label="Route information"><span class="eyebrow">ROUTE</span><p>Routes and road geometry will come from the validated BeamNG map.</p></aside>
-  <section id="minimapBorder" aria-label="Map and vehicle position"><div id="minimapLabel">SIMULATION MAP <span>Z ↑</span></div><div id="minimapView"><p>BeamNG map not loaded</p><p id="positionVal">Position unavailable</p><p id="headingVal">Heading unavailable</p></div><div class="map-caption">BEAMNG WORLD COORDINATES</div></section>
-  <aside id="sensorPanel" hidden aria-label="Debug telemetry"><div id="providerStatus">BEAMNG NOT AVAILABLE</div><div id="debugTelemetry"></div></aside>
+  <aside id="routePanel" hidden aria-label="Route information"><span class="eyebrow">ROUTE</span><p>Routes and road geometry will come from the validated CARLA map.</p></aside>
+  <section id="minimapBorder" aria-label="Map and vehicle position"><div id="minimapLabel">SIMULATION MAP <span>Z ↑</span></div><div id="minimapView"><p>CARLA map not loaded</p><p id="positionVal">Position unavailable</p><p id="headingVal">Heading unavailable</p></div><div class="map-caption">CARLA WORLD COORDINATES</div></section>
+  <aside id="sensorPanel" hidden aria-label="Debug telemetry"><div id="providerStatus">CARLA — DISCONNECTED</div><div id="debugTelemetry"></div></aside>
   <script type="module" src="/frontend/dashboard.js"></script>
 </body>
 </html>

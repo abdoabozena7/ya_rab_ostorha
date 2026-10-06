@@ -1,47 +1,80 @@
-# Ya Rab Ostorha — BeamNG Simulation Control Center
+# Ya Rab Ostorha — CARLA Simulation Control Center
 
-BeamNG.tech is the simulator. This project provides the application HUD, controls, telemetry and debugging interface.
+**CARLA is the simulator.** This project provides the existing HUD, dashboard,
+keyboard controls, telemetry/debugging and experiment interfaces. Production
+does not render a duplicate driving world or run mock physics.
 
-**BEAMNG BLOCKER:** no licensed simulator/package or `tech.key` was found on this device. Architecture preparation is complete; the real driving/sensor milestones have not passed.
+**CARLA BLOCKER:** installation is incomplete. Python 3.12 x64 must be installed
+manually; automatic approval review rejected running its official installer
+(“blocked by policy”). The signed installer is downloaded at:
 
-## Run the dashboard now
+`C:\CARLA\downloads\python-3.12.10-amd64.exe`
+
+The official CARLA 0.10.0 Windows ZIP is partially downloaded and preserved.
+No native migration gate has passed. The Quadro T1000's 4 GB VRAM is below
+CARLA UE5's recommended GPU capacity; native boot remains untested.
+
+## Dashboard now
 
 ```powershell
 .\.venv\Scripts\python.exe -m backend.server
 ```
 
-Open http://127.0.0.1:8000/. Without BeamNG it shows unavailable readings and disables driving controls. There is no production mock physics or Three.js renderer.
+Open http://127.0.0.1:8000/. It shows **CARLA — DISCONNECTED**, unavailable
+observations, and disabled driving controls. The current Python 3.13 environment
+is suitable for this dashboard/offline tests, not the CARLA 0.10.0 API.
 
-## Continue with a licensed installation
-
-Provide the official package's local path, licensed `tech.key` path, installation directory and version. Confirm matching BeamNGpy first; the current pin is 1.34.1 for BeamNG.tech 0.37.
+## Continue after installing Python 3.12 x64
 
 ```powershell
-.\.venv\Scripts\python.exe -m backend.server --beamng-home 'C:\BeamNG.tech' --beamng-user 'C:\BeamNG.user' --traffic-count 0
+py -3.12 --version
+.\scripts\prepare_carla.ps1
 ```
 
-Expected files: `C:\BeamNG.tech\Bin64\BeamNG.tech.x64.exe` and `C:\BeamNG.tech\tech.key`.
+The script resumes the official precompiled package into
+`C:\CARLA\CARLA_0.10.0\` and installs its matching cp312 Windows x64 wheel
+into `.venv-carla`. It does not install Python or build CARLA from source.
 
-The backend launches one physical vehicle. Focus the dashboard to send W/A/S/D controls; view the car in BeamNG. Extra sensors and traffic are disabled for the first milestone.
+Then launch `CarlaUnreal.exe` from its installation folder. Before spawning:
 
-See [migration status, installation route, architecture and acceptance gates](docs/BEAMNG_MIGRATION.md).
+Stop the dashboard-only backend before reusing port 8000, or add
+`--port 8002 --websocket-port 8003` to the production command and open port 8002.
 
-## Verify the preparation
+```powershell
+.\.venv-carla\Scripts\python.exe -m backend.carla.preflight
+.\.venv-carla\Scripts\python.exe -m backend.server --carla
+```
+
+Focus the dashboard for W/A/S/D/Space; observe the actual car in CARLA.
+First validate one vehicle, native controls and telemetry. Sensors, collisions,
+traffic/walkers and custom environment work follow their required gates.
+No fake RPM, fuel, or component damage is displayed.
+
+See [machine audit, installation blocker, architecture, limitations and gate procedures](docs/CARLA_MIGRATION.md).
+
+## Offline verification
 
 ```powershell
 npm test
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
 npm run test:legacy
+.\.venv\Scripts\python.exe -m unittest discover -s legacy/threejs-simulator/tests -p 'test_*.py'
 ```
 
-## Preserved Three.js archive
+SDK fixtures test contracts and cleanup only. They do not pass native physics gates.
 
-The previous implementation is safely retained under `legacy/threejs-simulator/` and on `codex/threejs-simulator-archive` (commit `e51bfb3`). Production does not load it.
+## Preserved work
 
-For an explicit historical preview only, run a separate server:
+- Three.js: `legacy/threejs-simulator/`, branch `codex/threejs-simulator-archive`, snapshot `e51bfb3`.
+- BeamNG: `legacy/beamng-integration/`, branch `codex/beamng-migration-archive`, snapshot `7a6a777`.
+- Reused: branding, CSS/HUD, Phone/Route/Debug, camera panel, controls and transport.
+- Assets and [license notices](public/assets/ATTRIBUTION.md) remain preserved.
+
+For an explicit historical Three.js preview, use a separate server:
 
 ```powershell
 .\.venv\Scripts\python.exe -m backend.server --port 8002 --enable-legacy-preview
 ```
 
-Open http://127.0.0.1:8002/legacy/threejs-simulator/. It is labeled archived/development-only and uses separate `/api/legacy/` observation endpoints. The legacy flag cannot be combined with BeamNG mode. Existing GLBs remain at `assets/`; [asset credits/licenses](public/assets/ATTRIBUTION.md) are preserved.
+Open http://127.0.0.1:8002/legacy/threejs-simulator/. Legacy preview and CARLA
+production mode cannot run together in one server.

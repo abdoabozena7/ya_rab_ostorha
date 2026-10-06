@@ -1,4 +1,4 @@
-// Keyboard-to-pedal/gear policy. Motion and drivetrain are exclusively BeamNG's.
+// Keyboard-to-pedal/gear policy. Motion and drivetrain are exclusively the native simulator's.
 export class DrivingControls {
   constructor() { this.clear(); }
   clear() { this.keys = new Set(); this.reverseSince = null; this.mode = 'D'; this.gear = 1; }

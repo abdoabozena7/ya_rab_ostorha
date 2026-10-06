@@ -69,10 +69,10 @@ class ApiTests(unittest.TestCase):
             self.request("/.git/HEAD")
         self.assertEqual(raised.exception.code, 404)
 
-    def test_beamng_endpoints_do_not_silently_return_mock_data(self):
+    def test_production_endpoints_do_not_silently_return_mock_data(self):
         status = self.request('/api/simulation/status')
-        self.assertFalse(status['beamngConnected'])
-        self.assertEqual(status['provider'], 'beamng')
+        self.assertFalse(status['connected'])
+        self.assertEqual(status['provider'], 'carla')
         with self.assertRaises(HTTPError) as raised:
             self.request('/api/simulation/state')
         self.assertEqual(raised.exception.code, 503)

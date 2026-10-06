@@ -36,11 +36,11 @@ class ApiTests(unittest.TestCase):
 
     def test_missing_installation_is_reported_without_mock_fallback(self):
         status = self.request('/api/simulation/status')
-        self.assertEqual(status['provider'], 'beamng')
+        self.assertEqual(status['provider'], 'carla')
         self.assertFalse(status['configured'])
-        self.assertFalse(status['beamngConnected'])
+        self.assertFalse(status['connected'])
         self.assertIsNone(status['websocketPort'])
-        self.assertIn('BEAMNG BLOCKER', status['error'])
+        self.assertIn('CARLA is not connected', status['error'])
         for path in ['/api/simulation/state', '/api/state', '/api/frame', '/api/simulation/sensor?name=gps']:
             self.expect_error(503, path)
 
@@ -64,13 +64,13 @@ class ApiTests(unittest.TestCase):
         self.assertNotIn('three@', html)
         self.assertNotIn('gameCanvas', html)
 
-    def test_production_api_reads_cached_beamng_and_rejects_stale_commands(self):
+    def test_production_api_reads_cached_carla_and_rejects_stale_commands(self):
         service = SimulationService(None)
-        service.state = {'source': 'beamng', 'speedMps': 7, 'engineRPM': 2200}
+        service.state = {'source': 'carla', 'speedMps': 7, 'frame': 22}
         service.state_at = time.monotonic()
         self.server.simulation_service = service
         try:
-            self.assertEqual(self.request('/api/state')['vehicle']['engineRPM'], 2200)
+            self.assertEqual(self.request('/api/state')['vehicle']['frame'], 22)
             self.request('/api/simulation/control', {'throttle': .3})
             self.assertEqual(service.effective_controls()['throttle'], .3)
             service.state_at = time.monotonic() - 2
@@ -81,7 +81,7 @@ class ApiTests(unittest.TestCase):
 
     def test_http_reset_respects_websocket_controller(self):
         service = SimulationService(None)
-        service.state = {'source': 'beamng'}
+        service.state = {'source': 'carla'}
         service.state_at = time.monotonic()
         self.server.simulation_service = service
         self.server.websocket_bridge = SimpleNamespace(controller_lock=SimpleNamespace(locked=lambda: True))

@@ -1,4 +1,4 @@
-import { SimulationProvider, WHEEL_NAMES } from './provider.js';
+import { SimulationProvider, WHEEL_NAMES } from '/frontend/provider.js';
 
 export function unavailableBeamNGState() {
   return { source: 'beamng', timestamp: null, physicsTick: null, speedMps: null,
