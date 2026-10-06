@@ -33,6 +33,7 @@ class WebSocketBridge:
                     if message.get("type") in {"controls", "reset", "pause"}:
                         if not controller:
                             raise ValueError("Another connection controls this vehicle")
+                        self.service.require_connected()
                         if message["type"] == "controls":
                             self.service.set_controls(**message.get("controls", {}))
                         elif message["type"] == "reset":
@@ -42,7 +43,7 @@ class WebSocketBridge:
                         acknowledged = message.get("sequence")
                 except TimeoutError:
                     pass
-                except (ValueError, TypeError) as error:
+                except (ValueError, TypeError, RuntimeError) as error:
                     socket.send(json.dumps({"type": "error", "error": str(error)}))
                 snapshot = self.service.snapshot()
                 socket.send(json.dumps({"type": "snapshot", **snapshot,

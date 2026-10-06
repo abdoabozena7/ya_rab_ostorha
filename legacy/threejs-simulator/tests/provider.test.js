@@ -1,8 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DevelopmentMockProvider, WHEEL_RADIUS_M } from '../src/simulation/provider.js';
-import { BeamNGProvider,unavailableBeamNGState } from '../src/simulation/beamng-provider.js';
-import { telemetryText } from '../src/ui/telemetry.js';
 
 test('development provider wheel speed and spin follow vehicle displacement', () => {
   const provider = new DevelopmentMockProvider();
@@ -44,20 +42,4 @@ test('empty fuel cannot power reverse and temperature remains bounded',()=>{
   const driving=new DevelopmentMockProvider();
   for(let i=0;i<3600;i++)driving.step({forward:true,throttle:1});
   assert.ok(driving.getVehicleState().engineTemperatureC<105);
-});
-
-test('missing BeamNG observations are shown as unavailable, never zero',()=>{
-  const state=unavailableBeamNGState();assert.equal(state.speedMps,null);
-  const text=telemetryText(state,{remote:true});
-  assert.match(text,/Speed unavailable/);assert.match(text,/Suspension unavailable/);
-  assert.doesNotMatch(text,/NaN|Speed 0.0/);
-});
-
-test('initial gear command survives disconnected controls and is sent only once',()=>{
-  const p=new BeamNGProvider(),sent=[];
-  p.updateControls({throttle:0});assert.equal(p.gearCommand,1);
-  p.controller=true;p.socket={readyState:1,send:json=>sent.push(JSON.parse(json))};
-  p.updateControls({throttle:.2});p.updateControls({throttle:.3});
-  assert.equal(sent[0].controls.gear,1);
-  assert.equal(sent[1].controls.gear,undefined);
 });

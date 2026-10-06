@@ -19,7 +19,7 @@ export function createBridge({ renderer, readState }) {
   async function report() {
     if (!enabled) return;
     try {
-      await fetch(`/api/state?client=${encodeURIComponent(client)}`, {
+      await fetch(`/api/legacy/state?client=${encodeURIComponent(client)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(readState())
       });
@@ -35,7 +35,7 @@ export function createBridge({ renderer, readState }) {
       viewport.width * pixelRatio, viewport.height * pixelRatio,
       0, 0, capture.width, capture.height);
     capture.toBlob((blob) => {
-      if (blob) fetch('/api/frame', {
+      if (blob) fetch('/api/legacy/frame', {
         method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob
       }).catch(() => {});
     }, 'image/jpeg', 0.55);

@@ -1,9 +1,12 @@
 import unittest
 import importlib.util
 import inspect
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from tempfile import TemporaryDirectory
+from pathlib import Path
 
-from backend.beamng_provider import SensorManager, jsonable, normalize_radar, normalize_motion_sensor
+from backend.beamng_provider import BeamNGProvider, SensorManager, jsonable, normalize_radar, normalize_motion_sensor
+from backend.installation import BeamNGBlocker
 
 
 class FakeArray:
@@ -75,6 +78,41 @@ class SensorContractTests(unittest.TestCase):
         self.assertFalse(depth['metricCalibrated'])
         self.assertFalse(envelope['frameAvailable'])
         self.assertIsNone(manager.last_jpeg)
+
+
+@unittest.skipUnless(importlib.util.find_spec('beamngpy'), 'Optional BeamNG environment not installed')
+class ProviderStartupTests(unittest.TestCase):
+    def fixture(self, home):
+        root = Path(home)
+        (root / 'Bin64').mkdir()
+        (root / 'Bin64/BeamNG.tech.x64.exe').touch()
+        (root / 'tech.key').write_text('unit-test fixture; not a license')
+
+    def test_default_preparation_starts_one_vehicle_without_traffic_or_extra_sensors(self):
+        with TemporaryDirectory() as home:
+            self.fixture(home)
+            bng = MagicMock(); bng.tech_enabled = True
+            with patch('beamngpy.BeamNGpy', return_value=bng) as sdk, \
+                 patch('beamngpy.Scenario') as scenario, patch('beamngpy.Vehicle') as vehicle, \
+                 patch('backend.beamng_provider.SensorManager') as sensor_manager:
+                provider = BeamNGProvider(home)
+                self.assertIn('BeamNG.tech.x64.exe', sdk.call_args.kwargs['binary'])
+                self.assertEqual(vehicle.call_count, 1)
+                self.assertEqual(scenario.return_value.add_vehicle.call_count, 1)
+                bng.traffic.spawn.assert_not_called()
+                sensor_manager.assert_not_called()
+                self.assertIsNone(provider.sensor_manager)
+                provider.close()
+
+    def test_unlicensed_instance_is_rejected_before_scenario_creation(self):
+        with TemporaryDirectory() as home:
+            self.fixture(home)
+            bng = MagicMock(); bng.tech_enabled = False
+            with patch('beamngpy.BeamNGpy', return_value=bng), patch('beamngpy.Scenario') as scenario:
+                with self.assertRaises(BeamNGBlocker):
+                    BeamNGProvider(home)
+                scenario.assert_not_called()
+                bng.close.assert_called_once()
 
 
 if __name__ == "__main__":

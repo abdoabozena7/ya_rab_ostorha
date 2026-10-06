@@ -1,72 +1,47 @@
-# يارب استرها
+# Ya Rab Ostorha — BeamNG Simulation Control Center
 
-Phase 1 audit, changed files, installation/run instructions and all 15 acceptance gates: [docs/PHASE_1_FOUNDATION.md](docs/PHASE_1_FOUNDATION.md). The default browser simulation is development-only. `?provider=beamng` connects controls, HUD and front RGB to the optional backend while marking the city as an unregistered preview. A licensed BeamNG.tech installation, world registration and physical validation are still required. Phase 1 is not complete.
+BeamNG.tech is the simulator. This project provides the application HUD, controls, telemetry and debugging interface.
 
-محاكاة قيادة وتفادي حوادث في مدينة ثلاثية الأبعاد. الهدف النهائي هو **مساعدة السائق على منع الحوادث المفاجئة في الشوارع المصرية**. القيادة الذاتية الحالية تخدم تجربة المسارات والمواقف داخل اللعبة.
+**BEAMNG BLOCKER:** no licensed simulator/package or `tech.key` was found on this device. Architecture preparation is complete; the real driving/sensor milestones have not passed.
 
-## التشغيل
+## Run the dashboard now
 
-تحتاج Python 3 ومتصفحًا يدعم WebGL. لا تحتاج حزم إضافية للتشغيل:
-
-```bash
-python -m backend.server
+```powershell
+.\.venv\Scripts\python.exe -m backend.server
 ```
 
-افتح `http://127.0.0.1:8000/`. `WASD` أو الأسهم للقيادة، `S` للفرملة ثم الرجوع للخلف، و`Space` لفرامل الطوارئ. `1` يبدّل القيادة اليدوية/التلقائية. `C` يبدّل كاميرا المطاردة والرؤية الأمامية الحالية، و`P` يفتح التليفون. `Route` يعرض المسار وبيانات A*، و`Debug` يعرض الحساسات. زر `Pause` أو `Escape` يوقف المحاكاة، و`Reset` يرجع العربية والمرور إلى البداية.
+Open http://127.0.0.1:8000/. Without BeamNG it shows unavailable readings and disables driving controls. There is no production mock physics or Three.js renderer.
 
-**التليفون داخل اللعبة** يظهر من زر `📱 التليفون` على الجانب. اكتب مثلًا `روح السوق` أو `اذهب إلى المستشفى`. الأماكن الحالية: وسط البلد، السوق، المحطة، المستشفى، الجامعة، الكورنيش، البوابة الشمالية، البوابة الجنوبية. العربية تخطط طريقًا عبر الشوارع، تشغّل القيادة التلقائية، وتتوقف عند الوصول. لافتات بأسماء الأماكن موجودة في المدينة. هذه مطابقة أسماء بسيطة، وليست نموذج NLP مدربًا بعد.
+## Continue with a licensed installation
 
-## محاكاة المرور والقيادة
+Provide the official package's local path, licensed `tech.key` path, installation directory and version. Confirm matching BeamNGpy first; the current pin is 1.34.1 for BeamNG.tech 0.37.
 
-- شبكة المدينة متصلة بمحورين طويلين، بطول **١٫٢٨ كم** من طرف للطرف. التليفون يقبل `روح البوابة الشمالية` و`روح البوابة الجنوبية`، وزر **Drive setup / إعدادات القيادة** فيه رحلة طويلة جاهزة.
-- السائق الآلي يتابع مسارًا بمنحنيات، وطابور العربيات بمسافة آمنة محسوبة. لا يلف حول نفسه وهو واقف. إشارات التقاطعات تنظّم الاتجاهات، والعربيات تنتقل بين الشوارع المتصلة.
-- المرور الافتراضي ١٧٠ مركبة و٦٦ شخصًا، مع اختيار كثافة أخف أو أعلى. في المرحلة الأولى المواقف العشوائية وأزرار الحوادث والعبور العشوائي للمشاة معطلة؛ المشاة يمشون على الأرصفة ويتوقفون ويلفون بسلاسة.
-- اختيار سرعة مطلوبة من ٢٠ إلى ١٨٠ كم/س. هي سقف للسائق الآلي؛ المنحنيات والزحمة والمياه والحفر تقلل السرعة الفعلية. اليدوي يسمح بضغط بنزين وفرامل تدريجي، مع تأخير تبديل الاتجاه من الفرملة للرجوع.
-- خمس حالات سطح: أسفلت، مكسّر، رصف حجري، مياه، حصى. التماسك ومقاومة الحركة ومسافة التوقف واستجابة جسم العربية وصوت الطريق تختلف بينها. المناطق المرئية ومناطق التأثير تستخدم نفس الإحداثيات.
-- موديل سيدان أصلي قابل للتعديل في `src/render/detailed-sedan.js`: طول ٤٫٧٢ م، عرض جسم ١٫٨٦ م، قاعدة عجلات ٢٫٧٨ م؛ شبابيك مستقلة، أبواب ومرايات، جنوط وفرامل وعادم ولوحات ولمبات. المقاسات تخص غلاف جسم المحاكاة، والمرايات تفاصيل بصرية خارجه.
-- كشافات `L`، إشارة شمال `Q`، يمين `E`، انتظار `F`، زمارة بالضغط على `H`. الصوت يبدأ بعد أول تفاعل مع الصفحة. وضع الغروب يظهر تأثير الكشافات على الأرض.
-- التصوير السينمائي البطيء معطل في المرحلة الأولى للحفاظ على زمن محاكاة عادي. `C` يبدّل المطاردة والمقصورة والكبوت والكاميرا الأمامية المثبتة.
-- القياس الظاهر هو أقصر مسافة بين المستطيلات الموجهة للأجسام، مقربة للسنتيمتر. الحساسات مرجع هندسي داخل المحاكاة وليست حساسات حقيقية. التوقف الوقائي وفحص الحركة يمنعان التداخل المرصود، ولا يمثل ذلك ضمانًا لكل المواقف أو محاكاة ديناميكا إطارات كاملة.
+```powershell
+.\.venv\Scripts\python.exe -m backend.server --beamng-home 'C:\BeamNG.tech' --beamng-user 'C:\BeamNG.user' --traffic-count 0
+```
 
-التليفون وRoute وDebug وPause وReset والكاميرا الأمامية وواجهة Python مستمرون. المدينة والمحلات والأصول الخارجية من مرحلة التحسين السابقة باقية. راجع [تفاصيل النسخة والاختبار](docs/TRAFFIC_DYNAMICS.md) و[مصادر الأصول](public/assets/ATTRIBUTION.md).
+Expected files: `C:\BeamNG.tech\Bin64\BeamNG.tech.x64.exe` and `C:\BeamNG.tech\tech.key`.
 
-## ترتيب المشروع
+The backend launches one physical vehicle. Focus the dashboard to send W/A/S/D controls; view the car in BeamNG. Extra sensors and traffic are disabled for the first milestone.
 
-| المجلد أو الملف | الغرض |
-| --- | --- |
-| `index.html`, `src/ui/` | الواجهة والتليفون الداخلي ولوحة A* |
-| `src/main.js` | تركيب الوحدات ودورة اللعبة والقيادة الحالية |
-| `src/simulation/` | المسارات، الأماكن، المرور، الحساسات، حدود الطريق، الفرملة، وربط Python |
-| `src/render/` | المدينة والموديلات واللافتات |
-| `assets/models/` | موديلات GLB وخاماتها؛ راجع `assets/LICENSES.md` |
-| `backend/server.py` | خادم اللعبة وواجهة قراءة الحالة والكاميرا |
-| `tests/` | اختبارات المسارات والـAPI والمنطق الأساسي |
+See [migration status, installation route, architecture and acceptance gates](docs/BEAMNG_MIGRATION.md).
 
-## واجهة Python الحالية
+## Verify the preparation
 
-- `GET /api/health`: فحص السيرفر.
-- `GET /api/state`: آخر observation للعربية، وتشمل السرعة والوقود والوضع والموقع والحساسات والإشارة والمكان المطلوب وحالة الفرملة، إضافة إلى المشاة والمركبات القريبة بمواقعهم وسرعاتهم وأنواعهم. هذا تجهيز لتجارب الـRL القادمة.
-- `GET /api/frame`: آخر صورة JPEG من الكاميرا الأمامية.
-
-المتصفح يرسل الحالة والصورة إلى نفس السيرفر عبر `POST /api/state` و`POST /api/frame`. التليفون الداخلي يعمل في المتصفح ولا يحتاج API أو تليفونًا حقيقيًا. يمكن تشغيل اللعبة بخادم ملفات عادي؛ عندها تستمر اللعبة بدون بث الحالة إلى Python.
-
-## التطوير القادم بعد تأسيس المحاكاة
-
-الأولوية الحالية تثبيت BeamNG.tech المرخص، ربط العالمين، ومعايرة الحساسات والعجلات والتعليق والتصادمات واجتياز اختبارات المرحلة الأولى. البنود التالية مؤجلة حتى ذلك الوقت.
-
-1. توسيع مكتبة المواقف واختبارات الضغط مع حفظ وإعادة عرض الحالات الفردية.
-2. توصيل كاشف أجسام ورؤية كاميرا فعلية في Python، مع قياس التأخير وأخطاء الكشف. أشعة المحاكاة الحالية تبقى كمرجع منفصل.
-3. إضافة OCR للّافتات وNLP للأوامر العربية. مطابقة أسماء الأماكن الحالية نقطة بداية قابلة للاستبدال.
-4. تعريف observation/action/reward للتعلّم المعزز، تدريب سياسة داخل المحاكاة، ومقارنتها بخط الأساس. تبقى طبقة الفرملة مستقلة عن مخرجات السياسة.
-5. معايرة التعليق والتماسك بمقاييس مرجعية، وإضافة اختبارات ضغط طويلة للتقاطعات قبل اعتبار المحاكاة مرجعًا هندسيًا.
-
-الموديلات الخارجية موثقة في [سجل المصادر](public/assets/ATTRIBUTION.md). لا تحتاج Blender؛ حافظ على ملفات الخامات بجانب موديلاتها. صيغة العربية الحالية لا ترسل أوامر غير معروفة للقيادة.
-
-## الاختبارات
-
-```bash
+```powershell
 npm test
-python -m unittest discover -s tests -p "test_*.py"
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
+npm run test:legacy
 ```
 
-كود المشروع تحت رخصة [MIT](LICENSE).
+## Preserved Three.js archive
+
+The previous implementation is safely retained under `legacy/threejs-simulator/` and on `codex/threejs-simulator-archive` (commit `e51bfb3`). Production does not load it.
+
+For an explicit historical preview only, run a separate server:
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.server --port 8002 --enable-legacy-preview
+```
+
+Open http://127.0.0.1:8002/legacy/threejs-simulator/. It is labeled archived/development-only and uses separate `/api/legacy/` observation endpoints. The legacy flag cannot be combined with BeamNG mode. Existing GLBs remain at `assets/`; [asset credits/licenses](public/assets/ATTRIBUTION.md) are preserved.

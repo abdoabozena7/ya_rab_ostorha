@@ -25,3 +25,6 @@ output/
 .playwright-cli/
 .beamng-sdk-audit/
 .venv/
+.beamng-user/
+tech.key
+*.key

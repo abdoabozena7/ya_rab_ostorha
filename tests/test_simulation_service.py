@@ -35,12 +35,29 @@ class ServiceTests(unittest.TestCase):
 
     def test_camera_bytes_and_metadata_are_copied_as_one_frame(self):
         service = SimulationService(None)
+        service.state = {"source": "beamng"}
+        service.state_at = time.monotonic()
         service.frame = b'jpeg'
         service.frame_metadata = {"sensorTimestamp": 12.5}
         frame, meta = service.get_camera_frame()
         service.frame_metadata["sensorTimestamp"] = 13
         self.assertEqual(frame, b'jpeg')
         self.assertEqual(meta["sensorTimestamp"], 12.5)
+
+    def test_disabled_sensors_do_not_poll_or_create_placeholder_measurements(self):
+        service = SimulationService(None)
+        self.assertEqual(service.SENSOR_POLL_HZ, {})
+        self.assertEqual(service.snapshot()["sensors"], {})
+
+    def test_stale_connection_suspends_commands_and_camera_reads(self):
+        service = SimulationService(None)
+        service.set_controls(throttle=.7)
+        with self.assertRaises(RuntimeError):
+            service.require_connected()
+        self.assertEqual(service.effective_controls()["throttle"], 0)
+        service.frame = b'old jpeg'
+        with self.assertRaises(RuntimeError):
+            service.get_camera_frame()
 
 
 class TelemetryTests(unittest.TestCase):

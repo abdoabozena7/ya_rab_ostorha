@@ -1,3 +1,5 @@
+> HISTORICAL / SUPERSEDED: the two-world synchronization proposal and production mock mode below are retired. See [the current migration](../../../docs/BEAMNG_MIGRATION.md).
+
 # Phase 1 foundation: audit and open acceptance gates
 
 **Phase 1 is not finished.** This device has no licensed BeamNG.tech installation. None of the fifteen physical acceptance tests has been passed against BeamNG. Repository test results do not replace those physical tests.
@@ -51,8 +53,8 @@ Road wheel steering angle is different from steering wheel angle. Individual whe
 
 | Sensor | Adapter output | Remaining work |
 | --- | --- | --- |
-| Front RGB | Mounted BeamNG Camera, 480×270 JPEG in existing panel | Live mount/FOV/latency validation |
-| Depth | Full precision array from same Camera poll | Normalized 0–1 buffer is not calibrated metres |
+| Front RGB | Mounted BeamNG Camera, 480أ—270 JPEG in existing panel | Live mount/FOV/latency validation |
+| Depth | Full precision array from same Camera poll | Normalized 0â€“1 buffer is not calibrated metres |
 | Roof LiDAR | `{x,y,z}` world point cloud; configurable channels, range, horizontal/vertical FOV and frequency | Mount/repeatability validation; intensity only if supplied |
 | Radar | Range m, Doppler m/s, azimuth/elevation rad, RCS, SNR, optional weight | Sign/range calibration; no promised object ID |
 | IMU | Buffered acceleration/angular velocity/orientation axes with each sample's time | Axis/timing calibration; configured without gravity |
@@ -135,7 +137,7 @@ Use one vehicle/build/configuration and a dry flat road for comparable runs. Sav
 | Test | How to verify | Current gate |
 | --- | --- | --- |
 | 1 Wheel physics | Hold 10/30/60 km/h; compare individual wheel rad/s with speed/radius under low slip and integrated angle with travelled distance. Allow physical slip/contact effects | Development identity test passes; individual BeamNG wheels unavailable; live gate open |
-| 2 Steering | Sweep steering at rest and 20/60 km/h; compare measured road wheel angle, model yaw and steering wheel including reverse; proposed visual mismatch <1° | Development binding implemented; real road wheel bridge pending |
+| 2 Steering | Sweep steering at rest and 20/60 km/h; compare measured road wheel angle, model yaw and steering wheel including reverse; proposed visual mismatch <1آ° | Development binding implemented; real road wheel bridge pending |
 | 3 Braking | Brake from 30/60/90 km/h on same surface/pedals; measure displacement from command to speed <0.1 m/s, repeat three times | Simplified tests pass; live distances unmeasured |
 | 4 Suspension | Record four compression values and pitch/roll during hard acceleration/braking; confirm load transfer and recovery | Development pitch visual only; physical bridge pending |
 | 5 Collision | Disable traffic and strike a barrier at documented speed; inspect measured position/direction/impulse, part damage and physical deformation | Development estimate only; collision extension/live test pending |
@@ -145,9 +147,9 @@ Use one vehicle/build/configuration and a dry flat road for comparable runs. Sav
 | 9 Depth | Calibrate depth buffer first; survey a flat target at 5/10/20 m and compare centre pixels; proposed max(0.1 m, 2%) | Metric conversion unavailable; gate open |
 | 10 Radar | Follow a target at known relative speed; compare range and signed line-of-sight Doppler; proposed 0.5 m / 0.5 m/s | Seven-column contract tested; live calibration pending |
 | 11 LiDAR | Capture a fixed wall over ten sweeps; compare transformed plane position/repeatability; proposed RMS <0.1 m | Serialization tested; live point cloud pending |
-| 12 IMU | Brake from 50 km/h; compare longitudinal sensor acceleration with velocity derivative projected into the same axis/time/filter; proposed median error <0.5 m/s² | Buffered samples tested; live axes/timing pending |
+| 12 IMU | Brake from 50 km/h; compare longitudinal sensor acceleration with velocity derivative projected into the same axis/time/filter; proposed median error <0.5 m/sآ² | Buffered samples tested; live axes/timing pending |
 | 13 Damage | Compare undamaged performance with severe front and wheel crashes; confirm actual power/cooling/alignment/failure changes | Raw damage exposed; component/live test pending |
-| 14 NPC | Observe ten ordinary turns/stops/queue releases and wheel rotations; verify vehicle↔vehicle/environment contact, then matching registered browser actors | Development improvements/native traffic startup added; physical/world gate open |
+| 14 NPC | Observe ten ordinary turns/stops/queue releases and wheel rotations; verify vehicleâ†”vehicle/environment contact, then matching registered browser actors | Development improvements/native traffic startup added; physical/world gate open |
 | 15 Pedestrians | Observe five minutes of sidewalks, walk/idle, smooth turns, destinations/groups/crossing waits; no teleports/random crossings | Baseline fixes implemented; richer navigation/physical registration pending |
 
 ## 9. Files changed

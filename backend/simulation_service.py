@@ -15,9 +15,11 @@ class SimulationService:
 
     def __init__(self, provider):
         self.provider = provider
-        configs = getattr(getattr(provider, "sensor_manager", None), "config", {})
+        manager = getattr(provider, "sensor_manager", None)
+        configs = getattr(manager, "config", {})
         self.SENSOR_POLL_HZ = {name: min(20, configs[name].rate_hz) if name in configs else rate
-                               for name, rate in self.SENSOR_POLL_HZ.items()}
+                               for name, rate in self.SENSOR_POLL_HZ.items()
+                               if manager is not None and name in manager.sensors}
         self.lock = threading.RLock()
         self.stop_event = threading.Event()
         self.thread = None
@@ -87,11 +89,17 @@ class SimulationService:
                                                    for name, times in self.sensor_polls.items()},
                                   "controlExpired": time.monotonic()-self.command_at > self.CONTROL_TTL})
 
+    def require_connected(self):
+        if not self.snapshot()["connected"]:
+            self.release_controls()
+            raise RuntimeError("BeamNG telemetry unavailable; commands suspended")
+
     def get_vehicle_state(self):
         return self.snapshot()
 
     def get_sensor_frame(self, name):
         with self.lock:
+            self.require_connected()
             if name not in self.SENSOR_POLL_HZ:
                 raise KeyError(name)
             if name not in self.sensors:
@@ -104,6 +112,7 @@ class SimulationService:
 
     def get_camera_frame(self):
         with self.lock:
+            self.require_connected()
             return self.frame, copy.deepcopy(self.frame_metadata)
 
     def _run(self):

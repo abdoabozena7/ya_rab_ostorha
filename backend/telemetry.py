@@ -81,6 +81,5 @@ class TelemetryMapper:
             "damageTotal": number(damage.get("damage")), "damageRaw": damage,
             "lastCollision": None,
             "capabilities": {"vehiclePhysics": True, "softBodyDamage": True,
-                             "perWheelTelemetry": False, "collisionImpulse": False,
-                             "browserWorldAligned": False},
+                             "perWheelTelemetry": False, "collisionImpulse": False},
         }

@@ -11,6 +11,8 @@ class WebSocketTests(unittest.TestCase):
         from websockets.sync.client import connect
         from backend.websocket_bridge import WebSocketBridge
         service = SimulationService(None)
+        service.state = {"source": "beamng", "speedMps": 0}
+        service.state_at = time.monotonic()
         bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
         bridge.start()
         uri = f'ws://127.0.0.1:{bridge.server.socket.getsockname()[1]}'
@@ -33,5 +35,21 @@ class WebSocketTests(unittest.TestCase):
                 time.sleep(.01)
             self.assertEqual(service.effective_controls()['throttle'], 0)
             self.assertEqual(service.effective_controls()['brake'], 1)
+        finally:
+            bridge.close()
+
+    def test_disconnected_backend_rejects_throttle(self):
+        from websockets.sync.client import connect
+        from backend.websocket_bridge import WebSocketBridge
+        service = SimulationService(None)
+        bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
+        bridge.start()
+        try:
+            with connect(f'ws://127.0.0.1:{bridge.server.socket.getsockname()[1]}') as socket:
+                socket.send(json.dumps({'type': 'controls', 'controls': {'throttle': 1}}))
+                frame = json.loads(socket.recv(timeout=2))
+                self.assertEqual(frame['type'], 'error')
+                self.assertIn('suspended', frame['error'])
+                self.assertEqual(service.effective_controls()['throttle'], 0)
         finally:
             bridge.close()

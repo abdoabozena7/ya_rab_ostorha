@@ -1,8 +1,7 @@
-"""Optional authoritative BeamNG.tech provider. Requires a local BeamNG.tech install.
+"""Authoritative BeamNG.tech provider; BeamNG owns the rendered game and physics.
 
-The browser city's meshes are not exported to BeamNG. This provider runs its own
-BeamNG scenario; its physics and sensor observations must not be conflated with
-the browser development scene until the two worlds are registered.
+The application sends controls and reads telemetry. No browser scene is mirrored.
+The licensed executable is required; there is no production mock provider.
 """
 
 from __future__ import annotations
@@ -248,15 +247,31 @@ class SensorManager:
 
 class BeamNGProvider:
     def __init__(self, home: str, user: str | None = None, host: str = "127.0.0.1",
-                 port: int = 25252, launch: bool = True, level: str = "west_coast_usa", sensor_config=None, traffic_count=5):
+                 port: int = 25252, launch: bool = True, level: str = "west_coast_usa", sensor_config=None, traffic_count=0,
+                 enable_sensors=False):
+        from .installation import require_installation, BeamNGBlocker
+        root, binary = require_installation(home)
         from beamngpy import BeamNGpy, Scenario, Vehicle
         from beamngpy.sensors import Damage, Electrics, State, Timer
 
         self.lock = threading.RLock()
         self.mapper = TelemetryMapper()
         self.launch = launch
-        self.bng = BeamNGpy(host, port, home=home, user=user)
-        self.bng.open(launch=launch)
+        self.sensor_manager = None
+        # An explicit tech binary prevents SDK auto-discovery falling back to .drive.
+        self.bng = BeamNGpy(host, port, home=str(root), binary=str(binary), user=user)
+        try:
+            self.bng.open(launch=launch)
+            if self.bng.tech_enabled is not True:
+                raise BeamNGBlocker("BEAMNG BLOCKER: simulator did not confirm a valid BeamNG.tech license")
+            self._start_scenario(Scenario, Vehicle, State, Electrics, Damage, Timer,
+                                 level, sensor_config, traffic_count, enable_sensors)
+        except Exception:
+            self.close()
+            raise
+
+    def _start_scenario(self, Scenario, Vehicle, State, Electrics, Damage, Timer,
+                        level, sensor_config, traffic_count, enable_sensors):
         self.vehicle = Vehicle("ego_vehicle", model="etk800", license="OSTORHA")
         for name, sensor in {"state": State(), "electrics": Electrics(),
                              "damage": Damage(), "timer": Timer()}.items():
@@ -269,13 +284,10 @@ class BeamNGProvider:
         self.bng.scenario.load(self.scenario)
         self.bng.scenario.start()
         self.vehicle.set_shift_mode("realistic_automatic")
-        try:
+        if enable_sensors:
             self.sensor_manager = SensorManager(self.bng, self.vehicle, sensor_config)
-            if traffic_count:
-                self.bng.traffic.spawn(max_amount=traffic_count, extra_amount=0, parked_amount=0)
-        except Exception:
-            self.bng.close() if self.launch else self.bng.disconnect()
-            raise
+        if traffic_count:
+            self.bng.traffic.spawn(max_amount=traffic_count, extra_amount=0, parked_amount=0)
 
     def set_controls(self, throttle=0.0, brake=0.0, steering=0.0,
                      parkingbrake=0.0, gear=None):
@@ -309,11 +321,13 @@ class BeamNGProvider:
 
     def get_sensor_frame(self, name: str, simulation_time=None) -> dict:
         with self.lock:
+            if self.sensor_manager is None:
+                raise RuntimeError("Sensor suite is disabled for the one-vehicle connection checkpoint")
             return self.sensor_manager.poll(name, simulation_time)
 
     def get_camera_jpeg(self) -> bytes | None:
         with self.lock:
-            return self.sensor_manager.frame_jpeg()
+            return self.sensor_manager.frame_jpeg() if self.sensor_manager else None
 
     def reset_vehicle(self):
         with self.lock:
@@ -334,5 +348,6 @@ class BeamNGProvider:
 
     def close(self):
         with self.lock:
-            self.sensor_manager.close()
+            if self.sensor_manager:
+                self.sensor_manager.close()
             self.bng.close() if self.launch else self.bng.disconnect()
