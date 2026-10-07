@@ -5,12 +5,13 @@ from .sensors import CarlaSensorManager
 from .telemetry import vehicle_state
 from .vehicle import EgoVehicle
 from .world import CarlaWorld
+from .target import VERSION
 
 
 class CarlaProvider:
     name = 'carla'
 
-    def __init__(self, host='127.0.0.1', port=2000, version='0.10.0', map_name=None,
+    def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
                  blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05):
         self.connection = CarlaConnection(host, port, version)
         self.map_name, self.blueprint, self.spawn_index = map_name, blueprint, spawn_index

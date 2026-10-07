@@ -30,6 +30,9 @@ def vehicle_state(actor, snapshot):
             'accelerationWorldMps2': acceleration,
             'accelerationMps2': sum(a*f for a, f in zip(acceleration, forward)),
             'accelerationSource': 'CARLA ActorSnapshot acceleration projected onto native forward vector',
+            # Tagged 0.9.16 WorldObserver.cpp emits degrees/s, despite an inconsistent
+            # ActorSnapshot unit label in the generated docs. Preserve raw data too.
+            'angularVelocityWorldDegps': angular,
             'angularVelocityWorldRadps': [math.radians(a) for a in angular],
             'headingRad': math.radians(transform.rotation.yaw), 'headingConvention': 'CARLA yaw from +X toward +Y',
             'steeringInput': float(control.steer), 'steeringConvention': 'positive right',

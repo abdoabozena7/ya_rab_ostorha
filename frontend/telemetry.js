@@ -11,8 +11,8 @@ export function telemetryText(t, {latencyMs, sensorRates = {}, sensorErrors = {}
     `Position ${vec(t.positionWorldM)} m · Velocity ${vec(t.velocityWorldMps)} m/s`,
     `Angular velocity ${vec(t.angularVelocityWorldRadps)} rad/s`,
     'PHYSICS · LIMITATIONS',
-    'RPM / fuel / mechanical engine damage: not available in this integration',
-    'Suspension / wheel RPM: unavailable; no estimated mechanical gauges',
+    'RPM / wheel dynamics: native 0.9.16 API; mapping and validation pending',
+    'Fuel / mechanical engine damage / suspension compression: unavailable',
     'Collision impulse: pending native collision-sensor validation',
     'SENSORS · NATIVE DATA ONLY',
     ...Object.entries({frontCamera: 'RGB', depth: 'Depth', radar: 'Radar', lidar: 'LiDAR', imu: 'IMU', gnss: 'GNSS', collision: 'Collision'})

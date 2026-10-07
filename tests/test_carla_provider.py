@@ -52,14 +52,14 @@ def fixture():
 class ConnectionTests(unittest.TestCase):
     def test_unsupported_python_is_rejected_before_import_or_connection(self):
         ensure_runtime((3, 12))
-        for version in ((3, 7), (3, 13), (3, 14)):
+        for version in ((3, 7), (3, 8), (3, 10), (3, 11), (3, 13), (3, 14)):
             with self.subTest(version=version), self.assertRaises(CarlaBlocker):
                 ensure_runtime(version)
 
     def test_version_match_and_reconnect(self):
         api = MagicMock()
-        api.Client.return_value.get_client_version.return_value = '0.10.0'
-        api.Client.return_value.get_server_version.return_value = '0.10.0'
+        api.Client.return_value.get_client_version.return_value = '0.9.16'
+        api.Client.return_value.get_server_version.return_value = '0.9.16'
         connection = CarlaConnection()
         with patch('backend.carla.connection.ensure_runtime'), patch('backend.carla.connection.importlib.import_module', return_value=api):
             connection.connect()
@@ -72,7 +72,7 @@ class ConnectionTests(unittest.TestCase):
     def test_incompatible_api_fails_without_silent_fallback(self):
         api = MagicMock()
         api.Client.return_value.get_client_version.return_value = '0.9.15'
-        api.Client.return_value.get_server_version.return_value = '0.10.0'
+        api.Client.return_value.get_server_version.return_value = '0.9.16'
         with patch('backend.carla.connection.ensure_runtime'), patch('backend.carla.connection.importlib.import_module', return_value=api):
             connection = CarlaConnection()
             with self.assertRaisesRegex(CarlaBlocker, 'version mismatch'):
@@ -170,7 +170,7 @@ class WorldVehicleTests(unittest.TestCase):
         provider = CarlaProvider()
         provider.connection = MagicMock(api=NS(VehicleControl=lambda **v: NS(**v),
                                                Location=vec, Rotation=lambda **v: NS(**v), Transform=transform),
-                                         server_version='0.10.0', api_version='0.10.0')
+                                         server_version='0.9.16', api_version='0.9.16')
         provider.connection.connect.return_value = world
         provider.connection.client.get_available_maps.return_value = ['Town10HD']
         provider.connect()
@@ -184,6 +184,23 @@ class WorldVehicleTests(unittest.TestCase):
         actor.destroy.assert_called_once()
         self.assertFalse(settings.synchronous_mode)
         self.assertIsNone(provider.get_vehicle_state())
+
+    def test_explicit_world_loading_and_reconnect_clean_previous_actor(self):
+        world, actor, _, settings = fixture()
+        provider = CarlaProvider(map_name='Town03')
+        provider.connection = MagicMock(api=NS(VehicleControl=lambda **v: NS(**v),
+                                               Location=vec, Rotation=lambda **v: NS(**v), Transform=transform),
+                                         server_version='0.9.16', api_version='0.9.16')
+        provider.connection.connect.return_value = world
+        provider.connection.client.load_world.return_value = world
+        provider.connect()
+        provider.connection.client.load_world.assert_called_once_with('Town03')
+        provider.disconnect()
+        self.assertFalse(settings.synchronous_mode)
+        provider.connect()
+        self.assertEqual(world.try_spawn_actor.call_count, 2)
+        provider.disconnect()
+        self.assertEqual(actor.destroy.call_count, 2)
 
     def test_failed_spawn_restores_world_settings(self):
         world, _, _, settings = fixture()

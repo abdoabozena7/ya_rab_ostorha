@@ -7,6 +7,7 @@ import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit, parse_qs
+from .carla.target import VERSION, BLOCKER
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -187,7 +188,7 @@ def main():
     parser.add_argument("--carla", action="store_true", help="Connect to the running CARLA simulator")
     parser.add_argument("--carla-host", default="127.0.0.1")
     parser.add_argument("--carla-port", type=int, default=2000)
-    parser.add_argument("--carla-version", default="0.10.0")
+    parser.add_argument("--carla-version", default=VERSION, choices=[VERSION])
     parser.add_argument("--map", help="Explicit CARLA map; defaults to the current world")
     parser.add_argument("--vehicle", default="vehicle.lincoln.mkz_2020")
     parser.add_argument("--spawn-index", type=int, default=0)
@@ -209,7 +210,7 @@ def main():
                                      fixed_delta=args.fixed_delta).connect()
         except Exception as error:
             reason = str(error)
-            parser.exit(2, (reason if reason.startswith('CARLA BLOCKER:') else f'CARLA BLOCKER: {reason}') + '\n')
+            parser.exit(2, (reason if reason.startswith(BLOCKER) else f'{BLOCKER}: {reason}') + '\n')
     server = None
     try:
         server = ThreadingHTTPServer((args.host, args.port), Handler)
