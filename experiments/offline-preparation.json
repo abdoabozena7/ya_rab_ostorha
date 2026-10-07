@@ -1,0 +1,14 @@
+{
+  "experiment": {"name": "Native foundation", "description": "Configuration only; no simulator or synthetic observations", "seed": 42},
+  "simulation": {"fixed_delta_seconds": 0.05, "connection_timeout_s": 10, "sensor_timeout_s": 0.25, "required_sensors": [], "optional_sensors": []},
+  "vehicle": {"blueprint": null, "spawn_point": null},
+  "sensors": {
+    "rgb": {"kind": "RGB", "enabled": false},
+    "depth": {"kind": "DEPTH", "enabled": false},
+    "radar": {"kind": "RADAR", "enabled": false},
+    "lidar": {"kind": "LIDAR", "enabled": false},
+    "imu": {"kind": "IMU", "enabled": false},
+    "gnss": {"kind": "GNSS", "enabled": false}
+  },
+  "recording": {"enabled": false, "output_directory": "runs"}
+}

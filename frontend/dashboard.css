@@ -1,0 +1,50 @@
+/* Preserve the HUD design and positions; replace its 3D backdrop with telemetry. */
+body.control-center { background:#102832; }
+.control-center #simulationCenter { position:absolute; top:130px; left:350px; right:245px; bottom:125px; overflow:auto; padding:26px; border:1px solid var(--line); background:var(--panel); border-radius:10px; }
+#simulationCenter h2 { font-size:28px; margin:8px 0 14px; }
+#simulationCenter p { color:var(--muted); line-height:1.6; }
+#connectionDetail { color:var(--yellow) !important; overflow-wrap:anywhere; }
+.simulation-hint { margin-top:12px; max-width:540px; }
+.dashboard-values { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px 14px; padding:26px 0; margin-top:20px; border-top:1px solid var(--line); }
+.dashboard-values span { display:block; font-size:8px; color:var(--muted); letter-spacing:1.2px; margin-bottom:7px; }
+.dashboard-values strong { display:block; font-size:21px; font-weight:500; font-variant-numeric:tabular-nums; }
+.session-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding-top:18px; border-top:1px solid var(--line); }
+select { color:var(--ink); background:#223e48; border:1px solid var(--line); border-radius:5px; padding:8px; }
+button:disabled, select:disabled { opacity:.45; cursor:default; }
+#controlStatus { font-size:10px; color:var(--muted); }
+.sensor-summary { margin-top:25px; }
+#sensorStatus { font-size:11px; }
+#validationNotice { margin-top:20px; font-size:9px; color:var(--muted); }
+.control-center #frontCameraView { display:grid; place-items:center; background:#0c2029; padding:0; }
+#authoritativeCamera { width:100%; height:100%; object-fit:contain; }
+#cameraUnavailable { text-align:center; color:var(--muted); font-size:11px; }
+#cameraMetadata { padding:8px 7px 4px; color:var(--muted); font-size:9px; background:var(--panel); }
+.control-center #minimapView { padding:14px; background:#0c2029; display:flex; flex-direction:column; justify-content:center; gap:15px; color:var(--muted); font-size:10px; line-height:1.5; overflow-wrap:anywhere; }
+.control-center #cityStatus[data-connected="true"] { color:#b4e7cc; }
+.control-center #runtime i { background:#927568; }
+.control-center #runtime i.connected { background:#9ad3b7; }
+.control-center #sensorPanel { display:block; top:125px; max-height:calc(100vh - 240px); }
+#routePanel { position:absolute; top:115px; right:28px; width:290px; padding:20px; border:1px solid var(--line); border-radius:8px; background:#152d36; z-index:20; line-height:1.6; }
+.control-center #phoneStatus { padding:12px; margin:18px 0; }
+@media(max-width:1100px) {
+  .control-center #simulationCenter { top:190px; left:340px; right:225px; padding:18px; }
+  .dashboard-values { grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
+}
+@media(max-width:900px), (max-height:650px) {
+  body.control-center { overflow:auto; padding:24px; display:grid; gap:20px; grid-template-columns:1fr 1fr; }
+  .control-center #brand,.control-center #mission,.control-center #toolbar,.control-center #cityStatus,.control-center #simulationCenter,.control-center #cameraCard,.control-center #driveReadout,.control-center #runtime,.control-center #drivingHelp,.control-center #bottomActions,.control-center #minimapBorder { position:static; transform:none; width:auto; height:auto; }
+  .control-center #brand,.control-center #mission,.control-center #simulationCenter,.control-center #runtime { grid-column:1 / -1; }
+  .control-center #toolbar { flex-wrap:wrap; }
+  .control-center #cityStatus { align-self:center; }
+  .control-center #simulationCenter { overflow:visible; }
+  .control-center #cameraCard { align-self:start; }
+  .control-center #driveReadout { align-self:start; height:70px; }
+  .control-center #frontCameraView { width:100%; height:auto; aspect-ratio:16/9; }
+  .control-center #minimapView { width:100%; height:auto; min-height:157px; }
+  .control-center #drivingHelp { flex-wrap:wrap; white-space:normal; }
+  .control-center #drivingHelp>span { display:inline; }
+  .control-center #bottomActions { flex-wrap:wrap; }
+  .control-center #speedPanel { width:145px; height:70px; }
+  .control-center #sensorPanel { position:fixed; top:100px; bottom:20px; right:20px; max-height:calc(100vh - 120px); }
+}
+@media(max-width:560px) { body.control-center { grid-template-columns:1fr; padding:18px; } .dashboard-values { grid-template-columns:repeat(2,minmax(0,1fr)); } }

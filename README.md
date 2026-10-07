@@ -1,68 +1,121 @@
-# يارب استرها
+# Ya Rab Ostorha — CARLA Simulation Control Center
 
-محاكاة قيادة وتفادي حوادث في مدينة ثلاثية الأبعاد. الهدف النهائي هو **مساعدة السائق على منع الحوادث المفاجئة في الشوارع المصرية**. القيادة الذاتية الحالية تخدم تجربة المسارات والمواقف داخل اللعبة.
+**CARLA is the simulator.** This project provides the existing HUD, dashboard,
+keyboard controls, telemetry/debugging and experiment interfaces. Production
+does not render a duplicate driving world or run mock physics.
 
-## التشغيل
+**Target: CARLA 0.9.16 (UE4), official precompiled Windows package.**
 
-تحتاج Python 3 ومتصفحًا يدعم WebGL. لا تحتاج حزم إضافية للتشغيل:
+**Current work: offline application core. No installation/download is attempted
+while internet is unavailable.** Contracts, frame synchronization, control safety,
+recording/Replay, events, metrics and plugin interfaces are simulator-independent.
+See [offline core, running and future gates](docs/OFFLINE_CORE.md).
 
-```bash
-python -m backend.server
+**CARLA 0.9.16 BLOCKER:** installation is incomplete. Python 3.12 x64 must be installed
+manually; automatic approval review rejected running its official installer
+(“blocked by policy”). The signed installer is downloaded at:
+
+`C:\CARLA\downloads\python-3.12.10-amd64.exe`
+
+The actual 0.9.16 ZIP directory and shipped API wheel have been inspected:
+`CarlaUE4.exe`, `carla-0.9.16-cp312-cp312-win_amd64.whl`. The wheel confirms
+**CPython 3.12 x64**. The full game has not been downloaded or extracted.
+The old 0.10.0 partial download remains separate. No native gate has passed.
+This machine has a Quadro T1000 with 4 GiB VRAM and 32 GB RAM; native boot and
+performance remain untested.
+
+## Dashboard now
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.server
 ```
 
-افتح `http://127.0.0.1:8000/`. `WASD` أو الأسهم للقيادة، `S` للفرملة ثم الرجوع للخلف، و`Space` لفرامل الطوارئ. `1` يبدّل القيادة اليدوية/التلقائية. `C` يبدّل كاميرا المطاردة والرؤية الأمامية الحالية، و`P` يفتح التليفون. `Route` يعرض المسار وبيانات A*، و`Debug` يعرض الحساسات. زر `Pause` أو `Escape` يوقف المحاكاة، و`Reset` يرجع العربية والمرور إلى البداية.
+Open http://127.0.0.1:8000/. It shows **CARLA — DISCONNECTED**, unavailable
+observations, and disabled driving controls. The current Python 3.13 environment
+is suitable for this dashboard/offline tests, not the packaged CARLA 0.9.16 API.
 
-**التليفون داخل اللعبة** يظهر من زر `📱 التليفون` على الجانب. اكتب مثلًا `روح السوق` أو `اذهب إلى المستشفى`. الأماكن الحالية: وسط البلد، السوق، المحطة، المستشفى، الجامعة، الكورنيش، البوابة الشمالية، البوابة الجنوبية. العربية تخطط طريقًا عبر الشوارع، تشغّل القيادة التلقائية، وتتوقف عند الوصول. لافتات بأسماء الأماكن موجودة في المدينة. هذه مطابقة أسماء بسيطة، وليست نموذج NLP مدربًا بعد.
+## Replay an existing real run
 
-## محاكاة المرور والقيادة
+```powershell
+.\.venv\Scripts\python.exe -m backend.server --replay runs\REAL_RUN_ID
+```
 
-- شبكة المدينة متصلة بمحورين طويلين، بطول **١٫٢٨ كم** من طرف للطرف. التليفون يقبل `روح البوابة الشمالية` و`روح البوابة الجنوبية`، وزر **Drive setup / إعدادات القيادة** فيه رحلة طويلة جاهزة.
-- السائق الآلي يتابع مسارًا بمنحنيات، وطابور العربيات بمسافة آمنة محسوبة. لا يلف حول نفسه وهو واقف. إشارات التقاطعات تنظّم الاتجاهات، والعربيات تنتقل بين الشوارع المتصلة.
-- المرور الافتراضي ١٧٠ مركبة و٦٦ شخصًا، مع اختيار كثافة أخف أو أعلى. المواقف العشوائية تشمل الوقوف المؤقت، الفرملة المفاجئة، الدخول للحارة وأعمال الطريق، ثم انتهاء الموقف وتحرك الطابور. البذرة ٤٢ تعيد تسلسل الأحداث عند Reset.
-- اختيار سرعة مطلوبة من ٢٠ إلى ١٨٠ كم/س. هي سقف للسائق الآلي؛ المنحنيات والزحمة والمياه والحفر تقلل السرعة الفعلية. اليدوي يسمح بضغط بنزين وفرامل تدريجي، مع تأخير تبديل الاتجاه من الفرملة للرجوع.
-- خمس حالات سطح: أسفلت، مكسّر، رصف حجري، مياه، حصى. التماسك ومقاومة الحركة ومسافة التوقف واستجابة جسم العربية وصوت الطريق تختلف بينها. المناطق المرئية ومناطق التأثير تستخدم نفس الإحداثيات.
-- موديل سيدان أصلي قابل للتعديل في `src/render/detailed-sedan.js`: طول ٤٫٧٢ م، عرض جسم ١٫٨٦ م، قاعدة عجلات ٢٫٧٨ م؛ شبابيك مستقلة، أبواب ومرايات، جنوط وفرامل وعادم ولوحات ولمبات. المقاسات تخص غلاف جسم المحاكاة، والمرايات تفاصيل بصرية خارجه.
-- كشافات `L`، إشارة شمال `Q`، يمين `E`، انتظار `F`، زمارة بالضغط على `H`. الصوت يبدأ بعد أول تفاعل مع الصفحة. وضع الغروب يظهر تأثير الكشافات على الأرض.
-- الكاميرا السينمائية تعمل تلقائيًا عند توقع تداخل قريب من حركة الأجسام، وتبطّئ **المحاكاة كلها** ثم ترجع للزمن الطبيعي. يمكن إيقافها من الإعدادات. ليست إعادة عرض ولا حركة نجاة مكتوبة مسبقًا.
-- القياس الظاهر هو أقصر مسافة بين المستطيلات الموجهة للأجسام، مقربة للسنتيمتر. الحساسات مرجع هندسي داخل المحاكاة وليست حساسات حقيقية. التوقف الوقائي وفحص الحركة يمنعان التداخل المرصود، ولا يمثل ذلك ضمانًا لكل المواقف أو محاكاة ديناميكا إطارات كاملة.
+Replay shows **MODE: REPLAY** and recorded observations with driving controls
+disabled. It never connects to a simulator. No real run exists yet, and test
+fixture recordings are refused by the production reader. Future native recording
+uses `--record-run runs`; the old `--record-log` is a compatibility JSONL sink.
 
-التليفون وRoute وDebug وPause وReset والكاميرا الأمامية وواجهة Python مستمرون. المدينة والمحلات والأصول الخارجية من مرحلة التحسين السابقة باقية. راجع [تفاصيل النسخة والاختبار](docs/TRAFFIC_DYNAMICS.md) و[مصادر الأصول](public/assets/ATTRIBUTION.md).
+Strict configuration example: `experiments/offline-preparation.json`.
+Optional dashboard-only startup: add `--experiment-config` with that file path.
 
-## ترتيب المشروع
+## Continue once internet and Python 3.12 x64 are available
 
-| المجلد أو الملف | الغرض |
-| --- | --- |
-| `index.html`, `src/ui/` | الواجهة والتليفون الداخلي ولوحة A* |
-| `src/main.js` | تركيب الوحدات ودورة اللعبة والقيادة الحالية |
-| `src/simulation/` | المسارات، الأماكن، المرور، الحساسات، حدود الطريق، الفرملة، وربط Python |
-| `src/render/` | المدينة والموديلات واللافتات |
-| `assets/models/` | موديلات GLB وخاماتها؛ راجع `assets/LICENSES.md` |
-| `backend/server.py` | خادم اللعبة وواجهة قراءة الحالة والكاميرا |
-| `tests/` | اختبارات المسارات والـAPI والمنطق الأساسي |
+```powershell
+py -3.12 --version
+.\scripts\prepare_carla.ps1
+```
 
-## واجهة Python الحالية
+The script inspects the official package, checks its exact wheel ABI, downloads
+and verifies the archive, extracts into `C:\CARLA\CARLA_0.9.16\`, and installs
+the shipped cp312 Windows x64 wheel and project dependencies into `.venv-carla`.
+An incompatible existing environment is archived. It does not install Python
+or build CARLA from source. Inspection without installation:
 
-- `GET /api/health`: فحص السيرفر.
-- `GET /api/state`: آخر observation للعربية، وتشمل السرعة والوقود والوضع والموقع والحساسات والإشارة والمكان المطلوب وحالة الفرملة، إضافة إلى المشاة والمركبات القريبة بمواقعهم وسرعاتهم وأنواعهم. هذا تجهيز لتجارب الـRL القادمة.
-- `GET /api/frame`: آخر صورة JPEG من الكاميرا الأمامية.
+```powershell
+.\scripts\prepare_carla.ps1 -InspectOnly
+```
 
-المتصفح يرسل الحالة والصورة إلى نفس السيرفر عبر `POST /api/state` و`POST /api/frame`. التليفون الداخلي يعمل في المتصفح ولا يحتاج API أو تليفونًا حقيقيًا. يمكن تشغيل اللعبة بخادم ملفات عادي؛ عندها تستمر اللعبة بدون بث الحالة إلى Python.
+Launch in a separate terminal, using the detected package executable and a
+conservative development profile (Low, windowed 1280x720):
 
-## التطوير القادم
+```powershell
+.\scripts\launch_carla.ps1
+```
 
-1. توسيع مكتبة المواقف واختبارات الضغط مع حفظ وإعادة عرض الحالات الفردية.
-2. توصيل كاشف أجسام ورؤية كاميرا فعلية في Python، مع قياس التأخير وأخطاء الكشف. أشعة المحاكاة الحالية تبقى كمرجع منفصل.
-3. إضافة OCR للّافتات وNLP للأوامر العربية. مطابقة أسماء الأماكن الحالية نقطة بداية قابلة للاستبدال.
-4. تعريف observation/action/reward للتعلّم المعزز، تدريب سياسة داخل المحاكاة، ومقارنتها بخط الأساس. تبقى طبقة الفرملة مستقلة عن مخرجات السياسة.
-5. معايرة التعليق والتماسك بمقاييس مرجعية، وإضافة اختبارات ضغط طويلة للتقاطعات قبل اعتبار المحاكاة مرجعًا هندسيًا.
+Before spawning:
 
-الموديلات الخارجية موثقة في [سجل المصادر](public/assets/ATTRIBUTION.md). لا تحتاج Blender؛ حافظ على ملفات الخامات بجانب موديلاتها. صيغة العربية الحالية لا ترسل أوامر غير معروفة للقيادة.
+Stop the dashboard-only backend before reusing port 8000, or add
+`--port 8002 --websocket-port 8003` to the production command and open port 8002.
 
-## الاختبارات
+```powershell
+.\.venv-carla\Scripts\python.exe -m backend.carla.preflight
+.\.venv-carla\Scripts\python.exe -m backend.server --carla
+```
 
-```bash
+Focus the dashboard for W/A/S/D/Space; observe the actual car in CARLA.
+First validate native boot, connection and one vehicle (Gate 1), then controls
+and collision (Gate 2), then real sensors (Gate 3). Normal traffic/pedestrians
+follow Gate 4. Egypt, AI, accident avoidance and randomized chaos are Gates 5–8
+and are not implemented in this offline preparation.
+No fake RPM, fuel, or component damage is displayed. Native RPM/per-wheel APIs
+exist in 0.9.16; mapping and validation are deferred until Gate 1.
+
+See [0.9.16 migration, package evidence, blocker and gate procedures](docs/CARLA_0916_MIGRATION.md).
+
+## Offline verification
+
+```powershell
 npm test
-python -m unittest discover -s tests -p "test_*.py"
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
+npm run test:legacy
+.\.venv\Scripts\python.exe -m unittest discover -s legacy/threejs-simulator/tests -p 'test_*.py'
 ```
 
-كود المشروع تحت رخصة [MIT](LICENSE).
+SDK fixtures test contracts and cleanup only. They do not pass native physics gates.
+
+## Preserved work
+
+- Three.js: `legacy/threejs-simulator/`, branch `codex/threejs-simulator-archive`, snapshot `e51bfb3`.
+- BeamNG: `legacy/beamng-integration/`, branch `codex/beamng-migration-archive`, snapshot `7a6a777`.
+- Previous CARLA 0.10.0 preparation: `legacy/carla-0100-preparation/`, branch `codex/carla-0100-preparation-archive`, snapshot `4d5b8ad`.
+- Reused: branding, CSS/HUD, Phone/Route/Debug, camera panel, controls and transport.
+- Assets and [license notices](public/assets/ATTRIBUTION.md) remain preserved.
+
+For an explicit historical Three.js preview, use a separate server:
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.server --port 8002 --enable-legacy-preview
+```
+
+Open http://127.0.0.1:8002/legacy/threejs-simulator/. Legacy preview and CARLA
+production mode cannot run together in one server.
