@@ -3,8 +3,8 @@
 Updated 7 October 2026. Version preparation originated on `codex/carla-control-center`
 and was merged into `main` at `d5b5132`; the working CARLA branch was removed after
 the merge. Continues from `4d5b8ad`; this is a version migration, not a new simulator.
-Current offline work and the authoritative eight-gate progression are documented
-in [OFFLINE_CORE.md](OFFLINE_CORE.md). No installation is attempted while offline.
+The offline-core architecture is retained. Current live evidence and the stopping boundary
+through Gate 3 are documented in [LIVE_NATIVE_VALIDATION.md](LIVE_NATIVE_VALIDATION.md).
 
 ## Status and implementation plan
 
@@ -21,7 +21,7 @@ production provider.
 6. Only after Gate 1: validate vehicle behavior/collision, then the sensor suite.
 7. Only after those gates: choose an urban map, normal traffic/walkers and Egypt planning.
 
-**No native migration gate has passed.** Offline SDK fixtures verify contracts
+**Native gate results are maintained in the current live validation report.** Offline SDK fixtures verify contracts
 and ownership only; they are never displayed as simulator observations.
 
 ## Why the target changed
@@ -54,21 +54,15 @@ chaos, traffic or pedestrian behavior has been implemented during this downgrade
 | Item | Observed on this machine |
 | --- | --- |
 | Windows | Windows 11 Pro x64, build 26200 |
-| Machine / CPU | Dell Precision 5540; Intel i7-9850H, 6 cores / 12 threads |
-| Dedicated GPU | NVIDIA Quadro T1000, 4096 MiB VRAM; driver 581.95 |
-| Other GPU | Intel UHD 630 |
-| RAM | 31.73 GiB usable, 32 GB installed |
-| C: available space | Approximately 183.64 GiB at this audit |
-| Python | Project `.venv`: 3.13.5; system 3.13 and 3.14; no 3.12 |
-| `.venv-carla` | Not created |
-| Visual C++ x64 runtime | Installed, 14.44.35211.00 |
+| Machine / CPU | ASUS TUF Gaming A15 FA507RM; AMD Ryzen 7 6800H, 8 cores / 16 threads |
+| Dedicated GPU | NVIDIA RTX 3060 Laptop GPU, 6144 MiB VRAM; driver 617.14 |
+| RAM | Windows: 16 GiB installed, 15.25 GiB usable; user-reported 32 GB discrepancy retained |
+| Python | `.venv-carla`: CPython 3.12.10 x64 |
+| Native runtime / Python API | 0.9.16 / 0.9.16, exact native version check passed |
+| Current map | Carla/Maps/Town10HD_Opt |
 
-The [0.9.16 quick start](https://carla.readthedocs.io/en/0.9.16/start_quickstart/)
-lists Windows 10/11 and recommends RTX 2070-equivalent graphics with 8 GB VRAM.
-This T1000 has 4 GiB VRAM, below that recommendation. Boot/performance are
-unverified; a low profile is prepared, without claiming compatibility from specs.
-The actual machine is not an RTX 3060. Storage is sufficient for the inspected
-archive plus extracted files; the installer rechecks free space before downloading.
+Measure performance on this machine using native runs. The former Quadro T1000,
+Dell and Python-installation blocker notes are obsolete.
 
 ## Official package inspection and exact Python compatibility
 
@@ -97,39 +91,21 @@ this wheel. No arbitrary PyPI `carla` package is installed.
 Inspection manifest: `C:\CARLA\downloads\CARLA_0.9.16.package.json`.
 The inspected wheel is cached separately at
 `C:\CARLA\downloads\CARLA_0.9.16-api\carla-0.9.16-cp312-cp312-win_amd64.whl`.
-It is not installed. The full CARLA game has not been downloaded or extracted;
-the native executable has been identified in the remote directory, not launched.
+The wheel is installed in `.venv-carla`; the full archive passed CRC verification,
+and the extracted game has been launched and connected to successfully.
 
 The older partial `C:\CARLA\downloads\Carla-0.10.0-Win64-Shipping.zip.part`
 remains preserved at 185,249,792 bytes. It is never used by the new installer.
 
-## CARLA 0.9.16 BLOCKER
+## Installed runtime
 
-**Required dependency: Python 3.12 x64, manually installed.**
-
-Automatic approval review previously rejected executing its official installer,
-with the stated reason **“blocked by policy.”** No installer was executed. That
-rejection has not been retried through another execution method.
-
-Required manual file:
-`C:\CARLA\downloads\python-3.12.10-amd64.exe`.
-Downloaded from the [official Python 3.12.10 release](https://www.python.org/downloads/release/python-31210/);
-26,964,224 bytes; Authenticode signature Valid, signer Python Software Foundation.
-
-Install that file manually, including Python launcher registration. The default
-per-user executable is
-`C:\Users\LAPSHOP\AppData\Local\Programs\Python\Python312\python.exe`.
-If another location is used, ensure `py -3.12` selects that x64 executable.
+Python 3.12.10 x64 is installed at
+`C:\Users\A-plus\AppData\Local\Programs\Python\Python312\python.exe`.
+The CARLA package is `C:\CARLA\CARLA_0.9.16\`, launcher `CarlaUE4.exe`, native
+binary `CarlaUE4\Binaries\Win64\CarlaUE4-Win64-Shipping.exe`.
+Run `python -m scripts.native.audit_installation` with `.venv-carla` for fresh
+native version/map/blueprint/Traffic Manager and hardware evidence.
 No CARLA license key is needed.
-
-From `C:\Users\LAPSHOP\Downloads\ya_rab_ostorha`, continue with:
-
-```powershell
-py -3.12 --version
-.\scripts\prepare_carla.ps1
-```
-
-Do not proceed to native boot with the project's existing Python 3.13 environment.
 
 ## Installation and launch procedure
 

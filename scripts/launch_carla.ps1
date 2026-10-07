@@ -13,6 +13,6 @@ $quality = 'Low'
 Write-Host "Launching actual CARLA 0.9.16: $nativeExe ($Profile, $quality, 1280x720). Gate 1 remains unverified."
 Push-Location -LiteralPath (Split-Path -Parent $nativeExe)
 try {
-    & $nativeExe "-quality-level=$quality" -windowed -ResX=1280 -ResY=720 -carla-rpc-port=2000
-    if ($LASTEXITCODE -ne 0) { throw "CARLA 0.9.16 BLOCKER: native launcher exited with code $LASTEXITCODE; inspect CarlaUE4 logs" }
+    $nativeProcess = Start-Process -FilePath $nativeExe -ArgumentList "-quality-level=$quality", '-windowed', '-ResX=1280', '-ResY=720', '-carla-rpc-port=2000' -WindowStyle Hidden -PassThru -Wait
+    if ($nativeProcess.ExitCode -ne 0) { throw "CARLA 0.9.16 BLOCKER: native launcher exited with code $($nativeProcess.ExitCode); inspect CarlaUE4 logs" }
 } finally { Pop-Location }

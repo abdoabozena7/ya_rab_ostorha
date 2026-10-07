@@ -6,23 +6,14 @@ does not render a duplicate driving world or run mock physics.
 
 **Target: CARLA 0.9.16 (UE4), official precompiled Windows package.**
 
-**Current work: offline application core. No installation/download is attempted
-while internet is unavailable.** Contracts, frame synchronization, control safety,
-recording/Replay, events, metrics and plugin interfaces are simulator-independent.
-See [offline core, running and future gates](docs/OFFLINE_CORE.md).
+**Current work: live native validation of the existing offline core.** CARLA 0.9.16
+is installed at `C:\CARLA\CARLA_0.9.16`, with the matching packaged CPython 3.12
+API in `.venv-carla` (Python 3.12.10). Native boot and connection are verified.
+Gate evidence is tracked in [LIVE_NATIVE_VALIDATION.md](docs/LIVE_NATIVE_VALIDATION.md).
 
-**CARLA 0.9.16 BLOCKER:** installation is incomplete. Python 3.12 x64 must be installed
-manually; automatic approval review rejected running its official installer
-(“blocked by policy”). The signed installer is downloaded at:
-
-`C:\CARLA\downloads\python-3.12.10-amd64.exe`
-
-The actual 0.9.16 ZIP directory and shipped API wheel have been inspected:
-`CarlaUE4.exe`, `carla-0.9.16-cp312-cp312-win_amd64.whl`. The wheel confirms
-**CPython 3.12 x64**. The full game has not been downloaded or extracted.
-The old 0.10.0 partial download remains separate. No native gate has passed.
-This machine has a Quadro T1000 with 4 GiB VRAM and 32 GB RAM; native boot and
-performance remain untested.
+Hardware: RTX 3060 Laptop GPU, **6144 MiB VRAM**. The user reports 32 GB RAM;
+Windows currently enumerates **two 8 GiB modules (16 GiB installed)** and 15.25 GiB
+usable. The previous Quadro T1000 notes describe obsolete hardware.
 
 ## Dashboard now
 
@@ -31,8 +22,7 @@ performance remain untested.
 ```
 
 Open http://127.0.0.1:8000/. It shows **CARLA — DISCONNECTED**, unavailable
-observations, and disabled driving controls. The current Python 3.13 environment
-is suitable for this dashboard/offline tests, not the packaged CARLA 0.9.16 API.
+observations, and disabled driving controls. Use `.venv-carla` for the native API and all current verification.
 
 ## Replay an existing real run
 
@@ -48,7 +38,7 @@ uses `--record-run runs`; the old `--record-log` is a compatibility JSONL sink.
 Strict configuration example: `experiments/offline-preparation.json`.
 Optional dashboard-only startup: add `--experiment-config` with that file path.
 
-## Continue once internet and Python 3.12 x64 are available
+## Installed runtime and launch
 
 ```powershell
 py -3.12 --version

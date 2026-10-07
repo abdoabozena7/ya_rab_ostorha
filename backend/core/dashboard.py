@@ -15,6 +15,7 @@ def dashboard_frame(frame):
              'accelerationWorldMps2': list(vehicle.acceleration_mps2),
              'speedMps': vehicle.longitudinal_speed_mps if vehicle.longitudinal_speed_mps is not None else vehicle.speed_mps,
              'speedMagnitudeMps': vehicle.speed_mps, 'accelerationMps2': vehicle.longitudinal_acceleration_mps2,
+             'speedKmh': vehicle.speed_mps * 3.6,
              'steeringInput': vehicle.steering, 'throttle': vehicle.throttle, 'brake': vehicle.brake,
              'gear': 'R' if vehicle.reverse else 'N' if vehicle.gear == 0 else str(vehicle.gear),
              'gearIndex': vehicle.gear, 'reverse': vehicle.reverse, 'handbrake': vehicle.handbrake,

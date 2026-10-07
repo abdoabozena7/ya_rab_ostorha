@@ -2,6 +2,7 @@
 import argparse
 import importlib.util
 import json
+import time
 
 SENSOR_PLANS = {
     'collision': {'blueprint': 'sensor.other.collision', 'cases': ['barrier low/high speed', 'side', 'rear'], 'fields': ['frame', 'timestamp_s', 'other_actor_id', 'impulse_ns']},
@@ -40,7 +41,9 @@ def main(check):
             print(json.dumps({'check': check, 'plan': plan, 'status': 'NOT_RUN'}, indent=2))
             return 3  # Structural plans only; no fabricated sensor PASS.
         if check == 'connection':
+            manager = connection.client.get_trafficmanager(8003)
             print(json.dumps({'status': 'PASS', 'check': check, 'version': connection.server_version,
+                              'client_version': connection.api_version, 'traffic_manager_port': manager.get_port(),
                               'map': world.get_map().name, 'maps': connection.client.get_available_maps(),
                               'vehicles': [bp.id for bp in world.get_blueprint_library().filter('vehicle.*')]}, indent=2))
             return 0
@@ -73,8 +76,15 @@ def main(check):
         provider.close()
         if provider.cleanup_errors:
             raise RuntimeError('Cleanup unconfirmed: '+'; '.join(provider.cleanup_errors))
-        if world.get_actor(ego_id) is not None:
-            raise RuntimeError('Owned ego actor survived cleanup')
+        # get_actor() retains a cached Python proxy after destruction in 0.9.16.
+        # Confirm removal from the live snapshot AND live actor enumeration instead.
+        deadline = time.monotonic()+5
+        while time.monotonic() < deadline:
+            snapshot = world.wait_for_tick(2)
+            if snapshot.find(ego_id) is None and ego_id not in {a.id for a in world.get_actors()}:
+                break
+        else:
+            raise RuntimeError('Owned ego actor survived cleanup for five seconds')
         if not before.issubset({actor.id for actor in world.get_actors()}):
             raise RuntimeError('Unrelated actor disappeared during the check')
         print(json.dumps({'status': 'PASS', 'check': check, 'ego_actor_id': ego_id,

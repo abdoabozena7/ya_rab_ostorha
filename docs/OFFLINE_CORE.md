@@ -1,9 +1,9 @@
 # Offline application core
 
-Updated 7 October 2026. The active branch is `main`; the CARLA preparation branch
-was merged at `d5b5132`. CARLA 0.9.16 remains the production target. Internet and
-native installation are unavailable. **No installation/download was attempted
-during this work. No physics, sensors, world, model or scenario was simulated.**
+Updated 7 October 2026. The architecture below was prepared offline and is retained.
+CARLA 0.9.16 is now installed, with the matching API and a working native connection.
+Current Gate 1–3 results are in [LIVE_NATIVE_VALIDATION.md](LIVE_NATIVE_VALIDATION.md).
+No later traffic, map, AI or scenario phase is authorized in this validation work.
 
 ## Implementation sequence and architecture
 

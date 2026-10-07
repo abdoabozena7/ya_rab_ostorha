@@ -213,6 +213,7 @@ def main():
     parser.add_argument("--vehicle", default="vehicle.lincoln.mkz_2020")
     parser.add_argument("--spawn-index", type=int, default=0)
     parser.add_argument("--fixed-delta", type=float, default=.05)
+    parser.add_argument('--session-duration', type=float, help='Stop cleanly after this many wall-clock seconds (native validation/recording)')
     parser.add_argument("--record-log", help="Optional JSONL frame log")
     parser.add_argument('--record-run', help='Output directory for a versioned replayable run')
     parser.add_argument('--replay', help='Read an existing real recorded run; never connects to CARLA')
@@ -221,6 +222,8 @@ def main():
     parser.add_argument("--enable-legacy-preview", action="store_true",
                         help="Explicitly serve the archived Three.js preview")
     args = parser.parse_args()
+    if args.session_duration is not None and args.session_duration <= 0:
+        parser.error('Session duration must be positive')
     configure_logging()
     if args.replay and (args.carla or args.enable_legacy_preview or args.record_run or args.record_log):
         parser.error('Replay, live simulation and recording are separate operating modes')
@@ -304,6 +307,10 @@ def main():
             server.websocket_bridge.start()
         log(LogCategory.CONNECTION, 'Control center listening', url=f'http://{args.host}:{args.port}/',
             mode='REPLAY' if args.replay else 'CARLA' if args.carla else 'DISCONNECTED')
+        if args.session_duration:
+            timer = threading.Timer(args.session_duration, server.shutdown)
+            timer.daemon = True
+            timer.start()
         server.serve_forever()
     except KeyboardInterrupt:
         pass
