@@ -87,25 +87,15 @@ See [0.9.16 migration, package evidence, blocker and gate procedures](docs/CARLA
 ```powershell
 npm test
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
-npm run test:legacy
-.\.venv\Scripts\python.exe -m unittest discover -s legacy/threejs-simulator/tests -p 'test_*.py'
 ```
 
 SDK fixtures test contracts and cleanup only. They do not pass native physics gates.
 
 ## Preserved work
 
-- Three.js: `legacy/threejs-simulator/`, branch `codex/threejs-simulator-archive`, snapshot `e51bfb3`.
+- Three.js game deleted from this checkout at the user’s request; no preview launcher or legacy mock API remains.
 - BeamNG: `legacy/beamng-integration/`, branch `codex/beamng-migration-archive`, snapshot `7a6a777`.
 - Previous CARLA 0.10.0 preparation: `legacy/carla-0100-preparation/`, branch `codex/carla-0100-preparation-archive`, snapshot `4d5b8ad`.
 - Reused: branding, CSS/HUD, Phone/Route/Debug, camera panel, controls and transport.
 - Assets and [license notices](public/assets/ATTRIBUTION.md) remain preserved.
 
-For an explicit historical Three.js preview, use a separate server:
-
-```powershell
-.\.venv\Scripts\python.exe -m backend.server --port 8002 --enable-legacy-preview
-```
-
-Open http://127.0.0.1:8002/legacy/threejs-simulator/. Legacy preview and CARLA
-production mode cannot run together in one server.

@@ -39,13 +39,12 @@ provides a Windows binary package, avoiding a source build or Unreal clone.
 | REUSED | HUD/CSS/branding, Phone/Route/Debug, front-camera panel, position/minimap concept and controls |
 | UPDATED | CARLA version contract, package URL/install root, inspected wheel ABI, native executable discovery, runtime/API checks, dashboard labels, tests and documentation |
 | ARCHIVED | 0.10.0 installer and notes: `legacy/carla-0100-preparation/`; full preparation branch `codex/carla-0100-preparation-archive` at `4d5b8ad` |
-| ARCHIVED | Three.js world/dynamics/traffic/walkers: `legacy/threejs-simulator/`; branch `codex/threejs-simulator-archive` at `e51bfb3` |
+| REMOVED | Three.js game and preview/API entry points; current work uses only CARLA and the existing dashboard/core |
 | ARCHIVED | BeamNG provider/license checks/adapters: `legacy/beamng-integration/`; branch `codex/beamng-migration-archive` at `7a6a777` |
 
 The earlier Three.js implementation used local longitudinal/bicycle dynamics,
 distance/radius wheel animation and approximate powertrain/suspension/damage.
-Those visual systems remain historical material. The earlier repository audit
-is retained in `legacy/threejs-simulator/docs/PHASE_1_FOUNDATION.md`.
+The game files and launch routes were removed at the user’s request.
 Licensed assets and attribution remain preserved. No new vehicle physics, AI,
 chaos, traffic or pedestrian behavior has been implemented during this downgrade.
 
@@ -294,8 +293,6 @@ deferred until preceding gates; no full Cairo map is built during this blocker.
 ```powershell
 npm test
 .\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
-npm run test:legacy
-.\.venv\Scripts\python.exe -m unittest discover -s legacy/threejs-simulator/tests -p 'test_*.py'
 ```
 
 Preparation tests cover runtime/version guards, actual ZIP-layout/wheel metadata

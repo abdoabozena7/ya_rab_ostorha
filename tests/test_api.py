@@ -49,7 +49,7 @@ class ApiTests(unittest.TestCase):
         self.expect_error(404, '/api/state', {'speedKmh': 100})
         self.expect_error(503, '/api/simulation/control', {'throttle': 1})
 
-    def test_legacy_requires_explicit_opt_in(self):
+    def test_removed_game_and_mock_routes_are_permanently_unavailable(self):
         self.expect_error(404, '/legacy/threejs-simulator/index.html')
         self.expect_error(404, '/api/legacy/state')
         self.expect_error(404, '/api/legacy/state', {'speedKmh': 100})

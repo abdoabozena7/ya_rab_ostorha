@@ -15,21 +15,6 @@ from .core.logging import configure_logging, log, LogCategory
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_JSON = 16_384
-MAX_FRAME = 400_000
-
-
-class LegacyStore:
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.state = {"connected": False, "source": "development-mock", "speedKmh": 0, "fuel": 100, "mode": "manual"}
-        self.state_at = 0.0
-        self.frame = b""
-        self.clients = {}
-
-
-STORE = LegacyStore()  # Used exclusively by the opt-in /api/legacy endpoints.
-
-
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         log(LogCategory.CONNECTION, 'HTTP request', path=urlsplit(self.path).path, detail=format % args)
@@ -62,7 +47,7 @@ class Handler(SimpleHTTPRequestHandler):
         provider = getattr(self.server, "simulation_service", None)
         if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/", "/runs/", "/recordings/")) or Path(path).name == "tech.key":
             return self._json(404, {"error": "Not found"})
-        if path.startswith(("/legacy/", "/api/legacy/")) and not getattr(self.server, "enable_legacy_preview", False):
+        if path.startswith(("/legacy/", "/api/legacy/")):
             return self._json(404, {"error": "Archived preview is disabled"})
         path = {"/api/state": "/api/simulation/state", "/api/frame": "/api/simulation/camera.jpg"}.get(path, path)
         if path == "/api/health":
@@ -110,31 +95,12 @@ class Handler(SimpleHTTPRequestHandler):
             except RuntimeError as error:
                 return self._json(503, {"error": str(error)})
             return self._json(404, {"error": "Unknown simulation endpoint"})
-        if path == "/api/legacy/state":
-            with STORE.lock:
-                client = parse_qs(urlsplit(self.path).query).get('client', [''])[0]
-                record = STORE.clients.get(client) if client else None
-                state = (record['state'] if record else {'connected': False} if client else STORE.state).copy()
-                at = record['at'] if record else 0 if client else STORE.state_at
-                state["connected"] = state["connected"] and time.monotonic() - at < 2
-            return self._json(200, state)
-        if path == "/api/legacy/frame":
-            with STORE.lock:
-                frame = STORE.frame
-            if not frame:
-                return self._json(404, {"error": "No camera frame yet"})
-            self.send_response(200)
-            self.send_header("Content-Type", "image/jpeg")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Length", str(len(frame)))
-            self.end_headers()
-            return self.wfile.write(frame)
         return super().do_GET()
 
     def do_POST(self):
         path = urlsplit(self.path).path
         try:
-            if path.startswith("/api/legacy/") and not getattr(self.server, "enable_legacy_preview", False):
+            if path.startswith("/api/legacy/"):
                 return self._json(404, {"error": "Archived preview is disabled"})
             if path.startswith("/api/simulation/"):
                 provider = getattr(self.server, "simulation_service", None)
@@ -164,36 +130,6 @@ class Handler(SimpleHTTPRequestHandler):
                     provider.reset_vehicle()
                     return self._json(200, {"ok": True})
                 return self._json(404, {"error": "Unknown simulation endpoint"})
-            if path == "/api/legacy/frame":
-                size = int(self.headers.get("Content-Length", "0"))
-                if not 0 < size <= MAX_FRAME or self.headers.get("Content-Type") != "image/jpeg":
-                    raise ValueError("Expected a JPEG frame under 400 KB")
-                frame = self.rfile.read(size)
-                if not frame.startswith(b"\xff\xd8"):
-                    raise ValueError("Invalid JPEG frame")
-                with STORE.lock:
-                    STORE.frame = frame
-                return self._json(200, {"ok": True})
-
-            data = self._read_json()
-            if not isinstance(data, dict):
-                raise ValueError("Expected JSON object")
-            if path == "/api/legacy/state":
-                allowed = {"speedKmh", "fuel", "mode", "safety", "position", "onRoad", "sensorsM", "light", "destination", "actors",
-                           "clearanceCm", "throttle", "brake", "surface", "grip", "stoppingDistanceM",
-                           "requestedSpeedKmh", "plannedSpeedKmh", "cinematic", "timeScale", "cinematicEvents", "equipment", "tripRemainingM", "incidents", "simulationTime", "physicsTick"}
-                if set(data) - allowed:
-                    raise ValueError("Unknown state field")
-                with STORE.lock:
-                    STORE.state = {**data, "source": "development-mock", "connected": True}
-                    STORE.state_at = time.monotonic()
-                    client = parse_qs(urlsplit(self.path).query).get('client', [''])[0][:80]
-                    if client:
-                        STORE.clients[client] = {'state': STORE.state.copy(), 'at': STORE.state_at}
-                        if len(STORE.clients) > 16:
-                            oldest = min(STORE.clients, key=lambda key: STORE.clients[key]['at'])
-                            del STORE.clients[oldest]
-                return self._json(200, {"ok": True})
             return self._json(404, {"error": "Unknown API endpoint"})
         except (ValueError, json.JSONDecodeError) as error:
             return self._json(400, {"error": str(error)})
@@ -214,18 +150,17 @@ def main():
     parser.add_argument("--spawn-index", type=int, default=0)
     parser.add_argument("--fixed-delta", type=float, default=.05)
     parser.add_argument('--session-duration', type=float, help='Stop cleanly after this many wall-clock seconds (native validation/recording)')
+    parser.add_argument('--collision-sensor', action='store_true', help='Attach the real native collision sensor (Gate 2)')
     parser.add_argument("--record-log", help="Optional JSONL frame log")
     parser.add_argument('--record-run', help='Output directory for a versioned replayable run')
     parser.add_argument('--replay', help='Read an existing real recorded run; never connects to CARLA')
     parser.add_argument('--experiment-config', help='Strict simulator-independent JSON experiment config')
     parser.add_argument("--websocket-port", type=int, default=8001)
-    parser.add_argument("--enable-legacy-preview", action="store_true",
-                        help="Explicitly serve the archived Three.js preview")
     args = parser.parse_args()
     if args.session_duration is not None and args.session_duration <= 0:
         parser.error('Session duration must be positive')
     configure_logging()
-    if args.replay and (args.carla or args.enable_legacy_preview or args.record_run or args.record_log):
+    if args.replay and (args.carla or args.record_run or args.record_log):
         parser.error('Replay, live simulation and recording are separate operating modes')
     if args.record_run and args.record_log:
         parser.error('Choose versioned run recording or the compatibility JSONL sink')
@@ -249,8 +184,6 @@ def main():
         parser.error('Replay cannot also record a new native run')
     if (args.record_run or args.record_log) and not args.carla:
         parser.error('Recording requires a live production provider')
-    if args.enable_legacy_preview and args.carla:
-        parser.error("Legacy preview and CARLA production mode must run separately")
     provider = None
     supervisor = None
     if args.carla:
@@ -260,7 +193,7 @@ def main():
             provider = create_provider('carla', host=args.carla_host, port=args.carla_port,
                                      version=args.carla_version, map_name=args.map,
                                      blueprint=args.vehicle, spawn_index=args.spawn_index,
-                                     fixed_delta=args.fixed_delta)
+                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor)
             supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 10)
             supervisor.connect(provider)
         except Exception as error:
@@ -274,7 +207,6 @@ def main():
     server = None
     try:
         server = ThreadingHTTPServer((args.host, args.port), Handler)
-        server.enable_legacy_preview = args.enable_legacy_preview
         if provider:
             from .simulation_service import SimulationService
             from .websocket_bridge import WebSocketBridge
