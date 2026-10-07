@@ -174,6 +174,11 @@ class WorldVehicleTests(unittest.TestCase):
         provider.connection.connect.return_value = world
         provider.connection.client.get_available_maps.return_value = ['Town10HD']
         provider.connect()
+        canonical = provider.get_simulation_frame()
+        self.assertEqual(canonical.frame_id, 22)
+        self.assertEqual(canonical.vehicle.linear_velocity_mps, (3., -4., 0.))
+        self.assertAlmostEqual(canonical.vehicle.transform.rotation_rad.yaw, math.pi/2)
+        self.assertAlmostEqual(canonical.vehicle.angular_velocity_radps[2], math.pi)
         self.assertEqual(provider.catalog['maps'], ['Town10HD'])
         provider.set_controls(throttle=.6, steering=-1)
         self.assertEqual(actor.apply_control.call_args.args[0].steer, 1)

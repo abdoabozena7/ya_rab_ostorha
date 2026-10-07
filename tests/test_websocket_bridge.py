@@ -3,6 +3,7 @@ import json
 import time
 import unittest
 from backend.simulation_service import SimulationService
+from tests.core_packets import packet
 
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
@@ -11,14 +12,14 @@ class WebSocketTests(unittest.TestCase):
         from websockets.sync.client import connect
         from backend.websocket_bridge import WebSocketBridge
         service = SimulationService(None)
-        service.state = {"source": "carla", "speedMps": 0}
-        service.state_at = time.monotonic()
+        service._publish(packet())
         bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
         bridge.start()
         uri = f'ws://127.0.0.1:{bridge.server.socket.getsockname()[1]}'
         try:
             with connect(uri) as first:
                 first.send(json.dumps({'type': 'controls', 'sequence': 1,
+                                       'frame_id': 1, 'timestamp_s': .05,
                                        'controls': {'throttle': .4, 'gear': 1}}))
                 frame = json.loads(first.recv(timeout=2))
                 self.assertTrue(frame['controller'])

@@ -6,6 +6,8 @@ from .telemetry import vehicle_state
 from .vehicle import EgoVehicle
 from .world import CarlaWorld
 from .target import VERSION
+from .contracts import simulation_frame
+from ..core.contracts import ControlCommand
 
 
 class CarlaProvider:
@@ -105,6 +107,21 @@ class CarlaProvider:
 
     def get_vehicle_state(self):
         return self.last_vehicle
+
+    def get_simulation_frame(self):
+        if self.last_vehicle is None or self.last_world is None:
+            raise RuntimeError('No native observation is available')
+        # Canonical sensor decoders will be added after native sensor validation.
+        if self.get_sensor_state():
+            raise RuntimeError('Canonical sensor decoder requires native validation before activation')
+        return simulation_frame(self.last_vehicle, self.last_world)
+
+    def apply_control(self, command: ControlCommand):
+        if not isinstance(command, ControlCommand):
+            raise ValueError('Expected canonical ControlCommand')
+        gear = 0 if command.gear == 0 else -1 if command.reverse else 1
+        self.set_controls(throttle=command.throttle, brake=command.brake,
+                          steering=-command.steering, parkingbrake=int(command.handbrake), gear=gear)
 
     def get_world_state(self):
         return self.last_world

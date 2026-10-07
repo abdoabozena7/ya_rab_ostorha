@@ -28,6 +28,7 @@ output/
 .venv-carla/
 .venv-carla-archive-*/
 recordings/
+runs/
 .beamng-user/
 tech.key
 *.key

@@ -6,6 +6,11 @@ does not render a duplicate driving world or run mock physics.
 
 **Target: CARLA 0.9.16 (UE4), official precompiled Windows package.**
 
+**Current work: offline application core. No installation/download is attempted
+while internet is unavailable.** Contracts, frame synchronization, control safety,
+recording/Replay, events, metrics and plugin interfaces are simulator-independent.
+See [offline core, running and future gates](docs/OFFLINE_CORE.md).
+
 **CARLA 0.9.16 BLOCKER:** installation is incomplete. Python 3.12 x64 must be installed
 manually; automatic approval review rejected running its official installer
 (“blocked by policy”). The signed installer is downloaded at:
@@ -29,7 +34,21 @@ Open http://127.0.0.1:8000/. It shows **CARLA — DISCONNECTED**, unavailable
 observations, and disabled driving controls. The current Python 3.13 environment
 is suitable for this dashboard/offline tests, not the packaged CARLA 0.9.16 API.
 
-## Continue after installing Python 3.12 x64
+## Replay an existing real run
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.server --replay runs\REAL_RUN_ID
+```
+
+Replay shows **MODE: REPLAY** and recorded observations with driving controls
+disabled. It never connects to a simulator. No real run exists yet, and test
+fixture recordings are refused by the production reader. Future native recording
+uses `--record-run runs`; the old `--record-log` is a compatibility JSONL sink.
+
+Strict configuration example: `experiments/offline-preparation.json`.
+Optional dashboard-only startup: add `--experiment-config` with that file path.
+
+## Continue once internet and Python 3.12 x64 are available
 
 ```powershell
 py -3.12 --version
@@ -64,8 +83,10 @@ Stop the dashboard-only backend before reusing port 8000, or add
 ```
 
 Focus the dashboard for W/A/S/D/Space; observe the actual car in CARLA.
-First validate one vehicle, native controls and telemetry. Sensors, collisions,
-traffic/walkers and custom environment work follow their required gates.
+First validate native boot, connection and one vehicle (Gate 1), then controls
+and collision (Gate 2), then real sensors (Gate 3). Normal traffic/pedestrians
+follow Gate 4. Egypt, AI, accident avoidance and randomized chaos are Gates 5–8
+and are not implemented in this offline preparation.
 No fake RPM, fuel, or component damage is displayed. Native RPM/per-wheel APIs
 exist in 0.9.16; mapping and validation are deferred until Gate 1.
 

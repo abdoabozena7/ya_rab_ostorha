@@ -4,10 +4,13 @@ import argparse
 import json
 import threading
 import time
+from datetime import datetime, timezone
+import uuid
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit, parse_qs
 from .carla.target import VERSION, BLOCKER
+from .core.logging import configure_logging, log, LogCategory
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +31,9 @@ STORE = LegacyStore()  # Used exclusively by the opt-in /api/legacy endpoints.
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        log(LogCategory.CONNECTION, 'HTTP request', path=urlsplit(self.path).path, detail=format % args)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
@@ -54,21 +60,25 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = unquote(urlsplit(self.path).path)
         provider = getattr(self.server, "simulation_service", None)
-        if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/")) or Path(path).name == "tech.key":
+        if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/", "/runs/", "/recordings/")) or Path(path).name == "tech.key":
             return self._json(404, {"error": "Not found"})
         if path.startswith(("/legacy/", "/api/legacy/")) and not getattr(self.server, "enable_legacy_preview", False):
             return self._json(404, {"error": "Archived preview is disabled"})
         path = {"/api/state": "/api/simulation/state", "/api/frame": "/api/simulation/camera.jpg"}.get(path, path)
         if path == "/api/health":
+            service_snapshot = provider.snapshot() if provider else {}
             return self._json(200, {"ok": True, "service": "ya-rab-ostorha-control-center",
-                                    "simulationProvider": "carla",
-                                    "simulationConnected": bool(provider and provider.snapshot()["connected"])})
+                                    "simulationProvider": service_snapshot.get('provider', 'carla'),
+                                    "mode": service_snapshot.get('mode', 'DISCONNECTED'),
+                                    "simulationConnected": service_snapshot.get('connected', False)})
         if path == "/api/simulation/status":
             snapshot = provider.snapshot() if provider else {}
             connected = snapshot.get('connected', False)
-            return self._json(200, {"provider": "carla", "configured": provider is not None,
+            replay = snapshot.get('mode') == 'REPLAY'
+            return self._json(200, {"provider": 'replay' if replay else "carla", "configured": provider is not None,
                                     "connected": connected,
-                                    "status": "CONNECTED" if connected else "ERROR" if snapshot.get('error') else "DISCONNECTED",
+                                    "mode": snapshot.get('mode', 'DISCONNECTED'),
+                                    "status": 'REPLAY' if replay else "CONNECTED" if connected else "ERROR" if snapshot.get('error') else "DISCONNECTED",
                                     "websocketPort": getattr(self.server, "websocket_port", None),
                                     "error": snapshot.get('error') if provider else "CARLA is not connected. Start the official simulator and backend with --carla."})
         if path.startswith("/api/simulation/"):
@@ -85,7 +95,7 @@ class Handler(SimpleHTTPRequestHandler):
                     if not frame:
                         return self._json(503, {"error": "No camera frame yet"})
                     self.send_response(200)
-                    self.send_header("Content-Type", "image/jpeg")
+                    self.send_header("Content-Type", (metadata or {}).get('contentType', "image/jpeg"))
                     self.send_header("Cache-Control", "no-store")
                     self.send_header("Content-Length", str(len(frame)))
                     for key, header in (("timestamp", "X-Sensor-Time"),
@@ -133,11 +143,21 @@ class Handler(SimpleHTTPRequestHandler):
                 data = self._read_json()
                 if not isinstance(data, dict):
                     raise ValueError("Expected JSON object")
+                if getattr(provider, 'is_replay', False) and path == '/api/simulation/replay':
+                    if set(data)-{'paused', 'timestamp_s'}:
+                        raise ValueError('Unknown replay option')
+                    if 'paused' in data:
+                        provider.set_paused(data['paused'])
+                    if 'timestamp_s' in data:
+                        provider.seek(data['timestamp_s'])
+                    return self._json(200, {'ok': True, 'mode': 'REPLAY'})
                 provider.require_connected()
                 bridge = getattr(self.server, "websocket_bridge", None)
                 if bridge and bridge.controller_lock.locked():
                     return self._json(409, {"error": "Browser connection controls this vehicle"})
                 if path == "/api/simulation/control":
+                    if 'frame_id' not in data or 'timestamp_s' not in data:
+                        raise ValueError('Controls require frame_id and timestamp_s')
                     provider.set_controls(**data)
                     return self._json(200, {"ok": True})
                 if path == "/api/simulation/reset":
@@ -194,22 +214,59 @@ def main():
     parser.add_argument("--spawn-index", type=int, default=0)
     parser.add_argument("--fixed-delta", type=float, default=.05)
     parser.add_argument("--record-log", help="Optional JSONL frame log")
+    parser.add_argument('--record-run', help='Output directory for a versioned replayable run')
+    parser.add_argument('--replay', help='Read an existing real recorded run; never connects to CARLA')
+    parser.add_argument('--experiment-config', help='Strict simulator-independent JSON experiment config')
     parser.add_argument("--websocket-port", type=int, default=8001)
     parser.add_argument("--enable-legacy-preview", action="store_true",
                         help="Explicitly serve the archived Three.js preview")
     args = parser.parse_args()
+    configure_logging()
+    if args.replay and (args.carla or args.enable_legacy_preview or args.record_run or args.record_log):
+        parser.error('Replay, live simulation and recording are separate operating modes')
+    if args.record_run and args.record_log:
+        parser.error('Choose versioned run recording or the compatibility JSONL sink')
+    config = None
+    if args.experiment_config:
+        from .core.config import load_config
+        try:
+            config = load_config(args.experiment_config)
+        except (ValueError, OSError) as error:
+            parser.error('Invalid experiment configuration: '+str(error))
+        args.fixed_delta = config.simulation.fixed_delta_seconds
+        if config.vehicle.blueprint:
+            args.vehicle = config.vehicle.blueprint
+        if config.vehicle.spawn_point is not None:
+            args.spawn_index = config.vehicle.spawn_point
+        if any(sensor.enabled for sensor in config.sensors.values()):
+            parser.error('Native sensor activation is gated; configuration alone cannot enable unvalidated sensors')
+        if config.recording.enabled and not args.record_run:
+            args.record_run = config.recording.output_directory
+    if args.replay and (args.record_run or args.record_log):
+        parser.error('Replay cannot also record a new native run')
+    if (args.record_run or args.record_log) and not args.carla:
+        parser.error('Recording requires a live production provider')
     if args.enable_legacy_preview and args.carla:
         parser.error("Legacy preview and CARLA production mode must run separately")
     provider = None
+    supervisor = None
     if args.carla:
-        from .carla.provider import CarlaProvider
+        from .providers import create_provider
+        from .core.lifecycle import ConnectionSupervisor
         try:
-            provider = CarlaProvider(host=args.carla_host, port=args.carla_port,
+            provider = create_provider('carla', host=args.carla_host, port=args.carla_port,
                                      version=args.carla_version, map_name=args.map,
                                      blueprint=args.vehicle, spawn_index=args.spawn_index,
-                                     fixed_delta=args.fixed_delta).connect()
+                                     fixed_delta=args.fixed_delta)
+            supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 10)
+            supervisor.connect(provider)
         except Exception as error:
             reason = str(error)
+            if supervisor:
+                try:
+                    supervisor.disconnect()
+                except Exception as cleanup:
+                    reason += '; cleanup unconfirmed: '+str(cleanup)
             parser.exit(2, (reason if reason.startswith(BLOCKER) else f'{BLOCKER}: {reason}') + '\n')
     server = None
     try:
@@ -220,15 +277,33 @@ def main():
             from .websocket_bridge import WebSocketBridge
             from .recording import FrameRecorder
             recorder = FrameRecorder(args.record_log) if args.record_log else None
+            if args.record_run:
+                from .core.recording import RunRecorder
+                from .core.contracts import ExperimentMetadata, DataOrigin, to_dict
+                recorder = RunRecorder(args.record_run, ExperimentMetadata('run_'+uuid.uuid4().hex,
+                                        config.experiment.name if config else 'Manual native session', provider.name, DataOrigin.REAL_SIMULATION,
+                                        description=config.experiment.description if config else '', seed=config.experiment.seed if config else None,
+                                        created_at_utc=datetime.now(timezone.utc).isoformat(), config=to_dict(config) if config else {}))
             server.simulation_service = SimulationService(provider, recorder)
             server.simulation_service.start()
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host,
                                                       args.websocket_port, args.port)
             server.websocket_bridge.start()
-        print(f"Control center: http://{args.host}:{args.port}/", flush=True)
-        if not args.carla:
-            print("CARLA DISCONNECTED - dashboard only; no simulated telemetry", flush=True)
+        elif args.replay:
+            from .core.replay import ReplayReader
+            from .replay_service import ReplayService
+            from .websocket_bridge import WebSocketBridge
+            try:
+                reader = ReplayReader(args.replay)
+            except (ValueError, OSError) as error:
+                parser.exit(2, 'REPLAY UNAVAILABLE: '+str(error)+'\n')
+            server.simulation_service = ReplayService(reader)
+            server.websocket_port = args.websocket_port
+            server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host, args.websocket_port, args.port)
+            server.websocket_bridge.start()
+        log(LogCategory.CONNECTION, 'Control center listening', url=f'http://{args.host}:{args.port}/',
+            mode='REPLAY' if args.replay else 'CARLA' if args.carla else 'DISCONNECTED')
         server.serve_forever()
     except KeyboardInterrupt:
         pass
@@ -241,11 +316,11 @@ def main():
                 if getattr(server, "simulation_service", None):
                     server.simulation_service.close()
                     if server.simulation_service.error:
-                        print('Simulation shutdown: ' + server.simulation_service.error, flush=True)
+                        log(LogCategory.SIMULATION, 'Simulation shutdown error', error=server.simulation_service.error)
                 elif provider:
                     provider.close()
                     if provider.cleanup_errors:
-                        print('CARLA cleanup unconfirmed: ' + '; '.join(provider.cleanup_errors), flush=True)
+                        log(LogCategory.CONNECTION, 'CARLA cleanup unconfirmed', errors=provider.cleanup_errors)
             finally:
                 if server:
                     server.server_close()

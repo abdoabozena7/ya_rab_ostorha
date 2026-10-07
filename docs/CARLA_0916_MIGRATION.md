@@ -1,7 +1,10 @@
 # CARLA 0.9.16 migration
 
-Updated 7 October 2026. Branch: `codex/carla-control-center`.
-Continues from `4d5b8ad`; this is a version migration, not a new simulator.
+Updated 7 October 2026. Version preparation originated on `codex/carla-control-center`
+and was merged into `main` at `d5b5132`; the working CARLA branch was removed after
+the merge. Continues from `4d5b8ad`; this is a version migration, not a new simulator.
+Current offline work and the authoritative eight-gate progression are documented
+in [OFFLINE_CORE.md](OFFLINE_CORE.md). No installation is attempted while offline.
 
 ## Status and implementation plan
 
@@ -279,12 +282,16 @@ must remain separate from future AI predictions.
 
 | Gate | Required native evidence | Result |
 | --- | --- | --- |
-| 1 | Install/boot/render/listen/connect, one ego, browser W/A/D/S, live telemetry, reconnect and actor cleanup | BLOCKED: Python 3.12 dependency; native tests not run |
-| 2 | Normal acceleration/braking/reverse/handbrake, physical wheel/body/contact/curb/slope behavior and collision sensing | NOT RUN |
+| 1 | CARLA native boot + connection + one vehicle | BLOCKED: internet/runtime dependency; native tests not run |
+| 2 | Vehicle controls + collision; real browser controls/telemetry, reconnect, cleanup and physical behavior | NOT RUN |
 | 3 | Calibrated RGB/depth/radar/LiDAR/IMU/GNSS/collision, frame/time tracking | NOT RUN |
 | 4 | Stable built-in urban map, deterministic normal traffic and navigable walkers | DEFERRED |
+| 5 | Egyptian environment | NOT IMPLEMENTED |
+| 6 | AI integration | NOT IMPLEMENTED |
+| 7 | Accident avoidance | NOT IMPLEMENTED |
+| 8 | Randomized chaos scenarios | NOT IMPLEMENTED |
 
-Gate 1: preflight the native catalog; start exactly one ego. Verify W increases
+Gates 1–2: preflight the native catalog; start exactly one ego. Verify W increases
 native speed, A/D turn the real wheels/vehicle, S decreases speed before reverse,
 Space brakes, and telemetry carries CARLA frame/time and applied controls.
 Verify blur/disconnect stops commands, browser reconnect resumes fresh input,

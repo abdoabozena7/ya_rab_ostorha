@@ -7,7 +7,16 @@ class FrameRecorder:
         self.file = open(path, 'a', encoding='utf-8')
         self.last_frame = None
 
-    def record(self, vehicle, world, sensors):
+    def record(self, vehicle, world=None, sensors=None):
+        # Compatibility JSONL sink. New replayable runs use core.RunRecorder.
+        from .core.contracts import SimulationFrame, to_dict
+        if isinstance(vehicle, SimulationFrame):
+            if self.last_frame == vehicle.frame_id:
+                return
+            self.file.write(json.dumps(to_dict(vehicle), allow_nan=False) + '\n')
+            self.file.flush()
+            self.last_frame = vehicle.frame_id
+            return
         frame = world['frame']
         if (vehicle.get('source') != 'carla' or world.get('source') != 'carla'
                 or vehicle['frame'] != frame):

@@ -20,7 +20,7 @@
 
   <main id="simulationCenter">
     <span class="eyebrow">SIMULATION PROVIDER</span>
-    <h2>CARLA 0.9.16</h2>
+    <h2 id="providerTitle">CARLA 0.9.16</h2>
     <p id="connectionDetail">Waiting for the simulation backend.</p>
     <p class="simulation-hint">Drive and view the vehicle in the CARLA window. This dashboard sends controls and displays its telemetry.</p>
     <div class="dashboard-values" aria-label="Vehicle telemetry">
@@ -49,10 +49,10 @@
     <div class="camera-caption"><span id="cameraSource">CARLA SENSOR</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
     <p id="cameraMetadata">FOV / transform unavailable</p>
   </section>
-  <div id="driveReadout"><div id="speedPanel"><span id="speedVal">—</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">—</span><span class="divider"></span><span>Manual</span></div></div>
+  <div id="driveReadout"><div id="speedPanel"><span id="speedVal">—</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">—</span><span class="divider"></span><span id="controlMode">DISCONNECTED</span></div></div>
   <div id="runtime"><i id="connectionDot"></i><span id="simulationState">CARLA — DISCONNECTED</span><span id="performance">RTT —</span></div>
   <div id="drivingHelp"><span><kbd>W A S D</kbd> Drive</span><span><kbd>S</kbd> Brake / reverse</span><span><kbd>SPACE</kbd> Handbrake</span></div>
-  <div id="bottomActions"><button id="hideCameraBtn">Hide camera</button><button id="pauseBtn" disabled>Pause</button><button id="resetBtn" disabled>Reset vehicle</button></div>
+  <div id="bottomActions"><button id="hideCameraBtn">Hide camera</button><button id="pauseBtn" disabled>Pause</button><button id="resetBtn" disabled>Reset vehicle</button><button id="emergencyStopBtn" disabled>Emergency stop</button><button id="replayPauseBtn" hidden>Pause replay</button></div>
 
   <aside id="inGamePhone" hidden aria-label="Vehicle session">
     <div class="phone-head">Phone <span lang="ar">يارب استرها</span></div>

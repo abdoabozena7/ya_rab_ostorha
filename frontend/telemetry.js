@@ -1,9 +1,10 @@
 const n = (value, scale = 1) => Number.isFinite(value) ? (value * scale).toFixed(2) : 'unavailable';
 const vec = value => value?.map(v => n(v)).join(' / ') || 'unavailable';
 
-export function telemetryText(t, {latencyMs, sensorRates = {}, sensorErrors = {}, world = {}} = {}) {
+export function telemetryText(t, {latencyMs, sensorRates = {}, sensorErrors = {}, world = {}, mode = 'DISCONNECTED'} = {}) {
   return [
-    'VEHICLE · CARLA',
+    `MODE: ${mode.replaceAll('_', ' ')} · ${mode === 'REPLAY' ? 'RECORDED OBSERVATIONS' : 'LIVE OBSERVATIONS ONLY'}`,
+    'VEHICLE',
     `Speed ${n(t.speedMps, 3.6)} km/h · Longitudinal acceleration ${n(t.accelerationMps2)} m/s²`,
     `Steering input ${n(t.steeringInput)} (positive right; normalized input, not wheel angle)`,
     `Throttle ${n(t.throttle, 100)}% · Brake ${n(t.brake, 100)}%`,

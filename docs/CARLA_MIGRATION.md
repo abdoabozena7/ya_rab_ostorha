@@ -1,7 +1,10 @@
 # CARLA migration documentation
 
 The production target is **CARLA 0.9.16**, continuing from preparation commit
-`4d5b8ad` on `codex/carla-control-center`.
+`4d5b8ad` from `codex/carla-control-center`, now merged into `main`.
+
+Current simulator-independent offline preparation and gates:
+[OFFLINE_CORE.md](OFFLINE_CORE.md).
 
 See [current installation, architecture, limits and gate procedures](CARLA_0916_MIGRATION.md).
 

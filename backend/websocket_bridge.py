@@ -21,7 +21,7 @@ class WebSocketBridge:
 
     def handle(self, socket):
         from websockets.exceptions import ConnectionClosed
-        controller = self.controller_lock.acquire(blocking=False)
+        controller = False if getattr(self.service, 'is_replay', False) else self.controller_lock.acquire(blocking=False)
         acknowledged = None
         try:
             while True:
@@ -30,16 +30,22 @@ class WebSocketBridge:
                     message = json.loads(payload)
                     if not isinstance(message, dict):
                         raise ValueError("Expected an object")
-                    if message.get("type") in {"controls", "reset", "pause"}:
+                    if message.get("type") in {"controls", "reset", "pause", "emergency_stop", "acknowledge_stop"}:
                         if not controller:
                             raise ValueError("Another connection controls this vehicle")
                         self.service.require_connected()
                         if message["type"] == "controls":
-                            self.service.set_controls(**message.get("controls", {}))
+                            if 'frame_id' not in message or 'timestamp_s' not in message:
+                                raise ValueError('Controls require simulation frame_id and timestamp_s')
+                            self.service.set_controls(frame_id=message['frame_id'], timestamp_s=message['timestamp_s'], **message.get("controls", {}))
                         elif message["type"] == "reset":
                             self.service.reset_vehicle()
-                        else:
+                        elif message['type'] == 'pause':
                             self.service.set_paused(message.get("paused"))
+                        elif message['type'] == 'emergency_stop':
+                            self.service.emergency_stop()
+                        else:
+                            self.service.acknowledge_stop()
                         acknowledged = message.get("sequence")
                 except TimeoutError:
                     pass

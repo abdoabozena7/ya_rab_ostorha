@@ -8,6 +8,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from backend.server import Handler
 from backend.simulation_service import SimulationService
+from tests.core_packets import packet
 
 
 class ApiTests(unittest.TestCase):
@@ -66,12 +67,11 @@ class ApiTests(unittest.TestCase):
 
     def test_production_api_reads_cached_carla_and_rejects_stale_commands(self):
         service = SimulationService(None)
-        service.state = {'source': 'carla', 'speedMps': 7, 'frame': 22}
-        service.state_at = time.monotonic()
+        service._publish(packet(22, 1.1, speed=7.))
         self.server.simulation_service = service
         try:
             self.assertEqual(self.request('/api/state')['vehicle']['frame'], 22)
-            self.request('/api/simulation/control', {'throttle': .3})
+            self.request('/api/simulation/control', {'throttle': .3, 'frame_id': 22, 'timestamp_s': 1.1})
             self.assertEqual(service.effective_controls()['throttle'], .3)
             service.state_at = time.monotonic() - 2
             self.expect_error(503, '/api/simulation/control', {'throttle': 1})
@@ -81,8 +81,7 @@ class ApiTests(unittest.TestCase):
 
     def test_http_reset_respects_websocket_controller(self):
         service = SimulationService(None)
-        service.state = {'source': 'carla'}
-        service.state_at = time.monotonic()
+        service._publish(packet())
         self.server.simulation_service = service
         self.server.websocket_bridge = SimpleNamespace(controller_lock=SimpleNamespace(locked=lambda: True))
         try:
