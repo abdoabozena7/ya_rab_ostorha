@@ -32,3 +32,5 @@ runs/
 .beamng-user/
 tech.key
 *.key
+config/dashboard-preferences.json
+config/places-*.json

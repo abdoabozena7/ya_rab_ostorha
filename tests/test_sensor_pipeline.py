@@ -4,12 +4,22 @@ import unittest
 from types import SimpleNamespace
 
 from backend.carla.sensor_decoders import decode_depth
+from backend.carla.sensors import CarlaSensorManager
 from backend.core.contracts import AssetReference, CollisionEvent, SensorFrame, SensorKind
 from backend.core.service import SimulationService
 from tests.core_packets import TRANSFORM, packet
 
 
 class SensorPipelineTests(unittest.TestCase):
+    def test_delayed_camera_frame_retains_its_original_mount(self):
+        manager = CarlaSensorManager(None, None)
+        front, chase, rear = object(), object(), object()
+        manager.camera_mount_history = [(0, front), (120, chase), (160, rear)]
+        self.assertIs(manager.camera_mount_at(119), front)
+        self.assertIs(manager.camera_mount_at(120), chase)
+        self.assertIs(manager.camera_mount_at(159), chase)
+        self.assertIs(manager.camera_mount_at(170), rear)
+
     def test_depth_bgra_byte_order_and_endpoints(self):
         # Independently chosen packed values: 0, max, R=255, G=255, B=255.
         raw = bytes((0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 255, 255,

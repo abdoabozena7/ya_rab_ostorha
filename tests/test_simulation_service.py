@@ -7,6 +7,21 @@ from tests.core_packets import packet
 
 
 class ServiceTests(unittest.TestCase):
+    def test_reconnect_of_live_session_requires_explicit_driving_resume(self):
+        provider = MagicMock(name='test-fixture')
+        provider.name = 'test-fixture'
+        provider.connection.api_version = '0.9.16'
+        provider.connection.client.get_server_version.return_value = '0.9.16'
+        provider.get_simulation_frame.return_value = packet(2, .1)
+        service = SimulationService(provider)
+        service._publish(packet())
+        service.set_controls(throttle=1)
+        service.reconnect()
+        service._iteration()
+        self.assertTrue(service.snapshot()['connected'])
+        self.assertEqual(service.snapshot()['mode'], 'PAUSED')
+        self.assertEqual(service.effective_controls()['throttle'], 0)
+
     def test_controls_expire_and_missing_pedals_release(self):
         service = SimulationService(None)
         service._publish(packet())

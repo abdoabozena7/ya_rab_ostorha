@@ -20,6 +20,8 @@ class CarlaProvider:
         self.fixed_delta = fixed_delta
         self.collision_sensor = collision_sensor
         self.sensor_suite = sensor_suite
+        self.camera_settings = {'camera_view': 'front', 'camera_resolution': '640x360', 'camera_fov': 90}
+        self.dashboard_tools = None
         self.world = self.ego = self.sensor_manager = None
         self.gear = 1
         self.last_vehicle = self.last_world = None
@@ -54,7 +56,7 @@ class CarlaProvider:
         if self.collision_sensor:
             self.sensor_manager.enable_collision(self.connection.api)
         if self.sensor_suite:
-            self.sensor_manager.enable_suite(self.connection.api, self.fixed_delta)
+            self.sensor_manager.enable_suite(self.connection.api, self.fixed_delta, self.camera_settings)
         return actor.id
 
     def destroy_ego_vehicle(self):
@@ -121,6 +123,25 @@ class CarlaProvider:
 
     def drain_collision_events(self):
         return self.sensor_manager.drain_collisions() if self.sensor_manager else ()
+
+    def dashboard_catalog(self):
+        self._ensure_dashboard_tools()
+        return {'places': self.dashboard_tools.places(), 'settings': self.dashboard_tools.settings()}
+
+    def _ensure_dashboard_tools(self):
+        if self.dashboard_tools is None:
+            from .dashboard_tools import NativeDashboardTools
+            self.dashboard_tools = NativeDashboardTools(self)
+
+    def dashboard_action(self, action, value):
+        self._ensure_dashboard_tools()
+        if action == 'settings': return self.dashboard_tools.apply(value)
+        if action == 'destination': return self.dashboard_tools.set_destination(value)
+        if action == 'save_place': return self.dashboard_tools.save_place(value)
+        raise ValueError('Unknown dashboard operation')
+
+    def route_state(self):
+        return self.dashboard_tools.route_state() if self.dashboard_tools else None
 
     @property
     def required_sensors(self):
@@ -206,6 +227,7 @@ class CarlaProvider:
             self.cleanup_errors.append(str(error))
         finally:
             self.world = None
+            self.dashboard_tools = None
             self.last_vehicle = self.last_world = None
             self.connection.disconnect()
 

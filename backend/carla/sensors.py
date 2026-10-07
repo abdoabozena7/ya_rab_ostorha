@@ -19,6 +19,7 @@ class CarlaSensorManager:
         self.errors = {}
         self.queue_overflows = 0
         self.configurations = {}
+        self.camera_mount_history = []
 
     def spawn(self, sensor_id, blueprint_id, transform, attributes, decode):
         if sensor_id in self.actors:
@@ -47,7 +48,9 @@ class CarlaSensorManager:
                     return
                 envelope = {'source': 'carla', 'sensorId': sensor_id, 'actorId': actor.id,
                             'frame': data.frame, 'timestamp': data.timestamp,
-                            'mountTransform': mount,
+                            'mountTransform': ({'positionM': vector(self.camera_mount_at(data.frame).location),
+                                                'rotationDeg': rotation(self.camera_mount_at(data.frame).rotation)}
+                                               if sensor_id in ('frontCamera', 'depth') else mount),
                             'worldTransform': {'positionM': vector(data.transform.location),
                                                'rotationDeg': rotation(data.transform.rotation)},
                             'sensorTickSeconds': tick, 'requestedRateHz': 1/tick if tick else None,
@@ -131,12 +134,17 @@ class CarlaSensorManager:
                            'latestValidData': to_dict(self.frames[name]['data']) if name in self.frames else None,
                            'eventDriven': name == 'collision'} for name, config in self.configurations.items()}
 
-    def enable_suite(self, api, fixed_delta):
+    def enable_suite(self, api, fixed_delta, options=None):
         from ..core.contracts import SensorKind
         from .sensor_decoders import decode_sensor
-        camera_mount = api.Transform(api.Location(x=1.5, z=1.6))
-        camera = {'sensor_tick': fixed_delta, 'image_size_x': 640, 'image_size_y': 360,
-                  'fov': 90, 'lens_k': 0, 'lens_kcube': 0}
+        from .dashboard_tools import CAMERA_VIEWS
+        options = options or {'camera_view':'front', 'camera_resolution':'640x360', 'camera_fov':90}
+        x,y,z,pitch,yaw = CAMERA_VIEWS[options['camera_view']]
+        camera_mount = api.Transform(api.Location(x=x,y=y,z=z), api.Rotation(pitch=pitch,yaw=yaw))
+        self.camera_mount_history = [(0, camera_mount)]
+        width,height = map(int, options['camera_resolution'].split('x'))
+        camera = {'sensor_tick': fixed_delta, 'image_size_x': width, 'image_size_y': height,
+                  'fov': options['camera_fov'], 'lens_k': 0, 'lens_kcube': 0}
         plans = (
             ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount, camera),
             ('depth', SensorKind.DEPTH, 'sensor.camera.depth', camera_mount, camera),
@@ -150,9 +158,28 @@ class CarlaSensorManager:
         )
         for name, kind, blueprint, mount, attrs in plans:
             self.spawn(name, blueprint, mount, attrs,
-                       lambda data, n=name, k=kind, m=mount, a=attrs: decode_sensor(self, n, k, data, m, a))
+                       lambda data, n=name, k=kind, m=mount, a=attrs: decode_sensor(self, n, k, data,
+                           self.camera_mount_at(data.frame) if n in ('frontCamera','depth') else m, a))
         if 'collision' not in self.actors:
             self.enable_collision(api)
+
+    def camera_mount_at(self, frame_id):
+        with self.lock:
+            return next(mount for frame, mount in reversed(self.camera_mount_history) if frame <= frame_id)
+
+    def change_camera_view(self, api, view):
+        from .dashboard_tools import CAMERA_VIEWS
+        x,y,z,pitch,yaw = CAMERA_VIEWS[view]
+        mount = api.Transform(api.Location(x=x,y=y,z=z), api.Rotation(pitch=pitch,yaw=yaw))
+        # No intervening simulation tick: both cameras adopt this mount at N+1.
+        effective_frame = self.world.get_snapshot().frame+1
+        for name in ('frontCamera','depth'):
+            self.actors[name].set_transform(mount)
+        with self.lock:
+            self.camera_mount_history.append((effective_frame,mount))
+            self.camera_mount_history = self.camera_mount_history[-32:]
+            for name in ('frontCamera','depth'):
+                self.configurations[name]['mountTransform'] = {'positionM':vector(mount.location), 'rotationDeg':rotation(mount.rotation)}
 
     def close(self):
         with self.lock:

@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MAX_JSON = 16_384
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
+        # Per-frame image/telemetry logs can block a terminal and stall live ticks.
+        if len(args) > 1 and str(args[1]) in ('200', '304'):
+            return
         log(LogCategory.CONNECTION, 'HTTP request', path=urlsplit(self.path).path, detail=format % args)
 
     def __init__(self, *args, **kwargs):
@@ -45,7 +48,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = unquote(urlsplit(self.path).path)
         provider = getattr(self.server, "simulation_service", None)
-        if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/", "/runs/", "/recordings/")) or Path(path).name == "tech.key":
+        if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/", "/runs/", "/recordings/", '/config/')) or Path(path).name == "tech.key":
             return self._json(404, {"error": "Not found"})
         if path.startswith(("/legacy/", "/api/legacy/")):
             return self._json(404, {"error": "Archived preview is disabled"})
@@ -72,6 +75,8 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 if path == "/api/simulation/state":
                     return self._json(200, provider.get_vehicle_state())
+                if path == '/api/simulation/catalog':
+                    return self._json(200, provider.dashboard_catalog())
                 if path == "/api/simulation/sensor":
                     name = parse_qs(urlsplit(self.path).query).get("name", [""])[0]
                     return self._json(200, provider.get_sensor_frame(name))

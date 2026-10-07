@@ -36,6 +36,8 @@ export class SimulationClient extends SimulationProvider {
     this.controlMode = 'DISCONNECTED';
     this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
+    this.route = this.dashboardResult = this.operationError = null;
+    this.lastControlSentAt = -Infinity;
   }
 
   async connect() {
@@ -79,8 +81,10 @@ export class SimulationClient extends SimulationProvider {
   }
 
   acceptSnapshot(message) {
-    if (message.type === 'error') { this.disconnect(message.error); this.phase = 'ERROR'; return; }
+    if (message.type === 'error') { this.operationError = message.error; return; }
     if (message.type !== 'snapshot') return;
+    this.dashboardResult = message.dashboardResult ?? null;
+    this.route = message.route ?? null;
     const replay = message.mode === 'REPLAY' && message.provider === 'replay' && message.connected === false
       && message.available === true && message.replay?.dataOrigin === 'REAL_SIMULATION';
     const sourceValid = replay ? message.vehicle?.source === message.replay.recordedProvider && message.world?.source === message.replay.recordedProvider
@@ -129,6 +133,7 @@ export class SimulationClient extends SimulationProvider {
     this.status = reason; this.phase = 'DISCONNECTED';
     this.isReplay = false; this.controlMode = 'DISCONNECTED'; this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
+    this.route = null;
   }
 
   retry() {
@@ -149,13 +154,25 @@ export class SimulationClient extends SimulationProvider {
     return frame;
   }
   send(type, payload = {}) {
-    if (this.closed || this.isReplay || !this.connected || !this.fresh || !this.controller || this.socket?.readyState !== 1) return false;
+    if (this.closed || this.isReplay || this.socket?.readyState !== 1) return false;
+    if (type !== 'reconnect' && (!this.connected || !this.fresh || (!this.controller && type !== 'start_driving'))) return false;
     if (type === 'controls' && ['PAUSED', 'EMERGENCY_STOP', 'DISCONNECTED'].includes(this.controlMode)) return false;
+    if (type === 'controls' && this.now()-this.lastControlSentAt < 30) return false;
     const sequence = ++this.sequence;
     this.pending.set(sequence, this.now());
     if (this.pending.size > 40) this.pending.delete(this.pending.keys().next().value);
     this.socket.send(JSON.stringify({type, sequence, frame_id: this.telemetry.frame, timestamp_s: this.telemetry.timestamp, ...payload}));
+    if (type === 'controls') this.lastControlSentAt = this.now();
     return true;
+  }
+  startDriving() { this.operationError = null; return this.send('start_driving'); }
+  reconnectNative() { this.operationError = null; return this.send('reconnect'); }
+  dashboardAction(type, value) { this.operationError = null; return this.send(type, {value}); }
+  async catalog() {
+    const response = await this.fetcher('/api/simulation/catalog', {cache:'no-store'});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    return result;
   }
   updateControls({throttle = 0, brake = 0, steering = 0, parkingbrake = 0} = {}) {
     const controls = {throttle, brake, steering, parkingbrake};
@@ -165,7 +182,16 @@ export class SimulationClient extends SimulationProvider {
   setGear(gear) { this.gearCommand = gear; }
   resetVehicle() { this.releaseControls(); this.send('reset'); this.gearCommand = 1; }
   setPaused(paused) { this.releaseControls(); this.send('pause', {paused}); }
-  releaseControls() { this.updateControls({brake: 1}); }
+  releaseControls() {
+    this.cancel(this.releaseTimer);
+    if (!this.send('controls', {controls:{throttle:0, brake:1, steering:0, parkingbrake:0}})
+        && this.connected && this.controller && !this.isReplay) {
+      this.releaseTimer = this.schedule(() => {
+        this.releaseTimer = null;
+        this.send('controls', {controls:{throttle:0, brake:1, steering:0, parkingbrake:0}});
+      }, 35);
+    }
+  }
   emergencyStop() { return this.send('emergency_stop'); }
   acknowledgeStop() { return this.send('acknowledge_stop'); }
   async setReplayPaused(paused) {
@@ -178,6 +204,7 @@ export class SimulationClient extends SimulationProvider {
     this.releaseControls(); this.closed = true;
     this.cancel(this.retryTimer); this.retryTimer = null;
     this.cancel(this.connectTimer); this.connectTimer = null;
+    this.cancel(this.releaseTimer); this.releaseTimer = null;
     this.socket?.close(); this.disconnect('Disconnected');
   }
 }

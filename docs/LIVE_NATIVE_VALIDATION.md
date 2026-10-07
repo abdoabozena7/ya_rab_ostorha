@@ -203,10 +203,14 @@ scripts; tests; dependencies; README and current architecture/migration reports.
 Three.js game files, preview launcher and mock routes removed in a separate commit.
 Use `git diff 8dab36e..HEAD --name-status` for the complete manifest.
 
-Checkpoint commits: Gate 1 `9b3170d`; Three.js removal `1267860`; Gate 2 `9731ecd`.
-Gate 3 is the commit containing this report, titled
-"Validate Gate 3 real sensors, synchronized recording and simulator-stopped Replay".
+Checkpoint commits: Gate 1 `9b3170d`; Three.js removal `1267860`; Gate 2 `9731ecd`;
+Gate 3 `6c35175`.
 
-Next recommended phase: stabilize dashboard operation and named destinations,
-then separately approve/validate controlled normal traffic. Egypt/custom maps,
+Subsequent dashboard controls, camera/settings, prepared traffic preferences and
+manual named destinations are described in [the dashboard report](DASHBOARD_NATIVE_CONTROLS.md).
+Latest regression: 95 Python tests, 94 passes / 1 skip; 18 JavaScript passes.
+The original Gate 3 measurements above retain their original validation date/run.
+
+Next recommended phase: longer native stability runs with the dashboard, then
+separately approve/validate controlled normal traffic. Egypt/custom maps,
 models, autonomous driving and accident-avoidance work remain outside this report.

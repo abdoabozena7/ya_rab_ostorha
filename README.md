@@ -23,9 +23,16 @@ at 20 simulation Hz, 5868 MiB VRAM in the conservative development profile.
 .\.venv-carla\Scripts\python.exe -m backend.server --carla --sensors --spawn-index 152
 ```
 
-Open http://127.0.0.1:8000/. Keep the dashboard focused to drive; resume explicitly
+Open http://127.0.0.1:8000/. Select **Start driving / ابدأ القيادة** (or **Take control**
+if another page owns controls). Keep the dashboard focused to drive; resume explicitly
 if the safety watchdog paused controls. W throttle, S brake/reverse, A/D steer,
 Space handbrake. The native CARLA window has its own spectator keyboard controls.
+Held on-screen buttons also control the real car. Camera offers front, hood,
+follow, rear and top views plus enlargement. Phone saves named native locations
+and shows a road route for manual driving. Settings controls native vehicle/spawn,
+camera resolution/FOV, 10/20 Hz and weather. Graphics apply on the next native
+launch; traffic count/speed/seed are prepared preferences only, never activated.
+[Dashboard operation and native evidence](docs/DASHBOARD_NATIVE_CONTROLS.md).
 Do not run a second synchronous tick owner or verification script while the backend
 owns the session. Ctrl+C in an interactive backend terminal performs actor cleanup.
 `--session-duration 30` provides clean timed validation runs.
@@ -58,9 +65,11 @@ npm test
 # Run only with a free native simulator / no active backend:
 .\.venv-carla\Scripts\python.exe -m scripts.native.vehicle_baseline
 .\.venv-carla\Scripts\python.exe -m scripts.native.sensor_validation
+# This dashboard-only verifier uses an already running backend; it never ticks CARLA:
+.\.venv-carla\Scripts\python.exe -m scripts.native.verify_dashboard
 ```
 
-Current regression checks: 85 Python passes / 1 skip and 15 JavaScript passes.
+Current regression checks: 94 Python passes / 1 skip and 18 JavaScript passes.
 Native gate status comes from live measurements, never unit tests.
 
 [Architecture](docs/OFFLINE_CORE.md), [migration/package evidence](docs/CARLA_0916_MIGRATION.md),

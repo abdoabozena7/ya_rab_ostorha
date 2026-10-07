@@ -50,6 +50,9 @@ class SimulationService:
         self.synchronization_issues = Counter()
         self.synchronization_missing_frames = 0
         self.synchronized_frames = 0
+        self.dashboard_result = None
+        self.reconfiguring = False
+        self.reconnecting = False
 
     @property
     def name(self):
@@ -233,13 +236,58 @@ class SimulationService:
                 self.arbiter.safety.clear()
             self.actions.append(('pause', paused))
 
+    def dashboard_catalog(self):
+        self.require_connected()
+        return self.provider.dashboard_catalog()
+
+    def queue_dashboard_action(self, action, value):
+        with self.lock:
+            self.require_connected()
+            if action not in ('settings', 'destination', 'save_place'):
+                raise ValueError('Unknown dashboard operation')
+            if self.recorder and action == 'settings':
+                raise ValueError('Finish recording before changing sensor configuration')
+            self.release_controls()
+            self.dashboard_result = {'action': action, 'status': 'PENDING'}
+            self.actions.append((action, value))
+
+    def reconnect(self):
+        with self.lock:
+            if self.closed:
+                if self.reconnecting:
+                    return
+                self.reconnecting = True
+                threading.Thread(target=self._reopen, name='native-reconnect', daemon=True).start()
+                return
+            self.release_controls()
+            self.actions.append(('reconnect', None))
+
+    def _reopen(self):
+        provider, now = self.provider, self.now
+        try:
+            if self.thread:
+                self.thread.join(timeout=15)
+                if self.thread.is_alive():
+                    raise RuntimeError('Previous native worker is still running')
+            provider.connect()
+            fresh = SimulationService(provider, required_sensors=provider.required_sensors, now=now)
+            fresh.events = EventBus()
+            # Replace complete state atomically; WebSocket observers cannot see a
+            # partially initialized service while reconnect is in progress.
+            self.__dict__.update(fresh.__dict__)
+            self.events.subscribe(self._log_event)
+            self.start()
+        except Exception as error:
+            self.error = str(error)
+            self.reconnecting = False
+
     def _live(self):
-        return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and self.now()-self.state_at < 1
+        return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and not self.reconfiguring and self.now()-self.state_at < 1
 
     def snapshot(self):
         with self.lock:
             live = self._live()
-            if not live and self.lifecycle.state == ConnectionState.CONNECTED:
+            if not live and self.lifecycle.state == ConnectionState.CONNECTED and not self.reconfiguring:
                 self.arbiter.disconnect()
                 self.lifecycle.fail(self.error or 'Observation receipt timeout')
                 self._event(EventType.ConnectionLost, reason=self.lifecycle.error)
@@ -252,6 +300,8 @@ class SimulationService:
                     'sensorErrors': getattr(self.provider, 'sensor_errors', lambda: {})() if live else {},
                     'sensorRegistry': getattr(self.provider, 'sensor_registry', lambda: {})() if live else {},
                     'collisionEvents': [to_dict(e) for e in self.collision_events] if live else [],
+                    'dashboardResult': copy.deepcopy(self.dashboard_result),
+                    'route': getattr(self.provider, 'route_state', lambda: None)() if live else None,
                     'synchronization': {'completeFrames': self.synchronized_frames,
                                         'incompleteFrames': self.synchronization_missing_frames,
                                         'issues': {issue.value: self.synchronization_issues[issue.value] for issue in FrameIssue},
@@ -315,6 +365,10 @@ class SimulationService:
             raise RuntimeError('Observation provider does not match its adapter')
         with self.lock:
             first = self.observation is None
+            fresh_recovery = (not first and observation.frame_id > self.observation.frame_id
+                              and self.lifecycle.state == ConnectionState.ERROR
+                              and self.lifecycle.error == 'Observation receipt timeout'
+                              and self.error is None)
             self.observation = observation
             view = dashboard_frame(observation)
             self.state, self.world, self.sensors = view['vehicle'], view['world'], view['sensors']
@@ -347,6 +401,13 @@ class SimulationService:
                 self.started_session = True
                 self._event(EventType.SimulationStarted, provider=observation.world.provider)
                 self._event(EventType.VehicleSpawned, actor_id=observation.vehicle.actor_id)
+            elif fresh_recovery:
+                # A new validated native frame can restore observation availability,
+                # while driving remains suspended until the operator starts again.
+                generation = self.lifecycle.begin(); self.lifecycle.connected(generation)
+                self.arbiter.machine.transition(ControlMode.MANUAL, connected=True)
+                self.arbiter.machine.transition(ControlMode.EMERGENCY_STOP if self.arbiter.safety.emergency
+                                               else ControlMode.PAUSED, connected=True)
             for sensor in observation.sensors:
                 if sensor.sensor_id not in self.sensor_ids:
                     self.sensor_ids.add(sensor.sensor_id)
@@ -361,7 +422,37 @@ class SimulationService:
             actions = list(self.actions)
             self.actions.clear()
         for action, value in actions:
-            if action == 'reset':
+            if action in ('settings', 'destination', 'save_place'):
+                self.reconfiguring = True
+                try:
+                    self._drain_collision_events()
+                    self._ingest_provider_sensors()
+                    for pending in self.synchronizer.drain(force=True):
+                        self._publish(pending); self._record(pending)
+                    result = self.provider.dashboard_action(action, value)
+                    self.dashboard_result = {'action': action, 'status': 'APPLIED', 'result': result}
+                    if action == 'settings':
+                        self.synchronizer = SensorSynchronizer(self.synchronizer.required, self.synchronizer.optional,
+                                                               timeout_s=self.synchronizer.timeout_s, now=self.now)
+                        self.camera_cache.clear(); self.sensor_frame_cache.clear()
+                except ValueError as error:
+                    self.dashboard_result = {'action': action, 'status': 'REJECTED', 'error': str(error)}
+                finally:
+                    self.state_at = self.now()
+                    self.reconfiguring = False
+            elif action == 'reconnect':
+                # Reconfirm the actual server, not merely the browser socket.
+                client = self.provider.connection.client
+                if client.get_server_version() != self.provider.connection.api_version:
+                    raise RuntimeError('CARLA server/API version mismatch during reconnect')
+                client.get_world().get_snapshot()
+                self.error = None
+                self.lifecycle.disconnect()
+                generation = self.lifecycle.begin(); self.lifecycle.connected(generation)
+                self.arbiter.machine.transition(ControlMode.EMERGENCY_STOP if self.arbiter.safety.emergency
+                                               else ControlMode.PAUSED, connected=True)
+                self.arbiter.safety.clear(); self.state_at = self.now()
+            elif action == 'reset':
                 self._drain_collision_events()
                 self._ingest_provider_sensors()
                 for pending in self.synchronizer.drain(force=True):

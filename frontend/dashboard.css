@@ -26,6 +26,32 @@ button:disabled, select:disabled { opacity:.45; cursor:default; }
 .control-center #sensorPanel { display:block; top:125px; max-height:calc(100vh - 240px); }
 #routePanel { position:absolute; top:115px; right:28px; width:290px; padding:20px; border:1px solid var(--line); border-radius:8px; background:#152d36; z-index:20; line-height:1.6; }
 .control-center #phoneStatus { padding:12px; margin:18px 0; }
+.drive-controls { padding:12px 0; border-top:1px solid var(--line); }
+.drive-controls button,.camera-tools button,#settingsPanel button,#inGamePhone button { border:1px solid var(--line); border-radius:5px; padding:10px; background:#223e48; color:var(--ink); cursor:pointer; }
+.drive-controls .drive-start { background:#b7d7c7; color:#102832; font-weight:600; }
+.drive-pad { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.drive-pad button { touch-action:none; user-select:none; min-height:44px; }
+.drive-pad button.held { background:#d4bb79; color:#102832; }
+#drivingInstruction { font-size:12px; }
+.camera-tools { display:flex; align-items:center; gap:8px; padding:8px; background:var(--panel); font-size:10px; }
+.camera-tools select { min-width:0; flex:1; }
+.control-center #cameraCard.camera-expanded { position:fixed; inset:70px 25px 75px; z-index:40; width:auto; height:auto; background:#102832; display:flex; flex-direction:column; }
+.control-center #cameraCard.camera-expanded #frontCameraView { flex:1; min-height:0; width:100%; height:auto; }
+#settingsPanel { position:fixed; top:90px; right:20px; bottom:30px; width:min(470px,calc(100vw - 40px)); padding:22px; border:1px solid var(--line); border-radius:10px; background:#152d36; z-index:45; overflow:auto; }
+.panel-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.panel-heading h2 { font-size:18px; }
+#settingsPanel p,#inGamePhone p { font-size:12px; line-height:1.7; }
+#settingsPanel fieldset { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 0; margin:12px 0; border:0; border-top:1px solid var(--line); }
+#settingsPanel legend { font-size:12px; padding:0 8px 0 0; }
+#settingsPanel label,#inGamePhone label { display:flex; flex-direction:column; gap:8px; font-size:11px; }
+#settingsPanel fieldset p { grid-column:1/-1; }
+#settingsPanel input,#inGamePhone input { min-width:0; width:100%; border:1px solid var(--line); border-radius:5px; padding:9px; background:#223e48; color:var(--ink); }
+#settingVehicle { max-width:100%; }
+.control-center #inGamePhone { top:100px; bottom:30px; height:auto; overflow:auto; z-index:42; padding:20px; }
+#inGamePhone label { margin-top:18px; }
+#inGamePhone button { margin-top:10px; }
+#routePanel { max-height:calc(100vh - 150px); overflow:auto; }
+#routeMap { width:100%; height:auto; background:#102832; border-radius:5px; }
 @media(max-width:1100px) {
   .control-center #simulationCenter { top:190px; left:340px; right:225px; padding:18px; }
   .dashboard-values { grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
@@ -37,7 +63,9 @@ button:disabled, select:disabled { opacity:.45; cursor:default; }
   .control-center #toolbar { flex-wrap:wrap; }
   .control-center #cityStatus { align-self:center; }
   .control-center #simulationCenter { overflow:visible; }
-  .control-center #cameraCard { align-self:start; }
+  .control-center #cameraCard { align-self:start; order:1; grid-column:1 / -1; }
+  .control-center #simulationCenter { order:2; }
+  .control-center #driveReadout,.control-center #runtime,.control-center #drivingHelp,.control-center #bottomActions,.control-center #minimapBorder { order:3; }
   .control-center #driveReadout { align-self:start; height:70px; }
   .control-center #frontCameraView { width:100%; height:auto; aspect-ratio:16/9; }
   .control-center #minimapView { width:100%; height:auto; min-height:157px; }

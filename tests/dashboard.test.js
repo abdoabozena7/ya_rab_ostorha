@@ -30,15 +30,49 @@ function clientFixture() {
   return {p, sent, snapshot, advance: ms => {time += ms;}};
 }
 
+test('read-only dashboard can explicitly claim driving without admitting pedals first', () => {
+  const {p, sent, snapshot} = clientFixture();
+  p.acceptSnapshot({...snapshot, controller:false, mode:'PAUSED'});
+  p.updateControls({throttle:1}); assert.equal(sent.length, 0);
+  assert.equal(p.startDriving(), true); assert.equal(sent[0].type, 'start_driving');
+  p.updateControls({throttle:1}); assert.equal(sent.length, 1);
+  p.acceptSnapshot({...snapshot, mode:'MANUAL'});
+  p.updateControls({throttle:.4}); assert.equal(sent[1].controls.throttle, .4);
+});
+
+test('native reconnect is available on a disconnected socket but cannot escape replay', () => {
+  const {p, sent, snapshot} = clientFixture();
+  assert.equal(p.reconnectNative(), true); assert.equal(sent[0].type, 'reconnect');
+  p.acceptSnapshot({...snapshot, connected:false, available:true, mode:'REPLAY', provider:'replay',
+    replay:{dataOrigin:'REAL_SIMULATION', recordedProvider:'carla', runId:'test'}});
+  assert.equal(p.reconnectNative(), false); assert.equal(p.startDriving(), false);
+  assert.equal(sent.length, 1);
+});
+
 test('commands require fresh CARLA state and exclusive control ownership', () => {
   const {p, sent, snapshot, advance} = clientFixture();
   p.updateControls({throttle: 1}); assert.equal(sent.length, 0);
-  p.acceptSnapshot(snapshot); p.updateControls({throttle: .2}); p.updateControls({throttle: .3});
+  p.acceptSnapshot(snapshot); p.updateControls({throttle: .2});
+  p.updateControls({throttle: .3}); assert.equal(sent.length, 1);
+  advance(40); p.updateControls({throttle: .3});
   assert.equal(sent[0].controls.gear, 1); assert.equal(sent[1].controls.gear, undefined);
   advance(800); p.updateControls({throttle: 1}); assert.equal(sent.length, 2);
   assert.equal(p.getVehicleState().speedMps, null);
   p.acceptSnapshot({...snapshot, controller: false}); p.updateControls({throttle: 1});
   assert.equal(sent.length, 2);
+});
+
+test('pedal release deferred by the rate guard sends brake and never carries old throttle', () => {
+  const {p, sent, snapshot, advance} = clientFixture();
+  let release;
+  p.schedule = action => {release = action; return 1;}; p.cancel = () => {};
+  p.acceptSnapshot(snapshot); p.updateControls({throttle:1}); p.releaseControls();
+  assert.equal(sent.length, 1);
+  advance(35); release();
+  assert.equal(sent[1].controls.throttle, 0); assert.equal(sent[1].controls.brake, 1);
+  assert.equal(sent[1].controls.gear, undefined);
+  p.updateControls({throttle:1}); p.releaseControls(); p.isReplay = true;
+  advance(35); release(); assert.equal(sent.length, 2);
 });
 
 test('disconnect clears cached telemetry and never accepts a different source', () => {

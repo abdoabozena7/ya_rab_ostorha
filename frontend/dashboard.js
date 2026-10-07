@@ -2,18 +2,20 @@ import { SimulationClient } from './simulation-client.js';
 import { DrivingControls } from './controls.js';
 import { telemetryText } from './telemetry.js';
 import { sensorFrameKey, matchesSensorResponse } from './sensor-frame.js';
+import { DashboardTools } from './dashboard-tools.js';
 
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
+const tools = new DashboardTools(provider, controls, clearControls);
 const numeric = (value, suffix = '', digits = 1) => Number.isFinite(value) ? `${value.toFixed(digits)}${suffix}` : '—';
 let wasControllable = false, paused = false, lastGear = null, cameraReceipt = null;
 let cameraUrl = null, cameraRequest = null, cameraGeneration = 0;
 
 function clearControls() {
   controls.clear();
-  const nativeGear = provider.getVehicleState().gear;
-  controls.gear = nativeGear === 'R' ? -1 : nativeGear === 'N' ? 0 : 1;
-  lastGear = controls.gear; $('gearSelect').value = 'D';
+  controls.setMode($('gearSelect').value);
+  controls.gear = controls.mode === 'R' ? -1 : controls.mode === 'N' ? 0 : 1;
+  lastGear = null;
   provider.releaseControls();
 }
 function clearCamera() {
@@ -41,6 +43,7 @@ async function updateCamera(metadata) {
     if (cameraUrl) URL.revokeObjectURL(cameraUrl);
     cameraUrl = URL.createObjectURL(blob); cameraReceipt = key;
     $('authoritativeCamera').src = cameraUrl; $('authoritativeCamera').hidden = false;
+    $('authoritativeCamera').alt = `CARLA native camera · ${$('cameraView').value}`;
     $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = provider.isReplay ? 'REPLAY RGB' : 'CARLA RGB';
     const timestamp = response.headers.get('X-Sensor-Time');
     $('cameraTimestamp').textContent = timestamp === null ? 't unavailable' : `t ${Number(timestamp).toFixed(3)} s`;
@@ -84,7 +87,7 @@ function refresh() {
   $('reverseVal').textContent = state.reverse == null ? '—' : state.reverse ? 'Yes' : 'No';
   $('positionVal').textContent = state.positionWorldM ? `X/Y/Z ${state.positionWorldM.map(v => numeric(v)).join(' / ')} m` : 'Position unavailable';
   $('headingVal').textContent = Number.isFinite(state.headingRad) ? `Heading ${numeric(state.headingRad * 180 / Math.PI, '°')} from +X toward +Y` : 'Heading unavailable';
-  $('minimapView').firstElementChild.textContent = live ? 'Road geometry pending' : 'CARLA map not loaded';
+  $('minimapView').firstElementChild.textContent = live ? `Map: ${provider.world.map?.split('/').at(-1) ?? 'unavailable'} · Phone → choose destination` : 'CARLA map not loaded';
   $('performance').textContent = `RTT ${numeric(provider.latencyMs, ' ms')}`;
   $('gearSelect').disabled = !controllable;
   for (const id of ['pauseBtn', 'resetBtn', 'emergencyStopBtn']) $(id).disabled = !nativeOwner;
@@ -103,6 +106,7 @@ function refresh() {
     provider.updateControls(command);
   }
   updateCamera(provider.sensorMetadata.frontCamera);
+  tools.render(state, controllable);
 }
 
 function toggle(id, button) { const panel = $(id); panel.hidden = !panel.hidden; $(button).setAttribute('aria-expanded', String(!panel.hidden)); }

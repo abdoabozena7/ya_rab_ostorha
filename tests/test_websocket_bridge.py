@@ -54,3 +54,33 @@ class WebSocketTests(unittest.TestCase):
                 self.assertEqual(service.effective_controls()['throttle'], 0)
         finally:
             bridge.close()
+
+    def test_explicit_takeover_revokes_old_owner_atomically(self):
+        from backend.websocket_bridge import WebSocketBridge
+        service = SimulationService(None); service._publish(packet())
+        bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
+        first, second = object(), object()
+        try:
+            bridge.process_message(first, {'type':'start_driving'})
+            bridge.process_message(first, {'type':'controls','frame_id':1,'timestamp_s':.05,
+                                           'controls':{'throttle':.5}})
+            self.assertEqual(service.effective_controls()['throttle'], .5)
+            bridge.process_message(second, {'type':'start_driving'})
+            self.assertEqual(service.effective_controls()['throttle'], 0)
+            with self.assertRaisesRegex(ValueError, 'Another dashboard'):
+                bridge.process_message(first, {'type':'controls','frame_id':1,'timestamp_s':.05,
+                                               'controls':{'throttle':1}})
+            self.assertIs(bridge.owner, second)
+        finally:
+            bridge.server.shutdown()
+
+    def test_replay_cannot_claim_control_or_reconnect(self):
+        from types import SimpleNamespace
+        from backend.websocket_bridge import WebSocketBridge
+        bridge = WebSocketBridge(SimpleNamespace(is_replay=True), '127.0.0.1', 0, 8000)
+        try:
+            for kind in ('start_driving','reconnect'):
+                with self.assertRaisesRegex(ValueError, 'Replay'):
+                    bridge.process_message(object(), {'type':kind})
+        finally:
+            bridge.server.shutdown()
