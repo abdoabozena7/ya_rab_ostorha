@@ -1,8 +1,9 @@
 {
-  "name": "ya-rab-ostorha-simulator",
+  "name": "ya-rab-ostorha-control-center",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:legacy": "node --test legacy/threejs-simulator/tests/*.test.js"
   }
 }

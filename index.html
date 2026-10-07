@@ -1,146 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:,">
-<title>Ya Rab Ostorha | Accident Avoidance Simulator</title>
-
-<link rel="stylesheet" href="/src/ui/styles.css?v=traffic-dynamics-final">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.152/build/three.module.js"}}</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Ya Rab Ostorha | Simulation Control Center</title>
+  <link rel="stylesheet" href="/frontend/styles.css">
+  <link rel="stylesheet" href="/frontend/dashboard.css">
 </head>
-<body>
-<header id="brand"><span class="brand-eyebrow">DRIVING SANDBOX <span>01</span></span><h1>YA RAB OSTORHA</h1><p>City simulation <span lang="ar">· يارب استرها</span></p></header>
-<div id="mission"><span class="mission-icon">↗</span><div><span class="eyebrow">FREE DRIVE</span><div id="missionText">Choose a destination on the phone</div></div></div>
-<nav id="toolbar" aria-label="Simulator tools">
-  <button class="ctrl-btn" id="phoneToggleBtn" aria-expanded="false" aria-controls="inGamePhone">Phone <kbd>P</kbd></button>
-  <button class="ctrl-btn" id="routeBtn">Route</button>
-  <button class="ctrl-btn" id="sensorBtn">Debug</button>
-</nav>
-<div id="cityStatus">Loading test district…</div>
-<div id="aiBanner" role="status"></div>
-<div id="modeOverlay"></div>
-<div id="cameraCard"><div id="frontCameraLabel">Front camera <span><i></i> LIVE</span></div><div id="frontCameraView"></div><div class="camera-caption"><span title="Boxes projected from known simulation geometry, not a neural detector">GROUND TRUTH</span><span id="cameraFps">— FPS</span><span id="cvLatency" title="CPU time to project and draw ground-truth boxes">GT · — ms</span></div></div>
-<div id="driveReadout"><div id="speedPanel"><span id="speedVal">0</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">D</span><span class="divider"></span><button id="aiToggleBtn" class="ctrl-btn" title="Switch manual / auto (1)">Manual</button><kbd>1</kbd><span id="modeBadge" hidden>MANUAL</span></div></div>
-<div id="runtime"><i></i><span id="simulationState">Live simulation</span><span id="performance">Measuring FPS…</span></div>
-<div id="drivingHelp"><span><kbd>W A S D</kbd> Drive</span><span><kbd>SPACE</kbd> Brake</span><button id="viewBtn">Chase view · C</button></div>
-<div id="bottomActions"><button id="hideCameraBtn">Hide camera</button><button id="pauseBtn">Pause</button><button id="resetBtn" title="Return car and traffic to the starting positions">Reset</button></div>
-<button id="driveSettingsBtn" aria-expanded="false">Drive setup · إعدادات القيادة</button>
-<aside id="driveSettings" hidden dir="rtl" aria-label="إعدادات القيادة">
-  <h2>تفاصيل القيادة</h2>
-  <label>السرعة المطلوبة <output id="cruiseOutput">80 كم/س</output><input id="cruiseSpeed" type="range" min="20" max="180" step="5" value="80" aria-label="السرعة المطلوبة"></label>
-  <label>قوة ضغط البنزين <output id="throttleOutput">100%</output><input id="throttlePressure" type="range" min="10" max="100" step="5" value="100" aria-label="قوة ضغط البنزين"></label>
-  <label>قوة ضغط الفرامل <output id="brakeOutput">100%</output><input id="brakePressure" type="range" min="10" max="100" step="5" value="100" aria-label="قوة ضغط الفرامل"></label>
-  <label>كثافة المرور <select id="trafficDensity" aria-label="كثافة المرور"><option value=".6">خفيفة</option><option value="1" selected>ساعة الذروة</option><option value="1.4">زحمة شديدة</option></select></label>
-  <label class="check"><input id="randomEvents" type="checkbox" checked> ظروف عشوائية بتعمل زحمة</label>
-  <label class="check"><input id="cinematicEnabled" type="checkbox" checked> تصوير بطيء عند خطر اصطدام</label>
-  <label class="check"><input id="nightMode" type="checkbox"> وقت الغروب والكشافات</label>
-  <label class="check"><input id="muteAudio" type="checkbox"> كتم صوت العربية</label>
-  <button id="incidentBtn">موقف مفاجئ في الطريق</button><button id="longTripBtn">رحلة طويلة · البوابة الشمالية</button>
-  <button id="nearMissBtn">تجربة تفادي سينمائية · إعادة ضبط الرحلة</button>
-  <p>١ وحدة = ١ متر. المسافة بين حدود أجسام المحاكاة بالسنتيمتر. السرعة المطلوبة سقف؛ السائق الآلي يخفّضها حسب الأمان والتماسك.</p>
-</aside>
-<div id="physicalTelemetry" dir="rtl"><b id="surfaceName">أسفلت</b><span id="clearanceValue">الخلوص — سم</span><span id="stopDistance">مسافة توقف — م</span><div class="pedals"><label>بنزين <meter id="throttleMeter" min="0" max="1" value="0"></meter></label><label>فرامل <meter id="brakeMeter" min="0" max="1" value="0"></meter></label></div><span id="incidentStatus">الطريق مفتوح</span></div>
-<div id="vehicleControls"><button id="lightsBtn" aria-pressed="false">◉ Lights · L</button><button id="leftSignalBtn" aria-pressed="false">◀ Q</button><button id="hazardsBtn" aria-pressed="false">△ F</button><button id="rightSignalBtn" aria-pressed="false">E ▶</button><button id="hornBtn">Horn · H</button></div>
-<div id="cinematicNotice" hidden></div><div id="cinemaBars" aria-hidden="true"></div>
-<div id="pauseScreen" hidden><div class="pause-card"><span class="eyebrow">TAKE A BREATHER</span><h2>Simulation paused</h2><p>Your drive will continue from here.</p><button id="resumeBtn">Back to the road</button><small>or press Escape</small></div></div>
-<aside id="inGamePhone" hidden dir="rtl" aria-label="تليفون العربية">
-  <div class="phone-head">📱 التليفون <span>يارب استرها</span></div>
-  <p>اكتب المكان اللي عايز تروحه</p>
-  <form id="destinationForm">
-    <input id="destinationInput" type="text" maxlength="100" placeholder="مثلاً: روح السوق" aria-label="اسم المكان" required>
-    <button type="submit">روح</button>
-  </form>
-  <div class="phone-small-title">الأماكن الموجودة</div>
-  <div id="phonePlaces"></div>
-  <div id="phoneStatus" role="status">مستني المكان...</div>
-</aside>
+<body class="control-center">
+  <header id="brand"><span class="brand-eyebrow">SIMULATION CONTROL <span>01</span></span><h1>YA RAB OSTORHA</h1><p>Driving simulation <span lang="ar">· يارب استرها</span></p></header>
+  <div id="mission"><span class="mission-icon">↗</span><div><span class="eyebrow">FREE DRIVE</span><div id="missionText">One vehicle · CARLA</div></div></div>
+  <nav id="toolbar" aria-label="Simulator tools">
+    <button class="ctrl-btn" id="phoneToggleBtn" aria-expanded="false" aria-controls="inGamePhone">Phone <kbd>P</kbd></button>
+    <button class="ctrl-btn" id="routeBtn" aria-expanded="false" aria-controls="routePanel">Route</button>
+    <button class="ctrl-btn" id="sensorBtn" aria-expanded="false" aria-controls="sensorPanel">Debug</button>
+  </nav>
+  <div id="cityStatus" role="status">CARLA — DISCONNECTED</div>
 
-<div id="minimapBorder"><div id="minimapLabel">DISTRICT MAP <span>N ↑</span></div><div id="minimapView"></div><div class="map-caption">LOCAL ROAD NETWORK</div></div>
+  <main id="simulationCenter">
+    <span class="eyebrow">SIMULATION PROVIDER</span>
+    <h2>CARLA</h2>
+    <p id="connectionDetail">Waiting for the simulation backend.</p>
+    <p class="simulation-hint">Drive and view the vehicle in the CARLA window. This dashboard sends controls and displays its telemetry.</p>
+    <div class="dashboard-values" aria-label="Vehicle telemetry">
+      <div><span>CARLA VERSION</span><strong id="versionVal">—</strong></div>
+      <div><span>MAP</span><strong id="mapVal">—</strong></div>
+      <div><span>FRAME</span><strong id="frameVal">—</strong></div>
+      <div><span>THROTTLE</span><strong id="throttleVal">—</strong></div>
+      <div><span>BRAKE</span><strong id="brakeVal">—</strong></div>
+      <div><span>STEERING INPUT · RIGHT +</span><strong id="steerVal">—</strong></div>
+      <div><span>ACCELERATION</span><strong id="accelVal">—</strong></div>
+      <div><span>SIMULATION TIME</span><strong id="timeVal">—</strong></div>
+      <div><span>REVERSE</span><strong id="reverseVal">—</strong></div>
+    </div>
+    <div class="session-controls">
+      <label for="gearSelect">Transmission</label>
+      <select id="gearSelect" disabled><option value="D">D · Automatic</option><option value="N">N · Neutral</option><option value="R">R · Reverse</option></select>
+      <span id="controlStatus">Controls unavailable</span>
+    </div>
+    <div class="sensor-summary"><span class="eyebrow">SENSORS</span><p id="sensorStatus">RGB · Depth · Radar · LiDAR · IMU · GNSS · Collision: unavailable</p></div>
+    <div id="validationNotice">Connection checkpoint pending · native driving and physics validation required</div>
+  </main>
 
-<div id="tlPanel">
-  <span class="hud-label">🚦 NEAREST LIGHT</span>
-  <div class="tl-row"><div class="tl-dot" id="tlDotRed"></div><span class="tl-label">RED — STOP</span></div>
-  <div class="tl-row"><div class="tl-dot" id="tlDotYellow"></div><span class="tl-label">YELLOW — READY</span></div>
-  <div class="tl-row"><div class="tl-dot" id="tlDotGreen"></div><span class="tl-label">GREEN — GO</span></div>
-</div>
+  <section id="cameraCard" aria-label="Front camera">
+    <div id="frontCameraLabel">Front camera <span id="cameraActivity">UNAVAILABLE</span></div>
+    <div id="frontCameraView"><img id="authoritativeCamera" alt="CARLA mounted front camera" hidden><span id="cameraUnavailable">Waiting for CARLA camera</span></div>
+    <div class="camera-caption"><span id="cameraSource">CARLA SENSOR</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
+    <p id="cameraMetadata">FOV / transform unavailable</p>
+  </section>
+  <div id="driveReadout"><div id="speedPanel"><span id="speedVal">—</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">—</span><span class="divider"></span><span>Manual</span></div></div>
+  <div id="runtime"><i id="connectionDot"></i><span id="simulationState">CARLA — DISCONNECTED</span><span id="performance">RTT —</span></div>
+  <div id="drivingHelp"><span><kbd>W A S D</kbd> Drive</span><span><kbd>S</kbd> Brake / reverse</span><span><kbd>SPACE</kbd> Handbrake</span></div>
+  <div id="bottomActions"><button id="hideCameraBtn">Hide camera</button><button id="pauseBtn" disabled>Pause</button><button id="resetBtn" disabled>Reset vehicle</button></div>
 
-<!-- ★ A* VALUES PANEL — visible when ROUTE is ON -->
-<div id="astarPanel">
-  <div class="astar-title">◈ &nbsp;A* ALGORITHM — LIVE VALUES</div>
-  <div class="astar-formula">f(n) &nbsp;=&nbsp; g(n) &nbsp;+&nbsp; h(n)</div>
-
-  <!-- f(n) row -->
-  <div class="astar-row">
-    <span class="astar-key fn">f(n)</span>
-    <span class="astar-desc">Total estimated cost</span>
-    <div class="astar-bar-wrap"><div class="astar-bar-fill fn" id="aBarF" style="width:0%"></div></div>
-    <span class="astar-val fn" id="aValF">—</span>
-  </div>
-
-  <!-- g(n) row -->
-  <div class="astar-row">
-    <span class="astar-key gn">g(n)</span>
-    <span class="astar-desc">Cost from start</span>
-    <div class="astar-bar-wrap"><div class="astar-bar-fill gn" id="aBarG" style="width:0%"></div></div>
-    <span class="astar-val gn" id="aValG">—</span>
-  </div>
-
-  <!-- h(n) row -->
-  <div class="astar-row">
-    <span class="astar-key hn">h(n)</span>
-    <span class="astar-desc">Heuristic to goal</span>
-    <div class="astar-bar-wrap"><div class="astar-bar-fill hn" id="aBarH" style="width:0%"></div></div>
-    <span class="astar-val hn" id="aValH">—</span>
-  </div>
-
-  <!-- Footer: node index info -->
-  <div class="astar-footer">
-    <div>NODE &nbsp;<span id="aNodeIdx">—</span></div>
-    <div>PATH LEN &nbsp;<span id="aPathLen">—</span></div>
-    <div>REMAIN &nbsp;<span id="aRemain">—</span></div>
-  </div>
-
-  <!-- Waypoint table: next 5 nodes -->
-  <table class="astar-table" id="astarTable">
-    <thead>
-      <tr>
-        <th>NODE</th>
-        <th>g(n)</th>
-        <th>h(n)</th>
-        <th>f(n)</th>
-      </tr>
-    </thead>
-    <tbody id="astarTableBody"></tbody>
-  </table>
-</div>
-
-<div class="hud-panel" id="fuelPanel">
-  <div class="hud-label">⛽ Fuel</div>
-  <div class="hud-value" id="fuelVal">100%</div>
-  <div id="fuelBar"><div id="fuelFill"></div></div>
-</div>
-<div class="hud-panel" id="pointPanel">
-  <div class="hud-label">★ Points</div>
-  <div class="hud-value" id="pointVal">0</div>
-</div>
-<div class="hud-panel" id="moneyPanel">
-  <div class="hud-label">Balance</div>
-  <div class="hud-value" id="moneyVal">0 ج</div>
-</div>
-<div class="hud-panel" id="fitnessPanel">
-  <div class="hud-label">🧠 AI FITNESS</div>
-  <div class="hud-value" id="fitnessVal">0</div>
-</div>
-
-<div id="sensorPanel"><div id="renderStats"></div>
-  <span class="hud-label">◈ SENSOR RAYS</span>
-  <div id="sensorRows"></div>
-  <a class="asset-credits" href="/public/assets/ATTRIBUTION.md" target="_blank" rel="noopener">Asset credits &amp; licenses</a>
-</div>
-
-
-
-<script type="module" src="/src/main.js?v=traffic-dynamics-final"></script>
+  <aside id="inGamePhone" hidden aria-label="Vehicle session">
+    <div class="phone-head">Phone <span lang="ar">يارب استرها</span></div>
+    <p id="phoneStatus">CARLA session unavailable</p>
+    <button id="reconnectBtn">Reconnect dashboard</button>
+    <p>Keep this dashboard focused for keyboard controls. Controls release when focus is lost.</p>
+  </aside>
+  <aside id="routePanel" hidden aria-label="Route information"><span class="eyebrow">ROUTE</span><p>Routes and road geometry will come from the validated CARLA map.</p></aside>
+  <section id="minimapBorder" aria-label="Map and vehicle position"><div id="minimapLabel">SIMULATION MAP <span>Z ↑</span></div><div id="minimapView"><p>CARLA map not loaded</p><p id="positionVal">Position unavailable</p><p id="headingVal">Heading unavailable</p></div><div class="map-caption">CARLA WORLD COORDINATES</div></section>
+  <aside id="sensorPanel" hidden aria-label="Debug telemetry"><div id="providerStatus">CARLA — DISCONNECTED</div><div id="debugTelemetry"></div></aside>
+  <script type="module" src="/frontend/dashboard.js"></script>
 </body>
 </html>

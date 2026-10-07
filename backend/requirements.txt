@@ -1,0 +1,2 @@
+# Install CARLA separately from the exact simulator release's shipped wheel.
+websockets==15.0.1

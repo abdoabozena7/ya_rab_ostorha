@@ -1,4 +1,4 @@
-"""Serve the control dashboard and authoritative CARLA API."""
+"""Serve the control dashboard and authoritative BeamNG API."""
 
 import argparse
 import json
@@ -60,19 +60,15 @@ class Handler(SimpleHTTPRequestHandler):
         path = {"/api/state": "/api/simulation/state", "/api/frame": "/api/simulation/camera.jpg"}.get(path, path)
         if path == "/api/health":
             return self._json(200, {"ok": True, "service": "ya-rab-ostorha-control-center",
-                                    "simulationProvider": "carla",
-                                    "simulationConnected": bool(provider and provider.snapshot()["connected"])})
+                                    "beamngConnected": bool(provider and provider.snapshot()["connected"])})
         if path == "/api/simulation/status":
-            snapshot = provider.snapshot() if provider else {}
-            connected = snapshot.get('connected', False)
-            return self._json(200, {"provider": "carla", "configured": provider is not None,
-                                    "connected": connected,
-                                    "status": "CONNECTED" if connected else "ERROR" if snapshot.get('error') else "DISCONNECTED",
+            return self._json(200, {"provider": "beamng", "configured": provider is not None,
+                                    "beamngConnected": bool(provider and provider.snapshot()["connected"]),
                                     "websocketPort": getattr(self.server, "websocket_port", None),
-                                    "error": snapshot.get('error') if provider else "CARLA is not connected. Start the official simulator and backend with --carla."})
+                                    "error": None if provider else "BEAMNG BLOCKER: official installation and tech.key required"})
         if path.startswith("/api/simulation/"):
             if provider is None:
-                return self._json(503, {"error": "CARLA provider is not running"})
+                return self._json(503, {"error": "BeamNG provider is not running"})
             try:
                 if path == "/api/simulation/state":
                     return self._json(200, provider.get_vehicle_state())
@@ -87,8 +83,8 @@ class Handler(SimpleHTTPRequestHandler):
                     self.send_header("Content-Type", "image/jpeg")
                     self.send_header("Cache-Control", "no-store")
                     self.send_header("Content-Length", str(len(frame)))
-                    for key, header in (("timestamp", "X-Sensor-Time"),
-                                        ("frame", "X-Sensor-Frame"),
+                    for key, header in (("sensorTimestamp", "X-Sensor-Time"),
+                                        ("simulationTimeAtPoll", "X-Simulation-Time-At-Poll"),
                                         ("receivedMonotonic", "X-Received-Monotonic")):
                         if metadata and metadata.get(key) is not None:
                             self.send_header(header, str(metadata[key]))
@@ -128,7 +124,7 @@ class Handler(SimpleHTTPRequestHandler):
             if path.startswith("/api/simulation/"):
                 provider = getattr(self.server, "simulation_service", None)
                 if provider is None:
-                    return self._json(503, {"error": "CARLA provider is not running"})
+                    return self._json(503, {"error": "BeamNG provider is not running"})
                 data = self._read_json()
                 if not isinstance(data, dict):
                     raise ValueError("Expected JSON object")
@@ -181,73 +177,57 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Ya Rab Ostorha CARLA control center")
+    parser = argparse.ArgumentParser(description="Ya Rab Ostorha BeamNG control center")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
-    parser.add_argument("--carla", action="store_true", help="Connect to the running CARLA simulator")
-    parser.add_argument("--carla-host", default="127.0.0.1")
-    parser.add_argument("--carla-port", type=int, default=2000)
-    parser.add_argument("--carla-version", default="0.10.0")
-    parser.add_argument("--map", help="Explicit CARLA map; defaults to the current world")
-    parser.add_argument("--vehicle", default="vehicle.lincoln.mkz_2020")
-    parser.add_argument("--spawn-index", type=int, default=0)
-    parser.add_argument("--fixed-delta", type=float, default=.05)
-    parser.add_argument("--record-log", help="Optional JSONL frame log")
+    parser.add_argument("--beamng-home", help="BeamNG.tech installation directory")
+    parser.add_argument("--beamng-user", help="BeamNG.tech user directory")
+    parser.add_argument("--sensor-config", help="JSON file overriding named sensor configuration fields")
+    parser.add_argument("--beamng-port", type=int, default=25252)
     parser.add_argument("--websocket-port", type=int, default=8001)
+    parser.add_argument("--traffic-count", type=int, choices=range(0, 21), default=0, metavar="0..20",
+                        help="Later-phase normal traffic; checkpoint 1 uses 0")
+    parser.add_argument("--enable-sensors", action="store_true",
+                        help="Prepared sensor suite; validate only after checkpoint 1")
     parser.add_argument("--enable-legacy-preview", action="store_true",
                         help="Explicitly serve the archived Three.js preview")
+    parser.add_argument("--beamng-connect", action="store_true", help="Connect to an already running BeamNG.tech")
     args = parser.parse_args()
-    if args.enable_legacy_preview and args.carla:
-        parser.error("Legacy preview and CARLA production mode must run separately")
-    provider = None
-    if args.carla:
-        from .carla.provider import CarlaProvider
+    if args.enable_legacy_preview and args.beamng_home:
+        parser.error("Legacy preview and BeamNG production mode must run separately")
+    if args.beamng_home:
+        from .installation import require_installation, BeamNGBlocker
         try:
-            provider = CarlaProvider(host=args.carla_host, port=args.carla_port,
-                                     version=args.carla_version, map_name=args.map,
-                                     blueprint=args.vehicle, spawn_index=args.spawn_index,
-                                     fixed_delta=args.fixed_delta).connect()
-        except Exception as error:
-            reason = str(error)
-            parser.exit(2, (reason if reason.startswith('CARLA BLOCKER:') else f'CARLA BLOCKER: {reason}') + '\n')
-    server = None
+            require_installation(args.beamng_home)
+        except BeamNGBlocker as error:
+            parser.exit(2, str(error) + "\n")
+    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server.enable_legacy_preview = args.enable_legacy_preview
     try:
-        server = ThreadingHTTPServer((args.host, args.port), Handler)
-        server.enable_legacy_preview = args.enable_legacy_preview
-        if provider:
+        if args.beamng_home:
+            from .beamng_provider import BeamNGProvider, load_sensor_config
             from .simulation_service import SimulationService
             from .websocket_bridge import WebSocketBridge
-            from .recording import FrameRecorder
-            recorder = FrameRecorder(args.record_log) if args.record_log else None
-            server.simulation_service = SimulationService(provider, recorder)
+            provider = BeamNGProvider(args.beamng_home, args.beamng_user,
+                                     port=args.beamng_port, launch=not args.beamng_connect,
+                                     sensor_config=load_sensor_config(args.sensor_config) if args.sensor_config else None,
+                                     traffic_count=args.traffic_count, enable_sensors=args.enable_sensors)
+            server.simulation_service = SimulationService(provider)
             server.simulation_service.start()
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host,
                                                       args.websocket_port, args.port)
             server.websocket_bridge.start()
         print(f"Control center: http://{args.host}:{args.port}/", flush=True)
-        if not args.carla:
-            print("CARLA DISCONNECTED - dashboard only; no simulated telemetry", flush=True)
+        if not args.beamng_home:
+            print("BEAMNG NOT AVAILABLE - dashboard only; no simulated telemetry", flush=True)
         server.serve_forever()
-    except KeyboardInterrupt:
-        pass
     finally:
-        try:
-            if getattr(server, "websocket_bridge", None):
-                server.websocket_bridge.close()
-        finally:
-            try:
-                if getattr(server, "simulation_service", None):
-                    server.simulation_service.close()
-                    if server.simulation_service.error:
-                        print('Simulation shutdown: ' + server.simulation_service.error, flush=True)
-                elif provider:
-                    provider.close()
-                    if provider.cleanup_errors:
-                        print('CARLA cleanup unconfirmed: ' + '; '.join(provider.cleanup_errors), flush=True)
-            finally:
-                if server:
-                    server.server_close()
+        if getattr(server, "websocket_bridge", None):
+            server.websocket_bridge.close()
+        if getattr(server, "simulation_service", None):
+            server.simulation_service.close()
+        server.server_close()
 
 
 if __name__ == "__main__":

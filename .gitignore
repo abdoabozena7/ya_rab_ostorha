@@ -23,3 +23,10 @@ __pycache__/
 *.pyc
 output/
 .playwright-cli/
+.beamng-sdk-audit/
+.venv/
+.venv-carla/
+recordings/
+.beamng-user/
+tech.key
+*.key

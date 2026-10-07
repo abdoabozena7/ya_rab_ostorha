@@ -1,0 +1,5 @@
+{
+  "lidarRoof": {"range_m": 120, "fov_deg": 360, "vertical_fov_deg": 26.9, "channels": 32, "rate_hz": 10},
+  "frontCamera": {"position": [0, -1.2, 1.25], "direction": [0, -1, 0], "up": [0, 0, 1], "fov_deg": 75, "rate_hz": 20},
+  "radarFront": {"range_m": 100, "fov_deg": 60, "rate_hz": 10}
+}
