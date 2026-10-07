@@ -281,12 +281,15 @@ class SensorFrame(Contract):
     data: Mapping[str, Any] = None
     units: Mapping[str, str] = None
     asset: AssetReference | None = None
+    metadata: Mapping[str, Any] = None
 
     def __post_init__(self):
         if self.data is None:
             object.__setattr__(self, 'data', {})
         if self.units is None:
             object.__setattr__(self, 'units', {})
+        if self.metadata is None:
+            object.__setattr__(self, 'metadata', {})
         super().__post_init__()
 
     def validate(self):

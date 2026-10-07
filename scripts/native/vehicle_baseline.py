@@ -12,23 +12,34 @@ from backend.core.recording import RunRecorder
 
 class NativeHarness:
     def __init__(self, *, sensors=False, recorder=None, spawn_index=152):
-        self.provider = CarlaProvider(spawn_index=spawn_index, collision_sensor=True)
+        self.provider = CarlaProvider(spawn_index=spawn_index, collision_sensor=True, sensor_suite=sensors)
         self.provider.connect()
-        self.service = SimulationService(self.provider, recorder)
+        self.service = SimulationService(self.provider, recorder, required_sensors=self.provider.required_sensors,
+                                         sensor_timeout_s=.25)
         self.service.start(threaded=False)
         self.events = []
         self.service.events.subscribe(self.events.append, EventType.CollisionDetected)
         self.api = self.provider.connection.api
         self.world = self.provider.world.world
         self.last_step_at = time.monotonic()
+        for _ in range(100):
+            if self.service.observation is not None and (not sensors or self.service.observation.complete and self.provider.last_world['frame']-self.service.observation.frame_id<=3): break
+            time.sleep(.05)
+            self.service.step_once()
+        if self.service.observation is None or (sensors and not self.service.observation.complete):
+            self.close()
+            raise RuntimeError('Native sensor/vehicle synchronization did not establish an observation')
 
     def step(self, throttle=0., brake=0., steer=0., reverse=False, handbrake=False):
         # Respect the existing wall-clock command rate limit; never weaken safety for tests.
         time.sleep(max(0., .05-(time.monotonic()-self.last_step_at)))
         self.last_step_at = time.monotonic()
         f = self.service.observation
-        self.service.submit_control(ControlCommand(f.frame_id, f.timestamp_s, throttle, brake, steer,
-                                                  reverse, handbrake, CommandSource.SYSTEM, -1 if reverse else 1))
+        try:
+            self.service.submit_control(ControlCommand(f.frame_id, f.timestamp_s, throttle, brake, steer,
+                                                      reverse, handbrake, CommandSource.SYSTEM, -1 if reverse else 1))
+        except RuntimeError as error:
+            raise RuntimeError(f'{error}; native_frame={self.provider.last_world["frame"]}, observation_frame={f.frame_id}, receipt_age={time.monotonic()-self.service.state_at}, sensor_errors={self.provider.sensor_errors()}') from error
         self.service.step_once()
         if self.service.error:
             raise RuntimeError(self.service.error)

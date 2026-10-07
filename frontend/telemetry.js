@@ -5,7 +5,8 @@ export function telemetryText(t, {latencyMs, sensorRates = {}, sensorErrors = {}
   return [
     `MODE: ${mode.replaceAll('_', ' ')} · ${mode === 'REPLAY' ? 'RECORDED OBSERVATIONS' : 'LIVE OBSERVATIONS ONLY'}`,
     'VEHICLE',
-    `Speed ${n(t.speedMps, 3.6)} km/h · Longitudinal acceleration ${n(t.accelerationMps2)} m/s²`,
+    `Speed magnitude ${n(t.speedMagnitudeMps, 3.6)} km/h · Signed longitudinal speed ${n(t.speedMps)} m/s`,
+    `Longitudinal acceleration ${n(t.accelerationMps2)} m/s²`,
     `Steering input ${n(t.steeringInput)} (positive right; normalized input, not wheel angle)`,
     `Throttle ${n(t.throttle, 100)}% · Brake ${n(t.brake, 100)}%`,
     `Gear ${t.gear ?? 'unavailable'} · Reverse ${t.reverse ?? 'unavailable'} · Handbrake ${t.handbrake ?? 'unavailable'}`,
@@ -14,7 +15,7 @@ export function telemetryText(t, {latencyMs, sensorRates = {}, sensorErrors = {}
     'PHYSICS · LIMITATIONS',
     'RPM / wheel dynamics: native 0.9.16 API; mapping and validation pending',
     'Fuel / mechanical engine damage / suspension compression: unavailable',
-    'Collision impulse: pending native collision-sensor validation',
+    'Collision: native event frame/time, other actor and impulse; no component damage inferred',
     'SENSORS · NATIVE DATA ONLY',
     ...Object.entries({frontCamera: 'RGB', depth: 'Depth', radar: 'Radar', lidar: 'LiDAR', imu: 'IMU', gnss: 'GNSS', collision: 'Collision'})
       .map(([key, label]) => `${label}: ${n(sensorRates[key])} Hz${sensorErrors[key] ? ` · ERROR ${sensorErrors[key]}` : ''}`),

@@ -16,9 +16,9 @@ production provider.
 1. Preserve 0.10.0 preparation and audit version assumptions — complete.
 2. Inspect the official 0.9.16 Windows package and its exact wheel — complete.
 3. Update target, preparation/launch scripts, runtime guards, labels and tests — complete.
-4. Install compatible Python, download/extract CARLA, import matching API — blocked.
-5. Native boot, read-only connection/catalog check, one ego and browser control — not run.
-6. Only after Gate 1: validate vehicle behavior/collision, then the sensor suite.
+4. Install compatible Python, download/extract CARLA, import matching API — complete.
+5. Native boot, read-only connection/catalog check, one ego and browser control — PASS live.
+6. Vehicle baseline/collision and all seven native sensors — PASS live; real recording/Replay verified.
 7. Only after those gates: choose an urban map, normal traffic/walkers and Egypt planning.
 
 **Native gate results are maintained in the current live validation report.** Offline SDK fixtures verify contracts
@@ -44,7 +44,7 @@ provides a Windows binary package, avoiding a source build or Unreal clone.
 
 The earlier Three.js implementation used local longitudinal/bicycle dynamics,
 distance/radius wheel animation and approximate powertrain/suspension/damage.
-The game files and launch routes were removed at the user�s request.
+The game files and launch routes were removed at the user’s request.
 Licensed assets and attribution remain preserved. No new vehicle physics, AI,
 chaos, traffic or pedestrian behavior has been implemented during this downgrade.
 
@@ -196,12 +196,12 @@ Native spectator follows the ego; cockpit/hood/interior inspection follows Gate 
 | Throttle/brake/steer/gear/reverse/handbrake | NATIVE | Applied `Vehicle.get_control()` |
 | Current engine RPM | NATIVE API | 0.9.16 `get_telemetry_data().engine_rpm`; mapping/validation pending after Gate 1; currently null |
 | Per-wheel slip/omega/load/forces/friction | NATIVE API | WheelTelemetryData available; units and mapping must be validated after Gate 1 |
-| Wheel steering angle | NATIVE API | `get_wheel_steer_angle()`; not yet mapped/validated |
+| Wheel steering angle | NATIVE API | `get_wheel_steer_angle()`; baseline steering/pitch verified, no full wheel dynamics mapping |
 | Wheel RPM | DERIVABLE once native omega is validated | `omega * 60 / (2*pi)` if radians/second is confirmed; no fabricated animation |
 | Suspension compression / engine-running state | NOT AVAILABLE in current adapter | Null/unmapped; no estimate advertised as physical telemetry |
 | Fuel/consumption/range | NOT AVAILABLE | No functional fuel model mapped; no decorative values |
 | Detailed engine/cooling/transmission/wheel structural damage | NOT AVAILABLE at requested fidelity | No BeamNG-style mechanical damage or invented health |
-| Collision actor/normal impulse/frame/time | NATIVE sensor | Activation/validation after Gate 1 |
+| Collision actor/normal impulse/frame/time | NATIVE sensor | Verified live in Gates 2 and 3 |
 | Exact collision contact point | NOT AVAILABLE in event | Sensor/ego transform is not a contact coordinate |
 
 The tagged [VehicleTelemetryData source](https://github.com/carla-simulator/carla/blob/0.9.16/LibCarla/source/carla/rpc/VehicleTelemetryData.h)
@@ -238,13 +238,13 @@ The generic FrameRecorder preserves frame/time, ego state/control and sensor
 references. It groups only matching frame IDs and lists missing/mismatched frames.
 Native RGB/depth/point-cloud file exporters and dataset generation remain deferred.
 
-## Sensors: API audit only, no activation yet
+## Sensors: native activation and validation
 
 The [0.9.16 sensor reference](https://carla.readthedocs.io/en/0.9.16/ref_sensors/)
 lists RGB/depth, ray-cast LiDAR, radar, IMU, GNSS and collision; semantic/instance
 segmentation and lane invasion are available optional blueprints. The existing
 CarlaSensorManager owns registration, callbacks, transform/frame/timestamp/rate
-metadata and cleanup. **No suite is mounted or decoded in production yet.**
+metadata and cleanup. **The real seven-sensor suite is available with `--sensors`; Gate 3 passed.**
 
 After vehicle/collision validation, implement real RGB frames in the preserved
 front-camera panel. Decode depth in meters, LiDAR x/y/z/intensity, radar
@@ -257,9 +257,9 @@ must remain separate from future AI predictions.
 
 | Gate | Required native evidence | Result |
 | --- | --- | --- |
-| 1 | CARLA native boot + connection + one vehicle | BLOCKED: internet/runtime dependency; native tests not run |
-| 2 | Vehicle controls + collision; real browser controls/telemetry, reconnect, cleanup and physical behavior | NOT RUN |
-| 3 | Calibrated RGB/depth/radar/LiDAR/IMU/GNSS/collision, frame/time tracking | NOT RUN |
+| 1 | CARLA native boot + connection + one vehicle | PASS live, see current validation report |
+| 2 | Vehicle controls + collision; real browser controls/telemetry, reconnect, cleanup and physical behavior | PASS live |
+| 3 | Calibrated RGB/depth/radar/LiDAR/IMU/GNSS/collision, frame/time tracking | PASS live |
 | 4 | Stable built-in urban map, deterministic normal traffic and navigable walkers | DEFERRED |
 | 5 | Egyptian environment | NOT IMPLEMENTED |
 | 6 | AI integration | NOT IMPLEMENTED |

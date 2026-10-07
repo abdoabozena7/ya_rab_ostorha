@@ -3,8 +3,8 @@ import copy
 from dataclasses import replace
 import threading
 import time
-from collections import deque
-from .contracts import CommandSource, ControlCommand, SensorFrame, SimulationFrame, finite
+from collections import deque, OrderedDict, Counter
+from .contracts import CommandSource, ControlCommand, SensorFrame, SimulationFrame, finite, to_dict
 from .control import CommandArbiter, ControlMode, ControlSafetyLayer, safe_command
 from .dashboard import dashboard_frame
 from .events import EventBus, EventType, SimulationEvent
@@ -44,6 +44,12 @@ class SimulationService:
         self.started_session = False
         self.sensor_ids = set()
         self.closed = False
+        self.collision_events = deque(maxlen=50)
+        self.camera_cache = OrderedDict()
+        self.sensor_frame_cache = OrderedDict()
+        self.synchronization_issues = Counter()
+        self.synchronization_missing_frames = 0
+        self.synchronized_frames = 0
 
     @property
     def name(self):
@@ -79,10 +85,10 @@ class SimulationService:
                 raise RuntimeError('Provider did not supply a canonical connection snapshot')
             self.clock.observe(initial.world)
             self.synchronizer.begin(initial)
+            self._ingest_provider_sensors()
             for frame in self.synchronizer.drain():
                 self._publish(frame)
-                if self.recorder:
-                    self.recorder.record(frame)
+                self._record(frame)
         if threaded:
             self.thread = threading.Thread(target=self._run, name='simulation-worker', daemon=True)
             self.thread.start()
@@ -98,11 +104,31 @@ class SimulationService:
         drain = getattr(self.provider, 'drain_collision_events', None)
         if drain:
             for collision in drain():
+                with self.lock:
+                    self.collision_events.append(collision)
                 # Event-driven collisions can arrive after their native anchor frame.
                 # Preserve their actual frame/time instead of relabelling a later frame.
                 self.events.publish(SimulationEvent(EventType.CollisionDetected,
                                                     collision.frame_id, collision.timestamp_s,
                                                     {'collision': to_dict(collision)}))
+
+    def _ingest_provider_sensors(self):
+        drain = getattr(self.provider, 'drain_sensor_frames', None)
+        if drain:
+            for sensor in drain():
+                self.ingest_sensor(sensor)
+
+    def _record(self, frame):
+        if not self.recorder:
+            return
+        if hasattr(self.recorder, 'store_asset') and hasattr(self.provider, 'get_sensor_asset'):
+            for sensor in frame.sensors:
+                if sensor.asset:
+                    folder, filename = sensor.asset.path.split('/', 1)
+                    stored = self.recorder.store_asset(folder, filename, self.provider.get_sensor_asset(sensor.asset), sensor.asset.media_type)
+                    if stored != sensor.asset:
+                        raise RuntimeError('Recorded sensor bytes differ from the native frame reference')
+        self.recorder.record(frame)
 
     def submit_control(self, command):
         with self.lock:
@@ -223,7 +249,14 @@ class SimulationService:
                     'connectionState': self.lifecycle.state.value,
                     'error': self.error or (self.lifecycle.error if self.lifecycle.state == ConnectionState.ERROR else None),
                     **view, 'sensorRatesHz': dict(self.sensor_rates) if live else {},
-                    'sensorErrors': {}, 'backendStepMs': self.backend_step_ms,
+                    'sensorErrors': getattr(self.provider, 'sensor_errors', lambda: {})() if live else {},
+                    'sensorRegistry': getattr(self.provider, 'sensor_registry', lambda: {})() if live else {},
+                    'collisionEvents': [to_dict(e) for e in self.collision_events] if live else [],
+                    'synchronization': {'completeFrames': self.synchronized_frames,
+                                        'incompleteFrames': self.synchronization_missing_frames,
+                                        'issues': {issue.value: self.synchronization_issues[issue.value] for issue in FrameIssue},
+                                        'pendingFrames': len(self.synchronizer.pending)},
+                    'backendStepMs': self.backend_step_ms,
                     'controlSource': self.arbiter.last_selection.source.value if self.arbiter.last_selection else None,
                     'controlExpired': self.now()-self.command_at > self.CONTROL_TTL}
 
@@ -238,21 +271,38 @@ class SimulationService:
     def get_sensor_frame(self, name):
         with self.lock:
             self.require_connected()
+            if name == 'collision' and self.collision_events:
+                return {'sensor_id': name, 'kind': 'COLLISION', 'event_driven': True,
+                        'actor_id': getattr(self.provider, 'sensor_registry', lambda: {})().get(name, {}).get('actorId'),
+                        'collision': to_dict(self.collision_events[-1])}
             for sensor in self.observation.sensors:
                 if sensor.sensor_id == name:
-                    from .contracts import to_dict
                     return to_dict(sensor)
             raise KeyError(name)
 
-    def get_camera_frame(self):
+    def get_camera_frame(self, frame_id=None):
         with self.lock:
             self.require_connected()
+            if frame_id is not None:
+                frame, metadata = self.camera_cache.get(frame_id, (None, None))
+                return frame, copy.deepcopy(metadata)
             return self.frame, copy.deepcopy(self.frame_metadata)
+
+    def get_sensor_asset(self, name, frame_id=None):
+        with self.lock:
+            self.require_connected()
+            frame_id = self.observation.frame_id if frame_id is None else frame_id
+            for sensor in self.sensor_frame_cache.get(frame_id, ()):
+                if sensor.sensor_id == name and sensor.asset:
+                    return self.provider.get_sensor_asset(sensor.asset), {'frame': sensor.frame_id,
+                        'timestamp': sensor.timestamp_s, 'contentType': sensor.asset.media_type}
+            raise KeyError(name)
 
     def ingest_sensor(self, sensor: SensorFrame):
         if not isinstance(sensor, SensorFrame):
             raise ValueError('Expected canonical SensorFrame')
         result = self.synchronizer.receive(sensor)
+        self.synchronization_issues.update(issue.value for issue in result.issues)
         if result.issues:
             log(LogCategory.SENSOR, 'Sensor frame diagnostic', frame_id=sensor.frame_id, timestamp_s=sensor.timestamp_s,
                 sensor_id=sensor.sensor_id, issues=sorted(issue.value for issue in result.issues))
@@ -270,6 +320,25 @@ class SimulationService:
             self.state, self.world, self.sensors = view['vehicle'], view['world'], view['sensors']
             self.state_at = self.now()
             self.sequence += 1
+            self.sensor_frame_cache[observation.frame_id] = observation.sensors
+            while len(self.sensor_frame_cache)>32:
+                self.sensor_frame_cache.popitem(last=False)
+            if observation.complete:
+                self.synchronized_frames += 1
+            else:
+                self.synchronization_missing_frames += 1
+            rates = getattr(self.provider, 'get_sensor_rates', None)
+            if rates:
+                self.sensor_rates = rates()
+            self.frame = self.frame_metadata = None
+            for sensor in observation.sensors:
+                if sensor.sensor_id == 'frontCamera' and sensor.asset and hasattr(self.provider, 'get_sensor_asset'):
+                    self.frame = self.provider.get_sensor_asset(sensor.asset)
+                    self.frame_metadata = {'frame': sensor.frame_id, 'timestamp': sensor.timestamp_s,
+                                           'contentType': sensor.asset.media_type}
+                    self.camera_cache[sensor.frame_id] = (self.frame, self.frame_metadata)
+                    while len(self.camera_cache)>32:
+                        self.camera_cache.popitem(last=False)
             if first:
                 generation = self.lifecycle.begin()
                 self.lifecycle.connected(generation)
@@ -293,6 +362,11 @@ class SimulationService:
             self.actions.clear()
         for action, value in actions:
             if action == 'reset':
+                self._drain_collision_events()
+                self._ingest_provider_sensors()
+                for pending in self.synchronizer.drain(force=True):
+                    self._publish(pending)
+                    self._record(pending)
                 old_actor_id = self.observation.vehicle.actor_id if self.observation else None
                 self.provider.reset_vehicle()
                 self._event(EventType.VehicleDestroyed, actor_id=old_actor_id)
@@ -319,10 +393,10 @@ class SimulationService:
         if not duplicate:
             observation = replace(observation, control=chosen)
             self.synchronizer.begin(observation)
+            self._ingest_provider_sensors()
             for synchronized in self.synchronizer.drain():
                 self._publish(synchronized)
-                if self.recorder:
-                    self.recorder.record(synchronized)
+                self._record(synchronized)
         elif self.observation:
             self.state_at = self.now()  # Explicit native pause; no new observations are recorded.
         if any(name == 'reset' for name, _ in actions):
@@ -356,8 +430,14 @@ class SimulationService:
                     if self.provider.is_connected():
                         self.provider.apply_control(safe_command(*self._context()))
                 finally:
-                    self._drain_collision_events()
-                    self.provider.close()
+                    try:
+                        self._drain_collision_events()
+                        self._ingest_provider_sensors()
+                        for pending in self.synchronizer.drain(force=True):
+                            self._publish(pending)
+                            self._record(pending)
+                    finally:
+                        self.provider.close()
                 errors = getattr(self.provider, 'cleanup_errors', [])
                 if errors:
                     raise RuntimeError('; '.join(errors))
@@ -384,6 +464,8 @@ class SimulationService:
                 self.lifecycle.disconnect()
                 self.observation = self.state = self.world = self.frame = self.frame_metadata = None
                 self.sensors = {}
+                self.camera_cache.clear()
+                self.sensor_frame_cache.clear()
 
     def close(self):
         self.release_controls()

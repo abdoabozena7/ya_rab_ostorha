@@ -1,18 +1,8 @@
-"""Execute verified adapter operations; mark unimplemented calibrations pending."""
+"""Execute native connection, control, cleanup and measured sensor validations."""
 import argparse
 import importlib.util
 import json
 import time
-
-SENSOR_PLANS = {
-    'collision': {'blueprint': 'sensor.other.collision', 'cases': ['barrier low/high speed', 'side', 'rear'], 'fields': ['frame', 'timestamp_s', 'other_actor_id', 'impulse_ns']},
-    'rgb': {'blueprint': 'sensor.camera.rgb', 'checks': ['native image', 'mount transform', 'FOV', 'frame/timestamp alignment']},
-    'depth': {'blueprint': 'sensor.camera.depth', 'distances_m': [5, 10, 20, 30], 'checks': ['surface-distance calibration', 'error_m']},
-    'radar': {'blueprint': 'sensor.other.radar', 'cases': ['stationary', 'approaching', 'receding'], 'fields': ['depth_m', 'azimuth_rad', 'altitude_rad', 'velocity_mps']},
-    'lidar': {'blueprint': 'sensor.lidar.ray_cast', 'fields': ['x_m', 'y_m', 'z_m', 'intensity'], 'checks': ['repeatable static targets', 'frame/timestamp']},
-    'imu': {'blueprint': 'sensor.other.imu', 'cases': ['acceleration', 'hard braking', 'left/right turn'], 'fields': ['accelerometer_mps2', 'gyroscope_radps', 'compass_rad']},
-    'gnss': {'blueprint': 'sensor.other.gnss', 'fields': ['latitude_deg', 'longitude_deg', 'altitude_m', 'world_transform']},
-}
 
 
 def main(check):
@@ -24,6 +14,10 @@ def main(check):
     if check == 'collision':
         from .vehicle_baseline import main as baseline
         baseline()
+        return 0
+    if check in ('rgb', 'depth', 'radar', 'lidar', 'imu', 'gnss'):
+        from .sensor_validation import main as sensors
+        sensors(check)
         return 0
     if importlib.util.find_spec('carla') is None:
         print('CARLA NOT INSTALLED: the compatible native Python API is unavailable. No test passed.')
@@ -38,12 +32,6 @@ def main(check):
     provider = None
     try:
         world = connection.connect()
-        if check in SENSOR_PLANS:
-            plan = SENSOR_PLANS[check]
-            world.get_blueprint_library().find(plan['blueprint'])
-            print('NATIVE VALIDATION PENDING: blueprint availability alone does not validate a sensor.')
-            print(json.dumps({'check': check, 'plan': plan, 'status': 'NOT_RUN'}, indent=2))
-            return 3  # Structural plans only; no fabricated sensor PASS.
         if check == 'connection':
             manager = connection.client.get_trafficmanager(8003)
             print(json.dumps({'status': 'PASS', 'check': check, 'version': connection.server_version,

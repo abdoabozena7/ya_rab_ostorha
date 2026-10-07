@@ -1,2 +1,4 @@
 # Install CARLA separately from the exact simulator release's shipped wheel.
 websockets==15.0.1
+numpy==2.5.3
+Pillow==12.3.0

@@ -11,6 +11,7 @@ class ReplayService:
     def __init__(self, reader, now=None):
         self.session = ReplaySession(reader, **({'now': now} if now else {}))
         self.error = None
+        self.frame_indices = {entry[2]: i for i, entry in enumerate(reader.index)}
         log(LogCategory.REPLAY, 'Replay opened', run_id=reader.metadata.run_id)
 
     def snapshot(self):
@@ -37,12 +38,24 @@ class ReplayService:
                 return to_dict(sensor)
         raise KeyError(name)
 
-    def get_camera_frame(self):
-        for sensor in self.session.current().sensors:
+    def get_camera_frame(self, frame_id=None):
+        frame = self.session.current() if frame_id is None else self.session.reader.frame_at(self.frame_indices[frame_id]) if frame_id in self.frame_indices else None
+        if frame is None:
+            return None, None
+        for sensor in frame.sensors:
             if sensor.kind == SensorKind.RGB and sensor.asset:
                 return self.session.reader.asset_path(sensor).read_bytes(), {'frame': sensor.frame_id, 'timestamp': sensor.timestamp_s,
                                                                            'contentType': sensor.asset.media_type}
         return None, None
+
+    def get_sensor_asset(self, name, frame_id=None):
+        frame = self.session.current() if frame_id is None else self.session.reader.frame_at(self.frame_indices[frame_id]) if frame_id in self.frame_indices else None
+        if frame:
+            for sensor in frame.sensors:
+                if sensor.sensor_id == name and sensor.asset:
+                    return self.session.reader.asset_path(sensor).read_bytes(), {'frame': sensor.frame_id,
+                        'timestamp': sensor.timestamp_s, 'contentType': sensor.asset.media_type}
+        raise KeyError(name)
 
     def set_paused(self, paused):
         self.session.set_paused(paused)

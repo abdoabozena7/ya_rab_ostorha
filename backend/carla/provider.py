@@ -14,11 +14,12 @@ class CarlaProvider:
     name = 'carla'
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
-                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False):
+                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False):
         self.connection = CarlaConnection(host, port, version)
         self.map_name, self.blueprint, self.spawn_index = map_name, blueprint, spawn_index
         self.fixed_delta = fixed_delta
         self.collision_sensor = collision_sensor
+        self.sensor_suite = sensor_suite
         self.world = self.ego = self.sensor_manager = None
         self.gear = 1
         self.last_vehicle = self.last_world = None
@@ -52,6 +53,8 @@ class CarlaProvider:
         self.sensor_manager = CarlaSensorManager(self.world.world, actor)
         if self.collision_sensor:
             self.sensor_manager.enable_collision(self.connection.api)
+        if self.sensor_suite:
+            self.sensor_manager.enable_suite(self.connection.api, self.fixed_delta)
         return actor.id
 
     def destroy_ego_vehicle(self):
@@ -119,6 +122,25 @@ class CarlaProvider:
     def drain_collision_events(self):
         return self.sensor_manager.drain_collisions() if self.sensor_manager else ()
 
+    @property
+    def required_sensors(self):
+        return ('frontCamera', 'depth', 'radar', 'lidar', 'imu', 'gnss') if self.sensor_suite else ()
+
+    def drain_sensor_frames(self):
+        return self.sensor_manager.drain_frames() if self.sensor_manager else ()
+
+    def get_sensor_asset(self, asset):
+        return self.sensor_manager.asset_bytes(asset)
+
+    def get_sensor_rates(self):
+        return self.sensor_manager.rates() if self.sensor_manager else {}
+
+    def sensor_errors(self):
+        return dict(self.sensor_manager.errors) if self.sensor_manager else {}
+
+    def sensor_registry(self):
+        return self.sensor_manager.registry() if self.sensor_manager else {}
+
     def apply_control(self, command: ControlCommand):
         if not isinstance(command, ControlCommand):
             raise ValueError('Expected canonical ControlCommand')
@@ -133,13 +155,15 @@ class CarlaProvider:
         return self.sensor_manager.latest() if self.sensor_manager else {}
 
     def get_camera_frame(self):
-        return None, None  # RGB is deliberately disabled until checkpoint 1 passes.
+        return None, None  # SimulationService serves RGB only after exact-frame synchronization.
 
     def is_connected(self):
         return self.world is not None and self.connection.is_connected()
 
     def reset_vehicle(self):
         self.destroy_ego_vehicle()
+        if self.cleanup_errors:
+            raise RuntimeError('CARLA cleanup failed: ' + '; '.join(self.cleanup_errors))
         self.gear = 1
         self.spawn_ego_vehicle()
         self.set_controls(brake=1)

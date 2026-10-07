@@ -75,8 +75,16 @@ class Handler(SimpleHTTPRequestHandler):
                 if path == "/api/simulation/sensor":
                     name = parse_qs(urlsplit(self.path).query).get("name", [""])[0]
                     return self._json(200, provider.get_sensor_frame(name))
-                if path == "/api/simulation/camera.jpg":
-                    frame, metadata = provider.get_camera_frame()
+                if path in ("/api/simulation/camera.jpg", '/api/simulation/sensor.bin'):
+                    requested = parse_qs(urlsplit(self.path).query).get('frame_id', [None])[0]
+                    if requested is not None and (not requested.isdigit() or len(requested)>12):
+                        return self._json(400, {'error': 'Sensor frame_id must be a nonnegative integer'})
+                    options = {'frame_id': int(requested)} if requested is not None else {}
+                    if path.endswith('sensor.bin'):
+                        name = parse_qs(urlsplit(self.path).query).get('name', [''])[0]
+                        frame, metadata = provider.get_sensor_asset(name, **options)
+                    else:
+                        frame, metadata = provider.get_camera_frame(**options)
                     if not frame:
                         return self._json(503, {"error": "No camera frame yet"})
                     self.send_response(200)
@@ -151,6 +159,7 @@ def main():
     parser.add_argument("--fixed-delta", type=float, default=.05)
     parser.add_argument('--session-duration', type=float, help='Stop cleanly after this many wall-clock seconds (native validation/recording)')
     parser.add_argument('--collision-sensor', action='store_true', help='Attach the real native collision sensor (Gate 2)')
+    parser.add_argument('--sensors', action='store_true', help='Attach the validated seven native sensors (Gate 3)')
     parser.add_argument("--record-log", help="Optional JSONL frame log")
     parser.add_argument('--record-run', help='Output directory for a versioned replayable run')
     parser.add_argument('--replay', help='Read an existing real recorded run; never connects to CARLA')
@@ -193,7 +202,7 @@ def main():
             provider = create_provider('carla', host=args.carla_host, port=args.carla_port,
                                      version=args.carla_version, map_name=args.map,
                                      blueprint=args.vehicle, spawn_index=args.spawn_index,
-                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor)
+                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor, sensor_suite=args.sensors)
             supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 10)
             supervisor.connect(provider)
         except Exception as error:
@@ -219,7 +228,8 @@ def main():
                                         config.experiment.name if config else 'Manual native session', provider.name, DataOrigin.REAL_SIMULATION,
                                         description=config.experiment.description if config else '', seed=config.experiment.seed if config else None,
                                         created_at_utc=datetime.now(timezone.utc).isoformat(), config=to_dict(config) if config else {}))
-            server.simulation_service = SimulationService(provider, recorder)
+            server.simulation_service = SimulationService(provider, recorder, required_sensors=provider.required_sensors,
+                                                          sensor_timeout_s=.25)
             server.simulation_service.start()
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host,

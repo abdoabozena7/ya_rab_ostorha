@@ -1,101 +1,69 @@
-# Ya Rab Ostorha — CARLA Simulation Control Center
+# Ya Rab Ostorha: CARLA Simulation Control Center
 
-**CARLA is the simulator.** This project provides the existing HUD, dashboard,
-keyboard controls, telemetry/debugging and experiment interfaces. Production
-does not render a duplicate driving world or run mock physics.
+CARLA owns the world, vehicle physics and sensors. This project retains the
+existing dashboard, controls, safety/core architecture, synchronization and recording.
+The obsolete Three.js game and all preview/mock launch routes are deleted.
 
-**Target: CARLA 0.9.16 (UE4), official precompiled Windows package.**
+CARLA server/API **0.9.16 / 0.9.16**, Python **3.12.10 x64**, install
+`C:\CARLA\CARLA_0.9.16`, map `Town10HD_Opt`, ego `vehicle.lincoln.mkz_2020`.
+**Gates 1-3 PASS live**, including real sensors, recording and Replay with CARLA
+stopped. Evidence and limits: [live validation report](docs/LIVE_NATIVE_VALIDATION.md).
 
-**Current work: live native validation of the existing offline core.** CARLA 0.9.16
-is installed at `C:\CARLA\CARLA_0.9.16`, with the matching packaged CPython 3.12
-API in `.venv-carla` (Python 3.12.10). Native boot and connection are verified.
-Gate evidence is tracked in [LIVE_NATIVE_VALIDATION.md](docs/LIVE_NATIVE_VALIDATION.md).
+Hardware: RTX 3060 Laptop GPU, 6144 MiB VRAM. Windows detects 16 GiB installed RAM
+(two 8 GiB modules), 15.25 GiB usable; the user reports 32 GB. Former Quadro T1000
+hardware notes are obsolete. Full-suite native throughput measured 19.69 frames/s
+at 20 simulation Hz, 5868 MiB VRAM in the conservative development profile.
 
-Hardware: RTX 3060 Laptop GPU, **6144 MiB VRAM**. The user reports 32 GB RAM;
-Windows currently enumerates **two 8 GiB modules (16 GiB installed)** and 15.25 GiB
-usable. The previous Quadro T1000 notes describe obsolete hardware.
-
-## Dashboard now
-
-```powershell
-.\.venv\Scripts\python.exe -m backend.server
-```
-
-Open http://127.0.0.1:8000/. It shows **CARLA — DISCONNECTED**, unavailable
-observations, and disabled driving controls. Use `.venv-carla` for the native API and all current verification.
-
-## Replay an existing real run
-
-```powershell
-.\.venv\Scripts\python.exe -m backend.server --replay runs\REAL_RUN_ID
-```
-
-Replay shows **MODE: REPLAY** and recorded observations with driving controls
-disabled. It never connects to a simulator. No real run exists yet, and test
-fixture recordings are refused by the production reader. Future native recording
-uses `--record-run runs`; the old `--record-log` is a compatibility JSONL sink.
-
-Strict configuration example: `experiments/offline-preparation.json`.
-Optional dashboard-only startup: add `--experiment-config` with that file path.
-
-## Installed runtime and launch
-
-```powershell
-py -3.12 --version
-.\scripts\prepare_carla.ps1
-```
-
-The script inspects the official package, checks its exact wheel ABI, downloads
-and verifies the archive, extracts into `C:\CARLA\CARLA_0.9.16\`, and installs
-the shipped cp312 Windows x64 wheel and project dependencies into `.venv-carla`.
-An incompatible existing environment is archived. It does not install Python
-or build CARLA from source. Inspection without installation:
-
-```powershell
-.\scripts\prepare_carla.ps1 -InspectOnly
-```
-
-Launch in a separate terminal, using the detected package executable and a
-conservative development profile (Low, windowed 1280x720):
+## Run the native dashboard
 
 ```powershell
 .\scripts\launch_carla.ps1
-```
-
-Before spawning:
-
-Stop the dashboard-only backend before reusing port 8000, or add
-`--port 8002 --websocket-port 8003` to the production command and open port 8002.
-
-```powershell
+# In another terminal, from the project folder:
 .\.venv-carla\Scripts\python.exe -m backend.carla.preflight
-.\.venv-carla\Scripts\python.exe -m backend.server --carla
+.\.venv-carla\Scripts\python.exe -m backend.server --carla --sensors --spawn-index 152
 ```
 
-Focus the dashboard for W/A/S/D/Space; observe the actual car in CARLA.
-First validate native boot, connection and one vehicle (Gate 1), then controls
-and collision (Gate 2), then real sensors (Gate 3). Normal traffic/pedestrians
-follow Gate 4. Egypt, AI, accident avoidance and randomized chaos are Gates 5–8
-and are not implemented in this offline preparation.
-No fake RPM, fuel, or component damage is displayed. Native RPM/per-wheel APIs
-exist in 0.9.16; mapping and validation are deferred until Gate 1.
+Open http://127.0.0.1:8000/. Keep the dashboard focused to drive; resume explicitly
+if the safety watchdog paused controls. W throttle, S brake/reverse, A/D steer,
+Space handbrake. The native CARLA window has its own spectator keyboard controls.
+Do not run a second synchronous tick owner or verification script while the backend
+owns the session. Ctrl+C in an interactive backend terminal performs actor cleanup.
+`--session-duration 30` provides clean timed validation runs.
 
-See [0.9.16 migration, package evidence, blocker and gate procedures](docs/CARLA_0916_MIGRATION.md).
+Record a new native session with `--record-run runs`. Large sensor data is kept
+as separate binary assets. No RPM, fuel, temperature or component damage is invented.
 
-## Offline verification
+## Replay the verified real run
 
 ```powershell
-npm test
-.\.venv\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
+.\.venv-carla\Scripts\python.exe -m backend.server --replay runs\gate3_1791400336
 ```
 
-SDK fixtures test contracts and cleanup only. They do not pass native physics gates.
+Stop the current backend before reusing its ports. Replay never connects to CARLA,
+shows MODE: REPLAY, displays recorded telemetry/camera and refuses native controls.
+The verified run contains 534 frames over 26.65 simulation seconds (~550.32 MB).
+Test-fixture recordings are refused by production Replay.
 
-## Preserved work
+Dashboard only, with disabled controls and unavailable telemetry:
 
-- Three.js game deleted from this checkout at the user�s request; no preview launcher or legacy mock API remains.
-- BeamNG: `legacy/beamng-integration/`, branch `codex/beamng-migration-archive`, snapshot `7a6a777`.
-- Previous CARLA 0.10.0 preparation: `legacy/carla-0100-preparation/`, branch `codex/carla-0100-preparation-archive`, snapshot `4d5b8ad`.
-- Reused: branding, CSS/HUD, Phone/Route/Debug, camera panel, controls and transport.
-- Assets and [license notices](public/assets/ATTRIBUTION.md) remain preserved.
+```powershell
+.\.venv-carla\Scripts\python.exe -m backend.server
+```
 
+## Validation
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
+npm test
+# Run only with a free native simulator / no active backend:
+.\.venv-carla\Scripts\python.exe -m scripts.native.vehicle_baseline
+.\.venv-carla\Scripts\python.exe -m scripts.native.sensor_validation
+```
+
+Current regression checks: 85 Python passes / 1 skip and 15 JavaScript passes.
+Native gate status comes from live measurements, never unit tests.
+
+[Architecture](docs/OFFLINE_CORE.md), [migration/package evidence](docs/CARLA_0916_MIGRATION.md),
+[asset licenses](public/assets/ATTRIBUTION.md). BeamNG history is preserved in
+`legacy/beamng-integration`; 0.10.0 preparation in `legacy/carla-0100-preparation`.
+Traffic populations, pedestrians, Egypt maps and AI are not active.

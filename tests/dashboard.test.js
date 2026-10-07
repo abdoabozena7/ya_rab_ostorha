@@ -15,7 +15,7 @@ test('production modules have no legacy world, renderer, or mock physics depende
 
 test('missing observations stay unavailable, rather than decorative zero values', () => {
   const text = telemetryText(unavailableState(), {remote: true});
-  assert.match(text, /Speed unavailable/); assert.match(text, /suspension compression: unavailable/);
+  assert.match(text, /Speed(?: magnitude)? unavailable/); assert.match(text, /suspension compression: unavailable/);
   assert.doesNotMatch(text, /NaN|Speed 0.0/);
 });
 

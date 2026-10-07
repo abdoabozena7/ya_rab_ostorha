@@ -28,6 +28,13 @@ def dashboard_frame(frame):
                                  'frameAvailable': sensor.asset is not None,
                                  'asset': to_dict(sensor.asset), 'matchesVehicleFrame': True}
                for sensor in frame.sensors}
+    for sensor in frame.sensors:
+        capture = sensor.metadata
+        sensors[sensor.sensor_id].update(width=capture.get('width'), height=capture.get('height'),
+            fovDeg=capture.get('fov_deg'), worldTransform=to_dict(sensor.transform),
+            mountTransform=to_dict(capture.get('mount_transform', to_dict(sensor.transform))),
+            sensorTickSeconds=capture.get('sensor_tick_s'), data=to_dict(sensor.data), units=to_dict(sensor.units),
+            metadata=to_dict(capture))
     return {'vehicle': state, 'world': {'source': world.provider, 'frame': world.frame_id, 'timestamp': world.timestamp_s,
                                        'map': world.map_name, 'version': world.simulator_version, 'pythonApiVersion': world.api_version,
                                        'fixedDeltaSeconds': world.fixed_delta_seconds, 'synchronous': world.synchronous},

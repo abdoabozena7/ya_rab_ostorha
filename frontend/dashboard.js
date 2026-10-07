@@ -31,7 +31,7 @@ async function updateCamera(metadata) {
   const generation = cameraGeneration, request = new AbortController();
   cameraRequest = request;
   try {
-    const response = await fetch('/api/simulation/camera.jpg', {cache: 'no-store', signal: request.signal});
+    const response = await fetch(`/api/simulation/camera.jpg?frame_id=${metadata.frame}`, {cache: 'no-store', signal: request.signal});
     if (!response.ok) throw new Error('No live camera frame');
     // Playback/native callbacks may advance while the HTTP request is in flight.
     // Retry against the next snapshot instead of attaching a different frame's metadata.
@@ -69,8 +69,9 @@ function refresh() {
   $('connectionDetail').textContent = provider.status;
   $('phoneStatus').textContent = provider.status;
   $('providerStatus').textContent = provider.status;
-  $('speedVal').textContent = numeric(state.speedMps == null ? null : Math.abs(state.speedMps) * 3.6, '', 0);
-  $('speedFill').style.width = `${Number.isFinite(state.speedMps) ? Math.min(100, Math.abs(state.speedMps) * 3.6 / 2) : 0}%`;
+  const speedKmh = state.speedKmh ?? (state.speedMagnitudeMps == null ? null : state.speedMagnitudeMps * 3.6);
+  $('speedVal').textContent = numeric(speedKmh, '', 0);
+  $('speedFill').style.width = `${Number.isFinite(speedKmh) ? Math.min(100, speedKmh / 2) : 0}%`;
   $('gearVal').textContent = state.gear ?? '—';
   $('versionVal').textContent = provider.world.version ?? '—';
   $('mapVal').textContent = provider.world.map?.split('/').at(-1) ?? '—';

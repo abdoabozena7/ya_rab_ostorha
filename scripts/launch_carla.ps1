@@ -10,7 +10,7 @@ $nativeExe = [IO.Path]::GetFullPath($installed.executable)
 $rootPrefix = [IO.Path]::GetFullPath($InstallRoot).TrimEnd('\') + '\'
 if (-not $nativeExe.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $nativeExe)) { throw 'CARLA 0.9.16 BLOCKER: detected package launcher is missing or outside the install folder' }
 $quality = 'Low'
-Write-Host "Launching actual CARLA 0.9.16: $nativeExe ($Profile, $quality, 1280x720). Gate 1 remains unverified."
+Write-Host "Launching actual CARLA 0.9.16: $nativeExe ($Profile, $quality, 1280x720). See docs/LIVE_NATIVE_VALIDATION.md for gate evidence."
 Push-Location -LiteralPath (Split-Path -Parent $nativeExe)
 try {
     $nativeProcess = Start-Process -FilePath $nativeExe -ArgumentList "-quality-level=$quality", '-windowed', '-ResX=1280', '-ResY=720', '-carla-rpc-port=2000' -WindowStyle Hidden -PassThru -Wait
