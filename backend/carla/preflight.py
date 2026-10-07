@@ -1,6 +1,7 @@
 """Read-only native connection/version/catalog check, before starting a tick owner."""
 import json
 from .connection import CarlaConnection
+from .target import BLOCKER
 
 
 def main():
@@ -15,7 +16,7 @@ def main():
                           'vehicleBlueprints': [bp.id for bp in world.get_blueprint_library().filter('vehicle.*')]}, indent=2))
     except RuntimeError as error:
         reason = str(error)
-        raise SystemExit(reason if reason.startswith('CARLA BLOCKER:') else 'CARLA BLOCKER: ' + reason) from None
+        raise SystemExit(reason if reason.startswith(BLOCKER) else BLOCKER + ': ' + reason) from None
     finally:
         connection.disconnect()
 

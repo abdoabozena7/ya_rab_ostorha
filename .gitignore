@@ -26,6 +26,7 @@ output/
 .beamng-sdk-audit/
 .venv/
 .venv-carla/
+.venv-carla-archive-*/
 recordings/
 .beamng-user/
 tech.key
