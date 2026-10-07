@@ -21,6 +21,10 @@ def main(check):
     parser.add_argument('--port', type=int, default=2000)
     parser.add_argument('--spawn-index', type=int, default=0)
     args = parser.parse_args()
+    if check == 'collision':
+        from .vehicle_baseline import main as baseline
+        baseline()
+        return 0
     if importlib.util.find_spec('carla') is None:
         print('CARLA NOT INSTALLED: the compatible native Python API is unavailable. No test passed.')
         return 2

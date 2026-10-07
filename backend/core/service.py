@@ -70,7 +70,7 @@ class SimulationService:
     def safe_controls():
         return {'throttle': 0, 'brake': 1, 'steering': 0, 'parkingbrake': 0}
 
-    def start(self):
+    def start(self, *, threaded=True):
         if self.thread is not None or self.provider is None or self.closed:
             raise RuntimeError('A provider and an unstarted worker are required')
         if self.observation is None:
@@ -83,8 +83,26 @@ class SimulationService:
                 self._publish(frame)
                 if self.recorder:
                     self.recorder.record(frame)
-        self.thread = threading.Thread(target=self._run, name='simulation-worker', daemon=True)
-        self.thread.start()
+        if threaded:
+            self.thread = threading.Thread(target=self._run, name='simulation-worker', daemon=True)
+            self.thread.start()
+
+    def step_once(self):
+        """Controlled experiment step through the same safety/arbitration worker."""
+        if self.thread is not None or self.closed:
+            raise RuntimeError('Manual stepping requires an open, unthreaded service')
+        self._iteration()
+
+    def _drain_collision_events(self):
+        from .contracts import to_dict
+        drain = getattr(self.provider, 'drain_collision_events', None)
+        if drain:
+            for collision in drain():
+                # Event-driven collisions can arrive after their native anchor frame.
+                # Preserve their actual frame/time instead of relabelling a later frame.
+                self.events.publish(SimulationEvent(EventType.CollisionDetected,
+                                                    collision.frame_id, collision.timestamp_s,
+                                                    {'collision': to_dict(collision)}))
 
     def submit_control(self, command):
         with self.lock:
@@ -285,6 +303,7 @@ class SimulationService:
             chosen = self._choose()
         self.provider.apply_control(chosen)
         self.provider.step()
+        self._drain_collision_events()
         observation = self.provider.get_simulation_frame()
         if not isinstance(observation, SimulationFrame):
             raise RuntimeError('Expected canonical observations from one native frame')
@@ -337,6 +356,7 @@ class SimulationService:
                     if self.provider.is_connected():
                         self.provider.apply_control(safe_command(*self._context()))
                 finally:
+                    self._drain_collision_events()
                     self.provider.close()
                 errors = getattr(self.provider, 'cleanup_errors', [])
                 if errors:

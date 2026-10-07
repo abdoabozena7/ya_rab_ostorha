@@ -14,10 +14,11 @@ class CarlaProvider:
     name = 'carla'
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
-                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05):
+                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False):
         self.connection = CarlaConnection(host, port, version)
         self.map_name, self.blueprint, self.spawn_index = map_name, blueprint, spawn_index
         self.fixed_delta = fixed_delta
+        self.collision_sensor = collision_sensor
         self.world = self.ego = self.sensor_manager = None
         self.gear = 1
         self.last_vehicle = self.last_world = None
@@ -49,6 +50,8 @@ class CarlaProvider:
         self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index)
         actor = self.ego.spawn()
         self.sensor_manager = CarlaSensorManager(self.world.world, actor)
+        if self.collision_sensor:
+            self.sensor_manager.enable_collision(self.connection.api)
         return actor.id
 
     def destroy_ego_vehicle(self):
@@ -111,10 +114,10 @@ class CarlaProvider:
     def get_simulation_frame(self):
         if self.last_vehicle is None or self.last_world is None:
             raise RuntimeError('No native observation is available')
-        # Canonical sensor decoders will be added after native sensor validation.
-        if self.get_sensor_state():
-            raise RuntimeError('Canonical sensor decoder requires native validation before activation')
         return simulation_frame(self.last_vehicle, self.last_world)
+
+    def drain_collision_events(self):
+        return self.sensor_manager.drain_collisions() if self.sensor_manager else ()
 
     def apply_control(self, command: ControlCommand):
         if not isinstance(command, ControlCommand):

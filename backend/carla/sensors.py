@@ -17,6 +17,7 @@ class CarlaSensorManager:
         self.lock = threading.RLock()
         self.cleanup_errors = []
         self.sample_times = {}
+        self.pending_collisions = deque()
 
     def spawn(self, sensor_id, blueprint_id, transform, attributes, decode):
         if sensor_id in self.actors:
@@ -57,6 +58,29 @@ class CarlaSensorManager:
             return {name: (len(times)-1)/(times[-1]-times[0])
                     if len(times) > 1 and times[-1] > times[0] else None
                     for name, times in self.sample_times.items()}
+
+    def enable_collision(self, api):
+        from ..core.contracts import CollisionEvent
+        import math
+        def decode(event):
+            impulse = tuple(vector(event.normal_impulse))
+            collision = CollisionEvent(event.frame, event.timestamp, self.ego.id,
+                                       event.other_actor.id, impulse,
+                                       'left-handed-x-forward-y-right-z-up',
+                                       other_actor_type=event.other_actor.type_id,
+                                       impulse_magnitude_ns=math.sqrt(sum(v*v for v in impulse)))
+            with self.lock:
+                if 'collision' in self.actors:
+                    self.pending_collisions.append(collision)
+            from ..core.contracts import to_dict
+            return to_dict(collision)
+        return self.spawn('collision', 'sensor.other.collision', api.Transform(), {}, decode)
+
+    def drain_collisions(self):
+        with self.lock:
+            events = tuple(self.pending_collisions)
+            self.pending_collisions.clear()
+            return events
 
     def close(self):
         with self.lock:

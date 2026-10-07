@@ -310,6 +310,12 @@ class CollisionEvent(Contract):
     coordinate_frame: str
     contact_position_m: Vec3 | None = None
     ego_transform: Transform | None = None
+    other_actor_type: str | None = None
+    impulse_magnitude_ns: float | None = None
+
+    def validate(self):
+        if self.impulse_magnitude_ns is not None and not math.isclose(self.impulse_magnitude_ns, math.sqrt(sum(v*v for v in self.impulse_ns)), rel_tol=1e-6, abs_tol=1e-6):
+            raise ValueError('Impulse magnitude must match the native impulse vector norm')
 
 
 @dataclass(frozen=True)
