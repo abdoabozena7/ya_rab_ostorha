@@ -30,7 +30,7 @@ MIXTURES = {
     'UNREGULATED': (15, 30, 25, 30),
 }
 WORLD_PROFILES = {
-    'VISUAL_DEMO': {'vehicle_count': 50, 'pedestrian_count': 30},
+    'VISUAL_DEMO': {'vehicle_count': 40, 'pedestrian_count': 30},
     'TRAINING_DEVELOPMENT': {'vehicle_count': 25, 'pedestrian_count': 20},
     'EVALUATION': {'vehicle_count': 25, 'pedestrian_count': 20},
 }

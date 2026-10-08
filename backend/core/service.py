@@ -150,6 +150,11 @@ class SimulationService:
             for collision in drain():
                 with self.lock:
                     self.collision_events.append(collision)
+                    if getattr(self.provider,'scenario_outcomes_enabled',False) is True:
+                        outcome=self.provider.observe_scenario_collision(collision)
+                        if outcome is not None:
+                            self.events.publish(SimulationEvent(EventType.ControlChanged,collision.frame_id,collision.timestamp_s,
+                                {'scenario_outcome':outcome,'mode':self.arbiter.machine.mode.value}))
                     if self.arbiter.machine.mode == ControlMode.AUTOMATIC:
                         self._stop_navigation('collision')
                 # Event-driven collisions can arrive after their native anchor frame.

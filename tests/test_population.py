@@ -10,6 +10,15 @@ from backend.core.contracts import PopulationState, from_dict, to_dict
 
 
 class PopulationTests(unittest.TestCase):
+    def test_replacement_visibility_is_conservative_for_front_and_rear_views(self):
+        vector=lambda x,y,z:SimpleNamespace(x=x,y=y,z=z)
+        front=(vector(0,0,0),vector(1,0,0),vector(0,1,0),vector(0,0,1),1.,.5625)
+        rear=(vector(0,0,0),vector(-1,0,0),vector(0,-1,0),vector(0,0,1),1.,.5625)
+        self.assertTrue(WorldPopulationManager._spawn_visible(vector(150,0,0),(front,)))
+        self.assertFalse(WorldPopulationManager._spawn_visible(vector(-150,0,0),(front,)))
+        self.assertTrue(WorldPopulationManager._spawn_visible(vector(-150,0,0),(rear,)))
+        self.assertFalse(WorldPopulationManager._spawn_visible(vector(0,150,0),(front,rear)))
+
     def test_population_values_and_speed_units_are_explicit(self):
         self.assertEqual(validate_population(DEFAULT_POPULATION), DEFAULT_POPULATION)
         self.assertEqual(SPEED_DIFFERENCE, {'SLOW':30., 'NORMAL':15., 'FAST':0.})

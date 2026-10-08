@@ -9,6 +9,7 @@ import json
 import math
 from pathlib import Path
 import time
+import threading
 import urllib.request
 import carla
 import numpy as np
@@ -123,7 +124,16 @@ def main():
             send('start_journey',speed_kmh=15)
             wait(lambda s:s.get('journey',{}).get('status')=='RUNNING')
             wait(lambda s:s['vehicle']['speedKmh']>2)
-            proof['moving_image_comparison']=compare_image()[0]
+            # Browser image requests do not block its WebSocket heartbeat.
+            # Preserve that behavior while this synchronous verifier encodes PNG.
+            image_done=threading.Event()
+            def image_heartbeat():
+                while not image_done.wait(.07):
+                    send('journey_heartbeat',session_id=state['sessionId'])
+            image_thread=threading.Thread(target=image_heartbeat,daemon=True)
+            image_thread.start()
+            try:proof['moving_image_comparison']=compare_image()[0]
+            finally:image_done.set();image_thread.join(timeout=2)
             wait(lambda s:s.get('journey',{}).get('status')=='ARRIVED',35)
             proof['checks']['straight_arrival'] = math.dist(start,state['vehicle']['positionWorldM'])>15 and state['vehicle']['speedKmh']<.54
             heartbeat = False
@@ -217,8 +227,9 @@ def main():
         if not args.restart:
             proof['image_comparison'],raw,jpeg=compare_image()
             proof['image_comparison']['postprocess']=rgb['metadata']['attributes']['enable_postprocess_effects']
-            (ROOT/'output/native-validation/dashboard-v2-native.png').write_bytes(raw)
-            (ROOT/'output/native-validation/dashboard-v2-delivered.jpg').write_bytes(jpeg)
+            prefix=args.output.with_suffix('') if args.output else ROOT/'output/native-validation/dashboard-v2'
+            prefix.with_name(prefix.name+'-native.png').write_bytes(raw)
+            prefix.with_name(prefix.name+'-delivered.jpg').write_bytes(jpeg)
         proof['pass']=all(proof['checks'].values())
     suffix=args.restart.lower() if args.restart else 'navigation-short' if args.short else 'navigation'
     path=args.output or ROOT/'output/native-validation'/('dashboard-v2-'+suffix+'.json')
