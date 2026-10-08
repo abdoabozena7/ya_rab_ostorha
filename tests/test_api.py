@@ -61,7 +61,7 @@ class ApiTests(unittest.TestCase):
     def test_default_page_is_control_center(self):
         with urlopen(self.base + '/') as response:
             html = response.read().decode()
-        self.assertIn('/frontend/dashboard.js', html)
+        self.assertIn('/frontend/dashboard.bundle.js', html)
         self.assertNotIn('three@', html)
         self.assertNotIn('gameCanvas', html)
 
