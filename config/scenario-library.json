@@ -1,0 +1,13 @@
+{
+  "version":1,
+  "map":"Carla/Maps/Town10HD_Opt",
+  "split_seed_ranges":{"TRAIN":[0,999],"VALIDATION":[1000,1999],"TEST":[2000,2999]},
+  "native_demonstrations":[
+    {"scenario_id":"front_obstacle_v1","scenario_type":"FRONT_OBSTACLE","ego_initial_speed_mps":0,"front_distance_m":24,"timeout_s":15,"geometry":"Seeded compatible straight native lane"},
+    {"scenario_id":"sudden_braking_v1","scenario_type":"SUDDEN_BRAKING","ego_initial_speed_mps":0,"leader_initial_speed_mps":5,"front_distance_m":18,"brake_start_s":2,"timeout_s":15,"geometry":"Seeded compatible straight native lane"}
+  ],
+  "contract_only_families":["SIDE_CUT_IN","INTERSECTION_CONFLICT","PEDESTRIAN_CROSSING","NARROW_GAP","DENSE_CONGESTION","REAR_APPROACHING","MULTI_HAZARD"],
+  "difficulty_note":"Native v1 prototypes use fixed geometry; difficulty labels do not imply harder situations. Later factories must explicitly parameterize and verify difficulty.",
+  "evaluation_variations":["unseen seeds and positions","actor combinations","density","initial speeds","pedestrian destinations and schedules","weather"],
+  "repeatability":"Seeded setup with recorded actual initial states, API/server versions, timestep, sensor and renderer configuration. No unconditional bitwise physics guarantee."
+}

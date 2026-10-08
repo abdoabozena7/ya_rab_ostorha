@@ -1,5 +1,6 @@
 """Application worker: canonical observations in, validated command data out."""
 import copy
+import statistics
 from dataclasses import replace
 import threading
 import time
@@ -18,6 +19,8 @@ class SimulationService:
     CONTROL_TTL = .35
 
     def __init__(self, provider, recorder=None, *, required_sensors=(), optional_sensors=(), sensor_timeout_s=.25, now=time.monotonic):
+        from .safety_policy import ObservationHistory
+        self.policy_history = ObservationHistory()
         self.provider, self.recorder, self.now = provider, recorder, now
         self.lock = threading.RLock()
         self.stop_event = threading.Event()
@@ -32,6 +35,8 @@ class SimulationService:
         self.restart_result = None
         self.restarting = False
         self.recent_ticks = deque(maxlen=100)
+        self.observation_latencies_ms = deque(maxlen=100)
+        self.frame_tick_started = OrderedDict()
         self.lifecycle = ConnectionLifecycle(now=now)
         self.events = EventBus()
         self.events.subscribe(self._log_event)
@@ -98,8 +103,10 @@ class SimulationService:
             from .contracts import ExperimentMetadata, DataOrigin
             from .recording import RunRecorder
             directory = Path(__file__).resolve().parents[2] / 'runs' / 'normal_city'
+            environment=self.provider.environment_state()
+            label='Controlled scenario native run' if environment and environment.get('mode')=='TRAINING' else 'Living city native run'
             self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
-                'Normal city native manual run', self.name, DataOrigin.REAL_SIMULATION,
+                label, self.name, DataOrigin.REAL_SIMULATION,
                 created_at_utc=datetime.now(timezone.utc).isoformat(), config=self.provider.recording_metadata()))
             self._event(EventType.ControlChanged, recording='STARTED', population=self.provider.population_state())
             return {'enabled': True, 'path': str(self.recorder.root)}
@@ -486,6 +493,11 @@ class SimulationService:
                         (len(self.recent_ticks)-1)/(self.recent_ticks[-1]-self.recent_ticks[0])
                         if len(self.recent_ticks)>1 and self.recent_ticks[-1]>self.recent_ticks[0] else None,
                         'renderFps': None, 'clock': 'WALL_TIME',
+                        'observationPipelineLatencyMs': {
+                            'definition':'Native step request to complete synchronized publication; excludes display latency',
+                            'samples':len(self.observation_latencies_ms),
+                            'median':statistics.median(self.observation_latencies_ms) if self.observation_latencies_ms else None,
+                            'maximum':max(self.observation_latencies_ms) if self.observation_latencies_ms else None},
                         'sensorWallRatesHz': getattr(self.provider,'get_sensor_wall_rates',lambda:{})(),
                         'gpu': getattr(getattr(self.provider, 'runtime', None), 'gpu', None)},
                     'provider': self.name, 'mode': self.arbiter.machine.mode.value,
@@ -498,7 +510,7 @@ class SimulationService:
                     'dashboardResult': copy.deepcopy(self.dashboard_result),
                     'route': getattr(self.provider, 'route_state', lambda: None)() if live else None,
                     'population': getattr(self.provider, 'population_state', lambda: None)() if live else None,
-                    'environment': getattr(self.provider, 'environment_state', lambda: None)() if live else None,
+                    'environment': self._environment_snapshot() if live else None,
                     'nearbyActors': getattr(self.provider, 'ground_truth_debug', lambda: None)() if live else None,
                     'synchronization': {'completeFrames': self.synchronized_frames,
                                         'incompleteFrames': self.synchronization_missing_frames,
@@ -507,6 +519,15 @@ class SimulationService:
                     'backendStepMs': self.backend_step_ms,
                     'controlSource': self.arbiter.last_selection.source.value if self.arbiter.last_selection else None,
                     'controlExpired': self.now()-self.command_at > self.CONTROL_TTL}
+
+    def _environment_snapshot(self):
+        state = getattr(self.provider, 'environment_state', lambda: None)()
+        if isinstance(state,dict):
+            frames = self.policy_history.snapshot()
+            state['observation_status'] = {'status':self.policy_history.status,'history_frames':len(frames),
+                'frame_id':frames[-1].frame_id if frames else None,'privileged_data_excluded':True,'policy_active':False}
+            return state
+        return None
 
     def require_connected(self):
         if not self.snapshot()['connected']:
@@ -561,14 +582,20 @@ class SimulationService:
             raise RuntimeError('Provider must return one canonical SimulationFrame')
         if self.provider and observation.world.provider != self.provider.name:
             raise RuntimeError('Observation provider does not match its adapter')
-        getattr(self.provider, 'observe_scenario', lambda frame: None)(observation)
         with self.lock:
             first = self.observation is None
+            tick_started = self.frame_tick_started.pop(observation.frame_id,None)
+            if tick_started is not None and observation.complete:
+                self.observation_latencies_ms.append((self.now()-tick_started)*1000)
+            self.policy_history.append(observation)
             fresh_recovery = (not first and observation.frame_id > self.observation.frame_id
                               and self.lifecycle.state == ConnectionState.ERROR
                               and self.lifecycle.error == 'Observation receipt timeout'
                               and self.error is None)
             self.observation = observation
+            if getattr(self.provider,'scenario_outcomes_enabled',False) is True:
+                outcome=self.provider.observe_scenario(observation)
+                if outcome is not None:self._event(EventType.ControlChanged,scenario_outcome=outcome)
             view = dashboard_frame(observation)
             self.state, self.world, self.sensors = view['vehicle'], view['world'], view['sensors']
             self.state_at = self.now()
@@ -649,6 +676,7 @@ class SimulationService:
                         'camera_bloom', 'simulation_hz', 'vehicle', 'spawn_index'))
                     sensor_change = sensor_change or action=='scenario' and isinstance(value,dict) and value.get('operation') in ('load','reset')
                     if sensor_change:
+                        self.policy_history.clear()
                         self._drain_collision_events()
                         self._ingest_provider_sensors()
                         for pending in self.synchronizer.drain(force=True):
@@ -660,10 +688,13 @@ class SimulationService:
                         self.journey.update(status='READY', reason=None)
                     self._event(EventType.ControlChanged, dashboard_action=action, value=value,
                                 population=getattr(self.provider, 'population_state', lambda: None)())
+                    if action=='scenario' and value.get('operation')=='stop' and result.get('outcome'):
+                        self._event(EventType.ControlChanged,scenario_outcome=result['outcome'])
                     if sensor_change:
                         self.synchronizer = SensorSynchronizer(self.synchronizer.required, self.synchronizer.optional,
                                                                timeout_s=self.synchronizer.timeout_s, now=self.now)
                         self.camera_cache.clear(); self.sensor_frame_cache.clear()
+                        self.policy_history.clear()
                 except ValueError as error:
                     self.dashboard_result = {'action': action, 'status': 'REJECTED', 'error': str(error),
                                              'operationId': uuid.uuid4().hex}
@@ -686,6 +717,7 @@ class SimulationService:
                                                else ControlMode.PAUSED, connected=True)
                 self.arbiter.safety.clear(); self.state_at = self.now()
             elif action == 'reset':
+                self.policy_history.clear()
                 self._drain_collision_events()
                 self._ingest_provider_sensors()
                 for pending in self.synchronizer.drain(force=True):
@@ -704,6 +736,7 @@ class SimulationService:
             self._navigation_step()
             chosen = self._choose()
         self.provider.apply_control(chosen)
+        native_step_started = self.now()
         self.provider.step()
         # Native weather/population setters become observable on the following
         # simulation step. Publish APPLIED only with that step's real state.
@@ -726,6 +759,8 @@ class SimulationService:
         if duplicate and not self.paused:
             raise RuntimeError('Provider frame did not advance')
         if not duplicate:
+            self.frame_tick_started[observation.frame_id] = native_step_started
+            while len(self.frame_tick_started)>32:self.frame_tick_started.popitem(last=False)
             self.recent_ticks.append(self.now())
             observation = replace(observation, control=chosen)
             self.synchronizer.begin(observation)
@@ -796,6 +831,7 @@ class SimulationService:
                         self.recorder.close()
             finally:
                 self.closed = True
+                self.policy_history.clear()
                 self.arbiter.disconnect()
                 self.lifecycle.disconnect()
                 self.observation = self.state = self.world = self.frame = self.frame_metadata = None

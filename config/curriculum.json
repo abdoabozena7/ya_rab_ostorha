@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "criteria_status": "PROPOSED_NOT_RESEARCH_VALIDATED",
+  "training_implemented": false,
+  "levels": [
+    {"level":1,"name":"Basic collision avoidance","scenario_types":["FRONT_OBSTACLE"],"entry_requirement":"Verified native reset, cleanup and synchronized sensor observations","progression":{"minimum_episodes":30,"maximum_collision_rate":0.05,"minimum_success_rate":0.9,"minimum_progress_fraction":0.8,"maximum_unsafe_interventions":0}},
+    {"level":2,"name":"Relative motion","scenario_types":["SUDDEN_BRAKING","REAR_APPROACHING"],"entry_requirement":"Level 1 criteria met on held-out validation conditions","progression":{"minimum_episodes":30,"maximum_collision_rate":0.05,"minimum_success_rate":0.9,"minimum_progress_fraction":0.8,"maximum_unsafe_interventions":0}},
+    {"level":3,"name":"Multi-vehicle interaction","scenario_types":["SIDE_CUT_IN","INTERSECTION_CONFLICT"],"entry_requirement":"Level 2 criteria met and new native scenario families validated","progression":{"minimum_episodes":40,"maximum_collision_rate":0.05,"minimum_success_rate":0.9,"minimum_progress_fraction":0.8,"maximum_unsafe_interventions":0}},
+    {"level":4,"name":"Congestion","scenario_types":["DENSE_CONGESTION","NARROW_GAP"],"entry_requirement":"Level 3 criteria met and congestion clearance measurements validated","progression":{"minimum_episodes":40,"maximum_collision_rate":0.05,"minimum_success_rate":0.9,"minimum_progress_fraction":0.8,"maximum_unsafe_interventions":0}},
+    {"level":5,"name":"Unregulated traffic","scenario_types":["SIDE_CUT_IN","INTERSECTION_CONFLICT","REAR_APPROACHING"],"entry_requirement":"Level 4 criteria met across held-out traffic mixtures and densities","progression":{"minimum_episodes":50,"maximum_collision_rate":0.05,"minimum_success_rate":0.9,"minimum_progress_fraction":0.8,"maximum_unsafe_interventions":0}},
+    {"level":6,"name":"Multi-hazard urban traffic","scenario_types":["MULTI_HAZARD","PEDESTRIAN_CROSSING","DENSE_CONGESTION"],"entry_requirement":"Level 5 criteria met and combined pedestrian/vehicle native scenarios validated","progression":{"minimum_episodes":60,"maximum_collision_rate":0.05,"minimum_success_rate":0.9,"minimum_progress_fraction":0.8,"maximum_unsafe_interventions":0}}
+  ]
+}

@@ -5,7 +5,7 @@ from enum import Enum
 import hashlib
 import json
 from typing import Any, Protocol
-from .contracts import Contract, Transform, validate_inputs, to_dict
+from .contracts import Contract, Transform, validate_inputs, to_dict, finite
 
 
 class EnvironmentMode(str, Enum):
@@ -150,6 +150,10 @@ class CurriculumCriteria(Contract):
     def passed(self, results):
         required={'episodes','collision_rate','success_rate','progress_fraction','unsafe_interventions'}
         if not required <= set(results): return False
+        if any(type(results[k]) is not int or results[k]<0 for k in ('episodes','unsafe_interventions')):return False
+        try:
+            if any(not 0<=finite(results[k],k)<=1 for k in ('collision_rate','success_rate','progress_fraction')):return False
+        except ValueError:return False
         return (results['episodes']>=self.minimum_episodes and results['collision_rate']<=self.maximum_collision_rate
                 and results['success_rate']>=self.minimum_success_rate and results['progress_fraction']>=self.minimum_progress_fraction
                 and results['unsafe_interventions']<=self.maximum_unsafe_interventions)
@@ -167,3 +171,13 @@ class CurriculumLevel(Contract):
     def validate(self):
         if not 1 <= self.level <= 6 or not self.name or not self.scenario_types or not self.entry_requirement:
             raise ValueError('Invalid curriculum level')
+
+
+def load_curriculum(path):
+    from pathlib import Path
+    from .contracts import from_dict
+    data=json.loads(Path(path).read_text(encoding='utf8'))
+    levels=tuple(from_dict(CurriculumLevel,item) for item in data['levels'])
+    if tuple(item.level for item in levels)!=tuple(range(1,7)):
+        raise ValueError('Curriculum must contain levels 1–6 in order')
+    return levels

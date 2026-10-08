@@ -6,6 +6,7 @@ No ego driver, perception model, RL policy or reward weights are implemented her
 import copy
 from datetime import datetime, timezone
 import json
+import hashlib
 import math
 from pathlib import Path
 import random
@@ -110,10 +111,15 @@ class NativeScenarioManager:
         if p.dashboard_tools:p.dashboard_tools.route=None
         self.resetting=True
         began=time.monotonic()
+        self.initialization_began=began
         try:
             p.spawn_index=self.spec.ego_spawn; p.strict_ego_spawn=True
             p.reset_vehicle()
-            weather=p.world.world.get_weather()
+            from .dashboard_tools import WEATHER_PRESET_FIELDS
+            weather=p.connection.api.WeatherParameters()
+            clear=p.connection.api.WeatherParameters.ClearNoon
+            for k in WEATHER_PRESET_FIELDS:
+                if hasattr(clear,k):setattr(weather,k,getattr(clear,k))
             for k,v in self.spec.weather.items():setattr(weather,k,v)
             p.world.world.set_weather(weather)
             for definition in self.spec.other_actor_definitions:
@@ -178,13 +184,25 @@ class NativeScenarioManager:
                 a=snapshot.find(actor_id)
                 if a is None:return
                 t=a.get_transform();v=a.get_velocity()
+                actor=self.provider.world.world.get_actor(actor_id);box=actor.bounding_box;control=actor.get_control()
                 rows.append({'name':name,'actor_id':actor_id,'transform':to_dict(canonical_transform(t)),
-                             'velocity_mps':[v.x,v.y,v.z]})
+                             'velocity_mps':[v.x,v.y,v.z],'blueprint':actor.type_id,
+                             'bounding_box':{'extent_m':[box.extent.x,box.extent.y,box.extent.z],
+                                'center_offset_m':[box.location.x,box.location.y,box.location.z],
+                                'rotation_deg':[box.rotation.roll,box.rotation.pitch,box.rotation.yaw]},
+                             'control':{'throttle':control.throttle,'brake':control.brake,'steering':control.steer}})
+            from .dashboard_tools import WEATHER_PRESET_FIELDS
             states={'frame_id':snapshot.frame,'timestamp_s':snapshot.timestamp.elapsed_seconds,'actors':rows,
-                    'weather':{k:getattr(self.provider.world.world.get_weather(),k) for k in self.spec.weather},
+                    'weather':{k:getattr(self.provider.world.world.get_weather(),k) for k in WEATHER_PRESET_FIELDS
+                               if hasattr(self.provider.world.world.get_weather(),k)},
                     'sensor_registry':self.provider.sensor_registry()}
             if self.initial_pending:
                 self.run['initial_states']=states; self.initial_pending=False; self.phase='READY'
+                self.run['initialization_duration_wall_s']=time.monotonic()-self.initialization_began
+                signature={'actors':[{k:v for k,v in row.items() if k!='actor_id'} for row in rows],
+                           'weather':states['weather'],'camera':self.run['camera'],'map':self.run['map'],
+                           'fixed_delta_seconds':self.run['fixed_delta_seconds']}
+                self.run['actual_initial_condition_id']=hashlib.sha256(json.dumps(signature,sort_keys=True).encode()).hexdigest()
             if self.capture_start:self.run['start_states']=states;self.capture_start=False
             self._publish()
 

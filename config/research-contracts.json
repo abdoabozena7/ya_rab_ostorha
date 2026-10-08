@@ -1,0 +1,26 @@
+{
+  "version":1,
+  "policy_status":"INTERFACE_PREPARED_NO_POLICY",
+  "reward_weights":null,
+  "reward_total":null,
+  "reward_components":{
+    "collision_penalty":{"input":"Collision episodes and raw native callbacks","weight":null},
+    "collision_severity_penalty":{"input":"Peak and accumulated native impulse N*s; injury/energy not inferred","weight":null},
+    "near_miss_penalty":{"input":"Clearance and valid relative-motion diagnostics; classifier deferred","weight":null},
+    "progress_reward":{"input":"Directed scene progress or documented route progress in meters","weight":null},
+    "time_cost":{"input":"Elapsed simulation seconds","weight":null},
+    "control_smoothness_penalty":{"input":"Control changes, angular velocity, acceleration and jerk","weight":null},
+    "unnecessary_intervention_penalty":{"input":"Real identified policy intervention records and reviewed necessity","weight":null},
+    "route_completion_reward":{"input":"Verified route completion fraction","weight":null}
+  },
+  "comparisons":{
+    "baseline":"NO_YA_RAB_OSTORHA_BASELINE",
+    "enabled":"Requires a real connected policy ID; no enabled results exist",
+    "manual_protocol":"Replay the same documented scripted driver control trace through ControlSafetyLayer/CommandArbiter; record deviations. Unstandardized human input is exploratory, not a matched research comparison.",
+    "autonomous_protocol":"Same identified baseline agent, route, speed, sensor configuration and runtime conditions with and without a real safety policy",
+    "matching":"Scenario condition ID, actual initial-condition ID, held-out split and driver protocol must match",
+    "avoidability":"UNKNOWN until independent physical analysis with an evidence ID"
+  },
+  "unknown_metrics":"Remain null; callback counts are distinct from collision episodes; world actor-center distance is distinct from bounding-box clearance. TTC is valid only under an explicitly applicable relative-motion model.",
+  "stationary_survival":"Cannot satisfy positive-progress scenario success criteria. Safety and useful progress must be evaluated together."
+}

@@ -30,6 +30,9 @@ class ScenarioTests(unittest.TestCase):
         good=dict(episodes=30,collision_rate=0.,success_rate=1.,progress_fraction=.9,unsafe_interventions=0)
         self.assertTrue(criteria.passed(good))
         self.assertFalse(criteria.passed({**good,'progress_fraction':0.}))
+        self.assertFalse(criteria.passed({**good,'collision_rate':-1.}))
+        self.assertFalse(criteria.passed({**good,'unsafe_interventions':False}))
+        self.assertEqual(len(load_curriculum('config/curriculum.json')),6)
 
     def test_unimplemented_scenarios_are_rejected_before_mutating_world(self):
         provider=MagicMock()

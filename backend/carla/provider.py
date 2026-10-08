@@ -16,6 +16,7 @@ from .urban import WORLD_PROFILES
 
 class CarlaProvider:
     name = 'carla'
+    scenario_outcomes_enabled = True
     allow_navigation = True  # Explicit destination journeys; AI/assisted modes stay disabled.
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
@@ -258,7 +259,11 @@ class CarlaProvider:
         return self.scenarios.status() if self.scenarios else None
 
     def observe_scenario(self, frame):
-        if self.scenarios: self.scenarios.step(frame)
+        if self.scenarios:
+            phase=self.scenarios.phase
+            self.scenarios.step(frame)
+            if phase=='RUNNING' and self.scenarios.phase=='FINISHED':
+                return self.scenarios.collect_outcome()
 
     def ground_truth_debug(self):
         return self.inspector.latest if self.inspector else None
