@@ -62,6 +62,7 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--duration',type=float,default=60)
     parser.add_argument('--profiles-only',action='store_true')
+    parser.add_argument('--single',action='store_true',help='Detailed 25/20 congestion probe')
     parser.add_argument('--output',default='output/native-validation/gate5-urban.json')
     args=parser.parse_args()
     proof={'source':'LIVE_NATIVE','matrix':[],'render_fps':None}
@@ -74,6 +75,7 @@ def main():
         proof['sensor_registry']=s.state['sensorRegistry']
         matrix=[(10,5,b) for b in ('NORMAL','BUSY','AGGRESSIVE','UNREGULATED')] if args.profiles_only else [
             (0,0,'NORMAL'),(10,10,'BUSY'),(25,20,'BUSY'),(40,30,'BUSY'),(50,35,'UNREGULATED')]
+        if args.single: matrix=[(25,20,'BUSY')]
         for vehicles,walkers,behavior in matrix:
             s.action('population','reset')
             s.action('settings',{'population':{**DEFAULT_POPULATION,'vehicle_count':vehicles,
@@ -83,6 +85,7 @@ def main():
             began=time.monotonic(); initial=s.state['synchronization']; rows=[]; positions={}; distances={}
             sampled=-10.; stopped_then_moved=set(); previously_stopped=set(); nearby=[]; minimum_gap=None
             states=set(); lanes={}; changed=set(); ego_start=s.state['canonical']['vehicle']['transform']['position_m']
+            overlap_samples=0; queue_sizes=[]; collision_ids=set()
             while time.monotonic()-began<args.duration:
                 s.wait(lambda st:st['connected'])
                 now=time.monotonic()
@@ -107,14 +110,19 @@ def main():
                             lanes[i]=(wp.road_id,wp.lane_id)
                         actor=s.world.get_actor(i)
                         if actor: native.append((t,actor.bounding_box))
-                # Conservative bounding-sphere clearance: diagnostic lower bound,
-                # not a road-aligned bumper gap or a valid TTC measurement.
+                from backend.carla.geometry import footprint, rectangle_clearance
+                overlapping=False
                 for k,(a,ab) in enumerate(native):
                     for b,bb in native[k+1:]:
-                        gap=a.location.distance(b.location)-math.hypot(ab.extent.x,ab.extent.y)-math.hypot(bb.extent.x,bb.extent.y)
+                        gap=rectangle_clearance(footprint(a,ab),footprint(b,bb))
                         minimum_gap=gap if minimum_gap is None else min(minimum_gap,gap)
+                        overlapping |= gap==0.
+                overlap_samples+=overlapping
+                queue_sizes.append(sum(math.hypot(a.get_velocity().x,a.get_velocity().y)<.15
+                                       for i in pop['vehicle_ids'] if (a:=snapshot.find(i)) is not None))
+                collision_ids.update((c['frame_id'],c['other_actor_id']) for c in s.state['collisionEvents'])
                 nearby.append(local)
-                states.update(pop.get('activity_counts',{}))
+                states.update(k for k,v in pop.get('activity_counts',{}).items() if v>0)
                 rows.append({'performance':s.state['performance'],'step_ms':s.state['backendStepMs'],
                              'backend':memory(backend),'carla':memory(engine),'population':pop})
             final=s.state['synchronization']; warm=rows[len(rows)//4:]
@@ -130,7 +138,9 @@ def main():
                  'moved_vehicles':sum(distances.get(i,0)>2 for i in pop['vehicle_ids']),
                  'moved_walkers':sum(distances.get(i,0)>2 for i in pop['walker_ids']),
                  'stopped_then_moved_vehicles':len(stopped_then_moved),'observed_lane_changes':len(changed),
-                 'minimum_bounding_sphere_clearance_m':minimum_gap,'observed_activity_states':sorted(states),
+                 'minimum_planar_box_clearance_m':minimum_gap,'observed_activity_states':sorted(states),
+                 'footprint_overlap_sample_count':overlap_samples,'queue_size_minmax':[min(queue_sizes),max(queue_sizes)],
+                 'ego_collision_callback_count':len(collision_ids),
                  'ego_displacement_m':math.dist(ego_start,s.state['canonical']['vehicle']['transform']['position_m']),
                  'profile_names':sorted({p.get('name') for p in pop['driver_profiles'].values()}),
                  'final_population':pop,'sensor_errors':s.state['sensorErrors']}

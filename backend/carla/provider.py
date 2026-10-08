@@ -139,6 +139,9 @@ class CarlaProvider:
         self._set_control_field('parkingbrake', int(enabled))
 
     def step(self):
+        if self.population and self.dashboard_tools:
+            route = self.dashboard_tools.route
+            self.population.set_route(route['points'] if route else [])
         snapshot = self.world.advance()
         if self.population: self.population.update(snapshot)
         self.last_vehicle = vehicle_state(self.ego.actor, snapshot)
@@ -234,7 +237,7 @@ class CarlaProvider:
     def start_navigation(self, speed_kmh):
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
-            raise ValueError('اختار وجهة صالحة واعرض طريقها قبل الانطلاق')
+            raise ValueError('Choose a valid destination and show its route before starting')
         # Resume always plans from the real vehicle's current location.
         self.dashboard_tools.replan_route()
         from agents.navigation.basic_agent import BasicAgent

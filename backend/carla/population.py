@@ -77,6 +77,11 @@ class WorldPopulationManager:
         self.vehicles = set()
         self.driver_profiles = {}
         self.driver_ordinal = 0
+        self.route_points = []
+        self.road_candidates = None
+        self.last_recycle_at = -float('inf')
+        self.recycled_vehicles = self.recycled_walkers = 0
+        self.local_counts = {'vehicles_120m': 0, 'walkers_120m': 0}
         self.walkers = {}  # walker ID -> controller ID, speed and native schedule
         self.pending_vehicles = set()
         self.seen_vehicles = set()
@@ -90,7 +95,7 @@ class WorldPopulationManager:
         self.walkers_lost = 0
         self.sidewalk_locations = None
         self.actual = {'vehicles': 0, 'pedestrians': 0, 'controllers': 0, 'walkers_active': 0}
-        self.world.set_pedestrians_cross_factor(0.)
+        self.world.set_pedestrians_cross_factor(self.config['crossing_percent']/100.)
         self.state_cache = self._build_population_state()
 
     def apply(self, value):
@@ -100,6 +105,7 @@ class WorldPopulationManager:
             self.random = random.Random(config['seed'])
         self.config = config
         self.world.set_pedestrians_seed(config['seed'])
+        self.world.set_pedestrians_cross_factor(config['crossing_percent']/100.)
         self.traffic_manager.configure(config['speed_behavior'], config['seed'])
         self.pending_vehicles.update(self.vehicles)
         self.spawn_report = {'npc_spawned': 0, 'npc_failed': 0, 'walkers_spawned': 0, 'walkers_failed': 0}
@@ -131,12 +137,7 @@ class WorldPopulationManager:
         if needed <= 0: return
         blueprints = passenger_blueprints(self.world.get_blueprint_library())
         if not blueprints: raise RuntimeError('No native passenger vehicle blueprints')
-        spawns = list(self.world.get_map().get_spawn_points()); self.random.shuffle(spawns)
-        if replacement:
-            ego = self.world.get_actor(self.ego_id)
-            if ego is not None:
-                position = ego.get_location()
-                spawns = [t for t in spawns if t.location.distance(position) >= 45.]
+        spawns = self._local_road_spawns(replacement)
         # Batch only as many attempts as required; retry occupied native road points.
         attempted = 0
         while needed and attempted < len(spawns):
@@ -179,7 +180,7 @@ class WorldPopulationManager:
             if location is None: continue
             if replacement:
                 ego = self.world.get_actor(self.ego_id)
-                if ego is not None and location.distance(ego.get_location()) < 45.: continue
+                if ego is not None and location.distance(ego.get_location()) < 90.: continue
             if any(location.distance(previous) < 1.5 for previous in chosen_locations+existing_locations): continue
             chosen_locations.append(location)
             bp = self.random.choice(blueprints)
@@ -204,6 +205,7 @@ class WorldPopulationManager:
                 self.walkers[walker_id] = {'controller_id': reply.actor_id, 'speed': speed, 'started': False,
                                           'ready_at': None, 'destination': None, 'last_retarget': 0., 'seen': False,
                                           'location': location}
+                self.walkers[walker_id].update(activity='IDLE', wait_until=None, crossing=False)
                 self.spawn_report['walkers_spawned'] += 1
         self.spawn_report['walkers_failed'] = count-len(self.walkers)
         if self.spawn_report['walkers_failed'] and _attempt < 2:
@@ -241,11 +243,56 @@ class WorldPopulationManager:
                 self.sidewalk_locations.append((location, candidate.road_id, candidate.lane_id))
         if origin is None:
             candidates = self.sidewalk_locations
+            ego = self.world.get_actor(self.ego_id)
+            if ego is not None:
+                position = ego.get_location()
+                candidates = [c for c in candidates if 25. <= c[0].distance(position) <= 180.]
+                # Favor nearby busy streets without manufacturing destinations.
+                candidates.sort(key=lambda c: c[0].distance(position))
+                candidates = candidates[:max(60, self.config['pedestrian_count']*4)]
         else:
             candidates = [(location, road, lane) for location, road, lane in self.sidewalk_locations
                           if sidewalk is not None and (road, lane) == (sidewalk.road_id, sidewalk.lane_id)
                           and 5. <= origin.distance(location) <= 40.]
         return self.random.choice(candidates)[0] if candidates else None
+
+    def _crossing_destination(self, origin):
+        sidewalk = self.map.get_waypoint(origin, lane_type=self.api.LaneType.Sidewalk)
+        if sidewalk is None: return None
+        candidates = [location for location, road, lane in self.sidewalk_locations
+                      if road == sidewalk.road_id and lane*sidewalk.lane_id < 0
+                      and 7. <= origin.distance(location) <= 22.]
+        return self.random.choice(candidates) if candidates else None
+
+    def _local_road_spawns(self, replacement):
+        if self.road_candidates is None:
+            waypoints = self.map.generate_waypoints(12.)
+            self.road_candidates = []
+            for wp in waypoints:
+                if wp.is_junction or wp.lane_width < 2.5: continue
+                t = wp.transform
+                # Initial spawn height only; driving actors never interpolate.
+                t.location.z += .3
+                self.road_candidates.append(t)
+        ego = self.world.get_actor(self.ego_id)
+        if ego is None: return []
+        position = ego.get_location()
+        minimum = 90. if replacement else 28.
+        candidates = [t for t in self.road_candidates if minimum <= t.location.distance(position) <= 200.]
+        occupied = [a.get_location() for a in self.world.get_actors().filter('vehicle.*')]
+        candidates = [t for t in candidates if all(t.location.distance(p) >= 9. for p in occupied)]
+        self.random.shuffle(candidates)
+        def score(t):
+            distance = t.location.distance(position)
+            route_gap = min((t.location.distance(p) for p in self.route_points), default=distance)
+            return min(distance, route_gap+35.)
+        candidates.sort(key=score)
+        # Native points cover both legal driving directions. SpawnActor rejects
+        # occupied volumes, retaining actual counts rather than claimed counts.
+        return candidates
+
+    def set_route(self, points):
+        self.route_points = [self.api.Location(*p) for p in (points or [])[::3]]
 
     def reset_population(self):
         self.clear_pedestrians(); self.clear_traffic()
@@ -254,6 +301,23 @@ class WorldPopulationManager:
     def update(self, snapshot):
         """Register controllers after the sole worker has advanced the native frame."""
         timestamp = snapshot.timestamp.elapsed_seconds
+        ego_snapshot = snapshot.find(self.ego_id) if hasattr(self, 'ego_id') else None
+        ego_position = ego_snapshot.get_transform().location if ego_snapshot is not None else None
+        if ego_position is not None and timestamp-self.last_recycle_at >= 10.:
+            self.last_recycle_at = timestamp
+            # Beyond all camera ranges used by this project; bounded retirement
+            # avoids a mass reset while ego traverses the map.
+            distant = [i for i in sorted(self.vehicles) if snapshot.find(i) is not None
+                       and snapshot.find(i).get_transform().location.distance(ego_position) > 300.][:3]
+            self._destroy(distant)
+            for i in distant:
+                self.vehicles.discard(i); self.pending_vehicles.discard(i); self.seen_vehicles.discard(i)
+                self.driver_profiles.pop(i, None); self.missing_vehicle_frames.pop(i, None)
+            self.recycled_vehicles += len(distant)
+            for i, entry in list(self.walkers.items()):
+                if snapshot.find(i) is not None and snapshot.find(i).get_transform().location.distance(ego_position) > 300.:
+                    self._remove_walker(i); self.recycled_walkers += 1
+                    break
         active = 0
         removed = []
         for actor_id in self.vehicles:
@@ -307,18 +371,36 @@ class WorldPopulationManager:
             if not entry['started']:
                 controller.start(); controller.set_max_speed(entry['speed']); entry['started'] = True
             active += 1
+            if entry.get('wait_until') is not None:
+                if timestamp < entry['wait_until']: continue
+                controller.set_max_speed(entry['speed']); entry['wait_until'] = None
+                entry['destination'] = None
             destination = entry['destination']
             reached = destination is not None and actor.get_transform().location.distance(destination) < 2.
             # Retarget stationary walkers after 20 simulation seconds; never teleport.
             stationary = timestamp-entry['last_moved_at'] > 20. and timestamp-entry['last_retarget'] > 20.
             if destination is None or reached or stationary:
+                if reached and self.random.random() < .35:
+                    entry.update(activity='WAITING', wait_until=timestamp+self.random.uniform(2.,6.))
+                    controller.set_max_speed(0.)
+                    continue
+                entry['activity'] = 'RESELECTING_DESTINATION'
                 target = self._sidewalk_destination(actor.get_transform().location)
+                crossing = self.random.random()*100 < self.config['crossing_percent']
+                crossing_target = self._crossing_destination(entry['location']) if crossing else None
+                if crossing_target is not None: target = crossing_target
                 if target is not None:
                     controller.go_to_location(target); entry['destination'] = target; entry['last_retarget'] = timestamp
+                    entry['activity'] = 'CROSSING' if crossing_target is not None else 'WALKING'
+                    entry['crossing'] = crossing_target is not None
         if len(self.walkers) < self.config['pedestrian_count'] and timestamp-self.last_walker_replacement_at >= 5.:
             self.last_walker_replacement_at = timestamp
             self.spawn_pedestrians(self.config['pedestrian_count'], replacement=True)
         self.frame_id = snapshot.frame
+        if ego_position is not None:
+            self.local_counts = {name:sum(snapshot.find(i) is not None and
+                snapshot.find(i).get_transform().location.distance(ego_position) <= 120. for i in ids)
+                for name,ids in [('vehicles_120m',self.vehicles),('walkers_120m',self.walkers)]}
         self.actual = {'vehicles': sum(snapshot.find(i) is not None for i in self.vehicles),
                        'pedestrians': sum(snapshot.find(i) is not None for i in self.walkers),
                        'controllers': sum(snapshot.find(e['controller_id']) is not None for e in self.walkers.values()),
@@ -342,8 +424,13 @@ class WorldPopulationManager:
                 'vehicles_removed_native': self.vehicles_removed_native,
                 'behavior': self.config['driver_behavior'],
                 'driver_profiles': {str(i):dict(p) for i,p in getattr(self, 'driver_profiles', {}).items()},
-                'pedestrian_cross_factor': 0., 'walker_invincible': True,
-                'destinations': 'SAME_NATIVE_SIDEWALK_SEGMENT'}
+                'local_counts': getattr(self, 'local_counts', {}),
+                'recycled_vehicles': getattr(self, 'recycled_vehicles', 0),
+                'recycled_walkers': getattr(self, 'recycled_walkers', 0),
+                'activity_counts': {state:sum(e.get('activity','IDLE') == state for e in self.walkers.values())
+                                    for state in ('WALKING','WAITING','CROSSING','IDLE','RESELECTING_DESTINATION')},
+                'pedestrian_cross_factor': self.config['crossing_percent']/100., 'walker_invincible': True,
+                'destinations': 'NATIVE_SIDEWALK_WITH_BOUNDED_OPTIONAL_CROSSINGS'}
 
     def close(self):
         try:
