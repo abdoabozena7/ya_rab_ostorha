@@ -272,16 +272,16 @@ class SimulationService:
 
     def start_journey(self, speed_kmh=20):
         if not self.arbiter.machine.allow_navigation:
-            raise ValueError('الرحلات التلقائية غير متاحة في هذا الوضع')
+            raise ValueError('Destination journeys are unavailable in this mode')
         speed = finite(speed_kmh)
         if not 5 <= speed <= 30:
             raise ValueError('Journey speed must be 5–30 km/h')
         with self.lock:
             self.require_connected()
             if not getattr(self.provider, 'route_state', lambda: None)():
-                raise ValueError('اختار وجهة صالحة واعرض طريقها قبل الانطلاق')
+                raise ValueError('Choose a valid destination and show its route before starting')
             if self.dashboard_result and self.dashboard_result.get('action')=='destination' and self.dashboard_result.get('status') in ('PENDING', 'REJECTED'):
-                raise ValueError('اختار وجهة صالحة واعرض طريقها قبل بدء الرحلة')
+                raise ValueError('Choose a valid destination and show its route before starting the journey')
             if self.arbiter.machine.mode == ControlMode.EMERGENCY_STOP:
                 raise ValueError('Acknowledge the emergency stop before starting')
             self.release_controls()
@@ -373,10 +373,12 @@ class SimulationService:
     def queue_dashboard_action(self, action, value):
         with self.lock:
             self.require_connected()
-            if action not in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene'):
+            if action not in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario'):
                 raise ValueError('Unknown dashboard operation')
             if self.recorder and action in ('settings','world_reset'):
                 raise ValueError('Finish recording before changing sensor configuration')
+            if self.recorder and action in ('scenario','environment'):
+                raise ValueError('Finish recording before changing scenario lifecycle or environment mode')
             if action=='world_reset':
                 active = self.provider.runtime.active or {'quality':'Low','resolution':'1280x720'}
                 self.restart_graphics({k:active[k] for k in ('quality','resolution')}, operation='WORLD_RESET')
@@ -405,7 +407,7 @@ class SimulationService:
             if self.restarting or self.recorder:
                 raise ValueError('Finish recording or the current restart first')
             if self.observation.vehicle.speed_mps > .15:
-                raise ValueError('أوقف العربية قبل إعادة تشغيل CARLA')
+                raise ValueError('Stop the vehicle before restarting CARLA')
             previous = dict(self.provider.runtime.active or {'quality':'Low','resolution':'1280x720','offscreen':False})
             self.stop_driving('graphics_restart')
             self.restarting = True
@@ -496,6 +498,7 @@ class SimulationService:
                     'dashboardResult': copy.deepcopy(self.dashboard_result),
                     'route': getattr(self.provider, 'route_state', lambda: None)() if live else None,
                     'population': getattr(self.provider, 'population_state', lambda: None)() if live else None,
+                    'environment': getattr(self.provider, 'environment_state', lambda: None)() if live else None,
                     'nearbyActors': getattr(self.provider, 'ground_truth_debug', lambda: None)() if live else None,
                     'synchronization': {'completeFrames': self.synchronized_frames,
                                         'incompleteFrames': self.synchronization_missing_frames,
@@ -558,6 +561,7 @@ class SimulationService:
             raise RuntimeError('Provider must return one canonical SimulationFrame')
         if self.provider and observation.world.provider != self.provider.name:
             raise RuntimeError('Observation provider does not match its adapter')
+        getattr(self.provider, 'observe_scenario', lambda frame: None)(observation)
         with self.lock:
             first = self.observation is None
             fresh_recovery = (not first and observation.frame_id > self.observation.frame_id
@@ -634,22 +638,23 @@ class SimulationService:
                         self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
                 except (ValueError, ImportError) as error:
                     self._stop_navigation(str(error), status='ERROR')
-            elif action in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'scene'):
+            elif action in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'scene', 'environment', 'scenario'):
                 # Route guidance, saved places and recording do not rebuild
                 # native actors. Keep fresh observations available while these
                 # actions run; the normal receipt watchdog still applies.
-                self.reconfiguring = action in ('settings', 'population', 'scene')
+                self.reconfiguring = action in ('settings', 'population', 'scene', 'scenario', 'environment')
                 try:
                     sensor_change = action == 'settings' and isinstance(value, dict) and any(k in value for k in (
                         'camera_resolution', 'camera_fov', 'camera_postprocess', 'camera_motion_blur',
                         'camera_bloom', 'simulation_hz', 'vehicle', 'spawn_index'))
+                    sensor_change = sensor_change or action=='scenario' and isinstance(value,dict) and value.get('operation') in ('load','reset')
                     if sensor_change:
                         self._drain_collision_events()
                         self._ingest_provider_sensors()
                         for pending in self.synchronizer.drain(force=True):
                             self._publish(pending); self._record(pending)
                     result = self._change_recording(value) if action == 'recording' else self.provider.dashboard_action(action, value)
-                    self.dashboard_result = {'action': action, 'status': 'PENDING' if action in ('settings','scene','population') else 'APPLIED', 'result': result,
+                    self.dashboard_result = {'action': action, 'status': 'PENDING' if action in ('settings','scene','population','scenario','environment') else 'APPLIED', 'result': result,
                                              'operationId': uuid.uuid4().hex}
                     if action == 'destination':
                         self.journey.update(status='READY', reason=None)
@@ -704,8 +709,8 @@ class SimulationService:
         # simulation step. Publish APPLIED only with that step's real state.
         if self.dashboard_result and self.dashboard_result.get('operationId') and self.dashboard_result['status']=='PENDING':
             action = self.dashboard_result['action']
-            if action in ('settings','scene','population'):
-                result = self.provider.population_state() if action=='population' else self.provider.dashboard_tools.settings()
+            if action in ('settings','scene','population','scenario','environment'):
+                result = self.provider.environment_state() if action in ('scenario','environment') else self.provider.population_state() if action=='population' else self.provider.dashboard_tools.settings()
                 self.dashboard_result = {**self.dashboard_result,'status':'APPLIED','result':result}
         self._drain_collision_events()
         observation = self.provider.get_simulation_frame()

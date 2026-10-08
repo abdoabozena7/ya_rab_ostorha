@@ -11,6 +11,7 @@ from ..core.contracts import ControlCommand, PopulationState
 from dataclasses import replace
 from .population import WorldPopulationManager, passenger_blueprints
 from .ground_truth import NearbyActorInspector
+from .urban import WORLD_PROFILES
 
 
 class CarlaProvider:
@@ -27,6 +28,8 @@ class CarlaProvider:
         self.camera_settings = {'camera_view': 'front', 'camera_resolution': '800x450', 'camera_fov': 90,
                                 'camera_postprocess': False, 'camera_motion_blur': 0., 'camera_bloom': 0.}
         self.navigation = None
+        self.scenarios = None
+        self.strict_ego_spawn = False
         self.population = None
         self.inspector = None
         self.last_ground_truth = None
@@ -59,7 +62,7 @@ class CarlaProvider:
             raw_world.wait_for_tick(self.connection.timeout)
             actors = raw_world.get_actors()
             project_ids = {a.id for a in actors if a.attributes.get('role_name') in
-                           ('ostorha_ego', 'ostorha_npc', 'ostorha_walker', 'ostorha_sensor')}
+                           ('ostorha_ego', 'ostorha_npc', 'ostorha_walker', 'ostorha_sensor', 'ostorha_scenario')}
             children = [a for a in actors if a.type_id.startswith(('sensor.', 'controller.')) and
                         a.parent is not None and a.parent.id in project_ids]
             for actor in children:
@@ -79,6 +82,8 @@ class CarlaProvider:
             self.world = CarlaWorld(raw_world, self.fixed_delta)
             self.spawn_ego_vehicle()
             self.population = WorldPopulationManager(self.connection.client, raw_world, self.connection.api, self.ego.actor.id)
+            from .scenarios import NativeScenarioManager
+            self.scenarios = NativeScenarioManager(self)
             self.set_controls(brake=1)
             self.step()
         except Exception:
@@ -89,7 +94,7 @@ class CarlaProvider:
     def spawn_ego_vehicle(self):
         if self.ego is not None:
             raise RuntimeError('An ego vehicle is already owned by this session')
-        self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index)
+        self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index, strict_spawn=self.strict_ego_spawn)
         actor = self.ego.spawn()
         self.inspector = NearbyActorInspector(self.world.world, actor)
         self.sensor_manager = CarlaSensorManager(self.world.world, actor)
@@ -139,6 +144,7 @@ class CarlaProvider:
         self._set_control_field('parkingbrake', int(enabled))
 
     def step(self):
+        if self.scenarios: self.scenarios.before_tick()
         if self.population and self.dashboard_tools:
             route = self.dashboard_tools.route
             self.population.set_route(route['points'] if route else [])
@@ -148,6 +154,7 @@ class CarlaProvider:
         self.last_ground_truth = self.inspector.observe(snapshot) if self.inspector else None
         self.last_world = {**self.world.state(snapshot), 'version': self.connection.server_version,
                            'pythonApiVersion': self.connection.api_version}
+        if self.scenarios: self.scenarios.after_tick(snapshot)
         self._follow_ego(snapshot.find(self.ego.actor.id).get_transform())
         return self.last_vehicle
 
@@ -183,7 +190,10 @@ class CarlaProvider:
         self._ensure_dashboard_tools()
         return {'places': self.dashboard_tools.places(), 'roads': self.dashboard_tools.roads(),
                 'settings': self.dashboard_tools.settings(), 'profiles': self.dashboard_tools.profiles(),
-                'scenes': self.dashboard_tools.scenes()}
+                'scenes': self.dashboard_tools.scenes(),
+                'scenario_library': {'native_demonstrations':['FRONT_OBSTACLE','SUDDEN_BRAKING'],
+                    'policy_status':'INTERFACE_PREPARED_NO_POLICY','seed_ranges':{'TRAIN':[0,999],'VALIDATION':[1000,1999],'TEST':[2000,2999]}},
+                'urban_world_profiles': WORLD_PROFILES}
 
     def _ensure_dashboard_tools(self):
         if self.dashboard_tools is None:
@@ -192,6 +202,28 @@ class CarlaProvider:
 
     def dashboard_action(self, action, value):
         self._ensure_dashboard_tools()
+        if action == 'environment':
+            if value != 'LIVING_CITY': raise ValueError('Load a scenario to enter the training environment')
+            self.scenarios.living_city()
+            return self.environment_state()
+        if action == 'scenario':
+            if not isinstance(value, dict) or value.get('operation') not in ('load','reset','start','stop','cleanup','collect_outcome'):
+                raise ValueError('Unknown scenario operation')
+            operation=value['operation']
+            if operation == 'load':
+                if 'spec' in value:self.scenarios.load(value['spec'])
+                else:
+                    from .scenarios import demonstration
+                    self.scenarios.load(demonstration(self,value.get('scenario_type'),value.get('seed',42),
+                                                      value.get('split','TRAIN'),value.get('difficulty',1)))
+            elif operation == 'reset':self.scenarios.reset()
+            elif operation == 'start':self.scenarios.start()
+            elif operation == 'stop':self.scenarios.stop()
+            elif operation == 'cleanup':self.scenarios.living_city()
+            else:return self.scenarios.collect_outcome()
+            return self.environment_state()
+        if self.scenarios and self.scenarios.mode.value == 'TRAINING' and action in ('settings','population','scene','destination'):
+            raise ValueError('Return to Living city before changing the controlled scene or route')
         if action == 'settings': return self.dashboard_tools.apply(value)
         if action == 'destination': return self.dashboard_tools.set_destination(value)
         if action == 'save_place': return self.dashboard_tools.save_place(value)
@@ -221,6 +253,12 @@ class CarlaProvider:
 
     def population_state(self):
         return self.population.get_population_state() if self.population else None
+
+    def environment_state(self):
+        return self.scenarios.status() if self.scenarios else None
+
+    def observe_scenario(self, frame):
+        if self.scenarios: self.scenarios.step(frame)
 
     def ground_truth_debug(self):
         return self.inspector.latest if self.inspector else None
@@ -313,6 +351,8 @@ class CarlaProvider:
         return self.world is not None and self.connection.is_connected()
 
     def reset_vehicle(self):
+        if self.scenarios and self.scenarios.mode.value == 'TRAINING' and not self.scenarios.resetting:
+            return self.scenarios.reset()
         if self.population: self.population.reset_population()
         self.destroy_ego_vehicle()
         if self.cleanup_errors:
@@ -350,6 +390,11 @@ class CarlaProvider:
     def disconnect(self):
         self.cleanup_errors = []
         try:
+            if self.scenarios:
+                self.scenarios.stop(reason='disconnect'); self.scenarios.cleanup()
+        except RuntimeError as error:
+            self.cleanup_errors.append(str(error))
+        try:
             if self.population: self.population.close()
         except RuntimeError as error:
             self.cleanup_errors.append(str(error))
@@ -366,6 +411,8 @@ class CarlaProvider:
             self.world = None
             self.population = self.inspector = self.last_ground_truth = None
             self.dashboard_tools = None
+            self.scenarios = None
+            self.strict_ego_spawn = False
             self.last_vehicle = self.last_world = None
             self.connection.disconnect()
 
@@ -385,7 +432,8 @@ class CarlaProvider:
                 'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
                 'navigation':'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
-                'population': self.population_state(), 'traffic_active': bool(self.population and self.population.vehicles)}
+                'population': self.population_state(), 'environment':self.environment_state(),
+                'traffic_active': bool(self.population and self.population.vehicles)}
 
     def restart_status(self):
         ticket = getattr(self, 'restart_ticket', None)
