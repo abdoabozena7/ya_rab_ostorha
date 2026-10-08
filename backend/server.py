@@ -238,7 +238,7 @@ def main():
             if ticket:
                 provider.camera_settings.update(ticket['configuration']['camera'])
                 provider.restart_ticket = args.restart_ticket
-            supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 10)
+            supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 60)
             supervisor.connect(provider)
             if ticket:
                 weather = provider.world.world.get_weather()
@@ -269,7 +269,7 @@ def main():
                                         created_at_utc=datetime.now(timezone.utc).isoformat(),
                                         config={**(to_dict(config) if config else {}), **provider.recording_metadata()}))
             server.simulation_service = SimulationService(provider, recorder, required_sensors=provider.required_sensors,
-                                                          sensor_timeout_s=.25)
+                                                          sensor_timeout_s=.5)
             server.simulation_service.start()
             if args.start_paused:
                 ready_deadline=time.monotonic()+10

@@ -104,7 +104,8 @@ def main():
         assert state['world']['version']==state['world']['pythonApiVersion']=='0.9.16'
         proof['reconnect'] = {'frame':state['world']['frame'],'ego_id':state['vehicle']['actorId'],
             'vehicles':len(vehicles),'sensors':len(sensors),'connected':True}
-        proof['traffic_plan'] = http('catalog')['settings']['traffic_plan']
+        proof['population'] = state.get('population')
+        assert not state['population']['actual']['vehicles'] and not state['population']['actual']['pedestrians']
         proof['traffic_active'] = False
     proof['status'] = 'PASS'
     path = Path('output/native-validation/dashboard-operations.json')

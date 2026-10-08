@@ -35,9 +35,18 @@ def dashboard_frame(frame):
             mountTransform=to_dict(capture.get('mount_transform', to_dict(sensor.transform))),
             sensorTickSeconds=capture.get('sensor_tick_s'), data=to_dict(sensor.data), units=to_dict(sensor.units),
             metadata=to_dict(capture))
+    population = frame.population
+    population_view = None if population is None else {
+        'frame_id': population.frame_id,
+        'actual': {'vehicles': population.traffic_vehicles, 'pedestrians': population.pedestrians,
+                   'controllers': population.walker_controllers, 'walkers_active': population.walkers_active},
+        'requested': {'vehicle_count': population.requested_traffic, 'pedestrian_count': population.requested_pedestrians},
+        'traffic_manager_connected': population.traffic_manager_connected, 'npc_spawned': None, 'npc_failed': None,
+        'walkers_failed': None, 'source': 'RECORDED_FRAME'}
     return {'vehicle': state, 'world': {'source': world.provider, 'frame': world.frame_id, 'timestamp': world.timestamp_s,
                                        'map': world.map_name, 'version': world.simulator_version, 'pythonApiVersion': world.api_version,
                                        'fixedDeltaSeconds': world.fixed_delta_seconds, 'synchronous': world.synchronous},
             'sensors': sensors, 'sensorRatesHz': {}, 'sensorErrors': {},
+            'population': population_view,
             'canonical': to_dict(frame), 'frameComplete': frame.complete,
             'missingRequiredSensors': list(frame.missing_required_sensors)}

@@ -1,5 +1,7 @@
 # CARLA dashboard native validation — 8 October 2026
 
+Historical evidence for the preceding dashboard phase. Gate 4 now disables autonomous ego navigation and enables explicitly requested normal populations. Current operation: [normal city guide](NORMAL_CITY_OPERATION.md). These earlier measurements are not Gate 4 acceptance evidence.
+
 The approved dashboard plan is implemented on the existing application core.
 Native keyboard/pointer controls, explicit conventional destination navigation,
 settings, actor lifecycle, sensor synchronization, recording and engine-off Replay

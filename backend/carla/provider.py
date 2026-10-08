@@ -7,11 +7,15 @@ from .vehicle import EgoVehicle
 from .world import CarlaWorld
 from .target import VERSION
 from .contracts import simulation_frame
-from ..core.contracts import ControlCommand
+from ..core.contracts import ControlCommand, PopulationState
+from dataclasses import replace
+from .population import WorldPopulationManager, passenger_blueprints
+from .ground_truth import NearbyActorInspector
 
 
 class CarlaProvider:
     name = 'carla'
+    allow_navigation = False  # Gate 4 routes guide the manual driver only.
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
                  blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False):
@@ -23,6 +27,9 @@ class CarlaProvider:
         self.camera_settings = {'camera_view': 'front', 'camera_resolution': '800x450', 'camera_fov': 90,
                                 'camera_postprocess': False, 'camera_motion_blur': 0., 'camera_bloom': 0.}
         self.navigation = None
+        self.population = None
+        self.inspector = None
+        self.last_ground_truth = None
         self.dashboard_tools = None
         self.world = self.ego = self.sensor_manager = None
         self.gear = 1
@@ -51,21 +58,27 @@ class CarlaProvider:
             # Wait for a real snapshot before identifying this project's orphans.
             raw_world.wait_for_tick(self.connection.timeout)
             actors = raw_world.get_actors()
-            project_ids = {a.id for a in actors if a.type_id.startswith('vehicle.') and
-                           a.attributes.get('role_name') == 'ostorha_ego'}
-            children = [a for a in actors if a.type_id.startswith('sensor.') and
+            project_ids = {a.id for a in actors if a.attributes.get('role_name') in
+                           ('ostorha_ego', 'ostorha_npc', 'ostorha_walker', 'ostorha_sensor')}
+            children = [a for a in actors if a.type_id.startswith(('sensor.', 'controller.')) and
                         a.parent is not None and a.parent.id in project_ids]
-            for actor in children + [a for a in actors if a.id in project_ids]:
-                if actor.is_alive and not actor.destroy():
-                    raise RuntimeError('Previous project actor cleanup failed: '+str(actor.id))
+            for actor in children:
+                if actor.type_id == 'controller.ai.walker': actor.stop()
+            owned = list({a.id:a for a in children + [a for a in actors if a.id in project_ids]}.values())
+            if owned:
+                replies = self.connection.client.apply_batch_sync([
+                    self.connection.api.command.DestroyActor(actor.id) for actor in owned], False)
+                errors = [reply.error for reply in replies if reply.error and 'not found' not in reply.error.lower()]
+                if errors: raise RuntimeError('Previous project actor cleanup failed: '+'; '.join(errors))
             if project_ids:
                 raw_world.wait_for_tick(self.connection.timeout)
-                if any(a.id in project_ids for a in raw_world.get_actors()):
+                if any(a.id in {actor.id for actor in owned} for a in raw_world.get_actors()):
                     raise RuntimeError('Previous project ego cleanup is not confirmed')
             self.catalog = {'maps': self.connection.client.get_available_maps(),
-                            'vehicles': [bp.id for bp in raw_world.get_blueprint_library().filter('vehicle.*')]}
+                            'vehicles': [bp.id for bp in passenger_blueprints(raw_world.get_blueprint_library())]}
             self.world = CarlaWorld(raw_world, self.fixed_delta)
             self.spawn_ego_vehicle()
+            self.population = WorldPopulationManager(self.connection.client, raw_world, self.connection.api, self.ego.actor.id)
             self.set_controls(brake=1)
             self.step()
         except Exception:
@@ -78,6 +91,7 @@ class CarlaProvider:
             raise RuntimeError('An ego vehicle is already owned by this session')
         self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index)
         actor = self.ego.spawn()
+        self.inspector = NearbyActorInspector(self.world.world, actor)
         self.sensor_manager = CarlaSensorManager(self.world.world, actor)
         if self.collision_sensor:
             self.sensor_manager.enable_collision(self.connection.api)
@@ -126,7 +140,9 @@ class CarlaProvider:
 
     def step(self):
         snapshot = self.world.advance()
+        if self.population: self.population.update(snapshot)
         self.last_vehicle = vehicle_state(self.ego.actor, snapshot)
+        self.last_ground_truth = self.inspector.observe(snapshot) if self.inspector else None
         self.last_world = {**self.world.state(snapshot), 'version': self.connection.server_version,
                            'pythonApiVersion': self.connection.api_version}
         self._follow_ego(snapshot.find(self.ego.actor.id).get_transform())
@@ -146,7 +162,16 @@ class CarlaProvider:
     def get_simulation_frame(self):
         if self.last_vehicle is None or self.last_world is None:
             raise RuntimeError('No native observation is available')
-        return simulation_frame(self.last_vehicle, self.last_world)
+        frame = simulation_frame(self.last_vehicle, self.last_world)
+        if self.population:
+            population = self.population.get_population_state()
+            a, r = population['actual'], population['requested']
+            frame = replace(frame, population=PopulationState(frame.frame_id, frame.timestamp_s,
+                a['vehicles'], a['pedestrians'], a['controllers'], a['walkers_active'],
+                r['vehicle_count'], r['pedestrian_count'], population['traffic_manager_connected'],
+                r['speed_behavior'], population['desired_speed_difference_percent'], r['seed']))
+        return replace(frame, ground_truth=self.last_ground_truth,
+                       actors=tuple(item.actor for item in self.last_ground_truth.objects)) if self.last_ground_truth else frame
 
     def drain_collision_events(self):
         return self.sensor_manager.drain_collisions() if self.sensor_manager else ()
@@ -154,7 +179,8 @@ class CarlaProvider:
     def dashboard_catalog(self):
         self._ensure_dashboard_tools()
         return {'places': self.dashboard_tools.places(), 'roads': self.dashboard_tools.roads(),
-                'settings': self.dashboard_tools.settings()}
+                'settings': self.dashboard_tools.settings(), 'profiles': self.dashboard_tools.profiles(),
+                'scenes': self.dashboard_tools.scenes()}
 
     def _ensure_dashboard_tools(self):
         if self.dashboard_tools is None:
@@ -167,7 +193,34 @@ class CarlaProvider:
         if action == 'destination': return self.dashboard_tools.set_destination(value)
         if action == 'save_place': return self.dashboard_tools.save_place(value)
         if action == 'favorite_place': return self.dashboard_tools.favorite_place(value)
+        if action == 'clear_route':
+            self.dashboard_tools.route = None
+            self.dashboard_tools.native_route = []
+            return {'active': False}
+        if action == 'inspector':
+            self.inspector.configure(value)
+            return {'radius_m': self.inspector.radius}
+        if action == 'population':
+            if value not in ('clear_traffic', 'clear_pedestrians', 'reset', 'respawn'):
+                raise ValueError('Unknown population operation')
+            config = dict(self.population.config)
+            if value == 'clear_traffic': self.population.clear_traffic()
+            elif value == 'clear_pedestrians': self.population.clear_pedestrians()
+            else:
+                self.population.reset_population()
+                if value == 'respawn': self.population.apply(config)
+            return self.population.get_population_state()
+        if action == 'scene':
+            if value not in self.dashboard_tools.scenes(): raise ValueError('Unknown normal-city scene')
+            self.population.reset_population()
+            return self.dashboard_tools.apply(self.dashboard_tools.scenes()[value])
         raise ValueError('Unknown dashboard operation')
+
+    def population_state(self):
+        return self.population.get_population_state() if self.population else None
+
+    def ground_truth_debug(self):
+        return self.inspector.latest if self.inspector else None
 
     def route_state(self):
         return self.dashboard_tools.route_state() if self.dashboard_tools else None
@@ -179,32 +232,10 @@ class CarlaProvider:
         return validate_settings({'next_launch': value})['next_launch']
 
     def start_navigation(self, speed_kmh):
-        self._ensure_dashboard_tools()
-        if not self.dashboard_tools.route:
-            raise ValueError('Choose a destination before starting a journey')
-        target = self.dashboard_tools.route['destination']
-        self.dashboard_tools.set_destination({'location': target['location'], 'name': target['name']})
-        from agents.navigation.basic_agent import BasicAgent
-        delta = self.fixed_delta
-        self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
-            opt_dict={'dt': delta, 'max_brake': 1.,
-                      'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
-                      'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta}},
-            map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.planner)
-        self.navigation.set_global_plan(self.dashboard_tools.native_route,
-                                        stop_waypoint_creation=True, clean_queue=True)
-        return self.route_state()
+        raise ValueError('Gate 4 supports manual navigation only; autonomous ego driving is disabled')
 
     def navigation_command(self, frame_id, timestamp_s, speed_kmh):
-        from ..core.contracts import CommandSource
-        if self.navigation is None:
-            raise RuntimeError('No active native route controller')
-        limit = self.ego.actor.get_speed_limit()
-        self.navigation.set_target_speed(min(speed_kmh, limit) if limit > 0 else speed_kmh)
-        value = self.navigation.run_step()
-        return ControlCommand(frame_id, timestamp_s, float(value.throttle), float(value.brake),
-                              float(value.steer), bool(value.reverse), bool(value.hand_brake),
-                              CommandSource.NAVIGATION, -1 if value.reverse else 1)
+        raise ValueError('Autonomous ego driving is disabled')
 
     def navigation_done(self):
         return self.navigation is not None and self.navigation.done()
@@ -254,11 +285,13 @@ class CarlaProvider:
         return self.world is not None and self.connection.is_connected()
 
     def reset_vehicle(self):
+        if self.population: self.population.reset_population()
         self.destroy_ego_vehicle()
         if self.cleanup_errors:
             raise RuntimeError('CARLA cleanup failed: ' + '; '.join(self.cleanup_errors))
         self.gear = 1
         self.spawn_ego_vehicle()
+        if self.population: self.population.ego_id = self.ego.actor.id
         self.set_controls(brake=1)
         if self.world.paused:
             self.world.paused = False
@@ -289,6 +322,10 @@ class CarlaProvider:
     def disconnect(self):
         self.cleanup_errors = []
         try:
+            if self.population: self.population.close()
+        except RuntimeError as error:
+            self.cleanup_errors.append(str(error))
+        try:
             self.destroy_ego_vehicle()
         except RuntimeError as error:
             self.cleanup_errors.append(str(error))
@@ -299,6 +336,7 @@ class CarlaProvider:
             self.cleanup_errors.append(str(error))
         finally:
             self.world = None
+            self.population = self.inspector = self.last_ground_truth = None
             self.dashboard_tools = None
             self.last_vehicle = self.last_world = None
             self.connection.disconnect()
@@ -306,20 +344,20 @@ class CarlaProvider:
     close = disconnect
 
     def restart_configuration(self):
-        from .dashboard_tools import WEATHER_RANGES
+        from .dashboard_tools import WEATHER_PRESET_FIELDS
         weather = self.world.world.get_weather()
         return {'camera': dict(self.camera_settings), 'vehicle':self.blueprint,
                 'spawn_index':self.spawn_index, 'fixed_delta':self.fixed_delta,
                 'map':self.world.world.get_map().name,
-                'weather':{key:getattr(weather,key) for key in WEATHER_RANGES}}
+                'weather':{key:getattr(weather,key) for key in WEATHER_PRESET_FIELDS if hasattr(weather,key)}}
 
     def recording_metadata(self):
         return {'native_version':self.connection.server_version,'python_api_version':self.connection.api_version,
                 'map':self.world.world.get_map().name,'blueprint':self.ego.actor.type_id,
                 'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
-                'navigation':'Official CARLA BasicAgent, explicit global route, SafetyLayer/Arbitrator',
-                'traffic_active':False}
+                'navigation':'Manual route guidance from official GlobalRoutePlanner; no ego autopilot',
+                'population': self.population_state(), 'traffic_active': bool(self.population and self.population.vehicles)}
 
     def restart_status(self):
         ticket = getattr(self, 'restart_ticket', None)

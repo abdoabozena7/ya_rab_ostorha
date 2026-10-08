@@ -1,0 +1,232 @@
+{
+  "gate": 4,
+  "status": "PASS",
+  "source": "LIVE_NATIVE",
+  "validation_date": "2026-10-08",
+  "carla_version": "0.9.16",
+  "python_api_version": "0.9.16",
+  "python_version": "3.12.10",
+  "map": "Carla/Maps/Town10HD_Opt",
+  "gpu": "RTX 3060 Laptop GPU",
+  "vram_total_mib": 6144,
+  "windows_detected_ram_gib": 16,
+  "user_reported_ram_gb": 32,
+  "population_endurance": {
+    "duration_wall_s": 1200.0,
+    "native_tick_hz_median": 16.897081413219848,
+    "sensor_wall_hz_medians": {
+      "frontCamera": 16.855131214081563,
+      "depth": 16.855131214081563,
+      "radar": 16.855131214081563,
+      "lidar": 16.855131214081563,
+      "imu": 16.855131214081563,
+      "gnss": 16.855131214081563
+    },
+    "sync_delta": {
+      "completeFrames": 20265,
+      "incompleteFrames": 0
+    },
+    "sync_issue_delta": {
+      "MISSING": 0,
+      "LATE": 0,
+      "STALE": 0,
+      "DUPLICATE": 0,
+      "OUT_OF_ORDER": 0,
+      "TIMESTAMP_MISMATCH": 0
+    },
+    "ws_max_gap_s": 0.14100000000325963,
+    "actor_counts_minmax": {
+      "vehicle": [
+        26,
+        26
+      ],
+      "walker": [
+        25,
+        25
+      ],
+      "controller": [
+        24,
+        25
+      ],
+      "sensor": [
+        7,
+        7
+      ]
+    },
+    "memory": {
+      "backend_memory": {
+        "initial_median_private_mib": 721.470703125,
+        "final_median_private_mib": 726.1796875,
+        "peak_private_mib": 731.71875
+      },
+      "carla_memory": {
+        "initial_median_private_mib": 9613.619140625,
+        "final_median_private_mib": 9714.3125,
+        "peak_private_mib": 9714.609375
+      }
+    },
+    "cpu_percent_total_machine": {
+      "backend_memory": 9.404261522061711,
+      "carla_memory": 16.68644211850491
+    },
+    "vram_mib_minmax": [
+      5641,
+      5852
+    ],
+    "render_fps": null
+  },
+  "native_checks": {
+    "population": {
+      "incremental_reduction": true,
+      "respawn": true,
+      "clear_traffic_and_pedestrians": true,
+      "ego_sensors_unchanged": true,
+      "speed_semantics": true,
+      "reset_population": true
+    },
+    "settings": {
+      "vehicle_spawn_and_cleanup": true,
+      "five_camera_views_no_leaks": true,
+      "native_weather": true,
+      "fixed_delta_and_sensor_recreation": true,
+      "autonomous_ego_rejected_live": true,
+      "native_manual_routes_saved_transform": true,
+      "native_actor_inspector": true,
+      "repeatable_normal_scenes": true
+    },
+    "reset": {
+      "native_world_reset_empty_population_seven_sensors": true,
+      "disconnect_zero_owned_actors": true,
+      "reconnect_one_ego_seven_sensors": true
+    }
+  },
+  "recording": {
+    "path": "runs/normal_city/run_d252d723675c461bbdf42725c31b3259",
+    "frames": 4981,
+    "duration_sim_s": 249.00000371038914,
+    "max_speed_kmh": 19.604457292680276,
+    "max_throttle": 1.0,
+    "max_brake": 1.0,
+    "steering_range": [
+      -1.0,
+      1.0
+    ],
+    "reverse_observed": true,
+    "handbrake_observed": true,
+    "max_displacement_m": 15.881854505868539,
+    "control_sources": {
+      "SAFETY": 4082,
+      "MANUAL": 899
+    },
+    "event_types": {
+      "RunRecordingStarted": 1,
+      "ControlChanged": 23,
+      "CollisionDetected": 420,
+      "RunRecordingStopped": 1
+    },
+    "size_mib": 7724.42692565918
+  },
+  "replay": "PASS_WITH_CARLA_STOPPED",
+  "recommended_profile": "BALANCED_25_25",
+  "tests": {
+    "python_pass": 115,
+    "python_skip": 1,
+    "javascript_pass": 21
+  },
+  "scope": "Manual ego only; native normal traffic/walkers; no models, chaos, Egyptian map or Three.js simulator",
+  "artifacts": [
+    {
+      "path": "output/native-validation/gate4-stability-20min.json",
+      "sha256": "8a9b5a7a17a2361d5b1cbc4ab4d6bf0dce798548ec4cee9e160b7e9c58e99795"
+    },
+    {
+      "path": "output/native-validation/gate4-stability-recording-2min.json",
+      "sha256": "2f36068533c03efe4d108a95a5fa7db43a50749f020e77b55de0bcfdc29ccf66"
+    },
+    {
+      "path": "output/native-validation/gate4-city-acceptance.json",
+      "sha256": "105d813c6599c814bb317070f8ed5e193d5ef2aea0c35fe632d74782815d0ce8"
+    },
+    {
+      "path": "output/native-validation/gate4-city-stability-20min.json",
+      "sha256": "5c78b8b2628b989413d7282ddcf2741f0264e6e487d31fae83038f1f9b9dc705"
+    },
+    {
+      "path": "output/native-validation/gate4-settings.json",
+      "sha256": "257dd8d4c15b5e2f0a4efe3e6101be808f1d6a9c26061c7b60e7ce2f689c0503"
+    },
+    {
+      "path": "output/native-validation/gate4-reset.json",
+      "sha256": "6be5311b7deb0d2f9979734e32ee1e083adc3a069c79eaf07831c904f0979202"
+    },
+    {
+      "path": "output/native-validation/gate4-normal-behavior-final.json",
+      "sha256": "8f59b8156500092c24cbbe286f7476ac29a16c292c4ab5202c3cd483f58fac10"
+    },
+    {
+      "path": "output/native-validation/gate4-city-recording-verified.json",
+      "sha256": "7f4a54596ae226c18619dd85689ba4cdc00b227159a01cf8ef70bc3ad5e3c626"
+    },
+    {
+      "path": "output/native-validation/gate4-recording-summary.json",
+      "sha256": "92be81b753fed8437858cc841bcf80029ffed8029e9d5caf5c0203e4955e0065"
+    },
+    {
+      "path": "output/native-validation/gate4-recording-cleanup.json",
+      "sha256": "fc105163945481a0a0ec8e832eea5355ab80d3dd94be056476150d5744ab59ba"
+    },
+    {
+      "path": "output/native-validation/gate4-replay.json",
+      "sha256": "4abd1d7b50d3cc86ef78d76d9ae2abbbd0b24ef37095e2ba4bc638d24dc80111"
+    },
+    {
+      "path": "output/native-validation/gate4-replay-dashboard.json",
+      "sha256": "4cf063cd2979ca377a43f1639b0501dde622659e8d118a066e54251f9c17585c"
+    },
+    {
+      "path": "output/native-validation/gate4-route-availability.json",
+      "sha256": "febd44ab19ed1d66a5199f0ae5736828ebb29315bbde9650a5405e90027e4f84"
+    },
+    {
+      "path": "output/native-validation/gate4-disabled-navigation.json",
+      "sha256": "37346ba2725fb829293027e42e6bfaa89659cd8119797cedcf6acba8b4633da5"
+    },
+    {
+      "path": "output/native-validation/gate4-final-state.json",
+      "sha256": "c7092fb76c64d433cf38dd3e4d2ab63cf5d946a8b7328097fc811694337322f8"
+    },
+    {
+      "path": "output/native-validation/gate4-dashboard-final.png",
+      "sha256": "ee39e0e64882ac9c42df370aaf573bc9cbc1037c4c4ecef5545b26baa710653f"
+    },
+    {
+      "path": "output/native-validation/gate4-dashboard-small.png",
+      "sha256": "782a670350eb8930d045076c58bd33be81630ffbc6f119639a01b2ef5cca5326"
+    },
+    {
+      "path": "output/native-validation/gate4-replay-dashboard.png",
+      "sha256": "a507fbac90a8e93f4ff263ff3fbfec7d83fecd75230002495be20a10abf9afba"
+    },
+    {
+      "path": "output/native-validation/gate4-python-tests.txt",
+      "sha256": "fd319670e4e42e24e2bd33e42c755329ec33246ba46ee846b6e9e43cb35d118a"
+    },
+    {
+      "path": "output/native-validation/gate4-js-tests.txt",
+      "sha256": "29387ccdbdd82886b01da148042c025abaffbb200d4cf3df70ebf392c9fa1226"
+    },
+    {
+      "path": "runs/normal_city/run_d252d723675c461bbdf42725c31b3259/metadata.json",
+      "sha256": "18a90474e246d701e3f74ba2b71066b9c83d0e3794d5769049f3434de2b0df9e"
+    },
+    {
+      "path": "runs/normal_city/run_d252d723675c461bbdf42725c31b3259/telemetry/frames.jsonl",
+      "sha256": "4c7d9c61121c749ec2f1f5ba28a1390d07204b77c181289cc762f754087b80a5"
+    },
+    {
+      "path": "runs/normal_city/run_d252d723675c461bbdf42725c31b3259/events/events.jsonl",
+      "sha256": "2d412390e67359f3f91ae407624319e65638019e9381c95b13c1dcc261397ece"
+    }
+  ],
+  "artifact_storage": "Large native recordings, JSONL samples and screenshots remain local in ignored runs/output directories; hashes seal the evidence."
+}

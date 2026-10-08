@@ -31,6 +31,8 @@ class WebSocketBridge:
             if kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
                 if getattr(self.service, 'is_replay', False):
                     raise ValueError('Replay has no native connection or control sink')
+                if kind == 'start_journey' and not self.service.arbiter.machine.allow_navigation:
+                    raise ValueError('Gate 4 provides manual route guidance only; autonomous ego driving is disabled')
                 if kind == 'reconnect':
                     self.service.reconnect()
                 else:
@@ -47,7 +49,8 @@ class WebSocketBridge:
                         self.service.stop_driving('ownership_taken')
                 return True
             if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'restart_graphics',
-                            'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect'}:
+                            'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect',
+                            'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene'}:
                 return False
             if self.owner is not socket:
                 raise ValueError('Another dashboard controls this vehicle; select Start driving')
@@ -62,8 +65,15 @@ class WebSocketBridge:
                 safety=self.service.arbiter.safety
                 receipt=safety.receipts.get(CommandSource.MANUAL)
                 if receipt is not None:
-                    delay=safety.min_interval_s-(safety.now()-receipt)
-                    if delay>0: time.sleep(delay)
+                    deadline = time.perf_counter() + .1
+                    while (delay := safety.min_interval_s-(safety.now()-receipt)) > 0:
+                        # Windows monotonic readings can advance in coarse steps.
+                        # A single sleep may return inside the admission interval.
+                        # Recheck the same clock as the safety layer, with a bound
+                        # so a stalled clock cannot stall the connection forever.
+                        if time.perf_counter() >= deadline:
+                            raise ValueError('Control admission clock did not advance')
+                        time.sleep(max(.001, delay))
                 self.service.set_controls(frame_id=message['frame_id'], timestamp_s=message['timestamp_s'], **message.get('controls', {}))
             elif kind == 'reset':
                 self.service.reset_vehicle()

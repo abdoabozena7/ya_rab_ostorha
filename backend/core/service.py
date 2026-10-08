@@ -25,7 +25,7 @@ class SimulationService:
         self.clock = SimulationClock(now)
         self.synchronizer = SensorSynchronizer(required_sensors, optional_sensors, timeout_s=sensor_timeout_s, now=now)
         self.arbiter = CommandArbiter(ControlSafetyLayer(command_timeout_s=self.CONTROL_TTL, now=now))
-        self.arbiter.machine.allow_navigation = hasattr(provider, 'navigation_command') and getattr(provider, 'name', '') == 'carla'
+        self.arbiter.machine.allow_navigation = getattr(provider, 'allow_navigation', False)
         self.session_id = uuid.uuid4().hex
         self.journey = {'status': 'IDLE', 'reason': None, 'speed_kmh': 20}
         self.navigation_heartbeat_at = -float('inf')
@@ -35,8 +35,7 @@ class SimulationService:
         self.lifecycle = ConnectionLifecycle(now=now)
         self.events = EventBus()
         self.events.subscribe(self._log_event)
-        if recorder and hasattr(recorder, 'record_event'):
-            self.events.subscribe(recorder.record_event)
+        self.events.subscribe(self._record_event)
         self.actions = deque()
         self.observation = None
         self.state = self.world = None  # Existing dashboard compatibility view only.
@@ -84,6 +83,31 @@ class SimulationService:
                     EventType.SensorStarted: LogCategory.SENSOR, EventType.SensorStopped: LogCategory.SENSOR}.get(event.event_type, LogCategory.SIMULATION)
         log(category, event.event_type.value, frame_id=event.frame_id, timestamp_s=event.timestamp_s,
             run_id=getattr(getattr(self.recorder, 'metadata', None), 'run_id', None), **dict(event.payload))
+
+    def _record_event(self, event):
+        if self.recorder and hasattr(self.recorder, 'record_event'):
+            self.recorder.record_event(event)
+
+    def _change_recording(self, value):
+        if not isinstance(value, dict) or set(value) != {'enabled'} or type(value['enabled']) is not bool:
+            raise ValueError('Recording requires an explicit enabled boolean')
+        if value['enabled']:
+            if self.recorder: raise ValueError('A recording is already active')
+            from datetime import datetime, timezone
+            from pathlib import Path
+            from .contracts import ExperimentMetadata, DataOrigin
+            from .recording import RunRecorder
+            directory = Path(__file__).resolve().parents[2] / 'runs' / 'normal_city'
+            self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
+                'Normal city native manual run', self.name, DataOrigin.REAL_SIMULATION,
+                created_at_utc=datetime.now(timezone.utc).isoformat(), config=self.provider.recording_metadata()))
+            self._event(EventType.ControlChanged, recording='STARTED', population=self.provider.population_state())
+            return {'enabled': True, 'path': str(self.recorder.root)}
+        if not self.recorder: raise ValueError('No recording is active')
+        self._event(EventType.ControlChanged, recording='STOPPED')
+        recorder = self.recorder; self.recorder = None
+        recorder.close()
+        return {'enabled': False, 'path': str(recorder.root)}
 
     @staticmethod
     def safe_controls():
@@ -247,6 +271,8 @@ class SimulationService:
                 self.actions.append(('pause', False))
 
     def start_journey(self, speed_kmh=20):
+        if not self.arbiter.machine.allow_navigation:
+            raise ValueError('الملاحة إرشاد للقيادة اليدوية فقط في Gate 4؛ القيادة التلقائية غير مفعّلة')
         speed = finite(speed_kmh)
         if not 5 <= speed <= 30:
             raise ValueError('Journey speed must be 5–30 km/h')
@@ -334,10 +360,14 @@ class SimulationService:
     def queue_dashboard_action(self, action, value):
         with self.lock:
             self.require_connected()
-            if action not in ('settings', 'destination', 'save_place', 'favorite_place'):
+            if action not in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene'):
                 raise ValueError('Unknown dashboard operation')
-            if self.recorder and action == 'settings':
+            if self.recorder and action in ('settings','world_reset'):
                 raise ValueError('Finish recording before changing sensor configuration')
+            if action=='world_reset':
+                active = self.provider.runtime.active or {'quality':'Low','resolution':'1280x720'}
+                self.restart_graphics({k:active[k] for k in ('quality','resolution')}, operation='WORLD_RESET')
+                return
             self.release_controls()
             self.dashboard_result = {'action': action, 'status': 'PENDING'}
             self.actions.append((action, value))
@@ -355,7 +385,7 @@ class SimulationService:
             self.release_controls()
             self.actions.append(('reconnect', None))
 
-    def restart_graphics(self, value):
+    def restart_graphics(self, value, operation='GRAPHICS'):
         launch = self.provider.validate_graphics(value)
         with self.lock:
             self.require_connected()
@@ -368,6 +398,7 @@ class SimulationService:
             self.restarting = True
             self.restart_result = {'status':'STOPPING', 'requested':launch}
             self.restart_configuration = self.provider.restart_configuration()
+            self.restart_configuration['restart_operation'] = operation
             threading.Thread(target=self._restart_native, args=(launch, previous),
                              name='native-graphics-restart', daemon=True).start()
 
@@ -392,17 +423,20 @@ class SimulationService:
                 if self.thread.is_alive():
                     raise RuntimeError('Previous native worker is still running')
             provider.connect()
-            fresh = SimulationService(provider, required_sensors=provider.required_sensors, now=now)
+            fresh = SimulationService(provider, required_sensors=provider.required_sensors,
+                                      sensor_timeout_s=self.synchronizer.timeout_s, now=now)
             fresh.restarting = self.restarting
             fresh.restart_result = self.restart_result
+            fresh.pause_on_first_observation = True
             fresh.events = EventBus()
             # Replace complete state atomically; WebSocket observers cannot see a
             # partially initialized service while reconnect is in progress.
             self.__dict__.update(fresh.__dict__)
             self.events.subscribe(self._log_event)
+            self.events.subscribe(self._record_event)
             self.start()
-            with self.lock:
-                self.arbiter.machine.transition(ControlMode.PAUSED, connected=True)
+            # The first verified frame establishes DISCONNECTED -> MANUAL ->
+            # PAUSED in _publish. Do not race it with a premature transition.
         except Exception as error:
             self.error = str(error)
             self.reconnecting = False
@@ -416,6 +450,12 @@ class SimulationService:
             if isinstance(status, dict) and isinstance(status.get('status'), str):
                 self.restart_result = status
                 self.restarting = status['status'] not in ('APPLIED','ROLLED_BACK','FAILED')
+                if status.get('operation')=='WORLD_RESET' and status['status'] in ('APPLIED','ROLLED_BACK') and not getattr(self,'native_reset_reported',False):
+                    self.dashboard_result = {'action':'world_reset','status':'APPLIED',
+                                             'result':{'map':getattr(self.provider,'map_name',None),
+                                                       'native_reset':{'status':'NATIVE_PROCESS_RESTART','reason':'Windows libcarla requires retirement of the old SDK process'}},
+                                             'operationId':self.session_id}
+                    self.native_reset_reported = True
             live = self._live()
             if not live and self.lifecycle.state == ConnectionState.CONNECTED and not self.reconfiguring:
                 self.arbiter.disconnect()
@@ -441,6 +481,8 @@ class SimulationService:
                     'collisionEvents': [to_dict(e) for e in self.collision_events] if live else [],
                     'dashboardResult': copy.deepcopy(self.dashboard_result),
                     'route': getattr(self.provider, 'route_state', lambda: None)() if live else None,
+                    'population': getattr(self.provider, 'population_state', lambda: None)() if live else None,
+                    'nearbyActors': getattr(self.provider, 'ground_truth_debug', lambda: None)() if live else None,
                     'synchronization': {'completeFrames': self.synchronized_frames,
                                         'incompleteFrames': self.synchronization_missing_frames,
                                         'issues': {issue.value: self.synchronization_issues[issue.value] for issue in FrameIssue},
@@ -537,6 +579,9 @@ class SimulationService:
                 self.lifecycle.connected(generation)
                 self.arbiter.machine.transition(ControlMode.MANUAL, connected=True)
                 self.arbiter.safety.clear()
+                if getattr(self, 'pause_on_first_observation', False):
+                    self.arbiter.machine.transition(ControlMode.PAUSED, connected=True)
+                    self.pause_on_first_observation = False
                 self.started_session = True
                 self._event(EventType.SimulationStarted, provider=observation.world.provider)
                 self._event(EventType.VehicleSpawned, actor_id=observation.vehicle.actor_id)
@@ -575,19 +620,28 @@ class SimulationService:
                         self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
                 except (ValueError, ImportError) as error:
                     self._stop_navigation(str(error), status='ERROR')
-            elif action in ('settings', 'destination', 'save_place', 'favorite_place'):
-                self.reconfiguring = True
+            elif action in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'scene'):
+                # Route guidance, saved places and recording do not rebuild
+                # native actors. Keep fresh observations available while these
+                # actions run; the normal receipt watchdog still applies.
+                self.reconfiguring = action in ('settings', 'population', 'scene')
                 try:
-                    self._drain_collision_events()
-                    self._ingest_provider_sensors()
-                    for pending in self.synchronizer.drain(force=True):
-                        self._publish(pending); self._record(pending)
-                    result = self.provider.dashboard_action(action, value)
-                    self.dashboard_result = {'action': action, 'status': 'APPLIED', 'result': result,
+                    sensor_change = action == 'settings' and isinstance(value, dict) and any(k in value for k in (
+                        'camera_resolution', 'camera_fov', 'camera_postprocess', 'camera_motion_blur',
+                        'camera_bloom', 'simulation_hz', 'vehicle', 'spawn_index'))
+                    if sensor_change:
+                        self._drain_collision_events()
+                        self._ingest_provider_sensors()
+                        for pending in self.synchronizer.drain(force=True):
+                            self._publish(pending); self._record(pending)
+                    result = self._change_recording(value) if action == 'recording' else self.provider.dashboard_action(action, value)
+                    self.dashboard_result = {'action': action, 'status': 'PENDING' if action in ('settings','scene','population') else 'APPLIED', 'result': result,
                                              'operationId': uuid.uuid4().hex}
                     if action == 'destination':
                         self.journey.update(status='READY', reason=None)
-                    if action == 'settings':
+                    self._event(EventType.ControlChanged, dashboard_action=action, value=value,
+                                population=getattr(self.provider, 'population_state', lambda: None)())
+                    if sensor_change:
                         self.synchronizer = SensorSynchronizer(self.synchronizer.required, self.synchronizer.optional,
                                                                timeout_s=self.synchronizer.timeout_s, now=self.now)
                         self.camera_cache.clear(); self.sensor_frame_cache.clear()
@@ -597,7 +651,8 @@ class SimulationService:
                     if action == 'destination':
                         self.journey.update(status='ERROR',reason=str(error))
                 finally:
-                    self.state_at = self.now()
+                    if self.reconfiguring:
+                        self.state_at = self.now()
                     self.reconfiguring = False
             elif action == 'reconnect':
                 # Reconfirm the actual server, not merely the browser socket.
@@ -619,6 +674,9 @@ class SimulationService:
                     self._record(pending)
                 old_actor_id = self.observation.vehicle.actor_id if self.observation else None
                 self.provider.reset_vehicle()
+                self.synchronizer = SensorSynchronizer(self.synchronizer.required, self.synchronizer.optional,
+                                                       timeout_s=self.synchronizer.timeout_s, now=self.now)
+                self.camera_cache.clear(); self.sensor_frame_cache.clear()
                 self._event(EventType.VehicleDestroyed, actor_id=old_actor_id)
             else:
                 self.provider.set_paused(value)
@@ -628,6 +686,13 @@ class SimulationService:
             chosen = self._choose()
         self.provider.apply_control(chosen)
         self.provider.step()
+        # Native weather/population setters become observable on the following
+        # simulation step. Publish APPLIED only with that step's real state.
+        if self.dashboard_result and self.dashboard_result.get('operationId') and self.dashboard_result['status']=='PENDING':
+            action = self.dashboard_result['action']
+            if action in ('settings','scene','population'):
+                result = self.provider.population_state() if action=='population' else self.provider.dashboard_tools.settings()
+                self.dashboard_result = {**self.dashboard_result,'status':'APPLIED','result':result}
         self._drain_collision_events()
         observation = self.provider.get_simulation_frame()
         if not isinstance(observation, SimulationFrame):

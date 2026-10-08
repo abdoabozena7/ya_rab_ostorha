@@ -10,7 +10,10 @@ from backend.core.timing import SensorSynchronizer, FrameIssue
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('run');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('run')
+    parser.add_argument('--output',default='output/native-validation/replay.json')
+    parser.add_argument('--require-population',action='store_true')
+    args=parser.parse_args()
     with socket.socket() as connection:
         connection.settimeout(1)
         if connection.connect_ex(('127.0.0.1',2000))==0:
@@ -23,6 +26,12 @@ def main():
         state=service.snapshot()
         assert state['mode']=='REPLAY' and not state['connected'] and state['available']
         assert state['vehicle']['frame']==first.frame_id
+        if args.require_population:
+            assert first.population and first.population.traffic_vehicles > 0 and first.population.pedestrians > 0
+            assert state['population']['source']=='RECORDED_FRAME'
+            assert state['population']['actual']['vehicles']==first.population.traffic_vehicles
+            assert state['population']['actual']['pedestrians']==first.population.pedestrians
+            assert first.ground_truth and first.ground_truth.frame_id==first.frame_id
         camera,metadata=service.get_camera_frame(first.frame_id)
         assert camera.startswith(b'\xff\xd8') and metadata['frame']==first.frame_id
         assert abs(metadata['timestamp']-first.timestamp_s)<1e-6
@@ -48,8 +57,10 @@ def main():
             'telemetry_frame':first.frame_id,'replayed_camera_frames':[metadata['frame'],metadata2['frame']],
             'native_controls_disabled':True,'recorded_provenance':reader.metadata.data_origin.value,
             'real_packet_synchronizer_checks':{'duplicate':sorted(x.value for x in duplicate.issues),
-                'out_of_order':sorted(x.value for x in out_of_order.issues),'missing':list(incomplete.missing_required_sensors)}}
-        Path('output/native-validation/replay.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2))
+                'out_of_order':sorted(x.value for x in out_of_order.issues),'missing':list(incomplete.missing_required_sensors)},
+            'frames':len(reader.index),'duration_sim_s':reader.index[-1][0]-reader.index[0][0],
+            'recorded_population':state.get('population')}
+        Path(args.output).write_text(json.dumps(result,indent=2),encoding='utf8');print(json.dumps(result,indent=2))
     finally:service.close()
 
 

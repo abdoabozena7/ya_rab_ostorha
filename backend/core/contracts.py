@@ -385,6 +385,29 @@ class ModelPrediction(Contract):
 
 
 @dataclass(frozen=True)
+class PopulationState(Contract):
+    frame_id: int
+    timestamp_s: float
+    traffic_vehicles: int
+    pedestrians: int
+    walker_controllers: int
+    walkers_active: int
+    requested_traffic: int
+    requested_pedestrians: int
+    traffic_manager_connected: bool
+    speed_behavior: str
+    desired_speed_difference_percent: float
+    seed: int
+
+    def validate(self):
+        if any(value < 0 for value in (self.traffic_vehicles, self.pedestrians, self.walker_controllers,
+                                      self.walkers_active, self.requested_traffic, self.requested_pedestrians, self.seed)):
+            raise ValueError('Population counts/seed cannot be negative')
+        if self.walkers_active > self.pedestrians or not 0 <= self.desired_speed_difference_percent <= 100:
+            raise ValueError('Invalid native population state')
+
+
+@dataclass(frozen=True)
 class SimulationFrame(Contract):
     frame_id: int
     timestamp_s: float
@@ -398,11 +421,14 @@ class SimulationFrame(Contract):
     predictions: tuple[ModelPrediction, ...] = ()
     missing_required_sensors: tuple[str, ...] = ()
     missing_optional_sensors: tuple[str, ...] = ()
+    population: PopulationState | None = None
 
     def validate(self):
         parts = (self.world, self.vehicle, *self.sensors, *self.collisions, *self.actors, *self.predictions)
         if self.ground_truth is not None:
             parts += (self.ground_truth,)
+        if self.population is not None:
+            parts += (self.population,)
         if any(part.frame_id != self.frame_id or abs(part.timestamp_s-self.timestamp_s) > 1e-6 for part in parts):
             raise ValueError('SimulationFrame cannot mix unrelated frame IDs/timestamps')
         if self.world.provider != self.vehicle.provider or any(sensor.provider != self.world.provider for sensor in self.sensors):

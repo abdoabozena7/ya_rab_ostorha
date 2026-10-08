@@ -26,6 +26,8 @@ class CarlaSensorManager:
         if sensor_id in self.actors:
             raise ValueError(f'Duplicate sensor ID: {sensor_id}')
         blueprint = self.world.get_blueprint_library().find(blueprint_id)
+        if blueprint.has_attribute('role_name'):
+            blueprint.set_attribute('role_name', 'ostorha_sensor')
         for key, value in attributes.items():
             blueprint.set_attribute(key, str(value))
         actor = self.world.spawn_actor(blueprint, transform, attach_to=self.ego)

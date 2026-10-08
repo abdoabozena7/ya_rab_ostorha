@@ -70,6 +70,10 @@ function refresh() {
     seenSession = provider.sessionId; manualArmed = false; resetKeys(); clearCamera();
   }
   const state = provider.getVehicleState(), live = provider.fresh;
+  $('cameraEmptyTitle').textContent = live ? 'بانتظار صورة الكاميرا' : 'بانتظار اتصال المحاكي';
+  $('cameraEmptyDescription').textContent = live ? 'لا توجد صورة متاحة بعد. راجع حالة الحساسات في التفاصيل.' : 'وصّل CARLA لعرض الكاميرا وبيانات العربية، ثم فعّل القيادة.';
+  $('connectionSetupBtn').hidden = live || provider.isReplay;
+  if (!live) $('mapEmpty').hidden = false;
   if (!live || provider.isReplay || !document.hasFocus() || document.hidden ||
       performance.now()>manualRequestedUntil && (!provider.controller ||
       provider.controlMode === 'PAUSED' && lastMode === 'MANUAL' || provider.controlMode === 'EMERGENCY_STOP')) manualArmed = false;
@@ -79,13 +83,15 @@ function refresh() {
     : 'CARLA — '+(live&&provider.connected?'CONNECTED':'DISCONNECTED');
   $('cityStatus').textContent = $('simulationState').textContent = connectedLabel;
   $('connectionDot').classList.toggle('connected',live&&provider.connected);
-  $('missionText').textContent = provider.isReplay ? 'عرض تسجيل · القيادة مقفولة' : 'عربية واحدة · المرور غير مفعّل';
+  $('missionText').textContent = provider.isReplay ? 'عرض تسجيل · القيادة مقفولة' : provider.population ?
+    provider.population.actual.vehicles+' عربية مرور · '+provider.population.actual.pedestrians+' مشاة' : 'بانتظار سكان CARLA';
   const modeNames = {MANUAL:manualArmed?'قيادة يدوية':'العربية تحت الأمان',AUTOMATIC:'رحلة تلقائية',PAUSED:state.speedKmh>.54?'جاري إيقاف العربية':'العربية متوقفة',
     EMERGENCY_STOP:'إيقاف طوارئ',DISCONNECTED:'المحاكي غير متصل',REPLAY:'عرض تسجيل'};
   $('controlMode').textContent = modeNames[provider.controlMode] || provider.controlMode;
   $('controlSource').textContent = provider.controlSource || '';
   $('connectionDetail').textContent = provider.isReplay ? 'عرض بيانات مسجلة؛ لا يوجد تحكم بالمحاكي.'
-    : live ? (provider.controller?'هذه الصفحة تملك التحكم.':'هذه الصفحة للعرض؛ التحكم لدى صفحة أخرى.') : provider.status;
+    : live ? (provider.controller?'التحكم من هذه الصفحة.':'صفحة أخرى تتحكم بالعربية؛ استلم التحكم من الإعدادات.')
+    : provider.restarting ? 'جاري إعادة تشغيل CARLA وإعادة الاتصال…' : 'المحاكي غير متصل. افتح إعداد الاتصال للمتابعة.';
   $('phoneStatus').textContent = live ? 'الوجهات من خريطة '+(provider.world.map?.split('/').at(-1)||'CARLA') : 'بانتظار اتصال المحاكي.';
   $('providerStatus').textContent = provider.status;
   $('providerTitle').textContent = provider.isReplay ? 'الكاميرا المسجلة' : 'كاميرا CARLA';
@@ -108,7 +114,8 @@ function refresh() {
   $('controlStatus').textContent = provider.isReplay ? 'REPLAY · القيادة مقفولة' : !document.hasFocus()||document.hidden
     ? 'ارجع للداشبورد لاستقبال الكيبورد' : controllable ? 'WASD وأزرار الشاشة جاهزة' : 'الكيبورد متوقف — فعّل القيادة أولًا';
   const sensorCount = Object.keys(provider.sensorMetadata).length;
-  $('sensorStatus').textContent = live ? sensorCount+' حساسات دورية تستقبل بيانات · التصادم يعمل عند الحدث' : 'الحساسات غير متاحة';
+  $('sensorStatus').textContent = provider.isReplay ? sensorCount+' حساسات من الفريم المسجل · أحداث التصادم من التسجيل' :
+    live ? sensorCount+' حساسات دورية تستقبل بيانات · التصادم يعمل عند الحدث' : 'الحساسات غير متاحة';
   $('cameraFps').textContent = number(provider.performance?.sensorWallRatesHz?.frontCamera)+' /ث فعلية · '+number(provider.sensorRates.frontCamera)+' Hz sim';
   const perf = provider.performance || {}, gpu = perf.gpu;
   $('performance').textContent = 'خطوات فعلية: '+number(perf.nativeTickRateHz)+' /ث · زمن المحاكاة: '+
@@ -128,10 +135,6 @@ function refresh() {
 $('startDrivingBtn').onclick = () => {
   resetKeys(); manualArmed = true; manualRequestedUntil = performance.now()+1000;
   provider.startDriving(); document.activeElement?.blur(); $('drivingInstruction').textContent = 'تفعيل القيادة اليدوية…';
-};
-$('startJourneyBtn').onclick = () => {
-  clearControls(); provider.startJourney(Number($('journeySpeed').value));
-  document.activeElement?.blur();
 };
 $('drivingMode').onchange = () => { clearControls(); };
 $('gearSelect').onchange = () => { controls.setMode($('gearSelect').value); provider.releaseControls(); lastGear = null; };

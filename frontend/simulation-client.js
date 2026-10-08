@@ -93,6 +93,8 @@ export class SimulationClient extends SimulationProvider {
     this.recording = message.recording ?? false;
     this.dashboardResult = message.dashboardResult ?? null;
     this.route = message.route ?? null;
+    this.population = message.population ?? null;
+    this.nearbyActors = message.nearbyActors ?? null;
     const replay = message.mode === 'REPLAY' && message.provider === 'replay' && message.connected === false
       && message.available === true && message.replay?.dataOrigin === 'REAL_SIMULATION';
     const sourceValid = replay ? message.vehicle?.source === message.replay.recordedProvider && message.world?.source === message.replay.recordedProvider
@@ -142,6 +144,7 @@ export class SimulationClient extends SimulationProvider {
     this.isReplay = false; this.controlMode = 'DISCONNECTED'; this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
     this.route = null;
+    this.population = this.nearbyActors = null;
   }
 
   retry() {

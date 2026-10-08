@@ -9,21 +9,57 @@ export class DashboardTools {
     this.catalog = null; this.session = null; this.loading = false; this.retryAt = 0;
     this.selectedPlace = null; this.result = null; this.panel = null; this.panelTrigger = null;
     this.restartAfterSave = null; this.restartSeen = null;
+    this.recordingPath = '';
+    const populationAction = operation => { clearControls(); provider.dashboardAction('population', operation); };
+    $('clearTrafficBtn').onclick = () => populationAction('clear_traffic');
+    $('clearPedestriansBtn').onclick = () => populationAction('clear_pedestrians');
+    $('resetPopulationBtn').onclick = () => populationAction('reset');
+    $('respawnPopulationBtn').onclick = () => populationAction('respawn');
+    $('recordRunBtn').onclick = () => { clearControls(); provider.dashboardAction('recording', {enabled:!provider.recording}); };
+    $('applyRadiusBtn').onclick = () => provider.dashboardAction('inspector', Number($('nearbyRadius').value));
+    $('clearRouteBtn').onclick = () => provider.dashboardAction('clear_route', null);
+    $('worldResetBtn').onclick = () => { clearControls(); provider.dashboardAction('world_reset', null); };
+    $('applySceneBtn').onclick = () => {
+      if (this.catalog?.scenes?.[$('settingScene').value]) {
+        clearControls(); provider.dashboardAction('scene',$('settingScene').value);
+      }
+    };
+    $('applyProfileBtn').onclick = () => {
+      const profile = this.catalog?.profiles?.[$('settingProfile').value];
+      if (profile) { clearControls(); provider.dashboardAction('settings',{population:profile.population}); }
+    };
+    for (const id of Object.values(weatherFields)) $(id).oninput = () => { $('settingWeather').value = 'CUSTOM'; };
+    $('settingWeather').onchange = () => {
+      const values = this.catalog?.settings.weather_preset_values?.[$('settingWeather').value];
+      if (values) for (const [key,id] of Object.entries(weatherFields)) $(id).value = values[key];
+    };
     $('phoneToggleBtn').onclick = () => this.toggle('inGamePhone','phoneToggleBtn');
     $('mapDestinationsBtn').onclick = () => this.open('inGamePhone','mapDestinationsBtn');
     $('settingsBtn').onclick = () => { this.toggle('settingsPanel','settingsBtn'); this.load(true); };
+    $('connectionSetupBtn').onclick = () => {
+      this.open('settingsPanel','connectionSetupBtn');
+      $('connectionSettings').open = true;
+      $('connectionSettings').scrollIntoView({block:'start',behavior:this.scrollBehavior()});
+      $('connectionSettings').querySelector('summary').focus({preventScroll:true});
+      this.load(true);
+    };
     $('sensorBtn').onclick = () => this.toggle('sensorPanel','sensorBtn');
-    $('routeBtn').onclick = () => { this.close(); $('routePanel').scrollIntoView({behavior:'smooth',block:'center'}); $('routeMap').focus(); };
+    $('routeBtn').onclick = () => { this.close(); $('routePanel').scrollIntoView({behavior:this.scrollBehavior(),block:'center'}); $('routeMap').focus({preventScroll:true}); };
+    $('routeMap').onkeydown = event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); this.open('inGamePhone','routeMap');
+      }
+    };
     for (const [panel,button] of [['inGamePhone','closePhoneBtn'],['settingsPanel','closeSettingsBtn'],['sensorPanel','closeSensorBtn']])
       $(button).onclick = () => this.close();
     $('panelBackdrop').onclick = () => this.close();
     document.addEventListener('keydown', event => {
       if (event.code === 'Escape') {
         if (this.panel) this.close();
-        else $('cameraCard').classList.remove('camera-expanded');
+        else if ($('cameraCard').classList.contains('camera-expanded')) this.expandCamera(false);
       }
       if (event.key === 'Tab' && this.panel) {
-        const elements = [...$(this.panel).querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')].filter(el => !el.hidden);
+        const elements = [...$(this.panel).querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')].filter(el => el.getClientRects().length && !el.closest('[inert]'));
         if (!elements.length) return;
         const first = elements[0], last = elements.at(-1);
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -34,10 +70,7 @@ export class DashboardTools {
     $('nativeReconnectBtn').onclick = () => { clearControls(); provider.reconnectNative(); provider.connect(); };
     $('nativeDisconnectBtn').onclick = () => { clearControls(); provider.dashboardAction('disconnect'); };
     $('takeControlBtn').onclick = () => { clearControls(); provider.takeControl(); };
-    $('expandCameraBtn').onclick = () => {
-      const enlarged = $('cameraCard').classList.toggle('camera-expanded');
-      $('expandCameraBtn').textContent = enlarged ? 'تصغير الصورة' : 'تكبير الصورة';
-    };
+    $('expandCameraBtn').onclick = () => this.expandCamera(!$('cameraCard').classList.contains('camera-expanded'));
     $('cameraView').onchange = () => {
       clearControls(); provider.dashboardAction('settings', {camera_view:$('cameraView').value});
     };
@@ -85,12 +118,21 @@ export class DashboardTools {
     }
   }
 
+  scrollBehavior() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
+  expandCamera(enlarged) {
+    $('cameraCard').classList.toggle('camera-expanded',enlarged);
+    $('expandCameraBtn').textContent = enlarged ? 'تصغير الصورة' : 'تكبير الصورة';
+    $('expandCameraBtn').setAttribute('aria-expanded',String(enlarged));
+    if (!enlarged) $('expandCameraBtn').focus({preventScroll:true});
+  }
   open(panel, trigger) {
     if (this.panel === panel) return;
     this.close(false);
     if (this.provider.controlMode === 'MANUAL') this.clearControls();
     this.panel = panel; this.panelTrigger = trigger; $(panel).hidden = false;
     $('panelBackdrop').hidden = false;
+    document.body.classList.add('panel-open');
+    for (const element of document.querySelectorAll('.app-header,.workspace,.app-footer,.skip-link')) element.inert = true;
     $(trigger)?.setAttribute('aria-expanded','true');
     $(panel).querySelector('button')?.focus();
     if (panel === 'inGamePhone') this.load();
@@ -98,6 +140,8 @@ export class DashboardTools {
   close(returnFocus = true) {
     if (!this.panel) return;
     $(this.panel).hidden = true; $('panelBackdrop').hidden = true;
+    document.body.classList.remove('panel-open');
+    for (const element of document.querySelectorAll('.app-header,.workspace,.app-footer,.skip-link')) element.inert = false;
     $(this.panelTrigger)?.setAttribute('aria-expanded','false');
     if (returnFocus) $(this.panelTrigger)?.focus();
     this.panel = null;
@@ -145,7 +189,8 @@ export class DashboardTools {
           this.selectedPlace = place; $('destinationSearch').value = place.name;
           this.renderPlaces(); $('chooseDestinationBtn').focus();
         };
-        const row = document.createElement('div'); row.className = 'place-row';
+        button.setAttribute('aria-pressed',String(this.selectedPlace?.id === place.id));
+        const row = document.createElement('div'); row.className = 'place-row'; row.setAttribute('role','listitem');
         const star = document.createElement('button'); star.type = 'button'; star.className = 'place-favorite';
         star.textContent = place.favorite ? '★' : '☆';
         star.setAttribute('aria-label',(place.favorite ? 'إزالة من المفضلات: ' : 'إضافة للمفضلات: ') + place.name);
@@ -159,16 +204,20 @@ export class DashboardTools {
   }
   fillSettings() {
     const s = this.catalog.settings;
-    for (const [id, entries] of [['settingVehicle',s.vehicles.map(id => [id,id.replace('vehicle.','')])],
-      ['settingSpawn',this.catalog.places.filter(p => p.id.startsWith('road-point-')).map(p => [p.spawn_index,p.name])]]) {
-      const select = $(id); select.replaceChildren();
+    for (const [id, entries] of [['settingVehicle',s.vehicle_options.map(p => [p.id,p.name])],
+      ['settingSpawn',s.spawn_options.map(p => [p.index,p.name])],
+      ['settingWeather',[['CUSTOM','مخصص'],...s.weather_presets.map(name => [name,({ClearNoon:'صافٍ — ظهر',CloudyNoon:'غائم — ظهر',WetNoon:'أرض مبللة',WetCloudyNoon:'مبلل وغائم',MidRainyNoon:'مطر متوسط',HardRainNoon:'مطر غزير',SoftRainNoon:'مطر خفيف',ClearSunset:'غروب صافٍ',CloudySunset:'غروب غائم',WetSunset:'غروب وأرض مبللة',HardRainSunset:'غروب ومطر غزير'})[name] || name])]],
+      ['settingProfile',Object.entries(this.catalog.profiles || {}).map(([name,p]) => [name,name+' · '+p.population.vehicle_count+' / '+p.population.pedestrian_count])]]) {
+      const select = $(id), previous = select.value; select.replaceChildren();
       for (const [value,text] of entries) { const option = document.createElement('option'); option.value = value; option.textContent = text; select.append(option); }
+      if (id === 'settingProfile' && entries.some(([value]) => value === previous)) select.value = previous;
     }
     const fields = {settingVehicle:s.vehicle,settingSpawn:s.spawn_index,settingResolution:s.camera_resolution,
       settingFov:s.camera_fov,settingHz:s.simulation_hz,settingQuality:s.next_launch.quality,
-      settingWindow:s.next_launch.resolution,settingTrafficCount:s.traffic_plan.vehicle_count,
-      settingTrafficMin:s.traffic_plan.speed_min_kmh,settingTrafficMax:s.traffic_plan.speed_max_kmh,
-      settingSeed:s.traffic_plan.seed,cameraView:s.camera_view,
+      settingWindow:s.next_launch.resolution,settingTrafficCount:s.population_saved.vehicle_count,
+      settingPedestrianCount:s.population_saved.pedestrian_count,settingTrafficSpeed:s.population_saved.speed_behavior,
+      settingFastWalk:s.population_saved.fast_walk_percent,settingSeed:s.population_saved.seed,
+      settingWeather:s.weather_preset,cameraView:s.camera_view,
       settingMotionBlur:s.camera_motion_blur,settingBloom:s.camera_bloom};
     for (const [id,value] of Object.entries(fields)) $(id).value = value ?? 0;
     $('settingPostprocess').checked = s.camera_postprocess === true;
@@ -178,14 +227,19 @@ export class DashboardTools {
       ' · ' + (applied.resolution || 'دقة غير معروفة') +
       (applied.offscreen ? ' · العرض داخل الداشبورد' : '') : 'إعداد الجرافيكس المطبّق غير متاح.';
     $('effectsNote').textContent = s.camera_effects?.note || '';
+    $('weatherApplied').textContent = 'الطقس المطبق: '+s.weather_preset;
+    if (!Object.keys(this.catalog.profiles || {}).length) {
+      const option = document.createElement('option'); option.textContent = 'بانتظار نتائج قياس الأداء'; $('settingProfile').append(option);
+    }
   }
   apply() {
     if (!this.catalog) return;
     const number = id => Number($(id).value), current = this.catalog.settings;
     const data = {weather:Object.fromEntries(Object.entries(weatherFields).map(([key,id]) => [key,number(id)])),
       next_launch:{quality:$('settingQuality').value,resolution:$('settingWindow').value},
-      traffic_plan:{vehicle_count:number('settingTrafficCount'),speed_min_kmh:number('settingTrafficMin'),
-        speed_max_kmh:number('settingTrafficMax'),seed:number('settingSeed')}};
+      population:{vehicle_count:number('settingTrafficCount'),pedestrian_count:number('settingPedestrianCount'),
+        speed_behavior:$('settingTrafficSpeed').value,fast_walk_percent:number('settingFastWalk'),seed:number('settingSeed')}};
+    if ($('settingWeather').value !== 'CUSTOM') { delete data.weather; data.weather_preset = $('settingWeather').value; }
     const candidates = {vehicle:$('settingVehicle').value,spawn_index:number('settingSpawn'),
       camera_view:$('cameraView').value,camera_resolution:$('settingResolution').value,
       camera_fov:number('settingFov'),simulation_hz:number('settingHz'),camera_postprocess:$('settingPostprocess').checked,
@@ -200,16 +254,18 @@ export class DashboardTools {
     if (this.session !== p.sessionId) {
       this.session = p.sessionId; this.catalog = null; this.selectedPlace = null; this.result = null;
       this.project = this.inverse = null; $('roadGeometry').replaceChildren(); $('routeLine').setAttribute('d','');
+      $('mapEmpty').hidden = false;
       $('routeCar').setAttribute('hidden',''); $('routeTarget').setAttribute('hidden','');
     }
     const blocked = p.isReplay ? 'التسجيل للعرض فقط؛ القيادة مقفولة' : p.restarting ? 'جاري إعادة تشغيل CARLA'
       : !p.fresh ? 'بانتظار اتصال حقيقي بـCARLA' : '';
     const ownerBlocked = blocked || (!p.controller ? 'استلم التحكم من إعدادات الاتصال' : '');
+    for (const star of document.querySelectorAll('.place-favorite')) {
+      star.disabled = !!ownerBlocked;
+      star.title = ownerBlocked || 'المفضلات محفوظة بعد إعادة الاتصال';
+    }
     const emergency = p.controlMode === 'EMERGENCY_STOP' ? 'أقر إيقاف الطوارئ أولًا' : '';
     this.disable('startDrivingBtn', blocked || emergency);
-    this.disable('startJourneyBtn', blocked || emergency ||
-      (p.dashboardResult?.action === 'destination' && p.dashboardResult.status === 'REJECTED' ? 'الوجهة مرفوضة؛ اختار نقطة طريق صالحة' : '') ||
-      (!p.route ? 'اختار وجهة واعرض الطريق أولًا' : ''));
     this.disable('pauseBtn',ownerBlocked || emergency);
     this.disable('emergencyStopBtn',ownerBlocked);
     this.disable('acknowledgeStopBtn',ownerBlocked);
@@ -222,18 +278,19 @@ export class DashboardTools {
       this.disable(id,ownerBlocked);
     const configurationBlocked = ownerBlocked || (p.recording ? 'أنهِ التسجيل قبل تغيير إعدادات الحساسات' : '');
     this.disable('applySettingsBtn',configurationBlocked);
+    this.disable('worldResetBtn',configurationBlocked);
     this.disable('restartGraphicsBtn',configurationBlocked || (state.speedMagnitudeMps > .15 ? 'أوقف العربية أولًا' : ''));
     this.disable('nativeReconnectBtn',p.isReplay ? 'Replay ليس متصلًا بالمحاكي' : p.restarting ? 'جاري إعادة التشغيل' : '');
     this.disable('takeControlBtn',blocked);
     this.disable('drivingMode',blocked || emergency);
-    const automatic = $('drivingMode').value === 'AUTOMATIC';
-    $('startDrivingBtn').hidden = automatic; $('journeyControls').hidden = !automatic;
-    $('modeExplanation').textContent = automatic ? 'اختار وجهة، ثم اضغط ابدأ الرحلة. العربية تتحرك تلقائيًا ويمكنك التدخل في أي وقت.'
-      : 'تفعيل القيادة يجهز التحكم؛ العربية تتحرك عندما تضغط W أو زر البنزين.';
+    this.disable('clearRouteBtn',ownerBlocked || (!p.route ? 'لا يوجد مسار نشط' : ''));
+    $('modeExplanation').textContent = p.isReplay ? 'عرض بيانات وكاميرا من التسجيل؛ القيادة بالمحاكي معطّلة.' :
+      'فعّل القيادة، ثم اضغط باستمرار على W أو زر البنزين للتحرك.';
+    $('manualHint').textContent = p.isReplay ? 'الكيبورد لا يرسل أوامر قيادة أثناء Replay.' :
+      'الكيبورد يعمل داخل الداشبورد. المسار يرشدك فقط؛ أنت تتحكم في العربية.';
     $('drivingInstruction').textContent = blocked || emergency || (!p.controller ? 'صفحة أخرى تتحكم بالعربية. استلم التحكم من الإعدادات.' :
       p.controlMode === 'AUTOMATIC' ? 'الرحلة شغالة. إيقاف القيادة يفرمل؛ أي تدخل منك يسلمك القيادة.'
-      : controllable ? 'الكيبورد وأزرار الشاشة جاهزة. اضغط باستمرار للتحكم.' : automatic ?
-        (p.route ? 'الطريق جاهز. اضغط ابدأ الرحلة التلقائية للتحرك.' : 'اختار وجهة من القائمة أو الخريطة أولًا.') :
+      : controllable ? 'الكيبورد وأزرار الشاشة جاهزة. اضغط باستمرار للتحكم.' :
         'العربية تحت الأمان. اضغط تفعيل القيادة اليدوية للتحرك.');
     const reasons = {manual_intervention:'استلمت القيادة يدويًا',dashboard_heartbeat_timeout:'انقطع نبض اتصال الداشبورد',
       destination_reached:'وصلت للوجهة والعربية توقفت',collision:'توقفت الرحلة بسبب تصادم',
@@ -243,9 +300,35 @@ export class DashboardTools {
       fresh_native_session:'جلسة جديدة؛ ابدأ القيادة باختيار صريح'};
     const statuses = {IDLE:'',READY:'الطريق جاهز',STARTING:'جاري بدء الرحلة',RUNNING:'الرحلة التلقائية شغالة',
       PAUSED:'الرحلة متوقفة',ARRIVED:'وصلت',ERROR:'تعذر إكمال الرحلة'};
-    $('journeyStatus').textContent = p.route ? (statuses[p.journey?.status] || '') +
-      (p.journey?.reason ? ' · ' + (reasons[p.journey.reason] || p.journey.reason) : '') : '';
-    if (p.operationError) $('operationStatus').textContent = p.operationError;
+    $('journeyStatus').textContent = p.route ? (p.isReplay ? 'مسار من التسجيل؛ القيادة معطّلة' :
+      p.controlMode === 'AUTOMATIC' ? (statuses[p.journey?.status] || '') +
+        (p.journey?.reason ? ' · ' + (reasons[p.journey.reason] || p.journey.reason) : '') :
+        'إرشاد يدوي — اتبع المسار بنفسك') : '';
+    const population = p.population;
+    $('trafficActual').textContent = population?.actual.vehicles ?? '—';
+    $('pedestrianActual').textContent = population?.actual.pedestrians ?? '—';
+    const health = p.isReplay ? 'أعداد من الفريم المسجل؛ لا يوجد اتصال بـTraffic Manager' : population ? 'TM '+(population.traffic_manager_connected?'متصل':'غير متصل')+
+      ' · مشاة نشطون '+population.actual.walkers_active+' · طلب '+population.requested.vehicle_count+' / '+population.requested.pedestrian_count+
+      ' · آخر إنشاء NPC '+population.npc_spawned+' · فشل NPC '+population.npc_failed+' / مشاة '+population.walkers_failed+
+      ' · إزالات أصلية '+population.vehicles_removed_native+' عربية / '+population.walkers_lost+' مشاة' : 'بانتظار بيانات السكان';
+    $('populationHealth').textContent = $('populationApplied').textContent = health;
+    $('recordRunBtn').textContent = p.recording ? 'إنهاء تسجيل الرحلة' : 'ابدأ تسجيل الرحلة';
+    $('recordRunBtn').dataset.recording = String(!!p.recording);
+    $('recordingStatus').textContent = (p.recording ? 'جاري تسجيل الكاميرا وبيانات الحساسات.' : 'التسجيل متوقف.')+(this.recordingPath?' '+this.recordingPath:'');
+    for (const id of ['recordRunBtn','clearTrafficBtn','clearPedestriansBtn','resetPopulationBtn','respawnPopulationBtn','applyRadiusBtn','applySceneBtn']) this.disable(id,ownerBlocked);
+    this.disable('applyProfileBtn',ownerBlocked || (!Object.keys(this.catalog?.profiles || {}).length ? 'لم تنتهِ قياسات الأداء بعد' : ''));
+    if (this.panel === 'sensorPanel') {
+      const native = p.nearbyActors;
+      $('trafficLightState').textContent = native?.traffic_light?.relevant ?
+        'Actor '+native.traffic_light.actor_id+' · '+native.traffic_light.state+' · '+Math.round(native.traffic_light.distance_to_actor_origin_m)+' م إلى أصل الممثل' : 'العربية ليست عند إشارة مرور بحسب CARLA';
+      $('nearbyActors').textContent = native ? 'Frame '+native.frame_id+' · Radius '+native.radius_m+' m\n'+native.actors.map(a =>
+        a.category+' #'+a.actor_id+' '+a.type+'\n'+a.distance_m.toFixed(1)+' m · relative '+a.relative_position_m.map(v=>v.toFixed(1)).join('/')+' · velocity '+a.velocity_mps.map(v=>v.toFixed(1)).join('/')).join('\n\n') : 'لا توجد بيانات حية';
+    }
+    if (p.operationError) {
+      $('operationStatus').textContent = p.operationError; this.errorShown = true;
+    } else if (this.errorShown) {
+      $('operationStatus').textContent = ''; this.errorShown = false;
+    }
     if (p.dashboardResult && JSON.stringify(p.dashboardResult) !== this.result) {
       const result = p.dashboardResult; this.result = JSON.stringify(result);
       if (result.status === 'REJECTED') {
@@ -255,7 +338,7 @@ export class DashboardTools {
       }
       if (result.status === 'APPLIED') {
         if (result.action === 'settings') {
-          $('settingsStatus').textContent = 'تم تطبيق التغييرات. الجرافيكس محفوظة لحين إعادة التشغيل والمرور غير مفعّل.';
+          $('settingsStatus').textContent = 'تم تطبيق التغييرات الحية. الجرافيكس محفوظة لحين إعادة التشغيل.';
           if (this.restartAfterSave) {
             p.dashboardAction('restart_graphics', this.restartAfterSave); this.restartAfterSave = null;
           }
@@ -264,7 +347,11 @@ export class DashboardTools {
         if (result.action === 'save_place') { $('destinationStatus').textContent = 'اتحفظ المكان: ' + result.result.name; this.load(true); }
         if (result.action === 'favorite_place') { $('destinationStatus').textContent = result.result.favorite ? 'الوجهة اتضافت للمفضلات.' : 'الوجهة اتشالت من المفضلات.'; this.load(true); }
         if (result.action === 'destination') $('destinationStatus').textContent = $('mapSelectionStatus').textContent =
-          'الطريق جاهز إلى ' + result.result.destination.name + '؛ اختار طريقة القيادة لبدء الحركة.';
+          'الطريق جاهز إلى ' + result.result.destination.name + '؛ اتبعه بالقيادة اليدوية.';
+        if (result.action === 'recording') this.recordingPath = result.result.path;
+        if (result.action === 'population') { $('settingsStatus').textContent = 'تم تحديث السكان؛ العدد الفعلي ظاهر في المدينة الحية.'; this.load(true); }
+        if (result.action === 'scene') { $('settingsStatus').textContent = 'تم إنشاء المشهد العادي والطقس ببذرة ثابتة.'; this.load(true); }
+        if (result.action === 'world_reset') $('settingsStatus').textContent = 'تم إنشاء الخريطة بإعادة تشغيل CARLA والتحقق منها؛ العربية متوقفة والسكان أزيلوا.';
       }
     }
     const restart = p.restartResult;
@@ -290,6 +377,7 @@ export class DashboardTools {
     const path = document.createElementNS(svgNamespace,'path');
     path.setAttribute('d',roads.segments.map(line => 'M'+this.project(line[0]).join(',')+'L'+this.project(line[1]).join(',')).join(' '));
     $('roadGeometry').replaceChildren(path);
+    $('mapEmpty').hidden = roads.segments.length > 0;
   }
   renderRoute(route, car) {
     if (!this.project) return;

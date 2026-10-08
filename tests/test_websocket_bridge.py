@@ -84,3 +84,46 @@ class WebSocketTests(unittest.TestCase):
                     bridge.process_message(object(), {'type':kind})
         finally:
             bridge.server.shutdown()
+
+    def test_disabled_autonomous_request_preserves_manual_owner_and_command(self):
+        from backend.websocket_bridge import WebSocketBridge
+        service = SimulationService(None); service._publish(packet())
+        bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
+        owner, observer = object(), object()
+        try:
+            bridge.process_message(owner, {'type':'start_driving'})
+            bridge.process_message(owner, {'type':'controls','frame_id':1,'timestamp_s':.05,
+                                          'controls':{'throttle':.4}})
+            with self.assertRaisesRegex(ValueError, 'Gate 4'):
+                bridge.process_message(observer, {'type':'start_journey','speed_kmh':20})
+            self.assertIs(bridge.owner, owner)
+            self.assertEqual(service.effective_controls()['throttle'], .4)
+        finally:
+            bridge.server.shutdown()
+
+    def test_buffered_controls_recheck_coarse_admission_clock(self):
+        from unittest.mock import patch
+        from backend.websocket_bridge import WebSocketBridge
+        service = SimulationService(None); service._publish(packet())
+        bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
+        owner = object(); clock = [1.0]; sleeps = []
+        service.arbiter.safety.now = lambda: clock[0]
+        def coarse_sleep(delay):
+            sleeps.append(delay)
+            if len(sleeps) > 1:
+                clock[0] += .025
+        try:
+            bridge.process_message(owner, {'type':'start_driving'})
+            control = {'type':'controls','frame_id':1,'timestamp_s':.05,
+                       'controls':{'throttle':.4}}
+            bridge.process_message(owner, control)
+            with patch('backend.websocket_bridge.time.sleep', side_effect=coarse_sleep):
+                bridge.process_message(owner, control)
+            self.assertGreaterEqual(len(sleeps), 2)
+            self.assertEqual(service.effective_controls()['throttle'], .4)
+            # Pacing does not waive frame freshness checks.
+            clock[0] += .025
+            with self.assertRaisesRegex(ValueError, 'future'):
+                bridge.process_message(owner, {**control,'frame_id':2})
+        finally:
+            bridge.server.shutdown()

@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def write_ticket(path, ticket):
+    ticket['result']['operation'] = ticket['configuration'].get('restart_operation','GRAPHICS')
     temporary = path.with_suffix('.tmp')
     temporary.write_text(json.dumps(ticket, ensure_ascii=False), encoding='utf-8')
     temporary.replace(path)

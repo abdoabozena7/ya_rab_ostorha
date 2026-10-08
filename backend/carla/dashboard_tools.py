@@ -1,14 +1,18 @@
 """Native dashboard operations: map destinations, manual guidance and settings."""
 import json
 import math
-import sys
 import uuid
 from pathlib import Path
+from .population import DEFAULT_POPULATION, SPEED_DIFFERENCE, validate_population
+from .routes import RouteService
 
 ROOT = Path(__file__).resolve().parents[2]
 WEATHER_RANGES = {'cloudiness': (0, 100), 'precipitation': (0, 100),
                   'wetness': (0, 100), 'fog_density': (0, 100),
-                  'sun_altitude_angle': (-90, 90), 'sun_azimuth_angle': (0, 360)}
+                  'sun_altitude_angle': (-90, 90), 'sun_azimuth_angle': (-1, 360)}
+WEATHER_PRESET_FIELDS = (*WEATHER_RANGES, 'precipitation_deposits', 'wind_intensity',
+                        'fog_distance', 'fog_falloff', 'scattering_intensity',
+                        'mie_scattering_scale', 'rayleigh_scattering_scale', 'dust_storm')
 CAMERA_VIEWS = {'front': (1.5, 0., 1.6, 0., 0.), 'hood': (2.3, 0., 1.1, 0., 0.),
                 'chase': (-6., 0., 3., -15., 0.), 'rear': (-1.5, 0., 1.6, 0., 180.),
                 'top': (0., 0., 15., -90., 0.)}
@@ -17,9 +21,12 @@ CAMERA_VIEWS = {'front': (1.5, 0., 1.6, 0., 0.), 'hood': (2.3, 0., 1.1, 0., 0.),
 def validate_settings(data):
     if not isinstance(data, dict) or set(data)-{'weather', 'camera_view', 'camera_resolution',
             'camera_fov', 'camera_postprocess', 'camera_motion_blur', 'camera_bloom',
-            'simulation_hz', 'vehicle', 'spawn_index', 'next_launch', 'traffic_plan'}:
+            'simulation_hz', 'vehicle', 'spawn_index', 'next_launch', 'traffic_plan', 'population', 'weather_preset'}:
         raise ValueError('Unknown CARLA setting')
     result = dict(data)
+    if 'population' in data: result['population'] = validate_population(data['population'])
+    if 'weather_preset' in data and (not isinstance(data['weather_preset'], str) or not data['weather_preset'].isalnum()):
+        raise ValueError('Invalid native weather preset')
     if 'weather' in data:
         weather = data['weather']
         if not isinstance(weather, dict) or set(weather)-WEATHER_RANGES.keys():
@@ -74,6 +81,7 @@ class NativeDashboardTools:
         self.native_route = []
         self.road_geometry = None
         self.planner = None
+        self.route_service = RouteService(self.map, provider.connection.api)
         self.settings_path = ROOT / 'config' / 'dashboard-preferences.json'
         self.places_path = ROOT / 'config' / ('places-' + self.map_name.split('/')[-1] + '.json')
         self.preferences = json.loads(self.settings_path.read_text(encoding='utf-8')) if self.settings_path.exists() else {}
@@ -103,7 +111,7 @@ class NativeDashboardTools:
 
     def places(self):
         favorites=set(self.preferences.get('favorite_places',{}).get(self.map_name,[]))
-        return [{**p,'favorite':p['id'] in favorites} for p in self.presets+self.saved_places]
+        return [{**p,'favorite':p['id'] in favorites} for p in self.presets+self.saved_places if p.get('map') == self.map_name]
 
     def favorite_place(self, place_id):
         if not isinstance(place_id,str) or not any(p['id']==place_id for p in self.places()):
@@ -137,8 +145,11 @@ class NativeDashboardTools:
         name = name.strip()
         if len(self.saved_places) >= 30 and not any(p['name'] == name for p in self.saved_places):
             raise ValueError('Maximum 30 saved places per map')
-        point = self.provider.ego.actor.get_location()
+        native_transform = self.provider.ego.actor.get_transform()
+        point = native_transform.location
         place = self.place('saved-'+uuid.uuid4().hex[:12], name, point)
+        place['world_transform'] = {'location_m': [point.x, point.y, point.z],
+                                   'rotation_deg': [native_transform.rotation.pitch, native_transform.rotation.yaw, native_transform.rotation.roll]}
         self.saved_places = [p for p in self.saved_places if p['name'] != name]+[place]
         write_json(self.places_path, self.saved_places)
         return place
@@ -152,6 +163,8 @@ class NativeDashboardTools:
             if not isinstance(location, list) or len(location) != 3 or any(
                     type(v) not in (int, float) or not math.isfinite(v) for v in location):
                 raise ValueError('Destination must have three finite CARLA coordinates')
+            if place_id.get('map', self.map_name) != self.map_name:
+                raise ValueError('Destination belongs to a different CARLA map')
             native = self.provider.connection.api.Location(*location)
             waypoint = self.map.get_waypoint(native, project_to_road=True,
                                              lane_type=self.provider.connection.api.LaneType.Driving)
@@ -166,61 +179,61 @@ class NativeDashboardTools:
             target = next((p for p in self.places() if p['id'] == place_id), None)
         if target is None:
             raise ValueError('Choose a saved or native map destination')
-        if self.planner is None:
-            # Official packaged deterministic road graph; no driving agent is instantiated.
-            api_path = Path('C:/CARLA/CARLA_0.9.16/PythonAPI/carla')
-            if str(api_path) not in sys.path:
-                sys.path.insert(0, str(api_path))
-            from agents.navigation.global_route_planner import GlobalRoutePlanner
-            # Load controller dependencies while the route is being prepared,
-            # before a driving lease is armed. This never instantiates an agent.
-            from agents.navigation.basic_agent import BasicAgent
-            self.planner = GlobalRoutePlanner(self.map, 4.)
-        points = self.planner.trace_route(self.provider.ego.actor.get_location(),
-                                         self.provider.connection.api.Location(*target['location']))
-        if not points:
-            raise ValueError('No drivable route to this destination')
-        # GRP terminates within 2*sampling_resolution, which is 8 m here.
-        # Retain the exact native destination waypoint so arrival is not early.
-        from agents.navigation.local_planner import RoadOption
-        final_waypoint = self.map.get_waypoint(self.provider.connection.api.Location(*target['location']))
-        final_location = final_waypoint.transform.location
-        last_location = points[-1][0].transform.location
-        gap = last_location.distance(final_location)
-        if gap > 8.1:
-            raise ValueError('Native route does not reach the selected road waypoint')
-        if gap > .5:
-            points.append((final_waypoint, RoadOption.LANEFOLLOW))
-        self.native_route = points
-        polyline = [[wp.transform.location.x, wp.transform.location.y, wp.transform.location.z] for wp, _ in points]
-        length = sum(math.dist(a, b) for a, b in zip(polyline, polyline[1:]))
-        self.route = {'id': uuid.uuid4().hex, 'destination': target, 'points': polyline, 'length_m': length,
-                      'source': 'CARLA_ROAD_GRAPH', 'mode': 'ROUTE_GUIDANCE',
-                      'instructions': [{'location': polyline[i], 'action': option.name, 'point_index': i}
-                                       for i, (_, option) in enumerate(points) if option.name != 'LANEFOLLOW'
-                                       and (i == 0 or points[i-1][1] != option)]}
+        self.route, self.native_route = self.route_service.plan(self.provider.ego.actor.get_location(), target)
         return self.route
 
     def route_state(self):
         if self.route is None:
             return None
         position = self.provider.last_vehicle['positionWorldM'] if self.provider.last_vehicle else [0,0,0]
-        nearest = min(range(len(self.route['points'])), key=lambda i: math.dist(position, self.route['points'][i]))
-        remaining = math.dist(position, self.route['points'][nearest])+sum(math.dist(a,b) for a,b in zip(self.route['points'][nearest:], self.route['points'][nearest+1:]))
-        upcoming = next((step for step in self.route['instructions'] if step['point_index'] >= nearest), None)
-        return {**self.route, 'remaining_m': remaining, 'next_instruction': upcoming,
-                'arrived': math.dist(position, self.route['destination']['location']) <= 5}
+        return RouteService.progress(self.route, position)
+
+    def weather_presets(self):
+        api = self.provider.connection.api
+        return {name: getattr(api.WeatherParameters, name) for name in
+                ('ClearNoon', 'CloudyNoon', 'WetNoon', 'WetCloudyNoon', 'MidRainyNoon', 'HardRainNoon',
+                 'SoftRainNoon', 'ClearSunset', 'CloudySunset', 'WetSunset', 'HardRainSunset')
+                if hasattr(api.WeatherParameters, name)}
+
+    def profiles(self):
+        path = ROOT / 'config' / 'normal-city-profiles.json'
+        if not path.exists(): return {}
+        saved = json.loads(path.read_text(encoding='utf8'))
+        return saved['profiles'] if saved.get('source') == 'LIVE_NATIVE_MEASURED' and saved.get('map') == self.map_name else {}
+
+    def scenes(self):
+        return {name: {'population': {**DEFAULT_POPULATION, 'vehicle_count': count, 'pedestrian_count': walkers},
+                       'weather_preset': weather}
+                for name,count,walkers,weather in [('A',10,10,'ClearNoon'),('B',25,25,'CloudyNoon'),('C',50,50,'HardRainNoon')]}
 
     def settings(self):
         p = self.provider
         native_weather = p.world.world.get_weather()
+        current_preset = next((name for name, preset in self.weather_presets().items()
+                               if all(abs(getattr(native_weather,k)-getattr(preset,k)) < .01
+                                      for k in WEATHER_PRESET_FIELDS if hasattr(native_weather,k) and hasattr(preset,k))), 'CUSTOM')
         return {'map': self.map_name, 'vehicle': p.ego.actor.type_id, 'spawn_index': p.spawn_index,
+                'actual_spawn_index': p.ego.selected_spawn_index,
                 'vehicles': p.catalog['vehicles'], 'maps': p.catalog['maps'],
+                'vehicle_options': [{'id': i, 'name': i.removeprefix('vehicle.').replace('.', ' ').replace('_', ' ').title()} for i in p.catalog['vehicles']],
+                'spawn_options': [{'index': i, 'name': f'Spawn {i+1:02d}',
+                                   'location_m': [t.location.x, t.location.y, t.location.z]} for i,t in enumerate(self.spawns)],
                 'simulation_hz': round(1/p.fixed_delta), **p.camera_settings,
                 'weather': {key: getattr(native_weather, key) for key in WEATHER_RANGES},
+                'weather_preset': current_preset, 'weather_presets': list(self.weather_presets()),
+                'weather_preset_values': {name: {key:getattr(weather,key) for key in WEATHER_RANGES}
+                                         for name,weather in self.weather_presets().items()},
                 'next_launch': self.preferences.get('next_launch', {'quality':'Low', 'resolution':'1280x720'}),
                 'traffic_plan': self.preferences.get('traffic_plan', {'vehicle_count':0,'speed_min_kmh':20,'speed_max_kmh':40,'seed':42}),
-                'traffic_active': False, 'graphics_apply': 'RESTART_REQUIRED',
+                'population_saved': self.preferences.get('population', dict(DEFAULT_POPULATION)),
+                'population': p.population_state(), 'traffic_speed_mapping': SPEED_DIFFERENCE,
+                'traffic_active': bool(p.population and p.population.actual['vehicles']), 'graphics_apply': 'RESTART_REQUIRED',
+                'capabilities': {'camera_view': 'LIVE', 'camera_resolution': 'LIVE_STOP_REQUIRED',
+                                 'camera_effects': 'LIVE_STOP_REQUIRED_LOW_MAY_IGNORE', 'weather': 'LIVE',
+                                 'vehicle': 'LIVE_STOP_REQUIRED', 'spawn_index': 'LIVE_STOP_REQUIRED',
+                                 'simulation_hz': 'LIVE_STOP_REQUIRED', 'population': 'LIVE_EXPLICIT_APPLY',
+                                 'next_launch': 'NEXT-LAUNCH', 'render_fps': 'NOT IMPLEMENTED',
+                                 'nearby_actors': 'DISPLAY-ONLY', 'navigation': 'MANUAL_GUIDANCE'},
                 'active_launch': getattr(p, 'active_launch', None),
                 'camera_effects': {'supported': ['camera_postprocess','camera_motion_blur','camera_bloom'],
                                    'note': 'جودة Low قد تعطل مؤثرات الصورة مهما كانت القيم المحفوظة'}}
@@ -228,6 +241,8 @@ class NativeDashboardTools:
     def apply(self, settings):
         p = self.provider
         data = validate_settings(settings)
+        if 'weather_preset' in data and data['weather_preset'] not in self.weather_presets():
+            raise ValueError('Weather preset absent from the native CARLA API')
         if 'vehicle' in data and data['vehicle'] not in p.catalog['vehicles']:
             raise ValueError('Vehicle blueprint absent from native catalog')
         if 'spawn_index' in data and data['spawn_index'] >= len(self.spawns):
@@ -244,13 +259,15 @@ class NativeDashboardTools:
                 raise RuntimeError('; '.join(p.sensor_manager.cleanup_errors))
             p.sensor_manager = None
             p.world.world.tick()
-        if 'weather' in data:
+        if 'weather_preset' in data:
+            p.world.world.set_weather(self.weather_presets()[data['weather_preset']])
+        elif 'weather' in data:
             weather = p.world.world.get_weather()
             for key, value in data['weather'].items(): setattr(weather, key, value)
             p.world.world.set_weather(weather)
-        for key in ('next_launch','traffic_plan'):
+        for key in ('next_launch','traffic_plan', 'population'):
             if key in data: self.preferences[key] = data[key]
-        if any(k in data for k in ('next_launch','traffic_plan')):
+        if any(k in data for k in ('next_launch','traffic_plan', 'population')):
             write_json(self.settings_path, self.preferences)
         if 'simulation_hz' in data:
             p.fixed_delta = 1/data['simulation_hz']
@@ -266,4 +283,6 @@ class NativeDashboardTools:
             from .sensors import CarlaSensorManager
             p.sensor_manager = CarlaSensorManager(p.world.world, p.ego.actor)
             p.sensor_manager.enable_suite(p.connection.api, p.fixed_delta, p.camera_settings)
+        if 'population' in data:
+            p.population.apply(data['population'])
         return self.settings()

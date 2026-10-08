@@ -173,7 +173,15 @@ class WorldVehicleTests(unittest.TestCase):
                                          server_version='0.9.16', api_version='0.9.16')
         provider.connection.connect.return_value = world
         provider.connection.client.get_available_maps.return_value = ['Town10HD']
-        provider.connect()
+        with patch('backend.carla.provider.passenger_blueprints', return_value=[NS(id=actor.type_id)]), \
+                patch('backend.carla.provider.WorldPopulationManager'), \
+                patch('backend.carla.provider.NearbyActorInspector') as inspector:
+            inspector.return_value.observe.return_value = None
+            provider.connect()
+        provider.population.get_population_state.return_value = {
+            'actual':dict(vehicles=0,pedestrians=0,controllers=0,walkers_active=0),
+            'requested':dict(vehicle_count=0,pedestrian_count=0,speed_behavior='NORMAL',seed=42),
+            'traffic_manager_connected':True,'desired_speed_difference_percent':15.}
         canonical = provider.get_simulation_frame()
         self.assertEqual(canonical.frame_id, 22)
         self.assertEqual(canonical.vehicle.linear_velocity_mps, (3., -4., 0.))
@@ -198,11 +206,19 @@ class WorldVehicleTests(unittest.TestCase):
                                          server_version='0.9.16', api_version='0.9.16')
         provider.connection.connect.return_value = world
         provider.connection.client.load_world.return_value = world
-        provider.connect()
+        with patch('backend.carla.provider.passenger_blueprints', return_value=[NS(id=actor.type_id)]), \
+                patch('backend.carla.provider.WorldPopulationManager'), \
+                patch('backend.carla.provider.NearbyActorInspector') as inspector:
+            inspector.return_value.observe.return_value = None
+            provider.connect()
         provider.connection.client.load_world.assert_called_once_with('Town03')
         provider.disconnect()
         self.assertFalse(settings.synchronous_mode)
-        provider.connect()
+        with patch('backend.carla.provider.passenger_blueprints', return_value=[NS(id=actor.type_id)]), \
+                patch('backend.carla.provider.WorldPopulationManager'), \
+                patch('backend.carla.provider.NearbyActorInspector') as inspector:
+            inspector.return_value.observe.return_value = None
+            provider.connect()
         self.assertEqual(world.try_spawn_actor.call_count, 2)
         provider.disconnect()
         self.assertEqual(actor.destroy.call_count, 2)
@@ -213,7 +229,8 @@ class WorldVehicleTests(unittest.TestCase):
         provider = CarlaProvider()
         provider.connection = MagicMock()
         provider.connection.connect.return_value = world
-        with self.assertRaisesRegex(RuntimeError, 'occupied'):
+        with patch('backend.carla.provider.passenger_blueprints', return_value=[]), \
+                self.assertRaisesRegex(RuntimeError, 'occupied'):
             provider.connect()
         self.assertFalse(settings.synchronous_mode)
 

@@ -1,5 +1,16 @@
 # Asset attribution
 
+## Dashboard fonts — 2026-10-08
+
+Locally hosted Latin subsets for the shadcn dashboard; Arabic uses the system font fallback.
+
+| Font / installed filename | Creator | Direct source | License | Use |
+| --- | --- | --- | --- | --- |
+| Geist / `public/fonts/geist-latin.woff2` | Vercel | https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2 | SIL Open Font License 1.1; included in `public/fonts/GEIST-OFL.txt` | Interface typography and numbers |
+| Fira Code / `public/fonts/fira-code-latin.woff2` | The Fira Code Project Authors | https://fonts.gstatic.com/s/firacode/v27/uU9NCBsR6Z2vfE9aq3bh3dSD.woff2 | SIL Open Font License 1.1; included in `public/fonts/FIRA-CODE-OFL.txt` | Telemetry, shortcuts, diagnostic output |
+
+License texts verified against the Google Fonts `ofl/geist/OFL.txt` and `ofl/firacode/OFL.txt` distributions. Font files are unmodified subsets supplied by Google Fonts and require no external requests at runtime.
+
 Stage 1 reuses the repository's existing models; no new model files were downloaded.
 Runtime files remain in `/assets/models/` until the later asset-manager migration.
 

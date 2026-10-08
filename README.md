@@ -9,6 +9,12 @@ CARLA server/API **0.9.16 / 0.9.16**, Python **3.12.10 x64**, install
 **Gates 1-3 PASS live**, including real sensors, recording and Replay with CARLA
 stopped. Evidence and limits: [live validation report](docs/LIVE_NATIVE_VALIDATION.md).
 
+**Gate 4 PASS live**: normal traffic/walkers, two 20-minute endurance runs,
+real settings/manual topology navigation and populated recording/offline Replay.
+Measured default profile: BALANCED 25 NPCs / 25 walkers, Low, 20 simulation Hz;
+the populated endurance median was 16.90 actual ticks/s (renderer FPS unavailable).
+[Gate 4 native evidence and limitations](docs/GATE4_NATIVE_VALIDATION.md).
+
 Hardware: RTX 3060 Laptop GPU, 6144 MiB VRAM. Windows detects 16 GiB installed RAM
 (two 8 GiB modules), 15.25 GiB usable; the user reports 32 GB. Former Quadro T1000
 hardware notes are obsolete. Full-suite native throughput measured 19.69 frames/s
@@ -28,18 +34,20 @@ on-screen pedals; it does not start motion. W throttle, S brake/reverse, A/D ste
 Space handbrake. Typing in fields never drives. **إيقاف القيادة** brakes while
 keeping the vehicle and cameras. Keep the dashboard focused; resumption is explicit.
 
-For experimental conventional navigation, select a destination from the searchable
-native list or 2D road map, select **رحلة تلقائية**, then **ابدأ الرحلة التلقائية**.
-The official CARLA BasicAgent follows the explicit route through the existing
-safety/arbitration pipeline. Manual input, emergency, collision or expired 350 ms
-browser heartbeat stops navigation. This does not enable AI/model modes or traffic.
+Gate 4 navigation is **manual guidance only**. Select a destination from the native
+list or 2D road map and follow the ordered native road route yourself. Autonomous
+ego admission is disabled; older automatic-command recordings remain readable.
+Traffic Manager controls only the explicitly requested normal NPC population.
 
 The Arabic RTL dashboard has a native 800x450 RGB feed, five camera views, live
 telemetry, automatic current-position origin and persisted favorites. Settings
 apply camera, weather, vehicle/spawn and 10/20 Hz timing. A separate graphics button
 cleans up and restarts CARLA, verifies the new session and rolls back failed profiles.
-Saved preferences are displayed separately from actual settings and never activate
-traffic. DX12 RenderOffScreen passed native RGB/depth checks on this Windows machine;
+Saved preferences are displayed separately from actual settings. Population is
+created only after explicit application. Normal traffic/walkers, measured profiles,
+seeded scenes, ground-truth debug and live recording are described in the
+[normal city operation guide](docs/NORMAL_CITY_OPERATION.md).
+DX12 RenderOffScreen passed native RGB/depth checks on this Windows machine;
 Low/1280x720 is the verified default. Epic/1920x1080 failed startup and rolled back.
 [Operation guide](docs/DASHBOARD_NATIVE_CONTROLS.md) ·
 [8 October native evidence and limitations](docs/DASHBOARD_V2_VALIDATION.md).
@@ -56,6 +64,8 @@ as separate binary assets. No RPM, fuel, temperature or component damage is inve
 .\.venv-carla\Scripts\python.exe -m backend.server --replay runs\gate3_1791400336
 # New real manual/navigation/collision run:
 .\.venv-carla\Scripts\python.exe -m backend.server --replay runs\dashboard_v2_20261008_live\run_ba0335c155e445f698708ff9969ac7d2
+# Gate 4 real populated/manual run, verified with CARLA stopped:
+.\.venv-carla\Scripts\python.exe -m backend.server --replay runs\normal_city\run_d252d723675c461bbdf42725c31b3259
 ```
 
 Stop the current backend before reusing its ports. Replay never connects to CARLA,
@@ -81,16 +91,18 @@ npm test
 .\.venv-carla\Scripts\python.exe -m scripts.native.sensor_validation
 # This dashboard-only verifier uses an already running backend; it never ticks CARLA:
 .\.venv-carla\Scripts\python.exe -m scripts.native.verify_dashboard
-# Explicit navigation/lease/emergency/sensor verification against the live backend:
-.\.venv-carla\Scripts\python.exe -m scripts.native.verify_dashboard_v2
-# Include a temporary controlled collision fixture:
-.\.venv-carla\Scripts\python.exe -m scripts.native.verify_dashboard_v2 --short --collision
+# Gate 4 read-only endurance collector, with the real dashboard connected:
+.\.venv-carla\Scripts\python.exe -m scripts.native.stability_run --duration 1200
+# Normal-city matrix/lifecycle verification through the running backend WebSocket:
+.\.venv-carla\Scripts\python.exe -m scripts.native.verify_normal_city --duration 75
 ```
 
-Current regression checks: 103 Python passes / 1 skip and 21 JavaScript passes.
+The historical dashboard-v2 verifier includes automatic ego navigation, which is
+disabled for Gate 4. Use the normal-city verification scripts for the current phase.
+Current regression checks: 115 Python passes / 1 skip and 21 JavaScript passes.
 Native gate status comes from live measurements, never unit tests.
 
 [Architecture](docs/OFFLINE_CORE.md), [migration/package evidence](docs/CARLA_0916_MIGRATION.md),
 [asset licenses](public/assets/ATTRIBUTION.md). BeamNG history is preserved in
 `legacy/beamng-integration`; 0.10.0 preparation in `legacy/carla-0100-preparation`.
-Traffic populations, pedestrians, Egypt maps and AI are not active.
+Traffic populations and pedestrians activate only by explicit dashboard application. Egypt maps and AI remain deferred.

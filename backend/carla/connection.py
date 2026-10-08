@@ -18,7 +18,7 @@ def ensure_runtime(version=None):
 
 
 class CarlaConnection:
-    def __init__(self, host='127.0.0.1', port=2000, version=VERSION, timeout=10):
+    def __init__(self, host='127.0.0.1', port=2000, version=VERSION, timeout=30):
         self.host, self.port, self.expected_version, self.timeout = host, port, version, timeout
         self.client = self.api = None
         self.server_version = self.api_version = None

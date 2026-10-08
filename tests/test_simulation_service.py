@@ -2,11 +2,43 @@ import math
 import time
 import unittest
 from backend.simulation_service import SimulationService
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from tests.core_packets import packet
 
 
 class ServiceTests(unittest.TestCase):
+    def test_manual_route_action_preserves_fresh_connection_and_observation_clock(self):
+        provider = MagicMock()
+        provider.name = 'test-fixture'
+        provider.get_simulation_frame.return_value = packet(2, .1)
+        provider.population_state.return_value = {}
+        service = SimulationService(provider)
+        service._publish(packet())
+        receipt = service.state_at
+        def plan(action, value):
+            self.assertEqual(action, 'destination')
+            self.assertTrue(service.snapshot()['connected'])
+            self.assertFalse(service.reconfiguring)
+            self.assertEqual(service.state_at, receipt)
+            return {'source':'CARLA_ROAD_GRAPH','mode':'MANUAL_GUIDANCE'}
+        provider.dashboard_action.side_effect = plan
+        service.queue_dashboard_action('destination', 'native-place')
+        service._iteration()
+        self.assertTrue(service.snapshot()['connected'])
+        self.assertEqual(service.dashboard_result['status'], 'APPLIED')
+
+    def test_closed_session_reopen_waits_for_first_observation_before_paused(self):
+        provider = MagicMock(required_sensors=())
+        provider.name='test-fixture'
+        service = SimulationService(provider)
+        service.closed=True
+        with patch.object(SimulationService,'start'):
+            service._reopen()
+        self.assertIsNone(service.error)
+        self.assertEqual(service.arbiter.machine.mode.value,'DISCONNECTED')
+        service._publish(packet())
+        self.assertEqual(service.arbiter.machine.mode.value,'PAUSED')
+
     def test_reconnect_of_live_session_requires_explicit_driving_resume(self):
         provider = MagicMock(name='test-fixture')
         provider.name = 'test-fixture'
