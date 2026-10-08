@@ -5,21 +5,29 @@ random speed. Native TM/walker controllers do not control the ego vehicle.
 """
 import copy
 import random
+from .urban import MIXTURES, WORLD_PROFILES, sample_driver, apply_driver
 
 SPEED_DIFFERENCE = {'SLOW': 30., 'NORMAL': 15., 'FAST': 0.}
 DEFAULT_POPULATION = {'vehicle_count': 0, 'pedestrian_count': 0,
-                      'speed_behavior': 'NORMAL', 'seed': 42, 'fast_walk_percent': 10}
+                      'speed_behavior': 'NORMAL', 'seed': 42, 'fast_walk_percent': 10,
+                      'driver_behavior': 'NORMAL', 'light_compliance_percent': 90,
+                      'world_profile': 'TRAINING_DEVELOPMENT', 'crossing_percent': 5}
 
 
 def validate_population(value):
-    if not isinstance(value, dict) or set(value) != set(DEFAULT_POPULATION):
+    legacy = {'vehicle_count', 'pedestrian_count', 'speed_behavior', 'seed', 'fast_walk_percent'}
+    if not isinstance(value, dict) or set(value)-set(DEFAULT_POPULATION) or not legacy <= set(value):
         raise ValueError('Population requires counts, speed behavior, seed and fast walk percent')
+    value = {**DEFAULT_POPULATION, **value}
     for key, maximum in (('vehicle_count', 75), ('pedestrian_count', 50),
-                         ('seed', 2147483647), ('fast_walk_percent', 20)):
+                         ('seed', 2147483647), ('fast_walk_percent', 20),
+                         ('light_compliance_percent', 100), ('crossing_percent', 15)):
         if type(value[key]) is not int or not 0 <= value[key] <= maximum:
             raise ValueError(f'{key} must be an integer from 0 to {maximum}')
     if not isinstance(value['speed_behavior'], str) or value['speed_behavior'] not in SPEED_DIFFERENCE:
         raise ValueError('Traffic speed behavior must be SLOW, NORMAL or FAST')
+    if value['driver_behavior'] not in MIXTURES or value['world_profile'] not in WORLD_PROFILES:
+        raise ValueError('Unknown urban driver behavior or world profile')
     return dict(value)
 
 
@@ -67,6 +75,8 @@ class WorldPopulationManager:
         self.config = dict(DEFAULT_POPULATION)
         self.random = random.Random(self.config['seed'])
         self.vehicles = set()
+        self.driver_profiles = {}
+        self.driver_ordinal = 0
         self.walkers = {}  # walker ID -> controller ID, speed and native schedule
         self.pending_vehicles = set()
         self.seen_vehicles = set()
@@ -91,6 +101,7 @@ class WorldPopulationManager:
         self.config = config
         self.world.set_pedestrians_seed(config['seed'])
         self.traffic_manager.configure(config['speed_behavior'], config['seed'])
+        self.pending_vehicles.update(self.vehicles)
         self.spawn_report = {'npc_spawned': 0, 'npc_failed': 0, 'walkers_spawned': 0, 'walkers_failed': 0}
         self.spawn_traffic(config['vehicle_count'])
         self.spawn_pedestrians(config['pedestrian_count'])
@@ -115,6 +126,7 @@ class WorldPopulationManager:
         self.vehicles.difference_update(remove); self.pending_vehicles.difference_update(remove)
         self.seen_vehicles.difference_update(remove)
         for actor_id in remove: self.missing_vehicle_frames.pop(actor_id, None)
+        for actor_id in remove: getattr(self, 'driver_profiles', {}).pop(actor_id, None)
         needed = count-len(self.vehicles)
         if needed <= 0: return
         blueprints = passenger_blueprints(self.world.get_blueprint_library())
@@ -141,6 +153,8 @@ class WorldPopulationManager:
             for reply in self.client.apply_batch_sync(batch, False):
                 if not reply.error:
                     self.vehicles.add(reply.actor_id); self.pending_vehicles.add(reply.actor_id)
+                    self.driver_profiles[reply.actor_id] = {'ordinal': self.driver_ordinal}
+                    self.driver_ordinal += 1
                     self.spawn_report['npc_spawned'] += 1; needed -= 1
         self.spawn_report['npc_failed'] = needed
 
@@ -256,6 +270,7 @@ class WorldPopulationManager:
             self._destroy([actor_id])
             self.vehicles.remove(actor_id); self.pending_vehicles.discard(actor_id); self.seen_vehicles.discard(actor_id)
             self.missing_vehicle_frames.pop(actor_id, None)
+            getattr(self, 'driver_profiles', {}).pop(actor_id, None)
             self.vehicles_removed_native += 1
         # TM may destroy blocked vehicles. Replace only the missing owned NPCs,
         # outside the ego's immediate view, without resetting the world or fleet.
@@ -265,7 +280,12 @@ class WorldPopulationManager:
         for actor_id in list(self.pending_vehicles):
             actor = self.world.get_actor(actor_id)
             if actor is not None and actor.is_alive:
-                self.traffic_manager.normal_vehicle(actor); self.pending_vehicles.remove(actor_id)
+                entry = self.driver_profiles[actor_id]
+                profile = sample_driver(self.config['seed'], entry['ordinal'], self.config['driver_behavior'],
+                                        SPEED_DIFFERENCE[self.config['speed_behavior']], self.config['light_compliance_percent'])
+                apply_driver(self.traffic_manager.manager, actor, profile)
+                self.driver_profiles[actor_id] = {**profile, 'ordinal': entry['ordinal']}
+                self.pending_vehicles.remove(actor_id)
         for walker_id, entry in list(self.walkers.items()):
             actor = snapshot.find(walker_id)
             controller = self.world.get_actor(entry['controller_id'])
@@ -320,7 +340,9 @@ class WorldPopulationManager:
                 'controller_ids': sorted(e['controller_id'] for e in self.walkers.values()),
                 'errors': list(self.errors), 'walkers_lost': self.walkers_lost,
                 'vehicles_removed_native': self.vehicles_removed_native,
-                'behavior': 'NORMAL', 'pedestrian_cross_factor': 0., 'walker_invincible': True,
+                'behavior': self.config['driver_behavior'],
+                'driver_profiles': {str(i):dict(p) for i,p in getattr(self, 'driver_profiles', {}).items()},
+                'pedestrian_cross_factor': 0., 'walker_invincible': True,
                 'destinations': 'SAME_NATIVE_SIDEWALK_SEGMENT'}
 
     def close(self):

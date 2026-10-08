@@ -1,0 +1,34 @@
+"""Development restart with confirmed cleanup before terminating our backend."""
+import json
+import subprocess
+import time
+from pathlib import Path
+from websockets.sync.client import connect
+from .stability_run import backend_pid
+
+
+def main():
+    import carla
+    pid=backend_pid(8000)
+    with connect('ws://127.0.0.1:8001',max_size=2**23) as socket:
+        socket.recv(); socket.send(json.dumps({'type':'take_control','sequence':1}))
+        while json.loads(socket.recv()).get('acknowledged')!=1: pass
+        socket.send(json.dumps({'type':'disconnect','sequence':2}))
+        while json.loads(socket.recv()).get('acknowledged')!=2: pass
+    client=carla.Client('127.0.0.1',2000); client.set_timeout(10)
+    world=client.get_world(); world.wait_for_tick(10)
+    owned=[a.id for a in world.get_actors() if a.attributes.get('role_name','').startswith('ostorha_')]
+    assert not owned, owned
+    assert not world.get_settings().synchronous_mode
+    subprocess.run(['taskkill','/PID',str(pid),'/F'],capture_output=True,check=True)
+    time.sleep(1)
+    root=Path(__file__).resolve().parents[2]
+    output=root/'output/native-validation'; output.mkdir(parents=True,exist_ok=True)
+    with (output/'gate5-backend.log').open('w') as out, (output/'gate5-backend-error.log').open('w') as err:
+        process=subprocess.Popen([str(root/'.venv-carla/Scripts/python.exe'),'-m','backend.server',
+                                 '--carla','--sensors','--start-paused'],cwd=root,stdout=out,stderr=err,
+                                 creationflags=subprocess.CREATE_NO_WINDOW)
+    print(json.dumps({'retired_pid':pid,'new_pid':process.pid,'cleanup_verified':True}))
+
+
+if __name__=='__main__': main()
