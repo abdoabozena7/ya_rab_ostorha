@@ -346,6 +346,20 @@ class CarlaProvider:
         self.set_controls(throttle=command.throttle, brake=command.brake,
                           steering=-command.steering, parkingbrake=int(command.handbrake), gear=gear)
 
+    def apply_control_confirmed(self, command: ControlCommand):
+        """Training-only acknowledgement barrier using this provider's client.
+
+        The ordinary call updates libcarla's sticky-control cache. Re-sending
+        the identical accepted command in a synchronous batch acknowledges it
+        before the worker's separate physics tick. The batch never ticks.
+        """
+        self.apply_control(command)
+        native=native_control(self.connection.api,**self.controls)
+        result=self.connection.client.apply_batch_sync(
+            [self.connection.api.command.ApplyVehicleControl(self.ego.actor.id,native)],False)
+        if len(result)!=1 or result[0].error:
+            raise RuntimeError('Native control acknowledgement failed: '+str(result[0].error if result else 'empty response'))
+
     def get_world_state(self):
         return self.last_world
 

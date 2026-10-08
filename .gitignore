@@ -26,6 +26,7 @@ output/
 .beamng-sdk-audit/
 .venv/
 .venv-carla/
+.venv-rl/
 .venv-perception/
 models/
 .venv-carla-archive-*/

@@ -187,8 +187,8 @@ def admit_proposal(observation,base_command,proposal,evidence=None):
         return reject('Gear, reverse and handbrake changes require a separate validated contract')
     delta=c.steering-base_command.steering
     if abs(delta)>evidence.max_steering_delta:return reject('Steering exceeds verified physical limit')
-    if c.steering<0 and not evidence.left_space_verified:return reject('Left-side space unverified')
-    if c.steering>0 and not evidence.right_space_verified:return reject('Right-side space unverified')
+    if delta<0 and not evidence.left_space_verified:return reject('Left-side space unverified')
+    if delta>0 and not evidence.right_space_verified:return reject('Right-side space unverified')
     if c.throttle>evidence.max_throttle or c.throttle>base_command.throttle and not evidence.acceleration_path_verified:
         return reject('Acceleration path or throttle limit unverified')
     if c.brake>0 and c.throttle>0:return reject('Contradictory pedals')

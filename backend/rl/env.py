@@ -33,13 +33,17 @@ class YaRabOstorhaEnv(gym.Env):
 
     def __init__(self, *, profile='lightweight', split='TRAIN', scenario='FRONT_OBSTACLE',
                  parameters=None, max_steps=400, transport=None, baseline_id='SCRIPTED_DIAGNOSTIC',
-                 reward_weights=None, collision_impulse_threshold=0.):
+                 reward_weights=None, collision_impulse_threshold=0., supervisor=False, policy_id=None):
         self.config=CONFIGS[profile];self.split=DatasetSplit(split)
         self.scenario=scenario;self.parameters=dict(parameters or {});self.max_steps=max_steps
         self.baseline_id=baseline_id;self.transport=transport or HttpTransport()
         self.reward_weights=dict(reward_weights or {});self.collision_impulse_threshold=collision_impulse_threshold
+        self.supervisor=supervisor;self.policy_id=policy_id
         self.observation_space=observation_space(self.config)
         self.action_space=spaces.Box(ACTION_LOW,ACTION_HIGH,dtype=np.float32)
+        if self.supervisor:
+            from .supervisor import INTERVENTION_LOW,INTERVENTION_HIGH
+            self.action_space=spaces.Box(INTERVENTION_LOW,INTERVENTION_HIGH,dtype=np.float32)
         # The persisted scenario configuration is reproducible; absolute frames,
         # sensor noise and reused-world physics are not bitwise deterministic.
         self.spec=EnvSpec('YaRabOstorha-v0',nondeterministic=True)
@@ -57,7 +61,8 @@ class YaRabOstorhaEnv(gym.Env):
         if self.token is None:
             self.token=self.transport('acquire',profile=self.config.name,split=self.split.value,
                                       max_steps=self.max_steps,baseline_id=self.baseline_id,
-                                      reward_weights=self.reward_weights,collision_impulse_threshold=self.collision_impulse_threshold)['token']
+                                      reward_weights=self.reward_weights,collision_impulse_threshold=self.collision_impulse_threshold,
+                                      **({'supervisor':True,'policy_id':self.policy_id} if self.supervisor else {}))['token']
         result=self.transport('reset',token=self.token,seed=seed,scenario=options.get('scenario',self.scenario),
                               parameters={**self.parameters,**options.get('parameters',{})})
         self.done=False;self.current_info=result['info']
@@ -66,7 +71,10 @@ class YaRabOstorhaEnv(gym.Env):
 
     def step(self, action):
         if self.closed or self.done:raise RuntimeError('Reset before stepping an inactive or completed episode')
-        proposed,_=normalize_action(action)
+        if self.supervisor:
+            from .supervisor import normalize_intervention
+            proposed,_=normalize_intervention(action)
+        else:proposed,_=normalize_action(action)
         try:
             result=self.transport('step',token=self.token,action=proposed.tolist(),
                                   frame_id=self.current_info['frame_id'],timestamp_s=self.current_info['timestamp_s'])

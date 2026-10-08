@@ -765,7 +765,9 @@ class SimulationService:
                 chosen = self._choose()
             else:
                 chosen = training_command
-        self.provider.apply_control(chosen)
+        if training_command is not None and self.rl_runtime and self.rl_runtime.supervisor:
+            self.provider.apply_control_confirmed(chosen)
+        else:self.provider.apply_control(chosen)
         native_step_started = self.now()
         self.provider.step()
         # Native weather/population setters become observable on the following

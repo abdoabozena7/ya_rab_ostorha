@@ -31,6 +31,7 @@ class RLRuntime:
         self.service=service;self.active=False;self.token=None;self.last_request=0.
         self.done=True;self.episode_id=None;self.recorder=None;self.outcome=None
         self.last_observation=None;self.last_frame=None;self.baseline_agent=None
+        self.supervisor=False;self.policy_id=None
 
     def expired(self):return time.monotonic()-self.last_request>self.LEASE_SECONDS
 
@@ -60,14 +61,18 @@ class RLRuntime:
         raise ValueError('Unknown RL operation')
 
     def acquire(self, profile='lightweight', split='TRAIN', max_steps=400, baseline_id='SCRIPTED_DIAGNOSTIC',
-                reward_weights=None, collision_impulse_threshold=0.):
+                reward_weights=None, collision_impulse_threshold=0., supervisor=False, policy_id=None):
         s=self.service;p=s.provider
         if self.active:raise RuntimeError('An exclusive RL session already exists')
         if p.name!='carla' or not getattr(p,'sensor_suite',False):raise RuntimeError('RL requires REAL CARLA with the native sensor suite')
         if s.recorder or s.restarting or s.reconfiguring or s.actions:raise RuntimeError('Finish recording or pending reconfiguration before acquiring RL')
         if s.arbiter.safety.emergency:raise RuntimeError('Acknowledge the emergency stop before acquiring RL')
         if type(max_steps) is not int or not 1<=max_steps<=2400:raise ValueError('Invalid maximum steps')
-        if baseline_id not in ('SCRIPTED_DIAGNOSTIC','CONSERVATIVE_RADAR_BRAKING','BASIC_AGENT_NO_SAFETY'):
+        if type(supervisor) is not bool:raise ValueError('supervisor must be boolean')
+        if supervisor and (profile!='lightweight' or baseline_id!='BASIC_AGENT_WITH_SUPERVISOR' or
+                           not isinstance(policy_id,str) or not 1<=len(policy_id)<=160):
+            raise ValueError('Experiment 1 requires lightweight sensors and an identified supervisor')
+        if not supervisor and baseline_id not in ('SCRIPTED_DIAGNOSTIC','CONSERVATIVE_RADAR_BRAKING','BASIC_AGENT_NO_SAFETY'):
             raise ValueError('Unknown baseline identity; no learned policy exists')
         config=CONFIGS[profile];split=DatasetSplit(split)
         self.collision_impulse_threshold=finite(collision_impulse_threshold)
@@ -88,6 +93,7 @@ class RLRuntime:
         p.apply_control(safe_command(*s._context()))
         p.world.paused=False;s.paused=False
         self.config,self.split,self.max_steps,self.baseline_id=config,split,max_steps,baseline_id
+        self.supervisor,self.policy_id=supervisor,policy_id
         self.active=True;self.token=uuid.uuid4().hex;self.last_request=time.monotonic()
         self.assembler=ObservationAssembler(config,p.get_sensor_asset)
         return {'token':self.token,**self.status()}
@@ -130,6 +136,7 @@ class RLRuntime:
 
     def reset(self, seed, scenario, parameters):
         s=self.service;p=s.provider
+        if self.supervisor and scenario!='SUDDEN_BRAKING':raise ValueError('Experiment 1 supports Sudden Braking only')
         spec=compile_scenario(p,scenario,seed,self.split.value,parameters)
         if not self.done:self._finish('ABORTED',False,True,None,'reset_requested')
         self.done=True;self.baseline_agent=None;self.assembler.clear()
@@ -158,8 +165,13 @@ class RLRuntime:
             self.collision_closed_through=frame.frame_id
             self.last_frame=frame
             self.measurements=NativeMeasurements(p,frame,spec)
+            if self.supervisor:
+                self.measurements.metrics.update(intervention_steps=0,intervention_proposals=0,
+                    unnecessary_intervention_count=0,steering_adjustment_rejections=0)
+                self.was_intervention=False
             self.spec=spec;self.done=False
             self.last_observation=self.assembler.append(sensor_observation(frame),self.previous_action)
+            if self.supervisor:self._prepare_base()
             condition={'scenario_spec':to_dict(spec),'map':p.world.world.get_map().name,
                        'ego_blueprint':p.ego.actor.type_id,'fixed_delta_seconds':p.fixed_delta,
                        'intended_initial_states':p.scenarios.run['initial_states'],
@@ -169,9 +181,12 @@ class RLRuntime:
                        'observation_profile':self.config.name,'reward_weights':to_dict(self.reward.weights),
                        'weights_status':'HYPOTHESES_REQUIRING_EXPERIMENTAL_TUNING',
                        'collision_impulse_failure_threshold_ns':self.collision_impulse_threshold,
-                       'baseline_id':self.baseline_id,'policy_active':False}
+                       'baseline_id':self.baseline_id,'policy_active':False,
+                       'supervisory_training_mode':self.supervisor,'training_policy_id':self.policy_id,
+                       'base_driver':'BASIC_AGENT_NO_HAZARD_HANDLING' if self.supervisor else self.baseline_id}
             self.recorder=RunRecorder(ROOT/'runs/rl'/self.split.value,ExperimentMetadata(self.episode_id,
-                'Gate 6 real CARLA episode','carla',DataOrigin.REAL_SIMULATION,seed=seed,
+                'Experiment 1 supervisory episode' if self.supervisor else 'Gate 6 real CARLA episode',
+                'carla',DataOrigin.REAL_SIMULATION,seed=seed,
                 created_at_utc=datetime.now(timezone.utc).isoformat(),config=condition))
             s.recorder=self.recorder;s._record(frame)
             self.recording_path=str(self.recorder.root)
@@ -191,16 +206,32 @@ class RLRuntime:
         s=self.service;p=s.provider
         if frame_id!=self.last_frame.frame_id or timestamp_s!=self.last_frame.timestamp_s:
             raise ValueError('Action must reference the latest RL observation exactly')
-        proposed,applied,command=physical_command(action,self.last_frame,self.previous_action,p.fixed_delta)
+        decision=None;base=None
+        if self.supervisor:
+            from .supervisor import decide_intervention,normalize_intervention
+            proposed,_=normalize_intervention(action)
+            base=self.base_command
+            command,decision=decide_intervention(sensor_observation(self.last_frame),base,action,self.policy_id)
+            applied=np.array([command.steering,command.throttle,command.brake],np.float64)
+        else:proposed,applied,command=physical_command(action,self.last_frame,self.previous_action,p.fixed_delta)
         # Retain the existing wall rate limit without silently losing requests.
-        receipt=s.arbiter.safety.receipts.get(CommandSource.TRAINING)
-        if receipt is not None:time.sleep(max(0.,s.arbiter.safety.min_interval_s-(s.now()-receipt)))
+        for source in (CommandSource.TRAINING,command.source):
+            receipt=s.arbiter.safety.receipts.get(source)
+            if receipt is not None:time.sleep(max(0.,s.arbiter.safety.min_interval_s-(s.now()-receipt)))
         try:
             if s.arbiter.safety.emergency:raise RuntimeError('External emergency stop')
-            s.arbiter.submit(command,frame_id=self.last_frame.frame_id,timestamp_s=self.last_frame.timestamp_s,connected=True)
+            if self.supervisor:
+                # A previous safety proposal cannot persist across NO_INTERVENTION.
+                s.arbiter.safety.latest.pop(CommandSource.SAFETY,None)
+                s.arbiter.safety.receipts.pop(CommandSource.SAFETY,None)
+                s.arbiter.submit(base,frame_id=self.last_frame.frame_id,timestamp_s=self.last_frame.timestamp_s,connected=True)
+            if not self.supervisor or command.source==CommandSource.SAFETY:
+                s.arbiter.submit(command,frame_id=self.last_frame.frame_id,timestamp_s=self.last_frame.timestamp_s,connected=True)
             selected=s._choose()
-            if selected.source!=CommandSource.TRAINING:raise RuntimeError('Training action rejected by safety arbitration')
+            if selected.source!=command.source:raise RuntimeError('Training action rejected by safety arbitration')
             frame=self._advance(selected)
+            if self.supervisor and not np.allclose(applied,[frame.vehicle.steering,frame.vehicle.throttle,frame.vehicle.brake],atol=1e-5,rtol=0):
+                raise RuntimeError('Actual native controls differ from the accepted supervisory command')
             collisions=[]
             for event in s.collision_events:
                 key=(event.frame_id,event.other_actor_id,event.impulse_ns)
@@ -215,13 +246,28 @@ class RLRuntime:
             outcome,terminated,truncated,term_reason,trunc_reason=episode_outcome(
                 context,self.measurements.metrics,self.spec,self.steps,self.max_steps,self.collision_impulse_threshold)
             reward,components,raw=self.reward.evaluate(context,self.previous_action,applied,context['dt'],outcome=='SUCCESS')
+            if self.supervisor:
+                m=self.measurements.metrics;intervened=decision['accepted']
+                m['intervention_steps']+=int(intervened)
+                m['intervention_proposals']+=int(decision['bounded_intervention'][0]>0)
+                m['intervention_count']+=int(intervened and not self.was_intervention)
+                m['intervention_frequency']=m['intervention_count']/m['duration_s']
+                m['unnecessary_intervention_count']+=int(intervened and raw['unnecessary_braking']>0)
+                m['steering_adjustment_rejections']+=int(decision['steering_adjustment_rejected'])
+                self.was_intervention=intervened
             observation=self.assembler.append(sensor_observation(frame),applied)
             self.last_frame=frame;self.last_observation=observation;self.previous_action=applied
             self.total_reward+=reward
+            if self.supervisor and not outcome:self._prepare_base()
             info=self._info(frame)
             info.update(proposed_action=proposed.tolist(),applied_action=applied.tolist(),reward_components=components,
                         reward_measurements=raw,collision_events=[to_dict(e) for e in collisions],
                         outcome=outcome,termination_reason=term_reason,truncation_reason=trunc_reason)
+            if self.supervisor:
+                info.update(base_proposed_action=[base.steering,base.throttle,base.brake],
+                            next_base_proposed_action=[self.base_command.steering,self.base_command.throttle,self.base_command.brake],
+                            intervention=decision,applied_command=to_dict(selected),
+                            native_applied_action=[frame.vehicle.steering,frame.vehicle.throttle,frame.vehicle.brake])
             self._record_step(info,reward)
             if outcome:
                 self._finish(outcome,terminated,truncated,term_reason,trunc_reason)
@@ -248,10 +294,20 @@ class RLRuntime:
             return {'observation':pack_observation(invalid),'reward':0.,'terminated':False,'truncated':True,'info':info}
 
     def _info(self,frame):
-        return {'episode_id':self.episode_id,'scenario_id':self.spec.scenario_id,'seed':self.spec.random_seed,
+        info={'episode_id':self.episode_id,'scenario_id':self.spec.scenario_id,'seed':self.spec.random_seed,
                 'split':self.split.value,'frame_id':frame.frame_id,'timestamp_s':frame.timestamp_s,
                 'step':self.steps,'recording_path':self.recording_path,'observation_valid':True,
                 'tick_owner':'simulation-worker','policy_active':False,'baseline_id':self.baseline_id}
+        if self.supervisor:
+            info.update(supervisory_training_mode=True,training_policy_id=self.policy_id,
+                base_proposed_action=[self.base_command.steering,self.base_command.throttle,self.base_command.brake])
+        return info
+
+    def _prepare_base(self):
+        # BasicAgent remains inside the native worker. Only its ControlCommand
+        # crosses the sensor-only supervisory boundary; its route/map do not.
+        action=self.baseline()['action']
+        _,_,self.base_command=physical_command(action,self.last_frame,self.previous_action,self.service.provider.fixed_delta)
 
     def _record_step(self,info,reward):
         self.recorder.record_event(SimulationEvent(EventType.ControlChanged,info['frame_id'],info['timestamp_s'],
@@ -269,6 +325,10 @@ class RLRuntime:
                     'truncation_reason':trunc_reason,'reward':self.total_reward,'steps':self.steps,'metrics':dict(m),
                     'policy_active':False,'collision_severity_units':'native impulse N*s',
                     'ttc_definition':'planar aligned longitudinal clearance / positive closing speed'}
+            if self.supervisor:
+                result.update(supervisory_training_mode=True,training_policy_id=self.policy_id)
+                m['hard_braking_frequency_hz']=m['hard_braking_events']/m['duration_s'] if m['duration_s'] else 0.
+                result['metrics']=dict(m)
             if self.recorder and not self.recorder.closed:
                 self.recorder.record_event(SimulationEvent(EventType.ControlChanged,*s._context(),{'rl_episode_outcome':result}))
                 (self.recorder.root/'outcome.json').write_text(json.dumps(result,indent=2,allow_nan=False),encoding='utf8')
