@@ -1,0 +1,70 @@
+{
+  "version": "RADAR_FOREGROUND_V2",
+  "config": {
+    "version": "RADAR_FOREGROUND_V2",
+    "mount_position_m": [
+      2.5,
+      0.0,
+      0.65
+    ],
+    "mount_rotation_deg": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "minimum_height_m": 0.25,
+    "max_azimuth_rad": 0.12,
+    "max_altitude_rad": 0.15,
+    "plane_residual_m": 0.08,
+    "max_plane_slope": 0.15,
+    "min_plane_support": 6,
+    "min_plane_span_m": 2.0
+  },
+  "calibration_split": "VALIDATION",
+  "decision": "Retain the pre-specified 0.25 m foreground height; bounded radar-plane support compensates pitch. No gate/reward optimization",
+  "validation_groups": [
+    "VALIDATION_FROZEN_SAC",
+    "VALIDATION_STATIONARY",
+    "VALIDATION_SCRIPTED_SUCCESS"
+  ],
+  "validation_measurements": {
+    "VALIDATION_FROZEN_SAC": {
+      "complete_frames": 276,
+      "before_lead_associated": 56,
+      "before_road_height": 216,
+      "before_no_foreground": 0,
+      "after_lead_associated": 272,
+      "after_road_height": 0,
+      "after_no_foreground": 0,
+      "policy_observations": 272,
+      "actual_frame_ground_truth_invariance_checks": 12
+    },
+    "VALIDATION_STATIONARY": {
+      "complete_frames": 241,
+      "before_lead_associated": 0,
+      "before_road_height": 240,
+      "before_no_foreground": 0,
+      "after_lead_associated": 236,
+      "after_road_height": 0,
+      "after_no_foreground": 4,
+      "policy_observations": 240,
+      "actual_frame_ground_truth_invariance_checks": 3
+    },
+    "VALIDATION_SCRIPTED_SUCCESS": {
+      "complete_frames": 99,
+      "before_lead_associated": 0,
+      "before_road_height": 98,
+      "before_no_foreground": 0,
+      "after_lead_associated": 97,
+      "after_road_height": 0,
+      "after_no_foreground": 1,
+      "policy_observations": 98,
+      "actual_frame_ground_truth_invariance_checks": 3
+    }
+  },
+  "model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "reward_or_gate_calibration": false,
+  "historical_test_read_in_this_run_before_lock": false,
+  "historical_test_previously_inspected": true,
+  "test_use": "Historical audit, not tuning or an untouched safety benchmark"
+}

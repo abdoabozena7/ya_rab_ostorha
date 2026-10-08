@@ -1,0 +1,34 @@
+{
+  "version": "POSTHOC_RULE_TEACHER_PROPOSAL_V1",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "learning": "NONE_RULE_BASED",
+  "production_enabled": false,
+  "calibration_data": "VALIDATION 1042 braking measurement; original pre-specified script constants retained",
+  "radar_version": "RADAR_FOREGROUND_V2",
+  "parameters": {
+    "buffer_m": 3.0,
+    "reaction_margin_s": 0.35,
+    "nominal_deceleration_mps2": 5.0,
+    "minimum_resume_range_m": 6.0,
+    "initial_dwell_s": 1.0,
+    "stopped_speed_mps": 0.2,
+    "additional_brake": 1.0,
+    "steering_delta": 0.0,
+    "onboard_goal_guard_m": 10.75
+  },
+  "states": [
+    "INITIAL_BRAKE: admitted additional brake",
+    "RESUME_BASE: release after dwell, stopped ego and valid range > max(6,3+.35*v+v*v/(2*5))",
+    "FINAL_BRAKE: brake when range no longer exceeds envelope, validity lost or onboard travel >=10.75"
+  ],
+  "admission": "Existing decide_intervention -> feasibility -> safety layer -> arbitration",
+  "parameters_fitted_to_test": false,
+  "new_native_validation_required": true,
+  "limitations": [
+    "Initial dwell is a scenario diagnostic prior, not a universal hazard detector",
+    "One measured brake stroke cannot establish robust deceleration bounds",
+    "Radar foreground validity does not certify free space",
+    "Teacher phase, dwell and odometer need permitted persistent onboard state; absent from the 47-D SAC snapshot",
+    "Changed radar selector can change teacher decisions; three old successes are not evidence of new teacher performance"
+  ]
+}

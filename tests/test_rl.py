@@ -19,7 +19,11 @@ def policy_fixture(frame=1,timestamp=.05):
     f=observation_frame(frame,timestamp)
     imu=next(s for s in f.sensors if s.kind.value=='IMU')
     imu=replace(imu,data={**imu.data,'accelerometer_mps2':[0.,0.,9.81]})
-    return replace(f,sensors=tuple(imu if s.kind.value=='IMU' else s for s in f.sensors))
+    radar=next(s for s in f.sensors if s.kind.value=='RADAR')
+    radar=replace(radar,metadata={**radar.metadata,'mount_transform':{
+        'position_m':[2.5,0.,.65],'rotation_deg':{'roll':0.,'pitch':0.,'yaw':0.}}})
+    return replace(f,sensors=tuple(imu if s.kind.value=='IMU' else
+        radar if s.kind.value=='RADAR' else s for s in f.sensors))
 
 
 class RLBoundaryTests(unittest.TestCase):

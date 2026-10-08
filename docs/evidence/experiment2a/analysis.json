@@ -1,0 +1,590 @@
+{
+  "demonstrations": [
+    {
+      "seed": 2042,
+      "split": "TEST",
+      "parameter_fitting": false,
+      "historical_native_outcome": {
+        "episode_id": "rl_02cb1ab9cb244264bf20a084ca311498",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2042,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 36.655838268195104,
+        "steps": 98,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 8.255791063319627,
+          "minimum_ttc_s": 1.397496287087667,
+          "forward_progress_m": 13.459372465611013,
+          "distance_traveled_m": 13.463125060234677,
+          "duration_s": 4.90000007301569,
+          "average_speed_mps": 2.7475765019629557,
+          "hard_braking_events": 2,
+          "steering_oscillation": 0.062029010940023,
+          "intervention_count": 2,
+          "intervention_frequency": 0.4081632592240159,
+          "scenario_success": true,
+          "time_to_completion_s": 4.90000007301569,
+          "intervention_steps": 42,
+          "intervention_proposals": 42,
+          "unnecessary_intervention_count": 19,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.4081632592240159
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "EXPERIMENT1.1_SCRIPTED_brake_resume_stop"
+      },
+      "phases": [
+        {
+          "step": 0,
+          "phase": "INITIAL_BRAKE",
+          "script_phase": "INITIAL_BRAKE",
+          "onboard_distance_m": 0.0,
+          "onboard_elapsed_s": 0.0,
+          "elevated_radar_range_m": 13.104703903198242,
+          "sensor_stopping_threshold_m": 9.705767971277236,
+          "safe_to_continue": true
+        },
+        {
+          "step": 20,
+          "phase": "RESUME_BASE",
+          "script_phase": "RESUME_BASE",
+          "onboard_distance_m": 0.8456921547183992,
+          "onboard_elapsed_s": 1.0000000149011612,
+          "elevated_radar_range_m": 14.594078063964844,
+          "sensor_stopping_threshold_m": 3.0006981520757914,
+          "safe_to_continue": true
+        },
+        {
+          "step": 76,
+          "phase": "FINAL_BRAKE",
+          "script_phase": "FINAL_BRAKE",
+          "onboard_distance_m": 9.850183639548236,
+          "onboard_elapsed_s": 3.8000000566244125,
+          "elevated_radar_range_m": 11.842663764953613,
+          "sensor_stopping_threshold_m": 12.253342863988655,
+          "safe_to_continue": false
+        }
+      ],
+      "accepted_brake_steps": 42,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.459372465611013,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.3485341757347172,
+        "unnecessary_braking": -0.09500000141561034,
+        "success": 25.0
+      }
+    },
+    {
+      "seed": 2043,
+      "split": "TEST",
+      "parameter_fitting": false,
+      "historical_native_outcome": {
+        "episode_id": "rl_6955d4d248974101bad0769420b3d77a",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2043,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 36.63063617823521,
+        "steps": 98,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 8.13542258961733,
+          "minimum_ttc_s": 1.3801409234823088,
+          "forward_progress_m": 13.477142237577516,
+          "distance_traveled_m": 13.480775364315535,
+          "duration_s": 4.90000007301569,
+          "average_speed_mps": 2.751178604782925,
+          "hard_braking_events": 2,
+          "steering_oscillation": 0.029198857091273567,
+          "intervention_count": 2,
+          "intervention_frequency": 0.4081632592240159,
+          "scenario_success": true,
+          "time_to_completion_s": 4.90000007301569,
+          "intervention_steps": 43,
+          "intervention_proposals": 43,
+          "unnecessary_intervention_count": 19,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.4081632592240159
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "EXPERIMENT1.1_SCRIPTED_brake_resume_stop"
+      },
+      "phases": [
+        {
+          "step": 0,
+          "phase": "INITIAL_BRAKE",
+          "script_phase": "INITIAL_BRAKE",
+          "onboard_distance_m": 0.0,
+          "onboard_elapsed_s": 0.0,
+          "elevated_radar_range_m": 13.002485275268555,
+          "sensor_stopping_threshold_m": 9.705775957137757,
+          "safe_to_continue": true
+        },
+        {
+          "step": 20,
+          "phase": "RESUME_BASE",
+          "script_phase": "RESUME_BASE",
+          "onboard_distance_m": 0.8457143649227729,
+          "onboard_elapsed_s": 1.0000000149011612,
+          "elevated_radar_range_m": 14.493700981140137,
+          "sensor_stopping_threshold_m": 3.00069821799531,
+          "safe_to_continue": true
+        },
+        {
+          "step": 75,
+          "phase": "FINAL_BRAKE",
+          "script_phase": "FINAL_BRAKE",
+          "onboard_distance_m": 9.462311854997928,
+          "onboard_elapsed_s": 3.7500000558793545,
+          "elevated_radar_range_m": 12.122175216674805,
+          "sensor_stopping_threshold_m": 12.12772348325127,
+          "safe_to_continue": false
+        }
+      ],
+      "accepted_brake_steps": 43,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.477142237577516,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.391506037661121,
+        "unnecessary_braking": -0.09500000141561034,
+        "success": 25.0
+      }
+    },
+    {
+      "seed": 1042,
+      "split": "VALIDATION",
+      "parameter_fitting": false,
+      "historical_native_outcome": {
+        "episode_id": "rl_61874dbb452c471faff83eb9971a687e",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 1042,
+        "split": "VALIDATION",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 36.663335762013304,
+        "steps": 98,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 8.138377362830195,
+          "minimum_ttc_s": 1.3815697818997783,
+          "forward_progress_m": 13.468633400802966,
+          "distance_traveled_m": 13.473753087881073,
+          "duration_s": 4.90000007301569,
+          "average_speed_mps": 2.749745487164594,
+          "hard_braking_events": 2,
+          "steering_oscillation": 0.21027447608066724,
+          "intervention_count": 2,
+          "intervention_frequency": 0.4081632592240159,
+          "scenario_success": true,
+          "time_to_completion_s": 4.90000007301569,
+          "intervention_steps": 42,
+          "intervention_proposals": 42,
+          "unnecessary_intervention_count": 19,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.4081632592240159
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "EXPERIMENT1.1_SCRIPTED_brake_resume_stop"
+      },
+      "phases": [
+        {
+          "step": 0,
+          "phase": "INITIAL_BRAKE",
+          "script_phase": "INITIAL_BRAKE",
+          "onboard_distance_m": 0.0,
+          "onboard_elapsed_s": 0.0,
+          "elevated_radar_range_m": 13.010990142822266,
+          "sensor_stopping_threshold_m": 9.705777554310407,
+          "safe_to_continue": true
+        },
+        {
+          "step": 20,
+          "phase": "RESUME_BASE",
+          "script_phase": "RESUME_BASE",
+          "onboard_distance_m": 0.8454050088489706,
+          "onboard_elapsed_s": 1.0000000149011612,
+          "elevated_radar_range_m": 14.497254371643066,
+          "sensor_stopping_threshold_m": 3.0006977565588255,
+          "safe_to_continue": true
+        },
+        {
+          "step": 76,
+          "phase": "FINAL_BRAKE",
+          "script_phase": "FINAL_BRAKE",
+          "onboard_distance_m": 9.865144383851405,
+          "onboard_elapsed_s": 3.8000000566244125,
+          "elevated_radar_range_m": 11.72712516784668,
+          "sensor_stopping_threshold_m": 12.253590894003082,
+          "safe_to_continue": false
+        }
+      ],
+      "accepted_brake_steps": 42,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.468633400802966,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.3502976171084793,
+        "unnecessary_braking": -0.09500000141561034,
+        "success": 25.0
+      }
+    }
+  ],
+  "validation_phase_gate_replay": {
+    "INITIAL_BRAKE": {
+      "observations": 20,
+      "positive_before": 19,
+      "positive_after": 19,
+      "after_gate": {
+        "count": 20,
+        "min": -0.2412559986114502,
+        "max": 0.2334378957748413,
+        "mean": 0.12944493889808656,
+        "median": 0.17449498176574707,
+        "p95": 0.17979079484939578
+      },
+      "speed_mps": {
+        "count": 20,
+        "min": 0.002489580074325204,
+        "max": 6.623785018920898,
+        "mean": 1.010949810326565,
+        "median": 0.011389185208827257,
+        "p95": 5.355178022384645
+      }
+    },
+    "RESUME_BASE": {
+      "observations": 56,
+      "positive_before": 1,
+      "positive_after": 1,
+      "after_gate": {
+        "count": 56,
+        "min": -0.5263416171073914,
+        "max": 0.17560410499572754,
+        "mean": -0.3726276702114514,
+        "median": -0.3845628499984741,
+        "p95": -0.26912227272987366
+      },
+      "speed_mps": {
+        "count": 56,
+        "min": 9.588357352185994e-05,
+        "max": 7.9335246086120605,
+        "mean": 3.149679626732385,
+        "median": 2.8907124996185303,
+        "p95": 7.367962002754211
+      }
+    },
+    "FINAL_BRAKE": {
+      "observations": 22,
+      "positive_before": 21,
+      "positive_after": 21,
+      "after_gate": {
+        "count": 22,
+        "min": -0.12079501152038574,
+        "max": 0.15450060367584229,
+        "mean": 0.08446366136724298,
+        "median": 0.08889520168304443,
+        "p95": 0.15259177684783937
+      },
+      "speed_mps": {
+        "count": 22,
+        "min": 0.0052915941923856735,
+        "max": 8.027443885803223,
+        "mean": 3.513195850314911,
+        "median": 3.0223108530044556,
+        "p95": 7.951812314987182
+      }
+    }
+  },
+  "validation_braking_measurement": {
+    "split": "VALIDATION",
+    "seed": 1042,
+    "brake": 1.0,
+    "start_speed_mps": 8.027443885803223,
+    "stop_speed_mps": 0.017625348642468452,
+    "time_to_under_02_mps_s": 0.6500000096857548,
+    "onboard_braking_distance_m": 3.6594078911473265,
+    "mean_speed_deceleration_mps2": 12.32279756585409,
+    "energy_equivalent_deceleration_mps2": 8.804683333553704,
+    "warning": "One braking stroke, not a calibrated conservative bound across vehicles/weather/slopes",
+    "original_script_range_at_final_brake_m": 11.72712516784668,
+    "fixed_foreground_range_at_final_brake_m": 11.72712516784668,
+    "original_trigger_threshold_m": 12.253590894003082
+  },
+  "validation_reward_ordering": {
+    "split": "VALIDATION",
+    "seed": 1042,
+    "weights_changed": false,
+    "collision_no_intervention": {
+      "steps": 68,
+      "total": -243.05440521787287,
+      "components": {
+        "collision": -100.0,
+        "severity": -157.11954145681432,
+        "proximity": -0.7560876981625143,
+        "progress": 15.777284367576078,
+        "delay": -0.6800000101327888,
+        "smoothness": -0.2760604203393381,
+        "unnecessary_braking": 0.0,
+        "success": 0.0
+      }
+    },
+    "stationary": {
+      "steps": 240,
+      "total": -5.258021239172537,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 0.7972361637115944,
+        "delay": -4.760000070929548,
+        "smoothness": -0.10025731414769079,
+        "unnecessary_braking": -1.195000017806893,
+        "success": 0.0
+      }
+    },
+    "safe_progress": {
+      "steps": 98,
+      "total": 36.6633357620133,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.468633400802966,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.3502976171084793,
+        "unnecessary_braking": -0.09500000141561034,
+        "success": 25.0
+      }
+    }
+  },
+  "validation_teacher_fixed_selector_disagreements": [
+    {
+      "step": 6,
+      "elapsed_s": 0.2500000037252903,
+      "fixed_safe_to_continue": true,
+      "original_safe_to_continue": false,
+      "fixed_range_m": 12.816027641296387,
+      "threshold_m": 6.0
+    },
+    {
+      "step": 8,
+      "elapsed_s": 0.3500000052154064,
+      "fixed_safe_to_continue": true,
+      "original_safe_to_continue": false,
+      "fixed_range_m": 13.041892051696777,
+      "threshold_m": 6.0
+    },
+    {
+      "step": 90,
+      "elapsed_s": 4.450000066310167,
+      "fixed_safe_to_continue": true,
+      "original_safe_to_continue": false,
+      "fixed_range_m": 8.118005752563477,
+      "threshold_m": 6.0
+    },
+    {
+      "step": 91,
+      "elapsed_s": 4.500000067055225,
+      "fixed_safe_to_continue": true,
+      "original_safe_to_continue": false,
+      "fixed_range_m": 8.101110458374023,
+      "threshold_m": 6.0
+    }
+  ],
+  "projection_cost": {
+    "legacy_full_47_feature_projection_ms": {
+      "count": 512,
+      "min": 0.0787,
+      "max": 1.067,
+      "mean": 0.1524103515625,
+      "median": 0.13405,
+      "p95": 0.2586
+    },
+    "fixed_full_47_feature_projection_ms": {
+      "count": 512,
+      "min": 0.8288,
+      "max": 9.2121,
+      "mean": 1.5142236328125,
+      "median": 1.27775,
+      "p95": 2.6205249999999998
+    }
+  },
+  "validation_teacher_action_replay": {
+    "observations": 98,
+    "identical_decisions": 98,
+    "closed_loop_execution": false,
+    "state_source": "Recorded onboard elapsed time, speed and integrated distance"
+  },
+  "normalization": {
+    "split": "VALIDATION",
+    "normalization_changed": false,
+    "latest_history_dimension_extrema": [
+      {
+        "column": 33,
+        "min": 0.0,
+        "max": 0.5389215350151062,
+        "abs_at_one_count": 0
+      },
+      {
+        "column": 34,
+        "min": -1.0,
+        "max": 1.0,
+        "abs_at_one_count": 37
+      },
+      {
+        "column": 35,
+        "min": -0.03690958768129349,
+        "max": 0.04294204339385033,
+        "abs_at_one_count": 0
+      },
+      {
+        "column": 36,
+        "min": -0.05048009008169174,
+        "max": 0.06748247146606445,
+        "abs_at_one_count": 0
+      },
+      {
+        "column": 37,
+        "min": 0.0,
+        "max": 0.75,
+        "abs_at_one_count": 0
+      },
+      {
+        "column": 38,
+        "min": 0.0,
+        "max": 1.0,
+        "abs_at_one_count": 280
+      },
+      {
+        "column": 39,
+        "min": 0.001266404869966209,
+        "max": 1.0,
+        "abs_at_one_count": 5
+      },
+      {
+        "column": 40,
+        "min": -0.40018758177757263,
+        "max": 0.2355998307466507,
+        "abs_at_one_count": 0
+      },
+      {
+        "column": 41,
+        "min": 0.0008112353389151394,
+        "max": 1.0,
+        "abs_at_one_count": 296
+      },
+      {
+        "column": 42,
+        "min": 0.0,
+        "max": 1.0,
+        "abs_at_one_count": 605
+      },
+      {
+        "column": 43,
+        "min": 1.0,
+        "max": 1.0,
+        "abs_at_one_count": 610
+      }
+    ],
+    "observations": 610
+  },
+  "nominal_screen_first_pass": {
+    "VALIDATION_FROZEN_SAC": {
+      "complete_frames": 276,
+      "before_lead_associated": 56,
+      "before_road_height": 216,
+      "before_no_foreground": 0,
+      "after_lead_associated": 272,
+      "after_road_height": 0,
+      "after_no_foreground": 0,
+      "policy_observations": 272,
+      "actual_frame_ground_truth_invariance_checks": 12
+    },
+    "VALIDATION_STATIONARY": {
+      "complete_frames": 241,
+      "before_lead_associated": 0,
+      "before_road_height": 240,
+      "before_no_foreground": 0,
+      "after_lead_associated": 230,
+      "after_road_height": 7,
+      "after_no_foreground": 3,
+      "policy_observations": 240,
+      "actual_frame_ground_truth_invariance_checks": 3
+    },
+    "VALIDATION_SCRIPTED_SUCCESS": {
+      "complete_frames": 99,
+      "before_lead_associated": 0,
+      "before_road_height": 98,
+      "before_no_foreground": 0,
+      "after_lead_associated": 88,
+      "after_road_height": 10,
+      "after_no_foreground": 0,
+      "policy_observations": 98,
+      "actual_frame_ground_truth_invariance_checks": 3
+    },
+    "HISTORICAL_TEST_AUDIT": {
+      "complete_frames": 552,
+      "before_lead_associated": 112,
+      "before_road_height": 432,
+      "before_no_foreground": 0,
+      "after_lead_associated": 544,
+      "after_road_height": 0,
+      "after_no_foreground": 0,
+      "policy_observations": 544,
+      "actual_frame_ground_truth_invariance_checks": 24
+    }
+  },
+  "replay_resource_total": {
+    "two_offline_passes_wall_s": 55.72319239999979,
+    "two_offline_passes_cpu_user_system_s": 52.25,
+    "peak_private_mib": 817.48046875
+  },
+  "this_analysis_resource": {
+    "wall_s_including_imports": 2.319482500000049,
+    "cpu_user_system_s": 1.4375,
+    "os_peak_working_set_mib": 56.26171875
+  },
+  "native_episodes": 0,
+  "training_updates": 0
+}

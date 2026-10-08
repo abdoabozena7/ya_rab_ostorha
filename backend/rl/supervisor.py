@@ -9,6 +9,7 @@ from gymnasium import spaces
 from ..core.contracts import CommandSource, SensorKind
 from ..core.safety_policy import (SensorObservation, ProposedSafetyAction,
                                  FeasibilityEvidence, admit_proposal)
+from .radar import foreground_return
 
 INTERVENTION_LOW = np.array([-1., 0., -1.], np.float32)
 INTERVENTION_HIGH = np.ones(3, np.float32)
@@ -37,8 +38,7 @@ def policy_features(observation, base_action):
     for i in range(4):
         valid = bool(observation['history_valid'][i])
         points = observation['radar'][i][observation['radar_valid'][i].astype(bool)]
-        points = points[(np.abs(points[:, 1]) < .12) & (np.abs(points[:, 2]) < .15)]
-        point = points[np.argmin(points[:, 0])] if len(points) else None
+        point = foreground_return(points)
         distance = float(point[0]) if point is not None else 50.
         velocity = float(point[3]) if point is not None else 0.
         ttc = min(10., distance / max(.1, -velocity)) if point is not None else 10.

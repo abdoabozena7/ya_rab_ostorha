@@ -1,0 +1,75 @@
+{
+  "verified_at_utc": "2026-10-08T21:05:38.829790+00:00",
+  "source_head": "3d3684f7dfa855b7170c241962e6b7f646f37435",
+  "branch": "codex/experiment2a-radar-fix",
+  "preserved_original_tracked_patch_byte_identical": true,
+  "preserved_untracked_verifier_byte_identical": true,
+  "unchanged_runtime_files": [
+    "backend/rl/reward.py",
+    "backend/rl/env.py",
+    "backend/rl/runtime.py",
+    "backend/core/safety_policy.py",
+    "backend/core/control.py",
+    "backend/core/service.py",
+    "backend/core/contracts.py",
+    "backend/carla/provider.py",
+    "backend/carla/scenarios.py"
+  ],
+  "unchanged_action_nodes": [
+    "normalize_intervention",
+    "TrainingRadarFeasibilityValidator",
+    "decide_intervention",
+    "rule_intervention"
+  ],
+  "original_patch_sha256": "b81739c6aa016fa7eb7c299badd2439970f296d14d88cfaf8a2ede7b7c730066",
+  "python_tests": {
+    "run": 162,
+    "passed": 161,
+    "skipped": 1,
+    "elapsed_s": 7.164,
+    "command": ".venv-carla/Scripts/python.exe -m unittest discover -s tests",
+    "skip": "Native CARLA API installed; native-API-absence test is inapplicable"
+  },
+  "javascript_tests": {
+    "run": 24,
+    "passed": 24,
+    "elapsed_s": 0.3509683,
+    "command": "npm test"
+  },
+  "live_state": {
+    "connected": true,
+    "mode": "PAUSED",
+    "rlRuntime": {
+      "active": false,
+      "tick_owner": "simulation-worker",
+      "episode_id": "rl_61874dbb452c471faff83eb9971a687e",
+      "episode_done": true,
+      "outcome": "SUCCESS",
+      "policy_active": false,
+      "lease_seconds": 120.0,
+      "pending_requests": 0,
+      "bounded_buffers": {
+        "observation_history": 0,
+        "sensor_assets": 256,
+        "camera_cache": 32,
+        "sensor_frame_cache": 32,
+        "synchronizer_pending": 1
+      }
+    }
+  },
+  "gpu_snapshot": "5883 MiB, 6144 MiB, 36 %",
+  "gpu_snapshot_scope": "Existing CARLA process and desktop; no new model GPU allocation or graphical changes",
+  "native_episodes_this_experiment": 0,
+  "native_physics_steps_this_experiment": 0,
+  "model_training_updates": 0,
+  "analysis_first_pass_resource": {
+    "wall_s": 2.21376489999966,
+    "cpu_user_system_s": 1.375,
+    "os_peak_working_set_mib": 56.19921875
+  },
+  "regression_logs": [
+    "output/native-validation/experiment2a-python-tests.log",
+    "output/native-validation/experiment2a-javascript-tests.log"
+  ],
+  "plot_visually_inspected": true
+}

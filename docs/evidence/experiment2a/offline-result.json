@@ -1,0 +1,521 @@
+{
+  "experiment": "EXPERIMENT2A_RADAR_FIX_NO_TRAINING",
+  "groups": {
+    "VALIDATION_FROZEN_SAC": {
+      "selection": {
+        "complete_frames": 276,
+        "before_lead_associated": 56,
+        "before_road_height": 216,
+        "before_no_foreground": 0,
+        "after_lead_associated": 272,
+        "after_road_height": 0,
+        "after_no_foreground": 0,
+        "policy_observations": 272,
+        "actual_frame_ground_truth_invariance_checks": 12
+      },
+      "height_sensitivity": {
+        "0.1": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        },
+        "0.15": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        },
+        "0.2": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        },
+        "0.25": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        },
+        "0.3": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        },
+        "0.4": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        },
+        "0.5": {
+          "observations": 272,
+          "lead_associated": 272,
+          "road_height": 0,
+          "no_foreground": 0
+        }
+      },
+      "frozen_predictions": {
+        "before_gate": {
+          "n": 272,
+          "min": -0.5092177391052246,
+          "max": -0.08611917495727539,
+          "mean": -0.3801722504636821,
+          "median": -0.43041306734085083,
+          "p95": -0.11557738482952121
+        },
+        "after_gate": {
+          "n": 272,
+          "min": -0.5076053738594055,
+          "max": -0.038661420345306396,
+          "mean": -0.37328383611405597,
+          "median": -0.4316039979457855,
+          "p95": -0.05837386846542359
+        },
+        "before_positive_gates": 0,
+        "after_positive_gates": 0,
+        "after_brake_head": {
+          "n": 272,
+          "min": 0.30938148498535156,
+          "max": 0.49409013986587524,
+          "mean": 0.3915603227694245,
+          "median": 0.38340063393116,
+          "p95": 0.4855556383728981
+        },
+        "legacy_prediction_max_error": 1.1920928955078125e-07,
+        "two_batched_prediction_wall_s": 0.005401899999924353,
+        "counterfactual_only": true
+      }
+    },
+    "VALIDATION_STATIONARY": {
+      "selection": {
+        "complete_frames": 241,
+        "before_lead_associated": 0,
+        "before_road_height": 240,
+        "before_no_foreground": 0,
+        "after_lead_associated": 236,
+        "after_road_height": 0,
+        "after_no_foreground": 4,
+        "policy_observations": 240,
+        "actual_frame_ground_truth_invariance_checks": 3
+      },
+      "height_sensitivity": {
+        "0.1": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        },
+        "0.15": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        },
+        "0.2": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        },
+        "0.25": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        },
+        "0.3": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        },
+        "0.4": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        },
+        "0.5": {
+          "observations": 240,
+          "lead_associated": 236,
+          "road_height": 0,
+          "no_foreground": 4
+        }
+      },
+      "frozen_predictions": {
+        "before_gate": {
+          "n": 240,
+          "min": -0.2491617202758789,
+          "max": 0.19952058792114258,
+          "mean": 0.14109084457159043,
+          "median": 0.14450615644454956,
+          "p95": 0.1456318974494934
+        },
+        "after_gate": {
+          "n": 240,
+          "min": -0.2412559986114502,
+          "max": 0.2334378957748413,
+          "mean": 0.16309279352426528,
+          "median": 0.16214728355407715,
+          "p95": 0.19637469053268433
+        },
+        "before_positive_gates": 239,
+        "after_positive_gates": 239,
+        "after_brake_head": {
+          "n": 240,
+          "min": 0.39889442920684814,
+          "max": 0.4934461712837219,
+          "mean": 0.4583100609481335,
+          "median": 0.45895159244537354,
+          "p95": 0.4597489580512046
+        },
+        "legacy_prediction_max_error": null,
+        "two_batched_prediction_wall_s": 0.00169000000005326,
+        "counterfactual_only": true
+      }
+    },
+    "VALIDATION_SCRIPTED_SUCCESS": {
+      "selection": {
+        "complete_frames": 99,
+        "before_lead_associated": 0,
+        "before_road_height": 98,
+        "before_no_foreground": 0,
+        "after_lead_associated": 97,
+        "after_road_height": 0,
+        "after_no_foreground": 1,
+        "policy_observations": 98,
+        "actual_frame_ground_truth_invariance_checks": 3
+      },
+      "height_sensitivity": {
+        "0.1": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        },
+        "0.15": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        },
+        "0.2": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        },
+        "0.25": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        },
+        "0.3": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        },
+        "0.4": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        },
+        "0.5": {
+          "observations": 98,
+          "lead_associated": 97,
+          "road_height": 0,
+          "no_foreground": 1
+        }
+      },
+      "frozen_predictions": {
+        "before_gate": {
+          "n": 98,
+          "min": -0.5157516598701477,
+          "max": 0.19952058792114258,
+          "mean": -0.1903492461661903,
+          "median": -0.3323915898799896,
+          "p95": 0.1459058403968811
+        },
+        "after_gate": {
+          "n": 98,
+          "min": -0.5263416171073914,
+          "max": 0.2334378957748413,
+          "mean": -0.16755153269183878,
+          "median": -0.2728356122970581,
+          "p95": 0.17525538802146912
+        },
+        "before_positive_gates": 41,
+        "after_positive_gates": 41,
+        "after_brake_head": {
+          "n": 98,
+          "min": 0.2630452811717987,
+          "max": 0.5123654007911682,
+          "mean": 0.3870895404596718,
+          "median": 0.3916284292936325,
+          "p95": 0.49608776420354833
+        },
+        "legacy_prediction_max_error": null,
+        "two_batched_prediction_wall_s": 0.0013962000002720742,
+        "counterfactual_only": true
+      }
+    },
+    "HISTORICAL_TEST_AUDIT": {
+      "selection": {
+        "complete_frames": 552,
+        "before_lead_associated": 112,
+        "before_road_height": 432,
+        "before_no_foreground": 0,
+        "after_lead_associated": 544,
+        "after_road_height": 0,
+        "after_no_foreground": 0,
+        "policy_observations": 544,
+        "actual_frame_ground_truth_invariance_checks": 24
+      },
+      "frozen_predictions": {
+        "before_gate": {
+          "n": 544,
+          "min": -0.5098122954368591,
+          "max": -0.08611917495727539,
+          "mean": -0.37999272160232067,
+          "median": -0.43041306734085083,
+          "p95": -0.11661211848258972
+        },
+        "after_gate": {
+          "n": 544,
+          "min": -0.5079719424247742,
+          "max": -0.038661420345306396,
+          "mean": -0.37307034904027686,
+          "median": -0.4314724802970886,
+          "p95": -0.058701935410499576
+        },
+        "before_positive_gates": 0,
+        "after_positive_gates": 0,
+        "after_brake_head": {
+          "n": 544,
+          "min": 0.30959177017211914,
+          "max": 0.4943031668663025,
+          "mean": 0.3916071204687743,
+          "median": 0.38314755260944366,
+          "p95": 0.4856669470667839
+        },
+        "legacy_prediction_max_error": 1.1920928955078125e-07,
+        "two_batched_prediction_wall_s": 0.002201700000114215,
+        "counterfactual_only": true
+      }
+    }
+  },
+  "timing": [
+    {
+      "group": "VALIDATION_FROZEN_SAC",
+      "seed": 1042,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "VALIDATION_FROZEN_SAC",
+      "seed": 1043,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "VALIDATION_FROZEN_SAC",
+      "seed": 1044,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "VALIDATION_FROZEN_SAC",
+      "seed": 1045,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2042,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2043,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2044,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2045,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2046,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2047,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2048,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    },
+    {
+      "group": "HISTORICAL_TEST_AUDIT",
+      "seed": 2049,
+      "first_lead_before_s": 2.7000000402331352,
+      "first_lead_after_s": 0.0,
+      "recorded_collision_time_s": 3.400000050663948,
+      "available_time_after_s": 3.400000050663948
+    }
+  ],
+  "validation_demonstration": {
+    "analysis_split": "VALIDATION",
+    "seed": 1042,
+    "version": "SCRIPTED_BRAKE_RESUME_STOP_EXPERIMENT1.1",
+    "script_phases": [
+      {
+        "step": 0,
+        "phase": "INITIAL_BRAKE",
+        "script_phase": "INITIAL_BRAKE",
+        "onboard_distance_m": 0.0,
+        "onboard_elapsed_s": 0.0,
+        "elevated_radar_range_m": 13.010990142822266,
+        "sensor_stopping_threshold_m": 9.705777554310407,
+        "safe_to_continue": true
+      },
+      {
+        "step": 20,
+        "phase": "RESUME_BASE",
+        "script_phase": "RESUME_BASE",
+        "onboard_distance_m": 0.8454050088489706,
+        "onboard_elapsed_s": 1.0000000149011612,
+        "elevated_radar_range_m": 14.497254371643066,
+        "sensor_stopping_threshold_m": 3.0006977565588255,
+        "safe_to_continue": true
+      },
+      {
+        "step": 76,
+        "phase": "FINAL_BRAKE",
+        "script_phase": "FINAL_BRAKE",
+        "onboard_distance_m": 9.865144383851405,
+        "onboard_elapsed_s": 3.8000000566244125,
+        "elevated_radar_range_m": 11.72712516784668,
+        "sensor_stopping_threshold_m": 12.253590894003082,
+        "safe_to_continue": false
+      }
+    ],
+    "actual_outcome": {
+      "episode_id": "rl_61874dbb452c471faff83eb9971a687e",
+      "scenario_id": "sudden_braking_rl_v1",
+      "seed": 1042,
+      "split": "VALIDATION",
+      "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+      "outcome": "SUCCESS",
+      "terminated": true,
+      "truncated": false,
+      "termination_reason": "safe_approach_and_stop",
+      "truncation_reason": null,
+      "reward": 36.663335762013304,
+      "steps": 98,
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 8.138377362830195,
+        "minimum_ttc_s": 1.3815697818997783,
+        "forward_progress_m": 13.468633400802966,
+        "distance_traveled_m": 13.473753087881073,
+        "duration_s": 4.90000007301569,
+        "average_speed_mps": 2.749745487164594,
+        "hard_braking_events": 2,
+        "steering_oscillation": 0.21027447608066724,
+        "intervention_count": 2,
+        "intervention_frequency": 0.4081632592240159,
+        "scenario_success": true,
+        "time_to_completion_s": 4.90000007301569,
+        "intervention_steps": 42,
+        "intervention_proposals": 42,
+        "unnecessary_intervention_count": 19,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.4081632592240159
+      },
+      "policy_active": false,
+      "collision_severity_units": "native impulse N*s",
+      "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+      "supervisory_training_mode": true,
+      "training_policy_id": "EXPERIMENT1.1_SCRIPTED_brake_resume_stop"
+    },
+    "actual_braking_steps": 42,
+    "actual_base_release_steps": 56,
+    "ground_truth_policy_input": false,
+    "parameters_selected_from_test": false
+  },
+  "resource": {
+    "wall_s_including_imports": 28.617717500000253,
+    "cpu_user_s": 25.109375,
+    "cpu_system_s": 2.125,
+    "peak_sampled_private_mib": 817.48046875,
+    "peak_sampled_rss_mib": 293.609375,
+    "os_peak_working_set_mib": 297.55078125,
+    "torch_threads": 2,
+    "torch_interop_threads": 1,
+    "device": "cpu",
+    "torch_cuda_available": false,
+    "native_episodes": 0,
+    "native_action_steps": 0,
+    "gpu_model_allocations": 0,
+    "training_updates": 0
+  },
+  "features_shape": [
+    1154,
+    47
+  ],
+  "model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "replay_buffer_sha256": "83361806a6a7e69b9da52a6178d94f98e85fdb86b7fc3fe63c3d8ce884b7dfff",
+  "model_updates_unchanged": 755,
+  "normalization_unchanged": true,
+  "decoder_gate_reward_success_unchanged": true,
+  "collision_avoidance_improvement_measured": false,
+  "source_head": "3d3684f7dfa855b7170c241962e6b7f646f37435"
+}

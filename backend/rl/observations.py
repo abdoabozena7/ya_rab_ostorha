@@ -12,6 +12,7 @@ from PIL import Image
 from gymnasium import spaces
 from ..core.contracts import SensorKind
 from ..core.safety_policy import SensorObservation
+from .radar import validate_radar_calibration
 
 
 @dataclass(frozen=True)
@@ -74,6 +75,7 @@ class ObservationAssembler:
         channels = {c.kind:c for c in observation.channels}
         if any(abs(c.sensor_timestamp_s-observation.timestamp_s)>1e-6 for c in observation.channels):
             raise ValueError('Stale sensor timestamp')
+        validate_radar_calibration(channels[SensorKind.RADAR].calibration)
         imu = channels[SensorKind.IMU].data
         row = {
             'ego':np.clip([observation.ego.speed_mps,*observation.ego.angular_velocity_radps], [0,-100,-100,-100],100).astype(np.float32),
