@@ -15,6 +15,14 @@ Measured default profile: BALANCED 25 NPCs / 25 walkers, Low, 20 simulation Hz;
 the populated endurance median was 16.90 actual ticks/s (renderer FPS unavailable).
 [Gate 4 native evidence and limitations](docs/GATE4_NATIVE_VALIDATION.md).
 
+**Gate 5 world foundation** adds stable urban driver profiles, local density,
+native pedestrian activity, separate Living City/Training modes, two native
+scenario prototypes and sensor-only future safety-policy/research contracts.
+The current suggested BALANCED profile is 25 NPCs / 20 walkers. The interface
+is prepared; no YA RAB OSTORHA policy or RL training is active.
+[Gate 5 report](docs/GATE5_WORLD_FOUNDATION.md) ·
+[environment contracts](docs/GATE5_ENVIRONMENT_CONTRACTS.md).
+
 Hardware: RTX 3060 Laptop GPU, 6144 MiB VRAM. Windows detects 16 GiB installed RAM
 (two 8 GiB modules), 15.25 GiB usable; the user reports 32 GB. Former Quadro T1000
 hardware notes are obsolete. Full-suite native throughput measured 19.69 frames/s
@@ -59,7 +67,7 @@ Model assets live in ignored `models/`; dependencies in isolated `.venv-percepti
 Missing models produce an explicit unavailable state. Live analysis is off in Replay.
 See [extension validation](docs/JOURNEY_PERCEPTION_VALIDATION.md) for measured limits.
 
-The Arabic RTL dashboard has a native 800x450 RGB feed, five camera views, live
+The English LTR dashboard has a native 800x450 RGB feed, five camera views, live
 telemetry, automatic current-position origin and persisted favorites. Settings
 apply camera, weather, vehicle/spawn and 10/20 Hz timing. A separate graphics button
 cleans up and restarts CARLA, verifies the new session and rolls back failed profiles.

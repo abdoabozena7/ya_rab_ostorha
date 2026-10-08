@@ -44,8 +44,14 @@ limits violation probability for applicable profiles; NORMAL and BUSY drivers
 obey signals. These settings are not collision-avoidance guarantees.
 
 Initial explicit population creation prioritizes native road/navmesh positions
-near the ego. Replacements stay at least 90 m away. Bounded retirement occurs
-beyond 300 m. Route points bias road selection. Existing actors never teleport.
+near the ego. Replacements stay at least 120 m away and outside active native
+RGB camera frusta, including rear/chase/top views. Bounded retirement occurs
+beyond 300 m, or 180 m when local vehicle density drops below 60% of the requested
+fleet, also outside camera frusta. At most three vehicles retire per ten
+simulation seconds. Visibility uses conservative view
+geometry without assuming occlusion; this may limit replenishment. Initial
+explicit population creation can appear in view. Route points bias road
+selection. Existing actors never teleport.
 Walkers use valid native destinations, 0.9–1.9 m/s speeds, staggered starts,
 waiting and reselection. Optional crossing targets use a nearby valid sidewalk endpoint across a
 confirmed native driving lane. Native navigation decides whether and when it can execute that

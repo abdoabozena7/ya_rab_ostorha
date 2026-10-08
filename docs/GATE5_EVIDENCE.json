@@ -1,0 +1,1035 @@
+{
+  "milestone": "GATE_5_WORLD_FOUNDATION",
+  "generated_utc": "2026-10-08T15:42:22.602031+00:00",
+  "branch": "codex/gate5-world-foundation",
+  "implementation_commit": "bfb01d9623fc64ca300510689ab6283386b1518a",
+  "base_commit": "2896e6fc72b0d73e6836d572f03b514f1e70bfea",
+  "preservation_tag": "gate5-prechange-20261008",
+  "worktree": "C:\\Users\\A-plus\\.codex\\worktrees\\gate5-world-foundation\\ya_rab_ostorha",
+  "native_evidence": [
+    {
+      "path": "output/native-validation/gate5-audit-city.json",
+      "sha256": "6f8e6a9cf3292fdb9fbd3cfc82ac769141e7932fd1404fa18799945014a4b15d",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee",
+      "population_samples": [],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions."
+    },
+    {
+      "path": "output/native-validation/gate5-congestion.json",
+      "sha256": "833341bbfc4102b9f858f677812e9b497769dd21d6551030fc363bd9a4e0b8f5",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee",
+      "population_samples": [
+        {
+          "requested": [
+            25,
+            20
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 120.01500000001397,
+          "actual": {
+            "vehicles": 26,
+            "walkers": 19,
+            "controllers": 19,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            12,
+            25
+          ],
+          "tick_hz": 16.415188194440834,
+          "vram_mib_range": [
+            5811,
+            5867
+          ],
+          "memory_private_mib": {
+            "backend": [
+              698.32421875,
+              706.34375
+            ],
+            "carla": [
+              9492.421875,
+              9518.03515625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": 0.6599866069262058,
+          "footprint_overlap_sample_count": 0,
+          "queue_size_minmax": [
+            2,
+            18
+          ],
+          "observed_activity_states": [
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions."
+    },
+    {
+      "path": "output/native-validation/gate5-density-retention.json",
+      "sha256": "e6d7c00629a0930cef9c0584c6df4167eb96745e42c3cc1ecd4e763488fef4b3",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "Transport, sensor synchronization and cleanup; not a collision-free assertion",
+      "population_samples": [
+        {
+          "requested": [
+            25,
+            20
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 180.03100000001723,
+          "actual": {
+            "vehicles": 26,
+            "walkers": 19,
+            "controllers": 19,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            6,
+            25
+          ],
+          "tick_hz": 16.37175458915454,
+          "vram_mib_range": [
+            5866,
+            5870
+          ],
+          "memory_private_mib": {
+            "backend": [
+              685.5078125,
+              697.46875
+            ],
+            "carla": [
+              9706.7265625,
+              9709.6328125
+            ]
+          },
+          "observation_pipeline_latency_ms_median": 77.9999999795109,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": 0.11586056563761209,
+          "footprint_overlap_sample_count": 0,
+          "queue_size_minmax": [
+            0,
+            20
+          ],
+          "observed_activity_states": [
+            "IDLE",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": 0,
+          "collision_free_observed": null
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions.",
+      "runtime_limitation": "The last interval overlapped shared backend restart/activity by the Gate 6 chat; this is not exclusive native validation of the isolated final tree."
+    },
+    {
+      "path": "output/native-validation/gate5-driver-profiles-verified.json",
+      "sha256": "40a848962b4776c12a3847fe613770d6cca6816a244d96d967bb334e946a51d5",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee",
+      "population_samples": [
+        {
+          "requested": [
+            10,
+            5
+          ],
+          "behavior": "NORMAL",
+          "duration_wall_s": 20.01600000000326,
+          "actual": {
+            "vehicles": 11,
+            "walkers": 5,
+            "controllers": 5,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            5,
+            9
+          ],
+          "tick_hz": 17.125064867791345,
+          "vram_mib_range": [
+            5916,
+            5916
+          ],
+          "memory_private_mib": {
+            "backend": [
+              679.95703125,
+              688.26953125
+            ],
+            "carla": [
+              9511.8046875,
+              9512.28515625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            10,
+            5
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 20.03100000001723,
+          "actual": {
+            "vehicles": 11,
+            "walkers": 5,
+            "controllers": 5,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            5,
+            9
+          ],
+          "tick_hz": 16.717325227905686,
+          "vram_mib_range": [
+            5916,
+            5916
+          ],
+          "memory_private_mib": {
+            "backend": [
+              682.29296875,
+              689.24609375
+            ],
+            "carla": [
+              9511.984375,
+              9512.109375
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            10,
+            5
+          ],
+          "behavior": "AGGRESSIVE",
+          "duration_wall_s": 20.0,
+          "actual": {
+            "vehicles": 11,
+            "walkers": 5,
+            "controllers": 5,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            5,
+            8
+          ],
+          "tick_hz": 16.672280228966663,
+          "vram_mib_range": [
+            5913,
+            5916
+          ],
+          "memory_private_mib": {
+            "backend": [
+              682.5546875,
+              690.203125
+            ],
+            "carla": [
+              9506.32421875,
+              9512.203125
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            10,
+            5
+          ],
+          "behavior": "UNREGULATED",
+          "duration_wall_s": 20.07799999997951,
+          "actual": {
+            "vehicles": 11,
+            "walkers": 5,
+            "controllers": 5,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            5,
+            9
+          ],
+          "tick_hz": 16.5,
+          "vram_mib_range": [
+            5913,
+            5917
+          ],
+          "memory_private_mib": {
+            "backend": [
+              685.28125,
+              693.4296875
+            ],
+            "carla": [
+              9511.15625,
+              9511.5390625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions."
+    },
+    {
+      "path": "output/native-validation/gate5-final-city-stability.json",
+      "sha256": "7c7eaf14cf05f2b7d9c36a89431adf3485623fca490c21d1e03db07cbff069bc",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "Transport, sensor synchronization and cleanup; not a collision-free assertion",
+      "population_samples": [
+        {
+          "requested": [
+            25,
+            20
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 300.030999999959,
+          "actual": {
+            "vehicles": 26,
+            "walkers": 20,
+            "controllers": 20,
+            "sensors": 32
+          },
+          "local_vehicles_120m_minmax": [
+            5,
+            25
+          ],
+          "tick_hz": 16.986959505893626,
+          "vram_mib_range": [
+            5861,
+            5888
+          ],
+          "memory_private_mib": {
+            "backend": [
+              703.48828125,
+              718.8515625
+            ],
+            "carla": [
+              9621.4296875,
+              9629.51171875
+            ]
+          },
+          "observation_pipeline_latency_ms_median": 92.99999999348074,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": 0.2238972434313533,
+          "footprint_overlap_sample_count": 0,
+          "queue_size_minmax": [
+            0,
+            21
+          ],
+          "observed_activity_states": [
+            "IDLE",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": 25,
+          "collision_free_observed": true
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions."
+    },
+    {
+      "path": "output/native-validation/gate5-local-density.json",
+      "sha256": "a80172382bee0fca0373da30e46d8c5b8473d3cf0e0ce3be0300b4a589da4e38",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee",
+      "population_samples": [
+        {
+          "requested": [
+            0,
+            0
+          ],
+          "behavior": "NORMAL",
+          "duration_wall_s": 45.0,
+          "actual": {
+            "vehicles": 1,
+            "walkers": 0,
+            "controllers": 0,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            0,
+            0
+          ],
+          "tick_hz": 16.672280228966663,
+          "vram_mib_range": [
+            5837,
+            5837
+          ],
+          "memory_private_mib": {
+            "backend": [
+              678.2421875,
+              686.12890625
+            ],
+            "carla": [
+              9433.8359375,
+              9436.91015625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            10,
+            10
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 45.0,
+          "actual": {
+            "vehicles": 11,
+            "walkers": 10,
+            "controllers": 10,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            7,
+            10
+          ],
+          "tick_hz": 17.35928458712181,
+          "vram_mib_range": [
+            5918,
+            5918
+          ],
+          "memory_private_mib": {
+            "backend": [
+              684.23828125,
+              691.7890625
+            ],
+            "carla": [
+              9440.80078125,
+              9442.00390625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            25,
+            20
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 45.04700000002049,
+          "actual": {
+            "vehicles": 26,
+            "walkers": 20,
+            "controllers": 20,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            19,
+            25
+          ],
+          "tick_hz": 16.58569274590145,
+          "vram_mib_range": [
+            5905,
+            5908
+          ],
+          "memory_private_mib": {
+            "backend": [
+              689.87109375,
+              697.46875
+            ],
+            "carla": [
+              9472.6484375,
+              9481.41015625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            40,
+            30
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 45.07900000002701,
+          "actual": {
+            "vehicles": 41,
+            "walkers": 30,
+            "controllers": 30,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            28,
+            40
+          ],
+          "tick_hz": 15.268352868607305,
+          "vram_mib_range": [
+            5908,
+            5908
+          ],
+          "memory_private_mib": {
+            "backend": [
+              692.59375,
+              701.58203125
+            ],
+            "carla": [
+              9563.8671875,
+              9575.91796875
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        },
+        {
+          "requested": [
+            50,
+            35
+          ],
+          "behavior": "UNREGULATED",
+          "duration_wall_s": 45.01500000001397,
+          "actual": {
+            "vehicles": 51,
+            "walkers": 35,
+            "controllers": 35,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            33,
+            50
+          ],
+          "tick_hz": 15.605296342900461,
+          "vram_mib_range": [
+            5891,
+            5891
+          ],
+          "memory_private_mib": {
+            "backend": [
+              695.796875,
+              703.47265625
+            ],
+            "carla": [
+              9583.79296875,
+              9584.4140625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": null,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": null,
+          "footprint_overlap_sample_count": null,
+          "queue_size_minmax": null,
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions."
+    },
+    {
+      "path": "output/native-validation/gate5-native-congestion-collisions.json",
+      "sha256": "e4df7cfaeec902eeca74eac8a93b776af29f2dc7f45909ef2538d024ee602a68",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee",
+      "population_samples": [
+        {
+          "requested": [
+            25,
+            20
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 180.0,
+          "actual": {
+            "vehicles": 26,
+            "walkers": 18,
+            "controllers": 18,
+            "sensors": 32
+          },
+          "local_vehicles_120m_minmax": [
+            14,
+            25
+          ],
+          "tick_hz": 14.599616575689199,
+          "vram_mib_range": [
+            5804,
+            5804
+          ],
+          "memory_private_mib": {
+            "backend": [
+              692.8046875,
+              705.01953125
+            ],
+            "carla": [
+              9674.453125,
+              9686.44140625
+            ]
+          },
+          "observation_pipeline_latency_ms_median": 108.99999999674037,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": 0.0,
+          "footprint_overlap_sample_count": 30,
+          "queue_size_minmax": [
+            1,
+            25
+          ],
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "RESELECTING_DESTINATION",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": 25,
+          "collision_free_observed": null
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions.",
+      "safety_limitation": "One aggressive NPC pair collided with sustained contact. Transport PASS is not collision-free PASS."
+    },
+    {
+      "path": "output/native-validation/gate5-navigation.json",
+      "sha256": "751f87371662e20fd150bb8a8ec404b17521e7d2a567ece9455a22d48dd18898",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee"
+    },
+    {
+      "path": "output/native-validation/gate5-pedestrian-activity.json",
+      "sha256": "d844827c40d2248d2c536b04004aa137ac40fd1c0a4f62f2a6caaae66c3537c0",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee",
+      "population_samples": [
+        {
+          "requested": [
+            25,
+            20
+          ],
+          "behavior": "BUSY",
+          "duration_wall_s": 120.03099999995902,
+          "actual": {
+            "vehicles": 26,
+            "walkers": 19,
+            "controllers": 19,
+            "sensors": 7
+          },
+          "local_vehicles_120m_minmax": [
+            18,
+            25
+          ],
+          "tick_hz": 13.480392156787527,
+          "vram_mib_range": [
+            5869,
+            5869
+          ],
+          "memory_private_mib": {
+            "backend": [
+              686.9296875,
+              702.453125
+            ],
+            "carla": [
+              9626.37890625,
+              9626.921875
+            ]
+          },
+          "observation_pipeline_latency_ms_median": 125.0,
+          "sync_issues": {
+            "MISSING": 0,
+            "LATE": 0,
+            "STALE": 0,
+            "DUPLICATE": 0,
+            "OUT_OF_ORDER": 0,
+            "TIMESTAMP_MISMATCH": 0
+          },
+          "incomplete_frames": 0,
+          "minimum_planar_box_clearance_m": 0.0,
+          "footprint_overlap_sample_count": 34,
+          "queue_size_minmax": [
+            1,
+            24
+          ],
+          "observed_activity_states": [
+            "CROSSING",
+            "IDLE",
+            "WAITING",
+            "WALKING"
+          ],
+          "npc_collision_probe_actor_count": null,
+          "collision_free_observed": null
+        }
+      ],
+      "npc_collision_interpretation": "Only rows with attached diagnostic NPC collision sensors measure NPC callbacks. Empty uninstrumented lists and historical numeric zeros are not evidence of zero NPC collisions."
+    },
+    {
+      "path": "output/native-validation/gate5-policy-boundary.json",
+      "sha256": "138c9f7eee9edebfb349e357189c121a51a6e99b6402180cb4955fec7d016bee",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee"
+    },
+    {
+      "path": "output/native-validation/gate5-regression.json",
+      "sha256": "d65ac3a31bb1795da3e3e7e364cbefee2ded2c3a891d65695cde68e456842d1c",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee"
+    },
+    {
+      "path": "output/native-validation/gate5-replay.json",
+      "sha256": "84fc7f8f35e0378449cd84b6045d6d35fe93b1807ed94b3a81a082004b9f8e0a",
+      "reported_pass": true,
+      "source": "REAL_SIMULATION",
+      "scope": "Real recorded packets/assets/population replay, controls disabled, zero CARLA Client constructions under rejection guard. Shared CARLA engine remained running."
+    },
+    {
+      "path": "output/native-validation/gate5-reset.json",
+      "sha256": "4383de5234854a01f32a5d0a96ddd8916a7faa44f791aea42ea554a5b7c37405",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee"
+    },
+    {
+      "path": "output/native-validation/gate5-scenario-collision.json",
+      "sha256": "60606b6ba56b4a249d4570fee47efe11975f840b3b7e86793a46d7f39e75c093",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee"
+    },
+    {
+      "path": "output/native-validation/gate5-scenarios.json",
+      "sha256": "3c17ff24c78e9a5db082cebd0bbd7caa8caee627411b67a2af278fe87f461225",
+      "reported_pass": true,
+      "source": "LIVE_NATIVE",
+      "scope": "The checks explicitly listed in the raw report; no collision-free guarantee"
+    }
+  ],
+  "recordings": [
+    {
+      "context": "LIVING_CITY",
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7e48f9cf25a14a68813308a7bd096367",
+      "file_hashes": {
+        "metadata.json": "fd2559559396e55e7fa4464ccd775b10132ba25cd158f76275884aeed0095706",
+        "telemetry/frames.jsonl": "2b3260bfbd1224df4d6f6726a141a617fc562f720ac3592b6eee09c78d41cc84",
+        "events/events.jsonl": "ccb9e8da463618b2e7d304b44ee04cdb6cadc9bd536a72c305d773628783ed29"
+      },
+      "hash_scope": "Run metadata, canonical frames and events; individual sensor binaries are retained but not all hashed here."
+    },
+    {
+      "context": "TRAINING_VALIDATION",
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b9afed460e67402095bd80a84c626380",
+      "file_hashes": {
+        "metadata.json": "58b3fc8827c2a072e8091303f06fab902346f3018334928f7d75d4e9cfe86a77",
+        "telemetry/frames.jsonl": "73d3fff8ccf15a9cc52ad7811815a71c955b9bd76218a9fb7eec844a5ac0847e",
+        "events/events.jsonl": "3bfb2e53c7a440a49a3266fff6390e8b77affe47875a6fc4b344f7beda4a36ac"
+      },
+      "hash_scope": "Run metadata, canonical frames and events; individual sensor binaries are retained but not all hashed here."
+    },
+    {
+      "context": "EXPECTED_NATIVE_COLLISION_TEST",
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_dafa3f2160ac40848ddac0e8c143dee7",
+      "file_hashes": {
+        "metadata.json": "b51e3bef27e96ecab3699207a9a8dfaea902001d48e3c849b58f9172221b687c",
+        "telemetry/frames.jsonl": "0effda8d37c8ad9a3c8bd1097be1b6b98f7e1db9f670f3ced0b9aba0999a7916",
+        "events/events.jsonl": "b01a9af4ef0bd188c5820e564d63831109cb497aa03ecdce2019e2be1ee9edee"
+      },
+      "hash_scope": "Run metadata, canonical frames and events; individual sensor binaries are retained but not all hashed here."
+    }
+  ],
+  "dashboard_images": [
+    {
+      "path": "output/native-validation/gate5-dashboard-policy-status.png",
+      "sha256": "d0c8bcb82f89b33f27b2226f765130ef9ed92d4ccf853f6850a80f7878c6241f",
+      "context": "Pure Gate 5 dashboard replaying its native populated recording; no native simulator control"
+    },
+    {
+      "path": "output/native-validation/gate5-dashboard-replay.png",
+      "sha256": "73f056d56cf470adc86f1644ab538fef799553fd35c2e8fcd704a640fdf2312b",
+      "context": "Pure Gate 5 dashboard replaying its native populated recording; no native simulator control"
+    }
+  ],
+  "offline_checks": {
+    "implementation_commit": "bfb01d9623fc64ca300510689ab6283386b1518a",
+    "python_tests_run": 141,
+    "python_passed": 140,
+    "python_skipped": 1,
+    "skip_reason": "Native API is installed; absence-of-CARLA fixture is inapplicable",
+    "javascript_passed": 24,
+    "git_diff_check": "PASS"
+  },
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "vram_mib": 6144,
+    "usable_physical_ram_bytes": 16371494912,
+    "rendering_fps": null
+  },
+  "unknown_metrics": [
+    "minimum_valid_TTC",
+    "near_miss_rate",
+    "physical_avoidability",
+    "unsafe_intervention_count",
+    "learned_policy_improvement",
+    "total_managed_engine_reset_duration"
+  ],
+  "policy_active": false,
+  "rl_training_started_by_this_milestone": false,
+  "concurrency_incident": {
+    "description": "Shutdown followed a rejected active-experiment guard, interrupting a Gate 6 episode. Other chat restored native service and started a new experiment.",
+    "interrupted_episode": "rl_673c2733a6154dc79c89c244f275dc34",
+    "restored_engine_pid_observed": 32056,
+    "restored_backend_pid_observed": 36216,
+    "recovery_observation": "Connected HTTP state and a new active recorded Gate 6 episode were observed; interrupted episode was not resumed."
+  },
+  "changed_files": [
+    "README.md",
+    "backend/carla/dashboard_tools.py",
+    "backend/carla/geometry.py",
+    "backend/carla/population.py",
+    "backend/carla/provider.py",
+    "backend/carla/scenarios.py",
+    "backend/carla/urban.py",
+    "backend/carla/vehicle.py",
+    "backend/core/agents.py",
+    "backend/core/research.py",
+    "backend/core/safety_policy.py",
+    "backend/core/scenarios.py",
+    "backend/core/service.py",
+    "backend/perception.py",
+    "backend/perception_worker.py",
+    "backend/websocket_bridge.py",
+    "config/curriculum.json",
+    "config/research-contracts.json",
+    "config/scenario-library.json",
+    "config/urban-world-profiles.json",
+    "docs/DASHBOARD_NATIVE_CONTROLS.md",
+    "docs/GATE4_NATIVE_VALIDATION.md",
+    "docs/GATE5_AUDIT.md",
+    "docs/GATE5_ENVIRONMENT_CONTRACTS.md",
+    "docs/GATE5_EVIDENCE.json",
+    "docs/GATE5_WORLD_FOUNDATION.md",
+    "docs/JOURNEY_PERCEPTION_VALIDATION.md",
+    "docs/NORMAL_CITY_OPERATION.md",
+    "frontend/bootstrap.js",
+    "frontend/dashboard-tools.js",
+    "frontend/dashboard.bundle.js",
+    "frontend/dashboard.css",
+    "frontend/dashboard.js",
+    "frontend/perception-view.js",
+    "frontend/simulation-client.js",
+    "index.html",
+    "scripts/native/restart_backend.py",
+    "scripts/native/verify_city_reset.py",
+    "scripts/native/verify_dashboard_v2.py",
+    "scripts/native/verify_gate5_regression.py",
+    "scripts/native/verify_policy_boundary.py",
+    "scripts/native/verify_replay.py",
+    "scripts/native/verify_scenario_collision.py",
+    "scripts/native/verify_scenarios.py",
+    "scripts/native/verify_urban_world.py",
+    "tests/test_api.py",
+    "tests/test_population.py",
+    "tests/test_safety_policy.py",
+    "tests/test_scenarios.py",
+    "tests/test_urban.py"
+  ],
+  "commits": [
+    "bfb01d9 Verify scenario worker collision forwarding and event timestamps",
+    "339797a Finish Gate 5 native regression and bounded density retention",
+    "3ed6205 Verify native collision outcomes through the scenario event path",
+    "5ffdb4b Verify native pedestrian activity and English world controls",
+    "c756161 Prepare verified sensor-only safety and research contracts",
+    "f5d7283 Add verified native scenario lifecycle and environment separation",
+    "0bc4729 Prioritize local native density and verify urban congestion",
+    "3225cda Add native verified stable urban driver profiles",
+    "bb02c9c Audit and checkpoint Gate 4 before Gate 5"
+  ]
+}
