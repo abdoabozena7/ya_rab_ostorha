@@ -1,0 +1,495 @@
+{
+  "weights_unchanged": true,
+  "real_trajectories": [
+    {
+      "label": "no_intervention",
+      "recording_path": "runs/rl/TEST/rl_3713875a11f143f0a7b82c3cdd554cb5",
+      "seed": 2042,
+      "outcome": "COLLISION",
+      "steps": 68,
+      "return": -241.69604281196231,
+      "discounted_return_gamma_099": -119.47652730606269,
+      "components": {
+        "collision": -100.0,
+        "severity": -155.82090260260063,
+        "proximity": -0.7110661703161432,
+        "progress": 15.78981631346359,
+        "delay": -0.6800000101327897,
+        "smoothness": -0.27389034237634574,
+        "unnecessary_braking": 0.0,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 1,
+        "collision_callback_count": 1,
+        "collision_peak_impulse_ns": 15582.090260260064,
+        "collision_impulse_total_ns": 15582.090260260064,
+        "minimum_clearance_m": 0.0,
+        "minimum_ttc_s": 0.02532932770028266,
+        "forward_progress_m": 21.824169728690276,
+        "distance_traveled_m": 21.824260921480878,
+        "duration_s": 3.400000050663948,
+        "average_speed_mps": 6.418900175374722,
+        "hard_braking_events": 5,
+        "steering_oscillation": 0.052145126312098,
+        "intervention_count": 0,
+        "intervention_frequency": 0.0,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 0,
+        "intervention_proposals": 0,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.4705882133806456
+      }
+    },
+    {
+      "label": "stationary",
+      "recording_path": "runs/rl/TEST/rl_bd490de86d01461baf3f453ad1288309",
+      "seed": 2042,
+      "outcome": "TIMEOUT",
+      "steps": 240,
+      "return": -5.257558482725648,
+      "discounted_return_gamma_099": -1.5445941648032881,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 0.7974590222428808,
+        "delay": -4.760000070929528,
+        "smoothness": -0.10001741623211403,
+        "unnecessary_braking": -1.1950000178068876,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 12.848720848919255,
+        "minimum_ttc_s": 4.364740627614313,
+        "forward_progress_m": 0.7974590222428808,
+        "distance_traveled_m": 0.7997819592074512,
+        "duration_s": 12.000000178813934,
+        "average_speed_mps": 0.06664849560748096,
+        "hard_braking_events": 1,
+        "steering_oscillation": 0.0006179455667734146,
+        "intervention_count": 1,
+        "intervention_frequency": 0.08333333209156991,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 240,
+        "intervention_proposals": 240,
+        "unnecessary_intervention_count": 239,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.08333333209156991
+      }
+    },
+    {
+      "label": "late_braking",
+      "recording_path": "runs/rl/TEST/rl_dc93ed0169204f9c9af8b669fcb25ff1",
+      "seed": 2042,
+      "outcome": "COLLISION",
+      "steps": 68,
+      "return": -239.1970976893877,
+      "discounted_return_gamma_099": -118.2034449561152,
+      "components": {
+        "collision": -100.0,
+        "severity": -153.2007127349356,
+        "proximity": -0.7106633343717667,
+        "progress": 15.78981631346359,
+        "delay": -0.6800000101327897,
+        "smoothness": -0.3955379234111468,
+        "unnecessary_braking": 0.0,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 1,
+        "collision_callback_count": 1,
+        "collision_peak_impulse_ns": 15320.071273493559,
+        "collision_impulse_total_ns": 15320.071273493559,
+        "minimum_clearance_m": 0.0,
+        "minimum_ttc_s": 0.026031391959855845,
+        "forward_progress_m": 21.816376377141864,
+        "distance_traveled_m": 21.816467488169664,
+        "duration_s": 3.400000050663948,
+        "average_speed_mps": 6.416607989140873,
+        "hard_braking_events": 5,
+        "steering_oscillation": 0.052145126312098,
+        "intervention_count": 1,
+        "intervention_frequency": 0.2941176426761291,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 3,
+        "intervention_proposals": 3,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.4705882133806456
+      }
+    },
+    {
+      "label": "brake_resume_stop",
+      "recording_path": "runs/rl/TEST/rl_02cb1ab9cb244264bf20a084ca311498",
+      "seed": 2042,
+      "outcome": "SUCCESS",
+      "steps": 98,
+      "return": 36.655838268195104,
+      "discounted_return_gamma_099": 15.539951948535412,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.459372465611013,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.3485341757347169,
+        "unnecessary_braking": -0.09500000141561031,
+        "success": 25.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 8.255791063319627,
+        "minimum_ttc_s": 1.397496287087667,
+        "forward_progress_m": 13.459372465611013,
+        "distance_traveled_m": 13.463125060234677,
+        "duration_s": 4.90000007301569,
+        "average_speed_mps": 2.7475765019629557,
+        "hard_braking_events": 2,
+        "steering_oscillation": 0.062029010940023,
+        "intervention_count": 2,
+        "intervention_frequency": 0.4081632592240159,
+        "scenario_success": true,
+        "time_to_completion_s": 4.90000007301569,
+        "intervention_steps": 42,
+        "intervention_proposals": 42,
+        "unnecessary_intervention_count": 19,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.4081632592240159
+      }
+    },
+    {
+      "label": "brake_resume_stop",
+      "recording_path": "runs/rl/TEST/rl_6955d4d248974101bad0769420b3d77a",
+      "seed": 2043,
+      "outcome": "SUCCESS",
+      "steps": 98,
+      "return": 36.63063617823521,
+      "discounted_return_gamma_099": 15.527087935291174,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.477142237577516,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.39150603766112113,
+        "unnecessary_braking": -0.09500000141561031,
+        "success": 25.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 8.13542258961733,
+        "minimum_ttc_s": 1.3801409234823088,
+        "forward_progress_m": 13.477142237577516,
+        "distance_traveled_m": 13.480775364315535,
+        "duration_s": 4.90000007301569,
+        "average_speed_mps": 2.751178604782925,
+        "hard_braking_events": 2,
+        "steering_oscillation": 0.029198857091273567,
+        "intervention_count": 2,
+        "intervention_frequency": 0.4081632592240159,
+        "scenario_success": true,
+        "time_to_completion_s": 4.90000007301569,
+        "intervention_steps": 43,
+        "intervention_proposals": 43,
+        "unnecessary_intervention_count": 19,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.4081632592240159
+      }
+    },
+    {
+      "label": "brake_resume_stop",
+      "recording_path": "runs/rl/VALIDATION/rl_61874dbb452c471faff83eb9971a687e",
+      "seed": 1042,
+      "outcome": "SUCCESS",
+      "steps": 98,
+      "return": 36.6633357620133,
+      "discounted_return_gamma_099": 15.54487355375781,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 13.468633400802966,
+        "delay": -1.3600000202655793,
+        "smoothness": -0.35029761710847923,
+        "unnecessary_braking": -0.09500000141561031,
+        "success": 25.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 8.138377362830195,
+        "minimum_ttc_s": 1.3815697818997783,
+        "forward_progress_m": 13.468633400802966,
+        "distance_traveled_m": 13.473753087881073,
+        "duration_s": 4.90000007301569,
+        "average_speed_mps": 2.749745487164594,
+        "hard_braking_events": 2,
+        "steering_oscillation": 0.21027447608066724,
+        "intervention_count": 2,
+        "intervention_frequency": 0.4081632592240159,
+        "scenario_success": true,
+        "time_to_completion_s": 4.90000007301569,
+        "intervention_steps": 42,
+        "intervention_proposals": 42,
+        "unnecessary_intervention_count": 19,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.4081632592240159
+      }
+    },
+    {
+      "label": "TRAIN_SUCCESS",
+      "recording_path": "runs/rl/TRAIN/rl_98e8e81d55b0453c80acce7310b58ab4",
+      "seed": 43,
+      "outcome": "SUCCESS",
+      "steps": 131,
+      "return": 27.018087940787044,
+      "discounted_return_gamma_099": 10.49305100181248,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 10.157522179502978,
+        "delay": -2.0000000298023224,
+        "smoothness": -6.139434208913611,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 10.018113433431944,
+        "minimum_ttc_s": 4.1118618659736,
+        "forward_progress_m": 10.157522179502978,
+        "distance_traveled_m": 10.162210385227318,
+        "duration_s": 6.550000097602606,
+        "average_speed_mps": 1.551482478442532,
+        "hard_braking_events": 10,
+        "steering_oscillation": 0.15782478410255862,
+        "intervention_count": 32,
+        "intervention_frequency": 4.8854961104065415,
+        "scenario_success": true,
+        "time_to_completion_s": 6.550000097602606,
+        "intervention_steps": 61,
+        "intervention_proposals": 61,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 61,
+        "hard_braking_frequency_hz": 1.5267175345020443
+      }
+    },
+    {
+      "label": "existing_early_rule_braking",
+      "recording_path": "runs/rl/TEST/rl_0e5945a6905747c688e1a0a0f3eb1e04",
+      "seed": 2042,
+      "outcome": "TIMEOUT",
+      "steps": 240,
+      "return": -7.405058482129602,
+      "discounted_return_gamma_099": -2.282042275633024,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 0.7974590222428808,
+        "delay": -4.760000070929528,
+        "smoothness": -2.287517416232114,
+        "unnecessary_braking": -1.1550000172108412,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 12.848720848919255,
+        "minimum_ttc_s": 4.364740627614313,
+        "forward_progress_m": 0.7974590222428808,
+        "distance_traveled_m": 0.7997819592074512,
+        "duration_s": 12.000000178813934,
+        "average_speed_mps": 0.06664849560748096,
+        "hard_braking_events": 1,
+        "steering_oscillation": 0.0006179455667734146,
+        "intervention_count": 8,
+        "intervention_frequency": 0.6666666567325593,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 232,
+        "intervention_proposals": 232,
+        "unnecessary_intervention_count": 231,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.08333333209156991
+      }
+    }
+  ],
+  "native_diagnostic_run": "runs/diagnostics/experiment1_1_20261008T190202Z",
+  "native_steps": 670,
+  "native_duration_wall_s": 68.74999999999994,
+  "scripted_phases": [
+    {
+      "name": "no_intervention",
+      "seed": 2042,
+      "script_phases": [],
+      "step_latency_ms": {
+        "median": 90.06479999999328,
+        "p95": 107.39342999999337
+      }
+    },
+    {
+      "name": "stationary",
+      "seed": 2042,
+      "script_phases": [],
+      "step_latency_ms": {
+        "median": 89.74159999999642,
+        "p95": 107.4669350000022
+      }
+    },
+    {
+      "name": "late_braking",
+      "seed": 2042,
+      "script_phases": [],
+      "step_latency_ms": {
+        "median": 85.51934999999844,
+        "p95": 105.33957999998904
+      }
+    },
+    {
+      "name": "brake_resume_stop",
+      "seed": 2042,
+      "script_phases": [
+        {
+          "step": 0,
+          "phase": "INITIAL_BRAKE",
+          "script_phase": "INITIAL_BRAKE",
+          "onboard_distance_m": 0.0,
+          "onboard_elapsed_s": 0.0,
+          "elevated_radar_range_m": 13.104703903198242,
+          "sensor_stopping_threshold_m": 9.705767971277236,
+          "safe_to_continue": true
+        },
+        {
+          "step": 20,
+          "phase": "RESUME_BASE",
+          "script_phase": "RESUME_BASE",
+          "onboard_distance_m": 0.8456921547183992,
+          "onboard_elapsed_s": 1.0000000149011612,
+          "elevated_radar_range_m": 14.594078063964844,
+          "sensor_stopping_threshold_m": 3.0006981520757914,
+          "safe_to_continue": true
+        },
+        {
+          "step": 76,
+          "phase": "FINAL_BRAKE",
+          "script_phase": "FINAL_BRAKE",
+          "onboard_distance_m": 9.850183639548236,
+          "onboard_elapsed_s": 3.8000000566244125,
+          "elevated_radar_range_m": 11.842663764953613,
+          "sensor_stopping_threshold_m": 12.253342863988655,
+          "safe_to_continue": false
+        }
+      ],
+      "step_latency_ms": {
+        "median": 90.21564999997622,
+        "p95": 115.41156500000511
+      }
+    },
+    {
+      "name": "brake_resume_stop",
+      "seed": 2043,
+      "script_phases": [
+        {
+          "step": 0,
+          "phase": "INITIAL_BRAKE",
+          "script_phase": "INITIAL_BRAKE",
+          "onboard_distance_m": 0.0,
+          "onboard_elapsed_s": 0.0,
+          "elevated_radar_range_m": 13.002485275268555,
+          "sensor_stopping_threshold_m": 9.705775957137757,
+          "safe_to_continue": true
+        },
+        {
+          "step": 20,
+          "phase": "RESUME_BASE",
+          "script_phase": "RESUME_BASE",
+          "onboard_distance_m": 0.8457143649227729,
+          "onboard_elapsed_s": 1.0000000149011612,
+          "elevated_radar_range_m": 14.493700981140137,
+          "sensor_stopping_threshold_m": 3.00069821799531,
+          "safe_to_continue": true
+        },
+        {
+          "step": 75,
+          "phase": "FINAL_BRAKE",
+          "script_phase": "FINAL_BRAKE",
+          "onboard_distance_m": 9.462311854997928,
+          "onboard_elapsed_s": 3.7500000558793545,
+          "elevated_radar_range_m": 12.122175216674805,
+          "sensor_stopping_threshold_m": 12.12772348325127,
+          "safe_to_continue": false
+        }
+      ],
+      "step_latency_ms": {
+        "median": 81.49969999999485,
+        "p95": 103.00304000004985
+      }
+    },
+    {
+      "name": "brake_resume_stop",
+      "seed": 1042,
+      "script_phases": [
+        {
+          "step": 0,
+          "phase": "INITIAL_BRAKE",
+          "script_phase": "INITIAL_BRAKE",
+          "onboard_distance_m": 0.0,
+          "onboard_elapsed_s": 0.0,
+          "elevated_radar_range_m": 13.010990142822266,
+          "sensor_stopping_threshold_m": 9.705777554310407,
+          "safe_to_continue": true
+        },
+        {
+          "step": 20,
+          "phase": "RESUME_BASE",
+          "script_phase": "RESUME_BASE",
+          "onboard_distance_m": 0.8454050088489706,
+          "onboard_elapsed_s": 1.0000000149011612,
+          "elevated_radar_range_m": 14.497254371643066,
+          "sensor_stopping_threshold_m": 3.0006977565588255,
+          "safe_to_continue": true
+        },
+        {
+          "step": 76,
+          "phase": "FINAL_BRAKE",
+          "script_phase": "FINAL_BRAKE",
+          "onboard_distance_m": 9.865144383851405,
+          "onboard_elapsed_s": 3.8000000566244125,
+          "elevated_radar_range_m": 11.72712516784668,
+          "sensor_stopping_threshold_m": 12.253590894003082,
+          "safe_to_continue": false
+        }
+      ],
+      "step_latency_ms": {
+        "median": 89.38015000001087,
+        "p95": 106.76194000005808
+      }
+    }
+  ],
+  "runtime_restored": true,
+  "unchanged_model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679"
+}

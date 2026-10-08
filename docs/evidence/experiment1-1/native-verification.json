@@ -1,0 +1,263 @@
+{
+  "pass": true,
+  "training": false,
+  "audit": {
+    "complete_frames": 676,
+    "verified_asset_checksums": 36,
+    "verified_action_steps": 670,
+    "unique_sensor_binary_assets": 2028
+  },
+  "native_episode_end_states": [
+    {
+      "name": "no_intervention",
+      "seed": 2042,
+      "outcome": "COLLISION",
+      "leader_first_stopped_after_trigger_s": 2.7000000402331352,
+      "leader_max_speed_after_stopping_mps": 0.40764192103487457,
+      "leader_final_speed_mps": 0.40764192103487457,
+      "ego_final_speed_mps": 1.5224355555244815,
+      "joint_stop_duration_at_end_s": 0.0,
+      "progress_m": 21.824169728690276,
+      "minimum_clearance_m": 0.0,
+      "min_progress_required_m": 10.0,
+      "initial_actor_positions": {
+        "ego": [
+          -109.92955780029297,
+          -23.42840576171875,
+          -0.005247421097010374
+        ],
+        "leader": [
+          -110.18158721923828,
+          -5.329736232757568,
+          0.0017621039878576994
+        ]
+      },
+      "initial_actor_velocities": {
+        "ego": [
+          2.143936583820505e-09,
+          -4.0478440155311546e-08,
+          0.0046578217297792435
+        ],
+        "leader": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "stationary",
+      "seed": 2042,
+      "outcome": "TIMEOUT",
+      "leader_first_stopped_after_trigger_s": 2.7000000402331352,
+      "leader_max_speed_after_stopping_mps": 0.006532415507113302,
+      "leader_final_speed_mps": 0.0,
+      "ego_final_speed_mps": 1.909504087188633e-07,
+      "joint_stop_duration_at_end_s": 9.350000139325857,
+      "progress_m": 0.7974590222428808,
+      "minimum_clearance_m": 12.848720848919255,
+      "min_progress_required_m": 10.0,
+      "initial_actor_positions": {
+        "ego": [
+          -109.92955780029297,
+          -23.42840576171875,
+          -0.005247421097010374
+        ],
+        "leader": [
+          -110.18158721923828,
+          -5.329736232757568,
+          0.0017621039878576994
+        ]
+      },
+      "initial_actor_velocities": {
+        "ego": [
+          2.143936583820505e-09,
+          -4.0478440155311546e-08,
+          0.0046578217297792435
+        ],
+        "leader": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "late_braking",
+      "seed": 2042,
+      "outcome": "COLLISION",
+      "leader_first_stopped_after_trigger_s": 2.7000000402331352,
+      "leader_max_speed_after_stopping_mps": 0.4022267259559221,
+      "leader_final_speed_mps": 0.4022267259559221,
+      "ego_final_speed_mps": 1.497899982334836,
+      "joint_stop_duration_at_end_s": 0.0,
+      "progress_m": 21.816376377141864,
+      "minimum_clearance_m": 0.0,
+      "min_progress_required_m": 10.0,
+      "initial_actor_positions": {
+        "ego": [
+          -109.92955780029297,
+          -23.42840576171875,
+          -0.005247421097010374
+        ],
+        "leader": [
+          -110.18158721923828,
+          -5.329736232757568,
+          0.0017621039878576994
+        ]
+      },
+      "initial_actor_velocities": {
+        "ego": [
+          2.143936583820505e-09,
+          -4.0478440155311546e-08,
+          0.0046578217297792435
+        ],
+        "leader": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "brake_resume_stop",
+      "seed": 2042,
+      "outcome": "SUCCESS",
+      "leader_first_stopped_after_trigger_s": 2.7000000402331352,
+      "leader_max_speed_after_stopping_mps": 0.006532415507113302,
+      "leader_final_speed_mps": 0.0,
+      "ego_final_speed_mps": 0.006152199884600219,
+      "joint_stop_duration_at_end_s": 0.5000000074505806,
+      "progress_m": 13.459372465611013,
+      "minimum_clearance_m": 8.255791063319627,
+      "min_progress_required_m": 10.0,
+      "initial_actor_positions": {
+        "ego": [
+          -109.92955780029297,
+          -23.42840576171875,
+          -0.005247421097010374
+        ],
+        "leader": [
+          -110.18158721923828,
+          -5.329736232757568,
+          0.0017621039878576994
+        ]
+      },
+      "initial_actor_velocities": {
+        "ego": [
+          2.143936583820505e-09,
+          -4.0478440155311546e-08,
+          0.0046578217297792435
+        ],
+        "leader": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "brake_resume_stop",
+      "seed": 2043,
+      "outcome": "SUCCESS",
+      "leader_first_stopped_after_trigger_s": 2.7000000402331352,
+      "leader_max_speed_after_stopping_mps": 0.006523627795686073,
+      "leader_final_speed_mps": 0.0,
+      "ego_final_speed_mps": 0.006171260381421571,
+      "joint_stop_duration_at_end_s": 0.5000000074505806,
+      "progress_m": 13.477142237577516,
+      "minimum_clearance_m": 8.13542258961733,
+      "min_progress_required_m": 10.0,
+      "initial_actor_positions": {
+        "ego": [
+          -48.565467834472656,
+          85.6451187133789,
+          -0.005247535649687052
+        ],
+        "leader": [
+          -48.51483917236328,
+          103.64503479003906,
+          0.0017621039878576994
+        ]
+      },
+      "initial_actor_velocities": {
+        "ego": [
+          2.1784398729352006e-09,
+          8.126026074251058e-09,
+          0.004658498801290989
+        ],
+        "leader": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "brake_resume_stop",
+      "seed": 1042,
+      "outcome": "SUCCESS",
+      "leader_first_stopped_after_trigger_s": 2.7000000402331352,
+      "leader_max_speed_after_stopping_mps": 0.006519974972157063,
+      "leader_final_speed_mps": 0.0,
+      "ego_final_speed_mps": 0.006152586551741464,
+      "joint_stop_duration_at_end_s": 0.5000000074505806,
+      "progress_m": 13.468633400802966,
+      "minimum_clearance_m": 8.138377362830195,
+      "min_progress_required_m": 10.0,
+      "initial_actor_positions": {
+        "ego": [
+          55.54227828979492,
+          130.46006774902344,
+          -0.0052474974654614925
+        ],
+        "leader": [
+          37.54142379760742,
+          130.56158447265625,
+          0.0017621039878576994
+        ]
+      },
+      "initial_actor_velocities": {
+        "ego": [
+          3.45064634643677e-08,
+          -1.1481597539386712e-07,
+          0.004658612888306379
+        ],
+        "leader": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  ],
+  "maximum_matched_initial_position_deviation_m": 0.0,
+  "matched_scenario_specs": true,
+  "runtime_restored": true,
+  "production_policy_enabled": false,
+  "source_head": "13f3b370b7f30e95cc868f4c5132b556bacc578f",
+  "model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "original_uncommitted_patch_unchanged": true,
+  "preexisting_tracked_changes": [
+    "README.md",
+    "backend/carla/population.py",
+    "backend/carla/urban.py",
+    "docs/NORMAL_CITY_OPERATION.md",
+    "scripts/native/restart_backend.py",
+    "scripts/native/verify_city_reset.py",
+    "scripts/native/verify_dashboard_v2.py",
+    "scripts/native/verify_urban_world.py",
+    "tests/test_population.py"
+  ],
+  "python_tests": {
+    "run": 157,
+    "passed": 156,
+    "skipped": 1
+  },
+  "javascript_tests": {
+    "run": 24,
+    "passed": 24
+  },
+  "diagnostic_geometry_matrix_api_error": 5.975684291836814e-08,
+  "no_runtime_code_modified": true
+}

@@ -1,0 +1,873 @@
+{
+  "source_model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "training": false,
+  "native_test": {
+    "gate": {
+      "n": 544,
+      "min": -0.5098122954368591,
+      "max": -0.08611917495727539,
+      "mean": -0.379992718972704,
+      "std": 0.11601085076031797,
+      "p05": -0.47794856429100036,
+      "median": -0.4304131269454956,
+      "p95": -0.11661216914653778
+    },
+    "brake_head": {
+      "n": 544,
+      "min": 0.36135417222976685,
+      "max": 0.5043697953224182,
+      "mean": 0.4229475452071604,
+      "std": 0.036563549477937676,
+      "p05": 0.3861690863966942,
+      "median": 0.40815383195877075,
+      "p95": 0.4897177219390869
+    },
+    "steering_head": {
+      "n": 544,
+      "min": -0.001064002513885498,
+      "max": 0.13133692741394043,
+      "mean": 0.07516111389679067,
+      "std": 0.03440995904229107,
+      "p05": 0.006874567270278931,
+      "median": 0.08976322412490845,
+      "p95": 0.11427762508392333
+    },
+    "positive_gate_proposals": 0,
+    "accepted": 0,
+    "validator_rejected": 0,
+    "no_control_change_positive_gate": 0,
+    "steering_axis_rejections": 0,
+    "reasons": {
+      "Gate requests no intervention": 544
+    }
+  },
+  "native_validation": {
+    "gate": {
+      "n": 272,
+      "min": -0.5092177987098694,
+      "max": -0.08611917495727539,
+      "mean": -0.3801722458618529,
+      "std": 0.11588327782628022,
+      "p05": -0.4776501178741455,
+      "median": -0.4304131269454956,
+      "p95": -0.11557735800743106
+    },
+    "brake_head": {
+      "n": 272,
+      "min": 0.36135417222976685,
+      "max": 0.5041831731796265,
+      "mean": 0.42289861872353973,
+      "std": 0.03655467988722936,
+      "p05": 0.3861697196960449,
+      "median": 0.4081561267375946,
+      "p95": 0.4897170543670654
+    },
+    "steering_head": {
+      "n": 272,
+      "min": -0.0010634064674377441,
+      "max": 0.13130605220794678,
+      "mean": 0.0752201373962795,
+      "std": 0.03442110096848207,
+      "p05": 0.006850534677505493,
+      "median": 0.09000551700592041,
+      "p95": 0.11427612900733948
+    },
+    "positive_gate_proposals": 0,
+    "accepted": 0,
+    "validator_rejected": 0,
+    "no_control_change_positive_gate": 0,
+    "steering_axis_rejections": 0,
+    "reasons": {
+      "Gate requests no intervention": 272
+    }
+  },
+  "recomputed_prediction_max_abs_error": 1.1920928955078125e-07,
+  "unsquashed_gate_mean": {
+    "n": 544,
+    "min": -0.5624760985374451,
+    "max": -0.0863330289721489,
+    "mean": -0.4057851996519329,
+    "std": 0.12949150094768783,
+    "p05": -0.5203221380710602,
+    "median": -0.46040359139442444,
+    "p95": -0.1171450600028038
+  },
+  "gate_sigma": {
+    "n": 544,
+    "min": 0.7342864274978638,
+    "max": 0.8422631621360779,
+    "mean": 0.7767678692060358,
+    "std": 0.03170511444570148,
+    "p05": 0.7424370795488358,
+    "median": 0.7651212215423584,
+    "p95": 0.8374081254005432
+  },
+  "probability_stochastic_positive_gate": {
+    "n": 544,
+    "min": 0.22499510645866394,
+    "max": 0.45853108167648315,
+    "mean": 0.30103801804430347,
+    "std": 0.06417431726310838,
+    "p05": 0.24347746521234512,
+    "median": 0.2732335329055786,
+    "p95": 0.44437059909105303
+  },
+  "initial_deterministic_gate_on_same_test_observations": {
+    "n": 544,
+    "min": -0.00684279203414917,
+    "max": 0.05027604103088379,
+    "mean": 0.019251417806919885,
+    "std": 0.013448406843636525,
+    "p05": -0.002620890736579895,
+    "median": 0.016983747482299805,
+    "p95": 0.042156028747558597
+  },
+  "critic_slice_brake_05_steering_0": [
+    {
+      "gate": -0.9,
+      "mean_min_q": 1.3754726648330688,
+      "min": 1.1495087146759033,
+      "max": 1.5453846454620361
+    },
+    {
+      "gate": -0.5,
+      "mean_min_q": 1.3684734106063843,
+      "min": 1.1481444835662842,
+      "max": 1.5267434120178223
+    },
+    {
+      "gate": -0.1,
+      "mean_min_q": 1.3561594486236572,
+      "min": 1.1381118297576904,
+      "max": 1.5090970993041992
+    },
+    {
+      "gate": 0.1,
+      "mean_min_q": 1.3481969833374023,
+      "min": 1.1156439781188965,
+      "max": 1.504002571105957
+    },
+    {
+      "gate": 0.5,
+      "mean_min_q": 1.325865387916565,
+      "min": 1.0794612169265747,
+      "max": 1.4941112995147705
+    },
+    {
+      "gate": 0.9,
+      "mean_min_q": 1.2911673784255981,
+      "min": 1.034184455871582,
+      "max": 1.4657881259918213
+    }
+  ],
+  "actual_trace_examples": [
+    {
+      "seed": 2042,
+      "step": 1,
+      "observation_frame": 103665,
+      "actor_unsquashed_mean": [
+        -0.2559862732887268,
+        0.008645772933959961,
+        0.04778774455189705
+      ],
+      "actor_sigma": [
+        0.8147299289703369,
+        0.8630868196487427,
+        0.9062790870666504
+      ],
+      "tanh_mean": [
+        -0.25053754448890686,
+        0.008645557798445225,
+        0.047751400619745255
+      ],
+      "env_unscaled_output": [
+        -0.2505375146865845,
+        0.5043227672576904,
+        0.047751426696777344
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.2505375146865845,
+          0.5043227672576904,
+          0.047751426696777344
+        ],
+        "bounded_intervention": [
+          -0.2505375146865845,
+          0.5043227672576904,
+          0.047751426696777344
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.013045817613601685,
+        0.75,
+        0.0
+      ],
+      "arbitrated_command": {
+        "frame_id": 103665,
+        "timestamp_s": 4646.386248156428,
+        "throttle": 0.75,
+        "brake": 0,
+        "steering": 0.013045817613601685,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.013045817613601685,
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "seed": 2042,
+      "step": 2,
+      "observation_frame": 103666,
+      "actor_unsquashed_mean": [
+        -0.2888282835483551,
+        -0.12490002810955048,
+        0.10540175437927246
+      ],
+      "actor_sigma": [
+        0.7837843298912048,
+        0.8174357414245605,
+        0.8789961338043213
+      ],
+      "tanh_mean": [
+        -0.2810560166835785,
+        -0.12425457686185837,
+        0.1050131618976593
+      ],
+      "env_unscaled_output": [
+        -0.2810560464859009,
+        0.4378727078437805,
+        0.10501313209533691
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.2810560464859009,
+          0.4378727376461029,
+          0.10501313209533691
+        ],
+        "bounded_intervention": [
+          -0.2810560464859009,
+          0.4378727376461029,
+          0.10501313209533691
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.013014866970479488,
+        0.75,
+        0.0
+      ],
+      "arbitrated_command": {
+        "frame_id": 103666,
+        "timestamp_s": 4646.436248157173,
+        "throttle": 0.75,
+        "brake": 0,
+        "steering": 0.013014866970479488,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.013014866970479488,
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "seed": 2042,
+      "step": 3,
+      "observation_frame": 103667,
+      "actor_unsquashed_mean": [
+        -0.3609679341316223,
+        -0.15875139832496643,
+        0.08379250764846802
+      ],
+      "actor_sigma": [
+        0.76953125,
+        0.844775915145874,
+        0.8381593227386475
+      ],
+      "tanh_mean": [
+        -0.34606632590293884,
+        -0.15743109583854675,
+        0.08359695225954056
+      ],
+      "env_unscaled_output": [
+        -0.34606635570526123,
+        0.42128443717956543,
+        0.08359694480895996
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.3460664749145508,
+          0.4212844669818878,
+          0.08359694480895996
+        ],
+        "bounded_intervention": [
+          -0.3460664749145508,
+          0.4212844669818878,
+          0.08359694480895996
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.009506315924227238,
+        0.75,
+        0.0
+      ],
+      "arbitrated_command": {
+        "frame_id": 103667,
+        "timestamp_s": 4646.486248157918,
+        "throttle": 0.75,
+        "brake": 0,
+        "steering": 0.009506315924227238,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.009506315924227238,
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "seed": 2042,
+      "step": 68,
+      "observation_frame": 103732,
+      "actor_unsquashed_mean": [
+        -0.17740853130817413,
+        -0.050164662301540375,
+        0.04735301807522774
+      ],
+      "actor_sigma": [
+        0.83681321144104,
+        0.8774802684783936,
+        0.8265053033828735
+      ],
+      "tanh_mean": [
+        -0.17557042837142944,
+        -0.05012262612581253,
+        0.04731765761971474
+      ],
+      "env_unscaled_output": [
+        -0.17557042837142944,
+        0.47493869066238403,
+        0.04731762409210205
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.175570547580719,
+          0.47493869066238403,
+          0.04731762409210205
+        ],
+        "bounded_intervention": [
+          -0.175570547580719,
+          0.47493869066238403,
+          0.04731762409210205
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        -3.422269583097659e-05,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 103732,
+        "timestamp_s": 4649.736248206347,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": -3.422269583097659e-05,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        -3.422269583097659e-05,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2043,
+      "step": 68,
+      "observation_frame": 103831,
+      "actor_unsquashed_mean": [
+        -0.17888924479484558,
+        -0.050085075199604034,
+        0.04729399457573891
+      ],
+      "actor_sigma": [
+        0.8365973830223083,
+        0.8774227499961853,
+        0.8266112208366394
+      ],
+      "tanh_mean": [
+        -0.1770051270723343,
+        -0.05004323646426201,
+        0.04725876450538635
+      ],
+      "env_unscaled_output": [
+        -0.1770051121711731,
+        0.47497838735580444,
+        0.047258734703063965
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.1770051121711731,
+          0.47497838735580444,
+          0.047258734703063965
+        ],
+        "bounded_intervention": [
+          -0.1770051121711731,
+          0.47497838735580444,
+          0.047258734703063965
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        -2.0652862531278515e-06,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 103831,
+        "timestamp_s": 4654.686248280108,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": -2.0652862531278515e-06,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        -2.0652862531278515e-06,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2044,
+      "step": 68,
+      "observation_frame": 103930,
+      "actor_unsquashed_mean": [
+        -0.17867335677146912,
+        -0.05014016851782799,
+        0.047301243990659714
+      ],
+      "actor_sigma": [
+        0.8366137146949768,
+        0.8774387836456299,
+        0.826647162437439
+      ],
+      "tanh_mean": [
+        -0.17679598927497864,
+        -0.05009819194674492,
+        0.047265999019145966
+      ],
+      "env_unscaled_output": [
+        -0.17679595947265625,
+        0.474950909614563,
+        0.04726600646972656
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.17679601907730103,
+          0.474950909614563,
+          0.04726600646972656
+        ],
+        "bounded_intervention": [
+          -0.17679601907730103,
+          0.474950909614563,
+          0.04726600646972656
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.00014510970504488796,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 103930,
+        "timestamp_s": 4659.636248353869,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": 0.00014510970504488796,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.00014510970504488796,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2045,
+      "step": 68,
+      "observation_frame": 104029,
+      "actor_unsquashed_mean": [
+        -0.18835033476352692,
+        -0.05060930177569389,
+        0.04679175093770027
+      ],
+      "actor_sigma": [
+        0.8350416421890259,
+        0.8772875666618347,
+        0.8266973495483398
+      ],
+      "tanh_mean": [
+        -0.18615420162677765,
+        -0.050566136837005615,
+        0.04675763100385666
+      ],
+      "env_unscaled_output": [
+        -0.18615418672561646,
+        0.4747169315814972,
+        0.04675757884979248
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.18615424633026123,
+          0.4747169315814972,
+          0.04675757884979248
+        ],
+        "bounded_intervention": [
+          -0.18615424633026123,
+          0.4747169315814972,
+          0.04675757884979248
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.00025066922535188496,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 104029,
+        "timestamp_s": 4664.5862484276295,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": 0.00025066922535188496,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.00025066922535188496,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2046,
+      "step": 68,
+      "observation_frame": 104128,
+      "actor_unsquashed_mean": [
+        -0.17867335677146912,
+        -0.05014016851782799,
+        0.047301243990659714
+      ],
+      "actor_sigma": [
+        0.8366137146949768,
+        0.8774387836456299,
+        0.826647162437439
+      ],
+      "tanh_mean": [
+        -0.17679598927497864,
+        -0.05009819194674492,
+        0.047265999019145966
+      ],
+      "env_unscaled_output": [
+        -0.17679595947265625,
+        0.474950909614563,
+        0.04726600646972656
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.17679601907730103,
+          0.474950909614563,
+          0.04726600646972656
+        ],
+        "bounded_intervention": [
+          -0.17679601907730103,
+          0.474950909614563,
+          0.04726600646972656
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.00014510970504488796,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 104128,
+        "timestamp_s": 4669.53624850139,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": 0.00014510970504488796,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.00014510970504488796,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2047,
+      "step": 68,
+      "observation_frame": 104227,
+      "actor_unsquashed_mean": [
+        -0.17841434478759766,
+        -0.050040461122989655,
+        0.0472341813147068
+      ],
+      "actor_sigma": [
+        0.8366420269012451,
+        0.8775684833526611,
+        0.8266564607620239
+      ],
+      "tanh_mean": [
+        -0.17654506862163544,
+        -0.04999873414635658,
+        0.04719908535480499
+      ],
+      "env_unscaled_output": [
+        -0.17654508352279663,
+        0.47500061988830566,
+        0.047199130058288574
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.17654508352279663,
+          0.47500064969062805,
+          0.047199130058288574
+        ],
+        "bounded_intervention": [
+          -0.17654508352279663,
+          0.47500064969062805,
+          0.047199130058288574
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        5.6857228628359735e-05,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 104227,
+        "timestamp_s": 4674.486248575151,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": 5.6857228628359735e-05,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        5.6857228628359735e-05,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2048,
+      "step": 68,
+      "observation_frame": 104326,
+      "actor_unsquashed_mean": [
+        -0.17769864201545715,
+        -0.0496990904211998,
+        0.047165315598249435
+      ],
+      "actor_sigma": [
+        0.8367936611175537,
+        0.8773928880691528,
+        0.8265624642372131
+      ],
+      "tanh_mean": [
+        -0.17585158348083496,
+        -0.049658212810754776,
+        0.04713037237524986
+      ],
+      "env_unscaled_output": [
+        -0.17585158348083496,
+        0.47517088055610657,
+        0.04713034629821777
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.17585164308547974,
+          0.47517088055610657,
+          0.04713034629821777
+        ],
+        "bounded_intervention": [
+          -0.17585164308547974,
+          0.47517088055610657,
+          0.04713034629821777
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        0.0014999500708654523,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 104326,
+        "timestamp_s": 4679.436248648912,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": 0.0014999500708654523,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        0.0014999500708654523,
+        0.0,
+        0.30000001192092896
+      ]
+    },
+    {
+      "seed": 2049,
+      "step": 68,
+      "observation_frame": 104425,
+      "actor_unsquashed_mean": [
+        -0.17812985181808472,
+        -0.050053805112838745,
+        0.047330159693956375
+      ],
+      "actor_sigma": [
+        0.8367060422897339,
+        0.8774455189704895,
+        0.8266240954399109
+      ],
+      "tanh_mean": [
+        -0.17626942694187164,
+        -0.05001204460859299,
+        0.047294847667217255
+      ],
+      "env_unscaled_output": [
+        -0.17626941204071045,
+        0.4749939739704132,
+        0.04729485511779785
+      ],
+      "decoded": {
+        "proposed_intervention": [
+          -0.17626941204071045,
+          0.4749939739704132,
+          0.04729485511779785
+        ],
+        "bounded_intervention": [
+          -0.17626941204071045,
+          0.4749939739704132,
+          0.04729485511779785
+        ],
+        "decision": "NO_INTERVENTION",
+        "accepted": false,
+        "steering_adjustment_rejected": false,
+        "policy_id": "OFFLINE_FROZEN_MODEL_DIAGNOSIS",
+        "reason": "Gate requests no intervention"
+      },
+      "base_proposed": [
+        -5.1159062422811985e-05,
+        0.0,
+        0.30000001192092896
+      ],
+      "arbitrated_command": {
+        "frame_id": 104425,
+        "timestamp_s": 4684.3862487226725,
+        "throttle": 0.0,
+        "brake": 0.30000001192092896,
+        "steering": -5.1159062422811985e-05,
+        "reverse": false,
+        "handbrake": false,
+        "source": "TRAINING",
+        "gear": 1
+      },
+      "native_applied": [
+        -5.1159062422811985e-05,
+        0.0,
+        0.30000001192092896
+      ]
+    }
+  ],
+  "critic_dQ_dgate_at_deterministic_policy_action": {
+    "n": 544,
+    "min": -0.07424444705247879,
+    "max": 0.04480960592627525,
+    "mean": -0.02208817192877177,
+    "std": 0.025748580277706126,
+    "p05": -0.07137355208396912,
+    "median": -0.022001000121235847,
+    "p95": 0.01688176579773426
+  },
+  "offline_decoder_checks_on_authentic_observations": {
+    "native_ground_truth_removal_invariance": 3,
+    "negative_half_exact_base": 2176,
+    "positive_gate_brake_can_be_admitted": 1632
+  }
+}

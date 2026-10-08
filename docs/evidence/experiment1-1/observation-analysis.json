@@ -1,0 +1,131 @@
+{
+  "diagnostic_geometry_only": true,
+  "ground_height_tolerance_m": 0.12,
+  "leader_box_tolerance_m": 0.15,
+  "radar_counts": {
+    "frames": 544,
+    "raw_has_leader_box_associated_return": 544,
+    "nearest32_has_leader_box_associated_return": 544,
+    "selected_ground_height_consistent": 432,
+    "selected_leader_box_associated": 112,
+    "selected_other_or_none": 0,
+    "diagnostic_height_screen_selected_leader": 544,
+    "diagnostic_height_screen_selected_ground": 0,
+    "diagnostic_height_screen_other_or_none": 0
+  },
+  "freshness": {
+    "complete_frames": 544,
+    "sensor_time_or_frame_mismatch": 0,
+    "history_gap_above_timestep": 0
+  },
+  "per_seed": [
+    {
+      "seed": 2042,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.9365889892930985,
+      "selected_lead_range_m": 5.070856094360352,
+      "selected_lead_gate": -0.12674206495285034
+    },
+    {
+      "seed": 2043,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.936716567555464,
+      "selected_lead_range_m": 5.004167556762695,
+      "selected_lead_gate": -0.12731611728668213
+    },
+    {
+      "seed": 2044,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.936716640487552,
+      "selected_lead_range_m": 5.003902912139893,
+      "selected_lead_gate": -0.12726068496704102
+    },
+    {
+      "seed": 2045,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.937686945684737,
+      "selected_lead_range_m": 5.03132438659668,
+      "selected_lead_gate": -0.1263672113418579
+    },
+    {
+      "seed": 2046,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.936716640487552,
+      "selected_lead_range_m": 5.003902912139893,
+      "selected_lead_gate": -0.12726068496704102
+    },
+    {
+      "seed": 2047,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.936701877883627,
+      "selected_lead_range_m": 5.003463268280029,
+      "selected_lead_gate": -0.1272721290588379
+    },
+    {
+      "seed": 2048,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.936401457764273,
+      "selected_lead_range_m": 5.0279541015625,
+      "selected_lead_gate": -0.12622177600860596
+    },
+    {
+      "seed": 2049,
+      "collision_episode_time_s": 3.400000050663948,
+      "first_raw_lead_visible_at_s": 0.0,
+      "first_selected_lead_at_s": 2.7000000402331352,
+      "time_before_collision_when_selected_lead_s": 0.7000000104308128,
+      "selected_lead_speed_mps": 7.936634530682599,
+      "selected_lead_range_m": 5.004830360412598,
+      "selected_lead_gate": -0.12732797861099243
+    }
+  ],
+  "initial_observation_example": {
+    "seed": 2042,
+    "policy_step": 1,
+    "observation_frame": 103665,
+    "simulation_time_s": 4646.386248156428,
+    "speed_mps": 6.623779428413048,
+    "leader_speed_mps_diagnostic": 3.6547178933770215,
+    "center_separation_m_diagnostic": 17.95374643711773,
+    "raw_radar_returns": 58,
+    "lead_box_associated_raw_count": 29,
+    "lead_box_associated_nearest32_count": 14,
+    "selected_return": [
+      4.842324256896973,
+      -0.0090299341827631,
+      -0.12779834866523743,
+      -7.134768962860107
+    ],
+    "selected_world_z_m_diagnostic": 0.00019957719782781602,
+    "selected_is_lead_box_associated": false,
+    "selected_is_ground_height_consistent": true,
+    "lead_associated_range_m_diagnostic": 13.104703903198242,
+    "lead_associated_velocity_mps_diagnostic": -3.518688201904297,
+    "elevated_nearest32_lead_count": 13,
+    "diagnostic_height_screen_range_m": 13.104703903198242,
+    "diagnostic_height_screen_velocity_mps": -3.520186185836792,
+    "gate": -0.2505375146865845
+  },
+  "geometry_caveat": "Hit positions near bounding boxes/road are associations, not semantic radar labels. Flat road assumption is limited to sampled lanes."
+}

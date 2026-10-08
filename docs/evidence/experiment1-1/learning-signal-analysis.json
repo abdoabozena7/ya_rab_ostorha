@@ -1,0 +1,491 @@
+{
+  "training": false,
+  "replay_buffer_valid_transitions": 1255,
+  "replay_scaled_action_max_abs_error": 0.0,
+  "replay_reward_max_abs_error": 4.886977365003986e-06,
+  "terminal_samples": [
+    {
+      "buffer_index": 239,
+      "training_step": 240,
+      "reward": -0.08108126372098923,
+      "done": 1.0,
+      "timeout": 1.0,
+      "bootstrap_done_mask": 0.0
+    },
+    {
+      "buffer_index": 370,
+      "training_step": 371,
+      "reward": 24.916189193725586,
+      "done": 1.0,
+      "timeout": 0.0,
+      "bootstrap_done_mask": 1.0
+    },
+    {
+      "buffer_index": 610,
+      "training_step": 611,
+      "reward": -0.03588620573282242,
+      "done": 1.0,
+      "timeout": 1.0,
+      "bootstrap_done_mask": 0.0
+    },
+    {
+      "buffer_index": 850,
+      "training_step": 851,
+      "reward": -0.07121007144451141,
+      "done": 1.0,
+      "timeout": 1.0,
+      "bootstrap_done_mask": 0.0
+    },
+    {
+      "buffer_index": 1090,
+      "training_step": 1091,
+      "reward": -0.13625463843345642,
+      "done": 1.0,
+      "timeout": 1.0,
+      "bootstrap_done_mask": 0.0
+    },
+    {
+      "buffer_index": 1206,
+      "training_step": 1207,
+      "reward": -203.7440185546875,
+      "done": 1.0,
+      "timeout": 0.0,
+      "bootstrap_done_mask": 1.0
+    }
+  ],
+  "success_reward_samples": 1,
+  "collision_reward_samples": 1,
+  "gradient_updates_after_only_collision": 48,
+  "expected_uniform_minibatch_draws_success_terminal_not_observed": 58.859612156299825,
+  "expected_uniform_minibatch_draws_collision_terminal_not_observed": 2.5478586458780312,
+  "batches": [
+    {
+      "steps": [
+        1,
+        500
+      ],
+      "gate": {
+        "n": 500,
+        "min": -0.9991258382797241,
+        "max": 0.9984196424484253,
+        "mean": -0.0400046238899231,
+        "std": 0.5642481264734213,
+        "p05": -0.914462986588478,
+        "median": -0.028296977281570435,
+        "p95": 0.8600904822349547
+      },
+      "brake_head": {
+        "n": 500,
+        "min": 0.0016973912715911865,
+        "max": 0.9962108731269836,
+        "mean": 0.49250410693883895,
+        "std": 0.28840512606930674,
+        "p05": 0.054645766317844395,
+        "median": 0.45758023858070374,
+        "p95": 0.949050000309944
+      },
+      "steering_head": {
+        "n": 500,
+        "min": -0.9989750981330872,
+        "max": 0.9947798252105713,
+        "mean": -0.014994143605232239,
+        "std": 0.5693459970635418,
+        "p05": -0.8713536739349366,
+        "median": -0.045501530170440674,
+        "p95": 0.9021656394004821
+      },
+      "positive_gate_proposals": 239,
+      "accepted": 239,
+      "validator_rejected": 0,
+      "no_control_change_positive_gate": 0,
+      "steering_axis_rejections": 239,
+      "reasons": {
+        "Gate requests no intervention": 261,
+        "Admitted for existing ControlSafetyLayer and CommandArbiter checks": 239
+      },
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 14.142255194999208,
+        "delay": -8.99000013396144,
+        "smoothness": -24.267338342184292,
+        "unnecessary_braking": -0.44347724740918343,
+        "success": 25.0
+      },
+      "mean_immediate_reward_gate_positive": 0.05809854880015652,
+      "mean_immediate_reward_gate_nonpositive": -0.03235292602219585
+    },
+    {
+      "steps": [
+        501,
+        1000
+      ],
+      "gate": {
+        "n": 500,
+        "min": -0.9818278551101685,
+        "max": 0.9969996213912964,
+        "mean": -0.0398009033203125,
+        "std": 0.5915653816602879,
+        "p05": -0.9058667719364166,
+        "median": -0.09756988286972046,
+        "p95": 0.8780511677265159
+      },
+      "brake_head": {
+        "n": 500,
+        "min": 0.004166215658187866,
+        "max": 0.9954509139060974,
+        "mean": 0.43091551393270494,
+        "std": 0.29888459278702967,
+        "p05": 0.030962063372135164,
+        "median": 0.3792530745267868,
+        "p95": 0.9176588892936706
+      },
+      "steering_head": {
+        "n": 500,
+        "min": -0.9976971745491028,
+        "max": 0.976449728012085,
+        "mean": 0.0287465922832489,
+        "std": 0.5880120229339023,
+        "p05": -0.8954076349735259,
+        "median": 0.031477510929107666,
+        "p95": 0.8906108140945431
+      },
+      "positive_gate_proposals": 233,
+      "accepted": 233,
+      "validator_rejected": 0,
+      "no_control_change_positive_gate": 0,
+      "steering_axis_rejections": 230,
+      "reasons": {
+        "Gate requests no intervention": 267,
+        "Admitted for existing ControlSafetyLayer and CommandArbiter checks": 233
+      },
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 3.876283167656524,
+        "delay": -9.400000140070915,
+        "smoothness": -22.345724036820364,
+        "unnecessary_braking": -0.5132025872648147,
+        "success": 0.0
+      },
+      "mean_immediate_reward_gate_positive": -0.0643677491286451,
+      "mean_immediate_reward_gate_nonpositive": -0.050130929024439184
+    },
+    {
+      "steps": [
+        1001,
+        1255
+      ],
+      "gate": {
+        "n": 255,
+        "min": -0.9899640679359436,
+        "max": 0.9929697513580322,
+        "mean": -0.22834776172450943,
+        "std": 0.5204287123957808,
+        "p05": -0.9278664946556091,
+        "median": -0.2857247591018677,
+        "p95": 0.7101191520690915
+      },
+      "brake_head": {
+        "n": 255,
+        "min": 0.007456183433532715,
+        "max": 0.9846234321594238,
+        "mean": 0.4106616411723343,
+        "std": 0.27927509826043073,
+        "p05": 0.034615698456764224,
+        "median": 0.38974350690841675,
+        "p95": 0.8798966109752655
+      },
+      "steering_head": {
+        "n": 255,
+        "min": -0.98442542552948,
+        "max": 0.984792947769165,
+        "mean": 0.06725882432040046,
+        "std": 0.5932963000275229,
+        "p05": -0.850651639699936,
+        "median": 0.16817724704742432,
+        "p95": 0.9076585531234741
+      },
+      "positive_gate_proposals": 84,
+      "accepted": 84,
+      "validator_rejected": 0,
+      "no_control_change_positive_gate": 0,
+      "steering_axis_rejections": 84,
+      "reasons": {
+        "Gate requests no intervention": 171,
+        "Admitted for existing ControlSafetyLayer and CommandArbiter checks": 84
+      },
+      "components": {
+        "collision": -100.0,
+        "severity": -103.53402343853004,
+        "proximity": -1.1159311360380388,
+        "progress": 28.064210713607075,
+        "delay": -3.240000048279762,
+        "smoothness": -8.669388758311701,
+        "unnecessary_braking": -0.05553136550681837,
+        "success": 0.0
+      },
+      "mean_immediate_reward_gate_positive": 0.044197519528651745,
+      "mean_immediate_reward_gate_nonpositive": -1.1243465244062343
+    }
+  ],
+  "training_episode_trajectories": [
+    {
+      "label": "TRAIN_TIMEOUT",
+      "recording_path": "runs/rl/TRAIN/rl_b2b205e52dfe4f2f85f4ffe9f72040e5",
+      "seed": 42,
+      "outcome": "TIMEOUT",
+      "steps": 240,
+      "return": -15.610392712189034,
+      "discounted_return_gamma_099": -5.235479262827318,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 1.3014376946475805,
+        "delay": -4.6500000692903996,
+        "smoothness": -11.970693378930182,
+        "unnecessary_braking": -0.2911369586160325,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 12.748511208056089,
+        "minimum_ttc_s": 4.330719299256193,
+        "forward_progress_m": 1.3014376946475805,
+        "distance_traveled_m": 1.3135065918712043,
+        "duration_s": 12.000000178813934,
+        "average_speed_mps": 0.10945888102486927,
+        "hard_braking_events": 6,
+        "steering_oscillation": 0.04772452893666923,
+        "intervention_count": 60,
+        "intervention_frequency": 4.999999925494195,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 109,
+        "intervention_proposals": 109,
+        "unnecessary_intervention_count": 109,
+        "steering_adjustment_rejections": 109,
+        "hard_braking_frequency_hz": 0.4999999925494195
+      }
+    },
+    {
+      "label": "TRAIN_SUCCESS",
+      "recording_path": "runs/rl/TRAIN/rl_98e8e81d55b0453c80acce7310b58ab4",
+      "seed": 43,
+      "outcome": "SUCCESS",
+      "steps": 131,
+      "return": 27.018087940787044,
+      "discounted_return_gamma_099": 10.49305100181248,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 10.157522179502978,
+        "delay": -2.0000000298023224,
+        "smoothness": -6.139434208913611,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 10.018113433431944,
+        "minimum_ttc_s": 4.1118618659736,
+        "forward_progress_m": 10.157522179502978,
+        "distance_traveled_m": 10.162210385227318,
+        "duration_s": 6.550000097602606,
+        "average_speed_mps": 1.551482478442532,
+        "hard_braking_events": 10,
+        "steering_oscillation": 0.15782478410255862,
+        "intervention_count": 32,
+        "intervention_frequency": 4.8854961104065415,
+        "scenario_success": true,
+        "time_to_completion_s": 6.550000097602606,
+        "intervention_steps": 61,
+        "intervention_proposals": 61,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 61,
+        "hard_braking_frequency_hz": 1.5267175345020443
+      }
+    },
+    {
+      "label": "TRAIN_TIMEOUT",
+      "recording_path": "runs/rl/TRAIN/rl_4ede4eeb604243aca6c3e0203cb3da2b",
+      "seed": 44,
+      "outcome": "TIMEOUT",
+      "steps": 240,
+      "return": -13.81071728623693,
+      "discounted_return_gamma_099": -3.5707368297342286,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 2.7889308838811906,
+        "delay": -4.550000067800283,
+        "smoothness": -11.765929645189454,
+        "unnecessary_braking": -0.2837184571283825,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 12.748727092954066,
+        "minimum_ttc_s": 4.33102087204919,
+        "forward_progress_m": 2.7889308838811906,
+        "distance_traveled_m": 2.799534595247594,
+        "duration_s": 12.000000178813934,
+        "average_speed_mps": 0.23329454612760653,
+        "hard_braking_events": 4,
+        "steering_oscillation": 0.0210821627479163,
+        "intervention_count": 62,
+        "intervention_frequency": 5.166666589677335,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 124,
+        "intervention_proposals": 124,
+        "unnecessary_intervention_count": 123,
+        "steering_adjustment_rejections": 123,
+        "hard_braking_frequency_hz": 0.33333332836627966
+      }
+    },
+    {
+      "label": "TRAIN_TIMEOUT",
+      "recording_path": "runs/rl/TRAIN/rl_230a7f5682c24e44b677cdaa6430442a",
+      "seed": 45,
+      "outcome": "TIMEOUT",
+      "steps": 240,
+      "return": -13.186915174428215,
+      "discounted_return_gamma_099": -4.112427768419729,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 2.4465284641449236,
+        "delay": -4.450000066310167,
+        "smoothness": -10.948964825245607,
+        "unnecessary_braking": -0.23447874701736487,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 12.749332254274552,
+        "minimum_ttc_s": 4.331050087039351,
+        "forward_progress_m": 2.4465284641449236,
+        "distance_traveled_m": 2.4599038046189627,
+        "duration_s": 12.000000178813934,
+        "average_speed_mps": 0.20499198066362834,
+        "hard_braking_events": 11,
+        "steering_oscillation": 0.039434742490811914,
+        "intervention_count": 62,
+        "intervention_frequency": 5.166666589677335,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 113,
+        "intervention_proposals": 113,
+        "unnecessary_intervention_count": 112,
+        "steering_adjustment_rejections": 112,
+        "hard_braking_frequency_hz": 0.9166666530072691
+      }
+    },
+    {
+      "label": "TRAIN_TIMEOUT",
+      "recording_path": "runs/rl/TRAIN/rl_75428c5d36cd45b096e2dd9124c19d50",
+      "seed": 46,
+      "outcome": "TIMEOUT",
+      "steps": 240,
+      "return": -11.431647871185637,
+      "discounted_return_gamma_099": -4.128881644014989,
+      "components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 2.0712122626855267,
+        "delay": -4.34000006467104,
+        "smoothness": -8.959983031781087,
+        "unnecessary_braking": -0.20287703741903657,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 12.81635445117964,
+        "minimum_ttc_s": 4.352330931253657,
+        "forward_progress_m": 2.0712122626855267,
+        "distance_traveled_m": 2.083182892004806,
+        "duration_s": 12.000000178813934,
+        "average_speed_mps": 0.1735985717469135,
+        "hard_braking_events": 12,
+        "steering_oscillation": 0.061242726384080015,
+        "intervention_count": 54,
+        "intervention_frequency": 4.4999999329447755,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 96,
+        "intervention_proposals": 96,
+        "unnecessary_intervention_count": 96,
+        "steering_adjustment_rejections": 95,
+        "hard_braking_frequency_hz": 0.999999985098839
+      }
+    },
+    {
+      "label": "TRAIN_COLLISION",
+      "recording_path": "runs/rl/TRAIN/rl_d686f1acf5044e6f9c9f980a5bcfa0cb",
+      "seed": 47,
+      "outcome": "COLLISION",
+      "steps": 116,
+      "return": -191.88523074176962,
+      "discounted_return_gamma_099": -55.30964275526624,
+      "components": {
+        "collision": -100.0,
+        "severity": -103.53402343853004,
+        "proximity": -1.1159311360380388,
+        "progress": 17.734721872503016,
+        "delay": -1.160000017285347,
+        "smoothness": -3.8099980224191996,
+        "unnecessary_braking": 0.0,
+        "success": 0.0
+      },
+      "metrics": {
+        "collision_count": 1,
+        "collision_callback_count": 1,
+        "collision_peak_impulse_ns": 10353.402343853004,
+        "collision_impulse_total_ns": 10353.402343853004,
+        "minimum_clearance_m": 0.0,
+        "minimum_ttc_s": 0.0,
+        "forward_progress_m": 21.690774466827893,
+        "distance_traveled_m": 21.69110174296245,
+        "duration_s": 5.800000086426735,
+        "average_speed_mps": 3.7398450723689396,
+        "hard_braking_events": 4,
+        "steering_oscillation": 0.0952835782585737,
+        "intervention_count": 22,
+        "intervention_frequency": 3.793103391754217,
+        "scenario_success": false,
+        "time_to_completion_s": null,
+        "intervention_steps": 36,
+        "intervention_proposals": 36,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 36,
+        "hard_braking_frequency_hz": 0.6896551621371304
+      }
+    }
+  ],
+  "model_updates": 755,
+  "final_entropy_coefficient": 0.07983885705471039,
+  "target_entropy": -3.0
+}
