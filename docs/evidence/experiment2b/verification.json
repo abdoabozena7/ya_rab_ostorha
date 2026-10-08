@@ -1,0 +1,84 @@
+{
+  "git_head_at_audit": "4a52b8139dbfe1d8b846ca484b090b5dbfb118a7",
+  "branch": "codex/experiment2b-safety-teacher",
+  "preserved_dirty_paths": [
+    "README.md",
+    "backend/carla/population.py",
+    "backend/carla/urban.py",
+    "docs/NORMAL_CITY_OPERATION.md",
+    "scripts/native/restart_backend.py",
+    "scripts/native/verify_city_reset.py",
+    "scripts/native/verify_dashboard_v2.py",
+    "scripts/native/verify_urban_world.py",
+    "tests/test_population.py"
+  ],
+  "preserved_patch_sha256": "b81739c6aa016fa7eb7c299badd2439970f296d14d88cfaf8a2ede7b7c730066",
+  "preserved_untracked_path": "D:\\projects\\Ai\\ya_rab_ostorha\\scripts\\native\\verify_gate5_regression.py",
+  "production_and_experiment1_2a_modules_identical_except_checkout_newlines": [
+    "backend/carla/scenarios.py",
+    "backend/carla/provider.py",
+    "backend/core/research.py",
+    "backend/core/safety_policy.py",
+    "backend/core/control.py",
+    "backend/core/contracts.py",
+    "backend/core/service.py",
+    "backend/rl/runtime.py",
+    "backend/rl/reward.py",
+    "backend/rl/supervisor.py",
+    "backend/rl/radar.py",
+    "backend/rl/observations.py",
+    "backend/rl/env.py"
+  ],
+  "historical_checkpoints_are_ancestors": true,
+  "frozen_sac_model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "teacher_config_sha256": "f3bf24d3b1be242fa2654510e78a3ad3af66c7cf7d9f2cbff035f3a8eda16388",
+  "teacher_source_sha256": "2b4f28e2be17ced5fd588828c4db0bc45a5df51654abf43a3481c4fcbc494124",
+  "normal_runtime": {
+    "connected": true,
+    "mode": "PAUSED",
+    "rl_active": false,
+    "policy_active": false,
+    "pending_requests": 0,
+    "sensor_actor_ids": {
+      "frontCamera": 399,
+      "depth": 400,
+      "radar": 401,
+      "lidar": 402,
+      "imu": 403,
+      "gnss": 404,
+      "collision": 405
+    },
+    "sensor_errors": {},
+    "rgb_width": 800,
+    "rgb_height": 450
+  },
+  "regressions": {
+    "python": {
+      "run": 169,
+      "passed": 168,
+      "skipped": 1,
+      "wall_s": 4.066,
+      "skip_reason": "CARLA SDK is present; absent-SDK contract test does not apply"
+    },
+    "javascript": {
+      "run": 24,
+      "passed": 24,
+      "wall_s": 0.3191212
+    }
+  },
+  "native_budget": {
+    "episodes": 16,
+    "steps": 2188,
+    "wall_s": 223.0619999999999,
+    "remaining_authorized_episodes": 0
+  },
+  "gpu_snapshot": {
+    "command_succeeded": true,
+    "csv_columns": "name, memory.used MiB, memory.total MiB, utilization.gpu %",
+    "value": "NVIDIA GeForce RTX 3060 Laptop GPU, 5871, 6144, 45",
+    "new_model_gpu_allocations": 0,
+    "note": "Read-only post-run snapshot of existing GPU users; not incremental experiment VRAM"
+  },
+  "native_manual_journey_smoke_after_experiment": false,
+  "no_training_or_production_activation": true
+}

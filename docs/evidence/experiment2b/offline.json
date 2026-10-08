@@ -1,0 +1,119 @@
+{
+  "experiment": "YA RAB OSTORHA Experiment 2B offline teacher verification",
+  "split": "VALIDATION",
+  "config": {
+    "version": "YA_RAB_OSTORHA_TEACHER_V1",
+    "minimum_clearance_m": 3.0,
+    "reaction_time_s": 0.35,
+    "assumed_deceleration_mps2": 5.0,
+    "additional_brake": 1.0,
+    "release_hysteresis_m": 2.0,
+    "stopped_speed_mps": 0.2,
+    "lead_stationary_speed_mps": 0.5,
+    "maximum_observation_age_s": 0.1
+  },
+  "groups": {
+    "VALIDATION_COLLISION": {
+      "real_frame_isolation_checks": 272,
+      "observations": 272,
+      "NO_INTERVENTION": 128,
+      "accepted": 144,
+      "rejected_proposals": 0,
+      "missing_foreground_brakes": 0,
+      "nominal_decision_differences_from_nominal": 0,
+      "deceleration_4_decision_differences_from_nominal": 8,
+      "deceleration_6_decision_differences_from_nominal": 4,
+      "release_hysteresis_15_decision_differences_from_nominal": 0,
+      "BRAKE_INTERVENTION": 144,
+      "brake_release_edges": 4
+    },
+    "VALIDATION_STATIONARY": {
+      "real_frame_isolation_checks": 240,
+      "observations": 240,
+      "NO_INTERVENTION": 232,
+      "accepted": 4,
+      "rejected_proposals": 0,
+      "missing_foreground_brakes": 4,
+      "nominal_decision_differences_from_nominal": 0,
+      "deceleration_4_decision_differences_from_nominal": 0,
+      "deceleration_6_decision_differences_from_nominal": 0,
+      "release_hysteresis_15_decision_differences_from_nominal": 0,
+      "BRAKE_INTERVENTION": 4,
+      "brake_release_edges": 8,
+      "RELEASE_TO_BASE_DRIVER": 4
+    },
+    "VALIDATION_SCRIPTED_SUCCESS": {
+      "real_frame_isolation_checks": 98,
+      "observations": 98,
+      "NO_INTERVENTION": 82,
+      "accepted": 14,
+      "rejected_proposals": 0,
+      "missing_foreground_brakes": 1,
+      "nominal_decision_differences_from_nominal": 0,
+      "deceleration_4_decision_differences_from_nominal": 2,
+      "deceleration_6_decision_differences_from_nominal": 13,
+      "release_hysteresis_15_decision_differences_from_nominal": 0,
+      "historical_script_decision_mismatches": 28,
+      "BRAKE_INTERVENTION": 14,
+      "brake_release_edges": 4,
+      "RELEASE_TO_BASE_DRIVER": 2
+    }
+  },
+  "sensitivity_configs": {
+    "nominal": {
+      "version": "YA_RAB_OSTORHA_TEACHER_V1",
+      "minimum_clearance_m": 3.0,
+      "reaction_time_s": 0.35,
+      "assumed_deceleration_mps2": 5.0,
+      "additional_brake": 1.0,
+      "release_hysteresis_m": 2.0,
+      "stopped_speed_mps": 0.2,
+      "lead_stationary_speed_mps": 0.5,
+      "maximum_observation_age_s": 0.1
+    },
+    "deceleration_4": {
+      "version": "YA_RAB_OSTORHA_TEACHER_V1",
+      "minimum_clearance_m": 3.0,
+      "reaction_time_s": 0.35,
+      "assumed_deceleration_mps2": 4.0,
+      "additional_brake": 1.0,
+      "release_hysteresis_m": 2.0,
+      "stopped_speed_mps": 0.2,
+      "lead_stationary_speed_mps": 0.5,
+      "maximum_observation_age_s": 0.1
+    },
+    "deceleration_6": {
+      "version": "YA_RAB_OSTORHA_TEACHER_V1",
+      "minimum_clearance_m": 3.0,
+      "reaction_time_s": 0.35,
+      "assumed_deceleration_mps2": 6.0,
+      "additional_brake": 1.0,
+      "release_hysteresis_m": 2.0,
+      "stopped_speed_mps": 0.2,
+      "lead_stationary_speed_mps": 0.5,
+      "maximum_observation_age_s": 0.1
+    },
+    "release_hysteresis_15": {
+      "version": "YA_RAB_OSTORHA_TEACHER_V1",
+      "minimum_clearance_m": 3.0,
+      "reaction_time_s": 0.35,
+      "assumed_deceleration_mps2": 5.0,
+      "additional_brake": 1.0,
+      "release_hysteresis_m": 1.5,
+      "stopped_speed_mps": 0.2,
+      "lead_stationary_speed_mps": 0.5,
+      "maximum_observation_age_s": 0.1
+    }
+  },
+  "parameters_changed_after_sensitivity": false,
+  "reward_weights_changed": false,
+  "training": false,
+  "native_episodes": 0,
+  "calibration_evidence": "Experiment 2A VALIDATION full-brake stroke: 3.659 m at 8.027 m/s; energy-equivalent a=8.805 m/s\u00b2; retain assumed a=5",
+  "resource": {
+    "wall_s": 14.138391399999819,
+    "cpu_s_after_imports": 11.78125,
+    "os_peak_working_set_mib": 52.21484375,
+    "private_mib_at_end": 520.41015625
+  }
+}

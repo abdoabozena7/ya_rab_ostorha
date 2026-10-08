@@ -1,0 +1,1553 @@
+{
+  "held_out": {
+    "BASIC_AGENT": {
+      "episodes": 4,
+      "outcomes": {
+        "COLLISION": 4
+      },
+      "mean_collision_peak_impulse_ns": 15240.478873648372,
+      "mean_distance_traveled_m": 24.017446256294956,
+      "mean_forward_progress_m": 24.016972765736334,
+      "mean_average_speed_mps": 6.367390154913593,
+      "mean_minimum_clearance_m": 0.0,
+      "mean_duration_s": 3.762500056065619,
+      "mean_intervention_count": 0,
+      "mean_hard_braking_events": 4.75,
+      "mean_unnecessary_intervention_count": 0,
+      "minimum_clearance_m": 0.0,
+      "minimum_valid_ttc_s": 0.0
+    },
+    "EXISTING_RULE": {
+      "episodes": 4,
+      "outcomes": {
+        "TIMEOUT": 4
+      },
+      "mean_collision_peak_impulse_ns": 0.0,
+      "mean_distance_traveled_m": 0.7971458540402315,
+      "mean_forward_progress_m": 0.7951322876402682,
+      "mean_average_speed_mps": 0.06642882018015274,
+      "mean_minimum_clearance_m": 15.500060277528974,
+      "mean_duration_s": 12.000000178813934,
+      "mean_intervention_count": 8,
+      "mean_hard_braking_events": 1,
+      "mean_unnecessary_intervention_count": 231.5,
+      "minimum_clearance_m": 14.015846004805324,
+      "minimum_valid_ttc_s": 3.9643287765187183
+    },
+    "TEACHER": {
+      "episodes": 4,
+      "outcomes": {
+        "SUCCESS": 4
+      },
+      "mean_collision_peak_impulse_ns": 0.0,
+      "mean_distance_traveled_m": 20.143333215243462,
+      "mean_forward_progress_m": 20.13962377655821,
+      "mean_average_speed_mps": 3.2495536954577116,
+      "mean_minimum_clearance_m": 3.8096610165965643,
+      "mean_duration_s": 6.200000092387199,
+      "mean_intervention_count": 3,
+      "mean_hard_braking_events": 5.75,
+      "mean_unnecessary_intervention_count": 2.5,
+      "minimum_clearance_m": 3.726918697804493,
+      "minimum_valid_ttc_s": 1.1805559136468007
+    }
+  },
+  "matched_conditions": [
+    {
+      "seed": 2709,
+      "identical_scenario_specs": true,
+      "map": "Carla/Maps/Town10HD_Opt",
+      "maximum_initial_pose_position_difference_m": 0.0,
+      "maximum_initialized_velocity_difference_mps": 0.0
+    },
+    {
+      "seed": 2835,
+      "identical_scenario_specs": true,
+      "map": "Carla/Maps/Town10HD_Opt",
+      "maximum_initial_pose_position_difference_m": 0.0,
+      "maximum_initialized_velocity_difference_mps": 0.0
+    },
+    {
+      "seed": 2164,
+      "identical_scenario_specs": true,
+      "map": "Carla/Maps/Town10HD_Opt",
+      "maximum_initial_pose_position_difference_m": 0.0,
+      "maximum_initialized_velocity_difference_mps": 0.0
+    },
+    {
+      "seed": 2938,
+      "identical_scenario_specs": true,
+      "map": "Carla/Maps/Town10HD_Opt",
+      "maximum_initial_pose_position_difference_m": 0.0,
+      "maximum_initialized_velocity_difference_mps": 0.0
+    }
+  ],
+  "per_episode_control_analysis": [
+    {
+      "split": "VALIDATION",
+      "seed": 1200,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.1000000312924385,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.8500000424683094,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.7500000111758709,
+      "longest_stopped_s": 0.5000000074505806,
+      "total_stopped_s": 0.6500000096857548,
+      "outcome": {
+        "episode_id": "rl_df546d94090d48ef8b6424c7cd653532",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 1200,
+        "split": "VALIDATION",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 40.173673558729064,
+        "steps": 100,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.042526411796013,
+          "minimum_ttc_s": 1.2532314841018644,
+          "forward_progress_m": 16.828686379479077,
+          "distance_traveled_m": 16.832320736848363,
+          "duration_s": 5.000000074505806,
+          "average_speed_mps": 3.3664640972054483,
+          "hard_braking_events": 3,
+          "steering_oscillation": 0.032564605694460624,
+          "intervention_count": 2,
+          "intervention_frequency": 0.3999999940395356,
+          "scenario_success": true,
+          "time_to_completion_s": 5.000000074505806,
+          "intervention_steps": 35,
+          "intervention_proposals": 35,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.5999999910593035
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1285,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.550000037997961,
+          "braking": true
+        },
+        {
+          "elapsed_s": 3.200000047683716,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.500000067055225,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.6500000096857548,
+      "longest_stopped_s": 0.5000000074505806,
+      "total_stopped_s": 0.6500000096857548,
+      "outcome": {
+        "episode_id": "rl_9aa6f7c17b56419db3263b134618e67d",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 1285,
+        "split": "VALIDATION",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 46.001914993193495,
+        "steps": 112,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.221299421148119,
+          "minimum_ttc_s": 1.3059810188807777,
+          "forward_progress_m": 22.852355728324454,
+          "distance_traveled_m": 22.854042949312856,
+          "duration_s": 5.600000083446503,
+          "average_speed_mps": 4.081079037278765,
+          "hard_braking_events": 5,
+          "steering_oscillation": 0.025779585969132768,
+          "intervention_count": 2,
+          "intervention_frequency": 0.35714285182101396,
+          "scenario_success": true,
+          "time_to_completion_s": 5.600000083446503,
+          "intervention_steps": 35,
+          "intervention_proposals": 35,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.8928571295525348
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1297,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.4000000208616257,
+          "braking": true
+        },
+        {
+          "elapsed_s": 1.9500000290572643,
+          "braking": false
+        },
+        {
+          "elapsed_s": 3.35000004991889,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.5500000081956387,
+      "longest_stopped_s": 0.5000000074505806,
+      "total_stopped_s": 0.6500000096857548,
+      "outcome": {
+        "episode_id": "rl_e956974e631f4d66bef97859c19d15d5",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 1297,
+        "split": "VALIDATION",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 38.616145779392426,
+        "steps": 89,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.22332809666491,
+          "minimum_ttc_s": 1.2779183664895508,
+          "forward_progress_m": 15.140694144276848,
+          "distance_traveled_m": 15.143928535695586,
+          "duration_s": 4.450000066310167,
+          "average_speed_mps": 3.403129957310892,
+          "hard_braking_events": 8,
+          "steering_oscillation": 0.121036583892419,
+          "intervention_count": 2,
+          "intervention_frequency": 0.44943819555004,
+          "scenario_success": true,
+          "time_to_completion_s": 4.450000066310167,
+          "intervention_steps": 33,
+          "intervention_proposals": 33,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.79775278220016
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 0.10000000149011612,
+          "braking": true
+        },
+        {
+          "elapsed_s": 0.6000000089406967,
+          "braking": false
+        },
+        {
+          "elapsed_s": 0.6500000096857548,
+          "braking": true
+        },
+        {
+          "elapsed_s": 0.7500000111758709,
+          "braking": false
+        },
+        {
+          "elapsed_s": 3.500000052154064,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.200000062584877,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.4500000812113285,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.05000000074505806,
+      "longest_stopped_s": 0.850000012665987,
+      "total_stopped_s": 1.5000000223517418,
+      "outcome": {
+        "episode_id": "rl_d153aa7b66204bafac87c96813c39e02",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 1105,
+        "split": "VALIDATION",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 41.14447341897035,
+        "steps": 130,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.0107550113749575,
+          "minimum_ttc_s": 1.314816002446128,
+          "forward_progress_m": 18.931692659367055,
+          "distance_traveled_m": 18.935397470000918,
+          "duration_s": 6.500000096857548,
+          "average_speed_mps": 2.913138028898694,
+          "hard_braking_events": 4,
+          "steering_oscillation": 0.22026211564661935,
+          "intervention_count": 4,
+          "intervention_frequency": 0.6153846062146702,
+          "scenario_success": true,
+          "time_to_completion_s": 6.500000096857548,
+          "intervention_steps": 47,
+          "intervention_proposals": 47,
+          "unnecessary_intervention_count": 9,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.6153846062146702
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2709,
+      "controller": "BASIC_AGENT",
+      "brake_release_edges": [],
+      "shortest_bout_or_release_s": null,
+      "longest_stopped_s": 0.0,
+      "total_stopped_s": 0.0,
+      "outcome": {
+        "episode_id": "rl_ffe31624e3b6421ea1bfc4c715fea70f",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2709,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "COLLISION",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "collision_threshold",
+        "truncation_reason": null,
+        "reward": -241.07169692863013,
+        "steps": 66,
+        "metrics": {
+          "collision_count": 1,
+          "collision_callback_count": 1,
+          "collision_peak_impulse_ns": 15049.906287412741,
+          "collision_impulse_total_ns": 15049.906287412741,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": 0.028574703338131047,
+          "forward_progress_m": 19.262767422089055,
+          "distance_traveled_m": 19.262780214472162,
+          "duration_s": 3.300000049173832,
+          "average_speed_mps": 5.837206038616476,
+          "hard_braking_events": 2,
+          "steering_oscillation": 0.0002567131320327931,
+          "intervention_count": 0,
+          "intervention_frequency": 0.0,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 0,
+          "intervention_proposals": 0,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.6060605970295994
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_BASIC_AGENT"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2709,
+      "controller": "EXISTING_RULE",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 0.0,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.0000000298023224,
+          "braking": false
+        },
+        {
+          "elapsed_s": 2.0500000305473804,
+          "braking": true
+        },
+        {
+          "elapsed_s": 3.9500000588595867,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.350000064820051,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.450000066310167,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.100000075995922,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.900000087916851,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.950000088661909,
+          "braking": true
+        },
+        {
+          "elapsed_s": 10.750000160187483,
+          "braking": false
+        },
+        {
+          "elapsed_s": 10.800000160932541,
+          "braking": true
+        },
+        {
+          "elapsed_s": 11.550000172108412,
+          "braking": false
+        },
+        {
+          "elapsed_s": 11.60000017285347,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.05000000074505806,
+      "longest_stopped_s": 11.85000017657876,
+      "total_stopped_s": 11.85000017657876,
+      "outcome": {
+        "episode_id": "rl_aeb5392366ea408a9c42c55b2cc9e6f1",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2709,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "TIMEOUT",
+        "terminated": false,
+        "truncated": true,
+        "termination_reason": null,
+        "truncation_reason": "simulation_time_limit",
+        "reward": -7.744811415971435,
+        "steps": 240,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 14.015846004805324,
+          "minimum_ttc_s": 9.396132851853762,
+          "forward_progress_m": 0.47268868537260184,
+          "distance_traveled_m": 0.47491659183789925,
+          "duration_s": 12.000000178813934,
+          "average_speed_mps": 0.039576382063424224,
+          "hard_braking_events": 1,
+          "steering_oscillation": 0.0002504790318198502,
+          "intervention_count": 8,
+          "intervention_frequency": 0.6666666567325593,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 232,
+          "intervention_proposals": 232,
+          "unnecessary_intervention_count": 232,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.08333333209156991
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_EXISTING_RULE"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2709,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.9000000283122063,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.550000037997961,
+          "braking": false
+        },
+        {
+          "elapsed_s": 3.7000000551342964,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.6500000096857548,
+      "longest_stopped_s": 0.5000000074505806,
+      "total_stopped_s": 0.6500000096857548,
+      "outcome": {
+        "episode_id": "rl_810b78de0b584a5c8924da789744286c",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2709,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 38.65605124895647,
+        "steps": 94,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.926839093675769,
+          "minimum_ttc_s": 1.2349282998321496,
+          "forward_progress_m": 15.251065613830775,
+          "distance_traveled_m": 15.252927089255447,
+          "duration_s": 4.700000070035458,
+          "average_speed_mps": 3.245303587653005,
+          "hard_braking_events": 4,
+          "steering_oscillation": 0.04707850205947839,
+          "intervention_count": 2,
+          "intervention_frequency": 0.42553190855269746,
+          "scenario_success": true,
+          "time_to_completion_s": 4.700000070035458,
+          "intervention_steps": 33,
+          "intervention_proposals": 33,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.8510638171053949
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2835,
+      "controller": "EXISTING_RULE",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 0.0,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.0000000298023224,
+          "braking": false
+        },
+        {
+          "elapsed_s": 2.0500000305473804,
+          "braking": true
+        },
+        {
+          "elapsed_s": 3.9500000588595867,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.350000064820051,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.450000066310167,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.100000075995922,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.900000087916851,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.950000088661909,
+          "braking": true
+        },
+        {
+          "elapsed_s": 10.750000160187483,
+          "braking": false
+        },
+        {
+          "elapsed_s": 10.800000160932541,
+          "braking": true
+        },
+        {
+          "elapsed_s": 11.550000172108412,
+          "braking": false
+        },
+        {
+          "elapsed_s": 11.60000017285347,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.05000000074505806,
+      "longest_stopped_s": 11.750000175088644,
+      "total_stopped_s": 11.750000175088644,
+      "outcome": {
+        "episode_id": "rl_7d97d5d6c695428c8d63ce5c9320a56f",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2835,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "TIMEOUT",
+        "terminated": false,
+        "truncated": true,
+        "termination_reason": null,
+        "truncation_reason": "simulation_time_limit",
+        "reward": -7.265288448567384,
+        "steps": 240,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 15.646153059203343,
+          "minimum_ttc_s": 4.55626999770452,
+          "forward_progress_m": 0.9272116395875594,
+          "distance_traveled_m": 0.9291677593331914,
+          "duration_s": 12.000000178813934,
+          "average_speed_mps": 0.07743064545729275,
+          "hard_braking_events": 1,
+          "steering_oscillation": 8.187859202735126e-05,
+          "intervention_count": 8,
+          "intervention_frequency": 0.6666666567325593,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 232,
+          "intervention_proposals": 232,
+          "unnecessary_intervention_count": 231,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.08333333209156991
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_EXISTING_RULE"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2835,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.750000026077032,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.450000036507845,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.050000060349703,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.400000065565109,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.500000081956387,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.3500000052154064,
+      "longest_stopped_s": 0.5000000074505806,
+      "total_stopped_s": 0.800000011920929,
+      "outcome": {
+        "episode_id": "rl_107a908f4a51491f98742bbe18c467af",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2835,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 44.12374910701657,
+        "steps": 129,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.726918697804493,
+          "minimum_ttc_s": 1.351802459534764,
+          "forward_progress_m": 21.41125580285969,
+          "distance_traveled_m": 21.41648593070828,
+          "duration_s": 6.45000009611249,
+          "average_speed_mps": 3.3203853661360894,
+          "hard_braking_events": 9,
+          "steering_oscillation": 0.03547622369927694,
+          "intervention_count": 3,
+          "intervention_frequency": 0.4651162721389949,
+          "scenario_success": true,
+          "time_to_completion_s": 6.45000009611249,
+          "intervention_steps": 40,
+          "intervention_proposals": 40,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.3953488164169847
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2835,
+      "controller": "BASIC_AGENT",
+      "brake_release_edges": [],
+      "shortest_bout_or_release_s": null,
+      "longest_stopped_s": 0.0,
+      "total_stopped_s": 0.0,
+      "outcome": {
+        "episode_id": "rl_c9ac5fdcb80f42988645bccfd6a87ea8",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2835,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "COLLISION",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "collision_threshold",
+        "truncation_reason": null,
+        "reward": -240.40962989142366,
+        "steps": 76,
+        "metrics": {
+          "collision_count": 1,
+          "collision_callback_count": 1,
+          "collision_peak_impulse_ns": 15606.068446525183,
+          "collision_impulse_total_ns": 15606.068446525183,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": 0.0,
+          "forward_progress_m": 25.195039747540783,
+          "distance_traveled_m": 25.19558202234849,
+          "duration_s": 3.8000000566244125,
+          "average_speed_mps": 6.630416222869754,
+          "hard_braking_events": 7,
+          "steering_oscillation": 0.00044302221095904315,
+          "intervention_count": 0,
+          "intervention_frequency": 0.0,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 0,
+          "intervention_proposals": 0,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.8421052357083876
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_BASIC_AGENT"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 0.10000000149011612,
+          "braking": true
+        },
+        {
+          "elapsed_s": 0.6000000089406967,
+          "braking": false
+        },
+        {
+          "elapsed_s": 0.7000000104308128,
+          "braking": true
+        },
+        {
+          "elapsed_s": 0.7500000111758709,
+          "braking": false
+        },
+        {
+          "elapsed_s": 3.9500000588595867,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.550000067800283,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.750000085681677,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.05000000074505806,
+      "longest_stopped_s": 0.850000012665987,
+      "total_stopped_s": 1.5000000223517418,
+      "outcome": {
+        "episode_id": "rl_e4af896ac5a0426e9080b9c282c55352",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2164,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 43.64362393991969,
+        "steps": 136,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.8251610747588867,
+          "minimum_ttc_s": 1.2752267706132325,
+          "forward_progress_m": 21.60443919630562,
+          "distance_traveled_m": 21.60805232213917,
+          "duration_s": 6.800000101327896,
+          "average_speed_mps": 3.1776547059050153,
+          "hard_braking_events": 5,
+          "steering_oscillation": 0.05064615575014386,
+          "intervention_count": 4,
+          "intervention_frequency": 0.5882352853522582,
+          "scenario_success": true,
+          "time_to_completion_s": 6.800000101327896,
+          "intervention_steps": 44,
+          "intervention_proposals": 44,
+          "unnecessary_intervention_count": 10,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.7352941066903228
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "controller": "BASIC_AGENT",
+      "brake_release_edges": [],
+      "shortest_bout_or_release_s": null,
+      "longest_stopped_s": 0.0,
+      "total_stopped_s": 0.0,
+      "outcome": {
+        "episode_id": "rl_44b5efb0232e4501a124120479f341ff",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2164,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "COLLISION",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "collision_threshold",
+        "truncation_reason": null,
+        "reward": -238.84254856919154,
+        "steps": 76,
+        "metrics": {
+          "collision_count": 1,
+          "collision_callback_count": 1,
+          "collision_peak_impulse_ns": 15474.331504257878,
+          "collision_impulse_total_ns": 15474.331504257878,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": 0.011389153508577951,
+          "forward_progress_m": 25.47745383961884,
+          "distance_traveled_m": 25.47761247968368,
+          "duration_s": 3.8000000566244125,
+          "average_speed_mps": 6.7046347631678085,
+          "hard_braking_events": 7,
+          "steering_oscillation": 0.028157329840738043,
+          "intervention_count": 0,
+          "intervention_frequency": 0.0,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 0,
+          "intervention_proposals": 0,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.8421052357083876
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_BASIC_AGENT"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "controller": "EXISTING_RULE",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 0.0,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.0000000298023224,
+          "braking": false
+        },
+        {
+          "elapsed_s": 2.0500000305473804,
+          "braking": true
+        },
+        {
+          "elapsed_s": 3.9500000588595867,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.350000064820051,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.450000066310167,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.100000075995922,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.900000087916851,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.950000088661909,
+          "braking": true
+        },
+        {
+          "elapsed_s": 10.750000160187483,
+          "braking": false
+        },
+        {
+          "elapsed_s": 10.800000160932541,
+          "braking": true
+        },
+        {
+          "elapsed_s": 11.550000172108412,
+          "braking": false
+        },
+        {
+          "elapsed_s": 11.60000017285347,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.05000000074505806,
+      "longest_stopped_s": 11.700000174343586,
+      "total_stopped_s": 11.700000174343586,
+      "outcome": {
+        "episode_id": "rl_37377451000f4421a6eb13f3c0dab1bf",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2164,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "TIMEOUT",
+        "terminated": false,
+        "truncated": true,
+        "termination_reason": null,
+        "truncation_reason": "simulation_time_limit",
+        "reward": -6.973444911788605,
+        "steps": 240,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 17.397078091519873,
+          "minimum_ttc_s": 3.9643287765187183,
+          "forward_progress_m": 1.2090551763265596,
+          "distance_traveled_m": 1.2111375811678082,
+          "duration_s": 12.000000178813934,
+          "average_speed_mps": 0.10092813026003768,
+          "hard_braking_events": 1,
+          "steering_oscillation": 0.0001328083118323775,
+          "intervention_count": 8,
+          "intervention_frequency": 0.6666666567325593,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 232,
+          "intervention_proposals": 232,
+          "unnecessary_intervention_count": 231,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.08333333209156991
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_EXISTING_RULE"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2938,
+      "controller": "BASIC_AGENT",
+      "brake_release_edges": [],
+      "shortest_bout_or_release_s": null,
+      "longest_stopped_s": 0.0,
+      "total_stopped_s": 0.0,
+      "outcome": {
+        "episode_id": "rl_caa8e1ea45394d23b90cd97f57f33889",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2938,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "COLLISION",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "collision_threshold",
+        "truncation_reason": null,
+        "reward": -231.86780857860376,
+        "steps": 83,
+        "metrics": {
+          "collision_count": 1,
+          "collision_callback_count": 1,
+          "collision_peak_impulse_ns": 14831.609256397684,
+          "collision_impulse_total_ns": 14831.609256397684,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": 0.0,
+          "forward_progress_m": 26.13263005369666,
+          "distance_traveled_m": 26.133810308675496,
+          "duration_s": 4.150000061839819,
+          "average_speed_mps": 6.297303595000333,
+          "hard_braking_events": 3,
+          "steering_oscillation": 0.14445803191902656,
+          "intervention_count": 0,
+          "intervention_frequency": 0.0,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 0,
+          "intervention_proposals": 0,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.7228915554931367
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_BASIC_AGENT"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2938,
+      "controller": "TEACHER",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.9500000290572643,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.7000000402331352,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.6000000685453415,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "braking": false
+        },
+        {
+          "elapsed_s": 6.000000089406967,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.45000000670552254,
+      "longest_stopped_s": 0.5000000074505806,
+      "total_stopped_s": 0.9000000134110451,
+      "outcome": {
+        "episode_id": "rl_22a77ea178b14070b387dda170320d23",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2938,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 44.90422062229378,
+        "steps": 137,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.7597252001471086,
+          "minimum_ttc_s": 1.1805559136468007,
+          "forward_progress_m": 22.29173449323675,
+          "distance_traveled_m": 22.295867518870956,
+          "duration_s": 6.850000102072954,
+          "average_speed_mps": 3.2548711221367363,
+          "hard_braking_events": 5,
+          "steering_oscillation": 0.04978338039725827,
+          "intervention_count": 3,
+          "intervention_frequency": 0.43795619785350615,
+          "scenario_success": true,
+          "time_to_completion_s": 6.850000102072954,
+          "intervention_steps": 41,
+          "intervention_proposals": 41,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.7299269964225102
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_TEACHER"
+      }
+    },
+    {
+      "split": "TEST",
+      "seed": 2938,
+      "controller": "EXISTING_RULE",
+      "brake_release_edges": [
+        {
+          "elapsed_s": 0.0,
+          "braking": true
+        },
+        {
+          "elapsed_s": 2.0000000298023224,
+          "braking": false
+        },
+        {
+          "elapsed_s": 2.0500000305473804,
+          "braking": true
+        },
+        {
+          "elapsed_s": 3.9500000588595867,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "braking": true
+        },
+        {
+          "elapsed_s": 4.350000064820051,
+          "braking": false
+        },
+        {
+          "elapsed_s": 4.450000066310167,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.100000075995922,
+          "braking": true
+        },
+        {
+          "elapsed_s": 5.900000087916851,
+          "braking": false
+        },
+        {
+          "elapsed_s": 5.950000088661909,
+          "braking": true
+        },
+        {
+          "elapsed_s": 10.750000160187483,
+          "braking": false
+        },
+        {
+          "elapsed_s": 10.800000160932541,
+          "braking": true
+        },
+        {
+          "elapsed_s": 11.550000172108412,
+          "braking": false
+        },
+        {
+          "elapsed_s": 11.60000017285347,
+          "braking": true
+        }
+      ],
+      "shortest_bout_or_release_s": 0.05000000074505806,
+      "longest_stopped_s": 11.800000175833702,
+      "total_stopped_s": 11.800000175833702,
+      "outcome": {
+        "episode_id": "rl_670734a573734f7d95c6597ceed73a35",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 2938,
+        "split": "TEST",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "TIMEOUT",
+        "terminated": false,
+        "truncated": true,
+        "termination_reason": null,
+        "truncation_reason": "simulation_time_limit",
+        "reward": -7.635926439155083,
+        "steps": 240,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 14.941163954587351,
+          "minimum_ttc_s": 7.509845000913983,
+          "forward_progress_m": 0.571573649274352,
+          "distance_traveled_m": 0.5733614838220272,
+          "duration_s": 12.000000178813934,
+          "average_speed_mps": 0.04778012293985629,
+          "hard_braking_events": 1,
+          "steering_oscillation": 0.00011545657980605029,
+          "intervention_count": 8,
+          "intervention_frequency": 0.6666666567325593,
+          "scenario_success": false,
+          "time_to_completion_s": null,
+          "intervention_steps": 232,
+          "intervention_proposals": 232,
+          "unnecessary_intervention_count": 232,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.08333333209156991
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT2B_EXISTING_RULE"
+      }
+    }
+  ],
+  "radar_no_foreground_diagnosis": {
+    "NEAREST32_DISCARDS_LEAD": 16
+  },
+  "radar_no_foreground_examples": [
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 3,
+      "elapsed_s": 0.10000000149011612,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 15,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 56,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.0
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 4,
+      "elapsed_s": 0.15000000223517418,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 9,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 54,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.0
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 9,
+      "elapsed_s": 0.4000000059604645,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 12,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 63,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 10,
+      "elapsed_s": 0.45000000670552254,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 12,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 58,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 11,
+      "elapsed_s": 0.5000000074505806,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 5,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 57,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 12,
+      "elapsed_s": 0.5500000081956387,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 15,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 64,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 14,
+      "elapsed_s": 0.6500000096857548,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 9,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 53,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 15,
+      "elapsed_s": 0.7000000104308128,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 12,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 59,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 3,
+      "elapsed_s": 0.10000000149011612,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 16,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 59,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 4,
+      "elapsed_s": 0.15000000223517418,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 12,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 56,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.0
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 9,
+      "elapsed_s": 0.4000000059604645,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 11,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 62,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 10,
+      "elapsed_s": 0.45000000670552254,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 12,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 57,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 11,
+      "elapsed_s": 0.5000000074505806,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 9,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 60,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 12,
+      "elapsed_s": 0.5500000081956387,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 12,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 63,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 15,
+      "elapsed_s": 0.7000000104308128,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 15,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 61,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.005000000074505806
+    },
+    {
+      "split": "TEST",
+      "seed": 2938,
+      "step": 54,
+      "elapsed_s": 2.650000039488077,
+      "reason": "NEAREST32_DISCARDS_LEAD",
+      "full_lead_associated_returns": 24,
+      "retained_lead_associated_returns": 0,
+      "raw_returns": 72,
+      "teacher_decision": "BRAKE_INTERVENTION",
+      "actual_unnecessary_braking_component": -0.0
+    }
+  ],
+  "recorded_complete_frames": 2204,
+  "recorded_asset_references": 6612,
+  "recorded_sensor_binary_mib": 166.86995697021484,
+  "sampled_asset_integrity_checks": 144,
+  "synchronization_issue_delta": {
+    "MISSING": 192,
+    "LATE": 0,
+    "STALE": 0,
+    "DUPLICATE": 0,
+    "OUT_OF_ORDER": 0,
+    "TIMESTAMP_MISMATCH": 0
+  },
+  "incomplete_warmup_frame_delta": 32,
+  "teacher_decision_wall_ms_including_isolation_shadow": {
+    "median": 2.127400000972557,
+    "p95": 3.632480000123904,
+    "max": 5.422300000645919
+  },
+  "teacher_capture_step_response_wall_ms": {
+    "median": 80.51789999990433,
+    "p95": 111.55502000019617,
+    "max": 231.05729999952018
+  },
+  "sampled_private_memory_mib": {
+    "python.exe-17636": {
+      "initial": 0.75390625,
+      "final": 0.75390625,
+      "min": 0.75390625,
+      "max": 0.75390625
+    },
+    "runner": {
+      "initial": 30.3359375,
+      "final": 43.046875,
+      "min": 30.3359375,
+      "max": 43.046875
+    },
+    "python.exe-18960": {
+      "initial": 708.453125,
+      "final": 584.984375,
+      "min": 575.6875,
+      "max": 708.453125
+    },
+    "CarlaUE4-Win64-Shipping.exe-24436": {
+      "initial": 9507.09765625,
+      "final": 9563.37890625,
+      "min": 9507.09765625,
+      "max": 9563.37890625
+    }
+  },
+  "config_hash_preserved_after_test": true,
+  "teacher_source_preserved_after_test": true,
+  "model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "resource": {
+    "wall_s": 24.856218299999455,
+    "cpu_s_after_imports": 21.328125,
+    "os_peak_working_set_mib": 43.8359375
+  }
+}

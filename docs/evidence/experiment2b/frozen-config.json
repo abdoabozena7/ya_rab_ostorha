@@ -1,0 +1,29 @@
+{
+  "config": {
+    "version": "YA_RAB_OSTORHA_TEACHER_V1",
+    "minimum_clearance_m": 3.0,
+    "reaction_time_s": 0.35,
+    "assumed_deceleration_mps2": 5.0,
+    "additional_brake": 1.0,
+    "release_hysteresis_m": 2.0,
+    "stopped_speed_mps": 0.2,
+    "lead_stationary_speed_mps": 0.5,
+    "maximum_observation_age_s": 0.1
+  },
+  "config_sha256": "f3bf24d3b1be242fa2654510e78a3ad3af66c7cf7d9f2cbff035f3a8eda16388",
+  "teacher_source_sha256": "2b4f28e2be17ced5fd588828c4db0bc45a5df51654abf43a3481c4fcbc494124",
+  "frozen_before_any_test_reset": true,
+  "validation_episodes": [
+    "rl_df546d94090d48ef8b6424c7cd653532",
+    "rl_9aa6f7c17b56419db3263b134618e67d",
+    "rl_e956974e631f4d66bef97859c19d15d5",
+    "rl_d153aa7b66204bafac87c96813c39e02"
+  ],
+  "freeze_utc": "2026-10-08T21:32:26.223563+00:00",
+  "test_seeds": [
+    2709,
+    2835,
+    2164,
+    2938
+  ]
+}
