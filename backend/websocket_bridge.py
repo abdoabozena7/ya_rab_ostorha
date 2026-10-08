@@ -32,23 +32,25 @@ class WebSocketBridge:
                 if getattr(self.service, 'is_replay', False):
                     raise ValueError('Replay has no native connection or control sink')
                 if kind == 'start_journey' and not self.service.arbiter.machine.allow_navigation:
-                    raise ValueError('Gate 4 provides manual route guidance only; autonomous ego driving is disabled')
+                    raise ValueError('Destination journeys are disabled for this provider')
                 if kind == 'reconnect':
                     self.service.reconnect()
                 else:
                     self.service.require_connected()
-                    self.service.release_controls()
+                    if kind == 'start_journey':
+                        # Validate before taking control away from another dashboard.
+                        self.service.start_journey(message.get('speed_kmh', 20))
+                    else:
+                        self.service.release_controls()
                     self.owner = socket
                     if not self.controller_lock.locked():
                         self.controller_lock.acquire()
                     if kind == 'start_driving':
                         self.service.set_paused(False)
-                    elif kind == 'start_journey':
-                        self.service.start_journey(message.get('speed_kmh', 20))
-                    else:
+                    elif kind == 'take_control':
                         self.service.stop_driving('ownership_taken')
                 return True
-            if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'restart_graphics',
+            if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'journey_speed', 'restart_graphics',
                             'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect',
                             'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene'}:
                 return False
@@ -83,6 +85,8 @@ class WebSocketBridge:
                 self.service.stop_driving(message.get('reason', 'operator_stop'))
             elif kind == 'journey_heartbeat':
                 self.service.journey_heartbeat(message.get('session_id'))
+            elif kind == 'journey_speed':
+                self.service.set_journey_speed(message.get('speed_kmh'))
             elif kind == 'restart_graphics':
                 self.service.restart_graphics(message.get('value'))
             elif kind == 'emergency_stop':

@@ -38,6 +38,19 @@ test('choosing a route and heartbeating never emit manual pedal commands', () =>
   assert.equal(sent[1].session_id,'live');
 });
 
+test('explicit destination start emits only journey request, never manual pedals or AI opt-in', () => {
+  const {p,sent,snapshot} = clientFixture();
+  p.acceptSnapshot({...snapshot,mode:'PAUSED',controller:false,navigationAvailable:true});
+  assert.equal(p.navigationAvailable,true);
+  assert.equal(p.startJourney(20),true);
+  assert.deepEqual(sent.map(s=>s.type),['start_journey']);
+  assert.equal(sent[0].speed_kmh,20);
+  assert.equal(sent[0].controls,undefined);
+  p.disconnect('test');
+  assert.equal(p.navigationAvailable,false);
+  assert.equal(p.startJourney(20),false);
+});
+
 test('production modules have no legacy world, renderer, or mock physics dependency', () => {
   for (const name of readdirSync(new URL('../frontend/', import.meta.url)).filter(n => n.endsWith('.js'))) {
     const module = readFileSync(new URL(`../frontend/${name}`, import.meta.url), 'utf8');
@@ -143,7 +156,16 @@ test('S brakes forward motion before requesting reverse, and W brakes reverse fi
   command = c.sample(0, 450); assert.equal(command.gear, -1); assert.equal(command.throttle, 1);
   c.keys.clear(); c.keys.add('KeyW');
   command = c.sample(-3, 500); assert.equal(command.brake, 1); assert.equal(command.gear, -1);
-  command = c.sample(0, 700); assert.equal(command.gear, 1); assert.equal(command.throttle, 1);
+  command = c.sample(0, 700); assert.equal(command.gear, 1); assert.equal(command.throttle, .55);
+});
+
+test('Shift increases the W pedal without commanding motion on its own or overriding brakes', () => {
+  const c=new DrivingControls();c.keys.add('ShiftLeft');
+  assert.equal(c.sample(0,0).throttle,0);
+  c.keys.add('KeyW');assert.equal(c.sample(0,1).throttle,1);
+  c.keys.delete('ShiftLeft');assert.equal(c.sample(0,2).throttle,.55);
+  c.keys.add('ShiftRight');c.keys.add('Space');assert.equal(c.sample(0,3).throttle,0);
+  assert.equal(c.sample(0,3).brake,1);
 });
 
 test('neutral, contradictory pedals, missing speed, and handbrake cannot apply throttle', () => {

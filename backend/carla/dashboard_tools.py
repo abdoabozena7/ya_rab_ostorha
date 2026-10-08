@@ -1,5 +1,6 @@
 """Native dashboard operations: map destinations, manual guidance and settings."""
 import json
+import copy
 import math
 import uuid
 from pathlib import Path
@@ -182,6 +183,15 @@ class NativeDashboardTools:
         self.route, self.native_route = self.route_service.plan(self.provider.ego.actor.get_location(), target)
         return self.route
 
+    def replan_route(self):
+        if not self.route:
+            raise ValueError('Choose a destination before resuming')
+        target = copy.deepcopy(self.route['destination'])
+        if target['map'] != self.map_name:
+            raise ValueError('Destination belongs to a different CARLA map')
+        self.route, self.native_route = self.route_service.plan(self.provider.ego.actor.get_location(), target)
+        return self.route
+
     def route_state(self):
         if self.route is None:
             return None
@@ -233,7 +243,7 @@ class NativeDashboardTools:
                                  'vehicle': 'LIVE_STOP_REQUIRED', 'spawn_index': 'LIVE_STOP_REQUIRED',
                                  'simulation_hz': 'LIVE_STOP_REQUIRED', 'population': 'LIVE_EXPLICIT_APPLY',
                                  'next_launch': 'NEXT-LAUNCH', 'render_fps': 'NOT IMPLEMENTED',
-                                 'nearby_actors': 'DISPLAY-ONLY', 'navigation': 'MANUAL_GUIDANCE'},
+                                 'nearby_actors': 'DISPLAY-ONLY', 'navigation': 'EXPLICIT_BASIC_AGENT_JOURNEY'},
                 'active_launch': getattr(p, 'active_launch', None),
                 'camera_effects': {'supported': ['camera_postprocess','camera_motion_blur','camera_bloom'],
                                    'note': 'جودة Low قد تعطل مؤثرات الصورة مهما كانت القيم المحفوظة'}}

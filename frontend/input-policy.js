@@ -1,4 +1,4 @@
-export const DRIVING_KEYS = new Set(['KeyW','KeyA','KeyS','KeyD','Space']);
+export const DRIVING_KEYS = new Set(['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','ShiftRight']);
 export function isEditableTarget(target) {
   return !!target && (/INPUT|SELECT|TEXTAREA/.test(target.tagName) || target.isContentEditable);
 }

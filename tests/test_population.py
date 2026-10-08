@@ -42,11 +42,12 @@ class PopulationTests(unittest.TestCase):
         self.assertEqual(manager.vehicles,{10})
         self.assertTrue(manager.errors)
 
-    def test_gate4_rejects_ego_autonomous_start_before_queueing(self):
+    def test_destination_journey_requires_a_live_connection_before_queueing(self):
         service=SimulationService(CarlaProvider())
-        with self.assertRaises(ValueError):service.start_journey(20)
+        with self.assertRaises(RuntimeError):service.start_journey(20)
         self.assertFalse(service.actions)
-        self.assertFalse(service.arbiter.machine.allow_navigation)
+        self.assertTrue(service.arbiter.machine.allow_navigation)
+        self.assertFalse(service.arbiter.machine.allow_automation)
 
     def test_snapshot_absence_prunes_ghost_sdk_actor_without_waiving_cleanup(self):
         manager=object.__new__(WorldPopulationManager)

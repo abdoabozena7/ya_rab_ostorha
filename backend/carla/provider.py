@@ -15,7 +15,7 @@ from .ground_truth import NearbyActorInspector
 
 class CarlaProvider:
     name = 'carla'
-    allow_navigation = False  # Gate 4 routes guide the manual driver only.
+    allow_navigation = True  # Explicit destination journeys; AI/assisted modes stay disabled.
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
                  blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False):
@@ -232,10 +232,35 @@ class CarlaProvider:
         return validate_settings({'next_launch': value})['next_launch']
 
     def start_navigation(self, speed_kmh):
-        raise ValueError('Gate 4 supports manual navigation only; autonomous ego driving is disabled')
+        self._ensure_dashboard_tools()
+        if not self.dashboard_tools.route:
+            raise ValueError('اختار وجهة صالحة واعرض طريقها قبل الانطلاق')
+        # Resume always plans from the real vehicle's current location.
+        self.dashboard_tools.replan_route()
+        from agents.navigation.basic_agent import BasicAgent
+        delta = self.fixed_delta
+        self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
+            opt_dict={'dt': delta, 'max_brake': 1.,
+                      'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
+                      'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta}},
+            map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.route_service.planner)
+        self.navigation.set_global_plan(self.dashboard_tools.native_route,
+                                        stop_waypoint_creation=True, clean_queue=True)
+        return self.route_state()
 
     def navigation_command(self, frame_id, timestamp_s, speed_kmh):
-        raise ValueError('Autonomous ego driving is disabled')
+        from ..core.contracts import CommandSource
+        if self.navigation is None:
+            raise RuntimeError('No active native route controller')
+        limit = self.ego.actor.get_speed_limit()
+        self.navigation.set_target_speed(min(speed_kmh, limit) if limit > 0 else speed_kmh)
+        value = self.navigation.run_step()
+        # Canonical steering, like native telemetry, is right-positive. The
+        # left-positive legacy dashboard adapter is used only in set_controls.
+        # This command still goes through ControlSafetyLayer and CommandArbiter.
+        return ControlCommand(frame_id, timestamp_s, float(value.throttle), float(value.brake),
+                              float(value.steer), bool(value.reverse), bool(value.hand_brake),
+                              CommandSource.NAVIGATION, -1 if value.reverse else 1)
 
     def navigation_done(self):
         return self.navigation is not None and self.navigation.done()
@@ -356,7 +381,7 @@ class CarlaProvider:
                 'map':self.world.world.get_map().name,'blueprint':self.ego.actor.type_id,
                 'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
-                'navigation':'Manual route guidance from official GlobalRoutePlanner; no ego autopilot',
+                'navigation':'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
                 'population': self.population_state(), 'traffic_active': bool(self.population and self.population.vehicles)}
 
     def restart_status(self):

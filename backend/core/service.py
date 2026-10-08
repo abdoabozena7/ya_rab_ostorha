@@ -272,13 +272,15 @@ class SimulationService:
 
     def start_journey(self, speed_kmh=20):
         if not self.arbiter.machine.allow_navigation:
-            raise ValueError('الملاحة إرشاد للقيادة اليدوية فقط في Gate 4؛ القيادة التلقائية غير مفعّلة')
+            raise ValueError('الرحلات التلقائية غير متاحة في هذا الوضع')
         speed = finite(speed_kmh)
         if not 5 <= speed <= 30:
             raise ValueError('Journey speed must be 5–30 km/h')
         with self.lock:
             self.require_connected()
-            if self.dashboard_result and self.dashboard_result.get('action')=='destination' and self.dashboard_result.get('status')=='REJECTED':
+            if not getattr(self.provider, 'route_state', lambda: None)():
+                raise ValueError('اختار وجهة صالحة واعرض طريقها قبل الانطلاق')
+            if self.dashboard_result and self.dashboard_result.get('action')=='destination' and self.dashboard_result.get('status') in ('PENDING', 'REJECTED'):
                 raise ValueError('اختار وجهة صالحة واعرض طريقها قبل بدء الرحلة')
             if self.arbiter.machine.mode == ControlMode.EMERGENCY_STOP:
                 raise ValueError('Acknowledge the emergency stop before starting')
@@ -294,6 +296,17 @@ class SimulationService:
             if self.journey['status'] not in ('STARTING', 'RUNNING'):
                 return
             self.navigation_heartbeat_at = self.now()
+
+    def set_journey_speed(self, speed_kmh):
+        speed = finite(speed_kmh)
+        if not 5 <= speed <= 30:
+            raise ValueError('Journey speed must be 5–30 km/h')
+        with self.lock:
+            self.require_connected()
+            if self.arbiter.machine.mode != ControlMode.AUTOMATIC:
+                raise ValueError('Start a destination journey before changing its live speed')
+            self.journey['speed_kmh'] = speed
+            self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
 
     def _navigation_step(self):
         if self.arbiter.machine.mode != ControlMode.AUTOMATIC:
@@ -464,6 +477,7 @@ class SimulationService:
             view = dashboard_frame(self.observation) if live else {'vehicle': None, 'world': None, 'sensors': {}, 'canonical': None}
             return {'sequence': self.sequence, 'connected': live, 'available': live,
                     'sessionId': self.session_id, 'journey': copy.deepcopy(self.journey),
+                    'navigationAvailable': self.arbiter.machine.allow_navigation,
                     'restartResult': copy.deepcopy(self.restart_result),
                     'restarting': self.restarting, 'recording': bool(self.recorder),
                     'performance': {'nativeTickRateHz': 0 if self.recent_ticks and self.now()-self.recent_ticks[-1]>.5 else

@@ -13,7 +13,8 @@ export class DrivingControls {
     if (w) {
       this.reverseSince = null;
       const oppositeMotion = this.mode === 'R' ? speedMps > .35 : speedMps < -.35;
-      result.brake = Number(oppositeMotion); result.throttle = Number(!oppositeMotion);
+      const pedal = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? 1 : .55;
+      result.brake = Number(oppositeMotion); result.throttle = oppositeMotion ? 0 : pedal;
       if (!oppositeMotion) this.gear = result.gear = this.mode === 'R' ? -1 : 1;
     } else if (s) {
       if (this.mode === 'R') { result.brake = 1; return result; }

@@ -29,15 +29,35 @@ at 20 simulation Hz, 5868 MiB VRAM in the conservative development profile.
 .\.venv-carla\Scripts\python.exe -m backend.server --carla --sensors --spawn-index 152 --start-paused
 ```
 
-Open http://127.0.0.1:8000/. **تفعيل القيادة اليدوية** arms dashboard WASD and held
-on-screen pedals; it does not start motion. W throttle, S brake/reverse, A/D steer,
+Open http://127.0.0.1:8000/. **تفعيل القيادة اليدوية** arms dashboard WASD, using the
+physical keyboard only; it does not start motion. W throttle (55%), Shift+W full throttle, S brake/reverse, A/D steer,
 Space handbrake. Typing in fields never drives. **إيقاف القيادة** brakes while
 keeping the vehicle and cameras. Keep the dashboard focused; resumption is explicit.
 
-Gate 4 navigation is **manual guidance only**. Select a destination from the native
-list or 2D road map and follow the ordered native road route yourself. Autonomous
-ego admission is disabled; older automatic-command recordings remain readable.
-Traffic Manager controls only the explicitly requested normal NPC population.
+The checked-in `frontend/dashboard.bundle.js` is the browser entry point. After
+editing frontend modules, regenerate it with `npm ci` and `npm run build:dashboard`.
+The single classic bundle avoids intermittent embedded-browser module-fetch failures;
+the source modules and existing control architecture remain unchanged.
+
+The later user-authorized extension adds an explicit **انطلق إلى الوجهة** journey
+using CARLA 0.9.16's official BasicAgent. Commands remain behind the canonical
+safety/arbitration pipeline; AI/ASSISTED control modes stay disabled. Choose a
+5–30 km/h target speed, adjustable during the journey and capped by the road limit.
+WASD intervention stops automatic control while retaining the destination. Explicit
+**استكمال الرحلة إلى الوجهة** replans from the live current position. Only **إلغاء
+المسار** clears that goal. A floating minimap opens the full native road map.
+
+A separate read-only CPU worker runs real YOLOv8n detection and EasyOCR Arabic/English
+on native RGB images. Each processed image, boxes and text share one frame/session
+identity; their age is visible. These results never issue vehicle commands. Setup:
+
+```powershell
+.\scripts\setup_perception.ps1
+```
+
+Model assets live in ignored `models/`; dependencies in isolated `.venv-perception`.
+Missing models produce an explicit unavailable state. Live analysis is off in Replay.
+See [extension validation](docs/JOURNEY_PERCEPTION_VALIDATION.md) for measured limits.
 
 The Arabic RTL dashboard has a native 800x450 RGB feed, five camera views, live
 telemetry, automatic current-position origin and persisted favorites. Settings
@@ -97,12 +117,12 @@ npm test
 .\.venv-carla\Scripts\python.exe -m scripts.native.verify_normal_city --duration 75
 ```
 
-The historical dashboard-v2 verifier includes automatic ego navigation, which is
-disabled for Gate 4. Use the normal-city verification scripts for the current phase.
-Current regression checks: 115 Python passes / 1 skip and 21 JavaScript passes.
+The dashboard-v2 verifier exercises the explicit traditional journey extension.
+Use normal-city verification scripts for population lifecycle and performance.
+See the latest extension report for current regression and native checks.
 Native gate status comes from live measurements, never unit tests.
 
 [Architecture](docs/OFFLINE_CORE.md), [migration/package evidence](docs/CARLA_0916_MIGRATION.md),
 [asset licenses](public/assets/ATTRIBUTION.md). BeamNG history is preserved in
 `legacy/beamng-integration`; 0.10.0 preparation in `legacy/carla-0100-preparation`.
-Traffic populations and pedestrians activate only by explicit dashboard application. Egypt maps and AI remain deferred.
+Traffic populations and pedestrians activate only by explicit dashboard application. Egypt maps, RL and perception-based driving remain deferred. Read-only detection/OCR is user-authorized.

@@ -24,7 +24,7 @@
       <section id="cameraCard" aria-label="كاميرا CARLA الحقيقية">
         <div class="section-heading"><div><span class="eyebrow">العرض المباشر</span><h2 id="providerTitle">كاميرا CARLA</h2></div><span id="cameraActivity">بانتظار الصورة</span></div>
         <div class="camera-tools"><label for="cameraView">زاوية الكاميرا</label><select id="cameraView"><option value="front">أمام العربية</option><option value="hood">غطاء المحرك</option><option value="chase">خلف العربية</option><option value="rear">النظر للخلف</option><option value="top">من أعلى</option></select><button id="expandCameraBtn" aria-expanded="false" aria-controls="cameraCard">تكبير الصورة</button></div>
-        <div id="frontCameraView"><img id="authoritativeCamera" alt="كاميرا حقيقية من CARLA" hidden><div id="cameraUnavailable"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="4"/></svg><strong id="cameraEmptyTitle">بانتظار اتصال المحاكي</strong><p id="cameraEmptyDescription">وصّل CARLA لعرض الكاميرا وبيانات العربية، ثم فعّل القيادة.</p><button id="connectionSetupBtn" aria-controls="settingsPanel" aria-expanded="false">إعداد الاتصال <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button></div></div>
+        <div class="camera-stage">        <div id="frontCameraView"><img id="authoritativeCamera" alt="كاميرا حقيقية من CARLA" hidden><div id="cameraUnavailable"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="4"/></svg><strong id="cameraEmptyTitle">بانتظار اتصال المحاكي</strong><p id="cameraEmptyDescription">وصّل CARLA لعرض الكاميرا وبيانات العربية، ثم فعّل القيادة.</p><button id="connectionSetupBtn" aria-controls="settingsPanel" aria-expanded="false">إعداد الاتصال <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button></div><button id="miniMapToggle" class="mini-map" aria-label="فتح خريطة الطريق" aria-controls="routePanel" aria-expanded="false"><svg id="miniRouteMap" viewBox="0 0 800 330" aria-hidden="true"><g id="miniRoadGeometry"></g><path id="miniRouteLine" fill="none" stroke-width="4"/><circle id="miniRouteTarget" r="7" hidden/><circle id="miniRouteCar" r="7" hidden/></svg><span id="miniRouteHint">الخريطة</span></button></div><aside id="perceptionPanel" aria-label="الكشف الفعلي وقراءة اللافتات"><div class="perception-heading"><h3>الكشف وقراءة اللافتات</h3><span id="perceptionStatus" role="status">بانتظار النماذج</span></div><div class="perception-image"><img id="perceptionCamera" alt="فريم CARLA محلل بواسطة YOLO وOCR" hidden><p id="perceptionEmpty">الكشف سيظهر من صورة الكاميرا الحقيقية.</p></div><p id="perceptionFrame" class="muted"></p><div id="ocrTexts" aria-live="polite"></div><p class="muted">نتائج نموذج تجريبي؛ قد يفوت أجسامًا أو يقرأ نصًا خطأ. للعرض فقط، ولا تتحكم في القيادة.</p></aside></div>
         <div class="camera-caption"><span id="cameraSource">CARLA RGB</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
         <div class="telemetry-strip">
           <div class="speed-readout"><strong id="speedVal">—</strong><span>كم/س</span></div>
@@ -34,33 +34,25 @@
           <div><span>التوجيه</span><strong id="steerVal">—</strong></div>
         </div>
       </section>
-      <section id="routePanel" aria-label="طرق خريطة CARLA">
-        <div class="section-heading"><div><span class="eyebrow">الطرق الحقيقية / <span id="mapVal">—</span></span><h2>الخريطة والوجهة</h2></div><button id="mapDestinationsBtn" aria-controls="inGamePhone" aria-expanded="false">اختار وجهة</button></div>
-        <p id="routeDetail">اضغط على طريق في الخريطة أو اختار مكانًا من قائمة الوجهات.</p>
-        <div class="map-workspace"><svg id="routeMap" viewBox="0 0 800 330" role="img" aria-label="خريطة طرق CARLA" aria-describedby="mapKeyboardHelp" tabindex="0">
-          <g id="roadGeometry"></g><path id="routeLine" fill="none" stroke-width="4"/><circle id="routeTarget" r="7" hidden/><circle id="routeCar" r="7" hidden/>
-        </svg>
-        <div id="mapEmpty"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3ZM9 3v15M15 6v15"/></svg><strong>الخريطة تظهر بعد الاتصال</strong><span>موقع العربية والطرق يتحدثوا تلقائيًا من CARLA.</span></div></div>
-        <div class="map-caption"><span><i class="car-legend" aria-hidden="true"></i> العربية الحالية &nbsp; <i class="route-legend" aria-hidden="true"></i> الوجهة والمسار</span><span>الشمال ↑</span></div>
-        <p id="mapKeyboardHelp" class="muted">اضغط على طريق لاختيار وجهة، أو اضغط Enter لفتح قائمة الأماكن.</p>
-        <p id="turnInstruction"></p><p id="mapSelectionStatus" role="status"></p><button id="clearRouteBtn">إلغاء المسار</button>
-      </section>
+
     </section>
     <aside id="simulationCenter" class="drive-inspector">
       <div class="section-heading"><div><span class="eyebrow">التحكم في العربية</span><h2 id="controlMode">العربية متوقفة</h2></div><span id="controlSource"></span></div>
       <p id="connectionDetail">بانتظار الاتصال بالمحاكي.</p>
-      <select id="drivingMode" aria-label="طريقة القيادة" hidden><option value="MANUAL">يدوي — أنا أسوق</option></select>
-      <p id="modeExplanation">اضغط تفعيل القيادة اليدوية، ثم استخدم الكيبورد أو أزرار القيادة.</p>
-      <button id="startDrivingBtn" class="primary">تفعيل القيادة اليدوية</button>
+      <select id="drivingMode" aria-label="طريقة القيادة" hidden><option value="MANUAL">يدوي — أنا أسوق</option><option value="AUTOMATIC">رحلة إلى الوجهة</option></select>
+      <p id="modeExplanation">اضغط تفعيل القيادة اليدوية، ثم استخدم الكيبورد.</p>
+      <label for="journeySpeed">سرعة الرحلة التلقائية كم/س</label><input id="journeySpeed" type="number" min="5" max="30" step="1" value="20">
+      <p id="journeySpeedApplied" class="muted"></p>
+      <button id="driveJourneyBtn" class="primary" disabled>انطلق إلى الوجهة</button>
+      <p id="driveJourneyAvailability" class="muted" role="status">اختار وجهة واعرض الطريق أولًا.</p>
+      <button id="startDrivingBtn" disabled>تفعيل القيادة اليدوية</button>
       <button id="pauseBtn" disabled>إيقاف القيادة</button>
       <p id="drivingInstruction" role="status"></p><p id="journeyStatus" role="status"></p>
       <div class="manual-controls">
         <label for="gearSelect">الغيار</label><select id="gearSelect" disabled><option value="D">D — للأمام</option><option value="N">N — محايد</option><option value="R">R — رجوع للخلف</option></select>
-        <div class="drive-pad" aria-label="اضغط باستمرار للتحكم">
-          <button data-drive-key="KeyW">W <span>بنزين</span></button><button data-drive-key="KeyS">S <span>فرامل / رجوع</span></button><button data-drive-key="KeyA">A <span>شمال</span></button><button data-drive-key="KeyD">D <span>يمين</span></button><button data-drive-key="Space">Space <span>فرامل اليد</span></button>
-        </div>
+        <p class="keyboard-guide"><kbd>W</kbd> بنزين · <kbd>S</kbd> فرامل / رجوع · <kbd>A</kbd> شمال · <kbd>D</kbd> يمين<br><kbd>W + Shift</kbd> بنزين أقوى · <kbd>Space</kbd> فرامل اليد</p>
         <p id="controlStatus" role="status">الكيبورد غير مفعّل</p>
-        <p id="manualHint" class="muted">الكيبورد يعمل داخل الداشبورد. المسار يرشدك فقط؛ أنت تتحكم في العربية.</p>
+        <p id="manualHint" class="muted">الكيبورد يعمل داخل الداشبورد. الوجهة تظل محفوظة عند استلام القيادة يدويًا.</p>
       </div>
       <button id="emergencyStopBtn" class="emergency" disabled>إيقاف طوارئ</button>
       <button id="acknowledgeStopBtn" hidden>إقرار إيقاف الطوارئ</button>
@@ -71,13 +63,29 @@
   </main>
   <footer class="app-footer"><span id="simulationState">CARLA — DISCONNECTED</span><span id="positionVal">الموقع غير متاح</span><span id="headingVal"></span></footer>
   <div id="panelBackdrop" hidden></div>
+      <aside id="routePanel" class="drawer map-drawer" hidden role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+        <div class="section-heading"><div><span class="eyebrow">الطرق الحقيقية / <span id="mapVal">—</span></span><h2 id="mapTitle">الخريطة والوجهة</h2></div><button id="closeMapBtn" aria-label="إغلاق الخريطة">×</button><button id="mapDestinationsBtn" aria-controls="inGamePhone" aria-expanded="false">اختار وجهة</button></div>
+        <p id="routeDetail">اضغط على طريق في الخريطة أو اختار مكانًا من قائمة الوجهات.</p>
+        <div class="map-workspace"><svg id="routeMap" viewBox="0 0 800 330" role="img" aria-label="خريطة طرق CARLA" aria-describedby="mapKeyboardHelp" tabindex="0">
+          <g id="roadGeometry"></g><path id="routeLine" fill="none" stroke-width="4"/><circle id="routeTarget" r="7" hidden/><circle id="routeCar" r="7" hidden/>
+        </svg>
+        <div id="mapEmpty"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3ZM9 3v15M15 6v15"/></svg><strong>الخريطة تظهر بعد الاتصال</strong><span>موقع العربية والطرق يتحدثوا تلقائيًا من CARLA.</span></div></div>
+        <div class="map-caption"><span><i class="car-legend" aria-hidden="true"></i> العربية الحالية &nbsp; <i class="route-legend" aria-hidden="true"></i> الوجهة والمسار</span><span>الشمال ↑</span></div>
+        <p id="mapKeyboardHelp" class="muted">اضغط على طريق لاختيار وجهة، أو اضغط Enter لفتح قائمة الأماكن.</p>
+        <p id="turnInstruction"></p><p id="mapSelectionStatus" role="status"></p>
+        <div class="route-actions"><button id="startJourneyBtn" class="primary" disabled>انطلق إلى الوجهة</button><button id="clearRouteBtn">إلغاء المسار</button></div>
+        <p id="journeyAvailability" class="muted" role="status">اختار وجهة واعرض الطريق أولًا.</p>
+        <p class="muted">انطلق يشغّل متحكم CARLA التقليدي. التدخل اليدوي يوقف الرحلة ويحفظ الوجهة؛ اضغط استكمال للرجوع إليها. تنقل تجريبي؛ لا يضمن التعامل مع كل العوائق أو علامات الوقوف.</p>
+      </aside>
   <aside id="inGamePhone" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="phoneTitle">
     <div class="section-heading"><h2 id="phoneTitle">اختار وجهتك</h2><button id="closePhoneBtn" aria-label="إغلاق الوجهات">×</button></div>
     <p id="phoneStatus"></p><div class="origin"><span>نقطة البداية</span><strong>موقع العربية الحالي تلقائيًا</strong><span id="originPosition"></span></div>
     <label for="destinationSearch">ابحث عن وجهة</label><input id="destinationSearch" placeholder="مكان محفوظ، منطقة أو رقم طريق" autocomplete="off">
     <div id="placeResults" role="list" aria-label="الوجهات"></div>
     <button id="chooseDestinationBtn" class="primary">اعرض الطريق للوجهة المختارة</button>
-    <p id="destinationStatus" role="status">اختيار الوجهة يعرض الطريق فقط. فعّل القيادة، ثم استخدم W أو الدواسات للتحرك.</p>
+    <p id="destinationStatus" role="status">اختيار الوجهة يعرض الطريق فقط. اضغط انطلق للتحرك تلقائيًا، أو فعّل القيادة اليدوية.</p>
+    <button id="phoneJourneyBtn" class="primary" disabled>انطلق إلى الوجهة الحالية</button>
+    <p id="phoneJourneyAvailability" class="muted" role="status"></p>
     <div class="save-place"><label for="savePlaceName">احفظ مكان العربية باسم</label><input id="savePlaceName" maxlength="60" placeholder="مثال: بداية التدريب"><button id="savePlaceBtn">احفظ المكان الحالي</button></div>
     <p class="muted">تقدر تختار نقطة على الطريق من الخريطة كمان.</p>
   </aside>
@@ -100,8 +108,9 @@
   <aside id="sensorPanel" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="debugTitle">
     <div class="section-heading"><h2 id="debugTitle">التفاصيل الحية</h2><button id="closeSensorBtn" aria-label="إغلاق التفاصيل">×</button></div>
     <p id="providerStatus"></p><div class="debug-values"><span>الإصدار <b id="versionVal">—</b></span><span>الفريم <b id="frameVal">—</b></span><span>زمن المحاكاة <b id="timeVal">—</b></span><span>التسارع <b id="accelVal">—</b></span><span>رجوع للخلف <b id="reverseVal">—</b></span></div>
-    <p id="cameraMetadata"></p><pre id="debugTelemetry"></pre><h3>إشارة المرور — DISPLAY-ONLY</h3><p id="trafficLightState">بانتظار البيانات</p><h3>الممثلون القريبون — حقيقة المحاكي</h3><p class="muted">بيانات CARLA للتشخيص؛ لا يوجد إدراك أو قرار قيادة آلي.</p><label>نطاق الفحص بالمتر<input id="nearbyRadius" type="number" min="10" max="150" value="50"></label><button id="applyRadiusBtn">تطبيق نطاق الفحص</button><pre id="nearbyActors"></pre>
+    <p id="cameraMetadata"></p><pre id="debugTelemetry"></pre><h3>إشارة المرور — DISPLAY-ONLY</h3><p id="trafficLightState">بانتظار البيانات</p><h3>الممثلون القريبون — حقيقة المحاكي</h3><p class="muted">بيانات CARLA للتشخيص، منفصلة عن نتائج YOLO/OCR؛ لا تصدر قرارات قيادة.</p><label>نطاق الفحص بالمتر<input id="nearbyRadius" type="number" min="10" max="150" value="50"></label><button id="applyRadiusBtn">تطبيق نطاق الفحص</button><pre id="nearbyActors"></pre>
   </aside>
-  <script type="module" src="/frontend/dashboard.js"></script>
+  <script src="/frontend/bootstrap.js" defer></script>
+  <script src="/frontend/dashboard.bundle.js" defer></script>
 </body>
 </html>

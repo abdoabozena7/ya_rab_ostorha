@@ -44,13 +44,14 @@ export class DashboardTools {
       this.load(true);
     };
     $('sensorBtn').onclick = () => this.toggle('sensorPanel','sensorBtn');
-    $('routeBtn').onclick = () => { this.close(); $('routePanel').scrollIntoView({behavior:this.scrollBehavior(),block:'center'}); $('routeMap').focus({preventScroll:true}); };
+    $('routeBtn').onclick = () => this.toggle('routePanel','routeBtn');
+    $('miniMapToggle').onclick = () => this.toggle('routePanel','miniMapToggle');
     $('routeMap').onkeydown = event => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault(); this.open('inGamePhone','routeMap');
       }
     };
-    for (const [panel,button] of [['inGamePhone','closePhoneBtn'],['settingsPanel','closeSettingsBtn'],['sensorPanel','closeSensorBtn']])
+    for (const [panel,button] of [['inGamePhone','closePhoneBtn'],['settingsPanel','closeSettingsBtn'],['sensorPanel','closeSensorBtn'],['routePanel','closeMapBtn']])
       $(button).onclick = () => this.close();
     $('panelBackdrop').onclick = () => this.close();
     document.addEventListener('keydown', event => {
@@ -106,16 +107,7 @@ export class DashboardTools {
       const nativePoint = point.matrixTransform(matrix.inverse());
       this.choose({location:this.inverse([nativePoint.x,nativePoint.y])});
     };
-    for (const button of document.querySelectorAll('[data-drive-key]')) {
-      const key = button.dataset.driveKey;
-      button.onpointerdown = event => {
-        if (button.disabled || !this.options.canInput?.()) return;
-        event.preventDefault(); button.setPointerCapture(event.pointerId);
-        controls.keys.add(key); this.options.intervene?.(); button.classList.add('held');
-      };
-      const release = () => { controls.keys.delete(key); button.classList.remove('held'); };
-      button.onpointerup = release; button.onpointercancel = release; button.onlostpointercapture = release;
-    }
+
   }
 
   scrollBehavior() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
@@ -254,6 +246,8 @@ export class DashboardTools {
     if (this.session !== p.sessionId) {
       this.session = p.sessionId; this.catalog = null; this.selectedPlace = null; this.result = null;
       this.project = this.inverse = null; $('roadGeometry').replaceChildren(); $('routeLine').setAttribute('d','');
+      $('miniRoadGeometry').replaceChildren();$('miniRouteLine').setAttribute('d','');
+      $('miniRouteCar').setAttribute('hidden','');$('miniRouteTarget').setAttribute('hidden','');
       $('mapEmpty').hidden = false;
       $('routeCar').setAttribute('hidden',''); $('routeTarget').setAttribute('hidden','');
     }
@@ -266,14 +260,25 @@ export class DashboardTools {
     }
     const emergency = p.controlMode === 'EMERGENCY_STOP' ? 'أقر إيقاف الطوارئ أولًا' : '';
     this.disable('startDrivingBtn', blocked || emergency);
+    const journeyBusy = ['STARTING','RUNNING'].includes(p.journey?.status);
+    const destinationPending = p.dashboardResult?.action === 'destination' && p.dashboardResult.status === 'PENDING';
+    const journeyBlocked = blocked || emergency || (!p.navigationAvailable ? 'الرحلات غير متاحة في هذا الوضع' : '') ||
+      (destinationPending ? 'جاري حساب الطريق…' : '') || (!p.route ? 'اختار وجهة صالحة واعرض الطريق أولًا' : '') ||
+      (journeyBusy ? 'الرحلة شغالة؛ أوقفها قبل الانطلاق مجددًا' : '') ||
+      (p.route?.arrived && state.speedMagnitudeMps < .15 ? 'العربية عند الوجهة بالفعل؛ اختار وجهة جديدة' : '');
+    for (const id of ['startJourneyBtn','phoneJourneyBtn','driveJourneyBtn']) this.disable(id,journeyBlocked);
+    this.disable('journeySpeed',ownerBlocked || emergency);
+    $('journeySpeedApplied').textContent = journeyBusy ? 'السرعة المطلوبة حاليًا: '+p.journey.speed_kmh+' كم/س؛ حد الطريق الأقل له الأولوية.' : '5–30 كم/س. تقدر تغيرها أثناء الرحلة.';
+    const resume = p.route && p.journey?.route_id===p.route.id && ['PAUSED','ERROR'].includes(p.journey?.status);
+    for (const id of ['startJourneyBtn','driveJourneyBtn']) $(id).textContent = resume ? 'استكمال الرحلة إلى الوجهة' : 'انطلق إلى الوجهة';
+    $('phoneJourneyBtn').textContent = resume ? 'استكمال الرحلة إلى الوجهة الحالية' : 'انطلق إلى الوجهة الحالية';
+    $('journeyAvailability').textContent = $('phoneJourneyAvailability').textContent = $('driveJourneyAvailability').textContent = journeyBlocked ||
+      'الوجهة: '+p.route.destination.name+(resume ? ' — محفوظة؛ الاستكمال من مكانك الحالي.' : ' — اضغط انطلق للتحرك تلقائيًا.');
     this.disable('pauseBtn',ownerBlocked || emergency);
     this.disable('emergencyStopBtn',ownerBlocked);
     this.disable('acknowledgeStopBtn',ownerBlocked);
     $('acknowledgeStopBtn').hidden = !emergency;
-    for (const button of document.querySelectorAll('[data-drive-key]')) {
-      button.disabled = !controllable; button.title = controllable ? 'اضغط باستمرار' : blocked || emergency || 'فعّل القيادة اليدوية واحتفظ بالتركيز على الداشبورد';
-      button.classList.toggle('held',this.controls.keys.has(button.dataset.driveKey));
-    }
+
     for (const id of ['cameraView','chooseDestinationBtn','savePlaceBtn','nativeDisconnectBtn','resetBtn'])
       this.disable(id,ownerBlocked);
     const configurationBlocked = ownerBlocked || (p.recording ? 'أنهِ التسجيل قبل تغيير إعدادات الحساسات' : '');
@@ -285,12 +290,12 @@ export class DashboardTools {
     this.disable('drivingMode',blocked || emergency);
     this.disable('clearRouteBtn',ownerBlocked || (!p.route ? 'لا يوجد مسار نشط' : ''));
     $('modeExplanation').textContent = p.isReplay ? 'عرض بيانات وكاميرا من التسجيل؛ القيادة بالمحاكي معطّلة.' :
-      'فعّل القيادة، ثم اضغط باستمرار على W أو زر البنزين للتحرك.';
+      'انطلق يمشي العربية إلى الوجهة. تفعيل القيادة اليدوية يجهّز الكيبورد لتسوق بنفسك.';
     $('manualHint').textContent = p.isReplay ? 'الكيبورد لا يرسل أوامر قيادة أثناء Replay.' :
-      'الكيبورد يعمل داخل الداشبورد. المسار يرشدك فقط؛ أنت تتحكم في العربية.';
+      'الكيبورد يعمل داخل الداشبورد. W/A/S/D تستلم القيادة؛ الوجهة تظل محفوظة حتى تلغي المسار.';
     $('drivingInstruction').textContent = blocked || emergency || (!p.controller ? 'صفحة أخرى تتحكم بالعربية. استلم التحكم من الإعدادات.' :
       p.controlMode === 'AUTOMATIC' ? 'الرحلة شغالة. إيقاف القيادة يفرمل؛ أي تدخل منك يسلمك القيادة.'
-      : controllable ? 'الكيبورد وأزرار الشاشة جاهزة. اضغط باستمرار للتحكم.' :
+      : controllable ? 'الكيبورد جاهز. W+Shift يرفع البنزين من 55% إلى 100%.' :
         'العربية تحت الأمان. اضغط تفعيل القيادة اليدوية للتحرك.');
     const reasons = {manual_intervention:'استلمت القيادة يدويًا',dashboard_heartbeat_timeout:'انقطع نبض اتصال الداشبورد',
       destination_reached:'وصلت للوجهة والعربية توقفت',collision:'توقفت الرحلة بسبب تصادم',
@@ -301,9 +306,8 @@ export class DashboardTools {
     const statuses = {IDLE:'',READY:'الطريق جاهز',STARTING:'جاري بدء الرحلة',RUNNING:'الرحلة التلقائية شغالة',
       PAUSED:'الرحلة متوقفة',ARRIVED:'وصلت',ERROR:'تعذر إكمال الرحلة'};
     $('journeyStatus').textContent = p.route ? (p.isReplay ? 'مسار من التسجيل؛ القيادة معطّلة' :
-      p.controlMode === 'AUTOMATIC' ? (statuses[p.journey?.status] || '') +
-        (p.journey?.reason ? ' · ' + (reasons[p.journey.reason] || p.journey.reason) : '') :
-        'إرشاد يدوي — اتبع المسار بنفسك') : '';
+      (statuses[p.journey?.status] || 'الطريق جاهز') +
+      (p.journey?.reason ? ' · ' + (reasons[p.journey.reason] || p.journey.reason) : '')) : '';
     const population = p.population;
     $('trafficActual').textContent = population?.actual.vehicles ?? '—';
     $('pedestrianActual').textContent = population?.actual.pedestrians ?? '—';
@@ -347,7 +351,7 @@ export class DashboardTools {
         if (result.action === 'save_place') { $('destinationStatus').textContent = 'اتحفظ المكان: ' + result.result.name; this.load(true); }
         if (result.action === 'favorite_place') { $('destinationStatus').textContent = result.result.favorite ? 'الوجهة اتضافت للمفضلات.' : 'الوجهة اتشالت من المفضلات.'; this.load(true); }
         if (result.action === 'destination') $('destinationStatus').textContent = $('mapSelectionStatus').textContent =
-          'الطريق جاهز إلى ' + result.result.destination.name + '؛ اتبعه بالقيادة اليدوية.';
+          'الطريق جاهز إلى ' + result.result.destination.name + '؛ اضغط انطلق أو سق يدويًا.';
         if (result.action === 'recording') this.recordingPath = result.result.path;
         if (result.action === 'population') { $('settingsStatus').textContent = 'تم تحديث السكان؛ العدد الفعلي ظاهر في المدينة الحية.'; this.load(true); }
         if (result.action === 'scene') { $('settingsStatus').textContent = 'تم إنشاء المشهد العادي والطقس ببذرة ثابتة.'; this.load(true); }
@@ -372,11 +376,14 @@ export class DashboardTools {
     const [minX,minY,maxX,maxY] = roads.bounds;
     const scale = Math.min(750/Math.max(1,maxX-minX),280/Math.max(1,maxY-minY));
     const offsetX = (800-(maxX-minX)*scale)/2, offsetY = (330-(maxY-minY)*scale)/2;
+    $('routeMap').setAttribute('viewBox',[offsetX-15,offsetY-15,(maxX-minX)*scale+30,(maxY-minY)*scale+30].join(' '));
     this.project = p => [offsetX+(p[0]-minX)*scale,offsetY+(p[1]-minY)*scale];
     this.inverse = p => [(p[0]-offsetX)/scale+minX,(p[1]-offsetY)/scale+minY,0];
     const path = document.createElementNS(svgNamespace,'path');
     path.setAttribute('d',roads.segments.map(line => 'M'+this.project(line[0]).join(',')+'L'+this.project(line[1]).join(',')).join(' '));
     $('roadGeometry').replaceChildren(path);
+    $('miniRoadGeometry').replaceChildren(path.cloneNode(true));
+    this.mapScale = scale;
     $('mapEmpty').hidden = roads.segments.length > 0;
   }
   renderRoute(route, car) {
@@ -384,6 +391,16 @@ export class DashboardTools {
     const carVisible = this.provider.fresh && !!car;
     $('routeCar').toggleAttribute('hidden',!carVisible);
     if (carVisible) { const [x,y] = this.project(car); $('routeCar').setAttribute('cx',x); $('routeCar').setAttribute('cy',y); }
+    $('miniRouteCar').toggleAttribute('hidden',!carVisible);
+    $('miniRouteTarget').toggleAttribute('hidden',!route);
+    if (carVisible) {
+      const [x,y] = this.project(car), span = 100*this.mapScale;
+      $('miniRouteCar').setAttribute('cx',x); $('miniRouteCar').setAttribute('cy',y);
+      $('miniRouteMap').setAttribute('viewBox',[x-span/2,y-span/2,span,span].join(' '));
+    }
+    $('miniRouteHint').textContent = route ? Math.round(route.remaining_m)+' م · الخريطة' : 'الخريطة';
+    $('miniRouteLine').setAttribute('d',route ? route.points.map((point,i)=>(i?'L':'M')+this.project(point).join(',')).join(' ') : '');
+    if (route) { const [x,y]=this.project(route.destination.location); $('miniRouteTarget').setAttribute('cx',x); $('miniRouteTarget').setAttribute('cy',y); }
     $('routeTarget').toggleAttribute('hidden',!route);
     if (!route) {
       $('routeLine').setAttribute('d',''); $('routeDetail').textContent = 'اضغط على طريق في الخريطة أو اختار مكانًا من قائمة الوجهات.';

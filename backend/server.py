@@ -73,6 +73,23 @@ class Handler(SimpleHTTPRequestHandler):
             if provider is None:
                 return self._json(503, {"error": "CARLA provider is not running"})
             try:
+                if path == '/api/simulation/perception':
+                    analysis = getattr(self.server, 'perception', None)
+                    snapshot = provider.snapshot()
+                    if not snapshot.get('connected'):
+                        return self._json(200, {'status':'DISCONNECTED'})
+                    return self._json(200, analysis.latest(snapshot.get('sessionId')) if analysis else {'status':'UNAVAILABLE'})
+                if path == '/api/simulation/perception.jpg':
+                    analysis = getattr(self.server, 'perception', None)
+                    provider.require_connected()
+                    token = parse_qs(urlsplit(self.path).query).get('token',[''])[0]
+                    try: body = analysis.image(token) if analysis else None
+                    except (ValueError,OSError): body = None
+                    if not body: return self._json(404, {'error':'Processed frame expired or unavailable'})
+                    self.send_response(200);self.send_header('Content-Type','image/jpeg')
+                    self.send_header('Cache-Control','no-store');self.send_header('Content-Length',str(len(body)))
+                    self.send_header('X-Perception-Token',token)
+                    self.end_headers();return self.wfile.write(body)
                 if path == "/api/simulation/state":
                     return self._json(200, provider.get_vehicle_state())
                 if path == '/api/simulation/catalog':
@@ -295,6 +312,9 @@ def main():
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host, args.websocket_port, args.port)
             server.websocket_bridge.start()
+        if args.carla:
+            from .perception import PerceptionService
+            server.perception = PerceptionService(args.port)
         log(LogCategory.CONNECTION, 'Control center listening', url=f'http://{args.host}:{args.port}/',
             mode='REPLAY' if args.replay else 'CARLA' if args.carla else 'DISCONNECTED')
         if args.session_duration:
@@ -305,6 +325,10 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        if getattr(server,'perception',None):
+            try: server.perception.close()
+            except Exception as error:
+                log(LogCategory.SENSOR, 'Perception shutdown error', error=str(error))
         try:
             if getattr(server, "websocket_bridge", None):
                 server.websocket_bridge.close()

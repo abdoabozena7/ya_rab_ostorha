@@ -38,6 +38,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--restart', choices=['Low','Epic'])
     parser.add_argument('--short', action='store_true')
+    parser.add_argument('--output', type=Path, help='Preserve earlier validation artifacts by choosing a new evidence path')
     parser.add_argument('--collision', action='store_true', help='Temporary controlled static barrier; always cleaned up')
     args = parser.parse_args()
     proof = {'source':'LIVE_NATIVE', 'checks':{}, 'samples':[]}
@@ -165,8 +166,16 @@ def main():
             wait(lambda s:s['mode']=='MANUAL' and s['journey']['reason']=='manual_intervention')
             proof['checks']['manual_intervention']=True
             send('stop_driving'); wait(lambda s:s['mode']=='PAUSED' and s['vehicle']['speedKmh']<.5)
+            retained_target=json.loads(json.dumps(state['route']['destination']))
+            old_route_id=state['route']['id']
             heartbeat=True; send('start_journey',speed_kmh=10)
             wait(lambda s:s['mode']=='AUTOMATIC')
+            proof['checks']['resume_keeps_exact_destination_replans_live_origin']=(
+                state['route']['destination']==retained_target and state['route']['id']!=old_route_id and
+                math.dist(state['route']['points'][0],state['vehicle']['positionWorldM'])<3)
+            proof['resume']={'destination':retained_target,'new_route':state['route']['id'],
+                             'origin_waypoint':state['route']['points'][0],
+                             'ego_position':state['vehicle']['positionWorldM']}
             heartbeat=False; send('emergency_stop')
             wait(lambda s:s['mode']=='EMERGENCY_STOP')
             send('acknowledge_stop'); wait(lambda s:s['mode']=='PAUSED')
@@ -212,7 +221,7 @@ def main():
             (ROOT/'output/native-validation/dashboard-v2-delivered.jpg').write_bytes(jpeg)
         proof['pass']=all(proof['checks'].values())
     suffix=args.restart.lower() if args.restart else 'navigation-short' if args.short else 'navigation'
-    path=ROOT/'output/native-validation'/('dashboard-v2-'+suffix+'.json')
+    path=args.output or ROOT/'output/native-validation'/('dashboard-v2-'+suffix+'.json')
     path.write_text(json.dumps(proof,ensure_ascii=False,indent=2),encoding='utf-8')
     assert proof['pass'],proof['checks']
     print(json.dumps({'pass':proof['pass'],'path':str(path),'checks':proof['checks']},ensure_ascii=False))

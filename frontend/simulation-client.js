@@ -37,6 +37,7 @@ export class SimulationClient extends SimulationProvider {
     this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
     this.route = this.dashboardResult = this.operationError = null;
+    this.navigationAvailable = false;
     this.lastControlSentAt = -Infinity;
   }
 
@@ -86,6 +87,7 @@ export class SimulationClient extends SimulationProvider {
     if (message.sessionId && this.sessionId && message.sessionId !== this.sessionId) this.disconnect('New native session');
     this.sessionId = message.sessionId ?? this.sessionId;
     this.journey = message.journey ?? {};
+    this.navigationAvailable = message.navigationAvailable === true;
     this.restarting = message.restarting ?? false;
     this.restartResult = message.restartResult ?? null;
     this.performance = message.performance ?? {};
@@ -144,6 +146,7 @@ export class SimulationClient extends SimulationProvider {
     this.isReplay = false; this.controlMode = 'DISCONNECTED'; this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
     this.route = null;
+    this.navigationAvailable = false;
     this.population = this.nearbyActors = null;
   }
 
@@ -180,6 +183,7 @@ export class SimulationClient extends SimulationProvider {
   startDriving() { this.operationError = null; return this.send('start_driving'); }
   startJourney(speed_kmh) { this.operationError = null; return this.send('start_journey', {speed_kmh}); }
   journeyHeartbeat() { return this.send('journey_heartbeat', {session_id:this.sessionId}); }
+  journeySpeed(speed_kmh) { this.operationError = null; return this.send('journey_speed', {speed_kmh}); }
   stopDriving(reason = 'operator_stop') { return this.send('stop_driving', {reason}); }
   takeControl() { return this.send('take_control'); }
   reconnectNative() { this.operationError = null; return this.send('reconnect'); }

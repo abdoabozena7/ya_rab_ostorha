@@ -4,8 +4,10 @@ import {telemetryText} from './telemetry.js';
 import {sensorFrameKey,matchesSensorResponse} from './sensor-frame.js';
 import {DashboardTools} from './dashboard-tools.js';
 import {DRIVING_KEYS,isEditableTarget,drivingInputAllowed} from './input-policy.js';
+import {PerceptionView} from './perception-view.js';
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
+const perception = new PerceptionView(provider);
 const number = (value,suffix='',digits=1) => Number.isFinite(value) ? value.toFixed(digits)+suffix : '—';
 let manualArmed = false, manualRequestedUntil = 0, manualOverridePending = false, lastMode = null;
 let lastGear = null, seenSession = null, cameraReceipt = null, cameraUrl = null, cameraRequest = null, cameraGeneration = 0;
@@ -112,7 +114,7 @@ function refresh() {
     : !live ? 'بانتظار اتصال حقيقي بـCARLA' : provider.controlMode === 'AUTOMATIC' ? 'الغيار يديره متحكم الرحلة؛ استلم القيادة اليدوية لتغييره'
     : !provider.controller ? 'استلم التحكم من إعدادات الاتصال أولًا' : 'فعّل القيادة اليدوية لتغيير الغيار';
   $('controlStatus').textContent = provider.isReplay ? 'REPLAY · القيادة مقفولة' : !document.hasFocus()||document.hidden
-    ? 'ارجع للداشبورد لاستقبال الكيبورد' : controllable ? 'WASD وأزرار الشاشة جاهزة' : 'الكيبورد متوقف — فعّل القيادة أولًا';
+    ? 'ارجع للداشبورد لاستقبال الكيبورد' : controllable ? 'WASD جاهزة · W+Shift بنزين أقوى' : 'الكيبورد متوقف — فعّل القيادة أولًا';
   const sensorCount = Object.keys(provider.sensorMetadata).length;
   $('sensorStatus').textContent = provider.isReplay ? sensorCount+' حساسات من الفريم المسجل · أحداث التصادم من التسجيل' :
     live ? sensorCount+' حساسات دورية تستقبل بيانات · التصادم يعمل عند الحدث' : 'الحساسات غير متاحة';
@@ -131,10 +133,30 @@ function refresh() {
       ['STARTING','RUNNING'].includes(provider.journey?.status) && !manualOverridePending) provider.journeyHeartbeat();
   updateCamera(provider.sensorMetadata.frontCamera);
   tools.render(state,controllable);
+  perception.update();
 }
 $('startDrivingBtn').onclick = () => {
   resetKeys(); manualArmed = true; manualRequestedUntil = performance.now()+1000;
+  $('drivingMode').value = 'MANUAL';
   provider.startDriving(); document.activeElement?.blur(); $('drivingInstruction').textContent = 'تفعيل القيادة اليدوية…';
+};
+function startJourney() {
+  const speed = Number($('journeySpeed').value);
+  if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
+    $('operationStatus').textContent = 'اختار سرعة بين 5 و30 كم/س.'; return;
+  }
+  tools.close(false); resetKeys(); manualArmed = false; manualRequestedUntil = 0;
+  $('drivingMode').value = 'AUTOMATIC';
+  if (provider.startJourney(speed)) $('journeyStatus').textContent = 'جاري بدء الرحلة إلى الوجهة…';
+  document.activeElement?.blur();
+}
+$('startJourneyBtn').onclick = $('phoneJourneyBtn').onclick = $('driveJourneyBtn').onclick = startJourney;
+$('journeySpeed').onchange = () => {
+  const speed = Number($('journeySpeed').value);
+  if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
+    $('operationStatus').textContent = 'اختار سرعة بين 5 و30 كم/س.'; return;
+  }
+  if (provider.controlMode === 'AUTOMATIC') provider.journeySpeed(speed);
 };
 $('drivingMode').onchange = () => { clearControls(); };
 $('gearSelect').onchange = () => { controls.setMode($('gearSelect').value); provider.releaseControls(); lastGear = null; };
@@ -147,6 +169,7 @@ document.addEventListener('keydown',event => {
   if (isEditableTarget(event.target)) return;
   if (DRIVING_KEYS.has(event.code)) {
     event.preventDefault();
+    if (provider.controlMode === 'AUTOMATIC' && event.code.startsWith('Shift')) return;
     if (!event.repeat&&canInput()) { controls.keys.add(event.code); intervene(); }
   }
   if (!event.repeat&&event.code === 'KeyP') tools.toggle('inGamePhone','phoneToggleBtn');

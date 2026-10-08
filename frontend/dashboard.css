@@ -45,6 +45,26 @@ input:focus{outline:2px solid var(--focus);outline-offset:2px}
 kbd{direction:ltr;display:inline-block;font:12px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 var(--space-1);background:var(--bg)}
 [hidden]{display:none!important}
 .muted{color:var(--muted);font-size:12px}
+.route-actions{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-3)}
+#journeySpeed{max-width:160px}
+.camera-stage{display:grid;grid-template-columns:minmax(0,2fr) minmax(230px,1fr);gap:var(--space-3);align-items:start}
+#perceptionPanel{min-width:0;background:var(--bg);padding:var(--space-3);border-radius:6px}
+.perception-heading{margin-bottom:var(--space-2)}
+#perceptionStatus{display:block;font-size:12px;color:var(--muted)}
+.perception-image{position:relative;aspect-ratio:16/9;background:var(--camera-bg);display:grid;place-items:center;border-radius:4px;overflow:hidden;color:var(--camera-muted)}
+#perceptionCamera{width:100%;height:100%;object-fit:contain}
+#perceptionEmpty{padding:var(--space-3);text-align:center;font-size:12px}
+#ocrTexts{max-height:160px;overflow:auto;font-size:12px;overflow-wrap:anywhere}
+.mini-map{position:absolute;z-index:4;bottom:12px;left:12px;width:116px;height:116px;border-radius:50%;padding:0;overflow:hidden;border:2px solid var(--primary);background:var(--bg);box-shadow:0 2px 10px #0008}
+.mini-map svg{position:absolute;inset:0;width:100%;height:100%;background:var(--raised);transform:perspective(300px) rotateX(18deg) scale(1.12);pointer-events:none}
+.mini-map span{position:absolute;bottom:4px;left:0;right:0;background:var(--surface);font-size:10px;padding:2px;pointer-events:none}
+#miniRoadGeometry path{stroke:var(--road-ink);stroke-width:1.5;fill:none;vector-effect:non-scaling-stroke}
+#miniRouteLine{stroke:var(--primary);vector-effect:non-scaling-stroke}
+#miniRouteCar{fill:var(--surface);stroke:var(--primary);stroke-width:3}
+#miniRouteTarget{fill:var(--primary)}
+#routePanel.map-drawer{margin:0;inset:4vh 4vw;width:auto;max-width:1000px;height:92vh;z-index:51}
+.keyboard-guide{font-size:12px;color:var(--muted);line-height:2.2}
+@media(max-width:1100px){.camera-stage{grid-template-columns:1fr}#perceptionPanel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.perception-heading{grid-column:1/-1}.mini-map{width:92px;height:92px}}
 .accent{color:var(--accent)}
 .eyebrow{display:block;font-size:12px;color:var(--muted);font-weight:400}
 .icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -99,10 +119,6 @@ kbd{direction:ltr;display:inline-block;font:12px var(--mono);color:var(--muted);
 #controlSource:empty{display:none}
 .manual-controls{border-top:1px solid var(--line);margin-top:var(--space-6);padding-top:var(--space-4)}
 .manual-controls>label{margin-top:0}
-.drive-pad{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-top:var(--space-4);direction:ltr}
-.drive-pad button{display:flex;flex-direction:column;gap:0;touch-action:none;user-select:none;font:500 16px var(--mono);padding:var(--space-2)}
-.drive-pad span{display:block;font:12px/1.65 Geist,'Segoe UI',Tahoma,sans-serif;direction:rtl}
-.drive-pad button:last-child{grid-column:1/-1;flex-direction:row;gap:var(--space-3);font-size:14px}
 #controlStatus{font-size:12px;color:var(--muted)}
 .inspector-footer{border-top:1px solid var(--line);margin-top:var(--space-6);padding-top:var(--space-4);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 #operationStatus{color:var(--danger-ink)}
@@ -127,6 +143,8 @@ kbd{direction:ltr;display:inline-block;font:12px var(--mono);color:var(--muted);
 .drawer{position:fixed;z-index:51;inset:0 auto 0 0;width:min(520px,100vw);background:var(--surface);padding:var(--space-6);overflow:auto;overscroll-behavior:contain;box-shadow:8px 0 32px #0002;animation:drawer-in .18s ease-out}
 .drawer>.section-heading{position:sticky;top:-24px;background:var(--surface);padding:var(--space-4) 0;border-bottom:1px solid var(--line);z-index:1}
 .drawer .section-heading button{font-size:24px;padding:var(--space-1);width:44px;flex:none;border-color:transparent}
+.drawer #mapDestinationsBtn{width:auto;font-size:14px;padding:10px 14px;border-color:var(--line);white-space:nowrap}
+#routePanel .section-heading>div{flex:1}
 .drawer-intro{color:var(--muted);font-size:14px;margin-bottom:var(--space-6)}
 #panelBackdrop{position:fixed;inset:0;background:#0006;z-index:50;animation:fade-in .15s}
 body.panel-open{overflow:hidden}
@@ -177,7 +195,7 @@ body.panel-open{overflow:hidden}
 @keyframes fade-in{from{opacity:0}to{opacity:1}}
 @media(min-width:1500px){.workspace{grid-template-columns:minmax(0,1fr) 352px}}
 @media(max-width:1100px){.workspace{padding:var(--space-6);grid-template-columns:minmax(0,1fr) 296px}.app-header{padding:var(--space-4) var(--space-6);gap:var(--space-4)}.connection{padding-inline-start:var(--space-4)}.connection #missionText{display:none}#toolbar button{padding:var(--space-2) var(--space-3)}.workspace-note{display:none}.drive-inspector,#cameraCard,#routePanel{padding:var(--space-4)}}
-@media(max-width:850px){.app-header{flex-wrap:wrap;gap:var(--space-4)}.connection{margin-inline-start:auto;border:0;padding:0}#toolbar{width:100%;margin:0;justify-content:space-between;border-top:1px solid var(--line);padding-top:var(--space-3)}#toolbar button{flex:1}.workspace{grid-template-columns:1fr}.visual-workspace{display:contents}.workspace-heading{grid-row:1}#cameraCard{grid-row:2}.drive-inspector{grid-row:3}#routePanel{grid-row:4;margin-top:0}.drive-pad{grid-template-columns:repeat(4,1fr)}.drive-pad button:last-child{grid-column:1/-1}#routeMap{height:300px}.drive-inspector>.primary,.drive-inspector>#pauseBtn{width:calc(50% - 6px)}.drive-inspector>#pauseBtn{margin-inline-start:var(--space-2)}}
+@media(max-width:850px){.app-header{flex-wrap:wrap;gap:var(--space-4)}.connection{margin-inline-start:auto;border:0;padding:0}#toolbar{width:100%;margin:0;justify-content:space-between;border-top:1px solid var(--line);padding-top:var(--space-3)}#toolbar button{flex:1}.workspace{grid-template-columns:1fr}.visual-workspace{display:contents}.workspace-heading{grid-row:1}#cameraCard{grid-row:2}.drive-inspector{grid-row:3}#routePanel{grid-row:4;margin-top:0}#routeMap{height:300px}.drive-inspector>.primary,.drive-inspector>#pauseBtn{width:calc(50% - 6px)}.drive-inspector>#pauseBtn{margin-inline-start:var(--space-2)}}
 @media(max-width:480px){.workspace{padding:var(--space-4);gap:var(--space-4)}.app-header{padding:var(--space-4)}h1{font-size:20px}#brand .eyebrow{font-size:12px}.connection{flex-basis:100%;margin:0}#toolbar button{padding:var(--space-2) var(--space-1);gap:var(--space-1);font-size:12px}#toolbar kbd{display:none}.workspace-heading h2{font-size:20px}.workspace-heading p{font-size:12px}.telemetry-strip{gap:var(--space-2)}.telemetry-strip>div{padding-inline-start:var(--space-2)}.telemetry-strip strong{font-size:16px}.telemetry-strip span{font-size:12px}.speed-readout #speedVal{font-size:24px}.camera-tools{gap:var(--space-2);flex-wrap:wrap}.camera-tools label{font-size:12px}.camera-tools select{width:auto;max-width:160px}.camera-tools button{padding:var(--space-2);font-size:12px}#frontCameraView{min-height:240px}#cameraUnavailable{padding:var(--space-4);gap:var(--space-2)}#cameraUnavailable strong{font-size:16px}#cameraUnavailable p{font-size:12px}#cameraActivity{white-space:normal;text-align:center}.camera-caption{font-size:12px;gap:var(--space-2)}.drawer fieldset{grid-template-columns:1fr}.map-caption{flex-wrap:wrap}.app-footer{padding:var(--space-4);font-size:12px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 @media(max-width:480px){.telemetry-strip{grid-template-columns:repeat(4,minmax(0,1fr))}.telemetry-strip .speed-readout{grid-column:1/-1}.telemetry-strip>div:nth-child(2){border:0;padding:0}}

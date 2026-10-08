@@ -7,6 +7,7 @@ from tests.core_packets import packet
 from backend.core.control import CommandArbiter, ControlMode, ControlSafetyLayer, ControlStateMachine
 from backend.core.contracts import CommandSource, ControlCommand
 from backend.carla.dashboard_tools import NativeDashboardTools, validate_settings
+from backend.carla.provider import CarlaProvider
 
 
 class NavigationPolicyTests(unittest.TestCase):
@@ -97,6 +98,40 @@ class NavigationLeaseTests(unittest.TestCase):
         self.assertEqual(self.service.journey['reason'],'dashboard_heartbeat_timeout')
         self.provider.navigation_command.assert_not_called()
 
+    def test_missing_route_does_not_release_existing_manual_control(self):
+        self.provider.route_state.return_value = None
+        mode = self.service.arbiter.machine.mode
+        with self.assertRaises(ValueError): self.service.start_journey()
+        self.assertEqual(self.service.arbiter.machine.mode, mode)
+        self.assertFalse(self.service.actions)
+
+    def test_pending_destination_cannot_start_the_previous_route(self):
+        self.service.dashboard_result = {'action': 'destination', 'status': 'PENDING'}
+        with self.assertRaises(ValueError): self.service.start_journey()
+        self.assertFalse(self.service.actions)
+
+    def test_live_speed_change_preserves_route_lease_and_mode(self):
+        self.service.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
+        self.service.navigation_heartbeat_at=.1
+        self.service.journey.update(status='RUNNING',route_id='original')
+        self.service.set_journey_speed(10)
+        self.assertEqual(self.service.journey['speed_kmh'],10)
+        self.assertEqual(self.service.journey['route_id'],'original')
+        self.assertEqual(self.service.navigation_heartbeat_at,.1)
+        self.assertEqual(self.service.arbiter.machine.mode,ControlMode.AUTOMATIC)
+        for speed in (4,31,float('nan')):
+            with self.assertRaises(ValueError):self.service.set_journey_speed(speed)
+
+    def test_stop_keeps_destination_and_requires_explicit_restart(self):
+        route={'arrived':False,'destination':{'name':'saved goal'}}
+        self.provider.route_state.return_value=route
+        self.service.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
+        self.service.stop_driving()
+        self.assertEqual(self.provider.route_state(),route)
+        self.assertEqual(self.service.arbiter.machine.mode,ControlMode.PAUSED)
+        self.service.journey_heartbeat(self.service.session_id)
+        self.assertFalse(any(kind=='start_journey' for kind,_ in self.service.actions))
+
     def test_back_to_back_native_ticks_do_not_bypass_the_command_rate_guard(self):
         self.service.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
         self.service.navigation_heartbeat_at=0
@@ -104,3 +139,35 @@ class NavigationLeaseTests(unittest.TestCase):
         self.time=.001
         self.service._navigation_step()
         self.provider.navigation_command.assert_not_called()
+
+
+class NativeNavigationAdapterTests(unittest.TestCase):
+    def test_replanning_changes_origin_without_changing_goal_identity_or_coordinates(self):
+        tools = NativeDashboardTools.__new__(NativeDashboardTools)
+        target={'id':'saved-place','name':'same goal','map':'native-map','location':[1.,2.,3.]}
+        tools.route={'destination':target};tools.map_name='native-map'
+        actor=Mock();actor.get_location.return_value='live-new-origin'
+        tools.provider=SimpleNamespace(ego=SimpleNamespace(actor=actor))
+        tools.route_service=Mock()
+        tools.route_service.plan.return_value=({'destination':target,'id':'new-route'},['new-waypoint'])
+        result=tools.replan_route()
+        tools.route_service.plan.assert_called_once_with('live-new-origin',target)
+        self.assertEqual(result['destination'],target)
+        self.assertEqual(result['id'],'new-route')
+
+    def test_native_output_is_canonical_and_speed_capped_without_direct_application(self):
+        provider = CarlaProvider()
+        actor = Mock(); actor.get_speed_limit.return_value = 12.
+        provider.ego = SimpleNamespace(actor=actor)
+        provider.navigation = Mock()
+        provider.navigation.run_step.return_value = SimpleNamespace(
+            throttle=.4, brake=0., steer=.6, reverse=False, hand_brake=False)
+        command = provider.navigation_command(10, .5, 20.)
+        provider.navigation.set_target_speed.assert_called_once_with(12.)
+        self.assertEqual(command.source, CommandSource.NAVIGATION)
+        self.assertEqual(command.steering, .6)
+        actor.apply_control.assert_not_called()
+        provider.connection.api = SimpleNamespace(VehicleControl=lambda **values: SimpleNamespace(**values))
+        provider.apply_control(command)
+        native = actor.apply_control.call_args.args[0]
+        self.assertAlmostEqual(native.steer, .6)

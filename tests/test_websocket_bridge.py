@@ -94,10 +94,29 @@ class WebSocketTests(unittest.TestCase):
             bridge.process_message(owner, {'type':'start_driving'})
             bridge.process_message(owner, {'type':'controls','frame_id':1,'timestamp_s':.05,
                                           'controls':{'throttle':.4}})
-            with self.assertRaisesRegex(ValueError, 'Gate 4'):
+            with self.assertRaisesRegex(ValueError, 'disabled'):
                 bridge.process_message(observer, {'type':'start_journey','speed_kmh':20})
             self.assertIs(bridge.owner, owner)
             self.assertEqual(service.effective_controls()['throttle'], .4)
+        finally:
+            bridge.server.shutdown()
+
+    def test_missing_destination_cannot_steal_manual_ownership(self):
+        from types import SimpleNamespace
+        from backend.websocket_bridge import WebSocketBridge
+        service = SimulationService(SimpleNamespace(name='test-fixture',allow_navigation=True, route_state=lambda:None))
+        service._publish(packet())
+        bridge = WebSocketBridge(service, '127.0.0.1', 0, 8000)
+        owner, observer = object(), object()
+        try:
+            bridge.process_message(owner, {'type':'start_driving'})
+            bridge.process_message(owner, {'type':'controls','frame_id':1,'timestamp_s':.05,
+                                          'controls':{'throttle':.4}})
+            with self.assertRaises(ValueError):
+                bridge.process_message(observer, {'type':'start_journey','speed_kmh':20})
+            self.assertIs(bridge.owner,owner)
+            self.assertEqual(service.effective_controls()['throttle'],.4)
+            self.assertFalse(service.actions and any(k=='start_journey' for k,_ in service.actions))
         finally:
             bridge.server.shutdown()
 

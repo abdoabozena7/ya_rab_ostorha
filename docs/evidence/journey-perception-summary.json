@@ -1,0 +1,354 @@
+{
+  "date": "2026-10-08",
+  "scope": "Explicit destination journey, keyboard-only control, floating map, display-only real detection and OCR",
+  "base_checkpoint": "bede5a0d4007c95cce15f2c08d7a5fd822b60e27",
+  "native_journey": {
+    "selection_does_not_start_motion": true,
+    "straight_arrival": true,
+    "independent_dashboard_lease": true,
+    "manual_intervention": true,
+    "resume_keeps_exact_destination_replans_live_origin": true,
+    "emergency_no_automatic_resume": true,
+    "sensor_suite": true,
+    "exact_frame_rgb_depth_alignment": true
+  },
+  "keyboard": {
+    "source": "LIVE_NATIVE_BROWSER_KEYBOARD_HTTP_OBSERVATION",
+    "duration_wall_s": 180.05918312072754,
+    "samples": 1570,
+    "checks": {
+      "physical_w_55_percent": true,
+      "physical_shift_w_100_percent": true,
+      "physical_left_right_steer": true,
+      "physical_s_brake": true,
+      "physical_space_handbrake": true,
+      "live_speed_update": true,
+      "manual_override_keeps_destination": true
+    },
+    "pass": true
+  },
+  "replay": {
+    "source": "REAL_RECORDED_RUN",
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_fc201f13dbf6473a88cf112f0c413529",
+    "frames": 1620,
+    "duration_sim_s": 80.950001206249,
+    "applied_sources": [
+      "MANUAL",
+      "NAVIGATION",
+      "SAFETY"
+    ],
+    "mode": "REPLAY",
+    "connected": false,
+    "camera_frame": 136784,
+    "camera_bytes": 153893,
+    "control_rejected": "Replay has no native connection or control sink",
+    "total_size_mb": 2625.912815,
+    "pass": true
+  },
+  "final_actors": {
+    "source": "LIVE_NATIVE_FINAL_ACTOR_COUNTS",
+    "frame": 168725,
+    "counts": {
+      "vehicle.*": 26,
+      "walker.pedestrian.*": 25,
+      "controller.ai.walker": 25,
+      "sensor.*": 7
+    },
+    "expected": {
+      "vehicle.*": 26,
+      "walker.pedestrian.*": 25,
+      "controller.ai.walker": 25,
+      "sensor.*": 7
+    },
+    "population": {
+      "vehicles": 25,
+      "pedestrians": 25,
+      "controllers": 25,
+      "walkers_active": 25
+    },
+    "sensor_errors": {},
+    "mode": "PAUSED",
+    "perception_cached_images": 4,
+    "pass": true
+  },
+  "model_assets": {
+    "models\\yolov8n.pt": {
+      "size_bytes": 6549796,
+      "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36"
+    },
+    "models\\ocr\\arabic.pth": {
+      "size_bytes": 215400714,
+      "sha256": "2a9afd42c374deb98aed0b53c9b77d75e1d00d4e0501f3b0276c54190c89b1a8"
+    },
+    "models\\ocr\\craft_mlt_25k.pth": {
+      "size_bytes": 83152330,
+      "sha256": "4a5efbfb48b4081100544e75e1e2b57f8de3d84f213004b14b85fd4b3748db17"
+    },
+    "models\\ocr\\english_g2.pth": {
+      "size_bytes": 15143997,
+      "sha256": "e2272681d9d67a04e2dff396b6e95077bc19001f8f6d3593c307b9852e1c29e8"
+    }
+  },
+  "tests": {
+    "python_passed": 126,
+    "python_skipped": 1,
+    "javascript_passed": 24
+  },
+  "ocr_signage_accuracy": "NOT VALIDATED: endurance samples had no accepted transcription. Stationary native road pose returned ISTop at confidence 0.4704-0.6872; exact STOP checks failed at both calibration poses.",
+  "perception_empty": {
+    "source": "LIVE_NATIVE_CAMERA_REAL_MODELS",
+    "duration_wall_s": 180.1720000000205,
+    "checks": {
+      "real_model_frames": true,
+      "no_model_errors": true,
+      "periodic_sensor_suite_continues": true,
+      "immutable_frame_identity": true
+    },
+    "unique_processed_frames": 152,
+    "actual_processed_rate_hz": 0.8436383011787776,
+    "inference_ms_median": 1125.0,
+    "ticks_hz_median": 16.541353383497256,
+    "detection_classes": [
+      "bus"
+    ],
+    "pass": true,
+    "worker_rss_mib": {
+      "min": 855.2578125,
+      "max": 1191.05078125,
+      "first": 1010.765625,
+      "last": 946.0390625
+    },
+    "sync_first": {
+      "completeFrames": 722,
+      "incompleteFrames": 3,
+      "issues": {
+        "MISSING": 12,
+        "LATE": 0,
+        "STALE": 0,
+        "DUPLICATE": 0,
+        "OUT_OF_ORDER": 0,
+        "TIMESTAMP_MISMATCH": 0
+      },
+      "pendingFrames": 1
+    },
+    "sync_last": {
+      "completeFrames": 3694,
+      "incompleteFrames": 3,
+      "issues": {
+        "MISSING": 12,
+        "LATE": 0,
+        "STALE": 0,
+        "DUPLICATE": 0,
+        "OUT_OF_ORDER": 0,
+        "TIMESTAMP_MISMATCH": 0
+      },
+      "pendingFrames": 1
+    },
+    "sensor_rates_wall_hz": {
+      "frontCamera": 16.523739803328866,
+      "depth": 16.57574485940956,
+      "radar": 16.57574485940956,
+      "lidar": 16.63157894736842,
+      "imu": 16.57574485940956,
+      "gnss": 16.63157894736842,
+      "collision": null
+    },
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+      "usedMiB": 5873,
+      "totalMiB": 6144,
+      "utilizationPercent": 42,
+      "observedAtUnix": 1791457195.8091495
+    }
+  },
+  "perception_populated": {
+    "source": "LIVE_NATIVE_CAMERA_REAL_MODELS",
+    "duration_wall_s": 90.375,
+    "checks": {
+      "real_model_frames": true,
+      "no_model_errors": true,
+      "periodic_sensor_suite_continues": true,
+      "immutable_frame_identity": true
+    },
+    "unique_processed_frames": 73,
+    "actual_processed_rate_hz": 0.8077455048409405,
+    "inference_ms_median": 1186.9999999762513,
+    "ticks_hz_median": 14.63198344663794,
+    "detection_classes": [
+      "car"
+    ],
+    "pass": true,
+    "worker_rss_mib": {
+      "min": 854.36328125,
+      "max": 1178.16015625,
+      "first": 914.28515625,
+      "last": 909.54296875
+    },
+    "sync_first": {
+      "completeFrames": 8548,
+      "incompleteFrames": 3,
+      "issues": {
+        "MISSING": 12,
+        "LATE": 0,
+        "STALE": 0,
+        "DUPLICATE": 0,
+        "OUT_OF_ORDER": 0,
+        "TIMESTAMP_MISMATCH": 0
+      },
+      "pendingFrames": 1
+    },
+    "sync_last": {
+      "completeFrames": 9855,
+      "incompleteFrames": 3,
+      "issues": {
+        "MISSING": 12,
+        "LATE": 0,
+        "STALE": 0,
+        "DUPLICATE": 0,
+        "OUT_OF_ORDER": 0,
+        "TIMESTAMP_MISMATCH": 0
+      },
+      "pendingFrames": 1
+    },
+    "sensor_rates_wall_hz": {
+      "frontCamera": 14.69767441860465,
+      "depth": 14.871987951710754,
+      "radar": 14.613392526775476,
+      "lidar": 14.613392526775476,
+      "imu": 14.613392526775476,
+      "gnss": 14.613392526775476,
+      "collision": null
+    },
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+      "usedMiB": 5873,
+      "totalMiB": 6144,
+      "utilizationPercent": 31,
+      "observedAtUnix": 1791457581.4526522
+    }
+  },
+  "evidence": [
+    {
+      "path": "output\\native-validation\\destination-journey-native.json",
+      "sha256": "7d83ceb2fb845d17501cc72fe60c3864016c01fe94b07a70f833e4ad35bc44cf"
+    },
+    {
+      "path": "output\\native-validation\\destination-journey-ui.json",
+      "sha256": "4e2e690174b412e4da56ad0a5c4ff31b1e792d39ac3df86563d85d220f3925ab"
+    },
+    {
+      "path": "output\\native-validation\\journey-final-native.json",
+      "sha256": "e5cc8dfb30fbe68808f8258d018c3736ff6e4036497521e09fcddd0ae37a824d"
+    },
+    {
+      "path": "output\\native-validation\\keyboard-ui-observation.json",
+      "sha256": "6204a88949aa99cdee7f4f28ba00b3e703cde4a58df37b819fe0fe8d93462e1f"
+    },
+    {
+      "path": "output\\native-validation\\keyboard-extra-native.json",
+      "sha256": "b0b6d052c710f47a7c6fb90556880279d9bd72acd22fdb014d57de58c1481be1"
+    },
+    {
+      "path": "output\\native-validation\\perception-delivered-native.json",
+      "sha256": "03724d0819147e84620966f60872cd00384593ac2b8f26e4f20551addfe604f7"
+    },
+    {
+      "path": "output\\native-validation\\perception-populated-native.json",
+      "sha256": "0fe405b6d2ca218eeb0fcdc92ff81b0afaa8f5f39bd98f1eaadc9e24d20065d4"
+    },
+    {
+      "path": "output\\native-validation\\ocr-english-native.json",
+      "sha256": "a0dbb9c7c28654a8eee7d9c9ad3622c553e646d481cd9c66d0b96a7c0499c43a"
+    },
+    {
+      "path": "output\\native-validation\\journey-replay.json",
+      "sha256": "3d0427b4d5d2d566b6a33c7a30e1c6428eb36477ae8e3dc5663e2b69fa3c1cca"
+    },
+    {
+      "path": "output\\native-validation\\journey-final-actors.json",
+      "sha256": "eed3f5375dc2452fc74ad360faf703a4038b077ff6ad29e66797f2541a66e97e"
+    },
+    {
+      "path": "output\\native-validation\\journey-python-tests.log",
+      "sha256": "6f8c2bf2e86e70b349cbd4263725273f58ad5139b69b20786f3781fa687ca036"
+    },
+    {
+      "path": "output\\native-validation\\journey-js-tests.log",
+      "sha256": "92f2c033bf4579de334fda2f79a8ab073b49cbd357fe499ff2ec906e25884032"
+    },
+    {
+      "path": "output/native-validation/ocr-close-native.json",
+      "sha256": "fb6441dea146914216de3916545e49a6c879230d39f5b8242d72b59b9ff671c4"
+    },
+    {
+      "path": "output/native-validation/ocr-close-final-native.json",
+      "sha256": "4bae56bca7ea692c63d4d2ec1a4cd749497b89644278402f0ddd16d4a8a8212e"
+    },
+    {
+      "path": "output/native-validation/journey-after-calibration-native.json",
+      "sha256": "4f52d5ce95aa434a7452de3f45f6296e4e2c35ee09c41566369bf6100d8a8187"
+    },
+    {
+      "path": "output/native-validation/journey-final-ui.json",
+      "sha256": "85e2e588a48f9a283e2892c92f3bc1323504f2befc805d82a227ec235433115d"
+    },
+    {
+      "path": "output/native-validation/dashboard-bundle-native-smoke.json",
+      "sha256": "bd7d980ae63410573458c84bd41f623527ed0213396248a8b17c84cb505a5235"
+    },
+    {
+      "path": "output/native-validation/journey-final-dashboard.png",
+      "sha256": "27506afbcdcf5e9d256806727bcd792d59c8e45958395dd6fa8da78d19973a40"
+    },
+    {
+      "path": "frontend/dashboard.bundle.js",
+      "sha256": "90d1384fbd93b35f951f0cdd414cd611cb751fffe8cf7ace1cd721cbd6cc4275"
+    }
+  ],
+  "browser_reload": {
+    "classic_bundle": "frontend/dashboard.bundle.js",
+    "responsive_test_sizes": [
+      "1440x1000",
+      "390x844"
+    ],
+    "native_map_selection_after_new_viewbox": true
+  },
+  "after_calibration": {
+    "source": "LIVE_NATIVE_AFTER_OCR_POSE_RESTORATION",
+    "frame": 187437,
+    "counts": {
+      "vehicle.*": 26,
+      "walker.pedestrian.*": 25,
+      "controller.ai.walker": 25,
+      "sensor.*": 7
+    },
+    "position": [
+      40.59736633300781,
+      69.79401397705078,
+      -0.004608764313161373
+    ],
+    "mode": "PAUSED",
+    "speed_kmh": 0.0,
+    "sensor_errors": {},
+    "pass": true
+  },
+  "ocr_close_calibration": [
+    {
+      "path": "output\\native-validation\\ocr-close-native.json",
+      "exact_STOP_pass": false
+    },
+    {
+      "path": "output\\native-validation\\ocr-close-final-native.json",
+      "exact_STOP_pass": false
+    }
+  ],
+  "bundle_keyboard_smoke": {
+    "source": "LIVE_NATIVE_COMPILED_DASHBOARD_KEYBOARD_SMOKE",
+    "checks": {
+      "physical_w": true,
+      "physical_shift_w": true,
+      "paused_after_release": true
+    },
+    "pass": true
+  }
+}
