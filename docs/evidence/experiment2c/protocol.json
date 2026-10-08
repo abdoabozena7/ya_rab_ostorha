@@ -1,0 +1,77 @@
+{
+  "experiment": "YA RAB OSTORHA Experiment 2C",
+  "conditions": [
+    {
+      "seed": 1004,
+      "parameters": {
+        "ego_speed_mps": 10.0,
+        "following_distance_m": 23.0,
+        "trigger_s": 1.4,
+        "lead_brake": 0.8,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      }
+    },
+    {
+      "seed": 1877,
+      "parameters": {
+        "ego_speed_mps": 9.25,
+        "following_distance_m": 25.0,
+        "trigger_s": 2.2,
+        "lead_brake": 0.75,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      }
+    },
+    {
+      "seed": 1256,
+      "parameters": {
+        "ego_speed_mps": 7.25,
+        "following_distance_m": 18.0,
+        "trigger_s": 1.0,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      }
+    },
+    {
+      "seed": 1364,
+      "parameters": {
+        "ego_speed_mps": 8.75,
+        "following_distance_m": 21.5,
+        "trigger_s": 3.0,
+        "lead_brake": 0.65,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      }
+    }
+  ],
+  "split": "VALIDATION",
+  "selection_draw_seed": 314160,
+  "previous_validation_seeds": [
+    1042,
+    1043,
+    1044,
+    1045,
+    1105,
+    1200,
+    1285,
+    1297
+  ],
+  "selection_uses_trajectory_data": false,
+  "maximum_episodes": 4,
+  "native_wall_limit_s": 300,
+  "source_hashes_frozen_before_native": {
+    "backend/rl/teacher.py": "2b4f28e2be17ced5fd588828c4db0bc45a5df51654abf43a3481c4fcbc494124",
+    "backend/rl/teacher_config_v1.json": "f3bf24d3b1be242fa2654510e78a3ad3af66c7cf7d9f2cbff035f3a8eda16388",
+    "backend/rl/radar.py": "5668e41c4c92fbe0147a6cf8ab04efb0275ade3f3450ff72231038ca6e6f1ced",
+    "backend/rl/radar_retention.py": "4e750057ce9a7fa6d21230a1fda30cf9494e566135edf303d28f0afd080c8ec7",
+    "backend/rl/observations.py": "f3f23f3a098ea97bd7cee42a62148caf2ab401e002d9cb5ba05dc1f63e8ee1d1"
+  },
+  "model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "teacher_and_config_changed": false,
+  "native_test_seeds_used": false,
+  "production_policy_changed": false,
+  "offline_gate_passed": true,
+  "git_head": "61c9ea98b87039325935d693939db4b86c820415"
+}

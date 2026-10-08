@@ -1,0 +1,121 @@
+{
+  "experiment": "YA RAB OSTORHA Experiment 2C verification",
+  "recording": {
+    "complete_native_frames": 452,
+    "new_lead_retained_frames": 452,
+    "new_foreground_lead_selected_frames": 452,
+    "new_missing_foreground_frames": 0,
+    "new_ground_selected_frames": 0,
+    "sensor_asset_references": 1356,
+    "sampled_asset_integrity_checks": 36
+  },
+  "recorded_sensor_binary_mib": 34.24616622924805,
+  "preexisting_dirty_work_preserved": true,
+  "untouched_modules": [
+    "backend/carla/scenarios.py",
+    "backend/carla/provider.py",
+    "backend/carla/sensor_decoders.py",
+    "backend/core/research.py",
+    "backend/core/contracts.py",
+    "backend/core/safety_policy.py",
+    "backend/core/control.py",
+    "backend/core/service.py",
+    "backend/rl/runtime.py",
+    "backend/rl/reward.py",
+    "backend/rl/supervisor.py",
+    "backend/rl/env.py"
+  ],
+  "teacher_source_sha256": "2b4f28e2be17ced5fd588828c4db0bc45a5df51654abf43a3481c4fcbc494124",
+  "teacher_config_sha256": "f3bf24d3b1be242fa2654510e78a3ad3af66c7cf7d9f2cbff035f3a8eda16388",
+  "sac_model_sha256": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "source_hashes_preserved_through_native": true,
+  "native_synchronization_issue_delta": {
+    "MISSING": 48,
+    "LATE": 0,
+    "STALE": 0,
+    "DUPLICATE": 0,
+    "OUT_OF_ORDER": 0,
+    "TIMESTAMP_MISMATCH": 0
+  },
+  "incomplete_warmup_delta": 8,
+  "native_resource_process_samples": {
+    "3564": {
+      "name": "python.exe",
+      "runner": true,
+      "cpu_delta_s": 6.4375,
+      "initial_private_mib": 30.390625,
+      "final_private_mib": 38.1953125,
+      "maximum_sampled_private_mib": 38.1953125
+    },
+    "15588": {
+      "name": "python.exe",
+      "runner": false,
+      "cpu_delta_s": 40.078125,
+      "initial_private_mib": 90.59375,
+      "final_private_mib": 97.484375,
+      "maximum_sampled_private_mib": 97.484375
+    },
+    "19180": {
+      "name": "python.exe",
+      "runner": false,
+      "cpu_delta_s": 0.0,
+      "initial_private_mib": 0.80078125,
+      "final_private_mib": 0.74609375,
+      "maximum_sampled_private_mib": 0.80078125
+    },
+    "24436": {
+      "name": "CarlaUE4-Win64-Shipping.exe",
+      "runner": false,
+      "cpu_delta_s": 101.0,
+      "initial_private_mib": 9549.390625,
+      "final_private_mib": 9593.98046875,
+      "maximum_sampled_private_mib": 9593.98046875
+    }
+  },
+  "host_restarts": [
+    {
+      "old_pid": 18960,
+      "new_pid": 19180,
+      "module": "scripts.native.experiment2c_backend",
+      "old_actors_cleaned": true,
+      "old_world_settings_restored": true,
+      "new_mode": "PAUSED",
+      "wall_s": 21.45299999999952
+    },
+    {
+      "old_pid": 15588,
+      "new_pid": 23632,
+      "module": "backend.server",
+      "old_actors_cleaned": true,
+      "old_world_settings_restored": true,
+      "new_mode": "PAUSED",
+      "wall_s": 16.79700000000048
+    }
+  ],
+  "native_plus_host_reload_wall_s": 83.90699999999924,
+  "gpu_snapshot": "NVIDIA GeForce RTX 3060 Laptop GPU, 5865, 6144, 38",
+  "gpu_snapshot_columns": "name, memory.used MiB, memory.total MiB, utilization %",
+  "new_model_gpu_allocations": 0,
+  "normal_host_restored": true,
+  "normal_runtime": {
+    "connected": true,
+    "mode": "PAUSED",
+    "rl_active": false,
+    "policy_active": false,
+    "sensors": 7,
+    "rgb_shape": [
+      450,
+      800
+    ]
+  },
+  "regressions": {
+    "python_run": 176,
+    "python_passed": 175,
+    "python_skipped": 1,
+    "python_wall_s": 7.365,
+    "javascript_passed": 24,
+    "javascript_wall_s": 0.3308374
+  },
+  "native_budget_exhausted": true,
+  "native_test_seeds_used": false
+}

@@ -51,23 +51,21 @@ def validate_radar_calibration(calibration, config=RADAR_FEATURES):
         raise ValueError('Radar mount is missing or differs from the audited foreground calibration')
 
 
-def measured_heights(points, config=RADAR_FEATURES):
-    """Heights above a radar-supported plane in calibrated ego-local axes.
+def local_points(points, config=RADAR_FEATURES):
+    """Measured coordinates in calibrated local axes, without a world pose."""
+    depth,azimuth,altitude=points[:,0],points[:,1],points[:,2]
+    return (depth*np.cos(altitude)*np.cos(azimuth)+config.mount_position_m[0],
+            depth*np.cos(altitude)*np.sin(azimuth)+config.mount_position_m[1],
+            depth*np.sin(altitude)+config.mount_position_m[2])
 
-    Plane is z=a*x+b*y through the nominal road/ego origin. Deterministic pairs
-    fit two slopes; consensus must span depth, so a vehicle's vertical rear
-    face cannot establish ground by itself. No world pose or attitude enters.
-    With insufficient support, the explicitly limited nominal plane is used.
-    At most 32 retained returns and 496 pairs keep work bounded.
-    """
+
+def estimate_ground_plane(points, config=RADAR_FEATURES):
+    """Existing bounded V2 consensus fit: (a,b) for z=a*x+b*y, or None."""
     if len(points)>32:
         raise ValueError('Foreground profile supports at most 32 retained returns')
-    depth,azimuth,altitude=points[:,0],points[:,1],points[:,2]
-    x=depth*np.cos(altitude)*np.cos(azimuth)+config.mount_position_m[0]
-    y=depth*np.cos(altitude)*np.sin(azimuth)+config.mount_position_m[1]
-    z=depth*np.sin(altitude)+config.mount_position_m[2]
+    x,y,z=local_points(points,config)
     if len(points)<config.min_plane_support:
-        return z,False
+        return None
     i,j=np.triu_indices(len(points),1)
     determinant=x[i]*y[j]-x[j]*y[i]
     usable=np.abs(determinant)>.1
@@ -76,18 +74,30 @@ def measured_heights(points, config=RADAR_FEATURES):
     b=(x[i]*z[j]-x[j]*z[i])/determinant
     bounded=np.hypot(a,b)<=config.max_plane_slope
     a,b=a[bounded],b[bounded]
-    if not len(a):return z,False
+    if not len(a):return None
     residual=np.abs(z[None,:]-a[:,None]*x-b[:,None]*y)
     support=residual<=config.plane_residual_m
     counts=support.sum(axis=1)
     span=np.max(np.where(support,x[None,:],-np.inf),axis=1)-np.min(np.where(support,x[None,:],np.inf),axis=1)
     qualified=(counts>=config.min_plane_support)&(span>=config.min_plane_span_m)
-    if not qualified.any():return z,False
+    if not qualified.any():return None
     # Maximize measured support, then minimize total inlier residual. No labels.
     candidates=np.flatnonzero(qualified)
     best=candidates[np.lexsort(((residual*support).sum(axis=1)[candidates],-counts[candidates]))[0]]
-    height=(z-a[best]*x-b[best]*y)/np.sqrt(1+a[best]**2+b[best]**2)
-    return height,True
+    return a[best],b[best]
+
+
+def measured_heights(points, config=RADAR_FEATURES):
+    """Heights above the unchanged V2 radar-supported, spanning ground plane.
+
+    Insufficient support uses the limited nominal plane. No actor/world data.
+    At most 32 returns and 496 pairs keep consensus work bounded.
+    """
+    x,y,z=local_points(points,config)
+    plane=estimate_ground_plane(points,config)
+    if plane is None:return z,False
+    a,b=plane
+    return (z-a*x-b*y)/np.sqrt(1+a**2+b**2),True
 
 
 def foreground_index(points, config=RADAR_FEATURES):

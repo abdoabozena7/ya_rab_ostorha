@@ -1,0 +1,833 @@
+{
+  "experiment": "YA RAB OSTORHA Experiment 2C offline reliability audit",
+  "retention_version": "RADAR_RETENTION_V1",
+  "historical_test_is_diagnostic_not_fresh": true,
+  "groups": {
+    "VALIDATION_TEACHER": {
+      "frames": 435,
+      "raw_lead_observable_frames": 435,
+      "before_lead_retained_frames": 427,
+      "before_raw_lead_false_exclusion_frames": 8,
+      "before_missing_foreground_frames": 8,
+      "before_lead_selected_frames": 427,
+      "before_ground_selected_frames": 0,
+      "before_other_selected_frames": 0,
+      "after_lead_retained_frames": 435,
+      "after_raw_lead_false_exclusion_frames": 0,
+      "after_missing_foreground_frames": 0,
+      "after_lead_selected_frames": 435,
+      "after_ground_selected_frames": 0,
+      "after_other_selected_frames": 0,
+      "new_accepted_brake_proposals": 138,
+      "observation_space_valid_frames": 431
+    },
+    "TEST_BASIC_AGENT": {
+      "frames": 305,
+      "raw_lead_observable_frames": 305,
+      "before_lead_retained_frames": 303,
+      "before_raw_lead_false_exclusion_frames": 2,
+      "before_missing_foreground_frames": 5,
+      "before_lead_selected_frames": 297,
+      "before_ground_selected_frames": 0,
+      "before_other_selected_frames": 3,
+      "after_lead_retained_frames": 305,
+      "after_raw_lead_false_exclusion_frames": 0,
+      "after_missing_foreground_frames": 3,
+      "after_lead_selected_frames": 299,
+      "after_ground_selected_frames": 0,
+      "after_other_selected_frames": 3
+    },
+    "TEST_EXISTING_RULE": {
+      "frames": 964,
+      "raw_lead_observable_frames": 964,
+      "before_lead_retained_frames": 901,
+      "before_raw_lead_false_exclusion_frames": 63,
+      "before_missing_foreground_frames": 63,
+      "before_lead_selected_frames": 901,
+      "before_ground_selected_frames": 0,
+      "before_other_selected_frames": 0,
+      "after_lead_retained_frames": 964,
+      "after_raw_lead_false_exclusion_frames": 0,
+      "after_missing_foreground_frames": 0,
+      "after_lead_selected_frames": 964,
+      "after_ground_selected_frames": 0,
+      "after_other_selected_frames": 0
+    },
+    "TEST_TEACHER": {
+      "frames": 500,
+      "raw_lead_observable_frames": 500,
+      "before_lead_retained_frames": 492,
+      "before_raw_lead_false_exclusion_frames": 8,
+      "before_missing_foreground_frames": 8,
+      "before_lead_selected_frames": 492,
+      "before_ground_selected_frames": 0,
+      "before_other_selected_frames": 0,
+      "after_lead_retained_frames": 500,
+      "after_raw_lead_false_exclusion_frames": 0,
+      "after_missing_foreground_frames": 0,
+      "after_lead_selected_frames": 500,
+      "after_ground_selected_frames": 0,
+      "after_other_selected_frames": 0,
+      "new_accepted_brake_proposals": 146,
+      "observation_space_valid_frames": 496
+    }
+  },
+  "sixteen_dropouts": [
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 3,
+      "raw_lead_returns": 15,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 12,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 4,
+      "raw_lead_returns": 9,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 8,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 9,
+      "raw_lead_returns": 12,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 8,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 10,
+      "raw_lead_returns": 12,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 6,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 11,
+      "raw_lead_returns": 5,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 4,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 12,
+      "raw_lead_returns": 15,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 8,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 14,
+      "raw_lead_returns": 9,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 6,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "step": 15,
+      "raw_lead_returns": 12,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 8,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 3,
+      "raw_lead_returns": 16,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 14,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 4,
+      "raw_lead_returns": 12,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 10,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 9,
+      "raw_lead_returns": 11,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 7,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 10,
+      "raw_lead_returns": 12,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 6,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 11,
+      "raw_lead_returns": 9,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 5,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 12,
+      "raw_lead_returns": 12,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 9,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "step": 15,
+      "raw_lead_returns": 15,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 10,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "NO_INTERVENTION"
+    },
+    {
+      "split": "TEST",
+      "seed": 2938,
+      "step": 54,
+      "raw_lead_returns": 24,
+      "before_retained_lead_returns": 0,
+      "after_retained_lead_returns": 13,
+      "after_selected_lead": true,
+      "before_decision": "BRAKE_INTERVENTION",
+      "after_decision": "RELEASE_TO_BASE_DRIVER"
+    }
+  ],
+  "teacher_replay": [
+    {
+      "split": "VALIDATION",
+      "seed": 1200,
+      "steps": 100,
+      "decision_differences": 0,
+      "differences": [],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 2.1000000312924385,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.8500000424683094,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.000000059604645,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 2.1000000312924385,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.8500000424683094,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.000000059604645,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 0,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1285,
+      "steps": 112,
+      "decision_differences": 0,
+      "differences": [],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 2.550000037997961,
+            "braking": true
+          },
+          {
+            "elapsed_s": 3.200000047683716,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.500000067055225,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 2.550000037997961,
+            "braking": true
+          },
+          {
+            "elapsed_s": 3.200000047683716,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.500000067055225,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 0,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1297,
+      "steps": 89,
+      "decision_differences": 0,
+      "differences": [],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 1.4000000208616257,
+            "braking": true
+          },
+          {
+            "elapsed_s": 1.9500000290572643,
+            "braking": false
+          },
+          {
+            "elapsed_s": 3.35000004991889,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 1.4000000208616257,
+            "braking": true
+          },
+          {
+            "elapsed_s": 1.9500000290572643,
+            "braking": false
+          },
+          {
+            "elapsed_s": 3.35000004991889,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 0,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 1105,
+      "steps": 130,
+      "decision_differences": 14,
+      "differences": [
+        {
+          "step": 3,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 4,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 5,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 6,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 7,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 8,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 9,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 10,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 11,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 12,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 13,
+          "before": "RELEASE_TO_BASE_DRIVER",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 14,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 15,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 16,
+          "before": "RELEASE_TO_BASE_DRIVER",
+          "after": "NO_INTERVENTION"
+        }
+      ],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 0.10000000149011612,
+            "braking": true
+          },
+          {
+            "elapsed_s": 0.6000000089406967,
+            "braking": false
+          },
+          {
+            "elapsed_s": 0.6500000096857548,
+            "braking": true
+          },
+          {
+            "elapsed_s": 0.7500000111758709,
+            "braking": false
+          },
+          {
+            "elapsed_s": 3.500000052154064,
+            "braking": true
+          },
+          {
+            "elapsed_s": 4.200000062584877,
+            "braking": false
+          },
+          {
+            "elapsed_s": 5.4500000812113285,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 3.500000052154064,
+            "braking": true
+          },
+          {
+            "elapsed_s": 4.200000062584877,
+            "braking": false
+          },
+          {
+            "elapsed_s": 5.4500000812113285,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 2,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "TEST",
+      "seed": 2709,
+      "steps": 94,
+      "decision_differences": 0,
+      "differences": [],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 1.9000000283122063,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.550000037997961,
+            "braking": false
+          },
+          {
+            "elapsed_s": 3.7000000551342964,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 1.9000000283122063,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.550000037997961,
+            "braking": false
+          },
+          {
+            "elapsed_s": 3.7000000551342964,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 0,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "TEST",
+      "seed": 2835,
+      "steps": 129,
+      "decision_differences": 0,
+      "differences": [],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 1.750000026077032,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.450000036507845,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.050000060349703,
+            "braking": true
+          },
+          {
+            "elapsed_s": 4.400000065565109,
+            "braking": false
+          },
+          {
+            "elapsed_s": 5.500000081956387,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 1.750000026077032,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.450000036507845,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.050000060349703,
+            "braking": true
+          },
+          {
+            "elapsed_s": 4.400000065565109,
+            "braking": false
+          },
+          {
+            "elapsed_s": 5.500000081956387,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 0,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "TEST",
+      "seed": 2164,
+      "steps": 136,
+      "decision_differences": 13,
+      "differences": [
+        {
+          "step": 3,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 4,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 5,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 6,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 7,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 8,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 9,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 10,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 11,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 12,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 13,
+          "before": "RELEASE_TO_BASE_DRIVER",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 15,
+          "before": "BRAKE_INTERVENTION",
+          "after": "NO_INTERVENTION"
+        },
+        {
+          "step": 16,
+          "before": "RELEASE_TO_BASE_DRIVER",
+          "after": "NO_INTERVENTION"
+        }
+      ],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 0.10000000149011612,
+            "braking": true
+          },
+          {
+            "elapsed_s": 0.6000000089406967,
+            "braking": false
+          },
+          {
+            "elapsed_s": 0.7000000104308128,
+            "braking": true
+          },
+          {
+            "elapsed_s": 0.7500000111758709,
+            "braking": false
+          },
+          {
+            "elapsed_s": 3.9500000588595867,
+            "braking": true
+          },
+          {
+            "elapsed_s": 4.550000067800283,
+            "braking": false
+          },
+          {
+            "elapsed_s": 5.750000085681677,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 3.9500000588595867,
+            "braking": true
+          },
+          {
+            "elapsed_s": 4.550000067800283,
+            "braking": false
+          },
+          {
+            "elapsed_s": 5.750000085681677,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 2,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    },
+    {
+      "split": "TEST",
+      "seed": 2938,
+      "steps": 137,
+      "decision_differences": 2,
+      "differences": [
+        {
+          "step": 54,
+          "before": "BRAKE_INTERVENTION",
+          "after": "RELEASE_TO_BASE_DRIVER"
+        },
+        {
+          "step": 55,
+          "before": "RELEASE_TO_BASE_DRIVER",
+          "after": "NO_INTERVENTION"
+        }
+      ],
+      "brake_release_edges": {
+        "before": [
+          {
+            "elapsed_s": 1.9500000290572643,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.7000000402331352,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.6000000685453415,
+            "braking": true
+          },
+          {
+            "elapsed_s": 5.050000075250864,
+            "braking": false
+          },
+          {
+            "elapsed_s": 6.000000089406967,
+            "braking": true
+          }
+        ],
+        "after": [
+          {
+            "elapsed_s": 1.9500000290572643,
+            "braking": true
+          },
+          {
+            "elapsed_s": 2.650000039488077,
+            "braking": false
+          },
+          {
+            "elapsed_s": 4.6000000685453415,
+            "braking": true
+          },
+          {
+            "elapsed_s": 5.050000075250864,
+            "braking": false
+          },
+          {
+            "elapsed_s": 6.000000089406967,
+            "braking": true
+          }
+        ]
+      },
+      "brief_bout_or_release_count": {
+        "before": 0,
+        "after": 0
+      },
+      "counterfactual_physics_evaluated": false
+    }
+  ],
+  "remaining_missing_foreground": [],
+  "offline_pass": true,
+  "total_frames": 2204,
+  "legacy_foreground_refactor_equivalence_checks": 2204,
+  "privileged_removal_teacher_and_47_feature_checks": 927,
+  "foreground_before_latency": {
+    "median_ms": 0.5989000001136446,
+    "p95_ms": 1.6125250001095988,
+    "max_ms": 7.397100000162027
+  },
+  "retention_latency": {
+    "median_ms": 0.46070000007603085,
+    "p95_ms": 1.1725699995622556,
+    "max_ms": 8.261099999799626
+  },
+  "retention_plus_foreground_after_latency": {
+    "median_ms": 0.9007499993458623,
+    "p95_ms": 2.253234999716367,
+    "max_ms": 9.410999999090564
+  },
+  "resource": {
+    "wall_s": 51.93715030000021,
+    "cpu_s_after_imports": 45.546875,
+    "private_mib": 75.3046875,
+    "peak_working_set_mib": 59.4375
+  },
+  "teacher_source_sha256": "2b4f28e2be17ced5fd588828c4db0bc45a5df51654abf43a3481c4fcbc494124",
+  "teacher_config_sha256": "f3bf24d3b1be242fa2654510e78a3ad3af66c7cf7d9f2cbff035f3a8eda16388",
+  "neural_training": false,
+  "gpu_allocations": 0
+}

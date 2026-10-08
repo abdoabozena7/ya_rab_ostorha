@@ -1,0 +1,61 @@
+..................................................................................FFFFFFF.....................................................................................sssssss
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='collision')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='rgb')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='depth')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='radar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='lidar')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='imu')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_every_native_entry_point_reports_absence_instead_of_passing (tests.test_offline_boundaries.NativePreparationTests.test_every_native_entry_point_reports_absence_instead_of_passing) (check='gnss')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\projects\Ai\ya_rab_ostorha\tests\test_offline_boundaries.py", line 170, in test_every_native_entry_point_reports_absence_instead_of_passing
+    self.assertEqual(result.returncode, 2)
+AssertionError: 1 != 2
+
+----------------------------------------------------------------------
+Ran 175 tests in 32.402s
+
+FAILED (failures=7, skipped=7)

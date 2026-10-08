@@ -13,6 +13,7 @@ from gymnasium import spaces
 from ..core.contracts import SensorKind
 from ..core.safety_policy import SensorObservation
 from .radar import validate_radar_calibration
+from .radar_retention import retain_detections
 
 
 @dataclass(frozen=True)
@@ -86,7 +87,7 @@ class ObservationAssembler:
             'history_valid':np.array(1,np.int8),
             'frame_time':np.array([observation.frame_id,observation.timestamp_s],np.float64),
         }
-        detections = sorted(channels[SensorKind.RADAR].data['detections'],key=lambda d:d['depth_m'])[:self.config.radar_points]
+        detections = retain_detections(channels[SensorKind.RADAR].data['detections'], self.config.radar_points)
         for i,d in enumerate(detections):
             row['radar'][i] = np.clip([d['depth_m'],d['azimuth_rad'],d['altitude_rad'],d['velocity_mps']],
                                       [0,-np.pi,-np.pi/2,-100],[100,np.pi,np.pi/2,100])

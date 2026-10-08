@@ -1,0 +1,443 @@
+{
+  "frames": [
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 3,
+      "frame_id": 158840,
+      "raw_return_count": 56,
+      "raw_lead_return_count": 15,
+      "lead_min_distance_rank": 33,
+      "lead_max_distance_rank": 48,
+      "nearest32_max_depth_m": 16.064008712768555,
+      "lead_depth_range_m": [
+        18.48031997680664,
+        21.842487335205078
+      ],
+      "lead_azimuth_range_rad": [
+        -0.04051098972558975,
+        0.05944784730672836
+      ],
+      "lead_altitude_range_rad": [
+        -0.013586548157036304,
+        0.05047384649515152
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0005656466237269342,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 4,
+      "frame_id": 158841,
+      "raw_return_count": 54,
+      "raw_lead_return_count": 9,
+      "lead_min_distance_rank": 34,
+      "lead_max_distance_rank": 43,
+      "nearest32_max_depth_m": 16.854076385498047,
+      "lead_depth_range_m": [
+        18.25580406188965,
+        21.637298583984375
+      ],
+      "lead_azimuth_range_rad": [
+        -0.027697667479515076,
+        0.034940339624881744
+      ],
+      "lead_altitude_range_rad": [
+        -0.009163370355963707,
+        0.050171881914138794
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.00043362213182263076,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 9,
+      "frame_id": 158846,
+      "raw_return_count": 63,
+      "raw_lead_return_count": 12,
+      "lead_min_distance_rank": 40,
+      "lead_max_distance_rank": 53,
+      "nearest32_max_depth_m": 14.60730266571045,
+      "lead_depth_range_m": [
+        17.648887634277344,
+        22.24399185180664
+      ],
+      "lead_azimuth_range_rad": [
+        -0.05618201941251755,
+        0.01868620328605175
+      ],
+      "lead_altitude_range_rad": [
+        -0.0034096958115696907,
+        0.05260077863931656
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0005411319434642792,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 10,
+      "frame_id": 158847,
+      "raw_return_count": 58,
+      "raw_lead_return_count": 12,
+      "lead_min_distance_rank": 40,
+      "lead_max_distance_rank": 51,
+      "nearest32_max_depth_m": 14.652262687683105,
+      "lead_depth_range_m": [
+        17.68062400817871,
+        21.43450164794922
+      ],
+      "lead_azimuth_range_rad": [
+        -0.051939547061920166,
+        0.041562870144844055
+      ],
+      "lead_altitude_range_rad": [
+        -0.000625554530415684,
+        0.07728681713342667
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0014491566689684987,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 11,
+      "frame_id": 158848,
+      "raw_return_count": 57,
+      "raw_lead_return_count": 5,
+      "lead_min_distance_rank": 45,
+      "lead_max_distance_rank": 50,
+      "nearest32_max_depth_m": 13.505053520202637,
+      "lead_depth_range_m": [
+        17.844877243041992,
+        21.4034366607666
+      ],
+      "lead_azimuth_range_rad": [
+        -0.026372471824288368,
+        0.05483696237206459
+      ],
+      "lead_altitude_range_rad": [
+        0.007724818307906389,
+        0.08028712123632431
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0025722605641931295,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 12,
+      "frame_id": 158849,
+      "raw_return_count": 64,
+      "raw_lead_return_count": 15,
+      "lead_min_distance_rank": 43,
+      "lead_max_distance_rank": 58,
+      "nearest32_max_depth_m": 10.525429725646973,
+      "lead_depth_range_m": [
+        17.88737678527832,
+        22.314115524291992
+      ],
+      "lead_azimuth_range_rad": [
+        -0.06711085885763168,
+        0.05977300554513931
+      ],
+      "lead_altitude_range_rad": [
+        0.0010275805834680796,
+        0.06949233263731003
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0011423772666603327,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 14,
+      "frame_id": 158851,
+      "raw_return_count": 53,
+      "raw_lead_return_count": 9,
+      "lead_min_distance_rank": 33,
+      "lead_max_distance_rank": 42,
+      "nearest32_max_depth_m": 17.307188034057617,
+      "lead_depth_range_m": [
+        18.14495849609375,
+        21.772645950317383
+      ],
+      "lead_azimuth_range_rad": [
+        -0.023813974112272263,
+        0.03304988518357277
+      ],
+      "lead_altitude_range_rad": [
+        -0.0043647633865475655,
+        0.04969056323170662
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0003479980514384806,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 1105,
+      "split": "VALIDATION",
+      "step": 15,
+      "frame_id": 158852,
+      "raw_return_count": 59,
+      "raw_lead_return_count": 12,
+      "lead_min_distance_rank": 36,
+      "lead_max_distance_rank": 49,
+      "nearest32_max_depth_m": 14.034255027770996,
+      "lead_depth_range_m": [
+        18.228342056274414,
+        20.6968936920166
+      ],
+      "lead_azimuth_range_rad": [
+        -0.05739598721265793,
+        0.04213842377066612
+      ],
+      "lead_altitude_range_rad": [
+        -0.010480212047696114,
+        0.04616584628820419
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.00015316093049477786,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 3,
+      "frame_id": 160082,
+      "raw_return_count": 59,
+      "raw_lead_return_count": 16,
+      "lead_min_distance_rank": 33,
+      "lead_max_distance_rank": 49,
+      "nearest32_max_depth_m": 16.086450576782227,
+      "lead_depth_range_m": [
+        17.550195693969727,
+        21.232900619506836
+      ],
+      "lead_azimuth_range_rad": [
+        -0.04051393270492554,
+        0.05944684147834778
+      ],
+      "lead_altitude_range_rad": [
+        -0.013586468063294888,
+        0.050473909825086594
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.000568872841540724,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 4,
+      "frame_id": 160083,
+      "raw_return_count": 56,
+      "raw_lead_return_count": 12,
+      "lead_min_distance_rank": 33,
+      "lead_max_distance_rank": 45,
+      "nearest32_max_depth_m": 16.871620178222656,
+      "lead_depth_range_m": [
+        17.353595733642578,
+        21.67845916748047
+      ],
+      "lead_azimuth_range_rad": [
+        -0.05075734481215477,
+        0.05589788779616356
+      ],
+      "lead_altitude_range_rad": [
+        -0.015699198469519615,
+        0.05017188936471939
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0004375430871732533,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 9,
+      "frame_id": 160088,
+      "raw_return_count": 62,
+      "raw_lead_return_count": 11,
+      "lead_min_distance_rank": 40,
+      "lead_max_distance_rank": 52,
+      "nearest32_max_depth_m": 13.717538833618164,
+      "lead_depth_range_m": [
+        16.955764770507812,
+        20.3144474029541
+      ],
+      "lead_azimuth_range_rad": [
+        -0.05618414282798767,
+        0.018683012574911118
+      ],
+      "lead_altitude_range_rad": [
+        -0.003409762866795063,
+        0.052600711584091187
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0008112451760098338,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 10,
+      "frame_id": 160089,
+      "raw_return_count": 57,
+      "raw_lead_return_count": 12,
+      "lead_min_distance_rank": 40,
+      "lead_max_distance_rank": 51,
+      "nearest32_max_depth_m": 13.961592674255371,
+      "lead_depth_range_m": [
+        17.022886276245117,
+        20.051700592041016
+      ],
+      "lead_azimuth_range_rad": [
+        -0.051939547061920166,
+        0.04156143590807915
+      ],
+      "lead_altitude_range_rad": [
+        -0.0006256774649955332,
+        0.07728668302297592
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0016549326246604323,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 11,
+      "frame_id": 160090,
+      "raw_return_count": 60,
+      "raw_lead_return_count": 9,
+      "lead_min_distance_rank": 39,
+      "lead_max_distance_rank": 49,
+      "nearest32_max_depth_m": 14.12740421295166,
+      "lead_depth_range_m": [
+        16.964576721191406,
+        18.54827117919922
+      ],
+      "lead_azimuth_range_rad": [
+        -0.02637021243572235,
+        0.05633043125271797
+      ],
+      "lead_altitude_range_rad": [
+        -0.000951901194639504,
+        0.08028712868690491
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.001835870323702693,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 12,
+      "frame_id": 160091,
+      "raw_return_count": 63,
+      "raw_lead_return_count": 12,
+      "lead_min_distance_rank": 42,
+      "lead_max_distance_rank": 56,
+      "nearest32_max_depth_m": 11.305150985717773,
+      "lead_depth_range_m": [
+        17.18316650390625,
+        21.799306869506836
+      ],
+      "lead_azimuth_range_rad": [
+        -0.03214646503329277,
+        0.023058556020259857
+      ],
+      "lead_altitude_range_rad": [
+        -0.00391740258783102,
+        0.06949225813150406
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0006784040597267449,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2164,
+      "split": "TEST",
+      "step": 15,
+      "frame_id": 160094,
+      "raw_return_count": 61,
+      "raw_lead_return_count": 15,
+      "lead_min_distance_rank": 35,
+      "lead_max_distance_rank": 49,
+      "nearest32_max_depth_m": 15.32286262512207,
+      "lead_depth_range_m": [
+        17.559463500976562,
+        20.93446922302246
+      ],
+      "lead_azimuth_range_rad": [
+        -0.05739598721265793,
+        0.04213983938097954
+      ],
+      "lead_altitude_range_rad": [
+        -0.014383278787136078,
+        0.0601385198533535
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0004687559267040342,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    },
+    {
+      "seed": 2938,
+      "split": "TEST",
+      "step": 54,
+      "frame_id": 160822,
+      "raw_return_count": 72,
+      "raw_lead_return_count": 24,
+      "lead_min_distance_rank": 37,
+      "lead_max_distance_rank": 62,
+      "nearest32_max_depth_m": 9.06125545501709,
+      "lead_depth_range_m": [
+        11.077167510986328,
+        15.53494930267334
+      ],
+      "lead_azimuth_range_rad": [
+        -0.0750415101647377,
+        0.05616290867328644
+      ],
+      "lead_altitude_range_rad": [
+        -0.015676362439990044,
+        0.09125836938619614
+      ],
+      "ground_plane_fitted": true,
+      "nearest32_max_measured_height_m": 0.0010296264663338661,
+      "raw_projection_keeps_all_returns": true,
+      "nearest32_retains_lead": false
+    }
+  ],
+  "source_path": [
+    "backend/carla/sensor_decoders.py:decode_sensor",
+    "backend/core/safety_policy.py:sensor_observation",
+    "backend/rl/observations.py:ObservationAssembler.append",
+    "backend/rl/teacher.py:YaRabOstorhaSafetyTeacher.propose"
+  ],
+  "root_cause": "Raw radar preserves target returns. Independent nearest-distance top-32 truncation in the assembler and teacher discards every lead return on these sixteen frames, before foreground screening."
+}
