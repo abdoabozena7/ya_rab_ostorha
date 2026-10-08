@@ -71,6 +71,7 @@ class NativeScenarioManager:
         self.actors={}; self.resetting=False; self.run=None; self.started_at=None; self.previous=None
         self.outcome=None; self.initial_pending=False; self.capture_start=False
         self.metrics={}; self.last_contact={}; self.cache={}
+        self.seen_collision_events=set()
         self._publish()
 
     def load(self,spec):
@@ -138,6 +139,7 @@ class NativeScenarioManager:
                 'safety_intervention_count':0,'unsafe_intervention_count':None,'route_completion':None,
                 'control_variation':0.,'progress_under_congestion_m':None}
             self.previous=None; self.last_contact={}; self.started_at=None
+            self.seen_collision_events=set()
             self.run={'run_id':'scenario_'+uuid.uuid4().hex,'created_at_utc':datetime.now(timezone.utc).isoformat(),
                       'spec':to_dict(self.spec),'condition_id':self.spec.condition_id,
                       'safety_policy_enabled':False,'comparison_group':'NO_YA_RAB_OSTORHA_BASELINE',
@@ -217,14 +219,7 @@ class NativeScenarioManager:
             m['distance_traveled_m']+=math.dist(self.previous.vehicle.transform.position_m,v.transform.position_m)
             m['control_variation']+=sum(abs(getattr(self.previous.vehicle,k)-getattr(v,k)) for k in ('throttle','brake','steering'))
         m['average_speed_mps']=m['distance_traveled_m']/m['elapsed_simulation_s'] if m['elapsed_simulation_s']>0 else None
-        for c in frame.collisions:
-            # Collapse sustained contact with one actor into a collision episode,
-            # preserving raw callback counts and impulse data separately.
-            m['collision_callback_count']+=1
-            if c.timestamp_s-self.last_contact.get(c.other_actor_id,-float('inf'))>1.:m['collision_count']+=1
-            self.last_contact[c.other_actor_id]=c.timestamp_s
-            impulse=math.hypot(*c.impulse_ns)
-            m['collision_impulse_total_ns']+=impulse; m['collision_peak_impulse_ns']=max(m['collision_peak_impulse_ns'],impulse)
+        for c in frame.collisions:self._accept_collision(c)
         p=self.provider; ego_t=native_transform(p.connection.api,v.transform)
         ego_box=p.ego.actor.bounding_box
         for item in frame.ground_truth.objects if frame.ground_truth else ():
@@ -238,6 +233,26 @@ class NativeScenarioManager:
             self.stop(reason='failure_condition')
         elif m['elapsed_simulation_s']>=self.spec.timeout:self.stop(reason='timeout')
         else:self._publish()
+
+    def _accept_collision(self,collision):
+        if collision.ego_actor_id!=self.provider.ego.actor.id or collision.timestamp_s<self.started_at:return False
+        key=(collision.frame_id,collision.other_actor_id)
+        if key in self.seen_collision_events:return False
+        self.seen_collision_events.add(key)
+        m=self.metrics;m['collision_callback_count']+=1
+        if collision.timestamp_s-self.last_contact.get(collision.other_actor_id,-float('inf'))>1.:m['collision_count']+=1
+        self.last_contact[collision.other_actor_id]=collision.timestamp_s
+        impulse=math.hypot(*collision.impulse_ns)
+        m['collision_impulse_total_ns']+=impulse;m['collision_peak_impulse_ns']=max(m['collision_peak_impulse_ns'],impulse)
+        return True
+
+    def observe_collision(self,collision):
+        """Event-driven native collisions are not synchronous sensor channels."""
+        if self.phase!='RUNNING' or not self._accept_collision(collision):return None
+        if self.metrics['collision_count']>self.spec.failure_conditions.get('max_collision_episodes',float('inf')):
+            self.stop(reason='failure_condition')
+            return self.collect_outcome()
+        self._publish()
 
     def stop(self,reason='operator_stop'):
         if self.phase=='RUNNING':

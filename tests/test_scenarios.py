@@ -56,3 +56,18 @@ class ScenarioTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'rebuilding scenario actors'):
                 service.queue_dashboard_action('scenario',{'operation':operation})
         with self.assertRaises(ValueError):service.queue_dashboard_action('environment','LIVING_CITY')
+
+    def test_native_collision_event_path_counts_contact_and_rejects_old_ego(self):
+        from backend.core.contracts import CollisionEvent
+        provider=SimpleNamespace(ego=SimpleNamespace(actor=SimpleNamespace(id=11)))
+        manager=NativeScenarioManager(provider)
+        manager.phase='RUNNING';manager.spec=self.spec(failure_conditions={'max_collision_episodes':10.})
+        manager.started_at=1.;manager.metrics={'collision_callback_count':0,'collision_count':0,
+            'collision_impulse_total_ns':0.,'collision_peak_impulse_ns':0.}
+        event=CollisionEvent(22,1.1,11,12,(3.,4.,0.),'carla-world')
+        manager.observe_collision(event);manager.observe_collision(event)
+        manager.observe_collision(replace(event,frame_id=23,timestamp_s=1.15))
+        manager.observe_collision(replace(event,frame_id=24,timestamp_s=1.2,ego_actor_id=99))
+        self.assertEqual(manager.metrics['collision_count'],1)
+        self.assertEqual(manager.metrics['collision_callback_count'],2)
+        self.assertEqual(manager.metrics['collision_peak_impulse_ns'],5.)

@@ -265,6 +265,9 @@ class CarlaProvider:
             if phase=='RUNNING' and self.scenarios.phase=='FINISHED':
                 return self.scenarios.collect_outcome()
 
+    def observe_scenario_collision(self,collision):
+        return self.scenarios.observe_collision(collision) if self.scenarios else None
+
     def ground_truth_debug(self):
         return self.inspector.latest if self.inspector else None
 
