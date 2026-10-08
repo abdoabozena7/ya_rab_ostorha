@@ -32,7 +32,7 @@ The demonstrations default to a stopped ego and require a base driver to approac
 the hazard. Their difficulty label does not change their fixed geometry.
 Pedestrian definitions are not yet admitted by the native scenario adapter.
 
-Actual settled/start poses, velocities, bounding boxes, applied controls, weather,
+Actual observed setup/start poses, velocities, bounding boxes, applied controls, weather,
 sensor registry, API/server versions, timestep, rendering configuration and setup
 durations accompany each run. Canonical specification and actual-state hashes
 support matched runs. Identical seeds are not an unconditional physics guarantee.

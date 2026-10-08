@@ -41,7 +41,7 @@ function clearCamera() {
   if (cameraUrl) URL.revokeObjectURL(cameraUrl);
   cameraUrl = cameraReceipt = null; $('authoritativeCamera').hidden = true;
   $('authoritativeCamera').removeAttribute('src'); $('cameraUnavailable').hidden = false;
-  $('cameraActivity').textContent = 'الصورة غير متاحة'; $('cameraTimestamp').textContent = 't —';
+  $('cameraActivity').textContent = 'Image unavailable'; $('cameraTimestamp').textContent = 't —';
 }
 async function updateCamera(metadata) {
   const key = sensorFrameKey(metadata);
@@ -56,7 +56,7 @@ async function updateCamera(metadata) {
     if (cameraUrl) URL.revokeObjectURL(cameraUrl);
     cameraUrl = URL.createObjectURL(blob); cameraReceipt = key;
     $('authoritativeCamera').src = cameraUrl; $('authoritativeCamera').hidden = false;
-    $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = provider.isReplay ? 'REPLAY · صورة مسجلة' : 'RGB · صورة حية';
+    $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = provider.isReplay ? 'REPLAY · Recorded image' : 'RGB · Live image';
     $('cameraTimestamp').textContent = 't '+number(Number(response.headers.get('X-Sensor-Time')),' s',3);
     $('cameraMetadata').textContent = 'Frame '+response.headers.get('X-Sensor-Frame')+
       ' · '+metadata.width+'×'+metadata.height+' · FOV '+metadata.fovDeg+
@@ -66,14 +66,14 @@ async function updateCamera(metadata) {
 }
 function refresh() {
   if ((provider.connected||provider.isReplay)&&!provider.fresh) {
-    manualArmed = false; provider.disconnect('انقطع تدفق البيانات؛ القيادة متوقفة');
+    manualArmed = false; provider.disconnect('Data stream lost; driving stopped');
   }
   if (provider.sessionId !== seenSession) {
     seenSession = provider.sessionId; manualArmed = false; resetKeys(); clearCamera();
   }
   const state = provider.getVehicleState(), live = provider.fresh;
-  $('cameraEmptyTitle').textContent = live ? 'بانتظار صورة الكاميرا' : 'بانتظار اتصال المحاكي';
-  $('cameraEmptyDescription').textContent = live ? 'لا توجد صورة متاحة بعد. راجع حالة الحساسات في التفاصيل.' : 'وصّل CARLA لعرض الكاميرا وبيانات العربية، ثم فعّل القيادة.';
+  $('cameraEmptyTitle').textContent = live ? 'Waiting for camera image' : 'Waiting for simulator connection';
+  $('cameraEmptyDescription').textContent = live ? 'No image available yet. Inspect sensor status in Details.' : 'Connect CARLA to view camera and telemetry, then enable driving.';
   $('connectionSetupBtn').hidden = live || provider.isReplay;
   if (!live) $('mapEmpty').hidden = false;
   if (!live || provider.isReplay || !document.hasFocus() || document.hidden ||
@@ -81,22 +81,22 @@ function refresh() {
       provider.controlMode === 'PAUSED' && lastMode === 'MANUAL' || provider.controlMode === 'EMERGENCY_STOP')) manualArmed = false;
   lastMode = provider.controlMode;
   const controllable = canInput();
-  const connectedLabel = provider.isReplay ? 'REPLAY — تسجيل حقيقي' : provider.restarting ? 'CARLA — RESTARTING'
+  const connectedLabel = provider.isReplay ? 'REPLAY — real recording' : provider.restarting ? 'CARLA — RESTARTING'
     : 'CARLA — '+(live&&provider.connected?'CONNECTED':'DISCONNECTED');
   $('cityStatus').textContent = $('simulationState').textContent = connectedLabel;
   $('connectionDot').classList.toggle('connected',live&&provider.connected);
-  $('missionText').textContent = provider.isReplay ? 'عرض تسجيل · القيادة مقفولة' : provider.population ?
-    provider.population.actual.vehicles+' عربية مرور · '+provider.population.actual.pedestrians+' مشاة' : 'بانتظار سكان CARLA';
-  const modeNames = {MANUAL:manualArmed?'قيادة يدوية':'العربية تحت الأمان',AUTOMATIC:'رحلة تلقائية',PAUSED:state.speedKmh>.54?'جاري إيقاف العربية':'العربية متوقفة',
-    EMERGENCY_STOP:'إيقاف طوارئ',DISCONNECTED:'المحاكي غير متصل',REPLAY:'عرض تسجيل'};
+  $('missionText').textContent = provider.isReplay ? 'Replay · Driving disabled' : provider.population ?
+    provider.population.actual.vehicles+' traffic vehicle · '+provider.population.actual.pedestrians+' walkers' : 'Waiting for population CARLA';
+  const modeNames = {MANUAL:manualArmed?'Manual driving':'Vehicle held by command safety',AUTOMATIC:'Destination journey',PAUSED:state.speedKmh>.54?'Stopping vehicle':'Vehicle stopped',
+    EMERGENCY_STOP:'Emergency stop',DISCONNECTED:'Simulator disconnected',REPLAY:'Replay'};
   $('controlMode').textContent = modeNames[provider.controlMode] || provider.controlMode;
   $('controlSource').textContent = provider.controlSource || '';
-  $('connectionDetail').textContent = provider.isReplay ? 'عرض بيانات مسجلة؛ لا يوجد تحكم بالمحاكي.'
-    : live ? (provider.controller?'التحكم من هذه الصفحة.':'صفحة أخرى تتحكم بالعربية؛ استلم التحكم من الإعدادات.')
-    : provider.restarting ? 'جاري إعادة تشغيل CARLA وإعادة الاتصال…' : 'المحاكي غير متصل. افتح إعداد الاتصال للمتابعة.';
-  $('phoneStatus').textContent = live ? 'الوجهات من خريطة '+(provider.world.map?.split('/').at(-1)||'CARLA') : 'بانتظار اتصال المحاكي.';
+  $('connectionDetail').textContent = provider.isReplay ? 'Recorded data view; no simulator controls.'
+    : live ? (provider.controller?'Take control from this page.':'Another page controls the vehicle; take control in Settings.')
+    : provider.restarting ? 'Restarting CARLA and reconnecting…' : 'Simulator disconnected. Open connection setup to continue.';
+  $('phoneStatus').textContent = live ? 'Destinations from map '+(provider.world.map?.split('/').at(-1)||'CARLA') : 'Waiting for simulator connection.';
   $('providerStatus').textContent = provider.status;
-  $('providerTitle').textContent = provider.isReplay ? 'الكاميرا المسجلة' : 'كاميرا CARLA';
+  $('providerTitle').textContent = provider.isReplay ? 'Recorded camera' : 'Camera CARLA';
   $('cameraSource').textContent = provider.isReplay ? 'RECORDED RGB' : 'CARLA RGB';
   $('speedVal').textContent = number(state.speedKmh,'',0); $('gearVal').textContent = state.gear ?? '—';
   $('throttleVal').textContent = number(state.throttle==null?null:state.throttle*100,'%');
@@ -106,27 +106,27 @@ function refresh() {
   $('mapVal').textContent = provider.world.map?.split('/').at(-1) ?? '—';
   $('frameVal').textContent = state.frame ?? '—'; $('timeVal').textContent = number(state.timestamp,' s',3);
   $('accelVal').textContent = number(state.accelerationMps2,' m/s²');
-  $('reverseVal').textContent = state.reverse==null?'—':state.reverse?'نعم':'لا';
-  $('positionVal').textContent = state.positionWorldM ? 'X / Y / Z: '+state.positionWorldM.map(v=>number(v)).join(' / ')+' m' : 'الموقع غير متاح';
+  $('reverseVal').textContent = state.reverse==null?'—':state.reverse?'Yes':'No';
+  $('positionVal').textContent = state.positionWorldM ? 'X / Y / Z: '+state.positionWorldM.map(v=>number(v)).join(' / ')+' m' : 'Position unavailable';
   $('headingVal').textContent = state.rotationDeg ? 'Yaw '+number(state.rotationDeg.yaw,'°') : '';
   $('gearSelect').disabled = !controllable || provider.controlMode === 'AUTOMATIC';
-  $('gearSelect').title = !$('gearSelect').disabled ? '' : provider.isReplay ? 'التسجيل للعرض فقط؛ القيادة مقفولة'
-    : !live ? 'بانتظار اتصال حقيقي بـCARLA' : provider.controlMode === 'AUTOMATIC' ? 'الغيار يديره متحكم الرحلة؛ استلم القيادة اليدوية لتغييره'
-    : !provider.controller ? 'استلم التحكم من إعدادات الاتصال أولًا' : 'فعّل القيادة اليدوية لتغيير الغيار';
-  $('controlStatus').textContent = provider.isReplay ? 'REPLAY · القيادة مقفولة' : !document.hasFocus()||document.hidden
-    ? 'ارجع للداشبورد لاستقبال الكيبورد' : controllable ? 'WASD جاهزة · W+Shift بنزين أقوى' : 'الكيبورد متوقف — فعّل القيادة أولًا';
+  $('gearSelect').title = !$('gearSelect').disabled ? '' : provider.isReplay ? 'Replay is read-only; driving is disabled'
+    : !live ? 'Waiting for native connection to CARLA' : provider.controlMode === 'AUTOMATIC' ? 'Journey controller selects the gear; take manual control to change it'
+    : !provider.controller ? 'Take control in connection settings first' : 'Enable manual driving to change gear';
+  $('controlStatus').textContent = provider.isReplay ? 'REPLAY · Driving disabled' : !document.hasFocus()||document.hidden
+    ? 'Focus the dashboard to use the keyboard' : controllable ? 'WASD ready · W+Shift More throttle' : 'Keyboard stopped — Enable driving first';
   const sensorCount = Object.keys(provider.sensorMetadata).length;
-  $('sensorStatus').textContent = provider.isReplay ? sensorCount+' حساسات من الفريم المسجل · أحداث التصادم من التسجيل' :
-    live ? sensorCount+' حساسات دورية تستقبل بيانات · التصادم يعمل عند الحدث' : 'الحساسات غير متاحة';
-  $('cameraFps').textContent = number(provider.performance?.sensorWallRatesHz?.frontCamera)+' /ث فعلية · '+number(provider.sensorRates.frontCamera)+' Hz sim';
+  $('sensorStatus').textContent = provider.isReplay ? sensorCount+' sensors from recorded frame · recorded collision events' :
+    live ? sensorCount+' periodic sensors receiving data · Collision sensor is event-driven' : 'Sensors unavailable';
+  $('cameraFps').textContent = number(provider.performance?.sensorWallRatesHz?.frontCamera)+' /wall seconds · '+number(provider.sensorRates.frontCamera)+' Hz sim';
   const perf = provider.performance || {}, gpu = perf.gpu;
-  $('performance').textContent = 'خطوات فعلية: '+number(perf.nativeTickRateHz)+' /ث · زمن المحاكاة: '+
+  $('performance').textContent = 'actual steps: '+number(perf.nativeTickRateHz)+' /s · Simulation time: '+
     (provider.world.fixedDeltaSeconds?number(1/provider.world.fixedDeltaSeconds)+' Hz':'—')+
-    (gpu?' · VRAM '+gpu.usedMiB+' / '+gpu.totalMiB+' MiB':'')+' · FPS الرسم غير متاح';
+    (gpu?' · VRAM '+gpu.usedMiB+' / '+gpu.totalMiB+' MiB':'')+' · FPS Rendering unavailable';
   $('debugTelemetry').textContent = telemetryText(state,{remote:true,latencyMs:provider.latencyMs,
     sensorRates:provider.sensorRates,sensorErrors:provider.sensorErrors,world:provider.world,mode:provider.controlMode});
   $('replayPauseBtn').hidden = !provider.isReplay;
-  $('replayPauseBtn').textContent = provider.replay?.paused ? 'استئناف عرض التسجيل' : 'إيقاف عرض التسجيل';
+  $('replayPauseBtn').textContent = provider.replay?.paused ? 'Resume replay' : 'Pause replay';
   if (controllable && (provider.controlMode === 'MANUAL' ||
       provider.controlMode === 'AUTOMATIC' && (manualOverridePending||controls.keys.size>0))) sendManual(state);
   if (live&&provider.controller&&!provider.isReplay&&document.hasFocus()&&!document.hidden&&
@@ -138,23 +138,23 @@ function refresh() {
 $('startDrivingBtn').onclick = () => {
   resetKeys(); manualArmed = true; manualRequestedUntil = performance.now()+1000;
   $('drivingMode').value = 'MANUAL';
-  provider.startDriving(); document.activeElement?.blur(); $('drivingInstruction').textContent = 'تفعيل القيادة اليدوية…';
+  provider.startDriving(); document.activeElement?.blur(); $('drivingInstruction').textContent = 'Enable manual driving…';
 };
 function startJourney() {
   const speed = Number($('journeySpeed').value);
   if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
-    $('operationStatus').textContent = 'اختار سرعة بين 5 و30 كم/س.'; return;
+    $('operationStatus').textContent = 'Choose a speed between 5 and 30 km/h.'; return;
   }
   tools.close(false); resetKeys(); manualArmed = false; manualRequestedUntil = 0;
   $('drivingMode').value = 'AUTOMATIC';
-  if (provider.startJourney(speed)) $('journeyStatus').textContent = 'جاري بدء الرحلة إلى الوجهة…';
+  if (provider.startJourney(speed)) $('journeyStatus').textContent = 'Starting destination journey…';
   document.activeElement?.blur();
 }
 $('startJourneyBtn').onclick = $('phoneJourneyBtn').onclick = $('driveJourneyBtn').onclick = startJourney;
 $('journeySpeed').onchange = () => {
   const speed = Number($('journeySpeed').value);
   if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
-    $('operationStatus').textContent = 'اختار سرعة بين 5 و30 كم/س.'; return;
+    $('operationStatus').textContent = 'Choose a speed between 5 and 30 km/h.'; return;
   }
   if (provider.controlMode === 'AUTOMATIC') provider.journeySpeed(speed);
 };

@@ -384,8 +384,9 @@ class SimulationService:
                 raise ValueError('Unknown dashboard operation')
             if self.recorder and action in ('settings','world_reset'):
                 raise ValueError('Finish recording before changing sensor configuration')
-            if self.recorder and action in ('scenario','environment'):
-                raise ValueError('Finish recording before changing scenario lifecycle or environment mode')
+            scenario_rebuild=action=='scenario' and (not isinstance(value,dict) or value.get('operation') in ('load','reset','cleanup'))
+            if self.recorder and (action=='environment' or scenario_rebuild):
+                raise ValueError('Finish recording before rebuilding scenario actors or changing environment mode')
             if action=='world_reset':
                 active = self.provider.runtime.active or {'quality':'Low','resolution':'1280x720'}
                 self.restart_graphics({k:active[k] for k in ('quality','resolution')}, operation='WORLD_RESET')

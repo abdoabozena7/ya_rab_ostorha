@@ -148,6 +148,7 @@
       this.dashboardResult = message.dashboardResult ?? null;
       this.route = message.route ?? null;
       this.population = message.population ?? null;
+      this.environment = message.environment ?? null;
       this.nearbyActors = message.nearbyActors ?? null;
       const replay = message.mode === "REPLAY" && message.provider === "replay" && message.connected === false && message.available === true && message.replay?.dataOrigin === "REAL_SIMULATION";
       const sourceValid = replay ? message.vehicle?.source === message.replay.recordedProvider && message.world?.source === message.replay.recordedProvider : message.connected === true && message.mode !== "REPLAY" && message.provider !== "replay" && message.vehicle?.source === "carla" && message.world?.source === "carla";
@@ -208,6 +209,7 @@
       this.route = null;
       this.navigationAvailable = false;
       this.population = this.nearbyActors = null;
+      this.environment = null;
     }
     retry() {
       if (this.closed || this.retryTimer) return;
@@ -468,6 +470,37 @@
       $("clearPedestriansBtn").onclick = () => populationAction("clear_pedestrians");
       $("resetPopulationBtn").onclick = () => populationAction("reset");
       $("respawnPopulationBtn").onclick = () => populationAction("respawn");
+      const scenario = (operation) => {
+        clearControls2();
+        provider2.dashboardAction("scenario", { operation });
+      };
+      $("loadScenarioBtn").onclick = () => {
+        clearControls2();
+        provider2.dashboardAction("scenario", {
+          operation: "load",
+          scenario_type: $("scenarioType").value,
+          seed: Number($("scenarioSeed").value),
+          split: $("scenarioSplit").value,
+          difficulty: Number($("scenarioDifficulty").value)
+        });
+      };
+      $("resetScenarioBtn").onclick = () => scenario("reset");
+      $("startScenarioBtn").onclick = () => scenario("start");
+      $("stopScenarioBtn").onclick = () => scenario("stop");
+      $("livingCityBtn").onclick = () => {
+        clearControls2();
+        provider2.dashboardAction("environment", "LIVING_CITY");
+      };
+      $("scenarioSplit").onchange = () => {
+        $("scenarioSeed").value = { TRAIN: 42, VALIDATION: 1042, TEST: 2042 }[$("scenarioSplit").value];
+      };
+      $("settingWorldProfile").onchange = () => {
+        const profile = this.catalog?.urban_world_profiles?.[$("settingWorldProfile").value];
+        if (profile) {
+          $("settingTrafficCount").value = profile.vehicle_count;
+          $("settingPedestrianCount").value = profile.pedestrian_count;
+        }
+      };
       $("recordRunBtn").onclick = () => {
         clearControls2();
         provider2.dashboardAction("recording", { enabled: !provider2.recording });
@@ -570,7 +603,7 @@
         $("settingPostprocess").checked = false;
         $("settingMotionBlur").value = 0;
         $("settingBloom").value = 0;
-        $("settingsStatus").textContent = "\u0627\u0644\u0635\u0648\u0631\u0629 \u0627\u0644\u0648\u0627\u0636\u062D\u0629 \u062C\u0627\u0647\u0632\u0629. \u0627\u0636\u063A\u0637 \u0637\u0628\u0651\u0642 \u0627\u0644\u062A\u063A\u064A\u064A\u0631\u0627\u062A \u0644\u062A\u0641\u0639\u064A\u0644\u0647\u0627.";
+        $("settingsStatus").textContent = "Clear image settings ready. Select Apply changes to activate.";
       };
       $("restartGraphicsBtn").onclick = () => {
         const launch = { quality: $("settingQuality").value, resolution: $("settingWindow").value };
@@ -578,8 +611,8 @@
         clearControls2();
         if (!provider2.dashboardAction("settings", { next_launch: launch })) {
           this.restartAfterSave = null;
-          $("restartStatus").textContent = "\u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0623\u0648\u0644\u064B\u0627.";
-        } else $("restartStatus").textContent = "\u062D\u0641\u0638 \u0627\u0644\u0625\u0639\u062F\u0627\u062F \u062B\u0645 \u0625\u0639\u0627\u062F\u0629 \u062A\u0634\u063A\u064A\u0644 \u0627\u0644\u0645\u062D\u0627\u0643\u064A\u2026";
+          $("restartStatus").textContent = "Take control in connection settings first.";
+        } else $("restartStatus").textContent = "Save settings then restart simulator\u2026";
       };
       $("destinationSearch").oninput = () => {
         this.selectedPlace = null;
@@ -589,13 +622,13 @@
         const text = $("destinationSearch").value.trim();
         const place = this.selectedPlace || this.catalog?.places.find((p) => p.name === text || p.id === text);
         if (!place) {
-          $("destinationStatus").textContent = "\u0627\u062E\u062A\u0627\u0631 \u0648\u062C\u0647\u0629 \u0645\u0646 \u0646\u062A\u0627\u0626\u062C \u0627\u0644\u0628\u062D\u062B \u0623\u0648\u0644\u064B\u0627.";
+          $("destinationStatus").textContent = "Choose a destination from the search results first.";
           return;
         }
         this.choose(place.id);
       };
       $("savePlaceBtn").onclick = () => {
-        const name = $("savePlaceName").value.trim() || "\u0645\u0643\u0627\u0646 \u0645\u062D\u0641\u0648\u0638 " + (/* @__PURE__ */ new Date()).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+        const name = $("savePlaceName").value.trim() || "Saved place " + (/* @__PURE__ */ new Date()).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
         clearControls2();
         provider2.dashboardAction("save_place", name);
       };
@@ -615,7 +648,7 @@
     }
     expandCamera(enlarged) {
       $("cameraCard").classList.toggle("camera-expanded", enlarged);
-      $("expandCameraBtn").textContent = enlarged ? "\u062A\u0635\u063A\u064A\u0631 \u0627\u0644\u0635\u0648\u0631\u0629" : "\u062A\u0643\u0628\u064A\u0631 \u0627\u0644\u0635\u0648\u0631\u0629";
+      $("expandCameraBtn").textContent = enlarged ? "Shrink image" : "Expand image";
       $("expandCameraBtn").setAttribute("aria-expanded", String(enlarged));
       if (!enlarged) $("expandCameraBtn").focus({ preventScroll: true });
     }
@@ -650,7 +683,7 @@
     choose(value) {
       this.clearControls();
       const accepted = this.provider.dashboardAction("destination", value);
-      $("destinationStatus").textContent = $("mapSelectionStatus").textContent = accepted ? "\u0628\u0646\u062D\u0633\u0628 \u0627\u0644\u0637\u0631\u064A\u0642 \u0645\u0646 \u0645\u0643\u0627\u0646 \u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u2026" : "\u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0642\u0628\u0644 \u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u0644\u0648\u062C\u0647\u0629.";
+      $("destinationStatus").textContent = $("mapSelectionStatus").textContent = accepted ? "Planning from the current vehicle position\u2026" : "Take control in connection settings before selecting a destination.";
       if (accepted) this.close();
     }
     async load(force = false) {
@@ -678,11 +711,11 @@
       const places = this.catalog?.places.filter((p) => p.name.toLocaleLowerCase().includes(query) || String(p.road_id).includes(query)) ?? [];
       const groups = /* @__PURE__ */ new Map();
       for (const place of places) {
-        const name = place.favorite ? "\u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A \u2605" : place.id.startsWith("saved-") ? "\u0623\u0645\u0627\u0643\u0646\u0643 \u0627\u0644\u0645\u062D\u0641\u0648\u0638\u0629" : place.sector ? place.sector + " \xB7 \u0637\u0631\u064A\u0642 " + place.road_id : "\u0623\u0645\u0627\u0643\u0646 \u062C\u0627\u0647\u0632\u0629";
+        const name = place.favorite ? "Favorites \u2605" : place.id.startsWith("saved-") ? "Your saved places" : place.sector ? place.sector + " \xB7 Road " + place.road_id : "Available places";
         if (!groups.has(name)) groups.set(name, []);
         groups.get(name).push(place);
       }
-      for (const [name, entries] of [...groups].sort(([a], [b]) => Number(b === "\u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A \u2605") - Number(a === "\u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A \u2605"))) {
+      for (const [name, entries] of [...groups].sort(([a], [b]) => Number(b === "Favorites \u2605") - Number(a === "Favorites \u2605"))) {
         const title = document.createElement("div");
         title.className = "place-group";
         title.textContent = name;
@@ -708,22 +741,22 @@
           star.type = "button";
           star.className = "place-favorite";
           star.textContent = place.favorite ? "\u2605" : "\u2606";
-          star.setAttribute("aria-label", (place.favorite ? "\u0625\u0632\u0627\u0644\u0629 \u0645\u0646 \u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A: " : "\u0625\u0636\u0627\u0641\u0629 \u0644\u0644\u0645\u0641\u0636\u0644\u0627\u062A: ") + place.name);
+          star.setAttribute("aria-label", (place.favorite ? "Remove from favorites: " : "Add to favorites: ") + place.name);
           star.disabled = !this.provider.fresh || !this.provider.controller || this.provider.isReplay;
-          star.title = star.disabled ? "\u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0623\u0648\u0644\u064B\u0627" : "\u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A \u0645\u062D\u0641\u0648\u0638\u0629 \u0628\u0639\u062F \u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0627\u062A\u0635\u0627\u0644";
+          star.title = star.disabled ? "Take control in connection settings first" : "Favorites persist after reconnection";
           star.onclick = () => this.provider.dashboardAction("favorite_place", place.id);
           row.append(button, star);
           list.append(row);
         }
       }
-      if (!places.length) list.textContent = this.catalog ? "\u0645\u0641\u064A\u0634 \u0646\u062A\u0627\u0626\u062C. \u062C\u0631\u0651\u0628 \u0627\u0633\u0645 \u0645\u0646\u0637\u0642\u0629 \u0623\u0648 \u0627\u062E\u062A\u0627\u0631 \u0645\u0646 \u0627\u0644\u062E\u0631\u064A\u0637\u0629." : "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u062E\u0631\u064A\u0637\u0629 CARLA\u2026";
+      if (!places.length) list.textContent = this.catalog ? "No results. Try an area name or select from the map." : "Waiting for map CARLA\u2026";
     }
     fillSettings() {
       const s = this.catalog.settings;
       for (const [id, entries] of [
         ["settingVehicle", s.vehicle_options.map((p) => [p.id, p.name])],
         ["settingSpawn", s.spawn_options.map((p) => [p.index, p.name])],
-        ["settingWeather", [["CUSTOM", "\u0645\u062E\u0635\u0635"], ...s.weather_presets.map((name) => [name, { ClearNoon: "\u0635\u0627\u0641\u064D \u2014 \u0638\u0647\u0631", CloudyNoon: "\u063A\u0627\u0626\u0645 \u2014 \u0638\u0647\u0631", WetNoon: "\u0623\u0631\u0636 \u0645\u0628\u0644\u0644\u0629", WetCloudyNoon: "\u0645\u0628\u0644\u0644 \u0648\u063A\u0627\u0626\u0645", MidRainyNoon: "\u0645\u0637\u0631 \u0645\u062A\u0648\u0633\u0637", HardRainNoon: "\u0645\u0637\u0631 \u063A\u0632\u064A\u0631", SoftRainNoon: "\u0645\u0637\u0631 \u062E\u0641\u064A\u0641", ClearSunset: "\u063A\u0631\u0648\u0628 \u0635\u0627\u0641\u064D", CloudySunset: "\u063A\u0631\u0648\u0628 \u063A\u0627\u0626\u0645", WetSunset: "\u063A\u0631\u0648\u0628 \u0648\u0623\u0631\u0636 \u0645\u0628\u0644\u0644\u0629", HardRainSunset: "\u063A\u0631\u0648\u0628 \u0648\u0645\u0637\u0631 \u063A\u0632\u064A\u0631" }[name] || name])]],
+        ["settingWeather", [["CUSTOM", "Custom"], ...s.weather_presets.map((name) => [name, { ClearNoon: "Clear \u2014 Noon", CloudyNoon: "Cloudy \u2014 Noon", WetNoon: "Wet ground", WetCloudyNoon: "Wet and cloudy", MidRainyNoon: "Moderate rain", HardRainNoon: "Heavy rain", SoftRainNoon: "Light rain", ClearSunset: "Clear sunset", CloudySunset: "Cloudy sunset", WetSunset: "Wet sunset", HardRainSunset: "Heavy rain sunset" }[name] || name])]],
         ["settingProfile", Object.entries(this.catalog.profiles || {}).map(([name, p]) => [name, name + " \xB7 " + p.population.vehicle_count + " / " + p.population.pedestrian_count])]
       ]) {
         const select = $(id), previous = select.value;
@@ -749,6 +782,10 @@
         settingTrafficSpeed: s.population_saved.speed_behavior,
         settingFastWalk: s.population_saved.fast_walk_percent,
         settingSeed: s.population_saved.seed,
+        settingDriverBehavior: s.population_saved.driver_behavior ?? "NORMAL",
+        settingCompliance: s.population_saved.light_compliance_percent ?? 90,
+        settingCrossing: s.population_saved.crossing_percent ?? 5,
+        settingWorldProfile: s.population_saved.world_profile ?? "TRAINING_DEVELOPMENT",
         settingWeather: s.weather_preset,
         cameraView: s.camera_view,
         settingMotionBlur: s.camera_motion_blur,
@@ -758,12 +795,12 @@
       $("settingPostprocess").checked = s.camera_postprocess === true;
       for (const [key, id] of Object.entries(weatherFields)) $(id).value = s.weather[key];
       const applied = s.active_launch;
-      $("activeGraphics").textContent = applied ? "\u0627\u0644\u0645\u0637\u0628\u0651\u0642 \u0641\u0639\u0644\u064A\u064B\u0627: " + (applied.quality || "\u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641") + " \xB7 " + (applied.resolution || "\u062F\u0642\u0629 \u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641\u0629") + (applied.offscreen ? " \xB7 \u0627\u0644\u0639\u0631\u0636 \u062F\u0627\u062E\u0644 \u0627\u0644\u062F\u0627\u0634\u0628\u0648\u0631\u062F" : "") : "\u0625\u0639\u062F\u0627\u062F \u0627\u0644\u062C\u0631\u0627\u0641\u064A\u0643\u0633 \u0627\u0644\u0645\u0637\u0628\u0651\u0642 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D.";
+      $("activeGraphics").textContent = applied ? "Applied: " + (applied.quality || "unknown") + " \xB7 " + (applied.resolution || "unknown resolution") + (applied.offscreen ? " \xB7 displayed in dashboard" : "") : "Applied graphics settings are unavailable.";
       $("effectsNote").textContent = s.camera_effects?.note || "";
-      $("weatherApplied").textContent = "\u0627\u0644\u0637\u0642\u0633 \u0627\u0644\u0645\u0637\u0628\u0642: " + s.weather_preset;
+      $("weatherApplied").textContent = "Applied weather: " + s.weather_preset;
       if (!Object.keys(this.catalog.profiles || {}).length) {
         const option = document.createElement("option");
-        option.textContent = "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0646\u062A\u0627\u0626\u062C \u0642\u064A\u0627\u0633 \u0627\u0644\u0623\u062F\u0627\u0621";
+        option.textContent = "Waiting for performance measurements";
         $("settingProfile").append(option);
       }
     }
@@ -778,7 +815,11 @@
           pedestrian_count: number2("settingPedestrianCount"),
           speed_behavior: $("settingTrafficSpeed").value,
           fast_walk_percent: number2("settingFastWalk"),
-          seed: number2("settingSeed")
+          seed: number2("settingSeed"),
+          driver_behavior: $("settingDriverBehavior").value,
+          light_compliance_percent: number2("settingCompliance"),
+          crossing_percent: number2("settingCrossing"),
+          world_profile: $("settingWorldProfile").value
         }
       };
       if ($("settingWeather").value !== "CUSTOM") {
@@ -798,7 +839,7 @@
       };
       for (const [key, value] of Object.entries(candidates)) if (value !== current[key]) data[key] = value;
       this.clearControls();
-      $("settingsStatus").textContent = this.provider.dashboardAction("settings", data) ? "\u062C\u0627\u0631\u064A \u0627\u0644\u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u0641\u0639\u0644\u064A\u2026" : "\u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0623\u0648\u0644\u064B\u0627.";
+      $("settingsStatus").textContent = this.provider.dashboardAction("settings", data) ? "Applying live settings\u2026" : "Take control in connection settings first.";
     }
     disable(id, reason) {
       const button = $(id);
@@ -823,78 +864,93 @@
         $("routeCar").setAttribute("hidden", "");
         $("routeTarget").setAttribute("hidden", "");
       }
-      const blocked = p.isReplay ? "\u0627\u0644\u062A\u0633\u062C\u064A\u0644 \u0644\u0644\u0639\u0631\u0636 \u0641\u0642\u0637\u061B \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0645\u0642\u0641\u0648\u0644\u0629" : p.restarting ? "\u062C\u0627\u0631\u064A \u0625\u0639\u0627\u062F\u0629 \u062A\u0634\u063A\u064A\u0644 CARLA" : !p.fresh ? "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0627\u062A\u0635\u0627\u0644 \u062D\u0642\u064A\u0642\u064A \u0628\u0640CARLA" : "";
-      const ownerBlocked = blocked || (!p.controller ? "\u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644" : "");
+      const blocked = p.isReplay ? "Replay is read-only; driving is disabled" : p.restarting ? "Restarting CARLA" : !p.fresh ? "Waiting for native connection to CARLA" : "";
+      const ownerBlocked = blocked || (!p.controller ? "Take control in connection settings" : "");
       for (const star of document.querySelectorAll(".place-favorite")) {
         star.disabled = !!ownerBlocked;
-        star.title = ownerBlocked || "\u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A \u0645\u062D\u0641\u0648\u0638\u0629 \u0628\u0639\u062F \u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0627\u062A\u0635\u0627\u0644";
+        star.title = ownerBlocked || "Favorites persist after reconnection";
       }
-      const emergency = p.controlMode === "EMERGENCY_STOP" ? "\u0623\u0642\u0631 \u0625\u064A\u0642\u0627\u0641 \u0627\u0644\u0637\u0648\u0627\u0631\u0626 \u0623\u0648\u0644\u064B\u0627" : "";
+      const emergency = p.controlMode === "EMERGENCY_STOP" ? "Acknowledge the emergency stop first" : "";
       this.disable("startDrivingBtn", blocked || emergency);
       const journeyBusy = ["STARTING", "RUNNING"].includes(p.journey?.status);
       const destinationPending = p.dashboardResult?.action === "destination" && p.dashboardResult.status === "PENDING";
-      const journeyBlocked = blocked || emergency || (!p.navigationAvailable ? "\u0627\u0644\u0631\u062D\u0644\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629 \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0648\u0636\u0639" : "") || (destinationPending ? "\u062C\u0627\u0631\u064A \u062D\u0633\u0627\u0628 \u0627\u0644\u0637\u0631\u064A\u0642\u2026" : "") || (!p.route ? "\u0627\u062E\u062A\u0627\u0631 \u0648\u062C\u0647\u0629 \u0635\u0627\u0644\u062D\u0629 \u0648\u0627\u0639\u0631\u0636 \u0627\u0644\u0637\u0631\u064A\u0642 \u0623\u0648\u0644\u064B\u0627" : "") || (journeyBusy ? "\u0627\u0644\u0631\u062D\u0644\u0629 \u0634\u063A\u0627\u0644\u0629\u061B \u0623\u0648\u0642\u0641\u0647\u0627 \u0642\u0628\u0644 \u0627\u0644\u0627\u0646\u0637\u0644\u0627\u0642 \u0645\u062C\u062F\u062F\u064B\u0627" : "") || (p.route?.arrived && state.speedMagnitudeMps < 0.15 ? "\u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0639\u0646\u062F \u0627\u0644\u0648\u062C\u0647\u0629 \u0628\u0627\u0644\u0641\u0639\u0644\u061B \u0627\u062E\u062A\u0627\u0631 \u0648\u062C\u0647\u0629 \u062C\u062F\u064A\u062F\u0629" : "");
+      const journeyBlocked = blocked || emergency || (!p.navigationAvailable ? "Journeys are unavailable in this mode" : "") || (destinationPending ? "Planning route\u2026" : "") || (!p.route ? "Choose a valid destination and show its route first" : "") || (journeyBusy ? "Journey running; stop it before starting again" : "") || (p.route?.arrived && state.speedMagnitudeMps < 0.15 ? "Vehicle is already at the destination; choose another" : "");
       for (const id of ["startJourneyBtn", "phoneJourneyBtn", "driveJourneyBtn"]) this.disable(id, journeyBlocked);
       this.disable("journeySpeed", ownerBlocked || emergency);
-      $("journeySpeedApplied").textContent = journeyBusy ? "\u0627\u0644\u0633\u0631\u0639\u0629 \u0627\u0644\u0645\u0637\u0644\u0648\u0628\u0629 \u062D\u0627\u0644\u064A\u064B\u0627: " + p.journey.speed_kmh + " \u0643\u0645/\u0633\u061B \u062D\u062F \u0627\u0644\u0637\u0631\u064A\u0642 \u0627\u0644\u0623\u0642\u0644 \u0644\u0647 \u0627\u0644\u0623\u0648\u0644\u0648\u064A\u0629." : "5\u201330 \u0643\u0645/\u0633. \u062A\u0642\u062F\u0631 \u062A\u063A\u064A\u0631\u0647\u0627 \u0623\u062B\u0646\u0627\u0621 \u0627\u0644\u0631\u062D\u0644\u0629.";
+      $("journeySpeedApplied").textContent = journeyBusy ? "Current target speed: " + p.journey.speed_kmh + " km/h; the lower road limit takes priority." : "5\u201330 km/h. You can change it during the journey.";
       const resume = p.route && p.journey?.route_id === p.route.id && ["PAUSED", "ERROR"].includes(p.journey?.status);
-      for (const id of ["startJourneyBtn", "driveJourneyBtn"]) $(id).textContent = resume ? "\u0627\u0633\u062A\u0643\u0645\u0627\u0644 \u0627\u0644\u0631\u062D\u0644\u0629 \u0625\u0644\u0649 \u0627\u0644\u0648\u062C\u0647\u0629" : "\u0627\u0646\u0637\u0644\u0642 \u0625\u0644\u0649 \u0627\u0644\u0648\u062C\u0647\u0629";
-      $("phoneJourneyBtn").textContent = resume ? "\u0627\u0633\u062A\u0643\u0645\u0627\u0644 \u0627\u0644\u0631\u062D\u0644\u0629 \u0625\u0644\u0649 \u0627\u0644\u0648\u062C\u0647\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u0629" : "\u0627\u0646\u0637\u0644\u0642 \u0625\u0644\u0649 \u0627\u0644\u0648\u062C\u0647\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u0629";
-      $("journeyAvailability").textContent = $("phoneJourneyAvailability").textContent = $("driveJourneyAvailability").textContent = journeyBlocked || "\u0627\u0644\u0648\u062C\u0647\u0629: " + p.route.destination.name + (resume ? " \u2014 \u0645\u062D\u0641\u0648\u0638\u0629\u061B \u0627\u0644\u0627\u0633\u062A\u0643\u0645\u0627\u0644 \u0645\u0646 \u0645\u0643\u0627\u0646\u0643 \u0627\u0644\u062D\u0627\u0644\u064A." : " \u2014 \u0627\u0636\u063A\u0637 \u0627\u0646\u0637\u0644\u0642 \u0644\u0644\u062A\u062D\u0631\u0643 \u062A\u0644\u0642\u0627\u0626\u064A\u064B\u0627.");
+      for (const id of ["startJourneyBtn", "driveJourneyBtn"]) $(id).textContent = resume ? "Resume journey to destination" : "Go to destination";
+      $("phoneJourneyBtn").textContent = resume ? "Resume journey to current destination" : "Go to current destination";
+      $("journeyAvailability").textContent = $("phoneJourneyAvailability").textContent = $("driveJourneyAvailability").textContent = journeyBlocked || "Destination: " + p.route.destination.name + (resume ? " \u2014 saved; resume from your current position." : " \u2014 Select Go to start the destination journey.");
       this.disable("pauseBtn", ownerBlocked || emergency);
       this.disable("emergencyStopBtn", ownerBlocked);
       this.disable("acknowledgeStopBtn", ownerBlocked);
       $("acknowledgeStopBtn").hidden = !emergency;
       for (const id of ["cameraView", "chooseDestinationBtn", "savePlaceBtn", "nativeDisconnectBtn", "resetBtn"])
         this.disable(id, ownerBlocked);
-      const configurationBlocked = ownerBlocked || (p.recording ? "\u0623\u0646\u0647\u0650 \u0627\u0644\u062A\u0633\u062C\u064A\u0644 \u0642\u0628\u0644 \u062A\u063A\u064A\u064A\u0631 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u062D\u0633\u0627\u0633\u0627\u062A" : "");
+      const configurationBlocked = ownerBlocked || (p.recording ? "Finish recording before changing sensor settings" : "");
       this.disable("applySettingsBtn", configurationBlocked);
       this.disable("worldResetBtn", configurationBlocked);
-      this.disable("restartGraphicsBtn", configurationBlocked || (state.speedMagnitudeMps > 0.15 ? "\u0623\u0648\u0642\u0641 \u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0623\u0648\u0644\u064B\u0627" : ""));
-      this.disable("nativeReconnectBtn", p.isReplay ? "Replay \u0644\u064A\u0633 \u0645\u062A\u0635\u0644\u064B\u0627 \u0628\u0627\u0644\u0645\u062D\u0627\u0643\u064A" : p.restarting ? "\u062C\u0627\u0631\u064A \u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u062A\u0634\u063A\u064A\u0644" : "");
+      this.disable("restartGraphicsBtn", configurationBlocked || (state.speedMagnitudeMps > 0.15 ? "Stop the vehicle first" : ""));
+      this.disable("nativeReconnectBtn", p.isReplay ? "Replay not connected to simulator" : p.restarting ? "Restarting" : "");
       this.disable("takeControlBtn", blocked);
       this.disable("drivingMode", blocked || emergency);
-      this.disable("clearRouteBtn", ownerBlocked || (!p.route ? "\u0644\u0627 \u064A\u0648\u062C\u062F \u0645\u0633\u0627\u0631 \u0646\u0634\u0637" : ""));
-      $("modeExplanation").textContent = p.isReplay ? "\u0639\u0631\u0636 \u0628\u064A\u0627\u0646\u0627\u062A \u0648\u0643\u0627\u0645\u064A\u0631\u0627 \u0645\u0646 \u0627\u0644\u062A\u0633\u062C\u064A\u0644\u061B \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0628\u0627\u0644\u0645\u062D\u0627\u0643\u064A \u0645\u0639\u0637\u0651\u0644\u0629." : "\u0627\u0646\u0637\u0644\u0642 \u064A\u0645\u0634\u064A \u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0625\u0644\u0649 \u0627\u0644\u0648\u062C\u0647\u0629. \u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629 \u064A\u062C\u0647\u0651\u0632 \u0627\u0644\u0643\u064A\u0628\u0648\u0631\u062F \u0644\u062A\u0633\u0648\u0642 \u0628\u0646\u0641\u0633\u0643.";
-      $("manualHint").textContent = p.isReplay ? "\u0627\u0644\u0643\u064A\u0628\u0648\u0631\u062F \u0644\u0627 \u064A\u0631\u0633\u0644 \u0623\u0648\u0627\u0645\u0631 \u0642\u064A\u0627\u062F\u0629 \u0623\u062B\u0646\u0627\u0621 Replay." : "\u0627\u0644\u0643\u064A\u0628\u0648\u0631\u062F \u064A\u0639\u0645\u0644 \u062F\u0627\u062E\u0644 \u0627\u0644\u062F\u0627\u0634\u0628\u0648\u0631\u062F. W/A/S/D \u062A\u0633\u062A\u0644\u0645 \u0627\u0644\u0642\u064A\u0627\u062F\u0629\u061B \u0627\u0644\u0648\u062C\u0647\u0629 \u062A\u0638\u0644 \u0645\u062D\u0641\u0648\u0638\u0629 \u062D\u062A\u0649 \u062A\u0644\u063A\u064A \u0627\u0644\u0645\u0633\u0627\u0631.";
-      $("drivingInstruction").textContent = blocked || emergency || (!p.controller ? "\u0635\u0641\u062D\u0629 \u0623\u062E\u0631\u0649 \u062A\u062A\u062D\u0643\u0645 \u0628\u0627\u0644\u0639\u0631\u0628\u064A\u0629. \u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A." : p.controlMode === "AUTOMATIC" ? "\u0627\u0644\u0631\u062D\u0644\u0629 \u0634\u063A\u0627\u0644\u0629. \u0625\u064A\u0642\u0627\u0641 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u064A\u0641\u0631\u0645\u0644\u061B \u0623\u064A \u062A\u062F\u062E\u0644 \u0645\u0646\u0643 \u064A\u0633\u0644\u0645\u0643 \u0627\u0644\u0642\u064A\u0627\u062F\u0629." : controllable ? "\u0627\u0644\u0643\u064A\u0628\u0648\u0631\u062F \u062C\u0627\u0647\u0632. W+Shift \u064A\u0631\u0641\u0639 \u0627\u0644\u0628\u0646\u0632\u064A\u0646 \u0645\u0646 55% \u0625\u0644\u0649 100%." : "\u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u062A\u062D\u062A \u0627\u0644\u0623\u0645\u0627\u0646. \u0627\u0636\u063A\u0637 \u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629 \u0644\u0644\u062A\u062D\u0631\u0643.");
+      this.disable("clearRouteBtn", ownerBlocked || (!p.route ? "No active route" : ""));
+      $("modeExplanation").textContent = p.isReplay ? "Recorded data and camera; native driving disabled." : "Go drives the vehicle to the destination. Enable manual driving prepares the keyboard for driving.";
+      $("manualHint").textContent = p.isReplay ? "Keyboard sends no driving commands during Replay." : "Keyboard operates in the dashboard. W/A/S/D Take manual control; destination persists until the route is cleared.";
+      $("drivingInstruction").textContent = blocked || emergency || (!p.controller ? "Another page controls the vehicle. Take control in settings." : p.controlMode === "AUTOMATIC" ? "Journey running. Stop driving brakes; manual input transfers control to you." : controllable ? "Keyboard ready. W+Shift increases throttle from 55% to 100%." : "Vehicle held by command safety. Enable manual driving to move.");
       const reasons = {
-        manual_intervention: "\u0627\u0633\u062A\u0644\u0645\u062A \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u064A\u062F\u0648\u064A\u064B\u0627",
-        dashboard_heartbeat_timeout: "\u0627\u0646\u0642\u0637\u0639 \u0646\u0628\u0636 \u0627\u062A\u0635\u0627\u0644 \u0627\u0644\u062F\u0627\u0634\u0628\u0648\u0631\u062F",
-        destination_reached: "\u0648\u0635\u0644\u062A \u0644\u0644\u0648\u062C\u0647\u0629 \u0648\u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u062A\u0648\u0642\u0641\u062A",
-        collision: "\u062A\u0648\u0642\u0641\u062A \u0627\u0644\u0631\u062D\u0644\u0629 \u0628\u0633\u0628\u0628 \u062A\u0635\u0627\u062F\u0645",
-        controls_released: "\u062A\u0645 \u0625\u064A\u0642\u0627\u0641 \u0627\u0644\u062A\u062D\u0643\u0645",
-        operator_stop: "\u0623\u0648\u0642\u0641\u062A \u0627\u0644\u0642\u064A\u0627\u062F\u0629",
-        focus_lost: "\u0627\u0644\u062F\u0627\u0634\u0628\u0648\u0631\u062F \u0641\u0642\u062F\u062A \u0627\u0644\u062A\u0631\u0643\u064A\u0632",
-        route_ended_before_destination: "\u0627\u0644\u0645\u0633\u0627\u0631 \u0627\u0646\u062A\u0647\u0649 \u0628\u0639\u064A\u062F\u064B\u0627 \u0639\u0646 \u0627\u0644\u0648\u062C\u0647\u0629\u061B \u0627\u062E\u062A\u0627\u0631 \u0627\u0644\u0637\u0631\u064A\u0642 \u0645\u062C\u062F\u062F\u064B\u0627",
-        page_closed: "\u0635\u0641\u062D\u0629 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0627\u062A\u0642\u0641\u0644\u062A",
-        ownership_taken: "\u0627\u0644\u062A\u062D\u0643\u0645 \u0627\u0646\u062A\u0642\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0635\u0641\u062D\u0629",
-        fresh_native_session: "\u062C\u0644\u0633\u0629 \u062C\u062F\u064A\u062F\u0629\u061B \u0627\u0628\u062F\u0623 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0628\u0627\u062E\u062A\u064A\u0627\u0631 \u0635\u0631\u064A\u062D"
+        manual_intervention: "Manual control taken",
+        dashboard_heartbeat_timeout: "Dashboard heartbeat lost",
+        destination_reached: "Destination reached and vehicle stopped",
+        collision: "Journey stopped after collision",
+        controls_released: "Control stopped",
+        operator_stop: "Driving stopped",
+        focus_lost: "Dashboard lost focus",
+        route_ended_before_destination: "Route ended far from destination; select the route again",
+        page_closed: "Driving page closed",
+        ownership_taken: "Control transferred to this page",
+        fresh_native_session: "New session; explicitly choose driving to begin"
       };
       const statuses = {
         IDLE: "",
-        READY: "\u0627\u0644\u0637\u0631\u064A\u0642 \u062C\u0627\u0647\u0632",
-        STARTING: "\u062C\u0627\u0631\u064A \u0628\u062F\u0621 \u0627\u0644\u0631\u062D\u0644\u0629",
-        RUNNING: "\u0627\u0644\u0631\u062D\u0644\u0629 \u0627\u0644\u062A\u0644\u0642\u0627\u0626\u064A\u0629 \u0634\u063A\u0627\u0644\u0629",
-        PAUSED: "\u0627\u0644\u0631\u062D\u0644\u0629 \u0645\u062A\u0648\u0642\u0641\u0629",
-        ARRIVED: "\u0648\u0635\u0644\u062A",
-        ERROR: "\u062A\u0639\u0630\u0631 \u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0631\u062D\u0644\u0629"
+        READY: "Route ready",
+        STARTING: "Starting journey",
+        RUNNING: "Destination journey running",
+        PAUSED: "Journey paused",
+        ARRIVED: "Arrived",
+        ERROR: "Journey could not complete"
       };
-      $("journeyStatus").textContent = p.route ? p.isReplay ? "\u0645\u0633\u0627\u0631 \u0645\u0646 \u0627\u0644\u062A\u0633\u062C\u064A\u0644\u061B \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0645\u0639\u0637\u0651\u0644\u0629" : (statuses[p.journey?.status] || "\u0627\u0644\u0637\u0631\u064A\u0642 \u062C\u0627\u0647\u0632") + (p.journey?.reason ? " \xB7 " + (reasons[p.journey.reason] || p.journey.reason) : "") : "";
+      $("journeyStatus").textContent = p.route ? p.isReplay ? "Recorded route; driving disabled" : (statuses[p.journey?.status] || "Route ready") + (p.journey?.reason ? " \xB7 " + (reasons[p.journey.reason] || p.journey.reason) : "") : "";
       const population = p.population;
       $("trafficActual").textContent = population?.actual.vehicles ?? "\u2014";
       $("pedestrianActual").textContent = population?.actual.pedestrians ?? "\u2014";
-      const health = p.isReplay ? "\u0623\u0639\u062F\u0627\u062F \u0645\u0646 \u0627\u0644\u0641\u0631\u064A\u0645 \u0627\u0644\u0645\u0633\u062C\u0644\u061B \u0644\u0627 \u064A\u0648\u062C\u062F \u0627\u062A\u0635\u0627\u0644 \u0628\u0640Traffic Manager" : population ? "TM " + (population.traffic_manager_connected ? "\u0645\u062A\u0635\u0644" : "\u063A\u064A\u0631 \u0645\u062A\u0635\u0644") + " \xB7 \u0645\u0634\u0627\u0629 \u0646\u0634\u0637\u0648\u0646 " + population.actual.walkers_active + " \xB7 \u0637\u0644\u0628 " + population.requested.vehicle_count + " / " + population.requested.pedestrian_count + " \xB7 \u0622\u062E\u0631 \u0625\u0646\u0634\u0627\u0621 NPC " + population.npc_spawned + " \xB7 \u0641\u0634\u0644 NPC " + population.npc_failed + " / \u0645\u0634\u0627\u0629 " + population.walkers_failed + " \xB7 \u0625\u0632\u0627\u0644\u0627\u062A \u0623\u0635\u0644\u064A\u0629 " + population.vehicles_removed_native + " \u0639\u0631\u0628\u064A\u0629 / " + population.walkers_lost + " \u0645\u0634\u0627\u0629" : "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0633\u0643\u0627\u0646";
+      const health = p.isReplay ? "Recorded frame counts; no connection to Traffic Manager" : population ? "TM " + (population.traffic_manager_connected ? "connected" : "disconnected") + " \xB7 active walkers " + population.actual.walkers_active + " \xB7 requested " + population.requested.vehicle_count + " / " + population.requested.pedestrian_count + " \xB7 last spawn NPC " + population.npc_spawned + " \xB7 failed NPC " + population.npc_failed + " / walkers " + population.walkers_failed + " \xB7 native removals " + population.vehicles_removed_native + " vehicle / " + population.walkers_lost + " walkers" : "Waiting for population data";
       $("populationHealth").textContent = $("populationApplied").textContent = health;
-      $("recordRunBtn").textContent = p.recording ? "\u0625\u0646\u0647\u0627\u0621 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0631\u062D\u0644\u0629" : "\u0627\u0628\u062F\u0623 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0631\u062D\u0644\u0629";
+      const environment = p.environment, training = environment?.mode === "TRAINING";
+      $("environmentStatus").textContent = environment ? environment.mode + " \xB7 " + environment.scenario_phase + (environment.scenario ? " \xB7 " + environment.scenario.scenario_id + " \xB7 seed " + environment.scenario.random_seed + " \xB7 level " + environment.scenario.difficulty : "") : "Environment unavailable";
+      $("safetyPolicyStatus").textContent = "Safety interface prepared \u2014 no policy connected \xB7 control " + (p.controlSource ?? "unavailable");
+      $("policyObservationStatus").textContent = environment?.observation_status ? "Observation " + environment.observation_status.status + " \xB7 history " + environment.observation_status.history_frames + " \xB7 ground truth excluded" : "Waiting for synchronized policy observations";
+      $("scenarioOutcome").textContent = environment?.outcome ? JSON.stringify(environment.outcome, null, 2) : "No outcome yet";
+      const scenarioBlocked = ownerBlocked || (p.recording ? "Finish recording before changing scenario lifecycle" : "");
+      this.disable("loadScenarioBtn", scenarioBlocked);
+      this.disable("resetScenarioBtn", scenarioBlocked || (!training ? "Load a scenario first" : ""));
+      this.disable("startScenarioBtn", ownerBlocked || (environment?.scenario_phase !== "READY" ? "Reset or load a ready scenario" : ""));
+      this.disable("stopScenarioBtn", ownerBlocked || (environment?.scenario_phase !== "RUNNING" ? "No running scenario" : ""));
+      this.disable("livingCityBtn", scenarioBlocked || (!training ? "Living city is already selected" : ""));
+      const local = population?.local_counts;
+      if (local) $("populationHealth").textContent += " \xB7 within 120 m: " + local.vehicles_120m + " vehicles / " + local.walkers_120m + " walkers";
+      $("recordRunBtn").textContent = p.recording ? "Stop recording" : "Start recording";
       $("recordRunBtn").dataset.recording = String(!!p.recording);
-      $("recordingStatus").textContent = (p.recording ? "\u062C\u0627\u0631\u064A \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0643\u0627\u0645\u064A\u0631\u0627 \u0648\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u062D\u0633\u0627\u0633\u0627\u062A." : "\u0627\u0644\u062A\u0633\u062C\u064A\u0644 \u0645\u062A\u0648\u0642\u0641.") + (this.recordingPath ? " " + this.recordingPath : "");
+      $("recordingStatus").textContent = (p.recording ? "Recording camera and sensor data." : "Recording stopped.") + (this.recordingPath ? " " + this.recordingPath : "");
       for (const id of ["recordRunBtn", "clearTrafficBtn", "clearPedestriansBtn", "resetPopulationBtn", "respawnPopulationBtn", "applyRadiusBtn", "applySceneBtn"]) this.disable(id, ownerBlocked);
-      this.disable("applyProfileBtn", ownerBlocked || (!Object.keys(this.catalog?.profiles || {}).length ? "\u0644\u0645 \u062A\u0646\u062A\u0647\u0650 \u0642\u064A\u0627\u0633\u0627\u062A \u0627\u0644\u0623\u062F\u0627\u0621 \u0628\u0639\u062F" : ""));
+      this.disable("applyProfileBtn", ownerBlocked || (!Object.keys(this.catalog?.profiles || {}).length ? "Performance measurements are incomplete" : ""));
+      if (training) for (const id of ["clearTrafficBtn", "clearPedestriansBtn", "resetPopulationBtn", "respawnPopulationBtn", "applySceneBtn", "applySettingsBtn", "applyProfileBtn"])
+        this.disable(id, ownerBlocked || "Return to Living city before changing world settings");
       if (this.panel === "sensorPanel") {
         const native = p.nearbyActors;
-        $("trafficLightState").textContent = native?.traffic_light?.relevant ? "Actor " + native.traffic_light.actor_id + " \xB7 " + native.traffic_light.state + " \xB7 " + Math.round(native.traffic_light.distance_to_actor_origin_m) + " \u0645 \u0625\u0644\u0649 \u0623\u0635\u0644 \u0627\u0644\u0645\u0645\u062B\u0644" : "\u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0644\u064A\u0633\u062A \u0639\u0646\u062F \u0625\u0634\u0627\u0631\u0629 \u0645\u0631\u0648\u0631 \u0628\u062D\u0633\u0628 CARLA";
-        $("nearbyActors").textContent = native ? "Frame " + native.frame_id + " \xB7 Radius " + native.radius_m + " m\n" + native.actors.map((a) => a.category + " #" + a.actor_id + " " + a.type + "\n" + a.distance_m.toFixed(1) + " m \xB7 relative " + a.relative_position_m.map((v) => v.toFixed(1)).join("/") + " \xB7 velocity " + a.velocity_mps.map((v) => v.toFixed(1)).join("/")).join("\n\n") : "\u0644\u0627 \u062A\u0648\u062C\u062F \u0628\u064A\u0627\u0646\u0627\u062A \u062D\u064A\u0629";
+        $("trafficLightState").textContent = native?.traffic_light?.relevant ? "Actor " + native.traffic_light.actor_id + " \xB7 " + native.traffic_light.state + " \xB7 " + Math.round(native.traffic_light.distance_to_actor_origin_m) + " m to actor origin" : "Vehicle is not at a traffic light according to CARLA";
+        $("nearbyActors").textContent = native ? "Frame " + native.frame_id + " \xB7 Radius " + native.radius_m + " m\n" + native.actors.map((a) => a.category + " #" + a.actor_id + " " + a.type + "\n" + a.distance_m.toFixed(1) + " m \xB7 relative " + a.relative_position_m.map((v) => v.toFixed(1)).join("/") + " \xB7 velocity " + a.velocity_mps.map((v) => v.toFixed(1)).join("/")).join("\n\n") : "No live data";
       }
       if (p.operationError) {
         $("operationStatus").textContent = p.operationError;
@@ -913,7 +969,7 @@
         }
         if (result.status === "APPLIED") {
           if (result.action === "settings") {
-            $("settingsStatus").textContent = "\u062A\u0645 \u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u062A\u063A\u064A\u064A\u0631\u0627\u062A \u0627\u0644\u062D\u064A\u0629. \u0627\u0644\u062C\u0631\u0627\u0641\u064A\u0643\u0633 \u0645\u062D\u0641\u0648\u0638\u0629 \u0644\u062D\u064A\u0646 \u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u062A\u0634\u063A\u064A\u0644.";
+            $("settingsStatus").textContent = "Live changes applied. Graphics saved for restart.";
             if (this.restartAfterSave) {
               p.dashboardAction("restart_graphics", this.restartAfterSave);
               this.restartAfterSave = null;
@@ -921,43 +977,43 @@
             this.load(true);
           }
           if (result.action === "save_place") {
-            $("destinationStatus").textContent = "\u0627\u062A\u062D\u0641\u0638 \u0627\u0644\u0645\u0643\u0627\u0646: " + result.result.name;
+            $("destinationStatus").textContent = "Place saved: " + result.result.name;
             this.load(true);
           }
           if (result.action === "favorite_place") {
-            $("destinationStatus").textContent = result.result.favorite ? "\u0627\u0644\u0648\u062C\u0647\u0629 \u0627\u062A\u0636\u0627\u0641\u062A \u0644\u0644\u0645\u0641\u0636\u0644\u0627\u062A." : "\u0627\u0644\u0648\u062C\u0647\u0629 \u0627\u062A\u0634\u0627\u0644\u062A \u0645\u0646 \u0627\u0644\u0645\u0641\u0636\u0644\u0627\u062A.";
+            $("destinationStatus").textContent = result.result.favorite ? "Destination added to favorites." : "Destination removed from favorites.";
             this.load(true);
           }
-          if (result.action === "destination") $("destinationStatus").textContent = $("mapSelectionStatus").textContent = "\u0627\u0644\u0637\u0631\u064A\u0642 \u062C\u0627\u0647\u0632 \u0625\u0644\u0649 " + result.result.destination.name + "\u061B \u0627\u0636\u063A\u0637 \u0627\u0646\u0637\u0644\u0642 \u0623\u0648 \u0633\u0642 \u064A\u062F\u0648\u064A\u064B\u0627.";
+          if (result.action === "destination") $("destinationStatus").textContent = $("mapSelectionStatus").textContent = "Route ready to " + result.result.destination.name + "; select Go or drive manually.";
           if (result.action === "recording") this.recordingPath = result.result.path;
           if (result.action === "population") {
-            $("settingsStatus").textContent = "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0633\u0643\u0627\u0646\u061B \u0627\u0644\u0639\u062F\u062F \u0627\u0644\u0641\u0639\u0644\u064A \u0638\u0627\u0647\u0631 \u0641\u064A \u0627\u0644\u0645\u062F\u064A\u0646\u0629 \u0627\u0644\u062D\u064A\u0629.";
+            $("settingsStatus").textContent = "Population updated; actual counts appear in Living city.";
             this.load(true);
           }
           if (result.action === "scene") {
-            $("settingsStatus").textContent = "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0645\u0634\u0647\u062F \u0627\u0644\u0639\u0627\u062F\u064A \u0648\u0627\u0644\u0637\u0642\u0633 \u0628\u0628\u0630\u0631\u0629 \u062B\u0627\u0628\u062A\u0629.";
+            $("settingsStatus").textContent = "Seeded normal scene and weather applied.";
             this.load(true);
           }
-          if (result.action === "world_reset") $("settingsStatus").textContent = "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062E\u0631\u064A\u0637\u0629 \u0628\u0625\u0639\u0627\u062F\u0629 \u062A\u0634\u063A\u064A\u0644 CARLA \u0648\u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646\u0647\u0627\u061B \u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0645\u062A\u0648\u0642\u0641\u0629 \u0648\u0627\u0644\u0633\u0643\u0627\u0646 \u0623\u0632\u064A\u0644\u0648\u0627.";
+          if (result.action === "world_reset") $("settingsStatus").textContent = "Map created by restarting CARLA and verifying; vehicle stopped and population removed.";
         }
       }
       const restart = p.restartResult;
       if (restart && JSON.stringify(restart) !== this.restartSeen) {
         this.restartSeen = JSON.stringify(restart);
         const names = {
-          STOPPING: "\u062A\u0646\u0638\u064A\u0641 \u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0648\u0627\u0644\u062D\u0633\u0627\u0633\u0627\u062A",
-          LAUNCHING: "\u062A\u0634\u063A\u064A\u0644 CARLA",
-          ROLLING_BACK: "\u0627\u0644\u0639\u0648\u062F\u0629 \u0644\u0625\u0639\u062F\u0627\u062F \u0627\u0644\u062C\u0631\u0627\u0641\u064A\u0643\u0633 \u0627\u0644\u0633\u0627\u0628\u0642",
-          VERIFYING: "\u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u0644\u0635\u0648\u0631\u0629 \u0648\u0627\u0644\u062D\u0633\u0627\u0633\u0627\u062A \u0648\u0627\u0644\u0623\u062F\u0627\u0621",
-          APPLIED: "\u062A\u0645 \u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u062C\u0631\u0627\u0641\u064A\u0643\u0633 \u0648\u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646\u0647\u0627",
-          ROLLED_BACK: "\u062A\u0639\u0630\u0631 \u0627\u0644\u0625\u0639\u062F\u0627\u062F \u0627\u0644\u0645\u0637\u0644\u0648\u0628\u061B \u0631\u062C\u0639\u0646\u0627 \u0644\u0644\u0625\u0639\u062F\u0627\u062F \u0627\u0644\u0633\u0627\u0628\u0642",
-          FAILED: "\u062A\u0639\u0630\u0631 \u062A\u0634\u063A\u064A\u0644 CARLA"
+          STOPPING: "Vehicle and sensor cleanup",
+          LAUNCHING: "Start CARLA",
+          ROLLING_BACK: "Restore previous graphics settings",
+          VERIFYING: "Inspect images, sensors and performance",
+          APPLIED: "Graphics applied and verified",
+          ROLLED_BACK: "Requested settings failed; previous settings restored",
+          FAILED: "Failed to start CARLA"
         };
         $("restartStatus").textContent = (names[restart.status] || restart.status) + (restart.error ? " \xB7 " + restart.error : "");
         if (["APPLIED", "ROLLED_BACK"].includes(restart.status)) this.load(true);
       }
       this.load();
-      $("originPosition").textContent = state.positionWorldM?.map((v) => v.toFixed(1)).join(" / ") || "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0645\u0648\u0642\u0639 \u0627\u0644\u0639\u0631\u0628\u064A\u0629";
+      $("originPosition").textContent = state.positionWorldM?.map((v) => v.toFixed(1)).join(" / ") || "Waiting for vehicle position";
       this.renderRoute(p.route, state.positionWorldM);
     }
     renderRoads() {
@@ -993,7 +1049,7 @@
         $("miniRouteCar").setAttribute("cy", y2);
         $("miniRouteMap").setAttribute("viewBox", [x2 - span / 2, y2 - span / 2, span, span].join(" "));
       }
-      $("miniRouteHint").textContent = route ? Math.round(route.remaining_m) + " \u0645 \xB7 \u0627\u0644\u062E\u0631\u064A\u0637\u0629" : "\u0627\u0644\u062E\u0631\u064A\u0637\u0629";
+      $("miniRouteHint").textContent = route ? Math.round(route.remaining_m) + " m \xB7 Map" : "Map";
       $("miniRouteLine").setAttribute("d", route ? route.points.map((point, i) => (i ? "L" : "M") + this.project(point).join(",")).join(" ") : "");
       if (route) {
         const [x2, y2] = this.project(route.destination.location);
@@ -1003,7 +1059,7 @@
       $("routeTarget").toggleAttribute("hidden", !route);
       if (!route) {
         $("routeLine").setAttribute("d", "");
-        $("routeDetail").textContent = "\u0627\u0636\u063A\u0637 \u0639\u0644\u0649 \u0637\u0631\u064A\u0642 \u0641\u064A \u0627\u0644\u062E\u0631\u064A\u0637\u0629 \u0623\u0648 \u0627\u062E\u062A\u0627\u0631 \u0645\u0643\u0627\u0646\u064B\u0627 \u0645\u0646 \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0648\u062C\u0647\u0627\u062A.";
+        $("routeDetail").textContent = "Click a road on the map or choose a destination from the list.";
         $("turnInstruction").textContent = "";
         return;
       }
@@ -1011,9 +1067,9 @@
       const [x, y] = this.project(route.destination.location);
       $("routeTarget").setAttribute("cx", x);
       $("routeTarget").setAttribute("cy", y);
-      $("routeDetail").textContent = route.destination.name + " \xB7 " + Math.round(route.remaining_m) + " \u0645\u062A\u0631 \u0645\u062A\u0628\u0642\u064A\u0629";
-      const names = { LEFT: "\u0634\u0645\u0627\u0644", RIGHT: "\u064A\u0645\u064A\u0646", STRAIGHT: "\u0645\u0633\u062A\u0642\u064A\u0645", CHANGELANELEFT: "\u063A\u064A\u0651\u0631 \u0627\u0644\u062D\u0627\u0631\u0629 \u0634\u0645\u0627\u0644", CHANGELANERIGHT: "\u063A\u064A\u0651\u0631 \u0627\u0644\u062D\u0627\u0631\u0629 \u064A\u0645\u064A\u0646" };
-      $("turnInstruction").textContent = route.next_instruction ? "\u0627\u0644\u0627\u062A\u062C\u0627\u0647 \u0627\u0644\u0642\u0627\u062F\u0645: " + (names[route.next_instruction.action] || route.next_instruction.action) : "\u0627\u062A\u0628\u0639 \u0627\u0644\u0637\u0631\u064A\u0642 \u0644\u0644\u0648\u062C\u0647\u0629.";
+      $("routeDetail").textContent = route.destination.name + " \xB7 " + Math.round(route.remaining_m) + " m remaining";
+      const names = { LEFT: "North", RIGHT: "Right", STRAIGHT: "Straight", CHANGELANELEFT: "Change lane left", CHANGELANERIGHT: "Change lane right" };
+      $("turnInstruction").textContent = route.next_instruction ? "Next direction: " + (names[route.next_instruction.action] || route.next_instruction.action) : "Follow the route to the destination.";
     }
   };
 
@@ -1038,7 +1094,7 @@
     }
     metadata(result) {
       $2("perceptionStatus").textContent = "YOLOv8n + OCR \xB7 " + result.device + " \xB7 " + Math.round(result.inference_ms) + " ms";
-      $2("perceptionFrame").textContent = "Frame " + result.frame_id + " \xB7 t " + result.timestamp_s.toFixed(3) + " \xB7 " + result.detections.length + " \u0623\u062C\u0633\u0627\u0645 \xB7 \u0623\u0642\u062F\u0645 \u0628\u0640 " + Math.max(0, this.provider.telemetry.frame - result.frame_id) + " \u0641\u0631\u064A\u0645";
+      $2("perceptionFrame").textContent = "Frame " + result.frame_id + " \xB7 t " + result.timestamp_s.toFixed(3) + " \xB7 " + result.detections.length + " objects \xB7 older by " + Math.max(0, this.provider.telemetry.frame - result.frame_id) + " frame";
     }
     clear(reason) {
       if (this.url) URL.revokeObjectURL(this.url);
@@ -1053,8 +1109,8 @@
     async update() {
       const p = this.provider;
       if (!p.fresh || p.isReplay) {
-        $2("perceptionStatus").textContent = p.isReplay ? "REPLAY \xB7 \u0627\u0644\u0643\u0634\u0641 \u0627\u0644\u062D\u064A \u0645\u062A\u0648\u0642\u0641" : "\u0627\u0644\u0643\u0634\u0641 \u0645\u062A\u0648\u0642\u0641";
-        this.clear(p.isReplay ? "\u0627\u0644\u0643\u0634\u0641 \u0627\u0644\u062D\u064A \u0645\u062A\u0648\u0642\u0641 \u0623\u062B\u0646\u0627\u0621 Replay." : "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0627\u062A\u0635\u0627\u0644 CARLA.");
+        $2("perceptionStatus").textContent = p.isReplay ? "REPLAY \xB7 Live inference stopped" : "Inference stopped";
+        this.clear(p.isReplay ? "Live inference stopped during Replay." : "Waiting for connection CARLA.");
         return;
       }
       if (this.busy || performance.now() < this.nextAt) return;
@@ -1063,12 +1119,12 @@
       const session = p.sessionId;
       try {
         const response = await fetch("/api/simulation/perception", { cache: "no-store", signal: AbortSignal.timeout(3e3) });
-        if (!response.ok) throw new Error("\u062A\u0639\u0630\u0631 \u0642\u0631\u0627\u0621\u0629 \u0639\u0627\u0645\u0644 \u0627\u0644\u0643\u0634\u0641");
+        if (!response.ok) throw new Error("Could not read inference worker");
         const result = await response.json();
         if (result.status !== "RUNNING") {
-          const labels = { LOADING: "\u062A\u062D\u0645\u064A\u0644 YOLO \u0648OCR\u2026", WAITING: "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0641\u0631\u064A\u0645 \u0645\u0646 \u0627\u0644\u062C\u0644\u0633\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u0629", UNAVAILABLE: "\u0627\u0644\u0643\u0634\u0641 \u063A\u064A\u0631 \u0645\u062B\u0628\u062A", STALE: "\u0641\u0631\u064A\u0645 \u0627\u0644\u0643\u0634\u0641 \u0642\u062F\u064A\u0645", ERROR: "\u062A\u0639\u0630\u0631 \u0627\u0644\u0643\u0634\u0641", DISCONNECTED: "\u0627\u0644\u0643\u0634\u0641 \u0645\u062A\u0648\u0642\u0641" };
+          const labels = { LOADING: "Loading YOLO and OCR\u2026", WAITING: "Waiting for a frame from this session", UNAVAILABLE: "Inference not installed", STALE: "Inference frame is stale", ERROR: "Inference failed", DISCONNECTED: "Inference stopped" };
           $2("perceptionStatus").textContent = labels[result.status] || result.status;
-          this.clear(result.error || "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0641\u0631\u064A\u0645 \u0645\u062D\u0644\u0644 \u062D\u0642\u064A\u0642\u064A");
+          this.clear(result.error || "Waiting for a native analyzed frame");
           return;
         }
         if (result.session_id !== session || !p.fresh || p.isReplay) return;
@@ -1108,12 +1164,12 @@
         });
         if (!rows.length) {
           const empty = document.createElement("p");
-          empty.textContent = "\u0644\u0645 \u064A\u064F\u0642\u0631\u0623 \u0646\u0635 \u0628\u062B\u0642\u0629 \u0643\u0627\u0641\u064A\u0629 \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0641\u0631\u064A\u0645.";
+          empty.textContent = "No text recognized with sufficient confidence in this frame.";
           rows.push(empty);
         }
         $2("ocrTexts").replaceChildren(...rows);
       } catch (error) {
-        $2("perceptionStatus").textContent = "\u0627\u0644\u0643\u0634\u0641 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D";
+        $2("perceptionStatus").textContent = "Inference unavailable";
         this.clear(error.message);
       } finally {
         this.busy = false;
@@ -1189,7 +1245,7 @@
     $3("authoritativeCamera").hidden = true;
     $3("authoritativeCamera").removeAttribute("src");
     $3("cameraUnavailable").hidden = false;
-    $3("cameraActivity").textContent = "\u0627\u0644\u0635\u0648\u0631\u0629 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629";
+    $3("cameraActivity").textContent = "Image unavailable";
     $3("cameraTimestamp").textContent = "t \u2014";
   }
   async function updateCamera(metadata) {
@@ -1212,7 +1268,7 @@
       $3("authoritativeCamera").src = cameraUrl;
       $3("authoritativeCamera").hidden = false;
       $3("cameraUnavailable").hidden = true;
-      $3("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 \u0635\u0648\u0631\u0629 \u0645\u0633\u062C\u0644\u0629" : "RGB \xB7 \u0635\u0648\u0631\u0629 \u062D\u064A\u0629";
+      $3("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 Recorded image" : "RGB \xB7 Live image";
       $3("cameraTimestamp").textContent = "t " + number(Number(response.headers.get("X-Sensor-Time")), " s", 3);
       $3("cameraMetadata").textContent = "Frame " + response.headers.get("X-Sensor-Frame") + " \xB7 " + metadata.width + "\xD7" + metadata.height + " \xB7 FOV " + metadata.fovDeg + "\xB0 \xB7 mount " + JSON.stringify(metadata.mountTransform ?? null);
     } catch (error) {
@@ -1224,7 +1280,7 @@
   function refresh() {
     if ((provider.connected || provider.isReplay) && !provider.fresh) {
       manualArmed = false;
-      provider.disconnect("\u0627\u0646\u0642\u0637\u0639 \u062A\u062F\u0641\u0642 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A\u061B \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0645\u062A\u0648\u0642\u0641\u0629");
+      provider.disconnect("Data stream lost; driving stopped");
     }
     if (provider.sessionId !== seenSession) {
       seenSession = provider.sessionId;
@@ -1233,31 +1289,31 @@
       clearCamera();
     }
     const state = provider.getVehicleState(), live = provider.fresh;
-    $3("cameraEmptyTitle").textContent = live ? "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0635\u0648\u0631\u0629 \u0627\u0644\u0643\u0627\u0645\u064A\u0631\u0627" : "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0627\u062A\u0635\u0627\u0644 \u0627\u0644\u0645\u062D\u0627\u0643\u064A";
-    $3("cameraEmptyDescription").textContent = live ? "\u0644\u0627 \u062A\u0648\u062C\u062F \u0635\u0648\u0631\u0629 \u0645\u062A\u0627\u062D\u0629 \u0628\u0639\u062F. \u0631\u0627\u062C\u0639 \u062D\u0627\u0644\u0629 \u0627\u0644\u062D\u0633\u0627\u0633\u0627\u062A \u0641\u064A \u0627\u0644\u062A\u0641\u0627\u0635\u064A\u0644." : "\u0648\u0635\u0651\u0644 CARLA \u0644\u0639\u0631\u0636 \u0627\u0644\u0643\u0627\u0645\u064A\u0631\u0627 \u0648\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u0639\u0631\u0628\u064A\u0629\u060C \u062B\u0645 \u0641\u0639\u0651\u0644 \u0627\u0644\u0642\u064A\u0627\u062F\u0629.";
+    $3("cameraEmptyTitle").textContent = live ? "Waiting for camera image" : "Waiting for simulator connection";
+    $3("cameraEmptyDescription").textContent = live ? "No image available yet. Inspect sensor status in Details." : "Connect CARLA to view camera and telemetry, then enable driving.";
     $3("connectionSetupBtn").hidden = live || provider.isReplay;
     if (!live) $3("mapEmpty").hidden = false;
     if (!live || provider.isReplay || !document.hasFocus() || document.hidden || performance.now() > manualRequestedUntil && (!provider.controller || provider.controlMode === "PAUSED" && lastMode === "MANUAL" || provider.controlMode === "EMERGENCY_STOP")) manualArmed = false;
     lastMode = provider.controlMode;
     const controllable = canInput();
-    const connectedLabel = provider.isReplay ? "REPLAY \u2014 \u062A\u0633\u062C\u064A\u0644 \u062D\u0642\u064A\u0642\u064A" : provider.restarting ? "CARLA \u2014 RESTARTING" : "CARLA \u2014 " + (live && provider.connected ? "CONNECTED" : "DISCONNECTED");
+    const connectedLabel = provider.isReplay ? "REPLAY \u2014 real recording" : provider.restarting ? "CARLA \u2014 RESTARTING" : "CARLA \u2014 " + (live && provider.connected ? "CONNECTED" : "DISCONNECTED");
     $3("cityStatus").textContent = $3("simulationState").textContent = connectedLabel;
     $3("connectionDot").classList.toggle("connected", live && provider.connected);
-    $3("missionText").textContent = provider.isReplay ? "\u0639\u0631\u0636 \u062A\u0633\u062C\u064A\u0644 \xB7 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0645\u0642\u0641\u0648\u0644\u0629" : provider.population ? provider.population.actual.vehicles + " \u0639\u0631\u0628\u064A\u0629 \u0645\u0631\u0648\u0631 \xB7 " + provider.population.actual.pedestrians + " \u0645\u0634\u0627\u0629" : "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0633\u0643\u0627\u0646 CARLA";
+    $3("missionText").textContent = provider.isReplay ? "Replay \xB7 Driving disabled" : provider.population ? provider.population.actual.vehicles + " traffic vehicle \xB7 " + provider.population.actual.pedestrians + " walkers" : "Waiting for population CARLA";
     const modeNames = {
-      MANUAL: manualArmed ? "\u0642\u064A\u0627\u062F\u0629 \u064A\u062F\u0648\u064A\u0629" : "\u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u062A\u062D\u062A \u0627\u0644\u0623\u0645\u0627\u0646",
-      AUTOMATIC: "\u0631\u062D\u0644\u0629 \u062A\u0644\u0642\u0627\u0626\u064A\u0629",
-      PAUSED: state.speedKmh > 0.54 ? "\u062C\u0627\u0631\u064A \u0625\u064A\u0642\u0627\u0641 \u0627\u0644\u0639\u0631\u0628\u064A\u0629" : "\u0627\u0644\u0639\u0631\u0628\u064A\u0629 \u0645\u062A\u0648\u0642\u0641\u0629",
-      EMERGENCY_STOP: "\u0625\u064A\u0642\u0627\u0641 \u0637\u0648\u0627\u0631\u0626",
-      DISCONNECTED: "\u0627\u0644\u0645\u062D\u0627\u0643\u064A \u063A\u064A\u0631 \u0645\u062A\u0635\u0644",
-      REPLAY: "\u0639\u0631\u0636 \u062A\u0633\u062C\u064A\u0644"
+      MANUAL: manualArmed ? "Manual driving" : "Vehicle held by command safety",
+      AUTOMATIC: "Destination journey",
+      PAUSED: state.speedKmh > 0.54 ? "Stopping vehicle" : "Vehicle stopped",
+      EMERGENCY_STOP: "Emergency stop",
+      DISCONNECTED: "Simulator disconnected",
+      REPLAY: "Replay"
     };
     $3("controlMode").textContent = modeNames[provider.controlMode] || provider.controlMode;
     $3("controlSource").textContent = provider.controlSource || "";
-    $3("connectionDetail").textContent = provider.isReplay ? "\u0639\u0631\u0636 \u0628\u064A\u0627\u0646\u0627\u062A \u0645\u0633\u062C\u0644\u0629\u061B \u0644\u0627 \u064A\u0648\u062C\u062F \u062A\u062D\u0643\u0645 \u0628\u0627\u0644\u0645\u062D\u0627\u0643\u064A." : live ? provider.controller ? "\u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0647\u0630\u0647 \u0627\u0644\u0635\u0641\u062D\u0629." : "\u0635\u0641\u062D\u0629 \u0623\u062E\u0631\u0649 \u062A\u062A\u062D\u0643\u0645 \u0628\u0627\u0644\u0639\u0631\u0628\u064A\u0629\u061B \u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0627\u0644\u0625\u0639\u062F\u0627\u062F\u0627\u062A." : provider.restarting ? "\u062C\u0627\u0631\u064A \u0625\u0639\u0627\u062F\u0629 \u062A\u0634\u063A\u064A\u0644 CARLA \u0648\u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0627\u062A\u0635\u0627\u0644\u2026" : "\u0627\u0644\u0645\u062D\u0627\u0643\u064A \u063A\u064A\u0631 \u0645\u062A\u0635\u0644. \u0627\u0641\u062A\u062D \u0625\u0639\u062F\u0627\u062F \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0644\u0644\u0645\u062A\u0627\u0628\u0639\u0629.";
-    $3("phoneStatus").textContent = live ? "\u0627\u0644\u0648\u062C\u0647\u0627\u062A \u0645\u0646 \u062E\u0631\u064A\u0637\u0629 " + (provider.world.map?.split("/").at(-1) || "CARLA") : "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0627\u062A\u0635\u0627\u0644 \u0627\u0644\u0645\u062D\u0627\u0643\u064A.";
+    $3("connectionDetail").textContent = provider.isReplay ? "Recorded data view; no simulator controls." : live ? provider.controller ? "Take control from this page." : "Another page controls the vehicle; take control in Settings." : provider.restarting ? "Restarting CARLA and reconnecting\u2026" : "Simulator disconnected. Open connection setup to continue.";
+    $3("phoneStatus").textContent = live ? "Destinations from map " + (provider.world.map?.split("/").at(-1) || "CARLA") : "Waiting for simulator connection.";
     $3("providerStatus").textContent = provider.status;
-    $3("providerTitle").textContent = provider.isReplay ? "\u0627\u0644\u0643\u0627\u0645\u064A\u0631\u0627 \u0627\u0644\u0645\u0633\u062C\u0644\u0629" : "\u0643\u0627\u0645\u064A\u0631\u0627 CARLA";
+    $3("providerTitle").textContent = provider.isReplay ? "Recorded camera" : "Camera CARLA";
     $3("cameraSource").textContent = provider.isReplay ? "RECORDED RGB" : "CARLA RGB";
     $3("speedVal").textContent = number(state.speedKmh, "", 0);
     $3("gearVal").textContent = state.gear ?? "\u2014";
@@ -1269,17 +1325,17 @@
     $3("frameVal").textContent = state.frame ?? "\u2014";
     $3("timeVal").textContent = number(state.timestamp, " s", 3);
     $3("accelVal").textContent = number(state.accelerationMps2, " m/s\xB2");
-    $3("reverseVal").textContent = state.reverse == null ? "\u2014" : state.reverse ? "\u0646\u0639\u0645" : "\u0644\u0627";
-    $3("positionVal").textContent = state.positionWorldM ? "X / Y / Z: " + state.positionWorldM.map((v) => number(v)).join(" / ") + " m" : "\u0627\u0644\u0645\u0648\u0642\u0639 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D";
+    $3("reverseVal").textContent = state.reverse == null ? "\u2014" : state.reverse ? "Yes" : "No";
+    $3("positionVal").textContent = state.positionWorldM ? "X / Y / Z: " + state.positionWorldM.map((v) => number(v)).join(" / ") + " m" : "Position unavailable";
     $3("headingVal").textContent = state.rotationDeg ? "Yaw " + number(state.rotationDeg.yaw, "\xB0") : "";
     $3("gearSelect").disabled = !controllable || provider.controlMode === "AUTOMATIC";
-    $3("gearSelect").title = !$3("gearSelect").disabled ? "" : provider.isReplay ? "\u0627\u0644\u062A\u0633\u062C\u064A\u0644 \u0644\u0644\u0639\u0631\u0636 \u0641\u0642\u0637\u061B \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0645\u0642\u0641\u0648\u0644\u0629" : !live ? "\u0628\u0627\u0646\u062A\u0638\u0627\u0631 \u0627\u062A\u0635\u0627\u0644 \u062D\u0642\u064A\u0642\u064A \u0628\u0640CARLA" : provider.controlMode === "AUTOMATIC" ? "\u0627\u0644\u063A\u064A\u0627\u0631 \u064A\u062F\u064A\u0631\u0647 \u0645\u062A\u062D\u0643\u0645 \u0627\u0644\u0631\u062D\u0644\u0629\u061B \u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629 \u0644\u062A\u063A\u064A\u064A\u0631\u0647" : !provider.controller ? "\u0627\u0633\u062A\u0644\u0645 \u0627\u0644\u062A\u062D\u0643\u0645 \u0645\u0646 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0623\u0648\u0644\u064B\u0627" : "\u0641\u0639\u0651\u0644 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629 \u0644\u062A\u063A\u064A\u064A\u0631 \u0627\u0644\u063A\u064A\u0627\u0631";
-    $3("controlStatus").textContent = provider.isReplay ? "REPLAY \xB7 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0645\u0642\u0641\u0648\u0644\u0629" : !document.hasFocus() || document.hidden ? "\u0627\u0631\u062C\u0639 \u0644\u0644\u062F\u0627\u0634\u0628\u0648\u0631\u062F \u0644\u0627\u0633\u062A\u0642\u0628\u0627\u0644 \u0627\u0644\u0643\u064A\u0628\u0648\u0631\u062F" : controllable ? "WASD \u062C\u0627\u0647\u0632\u0629 \xB7 W+Shift \u0628\u0646\u0632\u064A\u0646 \u0623\u0642\u0648\u0649" : "\u0627\u0644\u0643\u064A\u0628\u0648\u0631\u062F \u0645\u062A\u0648\u0642\u0641 \u2014 \u0641\u0639\u0651\u0644 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0623\u0648\u0644\u064B\u0627";
+    $3("gearSelect").title = !$3("gearSelect").disabled ? "" : provider.isReplay ? "Replay is read-only; driving is disabled" : !live ? "Waiting for native connection to CARLA" : provider.controlMode === "AUTOMATIC" ? "Journey controller selects the gear; take manual control to change it" : !provider.controller ? "Take control in connection settings first" : "Enable manual driving to change gear";
+    $3("controlStatus").textContent = provider.isReplay ? "REPLAY \xB7 Driving disabled" : !document.hasFocus() || document.hidden ? "Focus the dashboard to use the keyboard" : controllable ? "WASD ready \xB7 W+Shift More throttle" : "Keyboard stopped \u2014 Enable driving first";
     const sensorCount = Object.keys(provider.sensorMetadata).length;
-    $3("sensorStatus").textContent = provider.isReplay ? sensorCount + " \u062D\u0633\u0627\u0633\u0627\u062A \u0645\u0646 \u0627\u0644\u0641\u0631\u064A\u0645 \u0627\u0644\u0645\u0633\u062C\u0644 \xB7 \u0623\u062D\u062F\u0627\u062B \u0627\u0644\u062A\u0635\u0627\u062F\u0645 \u0645\u0646 \u0627\u0644\u062A\u0633\u062C\u064A\u0644" : live ? sensorCount + " \u062D\u0633\u0627\u0633\u0627\u062A \u062F\u0648\u0631\u064A\u0629 \u062A\u0633\u062A\u0642\u0628\u0644 \u0628\u064A\u0627\u0646\u0627\u062A \xB7 \u0627\u0644\u062A\u0635\u0627\u062F\u0645 \u064A\u0639\u0645\u0644 \u0639\u0646\u062F \u0627\u0644\u062D\u062F\u062B" : "\u0627\u0644\u062D\u0633\u0627\u0633\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629";
-    $3("cameraFps").textContent = number(provider.performance?.sensorWallRatesHz?.frontCamera) + " /\u062B \u0641\u0639\u0644\u064A\u0629 \xB7 " + number(provider.sensorRates.frontCamera) + " Hz sim";
+    $3("sensorStatus").textContent = provider.isReplay ? sensorCount + " sensors from recorded frame \xB7 recorded collision events" : live ? sensorCount + " periodic sensors receiving data \xB7 Collision sensor is event-driven" : "Sensors unavailable";
+    $3("cameraFps").textContent = number(provider.performance?.sensorWallRatesHz?.frontCamera) + " /wall seconds \xB7 " + number(provider.sensorRates.frontCamera) + " Hz sim";
     const perf = provider.performance || {}, gpu = perf.gpu;
-    $3("performance").textContent = "\u062E\u0637\u0648\u0627\u062A \u0641\u0639\u0644\u064A\u0629: " + number(perf.nativeTickRateHz) + " /\u062B \xB7 \u0632\u0645\u0646 \u0627\u0644\u0645\u062D\u0627\u0643\u0627\u0629: " + (provider.world.fixedDeltaSeconds ? number(1 / provider.world.fixedDeltaSeconds) + " Hz" : "\u2014") + (gpu ? " \xB7 VRAM " + gpu.usedMiB + " / " + gpu.totalMiB + " MiB" : "") + " \xB7 FPS \u0627\u0644\u0631\u0633\u0645 \u063A\u064A\u0631 \u0645\u062A\u0627\u062D";
+    $3("performance").textContent = "actual steps: " + number(perf.nativeTickRateHz) + " /s \xB7 Simulation time: " + (provider.world.fixedDeltaSeconds ? number(1 / provider.world.fixedDeltaSeconds) + " Hz" : "\u2014") + (gpu ? " \xB7 VRAM " + gpu.usedMiB + " / " + gpu.totalMiB + " MiB" : "") + " \xB7 FPS Rendering unavailable";
     $3("debugTelemetry").textContent = telemetryText(state, {
       remote: true,
       latencyMs: provider.latencyMs,
@@ -1289,7 +1345,7 @@
       mode: provider.controlMode
     });
     $3("replayPauseBtn").hidden = !provider.isReplay;
-    $3("replayPauseBtn").textContent = provider.replay?.paused ? "\u0627\u0633\u062A\u0626\u0646\u0627\u0641 \u0639\u0631\u0636 \u0627\u0644\u062A\u0633\u062C\u064A\u0644" : "\u0625\u064A\u0642\u0627\u0641 \u0639\u0631\u0636 \u0627\u0644\u062A\u0633\u062C\u064A\u0644";
+    $3("replayPauseBtn").textContent = provider.replay?.paused ? "Resume replay" : "Pause replay";
     if (controllable && (provider.controlMode === "MANUAL" || provider.controlMode === "AUTOMATIC" && (manualOverridePending || controls.keys.size > 0))) sendManual(state);
     if (live && provider.controller && !provider.isReplay && document.hasFocus() && !document.hidden && ["STARTING", "RUNNING"].includes(provider.journey?.status) && !manualOverridePending) provider.journeyHeartbeat();
     updateCamera(provider.sensorMetadata.frontCamera);
@@ -1303,12 +1359,12 @@
     $3("drivingMode").value = "MANUAL";
     provider.startDriving();
     document.activeElement?.blur();
-    $3("drivingInstruction").textContent = "\u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u0642\u064A\u0627\u062F\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629\u2026";
+    $3("drivingInstruction").textContent = "Enable manual driving\u2026";
   };
   function startJourney() {
     const speed = Number($3("journeySpeed").value);
     if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
-      $3("operationStatus").textContent = "\u0627\u062E\u062A\u0627\u0631 \u0633\u0631\u0639\u0629 \u0628\u064A\u0646 5 \u064830 \u0643\u0645/\u0633.";
+      $3("operationStatus").textContent = "Choose a speed between 5 and 30 km/h.";
       return;
     }
     tools.close(false);
@@ -1316,14 +1372,14 @@
     manualArmed = false;
     manualRequestedUntil = 0;
     $3("drivingMode").value = "AUTOMATIC";
-    if (provider.startJourney(speed)) $3("journeyStatus").textContent = "\u062C\u0627\u0631\u064A \u0628\u062F\u0621 \u0627\u0644\u0631\u062D\u0644\u0629 \u0625\u0644\u0649 \u0627\u0644\u0648\u062C\u0647\u0629\u2026";
+    if (provider.startJourney(speed)) $3("journeyStatus").textContent = "Starting destination journey\u2026";
     document.activeElement?.blur();
   }
   $3("startJourneyBtn").onclick = $3("phoneJourneyBtn").onclick = $3("driveJourneyBtn").onclick = startJourney;
   $3("journeySpeed").onchange = () => {
     const speed = Number($3("journeySpeed").value);
     if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
-      $3("operationStatus").textContent = "\u0627\u062E\u062A\u0627\u0631 \u0633\u0631\u0639\u0629 \u0628\u064A\u0646 5 \u064830 \u0643\u0645/\u0633.";
+      $3("operationStatus").textContent = "Choose a speed between 5 and 30 km/h.";
       return;
     }
     if (provider.controlMode === "AUTOMATIC") provider.journeySpeed(speed);

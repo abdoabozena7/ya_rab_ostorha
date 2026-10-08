@@ -5,7 +5,7 @@ export class PerceptionView {
   metadata(result) {
     $('perceptionStatus').textContent='YOLOv8n + OCR · '+result.device+' · '+Math.round(result.inference_ms)+' ms';
     $('perceptionFrame').textContent='Frame '+result.frame_id+' · t '+result.timestamp_s.toFixed(3)+' · '+
-      result.detections.length+' أجسام · أقدم بـ '+Math.max(0,this.provider.telemetry.frame-result.frame_id)+' فريم';
+      result.detections.length+' objects · older by '+Math.max(0,this.provider.telemetry.frame-result.frame_id)+' frame';
   }
   clear(reason) {
     if(this.url) URL.revokeObjectURL(this.url);
@@ -16,20 +16,20 @@ export class PerceptionView {
   async update() {
     const p=this.provider;
     if(!p.fresh||p.isReplay) {
-      $('perceptionStatus').textContent=p.isReplay?'REPLAY · الكشف الحي متوقف':'الكشف متوقف';
-      this.clear(p.isReplay?'الكشف الحي متوقف أثناء Replay.':'بانتظار اتصال CARLA.');return;
+      $('perceptionStatus').textContent=p.isReplay?'REPLAY · Live inference stopped':'Inference stopped';
+      this.clear(p.isReplay?'Live inference stopped during Replay.':'Waiting for connection CARLA.');return;
     }
     if(this.busy||performance.now()<this.nextAt)return;
     this.busy=true;this.nextAt=performance.now()+500;
     const session=p.sessionId;
     try {
       const response=await fetch('/api/simulation/perception',{cache:'no-store',signal:AbortSignal.timeout(3000)});
-      if(!response.ok)throw new Error('تعذر قراءة عامل الكشف');
+      if(!response.ok)throw new Error('Could not read inference worker');
       const result=await response.json();
       if(result.status!=='RUNNING') {
-        const labels={LOADING:'تحميل YOLO وOCR…',WAITING:'بانتظار فريم من الجلسة الحالية',UNAVAILABLE:'الكشف غير مثبت',STALE:'فريم الكشف قديم',ERROR:'تعذر الكشف',DISCONNECTED:'الكشف متوقف'};
+        const labels={LOADING:'Loading YOLO and OCR…',WAITING:'Waiting for a frame from this session',UNAVAILABLE:'Inference not installed',STALE:'Inference frame is stale',ERROR:'Inference failed',DISCONNECTED:'Inference stopped'};
         $('perceptionStatus').textContent=labels[result.status]||result.status;
-        this.clear(result.error||'بانتظار فريم محلل حقيقي');return;
+        this.clear(result.error||'Waiting for a native analyzed frame');return;
       }
       if(result.session_id!==session||!p.fresh||p.isReplay)return;
       if(result.image_token===this.token){this.metadata(result);return;}
@@ -47,9 +47,9 @@ export class PerceptionView {
       this.metadata(result);
       if(previousUrl)URL.revokeObjectURL(previousUrl);
       const rows=result.texts.map(item=>{const row=document.createElement('p');row.textContent=item.text+' ('+Math.round(item.confidence*100)+'%)';return row;});
-      if(!rows.length){const empty=document.createElement('p');empty.textContent='لم يُقرأ نص بثقة كافية في هذا الفريم.';rows.push(empty);}
+      if(!rows.length){const empty=document.createElement('p');empty.textContent='No text recognized with sufficient confidence in this frame.';rows.push(empty);}
       $('ocrTexts').replaceChildren(...rows);
-    } catch(error) { $('perceptionStatus').textContent='الكشف غير متاح';this.clear(error.message); }
+    } catch(error) { $('perceptionStatus').textContent='Inference unavailable';this.clear(error.message); }
     finally {this.busy=false;}
   }
 }

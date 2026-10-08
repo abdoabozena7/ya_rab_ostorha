@@ -11,15 +11,15 @@ or perception-based vehicle decisions were added.
   W requests 55% throttle; Shift+W requests 100%. Shift alone does not move the car
   or cancel an automatic journey. S brakes before reverse; Space is handbrake.
   Inputs and open dialogs cannot send driving keys. Focus loss stops driving.
-- Destination selection is separate from motion. **انطلق إلى الوجهة** explicitly
+- Destination selection is separate from motion. **Go to destination** explicitly
   starts the official CARLA 0.9.16 BasicAgent, using the complete native route and
   `stop_waypoint_creation=True`. The controller uses the actual fixed simulation
   delta. Target speed is 5–30 km/h and the lower real road limit takes precedence.
   Changing the speed while running updates the same journey without renewing its
   browser heartbeat lease or changing modes.
 - Manual intervention stops automatic control and retains the exact destination
-  ID/name/map/coordinates. **استكمال الرحلة إلى الوجهة** explicitly replans from
-  the live ego position. Stopping does not erase the goal; **إلغاء المسار** does.
+  ID/name/map/coordinates. **Resume journey to destination** explicitly replans from
+  the live ego position. Stopping does not erase the goal; **Clear route** does.
   Arrival, collision, emergency, lost focus and the independent 350 ms browser
   heartbeat remain governed by the existing safety architecture. No auto resume.
 - The circular map sits at the bottom-left of the real RGB view. It follows the

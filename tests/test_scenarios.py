@@ -5,6 +5,8 @@ from backend.core.scenarios import *
 from backend.carla.scenarios import NativeScenarioManager
 from tests.core_packets import TRANSFORM
 from unittest.mock import MagicMock
+from types import SimpleNamespace
+from backend.core.service import SimulationService
 
 
 class ScenarioTests(unittest.TestCase):
@@ -43,3 +45,14 @@ class ScenarioTests(unittest.TestCase):
         provider.population.reset_population.assert_not_called()
         self.assertEqual(manager.status()['mode'],'LIVING_CITY')
         self.assertFalse(manager.status()['safety_policy']['active'])
+
+    def test_recording_keeps_scenario_start_stop_but_blocks_actor_rebuilds(self):
+        service=SimulationService(SimpleNamespace(name='test-fixture'))
+        service.require_connected=MagicMock()
+        service.recorder=MagicMock()
+        for operation in ('start','stop','collect_outcome'):
+            service.queue_dashboard_action('scenario',{'operation':operation})
+        for operation in ('load','reset','cleanup'):
+            with self.assertRaisesRegex(ValueError,'rebuilding scenario actors'):
+                service.queue_dashboard_action('scenario',{'operation':operation})
+        with self.assertRaises(ValueError):service.queue_dashboard_action('environment','LIVING_CITY')

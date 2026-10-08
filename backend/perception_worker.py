@@ -109,7 +109,7 @@ def main():
                 publish({'status':'DISCONNECTED'});time.sleep(1);continue
             if not state.get('frameComplete'):
                 publish({'status':'WAITING','session_id':state.get('sessionId'),
-                         'error':'بانتظار فريم كاميرا مكتمل'});time.sleep(.1);continue
+                         'error':'Waiting for complete camera frame'});time.sleep(.1);continue
             fid=state['vehicle']['frame'];session=state['sessionId'];stamp=state['vehicle']['timestamp']
             identity=(session,fid)
             if identity==previous: time.sleep(.1);continue
@@ -146,7 +146,7 @@ def main():
             previous=identity
         except urllib.error.HTTPError as error:
             if error.code in (404,409,503):
-                publish({'status':'WAITING','error':'بانتظار فريم كاميرا متاح'} )
+                publish({'status':'WAITING','error':'Waiting for available camera frame'} )
             else:
                 publish({'status':'ERROR','error':str(error)});print(str(error),flush=True)
         except Exception as error:

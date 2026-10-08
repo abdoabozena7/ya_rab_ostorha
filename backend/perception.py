@@ -17,7 +17,7 @@ class PerceptionService:
         assets = [ROOT/'models'/'yolov8n.pt', ROOT/'models'/'ocr'/'craft_mlt_25k.pth',
                   ROOT/'models'/'ocr'/'arabic.pth', ROOT/'models'/'ocr'/'english_g2.pth']
         if not python.is_file() or not all(asset.is_file() for asset in assets):
-            self.error = 'نماذج YOLO/OCR غير مثبتة؛ شغّل scripts/setup_perception.ps1'
+            self.error = 'Models YOLO/OCR not installed; run scripts/setup_perception.ps1'
             return
         OUTPUT.mkdir(parents=True, exist_ok=True)
         (ROOT/'models'/'ultralytics-config'/'Ultralytics').mkdir(parents=True, exist_ok=True)
@@ -34,16 +34,16 @@ class PerceptionService:
         if self.error:
             return {'status':'UNAVAILABLE', 'error':self.error}
         if self.process is None or self.process.poll() is not None:
-            return {'status':'ERROR', 'error':'عامل الكشف توقف؛ راجع output/perception/worker.log'}
+            return {'status':'ERROR', 'error':'Inference worker stopped; inspect output/perception/worker.log'}
         try:
             result = json.loads((OUTPUT / 'latest.json').read_text(encoding='utf8'))
         except (OSError, ValueError):
             return {'status':'LOADING'}
         if session_id and result.get('session_id') not in (None,session_id):
-            return {'status':'WAITING', 'error':'بانتظار فريم من الجلسة الحالية'}
+            return {'status':'WAITING', 'error':'Waiting for a frame from this session'}
         result['age_ms'] = max(0., (time.time()-result['published_at'])*1000)
         if result['age_ms'] > 10000:
-            return {'status':'STALE', 'error':'توقّف تحديث فريم الكشف'}
+            return {'status':'STALE', 'error':'Inference frame stopped updating'}
         return result
 
     def image(self, token):

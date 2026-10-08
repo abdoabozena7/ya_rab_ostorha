@@ -5,6 +5,6 @@ window.addEventListener('error',event => {
   if (!String(event.filename||script?.src||'').includes('dashboard.bundle.js')) return;
   const status=document.getElementById('operationStatus');
   if (!status) return;
-  status.textContent='تعذر تشغيل الداشبورد. أعد تحميل الصفحة. '+(event.message||'تعذر تحميل الواجهة');
+  status.textContent='Dashboard failed to start. Reload the page. '+(event.message||'Interface failed to load');
   status.setAttribute('role','alert');
 },true);

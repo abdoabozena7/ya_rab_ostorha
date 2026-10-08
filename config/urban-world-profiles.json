@@ -1,0 +1,183 @@
+{
+  "source": "LIVE_NATIVE_MEASURED",
+  "map": "Carla/Maps/Town10HD_Opt",
+  "recommended_default": "BALANCED",
+  "baseline_tick_hz": 16.672280228966663,
+  "profiles": {
+    "LIGHT": {
+      "population": {
+        "vehicle_count": 10,
+        "pedestrian_count": 10,
+        "speed_behavior": "NORMAL",
+        "seed": 42,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 5
+      },
+      "measured_tick_hz": 17.35928458712181
+    },
+    "BALANCED": {
+      "population": {
+        "vehicle_count": 25,
+        "pedestrian_count": 20,
+        "speed_behavior": "NORMAL",
+        "seed": 42,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 5
+      },
+      "measured_tick_hz": 16.58569274590145
+    },
+    "DENSE": {
+      "population": {
+        "vehicle_count": 40,
+        "pedestrian_count": 30,
+        "speed_behavior": "NORMAL",
+        "seed": 42,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "VISUAL_DEMO",
+        "crossing_percent": 5
+      },
+      "measured_tick_hz": 15.268352868607305
+    }
+  },
+  "conditions": {
+    "fixed_delta_seconds": 0.05,
+    "sensor_registry": {
+      "frontCamera": {
+        "blueprint": "sensor.camera.rgb",
+        "mountTransform": {
+          "positionM": [
+            1.5,
+            0.0,
+            1.600000023841858
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.05,
+        "requestedRateHz": 20.0
+      },
+      "depth": {
+        "blueprint": "sensor.camera.depth",
+        "mountTransform": {
+          "positionM": [
+            1.5,
+            0.0,
+            1.600000023841858
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.05,
+        "requestedRateHz": 20.0
+      },
+      "radar": {
+        "blueprint": "sensor.other.radar",
+        "mountTransform": {
+          "positionM": [
+            2.5,
+            0.0,
+            0.6499999761581421
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.05,
+        "requestedRateHz": 20.0
+      },
+      "lidar": {
+        "blueprint": "sensor.lidar.ray_cast",
+        "mountTransform": {
+          "positionM": [
+            0.0,
+            0.0,
+            1.899999976158142
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.05,
+        "requestedRateHz": 20.0
+      },
+      "imu": {
+        "blueprint": "sensor.other.imu",
+        "mountTransform": {
+          "positionM": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.05,
+        "requestedRateHz": 20.0
+      },
+      "gnss": {
+        "blueprint": "sensor.other.gnss",
+        "mountTransform": {
+          "positionM": [
+            0.0,
+            0.0,
+            1.600000023841858
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.05,
+        "requestedRateHz": 20.0
+      },
+      "collision": {
+        "blueprint": "sensor.other.collision",
+        "mountTransform": {
+          "positionM": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotationDeg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensorTickSeconds": 0.0,
+        "requestedRateHz": null
+      }
+    },
+    "quality": "Low",
+    "renderer": "D3D12",
+    "resolution": "1280x720",
+    "camera_resolution": "800x450",
+    "jpeg_quality": 95,
+    "duration_wall_s_per_row": 45,
+    "render_fps": null
+  },
+  "evidence": "output/native-validation/gate5-local-density.json",
+  "note": "Short measured intervals; current software versions and actual conditions must be recorded for research. No new sensor failures; at least 85% of baseline wall step rate. Connect starts empty."
+}

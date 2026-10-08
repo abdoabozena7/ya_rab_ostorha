@@ -90,18 +90,18 @@ class NativeDashboardTools:
         # Project labels for native road anchors, not fabricated real-world POIs.
         locations = [t.location for t in self.spawns]
         cx = sum(p.x for p in locations)/len(locations); cy = sum(p.y for p in locations)/len(locations)
-        selections = [('وسط الخريطة', min(range(len(locations)), key=lambda i: (locations[i].x-cx)**2+(locations[i].y-cy)**2)),
-                      ('شمال الخريطة', min(range(len(locations)), key=lambda i: locations[i].y)),
-                      ('جنوب الخريطة', max(range(len(locations)), key=lambda i: locations[i].y)),
-                      ('شرق الخريطة', max(range(len(locations)), key=lambda i: locations[i].x)),
-                      ('غرب الخريطة', min(range(len(locations)), key=lambda i: locations[i].x)),
-                      ('بداية الاختبار', min(152, len(locations)-1))]
+        selections = [('Map center', min(range(len(locations)), key=lambda i: (locations[i].x-cx)**2+(locations[i].y-cy)**2)),
+                      ('North map', min(range(len(locations)), key=lambda i: locations[i].y)),
+                      ('South map', max(range(len(locations)), key=lambda i: locations[i].y)),
+                      ('East map', max(range(len(locations)), key=lambda i: locations[i].x)),
+                      ('West map', min(range(len(locations)), key=lambda i: locations[i].x)),
+                      ('Test start', min(152, len(locations)-1))]
         self.presets = [self.place(f'anchor-{index}', name, self.spawns[index].location, index) for name, index in selections]
         for i, transform in enumerate(self.spawns):
             point = transform.location
-            sector = ('شمال' if point.y < cy else 'جنوب') + (' شرق' if point.x >= cx else ' غرب')
+            sector = ('North' if point.y < cy else 'South') + (' East' if point.x >= cx else ' West')
             place = self.place(f'road-point-{i}', '', point, i)
-            place.update(name=f'{sector} · طريق {place["road_id"]} · نقطة {i+1}', sector=sector)
+            place.update(name=f'{sector} · Road {place["road_id"]} · Point {i+1}', sector=sector)
             self.presets.append(place)
 
     def place(self, place_id, name, location, spawn_index=None):
@@ -171,8 +171,8 @@ class NativeDashboardTools:
                                              lane_type=self.provider.connection.api.LaneType.Driving)
             point = waypoint.transform.location if waypoint else None
             if point is None or math.hypot(point.x-native.x, point.y-native.y) > 10:
-                raise ValueError('اختار نقطة أقرب لطريق؛ أقصى مسافة مسموحة 10 أمتار')
-            name = place_id.get('name', f'وجهة على طريق {waypoint.road_id}')
+                raise ValueError('Choose a point closer to a road; maximum allowed distance 10 meters')
+            name = place_id.get('name', f'Road destination {waypoint.road_id}')
             if not isinstance(name, str) or not 1 <= len(name.strip()) <= 60:
                 raise ValueError('Invalid destination name')
             target = self.place('map-'+uuid.uuid4().hex[:10], name.strip(), point)
@@ -206,7 +206,8 @@ class NativeDashboardTools:
                 if hasattr(api.WeatherParameters, name)}
 
     def profiles(self):
-        path = ROOT / 'config' / 'normal-city-profiles.json'
+        path = ROOT / 'config' / 'urban-world-profiles.json'
+        if not path.exists():path = ROOT / 'config' / 'normal-city-profiles.json'
         if not path.exists(): return {}
         saved = json.loads(path.read_text(encoding='utf8'))
         return saved['profiles'] if saved.get('source') == 'LIVE_NATIVE_MEASURED' and saved.get('map') == self.map_name else {}
@@ -246,7 +247,7 @@ class NativeDashboardTools:
                                  'nearby_actors': 'DISPLAY-ONLY', 'navigation': 'EXPLICIT_BASIC_AGENT_JOURNEY'},
                 'active_launch': getattr(p, 'active_launch', None),
                 'camera_effects': {'supported': ['camera_postprocess','camera_motion_blur','camera_bloom'],
-                                   'note': 'جودة Low قد تعطل مؤثرات الصورة مهما كانت القيم المحفوظة'}}
+                                   'note': 'Quality Low may disable image effects regardless of saved values'}}
 
     def apply(self, settings):
         p = self.provider

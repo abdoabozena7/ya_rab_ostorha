@@ -105,7 +105,7 @@ kbd{direction:ltr;display:inline-block;font:12px var(--mono);color:var(--muted);
 #cameraUnavailable button{margin-top:var(--space-2);color:var(--camera-ink);background:var(--camera-button);border-color:var(--camera-line)}
 #cameraUnavailable button:hover{background:var(--camera-button-hover)}
 .camera-caption{display:flex;gap:var(--space-4);justify-content:space-between;color:var(--muted);font:12px var(--mono);direction:ltr;padding:var(--space-3) 0 var(--space-4);flex-wrap:wrap}
-.telemetry-strip{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--line);direction:rtl}
+.telemetry-strip{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--line);direction:ltr}
 .telemetry-strip>div{display:flex;flex-direction:column;justify-content:center;gap:var(--space-1);border-inline-start:1px solid var(--line);padding-inline-start:var(--space-4)}
 .telemetry-strip span{font-size:12px;color:var(--muted)}
 .telemetry-strip strong{font:500 20px var(--mono);font-variant-numeric:tabular-nums;direction:ltr;text-align:start}
@@ -169,7 +169,7 @@ body.panel-open{overflow:hidden}
 .origin{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:var(--space-4);margin:var(--space-6) 0}
 .origin span,.origin strong{display:block}
 .origin span{font-size:12px;color:var(--muted)}
-#originPosition{direction:ltr;text-align:right;font:12px var(--mono);margin-top:var(--space-2)}
+#originPosition{direction:ltr;text-align:left;font:12px var(--mono);margin-top:var(--space-2)}
 #placeResults{max-height:42vh;overflow:auto;margin:var(--space-4) 0}
 .place-group{color:var(--muted);font-size:12px;padding:var(--space-3) var(--space-2) var(--space-2)}
 .place-row{display:grid;grid-template-columns:minmax(0,1fr) 44px;border-radius:6px}

@@ -1,84 +1,88 @@
-# المدينة العادية في CARLA
+# Living city operation
 
-تحقق Gate 4 الأصلي كان بقيادة يدوية ومدينة عادية. التوسعة التالية بطلب المستخدم تضيف رحلة صريحة إلى الوجهة بمتحكم CARLA التقليدي، وكشفًا وOCR للعرض فقط. Traffic Manager يقود المرور، والمشاة تستخدم متحكمات CARLA. لا توجد سيناريوهات خطر أو قرارات قيادة من نماذج الإدراك.
+The dashboard uses native CARLA 0.9.16. See [Gate 4 evidence](GATE4_NATIVE_VALIDATION.md),
+[the journey extension](JOURNEY_PERCEPTION_VALIDATION.md), and the Gate 5 report
+for checkpoint-specific validation. All current controls are in English.
 
-## التشغيل
+## Start and drive
 
-شغّل CARLA المثبتة ثم الباك إند:
-
-```powershell
-.\scripts\launch_carla.ps1
-.\.venv-carla\Scripts\python.exe -m backend.server --carla --sensors --spawn-index 152 --start-paused
-```
-
-افتح `http://127.0.0.1:8000/`. الاتصال يبدأ بعربية متوقفة وحساساتها السبعة، بدون سكان. الإعدادات المحفوظة لا تنشئ مرورًا تلقائيًا.
-
-1. افتح الإعدادات واختر عربية من مكتبة CARLA، و`Spawn 01` وما بعده. تغيير العربية أو نقطة ظهورها ينظف العربية والحساسات والسكان. نقطة محجوزة تستعمل بديلًا صالحًا؛ الكتالوج يعرض رقم الظهور المطلوب والفعلي.
-2. اختر طقس CARLA أو قيمًا مخصصة. الطقس المعروض يأتي من العالم الحقيقي.
-3. حدد عدد عربيات المرور والمشاة واضغط **طبّق التغييرات واحفظ**. الأعداد الكبيرة تُراجع حسب ملف الأداء المقاس، وليست ضمانًا لأداء ثابت.
-4. الداشبورد تعرض العدد الفعلي، المطلوب، نجاح/فشل الظهور، المشاة النشطين وحالة TM. قد يكون العدد الفعلي أقل عندما لا تكفي نقاط مناسبة.
-5. اضغط **تفعيل القيادة اليدوية** واستخدم الكيبورد فقط: WASD وSpace؛ W يعطي بنزين 55% وShift+W يعطي 100%. حقول الكتابة والنوافذ لا تقود العربية. فقدان التركيز أو انتهاء أمر التحكم بعد 350 مللي ثانية يفعّل الفرملة.
-6. اختار وجهة من الموبايل أو خريطة الطرق. البداية موقع العربية الحي. اختيار الوجهة لا يبدأ الحركة. **انطلق إلى الوجهة** يبدأ BasicAgent بسرعة 5–30 كم/س، ويمكن تغييرها أثناء الرحلة مع احترام حد الطريق الأقل. التدخل اليدوي يوقف الرحلة ويحفظ الوجهة؛ **استكمال الرحلة إلى الوجهة** يعيد الطريق من الموقع الجديد. **إلغاء المسار** وحده يلغي الهدف. الخريطة الدائرية أسفل الكاميرا تفتح خريطة الطرق الكبيرة.
-7. **ابدأ تسجيل الرحلة** يحفظ البيانات الفعلية. **إنهاء تسجيل الرحلة** يقفل الملفات ويعرض المسار. RGB/Depth/LiDAR ملفات منفصلة؛ التسجيل قد يستخدم عشرات الميجابايت في الثانية.
-
-زر **إيقاف القيادة** يوقف العربية ويبقي الكاميرا والعالم يعملان. **إنهاء الجلسة** يزيل كل ممثلي المشروع: العربية والحساسات والمرور والمشاة والمتحكمات. **إعادة تحميل الخريطة الحالية** ينظف الجلسة ثم يعيد تشغيل CARLA والباك إند لإنشاء خريطة جديدة وعربية متوقفة بلا سكان. إعادة السكان تتطلب تطبيقًا صريحًا.
-
-إعادة الخريطة تستخدم نفس مساعد إعادة التشغيل الموجود للجرافيكس: Windows libcarla يحتفظ بمقابض البث، وإعادة تحميل العالم داخل العملية القديمة سببت انهيارًا في DX12 أثناء التحقق. لذلك تنتهي عملية SDK القديمة قبل إيقاف المحرك. المساعد يتحقق من إصداري 0.9.16 ومن الحساسات ومعدل الخطوات قبل إعلان نجاح العملية. تظهر حالة إعادة التشغيل في الواجهة، ولا تعود القيادة أو السكان تلقائيًا. عند تعذر بدء المحرك، يُجرَّب إعداد التشغيل السابق مرة واحدة وتظهر النتيجة الفعلية.
-
-## سرعة المرور والمشاة
-
-| اختيار المرور | `global_percentage_speed_difference` | المعنى |
-|---|---:|---|
-| بطيء | 30% | السرعة المرغوبة أقل من حد الطريق 30% |
-| عادي | 15% | أقل من حد الطريق 15% |
-| سريع | 0% | حتى حد الطريق؛ لا زيادة فوقه |
-
-هذه سرعة مرجعية لـTM، وليست أمر سرعة ثابتة: الإشارات والازدحام والانحناءات تؤثر في السرعة الفعلية. تجاهل الإشارات واللافتات والمركبات والمشاة مضبوط على 0%. المسافة المرجعية بين العربيات 3 أمتار، والفيزياء كاملة، وتغيير الحارات الآلي معطل في خط الأساس.
-
-المشاة يظهرون في نقاط navmesh تقع على أرصفة CARLA الفعلية، خارج حارات القيادة. الوجهة التالية نقطة navmesh على نفس مقطع الرصيف وفي حدود 5–40 مترًا. نسبة العبور `0`. سرعات المشي متنوعة ومحدودة بين 0.9 و1.9 م/ث؛ فئة المشاة الأسرع لا تجري. أوقات البدء متفاوتة، والوجهات يعاد اختيارها عند الوصول أو التعطل؛ لا توجد قفزات أو نقل فوري.
-
-نقاط البداية والوجهات تستبعد شريطًا إضافيًا بعرض 1.25 متر بجوار حارة القيادة. خط الأساس يستخدم خاصية CARLA الأصلية `is_invincible=true` للمشاة: هذه مرحلة حركة مدينة عادية، وليست اختبار إصابات المشاة. الخاصية لا تمنع كل تقاطعات مسار navmesh، ولا تحول TM إلى ضمان لمنع التصادم. حساس تصادم العربية يظل يعرض الأحداث الأصلية. قيمة سرعة المشاة القادمة من SDK قد تكون صفرًا رغم حركة الموقع؛ كشف التعطل يعتمد على تغير الموقع الفعلي، وتظل السرعة الخام متاحة للتشخيص.
-
-البذرة تضبط اختيار السكان وTM وCARLA navigation. المشاهد A/B/C تنظف السكان وتبدأ تكوينًا ببذرة ثابتة. إعادة التجربة من نفس الخريطة ونفس موقع العربية ضرورية؛ تغيّر حالة العالم يحد من التطابق الكامل.
-
-CARLA TM نفسه قد يزيل سيارة ظلت عالقة طويلًا، بحسب [مصدر ALSM الرسمي 0.9.16](https://github.com/carla-simulator/carla/blob/0.9.16/LibCarla/source/carla/trafficmanager/ALSM.cpp). المدير يكتشف غيابها الحقيقي، يزيل ID القديم، ويعوض العدد الناقص فقط في نقطة ظهور صالحة تبعد 45 مترًا على الأقل عن العربية الأساسية. يُعرض عدد الإزالات الأصلية؛ لا يعاد إنشاء المرور كله ولا تختفي هذه الحالة من التشخيص.
-
-الأعداد المنشورة تأتي من snapshot أصلي واحد، مع رقم الفريم. المراجع المخزنة في SDK، وحتى `is_alive`، قد تستمر بعد إزالة ممثل؛ غياب الممثل من فريمين أصليين متتاليين يؤكد الإزالة. يُنظف متحكم المشاة المتبقي ويعوّض العدد الناقص في نقطة navmesh صالحة تبعد 45 مترًا على الأقل عن العربية الأساسية، بفاصل لا يقل عن خمس ثوانٍ من زمن المحاكاة. هذا تعويض لممثل أزاله المحاكي، وليس نقلًا لمشاة موجودين. عدد الإزالات محفوظ في التشخيص؛ اختلاف العدد الفعلي مؤقتًا عن المطلوب ظاهر في الداشبورد.
-
-متحكم المشاة الأصلي قد يزيل متحكمًا بعد تفاعل navmesh مع سيارة، كما يوضح [مصدر WalkerNavigation الرسمي](https://github.com/carla-simulator/carla/blob/0.9.16/LibCarla/source/carla/client/detail/WalkerNavigation.cpp). `is_invincible` لا يلغي منطق navigation هذا، ولا ينبغي استعماله كضمان لسلامة المشاة.
-
-## معنى كل إعداد
-
-| التحكم | التصنيف | التطبيق/القيود |
-|---|---|---|
-| زاوية الكاميرا الخمس | LIVE | تحريك RGB وDepth الحاليين معًا؛ لا إنشاء حساس إضافي |
-| تكبير الصورة | DISPLAY-ONLY | تغيير مساحة العرض فقط |
-| المظهر الداكن/الفاتح | DISPLAY-ONLY | يتغير فورًا ويُحفظ محليًا؛ لا يغير CARLA |
-| دقة/FOV/مؤثرات الكاميرا | LIVE بعد الوقوف | إعادة الحساسات ومزامنتها؛ JPEG 95، جودة Low قد تتجاهل المؤثرات |
-| اختيار العربية/Spawn | LIVE بعد الوقوف | مكتبة CARLA ونقاط الخريطة؛ تنظيف السكان والعربية والحساسات |
-| الطقس والوقت | LIVE | presets الموجودة فعلًا أو المعاملات المحددة |
-| 10 أو 20 Hz | LIVE بعد الوقوف | `fixed_delta_seconds = 0.1 / 0.05` ثانية؛ إعادة إعداد الحساسات |
-| عدد المرور/المشاة وسرعة المرور | LIVE عند التطبيق الصريح | تحديث العدد تدريجيًا بدون إعادة تحميل العالم |
-| البذرة ونسبة المشي الأسرع | LIVE | سرعة المرور والبذرة تُطبّقان؛ سرعة المشاة الموجودين تُختار عند إنشائهم، استخدم إعادة إنشاء السكان لتطبيق تنويع جديد عليهم |
-| ملفات الأداء | LIVE عند التطبيق | تظهر بعد القياس؛ لا تنشئ سكانًا عند الاتصال |
-| الجودة ودقة نافذة CARLA المحفوظتان | NEXT-LAUNCH | زر مستقل ينظف الجلسة ويعيد تشغيل CARLA مع تحقق/تراجع |
-| جودة الرسم المطبقة | DISPLAY-ONLY | من عملية CARLA الفعلية |
-| معدل خطوات المحاكاة ومعدلات الحساسات وVRAM | DISPLAY-ONLY | قياسات فعلية؛ لا تسمى FPS الرسم |
-| FPS الرسم | NOT IMPLEMENTED | غير متاح من API الحالي؛ يعرض ذلك صراحة |
-| إشارة المرور والممثلون القريبون | DISPLAY-ONLY | حقيقة المحاكي للتشخيص، دون قرارات؛ لوحة YOLO/OCR المنفصلة تعتمد على الصورة فقط |
-
-TM على المنفذ `8050` لتجنب منفذ HTTP `8000`. العالم وTM في الوضع المتزامن، والباك إند وحده يصدر tick. لا تشغل برنامجًا ثانيًا يملك خطوات المحاكاة.
-
-الحساسات تجمع حسب frame/timestamp نفسه. نافذة انتظار callbacks الحية محدودة بـ0.5 ثانية للتعامل مع تأخر GPU في Windows؛ البيانات الناقصة/المتأخرة تبقى معلنة ولا تعاد نسبتها لفريم آخر. هذا مستقل عن مهلة التحكم اليدوي 350 مللي ثانية.
-
-الأماكن المحفوظة تتبع اسم خريطة CARLA، وتخزن transform بالمتر وrotation بالدرجات `pitch/yaw/roll`. أماكن الخرائط الأخرى تُرفض. الأماكن القديمة ذات location فقط تستمر على خريطتها ولا يُختلق لها دوران.
-
-## التسجيل وReplay
-
-بعد إنهاء التسجيل وإيقاف الباك إند الحي، شغّل المسار الذي عرضه زر التسجيل:
+Launch `scripts/launch_carla.ps1`, then run:
 
 ```powershell
-.\.venv-carla\Scripts\python.exe -m backend.server --replay runs\normal_city\run_<id>
+.\.venv-carla\Scripts\python.exe -m backend.server --carla --sensors --start-paused
 ```
 
-Replay لا ينشئ client لـCARLA، ولا يسمح بقيادة أو إنشاء سكان. يعرض الكاميرا والتليمترية وأعداد السكان من الفريم المسجل حيث تتوفر. التسجيلات الأقدم تستمر في العمل حتى لو لم تحتوِ أعداد السكان أو بيانات الممثلين القريبين.
+Open http://127.0.0.1:8000/. A connection is separate from driving permission.
+The ego starts braked, with cameras operating. Enable manual driving, then use
+physical W/A/S/D. Shift+W requests full throttle; Shift alone does nothing.
+S brakes before reverse. Space requests handbrake. D/N/R selects the gear.
+Typing in a field, opening a dialog, losing focus or losing the command lease
+stops driving. Stop driving brakes the ego while the surrounding world continues.
+Emergency stop latches until acknowledged; acknowledgement does not resume
+motion. Take control transfers command ownership to this page.
+
+Choose a destination from the list or native road map. Route selection does not
+move the car. Go to destination explicitly uses the existing official BasicAgent
+with a 5–30 km/h target, bounded by the lower road speed limit. Manual intervention
+stops the journey and preserves its goal. Resume replans from the live ego.
+Clear route removes the goal. This baseline controller is separate from the
+prepared YA RAB OSTORHA safety-policy interface.
+
+## Population
+
+Counts require explicit application; saved preferences never populate a new
+session automatically. Actual counts come from native snapshots. Clear traffic,
+clear pedestrians, respawn and clear all population use the ownership manager.
+Native actor removals and failed spawn attempts remain visible.
+
+Gate 5 provides NORMAL, BUSY, AGGRESSIVE and UNREGULATED driver mixtures with
+stable per-actor settings. SLOW/NORMAL/FAST are reference desired-speed modifiers
+of 30/15/0 percent below road limits; individual profiles add recorded variation.
+Every profile retains vehicle and walker collision awareness and full physics.
+Lane-change probabilities are small per-step probabilities. Light compliance
+limits violation probability for applicable profiles; NORMAL and BUSY drivers
+obey signals. These settings are not collision-avoidance guarantees.
+
+Initial explicit population creation prioritizes native road/navmesh positions
+near the ego. Replacements stay at least 90 m away. Bounded retirement occurs
+beyond 300 m. Route points bias road selection. Existing actors never teleport.
+Walkers use valid native destinations, 0.9–1.9 m/s speeds, staggered starts,
+waiting and reselection. Optional crossing targets use a nearby valid sidewalk endpoint across a
+confirmed native driving lane. Native navigation decides whether and when it can execute that
+path. Complex group formation and idle animation are not implemented. Walker
+invincibility is inherited from Gate 4; native ego collision events remain
+observable, but injury modeling is not supported.
+
+## Settings and lifecycle
+
+| Control | Application |
+|---|---|
+| Five camera views | Move existing aligned RGB/depth sensors |
+| Image expansion and appearance | Display only |
+| Camera resolution/FOV/effects | Live; stopped ego required; recreate sensors |
+| Vehicle/spawn | Live; stopped ego required; clean owned actors |
+| Weather | Native preset or native fields |
+| 10/20 simulation Hz | Live; stopped ego required; recreate matching sensors |
+| Population | Explicit live application |
+| Graphics quality/window resolution | Save then managed engine/backend restart |
+| Nearby actors | Privileged diagnostic ground truth |
+| Render FPS | Unavailable |
+
+Low graphics may ignore camera effects. Sensor JPEG quality is 95. Offscreen
+rendering preserves GPU camera output. Steps per wall second and renderer FPS
+are different measurements. Profile changes never silently change sensors or
+scenario difficulty.
+
+End session cleans owned vehicles, walkers, controllers and sensors and restores
+world settings. Reconnect starts stopped without population. Map reload retires
+the SDK backend and restarts the engine through the existing supervisor. Avoid
+in-process reload on this Windows/DX12 installation.
+
+## Recording and replay
+
+Recording stores canonical real frames, control, collision events, population,
+privileged diagnostics and separate RGB/depth/LiDAR assets. Finish recording
+before reconfiguring sensors or changing environment modes. Sensor assets can
+consume substantial disk space and reduce throughput. Replay reads completed
+real runs with CARLA stopped; driving, reconnect and scenario actions are
+unavailable. Historical recordings and evidence hashes remain unchanged.

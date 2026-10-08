@@ -26,7 +26,7 @@ def validate_population(value):
             raise ValueError(f'{key} must be an integer from 0 to {maximum}')
     if not isinstance(value['speed_behavior'], str) or value['speed_behavior'] not in SPEED_DIFFERENCE:
         raise ValueError('Traffic speed behavior must be SLOW, NORMAL or FAST')
-    if value['driver_behavior'] not in MIXTURES or value['world_profile'] not in WORLD_PROFILES:
+    if not isinstance(value['driver_behavior'],str) or value['driver_behavior'] not in MIXTURES or not isinstance(value['world_profile'],str) or value['world_profile'] not in WORLD_PROFILES:
         raise ValueError('Unknown urban driver behavior or world profile')
     return dict(value)
 
@@ -103,6 +103,7 @@ class WorldPopulationManager:
         # Explicit application only: stored preferences never populate a session.
         if config['seed'] != self.config['seed'] or not self.vehicles and not self.walkers:
             self.random = random.Random(config['seed'])
+            if not self.vehicles and not self.walkers:self.driver_ordinal = 0
         self.config = config
         self.world.set_pedestrians_seed(config['seed'])
         self.world.set_pedestrians_cross_factor(config['crossing_percent']/100.)
@@ -259,9 +260,14 @@ class WorldPopulationManager:
     def _crossing_destination(self, origin):
         sidewalk = self.map.get_waypoint(origin, lane_type=self.api.LaneType.Sidewalk)
         if sidewalk is None: return None
-        candidates = [location for location, road, lane in self.sidewalk_locations
-                      if road == sidewalk.road_id and lane*sidewalk.lane_id < 0
-                      and 7. <= origin.distance(location) <= 22.]
+        candidates = []
+        for location, road, lane in self.sidewalk_locations:
+            if not 7. <= origin.distance(location) <= 22.:continue
+            # Sidewalk IDs can differ across one crossing in Town10. Require
+            # a native driving lane at the midpoint, plus valid navmesh ends.
+            midpoint=self.api.Location((origin.x+location.x)/2,(origin.y+location.y)/2,(origin.z+location.z)/2)
+            driving=self.map.get_waypoint(midpoint,project_to_road=False,lane_type=self.api.LaneType.Driving)
+            if driving is not None:candidates.append(location)
         return self.random.choice(candidates) if candidates else None
 
     def _local_road_spawns(self, replacement):
@@ -391,8 +397,11 @@ class WorldPopulationManager:
                 if crossing_target is not None: target = crossing_target
                 if target is not None:
                     controller.go_to_location(target); entry['destination'] = target; entry['last_retarget'] = timestamp
-                    entry['activity'] = 'CROSSING' if crossing_target is not None else 'WALKING'
+                    entry['activity'] = 'WALKING'
                     entry['crossing'] = crossing_target is not None
+            if entry.get('crossing') and entry.get('wait_until') is None:
+                on_road=self.map.get_waypoint(entry['location'],project_to_road=False,lane_type=self.api.LaneType.Driving)
+                entry['activity']='CROSSING' if on_road is not None else 'WALKING'
         if len(self.walkers) < self.config['pedestrian_count'] and timestamp-self.last_walker_replacement_at >= 5.:
             self.last_walker_replacement_at = timestamp
             self.spawn_pedestrians(self.config['pedestrian_count'], replacement=True)
