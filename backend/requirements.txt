@@ -3,3 +3,4 @@ websockets==15.0.1
 numpy==2.5.3
 Pillow==12.3.0
 networkx==3.7
+Shapely==2.1.2

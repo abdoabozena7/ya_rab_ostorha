@@ -3,9 +3,10 @@ import copy
 from dataclasses import replace
 import threading
 import time
+import uuid
 from collections import deque, OrderedDict, Counter
 from .contracts import CommandSource, ControlCommand, SensorFrame, SimulationFrame, finite, to_dict
-from .control import CommandArbiter, ControlMode, ControlSafetyLayer, safe_command
+from .control import CommandArbiter, ControlMode, ControlSafetyLayer, ControlStateMachine, safe_command
 from .dashboard import dashboard_frame
 from .events import EventBus, EventType, SimulationEvent
 from .lifecycle import ConnectionLifecycle, ConnectionState
@@ -24,6 +25,13 @@ class SimulationService:
         self.clock = SimulationClock(now)
         self.synchronizer = SensorSynchronizer(required_sensors, optional_sensors, timeout_s=sensor_timeout_s, now=now)
         self.arbiter = CommandArbiter(ControlSafetyLayer(command_timeout_s=self.CONTROL_TTL, now=now))
+        self.arbiter.machine.allow_navigation = hasattr(provider, 'navigation_command') and getattr(provider, 'name', '') == 'carla'
+        self.session_id = uuid.uuid4().hex
+        self.journey = {'status': 'IDLE', 'reason': None, 'speed_kmh': 20}
+        self.navigation_heartbeat_at = -float('inf')
+        self.restart_result = None
+        self.restarting = False
+        self.recent_ticks = deque(maxlen=100)
         self.lifecycle = ConnectionLifecycle(now=now)
         self.events = EventBus()
         self.events.subscribe(self._log_event)
@@ -64,6 +72,8 @@ class SimulationService:
         return (self.clock.frame_id, self.clock.timestamp_s) if self.clock.frame_id is not None else (0, 0.)
 
     def _event(self, kind, **payload):
+        if kind == EventType.ControlChanged:
+            payload.setdefault('mode', self.arbiter.machine.mode.value)
         frame_id, timestamp_s = self._context() if self.observation else (None, None)
         self.events.publish(SimulationEvent(kind, frame_id, timestamp_s, payload))
 
@@ -109,6 +119,8 @@ class SimulationService:
             for collision in drain():
                 with self.lock:
                     self.collision_events.append(collision)
+                    if self.arbiter.machine.mode == ControlMode.AUTOMATIC:
+                        self._stop_navigation('collision')
                 # Event-driven collisions can arrive after their native anchor frame.
                 # Preserve their actual frame/time instead of relabelling a later frame.
                 self.events.publish(SimulationEvent(EventType.CollisionDetected,
@@ -143,7 +155,9 @@ class SimulationService:
                 raise ValueError('Control frame ID/timestamp does not match its observation')
             result = self.arbiter.submit(command, frame_id=frame_id, timestamp_s=timestamp_s, connected=True)
             self.command_at = self.now()
-            if previous in (ControlMode.AI, ControlMode.ASSISTED) and result.source == CommandSource.MANUAL:
+            if previous in (ControlMode.AI, ControlMode.ASSISTED, ControlMode.AUTOMATIC) and result.source == CommandSource.MANUAL:
+                if previous == ControlMode.AUTOMATIC:
+                    self._stop_navigation('manual_intervention', manual=True)
                 self._event(EventType.ControlChanged, source='MANUAL', manual_intervention=True)
             return result
 
@@ -202,14 +216,89 @@ class SimulationService:
 
     def release_controls(self):
         with self.lock:
+            if self.arbiter.machine.mode == ControlMode.AUTOMATIC or self.journey['status'] == 'STARTING':
+                self._stop_navigation('controls_released')
             self.arbiter.safety.clear()
             # Release is immediate, not the grace period of a new connection.
             self.arbiter.safety.armed_at = self.now()-self.CONTROL_TTL-1
             self.command_at = 0.
 
+    def _stop_navigation(self, reason, *, status='PAUSED', manual=False):
+        if hasattr(self.provider, 'stop_navigation'):
+            self.provider.stop_navigation()
+        self.navigation_heartbeat_at = -float('inf')
+        self.actions = deque((a, v) for a, v in self.actions if a != 'start_journey')
+        self.journey.update(status=status, reason=reason)
+        self.arbiter.safety.latest.pop(CommandSource.NAVIGATION, None)
+        self.arbiter.safety.receipts.pop(CommandSource.NAVIGATION, None)
+        if self.arbiter.machine.mode == ControlMode.AUTOMATIC:
+            self.arbiter.machine.transition(ControlMode.MANUAL if manual else ControlMode.PAUSED, connected=True)
+        self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
+
+    def stop_driving(self, reason='operator_stop'):
+        with self.lock:
+            self.require_connected()
+            self._stop_navigation(reason)
+            if self.arbiter.machine.mode == ControlMode.MANUAL:
+                self.arbiter.machine.transition(ControlMode.PAUSED, connected=True)
+            self.release_controls()
+            # Keep native ticks/cameras running while the safety brake stops the car.
+            if self.paused:
+                self.actions.append(('pause', False))
+
+    def start_journey(self, speed_kmh=20):
+        speed = finite(speed_kmh)
+        if not 5 <= speed <= 30:
+            raise ValueError('Journey speed must be 5–30 km/h')
+        with self.lock:
+            self.require_connected()
+            if self.dashboard_result and self.dashboard_result.get('action')=='destination' and self.dashboard_result.get('status')=='REJECTED':
+                raise ValueError('اختار وجهة صالحة واعرض طريقها قبل بدء الرحلة')
+            if self.arbiter.machine.mode == ControlMode.EMERGENCY_STOP:
+                raise ValueError('Acknowledge the emergency stop before starting')
+            self.release_controls()
+            self.navigation_heartbeat_at = self.now()
+            self.journey = {'status': 'STARTING', 'reason': None, 'speed_kmh': speed}
+            self.actions.append(('start_journey', speed))
+
+    def journey_heartbeat(self, session_id):
+        with self.lock:
+            if session_id != self.session_id:
+                raise ValueError('Journey heartbeat belongs to a previous CARLA session')
+            if self.journey['status'] not in ('STARTING', 'RUNNING'):
+                return
+            self.navigation_heartbeat_at = self.now()
+
+    def _navigation_step(self):
+        if self.arbiter.machine.mode != ControlMode.AUTOMATIC:
+            return
+        if self.now()-self.navigation_heartbeat_at > self.CONTROL_TTL:
+            self._stop_navigation('dashboard_heartbeat_timeout')
+            return
+        receipt = self.arbiter.safety.receipts.get(CommandSource.NAVIGATION)
+        if receipt is not None and self.now()-receipt < self.arbiter.safety.min_interval_s:
+            # A slow startup tick can be followed immediately by the next tick.
+            # Keep the still-valid selected command; never bypass the rate guard.
+            return
+        route = self.provider.route_state()
+        if self.provider.navigation_done():
+            if self.observation.vehicle.speed_mps < .15:
+                self._stop_navigation('destination_reached' if route['arrived'] else 'route_ended_before_destination',
+                                      status='ARRIVED' if route['arrived'] else 'ERROR')
+            else:
+                frame_id, timestamp_s = self._context()
+                self.arbiter.submit(safe_command(frame_id, timestamp_s, source=CommandSource.NAVIGATION),
+                                    frame_id=frame_id, timestamp_s=timestamp_s, connected=True)
+            return
+        frame_id, timestamp_s = self._context()
+        command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
+        self.arbiter.submit(command, frame_id=frame_id, timestamp_s=timestamp_s, connected=True)
+        self.command_at = self.now()
+
     def emergency_stop(self):
         with self.lock:
             self.require_connected()
+            self._stop_navigation('emergency_stop')
             self.arbiter.emergency_stop(connected=True)
             self._event(EventType.EmergencyStop, reason='explicit_operator_request')
 
@@ -229,6 +318,8 @@ class SimulationService:
             raise ValueError('paused must be boolean')
         with self.lock:
             self.require_connected()
+            if self.arbiter.machine.mode == ControlMode.AUTOMATIC:
+                self._stop_navigation('operator_pause')
             target = ControlMode.PAUSED if paused else ControlMode.MANUAL
             self.arbiter.machine.transition(target, connected=True)
             self.release_controls()
@@ -243,7 +334,7 @@ class SimulationService:
     def queue_dashboard_action(self, action, value):
         with self.lock:
             self.require_connected()
-            if action not in ('settings', 'destination', 'save_place'):
+            if action not in ('settings', 'destination', 'save_place', 'favorite_place'):
                 raise ValueError('Unknown dashboard operation')
             if self.recorder and action == 'settings':
                 raise ValueError('Finish recording before changing sensor configuration')
@@ -253,6 +344,8 @@ class SimulationService:
 
     def reconnect(self):
         with self.lock:
+            if self.restarting:
+                raise ValueError('CARLA restart is still running')
             if self.closed:
                 if self.reconnecting:
                     return
@@ -261,6 +354,35 @@ class SimulationService:
                 return
             self.release_controls()
             self.actions.append(('reconnect', None))
+
+    def restart_graphics(self, value):
+        launch = self.provider.validate_graphics(value)
+        with self.lock:
+            self.require_connected()
+            if self.restarting or self.recorder:
+                raise ValueError('Finish recording or the current restart first')
+            if self.observation.vehicle.speed_mps > .15:
+                raise ValueError('أوقف العربية قبل إعادة تشغيل CARLA')
+            previous = dict(self.provider.runtime.active or {'quality':'Low','resolution':'1280x720','offscreen':False})
+            self.stop_driving('graphics_restart')
+            self.restarting = True
+            self.restart_result = {'status':'STOPPING', 'requested':launch}
+            self.restart_configuration = self.provider.restart_configuration()
+            threading.Thread(target=self._restart_native, args=(launch, previous),
+                             name='native-graphics-restart', daemon=True).start()
+
+    def _restart_native(self, launch, previous):
+        try:
+            self.close()
+            if self.provider.cleanup_errors:
+                raise RuntimeError('Native actor cleanup failed: '+'; '.join(self.provider.cleanup_errors))
+            # Windows libcarla retains streaming handles beyond Client lifetime.
+            # The host shuts down this process before an independent helper kills
+            # UE and creates a fresh SDK session. No live control is resumed.
+            self.provider.restart_handler(launch, previous, self.restart_configuration)
+        except Exception as error:
+            self.restarting = False
+            self.restart_result = {'status':'FAILED', 'requested':launch, 'error':str(error)}
 
     def _reopen(self):
         provider, now = self.provider, self.now
@@ -271,12 +393,16 @@ class SimulationService:
                     raise RuntimeError('Previous native worker is still running')
             provider.connect()
             fresh = SimulationService(provider, required_sensors=provider.required_sensors, now=now)
+            fresh.restarting = self.restarting
+            fresh.restart_result = self.restart_result
             fresh.events = EventBus()
             # Replace complete state atomically; WebSocket observers cannot see a
             # partially initialized service while reconnect is in progress.
             self.__dict__.update(fresh.__dict__)
             self.events.subscribe(self._log_event)
             self.start()
+            with self.lock:
+                self.arbiter.machine.transition(ControlMode.PAUSED, connected=True)
         except Exception as error:
             self.error = str(error)
             self.reconnecting = False
@@ -286,6 +412,10 @@ class SimulationService:
 
     def snapshot(self):
         with self.lock:
+            status = getattr(self.provider, 'restart_status', lambda: None)()
+            if isinstance(status, dict) and isinstance(status.get('status'), str):
+                self.restart_result = status
+                self.restarting = status['status'] not in ('APPLIED','ROLLED_BACK','FAILED')
             live = self._live()
             if not live and self.lifecycle.state == ConnectionState.CONNECTED and not self.reconfiguring:
                 self.arbiter.disconnect()
@@ -293,6 +423,15 @@ class SimulationService:
                 self._event(EventType.ConnectionLost, reason=self.lifecycle.error)
             view = dashboard_frame(self.observation) if live else {'vehicle': None, 'world': None, 'sensors': {}, 'canonical': None}
             return {'sequence': self.sequence, 'connected': live, 'available': live,
+                    'sessionId': self.session_id, 'journey': copy.deepcopy(self.journey),
+                    'restartResult': copy.deepcopy(self.restart_result),
+                    'restarting': self.restarting, 'recording': bool(self.recorder),
+                    'performance': {'nativeTickRateHz': 0 if self.recent_ticks and self.now()-self.recent_ticks[-1]>.5 else
+                        (len(self.recent_ticks)-1)/(self.recent_ticks[-1]-self.recent_ticks[0])
+                        if len(self.recent_ticks)>1 and self.recent_ticks[-1]>self.recent_ticks[0] else None,
+                        'renderFps': None, 'clock': 'WALL_TIME',
+                        'sensorWallRatesHz': getattr(self.provider,'get_sensor_wall_rates',lambda:{})(),
+                        'gpu': getattr(getattr(self.provider, 'runtime', None), 'gpu', None)},
                     'provider': self.name, 'mode': self.arbiter.machine.mode.value,
                     'connectionState': self.lifecycle.state.value,
                     'error': self.error or (self.lifecycle.error if self.lifecycle.state == ConnectionState.ERROR else None),
@@ -422,7 +561,21 @@ class SimulationService:
             actions = list(self.actions)
             self.actions.clear()
         for action, value in actions:
-            if action in ('settings', 'destination', 'save_place'):
+            if action == 'start_journey':
+                try:
+                    with self.lock:
+                        if self.journey['status'] != 'STARTING' or self.now()-self.navigation_heartbeat_at > self.CONTROL_TTL:
+                            raise ValueError('Dashboard heartbeat expired before journey start')
+                        if self.paused:
+                            self.provider.set_paused(False); self.paused = False
+                        result = self.provider.start_navigation(value)
+                        self.arbiter.safety.clear()
+                        self.arbiter.machine.transition(ControlMode.AUTOMATIC, connected=True, explicit=True)
+                        self.journey.update(status='RUNNING', reason=None, route_id=result['id'])
+                        self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
+                except (ValueError, ImportError) as error:
+                    self._stop_navigation(str(error), status='ERROR')
+            elif action in ('settings', 'destination', 'save_place', 'favorite_place'):
                 self.reconfiguring = True
                 try:
                     self._drain_collision_events()
@@ -430,13 +583,19 @@ class SimulationService:
                     for pending in self.synchronizer.drain(force=True):
                         self._publish(pending); self._record(pending)
                     result = self.provider.dashboard_action(action, value)
-                    self.dashboard_result = {'action': action, 'status': 'APPLIED', 'result': result}
+                    self.dashboard_result = {'action': action, 'status': 'APPLIED', 'result': result,
+                                             'operationId': uuid.uuid4().hex}
+                    if action == 'destination':
+                        self.journey.update(status='READY', reason=None)
                     if action == 'settings':
                         self.synchronizer = SensorSynchronizer(self.synchronizer.required, self.synchronizer.optional,
                                                                timeout_s=self.synchronizer.timeout_s, now=self.now)
                         self.camera_cache.clear(); self.sensor_frame_cache.clear()
                 except ValueError as error:
-                    self.dashboard_result = {'action': action, 'status': 'REJECTED', 'error': str(error)}
+                    self.dashboard_result = {'action': action, 'status': 'REJECTED', 'error': str(error),
+                                             'operationId': uuid.uuid4().hex}
+                    if action == 'destination':
+                        self.journey.update(status='ERROR',reason=str(error))
                 finally:
                     self.state_at = self.now()
                     self.reconfiguring = False
@@ -465,6 +624,7 @@ class SimulationService:
                 self.provider.set_paused(value)
                 self.paused = value
         with self.lock:
+            self._navigation_step()
             chosen = self._choose()
         self.provider.apply_control(chosen)
         self.provider.step()
@@ -482,6 +642,7 @@ class SimulationService:
         if duplicate and not self.paused:
             raise RuntimeError('Provider frame did not advance')
         if not duplicate:
+            self.recent_ticks.append(self.now())
             observation = replace(observation, control=chosen)
             self.synchronizer.begin(observation)
             self._ingest_provider_sensors()

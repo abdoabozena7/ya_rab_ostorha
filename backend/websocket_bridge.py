@@ -12,6 +12,7 @@ class WebSocketBridge:
         self.controller_lock = threading.Lock()
         self.ownership_lock = threading.RLock()
         self.owner = None
+        self.sockets = set()
         self.server = serve(self.handle, host, port, max_size=16_384,
                             origins=[None, f"http://127.0.0.1:{http_port}",
                                      f"http://localhost:{http_port}", f"http://{host}:{http_port}"])
@@ -25,7 +26,9 @@ class WebSocketBridge:
         """Ownership changes and command admission are atomic across dashboards."""
         with self.ownership_lock:
             kind = message.get('type')
-            if kind in ('start_driving', 'reconnect'):
+            if getattr(self.service, 'restarting', False):
+                raise ValueError('جاري إعادة تشغيل CARLA؛ القيادة متوقفة لحين اكتمال التحقق')
+            if kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
                 if getattr(self.service, 'is_replay', False):
                     raise ValueError('Replay has no native connection or control sink')
                 if kind == 'reconnect':
@@ -33,12 +36,18 @@ class WebSocketBridge:
                 else:
                     self.service.require_connected()
                     self.service.release_controls()
-                    self.service.set_paused(False)
                     self.owner = socket
                     if not self.controller_lock.locked():
                         self.controller_lock.acquire()
+                    if kind == 'start_driving':
+                        self.service.set_paused(False)
+                    elif kind == 'start_journey':
+                        self.service.start_journey(message.get('speed_kmh', 20))
+                    else:
+                        self.service.stop_driving('ownership_taken')
                 return True
-            if kind not in {'controls', 'reset', 'pause', 'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'disconnect'}:
+            if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'restart_graphics',
+                            'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect'}:
                 return False
             if self.owner is not socket:
                 raise ValueError('Another dashboard controls this vehicle; select Start driving')
@@ -46,11 +55,26 @@ class WebSocketBridge:
             if kind == 'controls':
                 if 'frame_id' not in message or 'timestamp_s' not in message:
                     raise ValueError('Controls require simulation frame_id and timestamp_s')
+                # Network buffering can deliver two valid browser samples together.
+                # Wait for the existing safety admission interval, then run its
+                # normal freshness/range/rate checks; never waive the guard.
+                from .core.contracts import CommandSource
+                safety=self.service.arbiter.safety
+                receipt=safety.receipts.get(CommandSource.MANUAL)
+                if receipt is not None:
+                    delay=safety.min_interval_s-(safety.now()-receipt)
+                    if delay>0: time.sleep(delay)
                 self.service.set_controls(frame_id=message['frame_id'], timestamp_s=message['timestamp_s'], **message.get('controls', {}))
             elif kind == 'reset':
                 self.service.reset_vehicle()
             elif kind == 'pause':
                 self.service.set_paused(message.get('paused'))
+            elif kind == 'stop_driving':
+                self.service.stop_driving(message.get('reason', 'operator_stop'))
+            elif kind == 'journey_heartbeat':
+                self.service.journey_heartbeat(message.get('session_id'))
+            elif kind == 'restart_graphics':
+                self.service.restart_graphics(message.get('value'))
             elif kind == 'emergency_stop':
                 self.service.emergency_stop()
             elif kind == 'acknowledge_stop':
@@ -66,6 +90,7 @@ class WebSocketBridge:
     def handle(self, socket):
         from websockets.exceptions import ConnectionClosed
         with self.ownership_lock:
+            self.sockets.add(socket)
             if not getattr(self.service, 'is_replay', False) and self.controller_lock.acquire(blocking=False):
                 self.owner = socket
         acknowledged = None
@@ -90,11 +115,14 @@ class WebSocketBridge:
             pass
         finally:
             with self.ownership_lock:
+                self.sockets.discard(socket)
                 if self.owner is socket:
                     self.service.release_controls()
                     self.owner = None
                     self.controller_lock.release()
 
     def close(self):
+        for socket in list(self.sockets):
+            socket.close()
         self.server.shutdown()
         self.thread.join(timeout=2)

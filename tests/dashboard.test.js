@@ -5,6 +5,38 @@ import {SimulationClient, unavailableState} from '../frontend/simulation-client.
 import {DrivingControls} from '../frontend/controls.js';
 import {telemetryText} from '../frontend/telemetry.js';
 import {sensorFrameKey, matchesSensorResponse} from '../frontend/sensor-frame.js';
+import {DRIVING_KEYS, isEditableTarget, drivingInputAllowed} from '../frontend/input-policy.js';
+
+test('keyboard uses physical codes and never admits driving from an editable target', () => {
+  assert.equal(DRIVING_KEYS.has('KeyW'),true); assert.equal(DRIVING_KEYS.has('w'),false);
+  assert.equal(isEditableTarget({tagName:'INPUT'}),true);
+  assert.equal(isEditableTarget({tagName:'DIV',isContentEditable:true}),true);
+  const policy = {fresh:true,replay:false,owner:true,focused:true,modal:false,mode:'MANUAL',armed:true};
+  assert.equal(drivingInputAllowed(policy),true);
+  for (const field of ['fresh','owner','focused','armed']) assert.equal(drivingInputAllowed({...policy,[field]:false}),false);
+  assert.equal(drivingInputAllowed({...policy,modal:true}),false);
+  assert.equal(drivingInputAllowed({...policy,replay:true}),false);
+  assert.equal(drivingInputAllowed({...policy,mode:'AUTOMATIC',armed:false}),true);
+});
+
+test('native restart accepts lower frames only after a genuine new session identity', () => {
+  const {p,snapshot} = clientFixture();
+  p.acceptSnapshot({...snapshot,sessionId:'one'});
+  p.acceptSnapshot({...snapshot,sessionId:'two',vehicle:{...snapshot.vehicle,frame:0,timestamp:0},
+    world:{...snapshot.world,frame:0,timestamp:0}});
+  assert.equal(p.connected,true); assert.equal(p.lastFrame,0);
+  p.acceptSnapshot({...snapshot,sessionId:'two',vehicle:{...snapshot.vehicle,frame:0,timestamp:.1},
+    world:{...snapshot.world,frame:0,timestamp:.1}});
+  assert.equal(p.connected,false);
+});
+
+test('choosing a route and heartbeating never emit manual pedal commands', () => {
+  const {p,sent,snapshot} = clientFixture();
+  p.acceptSnapshot({...snapshot,sessionId:'live',mode:'AUTOMATIC',journey:{status:'RUNNING'}});
+  p.dashboardAction('destination','road-point-10'); p.journeyHeartbeat();
+  assert.deepEqual(sent.map(s=>s.type),['destination','journey_heartbeat']);
+  assert.equal(sent[1].session_id,'live');
+});
 
 test('production modules have no legacy world, renderer, or mock physics dependency', () => {
   for (const name of readdirSync(new URL('../frontend/', import.meta.url)).filter(n => n.endsWith('.js'))) {

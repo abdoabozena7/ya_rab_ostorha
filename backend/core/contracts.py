@@ -162,6 +162,7 @@ class Contract:
 
 class CommandSource(str, Enum):
     MANUAL = 'MANUAL'
+    NAVIGATION = 'NAVIGATION'
     ASSISTED = 'ASSISTED'
     AI = 'AI'
     SAFETY = 'SAFETY'

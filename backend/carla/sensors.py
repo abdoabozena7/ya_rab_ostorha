@@ -13,6 +13,7 @@ class CarlaSensorManager:
         self.lock = threading.RLock()
         self.cleanup_errors = []
         self.sample_times = {}
+        self.wall_sample_times = {}
         self.pending_collisions = deque()
         self.pending_frames = deque()
         self.assets = OrderedDict()
@@ -32,6 +33,7 @@ class CarlaSensorManager:
         tick = float(attributes.get('sensor_tick', 0))
         mount = {'positionM': vector(transform.location), 'rotationDeg': rotation(transform.rotation)}
         self.sample_times[sensor_id] = deque(maxlen=40)
+        self.wall_sample_times[sensor_id] = deque(maxlen=80)
         self.configurations[sensor_id] = {'blueprint': blueprint_id, 'actorId': actor.id,
                                          'mountTransform': mount, 'sensorTickSeconds': tick,
                                          'requestedRateHz': 1/tick if tick else None}
@@ -59,6 +61,7 @@ class CarlaSensorManager:
                     if self.actors.get(sensor_id) is actor:
                         self.frames[sensor_id] = envelope
                         self.sample_times[sensor_id].append(data.timestamp)
+                        self.wall_sample_times[sensor_id].append(envelope['receivedMonotonic'])
                         from ..core.contracts import SensorFrame
                         if isinstance(decoded, SensorFrame):
                             if len(self.pending_frames) >= 512:
@@ -81,6 +84,13 @@ class CarlaSensorManager:
             return {name: (len(times)-1)/(times[-1]-times[0])
                     if len(times) > 1 and times[-1] > times[0] else None
                     for name, times in self.sample_times.items()}
+
+    def wall_rates(self):
+        with self.lock:
+            now=time.monotonic()
+            return {name: 0 if times and now-times[-1]>.5 else
+                    (len(times)-1)/(times[-1]-times[0]) if len(times)>1 and times[-1]>times[0] else None
+                    for name,times in self.wall_sample_times.items()}
 
     def enable_collision(self, api):
         from ..core.contracts import CollisionEvent
@@ -145,8 +155,12 @@ class CarlaSensorManager:
         width,height = map(int, options['camera_resolution'].split('x'))
         camera = {'sensor_tick': fixed_delta, 'image_size_x': width, 'image_size_y': height,
                   'fov': options['camera_fov'], 'lens_k': 0, 'lens_kcube': 0}
+        rgb = {**camera, 'enable_postprocess_effects': str(options.get('camera_postprocess', False)).lower(),
+               'motion_blur_intensity': options.get('camera_motion_blur', 0),
+               'motion_blur_max_distortion': 0 if not options.get('camera_motion_blur', 0) else .35,
+               'bloom_intensity': options.get('camera_bloom', 0)}
         plans = (
-            ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount, camera),
+            ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount, rgb),
             ('depth', SensorKind.DEPTH, 'sensor.camera.depth', camera_mount, camera),
             ('radar', SensorKind.RADAR, 'sensor.other.radar', api.Transform(api.Location(x=2.5, z=.65)),
              {'sensor_tick': fixed_delta, 'range': 50, 'horizontal_fov': 30, 'vertical_fov': 20, 'points_per_second': 1500}),
@@ -185,6 +199,7 @@ class CarlaSensorManager:
         with self.lock:
             actors = list(self.actors.values())
             self.actors.clear(); self.frames.clear(); self.sample_times.clear()
+            self.wall_sample_times.clear()
             self.pending_frames.clear(); self.assets.clear(); self.configurations.clear()
             self.pending_collisions.clear()
         self.cleanup_errors = []

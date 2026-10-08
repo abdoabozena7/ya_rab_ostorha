@@ -8,6 +8,7 @@ class ControlMode(str, Enum):
     DISCONNECTED = 'DISCONNECTED'
     PAUSED = 'PAUSED'
     MANUAL = 'MANUAL'
+    AUTOMATIC = 'AUTOMATIC'
     ASSISTED = 'ASSISTED'
     AI = 'AI'
     EMERGENCY_STOP = 'EMERGENCY_STOP'
@@ -23,10 +24,17 @@ TRANSITIONS = {
 }
 
 
+for _mode in (ControlMode.MANUAL, ControlMode.PAUSED):
+    TRANSITIONS[_mode].add(ControlMode.AUTOMATIC)
+TRANSITIONS[ControlMode.AUTOMATIC] = {
+    ControlMode.MANUAL, ControlMode.PAUSED, ControlMode.EMERGENCY_STOP, ControlMode.DISCONNECTED}
+
+
 class ControlStateMachine:
-    def __init__(self, *, allow_automation=False):
+    def __init__(self, *, allow_automation=False, allow_navigation=False):
         self.mode = ControlMode.DISCONNECTED
         self.allow_automation = allow_automation
+        self.allow_navigation = allow_navigation
 
     def transition(self, target, *, connected, explicit=False):
         target = ControlMode(target)
@@ -38,6 +46,8 @@ class ControlStateMachine:
             raise ValueError('A live connection is required')
         if target in (ControlMode.AI, ControlMode.ASSISTED) and not (self.allow_automation and explicit):
             raise ValueError('Automation requires explicit opt-in; it is disabled by default')
+        if target == ControlMode.AUTOMATIC and not (self.allow_navigation and explicit):
+            raise ValueError('Destination navigation requires explicit opt-in')
         if self.mode == ControlMode.EMERGENCY_STOP and target == ControlMode.PAUSED and not explicit:
             raise ValueError('Emergency stop requires an explicit acknowledgement')
         self.mode = target
@@ -101,7 +111,7 @@ class ControlSafetyLayer:
 
 
 class CommandArbiter:
-    PRIORITY = (CommandSource.SAFETY, CommandSource.MANUAL, CommandSource.ASSISTED, CommandSource.AI, CommandSource.SYSTEM)
+    PRIORITY = (CommandSource.SAFETY, CommandSource.MANUAL, CommandSource.NAVIGATION, CommandSource.ASSISTED, CommandSource.AI, CommandSource.SYSTEM)
 
     def __init__(self, safety=None, machine=None):
         self.safety = safety or ControlSafetyLayer()
@@ -116,11 +126,13 @@ class CommandArbiter:
             raise ValueError('AI commands are not enabled')
         if command.source == CommandSource.ASSISTED and self.machine.mode != ControlMode.ASSISTED:
             raise ValueError('Assisted commands are not enabled')
+        if command.source == CommandSource.NAVIGATION and self.machine.mode != ControlMode.AUTOMATIC:
+            raise ValueError('Destination navigation is not enabled')
         accepted = self.safety.accept(command, frame_id=frame_id, timestamp_s=timestamp_s)
-        if command.source == CommandSource.MANUAL and self.machine.mode in (ControlMode.AI, ControlMode.ASSISTED):
+        if command.source == CommandSource.MANUAL and self.machine.mode in (ControlMode.AI, ControlMode.ASSISTED, ControlMode.AUTOMATIC):
             self.machine.transition(ControlMode.MANUAL, connected=True)
             # Old automated commands must never resume when manual input expires.
-            for source in (CommandSource.AI, CommandSource.ASSISTED):
+            for source in (CommandSource.AI, CommandSource.ASSISTED, CommandSource.NAVIGATION):
                 self.safety.latest.pop(source, None)
                 self.safety.receipts.pop(source, None)
         return accepted
@@ -136,6 +148,8 @@ class CommandArbiter:
             allowed.add(CommandSource.AI)
         if mode == ControlMode.ASSISTED:
             allowed.add(CommandSource.ASSISTED)
+        if mode == ControlMode.AUTOMATIC:
+            allowed.add(CommandSource.NAVIGATION)
         for source in self.PRIORITY:
             if source in allowed and self.safety.fresh(source):
                 command = self.safety.latest[source]

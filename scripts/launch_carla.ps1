@@ -1,4 +1,4 @@
-param([string]$InstallRoot = 'C:\CARLA\CARLA_0.9.16', [ValidateSet('Development','Evaluation')][string]$Profile = 'Development', [ValidateSet('D3D11','D3D12')][string]$Renderer = 'D3D12')
+param([string]$InstallRoot = 'C:\CARLA\CARLA_0.9.16', [ValidateSet('Development','Evaluation')][string]$Profile = 'Development', [ValidateSet('D3D11','D3D12')][string]$Renderer = 'D3D12', [ValidateSet('Low','Epic')][string]$Quality = 'Low', [ValidateSet('1280x720','1600x900','1920x1080')][string]$Resolution = '1280x720', [switch]$Windowed)
 $ErrorActionPreference = 'Stop'
 $markerPath = Join-Path $InstallRoot '.carla-install.json'
 if (-not (Test-Path -LiteralPath $markerPath)) { throw 'CARLA 0.9.16 BLOCKER: run prepare_carla.ps1 to verify the official package/API first' }
@@ -9,18 +9,11 @@ if ($Profile -eq 'Evaluation') { throw 'CARLA 0.9.16 BLOCKER: final evaluation s
 $nativeExe = [IO.Path]::GetFullPath($installed.executable)
 $rootPrefix = [IO.Path]::GetFullPath($InstallRoot).TrimEnd('\') + '\'
 if (-not $nativeExe.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $nativeExe)) { throw 'CARLA 0.9.16 BLOCKER: detected package launcher is missing or outside the install folder' }
-$quality = 'Low'
-$resolution = '1280x720'
-$preferencesPath = Join-Path $PSScriptRoot '..\config\dashboard-preferences.json'
-if (Test-Path -LiteralPath $preferencesPath) {
-    $preferences = Get-Content -LiteralPath $preferencesPath -Raw | ConvertFrom-Json
-    if ($preferences.next_launch.quality -in @('Low','Epic')) { $quality = $preferences.next_launch.quality }
-    if ($preferences.next_launch.resolution -in @('1280x720','1600x900','1920x1080')) { $resolution = $preferences.next_launch.resolution }
-}
+$renderMode = if ($Windowed -or $Renderer -ne 'D3D12') { '-windowed' } else { '-RenderOffScreen' }
 $dimensions = $resolution.Split('x')
 Write-Host "Launching actual CARLA 0.9.16: $nativeExe ($Profile, $quality, $resolution, $Renderer). See docs/LIVE_NATIVE_VALIDATION.md for gate evidence."
 Push-Location -LiteralPath (Split-Path -Parent $nativeExe)
 try {
-    $nativeProcess = Start-Process -FilePath $nativeExe -ArgumentList "-quality-level=$quality", '-windowed', "-ResX=$($dimensions[0])", "-ResY=$($dimensions[1])", "-$Renderer", '-carla-rpc-port=2000' -WindowStyle Hidden -PassThru -Wait
+    $nativeProcess = Start-Process -FilePath $nativeExe -ArgumentList "-quality-level=$quality", $renderMode, "-ResX=$($dimensions[0])", "-ResY=$($dimensions[1])", "-$Renderer", '-carla-rpc-port=2000' -WindowStyle Hidden -PassThru -Wait
     if ($nativeProcess.ExitCode -ne 0) { throw "CARLA 0.9.16 BLOCKER: native launcher exited with code $($nativeProcess.ExitCode); inspect CarlaUE4 logs" }
 } finally { Pop-Location }

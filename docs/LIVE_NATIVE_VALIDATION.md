@@ -1,6 +1,9 @@
 # Live native validation: CARLA 0.9.16
 
 Measured on 7 October 2026. Gates 1, 2 and 3 PASS against the real native simulator.
+The subsequent approved dashboard/navigation phase is documented separately in
+[8 October dashboard native validation](DASHBOARD_V2_VALIDATION.md). Historic
+calibration and baseline measurements below are preserved with their original dates.
 The existing offline core, safety layer, arbitration, synchronizer and recorder
 are retained. The obsolete Three.js game and its launch/mock routes are deleted.
 No traffic population, pedestrians, custom map, AI or random accidents were added.

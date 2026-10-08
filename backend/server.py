@@ -80,6 +80,30 @@ class Handler(SimpleHTTPRequestHandler):
                 if path == "/api/simulation/sensor":
                     name = parse_qs(urlsplit(self.path).query).get("name", [""])[0]
                     return self._json(200, provider.get_sensor_frame(name))
+                if path == '/api/simulation/camera-raw.png':
+                    import io
+                    from PIL import Image
+                    provider.require_connected()
+                    manager = getattr(provider.provider, 'sensor_manager', None)
+                    if manager is None:
+                        return self._json(503, {'error':'No native diagnostic RGB; start the sensor suite first'})
+                    with provider.lock:
+                        with manager.lock:
+                            raw = getattr(manager, 'diagnostic_rgb', {}).get(provider.observation.frame_id)
+                    if raw is None:
+                        return self._json(503, {'error':'No native diagnostic RGB'})
+                    frame_id, timestamp, width, height, pixels = raw
+                    output = io.BytesIO()
+                    Image.frombytes('RGB', (width,height), pixels).save(output, format='PNG')
+                    body = output.getvalue()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'image/png')
+                    self.send_header('Content-Length', str(len(body)))
+                    self.send_header('X-Sensor-Frame', str(frame_id))
+                    self.send_header('X-Sensor-Time', str(timestamp))
+                    self.send_header('Cache-Control', 'no-store')
+                    self.end_headers(); self.wfile.write(body)
+                    return
                 if path in ("/api/simulation/camera.jpg", '/api/simulation/sensor.bin'):
                     requested = parse_qs(urlsplit(self.path).query).get('frame_id', [None])[0]
                     if requested is not None and (not requested.isdigit() or len(requested)>12):
@@ -169,6 +193,8 @@ def main():
     parser.add_argument('--record-run', help='Output directory for a versioned replayable run')
     parser.add_argument('--replay', help='Read an existing real recorded run; never connects to CARLA')
     parser.add_argument('--experiment-config', help='Strict simulator-independent JSON experiment config')
+    parser.add_argument('--restart-ticket', help=argparse.SUPPRESS)
+    parser.add_argument('--start-paused', action='store_true', help='Connect with native brakes applied; requires explicit driving')
     parser.add_argument("--websocket-port", type=int, default=8001)
     args = parser.parse_args()
     if args.session_duration is not None and args.session_duration <= 0:
@@ -208,8 +234,16 @@ def main():
                                      version=args.carla_version, map_name=args.map,
                                      blueprint=args.vehicle, spawn_index=args.spawn_index,
                                      fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor, sensor_suite=args.sensors)
+            ticket = json.loads(Path(args.restart_ticket).read_text(encoding='utf-8')) if args.restart_ticket else None
+            if ticket:
+                provider.camera_settings.update(ticket['configuration']['camera'])
+                provider.restart_ticket = args.restart_ticket
             supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 10)
             supervisor.connect(provider)
+            if ticket:
+                weather = provider.world.world.get_weather()
+                for key,value in ticket['configuration']['weather'].items(): setattr(weather,key,value)
+                provider.world.world.set_weather(weather)
         except Exception as error:
             reason = str(error)
             if supervisor:
@@ -230,12 +264,21 @@ def main():
                 from .core.recording import RunRecorder
                 from .core.contracts import ExperimentMetadata, DataOrigin, to_dict
                 recorder = RunRecorder(args.record_run, ExperimentMetadata('run_'+uuid.uuid4().hex,
-                                        config.experiment.name if config else 'Manual native session', provider.name, DataOrigin.REAL_SIMULATION,
+                                        config.experiment.name if config else 'Native dashboard manual/navigation validation', provider.name, DataOrigin.REAL_SIMULATION,
                                         description=config.experiment.description if config else '', seed=config.experiment.seed if config else None,
-                                        created_at_utc=datetime.now(timezone.utc).isoformat(), config=to_dict(config) if config else {}))
+                                        created_at_utc=datetime.now(timezone.utc).isoformat(),
+                                        config={**(to_dict(config) if config else {}), **provider.recording_metadata()}))
             server.simulation_service = SimulationService(provider, recorder, required_sensors=provider.required_sensors,
                                                           sensor_timeout_s=.25)
             server.simulation_service.start()
+            if args.start_paused:
+                ready_deadline=time.monotonic()+10
+                while not server.simulation_service.snapshot()['connected'] and time.monotonic()<ready_deadline:
+                    time.sleep(.05)
+                server.simulation_service.stop_driving('fresh_native_session')
+            from .carla.restart_helper import dispatch_restart
+            provider.restart_handler = lambda launch,previous,configuration: dispatch_restart(
+                server, args, launch, previous, configuration)
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host,
                                                       args.websocket_port, args.port)

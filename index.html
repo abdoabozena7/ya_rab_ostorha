@@ -1,102 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:,">
-  <title>Ya Rab Ostorha | Simulation Control Center</title>
-  <link rel="stylesheet" href="/frontend/styles.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,"><title>يا رب استرها | قيادة CARLA</title>
   <link rel="stylesheet" href="/frontend/dashboard.css">
 </head>
 <body class="control-center">
-  <header id="brand"><span class="brand-eyebrow">SIMULATION CONTROL <span>01</span></span><h1>YA RAB OSTORHA</h1><p>Driving simulation <span lang="ar">· يارب استرها</span></p></header>
-  <div id="mission"><span class="mission-icon">↗</span><div><span class="eyebrow">FREE DRIVE</span><div id="missionText">One vehicle · CARLA 0.9.16</div></div></div>
-  <nav id="toolbar" aria-label="Simulator tools">
-    <button class="ctrl-btn" id="phoneToggleBtn" aria-expanded="false" aria-controls="inGamePhone">Phone <kbd>P</kbd></button>
-    <button class="ctrl-btn" id="routeBtn" aria-expanded="false" aria-controls="routePanel">Route</button>
-    <button class="ctrl-btn" id="sensorBtn" aria-expanded="false" aria-controls="sensorPanel">Debug</button>
-    <button class="ctrl-btn" id="settingsBtn" aria-expanded="false" aria-controls="settingsPanel">Settings · الإعدادات</button>
-  </nav>
-  <div id="cityStatus" role="status">CARLA — DISCONNECTED</div>
-
-  <main id="simulationCenter">
-    <span class="eyebrow">SIMULATION PROVIDER</span>
-    <h2 id="providerTitle">CARLA 0.9.16</h2>
-    <p id="connectionDetail">Waiting for the simulation backend.</p>
-    <p class="simulation-hint" dir="rtl">ابدأ القيادة من هنا، ثم استخدم W A S D أو اضغط باستمرار على أزرار القيادة. الكاميرا تنقل صورة CARLA الحقيقية. احتفظ بالتركيز على الداشبورد.</p>
-    <div class="drive-controls" aria-label="Dashboard driving controls">
-      <button id="startDrivingBtn" class="drive-start">Start driving · ابدأ القيادة</button>
-      <button id="nativeReconnectBtn">Reconnect CARLA</button>
-      <button id="nativeDisconnectBtn">Disconnect vehicle</button>
-      <div class="drive-pad">
-        <button data-drive-key="KeyW" aria-label="Hold accelerator">W · بنزين</button>
-        <button data-drive-key="KeyA" aria-label="Hold steer left">A · شمال</button>
-        <button data-drive-key="KeyS" aria-label="Hold brake or reverse">S · فرامل / رجوع</button>
-        <button data-drive-key="KeyD" aria-label="Hold steer right">D · يمين</button>
-        <button data-drive-key="Space" aria-label="Hold handbrake">Space · فرامل اليد</button>
+  <header class="app-header">
+    <div id="brand"><span class="eyebrow">CARLA / مساحة القيادة</span><h1>يا رب استرها</h1></div>
+    <div class="connection"><i id="connectionDot"></i><div id="cityStatus" role="status">CARLA — DISCONNECTED</div><span id="missionText">عربية واحدة · المرور غير مفعّل</span></div>
+    <nav id="toolbar" aria-label="أدوات المحاكاة">
+      <button id="phoneToggleBtn" aria-expanded="false" aria-controls="inGamePhone">الوجهات <kbd>P</kbd></button>
+      <button id="routeBtn" aria-controls="routePanel">الخريطة</button>
+      <button id="sensorBtn" aria-expanded="false" aria-controls="sensorPanel">التفاصيل</button>
+      <button id="settingsBtn" aria-expanded="false" aria-controls="settingsPanel">الإعدادات</button>
+    </nav>
+  </header>
+  <main class="workspace">
+    <section class="visual-workspace">
+      <section id="cameraCard" aria-label="كاميرا CARLA الحقيقية">
+        <div class="section-heading"><div><span class="eyebrow">العرض المباشر</span><h2 id="providerTitle">كاميرا CARLA</h2></div><span id="cameraActivity">بانتظار الصورة</span></div>
+        <div class="camera-tools"><label for="cameraView">زاوية الكاميرا</label><select id="cameraView"><option value="front">أمام العربية</option><option value="hood">غطاء المحرك</option><option value="chase">خلف العربية</option><option value="rear">النظر للخلف</option><option value="top">من أعلى</option></select><button id="expandCameraBtn">تكبير الصورة</button></div>
+        <div id="frontCameraView"><img id="authoritativeCamera" alt="كاميرا حقيقية من CARLA" hidden><span id="cameraUnavailable">بانتظار صورة من المحاكي الحقيقي</span></div>
+        <div class="camera-caption"><span id="cameraSource">CARLA RGB</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
+        <div class="telemetry-strip">
+          <div class="speed-readout"><strong id="speedVal">—</strong><span>كم/س</span></div>
+          <div><span>الغيار</span><strong id="gearVal">—</strong></div>
+          <div><span>البنزين</span><strong id="throttleVal">—</strong></div>
+          <div><span>الفرامل</span><strong id="brakeVal">—</strong></div>
+          <div><span>التوجيه</span><strong id="steerVal">—</strong></div>
+        </div>
+      </section>
+      <section id="routePanel" aria-label="طرق خريطة CARLA">
+        <div class="section-heading"><div><span class="eyebrow">الطرق الحقيقية / <span id="mapVal">—</span></span><h2>اختار وجهتك</h2></div><button id="mapDestinationsBtn">قائمة الأماكن</button></div>
+        <p id="routeDetail">اضغط على طريق في الخريطة أو اختار مكانًا من قائمة الوجهات.</p>
+        <svg id="routeMap" viewBox="0 0 800 330" role="img" aria-label="خريطة طرق CARLA؛ اضغط على طريق لاختيار الوجهة" tabindex="0">
+          <g id="roadGeometry"></g><path id="routeLine" fill="none" stroke="#63a8ff" stroke-width="4"/><circle id="routeTarget" r="7" fill="#63a8ff" hidden/><circle id="routeCar" r="7" fill="#fff" hidden/>
+        </svg>
+        <div class="map-caption"><span>● العربية الحالية &nbsp; <span class="accent">● الوجهة والمسار</span></span><span>الشمال ↑</span></div>
+        <p id="turnInstruction"></p><p id="mapSelectionStatus" role="status"></p>
+      </section>
+    </section>
+    <aside id="simulationCenter" class="drive-inspector">
+      <div class="section-heading"><div><span class="eyebrow">التحكم في العربية</span><h2 id="controlMode">العربية متوقفة</h2></div><span id="controlSource"></span></div>
+      <p id="connectionDetail">بانتظار الاتصال بالمحاكي.</p>
+      <label for="drivingMode">طريقة القيادة</label>
+      <select id="drivingMode"><option value="MANUAL">يدوي — أنا أسوق</option><option value="AUTOMATIC">رحلة تلقائية — للوجهة المختارة</option></select>
+      <p id="modeExplanation">اضغط تفعيل القيادة اليدوية، ثم استخدم الكيبورد أو أزرار القيادة.</p>
+      <button id="startDrivingBtn" class="primary">تفعيل القيادة اليدوية</button>
+      <div id="journeyControls" hidden><label for="journeySpeed">سرعة الرحلة — كم/س</label><input id="journeySpeed" type="number" min="5" max="30" value="20"><button id="startJourneyBtn" class="primary">ابدأ الرحلة التلقائية</button><p class="muted">تنقل تجريبي بمتحكم CARLA التقليدي. التعامل مع كل العوائق وعلامات الوقوف غير مضمون.</p></div>
+      <button id="pauseBtn" disabled>إيقاف القيادة</button>
+      <p id="drivingInstruction" role="status"></p><p id="journeyStatus" role="status"></p>
+      <div class="manual-controls">
+        <label for="gearSelect">الغيار</label><select id="gearSelect" disabled><option value="D">D — للأمام</option><option value="N">N — محايد</option><option value="R">R — رجوع للخلف</option></select>
+        <div class="drive-pad" aria-label="اضغط باستمرار للتحكم">
+          <button data-drive-key="KeyW">W <span>بنزين</span></button><button data-drive-key="KeyS">S <span>فرامل / رجوع</span></button><button data-drive-key="KeyA">A <span>شمال</span></button><button data-drive-key="KeyD">D <span>يمين</span></button><button data-drive-key="Space">Space <span>فرامل اليد</span></button>
+        </div>
+        <p id="controlStatus" role="status">الكيبورد غير مفعّل</p>
+        <p class="muted">الكيبورد يعمل داخل الداشبورد. أثناء الرحلة التلقائية، أي تدخل منك يسلمك القيادة.</p>
       </div>
-      <p id="drivingInstruction" role="status">Connect to CARLA, then select Start driving.</p>
-    </div>
-    <div class="dashboard-values" aria-label="Vehicle telemetry">
-      <div><span>CARLA VERSION</span><strong id="versionVal">—</strong></div>
-      <div><span>MAP</span><strong id="mapVal">—</strong></div>
-      <div><span>FRAME</span><strong id="frameVal">—</strong></div>
-      <div><span>THROTTLE</span><strong id="throttleVal">—</strong></div>
-      <div><span>BRAKE</span><strong id="brakeVal">—</strong></div>
-      <div><span>STEERING INPUT · RIGHT +</span><strong id="steerVal">—</strong></div>
-      <div><span>ACCELERATION</span><strong id="accelVal">—</strong></div>
-      <div><span>SIMULATION TIME</span><strong id="timeVal">—</strong></div>
-      <div><span>REVERSE</span><strong id="reverseVal">—</strong></div>
-    </div>
-    <div class="session-controls">
-      <label for="gearSelect">Transmission</label>
-      <select id="gearSelect" disabled><option value="D">D · Automatic</option><option value="N">N · Neutral</option><option value="R">R · Reverse</option></select>
-      <span id="controlStatus">Controls unavailable</span>
-    </div>
-    <div class="sensor-summary"><span class="eyebrow">SENSORS</span><p id="sensorStatus">RGB · Depth · Radar · LiDAR · IMU · GNSS · Collision: unavailable</p></div>
-    <div id="validationNotice">Native vehicle and sensor observations · Recorded mode is explicitly labelled REPLAY</div>
+      <button id="emergencyStopBtn" class="emergency" disabled>إيقاف طوارئ</button>
+      <button id="acknowledgeStopBtn" hidden>إقرار إيقاف الطوارئ</button>
+      <button id="replayPauseBtn" hidden>إيقاف عرض التسجيل</button>
+      <div class="inspector-footer"><span id="sensorStatus">الحساسات غير متاحة</span><p id="performance">الأداء غير متاح</p><p id="operationStatus" role="status" aria-live="polite"></p></div>
+    </aside>
   </main>
-
-  <section id="cameraCard" aria-label="Front camera">
-    <div id="frontCameraLabel">CARLA camera <span id="cameraActivity">UNAVAILABLE</span></div>
-    <div class="camera-tools"><label for="cameraView">Camera</label><select id="cameraView"><option value="front">Front · أمامية</option><option value="hood">Hood · غطاء المحرك</option><option value="chase">Follow car · خلف العربية</option><option value="rear">Rear · خلفية</option><option value="top">Top · علوية</option></select><button id="expandCameraBtn">Enlarge</button></div>
-    <div id="frontCameraView"><img id="authoritativeCamera" alt="CARLA mounted front camera" hidden><span id="cameraUnavailable">Waiting for CARLA camera</span></div>
-    <div class="camera-caption"><span id="cameraSource">CARLA SENSOR</span><span id="cameraFps">— Hz</span><span id="cameraTimestamp">t —</span></div>
-    <p id="cameraMetadata">FOV / transform unavailable</p>
-  </section>
-  <div id="driveReadout"><div id="speedPanel"><span id="speedVal">—</span><span class="speed-unit">km/h</span><div id="speedBar"><div id="speedFill"></div></div></div><div id="aiStatus"><span id="gearVal">—</span><span class="divider"></span><span id="controlMode">DISCONNECTED</span></div></div>
-  <div id="runtime"><i id="connectionDot"></i><span id="simulationState">CARLA — DISCONNECTED</span><span id="performance">RTT —</span></div>
-  <div id="drivingHelp"><span><kbd>W A S D</kbd> Drive</span><span><kbd>S</kbd> Brake / reverse</span><span><kbd>SPACE</kbd> Handbrake</span></div>
-  <div id="bottomActions"><button id="hideCameraBtn">Hide camera</button><button id="pauseBtn" disabled>Pause</button><button id="resetBtn" disabled>Reset vehicle</button><button id="emergencyStopBtn" disabled>Emergency stop</button><button id="replayPauseBtn" hidden>Pause replay</button></div>
-
-  <aside id="inGamePhone" hidden aria-label="Destinations phone">
-    <div class="phone-head">Phone <span lang="ar">يارب استرها</span></div>
-    <p id="phoneStatus">CARLA session unavailable</p>
-    <button id="reconnectBtn">Reconnect dashboard</button>
-    <label for="destinationSearch" dir="rtl">عايز تروح فين؟</label>
-    <input id="destinationSearch" list="placeOptions" placeholder="اكتب اسم المكان أو اختاره" autocomplete="off">
-    <datalist id="placeOptions"></datalist>
-    <button id="chooseDestinationBtn">Show route · اعرض الطريق</button>
-    <p id="destinationStatus" dir="rtl">الأماكن من خريطة CARLA الحالية.</p>
-    <label for="savePlaceName" dir="rtl">سمّي مكانك الحالي</label><input id="savePlaceName" maxlength="60" placeholder="مثال: بداية التدريب">
-    <button id="savePlaceBtn">Save current place · احفظ المكان</button>
-    <p dir="rtl">اختيار الوجهة يعرض طريقًا للقيادة اليدوية. ابدأ القيادة وامشِ بنفسك.</p>
+  <footer class="app-footer"><span id="simulationState">CARLA — DISCONNECTED</span><span id="positionVal">الموقع غير متاح</span><span id="headingVal"></span></footer>
+  <div id="panelBackdrop" hidden></div>
+  <aside id="inGamePhone" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="phoneTitle">
+    <div class="section-heading"><h2 id="phoneTitle">رايح فين؟</h2><button id="closePhoneBtn" aria-label="إغلاق الوجهات">×</button></div>
+    <p id="phoneStatus"></p><div class="origin"><span>نقطة البداية</span><strong>موقع العربية الحالي تلقائيًا</strong><span id="originPosition"></span></div>
+    <label for="destinationSearch">ابحث عن وجهة</label><input id="destinationSearch" placeholder="مكان محفوظ، منطقة أو رقم طريق" autocomplete="off">
+    <div id="placeResults" role="list" aria-label="الوجهات"></div>
+    <button id="chooseDestinationBtn" class="primary">اعرض الطريق للوجهة المختارة</button>
+    <p id="destinationStatus" role="status">اختيار الوجهة يعرض الطريق. الحركة تبدأ من زر القيادة.</p>
+    <div class="save-place"><label for="savePlaceName">احفظ مكان العربية باسم</label><input id="savePlaceName" maxlength="60" placeholder="مثال: بداية التدريب"><button id="savePlaceBtn">احفظ المكان الحالي</button></div>
+    <p class="muted">تقدر تختار نقطة على الطريق من الخريطة كمان.</p>
   </aside>
-  <aside id="routePanel" hidden aria-label="Route information"><span class="eyebrow">ROUTE · الطريق</span><p id="routeDetail">Choose a destination from Phone.</p><svg id="routeMap" viewBox="0 0 300 220" role="img" aria-label="CARLA route and vehicle"><path id="routeLine" fill="none" stroke="#ead290" stroke-width="3"/><circle id="routeCar" r="5" fill="#99dbc4"/><circle id="routeTarget" r="5" fill="#e99b82"/></svg><p id="turnInstruction"></p><p dir="rtl">الخريطة من طرق CARLA. الإرشاد يدوي.</p></aside>
-  <aside id="settingsPanel" hidden aria-label="CARLA settings">
-    <div class="panel-heading"><h2>Settings · الإعدادات</h2><button id="closeSettingsBtn">Close</button></div>
-    <p id="settingsStatus" role="status">Loading native settings…</p>
+  <aside id="settingsPanel" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="section-heading"><h2 id="settingsTitle">إعدادات CARLA</h2><button id="closeSettingsBtn" aria-label="إغلاق الإعدادات">×</button></div>
+    <p id="settingsStatus" role="status"></p>
     <form id="settingsForm">
-      <fieldset><legend>Vehicle · العربية</legend><label>Blueprint<select id="settingVehicle"></select></label><label>Spawn point<input id="settingSpawn" type="number" min="0" step="1"></label></fieldset>
-      <fieldset><legend>Camera & simulation · الكاميرا والمحاكاة</legend><label>Camera resolution<select id="settingResolution"><option>640x360</option><option>800x450</option></select></label><label>Camera FOV<input id="settingFov" type="number" min="60" max="120" step="1"></label><label>Simulation rate<select id="settingHz"><option value="20">20 Hz</option><option value="10">10 Hz</option></select></label></fieldset>
-      <fieldset><legend>Weather & time · الطقس والوقت</legend><label>Clouds %<input id="settingCloud" type="number" min="0" max="100"></label><label>Rain %<input id="settingRain" type="number" min="0" max="100"></label><label>Wetness %<input id="settingWet" type="number" min="0" max="100"></label><label>Fog %<input id="settingFog" type="number" min="0" max="100"></label><label>Sun altitude °<input id="settingSun" type="number" min="-90" max="90"></label><label>Sun direction °<input id="settingSunAzimuth" type="number" min="0" max="360"></label></fieldset>
-      <fieldset><legend>Graphics · الجرافيكس</legend><p dir="rtl">تُحفظ لتشغيل CARLA القادم؛ تغيير الجودة يتطلب إعادة تشغيل المحاكي.</p><label>Quality<select id="settingQuality"><option>Low</option><option>Epic</option></select></label><label>Window resolution<select id="settingWindow"><option>1280x720</option><option>1600x900</option><option>1920x1080</option></select></label></fieldset>
-      <fieldset><legend>Prepared traffic · تجهيز المرور</legend><p dir="rtl">إعدادات للمرحلة التالية فقط. المرور غير مفعّل حاليًا.</p><label>Vehicles<input id="settingTrafficCount" type="number" min="0" max="100" step="1"></label><label>Min speed km/h<input id="settingTrafficMin" type="number" min="0" max="120" step="1"></label><label>Max speed km/h<input id="settingTrafficMax" type="number" min="0" max="120" step="1"></label><label>Random seed<input id="settingSeed" type="number" min="0" max="2147483647" step="1"></label></fieldset>
-      <button type="submit" id="applySettingsBtn">Apply / save · طبّق واحفظ</button><p dir="rtl">أوقف العربية قبل تعديل الكاميرا أو التوقيت أو تغيير العربية. المرور والجرافيكس محفوظان فقط؛ الطقس والكاميرا والتوقيت يُطبّقون على CARLA.</p>
+      <fieldset><legend>الكاميرا والصورة</legend><button type="button" id="cleanImageBtn">اختيار إعداد الصورة الواضحة</button><label>دقة الكاميرا<select id="settingResolution"><option>640x360</option><option>800x450</option></select></label><label>مجال الرؤية °<input id="settingFov" type="number" min="60" max="120"></label><label class="check"><input id="settingPostprocess" type="checkbox">مؤثرات الصورة والحبيبات</label><label>ضبابية الحركة — 0 يوقفها<input id="settingMotionBlur" type="number" min="0" max="1" step="0.05"></label><label>توهج الإضاءة<input id="settingBloom" type="number" min="0" max="2" step="0.05"></label><p id="effectsNote" class="muted"></p></fieldset>
+      <fieldset><legend>الجرافيكس</legend><p id="activeGraphics"></p><label>الجودة المحفوظة<select id="settingQuality"><option>Low</option><option>Epic</option></select></label><label>دقة نافذة المحاكي — منفصلة عن الكاميرا<select id="settingWindow"><option>1280x720</option><option>1600x900</option><option>1920x1080</option></select></label><button type="button" id="restartGraphicsBtn">طبّق الجرافيكس وأعد تشغيل CARLA</button><p class="muted">إعادة التشغيل توقف القيادة وتعيد الاتصال بالعربية والحساسات. Epic يمر باختبار حي لمدة دقيقة.</p><p id="restartStatus" role="status"></p></fieldset>
+      <fieldset><legend>الطقس والوقت</legend><label>السحب %<input id="settingCloud" type="number" min="0" max="100"></label><label>المطر %<input id="settingRain" type="number" min="0" max="100"></label><label>بلل الأرض %<input id="settingWet" type="number" min="0" max="100"></label><label>الضباب %<input id="settingFog" type="number" min="0" max="100"></label><label>ارتفاع الشمس °<input id="settingSun" type="number" min="-90" max="90"></label><label>اتجاه الشمس °<input id="settingSunAzimuth" type="number" min="0" max="360"></label></fieldset>
+      <fieldset><legend>العربية ونقطة ظهورها</legend><label>العربية<select id="settingVehicle"></select></label><label>نقطة الظهور<select id="settingSpawn"></select></label><button type="button" id="resetBtn">إعادة العربية لنقطة ظهورها</button></fieldset>
+      <fieldset><legend>توقيت المحاكاة</legend><label>خطوات المحاكاة في الثانية<select id="settingHz"><option value="20">20 Hz</option><option value="10">10 Hz</option></select></label><p class="muted">تغيير التوقيت يعيد إعداد الحساسات. أوقف العربية أولًا.</p></fieldset>
+      <fieldset><legend>المرور — للمرحلة القادمة</legend><p>المرور غير مفعّل حاليًا. هذه القيم محفوظة فقط.</p><label>عدد العربيات<input id="settingTrafficCount" type="number" min="0" max="100" step="1"></label><label>أقل سرعة كم/س<input id="settingTrafficMin" type="number" min="0" max="120"></label><label>أعلى سرعة كم/س<input id="settingTrafficMax" type="number" min="0" max="120"></label><label>بذرة العشوائية<input id="settingSeed" type="number" min="0" max="2147483647"></label></fieldset>
+      <button id="applySettingsBtn" type="submit" class="primary">طبّق التغييرات واحفظ</button><p class="muted">الصورة والطقس والعربية والتوقيت تُطبّق فعليًا؛ الجرافيكس تتطلب زر إعادة التشغيل والمرور يظل مؤجلًا.</p>
     </form>
+    <fieldset class="connection-settings"><legend>الاتصال والجلسة</legend><button id="takeControlBtn">التحكم من هذه الصفحة</button><p class="muted">ينقل التحكم لهذه الصفحة ويترك العربية متوقفة.</p><button id="reconnectBtn">إعادة اتصال الداشبورد</button><button id="nativeReconnectBtn">إعادة الاتصال بالمحاكي</button><button id="nativeDisconnectBtn">إنهاء الجلسة وإزالة العربية</button><p class="muted">إنهاء الجلسة يزيل العربية والحساسات. إعادة الاتصال تنشئها مجددًا.</p></fieldset>
   </aside>
-  <section id="minimapBorder" aria-label="Map and vehicle position"><div id="minimapLabel">SIMULATION MAP <span>Z ↑</span></div><div id="minimapView"><p>CARLA map not loaded</p><p id="positionVal">Position unavailable</p><p id="headingVal">Heading unavailable</p></div><div class="map-caption">CARLA WORLD COORDINATES</div></section>
-  <aside id="sensorPanel" hidden aria-label="Debug telemetry"><div id="providerStatus">CARLA — DISCONNECTED</div><div id="debugTelemetry"></div></aside>
+  <aside id="sensorPanel" class="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="debugTitle">
+    <div class="section-heading"><h2 id="debugTitle">التفاصيل الحية</h2><button id="closeSensorBtn" aria-label="إغلاق التفاصيل">×</button></div>
+    <p id="providerStatus"></p><div class="debug-values"><span>الإصدار <b id="versionVal">—</b></span><span>الفريم <b id="frameVal">—</b></span><span>زمن المحاكاة <b id="timeVal">—</b></span><span>التسارع <b id="accelVal">—</b></span><span>رجوع للخلف <b id="reverseVal">—</b></span></div>
+    <p id="cameraMetadata"></p><pre id="debugTelemetry"></pre>
+  </aside>
   <script type="module" src="/frontend/dashboard.js"></script>
 </body>
 </html>

@@ -1,114 +1,113 @@
-# Native dashboard controls and settings
+# تشغيل داشبورد «يا رب استرها»
 
-Validated against CARLA server/API 0.9.16 on 7 October 2026. Existing dashboard,
-ControlSafetyLayer, CommandArbiter, CarlaProvider and SensorSynchronizer retained.
-Three.js remains deleted. No traffic population, driving AI or autonomous vehicle
-controller is enabled. The user explicitly chose prepared traffic settings only.
+محدّث في 8 أكتوبر 2026. الداشبورد تستخدم CARLA 0.9.16 الحقيقي بنفس بنية
+الأمان والتسجيل والمزامنة الموجودة. نتائج الاختبار الحي والقيود في
+[تقرير التحقق](DASHBOARD_V2_VALIDATION.md).
 
-## Driving from the dashboard
+## الاتصال والقيادة
 
-Open http://127.0.0.1:8000/ and select **Start driving / ابدأ القيادة**. If another
-browser owns controls, the same button says **Take control / استلم القيادة** and
-atomically transfers ownership. The previous dashboard can no longer send pedals.
-Keep the dashboard focused; native CARLA-window WASD controls its spectator.
+شغّل scripts/launch_carla.ps1، ثم من مجلد المشروع:
 
-Hold W for throttle, A/D for steering, S for braking; after forward motion stops,
-holding S selects reverse. Space applies handbrake. D/N/R selects transmission
-mode. The on-screen accelerator, steering, brake/reverse and handbrake buttons
-support held pointer/touch input. Pointer release/cancel, blur, stale telemetry
-and command timeout release controls through the existing safety architecture.
-Start/resume does not resume an old throttle command. Acknowledge emergency stop
-before resuming. REPLAY cannot claim controls, reconnect or change native settings.
+```powershell
+.\.venv-carla\Scripts\python.exe -m backend.server --carla --sensors --spawn-index 152 --start-paused
+```
 
-Disconnect vehicle destroys the owned ego and all seven sensors and restores
-world settings. Reconnect CARLA rebuilds one native ego/suite without restarting
-the backend. Select Start driving again after reconnect or a safety pause.
+افتح http://127.0.0.1:8000/. **CARLA — CONNECTED** تعني اتصالًا حقيقيًا؛
+حالة القيادة منفصلة عنها. العربية تبدأ متوقفة مع تشغيل الكاميرات.
 
-## Camera, Phone and Settings
-
-Camera views: front, hood, follow car, rear and top. These move the actual attached
-RGB and depth actors together. No additional GPU camera or substitute renderer is
-created. Frame-aware mount history preserves extrinsics for late sensor callbacks.
-Enlarge shows the native feed in a larger panel. At narrow widths the camera appears
-before the long telemetry section.
-
-Phone offers six named native road anchors and saved places. Enter a name in
-Save current place to store the real ego position for the current map. Choose a
-listed destination and Show route. The 2D route uses CARLA's packaged deterministic
-GlobalRoutePlanner road graph and actual waypoints; no driving agent or autopilot
-is instantiated. Routes provide manual guidance and remaining distance. Names such
-as north/centre are project labels for native map coordinates, not real geographic
-neighbourhoods or Egyptian POIs. Saved places are map-specific.
-
-| Setting | Application |
+| الفعل | النتيجة |
 | --- | --- |
-| Vehicle / spawn index | Native blueprint catalog and current map spawn points; stop first, then owned actors are replaced |
-| Camera resolution / FOV | 640x360 or 800x450; 60-120 degrees; stop first, RGB/depth recreated together |
-| Simulation frequency | 10 or 20 Hz; old sensors destroyed before changing fixed delta, then full suite recreated |
-| Weather | Native cloud, rain, wetness, fog, sun altitude and azimuth |
-| Graphics / native window | Low or Epic and three window sizes; saved for next launch via launch_carla.ps1 |
-| Vehicle count / speed range / seed | Prepared settings only; traffic_active is always false |
+| تفعيل القيادة اليدوية | يجهّز الكيبورد وأزرار الشاشة؛ الحركة تبدأ عند الضغط على البنزين |
+| إيقاف القيادة | يفرمل ويوقف التحكم، مع بقاء العربية والحساسات |
+| ابدأ الرحلة التلقائية | يتحرك نحو الوجهة المعروضة بعد اختيار وضع الرحلة صراحة |
+| إيقاف طوارئ | يثبت حالة الطوارئ؛ الإقرار وحده لا يستأنف الحركة |
+| التحكم من هذه الصفحة، داخل الإعدادات | ينقل ملكية الأوامر لهذه الصفحة ويترك العربية متوقفة |
+| إعادة اتصال الداشبورد | يعيد WebSocket فقط |
+| إعادة الاتصال بالمحاكي | ينشئ عربية وحساسات عند انتهاء الجلسة السابقة، دون استئناف القيادة |
+| إنهاء الجلسة وإزالة العربية | يدمر العربية والحساسات السبعة ويعيد إعدادات العالم |
 
-Operations release controls and may leave driving paused; resume explicitly after
-applying settings. Sensor reconfiguration is refused during recording. Invalid
-operator values are rejected before native mutations. There is no map selector or
-claim to expose every Unreal engine setting in this development panel.
+W بنزين، A/D توجيه، S فرامل ثم رجوع بعد التوقف، وSpace فرامل يد.
+D/N/R يحدد وضع الغيار. اضغط باستمرار على الأزرار أو الكيبورد.
+الكتابة في البحث والإعدادات لا تحرك العربية. المؤشر يوضح استعداد WASD؛
+لازم الداشبورد تكون مركزة وخارج النوافذ الجانبية. الأزرار المقفولة تشرح السبب.
 
-Prepared graphics/traffic preferences: `config/dashboard-preferences.json`.
-Named places: `config/places-Town10HD_Opt.json`. Both are ignored local user data.
-Camera/timing/vehicle options are live session settings; a new backend starts from
-its CLI defaults. Weather stays in the native world until changed/reloaded.
+الافتراضي على الجهاز ده DX12 **RenderOffScreen**: CARLA يرسم الحساسات بدون
+نافذة spectator تتلقى WASD. التحكم من الداشبورد. لو استخدمت -Windowed في
+سكريبت التشغيل، كيبورد نافذة CARLA يحرك الكاميرا الحرة؛ كيبورد الداشبورد
+يحرك العربية. لا نستخدم no_rendering_mode لأنه يفرغ بيانات كاميرات GPU.
+[توثيق الرسم الرسمي](https://carla.readthedocs.io/en/0.9.16/adv_rendering_options/).
 
-## Native evidence
+## الوجهة والرحلة
 
-Evidence files live under `output/native-validation/`; these are actual simulator
-observations, not unit-test fixtures.
+بداية المسار هي موقع العربية الحي دائمًا. الوجهات تضم نقاط ظهور القيادة المناسبة
+من الخريطة، مجمعة حسب المنطقة والطريق، مع بحث ومفضلات وأماكنك المحفوظة.
+Town10HD_Opt الحالية تضم 155 نقطة طريق، وستة أسماء جاهزة ومكانين محفوظين.
+«شمال غرب» وغيرها تقسيمات للمشروع، وليست أحياء جغرافية أو أماكن مصرية.
+الشمال أعلى الخريطة باتجاه Y السالب، والشرق باتجاه X الموجب.
 
-| Check | Live result |
+اختار الوجهة واضغط **اعرض الطريق للوجهة المختارة**، أو اضغط على الخريطة.
+الضغط يختار أقرب حارة Driving خلال 10 أمتار. النقطة البعيدة أو المسار غير
+القابل للوصول يُرفض برسالة، ويمسح المسار السابق. اختيار الوجهة لا يبدأ الحركة.
+المفضلات والأماكن محفوظة لكل خريطة. الإغلاق بـ× أو Escape أو الضغط خارج
+النافذة؛ على الموبايل قد تغطي النافذة العرض كله، فاستخدم × أو Escape.
+
+للرحلة: اختار **رحلة تلقائية — للوجهة المختارة**، ثم **ابدأ الرحلة التلقائية**.
+السرعة الافتراضية 20 كم/س، والاختيار بين 5 و30؛ المتحكم يأخذ الحد الأقل للطريق.
+يستخدم BasicAgent الرسمي من CARLA 0.9.16 ومسارًا كاملًا محددًا، دون وجهات
+عشوائية ودون set_autopilot. الأوامر تمر بنفس ControlSafetyLayer وCommandArbiter.
+
+أي تدخل بالدواسات أو التوجيه يسلمك القيادة اليدوية. فقدان الصفحة/التركيز،
+انتهاء نبض اتصال 350 مللي ثانية، التصادم أو الطوارئ يوقف الرحلة؛ الاستئناف
+يتطلب ضغطًا جديدًا ويحسب المسار من الموقع الجديد. الوصول يتطلب انتهاء المسار،
+القرب خلال خمسة أمتار والتوقف. انتهاء المسار بعيدًا عن الوجهة يظهر فشلًا.
+
+ده تنقل تجريبي بمتحكم تقليدي. ليس ضمانًا لتجنب كل العوائق أو التعامل مع علامات
+الوقوف. ممكن يحصل تجاوز لحظي لسرعة الهدف أثناء ضبط PID؛ القياس في التقرير.
+أوضاع AI والموديلات وReinforcement Learning غير مفعّلة.
+
+## الصورة والإعدادات
+
+إعداد **الصورة الواضحة**: RGB 800×450، FOV 90، JPEG 95، مؤثرات الصورة
+وضبابية الحركة والتوهج مقفولة. الزوايا الأمامية وغطاء المحرك والخلفية والنظر
+للخلف ومن أعلى تحرك RGB وDepth معًا. تكبير الصورة يغير مساحة العرض فقط.
+
+| مجموعة الإعدادات | التطبيق |
 | --- | --- |
-| Keyboard | 47.5047 km/h in dashboard-driving-proof.json; native throttle 1 and updated world position |
-| Final control regression | 1209 live samples: 19.1756 km/h, throttle/brake 1, left steering -1, handbrake and 4.8825 m displacement; RGB/depth frame 123793 matched, six measured sensor rates 20 Hz, no sensor errors; dashboard-final-proof.json |
-| Held dashboard buttons | 15.9623 km/h, throttle 1, right steering 1, brake 1 and handbrake; 3.6523 m net displacement, 546 samples in dashboard-pointer-controls.jsonl |
-| Camera during motion | 20.7091 km/h reached; chase mount applied while ego moved, same RGB/depth actors retained |
-| Five camera views | Native mounts verified with unchanged actor IDs and aligned RGB/depth metadata, frames 102072-102097 |
-| Timing | Stable measured six-sensor rates 9.99999985 / 19.99999970 Hz in simulation time at native 0.1 / 0.05 s steps |
-| Intrinsics | Actual RGB 800x450 and FOV 100, restored to 640x360 / 90 |
-| Vehicle replacement | Tesla model3 actor 178, then Lincoln MKZ actor 186; seven sensors each |
-| Cleanup / reconnect | Actors 186-193 removed; asynchronous settings restored; reconnect ego 194 with exactly one vehicle and seven sensors |
-| Dashboard Disconnect button | Frame 104988: zero vehicle/sensor actors, synchronous_mode false; camera/control UI unavailable |
-| Phone | Native route to north anchor, 443.7238 m, and saved current Arabic place name |
-| Weather / prepared traffic | Native cloudiness/sun altitude 35 / 35 verified; plan 5 vehicles, 20-40 km/h, seed 42 saved with zero active traffic |
+| الكاميرا والصورة | 640×360 أو 800×450، FOV 60–120، مؤثرات الصورة/الحركة/التوهج المدعومة |
+| الجرافيكس | Low/Epic ودقة نافذة CARLA، منفصلة عن دقة الكاميرا؛ زر إعادة تشغيل فعلي |
+| الطقس | سحب، مطر، بلل، ضباب، ارتفاع واتجاه الشمس |
+| العربية ونقطة ظهورها | blueprint من المكتبة الحقيقية، ونقطة ظهور من الخريطة الحالية |
+| توقيت المحاكاة | خطوة 0.05 ثانية = 20 Hz أو 0.1 ثانية = 10 Hz |
+| المرور | عدد/سرعات/seed محفوظة فقط؛ **المرور غير مفعّل حاليًا** |
 
-`dashboard-operations.json` contains the settings, cleanup and reconnect checks.
-`dashboard-ui-disconnect.json`, `dashboard-route-proof.json`,
-`dashboard-settings-proof.json` and browser screenshots provide supporting evidence.
-Run `python -m scripts.native.verify_dashboard` only with a running native backend
-and a stopped ego. It claims control, changes conservative settings, performs
-cleanup/reconnect, and leaves one ego at 20 Hz; it never drives traffic or ticks
-the world itself. Allow transient startup samples to settle before rate assertions;
-missing startup frames remain explicitly diagnosed by the SensorSynchronizer.
+تغيير الحساسات/العربية/التوقيت يحتاج توقف العربية. العامل يدمر الحساسات القديمة
+ويعيد إنشاء السبعة ويصفر المزامنة؛ RGB وDepth يظلان متطابقين. التغيير مرفوض
+أثناء التسجيل. الطقس وزاوية الكاميرا يدعمان التطبيق على الجلسة الحالية.
 
-Latest supporting regression: 95 Python tests, 94 pass / 1 skip, 18 JavaScript pass.
-These protect transport ownership, reconnect/pause, malformed settings, delayed
-camera extrinsics and replay isolation; they do not establish native gate PASS.
+**طبّق التغييرات واحفظ** يحفظ اختيار الجرافيكس دون تشغيله تلقائيًا.
+**طبّق الجرافيكس وأعد تشغيل CARLA** ينظف الممثلين، ينهي عملية SDK القديمة،
+يعيد تشغيل النسخة المثبتة، يتحقق من الإصدارين والحساسات ويعيد عربية متوقفة.
+لو Epic بدأ، يمر بفحص حي لدقيقة؛ عند فشل التشغيل أو الحساسات يرجع للإعداد السابق.
+المطبّق الفعلي يظهر منفصلًا عن المحفوظ. Epic/1920×1080 فشل بدء التشغيل في
+اختبارنا؛ Low/1280×720 هو الإعداد الحالي المتحقق منه. Low يعطل مؤثرات الصورة
+ويؤثر في جودة الحواف والمدى؛ تغيير القيم لا يضمن تحسينها تحت Low.
 
-## Performance and remaining limitations
+التفضيلات المحلية في config/dashboard-preferences.json والأماكن في
+config/places-Town10HD_Opt.json. ملفات المستخدم والتسجيلات لا تدخل Git.
 
-RTX 3060 Laptop GPU: 6144 MiB VRAM. Latest conservative full-suite sample was
-5843 MiB used / 33% GPU utilization. Gate 3 throughput and calibration remain in
-[the full native report](LIVE_NATIVE_VALIDATION.md). Keep Low, 1280x720 and 640x360;
-VRAM headroom is limited. Windows detects 16 GiB RAM, while the user reports 32 GB.
+## التسجيل وReplay
 
-During development an earlier D3D12 session reported a native fatal shader
-compilation error while timing/weather were reconfigured with sensors active.
-An attempted D3D11 fallback stalled with cameras and the Python SDK aborted during
-timeout cleanup. D3D12 remains the default. Reconfiguration now stops sensors before
-changing the native world step, and the revised sequence passed 10/20 Hz, camera
-intrinsics, vehicle replacement and reconnect tests. This does not prove that the
-native driver/renderer crash can never recur; longer stability runs are still needed.
-Fresh native observation recovery leaves driving paused, never silently resumes
-throttle. Successful image-request logging is suppressed to avoid console flooding.
+أضف --record-run runs لتسجيل جلسة جديدة؛ RGB/depth/LiDAR ملفات منفصلة عن JSON.
+الوقت في التليمترية هو وقت المحاكاة؛ المعدلات الفعلية تُقاس بزمن الجهاز.
+خطوات المحاكاة ليست FPS الرسم، وFPS الرسم غير متاح حاليًا.
 
-Next phase: longer reproducible dashboard stability runs. Normal traffic requires
-a separate subsequent phase; no pedestrians, Egyptian map, custom vehicles, random
-events, models, autonomous driving or accident avoidance are introduced here.
+بعد إيقاف backend الحالي، شغّل التسجيل الحقيقي الجديد:
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m backend.server --replay runs\dashboard_v2_20261008_live\run_ba0335c155e445f698708ff9969ac7d2
+```
+
+Replay يعرض الصورة والتليمترية المسجلة، ويكتب REPLAY، ولا يدعي اتصال CARLA
+ولا يقبل القيادة أو إعادة الاتصال بالمحاكي. قراءة التسجيلات القديمة مستمرة.
+لإنهاء الجلسة استخدم الزر المخصص؛ Ctrl+C في terminal تفاعلي للـbackend يؤدي
+أيضًا لتنظيف الممثلين. لا تشغل عاملًا ثانيًا لتوقيت CARLA المتزامن.

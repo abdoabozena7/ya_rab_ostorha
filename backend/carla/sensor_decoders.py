@@ -30,7 +30,15 @@ def decode_sensor(manager, sensor_id, kind, native, mount, attributes):
         from PIL import Image
         bgra = np.frombuffer(native.raw_data, np.uint8).reshape(native.height, native.width, 4)
         rgb = bgra[:, :, [2, 1, 0]]
-        encoded = io.BytesIO(); Image.fromarray(rgb).save(encoded, format='JPEG', quality=85)
+        encoded = io.BytesIO(); Image.fromarray(rgb).save(encoded, format='JPEG', quality=95)
+        metadata['jpeg_quality'] = 95
+        # Latest diagnostic PNG is bounded; recordings continue to store one JPEG.
+        with manager.lock:
+            if not hasattr(manager, 'diagnostic_rgb'):
+                manager.diagnostic_rgb = {}
+            manager.diagnostic_rgb[native.frame] = (native.frame, native.timestamp, native.width, native.height, rgb.tobytes())
+            while len(manager.diagnostic_rgb)>8:
+                del manager.diagnostic_rgb[min(manager.diagnostic_rgb)]
         asset = manager.cache_asset('rgb', f'{sensor_id}-{manager.actors[sensor_id].id}-{native.frame}.jpg', encoded.getvalue(), 'image/jpeg')
         metadata['encoding'] = 'JPEG RGB (compressed native image)'
     elif kind == SensorKind.DEPTH:

@@ -20,7 +20,9 @@ class CarlaProvider:
         self.fixed_delta = fixed_delta
         self.collision_sensor = collision_sensor
         self.sensor_suite = sensor_suite
-        self.camera_settings = {'camera_view': 'front', 'camera_resolution': '640x360', 'camera_fov': 90}
+        self.camera_settings = {'camera_view': 'front', 'camera_resolution': '800x450', 'camera_fov': 90,
+                                'camera_postprocess': False, 'camera_motion_blur': 0., 'camera_bloom': 0.}
+        self.navigation = None
         self.dashboard_tools = None
         self.world = self.ego = self.sensor_manager = None
         self.gear = 1
@@ -33,9 +35,33 @@ class CarlaProvider:
         if self.world is not None or self.ego is not None or self.cleanup_errors:
             raise RuntimeError('Disconnect the existing CARLA session first')
         try:
+            from .runtime import get_runtime
+            self.runtime = get_runtime()
+            self.active_launch = self.runtime.active
             raw_world = self.connection.connect()
             if self.map_name:
-                raw_world = self.connection.client.load_world(self.map_name)
+                name = self.map_name.rsplit('/',1)[-1]
+                if raw_world.get_map().name.rsplit('/',1)[-1] != name:
+                    available = self.connection.client.get_available_maps()
+                    match = next((m for m in available if m.rsplit('/',1)[-1] == name), self.map_name)
+                    raw_world = self.connection.client.load_world(match)
+            if raw_world.get_settings().synchronous_mode:
+                raise RuntimeError('CARLA world already has synchronous ticking enabled; stop the other tick owner first')
+            # A new SDK subscriber may initially have an empty actor cache.
+            # Wait for a real snapshot before identifying this project's orphans.
+            raw_world.wait_for_tick(self.connection.timeout)
+            actors = raw_world.get_actors()
+            project_ids = {a.id for a in actors if a.type_id.startswith('vehicle.') and
+                           a.attributes.get('role_name') == 'ostorha_ego'}
+            children = [a for a in actors if a.type_id.startswith('sensor.') and
+                        a.parent is not None and a.parent.id in project_ids]
+            for actor in children + [a for a in actors if a.id in project_ids]:
+                if actor.is_alive and not actor.destroy():
+                    raise RuntimeError('Previous project actor cleanup failed: '+str(actor.id))
+            if project_ids:
+                raw_world.wait_for_tick(self.connection.timeout)
+                if any(a.id in project_ids for a in raw_world.get_actors()):
+                    raise RuntimeError('Previous project ego cleanup is not confirmed')
             self.catalog = {'maps': self.connection.client.get_available_maps(),
                             'vehicles': [bp.id for bp in raw_world.get_blueprint_library().filter('vehicle.*')]}
             self.world = CarlaWorld(raw_world, self.fixed_delta)
@@ -60,6 +86,7 @@ class CarlaProvider:
         return actor.id
 
     def destroy_ego_vehicle(self):
+        self.stop_navigation()
         if self.sensor_manager:
             self.sensor_manager.close()
             self.cleanup_errors.extend(self.sensor_manager.cleanup_errors)
@@ -126,7 +153,8 @@ class CarlaProvider:
 
     def dashboard_catalog(self):
         self._ensure_dashboard_tools()
-        return {'places': self.dashboard_tools.places(), 'settings': self.dashboard_tools.settings()}
+        return {'places': self.dashboard_tools.places(), 'roads': self.dashboard_tools.roads(),
+                'settings': self.dashboard_tools.settings()}
 
     def _ensure_dashboard_tools(self):
         if self.dashboard_tools is None:
@@ -138,10 +166,51 @@ class CarlaProvider:
         if action == 'settings': return self.dashboard_tools.apply(value)
         if action == 'destination': return self.dashboard_tools.set_destination(value)
         if action == 'save_place': return self.dashboard_tools.save_place(value)
+        if action == 'favorite_place': return self.dashboard_tools.favorite_place(value)
         raise ValueError('Unknown dashboard operation')
 
     def route_state(self):
         return self.dashboard_tools.route_state() if self.dashboard_tools else None
+
+    def validate_graphics(self, value):
+        from .dashboard_tools import validate_settings
+        if self.connection.host not in ('127.0.0.1', 'localhost'):
+            raise ValueError('Native restart is available only for the local simulator')
+        return validate_settings({'next_launch': value})['next_launch']
+
+    def start_navigation(self, speed_kmh):
+        self._ensure_dashboard_tools()
+        if not self.dashboard_tools.route:
+            raise ValueError('Choose a destination before starting a journey')
+        target = self.dashboard_tools.route['destination']
+        self.dashboard_tools.set_destination({'location': target['location'], 'name': target['name']})
+        from agents.navigation.basic_agent import BasicAgent
+        delta = self.fixed_delta
+        self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
+            opt_dict={'dt': delta, 'max_brake': 1.,
+                      'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
+                      'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta}},
+            map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.planner)
+        self.navigation.set_global_plan(self.dashboard_tools.native_route,
+                                        stop_waypoint_creation=True, clean_queue=True)
+        return self.route_state()
+
+    def navigation_command(self, frame_id, timestamp_s, speed_kmh):
+        from ..core.contracts import CommandSource
+        if self.navigation is None:
+            raise RuntimeError('No active native route controller')
+        limit = self.ego.actor.get_speed_limit()
+        self.navigation.set_target_speed(min(speed_kmh, limit) if limit > 0 else speed_kmh)
+        value = self.navigation.run_step()
+        return ControlCommand(frame_id, timestamp_s, float(value.throttle), float(value.brake),
+                              float(value.steer), bool(value.reverse), bool(value.hand_brake),
+                              CommandSource.NAVIGATION, -1 if value.reverse else 1)
+
+    def navigation_done(self):
+        return self.navigation is not None and self.navigation.done()
+
+    def stop_navigation(self):
+        self.navigation = None
 
     @property
     def required_sensors(self):
@@ -155,6 +224,9 @@ class CarlaProvider:
 
     def get_sensor_rates(self):
         return self.sensor_manager.rates() if self.sensor_manager else {}
+
+    def get_sensor_wall_rates(self):
+        return self.sensor_manager.wall_rates() if self.sensor_manager else {}
 
     def sensor_errors(self):
         return dict(self.sensor_manager.errors) if self.sensor_manager else {}
@@ -232,3 +304,27 @@ class CarlaProvider:
             self.connection.disconnect()
 
     close = disconnect
+
+    def restart_configuration(self):
+        from .dashboard_tools import WEATHER_RANGES
+        weather = self.world.world.get_weather()
+        return {'camera': dict(self.camera_settings), 'vehicle':self.blueprint,
+                'spawn_index':self.spawn_index, 'fixed_delta':self.fixed_delta,
+                'map':self.world.world.get_map().name,
+                'weather':{key:getattr(weather,key) for key in WEATHER_RANGES}}
+
+    def recording_metadata(self):
+        return {'native_version':self.connection.server_version,'python_api_version':self.connection.api_version,
+                'map':self.world.world.get_map().name,'blueprint':self.ego.actor.type_id,
+                'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
+                'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
+                'navigation':'Official CARLA BasicAgent, explicit global route, SafetyLayer/Arbitrator',
+                'traffic_active':False}
+
+    def restart_status(self):
+        ticket = getattr(self, 'restart_ticket', None)
+        if not ticket:
+            return None
+        import json
+        from pathlib import Path
+        return json.loads(Path(ticket).read_text(encoding='utf-8'))['result']

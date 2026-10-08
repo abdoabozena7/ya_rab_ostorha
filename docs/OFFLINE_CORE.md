@@ -1,9 +1,10 @@
 # Offline application core
 
-Updated 7 October 2026. The architecture below was prepared offline and is retained.
+Updated 8 October 2026. The architecture below was prepared offline and is retained.
 CARLA 0.9.16 is now installed, with the matching API and a working native connection.
 Current Gate 1-3 results are in [LIVE_NATIVE_VALIDATION.md](LIVE_NATIVE_VALIDATION.md).
-No later traffic, map, AI or scenario phase is authorized in this validation work.
+The approved dashboard phase adds explicit conventional destination navigation;
+traffic, custom maps, AI/models and scenarios remain deferred.
 
 ## Implementation sequence and architecture
 
@@ -62,7 +63,7 @@ not a physical tire angle. The existing browser's left-positive input is convert
 once at the compatibility entry point. Canonical controls are converted back at
 the native adapter; no steering/vehicle dynamics are recreated.
 
-Sources: MANUAL, ASSISTED, AI, SAFETY, SYSTEM. Ground truth uses immutable
+Sources: MANUAL, NAVIGATION, ASSISTED, AI, SAFETY, SYSTEM. Ground truth uses immutable
 SimulatorGroundTruth/GroundTruthObject/ActorState. ModelPrediction has model/track
 identity, class/confidence/estimated distance; it cannot overwrite truth fields.
 
@@ -93,15 +94,18 @@ match the vehicle frame for a complete observation; collisions are event-driven.
 | Current mode | Allowed next modes |
 | --- | --- |
 | DISCONNECTED | MANUAL after a confirmed connection/observation |
-| MANUAL | PAUSED, ASSISTED, EMERGENCY_STOP, DISCONNECTED |
+| MANUAL | PAUSED, AUTOMATIC, ASSISTED, EMERGENCY_STOP, DISCONNECTED |
+| AUTOMATIC | MANUAL, PAUSED, EMERGENCY_STOP, DISCONNECTED |
 | ASSISTED | MANUAL, PAUSED, AI, EMERGENCY_STOP, DISCONNECTED |
 | AI | MANUAL, ASSISTED, PAUSED, EMERGENCY_STOP, DISCONNECTED |
-| PAUSED | MANUAL, EMERGENCY_STOP, DISCONNECTED |
+| PAUSED | MANUAL, AUTOMATIC, EMERGENCY_STOP, DISCONNECTED |
 | EMERGENCY_STOP | PAUSED with explicit acknowledgement, or DISCONNECTED |
 
-Automation is disabled by default. ASSISTED/AI require explicit opt-in in the
-state machine; there is no model, automatic transition, dashboard AI enable action
-or accident-avoidance controller. A successful new session defaults to MANUAL.
+ASSISTED/AI remain disabled. AUTOMATIC is a separate opt-in for the official
+BasicAgent conventional controller, permitted only by the native CARLA service.
+Browser selection never starts motion; an explicit start arms an independent
+350 ms session-bound heartbeat. Navigation cannot renew that browser lease.
+The recommended --start-paused launch leaves the live vehicle stopped.
 
 ControlSafetyLayer normalizes finite throttle/brake to [0,1] and steer to [-1,1],
 rejects invalid types/NaN/Infinity and stale/future/out-of-order timestamps, applies
@@ -114,16 +118,24 @@ The host watchdog defaults to 350 ms. A command timeout applies zero throttle,
 full brake, zero steering and enters control PAUSED; old commands are discarded.
 This is a command policy, not a prediction of stopping motion or a physics model.
 Control PAUSED from the watchdog does not automatically freeze native physics:
-the safety brake still needs native ticks. Explicit dashboard Pause invokes the
-provider's native pause operation. Resume is deliberate. Emergency stop is latched;
+the safety brake still needs native ticks. The dashboard Stop driving action keeps
+ticks and sensors running while braking. The old pause message retains its native
+freeze semantics for verification scripts. Resume is deliberate. Emergency stop is latched;
 acknowledgement enters PAUSED and a separate Resume is needed. Disconnect clears
 all command candidates and disables actuation. Neutral/reverse selections survive
 partial pedal messages.
 
-Arbitration: SAFETY > MANUAL override > active ASSISTED/AI > SYSTEM. A manual
+Arbitration: SAFETY > MANUAL override > NAVIGATION > active ASSISTED/AI > SYSTEM. A manual
 override changes automated mode to MANUAL and deletes old automated commands,
 so they cannot resume when manual input expires. ControlChanged records the
 selected source/reason; manual interventions and EmergencyStop are explicit events.
+
+BasicAgent produces canonical NAVIGATION commands; it never applies vehicle
+controls directly or enables set_autopilot. Collision, page loss, lease expiry
+and emergency cancel its plan. Restart/resume recalculates from the actual native
+position. Arrival requires an exhausted plan, distance within 5 m and a stopped
+vehicle. A rejected new destination clears the previous plan. Recorder retains
+commands/mode events without changing schema version or breaking older recordings.
 
 ## Recording and Replay
 

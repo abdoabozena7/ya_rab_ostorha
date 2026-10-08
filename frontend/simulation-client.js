@@ -83,6 +83,14 @@ export class SimulationClient extends SimulationProvider {
   acceptSnapshot(message) {
     if (message.type === 'error') { this.operationError = message.error; return; }
     if (message.type !== 'snapshot') return;
+    if (message.sessionId && this.sessionId && message.sessionId !== this.sessionId) this.disconnect('New native session');
+    this.sessionId = message.sessionId ?? this.sessionId;
+    this.journey = message.journey ?? {};
+    this.restarting = message.restarting ?? false;
+    this.restartResult = message.restartResult ?? null;
+    this.performance = message.performance ?? {};
+    this.controlSource = message.controlSource;
+    this.recording = message.recording ?? false;
     this.dashboardResult = message.dashboardResult ?? null;
     this.route = message.route ?? null;
     const replay = message.mode === 'REPLAY' && message.provider === 'replay' && message.connected === false
@@ -155,7 +163,8 @@ export class SimulationClient extends SimulationProvider {
   }
   send(type, payload = {}) {
     if (this.closed || this.isReplay || this.socket?.readyState !== 1) return false;
-    if (type !== 'reconnect' && (!this.connected || !this.fresh || (!this.controller && type !== 'start_driving'))) return false;
+    if (this.restarting) return false;
+    if (type !== 'reconnect' && (!this.connected || !this.fresh || (!this.controller && !['start_driving','start_journey','take_control'].includes(type)))) return false;
     if (type === 'controls' && ['PAUSED', 'EMERGENCY_STOP', 'DISCONNECTED'].includes(this.controlMode)) return false;
     if (type === 'controls' && this.now()-this.lastControlSentAt < 30) return false;
     const sequence = ++this.sequence;
@@ -166,6 +175,10 @@ export class SimulationClient extends SimulationProvider {
     return true;
   }
   startDriving() { this.operationError = null; return this.send('start_driving'); }
+  startJourney(speed_kmh) { this.operationError = null; return this.send('start_journey', {speed_kmh}); }
+  journeyHeartbeat() { return this.send('journey_heartbeat', {session_id:this.sessionId}); }
+  stopDriving(reason = 'operator_stop') { return this.send('stop_driving', {reason}); }
+  takeControl() { return this.send('take_control'); }
   reconnectNative() { this.operationError = null; return this.send('reconnect'); }
   dashboardAction(type, value) { this.operationError = null; return this.send(type, {value}); }
   async catalog() {
@@ -177,7 +190,8 @@ export class SimulationClient extends SimulationProvider {
   updateControls({throttle = 0, brake = 0, steering = 0, parkingbrake = 0} = {}) {
     const controls = {throttle, brake, steering, parkingbrake};
     if (this.gearCommand != null) controls.gear = this.gearCommand;
-    if (this.send('controls', {controls})) this.gearCommand = null;
+    if (this.send('controls', {controls})) { this.gearCommand = null; return true; }
+    return false;
   }
   setGear(gear) { this.gearCommand = gear; }
   resetVehicle() { this.releaseControls(); this.send('reset'); this.gearCommand = 1; }
