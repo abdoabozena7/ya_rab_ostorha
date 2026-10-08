@@ -1,0 +1,1963 @@
+{
+  "date_local": "2026-10-08",
+  "source": "LIVE_NATIVE_CARLA_0.9.16",
+  "pass": true,
+  "git": {
+    "start_head": "5ffdb4b9cee3a125b88f6d47be58f28486cf3f48",
+    "preserved_later_commit": "3ed6205",
+    "branch": "codex/gate6-real-rl"
+  },
+  "versions": {
+    "python": "3.12.10",
+    "gymnasium": "1.2.3",
+    "carla_client": "0.9.16",
+    "carla_server": "0.9.16"
+  },
+  "map": "Carla/Maps/Town10HD_Opt",
+  "fixed_delta_seconds": 0.05,
+  "trained_model": false,
+  "production_policy_activated": false,
+  "main_matrix": {
+    "checks": {
+      "exclusive_tick_owner": true,
+      "stale_action_rejected": true,
+      "invalid_actions_rejected": true,
+      "both_native_scenarios": true,
+      "reproducible_configuration": true,
+      "clean_reset": true,
+      "sensor_count_stable": true,
+      "recorded_assets_and_outcomes": true,
+      "post_episode_action_rejected": true,
+      "restored_normal_runtime": true
+    },
+    "episodes": [
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "expected": "TIMEOUT",
+        "actual": {
+          "episode_id": "rl_2a97093cb8cc4ed6a15d352338f883ff",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": 1.4947362707893117,
+          "steps": 6,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 17.266481522094555,
+            "minimum_ttc_s": 3.330901954353048,
+            "forward_progress_m": 1.5707362716833815,
+            "distance_traveled_m": 1.5707432233743646,
+            "duration_s": 0.30000000447034836,
+            "average_speed_mps": 5.235810666561557,
+            "hard_braking_events": 2,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_2a97093cb8cc4ed6a15d352338f883ff",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "expected": "COLLISION",
+        "actual": {
+          "episode_id": "rl_530917fbdfa2468fa8d9cac76c4758df",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -171.8486617243566,
+          "steps": 89,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8439.265562692437,
+            "collision_impulse_total_ns": 8439.265562692437,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.02619617113325158,
+            "forward_progress_m": 18.888998882935194,
+            "distance_traveled_m": 18.88901776073279,
+            "duration_s": 4.450000066310167,
+            "average_speed_mps": 4.244723029048202,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_530917fbdfa2468fa8d9cac76c4758df",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "expected": "SUCCESS",
+        "actual": {
+          "episode_id": "rl_4494273d500247f7b058406894c69711",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "SUCCESS",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "safe_approach_and_stop",
+          "truncation_reason": null,
+          "reward": 38.40889600751379,
+          "steps": 80,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 4.39442086309366,
+            "minimum_ttc_s": 1.418300344041325,
+            "forward_progress_m": 14.440896020924813,
+            "distance_traveled_m": 14.44200120743643,
+            "duration_s": 4.000000059604645,
+            "average_speed_mps": 3.6105002480584614,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": true,
+            "time_to_completion_s": 4.000000059604645
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_4494273d500247f7b058406894c69711",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 43,
+        "expected": "TIMEOUT",
+        "actual": {
+          "episode_id": "rl_a8608d04d84e45af93773b8c5ae2ef0b",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 43,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": 1.4946881271411672,
+          "steps": 6,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 17.266537036023596,
+            "minimum_ttc_s": 3.3310370226028363,
+            "forward_progress_m": 1.570688128035237,
+            "distance_traveled_m": 1.5706951001822687,
+            "duration_s": 0.30000000447034836,
+            "average_speed_mps": 5.235650255923627,
+            "hard_braking_events": 2,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_a8608d04d84e45af93773b8c5ae2ef0b",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 43,
+        "expected": "COLLISION",
+        "actual": {
+          "episode_id": "rl_a1b172bb2d474e1abda5fb7a75b23767",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 43,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -170.71198520546508,
+          "steps": 89,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8325.38820830394,
+            "collision_impulse_total_ns": 8325.38820830394,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.024211662225713856,
+            "forward_progress_m": 18.89807709532454,
+            "distance_traveled_m": 18.89809424323009,
+            "duration_s": 4.450000066310167,
+            "average_speed_mps": 4.2467626880059655,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_a1b172bb2d474e1abda5fb7a75b23767",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 43,
+        "expected": "SUCCESS",
+        "actual": {
+          "episode_id": "rl_084ca2ca5ab94e52b1a3dd6cdceb9d7d",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 43,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "SUCCESS",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "safe_approach_and_stop",
+          "truncation_reason": null,
+          "reward": 38.43006387307396,
+          "steps": 80,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 4.374908473321118,
+            "minimum_ttc_s": 1.416871068141104,
+            "forward_progress_m": 14.462063886484984,
+            "distance_traveled_m": 14.46323723301052,
+            "duration_s": 4.000000059604645,
+            "average_speed_mps": 3.6158092543728735,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": true,
+            "time_to_completion_s": 4.000000059604645
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_084ca2ca5ab94e52b1a3dd6cdceb9d7d",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "expected": "TIMEOUT",
+        "actual": {
+          "episode_id": "rl_44845d8f449a403ba5ddb8f56cf456ba",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": 1.4947362707893117,
+          "steps": 6,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 12.183056684328923,
+            "minimum_ttc_s": 4.138044503249214,
+            "forward_progress_m": 1.5707362716833815,
+            "distance_traveled_m": 1.5707432233743646,
+            "duration_s": 0.30000000447034836,
+            "average_speed_mps": 5.235810666561557,
+            "hard_braking_events": 2,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_44845d8f449a403ba5ddb8f56cf456ba",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "expected": "COLLISION",
+        "actual": {
+          "episode_id": "rl_70173de843bc4ac9a0b974aabfefb84a",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -170.38814137487387,
+          "steps": 103,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8530.080861192906,
+            "collision_impulse_total_ns": 8530.080861192906,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.0,
+            "forward_progress_m": 21.64497771496965,
+            "distance_traveled_m": 21.68287085447076,
+            "duration_s": 5.15000007674098,
+            "average_speed_mps": 4.210266122596274,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_70173de843bc4ac9a0b974aabfefb84a",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "expected": "SUCCESS",
+        "actual": {
+          "episode_id": "rl_9361c12cea6f45f08cd85a2cb944a838",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "SUCCESS",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "safe_approach_and_stop",
+          "truncation_reason": null,
+          "reward": 36.08598967172923,
+          "steps": 68,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 9.615808472585206,
+            "minimum_ttc_s": 3.5756868907618578,
+            "forward_progress_m": 11.997989683352117,
+            "distance_traveled_m": 12.000866621486063,
+            "duration_s": 3.400000050663948,
+            "average_speed_mps": 3.529666600782123,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": true,
+            "time_to_completion_s": 3.400000050663948
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_9361c12cea6f45f08cd85a2cb944a838",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 43,
+        "expected": "TIMEOUT",
+        "actual": {
+          "episode_id": "rl_edfe391ad34a4263b913777170b488ef",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 43,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": 1.4946881271411672,
+          "steps": 6,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 12.182737524846184,
+            "minimum_ttc_s": 4.137018272480001,
+            "forward_progress_m": 1.570688128035237,
+            "distance_traveled_m": 1.5706951001822687,
+            "duration_s": 0.30000000447034836,
+            "average_speed_mps": 5.235650255923627,
+            "hard_braking_events": 2,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_edfe391ad34a4263b913777170b488ef",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 43,
+        "expected": "COLLISION",
+        "actual": {
+          "episode_id": "rl_c88b9514da434be0a72d809312970f39",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 43,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -169.88515058538198,
+          "steps": 103,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8482.946189346067,
+            "collision_impulse_total_ns": 8482.946189346067,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.0,
+            "forward_progress_m": 21.701816608595887,
+            "distance_traveled_m": 21.70226951982722,
+            "duration_s": 5.15000007674098,
+            "average_speed_mps": 4.214032853677322,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_c88b9514da434be0a72d809312970f39",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 43,
+        "expected": "SUCCESS",
+        "actual": {
+          "episode_id": "rl_63838520539d4f9eb77d9dc9b48a72ac",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 43,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "SUCCESS",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "safe_approach_and_stop",
+          "truncation_reason": null,
+          "reward": 36.08823212865206,
+          "steps": 68,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 6.482877717183095,
+            "minimum_ttc_s": 2.069934770333031,
+            "forward_progress_m": 12.000232140274944,
+            "distance_traveled_m": 12.003082206863022,
+            "duration_s": 3.400000050663948,
+            "average_speed_mps": 3.5303182435303415,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": true,
+            "time_to_completion_s": 3.400000050663948
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_63838520539d4f9eb77d9dc9b48a72ac",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      }
+    ],
+    "performance": {
+      "step_ms_median": 93.99999998277053,
+      "step_ms_max": 250.0,
+      "reset_s_median": 0.8514999999897555,
+      "memory_private_mib_minmax": [
+        545.02734375,
+        550.5546875
+      ]
+    },
+    "diagnostic_summary": {
+      "episodes": 12,
+      "split": "TRAIN",
+      "baseline_id": "SCRIPTED_DIAGNOSTIC",
+      "collision_frequency": 0.3333333333333333,
+      "success_frequency": 0.3333333333333333,
+      "collision_peak_impulse_ns": 8530.080861192906,
+      "minimum_clearance_m": 0.0,
+      "minimum_ttc_s": 0.0,
+      "mean_forward_progress_m": 11.693158402691614,
+      "mean_distance_traveled_m": 11.697026357847513,
+      "mean_speed_mps": 4.345416740420161,
+      "mean_time_to_completion_s": 3.7000000551342964,
+      "hard_braking_events": 64,
+      "mean_steering_oscillation": 0.0,
+      "mean_intervention_frequency": null,
+      "policy_active": false
+    },
+    "repeated_resets": [
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 43,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      }
+    ]
+  },
+  "final_smoke": {
+    "checks": {
+      "exclusive_tick_owner": true,
+      "stale_action_rejected": true,
+      "invalid_actions_rejected": true,
+      "both_native_scenarios": true,
+      "reproducible_configuration": true,
+      "clean_reset": true,
+      "sensor_count_stable": true,
+      "recorded_assets_and_outcomes": true,
+      "post_episode_action_rejected": true,
+      "restored_normal_runtime": true
+    },
+    "episodes": [
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "expected": "TIMEOUT",
+        "actual": {
+          "episode_id": "rl_e5c8e49c91434b319dacfb761489c605",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": 1.4947362707893117,
+          "steps": 6,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 17.266481522094555,
+            "minimum_ttc_s": 3.330901954353048,
+            "forward_progress_m": 1.5707362716833815,
+            "distance_traveled_m": 1.5707432233743646,
+            "duration_s": 0.30000000447034836,
+            "average_speed_mps": 5.235810666561557,
+            "hard_braking_events": 2,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_e5c8e49c91434b319dacfb761489c605",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "expected": "COLLISION",
+        "actual": {
+          "episode_id": "rl_28a6b4073e304be294860787eb4091cd",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -171.8486617243566,
+          "steps": 89,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8439.265562692437,
+            "collision_impulse_total_ns": 8439.265562692437,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.02619617113325158,
+            "forward_progress_m": 18.888998882935194,
+            "distance_traveled_m": 18.88901776073279,
+            "duration_s": 4.450000066310167,
+            "average_speed_mps": 4.244723029048202,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_28a6b4073e304be294860787eb4091cd",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "expected": "SUCCESS",
+        "actual": {
+          "episode_id": "rl_2b36018a009b4c18a3c05d75ebac9bf6",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "SUCCESS",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "safe_approach_and_stop",
+          "truncation_reason": null,
+          "reward": 38.40889600751379,
+          "steps": 80,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 4.39442086309366,
+            "minimum_ttc_s": 1.418300344041325,
+            "forward_progress_m": 14.440896020924813,
+            "distance_traveled_m": 14.44200120743643,
+            "duration_s": 4.000000059604645,
+            "average_speed_mps": 3.6105002480584614,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": true,
+            "time_to_completion_s": 4.000000059604645
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_2b36018a009b4c18a3c05d75ebac9bf6",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "expected": "TIMEOUT",
+        "actual": {
+          "episode_id": "rl_581033ced0224ecdb08b5fb0c73d7e97",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": 1.4947362707893117,
+          "steps": 6,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 12.183056684328923,
+            "minimum_ttc_s": 4.138044503249214,
+            "forward_progress_m": 1.5707362716833815,
+            "distance_traveled_m": 1.5707432233743646,
+            "duration_s": 0.30000000447034836,
+            "average_speed_mps": 5.235810666561557,
+            "hard_braking_events": 2,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_581033ced0224ecdb08b5fb0c73d7e97",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "expected": "COLLISION",
+        "actual": {
+          "episode_id": "rl_9b7206d229814a34b433d20d270ee2dd",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -170.38814137487387,
+          "steps": 103,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8530.080861192906,
+            "collision_impulse_total_ns": 8530.080861192906,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.0,
+            "forward_progress_m": 21.64497771496965,
+            "distance_traveled_m": 21.68287085447076,
+            "duration_s": 5.15000007674098,
+            "average_speed_mps": 4.210266122596274,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_9b7206d229814a34b433d20d270ee2dd",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "expected": "SUCCESS",
+        "actual": {
+          "episode_id": "rl_9bb605b288ea437793f55bfd66d41abe",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "SUCCESS",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "safe_approach_and_stop",
+          "truncation_reason": null,
+          "reward": 36.08598967172923,
+          "steps": 68,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 9.615808472585206,
+            "minimum_ttc_s": 3.5756868907618578,
+            "forward_progress_m": 11.997989683352117,
+            "distance_traveled_m": 12.000866621486063,
+            "duration_s": 3.400000050663948,
+            "average_speed_mps": 3.529666600782123,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": true,
+            "time_to_completion_s": 3.400000050663948
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_9bb605b288ea437793f55bfd66d41abe",
+        "synchronization_issues": {
+          "MISSING": 0,
+          "LATE": 0,
+          "STALE": 0,
+          "DUPLICATE": 0,
+          "OUT_OF_ORDER": 0,
+          "TIMESTAMP_MISMATCH": 0
+        }
+      }
+    ],
+    "performance": {
+      "step_ms_median": 78.00000003771856,
+      "step_ms_max": 219.0000000409782,
+      "reset_s_median": 0.7419999999983702,
+      "memory_private_mib_minmax": [
+        544.6953125,
+        547.05078125
+      ]
+    },
+    "manual_rejection_reason": "Exclusive RL session owns simulation ticks and ego commands",
+    "diagnostic_summary": {
+      "episodes": 6,
+      "split": "TRAIN",
+      "baseline_id": "SCRIPTED_DIAGNOSTIC",
+      "collision_frequency": 0.3333333333333333,
+      "success_frequency": 0.3333333333333333,
+      "collision_peak_impulse_ns": 8530.080861192906,
+      "minimum_clearance_m": 0.0,
+      "minimum_ttc_s": 0.0,
+      "mean_forward_progress_m": 11.68572247425809,
+      "mean_distance_traveled_m": 11.69270714847913,
+      "mean_speed_mps": 4.344462888934696,
+      "mean_time_to_completion_s": 3.7000000551342964,
+      "hard_braking_events": 32,
+      "mean_steering_oscillation": 0.0,
+      "mean_intervention_frequency": null,
+      "policy_active": false
+    },
+    "repeated_resets": [
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "FRONT_OBSTACLE",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      },
+      {
+        "kind": "SUDDEN_BRAKING",
+        "seed": 42,
+        "position_deviation_m": [
+          0.0,
+          0.0
+        ],
+        "velocity_deviation_mps": [
+          0.0,
+          0.0
+        ],
+        "cleanup_verified": true
+      }
+    ]
+  },
+  "interfaces": {
+    "checks": {
+      "gymnasium_checker": true,
+      "all_sensor_profiles": true,
+      "held_out_splits": true,
+      "three_real_baselines": true,
+      "matched_baseline_configurations": true,
+      "external_emergency_abort": true,
+      "restored_after_abort": true
+    },
+    "profiles": [
+      {
+        "name": "lightweight",
+        "shapes": {
+          "ego": [
+            4,
+            4
+          ],
+          "frame_time": [
+            4,
+            2
+          ],
+          "history_valid": [
+            4
+          ],
+          "imu": [
+            4,
+            6
+          ],
+          "previous_action": [
+            4,
+            3
+          ],
+          "radar": [
+            4,
+            32,
+            4
+          ],
+          "radar_valid": [
+            4,
+            32
+          ]
+        },
+        "recording": "runs/rl/TRAIN/rl_373907818e774e9daf1f8c09424e8b67",
+        "outcome": "TIMEOUT"
+      },
+      {
+        "name": "multimodal",
+        "shapes": {
+          "depth": [
+            4,
+            90,
+            160
+          ],
+          "ego": [
+            4,
+            4
+          ],
+          "frame_time": [
+            4,
+            2
+          ],
+          "history_valid": [
+            4
+          ],
+          "imu": [
+            4,
+            6
+          ],
+          "lidar": [
+            4,
+            512,
+            4
+          ],
+          "lidar_valid": [
+            4,
+            512
+          ],
+          "previous_action": [
+            4,
+            3
+          ],
+          "radar": [
+            4,
+            32,
+            4
+          ],
+          "radar_valid": [
+            4,
+            32
+          ],
+          "rgb": [
+            4,
+            90,
+            160,
+            3
+          ]
+        },
+        "recording": "runs/rl/TRAIN/rl_7f05e23e257742ad9e017f3f8670acfc",
+        "outcome": "TIMEOUT"
+      },
+      {
+        "name": "evaluation",
+        "shapes": {
+          "depth": [
+            4,
+            180,
+            320
+          ],
+          "ego": [
+            4,
+            4
+          ],
+          "frame_time": [
+            4,
+            2
+          ],
+          "history_valid": [
+            4
+          ],
+          "imu": [
+            4,
+            6
+          ],
+          "lidar": [
+            4,
+            2048,
+            4
+          ],
+          "lidar_valid": [
+            4,
+            2048
+          ],
+          "previous_action": [
+            4,
+            3
+          ],
+          "radar": [
+            4,
+            32,
+            4
+          ],
+          "radar_valid": [
+            4,
+            32
+          ],
+          "rgb": [
+            4,
+            180,
+            320,
+            3
+          ]
+        },
+        "recording": "runs/rl/TRAIN/rl_b67019829ff04b5586b98c8a17ad0664",
+        "outcome": "TIMEOUT"
+      }
+    ],
+    "baselines": [
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "baseline": "SCRIPTED_DIAGNOSTIC",
+        "result": {
+          "episode_id": "rl_0aec3f9db5f544cba05720f66e47f8ee",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -171.84866172483342,
+          "steps": 89,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8439.265562692437,
+            "collision_impulse_total_ns": 8439.265562692437,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.02619617113325158,
+            "forward_progress_m": 18.888998882935194,
+            "distance_traveled_m": 18.88901776073279,
+            "duration_s": 4.450000066310167,
+            "average_speed_mps": 4.244723029048202,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_0aec3f9db5f544cba05720f66e47f8ee"
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "baseline": "SCRIPTED_DIAGNOSTIC",
+        "result": {
+          "episode_id": "rl_e2362925dbef46babd96db16df3606ce",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "SCRIPTED_DIAGNOSTIC",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -170.38814137535073,
+          "steps": 103,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 8530.080861192906,
+            "collision_impulse_total_ns": 8530.080861192906,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.0,
+            "forward_progress_m": 21.64497771496965,
+            "distance_traveled_m": 21.68287085447076,
+            "duration_s": 5.15000007674098,
+            "average_speed_mps": 4.210266122596274,
+            "hard_braking_events": 7,
+            "steering_oscillation": 0.0,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_e2362925dbef46babd96db16df3606ce"
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "baseline": "CONSERVATIVE_RADAR_BRAKING",
+        "result": {
+          "episode_id": "rl_10adcad7684644d298e925152c13090c",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "CONSERVATIVE_RADAR_BRAKING",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": -5.252604099782857,
+          "steps": 240,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 18.03981495703454,
+            "minimum_ttc_s": 3.50713577031824,
+            "forward_progress_m": 0.7973959888790523,
+            "distance_traveled_m": 0.7996960522313482,
+            "duration_s": 12.000000178813934,
+            "average_speed_mps": 0.06664133669291239,
+            "hard_braking_events": 1,
+            "steering_oscillation": 0.0,
+            "intervention_count": 1,
+            "intervention_frequency": 0.08333333209156991,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_10adcad7684644d298e925152c13090c"
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "baseline": "CONSERVATIVE_RADAR_BRAKING",
+        "result": {
+          "episode_id": "rl_851b1a3e5ab2475daee254f81d448cd9",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "CONSERVATIVE_RADAR_BRAKING",
+          "outcome": "TIMEOUT",
+          "terminated": false,
+          "truncated": true,
+          "termination_reason": null,
+          "truncation_reason": "simulation_time_limit",
+          "reward": -5.257604099857362,
+          "steps": 240,
+          "metrics": {
+            "collision_count": 0,
+            "collision_callback_count": 0,
+            "collision_peak_impulse_ns": 0.0,
+            "collision_impulse_total_ns": 0.0,
+            "minimum_clearance_m": 12.74928378635769,
+            "minimum_ttc_s": 4.330738808452591,
+            "forward_progress_m": 0.7973959888790523,
+            "distance_traveled_m": 0.7996960522313482,
+            "duration_s": 12.000000178813934,
+            "average_speed_mps": 0.06664133669291239,
+            "hard_braking_events": 1,
+            "steering_oscillation": 0.0,
+            "intervention_count": 1,
+            "intervention_frequency": 0.08333333209156991,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_851b1a3e5ab2475daee254f81d448cd9"
+      },
+      {
+        "scenario": "FRONT_OBSTACLE",
+        "seed": 42,
+        "baseline": "BASIC_AGENT_NO_SAFETY",
+        "result": {
+          "episode_id": "rl_67b1809396b345be9d83cd3c33f303d1",
+          "scenario_id": "front_obstacle_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "BASIC_AGENT_NO_SAFETY",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -237.1782756109799,
+          "steps": 61,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 14593.95654282442,
+            "collision_impulse_total_ns": 14593.95654282442,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.0,
+            "forward_progress_m": 18.90848843651956,
+            "distance_traveled_m": 18.90906833701894,
+            "duration_s": 3.0500000454485416,
+            "average_speed_mps": 6.199694444344875,
+            "hard_braking_events": 5,
+            "steering_oscillation": 0.0484413508365833,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_67b1809396b345be9d83cd3c33f303d1"
+      },
+      {
+        "scenario": "SUDDEN_BRAKING",
+        "seed": 42,
+        "baseline": "BASIC_AGENT_NO_SAFETY",
+        "result": {
+          "episode_id": "rl_1e8dac502d264e899c24d610b5fd1a39",
+          "scenario_id": "sudden_braking_rl_v1",
+          "seed": 42,
+          "split": "TRAIN",
+          "baseline_id": "BASIC_AGENT_NO_SAFETY",
+          "outcome": "COLLISION",
+          "terminated": true,
+          "truncated": false,
+          "termination_reason": "collision_threshold",
+          "truncation_reason": null,
+          "reward": -241.81722886546092,
+          "steps": 68,
+          "metrics": {
+            "collision_count": 1,
+            "collision_callback_count": 1,
+            "collision_peak_impulse_ns": 15589.32953465574,
+            "collision_impulse_total_ns": 15589.32953465574,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": 0.013192476834833305,
+            "forward_progress_m": 21.64266655516207,
+            "distance_traveled_m": 21.64304218134057,
+            "duration_s": 3.400000050663948,
+            "average_speed_mps": 6.365600546715916,
+            "hard_braking_events": 5,
+            "steering_oscillation": 0.04940233847810305,
+            "intervention_count": 0,
+            "intervention_frequency": null,
+            "scenario_success": false,
+            "time_to_completion_s": null
+          },
+          "policy_active": false,
+          "collision_severity_units": "native impulse N*s",
+          "ttc_definition": "planar aligned longitudinal clearance / positive closing speed"
+        },
+        "recording": "runs/rl/TRAIN/rl_1e8dac502d264e899c24d610b5fd1a39"
+      }
+    ]
+  },
+  "operator_abort": {
+    "episode_id": "rl_26b0ec4cb9534440a28dd5ca46a2c6dc",
+    "scenario_id": "front_obstacle_rl_v1",
+    "seed": 42,
+    "split": "TRAIN",
+    "step": 0,
+    "observation_valid": false,
+    "tick_owner": "simulation-worker",
+    "policy_active": false,
+    "baseline_id": "SCRIPTED_DIAGNOSTIC",
+    "outcome": "ABORTED",
+    "termination_reason": null,
+    "truncation_reason": "external_emergency_stop",
+    "proposed_action": [
+      0.0,
+      0.4,
+      0.0
+    ],
+    "applied_action": null,
+    "safety_command_requested": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "reward_components": {},
+    "error": "External emergency stop",
+    "exclusive_native_command_rejected": true
+  },
+  "operator_abort_recording": "runs/rl/TRAIN/rl_26b0ec4cb9534440a28dd5ca46a2c6dc",
+  "regressions": {
+    "python_tests_run": 152,
+    "python_tests_passed": 151,
+    "python_tests_skipped": 1,
+    "javascript_tests_passed": 24,
+    "normal_city": {
+      "vehicle_change_cleans_population": true,
+      "camera_views_aligned_without_actor_leaks": true,
+      "native_weather_and_fixed_delta": true,
+      "manual_real_motion_and_recorded_assets": true,
+      "native_navigation_route": true,
+      "scenario_metadata_and_outcome_recorded": true,
+      "scenario_cleanup": true
+    },
+    "navigation": {
+      "selection_does_not_start_motion": true,
+      "straight_arrival": true,
+      "independent_dashboard_lease": true,
+      "manual_intervention": true,
+      "resume_keeps_exact_destination_replans_live_origin": true,
+      "emergency_no_automatic_resume": true,
+      "native_collision_stops_journey": true,
+      "sensor_suite": true,
+      "exact_frame_rgb_depth_alignment": true
+    }
+  },
+  "raw_evidence": [
+    {
+      "path": "output/native-validation/gate6-rl.json",
+      "sha256": "fecbfada3ef8938a05471eae8e9e61ce1b1f6a4e9e813fb02e0a8f42d346b1a3"
+    },
+    {
+      "path": "output/native-validation/gate6-final-smoke.json",
+      "sha256": "28cae254cc3d239ab27891175db1511acb1801ddf9d2b9431462cbb08a2a7f2d"
+    },
+    {
+      "path": "output/native-validation/gate6-interfaces.json",
+      "sha256": "f29393a96fe238f34e6bbfc2e2cb74b021eba95ec71409df5394a4e60b3549f2"
+    },
+    {
+      "path": "output/native-validation/gate6-final-abort.json",
+      "sha256": "0729d5a54268d4a2861399b96544e485def7098c3b68273717d29c0cfa87ec5c"
+    },
+    {
+      "path": "output/native-validation/gate6-driving-regression.json",
+      "sha256": "c68e5a59f9aca6dbd097b65aec8a5752f17bb49f0354070230ec2eb3b1504811"
+    },
+    {
+      "path": "output/native-validation/gate6-navigation.json",
+      "sha256": "e8751070d4cae8fef2f37032b53291a86e75608128e3a8e42b3fa1b42275dad5"
+    },
+    {
+      "path": "output/native-validation/gate6-unit.log",
+      "sha256": "04c9b5a0ed7771f6e0f4594db11ab40eb9f73289f49224e18b5f00bc3d5e5b28"
+    },
+    {
+      "path": "output/native-validation/gate6-js.log",
+      "sha256": "cb01e30bcd9c3f28c197204ac2fa05826b4110a02ac7520cab48428ecb2590ca"
+    }
+  ],
+  "limits": [
+    "Configuration reproducibility is not bitwise physics determinism.",
+    "Short native samples do not constitute a long memory endurance test.",
+    "Weights remain reward hypotheses; two straight-lane approach/stop tasks only.",
+    "Wider held-out evaluation and sensor-loss/lease-expiry campaigns remain.",
+    "Perception optimization and learned-policy provenance belong to later milestones."
+  ]
+}

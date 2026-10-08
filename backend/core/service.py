@@ -65,6 +65,9 @@ class SimulationService:
         self.dashboard_result = None
         self.reconfiguring = False
         self.reconnecting = False
+        from queue import Queue
+        self.rl_requests = Queue(maxsize=16)
+        self.rl_runtime = None
 
     @property
     def name(self):
@@ -150,6 +153,11 @@ class SimulationService:
             for collision in drain():
                 with self.lock:
                     self.collision_events.append(collision)
+                    if getattr(self.provider,'scenario_outcomes_enabled',False) is True and not (self.rl_runtime and self.rl_runtime.active):
+                        outcome=self.provider.observe_scenario_collision(collision)
+                        if outcome is not None:
+                            self.events.publish(SimulationEvent(EventType.ControlChanged,collision.frame_id,collision.timestamp_s,
+                                {'scenario_outcome':outcome,'mode':self.arbiter.machine.mode.value}))
                     if self.arbiter.machine.mode == ControlMode.AUTOMATIC:
                         self._stop_navigation('collision')
                 # Event-driven collisions can arrive after their native anchor frame.
@@ -178,6 +186,7 @@ class SimulationService:
 
     def submit_control(self, command):
         with self.lock:
+            self._require_normal_runtime()
             self.require_connected()
             previous = self.arbiter.machine.mode
             frame_id, timestamp_s = self._context()
@@ -247,6 +256,8 @@ class SimulationService:
 
     def release_controls(self):
         with self.lock:
+            if self.rl_runtime and self.rl_runtime.active:
+                return  # A dashboard disconnect cannot release the RL owner's commands.
             if self.arbiter.machine.mode == ControlMode.AUTOMATIC or self.journey['status'] == 'STARTING':
                 self._stop_navigation('controls_released')
             self.arbiter.safety.clear()
@@ -268,6 +279,7 @@ class SimulationService:
 
     def stop_driving(self, reason='operator_stop'):
         with self.lock:
+            self._require_normal_runtime()
             self.require_connected()
             self._stop_navigation(reason)
             if self.arbiter.machine.mode == ControlMode.MANUAL:
@@ -278,12 +290,14 @@ class SimulationService:
                 self.actions.append(('pause', False))
 
     def start_journey(self, speed_kmh=20):
+        self._require_normal_runtime()
         if not self.arbiter.machine.allow_navigation:
             raise ValueError('Destination journeys are unavailable in this mode')
         speed = finite(speed_kmh)
         if not 5 <= speed <= 30:
             raise ValueError('Journey speed must be 5–30 km/h')
         with self.lock:
+            self._require_normal_runtime()
             self.require_connected()
             if not getattr(self.provider, 'route_state', lambda: None)():
                 raise ValueError('Choose a valid destination and show its route before starting')
@@ -354,15 +368,19 @@ class SimulationService:
             self.arbiter.acknowledge_stop(connected=True)
 
     def reset_vehicle(self):
+        self._require_normal_runtime()
         self.require_connected()
         self.release_controls()
         with self.lock:
+            self._require_normal_runtime()
             self.actions.append(('reset', None))
 
     def set_paused(self, paused):
+        self._require_normal_runtime()
         if type(paused) is not bool:
             raise ValueError('paused must be boolean')
         with self.lock:
+            self._require_normal_runtime()
             self.require_connected()
             if self.arbiter.machine.mode == ControlMode.AUTOMATIC:
                 self._stop_navigation('operator_pause')
@@ -379,6 +397,7 @@ class SimulationService:
 
     def queue_dashboard_action(self, action, value):
         with self.lock:
+            self._require_normal_runtime()
             self.require_connected()
             if action not in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario'):
                 raise ValueError('Unknown dashboard operation')
@@ -397,6 +416,7 @@ class SimulationService:
 
     def reconnect(self):
         with self.lock:
+            self._require_normal_runtime()
             if self.restarting:
                 raise ValueError('CARLA restart is still running')
             if self.closed:
@@ -409,8 +429,10 @@ class SimulationService:
             self.actions.append(('reconnect', None))
 
     def restart_graphics(self, value, operation='GRAPHICS'):
+        self._require_normal_runtime()
         launch = self.provider.validate_graphics(value)
         with self.lock:
+            self._require_normal_runtime()
             self.require_connected()
             if self.restarting or self.recorder:
                 raise ValueError('Finish recording or the current restart first')
@@ -465,7 +487,8 @@ class SimulationService:
             self.reconnecting = False
 
     def _live(self):
-        return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and not self.reconfiguring and self.now()-self.state_at < 1
+        controlled_idle = self.rl_runtime is not None and self.rl_runtime.active and not self.rl_runtime.expired()
+        return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and not self.reconfiguring and (controlled_idle or self.now()-self.state_at < 1)
 
     def snapshot(self):
         with self.lock:
@@ -487,6 +510,7 @@ class SimulationService:
             view = dashboard_frame(self.observation) if live else {'vehicle': None, 'world': None, 'sensors': {}, 'canonical': None}
             return {'sequence': self.sequence, 'connected': live, 'available': live,
                     'sessionId': self.session_id, 'journey': copy.deepcopy(self.journey),
+                    'rlRuntime': self.rl_runtime.status() if self.rl_runtime else {'active':False,'tick_owner':'simulation-worker'},
                     'navigationAvailable': self.arbiter.machine.allow_navigation,
                     'restartResult': copy.deepcopy(self.restart_result),
                     'restarting': self.restarting, 'recording': bool(self.recorder),
@@ -594,7 +618,7 @@ class SimulationService:
                               and self.lifecycle.error == 'Observation receipt timeout'
                               and self.error is None)
             self.observation = observation
-            if getattr(self.provider,'scenario_outcomes_enabled',False) is True:
+            if getattr(self.provider,'scenario_outcomes_enabled',False) is True and not (self.rl_runtime and self.rl_runtime.active):
                 outcome=self.provider.observe_scenario(observation)
                 if outcome is not None:self._event(EventType.ControlChanged,scenario_outcome=outcome)
             view = dashboard_frame(observation)
@@ -646,9 +670,11 @@ class SimulationService:
                 from .contracts import to_dict
                 self._event(EventType.CollisionDetected, collision=to_dict(collision))
 
-    def _iteration(self):
+    def _iteration(self, training_command=None):
         started = self.now()
         with self.lock:
+            if training_command is not None and self.actions:
+                raise RuntimeError('Normal operations were queued during exclusive RL tick ownership')
             actions = list(self.actions)
             self.actions.clear()
         for action, value in actions:
@@ -734,8 +760,11 @@ class SimulationService:
                 self.provider.set_paused(value)
                 self.paused = value
         with self.lock:
-            self._navigation_step()
-            chosen = self._choose()
+            if training_command is None:
+                self._navigation_step()
+                chosen = self._choose()
+            else:
+                chosen = training_command
         self.provider.apply_control(chosen)
         native_step_started = self.now()
         self.provider.step()
@@ -780,6 +809,14 @@ class SimulationService:
             while not self.stop_event.is_set():
                 started = self.now()
                 try:
+                    if self._process_rl_request():
+                        continue
+                    if self.rl_runtime and self.rl_runtime.active:
+                        if self.rl_runtime.expired():
+                            self.rl_runtime.close(reason='lease_expired')
+                        else:
+                            self.stop_event.wait(.01)
+                            continue
                     self._iteration()
                 except Exception as error:
                     self.release_controls()
@@ -791,7 +828,42 @@ class SimulationService:
                     break
                 self.stop_event.wait(max(0, getattr(self.provider, 'fixed_delta', .05)-(self.now()-started)))
         finally:
+            if self.rl_runtime and self.rl_runtime.active:
+                self.rl_runtime.close(reason='service_shutdown')
             self._close_provider()
+
+    def _require_normal_runtime(self):
+        if self.rl_runtime and self.rl_runtime.active:
+            raise RuntimeError('Exclusive RL session owns simulation ticks and ego commands')
+
+    def rl_request(self, operation, **data):
+        """Queue work to the existing simulation thread; caller never ticks."""
+        from concurrent.futures import Future, TimeoutError
+        from queue import Full
+        if self.closed or self.thread is None or not self.thread.is_alive():
+            raise RuntimeError('A running native service worker is required')
+        future=Future()
+        try:self.rl_requests.put_nowait((operation,data,future))
+        except Full:raise RuntimeError('RL request queue is full') from None
+        try:return future.result(timeout=65)
+        except TimeoutError:
+            future.cancel()
+            raise RuntimeError('RL worker request timed out; inspect runtime before retrying') from None
+
+    def _process_rl_request(self):
+        from queue import Empty
+        try:operation,data,future=self.rl_requests.get_nowait()
+        except Empty:return False
+        if not future.set_running_or_notify_cancel():return True
+        try:
+            if self.rl_runtime is None:
+                from ..rl.runtime import RLRuntime
+                self.rl_runtime=RLRuntime(self)
+            result=self.rl_runtime.dispatch(operation,**data)
+        except Exception as error:
+            future.set_exception(error if isinstance(error,(ValueError,RuntimeError)) else RuntimeError('RL runtime error: '+str(error)))
+        else:future.set_result(result)
+        return True
 
     def _close_provider(self):
         if self.closed:

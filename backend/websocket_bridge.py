@@ -26,6 +26,9 @@ class WebSocketBridge:
         """Ownership changes and command admission are atomic across dashboards."""
         with self.ownership_lock:
             kind = message.get('type')
+            runtime = getattr(self.service, 'rl_runtime', None)
+            if runtime and runtime.active and kind != 'emergency_stop':
+                raise RuntimeError('Exclusive RL session owns simulation ticks and ego commands')
             if getattr(self.service, 'restarting', False):
                 raise ValueError('Restarting CARLA; driving is stopped until verification completes')
             if kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):

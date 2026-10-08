@@ -5,6 +5,7 @@ from .contracts import CommandSource, ControlCommand, finite
 
 
 class ControlMode(str, Enum):
+    TRAINING = 'TRAINING'
     DISCONNECTED = 'DISCONNECTED'
     PAUSED = 'PAUSED'
     MANUAL = 'MANUAL'
@@ -28,13 +29,17 @@ for _mode in (ControlMode.MANUAL, ControlMode.PAUSED):
     TRANSITIONS[_mode].add(ControlMode.AUTOMATIC)
 TRANSITIONS[ControlMode.AUTOMATIC] = {
     ControlMode.MANUAL, ControlMode.PAUSED, ControlMode.EMERGENCY_STOP, ControlMode.DISCONNECTED}
+for _mode in (ControlMode.MANUAL, ControlMode.PAUSED):
+    TRANSITIONS[_mode].add(ControlMode.TRAINING)
+TRANSITIONS[ControlMode.TRAINING] = {ControlMode.PAUSED, ControlMode.EMERGENCY_STOP, ControlMode.DISCONNECTED}
 
 
 class ControlStateMachine:
-    def __init__(self, *, allow_automation=False, allow_navigation=False):
+    def __init__(self, *, allow_automation=False, allow_navigation=False, allow_training=False):
         self.mode = ControlMode.DISCONNECTED
         self.allow_automation = allow_automation
         self.allow_navigation = allow_navigation
+        self.allow_training = allow_training
 
     def transition(self, target, *, connected, explicit=False):
         target = ControlMode(target)
@@ -48,6 +53,8 @@ class ControlStateMachine:
             raise ValueError('Automation requires explicit opt-in; it is disabled by default')
         if target == ControlMode.AUTOMATIC and not (self.allow_navigation and explicit):
             raise ValueError('Destination navigation requires explicit opt-in')
+        if target == ControlMode.TRAINING and not (self.allow_training and explicit):
+            raise ValueError('Training requires an exclusive runtime lease')
         if self.mode == ControlMode.EMERGENCY_STOP and target == ControlMode.PAUSED and not explicit:
             raise ValueError('Emergency stop requires an explicit acknowledgement')
         self.mode = target
@@ -111,7 +118,7 @@ class ControlSafetyLayer:
 
 
 class CommandArbiter:
-    PRIORITY = (CommandSource.SAFETY, CommandSource.MANUAL, CommandSource.NAVIGATION, CommandSource.ASSISTED, CommandSource.AI, CommandSource.SYSTEM)
+    PRIORITY = (CommandSource.SAFETY, CommandSource.TRAINING, CommandSource.MANUAL, CommandSource.NAVIGATION, CommandSource.ASSISTED, CommandSource.AI, CommandSource.SYSTEM)
 
     def __init__(self, safety=None, machine=None):
         self.safety = safety or ControlSafetyLayer()
@@ -122,6 +129,10 @@ class CommandArbiter:
     def submit(self, command, *, frame_id, timestamp_s, connected):
         if not connected or self.machine.mode in (ControlMode.DISCONNECTED, ControlMode.PAUSED, ControlMode.EMERGENCY_STOP):
             raise RuntimeError('Controls suspended in the current state')
+        if self.machine.mode == ControlMode.TRAINING and command.source not in (CommandSource.TRAINING, CommandSource.SAFETY):
+            raise ValueError('Exclusive RL session owns ego commands')
+        if command.source == CommandSource.TRAINING and self.machine.mode != ControlMode.TRAINING:
+            raise ValueError('Training commands require an exclusive RL session')
         if command.source == CommandSource.AI and self.machine.mode != ControlMode.AI:
             raise ValueError('AI commands are not enabled')
         if command.source == CommandSource.ASSISTED and self.machine.mode != ControlMode.ASSISTED:
@@ -144,6 +155,8 @@ class CommandArbiter:
             self.last_selection = safe_command(frame_id, timestamp_s)
             return self.last_selection
         allowed = {CommandSource.MANUAL, CommandSource.SAFETY, CommandSource.SYSTEM}
+        if mode == ControlMode.TRAINING:
+            allowed = {CommandSource.SAFETY, CommandSource.TRAINING}
         if mode == ControlMode.AI:
             allowed.add(CommandSource.AI)
         if mode == ControlMode.ASSISTED:

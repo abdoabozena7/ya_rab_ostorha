@@ -171,6 +171,11 @@ class Handler(SimpleHTTPRequestHandler):
                     if 'timestamp_s' in data:
                         provider.seek(data['timestamp_s'])
                     return self._json(200, {'ok': True, 'mode': 'REPLAY'})
+                if path == '/api/simulation/rl' and not getattr(provider, 'is_replay', False):
+                    operation = data.pop('operation', None)
+                    if operation not in ('acquire','reset','step','close','heartbeat','baseline'):
+                        raise ValueError('Unknown RL operation')
+                    return self._json(200, provider.rl_request(operation, **data))
                 provider.require_connected()
                 bridge = getattr(self.server, "websocket_bridge", None)
                 if bridge and bridge.controller_lock.locked():
