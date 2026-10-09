@@ -1,0 +1,54 @@
+{
+  "python_full_suite": {
+    "command": ".venv-carla/Scripts/python.exe -m unittest discover -s tests",
+    "tests": 180,
+    "passed": 179,
+    "skipped": 1,
+    "failed": 0,
+    "duration_s": 7.581
+  },
+  "javascript_suite": {
+    "command": "npm test",
+    "passed": 24,
+    "failed": 0
+  },
+  "targeted_teacher_radar_dataset_suite": {
+    "tests": 23,
+    "passed": 23,
+    "failed": 0
+  },
+  "final_dataset_loader_tests": {
+    "tests": 4,
+    "passed": 4,
+    "duration_s": 0.056,
+    "nonfinite_provenance_rejected": true
+  },
+  "final_real_transition_loader_revalidation": 1202,
+  "offline_audits": [
+    {
+      "wall_s": 24.235535700001492,
+      "cpu_s": 21.21875
+    },
+    {
+      "wall_s": 24.95109279999815,
+      "cpu_s": 20.984375
+    }
+  ],
+  "import_probe": {
+    "torch_imported": false,
+    "stable_baselines3_imported": false,
+    "baseline_private_mib": 509.6796875
+  },
+  "native_runs_launched": 1,
+  "native_episodes": 11,
+  "native_wall_s_including_reload_and_restore": 161.01499999999942,
+  "final_runtime": {
+    "connected": true,
+    "mode": "PAUSED",
+    "rl_active": false,
+    "production_policy_active": false
+  },
+  "final_applied_command_freshness_anchors_verified": 1202,
+  "immutable_collection_sha256_manifest_verified": true,
+  "single_skipped_test_reason": "Native API installed; offline absence check inapplicable"
+}

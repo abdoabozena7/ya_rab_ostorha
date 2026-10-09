@@ -1,0 +1,19 @@
+{
+  "base_commit": "27cea1f46350fb0dd15ef6e842cbd1c413796b34",
+  "branch": "codex/experiment3a-demonstrations",
+  "original_dirty_patch_sha256": "b81739c6aa016fa7eb7c299badd2439970f296d14d88cfaf8a2ede7b7c730066",
+  "original_dirty_patch_byte_identical": true,
+  "original_untracked_gate5_script_byte_identical": true,
+  "original_uncommitted_files": [
+    "README.md",
+    "backend/carla/population.py",
+    "backend/carla/urban.py",
+    "docs/NORMAL_CITY_OPERATION.md",
+    "scripts/native/restart_backend.py",
+    "scripts/native/verify_city_reset.py",
+    "scripts/native/verify_dashboard_v2.py",
+    "scripts/native/verify_urban_world.py",
+    "tests/test_population.py"
+  ],
+  "frozen_teacher_radar_rewards_model_unchanged": true
+}

@@ -1,0 +1,1639 @@
+{
+  "experiment": "YA RAB OSTORHA Experiment 3A",
+  "dataset": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z",
+  "episodes": [
+    {
+      "seed": 766,
+      "split": "TRAIN",
+      "episode_id": "rl_445a18b3104745fa88c9b543a1956fc1",
+      "parameters": {
+        "ego_speed_mps": 8.0,
+        "following_distance_m": 20.0,
+        "trigger_s": 2.0,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_766",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_445a18b3104745fa88c9b543a1956fc1",
+      "outcome": {
+        "episode_id": "rl_445a18b3104745fa88c9b543a1956fc1",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 766,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 42.674756967772375,
+        "steps": 125,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.690062549639321,
+          "minimum_ttc_s": 1.3181969740494481,
+          "forward_progress_m": 19.922262579910477,
+          "distance_traveled_m": 19.92739984501465,
+          "duration_s": 6.2500000931322575,
+          "average_speed_mps": 3.188383927691721,
+          "hard_braking_events": 7,
+          "steering_oscillation": 0.0249315736677147,
+          "intervention_count": 3,
+          "intervention_frequency": 0.4799999928474427,
+          "scenario_success": true,
+          "time_to_completion_s": 6.2500000931322575,
+          "intervention_steps": 39,
+          "intervention_proposals": 39,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.1199999833106997
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 84,
+        "accepted_brake_actions": 39,
+        "verified_actions_and_isolation": 125,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 39,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.750000026077032,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.450000036507845,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 4.300000064074993,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 5.300000078976154,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 19.922262579910477,
+        "delay": -1.4100000210106372,
+        "smoothness": -0.8375055911274673,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 12.859000000000378,
+      "teacher_wall_ms": {
+        "median": 1.1178999993717298,
+        "p95": 1.4027999983227346,
+        "max": 1.7220000008819625
+      }
+    },
+    {
+      "seed": 356,
+      "split": "TRAIN",
+      "episode_id": "rl_14bfcd5a56ab42e490117803e31bbc75",
+      "parameters": {
+        "ego_speed_mps": 9.0,
+        "following_distance_m": 23.0,
+        "trigger_s": 1.4,
+        "lead_brake": 0.8,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_356",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_14bfcd5a56ab42e490117803e31bbc75",
+      "outcome": {
+        "episode_id": "rl_14bfcd5a56ab42e490117803e31bbc75",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 356,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 42.91606048916214,
+        "steps": 100,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.073154925814778,
+          "minimum_ttc_s": 1.2440559980665804,
+          "forward_progress_m": 19.493072705106197,
+          "distance_traveled_m": 19.496267637073853,
+          "duration_s": 5.000000074505806,
+          "average_speed_mps": 3.899253469311366,
+          "hard_braking_events": 8,
+          "steering_oscillation": 0.01902609035352043,
+          "intervention_count": 2,
+          "intervention_frequency": 0.3999999940395356,
+          "scenario_success": true,
+          "time_to_completion_s": 5.000000074505806,
+          "intervention_steps": 35,
+          "intervention_proposals": 35,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.5999999761581425
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 64,
+        "accepted_brake_actions": 35,
+        "verified_actions_and_isolation": 100,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 35,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.8500000275671482,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.500000037252903,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 3.9000000581145287,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 19.493072705106197,
+        "delay": -1.140000016987322,
+        "smoothness": -0.43701219895674087,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 9.89100000000326,
+      "teacher_wall_ms": {
+        "median": 1.1601999976846855,
+        "p95": 1.6485199999806353,
+        "max": 2.258500000607455
+      }
+    },
+    {
+      "seed": 274,
+      "split": "TRAIN",
+      "episode_id": "rl_f2b50bb28f484c6fb47481a28a9507b7",
+      "parameters": {
+        "ego_speed_mps": 7.0,
+        "following_distance_m": 18.0,
+        "trigger_s": 1.2,
+        "lead_brake": 0.9,
+        "lead_speed_mps": 4.0,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_274",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_f2b50bb28f484c6fb47481a28a9507b7",
+      "outcome": {
+        "episode_id": "rl_f2b50bb28f484c6fb47481a28a9507b7",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 274,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 35.43567705000497,
+        "steps": 80,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.8045277097843275,
+          "minimum_ttc_s": 1.1559908139980393,
+          "forward_progress_m": 11.890679193164019,
+          "distance_traveled_m": 11.893270017875798,
+          "duration_s": 4.000000059604645,
+          "average_speed_mps": 2.9733174601630665,
+          "hard_braking_events": 4,
+          "steering_oscillation": 0.007403169246970265,
+          "intervention_count": 2,
+          "intervention_frequency": 0.4999999925494195,
+          "scenario_success": true,
+          "time_to_completion_s": 4.000000059604645,
+          "intervention_steps": 28,
+          "intervention_proposals": 28,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.999999985098839
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 51,
+        "accepted_brake_actions": 28,
+        "verified_actions_and_isolation": 80,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 28,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.600000023841858,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.1000000312924385,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 3.1000000461935997,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 11.890679193164019,
+        "delay": -0.9300000138580786,
+        "smoothness": -0.5250021293009716,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 8.062999999998283,
+      "teacher_wall_ms": {
+        "median": 1.1269000005995622,
+        "p95": 1.5912600007141007,
+        "max": 2.0428999996511266
+      }
+    },
+    {
+      "seed": 471,
+      "split": "TRAIN",
+      "episode_id": "rl_32011e17c6e74838905d5e9b4ca2c592",
+      "parameters": {
+        "ego_speed_mps": 10.0,
+        "following_distance_m": 26.0,
+        "trigger_s": 2.4,
+        "lead_brake": 0.75,
+        "lead_speed_mps": 5.5,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_471",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_32011e17c6e74838905d5e9b4ca2c592",
+      "outcome": {
+        "episode_id": "rl_32011e17c6e74838905d5e9b4ca2c592",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 471,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 49.844106772983935,
+        "steps": 116,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.99084064290373,
+          "minimum_ttc_s": 1.2935359577309566,
+          "forward_progress_m": 26.82703212720126,
+          "distance_traveled_m": 26.829413587223147,
+          "duration_s": 5.800000086426735,
+          "average_speed_mps": 4.625760894385127,
+          "hard_braking_events": 9,
+          "steering_oscillation": 0.0781472525047775,
+          "intervention_count": 2,
+          "intervention_frequency": 0.3448275810685652,
+          "scenario_success": true,
+          "time_to_completion_s": 5.800000086426735,
+          "intervention_steps": 33,
+          "intervention_proposals": 33,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.5517241148085432
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 82,
+        "accepted_brake_actions": 33,
+        "verified_actions_and_isolation": 116,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 33,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.9500000439584255,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 3.6000000536441803,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.800000071525574,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 26.82703212720126,
+        "delay": -1.2900000192224967,
+        "smoothness": -0.6875254903051794,
+        "unnecessary_braking": -0.005399844689664909,
+        "success": 25.0
+      },
+      "wall_s": 11.8279999999977,
+      "teacher_wall_ms": {
+        "median": 1.17465000039374,
+        "p95": 1.4798999991398887,
+        "max": 2.402600002824329
+      }
+    },
+    {
+      "seed": 812,
+      "split": "TRAIN",
+      "episode_id": "rl_84a3b51cde0543798dc674a7459f2cfb",
+      "parameters": {
+        "ego_speed_mps": 8.5,
+        "following_distance_m": 22.0,
+        "trigger_s": 1.8,
+        "lead_brake": 0.65,
+        "lead_speed_mps": 6.0,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_812",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_84a3b51cde0543798dc674a7459f2cfb",
+      "outcome": {
+        "episode_id": "rl_84a3b51cde0543798dc674a7459f2cfb",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 812,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 43.7507100408965,
+        "steps": 102,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.036472696544474,
+          "minimum_ttc_s": 1.2979763916931453,
+          "forward_progress_m": 20.52426888639702,
+          "distance_traveled_m": 20.52712230103452,
+          "duration_s": 5.100000075995922,
+          "average_speed_mps": 4.024925881403249,
+          "hard_braking_events": 8,
+          "steering_oscillation": 0.046501014096108406,
+          "intervention_count": 2,
+          "intervention_frequency": 0.3921568569015055,
+          "scenario_success": true,
+          "time_to_completion_s": 5.100000075995922,
+          "intervention_steps": 32,
+          "intervention_proposals": 32,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.568627427606022
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 69,
+        "accepted_brake_actions": 32,
+        "verified_actions_and_isolation": 102,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 32,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.2500000335276127,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.8000000417232513,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.050000060349703,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 20.52426888639702,
+        "delay": -1.1500000171363336,
+        "smoothness": -0.623558828364179,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 10.81300000000192,
+      "teacher_wall_ms": {
+        "median": 1.1434500011091586,
+        "p95": 1.4827649987637412,
+        "max": 1.7150999992736615
+      }
+    },
+    {
+      "seed": 681,
+      "split": "TRAIN",
+      "episode_id": "rl_0178736199ec48f99dc6a739453e8da5",
+      "parameters": {
+        "ego_speed_mps": 7.5,
+        "following_distance_m": 19.0,
+        "trigger_s": 2.6,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 5.5,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_681",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_0178736199ec48f99dc6a739453e8da5",
+      "outcome": {
+        "episode_id": "rl_0178736199ec48f99dc6a739453e8da5",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 681,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 43.91752872589689,
+        "steps": 130,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.7583206164238496,
+          "minimum_ttc_s": 1.3638818131249935,
+          "forward_progress_m": 21.21620421827327,
+          "distance_traveled_m": 21.221541893476424,
+          "duration_s": 6.500000096857548,
+          "average_speed_mps": 3.2648525503462786,
+          "hard_braking_events": 5,
+          "steering_oscillation": 0.21053238936201524,
+          "intervention_count": 3,
+          "intervention_frequency": 0.46153845466100263,
+          "scenario_success": true,
+          "time_to_completion_s": 6.500000096857548,
+          "intervention_steps": 39,
+          "intervention_proposals": 39,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.7692307577683377
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 89,
+        "accepted_brake_actions": 39,
+        "verified_actions_and_isolation": 130,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 39,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.8500000275671482,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.550000037997961,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.250000063329935,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 4.6000000685453415,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 5.600000083446503,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 21.21620421827327,
+        "delay": -1.4600000217556957,
+        "smoothness": -0.8386754706206915,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 13.170999999998457,
+      "teacher_wall_ms": {
+        "median": 1.1360500011505792,
+        "p95": 1.5171200002441765,
+        "max": 2.1075000004202593
+      }
+    },
+    {
+      "seed": 56,
+      "split": "TRAIN",
+      "episode_id": "rl_effae5dbdcae49378c6d68bdecef9e0c",
+      "parameters": {
+        "ego_speed_mps": 9.5,
+        "following_distance_m": 24.0,
+        "trigger_s": 1.0,
+        "lead_brake": 0.9,
+        "lead_speed_mps": 4.5,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_56",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_effae5dbdcae49378c6d68bdecef9e0c",
+      "outcome": {
+        "episode_id": "rl_effae5dbdcae49378c6d68bdecef9e0c",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 56,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 40.50293477416884,
+        "steps": 93,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.676761057032626,
+          "minimum_ttc_s": 1.2035072677505376,
+          "forward_progress_m": 17.105943461835906,
+          "distance_traveled_m": 17.107996226131423,
+          "duration_s": 4.6500000692903996,
+          "average_speed_mps": 3.6791389185381544,
+          "hard_braking_events": 8,
+          "steering_oscillation": 0.01860134416179049,
+          "intervention_count": 2,
+          "intervention_frequency": 0.4301075204726189,
+          "scenario_success": true,
+          "time_to_completion_s": 4.6500000692903996,
+          "intervention_steps": 34,
+          "intervention_proposals": 34,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.7204300818904756
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 58,
+        "accepted_brake_actions": 34,
+        "verified_actions_and_isolation": 93,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 34,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.750000026077032,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.450000036507845,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 3.6500000543892384,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 17.105943461835906,
+        "delay": -1.0600000157952292,
+        "smoothness": -0.5430086718718226,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 9.968999999997322,
+      "teacher_wall_ms": {
+        "median": 1.1350999993737787,
+        "p95": 1.5381399993202645,
+        "max": 1.7197000015585218
+      }
+    },
+    {
+      "seed": 104,
+      "split": "TRAIN",
+      "episode_id": "rl_cb5eef8969e3402c8578c912cf58f1de",
+      "parameters": {
+        "ego_speed_mps": 6.5,
+        "following_distance_m": 20.0,
+        "trigger_s": 1.6,
+        "lead_brake": 0.8,
+        "lead_speed_mps": 5.5,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_104",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_cb5eef8969e3402c8578c912cf58f1de",
+      "outcome": {
+        "episode_id": "rl_cb5eef8969e3402c8578c912cf58f1de",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 104,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 42.023329304047245,
+        "steps": 105,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.129862566649157,
+          "minimum_ttc_s": 1.2731995930379023,
+          "forward_progress_m": 18.699640153299626,
+          "distance_traveled_m": 18.701809939235286,
+          "duration_s": 5.250000078231096,
+          "average_speed_mps": 3.562249459153639,
+          "hard_braking_events": 3,
+          "steering_oscillation": 0.029482403802944646,
+          "intervention_count": 2,
+          "intervention_frequency": 0.3809523752757482,
+          "scenario_success": true,
+          "time_to_completion_s": 5.250000078231096,
+          "intervention_steps": 36,
+          "intervention_proposals": 36,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.5714285629136223
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 68,
+        "accepted_brake_actions": 36,
+        "verified_actions_and_isolation": 105,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 36,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.1000000312924385,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.8000000417232513,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.150000061839819,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 18.699640153299626,
+        "delay": -1.1800000175833683,
+        "smoothness": -0.4963108316690132,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 10.640999999999622,
+      "teacher_wall_ms": {
+        "median": 1.1457999971753452,
+        "p95": 1.5973599998687857,
+        "max": 1.808800003345823
+      }
+    },
+    {
+      "seed": 831,
+      "split": "TRAIN",
+      "episode_id": "rl_60efecd4b6cd4101ac1188cad8f3d9c8",
+      "parameters": {
+        "ego_speed_mps": 8.0,
+        "following_distance_m": 25.0,
+        "trigger_s": 2.2,
+        "lead_brake": 0.7,
+        "lead_speed_mps": 4.0,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_831",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_60efecd4b6cd4101ac1188cad8f3d9c8",
+      "outcome": {
+        "episode_id": "rl_60efecd4b6cd4101ac1188cad8f3d9c8",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 831,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 46.55795444272736,
+        "steps": 112,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.35829714856861,
+          "minimum_ttc_s": 1.337622155145854,
+          "forward_progress_m": 23.431833179835095,
+          "distance_traveled_m": 23.43353052413937,
+          "duration_s": 5.600000083446503,
+          "average_speed_mps": 4.184558959812957,
+          "hard_braking_events": 7,
+          "steering_oscillation": 0.044374332051347665,
+          "intervention_count": 2,
+          "intervention_frequency": 0.35714285182101396,
+          "scenario_success": true,
+          "time_to_completion_s": 5.600000083446503,
+          "intervention_steps": 35,
+          "intervention_proposals": 35,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.2499999813735487
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 76,
+        "accepted_brake_actions": 35,
+        "verified_actions_and_isolation": 112,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 35,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.550000037997961,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 3.200000047683716,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.500000067055225,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 23.431833179835095,
+        "delay": -1.25000001862645,
+        "smoothness": -0.6238787184813015,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 11.515999999999622,
+      "teacher_wall_ms": {
+        "median": 1.1619000015343772,
+        "p95": 1.7135349973614211,
+        "max": 2.0732999983010814
+      }
+    },
+    {
+      "seed": 980,
+      "split": "TRAIN",
+      "episode_id": "rl_1f4b9aef36af4ab99985e76e9b9edba7",
+      "parameters": {
+        "ego_speed_mps": 9.0,
+        "following_distance_m": 21.0,
+        "trigger_s": 1.3,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 6.0,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_980",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_1f4b9aef36af4ab99985e76e9b9edba7",
+      "outcome": {
+        "episode_id": "rl_1f4b9aef36af4ab99985e76e9b9edba7",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 980,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 41.94435979248864,
+        "steps": 97,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 4.224639972115309,
+          "minimum_ttc_s": 1.3425332829614738,
+          "forward_progress_m": 18.525581090557985,
+          "distance_traveled_m": 18.527968255351762,
+          "duration_s": 4.850000072270632,
+          "average_speed_mps": 3.820199583353304,
+          "hard_braking_events": 8,
+          "steering_oscillation": 0.056081947099812623,
+          "intervention_count": 2,
+          "intervention_frequency": 0.41237112787580993,
+          "scenario_success": true,
+          "time_to_completion_s": 4.850000072270632,
+          "intervention_steps": 36,
+          "intervention_proposals": 36,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 1.6494845115032397
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 60,
+        "accepted_brake_actions": 36,
+        "verified_actions_and_isolation": 97,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 36,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 1.750000026077032,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 2.500000037252903,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 3.8000000566244125,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 18.525581090557985,
+        "delay": -1.1000000163912755,
+        "smoothness": -0.48122128167807326,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 9.484000000000378,
+      "teacher_wall_ms": {
+        "median": 1.1420999981055502,
+        "p95": 1.5144599994528103,
+        "max": 1.6772000017226674
+      }
+    },
+    {
+      "seed": 799,
+      "split": "TRAIN",
+      "episode_id": "rl_f25169458a14474d938b6abbf1f266ac",
+      "parameters": {
+        "ego_speed_mps": 7.25,
+        "following_distance_m": 22.0,
+        "trigger_s": 2.8,
+        "lead_brake": 0.75,
+        "lead_speed_mps": 4.75,
+        "time_limit_s": 12.0
+      },
+      "directory": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_799",
+      "recording_path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\rl\\TRAIN\\rl_f25169458a14474d938b6abbf1f266ac",
+      "outcome": {
+        "episode_id": "rl_f25169458a14474d938b6abbf1f266ac",
+        "scenario_id": "sudden_braking_rl_v1",
+        "seed": 799,
+        "split": "TRAIN",
+        "baseline_id": "BASIC_AGENT_WITH_SUPERVISOR",
+        "outcome": "SUCCESS",
+        "terminated": true,
+        "truncated": false,
+        "termination_reason": "safe_approach_and_stop",
+        "truncation_reason": null,
+        "reward": 48.737004522022225,
+        "steps": 142,
+        "metrics": {
+          "collision_count": 0,
+          "collision_callback_count": 0,
+          "collision_peak_impulse_ns": 0.0,
+          "collision_impulse_total_ns": 0.0,
+          "minimum_clearance_m": 3.828017832249421,
+          "minimum_ttc_s": 1.3253119772589206,
+          "forward_progress_m": 26.251318649956296,
+          "distance_traveled_m": 26.255456239225392,
+          "duration_s": 7.1000001057982445,
+          "average_speed_mps": 3.6979515278857202,
+          "hard_braking_events": 6,
+          "steering_oscillation": 0.01986101248576233,
+          "intervention_count": 3,
+          "intervention_frequency": 0.42253520497134045,
+          "scenario_success": true,
+          "time_to_completion_s": 7.1000001057982445,
+          "intervention_steps": 38,
+          "intervention_proposals": 38,
+          "unnecessary_intervention_count": 0,
+          "steering_adjustment_rejections": 0,
+          "hard_braking_frequency_hz": 0.8450704099426809
+        },
+        "policy_active": false,
+        "collision_severity_units": "native impulse N*s",
+        "ttc_definition": "planar aligned longitudinal clearance / positive closing speed",
+        "supervisory_training_mode": true,
+        "training_policy_id": "YA_RAB_OSTORHA_EXPERIMENT3A_TEACHER_V1"
+      },
+      "counts": {
+        "NO_INTERVENTION": 102,
+        "accepted_brake_actions": 38,
+        "verified_actions_and_isolation": 142,
+        "missing_foreground": 0,
+        "BRAKE_INTERVENTION": 38,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "brake_release_edges": [
+        {
+          "elapsed_s": 2.600000038743019,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 3.250000048428774,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 4.90000007301569,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 5.250000078231096,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "elapsed_s": 6.200000092387199,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "reward_components": {
+        "collision": 0.0,
+        "severity": 0.0,
+        "proximity": 0.0,
+        "progress": 26.251318649956296,
+        "delay": -1.5800000235438354,
+        "smoothness": -0.934314104390258,
+        "unnecessary_braking": 0.0,
+        "success": 25.0
+      },
+      "wall_s": 13.781000000002678,
+      "teacher_wall_ms": {
+        "median": 1.139249998232117,
+        "p95": 1.5230750019327388,
+        "max": 2.2291999994195066
+      }
+    }
+  ],
+  "attempted_episodes": 11,
+  "actual_steps": 1202,
+  "collection_wall_s_including_close": 122.81300000000192,
+  "total_native_wall_s_including_reload_and_restore": 161.01499999999942,
+  "runner_collection_cpu_s": 18.34375,
+  "memory_cpu_samples": [
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.8046875,
+        "working_set_mib": 4.1640625,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 512.4453125,
+        "working_set_mib": 46.39453125,
+        "cpu_s": 1.15625
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9578.0625,
+        "working_set_mib": 334.21875,
+        "cpu_s": 90828.390625
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 561.921875,
+        "working_set_mib": 96.2578125,
+        "cpu_s": 3.984375
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.8046875,
+        "working_set_mib": 4.1640625,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 517.5625,
+        "working_set_mib": 54.65625,
+        "cpu_s": 3.015625
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9572.7578125,
+        "working_set_mib": 352.78125,
+        "cpu_s": 90856.171875
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 564.6015625,
+        "working_set_mib": 101.98828125,
+        "cpu_s": 15.453125
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 517.890625,
+        "working_set_mib": 55.18359375,
+        "cpu_s": 4.375
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9572.24609375,
+        "working_set_mib": 364.83984375,
+        "cpu_s": 90876.421875
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 567.05078125,
+        "working_set_mib": 103.5,
+        "cpu_s": 24.84375
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 519.1796875,
+        "working_set_mib": 56.8125,
+        "cpu_s": 5.46875
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9573.0078125,
+        "working_set_mib": 371.45703125,
+        "cpu_s": 90894.109375
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 567.1953125,
+        "working_set_mib": 103.76953125,
+        "cpu_s": 32.390625
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 519.109375,
+        "working_set_mib": 56.44921875,
+        "cpu_s": 7.453125
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9573.61328125,
+        "working_set_mib": 379.0078125,
+        "cpu_s": 90920.1875
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 566.05859375,
+        "working_set_mib": 102.80078125,
+        "cpu_s": 42.765625
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 519.19921875,
+        "working_set_mib": 57.015625,
+        "cpu_s": 9.078125
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9587.70703125,
+        "working_set_mib": 405.12890625,
+        "cpu_s": 90948.8125
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 566.77734375,
+        "working_set_mib": 103.54296875,
+        "cpu_s": 51.453125
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 520.5234375,
+        "working_set_mib": 57.7265625,
+        "cpu_s": 11.09375
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9577.34375,
+        "working_set_mib": 398.14453125,
+        "cpu_s": 90980.25
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 566.77734375,
+        "working_set_mib": 103.21875,
+        "cpu_s": 61.828125
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 520.72265625,
+        "working_set_mib": 57.77734375,
+        "cpu_s": 12.625
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9576.9609375,
+        "working_set_mib": 398.87109375,
+        "cpu_s": 91004.15625
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 568.59765625,
+        "working_set_mib": 105.359375,
+        "cpu_s": 70.765625
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 520.72265625,
+        "working_set_mib": 57.7421875,
+        "cpu_s": 14.171875
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9577.08984375,
+        "working_set_mib": 399.9453125,
+        "cpu_s": 91028.359375
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 568.62109375,
+        "working_set_mib": 105.02734375,
+        "cpu_s": 80.078125
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 520.57421875,
+        "working_set_mib": 57.5,
+        "cpu_s": 16.0
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9577.71875,
+        "working_set_mib": 400.390625,
+        "cpu_s": 91054.96875
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 568.625,
+        "working_set_mib": 105.296875,
+        "cpu_s": 90.453125
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 521.26171875,
+        "working_set_mib": 58.0390625,
+        "cpu_s": 17.375
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9577.9140625,
+        "working_set_mib": 400.984375,
+        "cpu_s": 91075.34375
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 568.625,
+        "working_set_mib": 105.41015625,
+        "cpu_s": 98.890625
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 521.203125,
+        "working_set_mib": 58.23828125,
+        "cpu_s": 19.46875
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9578.1171875,
+        "working_set_mib": 402.37109375,
+        "cpu_s": 91106.515625
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 569.09375,
+        "working_set_mib": 105.8359375,
+        "cpu_s": 111.421875
+      }
+    ],
+    [
+      {
+        "pid": 7312,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 0.75,
+        "working_set_mib": 4.13671875,
+        "cpu_s": 0.0
+      },
+      {
+        "pid": 21672,
+        "name": "python.exe",
+        "runner": true,
+        "private_mib": 521.203125,
+        "working_set_mib": 58.23828125,
+        "cpu_s": 19.5
+      },
+      {
+        "pid": 24436,
+        "name": "CarlaUE4-Win64-Shipping.exe",
+        "runner": false,
+        "private_mib": 9594.72265625,
+        "working_set_mib": 418.73046875,
+        "cpu_s": 91107.765625
+      },
+      {
+        "pid": 25056,
+        "name": "python.exe",
+        "runner": false,
+        "private_mib": 580.03515625,
+        "working_set_mib": 115.8125,
+        "cpu_s": 111.765625
+      }
+    ]
+  ],
+  "gpu_samples": [
+    {
+      "csv": "NVIDIA GeForce RTX 3060 Laptop GPU, 5868, 6144, 20",
+      "exit_code": 0
+    },
+    {
+      "csv": "NVIDIA GeForce RTX 3060 Laptop GPU, 5864, 6144, 54",
+      "exit_code": 0
+    }
+  ],
+  "close_info": {
+    "active": false,
+    "restored": true,
+    "actor_inventory": {
+      "vehicles": 1,
+      "sensors": 7,
+      "walkers": 0,
+      "controllers": 0
+    }
+  },
+  "normal_backend_restored": true,
+  "tick_lease_released": true,
+  "final_mode": "PAUSED",
+  "failure": null,
+  "budget_stop": "Insufficient reserved time for another complete episode",
+  "source_and_model_hashes_unchanged": true
+}

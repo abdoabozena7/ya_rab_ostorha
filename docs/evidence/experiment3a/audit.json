@@ -1,0 +1,1237 @@
+{
+  "experiment": "YA RAB OSTORHA Experiment 3A",
+  "dataset": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\demonstrations\\experiment3a_20261009T031432Z",
+  "split": "TRAIN",
+  "episodes": [
+    {
+      "seed": 104,
+      "episode_id": "rl_cb5eef8969e3402c8578c912cf58f1de",
+      "parameters": {
+        "ego_speed_mps": 6.5,
+        "following_distance_m": 20.0,
+        "trigger_s": 1.6,
+        "lead_brake": 0.8,
+        "lead_speed_mps": 5.5,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 105,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 4.129862566649157,
+        "minimum_ttc_s": 1.2731995930379023,
+        "forward_progress_m": 18.699640153299626,
+        "distance_traveled_m": 18.701809939235286,
+        "duration_s": 5.250000078231096,
+        "average_speed_mps": 3.562249459153639,
+        "hard_braking_events": 3,
+        "steering_oscillation": 0.029482403802944646,
+        "intervention_count": 2,
+        "intervention_frequency": 0.3809523752757482,
+        "scenario_success": true,
+        "time_to_completion_s": 5.250000078231096,
+        "intervention_steps": 36,
+        "intervention_proposals": 36,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.5714285629136223
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 68,
+        "BRAKE_INTERVENTION": 36,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_cb5eef8969e3402c8578c912cf58f1de:42",
+          "step": 42,
+          "elapsed_s": 2.1000000312924385,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.990775068499915,
+          "forward_range_m": 12.031347274780273,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_cb5eef8969e3402c8578c912cf58f1de:56",
+          "step": 56,
+          "elapsed_s": 2.8000000417232513,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.008842108436589353,
+          "forward_range_m": 8.640358924865723,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_cb5eef8969e3402c8578c912cf58f1de:83",
+          "step": 83,
+          "elapsed_s": 4.150000061839819,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.342859553814009,
+          "forward_range_m": 6.104734420776367,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 17,
+      "four_frame_reset_action_disagreements": 11,
+      "four_frame_reset_enum_disagreements": 12
+    },
+    {
+      "seed": 274,
+      "episode_id": "rl_f2b50bb28f484c6fb47481a28a9507b7",
+      "parameters": {
+        "ego_speed_mps": 7.0,
+        "following_distance_m": 18.0,
+        "trigger_s": 1.2,
+        "lead_brake": 0.9,
+        "lead_speed_mps": 4.0,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 80,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 3.8045277097843275,
+        "minimum_ttc_s": 1.1559908139980393,
+        "forward_progress_m": 11.890679193164019,
+        "distance_traveled_m": 11.893270017875798,
+        "duration_s": 4.000000059604645,
+        "average_speed_mps": 2.9733174601630665,
+        "hard_braking_events": 4,
+        "steering_oscillation": 0.007403169246970265,
+        "intervention_count": 2,
+        "intervention_frequency": 0.4999999925494195,
+        "scenario_success": true,
+        "time_to_completion_s": 4.000000059604645,
+        "intervention_steps": 28,
+        "intervention_proposals": 28,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.999999985098839
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 51,
+        "BRAKE_INTERVENTION": 28,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_f2b50bb28f484c6fb47481a28a9507b7:32",
+          "step": 32,
+          "elapsed_s": 1.600000023841858,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 6.001411493671593,
+          "forward_range_m": 8.419069290161133,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_f2b50bb28f484c6fb47481a28a9507b7:42",
+          "step": 42,
+          "elapsed_s": 2.1000000312924385,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.01100914150406504,
+          "forward_range_m": 6.193078517913818,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_f2b50bb28f484c6fb47481a28a9507b7:62",
+          "step": 62,
+          "elapsed_s": 3.1000000461935997,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 2.970958345639653,
+          "forward_range_m": 4.834303855895996,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 13,
+      "four_frame_reset_action_disagreements": 7,
+      "four_frame_reset_enum_disagreements": 8
+    },
+    {
+      "seed": 356,
+      "episode_id": "rl_14bfcd5a56ab42e490117803e31bbc75",
+      "parameters": {
+        "ego_speed_mps": 9.0,
+        "following_distance_m": 23.0,
+        "trigger_s": 1.4,
+        "lead_brake": 0.8,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 100,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 4.073154925814778,
+        "minimum_ttc_s": 1.2440559980665804,
+        "forward_progress_m": 19.493072705106197,
+        "distance_traveled_m": 19.496267637073853,
+        "duration_s": 5.000000074505806,
+        "average_speed_mps": 3.899253469311366,
+        "hard_braking_events": 8,
+        "steering_oscillation": 0.01902609035352043,
+        "intervention_count": 2,
+        "intervention_frequency": 0.3999999940395356,
+        "scenario_success": true,
+        "time_to_completion_s": 5.000000074505806,
+        "intervention_steps": 35,
+        "intervention_proposals": 35,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.5999999761581425
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 64,
+        "BRAKE_INTERVENTION": 35,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_14bfcd5a56ab42e490117803e31bbc75:37",
+          "step": 37,
+          "elapsed_s": 1.8500000275671482,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.998593870886224,
+          "forward_range_m": 11.962763786315918,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_14bfcd5a56ab42e490117803e31bbc75:50",
+          "step": 50,
+          "elapsed_s": 2.500000037252903,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.002825589525366497,
+          "forward_range_m": 8.865138053894043,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_14bfcd5a56ab42e490117803e31bbc75:78",
+          "step": 78,
+          "elapsed_s": 3.9000000581145287,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.474991876505681,
+          "forward_range_m": 6.149405479431152,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 18,
+      "four_frame_reset_action_disagreements": 12,
+      "four_frame_reset_enum_disagreements": 13
+    },
+    {
+      "seed": 471,
+      "episode_id": "rl_32011e17c6e74838905d5e9b4ca2c592",
+      "parameters": {
+        "ego_speed_mps": 10.0,
+        "following_distance_m": 26.0,
+        "trigger_s": 2.4,
+        "lead_brake": 0.75,
+        "lead_speed_mps": 5.5,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 116,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 3.99084064290373,
+        "minimum_ttc_s": 1.2935359577309566,
+        "forward_progress_m": 26.82703212720126,
+        "distance_traveled_m": 26.829413587223147,
+        "duration_s": 5.800000086426735,
+        "average_speed_mps": 4.625760894385127,
+        "hard_braking_events": 9,
+        "steering_oscillation": 0.0781472525047775,
+        "intervention_count": 2,
+        "intervention_frequency": 0.3448275810685652,
+        "scenario_success": true,
+        "time_to_completion_s": 5.800000086426735,
+        "intervention_steps": 33,
+        "intervention_proposals": 33,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.5517241148085432
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 82,
+        "BRAKE_INTERVENTION": 33,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_32011e17c6e74838905d5e9b4ca2c592:59",
+          "step": 59,
+          "elapsed_s": 2.9500000439584255,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.487614111326747,
+          "forward_range_m": 10.960958480834961,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_32011e17c6e74838905d5e9b4ca2c592:72",
+          "step": 72,
+          "elapsed_s": 3.6000000536441803,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.016131541796155193,
+          "forward_range_m": 7.488213539123535,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_32011e17c6e74838905d5e9b4ca2c592:96",
+          "step": 96,
+          "elapsed_s": 4.800000071525574,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 3.677685830229647,
+          "forward_range_m": 5.488297462463379,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 15,
+      "four_frame_reset_action_disagreements": 9,
+      "four_frame_reset_enum_disagreements": 10
+    },
+    {
+      "seed": 56,
+      "episode_id": "rl_effae5dbdcae49378c6d68bdecef9e0c",
+      "parameters": {
+        "ego_speed_mps": 9.5,
+        "following_distance_m": 24.0,
+        "trigger_s": 1.0,
+        "lead_brake": 0.9,
+        "lead_speed_mps": 4.5,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 93,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 3.676761057032626,
+        "minimum_ttc_s": 1.2035072677505376,
+        "forward_progress_m": 17.105943461835906,
+        "distance_traveled_m": 17.107996226131423,
+        "duration_s": 4.6500000692903996,
+        "average_speed_mps": 3.6791389185381544,
+        "hard_braking_events": 8,
+        "steering_oscillation": 0.01860134416179049,
+        "intervention_count": 2,
+        "intervention_frequency": 0.4301075204726189,
+        "scenario_success": true,
+        "time_to_completion_s": 4.6500000692903996,
+        "intervention_steps": 34,
+        "intervention_proposals": 34,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.7204300818904756
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 58,
+        "BRAKE_INTERVENTION": 34,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_effae5dbdcae49378c6d68bdecef9e0c:35",
+          "step": 35,
+          "elapsed_s": 1.750000026077032,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.492326587627627,
+          "forward_range_m": 10.714095115661621,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_effae5dbdcae49378c6d68bdecef9e0c:49",
+          "step": 49,
+          "elapsed_s": 2.450000036507845,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.00116723436827834,
+          "forward_range_m": 6.926261901855469,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_effae5dbdcae49378c6d68bdecef9e0c:73",
+          "step": 73,
+          "elapsed_s": 3.6500000543892384,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 3.5563259233501485,
+          "forward_range_m": 5.102564334869385,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 14,
+      "four_frame_reset_action_disagreements": 8,
+      "four_frame_reset_enum_disagreements": 9
+    },
+    {
+      "seed": 681,
+      "episode_id": "rl_0178736199ec48f99dc6a739453e8da5",
+      "parameters": {
+        "ego_speed_mps": 7.5,
+        "following_distance_m": 19.0,
+        "trigger_s": 2.6,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 5.5,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 130,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 3.7583206164238496,
+        "minimum_ttc_s": 1.3638818131249935,
+        "forward_progress_m": 21.21620421827327,
+        "distance_traveled_m": 21.221541893476424,
+        "duration_s": 6.500000096857548,
+        "average_speed_mps": 3.2648525503462786,
+        "hard_braking_events": 5,
+        "steering_oscillation": 0.21053238936201524,
+        "intervention_count": 3,
+        "intervention_frequency": 0.46153845466100263,
+        "scenario_success": true,
+        "time_to_completion_s": 6.500000096857548,
+        "intervention_steps": 39,
+        "intervention_proposals": 39,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.7692307577683377
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 89,
+        "BRAKE_INTERVENTION": 39,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_0178736199ec48f99dc6a739453e8da5:37",
+          "step": 37,
+          "elapsed_s": 1.8500000275671482,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.509728195301473,
+          "forward_range_m": 11.058189392089844,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_0178736199ec48f99dc6a739453e8da5:51",
+          "step": 51,
+          "elapsed_s": 2.550000037997961,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.0010803851751944441,
+          "forward_range_m": 10.804863929748535,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_0178736199ec48f99dc6a739453e8da5:85",
+          "step": 85,
+          "elapsed_s": 4.250000063329935,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 5.238783943948875,
+          "forward_range_m": 7.490485668182373,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_0178736199ec48f99dc6a739453e8da5:92",
+          "step": 92,
+          "elapsed_s": 4.6000000685453415,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.012508240912213312,
+          "forward_range_m": 6.2994866371154785,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_0178736199ec48f99dc6a739453e8da5:112",
+          "step": 112,
+          "elapsed_s": 5.600000083446503,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 3.0451902617480915,
+          "forward_range_m": 4.818824768066406,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 20,
+      "four_frame_reset_action_disagreements": 11,
+      "four_frame_reset_enum_disagreements": 13
+    },
+    {
+      "seed": 766,
+      "episode_id": "rl_445a18b3104745fa88c9b543a1956fc1",
+      "parameters": {
+        "ego_speed_mps": 8.0,
+        "following_distance_m": 20.0,
+        "trigger_s": 2.0,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 5.0,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 125,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 3.690062549639321,
+        "minimum_ttc_s": 1.3181969740494481,
+        "forward_progress_m": 19.922262579910477,
+        "distance_traveled_m": 19.92739984501465,
+        "duration_s": 6.2500000931322575,
+        "average_speed_mps": 3.188383927691721,
+        "hard_braking_events": 7,
+        "steering_oscillation": 0.0249315736677147,
+        "intervention_count": 3,
+        "intervention_frequency": 0.4799999928474427,
+        "scenario_success": true,
+        "time_to_completion_s": 6.2500000931322575,
+        "intervention_steps": 39,
+        "intervention_proposals": 39,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.1199999833106997
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 84,
+        "BRAKE_INTERVENTION": 39,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_445a18b3104745fa88c9b543a1956fc1:35",
+          "step": 35,
+          "elapsed_s": 1.750000026077032,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.366238991102769,
+          "forward_range_m": 10.936455726623535,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_445a18b3104745fa88c9b543a1956fc1:49",
+          "step": 49,
+          "elapsed_s": 2.450000036507845,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.0030526861467608177,
+          "forward_range_m": 10.103340148925781,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_445a18b3104745fa88c9b543a1956fc1:80",
+          "step": 80,
+          "elapsed_s": 4.000000059604645,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 5.097509707403175,
+          "forward_range_m": 7.1405792236328125,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_445a18b3104745fa88c9b543a1956fc1:86",
+          "step": 86,
+          "elapsed_s": 4.300000064074993,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.01581917409441905,
+          "forward_range_m": 6.206053256988525,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_445a18b3104745fa88c9b543a1956fc1:106",
+          "step": 106,
+          "elapsed_s": 5.300000078976154,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 3.0607858376595396,
+          "forward_range_m": 4.79745626449585,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 20,
+      "four_frame_reset_action_disagreements": 11,
+      "four_frame_reset_enum_disagreements": 13
+    },
+    {
+      "seed": 799,
+      "episode_id": "rl_f25169458a14474d938b6abbf1f266ac",
+      "parameters": {
+        "ego_speed_mps": 7.25,
+        "following_distance_m": 22.0,
+        "trigger_s": 2.8,
+        "lead_brake": 0.75,
+        "lead_speed_mps": 4.75,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 142,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 3.828017832249421,
+        "minimum_ttc_s": 1.3253119772589206,
+        "forward_progress_m": 26.251318649956296,
+        "distance_traveled_m": 26.255456239225392,
+        "duration_s": 7.1000001057982445,
+        "average_speed_mps": 3.6979515278857202,
+        "hard_braking_events": 6,
+        "steering_oscillation": 0.01986101248576233,
+        "intervention_count": 3,
+        "intervention_frequency": 0.42253520497134045,
+        "scenario_success": true,
+        "time_to_completion_s": 7.1000001057982445,
+        "intervention_steps": 38,
+        "intervention_proposals": 38,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 0.8450704099426809
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 102,
+        "BRAKE_INTERVENTION": 38,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_f25169458a14474d938b6abbf1f266ac:52",
+          "step": 52,
+          "elapsed_s": 2.600000038743019,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.461278964786738,
+          "forward_range_m": 10.998319625854492,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_f25169458a14474d938b6abbf1f266ac:65",
+          "step": 65,
+          "elapsed_s": 3.250000048428774,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.17040095782433068,
+          "forward_range_m": 10.410751342773438,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_f25169458a14474d938b6abbf1f266ac:98",
+          "step": 98,
+          "elapsed_s": 4.90000007301569,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 5.187209313216627,
+          "forward_range_m": 7.400195598602295,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_f25169458a14474d938b6abbf1f266ac:105",
+          "step": 105,
+          "elapsed_s": 5.250000078231096,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.022190168895117345,
+          "forward_range_m": 6.183528900146484,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_f25169458a14474d938b6abbf1f266ac:124",
+          "step": 124,
+          "elapsed_s": 6.200000092387199,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 2.9287779966646252,
+          "forward_range_m": 4.836983680725098,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 20,
+      "four_frame_reset_action_disagreements": 11,
+      "four_frame_reset_enum_disagreements": 13
+    },
+    {
+      "seed": 812,
+      "episode_id": "rl_84a3b51cde0543798dc674a7459f2cfb",
+      "parameters": {
+        "ego_speed_mps": 8.5,
+        "following_distance_m": 22.0,
+        "trigger_s": 1.8,
+        "lead_brake": 0.65,
+        "lead_speed_mps": 6.0,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 102,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 4.036472696544474,
+        "minimum_ttc_s": 1.2979763916931453,
+        "forward_progress_m": 20.52426888639702,
+        "distance_traveled_m": 20.52712230103452,
+        "duration_s": 5.100000075995922,
+        "average_speed_mps": 4.024925881403249,
+        "hard_braking_events": 8,
+        "steering_oscillation": 0.046501014096108406,
+        "intervention_count": 2,
+        "intervention_frequency": 0.3921568569015055,
+        "scenario_success": true,
+        "time_to_completion_s": 5.100000075995922,
+        "intervention_steps": 32,
+        "intervention_proposals": 32,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.568627427606022
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 69,
+        "BRAKE_INTERVENTION": 32,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_84a3b51cde0543798dc674a7459f2cfb:45",
+          "step": 45,
+          "elapsed_s": 2.2500000335276127,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.306527633479771,
+          "forward_range_m": 10.800097465515137,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_84a3b51cde0543798dc674a7459f2cfb:56",
+          "step": 56,
+          "elapsed_s": 2.8000000417232513,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.022837168656605733,
+          "forward_range_m": 7.971916198730469,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_84a3b51cde0543798dc674a7459f2cfb:81",
+          "step": 81,
+          "elapsed_s": 4.050000060349703,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.011713227611475,
+          "forward_range_m": 5.7713751792907715,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 14,
+      "four_frame_reset_action_disagreements": 8,
+      "four_frame_reset_enum_disagreements": 9
+    },
+    {
+      "seed": 831,
+      "episode_id": "rl_60efecd4b6cd4101ac1188cad8f3d9c8",
+      "parameters": {
+        "ego_speed_mps": 8.0,
+        "following_distance_m": 25.0,
+        "trigger_s": 2.2,
+        "lead_brake": 0.7,
+        "lead_speed_mps": 4.0,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 112,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 4.35829714856861,
+        "minimum_ttc_s": 1.337622155145854,
+        "forward_progress_m": 23.431833179835095,
+        "distance_traveled_m": 23.43353052413937,
+        "duration_s": 5.600000083446503,
+        "average_speed_mps": 4.184558959812957,
+        "hard_braking_events": 7,
+        "steering_oscillation": 0.044374332051347665,
+        "intervention_count": 2,
+        "intervention_frequency": 0.35714285182101396,
+        "scenario_success": true,
+        "time_to_completion_s": 5.600000083446503,
+        "intervention_steps": 35,
+        "intervention_proposals": 35,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.2499999813735487
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 76,
+        "BRAKE_INTERVENTION": 35,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_60efecd4b6cd4101ac1188cad8f3d9c8:51",
+          "step": 51,
+          "elapsed_s": 2.550000037997961,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.585233383237806,
+          "forward_range_m": 11.399999618530273,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_60efecd4b6cd4101ac1188cad8f3d9c8:64",
+          "step": 64,
+          "elapsed_s": 3.200000047683716,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.016927864243656898,
+          "forward_range_m": 8.706262588500977,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_60efecd4b6cd4101ac1188cad8f3d9c8:90",
+          "step": 90,
+          "elapsed_s": 4.500000067055225,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.261593364154829,
+          "forward_range_m": 6.283790111541748,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 18,
+      "four_frame_reset_action_disagreements": 12,
+      "four_frame_reset_enum_disagreements": 13
+    },
+    {
+      "seed": 980,
+      "episode_id": "rl_1f4b9aef36af4ab99985e76e9b9edba7",
+      "parameters": {
+        "ego_speed_mps": 9.0,
+        "following_distance_m": 21.0,
+        "trigger_s": 1.3,
+        "lead_brake": 1.0,
+        "lead_speed_mps": 6.0,
+        "time_limit_s": 12.0
+      },
+      "valid_transitions": 97,
+      "outcome": "SUCCESS",
+      "metrics": {
+        "collision_count": 0,
+        "collision_callback_count": 0,
+        "collision_peak_impulse_ns": 0.0,
+        "collision_impulse_total_ns": 0.0,
+        "minimum_clearance_m": 4.224639972115309,
+        "minimum_ttc_s": 1.3425332829614738,
+        "forward_progress_m": 18.525581090557985,
+        "distance_traveled_m": 18.527968255351762,
+        "duration_s": 4.850000072270632,
+        "average_speed_mps": 3.820199583353304,
+        "hard_braking_events": 8,
+        "steering_oscillation": 0.056081947099812623,
+        "intervention_count": 2,
+        "intervention_frequency": 0.41237112787580993,
+        "scenario_success": true,
+        "time_to_completion_s": 4.850000072270632,
+        "intervention_steps": 36,
+        "intervention_proposals": 36,
+        "unnecessary_intervention_count": 0,
+        "steering_adjustment_rejections": 0,
+        "hard_braking_frequency_hz": 1.6494845115032397
+      },
+      "decision_counts": {
+        "NO_INTERVENTION": 60,
+        "BRAKE_INTERVENTION": 36,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "brake_release_edges": [
+        {
+          "sample_id": "rl_1f4b9aef36af4ab99985e76e9b9edba7:35",
+          "step": 35,
+          "elapsed_s": 1.750000026077032,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.872493173420557,
+          "forward_range_m": 11.831050872802734,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_1f4b9aef36af4ab99985e76e9b9edba7:50",
+          "step": 50,
+          "elapsed_s": 2.500000037252903,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.0012680667817776116,
+          "forward_range_m": 8.151230812072754,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_1f4b9aef36af4ab99985e76e9b9edba7:76",
+          "step": 76,
+          "elapsed_s": 3.8000000566244125,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.013568825846138,
+          "forward_range_m": 5.957999229431152,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ],
+      "brief_transition_pairs_le_150ms": 0,
+      "single_frame_reset_action_disagreements": 17,
+      "four_frame_reset_action_disagreements": 11,
+      "four_frame_reset_enum_disagreements": 12
+    }
+  ],
+  "episode_count": 11,
+  "valid_transitions": 1202,
+  "outcome_counts": {
+    "SUCCESS": 11
+  },
+  "decision_counts": {
+    "NO_INTERVENTION": 803,
+    "BRAKE_INTERVENTION": 385,
+    "RELEASE_TO_BASE_DRIVER": 14
+  },
+  "decision_percentages": {
+    "NO_INTERVENTION": 66.80532445923461,
+    "BRAKE_INTERVENTION": 32.02995008319468,
+    "RELEASE_TO_BASE_DRIVER": 1.1647254575707155
+  },
+  "counts": {
+    "NO_INTERVENTION": 803,
+    "distinct_braking_bouts": 25,
+    "missing_foreground": 0,
+    "history_padding_rows": 66,
+    "unnecessary_braking_heuristic_steps": 5,
+    "accepted_brake_actions": 385,
+    "BRAKE_INTERVENTION": 385,
+    "RELEASE_TO_BASE_DRIVER": 14
+  },
+  "teacher_state_counts": {
+    "MONITORING": 803,
+    "PROTECTIVE_BRAKING": 69,
+    "FINAL_APPROACH": 217,
+    "SAFE_RELEASE": 14,
+    "SAFE_STOP": 99
+  },
+  "state_decision_counts": {
+    "MONITORING": {
+      "NO_INTERVENTION": 803
+    },
+    "PROTECTIVE_BRAKING": {
+      "BRAKE_INTERVENTION": 69
+    },
+    "FINAL_APPROACH": {
+      "BRAKE_INTERVENTION": 217
+    },
+    "SAFE_RELEASE": {
+      "RELEASE_TO_BASE_DRIVER": 14
+    },
+    "SAFE_STOP": {
+      "BRAKE_INTERVENTION": 99
+    }
+  },
+  "model_input_shape": [
+    1202,
+    47
+  ],
+  "target_shape": [
+    1202,
+    3
+  ],
+  "observation_alignment_errors": 0,
+  "duplicate_source_frames": 0,
+  "stale_sensor_channels": 0,
+  "missing_required_sensor_channels": 0,
+  "privileged_input_fields": 0,
+  "stateful_sensor_only_replay_mismatches": 0,
+  "feasibility_rejections": 0,
+  "native_application_mismatches": 0,
+  "exact_duplicate_feature_vectors": 0,
+  "exact_label_conflicts": 0,
+  "coarsened_label_conflicts": 0,
+  "coarsening_tolerances_normalized": [
+    0.006666666666666667,
+    0.05,
+    0.01,
+    0.02,
+    0.02,
+    0.02,
+    0.004,
+    0.01,
+    0.01,
+    1.0,
+    1.0,
+    0.006666666666666667,
+    0.05,
+    0.01,
+    0.02,
+    0.02,
+    0.02,
+    0.004,
+    0.01,
+    0.01,
+    1.0,
+    1.0,
+    0.006666666666666667,
+    0.05,
+    0.01,
+    0.02,
+    0.02,
+    0.02,
+    0.004,
+    0.01,
+    0.01,
+    1.0,
+    1.0,
+    0.006666666666666667,
+    0.05,
+    0.01,
+    0.02,
+    0.02,
+    0.02,
+    0.004,
+    0.01,
+    0.01,
+    1.0,
+    1.0,
+    0.02,
+    0.02,
+    0.02
+  ],
+  "single_frame_reset_action_disagreements": 186,
+  "four_frame_reset_action_disagreements": 111,
+  "four_frame_reset_enum_disagreements": 125,
+  "window_replay_caveat": "Resetting the rule state is diagnostic, not a proof that 47 inputs cannot encode state via previous actions. Preserve ordered episodes; history sufficiency is not established.",
+  "examples": [
+    {
+      "seed": 104,
+      "transitions": [
+        {
+          "sample_id": "rl_cb5eef8969e3402c8578c912cf58f1de:42",
+          "step": 42,
+          "elapsed_s": 2.1000000312924385,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.990775068499915,
+          "forward_range_m": 12.031347274780273,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_cb5eef8969e3402c8578c912cf58f1de:56",
+          "step": 56,
+          "elapsed_s": 2.8000000417232513,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.008842108436589353,
+          "forward_range_m": 8.640358924865723,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_cb5eef8969e3402c8578c912cf58f1de:83",
+          "step": 83,
+          "elapsed_s": 4.150000061839819,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.342859553814009,
+          "forward_range_m": 6.104734420776367,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ]
+    },
+    {
+      "seed": 274,
+      "transitions": [
+        {
+          "sample_id": "rl_f2b50bb28f484c6fb47481a28a9507b7:32",
+          "step": 32,
+          "elapsed_s": 1.600000023841858,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 6.001411493671593,
+          "forward_range_m": 8.419069290161133,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_f2b50bb28f484c6fb47481a28a9507b7:42",
+          "step": 42,
+          "elapsed_s": 2.1000000312924385,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.01100914150406504,
+          "forward_range_m": 6.193078517913818,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_f2b50bb28f484c6fb47481a28a9507b7:62",
+          "step": 62,
+          "elapsed_s": 3.1000000461935997,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 2.970958345639653,
+          "forward_range_m": 4.834303855895996,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ]
+    },
+    {
+      "seed": 356,
+      "transitions": [
+        {
+          "sample_id": "rl_14bfcd5a56ab42e490117803e31bbc75:37",
+          "step": 37,
+          "elapsed_s": 1.8500000275671482,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 7.998593870886224,
+          "forward_range_m": 11.962763786315918,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "sample_id": "rl_14bfcd5a56ab42e490117803e31bbc75:50",
+          "step": 50,
+          "elapsed_s": 2.500000037252903,
+          "braking": false,
+          "decision": "RELEASE_TO_BASE_DRIVER",
+          "speed_mps": 0.002825589525366497,
+          "forward_range_m": 8.865138053894043,
+          "reason": "Stopped ego with measured clearance beyond release hysteresis"
+        },
+        {
+          "sample_id": "rl_14bfcd5a56ab42e490117803e31bbc75:78",
+          "step": 78,
+          "elapsed_s": 3.9000000581145287,
+          "braking": true,
+          "decision": "BRAKE_INTERVENTION",
+          "speed_mps": 4.474991876505681,
+          "forward_range_m": 6.149405479431152,
+          "reason": "Measured range is inside stationary-target stopping envelope"
+        }
+      ]
+    }
+  ],
+  "unique_original_sensor_assets": 3606,
+  "duplicated_sensor_binaries": 0,
+  "weighted_average_speed_mps": 3.7258198523974575,
+  "total_distance_m": 223.92177646578162,
+  "total_simulated_duration_s": 60.10000089555979,
+  "native_brief_chatter_count": 0,
+  "unnecessary_braking_heuristic_by_decision": {
+    "NO_INTERVENTION": 5,
+    "BRAKE_INTERVENTION": 0,
+    "RELEASE_TO_BASE_DRIVER": 0
+  },
+  "current_longitudinal_acceleration_feature_clipped_steps": 135,
+  "valid_history_rows_distribution": {
+    "1": 11,
+    "2": 11,
+    "3": 11,
+    "4": 1169
+  },
+  "sensor_and_latency_summary": {
+    "speed": {
+      "min": 0.0005807469119672886,
+      "max": 8.622766865307204,
+      "median": 3.9544104383656307,
+      "p95": 7.631159560895142
+    },
+    "range": {
+      "min": 3.63002347946167,
+      "max": 20.93921661376953,
+      "median": 9.705219745635986,
+      "p95": 17.0449728012085
+    },
+    "closing": {
+      "min": -5.051078796386719,
+      "max": 7.923335552215576,
+      "median": 2.3466503620147705,
+      "p95": 6.0307599067687985
+    },
+    "teacher_ms": {
+      "min": 0.9141000009549316,
+      "max": 2.402600002824329,
+      "median": 1.142999999501626,
+      "p95": 1.5603650021148499
+    },
+    "capture_ms": {
+      "min": 51.35130000053323,
+      "max": 230.58969999692636,
+      "median": 77.72724999995262,
+      "p95": 101.42334999854938
+    }
+  },
+  "dataset_bytes": 34474740,
+  "recorder_bytes": 121485380,
+  "total_storage_bytes": 155960120,
+  "process_cpu_deltas_collection": [
+    {
+      "pid": 7312,
+      "name": "python.exe",
+      "runner": false,
+      "cpu_s": 0.0
+    },
+    {
+      "pid": 21672,
+      "name": "python.exe",
+      "runner": true,
+      "cpu_s": 18.34375
+    },
+    {
+      "pid": 24436,
+      "name": "CarlaUE4-Win64-Shipping.exe",
+      "runner": false,
+      "cpu_s": 279.375
+    },
+    {
+      "pid": 25056,
+      "name": "python.exe",
+      "runner": false,
+      "cpu_s": 107.78125
+    }
+  ],
+  "sampled_private_mib_max": 521.26171875,
+  "audit_wall_s": 24.95109279999815,
+  "audit_cpu_s": 20.984375,
+  "audit_private_mib": 542.21875,
+  "bc_readiness": "Small sequential feasibility pilot only; three public decisions collapse to two intervention actions. No generalization or teacher optimality claim."
+}
