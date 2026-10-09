@@ -4,6 +4,7 @@ Traffic speed is a percentage below each road's speed limit, never an absolute
 random speed. Native TM/walker controllers do not control the ego vehicle.
 """
 import copy
+import math
 import random
 from .urban import MIXTURES, WORLD_PROFILES, sample_driver, apply_driver
 
@@ -174,6 +175,7 @@ class WorldPopulationManager:
         blueprints = sorted(library.filter('walker.pedestrian.*'), key=lambda bp: bp.id)
         batch, speeds = [], []
         chosen_locations = []
+        frusta=self._view_frusta() if replacement else ()
         existing_locations = [entry['location'] for entry in self.walkers.values() if entry.get('location') is not None]
         for _ in range(max(100, needed*10)) if needed else ():
             if len(batch) >= needed: break
@@ -181,7 +183,8 @@ class WorldPopulationManager:
             if location is None: continue
             if replacement:
                 ego = self.world.get_actor(self.ego_id)
-                if ego is not None and location.distance(ego.get_location()) < 90.: continue
+                if ego is not None and location.distance(ego.get_location()) < 120.: continue
+                if self._spawn_visible(location,frusta):continue
             if any(location.distance(previous) < 1.5 for previous in chosen_locations+existing_locations): continue
             chosen_locations.append(location)
             bp = self.random.choice(blueprints)
@@ -283,8 +286,11 @@ class WorldPopulationManager:
         ego = self.world.get_actor(self.ego_id)
         if ego is None: return []
         position = ego.get_location()
-        minimum = 90. if replacement else 28.
+        minimum = 120. if replacement else 28.
         candidates = [t for t in self.road_candidates if minimum <= t.location.distance(position) <= 200.]
+        if replacement:
+            frusta=self._view_frusta()
+            candidates=[t for t in candidates if not self._spawn_visible(t.location,frusta)]
         occupied = [a.get_location() for a in self.world.get_actors().filter('vehicle.*')]
         candidates = [t for t in candidates if all(t.location.distance(p) >= 9. for p in occupied)]
         self.random.shuffle(candidates)
@@ -296,6 +302,28 @@ class WorldPopulationManager:
         # Native points cover both legal driving directions. SpawnActor rejects
         # occupied volumes, retaining actual counts rather than claimed counts.
         return candidates
+
+    def _view_frusta(self):
+        """Conservative native RGB visibility, including rear/chase/top views."""
+        frusta=[]
+        for camera in self.world.get_actors().filter('sensor.camera.rgb'):
+            transform=camera.get_transform();attributes=camera.attributes
+            horizontal=math.tan(math.radians(float(attributes.get('fov',90))*.5))
+            aspect=float(attributes.get('image_size_x',800))/float(attributes.get('image_size_y',450))
+            frusta.append((transform.location,transform.get_forward_vector(),transform.get_right_vector(),
+                           transform.get_up_vector(),horizontal,horizontal/aspect))
+        return frusta
+
+    @staticmethod
+    def _spawn_visible(location,frusta):
+        # Three-meter padding rejects objects intersecting a view edge. Native
+        # occlusion is deliberately not assumed when choosing hidden spawns.
+        for origin,forward,right,up,horizontal,vertical in frusta:
+            delta=(location.x-origin.x,location.y-origin.y,location.z-origin.z)
+            dot=lambda axis:sum(value*getattr(axis,key) for value,key in zip(delta,('x','y','z')))
+            depth=dot(forward)
+            if depth>-3. and abs(dot(right))<=max(depth,0.)*horizontal+3. and abs(dot(up))<=max(depth,0.)*vertical+3.:return True
+        return False
 
     def set_route(self, points):
         self.route_points = [self.api.Location(*p) for p in (points or [])[::3]]
@@ -311,17 +339,25 @@ class WorldPopulationManager:
         ego_position = ego_snapshot.get_transform().location if ego_snapshot is not None else None
         if ego_position is not None and timestamp-self.last_recycle_at >= 10.:
             self.last_recycle_at = timestamp
+            frusta=self._view_frusta()
+            nearby=sum(snapshot.find(i) is not None and snapshot.find(i).get_transform().location.distance(ego_position)<=120.
+                       for i in self.vehicles)
+            # Circulating fleets can drift within the wider retirement radius.
+            # Retire a bounded number of hidden distant actors under local
+            # density pressure, then replenish through normal physical spawns.
+            retirement_radius=180. if nearby<self.config['vehicle_count']*.6 else 300.
             # Beyond all camera ranges used by this project; bounded retirement
             # avoids a mass reset while ego traverses the map.
             distant = [i for i in sorted(self.vehicles) if snapshot.find(i) is not None
-                       and snapshot.find(i).get_transform().location.distance(ego_position) > 300.][:3]
+                       and snapshot.find(i).get_transform().location.distance(ego_position) > retirement_radius
+                       and not self._spawn_visible(snapshot.find(i).get_transform().location,frusta)][:3]
             self._destroy(distant)
             for i in distant:
                 self.vehicles.discard(i); self.pending_vehicles.discard(i); self.seen_vehicles.discard(i)
                 self.driver_profiles.pop(i, None); self.missing_vehicle_frames.pop(i, None)
             self.recycled_vehicles += len(distant)
             for i, entry in list(self.walkers.items()):
-                if snapshot.find(i) is not None and snapshot.find(i).get_transform().location.distance(ego_position) > 300.:
+                if snapshot.find(i) is not None and snapshot.find(i).get_transform().location.distance(ego_position) > 300. and not self._spawn_visible(snapshot.find(i).get_transform().location,frusta):
                     self._remove_walker(i); self.recycled_walkers += 1
                     break
         active = 0

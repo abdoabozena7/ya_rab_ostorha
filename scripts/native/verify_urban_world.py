@@ -17,6 +17,8 @@ class Session:
         self.world = self.client.get_world(); self.world.wait_for_tick(10)
         self.socket = connect('ws://127.0.0.1:8001', max_size=2**23)
         self.sequence = 0; self.state = None
+        self.probe_sensors=[]
+        self.started_recording=False
         self.wait(lambda s:s['connected']); self.send('take_control')
         return self
 
@@ -36,12 +38,13 @@ class Session:
         self.socket.send(json.dumps({'type':kind, 'sequence':self.sequence, **payload}))
         self.wait(lambda s:s.get('acknowledged')==self.sequence)
 
-    def action(self, kind, value):
+    def action(self, kind, value=None):
         self.send(kind, value=value)
         self.wait(lambda s:(s.get('dashboardResult') or {}).get('action')==kind and
                   s['dashboardResult']['status'] in ('APPLIED','REJECTED'))
         if self.state['dashboardResult']['status']=='REJECTED':
             raise RuntimeError(self.state['dashboardResult']['error'])
+        if kind=='recording':self.started_recording=value['enabled']
         frame = self.state['vehicle']['frame']
         self.wait(lambda s:s['vehicle']['frame']>frame+10)
         return self.state['dashboardResult']['result']
@@ -53,6 +56,11 @@ class Session:
                  ('controllers','controller.ai.walker'),('sensors','sensor.*')]}
 
     def __exit__(self, *args):
+        for sensor in self.probe_sensors:
+            try:
+                if sensor.is_alive:sensor.stop();sensor.destroy()
+            except RuntimeError:pass
+        if self.started_recording:self.action('recording',{'enabled':False})
         self.socket.close()
 
 
@@ -63,6 +71,9 @@ def main():
     parser.add_argument('--duration',type=float,default=60)
     parser.add_argument('--profiles-only',action='store_true')
     parser.add_argument('--single',action='store_true',help='Detailed 25/20 congestion probe')
+    parser.add_argument('--crossing-percent',type=int,default=5)
+    parser.add_argument('--npc-collision-probe',action='store_true',help='Temporary native collision sensors on NPCs; removed after each probe')
+    parser.add_argument('--ego-spawn',type=int)
     parser.add_argument('--output',default='output/native-validation/gate5-urban.json')
     args=parser.parse_args()
     proof={'source':'LIVE_NATIVE','matrix':[],'render_fps':None}
@@ -72,6 +83,7 @@ def main():
     with Session() as s:
         proof['versions']=[s.client.get_server_version(),s.client.get_client_version()]
         proof['map']=s.world.get_map().name
+        if args.ego_spawn is not None:s.action('settings',{'spawn_index':args.ego_spawn})
         proof['sensor_registry']=s.state['sensorRegistry']
         matrix=[(10,5,b) for b in ('NORMAL','BUSY','AGGRESSIVE','UNREGULATED')] if args.profiles_only else [
             (0,0,'NORMAL'),(10,10,'BUSY'),(25,20,'BUSY'),(40,30,'BUSY'),(50,35,'UNREGULATED')]
@@ -79,9 +91,23 @@ def main():
         for vehicles,walkers,behavior in matrix:
             s.action('population','reset')
             s.action('settings',{'population':{**DEFAULT_POPULATION,'vehicle_count':vehicles,
-                'pedestrian_count':walkers,'driver_behavior':behavior,'light_compliance_percent':80}})
+                'pedestrian_count':walkers,'driver_behavior':behavior,'light_compliance_percent':80,
+                'crossing_percent':args.crossing_percent}})
             s.wait(lambda st:st['population']['actual']['vehicles']==vehicles and
                    st['population']['actual']['pedestrians']==walkers)
+            collision_probes=[];npc_contacts=[]
+            if args.npc_collision_probe:
+                import carla
+                bp=s.world.get_blueprint_library().find('sensor.other.collision')
+                for actor_id in s.state['population']['vehicle_ids']:
+                    actor=s.world.get_actor(actor_id)
+                    sensor=s.world.spawn_actor(bp,carla.Transform(),attach_to=actor)
+                    sensor.listen(lambda event,actor_id=actor_id:npc_contacts.append({
+                        'frame':event.frame,'timestamp_s':event.timestamp,'actor_id':actor_id,
+                        'other_actor_id':event.other_actor.id,'other_type':event.other_actor.type_id,
+                        'impulse_ns':math.hypot(event.normal_impulse.x,event.normal_impulse.y,event.normal_impulse.z)}))
+                    collision_probes.append(sensor)
+                    s.probe_sensors.append(sensor)
             began=time.monotonic(); initial=s.state['synchronization']; rows=[]; positions={}; distances={}
             sampled=-10.; stopped_then_moved=set(); previously_stopped=set(); nearby=[]; minimum_gap=None
             states=set(); lanes={}; changed=set(); ego_start=s.state['canonical']['vehicle']['transform']['position_m']
@@ -133,6 +159,7 @@ def main():
                  'memory_private_mib':{p:[min(r[p]['private_mib'] for r in warm),max(r[p]['private_mib'] for r in warm)] for p in ('backend','carla')},
                  'sensor_wall_hz':{k:statistics.median(r['performance']['sensorWallRatesHz'][k] for r in warm) for k in ('frontCamera','depth','radar','lidar','imu','gnss')},
                  'step_ms_median':statistics.median(r['step_ms'] for r in warm),
+                 'observation_pipeline_latency_ms_median':statistics.median(r['performance']['observationPipelineLatencyMs']['median'] for r in warm),
                  'sync_issues':{k:final['issues'][k]-initial['issues'][k] for k in final['issues']},
                  'incomplete_frames':final['incompleteFrames']-initial['incompleteFrames'],
                  'moved_vehicles':sum(distances.get(i,0)>2 for i in pop['vehicle_ids']),
@@ -140,16 +167,28 @@ def main():
                  'stopped_then_moved_vehicles':len(stopped_then_moved),'observed_lane_changes':len(changed),
                  'minimum_planar_box_clearance_m':minimum_gap,'observed_activity_states':sorted(states),
                  'footprint_overlap_sample_count':overlap_samples,'queue_size_minmax':[min(queue_sizes),max(queue_sizes)],
-                 'ego_collision_callback_count':len(collision_ids),
+                 'ego_collision_callback_count':len(collision_ids),'npc_collision_contacts':npc_contacts,
+                 'npc_collision_probe_actor_count':len(collision_probes),
                  'ego_displacement_m':math.dist(ego_start,s.state['canonical']['vehicle']['transform']['position_m']),
                  'profile_names':sorted({p.get('name') for p in pop['driver_profiles'].values()}),
                  'final_population':pop,'sensor_errors':s.state['sensorErrors']}
-            row['pass']=not any(row['sync_issues'].values()) and row['incomplete_frames']==0 and not row['sensor_errors'] and row['actual']['sensors']==7
+            pairs={tuple(sorted((c['actor_id'],c['other_actor_id']))) for c in npc_contacts}
+            row['npc_collision_summary']={'raw_callbacks':len(npc_contacts),'unique_contact_pairs':len(pairs),
+                'maximum_impulse_ns':max((c['impulse_ns'] for c in npc_contacts),default=0.),
+                'notes':'Temporary diagnostic sensors. Paired callbacks count twice; sustained contact is not multiple independent crashes.'}
+            row['pass']=not any(row['sync_issues'].values()) and row['incomplete_frames']==0 and not row['sensor_errors'] and row['actual']['sensors']==7+len(collision_probes)
+            row['transport_and_sensors_pass']=row['pass']
+            row['collision_free_observed']=not npc_contacts if args.npc_collision_probe else None
+            for sensor in collision_probes:
+                sensor.stop();sensor.destroy()
+            s.probe_sensors.clear()
             proof['matrix'].append(row); root.write_text(json.dumps(proof,indent=2),encoding='utf8')
-            print(json.dumps({k:v for k,v in row.items() if k!='final_population'}),flush=True)
+            print(json.dumps({k:v for k,v in row.items() if k not in ('final_population','npc_collision_contacts')} |
+                             {'npc_collision_callback_count':len(npc_contacts)}),flush=True)
         s.action('population','reset')
         proof['cleanup_inventory']=s.inventory()
         proof['pass']=all(r['pass'] for r in proof['matrix']) and proof['cleanup_inventory']==dict(vehicles=1,walkers=0,controllers=0,sensors=7)
+        proof['pass_scope']='Transport, sensor synchronization and cleanup; not a collision-free assertion'
         root.write_text(json.dumps(proof,indent=2),encoding='utf8')
     if not proof['pass']: raise SystemExit(1)
 

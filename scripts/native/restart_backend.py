@@ -2,6 +2,7 @@
 import json
 import subprocess
 import time
+import urllib.request
 from pathlib import Path
 from websockets.sync.client import connect
 from .stability_run import backend_pid
@@ -28,6 +29,15 @@ def main():
         process=subprocess.Popen([str(root/'.venv-carla/Scripts/python.exe'),'-m','backend.server',
                                  '--carla','--sensors','--start-paused'],cwd=root,stdout=out,stderr=err,
                                  creationflags=subprocess.CREATE_NO_WINDOW)
+    deadline=time.monotonic()+60
+    while time.monotonic()<deadline:
+        try:
+            with urllib.request.urlopen('http://127.0.0.1:8000/api/simulation/state',timeout=2) as response:
+                state=json.load(response)
+            if state.get('connected'):break
+        except OSError:pass
+        time.sleep(.25)
+    else:raise RuntimeError('Restarted backend did not publish a connected native state')
     print(json.dumps({'retired_pid':pid,'new_pid':process.pid,'cleanup_verified':True}))
 
 
