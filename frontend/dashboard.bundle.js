@@ -932,7 +932,7 @@
       $("populationHealth").textContent = $("populationApplied").textContent = health;
       const environment = p.environment, training = environment?.mode === "TRAINING";
       $("environmentStatus").textContent = environment ? environment.mode + " \xB7 " + environment.scenario_phase + (environment.scenario ? " \xB7 " + environment.scenario.scenario_id + " \xB7 seed " + environment.scenario.random_seed + " \xB7 level " + environment.scenario.difficulty : "") : "Environment unavailable";
-      $("safetyPolicyStatus").textContent = "Safety interface prepared \u2014 no policy connected \xB7 control " + (p.controlSource ?? "unavailable");
+      $("safetyPolicyStatus").textContent = p.safetySystem ? "YA RAB OSTORHA \xB7 " + p.safetySystem.controller + " \xB7 " + p.safetySystem.status + " \xB7 generator " + p.safetySystem.actual_generator + " \xB7 model " + p.safetySystem.model_health + " \xB7 control " + (p.controlSource ?? "unavailable") : "Safety sensors unavailable";
       $("policyObservationStatus").textContent = environment?.observation_status ? "Observation " + environment.observation_status.status + " \xB7 history " + environment.observation_status.history_frames + " \xB7 ground truth excluded" : "Waiting for synchronized policy observations";
       $("scenarioOutcome").textContent = environment?.outcome ? JSON.stringify(environment.outcome, null, 2) : "No outcome yet";
       const scenarioBlocked = ownerBlocked || (p.recording ? "Finish recording before changing scenario lifecycle" : "");
@@ -1314,9 +1314,12 @@
     $3("controlMode").textContent = modeNames[provider.controlMode] || provider.controlMode;
     $3("controlSource").textContent = provider.controlSource || "";
     const safety = provider.safetySystem;
-    $3("safetyStatus").textContent = provider.isReplay ? "YA RAB OSTORHA \xB7 Replay, no active control" : !live ? "YA RAB OSTORHA \xB7 Waiting for sensors" : "YA RAB OSTORHA \xB7 RULE-BASED SAFETY \xB7 " + (safety?.status ?? "UNAVAILABLE") + " \xB7 Risk: " + (safety?.risk ?? "UNKNOWN") + " \xB7 " + (safety?.active ? "Intervention active" : "Monitoring / standby") + " \xB7 Interventions: " + (safety?.intervention_count ?? 0) + " \xB7 " + (safety?.reason ?? "");
+    $3("safetyStatus").textContent = provider.isReplay ? "YA RAB OSTORHA \xB7 Replay, no active control" : !live ? "YA RAB OSTORHA \xB7 Waiting for sensors" : "YA RAB OSTORHA \xB7 " + (safety?.controller ?? "RULE") + " SAFETY \xB7 " + (safety?.status ?? "UNAVAILABLE") + " \xB7 Risk: " + (safety?.risk ?? "UNKNOWN") + " \xB7 " + (safety?.active ? "Intervention active" : "Monitoring / standby") + " \xB7 Generator: " + (safety?.actual_generator ?? "RULE") + " \xB7 Model: " + (safety?.model_health ?? "UNAVAILABLE") + " \xB7 Interventions: " + (safety?.intervention_count ?? 0) + " \xB7 " + (safety?.reason ?? "") + (safety?.model_validation ? " \xB7 " + safety.model_validation : "");
     $3("safetyEnabled").checked = safety?.enabled === true;
     $3("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
+    $3("safetyController").disabled = $3("safetyEnabled").disabled;
+    $3("safetyController").value = safety?.controller ?? "RULE";
+    for (const option of $3("safetyController").options) option.disabled = !(safety?.available_controllers ?? ["RULE"]).includes(option.value);
     $3("connectionDetail").textContent = provider.isReplay ? "Recorded data view; no simulator controls." : live ? provider.controller ? "Take control from this page." : "Another page controls the vehicle; take control in Settings." : provider.restarting ? "Restarting CARLA and reconnecting\u2026" : "Simulator disconnected. Open connection setup to continue.";
     $3("phoneStatus").textContent = live ? "Destinations from map " + (provider.world.map?.split("/").at(-1) || "CARLA") : "Waiting for simulator connection.";
     $3("providerStatus").textContent = provider.status;
@@ -1395,6 +1398,7 @@
     clearControls();
   };
   $3("safetyEnabled").onchange = () => provider.dashboardAction("safety_mode", { enabled: $3("safetyEnabled").checked });
+  $3("safetyController").onchange = () => provider.dashboardAction("safety_mode", { enabled: $3("safetyEnabled").checked, controller: $3("safetyController").value });
   $3("gearSelect").onchange = () => {
     controls.setMode($3("gearSelect").value);
     provider.releaseControls();

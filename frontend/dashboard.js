@@ -93,13 +93,18 @@ function refresh() {
   $('controlSource').textContent = provider.controlSource || '';
   const safety = provider.safetySystem;
   $('safetyStatus').textContent = provider.isReplay ? 'YA RAB OSTORHA · Replay, no active control' : !live ?
-    'YA RAB OSTORHA · Waiting for sensors' : 'YA RAB OSTORHA · RULE-BASED SAFETY · '+
+    'YA RAB OSTORHA · Waiting for sensors' : 'YA RAB OSTORHA · '+(safety?.controller ?? 'RULE')+' SAFETY · '+
     (safety?.status ?? 'UNAVAILABLE')+' · Risk: '+(safety?.risk ?? 'UNKNOWN')+
     ' · '+(safety?.active ? 'Intervention active' : 'Monitoring / standby')+
-    ' · Interventions: '+(safety?.intervention_count ?? 0)+' · '+(safety?.reason ?? '');
+    ' · Generator: '+(safety?.actual_generator ?? 'RULE')+' · Model: '+(safety?.model_health ?? 'UNAVAILABLE')+
+    ' · Interventions: '+(safety?.intervention_count ?? 0)+' · '+(safety?.reason ?? '')+
+    (safety?.model_validation ? ' · '+safety.model_validation : '');
   $('safetyEnabled').checked = safety?.enabled === true;
   $('safetyEnabled').disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === 'TRAINING' ||
     !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > .15;
+  $('safetyController').disabled = $('safetyEnabled').disabled;
+  $('safetyController').value = safety?.controller ?? 'RULE';
+  for (const option of $('safetyController').options) option.disabled = !(safety?.available_controllers ?? ['RULE']).includes(option.value);
   $('connectionDetail').textContent = provider.isReplay ? 'Recorded data view; no simulator controls.'
     : live ? (provider.controller?'Take control from this page.':'Another page controls the vehicle; take control in Settings.')
     : provider.restarting ? 'Restarting CARLA and reconnecting…' : 'Simulator disconnected. Open connection setup to continue.';
@@ -169,6 +174,7 @@ $('journeySpeed').onchange = () => {
 };
 $('drivingMode').onchange = () => { clearControls(); };
 $('safetyEnabled').onchange = () => provider.dashboardAction('safety_mode', {enabled:$('safetyEnabled').checked});
+$('safetyController').onchange = () => provider.dashboardAction('safety_mode', {enabled:$('safetyEnabled').checked,controller:$('safetyController').value});
 $('gearSelect').onchange = () => { controls.setMode($('gearSelect').value); provider.releaseControls(); lastGear = null; };
 $('pauseBtn').onclick = () => clearControls();
 $('resetBtn').onclick = () => { clearControls(); provider.resetVehicle(); };

@@ -28,6 +28,7 @@ output/
 .venv-carla/
 .venv-rl/
 .venv-perception/
+.venv-learned/
 models/
 .venv-carla-archive-*/
 recordings/

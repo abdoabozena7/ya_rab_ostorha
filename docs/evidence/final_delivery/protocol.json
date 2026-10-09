@@ -1,0 +1,168 @@
+{
+  "predeclared_epoch": 1791541534.3031106,
+  "selection": "Two fixed unused TEST namespace seeds; whole conditions held out before native outcomes. No final TEST retuning.",
+  "weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+  "cases": [
+    {
+      "scenario_id": "sudden_braking_v1",
+      "scenario_type": "SUDDEN_BRAKING",
+      "random_seed": 2473,
+      "map_id": "Carla/Maps/Town10HD_Opt",
+      "ego_spawn": 50,
+      "ego_initial_speed": 0.0,
+      "other_actor_definitions": [
+        {
+          "name": "leader",
+          "blueprint": "vehicle.tesla.model3",
+          "transform": {
+            "position_m": [
+              5.452742099761963,
+              13.199129104614258,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.144371129555073
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 4.0,
+          "control_schedule": [
+            {
+              "start_s": 0.0,
+              "throttle": 0.25,
+              "brake": 0.0,
+              "steering": 0.0
+            },
+            {
+              "start_s": 1.5,
+              "throttle": 0.0,
+              "brake": 0.85,
+              "steering": 0.0
+            },
+            {
+              "start_s": 7.0,
+              "throttle": 0.45,
+              "brake": 0.0,
+              "steering": 0.0
+            }
+          ]
+        }
+      ],
+      "pedestrian_definitions": [],
+      "weather": {
+        "cloudiness": 0.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "sun_altitude_angle": 70.0
+      },
+      "traffic_density": {
+        "vehicle_count": 0,
+        "pedestrian_count": 0
+      },
+      "difficulty": 1,
+      "success_conditions": {
+        "min_progress_m": 10.0,
+        "max_collision_episodes": 0.0
+      },
+      "failure_conditions": {
+        "max_collision_episodes": 0.0
+      },
+      "timeout": 14.0,
+      "split": "TEST",
+      "metadata": {
+        "native_demo": true,
+        "ego_control": "MANUAL_OR_EXISTING_BASE_DRIVER",
+        "avoidability": "UNKNOWN",
+        "prototype_difficulty_note": "Difficulty is a recorded curriculum label; geometry is fixed in these v1 demos",
+        "final_held_out": true,
+        "base_agent_hazard_handling": "NORMAL_UNCHANGED",
+        "actor_resumption_diagnostic": true
+      }
+    },
+    {
+      "scenario_id": "front_obstacle_v1",
+      "scenario_type": "FRONT_OBSTACLE",
+      "random_seed": 2589,
+      "map_id": "Carla/Maps/Town10HD_Opt",
+      "ego_spawn": 23,
+      "ego_initial_speed": 0.0,
+      "other_actor_definitions": [
+        {
+          "name": "obstacle",
+          "blueprint": "vehicle.tesla.model3",
+          "transform": {
+            "position_m": [
+              34.54146194458008,
+              130.54481506347656,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.1471855581950687
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": [
+            {
+              "start_s": 0.0,
+              "throttle": 0.0,
+              "brake": 1.0,
+              "steering": 0.0
+            },
+            {
+              "start_s": 7.0,
+              "throttle": 0.45,
+              "brake": 0.0,
+              "steering": 0.0
+            }
+          ]
+        }
+      ],
+      "pedestrian_definitions": [],
+      "weather": {
+        "cloudiness": 0.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "sun_altitude_angle": 70.0
+      },
+      "traffic_density": {
+        "vehicle_count": 0,
+        "pedestrian_count": 0
+      },
+      "difficulty": 1,
+      "success_conditions": {
+        "min_progress_m": 10.0,
+        "max_collision_episodes": 0.0
+      },
+      "failure_conditions": {
+        "max_collision_episodes": 0.0
+      },
+      "timeout": 14.0,
+      "split": "TEST",
+      "metadata": {
+        "native_demo": true,
+        "ego_control": "MANUAL_OR_EXISTING_BASE_DRIVER",
+        "avoidability": "UNKNOWN",
+        "prototype_difficulty_note": "Difficulty is a recorded curriculum label; geometry is fixed in these v1 demos",
+        "final_held_out": true,
+        "base_agent_hazard_handling": "NORMAL_UNCHANGED",
+        "actor_resumption_diagnostic": true
+      }
+    }
+  ],
+  "controllers": [
+    "BASE",
+    "RULE",
+    "LEARNED",
+    "HYBRID"
+  ],
+  "maximum_episodes": 10,
+  "maximum_native_wall_s": 600,
+  "success_conditions_unchanged": true,
+  "fallbacks_visible": true,
+  "model_frozen_before_test": true
+}

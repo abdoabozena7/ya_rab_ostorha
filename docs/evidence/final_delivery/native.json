@@ -1,0 +1,932 @@
+{
+  "source": "LIVE_NATIVE_PRODUCTION_COMMAND_LOOP",
+  "tick_owner": "simulation-worker",
+  "versions": [
+    "0.9.16",
+    "0.9.16"
+  ],
+  "baseline": "BasicAgent normal native hazard handling unchanged",
+  "cases": [
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_BASE",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "BASE",
+      "seed": 2473,
+      "condition_id": "d4323ee3c4323e9b55418ef27af94e6da32692dcfb27f00dfa3ced74932c1406",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 26.282230289099648,
+        "progress_m": 26.27797926501496,
+        "elapsed_simulation_s": 12.800000190734863,
+        "average_speed_mps": 2.0532992107393673,
+        "minimum_clearance_m": 2.8602761261595453,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 0,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 80.76854086702224,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 0,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 0
+      },
+      "learned_decisions": {
+        "null": 231
+      },
+      "fallback_reasons": {
+        "null": 231
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_5307d5e797a24e198c4cefee5de44505",
+      "recorded_frames": 282,
+      "applied_safety_frames": 0,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "RULE",
+          "reason": "Monitoring resumes with normal forward driving"
+        }
+      ],
+      "wall_s": 27.5,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_RULE",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "RULE",
+      "seed": 2473,
+      "condition_id": "d4323ee3c4323e9b55418ef27af94e6da32692dcfb27f00dfa3ced74932c1406",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 19.87356373090924,
+        "progress_m": 19.86617419531679,
+        "elapsed_simulation_s": 12.200000181794167,
+        "average_speed_mps": 1.6289806094073827,
+        "minimum_clearance_m": 4.479365733913751,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 12.460816281983625,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 104,
+        "BASE_DRIVER": 126
+      },
+      "learned_decisions": {
+        "null": 231
+      },
+      "fallback_reasons": {
+        "null": 231
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 78.99999999790452,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_88c7792cf35f42dba0166834b149871f",
+      "recorded_frames": 272,
+      "applied_safety_frames": 104,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 1.9500000290572643,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 2.550000037997961,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 4.400000065565109,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Complete protective stop; hold near obstacle"
+        },
+        {
+          "elapsed_s": 7.9500001184642315,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 10.500000156462193,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        }
+      ],
+      "wall_s": 28.718999999997322,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_LEARNED",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "LEARNED",
+      "seed": 2473,
+      "condition_id": "d4323ee3c4323e9b55418ef27af94e6da32692dcfb27f00dfa3ced74932c1406",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 7.911784411385795,
+        "progress_m": 7.906440707639061,
+        "elapsed_simulation_s": 12.150000181049109,
+        "average_speed_mps": 0.651175662015722,
+        "minimum_clearance_m": 4.3815990125055215,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 10.639881056231388,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": false,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 154,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 75
+      },
+      "learned_decisions": {
+        "null": 1,
+        "NO_INTERVENTION": 75,
+        "BRAKE_INTERVENTION": 153,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "fallback_reasons": {
+        "null": 229,
+        "Low model confidence": 1
+      },
+      "inference_median_ms": 0.10179999662796035,
+      "inference_max_ms": 0.3245999978389591,
+      "backend_step_median_ms": 78.99999999790452,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_ff793eb38f1a49f99d2f98162cdf41a3",
+      "recorded_frames": 270,
+      "applied_safety_frames": 154,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": false,
+      "edges": [
+        {
+          "elapsed_s": 0.05000000074505806,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Monitoring resumes with normal forward driving"
+        },
+        {
+          "elapsed_s": 2.500000037252903,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 3.1500000469386578,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.250000063329935,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.300000064074993,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.550000067800283,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        }
+      ],
+      "wall_s": 28.4059999999954,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_HYBRID",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "HYBRID",
+      "seed": 2473,
+      "condition_id": "d4323ee3c4323e9b55418ef27af94e6da32692dcfb27f00dfa3ced74932c1406",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 7.578535486568971,
+        "progress_m": 7.573769385577732,
+        "elapsed_simulation_s": 12.150000181049109,
+        "average_speed_mps": 0.6237477673777773,
+        "minimum_clearance_m": 4.712366406008113,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 7.121959401061758,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": false,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 154,
+        "RULE_GUARD": 3,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 73
+      },
+      "learned_decisions": {
+        "NO_INTERVENTION": 77,
+        "BRAKE_INTERVENTION": 153,
+        "RELEASE_TO_BASE_DRIVER": 1
+      },
+      "fallback_reasons": {
+        "null": 229,
+        "Low model confidence": 2
+      },
+      "inference_median_ms": 0.09560000034980476,
+      "inference_max_ms": 0.22399999579647556,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_bdb4eddacafb44929e241a40da53b534",
+      "recorded_frames": 268,
+      "applied_safety_frames": 157,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": false,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 1.9500000290572643,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 2.650000039488077,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.000000059604645,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 4.050000060349703,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 4.450000066310167,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        }
+      ],
+      "wall_s": 26.32800000000134,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_FRONT_OBSTACLE_BASE",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "AUTOMATIC",
+      "controller": "BASE",
+      "seed": 2589,
+      "condition_id": "6196b3422794f110109ce41f42c16ebd890a3e5ceae5bb81b57158a0c0967738",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 30.423135909425316,
+        "progress_m": 30.415367380354112,
+        "elapsed_simulation_s": 12.650000188499689,
+        "average_speed_mps": 2.4049909451450806,
+        "minimum_clearance_m": 2.9459895935076563,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 0,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 70.68220082573498,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 0,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 0
+      },
+      "learned_decisions": {
+        "null": 230
+      },
+      "fallback_reasons": {
+        "null": 230
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 77.99999999406282,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_380c15adebcd434ba9e550d4b5f3fa71",
+      "recorded_frames": 279,
+      "applied_safety_frames": 0,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.05000000074505806,
+          "active": false,
+          "generator": "RULE",
+          "reason": "Monitoring resumes with normal forward driving"
+        }
+      ],
+      "wall_s": 25.625,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_FRONT_OBSTACLE_RULE",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "AUTOMATIC",
+      "controller": "RULE",
+      "seed": 2589,
+      "condition_id": "6196b3422794f110109ce41f42c16ebd890a3e5ceae5bb81b57158a0c0967738",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 22.953723234719888,
+        "progress_m": 22.943222832935334,
+        "elapsed_simulation_s": 12.150000181049109,
+        "average_speed_mps": 1.889195299809281,
+        "minimum_clearance_m": 4.664985971922693,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 14.775552685769071,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 94,
+        "BASE_DRIVER": 135
+      },
+      "learned_decisions": {
+        "null": 230
+      },
+      "fallback_reasons": {
+        "null": 230
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3871df0c4f63468eba74dcaaa64729cc",
+      "recorded_frames": 270,
+      "applied_safety_frames": 94,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.05000000074505806,
+          "active": false,
+          "generator": "RULE",
+          "reason": "Monitoring resumes with normal forward driving"
+        },
+        {
+          "elapsed_s": 2.450000036507845,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 3.250000048428774,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Complete protective stop; hold near obstacle"
+        },
+        {
+          "elapsed_s": 7.900000117719173,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 10.400000154972076,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 11.450000170618296,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        }
+      ],
+      "wall_s": 24.70300000000134,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_FRONT_OBSTACLE_LEARNED",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "AUTOMATIC",
+      "controller": "LEARNED",
+      "seed": 2589,
+      "condition_id": "6196b3422794f110109ce41f42c16ebd890a3e5ceae5bb81b57158a0c0967738",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 9.739115398580301,
+        "progress_m": 9.734555631597008,
+        "elapsed_simulation_s": 12.150000181049109,
+        "average_speed_mps": 0.8015732718893971,
+        "minimum_clearance_m": 6.451243182773281,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 1,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 4.298131958930753,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": false,
+      "interventions": 1,
+      "generator_frames": {
+        "LEARNED_BC": 171,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 59
+      },
+      "learned_decisions": {
+        "null": 1,
+        "NO_INTERVENTION": 58,
+        "BRAKE_INTERVENTION": 172
+      },
+      "fallback_reasons": {
+        "null": 229,
+        "Low model confidence": 2
+      },
+      "inference_median_ms": 0.09744999988470227,
+      "inference_max_ms": 0.21949999791104347,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_9f34453220a948b1ba272af3c3c03ef7",
+      "recorded_frames": 270,
+      "applied_safety_frames": 171,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": false,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Monitoring resumes with normal forward driving"
+        },
+        {
+          "elapsed_s": 3.0000000447034836,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        }
+      ],
+      "wall_s": 25.781000000002678,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_FRONT_OBSTACLE_HYBRID",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "AUTOMATIC",
+      "controller": "HYBRID",
+      "seed": 2589,
+      "condition_id": "6196b3422794f110109ce41f42c16ebd890a3e5ceae5bb81b57158a0c0967738",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 11.385598483054041,
+        "progress_m": 11.37960532727934,
+        "elapsed_simulation_s": 12.150000181049109,
+        "average_speed_mps": 0.9370862809378935,
+        "minimum_clearance_m": 4.807145703047632,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 7.511904561863048,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 146,
+        "RULE_GUARD": 2,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 82
+      },
+      "learned_decisions": {
+        "NO_INTERVENTION": 81,
+        "BRAKE_INTERVENTION": 148,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "fallback_reasons": {
+        "null": 230,
+        "Low model confidence": 1
+      },
+      "inference_median_ms": 0.09709999721962959,
+      "inference_max_ms": 0.36559999716700986,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_41fb2e85c0304114bc37630b759eb939",
+      "recorded_frames": 271,
+      "applied_safety_frames": 148,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": false,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 2.400000035762787,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 3.250000048428774,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.6000000685453415,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.6500000692903996,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        }
+      ],
+      "wall_s": 25.54699999999866,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "MANUAL_FRONT_OBSTACLE_BASE",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "MANUAL",
+      "controller": "BASE",
+      "seed": 2589,
+      "condition_id": "6196b3422794f110109ce41f42c16ebd890a3e5ceae5bb81b57158a0c0967738",
+      "metrics": {
+        "collision_callback_count": 1,
+        "collision_count": 1,
+        "collision_impulse_total_ns": 13966.225348360982,
+        "collision_peak_impulse_ns": 13966.225348360982,
+        "distance_traveled_m": 15.715796222837549,
+        "progress_m": 15.71422225546504,
+        "elapsed_simulation_s": 5.700000084936619,
+        "average_speed_mps": 2.757157190991919,
+        "minimum_clearance_m": 0.4723115673647926,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 0,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 1.550000011920929,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "failure_condition",
+      "success": false,
+      "interventions": 0,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 0
+      },
+      "learned_decisions": {
+        "null": 102
+      },
+      "fallback_reasons": {
+        "null": 102
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_109c14dc04ed400ab236896e5dc556f9",
+      "recorded_frames": 146,
+      "applied_safety_frames": 0,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": false,
+      "edges": [
+        {
+          "elapsed_s": 0.05000000074505806,
+          "active": false,
+          "generator": "RULE",
+          "reason": "Monitoring resumes with normal forward driving"
+        }
+      ],
+      "wall_s": 13.280999999995402,
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "MANUAL_FRONT_OBSTACLE_RULE",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "MANUAL",
+      "controller": "RULE",
+      "seed": 2589,
+      "condition_id": "6196b3422794f110109ce41f42c16ebd890a3e5ceae5bb81b57158a0c0967738",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 21.711489320074346,
+        "progress_m": 21.7008817113511,
+        "elapsed_simulation_s": 12.850000191479921,
+        "average_speed_mps": 1.6896100386418638,
+        "minimum_clearance_m": 3.9634361596999286,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 2,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 9.300000071525574,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 2,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 55,
+        "BASE_DRIVER": 175
+      },
+      "learned_decisions": {
+        "null": 231
+      },
+      "fallback_reasons": {
+        "null": 231
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 78.00000000133878,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3f2f5cc9988241b59947f35be2a3efde",
+      "recorded_frames": 283,
+      "applied_safety_frames": 55,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "RULE",
+          "reason": "Monitoring resumes with normal forward driving"
+        },
+        {
+          "elapsed_s": 3.450000051409006,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 4.400000065565109,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 6.400000095367432,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 8.200000122189522,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        }
+      ],
+      "wall_s": 26.656000000002678,
+      "actor_cleanup_verified": true
+    }
+  ],
+  "before_resources": {
+    "working_set_mib": 225.91015625,
+    "private_mib": 692.54296875,
+    "cpu_seconds": 218.5625
+  },
+  "initial_inventory": {
+    "vehicles": 2,
+    "walkers": 0,
+    "controllers": 0,
+    "sensors": 7
+  },
+  "initial_sync": {
+    "completeFrames": 3764,
+    "incompleteFrames": 2,
+    "issues": {
+      "MISSING": 12,
+      "LATE": 0,
+      "STALE": 0,
+      "DUPLICATE": 0,
+      "OUT_OF_ORDER": 0,
+      "TIMESTAMP_MISMATCH": 0
+    },
+    "pendingFrames": 1
+  },
+  "final_inventory": {
+    "vehicles": 1,
+    "walkers": 0,
+    "controllers": 0,
+    "sensors": 7
+  },
+  "final_sync": {
+    "completeFrames": 7407,
+    "incompleteFrames": 12,
+    "issues": {
+      "MISSING": 72,
+      "LATE": 0,
+      "STALE": 0,
+      "DUPLICATE": 0,
+      "OUT_OF_ORDER": 0,
+      "TIMESTAMP_MISMATCH": 0
+    },
+    "pendingFrames": 1
+  },
+  "rl_runtime": {
+    "active": false,
+    "tick_owner": "simulation-worker"
+  },
+  "final_mode": "PAUSED",
+  "final_safety": {
+    "type": "RULE_BASED_SAFETY",
+    "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+    "status": "STANDBY",
+    "risk": "UNKNOWN",
+    "active": false,
+    "reason": "Waiting for forward driving",
+    "steering_available": false,
+    "rejected_interventions": 0,
+    "enabled": true,
+    "intervention_count": 18,
+    "controller": "RULE",
+    "model_health": "READY",
+    "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "model_error": null,
+    "available_controllers": [
+      "RULE"
+    ],
+    "source_counts": {
+      "LEARNED_BC": 625,
+      "RULE_GUARD": 5,
+      "RULE_FALLBACK": 0,
+      "RULE": 253,
+      "BASE_DRIVER": 725
+    },
+    "experimental": false,
+    "actual_generator": "RULE"
+  },
+  "wall_s": 264.42199999999866,
+  "after_resources": {
+    "working_set_mib": 245.32421875,
+    "private_mib": 710.94140625,
+    "cpu_seconds": 634.828125
+  }
+}

@@ -1,4 +1,26 @@
-# Ya Rab Ostorha: CARLA Simulation Control Center
+# YA RAB OSTORHA: CARLA Collision-Avoidance Prototype
+
+Always-on sensor-derived **RULE** safety protects forward manual and BasicAgent
+driving through the existing feasibility validator and command arbiter. A compact
+recurrent **behavior-cloned** safety model is supplied as an explicit research
+comparison, with visible rule fallback and an optional hybrid guard. This is
+supervised imitation, not a successful RL policy. RULE remains the startup default.
+
+```powershell
+.\Start-YA-RAB-OSTORHA.ps1
+```
+
+This reuses or starts the verified CARLA 0.9.16 installation and dashboard,
+with seven sensors and the vehicle paused. Open Settings to take control;
+enable manual driving for WASD, or select a map destination and Start Journey.
+Safety/controller comparisons require a stopped vehicle. Controller availability
+reflects native validation; the live **Generator** field identifies learned,
+rule-guard or fallback control. Nothing trains during startup or driving.
+
+The saved model, results, repeatable demonstration commands and limits are in
+[final delivery](docs/FINAL_DELIVERY.md). Historical checkpoints, the frozen SAC,
+demonstrations and Gymnasium environment are retained. No steering avoidance or
+general pedestrian/rear-collision guarantee is claimed.
 
 CARLA owns the world, vehicle physics and sensors. This project retains the
 existing dashboard, controls, safety/core architecture, synchronization and recording.
@@ -19,7 +41,8 @@ the populated endurance median was 16.90 actual ticks/s (renderer FPS unavailabl
 native pedestrian activity, separate Living City/Training modes, two native
 scenario prototypes and sensor-only future safety-policy/research contracts.
 The current suggested BALANCED profile is 25 NPCs / 20 walkers. The interface
-is prepared; no YA RAB OSTORHA policy or RL training is active.
+was originally prepared without a policy; the final prototype now adds the
+explicit rule-based and experimental learned safety modes described above.
 [Gate 5 report](docs/GATE5_WORLD_FOUNDATION.md) ·
 [environment contracts](docs/GATE5_ENVIRONMENT_CONTRACTS.md).
 

@@ -339,7 +339,9 @@ export class DashboardTools {
     const environment = p.environment, training=environment?.mode==='TRAINING';
     $('environmentStatus').textContent = environment ? environment.mode+' · '+environment.scenario_phase+
       (environment.scenario ? ' · '+environment.scenario.scenario_id+' · seed '+environment.scenario.random_seed+' · level '+environment.scenario.difficulty : '') : 'Environment unavailable';
-    $('safetyPolicyStatus').textContent = 'Safety interface prepared — no policy connected · control '+(p.controlSource ?? 'unavailable');
+    $('safetyPolicyStatus').textContent = p.safetySystem ? 'YA RAB OSTORHA · '+p.safetySystem.controller+
+      ' · '+p.safetySystem.status+' · generator '+p.safetySystem.actual_generator+' · model '+p.safetySystem.model_health+
+      ' · control '+(p.controlSource ?? 'unavailable') : 'Safety sensors unavailable';
     $('policyObservationStatus').textContent = environment?.observation_status ?
       'Observation '+environment.observation_status.status+' · history '+environment.observation_status.history_frames+' · ground truth excluded' : 'Waiting for synchronized policy observations';
     $('scenarioOutcome').textContent = environment?.outcome ? JSON.stringify(environment.outcome,null,2) : 'No outcome yet';

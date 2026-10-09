@@ -1,0 +1,10 @@
+{
+  "version": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+  "minimum_confidence": 0.55,
+  "maximum_supported_speed_mps": 12.0,
+  "maximum_supported_abs_yaw_rate_radps": 0.3,
+  "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+  "native_validated_modes": {"RULE": true, "LEARNED": false, "HYBRID": true},
+  "native_validation_status": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+  "notes": "Experimental supervised imitation, not RL. RULE remains default. Missing/unsupported observations or model failure use visible RULE fallback. No steering avoidance."
+}

@@ -71,24 +71,30 @@ class SimulationService:
         self.active_safety = None
         self.safety_command = None
         if getattr(provider, 'sensor_suite', False) is True:
-            from .active_safety import ActiveSafetySupervisor
-            self.active_safety = ActiveSafetySupervisor()
+            from .research_safety import ResearchSafetySupervisor
+            self.active_safety = ResearchSafetySupervisor()
             self.provider.active_safety_configuration = to_dict(self.active_safety.config)
+            self.provider.active_safety_configuration['learned_safety'] = copy.deepcopy(self.active_safety.learned_config)
 
     def set_safety_enabled(self, value):
         with self.lock:
             self._require_normal_runtime()
             self.require_connected()
-            if not isinstance(value, dict) or set(value) != {'enabled'} or type(value['enabled']) is not bool:
+            if not isinstance(value, dict) or set(value) not in ({'enabled'}, {'enabled','controller'}) or type(value['enabled']) is not bool:
                 raise ValueError('Safety comparison requires an explicit enabled boolean')
             if self.active_safety is None:
                 raise ValueError('YA RAB OSTORHA requires the real sensor suite')
             if self.observation.vehicle.speed_mps > .15:
                 raise ValueError('Stop the vehicle before changing the safety comparison mode')
+            if 'controller' in value:
+                environment = getattr(self.provider, 'environment_state', lambda: {})()
+                self.active_safety.set_controller(value['controller'], controlled_validation=
+                    isinstance(environment,dict) and environment.get('mode')=='TRAINING')
             self._clear_safety_command()
             self.active_safety.enabled = value['enabled']
             self.active_safety.reset()
-            self._event(EventType.ControlChanged, safety_enabled=value['enabled'], safety_type='RULE_BASED_SAFETY')
+            self._event(EventType.ControlChanged, safety_enabled=value['enabled'], safety_type=self.active_safety.snapshot()['type'],
+                        safety_controller=getattr(self.active_safety,'controller','RULE'))
 
     def _clear_safety_command(self):
         if self.safety_command is not None and self.arbiter.safety.latest.get(CommandSource.SAFETY) == self.safety_command:

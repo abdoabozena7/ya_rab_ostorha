@@ -1,0 +1,27 @@
+{
+  "predeclared_epoch": 1791542334.964856,
+  "selections": [
+    [
+      "SUDDEN_BRAKING",
+      1893,
+      "VALIDATION"
+    ],
+    [
+      "FRONT_OBSTACLE",
+      1729,
+      "VALIDATION"
+    ],
+    [
+      "SUDDEN_BRAKING",
+      2947,
+      "TEST"
+    ]
+  ],
+  "weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+  "model_and_thresholds_unchanged": true,
+  "change": "Rule release-envelope guard on unsupported learned braking",
+  "maximum_additional_episodes": 4,
+  "maximum_additional_wall_s": 150,
+  "previous_test_results_retained": "docs/evidence/final_delivery/native.json",
+  "scalar_evidence_only": true
+}

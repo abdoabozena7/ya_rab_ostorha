@@ -1,0 +1,59 @@
+{
+  "connected": true,
+  "mode": "PAUSED",
+  "safetySystem": {
+    "type": "RULE_BASED_SAFETY",
+    "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+    "status": "STANDBY",
+    "risk": "UNKNOWN",
+    "active": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "steering_available": false,
+    "rejected_interventions": 0,
+    "enabled": true,
+    "intervention_count": 0,
+    "controller": "RULE",
+    "model_health": "READY",
+    "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "model_error": null,
+    "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+    "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+    "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+    "available_controllers": [
+      "RULE",
+      "HYBRID"
+    ],
+    "source_counts": {
+      "LEARNED_BC": 0,
+      "RULE_GUARD": 0,
+      "RULE_FALLBACK": 0,
+      "RULE": 0,
+      "BASE_DRIVER": 0
+    },
+    "experimental": false,
+    "actual_generator": "RULE"
+  },
+  "rlRuntime": {
+    "active": false,
+    "tick_owner": "simulation-worker"
+  },
+  "synchronization": {
+    "completeFrames": 4743,
+    "incompleteFrames": 1,
+    "issues": {
+      "MISSING": 6,
+      "LATE": 0,
+      "STALE": 0,
+      "DUPLICATE": 0,
+      "OUT_OF_ORDER": 0,
+      "TIMESTAMP_MISMATCH": 0
+    },
+    "pendingFrames": 1
+  },
+  "sensor_count": 7,
+  "normal_display_worker_restored": true,
+  "startup_reuse_verified": true,
+  "observation_timeout_recovered_by_same_graphics_process_restart": true,
+  "timeout_cause": "NOT_ESTABLISHED",
+  "gpu_observation": "name, driver_version, memory.total [MiB], memory.used [MiB], memory.free [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 3060 Laptop GPU, 617.14, 6144 MiB, 5885 MiB, 110 MiB, 32 %\n"
+}

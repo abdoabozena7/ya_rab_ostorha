@@ -1,0 +1,297 @@
+{
+  "training": {
+    "identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "method": "SUPERVISED_BEHAVIOR_CLONING_NOT_RL",
+    "feature_version": "YA_RAB_OSTORHA_BC_SENSOR13_V1",
+    "input_dim": 13,
+    "hidden_dim": 32,
+    "decisions": [
+      "NO_INTERVENTION",
+      "BRAKE_INTERVENTION",
+      "RELEASE_TO_BASE_DRIVER"
+    ],
+    "parameters": 4611,
+    "seed": 20261009,
+    "device": "cuda",
+    "torch_version": "2.11.0+cu128",
+    "cuda_version": "12.8",
+    "gpu_name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "benchmark": {
+      "cpu": {
+        "batch_ms": 28.38375833380269
+      },
+      "cuda": {
+        "batch_ms": 2.06626666658849,
+        "peak_allocated_mib": 30.27490234375
+      }
+    },
+    "class_counts": [
+      803,
+      385,
+      14
+    ],
+    "class_weights": [
+      1.0,
+      1.4442002773284912,
+      7.573450088500977
+    ],
+    "optimizer": {
+      "name": "Adam",
+      "learning_rate": 0.003,
+      "weight_decay": 1e-05,
+      "gradient_clip_norm": 1.0
+    },
+    "epoch_budget": 1500,
+    "training_hard_limit_s": 1800,
+    "best_epoch": 305,
+    "epochs": 455,
+    "training_wall_s": 1.375,
+    "stop_reason": "VALIDATION_EARLY_STOP",
+    "data": {
+      "feature_version": "YA_RAB_OSTORHA_BC_SENSOR13_V1",
+      "episodes": [
+        {
+          "id": "TRAIN_104",
+          "split": "TRAIN",
+          "transitions": 105,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_104\\transitions.jsonl",
+          "sha256": "5145eb6ad6f79a76e389556598fd5f691e26d6a5ffc502eb9ccf2745589b848f",
+          "counts": [
+            68,
+            36,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_274",
+          "split": "TRAIN",
+          "transitions": 80,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_274\\transitions.jsonl",
+          "sha256": "5cc9293093961b03bd1fd912fdfccffc27606962c91fc5a85bea1719407e96a6",
+          "counts": [
+            51,
+            28,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_356",
+          "split": "TRAIN",
+          "transitions": 100,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_356\\transitions.jsonl",
+          "sha256": "15fb416306aedd75feb0b73e3a2faa7621cf489cb2be485749a1a92202cf844b",
+          "counts": [
+            64,
+            35,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_471",
+          "split": "TRAIN",
+          "transitions": 116,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_471\\transitions.jsonl",
+          "sha256": "4b25fba064d35f190c7cedd7af6d409bb28d7a0dc49ad7cbacc66a417ab1323d",
+          "counts": [
+            82,
+            33,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_56",
+          "split": "TRAIN",
+          "transitions": 93,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_56\\transitions.jsonl",
+          "sha256": "9ed958a81912ae807f355217937adff5537bd84f96cfb365ad256b7119374b17",
+          "counts": [
+            58,
+            34,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_681",
+          "split": "TRAIN",
+          "transitions": 130,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_681\\transitions.jsonl",
+          "sha256": "1c86d49efcd0482bf2dfc0d102cc31061badc661b070dfca4db639bc89ef6acf",
+          "counts": [
+            89,
+            39,
+            2
+          ]
+        },
+        {
+          "id": "TRAIN_766",
+          "split": "TRAIN",
+          "transitions": 125,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_766\\transitions.jsonl",
+          "sha256": "1514a4ed57869d68406c85b48e1a997371305a595fd5e9db5703859cf3fc049f",
+          "counts": [
+            84,
+            39,
+            2
+          ]
+        },
+        {
+          "id": "TRAIN_799",
+          "split": "TRAIN",
+          "transitions": 142,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_799\\transitions.jsonl",
+          "sha256": "3e51f2c6a08f60664a4044e12925add371649c926c5c15740ddc59ce045d4478",
+          "counts": [
+            102,
+            38,
+            2
+          ]
+        },
+        {
+          "id": "TRAIN_812",
+          "split": "TRAIN",
+          "transitions": 102,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_812\\transitions.jsonl",
+          "sha256": "ad6e7f6e16f4f3efc24aaf4eebc93ac143ea527b0cdcb5cd8def92f1e140ae73",
+          "counts": [
+            69,
+            32,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_831",
+          "split": "TRAIN",
+          "transitions": 112,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_831\\transitions.jsonl",
+          "sha256": "d6698988558ab981befb380d87043ac0531b24266664b0058b61ca2eba942aa9",
+          "counts": [
+            76,
+            35,
+            1
+          ]
+        },
+        {
+          "id": "TRAIN_980",
+          "split": "TRAIN",
+          "transitions": 97,
+          "source": "runs\\demonstrations\\experiment3a_20261009T031432Z\\TRAIN_980\\transitions.jsonl",
+          "sha256": "c864f5483a315eefbc8d51a88049140be7b1d2f18cc1ffe98be4ed57f5a2ae8c",
+          "counts": [
+            60,
+            36,
+            1
+          ]
+        },
+        {
+          "id": "VALIDATION_1004",
+          "split": "VALIDATION",
+          "transitions": 99,
+          "source": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\diagnostics\\experiment2c_20261008T223734Z\\VALIDATION_1004-steps.jsonl",
+          "sha256": "96e8c2296eec48a9fc9a0cf4eaf92aa3fc4303715b4fe1aa9a920e1b2986717d",
+          "counts": [
+            62,
+            36,
+            1
+          ]
+        },
+        {
+          "id": "VALIDATION_1877",
+          "split": "VALIDATION",
+          "transitions": 119,
+          "source": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\diagnostics\\experiment2c_20261008T223734Z\\VALIDATION_1877-steps.jsonl",
+          "sha256": "efa6808d9910c17027efe61490620282b4328388f64efff844af00a91f38ca62",
+          "counts": [
+            84,
+            34,
+            1
+          ]
+        },
+        {
+          "id": "VALIDATION_1256",
+          "split": "VALIDATION",
+          "transitions": 81,
+          "source": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\diagnostics\\experiment2c_20261008T223734Z\\VALIDATION_1256-steps.jsonl",
+          "sha256": "5570074a472b913359aba376823709274b953f94a33d1a7813b061cfc0f971a1",
+          "counts": [
+            51,
+            29,
+            1
+          ]
+        },
+        {
+          "id": "VALIDATION_1364",
+          "split": "VALIDATION",
+          "transitions": 149,
+          "source": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\diagnostics\\experiment2c_20261008T223734Z\\VALIDATION_1364-steps.jsonl",
+          "sha256": "20596fbbe6ed6d987c35c1c30f375869b58205dc63820f59299a45a3d5300969",
+          "counts": [
+            100,
+            47,
+            2
+          ]
+        }
+      ]
+    },
+    "weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629"
+  },
+  "frozen_replay": {
+    "TRAIN": {
+      "accuracy": 0.9858569051580699,
+      "macro_f1": 0.9890296039364362,
+      "class_f1": [
+        0.9894867037724181,
+        0.9776021080368906,
+        1.0
+      ],
+      "confusion": [
+        [
+          800,
+          3,
+          0
+        ],
+        [
+          14,
+          371,
+          0
+        ],
+        [
+          0,
+          0,
+          14
+        ]
+      ]
+    },
+    "VALIDATION": {
+      "accuracy": 0.9866071428571429,
+      "macro_f1": 0.9897110739502044,
+      "class_f1": [
+        0.9899665551839465,
+        0.9791666666666666,
+        1.0
+      ],
+      "confusion": [
+        [
+          296,
+          1,
+          0
+        ],
+        [
+          5,
+          141,
+          0
+        ],
+        [
+          0,
+          0,
+          5
+        ]
+      ]
+    }
+  },
+  "numpy_export_max_probability_error": 1.4901161193847656e-06,
+  "cpu_seconds": 6.203125,
+  "wall_s": 4.889999999999418,
+  "process_rss_mib": 1155.3671875,
+  "gpu_peak_allocated_mib": 30.3349609375,
+  "model_bytes": 46907
+}

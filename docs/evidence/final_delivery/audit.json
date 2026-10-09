@@ -1,0 +1,238 @@
+{
+  "native_episodes": 10,
+  "native_wall_s": 264.42199999999866,
+  "isolation_samples": 136,
+  "privileged_input_invariance": true,
+  "duplicate_recorded_frames": 0,
+  "incomplete_recorded_frames": 0,
+  "recording_bytes": 4202302789,
+  "sac_sha256_unchanged": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679",
+  "native_command_application_mismatches": 0,
+  "actor_cleanup_all_cases": true,
+  "matched_condition_ids": true,
+  "applied_brake_edges": {
+    "AUTOMATIC_SUDDEN_BRAKING_BASE": {
+      "threshold": 0.5,
+      "edges": 46,
+      "pulses_under_150ms": 27
+    },
+    "AUTOMATIC_SUDDEN_BRAKING_RULE": {
+      "threshold": 0.5,
+      "edges": 8,
+      "pulses_under_150ms": 1
+    },
+    "AUTOMATIC_SUDDEN_BRAKING_LEARNED": {
+      "threshold": 0.5,
+      "edges": 6,
+      "pulses_under_150ms": 1
+    },
+    "AUTOMATIC_SUDDEN_BRAKING_HYBRID": {
+      "threshold": 0.5,
+      "edges": 4,
+      "pulses_under_150ms": 0
+    },
+    "AUTOMATIC_FRONT_OBSTACLE_BASE": {
+      "threshold": 0.5,
+      "edges": 40,
+      "pulses_under_150ms": 20
+    },
+    "AUTOMATIC_FRONT_OBSTACLE_RULE": {
+      "threshold": 0.5,
+      "edges": 8,
+      "pulses_under_150ms": 0
+    },
+    "AUTOMATIC_FRONT_OBSTACLE_LEARNED": {
+      "threshold": 0.5,
+      "edges": 2,
+      "pulses_under_150ms": 0
+    },
+    "AUTOMATIC_FRONT_OBSTACLE_HYBRID": {
+      "threshold": 0.5,
+      "edges": 4,
+      "pulses_under_150ms": 0
+    },
+    "MANUAL_FRONT_OBSTACLE_BASE": {
+      "threshold": 0.5,
+      "edges": 2,
+      "pulses_under_150ms": 0
+    },
+    "MANUAL_FRONT_OBSTACLE_RULE": {
+      "threshold": 0.5,
+      "edges": 6,
+      "pulses_under_150ms": 0
+    }
+  },
+  "learned_failure_evidence": {
+    "AUTOMATIC_SUDDEN_BRAKING_LEARNED": {
+      "post_resumption_brake_predictions_while_rule_risk_clear": 90,
+      "sample": [
+        {
+          "frame": 4970,
+          "time_s": 242.1524268016219,
+          "speed_mps": 2.0040950600851775e-06,
+          "range_m": 4.326688766479492,
+          "closing_speed_mps": 5.3965636652719695e-06,
+          "probabilities": [
+            5.955531742074527e-05,
+            0.9998800754547119,
+            6.031310113030486e-05
+          ]
+        },
+        {
+          "frame": 4971,
+          "time_s": 242.20242680236697,
+          "speed_mps": 3.3242160937598773e-07,
+          "range_m": 4.326688766479492,
+          "closing_speed_mps": 4.66002802568255e-06,
+          "probabilities": [
+            5.9554971812758595e-05,
+            0.9998800754547119,
+            6.031442171661183e-05
+          ]
+        },
+        {
+          "frame": 4972,
+          "time_s": 242.25242680311203,
+          "speed_mps": 5.872346562798216e-07,
+          "range_m": 4.326688766479492,
+          "closing_speed_mps": 2.7929252155445283e-06,
+          "probabilities": [
+            5.955775486654602e-05,
+            0.9998800754547119,
+            6.0315920563880354e-05
+          ]
+        }
+      ]
+    },
+    "AUTOMATIC_SUDDEN_BRAKING_HYBRID": {
+      "post_resumption_brake_predictions_while_rule_risk_clear": 91,
+      "sample": [
+        {
+          "frame": 5354,
+          "time_s": 261.3524270877242,
+          "speed_mps": 2.4359207011656367e-06,
+          "range_m": 4.670965194702148,
+          "closing_speed_mps": 4.055586487083929e-06,
+          "probabilities": [
+            5.92877076996956e-05,
+            0.9998817443847656,
+            5.897732262383215e-05
+          ]
+        },
+        {
+          "frame": 5355,
+          "time_s": 261.40242708846927,
+          "speed_mps": 5.525162746061764e-07,
+          "range_m": 4.670965194702148,
+          "closing_speed_mps": 4.82500036014244e-06,
+          "probabilities": [
+            5.92848846281413e-05,
+            0.9998817443847656,
+            5.897405935684219e-05
+          ]
+        },
+        {
+          "frame": 5356,
+          "time_s": 261.4524270892143,
+          "speed_mps": 6.259858388682069e-07,
+          "range_m": 4.670965194702148,
+          "closing_speed_mps": 4.16379225498531e-06,
+          "probabilities": [
+            5.9286016039550304e-05,
+            0.9998817443847656,
+            5.8971640100935474e-05
+          ]
+        }
+      ]
+    },
+    "AUTOMATIC_FRONT_OBSTACLE_LEARNED": {
+      "post_resumption_brake_predictions_while_rule_risk_clear": 91,
+      "sample": [
+        {
+          "frame": 6500,
+          "time_s": 318.65242794156075,
+          "speed_mps": 6.091502904796667e-07,
+          "range_m": 6.411957263946533,
+          "closing_speed_mps": 2.1861458208149998e-06,
+          "probabilities": [
+            6.200185453053564e-05,
+            0.9998785257339478,
+            5.946254896116443e-05
+          ]
+        },
+        {
+          "frame": 6501,
+          "time_s": 318.7024279423058,
+          "speed_mps": 5.34546641212709e-07,
+          "range_m": 6.411957263946533,
+          "closing_speed_mps": 1.9324136246723356e-06,
+          "probabilities": [
+            6.200079224072397e-05,
+            0.9998785257339478,
+            5.9462490753503516e-05
+          ]
+        },
+        {
+          "frame": 6502,
+          "time_s": 318.75242794305086,
+          "speed_mps": 9.486071090230487e-07,
+          "range_m": 6.411957263946533,
+          "closing_speed_mps": 9.726037433210877e-07,
+          "probabilities": [
+            6.200321513460949e-05,
+            0.9998785257339478,
+            5.9463167417561635e-05
+          ]
+        }
+      ]
+    },
+    "AUTOMATIC_FRONT_OBSTACLE_HYBRID": {
+      "post_resumption_brake_predictions_while_rule_risk_clear": 91,
+      "sample": [
+        {
+          "frame": 6873,
+          "time_s": 337.3024282194674,
+          "speed_mps": 1.4167179239322669e-05,
+          "range_m": 4.761027812957764,
+          "closing_speed_mps": 0.0,
+          "probabilities": [
+            5.9861566114705056e-05,
+            0.999880313873291,
+            5.980666901450604e-05
+          ]
+        },
+        {
+          "frame": 6874,
+          "time_s": 337.35242822021246,
+          "speed_mps": 1.2163827706338412e-05,
+          "range_m": 4.761027812957764,
+          "closing_speed_mps": 9.781917469808832e-05,
+          "probabilities": [
+            5.987406984786503e-05,
+            0.999880313873291,
+            5.9812769904965535e-05
+          ]
+        },
+        {
+          "frame": 6875,
+          "time_s": 337.4024282209575,
+          "speed_mps": 1.016641165669553e-05,
+          "range_m": 4.761027812957764,
+          "closing_speed_mps": 0.0,
+          "probabilities": [
+            5.986721589579247e-05,
+            0.999880313873291,
+            5.981830690870993e-05
+          ]
+        }
+      ]
+    }
+  },
+  "acceptance": {
+    "RULE": true,
+    "LEARNED": false,
+    "HYBRID": false
+  },
+  "decision": "Retain RULE default; no final TEST tuning or additional neural training.",
+  "scope": "Initial frozen pilot with HYBRID V1; repaired V2 acceptance is separately recorded in hybrid-v2.json"
+}

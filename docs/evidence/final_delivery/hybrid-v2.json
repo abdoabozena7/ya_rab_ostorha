@@ -1,0 +1,448 @@
+{
+  "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+  "cases": [
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_HYBRID",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "HYBRID",
+      "seed": 1893,
+      "condition_id": "7bf73ace5ae752f4847106eaaa6df0326a3a901c8bbd1ac62087d0067674f5fa",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 19.158393343745768,
+        "progress_m": 19.152420014892236,
+        "elapsed_simulation_s": 12.250000182539225,
+        "average_speed_mps": 1.5639504537357931,
+        "minimum_clearance_m": 4.6814186216412,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 4,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 14.121110208871073,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 4,
+      "generator_frames": {
+        "LEARNED_BC": 76,
+        "RULE_GUARD": 22,
+        "RULE_FALLBACK": 7,
+        "RULE": 0,
+        "BASE_DRIVER": 126
+      },
+      "learned_decisions": {
+        "NO_INTERVENTION": 110,
+        "BRAKE_INTERVENTION": 118,
+        "RELEASE_TO_BASE_DRIVER": 3
+      },
+      "fallback_reasons": {
+        "null": 220,
+        "Low model confidence": 11
+      },
+      "inference_median_ms": 0.09719999798107892,
+      "inference_max_ms": 0.20960000256309286,
+      "backend_step_median_ms": 31.000000002677552,
+      "recording": null,
+      "evidence_type": "LIVE_SYNCHRONIZED_SCALAR_TRACE_NO_DUPLICATE_IMAGES",
+      "recorded_frames": 231,
+      "applied_safety_frames": 105,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 1.9500000290572643,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 2.550000037997961,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.150000061839819,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 4.200000062584877,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.300000064074993,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 7.850000116974115,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "RULE release guard vetoed unsupported learned braking: Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 10.350000154227018,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 11.400000169873238,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        }
+      ],
+      "wall_s": 17.32800000000134,
+      "trace_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\final-delivery\\native\\AUTOMATIC_SUDDEN_BRAKING_HYBRID_1893_c06ba046.jsonl",
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_FRONT_OBSTACLE_HYBRID",
+      "kind": "FRONT_OBSTACLE",
+      "mode": "AUTOMATIC",
+      "controller": "HYBRID",
+      "seed": 1729,
+      "condition_id": "12e36dcde7d731911b55f9a8418db7cd2538e68446230860f88de1e25d729b6e",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 23.5486127589154,
+        "progress_m": 23.54098431308844,
+        "elapsed_simulation_s": 12.200000181794167,
+        "average_speed_mps": 1.9302141318044042,
+        "minimum_clearance_m": 4.7175415485715515,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 14.545391529645713,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 66,
+        "RULE_GUARD": 22,
+        "RULE_FALLBACK": 6,
+        "RULE": 0,
+        "BASE_DRIVER": 136
+      },
+      "learned_decisions": {
+        "NO_INTERVENTION": 77,
+        "BRAKE_INTERVENTION": 151,
+        "RELEASE_TO_BASE_DRIVER": 2
+      },
+      "fallback_reasons": {
+        "null": 222,
+        "Low model confidence": 8
+      },
+      "inference_median_ms": 0.09375000081490725,
+      "inference_max_ms": 0.19220000103814527,
+      "backend_step_median_ms": 30.999999995401595,
+      "recording": null,
+      "evidence_type": "LIVE_SYNCHRONIZED_SCALAR_TRACE_NO_DUPLICATE_IMAGES",
+      "recorded_frames": 230,
+      "applied_safety_frames": 94,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.05000000074505806,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 2.400000035762787,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 3.250000048428774,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "RULE release guard vetoed unsupported learned braking: Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 5.050000075250864,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE release guard vetoed unsupported learned braking: Risk cleared; releasing brake smoothly to base driver"
+        },
+        {
+          "elapsed_s": 7.850000116974115,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "RULE release guard vetoed unsupported learned braking: Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 10.400000154972076,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured range is inside stationary-target stopping envelope"
+        },
+        {
+          "elapsed_s": 11.450000170618296,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "RULE release guard vetoed unsupported learned braking: Observed forward stopping corridor is clear"
+        }
+      ],
+      "wall_s": 17.687000000005355,
+      "trace_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\final-delivery\\native\\AUTOMATIC_FRONT_OBSTACLE_HYBRID_1729_ae2da3fb.jsonl",
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_RULE",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "RULE",
+      "seed": 2947,
+      "condition_id": "6e7432e592505f2c573a36cf669b8bb918a9b2c69b5de013d8ca991b99a6367d",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 19.112737151860486,
+        "progress_m": 19.10479584956225,
+        "elapsed_simulation_s": 12.300000183284283,
+        "average_speed_mps": 1.553881046102318,
+        "minimum_clearance_m": 4.7132206736587605,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 14.392325085111452,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 103,
+        "BASE_DRIVER": 128
+      },
+      "learned_decisions": {
+        "null": 231
+      },
+      "fallback_reasons": {
+        "null": 231
+      },
+      "inference_median_ms": null,
+      "inference_max_ms": null,
+      "backend_step_median_ms": 31.000000002677552,
+      "recording": null,
+      "evidence_type": "LIVE_SYNCHRONIZED_SCALAR_TRACE_NO_DUPLICATE_IMAGES",
+      "recorded_frames": 231,
+      "applied_safety_frames": 103,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.0,
+          "active": false,
+          "generator": "RULE",
+          "reason": "Monitoring resumes with normal forward driving"
+        },
+        {
+          "elapsed_s": 1.9500000290572643,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 2.550000037997961,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 4.300000064074993,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Risk cleared; releasing brake smoothly to base driver"
+        },
+        {
+          "elapsed_s": 7.800000116229057,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 10.30000015348196,
+          "active": true,
+          "generator": "RULE",
+          "reason": "Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 11.35000016912818,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Observed forward stopping corridor is clear"
+        }
+      ],
+      "wall_s": 17.35899999999674,
+      "trace_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\final-delivery\\native\\AUTOMATIC_SUDDEN_BRAKING_RULE_2947_0cbc640a.jsonl",
+      "actor_cleanup_verified": true
+    },
+    {
+      "case": "AUTOMATIC_SUDDEN_BRAKING_HYBRID",
+      "kind": "SUDDEN_BRAKING",
+      "mode": "AUTOMATIC",
+      "controller": "HYBRID",
+      "seed": 2947,
+      "condition_id": "6e7432e592505f2c573a36cf669b8bb918a9b2c69b5de013d8ca991b99a6367d",
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 19.112036594420374,
+        "progress_m": 19.10419489953231,
+        "elapsed_simulation_s": 12.250000182539225,
+        "average_speed_mps": 1.5601662293574563,
+        "minimum_clearance_m": 4.7132206736587605,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 3,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 14.391000532928729,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "operator_stop",
+      "success": true,
+      "interventions": 3,
+      "generator_frames": {
+        "LEARNED_BC": 75,
+        "RULE_GUARD": 22,
+        "RULE_FALLBACK": 7,
+        "RULE": 0,
+        "BASE_DRIVER": 127
+      },
+      "learned_decisions": {
+        "NO_INTERVENTION": 100,
+        "BRAKE_INTERVENTION": 127,
+        "RELEASE_TO_BASE_DRIVER": 3
+      },
+      "fallback_reasons": {
+        "null": 220,
+        "Low model confidence": 10
+      },
+      "inference_median_ms": 0.09390000195708126,
+      "inference_max_ms": 0.21120000019436702,
+      "backend_step_median_ms": 31.000000002677552,
+      "recording": null,
+      "evidence_type": "LIVE_SYNCHRONIZED_SCALAR_TRACE_NO_DUPLICATE_IMAGES",
+      "recorded_frames": 230,
+      "applied_safety_frames": 104,
+      "application_mismatches": [],
+      "all_observations_complete": true,
+      "sensor_errors": false,
+      "resumed_progress": true,
+      "edges": [
+        {
+          "elapsed_s": 0.05000000074505806,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 1.9500000290572643,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 2.550000037997961,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        },
+        {
+          "elapsed_s": 4.300000064074993,
+          "active": true,
+          "generator": "LEARNED_BC",
+          "reason": "Learned sequence imitation: BRAKE_INTERVENTION"
+        },
+        {
+          "elapsed_s": 7.850000116974115,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "RULE release guard vetoed unsupported learned braking: Observed forward stopping corridor is clear"
+        },
+        {
+          "elapsed_s": 10.350000154227018,
+          "active": true,
+          "generator": "RULE_GUARD",
+          "reason": "RULE guard: Measured obstacle inside braking envelope/TTC limit"
+        },
+        {
+          "elapsed_s": 11.400000169873238,
+          "active": false,
+          "generator": "BASE_DRIVER",
+          "reason": "Learned sequence imitation: NO_INTERVENTION"
+        }
+      ],
+      "wall_s": 17.187999999994645,
+      "trace_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\final-delivery\\native\\AUTOMATIC_SUDDEN_BRAKING_HYBRID_2947_d830a821.jsonl",
+      "actor_cleanup_verified": true
+    }
+  ],
+  "model_retrained": false,
+  "configuration_frozen_before_fresh_test": true,
+  "inventory": {
+    "vehicles": 1,
+    "walkers": 0,
+    "controllers": 0,
+    "sensors": 7
+  },
+  "rl_runtime": {
+    "active": false,
+    "tick_owner": "simulation-worker"
+  },
+  "accepted": true,
+  "wall_s": 72.93800000000192
+}
