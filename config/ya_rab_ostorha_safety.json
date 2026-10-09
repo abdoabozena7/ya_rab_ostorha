@@ -1,0 +1,27 @@
+{
+  "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+  "enabled_by_default": true,
+  "teacher": {
+    "version": "YA_RAB_OSTORHA_TEACHER_V1",
+    "minimum_clearance_m": 3.0,
+    "reaction_time_s": 0.35,
+    "assumed_deceleration_mps2": 5.0,
+    "additional_brake": 1.0,
+    "release_hysteresis_m": 2.0,
+    "stopped_speed_mps": 0.2,
+    "lead_stationary_speed_mps": 0.5,
+    "maximum_observation_age_s": 0.1
+  },
+  "ttc_trigger_s": 2.0,
+  "ttc_release_s": 3.0,
+  "minimum_closing_speed_mps": 0.25,
+  "minimum_brake_hold_s": 0.15,
+  "brake_release_rate_per_s": 3.0,
+  "maximum_sensor_wall_age_s": 0.25,
+  "path_half_width_m": 1.35,
+  "ego_front_m": 2.5,
+  "minimum_foreground_height_m": 0.25,
+  "maximum_foreground_height_m": 2.5,
+  "maximum_observed_range_m": 45.0,
+  "maximum_safety_steering_delta": 0.0
+}

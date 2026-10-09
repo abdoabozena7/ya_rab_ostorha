@@ -38,6 +38,7 @@
     </section>
     <aside id="simulationCenter" class="drive-inspector">
       <div class="section-heading"><div><span class="eyebrow">Vehicle controls</span><h2 id="controlMode">Vehicle stopped</h2></div><span id="controlSource"></span></div>
+      <p id="safetyStatus" role="status">YA RAB OSTORHA · Waiting for sensors</p>
       <p id="connectionDetail">Waiting for simulator connection.</p>
       <select id="drivingMode" aria-label="Driving mode" hidden><option value="MANUAL">Manual — I am driving</option><option value="AUTOMATIC">Destination journey</option></select>
       <p id="modeExplanation">Enable manual driving, then use the keyboard.</p>
@@ -112,6 +113,8 @@
     <p class="drawer-intro">Open a section, edit the settings, then select Apply and save.</p>
     <label for="dashboardAppearance">Dashboard appearance</label><select id="dashboardAppearance" aria-describedby="appearanceHint"><option value="dark">Dark — gray and blue</option><option value="light">Light — white and black</option></select><p id="appearanceHint" class="muted">Changes immediately and saves on this device.</p>
     <p id="settingsStatus" role="status"></p>
+    <label class="check"><input id="safetyEnabled" type="checkbox" checked disabled>YA RAB OSTORHA rule-based safety</label>
+    <p class="muted">Enabled automatically. Disable only at rest for a research comparison.</p>
     <form id="settingsForm">
       <details class="settings-group" id="cameraSettings" open><summary><span>Camera and image<small>Resolution, field of view and image effects</small></span></summary><fieldset><legend>Camera and image</legend><button type="button" id="cleanImageBtn">Use clear image settings</button><label>Camera resolution<select id="settingResolution"><option>640x360</option><option>800x450</option></select></label><label>Field of view °<input id="settingFov" type="number" min="60" max="120"></label><label class="check"><input id="settingPostprocess" type="checkbox">Image effects and grain</label><label>Motion blur — 0 stops it<input id="settingMotionBlur" type="number" min="0" max="1" step="0.05"></label><label>Bloom<input id="settingBloom" type="number" min="0" max="2" step="0.05"></label><p id="effectsNote" class="muted"></p></fieldset></details>
       <details class="settings-group" id="graphicsSettings"><summary><span>Simulator quality<small>Restart required CARLA</small></span></summary><fieldset><legend>Graphics</legend><p id="activeGraphics"></p><label>Saved quality<select id="settingQuality"><option>Low</option><option>Epic</option></select></label><label>Simulator window resolution — separate from camera<select id="settingWindow"><option>1280x720</option><option>1600x900</option><option>1920x1080</option></select></label><button type="button" id="restartGraphicsBtn">Apply graphics and restart CARLA</button><p class="muted">Restart stops driving and reconnects the vehicle and sensors. Epic passes a one-minute native test.</p><p id="restartStatus" role="status"></p></fieldset></details>

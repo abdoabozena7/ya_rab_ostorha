@@ -75,6 +75,7 @@
       this.replay = null;
       this.lastFrame = this.lastTimestamp = null;
       this.route = this.dashboardResult = this.operationError = null;
+      this.safetySystem = null;
       this.navigationAvailable = false;
       this.lastControlSentAt = -Infinity;
     }
@@ -149,6 +150,7 @@
       this.route = message.route ?? null;
       this.population = message.population ?? null;
       this.environment = message.environment ?? null;
+      this.safetySystem = message.safetySystem ?? null;
       this.nearbyActors = message.nearbyActors ?? null;
       const replay = message.mode === "REPLAY" && message.provider === "replay" && message.connected === false && message.available === true && message.replay?.dataOrigin === "REAL_SIMULATION";
       const sourceValid = replay ? message.vehicle?.source === message.replay.recordedProvider && message.world?.source === message.replay.recordedProvider : message.connected === true && message.mode !== "REPLAY" && message.provider !== "replay" && message.vehicle?.source === "carla" && message.world?.source === "carla";
@@ -210,6 +212,7 @@
       this.navigationAvailable = false;
       this.population = this.nearbyActors = null;
       this.environment = null;
+      this.safetySystem = null;
     }
     retry() {
       if (this.closed || this.retryTimer) return;
@@ -1310,6 +1313,10 @@
     };
     $3("controlMode").textContent = modeNames[provider.controlMode] || provider.controlMode;
     $3("controlSource").textContent = provider.controlSource || "";
+    const safety = provider.safetySystem;
+    $3("safetyStatus").textContent = provider.isReplay ? "YA RAB OSTORHA \xB7 Replay, no active control" : !live ? "YA RAB OSTORHA \xB7 Waiting for sensors" : "YA RAB OSTORHA \xB7 RULE-BASED SAFETY \xB7 " + (safety?.status ?? "UNAVAILABLE") + " \xB7 Risk: " + (safety?.risk ?? "UNKNOWN") + " \xB7 " + (safety?.active ? "Intervention active" : "Monitoring / standby") + " \xB7 Interventions: " + (safety?.intervention_count ?? 0) + " \xB7 " + (safety?.reason ?? "");
+    $3("safetyEnabled").checked = safety?.enabled === true;
+    $3("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
     $3("connectionDetail").textContent = provider.isReplay ? "Recorded data view; no simulator controls." : live ? provider.controller ? "Take control from this page." : "Another page controls the vehicle; take control in Settings." : provider.restarting ? "Restarting CARLA and reconnecting\u2026" : "Simulator disconnected. Open connection setup to continue.";
     $3("phoneStatus").textContent = live ? "Destinations from map " + (provider.world.map?.split("/").at(-1) || "CARLA") : "Waiting for simulator connection.";
     $3("providerStatus").textContent = provider.status;
@@ -1387,6 +1394,7 @@
   $3("drivingMode").onchange = () => {
     clearControls();
   };
+  $3("safetyEnabled").onchange = () => provider.dashboardAction("safety_mode", { enabled: $3("safetyEnabled").checked });
   $3("gearSelect").onchange = () => {
     controls.setMode($3("gearSelect").value);
     provider.releaseControls();

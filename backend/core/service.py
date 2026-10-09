@@ -68,6 +68,93 @@ class SimulationService:
         from queue import Queue
         self.rl_requests = Queue(maxsize=16)
         self.rl_runtime = None
+        self.active_safety = None
+        self.safety_command = None
+        if getattr(provider, 'sensor_suite', False) is True:
+            from .active_safety import ActiveSafetySupervisor
+            self.active_safety = ActiveSafetySupervisor()
+            self.provider.active_safety_configuration = to_dict(self.active_safety.config)
+
+    def set_safety_enabled(self, value):
+        with self.lock:
+            self._require_normal_runtime()
+            self.require_connected()
+            if not isinstance(value, dict) or set(value) != {'enabled'} or type(value['enabled']) is not bool:
+                raise ValueError('Safety comparison requires an explicit enabled boolean')
+            if self.active_safety is None:
+                raise ValueError('YA RAB OSTORHA requires the real sensor suite')
+            if self.observation.vehicle.speed_mps > .15:
+                raise ValueError('Stop the vehicle before changing the safety comparison mode')
+            self._clear_safety_command()
+            self.active_safety.enabled = value['enabled']
+            self.active_safety.reset()
+            self._event(EventType.ControlChanged, safety_enabled=value['enabled'], safety_type='RULE_BASED_SAFETY')
+
+    def _clear_safety_command(self):
+        if self.safety_command is not None and self.arbiter.safety.latest.get(CommandSource.SAFETY) == self.safety_command:
+            self.arbiter.safety.latest.pop(CommandSource.SAFETY, None)
+            self.arbiter.safety.receipts.pop(CommandSource.SAFETY, None)
+        self.safety_command = None
+
+    def _active_safety_step(self):
+        supervisor = self.active_safety
+        if supervisor is None: return
+        mode = self.arbiter.machine.mode
+        if not supervisor.enabled or mode not in (ControlMode.MANUAL, ControlMode.AUTOMATIC):
+            self._clear_safety_command(); supervisor.reset()
+            supervisor.status.update(status='DISABLED_COMPARISON' if not supervisor.enabled else
+                'SUSPENDED_RL' if mode == ControlMode.TRAINING else 'SENSOR_FAULT_STOP' if supervisor.last_fault else 'STANDBY',
+                reason=supervisor.last_fault or 'Monitoring resumes with normal forward driving')
+            self.provider.active_safety_status = supervisor.snapshot()
+            return
+        frame_id, timestamp_s = self._context()
+        base = self.arbiter.choose(frame_id=frame_id, timestamp_s=timestamp_s, connected=self._live(),
+                                   exclude_sources=(CommandSource.SAFETY,))
+        if base.source not in (CommandSource.MANUAL, CommandSource.NAVIGATION):
+            self._clear_safety_command(); supervisor.reset()
+            self.provider.active_safety_status = supervisor.snapshot()
+            return
+        try:
+            history = self.policy_history.snapshot()
+            if not history or self.now()-self.state_at > supervisor.config.maximum_sensor_wall_age_s:
+                raise ValueError('Fresh complete safety observations unavailable')
+            observation = history[-1]
+            if self.clock.timestamp_s-observation.timestamp_s > supervisor.config.teacher.maximum_observation_age_s:
+                raise ValueError('Safety sensor simulation freshness limit exceeded')
+            base = replace(base, frame_id=observation.frame_id, timestamp_s=observation.timestamp_s)
+            was_active = supervisor.active
+            if supervisor.previous_s == observation.timestamp_s:
+                # Reuse only within the same enforced freshness limits. Never call
+                # the stateful teacher twice or change the driver's steering.
+                candidate = replace(base, source=CommandSource.SAFETY, throttle=0.,
+                    brake=max(base.brake, supervisor.brake)) if supervisor.active else None
+                if candidate is not None:
+                    from .safety_policy import ProposedSafetyAction, admit_proposal
+                    proposal = ProposedSafetyAction(candidate, supervisor.config.version,
+                        observation.frame_id, observation.timestamp_s, True, supervisor.status['reason'])
+                    admitted = admit_proposal(observation, base, proposal,
+                        supervisor.validator.validate((observation,), base, proposal))
+                    if not admitted.accepted: raise ValueError(admitted.reason)
+                    candidate = admitted.command
+            else:
+                candidate = supervisor.evaluate(observation, base, self.provider.get_sensor_asset,
+                                                as_of_timestamp_s=self.clock.timestamp_s)
+            if candidate is None:
+                self._clear_safety_command()
+            else:
+                # Preserve the previous receipt/order so normal safety rate and
+                # monotonic-command admission checks also apply on every refresh.
+                self.safety_command = self.arbiter.submit(candidate, frame_id=frame_id,
+                    timestamp_s=timestamp_s, connected=True)
+            if supervisor.active != was_active:
+                self._event(EventType.ControlChanged, ya_rab_ostorha=supervisor.snapshot())
+        except (ValueError, KeyError, OSError, TypeError, ArithmeticError) as error:
+            self._clear_safety_command()
+            supervisor.reset()
+            supervisor.status.update(status='SENSOR_FAULT_STOP', risk='UNKNOWN', reason=str(error))
+            supervisor.last_fault = str(error)
+            self.stop_driving('ya_rab_ostorha_sensor_fault')
+        self.provider.active_safety_status = supervisor.snapshot()
 
     @property
     def name(self):
@@ -512,6 +599,8 @@ class SimulationService:
                     'sessionId': self.session_id, 'journey': copy.deepcopy(self.journey),
                     'rlRuntime': self.rl_runtime.status() if self.rl_runtime else {'active':False,'tick_owner':'simulation-worker'},
                     'navigationAvailable': self.arbiter.machine.allow_navigation,
+                    'safetySystem': self.active_safety.snapshot() if self.active_safety else
+                        {'enabled':False,'active':False,'type':'RULE_BASED_SAFETY','status':'SENSORS_UNAVAILABLE','risk':'UNKNOWN','intervention_count':0},
                     'restartResult': copy.deepcopy(self.restart_result),
                     'restarting': self.restarting, 'recording': bool(self.recorder),
                     'performance': {'nativeTickRateHz': 0 if self.recent_ticks and self.now()-self.recent_ticks[-1]>.5 else
@@ -550,7 +639,9 @@ class SimulationService:
         if isinstance(state,dict):
             frames = self.policy_history.snapshot()
             state['observation_status'] = {'status':self.policy_history.status,'history_frames':len(frames),
-                'frame_id':frames[-1].frame_id if frames else None,'privileged_data_excluded':True,'policy_active':False}
+                'frame_id':frames[-1].frame_id if frames else None,'privileged_data_excluded':True,
+                'policy_active':bool(self.active_safety and self.active_safety.enabled and self.arbiter.machine.mode in (ControlMode.MANUAL,ControlMode.AUTOMATIC))}
+            state['safety_policy'] = self.active_safety.snapshot() if self.active_safety else state.get('safety_policy')
             return state
         return None
 
@@ -704,6 +795,8 @@ class SimulationService:
                     sensor_change = sensor_change or action=='scenario' and isinstance(value,dict) and value.get('operation') in ('load','reset')
                     if sensor_change:
                         self.policy_history.clear()
+                        if self.active_safety: self.active_safety.reset()
+                        self._clear_safety_command()
                         self._drain_collision_events()
                         self._ingest_provider_sensors()
                         for pending in self.synchronizer.drain(force=True):
@@ -745,6 +838,8 @@ class SimulationService:
                 self.arbiter.safety.clear(); self.state_at = self.now()
             elif action == 'reset':
                 self.policy_history.clear()
+                if self.active_safety: self.active_safety.reset()
+                self._clear_safety_command()
                 self._drain_collision_events()
                 self._ingest_provider_sensors()
                 for pending in self.synchronizer.drain(force=True):
@@ -762,10 +857,15 @@ class SimulationService:
         with self.lock:
             if training_command is None:
                 self._navigation_step()
+                self._active_safety_step()
                 chosen = self._choose()
             else:
+                if self.active_safety:
+                    self._clear_safety_command(); self.active_safety.reset()
+                    self.active_safety.status.update(status='SUSPENDED_RL', reason='Exclusive RL interface owns commands')
+                    self.provider.active_safety_status = self.active_safety.snapshot()
                 chosen = training_command
-        if training_command is not None and self.rl_runtime and self.rl_runtime.supervisor:
+        if (training_command is not None and self.rl_runtime and self.rl_runtime.supervisor) or chosen == self.safety_command:
             self.provider.apply_control_confirmed(chosen)
         else:self.provider.apply_control(chosen)
         native_step_started = self.now()

@@ -38,6 +38,17 @@ test('choosing a route and heartbeating never emit manual pedal commands', () =>
   assert.equal(sent[1].session_id,'live');
 });
 
+test('safety comparison carries no driving commands and disconnect clears active status', () => {
+  const {p,sent,snapshot} = clientFixture();
+  const safety = {type:'RULE_BASED_SAFETY',enabled:true,active:true,intervention_count:2};
+  p.acceptSnapshot({...snapshot,safetySystem:safety});
+  assert.deepEqual(p.safetySystem,safety);
+  p.dashboardAction('safety_mode',{enabled:false});
+  assert.equal(sent[0].type,'safety_mode');assert.deepEqual(sent[0].value,{enabled:false});
+  assert.equal(sent[0].controls,undefined);
+  p.disconnect('test');assert.equal(p.safetySystem,null);
+});
+
 test('explicit destination start emits only journey request, never manual pedals or AI opt-in', () => {
   const {p,sent,snapshot} = clientFixture();
   p.acceptSnapshot({...snapshot,mode:'PAUSED',controller:false,navigationAvailable:true});

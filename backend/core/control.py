@@ -148,7 +148,7 @@ class CommandArbiter:
                 self.safety.receipts.pop(source, None)
         return accepted
 
-    def choose(self, *, frame_id, timestamp_s, connected):
+    def choose(self, *, frame_id, timestamp_s, connected, exclude_sources=()):
         mode = self.machine.mode
         if not connected or mode in (ControlMode.DISCONNECTED, ControlMode.PAUSED, ControlMode.EMERGENCY_STOP) or self.safety.emergency:
             self.reason = 'disconnected' if not connected else mode.value.lower()
@@ -164,7 +164,7 @@ class CommandArbiter:
         if mode == ControlMode.AUTOMATIC:
             allowed.add(CommandSource.NAVIGATION)
         for source in self.PRIORITY:
-            if source in allowed and self.safety.fresh(source):
+            if source in allowed and source not in exclude_sources and self.safety.fresh(source):
                 command = self.safety.latest[source]
                 if timestamp_s-command.timestamp_s <= self.safety.max_age_s:
                     self.last_selection, self.reason = command, source.value

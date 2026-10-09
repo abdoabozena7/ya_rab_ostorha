@@ -223,7 +223,7 @@ class CarlaProvider:
             elif operation == 'cleanup':self.scenarios.living_city()
             else:return self.scenarios.collect_outcome()
             return self.environment_state()
-        if self.scenarios and self.scenarios.mode.value == 'TRAINING' and action in ('settings','population','scene','destination'):
+        if self.scenarios and self.scenarios.mode.value == 'TRAINING' and action in ('settings','population','scene'):
             raise ValueError('Return to Living city before changing the controlled scene or route')
         if action == 'settings': return self.dashboard_tools.apply(value)
         if action == 'destination': return self.dashboard_tools.set_destination(value)
@@ -347,7 +347,7 @@ class CarlaProvider:
                           steering=-command.steering, parkingbrake=int(command.handbrake), gear=gear)
 
     def apply_control_confirmed(self, command: ControlCommand):
-        """Training-only acknowledgement barrier using this provider's client.
+        """Accepted safety/training acknowledgement using this provider's client.
 
         The ordinary call updates libcarla's sticky-control cache. Re-sending
         the identical accepted command in a synchronous batch acknowledges it
@@ -455,7 +455,9 @@ class CarlaProvider:
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
                 'navigation':'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
                 'population': self.population_state(), 'environment':self.environment_state(),
-                'traffic_active': bool(self.population and self.population.vehicles)}
+                'traffic_active': bool(self.population and self.population.vehicles),
+                'ya_rab_ostorha': {'status':getattr(self, 'active_safety_status', None),
+                    'parameters':getattr(self, 'active_safety_configuration', None)}}
 
     def restart_status(self):
         ticket = getattr(self, 'restart_ticket', None)

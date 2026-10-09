@@ -165,6 +165,12 @@ class NativeScenarioManager:
         velocity(p.ego.actor,self.spec.ego_initial_speed)
         for a in self.spec.other_actor_definitions:velocity(p.world.world.get_actor(self.actors[a.name]),a.initial_speed_mps)
         self.started_at=p.last_vehicle['timestamp']; self.phase='RUNNING'; self.capture_start=True
+        safety=getattr(p,'active_safety_status',None) or {}
+        enabled=safety.get('enabled',False) and safety.get('status')!='SUSPENDED_RL'
+        self.run.update(safety_policy_enabled=enabled,
+            comparison_group='YA_RAB_OSTORHA_RULE_BASED' if enabled else 'NO_YA_RAB_OSTORHA_BASELINE',
+            safety_configuration={'status':safety,'parameters':getattr(p,'active_safety_configuration',None)},
+            initial_intervention_count=safety.get('intervention_count',0))
         self._publish()
 
     def before_tick(self):
@@ -211,6 +217,9 @@ class NativeScenarioManager:
     def step(self,frame):
         if self.phase!='RUNNING':return
         v=frame.vehicle; m=self.metrics
+        safety=getattr(self.provider,'active_safety_status',None) or {}
+        if self.run.get('safety_policy_enabled'):
+            m['safety_intervention_count']=max(0,safety.get('intervention_count',0)-self.run.get('initial_intervention_count',0))
         m['elapsed_simulation_s']=frame.timestamp_s-self.started_at
         initial=self.run['initial_states']['actors'][0]['transform']
         x,y,_=initial['position_m'];yaw=initial['rotation_rad']['yaw']
@@ -261,7 +270,7 @@ class NativeScenarioManager:
             self.phase='FINISHED'
             self.outcome={'run_id':self.run['run_id'],'condition_id':self.spec.condition_id,'reason':reason,
                           'scenario_success':success,'metrics':dict(m),'avoidability':'UNKNOWN',
-                          'comparison_group':'NO_YA_RAB_OSTORHA_BASELINE','safety_policy_enabled':False,
+                          'comparison_group':self.run['comparison_group'],'safety_policy_enabled':self.run['safety_policy_enabled'],
                           'measurement_notes':{'collision_severity':'Native impulse proxy in N*s, not injury or kinetic energy',
                               'clearance':'Planar yaw-oriented bounding boxes; pitch/roll/meshes excluded',
                               'collision_count':'Contact episodes separated by >1 simulation second; raw callbacks retained',

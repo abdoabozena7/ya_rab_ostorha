@@ -91,6 +91,15 @@ function refresh() {
     EMERGENCY_STOP:'Emergency stop',DISCONNECTED:'Simulator disconnected',REPLAY:'Replay'};
   $('controlMode').textContent = modeNames[provider.controlMode] || provider.controlMode;
   $('controlSource').textContent = provider.controlSource || '';
+  const safety = provider.safetySystem;
+  $('safetyStatus').textContent = provider.isReplay ? 'YA RAB OSTORHA · Replay, no active control' : !live ?
+    'YA RAB OSTORHA · Waiting for sensors' : 'YA RAB OSTORHA · RULE-BASED SAFETY · '+
+    (safety?.status ?? 'UNAVAILABLE')+' · Risk: '+(safety?.risk ?? 'UNKNOWN')+
+    ' · '+(safety?.active ? 'Intervention active' : 'Monitoring / standby')+
+    ' · Interventions: '+(safety?.intervention_count ?? 0)+' · '+(safety?.reason ?? '');
+  $('safetyEnabled').checked = safety?.enabled === true;
+  $('safetyEnabled').disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === 'TRAINING' ||
+    !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > .15;
   $('connectionDetail').textContent = provider.isReplay ? 'Recorded data view; no simulator controls.'
     : live ? (provider.controller?'Take control from this page.':'Another page controls the vehicle; take control in Settings.')
     : provider.restarting ? 'Restarting CARLA and reconnecting…' : 'Simulator disconnected. Open connection setup to continue.';
@@ -159,6 +168,7 @@ $('journeySpeed').onchange = () => {
   if (provider.controlMode === 'AUTOMATIC') provider.journeySpeed(speed);
 };
 $('drivingMode').onchange = () => { clearControls(); };
+$('safetyEnabled').onchange = () => provider.dashboardAction('safety_mode', {enabled:$('safetyEnabled').checked});
 $('gearSelect').onchange = () => { controls.setMode($('gearSelect').value); provider.releaseControls(); lastGear = null; };
 $('pauseBtn').onclick = () => clearControls();
 $('resetBtn').onclick = () => { clearControls(); provider.resetVehicle(); };

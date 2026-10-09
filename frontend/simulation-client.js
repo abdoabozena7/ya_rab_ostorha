@@ -37,6 +37,7 @@ export class SimulationClient extends SimulationProvider {
     this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
     this.route = this.dashboardResult = this.operationError = null;
+    this.safetySystem = null;
     this.navigationAvailable = false;
     this.lastControlSentAt = -Infinity;
   }
@@ -97,6 +98,7 @@ export class SimulationClient extends SimulationProvider {
     this.route = message.route ?? null;
     this.population = message.population ?? null;
     this.environment = message.environment ?? null;
+    this.safetySystem = message.safetySystem ?? null;
     this.nearbyActors = message.nearbyActors ?? null;
     const replay = message.mode === 'REPLAY' && message.provider === 'replay' && message.connected === false
       && message.available === true && message.replay?.dataOrigin === 'REAL_SIMULATION';
@@ -150,6 +152,7 @@ export class SimulationClient extends SimulationProvider {
     this.navigationAvailable = false;
     this.population = this.nearbyActors = null;
     this.environment = null;
+    this.safetySystem = null;
   }
 
   retry() {
