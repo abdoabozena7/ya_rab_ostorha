@@ -55,7 +55,7 @@ class WebSocketBridge:
                 return True
             if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'journey_speed', 'restart_graphics',
                             'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect',
-                            'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode'}:
+                            'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode', 'comparison'}:
                 return False
             if self.owner is not socket:
                 raise ValueError('Another dashboard controls this vehicle; select Start driving')

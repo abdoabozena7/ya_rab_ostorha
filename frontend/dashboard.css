@@ -46,6 +46,11 @@ kbd{direction:ltr;display:inline-block;font:12px var(--mono);color:var(--muted);
 [hidden]{display:none!important}
 .muted{color:var(--muted);font-size:12px}
 .route-actions{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-3)}
+.comparison-demo{grid-column:1/-1;border-bottom:1px solid var(--line);padding-bottom:var(--space-4);margin-bottom:var(--space-4)}
+.comparison-actions{display:flex;gap:var(--space-3);flex-wrap:wrap}
+.comparison-actions button{font-weight:650}
+.comparison-actions button[aria-pressed="true"]{outline:2px solid var(--focus);outline-offset:2px}
+#demoResults{white-space:pre-line;font-size:13px;font-weight:550}
 #journeySpeed{max-width:160px}
 .camera-stage{display:grid;grid-template-columns:minmax(0,2fr) minmax(230px,1fr);gap:var(--space-3);align-items:start}
 #perceptionPanel{min-width:0;background:var(--bg);padding:var(--space-3);border-radius:6px}

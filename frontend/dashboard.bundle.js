@@ -76,8 +76,10 @@
       this.lastFrame = this.lastTimestamp = null;
       this.route = this.dashboardResult = this.operationError = null;
       this.safetySystem = null;
+      this.comparisonDemo = null;
       this.navigationAvailable = false;
       this.lastControlSentAt = -Infinity;
+      this.lastManualFrame = null;
     }
     async connect() {
       if (this.closed || this.connecting || this.socket?.readyState <= 1) return;
@@ -151,6 +153,7 @@
       this.population = message.population ?? null;
       this.environment = message.environment ?? null;
       this.safetySystem = message.safetySystem ?? null;
+      this.comparisonDemo = message.comparisonDemo ?? null;
       this.nearbyActors = message.nearbyActors ?? null;
       const replay = message.mode === "REPLAY" && message.provider === "replay" && message.connected === false && message.available === true && message.replay?.dataOrigin === "REAL_SIMULATION";
       const sourceValid = replay ? message.vehicle?.source === message.replay.recordedProvider && message.world?.source === message.replay.recordedProvider : message.connected === true && message.mode !== "REPLAY" && message.provider !== "replay" && message.vehicle?.source === "carla" && message.world?.source === "carla";
@@ -202,6 +205,7 @@
       this.pending.clear();
       this.latencyMs = null;
       this.gearCommand = 1;
+      this.lastManualFrame = null;
       this.status = reason;
       this.phase = "DISCONNECTED";
       this.isReplay = false;
@@ -213,6 +217,7 @@
       this.population = this.nearbyActors = null;
       this.environment = null;
       this.safetySystem = null;
+      this.comparisonDemo = null;
     }
     retry() {
       if (this.closed || this.retryTimer) return;
@@ -249,6 +254,7 @@
     }
     startDriving() {
       this.operationError = null;
+      this.lastManualFrame = null;
       return this.send("start_driving");
     }
     startJourney(speed_kmh) {
@@ -283,9 +289,11 @@
       return result;
     }
     updateControls({ throttle = 0, brake = 0, steering = 0, parkingbrake = 0 } = {}) {
+      if (this.telemetry.frame === this.lastManualFrame) return false;
       const controls2 = { throttle, brake, steering, parkingbrake };
       if (this.gearCommand != null) controls2.gear = this.gearCommand;
       if (this.send("controls", { controls: controls2 })) {
+        this.lastManualFrame = this.telemetry.frame;
         this.gearCommand = null;
         return true;
       }
@@ -1125,7 +1133,7 @@
         if (!response.ok) throw new Error("Could not read inference worker");
         const result = await response.json();
         if (result.status !== "RUNNING") {
-          const labels = { LOADING: "Loading YOLO and OCR\u2026", WAITING: "Waiting for a frame from this session", UNAVAILABLE: "Inference not installed", STALE: "Inference frame is stale", ERROR: "Inference failed", DISCONNECTED: "Inference stopped" };
+          const labels = { DEMO_PAUSED: "Comparison demo \xB7 YOLO/OCR paused", LOADING: "Loading YOLO and OCR\u2026", WAITING: "Waiting for a frame from this session", UNAVAILABLE: "Inference not installed", STALE: "Inference frame is stale", ERROR: "Inference failed", DISCONNECTED: "Inference stopped" };
           $2("perceptionStatus").textContent = labels[result.status] || result.status;
           this.clear(result.error || "Waiting for a native analyzed frame");
           return;
@@ -1314,9 +1322,26 @@
     $3("controlMode").textContent = modeNames[provider.controlMode] || provider.controlMode;
     $3("controlSource").textContent = provider.controlSource || "";
     const safety = provider.safetySystem;
+    const demo = provider.comparisonDemo;
+    const demoBusy = ["RESETTING", "RUNNING", "STOPPING"].includes(demo?.phase);
+    for (const id of ["demoWithoutBtn", "demoWithBtn", "demoStopBtn"]) {
+      $3(id).disabled = !live || provider.isReplay || !provider.controller || provider.restarting || provider.controlMode === "EMERGENCY_STOP";
+    }
+    $3("demoWithoutBtn").setAttribute("aria-pressed", String(demo?.mode === "WITHOUT" && demoBusy));
+    $3("demoWithBtn").setAttribute("aria-pressed", String(demo?.mode === "WITH" && demoBusy));
+    $3("demoStatus").textContent = demo?.mode ? (demo.mode === "WITH" ? "WITH YA RAB OSTORHA" : "WITHOUT SAFETY") + " \xB7 " + demo.phase + " \xB7 Safety " + (demo.safety_enabled ? "ON" : "OFF") + " during run \xB7 Controller: " + demo.active_controller + (demo.latest_outcome ? " \xB7 Outcome: " + demo.latest_outcome : "") + (demo.error ? " \xB7 " + demo.error : "") : demo?.error || "Choose a comparison mode. Each button resets and automatically records a fresh run.";
+    const measured = demo?.mode && demo.phase !== "RESETTING";
+    const ds = demoBusy ? safety : demo?.last_safety;
+    $3("demoMeasurements").textContent = measured ? "Hazard: " + (demo.mode === "WITHOUT" ? "Safety detection OFF" : ds?.risk ?? "UNKNOWN") + " \xB7 Reason: " + (ds?.reason ?? "Waiting for sensors") + " \xB7 Run brake: " + number((demoBusy ? state.brake : demo.last_applied_brake) == null ? null : (demoBusy ? state.brake : demo.last_applied_brake) * 100, "%") + " \xB7 Interventions: " + (demo.metrics?.safety_intervention_count ?? "\u2014") + " \xB7 Collision: " + (demo.metrics?.collision_count > 0 ? "YES" : "NO recorded") + " \xB7 Distance: " + number(demo.metrics?.distance_traveled_m, " m") + " \xB7 Progress: " + number(demo.metrics?.progress_m, " m") : "Measurements appear during the real CARLA run.";
+    const resultLines = ["WITHOUT", "WITH"].filter((mode) => demo?.results?.[mode]).map((mode) => {
+      const result = demo.results[mode], m = result.outcome.metrics;
+      return (mode === "WITH" ? "WITH YA RAB OSTORHA" : "WITHOUT SAFETY") + ": Collision " + (result.collision ? "YES" : "NO") + " \xB7 Progress " + number(m.progress_m, " m") + " \xB7 Interventions " + m.safety_intervention_count + " \xB7 " + result.status;
+    });
+    if (resultLines.length === 2) resultLines.push("Identical initial configuration: " + (demo.initial_conditions_match ? "VERIFIED" : "NOT VERIFIED"));
+    $3("demoResults").textContent = resultLines.join("\n");
     $3("safetyStatus").textContent = provider.isReplay ? "YA RAB OSTORHA \xB7 Replay, no active control" : !live ? "YA RAB OSTORHA \xB7 Waiting for sensors" : "YA RAB OSTORHA \xB7 " + (safety?.controller ?? "RULE") + " SAFETY \xB7 " + (safety?.status ?? "UNAVAILABLE") + " \xB7 Risk: " + (safety?.risk ?? "UNKNOWN") + " \xB7 " + (safety?.active ? "Intervention active" : "Monitoring / standby") + " \xB7 Generator: " + (safety?.actual_generator ?? "RULE") + " \xB7 Model: " + (safety?.model_health ?? "UNAVAILABLE") + " \xB7 Interventions: " + (safety?.intervention_count ?? 0) + " \xB7 " + (safety?.reason ?? "") + (safety?.model_validation ? " \xB7 " + safety.model_validation : "");
     $3("safetyEnabled").checked = safety?.enabled === true;
-    $3("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
+    $3("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || demoBusy || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
     $3("safetyController").disabled = $3("safetyEnabled").disabled;
     $3("safetyController").value = safety?.controller ?? "RULE";
     for (const option of $3("safetyController").options) option.disabled = !(safety?.available_controllers ?? ["RULE"]).includes(option.value);
@@ -1398,6 +1423,14 @@
     clearControls();
   };
   $3("safetyEnabled").onchange = () => provider.dashboardAction("safety_mode", { enabled: $3("safetyEnabled").checked });
+  for (const [id, mode] of [["demoWithoutBtn", "WITHOUT"], ["demoWithBtn", "WITH"], ["demoStopBtn", "STOP"]]) {
+    $3(id).onclick = () => {
+      resetKeys();
+      manualArmed = false;
+      manualRequestedUntil = 0;
+      provider.dashboardAction("comparison", { mode });
+    };
+  }
   $3("safetyController").onchange = () => provider.dashboardAction("safety_mode", { enabled: $3("safetyEnabled").checked, controller: $3("safetyController").value });
   $3("gearSelect").onchange = () => {
     controls.setMode($3("gearSelect").value);

@@ -38,8 +38,10 @@ export class SimulationClient extends SimulationProvider {
     this.lastFrame = this.lastTimestamp = null;
     this.route = this.dashboardResult = this.operationError = null;
     this.safetySystem = null;
+    this.comparisonDemo = null;
     this.navigationAvailable = false;
     this.lastControlSentAt = -Infinity;
+    this.lastManualFrame = null;
   }
 
   async connect() {
@@ -99,6 +101,7 @@ export class SimulationClient extends SimulationProvider {
     this.population = message.population ?? null;
     this.environment = message.environment ?? null;
     this.safetySystem = message.safetySystem ?? null;
+    this.comparisonDemo = message.comparisonDemo ?? null;
     this.nearbyActors = message.nearbyActors ?? null;
     const replay = message.mode === 'REPLAY' && message.provider === 'replay' && message.connected === false
       && message.available === true && message.replay?.dataOrigin === 'REAL_SIMULATION';
@@ -145,6 +148,7 @@ export class SimulationClient extends SimulationProvider {
     this.world = {};
     this.sensorMetadata = {}; this.sensorRates = {}; this.sensorErrors = {};
     this.pending.clear(); this.latencyMs = null; this.gearCommand = 1;
+    this.lastManualFrame = null;
     this.status = reason; this.phase = 'DISCONNECTED';
     this.isReplay = false; this.controlMode = 'DISCONNECTED'; this.replay = null;
     this.lastFrame = this.lastTimestamp = null;
@@ -153,6 +157,7 @@ export class SimulationClient extends SimulationProvider {
     this.population = this.nearbyActors = null;
     this.environment = null;
     this.safetySystem = null;
+    this.comparisonDemo = null;
   }
 
   retry() {
@@ -185,7 +190,7 @@ export class SimulationClient extends SimulationProvider {
     if (type === 'controls') this.lastControlSentAt = this.now();
     return true;
   }
-  startDriving() { this.operationError = null; return this.send('start_driving'); }
+  startDriving() { this.operationError = null; this.lastManualFrame = null; return this.send('start_driving'); }
   startJourney(speed_kmh) { this.operationError = null; return this.send('start_journey', {speed_kmh}); }
   journeyHeartbeat() { return this.send('journey_heartbeat', {session_id:this.sessionId}); }
   journeySpeed(speed_kmh) { this.operationError = null; return this.send('journey_speed', {speed_kmh}); }
@@ -200,9 +205,15 @@ export class SimulationClient extends SimulationProvider {
     return result;
   }
   updateControls({throttle = 0, brake = 0, steering = 0, parkingbrake = 0} = {}) {
+    // Sample the latest keys once per native observation. Repeated snapshots
+    // must not queue old commands faster than the simulator can admit them.
+    if (this.telemetry.frame === this.lastManualFrame) return false;
     const controls = {throttle, brake, steering, parkingbrake};
     if (this.gearCommand != null) controls.gear = this.gearCommand;
-    if (this.send('controls', {controls})) { this.gearCommand = null; return true; }
+    if (this.send('controls', {controls})) {
+      this.lastManualFrame = this.telemetry.frame;
+      this.gearCommand = null; return true;
+    }
     return false;
   }
   setGear(gear) { this.gearCommand = gear; }

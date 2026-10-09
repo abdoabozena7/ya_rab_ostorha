@@ -70,14 +70,20 @@ class SimulationService:
         self.rl_runtime = None
         self.active_safety = None
         self.safety_command = None
+        self.comparison = None
         if getattr(provider, 'sensor_suite', False) is True:
             from .research_safety import ResearchSafetySupervisor
             self.active_safety = ResearchSafetySupervisor()
             self.provider.active_safety_configuration = to_dict(self.active_safety.config)
             self.provider.active_safety_configuration['learned_safety'] = copy.deepcopy(self.active_safety.learned_config)
+            if getattr(provider, 'scenario_outcomes_enabled', False):
+                from ..carla.comparison import ComparisonDemo
+                self.comparison = ComparisonDemo(self)
 
     def set_safety_enabled(self, value):
         with self.lock:
+            if self.comparison and self.comparison.busy:
+                raise ValueError('Restart with a comparison button to change demo safety')
             self._require_normal_runtime()
             self.require_connected()
             if not isinstance(value, dict) or set(value) not in ({'enabled'}, {'enabled','controller'}) or type(value['enabled']) is not bool:
@@ -110,7 +116,9 @@ class SimulationService:
             self._clear_safety_command(); supervisor.reset()
             supervisor.status.update(status='DISABLED_COMPARISON' if not supervisor.enabled else
                 'SUSPENDED_RL' if mode == ControlMode.TRAINING else 'SENSOR_FAULT_STOP' if supervisor.last_fault else 'STANDBY',
-                reason=supervisor.last_fault or 'Monitoring resumes with normal forward driving')
+                actual_generator='BASE_DRIVER',
+                reason='Safety disabled for research comparison' if not supervisor.enabled else
+                    supervisor.last_fault or 'Monitoring resumes with normal forward driving')
             self.provider.active_safety_status = supervisor.snapshot()
             return
         frame_id, timestamp_s = self._context()
@@ -204,6 +212,9 @@ class SimulationService:
             self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
                 label, self.name, DataOrigin.REAL_SIMULATION,
                 created_at_utc=datetime.now(timezone.utc).isoformat(), config=self.provider.recording_metadata()))
+            if self.comparison and self.comparison.busy:
+                from .recording import BufferedRunRecorder
+                self.recorder = BufferedRunRecorder(self.recorder)
             self._event(EventType.ControlChanged, recording='STARTED', population=self.provider.population_state())
             return {'enabled': True, 'path': str(self.recorder.root)}
         if not self.recorder: raise ValueError('No recording is active')
@@ -268,6 +279,12 @@ class SimulationService:
     def _record(self, frame):
         if not self.recorder:
             return
+        if hasattr(self.recorder, 'submit'):
+            assets = [(sensor.asset, self.provider.get_sensor_asset(sensor.asset))
+                      for sensor in frame.sensors if sensor.asset]
+            self.recorder.submit(frame, assets)
+            if self.comparison: self.comparison.record(frame)
+            return
         if hasattr(self.recorder, 'store_asset') and hasattr(self.provider, 'get_sensor_asset'):
             for sensor in frame.sensors:
                 if sensor.asset:
@@ -276,6 +293,8 @@ class SimulationService:
                     if stored != sensor.asset:
                         raise RuntimeError('Recorded sensor bytes differ from the native frame reference')
         self.recorder.record(frame)
+        if self.comparison:
+            self.comparison.record(frame)
 
     def submit_control(self, command):
         with self.lock:
@@ -383,6 +402,8 @@ class SimulationService:
                 self.actions.append(('pause', False))
 
     def start_journey(self, speed_kmh=20):
+        if self.comparison and self.comparison.busy:
+            raise ValueError('Stop/Reset the comparison before starting another journey')
         self._require_normal_runtime()
         if not self.arbiter.machine.allow_navigation:
             raise ValueError('Destination journeys are unavailable in this mode')
@@ -412,6 +433,8 @@ class SimulationService:
             self.navigation_heartbeat_at = self.now()
 
     def set_journey_speed(self, speed_kmh):
+        if self.comparison and self.comparison.busy:
+            raise ValueError('Comparison speed is fixed at 28 km/h')
         speed = finite(speed_kmh)
         if not 5 <= speed <= 30:
             raise ValueError('Journey speed must be 5–30 km/h')
@@ -461,6 +484,8 @@ class SimulationService:
             self.arbiter.acknowledge_stop(connected=True)
 
     def reset_vehicle(self):
+        if self.comparison and self.comparison.busy:
+            raise ValueError('Use Stop/Reset demo to reset the comparison')
         self._require_normal_runtime()
         self.require_connected()
         self.release_controls()
@@ -469,6 +494,8 @@ class SimulationService:
             self.actions.append(('reset', None))
 
     def set_paused(self, paused):
+        if self.comparison and self.comparison.busy and not paused:
+            raise ValueError('Stop/Reset demo before enabling manual driving')
         self._require_normal_runtime()
         if type(paused) is not bool:
             raise ValueError('paused must be boolean')
@@ -492,6 +519,14 @@ class SimulationService:
         with self.lock:
             self._require_normal_runtime()
             self.require_connected()
+            if action == 'comparison':
+                if not self.comparison:
+                    raise ValueError('Live comparison unavailable')
+                self.comparison.request(value)
+                self.dashboard_result = {'action': action, 'status': 'PENDING'}
+                return
+            if self.comparison and self.comparison.busy:
+                raise ValueError('Stop/Reset the comparison before changing its configuration')
             if action not in ('settings', 'destination', 'save_place', 'favorite_place', 'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario'):
                 raise ValueError('Unknown dashboard operation')
             if self.recorder and action in ('settings','world_reset'):
@@ -522,6 +557,8 @@ class SimulationService:
             self.actions.append(('reconnect', None))
 
     def restart_graphics(self, value, operation='GRAPHICS'):
+        if self.comparison and self.comparison.busy:
+            raise ValueError('Stop/Reset demo before restarting graphics')
         self._require_normal_runtime()
         launch = self.provider.validate_graphics(value)
         with self.lock:
@@ -603,6 +640,7 @@ class SimulationService:
             view = dashboard_frame(self.observation) if live else {'vehicle': None, 'world': None, 'sensors': {}, 'canonical': None}
             return {'sequence': self.sequence, 'connected': live, 'available': live,
                     'sessionId': self.session_id, 'journey': copy.deepcopy(self.journey),
+                    'comparisonDemo': self.comparison.snapshot() if self.comparison else None,
                     'rlRuntime': self.rl_runtime.status() if self.rl_runtime else {'active':False,'tick_owner':'simulation-worker'},
                     'navigationAvailable': self.arbiter.machine.allow_navigation,
                     'safetySystem': self.active_safety.snapshot() if self.active_safety else
@@ -775,7 +813,14 @@ class SimulationService:
             actions = list(self.actions)
             self.actions.clear()
         for action, value in actions:
-            if action == 'start_journey':
+            if action == 'comparison':
+                try:
+                    with self.lock:
+                        self.comparison.execute(value)
+                        self.dashboard_result = {'action': action, 'status': 'APPLIED', 'operationId': uuid.uuid4().hex}
+                except (ValueError, RuntimeError) as error:
+                    self.dashboard_result = {'action': action, 'status': 'REJECTED', 'error': str(error), 'operationId': uuid.uuid4().hex}
+            elif action == 'start_journey':
                 try:
                     with self.lock:
                         if self.journey['status'] != 'STARTING' or self.now()-self.navigation_heartbeat_at > self.CONTROL_TTL:
@@ -862,6 +907,13 @@ class SimulationService:
                 self.paused = value
         with self.lock:
             if training_command is None:
+                if self.comparison:
+                    try:
+                        self.comparison.before_control()
+                    except (ValueError, RuntimeError, ImportError) as error:
+                        self.comparison.finish('initialization_error')
+                        self.comparison.phase = 'ERROR'
+                        self.comparison.error = str(error)
                 self._navigation_step()
                 self._active_safety_step()
                 chosen = self._choose()
@@ -906,11 +958,26 @@ class SimulationService:
             for synchronized in self.synchronizer.drain():
                 self._publish(synchronized)
                 self._record(synchronized)
+            if (self.comparison and self.comparison.busy or
+                    self.active_safety and self.active_safety.enabled):
+                # Protected driving has one physics tick owner. Wait for that
+                # tick's existing GPU sensors before advancing physics again;
+                # this keeps the validated RULE simulation-age gate intact.
+                deadline = self.now() + min(.2, self.synchronizer.timeout_s)
+                while (self.observation is None or self.observation.frame_id < observation.frame_id) and self.now() < deadline:
+                    self.stop_event.wait(.002)
+                    self._ingest_provider_sensors()
+                    for synchronized in self.synchronizer.drain():
+                        self._publish(synchronized)
+                        self._record(synchronized)
         elif self.observation:
             self.state_at = self.now()  # Explicit native pause; no new observations are recorded.
         if any(name == 'reset' for name, _ in actions):
             self._event(EventType.VehicleSpawned, actor_id=observation.vehicle.actor_id)
         self.backend_step_ms = (self.now()-started)*1000
+        if self.comparison:
+            with self.lock:
+                self.comparison.after_tick()
 
     def _run(self):
         try:
@@ -989,7 +1056,11 @@ class SimulationService:
                             self._publish(pending)
                             self._record(pending)
                     finally:
-                        self.provider.close()
+                        try:
+                            if self.comparison:
+                                self.comparison.finish('service_shutdown')
+                        finally:
+                            self.provider.close()
                 errors = getattr(self.provider, 'cleanup_errors', [])
                 if errors:
                     raise RuntimeError('; '.join(errors))

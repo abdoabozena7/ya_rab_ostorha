@@ -11,6 +11,66 @@ from .logging import log, LogCategory
 MAX_ROW_BYTES = 1_048_576
 
 
+class BufferedRunRecorder:
+    """Bounded demo disk writer; immutable native bytes leave the tick thread.
+
+    Uses the existing versioned writer and checksum validation. Queue exhaustion
+    or disk errors stop admission; no frames are silently dropped.
+    """
+    def __init__(self, recorder):
+        from queue import Queue
+        self.writer = recorder
+        self.root, self.metadata = recorder.root, recorder.metadata
+        # Includes command events as well as frames. Bound a short presentation
+        # episode's disk lag without letting file scanning stall sensor freshness.
+        self.queue = Queue(maxsize=640)
+        self.error = None
+        self.closed = False
+        self.thread = threading.Thread(target=self._run, name='comparison-recording', daemon=True)
+        self.thread.start()
+
+    def _put(self, item):
+        from queue import Full
+        if self.error: raise RuntimeError('Demo recording failed: '+str(self.error))
+        if self.closed: raise RuntimeError('Demo recording is closed')
+        try: self.queue.put(item, timeout=.1)
+        except Full: raise RuntimeError('Demo recording queue exhausted; disk cannot keep up')
+
+    def submit(self, frame, assets):
+        self._put(('frame', (frame, assets)))
+
+    def record_event(self, event):
+        self._put(('event', event))
+
+    def _run(self):
+        try:
+            while True:
+                item = self.queue.get()
+                if item is None: break
+                kind, value = item
+                if kind == 'event': self.writer.record_event(value)
+                else:
+                    frame, assets = value
+                    for asset, data in assets:
+                        folder, filename = asset.path.split('/', 1)
+                        if self.writer.store_asset(folder, filename, data, asset.media_type) != asset:
+                            raise RuntimeError('Recorded bytes differ from native sensor reference')
+                    self.writer.record(frame)
+        except Exception as error:
+            self.error = error
+        finally:
+            try: self.writer.close()
+            except Exception as error: self.error = error
+
+    def close(self):
+        if self.closed: return
+        if self.thread.is_alive(): self.queue.put(None, timeout=10)
+        self.thread.join(timeout=15)
+        self.closed = True
+        if self.thread.is_alive(): raise RuntimeError('Demo recording writer did not close')
+        if self.error: raise RuntimeError('Demo recording failed: '+str(self.error))
+
+
 def encode_row(value):
     row = (json.dumps(to_dict(value), allow_nan=False, separators=(',', ':'))+'\n').encode('utf-8')
     if len(row) > MAX_ROW_BYTES:

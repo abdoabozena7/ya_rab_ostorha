@@ -1,0 +1,194 @@
+{
+  "source": "REAL_CARLA_DASHBOARD_MANUAL_AND_NORMAL_JOURNEY",
+  "maximum_speed_kmh": 17.381698225605504,
+  "rows": [
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.13860111778625156,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.7940924540388232,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 2.8676670431258486,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 4.316072913411945,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 5.578042892222399,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 6.8018828736843,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 8.453298406198927,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 10.265685732903309,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 12.234763567844741,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 13.927859209157388,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 15.556128622172317,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    },
+    {
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 17.381698225605504,
+      "throttle": 0.550000011920929,
+      "brake": 0,
+      "safety": "MONITORING",
+      "reason": "Observed forward stopping corridor is clear",
+      "ui": {
+        "focused": true,
+        "hidden": false,
+        "status": "",
+        "gear": "D"
+      }
+    }
+  ],
+  "normal": {
+    "mode": "AUTOMATIC",
+    "source": "NAVIGATION",
+    "speed_kmh": 14.739035874200658,
+    "journey": "RUNNING",
+    "safety_on": true,
+    "safety_status": "MONITORING"
+  }
+}

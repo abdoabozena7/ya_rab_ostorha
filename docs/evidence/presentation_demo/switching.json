@@ -1,0 +1,28 @@
+{
+  "switching": "PASS",
+  "tick_owner": "simulation-worker",
+  "previous_runs": [
+    {
+      "mode": "WITHOUT",
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_50ea7572e7b440b0a982516d8fc8961f",
+      "frames": 13,
+      "outcome": "INTERRUPTED",
+      "reason": "switched",
+      "removed_actor_ids": [
+        101,
+        109
+      ]
+    },
+    {
+      "mode": "WITH",
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7bfab3ece7ea4beca7827d0a8dc301bb",
+      "frames": 11,
+      "outcome": "INTERRUPTED",
+      "reason": "switched",
+      "removed_actor_ids": [
+        110,
+        118
+      ]
+    }
+  ]
+}

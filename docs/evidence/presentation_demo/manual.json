@@ -1,0 +1,307 @@
+{
+  "source": "PRODUCTION_WEBSOCKET_MANUAL_CONTROLS",
+  "maximum_speed_kmh": 8.60647843040867,
+  "rows": [
+    {
+      "frame": 3579,
+      "mode": "MANUAL",
+      "source": "SAFETY",
+      "speed_kmh": 0.0,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "safety_enabled": true,
+      "safety_status": "STANDBY"
+    },
+    {
+      "frame": 3580,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3582,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.002679256279981298,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3584,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0019867400874128745,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3586,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.002674072282507353,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3587,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.002482601115662029,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3588,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0021744689441590627,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3590,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0010614852655771942,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3590,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0010614852655771942,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3592,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0011251373881053244,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3594,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.0008616027581045514,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3595,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 0.6607966429167706,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3597,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 2.8038504480716675,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3598,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 2.9365797976142023,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3599,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 3.3412193005681305,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3601,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 3.8031125394698813,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3602,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 4.101781892866692,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3603,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 4.389870019284123,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3604,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 4.666231462463787,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3606,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 5.0741841468314846,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3608,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 5.491317717358221,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3609,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 5.7260337777213834,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3610,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 5.943478343320353,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3611,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 6.195260951138824,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3612,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 6.427632625595414,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3615,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 7.219373322933871,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3616,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 7.475732509441489,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3618,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 8.03190769148818,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3619,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 8.33159838540856,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    },
+    {
+      "frame": 3620,
+      "mode": "MANUAL",
+      "source": "MANUAL",
+      "speed_kmh": 8.60647843040867,
+      "throttle": 0.550000011920929,
+      "brake": 0.0,
+      "safety_enabled": true,
+      "safety_status": "MONITORING"
+    }
+  ],
+  "stopped_mode": "PAUSED"
+}

@@ -27,7 +27,7 @@ export class PerceptionView {
       if(!response.ok)throw new Error('Could not read inference worker');
       const result=await response.json();
       if(result.status!=='RUNNING') {
-        const labels={LOADING:'Loading YOLO and OCR…',WAITING:'Waiting for a frame from this session',UNAVAILABLE:'Inference not installed',STALE:'Inference frame is stale',ERROR:'Inference failed',DISCONNECTED:'Inference stopped'};
+        const labels={DEMO_PAUSED:'Comparison demo · YOLO/OCR paused',LOADING:'Loading YOLO and OCR…',WAITING:'Waiting for a frame from this session',UNAVAILABLE:'Inference not installed',STALE:'Inference frame is stale',ERROR:'Inference failed',DISCONNECTED:'Inference stopped'};
         $('perceptionStatus').textContent=labels[result.status]||result.status;
         this.clear(result.error||'Waiting for a native analyzed frame');return;
       }

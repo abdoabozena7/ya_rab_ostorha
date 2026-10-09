@@ -20,6 +20,17 @@
   </header>
   <main id="workspace" class="workspace" tabindex="-1">
     <div class="workspace-heading"><div><h2>Driving workspace</h2><p>View the camera, control the vehicle and choose a destination.</p></div><span class="workspace-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7ZM8 12l3 3 5-6"/></svg>Driving starts after activation</span></div>
+    <section class="comparison-demo" aria-label="Presentation comparison">
+      <div class="comparison-actions">
+        <button id="demoWithoutBtn" disabled>WITHOUT SAFETY</button>
+        <button id="demoWithBtn" class="primary" disabled>WITH YA RAB OSTORHA</button>
+        <button id="demoStopBtn" disabled>Stop / Reset demo</button>
+      </div>
+      <p class="muted">Same front obstacle · 28 km/h · seed 2589 · actor moves away at 7 s. Research comparison: BasicAgent vehicle and traffic-light checks disabled in both runs. Normal journeys retain their own checks.</p>
+      <p id="demoStatus" role="status">Choose a comparison mode. Each button resets and automatically records a fresh run.</p>
+      <p id="demoMeasurements" role="status">Measurements appear during the real CARLA run.</p>
+      <div id="demoResults" aria-live="polite"></div>
+    </section>
     <section class="visual-workspace">
       <section id="cameraCard" aria-label="Camera CARLA native">
         <div class="section-heading"><div><span class="eyebrow">Live view</span><h2 id="providerTitle">Camera CARLA</h2></div><span id="cameraActivity">Waiting for image</span></div>

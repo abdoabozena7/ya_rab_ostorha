@@ -110,7 +110,10 @@ test('commands require fresh CARLA state and exclusive control ownership', () =>
   p.updateControls({throttle: 1}); assert.equal(sent.length, 0);
   p.acceptSnapshot(snapshot); p.updateControls({throttle: .2});
   p.updateControls({throttle: .3}); assert.equal(sent.length, 1);
-  advance(40); p.updateControls({throttle: .3});
+  advance(40); p.updateControls({throttle: .3}); assert.equal(sent.length, 1);
+  p.acceptSnapshot({...snapshot, vehicle:{...snapshot.vehicle,frame:2,timestamp:.1},
+    world:{...snapshot.world,frame:2,timestamp:.1}});
+  p.updateControls({throttle: .3});
   assert.equal(sent[0].controls.gear, 1); assert.equal(sent[1].controls.gear, undefined);
   advance(800); p.updateControls({throttle: 1}); assert.equal(sent.length, 2);
   assert.equal(p.getVehicleState().speedMps, null);

@@ -1,4 +1,5 @@
 """CARLA is the rendered simulator. This provider sends controls and reads state."""
+import copy
 from .connection import CarlaConnection
 from .controls import native_control
 from .sensors import CarlaSensorManager
@@ -280,7 +281,7 @@ class CarlaProvider:
             raise ValueError('Native restart is available only for the local simulator')
         return validate_settings({'next_launch': value})['next_launch']
 
-    def start_navigation(self, speed_kmh):
+    def start_navigation(self, speed_kmh, *, demo_options=None):
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
             raise ValueError('Choose a valid destination and show its route before starting')
@@ -288,10 +289,12 @@ class CarlaProvider:
         self.dashboard_tools.replan_route()
         from agents.navigation.basic_agent import BasicAgent
         delta = self.fixed_delta
-        self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
-            opt_dict={'dt': delta, 'max_brake': 1.,
+        self.navigation_options = {'dt': delta, 'max_brake': 1.,
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
-                      'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta}},
+                      'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
+                      **(demo_options or {})}
+        self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
+            opt_dict=copy.deepcopy(self.navigation_options),
             map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.route_service.planner)
         self.navigation.set_global_plan(self.dashboard_tools.native_route,
                                         stop_waypoint_creation=True, clean_queue=True)

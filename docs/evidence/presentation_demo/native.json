@@ -1,0 +1,88 @@
+{
+  "source": "REAL_CARLA_DASHBOARD_BUTTONS",
+  "tick_owner": "simulation-worker",
+  "initial_conditions_match": true,
+  "runs": {
+    "WITHOUT": {
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c11cf1d23af84a05b4f11d2faac357ec",
+      "frames": 78,
+      "checked_assets": 234,
+      "collision_events": 1,
+      "collision_impulses_ns": [
+        14636.863418582147
+      ],
+      "metrics": {
+        "collision_callback_count": 1,
+        "collision_count": 1,
+        "collision_impulse_total_ns": 14636.863418582147,
+        "collision_peak_impulse_ns": 14636.863418582147,
+        "distance_traveled_m": 16.291993472025663,
+        "progress_m": 16.21399943658349,
+        "elapsed_simulation_s": 3.8000000566244125,
+        "average_speed_mps": 4.287366639277907,
+        "minimum_clearance_m": 0.0,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 0,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 5.919144285755465,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "COLLISION",
+      "completed": false,
+      "applied_safety_frames": 0,
+      "command_application_mismatches": [],
+      "resumed_after_hazard": false,
+      "replay_camera": "PASS",
+      "initial_condition_id": "87bda6c4b195f7332f9707d9bd50b294f440389b18fa8ea856531d7f692d2de8"
+    },
+    "WITH": {
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_fcca8f47a88f4dc9b74482257837e500",
+      "frames": 282,
+      "checked_assets": 846,
+      "collision_events": 0,
+      "collision_impulses_ns": [],
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 28.01741420178026,
+        "progress_m": 28.005008746351447,
+        "elapsed_simulation_s": 14.000000208616257,
+        "average_speed_mps": 2.0012438417348757,
+        "minimum_clearance_m": 3.745784832391749,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 4,
+        "unsafe_intervention_count": null,
+        "route_completion": null,
+        "control_variation": 14.600962178621558,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "SAFE_PROGRESS",
+      "completed": true,
+      "applied_safety_frames": 102,
+      "command_application_mismatches": [],
+      "resumed_after_hazard": true,
+      "replay_camera": "PASS",
+      "initial_condition_id": "87bda6c4b195f7332f9707d9bd50b294f440389b18fa8ea856531d7f692d2de8"
+    }
+  },
+  "versions": [
+    "0.9.16",
+    "0.9.16"
+  ],
+  "actor_inventory": {
+    "vehicles": 2,
+    "sensors": 7,
+    "walkers": 0,
+    "walker_controllers": 0
+  },
+  "recording": "PASS"
+}

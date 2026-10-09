@@ -105,6 +105,10 @@ def main():
         started=time.monotonic()
         try:
             with urllib.request.urlopen(url+'state',timeout=5) as response: state=json.load(response)
+            if (state.get('comparisonDemo') or {}).get('phase') in ('RESETTING','RUNNING','STOPPING'):
+                publish({'status':'DEMO_PAUSED','session_id':state.get('sessionId')})
+                time.sleep(.5)
+                continue
             if not state.get('connected') or state.get('mode')=='REPLAY':
                 publish({'status':'DISCONNECTED'});time.sleep(1);continue
             if not state.get('frameComplete'):

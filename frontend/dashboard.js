@@ -92,6 +92,38 @@ function refresh() {
   $('controlMode').textContent = modeNames[provider.controlMode] || provider.controlMode;
   $('controlSource').textContent = provider.controlSource || '';
   const safety = provider.safetySystem;
+  const demo = provider.comparisonDemo;
+  const demoBusy = ['RESETTING','RUNNING','STOPPING'].includes(demo?.phase);
+  for (const id of ['demoWithoutBtn','demoWithBtn','demoStopBtn']) {
+    $(id).disabled = !live || provider.isReplay || !provider.controller || provider.restarting || provider.controlMode === 'EMERGENCY_STOP';
+  }
+  $('demoWithoutBtn').setAttribute('aria-pressed', String(demo?.mode === 'WITHOUT' && demoBusy));
+  $('demoWithBtn').setAttribute('aria-pressed', String(demo?.mode === 'WITH' && demoBusy));
+  $('demoStatus').textContent = demo?.mode ?
+    (demo.mode === 'WITH' ? 'WITH YA RAB OSTORHA' : 'WITHOUT SAFETY')+' · '+demo.phase+
+    ' · Safety '+(demo.safety_enabled ? 'ON' : 'OFF')+' during run · Controller: '+demo.active_controller+
+    (demo.latest_outcome ? ' · Outcome: '+demo.latest_outcome : '')+
+    (demo.error ? ' · '+demo.error : '') :
+    demo?.error || 'Choose a comparison mode. Each button resets and automatically records a fresh run.';
+  const measured = demo?.mode && demo.phase !== 'RESETTING';
+  const ds = demoBusy ? safety : demo?.last_safety;
+  $('demoMeasurements').textContent = measured ?
+    'Hazard: '+(demo.mode === 'WITHOUT' ? 'Safety detection OFF' : ds?.risk ?? 'UNKNOWN')+
+    ' · Reason: '+(ds?.reason ?? 'Waiting for sensors')+
+    ' · Run brake: '+number((demoBusy ? state.brake : demo.last_applied_brake) == null ? null :
+      (demoBusy ? state.brake : demo.last_applied_brake)*100,'%')+
+    ' · Interventions: '+(demo.metrics?.safety_intervention_count ?? '—')+
+    ' · Collision: '+(demo.metrics?.collision_count > 0 ? 'YES' : 'NO recorded')+
+    ' · Distance: '+number(demo.metrics?.distance_traveled_m,' m')+
+    ' · Progress: '+number(demo.metrics?.progress_m,' m') : 'Measurements appear during the real CARLA run.';
+  const resultLines = ['WITHOUT','WITH'].filter(mode => demo?.results?.[mode]).map(mode => {
+    const result = demo.results[mode], m = result.outcome.metrics;
+    return (mode === 'WITH' ? 'WITH YA RAB OSTORHA' : 'WITHOUT SAFETY')+
+      ': Collision '+(result.collision ? 'YES' : 'NO')+' · Progress '+number(m.progress_m,' m')+
+      ' · Interventions '+m.safety_intervention_count+' · '+result.status;
+  });
+  if (resultLines.length === 2) resultLines.push('Identical initial configuration: '+(demo.initial_conditions_match ? 'VERIFIED' : 'NOT VERIFIED'));
+  $('demoResults').textContent = resultLines.join('\n');
   $('safetyStatus').textContent = provider.isReplay ? 'YA RAB OSTORHA · Replay, no active control' : !live ?
     'YA RAB OSTORHA · Waiting for sensors' : 'YA RAB OSTORHA · '+(safety?.controller ?? 'RULE')+' SAFETY · '+
     (safety?.status ?? 'UNAVAILABLE')+' · Risk: '+(safety?.risk ?? 'UNKNOWN')+
@@ -101,7 +133,7 @@ function refresh() {
     (safety?.model_validation ? ' · '+safety.model_validation : '');
   $('safetyEnabled').checked = safety?.enabled === true;
   $('safetyEnabled').disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === 'TRAINING' ||
-    !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > .15;
+    demoBusy || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > .15;
   $('safetyController').disabled = $('safetyEnabled').disabled;
   $('safetyController').value = safety?.controller ?? 'RULE';
   for (const option of $('safetyController').options) option.disabled = !(safety?.available_controllers ?? ['RULE']).includes(option.value);
@@ -174,6 +206,12 @@ $('journeySpeed').onchange = () => {
 };
 $('drivingMode').onchange = () => { clearControls(); };
 $('safetyEnabled').onchange = () => provider.dashboardAction('safety_mode', {enabled:$('safetyEnabled').checked});
+for (const [id,mode] of [['demoWithoutBtn','WITHOUT'],['demoWithBtn','WITH'],['demoStopBtn','STOP']]) {
+  $(id).onclick = () => {
+    resetKeys(); manualArmed = false; manualRequestedUntil = 0;
+    provider.dashboardAction('comparison', {mode});
+  };
+}
 $('safetyController').onchange = () => provider.dashboardAction('safety_mode', {enabled:$('safetyEnabled').checked,controller:$('safetyController').value});
 $('gearSelect').onchange = () => { controls.setMode($('gearSelect').value); provider.releaseControls(); lastGear = null; };
 $('pauseBtn').onclick = () => clearControls();
