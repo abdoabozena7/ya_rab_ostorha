@@ -1,0 +1,82 @@
+{
+  "source": "SAME_RECORDED_NATIVE_RGB",
+  "mode": "new",
+  "device": "CPU",
+  "threads": 1,
+  "load_ms": 5477.742000002763,
+  "samples": [
+    {
+      "file": "frontCamera-241-1000.jpg",
+      "sha256": "cb158a60be643490400c9220c50aa1a90c3a2bc75e3ff5e62070876afc13ca1e",
+      "cv_ms": 37.33500000089407,
+      "ocr_ms": 138.03780000307597,
+      "total_cpu_ms": 187.5,
+      "detections": 2,
+      "texts": 0,
+      "regions": [
+        [
+          495,
+          11,
+          534,
+          28
+        ],
+        [
+          225,
+          170,
+          264,
+          184
+        ]
+      ]
+    },
+    {
+      "file": "frontCamera-241-1400.jpg",
+      "sha256": "874df34589fc89a5a2b7193d02686d19aa2cb843baa7dfb3e6afa13be3a1f7e9",
+      "cv_ms": 30.10829999402631,
+      "ocr_ms": 186.45009999454487,
+      "total_cpu_ms": 218.75,
+      "detections": 4,
+      "texts": 0,
+      "regions": [
+        [
+          201,
+          149,
+          281,
+          169
+        ],
+        [
+          98,
+          178,
+          164,
+          192
+        ]
+      ]
+    },
+    {
+      "file": "frontCamera-241-1801.jpg",
+      "sha256": "19db388b6ec10a4eba68e2a3b05e184a7022a318e1ec058d7652bf11be28c750",
+      "cv_ms": 31.892500002868474,
+      "ocr_ms": 190.79680000140797,
+      "total_cpu_ms": 218.75,
+      "detections": 2,
+      "texts": 0,
+      "regions": [
+        [
+          164,
+          155,
+          258,
+          183
+        ],
+        [
+          286,
+          149,
+          344,
+          173
+        ]
+      ]
+    }
+  ],
+  "cv_median_ms": 31.892500002868474,
+  "ocr_median_ms": 186.45009999454487,
+  "cpu_median_ms": 218.75,
+  "cadence": "At most CV 1 Hz; OCR two crops every 3 s"
+}

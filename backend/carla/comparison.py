@@ -22,8 +22,8 @@ AGENT_OPTIONS = {'ignore_vehicles': True, 'ignore_traffic_lights': True,
                  'ignore_stop_signs': True}
 
 
-def recipe(provider):
-    spec = demonstration(provider, 'FRONT_OBSTACLE', 2589, 'TEST')
+def recipe(provider, seed=2589):
+    spec = demonstration(provider, 'FRONT_OBSTACLE', seed, 'TEST')
     api = provider.connection.api
     native_map = provider.world.world.get_map()
     actor = spec.other_actor_definitions[0]
@@ -52,7 +52,7 @@ def initial_signature(run, route, agent_options):
         'weather': states['weather'], 'camera': run['camera'],
         'fixed_delta_seconds': run['fixed_delta_seconds'], 'route_points': route['points'],
         'destination': route['destination']['location'], 'basic_agent_options': agent_options,
-        'target_speed_kmh': 28, 'settling_ticks': 25}
+        'target_speed_kmh': run['spec'].get('metadata',{}).get('target_speed_kmh',28), 'settling_ticks': 25}
     return config, hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()
 
 
@@ -70,13 +70,22 @@ class ComparisonDemo:
         self.trace = None
         self.last_safety = None
         self.last_applied_brake = None
+        self.scenario_id='URBAN_CHAOS'
+        self.seed=2589
+        self.group=None
+        archive=ROOT/'output/presentation-demo/archive.json'
+        self.archive=json.loads(archive.read_text(encoding='utf8')) if archive.exists() else []
+        previous=ROOT/'output/presentation-demo/urban-comparison.json'
+        if not previous.exists():previous=ROOT/'output/presentation-demo/comparison.json'
+        saved=json.loads(previous.read_text(encoding='utf8')) if previous.exists() else {}
+        self.archived_comparison={k:saved.get(k) for k in ('results','scenario_id','seed','initial_conditions_match','native_pose_audit')}
 
     @property
     def busy(self):
         return self.phase in ('RESETTING', 'RUNNING', 'STOPPING')
 
     def request(self, value):
-        if not isinstance(value, dict) or set(value) != {'mode'} or value['mode'] not in ('WITHOUT', 'WITH', 'STOP'):
+        if not isinstance(value, dict) or set(value)-{'mode','scenario','seed'} or 'mode' not in value or value['mode'] not in ('WITHOUT', 'WITH', 'STOP'):
             raise ValueError('Choose WITHOUT, WITH or STOP comparison mode')
         s = self.service
         if not s.active_safety or not hasattr(s.provider, 'scenarios'):
@@ -84,8 +93,11 @@ class ComparisonDemo:
         if s.arbiter.machine.mode == ControlMode.EMERGENCY_STOP:
             raise ValueError('Acknowledge emergency stop before restarting the demo')
         # Latest click wins; queued resets cannot overlap or create extra runners.
+        scenario=value.get('scenario',self.scenario_id);seed=value.get('seed',self.seed)
+        if scenario not in ('URBAN_CHAOS','FRONT_OBSTACLE') or type(seed) is not int or not 2000<=seed<=2999:
+            raise ValueError('Choose a supported scenario and TEST seed 2000-2999')
         s.actions.clear()
-        s.actions.append(('comparison', value['mode']))
+        s.actions.append(('comparison',{'mode':value['mode'],'scenario':scenario,'seed':seed}))
 
     def _flush(self):
         s = self.service
@@ -98,6 +110,8 @@ class ComparisonDemo:
     def execute(self, mode):
         s = self.service
         p = s.provider
+        value=mode if isinstance(mode,dict) else {'mode':mode,'scenario':self.scenario_id,'seed':self.seed}
+        mode=value['mode']
         self._flush()
         self.finish('switched' if mode != 'STOP' else 'operator_reset')
         s.stop_driving('comparison_reset')
@@ -111,14 +125,29 @@ class ComparisonDemo:
         s.reconfiguring = True
         try:
             if mode == 'STOP':
+                p.spawn_index=152
                 p.reset_vehicle()
+                from .urban_chaos import CITY
+                p.population.apply({**CITY,'seed':value['seed']})
+                p.set_paused(False);s.paused=False
                 self.phase = 'IDLE'
                 self.mode = None
             else:
                 if p.world.world.get_map().name.split('/')[-1] != 'Town10HD_Opt':
                     raise ValueError('Presentation demo requires the existing Town10HD_Opt map')
+                launch=p.runtime.active or {};camera=p.camera_settings;weather=p.world.world.get_weather()
+                group=(value['scenario'],value['seed'],launch.get('quality'),launch.get('resolution'),
+                    camera.get('camera_resolution'),float(camera.get('camera_fov',90)),bool(camera.get('camera_postprocess',False)),
+                    float(camera.get('camera_bloom',0.)),tuple(float(getattr(weather,k,0.)) for k in
+                    ('cloudiness','precipitation','wetness','sun_altitude_angle','sun_azimuth_angle','fog_density')))
+                if group!=self.group:
+                    self.spec=None;self.results={};self.group=group
+                self.scenario_id=value['scenario'];self.seed=value['seed']
                 if self.spec is None:
-                    self.spec, self.destination = recipe(p)
+                    if self.scenario_id=='URBAN_CHAOS':
+                        from .urban_chaos import compile_urban
+                        self.spec,self.destination=compile_urban(p,self.seed)
+                    else:self.spec,self.destination=recipe(p,self.seed)
                 self.phase = 'RESETTING'
                 self.mode = mode
                 self.reset_began = time.monotonic()
@@ -131,11 +160,17 @@ class ComparisonDemo:
                 native = p.world.world.get_settings()
                 native.fixed_delta_seconds = .05
                 p.world.world.apply_settings(native)
-                p.camera_settings.update(camera_view='front', camera_resolution='640x360',
-                    camera_fov=90, camera_postprocess=False, camera_motion_blur=0, camera_bloom=0)
+                p.camera_settings.update(camera_view='front',camera_motion_blur=0)
                 p.set_paused(False)
                 s.paused = False
                 p.scenarios.load(self.spec)
+                # The validated legacy recipe sets its own weather during reset.
+                # Group by the admitted world, so that its second arm retains
+                # the first result instead of treating recipe weather as an
+                # operator configuration change.
+                admitted_weather = p.world.world.get_weather()
+                self.group = (*self.group[:-1], tuple(float(getattr(admitted_weather, k, 0.)) for k in
+                    ('cloudiness', 'precipitation', 'wetness', 'sun_altitude_angle', 'sun_azimuth_angle', 'fog_density')))
             s.synchronizer = SensorSynchronizer(s.synchronizer.required, s.synchronizer.optional,
                 timeout_s=s.synchronizer.timeout_s, now=s.now)
             s.camera_cache.clear()
@@ -167,8 +202,8 @@ class ComparisonDemo:
         if self.phase != 'RESETTING':
             return
         s, p = self.service, self.service.provider
-        if time.monotonic() - self.reset_began > 30:
-            raise ValueError('Comparison sensors/reset did not become ready within 30 seconds')
+        if time.monotonic() - self.reset_began > 45:
+            raise ValueError('Comparison sensors/reset did not become ready within 45 seconds')
         if p.scenarios.phase != 'READY':
             return
         if not s.observation or s.observation.vehicle.actor_id != p.ego.actor.id:
@@ -181,13 +216,18 @@ class ComparisonDemo:
             return
         if not self.prepared:
             p.dashboard_action('destination', self.destination)
-            route = p.start_navigation(28, demo_options=AGENT_OPTIONS)
+            route = p.start_navigation(self.spec.metadata.get('target_speed_kmh',28), demo_options=AGENT_OPTIONS)
             config, signature = initial_signature(p.scenarios.run, route, p.navigation_options)
+            if p.scenarios.urban:
+                config['actual_initial_states']=config.pop('actors')
+                signature=hashlib.sha256(json.dumps({k:v for k,v in config.items() if k!='actual_initial_states'},sort_keys=True).encode()).hexdigest()
+                config['matching_scope']='Compiled starts, seed, weather, route and hazard schedule; actual starts separately audited'
             p.scenarios.run.update(comparison_mode=self.mode, comparison_configuration=config,
                 comparison_initial_condition_id=signature, basic_agent_options=p.navigation_options,
                 safety_policy_enabled=self.mode == 'WITH',
                 comparison_group='YA_RAB_OSTORHA_RULE_BASED' if self.mode == 'WITH' else 'NO_YA_RAB_OSTORHA_BASELINE',
                 route=copy.deepcopy(route))
+            p.scenarios._publish()  # Include the admitted comparison manifest in recording metadata.
             # Route construction and recorder files can exceed sensor freshness.
             # Do that work while stopped, then prime fresh native observations.
             self.recording_path = s._change_recording({'enabled': True})['path']
@@ -201,11 +241,15 @@ class ComparisonDemo:
             return
         route = p.route_state()
         s.arbiter.safety.clear()
-        s.arbiter.machine.transition(ControlMode.AUTOMATIC, connected=True, explicit=True)
-        s.journey = {'status': 'RUNNING', 'reason': None, 'speed_kmh': 28, 'route_id': route['id']}
-        s.navigation_heartbeat_at = s.now()
         p.active_safety_status = s.active_safety.snapshot()
-        p.scenarios.start()
+        # Native controller registration is a managed setup operation while
+        # ego is held. Arm driving only after that operation has returned.
+        s.reconfiguring=True
+        try:p.scenarios.start()
+        finally:s.state_at=s.now();s.reconfiguring=False
+        s.arbiter.machine.transition(ControlMode.AUTOMATIC, connected=True, explicit=True)
+        s.journey = {'status': 'RUNNING', 'reason': None, 'speed_kmh': self.spec.metadata.get('target_speed_kmh',28), 'route_id': route['id']}
+        s.navigation_heartbeat_at = s.now()
         self.phase = 'RUNNING'
         s._event(EventType.ControlChanged, comparison_started=self.mode)
 
@@ -218,6 +262,7 @@ class ComparisonDemo:
         self.trace.write(json.dumps({'frame_id': frame.frame_id, 'timestamp_s': frame.timestamp_s,
             'comparison_phase': self.phase,
             'safety': safety, 'intervention_command': to_dict(self.service.safety_command),
+            'hazard_actors': copy.deepcopy(self.service.provider.scenarios.run.get('hazard_observations',{})),
             'applied_command': to_dict(frame.control), 'actual_vehicle_controls': {
                 k: getattr(frame.vehicle, k) for k in ('throttle', 'brake', 'steering')},
             'complete': frame.complete})+'\n')
@@ -227,11 +272,11 @@ class ComparisonDemo:
         if self.phase != 'RUNNING':
             return
         s, p = self.service, self.service.provider
-        if p.scenarios.metrics.get('collision_count', 0):
+        if not p.scenarios.urban and p.scenarios.metrics.get('collision_count', 0):
             self.finish('collision')
         elif p.scenarios.phase == 'FINISHED':
             self.finish(p.scenarios.outcome['reason'])
-        elif s.journey['status'] != 'RUNNING':
+        elif s.journey['status'] != 'RUNNING' and not (p.scenarios.urban and s.journey.get('reason') in ('destination_reached','collision')):
             self.finish(s.journey.get('reason') or 'interrupted')
 
     def finish(self, reason):
@@ -280,6 +325,11 @@ class ComparisonDemo:
             self.latest = result
             directory = ROOT/'output/presentation-demo'
             directory.mkdir(parents=True, exist_ok=True)
+            self.archive.append({'mode':self.mode,'scenario_id':result['run']['spec']['scenario_id'],
+                'seed':result['run']['spec']['random_seed'],'recording':self.recording_path,
+                'status':result['status'],'metrics':metrics,
+                'condition_id':result['run']['comparison_initial_condition_id']})
+            (directory/'archive.json').write_text(json.dumps(self.archive,indent=2),encoding='utf8')
         if self.busy:
             if s._live():
                 s.stop_driving(reason)
@@ -292,24 +342,42 @@ class ComparisonDemo:
             s.active_safety.enabled = True
             s.active_safety.set_controller('RULE')
         if hasattr(self, 'latest'):
-            (ROOT/'output/presentation-demo/comparison.json').write_text(json.dumps(self.snapshot(), indent=2), encoding='utf8')
+            saved=self.snapshot()
+            (ROOT/'output/presentation-demo/comparison.json').write_text(json.dumps(saved, indent=2), encoding='utf8')
+            if self.spec and self.spec.metadata.get('urban_chaos') and len(self.results)==2 and all(v['completed'] for v in self.results.values()):
+                (ROOT/'output/presentation-demo/urban-comparison.json').write_text(json.dumps(saved,indent=2),encoding='utf8')
 
     def snapshot(self):
         p = self.service.provider
-        environment = p.environment_state() or {}
-        metrics = environment.get('metrics') or {}
+        metrics = p.scenarios.metrics if p.scenarios else {}
         result = getattr(self, 'latest', None)
         # Compact live payload; full configs live beside the replay recordings.
         summaries = {mode: {k: value[k] for k in ('mode', 'recording', 'collision', 'completed', 'status', 'outcome')}
                      for mode, value in self.results.items()}
         signatures = [v['run']['comparison_initial_condition_id'] for v in self.results.values()]
+        pose_audit=None
+        if len(self.results)==2:
+            rows=[v['run']['initial_states']['actors'] for v in self.results.values()]
+            position_error=max(__import__('math').dist(a['transform']['position_m'],b['transform']['position_m']) for a,b in zip(*rows))
+            velocity_error=max(__import__('math').dist(a['velocity_mps'],b['velocity_mps']) for a,b in zip(*rows))
+            import math
+            rotation_error=max(abs((a['transform']['rotation_rad'][k]-b['transform']['rotation_rad'][k]+math.pi)%(2*math.pi)-math.pi)
+                for a,b in zip(*rows) for k in ('roll','pitch','yaw'))
+            identities_match=len(rows[0])==len(rows[1]) and all(a['name']==b['name'] and a['blueprint']==b['blueprint'] for a,b in zip(*rows))
+            pose_audit={'maximum_position_error_m':position_error,'maximum_velocity_error_mps':velocity_error,
+                'maximum_rotation_error_rad':rotation_error,'actor_identities_match':identities_match,
+                'position_tolerance_m':.05,'velocity_tolerance_mps':.1,'rotation_tolerance_rad':.01,
+                'passed':identities_match and position_error<=.05 and velocity_error<=.1 and rotation_error<=.01}
         return {'phase': self.phase, 'mode': self.mode, 'error': self.error,
-            'scenario_id': self.spec.scenario_id if self.spec else None, 'seed': 2589,
+            'scenario_id': self.spec.scenario_id if self.spec else None, 'seed': self.seed,
             'safety_enabled': self.mode == 'WITH' if self.mode else None,
             'active_controller': 'BasicAgent + RULE' if self.mode == 'WITH' else 'BasicAgent' if self.mode else None,
             'metrics': copy.deepcopy(metrics), 'recording': self.recording_path,
             'last_safety': copy.deepcopy(self.last_safety),
             'last_applied_brake': self.last_applied_brake,
             'latest_outcome': result['status'] if result and self.phase == 'FINISHED' else None,
-            'results': summaries, 'initial_conditions_match': len(signatures) == 2 and signatures[0] == signatures[1],
+            'results': summaries, 'initial_conditions_match': len(signatures) == 2 and signatures[0] == signatures[1] and pose_audit['passed'],
+            'archive':copy.deepcopy(self.archive[-20:]),'archived_comparison':copy.deepcopy(self.archived_comparison),
+            'native_pose_audit':pose_audit,
+            'hazards':copy.deepcopy(p.scenarios.run.get('hazard_observations',{})) if p.scenarios and p.scenarios.run else {},
             'basic_agent_vehicle_checks': 'DISABLED_IN_BOTH_RESEARCH_ARMS'}

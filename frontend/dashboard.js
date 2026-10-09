@@ -1,3 +1,4 @@
+import {presentationUI,updatePresentation} from './presentation-ui.js';
 import {SimulationClient} from './simulation-client.js';
 import {DrivingControls} from './controls.js';
 import {telemetryText} from './telemetry.js';
@@ -7,6 +8,7 @@ import {DRIVING_KEYS,isEditableTarget,drivingInputAllowed} from './input-policy.
 import {PerceptionView} from './perception-view.js';
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
+presentationUI(provider);
 const perception = new PerceptionView(provider);
 const number = (value,suffix='',digits=1) => Number.isFinite(value) ? value.toFixed(digits)+suffix : '—';
 let manualArmed = false, manualRequestedUntil = 0, manualOverridePending = false, lastMode = null;
@@ -105,7 +107,7 @@ function refresh() {
     (demo.latest_outcome ? ' · Outcome: '+demo.latest_outcome : '')+
     (demo.error ? ' · '+demo.error : '') :
     demo?.error || 'Choose a comparison mode. Each button resets and automatically records a fresh run.';
-  const measured = demo?.mode && demo.phase !== 'RESETTING';
+  const measured = demo?.mode && ['RUNNING','STOPPING','FINISHED'].includes(demo.phase);
   const ds = demoBusy ? safety : demo?.last_safety;
   $('demoMeasurements').textContent = measured ?
     'Hazard: '+(demo.mode === 'WITHOUT' ? 'Safety detection OFF' : ds?.risk ?? 'UNKNOWN')+
@@ -114,16 +116,19 @@ function refresh() {
       (demoBusy ? state.brake : demo.last_applied_brake)*100,'%')+
     ' · Interventions: '+(demo.metrics?.safety_intervention_count ?? '—')+
     ' · Collision: '+(demo.metrics?.collision_count > 0 ? 'YES' : 'NO recorded')+
+    ' · Time: '+number(demo.metrics?.elapsed_simulation_s,' s')+
     ' · Distance: '+number(demo.metrics?.distance_traveled_m,' m')+
     ' · Progress: '+number(demo.metrics?.progress_m,' m') : 'Measurements appear during the real CARLA run.';
-  const resultLines = ['WITHOUT','WITH'].filter(mode => demo?.results?.[mode]).map(mode => {
-    const result = demo.results[mode], m = result.outcome.metrics;
-    return (mode === 'WITH' ? 'WITH YA RAB OSTORHA' : 'WITHOUT SAFETY')+
-      ': Collision '+(result.collision ? 'YES' : 'NO')+' · Progress '+number(m.progress_m,' m')+
-      ' · Interventions '+m.safety_intervention_count+' · '+result.status;
-  });
-  if (resultLines.length === 2) resultLines.push('Identical initial configuration: '+(demo.initial_conditions_match ? 'VERIFIED' : 'NOT VERIFIED'));
-  $('demoResults').textContent = resultLines.join('\n');
+  const shown=Object.keys(demo?.results||{}).length?demo:demo?.archived_comparison;
+  const resultRows = ['WITHOUT','WITH'].filter(mode => shown?.results?.[mode]);
+  const resultBox = $('demoResults');resultBox.replaceChildren();
+  if(resultRows.length){
+    const table=document.createElement('table');table.className='comparison-table';
+    const header=document.createElement('tr');for(const label of ['Measured','Without','With RULE']){const cell=document.createElement('th');cell.textContent=label;header.append(cell);}table.append(header);
+    const fields=[['Collision',r=>r.collision?'YES':'NO'],['Progress',r=>number(r.outcome.metrics.progress_m,' m')],['Distance',r=>number(r.outcome.metrics.distance_traveled_m,' m')],['Clearance',r=>number(r.outcome.metrics.minimum_clearance_m,' m')],['Interventions',r=>r.outcome.metrics.safety_intervention_count],['Duration',r=>number(r.outcome.metrics.elapsed_simulation_s,' s')],['Outcome',r=>r.status]];
+    for(const [label,read] of fields){const row=document.createElement('tr');const title=document.createElement('th');title.textContent=label;row.append(title);for(const mode of ['WITHOUT','WITH']){const cell=document.createElement('td');cell.textContent=shown.results[mode]?read(shown.results[mode]):'—';row.append(cell);}table.append(row);}if(shown!==demo){const label=document.createElement('p');label.textContent='Archived comparison · '+shown.scenario_id+' · seed '+shown.seed;resultBox.append(label);}resultBox.append(table);
+    if(resultRows.length===2){const match=document.createElement('p');match.textContent='Same manifest / native pose audit: '+(shown.initial_conditions_match?'VERIFIED':'NOT VERIFIED');resultBox.append(match);}
+  }else resultBox.textContent='Finish a comparison to view recorded measurements.';
   $('safetyStatus').textContent = provider.isReplay ? 'YA RAB OSTORHA · Replay, no active control' : !live ?
     'YA RAB OSTORHA · Waiting for sensors' : 'YA RAB OSTORHA · '+(safety?.controller ?? 'RULE')+' SAFETY · '+
     (safety?.status ?? 'UNAVAILABLE')+' · Risk: '+(safety?.risk ?? 'UNKNOWN')+
@@ -179,6 +184,7 @@ function refresh() {
       ['STARTING','RUNNING'].includes(provider.journey?.status) && !manualOverridePending) provider.journeyHeartbeat();
   updateCamera(provider.sensorMetadata.frontCamera);
   tools.render(state,controllable);
+  updatePresentation(provider,state);
   perception.update();
 }
 $('startDrivingBtn').onclick = () => {
@@ -209,7 +215,7 @@ $('safetyEnabled').onchange = () => provider.dashboardAction('safety_mode', {ena
 for (const [id,mode] of [['demoWithoutBtn','WITHOUT'],['demoWithBtn','WITH'],['demoStopBtn','STOP']]) {
   $(id).onclick = () => {
     resetKeys(); manualArmed = false; manualRequestedUntil = 0;
-    provider.dashboardAction('comparison', {mode});
+    provider.dashboardAction('comparison', {mode,scenario:$('comparisonScenario').value,seed:Number($('comparisonSeed').value)});
   };
 }
 $('safetyController').onchange = () => provider.dashboardAction('safety_mode', {enabled:$('safetyEnabled').checked,controller:$('safetyController').value});

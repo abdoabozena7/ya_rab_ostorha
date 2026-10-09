@@ -1,0 +1,11 @@
+{
+  "version": "YA_RAB_OSTORHA_TEACHER_V1",
+  "minimum_clearance_m": 3.0,
+  "reaction_time_s": 0.35,
+  "assumed_deceleration_mps2": 5.0,
+  "additional_brake": 1.0,
+  "release_hysteresis_m": 2.0,
+  "stopped_speed_mps": 0.2,
+  "lead_stationary_speed_mps": 0.5,
+  "maximum_observation_age_s": 0.1
+}

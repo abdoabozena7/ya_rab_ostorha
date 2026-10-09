@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id);
 export class PerceptionView {
   constructor(provider) { this.provider=provider;this.busy=false;this.token=null;this.url=null;this.nextAt=0; }
   metadata(result) {
-    $('perceptionStatus').textContent='YOLOv8n + OCR · '+result.device+' · '+Math.round(result.inference_ms)+' ms';
+    $('perceptionStatus').textContent='Nano ONNX 320 + English OCR · '+result.device+' · '+Math.round(result.inference_ms)+' ms';
     $('perceptionFrame').textContent='Frame '+result.frame_id+' · t '+result.timestamp_s.toFixed(3)+' · '+
       result.detections.length+' objects · older by '+Math.max(0,this.provider.telemetry.frame-result.frame_id)+' frame';
   }
@@ -46,7 +46,8 @@ export class PerceptionView {
       $('perceptionCamera').src=this.url;$('perceptionCamera').hidden=false;$('perceptionEmpty').hidden=true;
       this.metadata(result);
       if(previousUrl)URL.revokeObjectURL(previousUrl);
-      const rows=result.texts.map(item=>{const row=document.createElement('p');row.textContent=item.text+' ('+Math.round(item.confidence*100)+'%)';return row;});
+      const nlp=result.nlp;
+      const rows=(nlp?.items||result.texts).map(item=>{const row=document.createElement('p');row.textContent=(item.raw_text||item.text)+' → '+(item.instruction||'TEXT')+(item.value?': '+item.value:'')+' ('+Math.round(item.confidence*100)+'%)'+(nlp?' · source frame '+nlp.frame_id:'');return row;});
       if(!rows.length){const empty=document.createElement('p');empty.textContent='No text recognized with sufficient confidence in this frame.';rows.push(empty);}
       $('ocrTexts').replaceChildren(...rows);
     } catch(error) { $('perceptionStatus').textContent='Inference unavailable';this.clear(error.message); }

@@ -1,1 +1,1 @@
-"""Gate 6: real CARLA episodes. No trainer or deployed safety policy."""
+"""Compatibility import; implementation lives in backend.learning.rl."""

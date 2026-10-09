@@ -36,7 +36,12 @@ def disconnect_backend():
             ws.recv()
             for seq,kind in enumerate(('take_control','stop_driving','disconnect'),1):
                 ws.send(json.dumps({'type':kind,'sequence':seq}))
-                while json.loads(ws.recv()).get('acknowledged')!=seq:pass
+                deadline=time.monotonic()+20
+                while time.monotonic()<deadline:
+                    message=json.loads(ws.recv(timeout=5))
+                    if message.get('type')=='error':raise RuntimeError(message['error'])
+                    if message.get('acknowledged')==seq:break
+                else:raise TimeoutError('Native cleanup acknowledgement missing')
         import carla
         client=carla.Client('127.0.0.1',2000);client.set_timeout(10);world=client.get_world();world.wait_for_tick(10)
         if world.get_settings().synchronous_mode or any(a.attributes.get('role_name','').startswith('ostorha_') for a in world.get_actors()):

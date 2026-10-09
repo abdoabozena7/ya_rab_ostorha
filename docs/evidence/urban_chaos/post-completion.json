@@ -1,0 +1,27 @@
+{
+  "source": "REAL_NATIVE_POST_COMPLETION_HOLD",
+  "phase": "FINISHED",
+  "elapsed_simulation_s": [
+    60.00000089406967,
+    60.00000089406967
+  ],
+  "hazards": {
+    "sudden_brake": {
+      "brake": 1.0,
+      "distance_m": 0.0
+    },
+    "cut_in": {
+      "brake": 1.0,
+      "distance_m": 0.0
+    },
+    "curb_up": {
+      "brake": 1.0,
+      "distance_m": 0.0
+    },
+    "curb_return": {
+      "brake": 1.0,
+      "distance_m": 0.0
+    }
+  },
+  "status": "PASS"
+}

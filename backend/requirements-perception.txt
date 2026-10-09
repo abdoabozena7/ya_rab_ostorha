@@ -1,3 +1,6 @@
 # Separate from CARLA's Python environment; CPU-only torch is installed first.
 ultralytics==8.4.174
 easyocr==1.7.2
+
+onnx==1.19.1
+onnxruntime==1.23.2

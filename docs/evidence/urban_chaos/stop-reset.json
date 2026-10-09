@@ -1,0 +1,47 @@
+{
+  "source": "REAL_DASHBOARD_STOP_RESET_AND_NATIVE_ACTOR_INVENTORY",
+  "mode": "PAUSED",
+  "phase": "IDLE",
+  "safety": {
+    "type": "RULE_BASED_SAFETY",
+    "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+    "status": "STANDBY",
+    "risk": "UNKNOWN",
+    "active": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "steering_available": false,
+    "rejected_interventions": 0,
+    "actual_generator": "BASE_DRIVER",
+    "enabled": true,
+    "intervention_count": 0,
+    "controller": "RULE",
+    "model_health": "READY",
+    "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "model_error": null,
+    "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+    "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+    "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+    "available_controllers": [
+      "RULE",
+      "HYBRID"
+    ],
+    "source_counts": {
+      "LEARNED_BC": 0,
+      "RULE_GUARD": 0,
+      "RULE_FALLBACK": 0,
+      "RULE": 0,
+      "BASE_DRIVER": 0
+    },
+    "experimental": false
+  },
+  "native_inventory": {
+    "vehicles": 41,
+    "walkers": 30,
+    "controllers": 30,
+    "sensors": 7
+  },
+  "remaining_previous_actor_ids": [],
+  "recording": false,
+  "speed_mps": 0.0,
+  "status": "PASS"
+}

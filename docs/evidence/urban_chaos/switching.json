@@ -1,0 +1,483 @@
+{
+  "source": "REAL_DASHBOARD_SWITCH_WITHOUT_TO_WITH",
+  "comparison": {
+    "phase": "RUNNING",
+    "mode": "WITH",
+    "error": null,
+    "scenario_id": "urban_chaos_v1",
+    "seed": 2589,
+    "safety_enabled": true,
+    "active_controller": "BasicAgent + RULE",
+    "metrics": {
+      "collision_callback_count": 0,
+      "collision_count": 0,
+      "collision_impulse_total_ns": 0.0,
+      "collision_peak_impulse_ns": 0.0,
+      "distance_traveled_m": 45.47004184474965,
+      "progress_m": 43.70919667056373,
+      "elapsed_simulation_s": 12.400000184774399,
+      "average_speed_mps": 3.6669388038059063,
+      "minimum_clearance_m": 1.5648334353633047,
+      "minimum_ttc_s": null,
+      "near_miss_count": null,
+      "emergency_braking_frequency": null,
+      "steering_intervention_frequency": null,
+      "safety_intervention_count": 2,
+      "unsafe_intervention_count": null,
+      "route_completion": 0.23575489896963361,
+      "control_variation": 23.18160363043262,
+      "progress_under_congestion_m": null
+    },
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b01d8518cf614d56b1dbe0111d969700",
+    "last_safety": {
+      "type": "RULE_BASED_SAFETY",
+      "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+      "status": "BRAKING",
+      "risk": "FORWARD_COLLISION_RISK",
+      "active": true,
+      "reason": "Measured obstacle inside braking envelope/TTC limit",
+      "steering_available": false,
+      "rejected_interventions": 0,
+      "actual_generator": "RULE",
+      "frame_id": 51110,
+      "timestamp_s": 1322.567002698779,
+      "stopping_envelope_m": 5.960356178577701,
+      "measured_range_m": 6.7701215744018555,
+      "closing_speed_mps": 3.912022352218628,
+      "ttc_s": 1.7305937862451914,
+      "observed_road_range_m": 9.27482795715332,
+      "target_source": "DEPTH",
+      "teacher_state": "MONITORING",
+      "ground_plane_supported": false,
+      "feasibility_validator": "YA_RAB_OSTORHA_RUNTIME_BRAKING_V1",
+      "depth_observed": true,
+      "lidar_observed": true,
+      "base_driver_brake": 0,
+      "proposed_safety_brake": 1.0,
+      "inference_ms": 0.0,
+      "enabled": true,
+      "intervention_count": 2,
+      "controller": "RULE",
+      "model_health": "READY",
+      "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+      "model_error": null,
+      "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+      "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+      "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+      "available_controllers": [
+        "RULE",
+        "HYBRID"
+      ],
+      "source_counts": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 11,
+        "BASE_DRIVER": 237
+      },
+      "experimental": false
+    },
+    "last_applied_brake": 1.0,
+    "latest_outcome": null,
+    "results": {
+      "WITHOUT": {
+        "mode": "WITHOUT",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_53a27a16169f4f4996f4a9cec8315a6f",
+        "collision": true,
+        "completed": false,
+        "status": "COLLISION",
+        "outcome": {
+          "run_id": "scenario_e9571ae0f86142b5a026431d7aaea7c9",
+          "condition_id": "af9a8170afa0180e4e49c458f889afb3011b0622a3a319e1719380aff2fe3470",
+          "reason": "switched",
+          "scenario_success": false,
+          "metrics": {
+            "collision_callback_count": 1,
+            "collision_count": 1,
+            "collision_impulse_total_ns": 9072.833785781047,
+            "collision_peak_impulse_ns": 9072.833785781047,
+            "distance_traveled_m": 52.1717746621005,
+            "progress_m": 50.38247323575604,
+            "elapsed_simulation_s": 17.950000267475843,
+            "average_speed_mps": 2.906505508895849,
+            "minimum_clearance_m": 0.0,
+            "minimum_ttc_s": null,
+            "near_miss_count": null,
+            "emergency_braking_frequency": null,
+            "steering_intervention_frequency": null,
+            "safety_intervention_count": 0,
+            "unsafe_intervention_count": null,
+            "route_completion": 0.2717486431301814,
+            "control_variation": 26.815455837277483,
+            "progress_under_congestion_m": null
+          },
+          "avoidability": "UNKNOWN",
+          "comparison_group": "NO_YA_RAB_OSTORHA_BASELINE",
+          "safety_policy_enabled": false,
+          "measurement_notes": {
+            "collision_severity": "Native impulse proxy in N*s, not injury or kinetic energy",
+            "clearance": "Planar yaw-oriented bounding boxes; pitch/roll/meshes excluded",
+            "collision_count": "Contact episodes separated by >1 simulation second; raw callbacks retained",
+            "null_metrics": "Not measured; no TTC/near-miss/intervention classifier is supplied"
+          }
+        }
+      }
+    },
+    "initial_conditions_match": false,
+    "archive": [
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_1d79f74a45844f9d855c5fcdc8b9b003",
+        "status": "INTERRUPTED",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 0.0009745024144649506,
+          "progress_m": 0.0,
+          "elapsed_simulation_s": 7.750000115483999,
+          "average_speed_mps": 0.00012574224515403008,
+          "minimum_clearance_m": 1.6220918704984086,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.0,
+          "control_variation": 1.773919127881527,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "88de409dff85f4787c29fb33900696619e1de2c02353ffae206ad11932e856e5"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c7331b4dbaee46b59eca8bb3c4c57ade",
+        "status": "INTERRUPTED",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 0.0003942493349313736,
+          "progress_m": 0.0,
+          "elapsed_simulation_s": 28.650000426918268,
+          "average_speed_mps": 1.3760884085745228e-05,
+          "minimum_clearance_m": 0.003501876949791121,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.0,
+          "control_variation": 1.773919127881527,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "88de409dff85f4787c29fb33900696619e1de2c02353ffae206ad11932e856e5"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_0858bcea9d164d22856cd58808314c7d",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 102,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 22871.307710372745,
+          "collision_peak_impulse_ns": 10270.417723554716,
+          "distance_traveled_m": 38.821241907934706,
+          "progress_m": 35.045155124559756,
+          "elapsed_simulation_s": 18.0000002682209,
+          "average_speed_mps": 2.156735629414063,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.18902353818206571,
+          "control_variation": 19.633025495153817,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "88de409dff85f4787c29fb33900696619e1de2c02353ffae206ad11932e856e5"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b2328870f14948ff8d583503648a391f",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 55.68180587495735,
+          "progress_m": 50.758520519299736,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.92803008408723,
+          "minimum_clearance_m": 0.20839714347105912,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 7,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.2737769345675153,
+          "control_variation": 37.56699620962081,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "88de409dff85f4787c29fb33900696619e1de2c02353ffae206ad11932e856e5"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_89ce98a84d2f456db925068f52e4195b",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 107,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 22276.00624983101,
+          "collision_peak_impulse_ns": 10267.505173146446,
+          "distance_traveled_m": 38.99535621062348,
+          "progress_m": 35.047013021436754,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.64992259382579,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.18903355914616246,
+          "control_variation": 19.633025495153817,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "dc1f36fe3bc74ad3358fa5551d729c2185f395fd7801876b733666f6432a97f4"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_de3a3621d68b48ebace5a901acbbfc2f",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 1,
+          "collision_count": 1,
+          "collision_impulse_total_ns": 6604.86517243676,
+          "collision_peak_impulse_ns": 6604.86517243676,
+          "distance_traveled_m": 23.049262532698698,
+          "progress_m": 19.053618175616464,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.3841543698206321,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.10276976403511878,
+          "control_variation": 12.513302370667589,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "0078b84f045fdf0d9f773275becffcf7b367308804ef2d49529bfd8271ae7d3b"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c9c13d02ef364d39a4753b614657d848",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 68,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 23230.321026002086,
+          "collision_peak_impulse_ns": 9072.833785781047,
+          "distance_traveled_m": 53.22186205713477,
+          "progress_m": 50.453655666026066,
+          "elapsed_simulation_s": 35.6500005312264,
+          "average_speed_mps": 1.4928993341954344,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.272132580789416,
+          "control_variation": 26.815455837277483,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "6ab073fc52a49bec2c600bacfe31b468735cd237e7d25a72ff1be96561643aee"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_53a27a16169f4f4996f4a9cec8315a6f",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 1,
+          "collision_count": 1,
+          "collision_impulse_total_ns": 9072.833785781047,
+          "collision_peak_impulse_ns": 9072.833785781047,
+          "distance_traveled_m": 52.1717746621005,
+          "progress_m": 50.38247323575604,
+          "elapsed_simulation_s": 17.950000267475843,
+          "average_speed_mps": 2.906505508895849,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.2717486431301814,
+          "control_variation": 26.815455837277483,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "6ab073fc52a49bec2c600bacfe31b468735cd237e7d25a72ff1be96561643aee"
+      }
+    ],
+    "archived_comparison": {
+      "results": {
+        "WITHOUT": {
+          "mode": "WITHOUT",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c9c13d02ef364d39a4753b614657d848",
+          "collision": true,
+          "completed": false,
+          "status": "COLLISION",
+          "outcome": {
+            "run_id": "scenario_134873a63fe34098bc06785637a674c0",
+            "condition_id": "af9a8170afa0180e4e49c458f889afb3011b0622a3a319e1719380aff2fe3470",
+            "reason": "service_shutdown",
+            "scenario_success": false,
+            "metrics": {
+              "collision_callback_count": 68,
+              "collision_count": 2,
+              "collision_impulse_total_ns": 23230.321026002086,
+              "collision_peak_impulse_ns": 9072.833785781047,
+              "distance_traveled_m": 53.22186205713477,
+              "progress_m": 50.453655666026066,
+              "elapsed_simulation_s": 35.6500005312264,
+              "average_speed_mps": 1.4928993341954344,
+              "minimum_clearance_m": 0.0,
+              "minimum_ttc_s": null,
+              "near_miss_count": null,
+              "emergency_braking_frequency": null,
+              "steering_intervention_frequency": null,
+              "safety_intervention_count": 0,
+              "unsafe_intervention_count": null,
+              "route_completion": 0.272132580789416,
+              "control_variation": 26.815455837277483,
+              "progress_under_congestion_m": null
+            },
+            "avoidability": "UNKNOWN",
+            "comparison_group": "NO_YA_RAB_OSTORHA_BASELINE",
+            "safety_policy_enabled": false,
+            "measurement_notes": {
+              "collision_severity": "Native impulse proxy in N*s, not injury or kinetic energy",
+              "clearance": "Planar yaw-oriented bounding boxes; pitch/roll/meshes excluded",
+              "collision_count": "Contact episodes separated by >1 simulation second; raw callbacks retained",
+              "null_metrics": "Not measured; no TTC/near-miss/intervention classifier is supplied"
+            }
+          }
+        }
+      },
+      "scenario_id": "urban_chaos_v1",
+      "seed": 2589,
+      "initial_conditions_match": false,
+      "native_pose_audit": null
+    },
+    "native_pose_audit": null,
+    "hazards": {
+      "sudden_brake": {
+        "status": "BRAKING",
+        "position_m": [
+          0.6693653464317322,
+          -67.97028350830078,
+          0.002002391731366515
+        ],
+        "controls": {
+          "throttle": 0.0,
+          "brake": 1.0,
+          "steering": 0.0
+        }
+      },
+      "cut_in": {
+        "status": "WAITING",
+        "position_m": [
+          -24.47774314880371,
+          -64.7496337890625,
+          -0.011204623617231846
+        ],
+        "controls": {
+          "throttle": 0.0,
+          "brake": 1.0,
+          "steering": 0.0
+        }
+      },
+      "curb_up": {
+        "status": "WAITING",
+        "position_m": [
+          9.502313613891602,
+          -64.4008560180664,
+          -0.0001280021679122001
+        ],
+        "controls": {
+          "throttle": 0.0,
+          "brake": 1.0,
+          "steering": 0.0
+        }
+      },
+      "curb_return": {
+        "status": "WAITING",
+        "position_m": [
+          -34.47719955444336,
+          -64.8537826538086,
+          -0.00012792587222065777
+        ],
+        "controls": {
+          "throttle": 0.0,
+          "brake": 1.0,
+          "steering": 0.0
+        }
+      },
+      "crossing_0": {
+        "status": "WAITING",
+        "position_m": [
+          -32.609169006347656,
+          -73.67701721191406,
+          1.0886199474334717
+        ]
+      },
+      "crossing_1": {
+        "status": "WAITING",
+        "position_m": [
+          -28.887611389160156,
+          -73.27310943603516,
+          0.7086199522018433
+        ]
+      }
+    },
+    "basic_agent_vehicle_checks": "DISABLED_IN_BOTH_RESEARCH_ARMS"
+  },
+  "mode": "AUTOMATIC",
+  "inventory": {
+    "vehicles": 41,
+    "walkers": 30,
+    "controllers": 30,
+    "sensors": 7
+  }
+}

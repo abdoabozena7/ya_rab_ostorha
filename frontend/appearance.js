@@ -1,10 +1,10 @@
 // Apply the saved dashboard appearance before the stylesheet paints.
 (() => {
   const storageKey = 'dashboard-appearance';
-  let appearance = 'dark';
+  let appearance = 'light';
   try {
     const saved = localStorage.getItem(storageKey);
-    if (saved === 'light' || saved === 'dark') appearance = saved;
+    if (saved === 'light') appearance = saved;
   } catch { /* Storage can be unavailable. */ }
   document.documentElement.dataset.appearance = appearance;
   document.addEventListener('DOMContentLoaded', () => {

@@ -1,6 +1,6 @@
 """Controlled scenarios share the existing provider, tick owner and ego lifecycle.
 
-Only two native vehicle demonstrations are admitted. Other families are contracts.
+Two validated vehicle demonstrations and the explicit Urban Chaos recipe are admitted.
 No ego driver, perception model, RL policy or reward weights are implemented here.
 """
 import copy
@@ -72,16 +72,18 @@ class NativeScenarioManager:
         self.outcome=None; self.initial_pending=False; self.capture_start=False
         self.metrics={}; self.last_contact={}; self.cache={}
         self.seen_collision_events=set()
+        self.urban=None
         self._publish()
 
     def load(self,spec):
         if not isinstance(spec,ScenarioSpec):spec=from_dict(ScenarioSpec,spec)
         p=self.provider; world=p.world.world
-        if spec.scenario_type not in SUPPORTED or spec.pedestrian_definitions:
+        urban=spec.metadata.get('urban_chaos',False)
+        if not urban and (spec.scenario_type not in SUPPORTED or spec.pedestrian_definitions):
             raise ValueError('Only the two verified vehicle prototypes are implemented; other families remain contracts')
         if spec.map_id!=world.get_map().name:raise ValueError('Scenario map differs from the live map; use managed map restart first')
         if spec.ego_spawn>=len(world.get_map().get_spawn_points()):raise ValueError('Ego spawn absent from native map')
-        if any(spec.traffic_density.get(key,0)!=0 for key in ('vehicle_count','pedestrian_count')) or set(spec.traffic_density)-{'vehicle_count','pedestrian_count'}:
+        if not urban and (any(spec.traffic_density.get(key,0)!=0 for key in ('vehicle_count','pedestrian_count')) or set(spec.traffic_density)-{'vehicle_count','pedestrian_count'}):
             raise ValueError('Native v1 prototypes require isolated zero background density')
         for a in spec.other_actor_definitions:
             if world.get_blueprint_library().find(a.blueprint) is None:raise ValueError('Native blueprint absent')
@@ -92,13 +94,17 @@ class NativeScenarioManager:
             raise ValueError('Unsupported native scenario weather field')
         if any(not 0<=v<=100 for k,v in spec.weather.items() if k not in ('sun_altitude_angle','sun_azimuth_angle')):
             raise ValueError('Invalid native weather percentage')
-        if not -90<=spec.weather.get('sun_altitude_angle',70)<=90 or not 0<=spec.weather.get('sun_azimuth_angle',0)<=360:
+        # CARLA 0.9.16's native ClearNoon preset uses -1 for azimuth.
+        azimuth=spec.weather.get('sun_azimuth_angle',0)
+        if not -90<=spec.weather.get('sun_altitude_angle',70)<=90 or not (azimuth == -1 or 0<=azimuth<=360):
             raise ValueError('Invalid native sun angle')
         self.spec=spec; self.mode=EnvironmentMode.TRAINING
         self.reset()
 
     def cleanup(self):
         p=self.provider
+        if self.urban:
+            self.urban.close(); self.urban=None
         if self.actors:
             p.population._destroy(list(self.actors.values()))
             self.actors.clear()
@@ -126,11 +132,15 @@ class NativeScenarioManager:
             for definition in self.spec.other_actor_definitions:
                 bp=p.world.world.get_blueprint_library().find(definition.blueprint)
                 bp.set_attribute('role_name','ostorha_scenario')
+                for key,value in self.spec.metadata.get('blueprint_attributes',{}).get(definition.name,{}).items():bp.set_attribute(key,value)
                 actor=p.world.world.try_spawn_actor(bp,native_transform(p.connection.api,definition.transform))
                 if actor is None:raise ValueError(f'Scenario spawn is occupied: {definition.name}')
                 self.actors[definition.name]=actor.id
                 actor.set_autopilot(False)
                 actor.apply_control(p.connection.api.VehicleControl(brake=1.))
+            if self.spec.metadata.get('urban_chaos'):
+                from .urban_chaos import UrbanPhysics
+                self.urban=UrbanPhysics(self);self.urban.spawn_walkers()
             self.phase='INITIALIZING'; self.initial_pending=True; self.outcome=None
             self.metrics={'collision_callback_count':0,'collision_count':0,'collision_impulse_total_ns':0.,
                 'collision_peak_impulse_ns':0.,'distance_traveled_m':0.,'progress_m':0.,'elapsed_simulation_s':0.,
@@ -163,7 +173,9 @@ class NativeScenarioManager:
             v=actor.get_transform().get_forward_vector()
             actor.set_target_velocity(p.connection.api.Vector3D(v.x*speed,v.y*speed,v.z*speed))
         velocity(p.ego.actor,self.spec.ego_initial_speed)
-        for a in self.spec.other_actor_definitions:velocity(p.world.world.get_actor(self.actors[a.name]),a.initial_speed_mps)
+        for a in self.spec.other_actor_definitions:
+            if a.initial_speed_mps:velocity(p.world.world.get_actor(self.actors[a.name]),a.initial_speed_mps)
+        if self.urban:self.urban.start()
         self.started_at=p.last_vehicle['timestamp']; self.phase='RUNNING'; self.capture_start=True
         safety=getattr(p,'active_safety_status',None) or {}
         enabled=safety.get('enabled',False) and safety.get('status')!='SUSPENDED_RL'
@@ -175,6 +187,8 @@ class NativeScenarioManager:
 
     def before_tick(self):
         p=self.provider
+        if self.urban:
+            self.urban.before_tick();return
         for a in self.spec.other_actor_definitions if self.spec else ():
             actor=p.world.world.get_actor(self.actors.get(a.name)) if a.name in self.actors else None
             if actor is None:continue
@@ -198,7 +212,7 @@ class NativeScenarioManager:
                              'bounding_box':{'extent_m':[box.extent.x,box.extent.y,box.extent.z],
                                 'center_offset_m':[box.location.x,box.location.y,box.location.z],
                                 'rotation_deg':[box.rotation.roll,box.rotation.pitch,box.rotation.yaw]},
-                             'control':{'throttle':control.throttle,'brake':control.brake,'steering':control.steer}})
+                             'control':{'throttle':getattr(control,'throttle',0.),'brake':getattr(control,'brake',0.),'steering':getattr(control,'steer',0.)}})
             from .dashboard_tools import WEATHER_PRESET_FIELDS
             states={'frame_id':snapshot.frame,'timestamp_s':snapshot.timestamp.elapsed_seconds,'actors':rows,
                     'weather':{k:getattr(self.provider.world.world.get_weather(),k) for k in WEATHER_PRESET_FIELDS
@@ -224,6 +238,11 @@ class NativeScenarioManager:
         initial=self.run['initial_states']['actors'][0]['transform']
         x,y,_=initial['position_m'];yaw=initial['rotation_rad']['yaw']
         m['progress_m']=max(0.,(v.transform.position_m[0]-x)*math.cos(yaw)+(v.transform.position_m[1]-y)*math.sin(yaw))
+        if self.urban and self.run.get('route'):
+            from .routes import RouteService
+            progress=RouteService.progress(self.run['route'],v.transform.position_m)
+            m['progress_m']=max(0.,self.run['route']['length_m']-progress['remaining_m'])
+            m['route_completion']=min(1.,m['progress_m']/self.run['route']['length_m'])
         if self.previous is not None:
             m['distance_traveled_m']+=math.dist(self.previous.vehicle.transform.position_m,v.transform.position_m)
             m['control_variation']+=sum(abs(getattr(self.previous.vehicle,k)-getattr(v,k)) for k in ('throttle','brake','steering'))
@@ -232,8 +251,8 @@ class NativeScenarioManager:
         p=self.provider; ego_t=native_transform(p.connection.api,v.transform)
         ego_box=p.ego.actor.bounding_box
         for item in frame.ground_truth.objects if frame.ground_truth else ():
-            if item.actor.actor_id not in self.actors.values():continue
-            actor=p.world.world.get_actor(item.actor.actor_id)
+            if not self.urban and item.actor.actor_id not in self.actors.values():continue
+            actor=next((a for a in self.urban.handles.values() if a.id==item.actor.actor_id),None) if self.urban else p.world.world.get_actor(item.actor.actor_id)
             if actor is None:continue
             gap=rectangle_clearance(footprint(ego_t,ego_box),footprint(native_transform(p.connection.api,item.actor.transform),actor.bounding_box))
             m['minimum_clearance_m']=gap if m['minimum_clearance_m'] is None else min(m['minimum_clearance_m'],gap)
@@ -268,6 +287,11 @@ class NativeScenarioManager:
             m=self.metrics; success=(m['progress_m']>=self.spec.success_conditions['min_progress_m'] and
                 m['collision_count']<=self.spec.success_conditions.get('max_collision_episodes',float('inf')))
             self.phase='FINISHED'
+            if self.urban:
+                for name,plan in self.spec.metadata['vehicle_plans'].items():
+                    if plan['kind']=='TRAFFIC_MANAGER':self.urban.handles[name].set_autopilot(False)
+                for entry in self.urban.controllers.values():
+                    if entry['started'] and entry['prepared']:entry['handle'].set_max_speed(0.)
             self.outcome={'run_id':self.run['run_id'],'condition_id':self.spec.condition_id,'reason':reason,
                           'scenario_success':success,'metrics':dict(m),'avoidability':'UNKNOWN',
                           'comparison_group':self.run['comparison_group'],'safety_policy_enabled':self.run['safety_policy_enabled'],
@@ -296,4 +320,12 @@ class NativeScenarioManager:
                     'actor_ids':dict(self.actors),
                     'safety_policy':{'status':'INTERFACE_PREPARED_NO_POLICY','active':False,'interventions':0}}
 
-    def status(self):return copy.deepcopy(self.cache)
+    def status(self, compact=False):
+        if not compact:return copy.deepcopy(self.cache)
+        # Full native starts/calibration stay in recordings; browser snapshots
+        # carry operator state rather than the entire experiment manifest.
+        run=self.cache['run']
+        return {**{k:copy.deepcopy(v) for k,v in self.cache.items() if k not in ('run','scenario')},
+            'scenario':{'scenario_id':self.spec.scenario_id,'random_seed':self.spec.random_seed,
+                        'timeout':self.spec.timeout} if self.spec else None,
+            'run':{k:copy.deepcopy(run[k]) for k in ('run_id','safety_policy_enabled','hazard_observations') if k in run} if run else None}

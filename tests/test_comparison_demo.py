@@ -22,14 +22,14 @@ class ComparisonTests(unittest.TestCase):
     def test_dashboard_button_reaches_worker_and_latest_click_wins(self):
         self.service.queue_dashboard_action('comparison', {'mode': 'WITHOUT'})
         self.service.queue_dashboard_action('comparison', {'mode': 'WITH'})
-        self.assertEqual(list(self.service.actions), [('comparison', 'WITH')])
+        self.assertEqual(list(self.service.actions), [('comparison', {'mode':'WITH','scenario':'URBAN_CHAOS','seed':2589})])
         self.assertEqual(self.service.dashboard_result['status'], 'PENDING')
 
     def test_invalid_click_does_not_cancel_queued_reset(self):
         self.service.queue_dashboard_action('comparison', {'mode': 'WITH'})
         with self.assertRaises(ValueError):
             self.service.queue_dashboard_action('comparison', {'mode': 'LEARNED'})
-        self.assertEqual(list(self.service.actions), [('comparison', 'WITH')])
+        self.assertEqual(list(self.service.actions), [('comparison', {'mode':'WITH','scenario':'URBAN_CHAOS','seed':2589})])
 
     def test_configuration_and_speed_cannot_change_during_demo(self):
         self.service.comparison.phase = 'RUNNING'

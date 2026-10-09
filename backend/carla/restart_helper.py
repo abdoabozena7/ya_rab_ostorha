@@ -73,6 +73,9 @@ def main():
             runtime.stop()
             runtime.launch(launch,ticket['carla_host'],ticket['carla_port'],None)
             config=ticket['configuration']
+            if attempt:
+                config['camera']=config.get('previous_camera',config['camera'])
+                write_ticket(path,ticket)
             command=[sys.executable,'-X','faulthandler','-m','backend.server','--carla','--sensors','--start-paused',
                      '--host',ticket['host'],'--port',str(ticket['port']),
                      '--websocket-port',str(ticket['websocket_port']),

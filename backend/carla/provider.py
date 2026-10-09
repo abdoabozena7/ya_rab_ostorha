@@ -27,7 +27,7 @@ class CarlaProvider:
         self.fixed_delta = fixed_delta
         self.collision_sensor = collision_sensor
         self.sensor_suite = sensor_suite
-        self.camera_settings = {'camera_view': 'front', 'camera_resolution': '800x450', 'camera_fov': 90,
+        self.camera_settings = {'camera_view': 'front', 'camera_resolution': '640x360', 'camera_fov': 90,
                                 'camera_postprocess': False, 'camera_motion_blur': 0., 'camera_bloom': 0.}
         self.navigation = None
         self.scenarios = None
@@ -42,6 +42,10 @@ class CarlaProvider:
         self.catalog = {}
         self.cleanup_errors = []
         self.controls = {'throttle': 0, 'brake': 1, 'steering': 0, 'parkingbrake': 0, 'gear': 1}
+
+    def create_comparison(self,service):
+        from .comparison import ComparisonDemo
+        return ComparisonDemo(service)
 
     def connect(self):
         if self.world is not None or self.ego is not None or self.cleanup_errors:
@@ -82,11 +86,15 @@ class CarlaProvider:
             self.catalog = {'maps': self.connection.client.get_available_maps(),
                             'vehicles': [bp.id for bp in passenger_blueprints(raw_world.get_blueprint_library())]}
             self.world = CarlaWorld(raw_world, self.fixed_delta)
+            clear_noon=getattr(getattr(self.connection.api,'WeatherParameters',None),'ClearNoon',None)
+            if clear_noon is not None:raw_world.set_weather(clear_noon)
             self.spawn_ego_vehicle()
             self.population = WorldPopulationManager(self.connection.client, raw_world, self.connection.api, self.ego.actor.id)
             from .scenarios import NativeScenarioManager
             self.scenarios = NativeScenarioManager(self)
             self.set_controls(brake=1)
+            from .urban_chaos import CITY
+            self.population.apply(CITY)
             self.step()
         except Exception:
             self.disconnect()
@@ -151,6 +159,7 @@ class CarlaProvider:
             route = self.dashboard_tools.route
             self.population.set_route(route['points'] if route else [])
         snapshot = self.world.advance()
+        self.last_actor_ids={a.id for a in snapshot} if self.scenarios and self.scenarios.urban else set()
         if self.population: self.population.update(snapshot)
         self.last_vehicle = vehicle_state(self.ego.actor, snapshot)
         self.last_ground_truth = self.inspector.observe(snapshot) if self.inspector else None
@@ -176,7 +185,7 @@ class CarlaProvider:
             raise RuntimeError('No native observation is available')
         frame = simulation_frame(self.last_vehicle, self.last_world)
         if self.population:
-            population = self.population.get_population_state()
+            population = self.population_state()
             a, r = population['actual'], population['requested']
             frame = replace(frame, population=PopulationState(frame.frame_id, frame.timestamp_s,
                 a['vehicles'], a['pedestrians'], a['controllers'], a['walkers_active'],
@@ -254,10 +263,37 @@ class CarlaProvider:
         raise ValueError('Unknown dashboard operation')
 
     def population_state(self):
-        return self.population.get_population_state() if self.population else None
+        state=self.population.get_population_state() if self.population else None
+        if state and self.scenarios and self.scenarios.urban:
+            import copy
+            state=copy.deepcopy(state)
+            live=set(self.last_actor_ids)
+            state['actual']={'vehicles':sum(i in live for n,i in self.scenarios.actors.items() if n in self.scenarios.spec.metadata['vehicle_plans']),
+                'pedestrians':sum(i in live for n,i in self.scenarios.actors.items() if n not in self.scenarios.spec.metadata['vehicle_plans']),
+                'controllers':sum(e['id'] in live for e in self.scenarios.urban.controllers.values()),
+                'walkers_active':sum(e['started'] and self.scenarios.actors[n] in live for n,e in self.scenarios.urban.controllers.items())}
+            state['requested'].update(vehicle_count=40,pedestrian_count=30,seed=self.scenarios.spec.random_seed,driver_behavior='UNREGULATED')
+            state['experiment_actor_ids']=dict(self.scenarios.actors)
+            state['actual_source']='Native admitted experiment actors; no recycling'
+            state.update(npc_spawned=40,walkers_spawned=30,npc_failed=0,walkers_failed=0,
+                walkers_lost=30-state['actual']['pedestrians'],vehicles_removed_native=40-state['actual']['vehicles'],
+                vehicle_ids=[i for n,i in self.scenarios.actors.items() if n in self.scenarios.spec.metadata['vehicle_plans']],
+                walker_ids=[i for n,i in self.scenarios.actors.items() if n not in self.scenarios.spec.metadata['vehicle_plans']],
+                controller_ids=[e['id'] for e in self.scenarios.urban.controllers.values()],
+                pedestrian_cross_factor=1.,walker_invincible=False,
+                destinations='28 native navmesh walkers; 2 scripted native-physics crossings',
+                behavior='UNREGULATED')
+            ego=self.ego.actor.get_location()
+            state['local_counts']={kind:sum(a.id in live and a.get_location().distance(ego)<=120 for n,a in self.scenarios.urban.handles.items()
+                if (n in self.scenarios.spec.metadata['vehicle_plans'])==(kind=='vehicles_120m'))
+                for kind in ('vehicles_120m','walkers_120m')}
+        return state
 
-    def environment_state(self):
-        return self.scenarios.status() if self.scenarios else None
+    def environment_state(self, compact=False):
+        return self.scenarios.status(compact=compact) if self.scenarios else None
+
+    def operator_environment_state(self):
+        return self.environment_state(compact=True)
 
     def observe_scenario(self, frame):
         if self.scenarios:
@@ -277,6 +313,10 @@ class CarlaProvider:
 
     def validate_graphics(self, value):
         from .dashboard_tools import validate_settings
+        if isinstance(value,dict) and set(value)=={'preset'}:
+            from .graphics import PRESETS
+            if value['preset'] not in PRESETS:raise ValueError('Unknown graphics preset')
+            value={k:PRESETS[value['preset']][k] for k in ('quality','resolution')}
         if self.connection.host not in ('127.0.0.1', 'localhost'):
             raise ValueError('Native restart is available only for the local simulator')
         return validate_settings({'next_launch': value})['next_launch']

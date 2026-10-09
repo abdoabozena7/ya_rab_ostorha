@@ -1,0 +1,60 @@
+{
+  "source": "FINAL_REAL_DASHBOARD_SWITCH_DURING_RUNNING_WITHOUT",
+  "before_phase": "RUNNING",
+  "before_timer_s": 52.950000789016485,
+  "prior_end_reason": "switched",
+  "prior_duration_s": 55.40000082552433,
+  "prior_completed": false,
+  "after_phase": "FINISHED",
+  "after_mode": "WITH",
+  "after_timer_s": 60.00000089406967,
+  "after_interventions": 8,
+  "safety": {
+    "type": "RULE_BASED_SAFETY",
+    "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+    "status": "STANDBY",
+    "risk": "UNKNOWN",
+    "active": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "steering_available": false,
+    "rejected_interventions": 0,
+    "actual_generator": "BASE_DRIVER",
+    "enabled": true,
+    "intervention_count": 8,
+    "controller": "RULE",
+    "model_health": "READY",
+    "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "model_error": null,
+    "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+    "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+    "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+    "available_controllers": [
+      "RULE",
+      "HYBRID"
+    ],
+    "source_counts": {
+      "LEARNED_BC": 0,
+      "RULE_GUARD": 0,
+      "RULE_FALLBACK": 0,
+      "RULE": 582,
+      "BASE_DRIVER": 618
+    },
+    "experimental": false
+  },
+  "native_inventory": {
+    "vehicles": 41,
+    "walkers": 28,
+    "controllers": 28,
+    "sensors": 7
+  },
+  "admitted_initial_actor_counts": {
+    "vehicles": 41,
+    "walkers": 30
+  },
+  "initial_intervention_count": 0,
+  "initial_manifest_matches": true,
+  "remaining_previous_actor_or_sensor_ids": [],
+  "previous_recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_d394c48a823c4df3ac6b3b6a08ad0852",
+  "new_recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a9e06c38d1b84b30b2902a7904588bdb",
+  "status": "PASS"
+}

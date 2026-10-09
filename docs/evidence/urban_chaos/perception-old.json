@@ -1,0 +1,43 @@
+{
+  "source": "SAME_RECORDED_NATIVE_RGB",
+  "mode": "old",
+  "device": "CPU",
+  "threads": 2,
+  "load_ms": 7440.109300005133,
+  "samples": [
+    {
+      "file": "frontCamera-241-1000.jpg",
+      "sha256": "cb158a60be643490400c9220c50aa1a90c3a2bc75e3ff5e62070876afc13ca1e",
+      "cv_ms": 165.36620000260882,
+      "ocr_ms": 741.9212000095285,
+      "total_cpu_ms": 6171.875,
+      "detections": 4,
+      "texts": 0,
+      "regions": null
+    },
+    {
+      "file": "frontCamera-241-1400.jpg",
+      "sha256": "874df34589fc89a5a2b7193d02686d19aa2cb843baa7dfb3e6afa13be3a1f7e9",
+      "cv_ms": 25.822399999015033,
+      "ocr_ms": 720.2236000011908,
+      "total_cpu_ms": 5187.5,
+      "detections": 6,
+      "texts": 0,
+      "regions": null
+    },
+    {
+      "file": "frontCamera-241-1801.jpg",
+      "sha256": "19db388b6ec10a4eba68e2a3b05e184a7022a318e1ec058d7652bf11be28c750",
+      "cv_ms": 29.85900000203401,
+      "ocr_ms": 725.2866000053473,
+      "total_cpu_ms": 4843.75,
+      "detections": 4,
+      "texts": 0,
+      "regions": null
+    }
+  ],
+  "cv_median_ms": 29.85900000203401,
+  "ocr_median_ms": 725.2866000053473,
+  "cpu_median_ms": 5187.5,
+  "cadence": "Full-image CRAFT + ar/en after every processed frame; paused in old comparison"
+}

@@ -1,0 +1,3820 @@
+{
+  "source": "REAL_CARLA_DASHBOARD_BUTTONS",
+  "tick_owner": "simulation-worker",
+  "initial_conditions_match": true,
+  "runs": {
+    "WITHOUT": {
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_5311ebe0ed9e42b6b4800495c6e5e6c2",
+      "frames": 1202,
+      "checked_assets": 3606,
+      "collision_events": 69,
+      "collision_impulses_ns": [
+        9072.833785781047,
+        3432.5964694938375,
+        589.9289620740718,
+        430.9811056470942,
+        275.0337409666927,
+        174.32337060527306,
+        202.54106240222774,
+        218.01200319756788,
+        257.91140520709826,
+        212.6392387077253,
+        227.74730618540778,
+        227.64603946812818,
+        229.7538633346523,
+        237.0759889717125,
+        203.76844158074732,
+        204.58264311604032,
+        190.5664860511218,
+        223.1350274122213,
+        159.30613581137217,
+        139.07895405049274,
+        185.62137485567723,
+        170.59036675814855,
+        191.78735224300527,
+        167.4949219291859,
+        177.65666701732854,
+        173.33374219193703,
+        127.70099480364884,
+        167.50467046829908,
+        161.45332127599363,
+        177.27787911160303,
+        162.1354494566805,
+        170.27357771695074,
+        153.3323354803352,
+        162.7420585446523,
+        154.76663038599477,
+        148.51833301571853,
+        156.3945169801264,
+        120.6258750576737,
+        138.3164999145462,
+        131.97209487270788,
+        147.5435627414625,
+        145.24194237361166,
+        150.2564535934684,
+        103.18504660257528,
+        117.14395070886636,
+        127.40496187640514,
+        127.41717733896002,
+        114.24827606775332,
+        112.96989390193502,
+        102.35270435811894,
+        110.90358438333664,
+        110.37567660209075,
+        109.06553519405523,
+        227.08377016791042,
+        143.92357582504098,
+        131.2829554178321,
+        675.3298279993033,
+        19.436613060023625,
+        63.86249077871057,
+        52.103388256273654,
+        40.68002675376233,
+        29.70690290188729,
+        23.724929818417724,
+        9.64944329247983,
+        13.712884986953807,
+        10.239593395315163,
+        5.462370296276165,
+        1.8941362836934748,
+        0.5496250017563354
+      ],
+      "metrics": {
+        "collision_callback_count": 69,
+        "collision_count": 2,
+        "collision_impulse_total_ns": 23135.71199212302,
+        "collision_peak_impulse_ns": 9072.833785781047,
+        "distance_traveled_m": 53.235583782331624,
+        "progress_m": 50.44464656913141,
+        "elapsed_simulation_s": 60.00000089406967,
+        "average_speed_mps": 0.887259716484327,
+        "minimum_clearance_m": 0.0,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 0,
+        "unsafe_intervention_count": null,
+        "route_completion": 0.2720839882988192,
+        "control_variation": 26.815455837277483,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "COLLISION",
+      "completed": true,
+      "applied_safety_frames": 0,
+      "command_application_mismatches": [],
+      "resumed_after_hazard": false,
+      "replay_camera": "PASS",
+      "hazard_observations": {
+        "sudden_brake": {
+          "status": "BLOCKED",
+          "position_m": [
+            -67.24323272705078,
+            -68.68946838378906,
+            0.002719020703807473
+          ],
+          "controls": {
+            "throttle": 0.6000000238418579,
+            "brake": 0.0,
+            "steering": -0.04243072122335434,
+            "reverse": false
+          }
+        },
+        "cut_in": {
+          "status": "TARGET_REACHED",
+          "position_m": [
+            -71.71031951904297,
+            -68.75850677490234,
+            -0.012731952592730522
+          ],
+          "controls": {
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": -0.08140769600868225,
+            "reverse": false
+          },
+          "reached_at_s": 31.350000467151403
+        },
+        "curb_up": {
+          "status": "TARGET_REACHED",
+          "position_m": [
+            -10.479129791259766,
+            -75.48074340820312,
+            0.15360136330127716
+          ],
+          "controls": {
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.021128788590431213,
+            "reverse": false
+          },
+          "sidewalk_observed_at_s": 36.05000053718686,
+          "reached_at_s": 39.65000059083104
+        },
+        "curb_return": {
+          "status": "BLOCKED",
+          "position_m": [
+            -45.13189697265625,
+            -71.24825286865234,
+            -0.02461683377623558
+          ],
+          "controls": {
+            "throttle": 0.949999988079071,
+            "brake": 0.0,
+            "steering": -0.45814287662506104,
+            "reverse": false
+          },
+          "sidewalk_observed_at_s": 35.950000535696745,
+          "road_reentry_observed_at_s": 43.150000642985106
+        },
+        "crossing_0": {
+          "status": "NATIVE_ACTOR_LOST",
+          "position_m": [
+            -30.844825744628906,
+            -65.4773941040039,
+            0.187815859913826
+          ],
+          "road_observed_at_s": 35.6500005312264,
+          "lost_at_s": 35.700000531971455
+        },
+        "crossing_1": {
+          "status": "ARRIVED",
+          "position_m": [
+            -31.492414474487305,
+            -52.36817169189453,
+            0.7238999605178833
+          ],
+          "road_observed_at_s": 33.30000049620867
+        },
+        "walker_21": {
+          "status": "NATIVE_ACTOR_LOST",
+          "lost_at_s": 47.800000712275505
+        }
+      },
+      "hazard_statuses": {
+        "sudden_brake": [
+          "BLOCKED",
+          "BRAKING",
+          "MOVING",
+          "WAITING"
+        ],
+        "cut_in": [
+          "MOVING",
+          "TARGET_REACHED",
+          "WAITING"
+        ],
+        "curb_up": [
+          "CURB_APPROACH",
+          "TARGET_REACHED",
+          "WAITING"
+        ],
+        "curb_return": [
+          "BLOCKED",
+          "CURB_APPROACH",
+          "MERGING",
+          "REVERSING_FROM_CURB",
+          "WAITING"
+        ],
+        "crossing_0": [
+          "CROSSING",
+          "NATIVE_ACTOR_LOST",
+          "WAITING",
+          "WALKING"
+        ],
+        "crossing_1": [
+          "ARRIVED",
+          "CROSSING",
+          "WAITING",
+          "WALKING"
+        ],
+        "walker_21": [
+          "NATIVE_ACTOR_LOST",
+          "UNOBSERVED"
+        ]
+      },
+      "initial_condition_id": "e5deb4c0d8f1d71b6b2d62d30176990a25e4c0618f1f5312658fa0584f5a58c3",
+      "recording_metadata": "PASS"
+    },
+    "WITH": {
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_71b297ee49be4acb8aec16d3cb378661",
+      "frames": 1202,
+      "checked_assets": 3606,
+      "collision_events": 0,
+      "collision_impulses_ns": [],
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 116.10273547898673,
+        "progress_m": 114.32571018990652,
+        "elapsed_simulation_s": 60.00000089406967,
+        "average_speed_mps": 1.9350455624820198,
+        "minimum_clearance_m": 0.20974990706531546,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 8,
+        "unsafe_intervention_count": null,
+        "route_completion": 0.6166401651944478,
+        "control_variation": 69.16076218365282,
+        "progress_under_congestion_m": null
+      },
+      "outcome": "SAFE_PROGRESS",
+      "completed": true,
+      "applied_safety_frames": 582,
+      "command_application_mismatches": [],
+      "resumed_after_hazard": true,
+      "replay_camera": "PASS",
+      "hazard_observations": {
+        "sudden_brake": {
+          "status": "BLOCKED",
+          "position_m": [
+            -67.17593383789062,
+            -68.71248626708984,
+            0.0024596976581960917
+          ],
+          "controls": {
+            "throttle": 0.6000000238418579,
+            "brake": 0.0,
+            "steering": -0.006869120057672262,
+            "reverse": false
+          }
+        },
+        "cut_in": {
+          "status": "TARGET_REACHED",
+          "position_m": [
+            -71.64350128173828,
+            -68.66805267333984,
+            -0.01180433202534914
+          ],
+          "controls": {
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.055805567651987076,
+            "reverse": false
+          },
+          "reached_at_s": 31.350000467151403
+        },
+        "curb_up": {
+          "status": "TARGET_REACHED",
+          "position_m": [
+            -10.48984146118164,
+            -75.48355102539062,
+            0.15360127389431
+          ],
+          "controls": {
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": -0.057467684149742126,
+            "reverse": false
+          },
+          "sidewalk_observed_at_s": 34.650000516325235,
+          "reached_at_s": 38.300000570714474
+        },
+        "curb_return": {
+          "status": "BLOCKED",
+          "position_m": [
+            -41.53187942504883,
+            -71.5349349975586,
+            0.040134064853191376
+          ],
+          "controls": {
+            "throttle": 0.6351464986801147,
+            "brake": 0.0,
+            "steering": 0.07701627910137177,
+            "reverse": true
+          },
+          "sidewalk_observed_at_s": 37.65000056102872
+        },
+        "crossing_0": {
+          "status": "NATIVE_ACTOR_LOST",
+          "position_m": [
+            -30.841615676879883,
+            -65.47774505615234,
+            0.18786461651325226
+          ],
+          "road_observed_at_s": 35.6500005312264,
+          "lost_at_s": 35.700000531971455
+        },
+        "crossing_1": {
+          "status": "ARRIVED",
+          "position_m": [
+            -31.492414474487305,
+            -52.36817169189453,
+            0.7238999605178833
+          ],
+          "road_observed_at_s": 33.30000049620867
+        },
+        "walker_21": {
+          "status": "NATIVE_ACTOR_LOST",
+          "lost_at_s": 46.05000068619847
+        }
+      },
+      "hazard_statuses": {
+        "sudden_brake": [
+          "BLOCKED",
+          "BRAKING",
+          "MOVING",
+          "WAITING"
+        ],
+        "cut_in": [
+          "MOVING",
+          "TARGET_REACHED",
+          "WAITING"
+        ],
+        "curb_up": [
+          "CURB_APPROACH",
+          "TARGET_REACHED",
+          "WAITING"
+        ],
+        "curb_return": [
+          "BLOCKED",
+          "CURB_APPROACH",
+          "REVERSING_FROM_CURB",
+          "WAITING"
+        ],
+        "crossing_0": [
+          "CROSSING",
+          "NATIVE_ACTOR_LOST",
+          "WAITING",
+          "WALKING"
+        ],
+        "crossing_1": [
+          "ARRIVED",
+          "CROSSING",
+          "WAITING",
+          "WALKING"
+        ],
+        "walker_21": [
+          "NATIVE_ACTOR_LOST",
+          "UNOBSERVED"
+        ]
+      },
+      "initial_condition_id": "e5deb4c0d8f1d71b6b2d62d30176990a25e4c0618f1f5312658fa0584f5a58c3",
+      "recording_metadata": "PASS"
+    }
+  },
+  "native_pose_audit": {
+    "maximum_position_error_m": 0.0,
+    "maximum_velocity_error_mps": 0.0,
+    "maximum_rotation_error_rad": 0.0,
+    "actor_identities_match": true,
+    "position_tolerance_m": 0.05,
+    "velocity_tolerance_mps": 0.1,
+    "rotation_tolerance_rad": 0.01,
+    "passed": true
+  },
+  "manifest": {
+    "spec": {
+      "scenario_id": "urban_chaos_v1",
+      "scenario_type": "MULTI_HAZARD",
+      "random_seed": 2589,
+      "map_id": "Carla/Maps/Town10HD_Opt",
+      "ego_spawn": 152,
+      "ego_initial_speed": 0.0,
+      "other_actor_definitions": [
+        {
+          "name": "sudden_brake",
+          "blueprint": "vehicle.tesla.model3",
+          "transform": {
+            "position_m": [
+              35.50088119506836,
+              -67.9114761352539,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 3.141183858362466
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "cut_in",
+          "blueprint": "vehicle.audi.tt",
+          "transform": {
+            "position_m": [
+              -24.477745056152344,
+              -64.7496337890625,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.152007743980875
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "curb_up",
+          "blueprint": "vehicle.nissan.patrol",
+          "transform": {
+            "position_m": [
+              9.502313613891602,
+              -64.4008560180664,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 3.141183858362466
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "curb_return",
+          "blueprint": "vehicle.nissan.patrol",
+          "transform": {
+            "position_m": [
+              -34.477203369140625,
+              -64.8537826538086,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": -3.1311775631987113
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_00",
+          "blueprint": "vehicle.chevrolet.impala",
+          "transform": {
+            "position_m": [
+              -81.8581314086914,
+              -67.18925476074219,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 2.863156498460919
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_01",
+          "blueprint": "vehicle.toyota.prius",
+          "transform": {
+            "position_m": [
+              -15.72807502746582,
+              -68.15869140625,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.152007743980875
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_02",
+          "blueprint": "vehicle.nissan.micra",
+          "transform": {
+            "position_m": [
+              -94.22736358642578,
+              -61.199275970458984,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 2.518068878098413
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_03",
+          "blueprint": "vehicle.audi.etron",
+          "transform": {
+            "position_m": [
+              -100.96441650390625,
+              -49.45235824584961,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 2.1963321204898314
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_04",
+          "blueprint": "vehicle.audi.etron",
+          "transform": {
+            "position_m": [
+              19.811246871948242,
+              -64.40506744384766,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 3.141183858362466
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_05",
+          "blueprint": "vehicle.mercedes.coupe",
+          "transform": {
+            "position_m": [
+              -109.74296569824219,
+              -26.437978744506836,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 1.6740661238590626
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_06",
+          "blueprint": "vehicle.audi.etron",
+          "transform": {
+            "position_m": [
+              -78.97217559814453,
+              -57.09364318847656,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -0.27843607190509034
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_07",
+          "blueprint": "vehicle.chevrolet.impala",
+          "transform": {
+            "position_m": [
+              -88.0964126586914,
+              -52.675106048583984,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -0.6235237089123528
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_08",
+          "blueprint": "vehicle.seat.leon",
+          "transform": {
+            "position_m": [
+              -68.59456634521484,
+              -58.208744049072266,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.01041499468373021
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_09",
+          "blueprint": "vehicle.tesla.model3",
+          "transform": {
+            "position_m": [
+              -4.570794582366943,
+              -64.54228973388672,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -3.1311775631987113
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_10",
+          "blueprint": "vehicle.chevrolet.impala",
+          "transform": {
+            "position_m": [
+              -68.4852066040039,
+              -68.70817565917969,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.152007743980875
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_11",
+          "blueprint": "vehicle.micro.microlino",
+          "transform": {
+            "position_m": [
+              -110.0811996459961,
+              -14.286100387573242,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 1.5820054386649856
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_12",
+          "blueprint": "vehicle.nissan.patrol_2021",
+          "transform": {
+            "position_m": [
+              -52.142601013183594,
+              -43.38029861450195,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 1.5783417279533636
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_13",
+          "blueprint": "vehicle.nissan.patrol",
+          "transform": {
+            "position_m": [
+              -41.64289855957031,
+              -43.30107498168945,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 4.719934248385102
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_14",
+          "blueprint": "vehicle.audi.a2",
+          "transform": {
+            "position_m": [
+              -106.86473083496094,
+              -38.52153778076172,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 1.93519905559542
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_15",
+          "blueprint": "vehicle.nissan.micra",
+          "transform": {
+            "position_m": [
+              31.814104080200195,
+              -57.409969329833984,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 6.28277624563615
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_16",
+          "blueprint": "vehicle.mini.cooper_s_2021",
+          "transform": {
+            "position_m": [
+              90.95166015625,
+              -55.47078323364258,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -2.4694661882044673
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_17",
+          "blueprint": "vehicle.mini.cooper_s_2021",
+          "transform": {
+            "position_m": [
+              -103.21614074707031,
+              -2.2083921432495117,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -1.5595872149248076
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_18",
+          "blueprint": "vehicle.audi.a2",
+          "transform": {
+            "position_m": [
+              -52.23314666748047,
+              -31.38064193725586,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 1.5783417279533636
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_19",
+          "blueprint": "vehicle.toyota.prius",
+          "transform": {
+            "position_m": [
+              -15.837430953979492,
+              -57.65925979614258,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.01041499468373021
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_20",
+          "blueprint": "vehicle.jeep.wrangler_rubicon",
+          "transform": {
+            "position_m": [
+              -41.73344421386719,
+              -31.301414489746094,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 4.719934248385102
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_21",
+          "blueprint": "vehicle.citroen.c3",
+          "transform": {
+            "position_m": [
+              -41.84298324584961,
+              -16.764692306518555,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 4.719095352641728
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_22",
+          "blueprint": "vehicle.nissan.patrol",
+          "transform": {
+            "position_m": [
+              -88.64411163330078,
+              12.937679290771484,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.144371129555073
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_23",
+          "blueprint": "vehicle.ford.mustang",
+          "transform": {
+            "position_m": [
+              -113.71548461914062,
+              -2.326085090637207,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 1.5820054386649856
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_24",
+          "blueprint": "vehicle.lincoln.mkz_2020",
+          "transform": {
+            "position_m": [
+              101.41458892822266,
+              -34.020938873291016,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 1.2810699665407403
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_25",
+          "blueprint": "vehicle.toyota.prius",
+          "transform": {
+            "position_m": [
+              -52.323692321777344,
+              -19.380983352661133,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 1.5783417279533636
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_26",
+          "blueprint": "vehicle.audi.etron",
+          "transform": {
+            "position_m": [
+              99.42892456054688,
+              -46.305747985839844,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -2.1649943044687054
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_27",
+          "blueprint": "vehicle.citroen.c3",
+          "transform": {
+            "position_m": [
+              -45.32000732421875,
+              -4.804924488067627,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -1.5736103559607288
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_28",
+          "blueprint": "vehicle.nissan.micra",
+          "transform": {
+            "position_m": [
+              102.96273040771484,
+              -21.38987159729004,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 7.865420976120809
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_29",
+          "blueprint": "vehicle.tesla.model3",
+          "transform": {
+            "position_m": [
+              -78.04388427734375,
+              16.467145919799805,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.144371129555073
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_30",
+          "blueprint": "vehicle.toyota.prius",
+          "transform": {
+            "position_m": [
+              -88.67606353759766,
+              24.437633514404297,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0027785214782865796
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_31",
+          "blueprint": "vehicle.audi.tt",
+          "transform": {
+            "position_m": [
+              -16.684391021728516,
+              13.13762092590332,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.144371129555073
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_32",
+          "blueprint": "vehicle.citroen.c3",
+          "transform": {
+            "position_m": [
+              99.43012237548828,
+              -9.405803680419922,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 1.5776161497143715
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_33",
+          "blueprint": "vehicle.ford.mustang",
+          "transform": {
+            "position_m": [
+              69.44527435302734,
+              13.376934051513672,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 6.283185307179586,
+              "yaw": 3.144371129555073
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_34",
+          "blueprint": "vehicle.nissan.patrol",
+          "transform": {
+            "position_m": [
+              -78.07583618164062,
+              27.967100143432617,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0027785214782865796
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        },
+        {
+          "name": "traffic_35",
+          "blueprint": "vehicle.mercedes.coupe",
+          "transform": {
+            "position_m": [
+              106.396484375,
+              -4.449376106262207,
+              0.30000001192092896
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": -1.5639765038754216
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "initial_speed_mps": 0.0,
+          "control_schedule": []
+        }
+      ],
+      "pedestrian_definitions": [
+        {
+          "name": "crossing_0",
+          "blueprint": "walker.pedestrian.0028",
+          "transform": {
+            "position_m": [
+              -32.609169006347656,
+              -73.67701721191406,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            -31.54445457458496,
+            -51.95069122314453,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.5,
+          "start_s": 20.21
+        },
+        {
+          "name": "crossing_1",
+          "blueprint": "walker.pedestrian.0010",
+          "transform": {
+            "position_m": [
+              -28.887615203857422,
+              -73.27310943603516,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            -31.54445457458496,
+            -51.95069122314453,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.5,
+          "start_s": 21.21
+        },
+        {
+          "name": "walker_00",
+          "blueprint": "walker.pedestrian.0034",
+          "transform": {
+            "position_m": [
+              56.76286697387695,
+              -75.90147399902344,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            54.3846435546875,
+            -49.443565368652344,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.42,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_01",
+          "blueprint": "walker.pedestrian.0033",
+          "transform": {
+            "position_m": [
+              51.51103210449219,
+              -75.08702850341797,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            29.8005313873291,
+            -73.8714828491211,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.32,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_02",
+          "blueprint": "walker.pedestrian.0020",
+          "transform": {
+            "position_m": [
+              71.66578674316406,
+              -73.69071197509766,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            56.76286697387695,
+            -75.90147399902344,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.21,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_03",
+          "blueprint": "walker.pedestrian.0022",
+          "transform": {
+            "position_m": [
+              67.11256408691406,
+              -51.8339958190918,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            38.100318908691406,
+            -49.04228973388672,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.01,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_04",
+          "blueprint": "walker.pedestrian.0025",
+          "transform": {
+            "position_m": [
+              65.61971282958984,
+              -73.89081573486328,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            39.064849853515625,
+            -75.70472717285156,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.2,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_05",
+          "blueprint": "walker.pedestrian.0028",
+          "transform": {
+            "position_m": [
+              54.3846435546875,
+              -49.443565368652344,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            38.100318908691406,
+            -49.04228973388672,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.72,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_06",
+          "blueprint": "walker.pedestrian.0009",
+          "transform": {
+            "position_m": [
+              64.33343505859375,
+              -77.42843627929688,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            67.11256408691406,
+            -51.8339958190918,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.01,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_07",
+          "blueprint": "walker.pedestrian.0044",
+          "transform": {
+            "position_m": [
+              47.61524200439453,
+              -51.07357406616211,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            58.18503952026367,
+            -73.30242919921875,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.1,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_08",
+          "blueprint": "walker.pedestrian.0041",
+          "transform": {
+            "position_m": [
+              74.12339782714844,
+              -72.94190216064453,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            98.19020080566406,
+            -62.212928771972656,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.36,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_09",
+          "blueprint": "walker.pedestrian.0007",
+          "transform": {
+            "position_m": [
+              50.737159729003906,
+              -51.52003479003906,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            34.297462463378906,
+            -51.58451843261719,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.77,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_10",
+          "blueprint": "walker.pedestrian.0005",
+          "transform": {
+            "position_m": [
+              74.185546875,
+              -46.35496520996094,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            83.5199203491211,
+            -71.53756713867188,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.61,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_11",
+          "blueprint": "walker.pedestrian.0020",
+          "transform": {
+            "position_m": [
+              58.3117561340332,
+              -49.40863037109375,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            82.07080841064453,
+            -40.8931770324707,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.42,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_12",
+          "blueprint": "walker.pedestrian.0043",
+          "transform": {
+            "position_m": [
+              30.126232147216797,
+              -76.83002471923828,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            39.599117279052734,
+            -72.974853515625,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.0,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_13",
+          "blueprint": "walker.pedestrian.0049",
+          "transform": {
+            "position_m": [
+              60.65902328491211,
+              -77.3201675415039,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            47.61524200439453,
+            -51.07357406616211,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.59,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_14",
+          "blueprint": "walker.pedestrian.0044",
+          "transform": {
+            "position_m": [
+              83.5199203491211,
+              -71.53756713867188,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            64.33343505859375,
+            -77.42843627929688,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.45,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_15",
+          "blueprint": "walker.pedestrian.0050",
+          "transform": {
+            "position_m": [
+              67.41068267822266,
+              -76.64005279541016,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            83.5199203491211,
+            -71.53756713867188,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.24,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_16",
+          "blueprint": "walker.pedestrian.0050",
+          "transform": {
+            "position_m": [
+              29.8005313873291,
+              -73.8714828491211,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            3.379639148712158,
+            -76.83141326904297,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.76,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_17",
+          "blueprint": "walker.pedestrian.0012",
+          "transform": {
+            "position_m": [
+              73.81805419921875,
+              -76.11831665039062,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            94.02836608886719,
+            -65.25437927246094,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.29,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_18",
+          "blueprint": "walker.pedestrian.0018",
+          "transform": {
+            "position_m": [
+              78.75133514404297,
+              -48.46424102783203,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            95.56361389160156,
+            -62.61253356933594,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.51,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_19",
+          "blueprint": "walker.pedestrian.0025",
+          "transform": {
+            "position_m": [
+              34.120182037353516,
+              -48.944793701171875,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            16.48577117919922,
+            -47.9814338684082,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.13,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_20",
+          "blueprint": "walker.pedestrian.0036",
+          "transform": {
+            "position_m": [
+              36.64781188964844,
+              -74.09074401855469,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            58.18503952026367,
+            -73.30242919921875,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.22,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_21",
+          "blueprint": "walker.pedestrian.0008",
+          "transform": {
+            "position_m": [
+              42.867183685302734,
+              -75.01543426513672,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            54.3846435546875,
+            -49.443565368652344,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.45,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_22",
+          "blueprint": "walker.pedestrian.0048",
+          "transform": {
+            "position_m": [
+              64.23715209960938,
+              -50.31689453125,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            81.98408508300781,
+            -45.73842239379883,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.26,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_23",
+          "blueprint": "walker.pedestrian.0020",
+          "transform": {
+            "position_m": [
+              44.046974182128906,
+              -50.044883728027344,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            56.47930908203125,
+            -52.18367004394531,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.41,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_24",
+          "blueprint": "walker.pedestrian.0008",
+          "transform": {
+            "position_m": [
+              86.04574584960938,
+              -71.37226867675781,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            95.56361389160156,
+            -62.61253356933594,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.6,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_25",
+          "blueprint": "walker.pedestrian.0020",
+          "transform": {
+            "position_m": [
+              91.20860290527344,
+              -69.28048706054688,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            76.66637420654297,
+            -74.7095947265625,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.75,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_26",
+          "blueprint": "walker.pedestrian.0005",
+          "transform": {
+            "position_m": [
+              60.779685974121094,
+              -73.21218872070312,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            71.66578674316406,
+            -73.69071197509766,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.78,
+          "start_s": 0.0
+        },
+        {
+          "name": "walker_27",
+          "blueprint": "walker.pedestrian.0046",
+          "transform": {
+            "position_m": [
+              48.26978302001953,
+              -76.0596694946289,
+              0.5586199760437012
+            ],
+            "rotation_rad": {
+              "roll": 0.0,
+              "pitch": 0.0,
+              "yaw": 0.0
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "destination": [
+            60.65902328491211,
+            -77.3201675415039,
+            0.15861999988555908
+          ],
+          "speed_mps": 1.08,
+          "start_s": 0.0
+        }
+      ],
+      "weather": {
+        "cloudiness": 5.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0,
+        "fog_density": 2.0
+      },
+      "traffic_density": {
+        "vehicle_count": 40,
+        "pedestrian_count": 30
+      },
+      "difficulty": 1,
+      "success_conditions": {
+        "min_progress_m": 10.0,
+        "max_collision_episodes": 0.0
+      },
+      "failure_conditions": {
+        "max_collision_episodes": 1000000
+      },
+      "timeout": 60.0,
+      "split": "TEST",
+      "metadata": {
+        "urban_chaos": true,
+        "target_speed_kmh": 20,
+        "hazard_schedule": {
+          "sudden_brake_s": 8.41,
+          "cut_in_s": 16.58,
+          "pedestrian_crossing_s": 20.21,
+          "curb_up_s": 29.48,
+          "curb_return_s": 38.73
+        },
+        "vehicle_plans": {
+          "sudden_brake": {
+            "kind": "BRAKE",
+            "speed_mps": 4.5,
+            "points": [
+              [
+                35.50088119506836,
+                -67.9114761352539,
+                0.0
+              ],
+              [
+                33.50088119506836,
+                -67.91065979003906,
+                0.0
+              ],
+              [
+                31.500879287719727,
+                -67.90984344482422,
+                0.0
+              ],
+              [
+                29.500879287719727,
+                -67.90902709960938,
+                0.0
+              ],
+              [
+                27.500879287719727,
+                -67.908203125,
+                0.0
+              ],
+              [
+                25.500879287719727,
+                -67.90738677978516,
+                0.0
+              ],
+              [
+                23.500879287719727,
+                -67.90657043457031,
+                0.0
+              ],
+              [
+                21.500879287719727,
+                -67.90575408935547,
+                0.0
+              ],
+              [
+                19.500879287719727,
+                -67.90493774414062,
+                0.0
+              ],
+              [
+                17.500879287719727,
+                -67.90412139892578,
+                0.0
+              ],
+              [
+                15.500880241394043,
+                -67.90330505371094,
+                0.0
+              ],
+              [
+                13.500884056091309,
+                -67.9024887084961,
+                0.0
+              ],
+              [
+                11.500884056091309,
+                -67.90167236328125,
+                0.0
+              ],
+              [
+                9.500884056091309,
+                -67.9008560180664,
+                0.0
+              ],
+              [
+                7.500884056091309,
+                -67.90003204345703,
+                0.0
+              ],
+              [
+                5.534295082092285,
+                -67.9052734375,
+                0.0
+              ],
+              [
+                3.5698304176330566,
+                -67.92373657226562,
+                0.0
+              ],
+              [
+                1.5867952108383179,
+                -67.95393371582031,
+                0.0
+              ],
+              [
+                -0.4129498302936554,
+                -67.98587036132812,
+                0.0
+              ],
+              [
+                -2.4232869148254395,
+                -68.0169448852539,
+                0.0
+              ],
+              [
+                -4.441721439361572,
+                -68.0411376953125,
+                0.0
+              ],
+              [
+                -6.442270278930664,
+                -68.06197357177734,
+                0.0
+              ],
+              [
+                -8.442161560058594,
+                -68.08280181884766,
+                0.0
+              ],
+              [
+                -10.442052841186523,
+                -68.10363006591797,
+                0.0
+              ],
+              [
+                -12.44194507598877,
+                -68.12446594238281,
+                0.0
+              ],
+              [
+                -14.4418363571167,
+                -68.14529418945312,
+                0.0
+              ],
+              [
+                -16.441728591918945,
+                -68.16612243652344,
+                0.0
+              ],
+              [
+                -18.441619873046875,
+                -68.18695068359375,
+                0.0
+              ],
+              [
+                -20.441511154174805,
+                -68.20777893066406,
+                0.0
+              ],
+              [
+                -22.441402435302734,
+                -68.22860717773438,
+                0.0
+              ],
+              [
+                -24.441293716430664,
+                -68.24944305419922,
+                0.0
+              ],
+              [
+                -26.441184997558594,
+                -68.27027130126953,
+                0.0
+              ],
+              [
+                -28.441076278686523,
+                -68.29109954833984,
+                0.0
+              ],
+              [
+                -30.440969467163086,
+                -68.31192779541016,
+                0.0
+              ],
+              [
+                -32.440860748291016,
+                -68.33275604248047,
+                0.0
+              ],
+              [
+                -34.44075393676758,
+                -68.35359191894531,
+                0.0
+              ],
+              [
+                -36.44064712524414,
+                -68.37442016601562,
+                0.0
+              ],
+              [
+                -38.44053649902344,
+                -68.39524841308594,
+                0.0
+              ],
+              [
+                -40.440425872802734,
+                -68.41607666015625,
+                0.0
+              ],
+              [
+                -42.4403190612793,
+                -68.43690490722656,
+                0.0
+              ],
+              [
+                -44.44021224975586,
+                -68.45773315429688,
+                0.0
+              ],
+              [
+                -46.44010543823242,
+                -68.47856903076172,
+                0.0
+              ],
+              [
+                -48.43999481201172,
+                -68.49939727783203,
+                0.0
+              ],
+              [
+                -50.439884185791016,
+                -68.52022552490234,
+                0.0
+              ],
+              [
+                -52.43977737426758,
+                -68.54105377197266,
+                0.0
+              ],
+              [
+                -54.43967056274414,
+                -68.56188201904297,
+                0.0
+              ],
+              [
+                -56.43955993652344,
+                -68.58271789550781,
+                0.0
+              ],
+              [
+                -58.439453125,
+                -68.60354614257812,
+                0.0
+              ],
+              [
+                -60.4393424987793,
+                -68.62437438964844,
+                0.0
+              ],
+              [
+                -62.43923568725586,
+                -68.64520263671875,
+                0.0
+              ],
+              [
+                -64.43911743164062,
+                -68.66603088378906,
+                0.0
+              ],
+              [
+                -66.43901062011719,
+                -68.6868667602539,
+                0.0
+              ],
+              [
+                -68.43890380859375,
+                -68.70769500732422,
+                0.0
+              ],
+              [
+                -70.43879699707031,
+                -68.72852325439453,
+                0.0
+              ],
+              [
+                -72.73976135253906,
+                -68.6864242553711,
+                0.0
+              ],
+              [
+                -75.03478240966797,
+                -68.51212310791016,
+                0.0
+              ],
+              [
+                -77.31599426269531,
+                -68.20618438720703,
+                0.0
+              ],
+              [
+                -79.57584381103516,
+                -67.76961517333984,
+                0.0
+              ],
+              [
+                -81.80686950683594,
+                -67.20387268066406,
+                0.0
+              ],
+              [
+                -84.00167846679688,
+                -66.51081085205078,
+                0.0
+              ],
+              [
+                -86.15302276611328,
+                -65.69274139404297,
+                0.0
+              ],
+              [
+                -88.2537841796875,
+                -64.75234985351562,
+                0.0
+              ],
+              [
+                -90.29701232910156,
+                -63.6927604675293,
+                0.0
+              ],
+              [
+                -92.27595520019531,
+                -62.51747131347656,
+                0.0
+              ],
+              [
+                -94.18406677246094,
+                -61.230369567871094,
+                0.0
+              ],
+              [
+                -96.0150375366211,
+                -59.83571243286133,
+                0.0
+              ],
+              [
+                -97.7628173828125,
+                -58.33811569213867,
+                0.0
+              ],
+              [
+                -99.4216079711914,
+                -56.742523193359375,
+                0.0
+              ],
+              [
+                -100.98594665527344,
+                -55.05421829223633,
+                0.0
+              ],
+              [
+                -102.42591857910156,
+                -53.319740295410156,
+                0.0
+              ],
+              [
+                -103.77145385742188,
+                -51.54352951049805,
+                0.0
+              ],
+              [
+                -105.0384292602539,
+                -49.71046447753906,
+                0.0
+              ],
+              [
+                -106.22445678710938,
+                -47.82400131225586,
+                0.0
+              ],
+              [
+                -107.32730102539062,
+                -45.887725830078125,
+                0.0
+              ],
+              [
+                -108.34483337402344,
+                -43.905303955078125,
+                0.0
+              ],
+              [
+                -109.27515411376953,
+                -41.880489349365234,
+                0.0
+              ],
+              [
+                -110.11650085449219,
+                -39.81711196899414,
+                0.0
+              ],
+              [
+                -110.86727905273438,
+                -37.71908187866211,
+                0.0
+              ],
+              [
+                -111.52606201171875,
+                -35.59037399291992,
+                0.0
+              ],
+              [
+                -112.09160614013672,
+                -33.435020446777344,
+                0.0
+              ]
+            ],
+            "start_s": 0.0,
+            "brake_s": 8.41,
+            "release_s": 13.41
+          },
+          "cut_in": {
+            "kind": "CUT_IN",
+            "speed_mps": 4.0,
+            "start_s": 16.58,
+            "points": [
+              [
+                -30.459195787087083,
+                -66.56202271580696,
+                0.0
+              ],
+              [
+                -36.44064712524414,
+                -68.37442016601562,
+                0.0
+              ],
+              [
+                -52.43977737426758,
+                -68.54105377197266,
+                0.0
+              ],
+              [
+                -72.73976135253906,
+                -68.6864242553711,
+                0.0
+              ]
+            ]
+          },
+          "curb_up": {
+            "kind": "CURB",
+            "speed_mps": 4.0,
+            "start_s": 29.48,
+            "return_s": 38.73,
+            "points": [
+              [
+                -2.320214534726143,
+                -75.40300883570431,
+                0.0
+              ],
+              [
+                -10.365119669536812,
+                -75.49001234356072,
+                0.0
+              ]
+            ],
+            "reverse_exit_points": [
+              [
+                5.534295082092285,
+                -67.9052734375,
+                0.0
+              ]
+            ],
+            "return_points": [
+              [
+                -18.441619873046875,
+                -68.18695068359375,
+                0.0
+              ],
+              [
+                -26.441184997558594,
+                -68.27027130126953,
+                0.0
+              ],
+              [
+                -36.44064712524414,
+                -68.37442016601562,
+                0.0
+              ]
+            ]
+          },
+          "curb_return": {
+            "kind": "CURB",
+            "speed_mps": 4.0,
+            "start_s": 30.48,
+            "return_s": 38.73,
+            "points": [
+              [
+                -46.36319038551477,
+                -75.8631667998026,
+                0.0
+              ],
+              [
+                -54.36275551002649,
+                -75.94647978808385,
+                0.0
+              ]
+            ],
+            "reverse_exit_points": [
+              [
+                -38.44053649902344,
+                -68.39524841308594,
+                0.0
+              ]
+            ],
+            "return_points": [
+              [
+                -62.43923568725586,
+                -68.64520263671875,
+                0.0
+              ],
+              [
+                -70.43879699707031,
+                -68.72852325439453,
+                0.0
+              ],
+              [
+                -81.80686950683594,
+                -67.20387268066406,
+                0.0
+              ]
+            ]
+          },
+          "traffic_00": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 0,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.4252152265425475,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 11.66181561339117
+            }
+          },
+          "traffic_01": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 1,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.385329566713461,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 12.594394881123133
+            }
+          },
+          "traffic_02": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 2,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.503649698754713,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 12.199390485222875
+            }
+          },
+          "traffic_03": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 3,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.512379930515031,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 12.746986663080214
+            }
+          },
+          "traffic_04": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 4,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.6180970841393947,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 10.135924535976354
+            }
+          },
+          "traffic_05": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 5,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.5126243611661105,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 13.352011668752986
+            }
+          },
+          "traffic_06": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 6,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.295938105845745,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 3.6756621859533283
+            }
+          },
+          "traffic_07": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 7,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 2.0316686938311395,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 16.588677376246874
+            }
+          },
+          "traffic_08": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 8,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.1031502281383145,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 4.297114126816669
+            }
+          },
+          "traffic_09": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 9,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "NORMAL",
+              "following_distance_m": 3.7745195083937713,
+              "lane_change_percent": 0.0,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 20.197914212770375
+            }
+          },
+          "traffic_10": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 10,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.2323818680017111,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 8.621588666341173
+            }
+          },
+          "traffic_11": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 11,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 2.018753048133848,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 13.682982478285624
+            }
+          },
+          "traffic_12": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 12,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.161334644056709,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 7.807342777729172
+            }
+          },
+          "traffic_13": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 13,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 1.8937412239421103,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 16.342414529065792
+            }
+          },
+          "traffic_14": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 14,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.2297248268592005,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 6.967149528320475
+            }
+          },
+          "traffic_15": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 15,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.307167213713055,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 7.6976785551341775
+            }
+          },
+          "traffic_16": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 16,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.2770877308660158,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 5.179848026781904
+            }
+          },
+          "traffic_17": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 17,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.173812042248429,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 6.503945162829107
+            }
+          },
+          "traffic_18": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 18,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "NORMAL",
+              "following_distance_m": 3.410881190156748,
+              "lane_change_percent": 0.0,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 17.42444209896238
+            }
+          },
+          "traffic_19": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 19,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.6105021699594824,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 13.088638904547036
+            }
+          },
+          "traffic_20": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 20,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 1.9702176099072233,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 11.270998601367872
+            }
+          },
+          "traffic_21": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 21,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 1.9159651652699325,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 15.06565607364565
+            }
+          },
+          "traffic_22": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 22,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.2447667489162637,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 8.322719185615732
+            }
+          },
+          "traffic_23": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 23,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.1620198358164004,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 9.000330205469853
+            }
+          },
+          "traffic_24": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 24,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 2.1300662776139765,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 18.170009291628638
+            }
+          },
+          "traffic_25": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 25,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.6280277736352793,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 12.871951785453138
+            }
+          },
+          "traffic_26": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 26,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "NORMAL",
+              "following_distance_m": 3.8216765029305506,
+              "lane_change_percent": 0.0,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 20.80972977713212
+            }
+          },
+          "traffic_27": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 27,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "NORMAL",
+              "following_distance_m": 3.817358542765465,
+              "lane_change_percent": 0.0,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 17.68541565963101
+            }
+          },
+          "traffic_28": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 28,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "NORMAL",
+              "following_distance_m": 3.7732705379083233,
+              "lane_change_percent": 0.0,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 17.373882705205922
+            }
+          },
+          "traffic_29": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 29,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.2016706508104693,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 4.994362372993021
+            }
+          },
+          "traffic_30": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 30,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 1.9391873529257806,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 16.23459611624457
+            }
+          },
+          "traffic_31": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 31,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "NORMAL",
+              "following_distance_m": 3.5951934751328327,
+              "lane_change_percent": 0.0,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 22.809103712530614
+            }
+          },
+          "traffic_32": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 32,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 1.9101840443053966,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 13.012051620082367
+            }
+          },
+          "traffic_33": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 33,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "BUSY",
+              "following_distance_m": 2.1937318770922483,
+              "lane_change_percent": 0.08,
+              "light_violation_percent": 0.0,
+              "sign_violation_percent": 0.0,
+              "speed_difference_percent": 17.340203613052893
+            }
+          },
+          "traffic_34": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 34,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "UNREGULATED",
+              "following_distance_m": 1.6138008269073345,
+              "lane_change_percent": 0.12,
+              "light_violation_percent": 20.0,
+              "sign_violation_percent": 10.0,
+              "speed_difference_percent": 14.272308433471748
+            }
+          },
+          "traffic_35": {
+            "kind": "TRAFFIC_MANAGER",
+            "ordinal": 35,
+            "route_policy": "SEEDED_NATIVE_LANE_ROUTING",
+            "driver_profile": {
+              "name": "AGGRESSIVE",
+              "following_distance_m": 1.1372763823371617,
+              "lane_change_percent": 0.18,
+              "light_violation_percent": 5.0,
+              "sign_violation_percent": 2.0,
+              "speed_difference_percent": 7.753726047491161
+            }
+          }
+        },
+        "blueprint_attributes": {
+          "traffic_00": {
+            "color": "0,12,49"
+          },
+          "traffic_01": {
+            "color": "28,46,58"
+          },
+          "traffic_02": {
+            "color": "17,21,99"
+          },
+          "traffic_03": {
+            "color": "168,0,27"
+          },
+          "traffic_04": {
+            "color": "195,168,228"
+          },
+          "traffic_05": {
+            "color": "33,33,33"
+          },
+          "traffic_06": {
+            "color": "33,33,33"
+          },
+          "traffic_07": {
+            "color": "0,0,0"
+          },
+          "traffic_08": {
+            "color": "38,38,38"
+          },
+          "traffic_09": {
+            "color": "0,0,0"
+          },
+          "traffic_10": {
+            "color": "61,86,143"
+          },
+          "traffic_11": {
+            "color": "145,255,181"
+          },
+          "traffic_12": {
+            "color": "12,42,12"
+          },
+          "traffic_13": {
+            "color": "22,24,43"
+          },
+          "traffic_14": {
+            "color": "0,39,105"
+          },
+          "traffic_15": {
+            "color": "0,0,0"
+          },
+          "traffic_16": {
+            "color": "215,88,0"
+          },
+          "traffic_17": {
+            "color": "0,28,0"
+          },
+          "traffic_18": {
+            "color": "0,39,105"
+          },
+          "traffic_19": {
+            "color": "227,227,227"
+          },
+          "traffic_20": {
+            "color": "0,39,105"
+          },
+          "traffic_21": {
+            "color": "16,44,21"
+          },
+          "traffic_22": {
+            "color": "183,187,162"
+          },
+          "traffic_23": {
+            "color": "0,0,0"
+          },
+          "traffic_24": {
+            "color": "0,0,0",
+            "driver_id": "0"
+          },
+          "traffic_25": {
+            "color": "96,102,99"
+          },
+          "traffic_26": {
+            "color": "168,0,27"
+          },
+          "traffic_27": {
+            "color": "33,33,33"
+          },
+          "traffic_28": {
+            "color": "28,0,46"
+          },
+          "traffic_29": {
+            "color": "75,86,173"
+          },
+          "traffic_30": {
+            "color": "28,46,58"
+          },
+          "traffic_31": {
+            "color": "168,0,27"
+          },
+          "traffic_32": {
+            "color": "217,217,217"
+          },
+          "traffic_33": {
+            "color": "0,0,0"
+          },
+          "traffic_34": {
+            "color": "66,52,33"
+          },
+          "traffic_35": {
+            "color": "168,0,27"
+          }
+        },
+        "route_points": [
+          [
+            57.50088119506836,
+            -67.92046356201172,
+            0.0
+          ],
+          [
+            55.500877380371094,
+            -67.91964721679688,
+            0.0
+          ],
+          [
+            53.50088119506836,
+            -67.91883087158203,
+            0.0
+          ],
+          [
+            51.50088119506836,
+            -67.91801452636719,
+            0.0
+          ],
+          [
+            49.50088119506836,
+            -67.91719818115234,
+            0.0
+          ],
+          [
+            47.50088119506836,
+            -67.91637420654297,
+            0.0
+          ],
+          [
+            45.50088119506836,
+            -67.91555786132812,
+            0.0
+          ],
+          [
+            43.50088119506836,
+            -67.91474151611328,
+            0.0
+          ],
+          [
+            41.50088119506836,
+            -67.91392517089844,
+            0.0
+          ],
+          [
+            39.50088119506836,
+            -67.9131088256836,
+            0.0
+          ],
+          [
+            37.50088119506836,
+            -67.91229248046875,
+            0.0
+          ],
+          [
+            35.50088119506836,
+            -67.9114761352539,
+            0.0
+          ],
+          [
+            33.50088119506836,
+            -67.91065979003906,
+            0.0
+          ],
+          [
+            31.500879287719727,
+            -67.90984344482422,
+            0.0
+          ],
+          [
+            29.500879287719727,
+            -67.90902709960938,
+            0.0
+          ],
+          [
+            27.500879287719727,
+            -67.908203125,
+            0.0
+          ],
+          [
+            25.500879287719727,
+            -67.90738677978516,
+            0.0
+          ],
+          [
+            23.500879287719727,
+            -67.90657043457031,
+            0.0
+          ],
+          [
+            21.500879287719727,
+            -67.90575408935547,
+            0.0
+          ],
+          [
+            19.500879287719727,
+            -67.90493774414062,
+            0.0
+          ],
+          [
+            17.500879287719727,
+            -67.90412139892578,
+            0.0
+          ],
+          [
+            15.500880241394043,
+            -67.90330505371094,
+            0.0
+          ],
+          [
+            13.500884056091309,
+            -67.9024887084961,
+            0.0
+          ],
+          [
+            11.500884056091309,
+            -67.90167236328125,
+            0.0
+          ],
+          [
+            9.500884056091309,
+            -67.9008560180664,
+            0.0
+          ],
+          [
+            7.500884056091309,
+            -67.90003204345703,
+            0.0
+          ],
+          [
+            5.534295082092285,
+            -67.9052734375,
+            0.0
+          ],
+          [
+            3.5698304176330566,
+            -67.92373657226562,
+            0.0
+          ],
+          [
+            1.5867952108383179,
+            -67.95393371582031,
+            0.0
+          ],
+          [
+            -0.4129498302936554,
+            -67.98587036132812,
+            0.0
+          ],
+          [
+            -2.4232869148254395,
+            -68.0169448852539,
+            0.0
+          ],
+          [
+            -4.441721439361572,
+            -68.0411376953125,
+            0.0
+          ],
+          [
+            -6.442270278930664,
+            -68.06197357177734,
+            0.0
+          ],
+          [
+            -8.442161560058594,
+            -68.08280181884766,
+            0.0
+          ],
+          [
+            -10.442052841186523,
+            -68.10363006591797,
+            0.0
+          ],
+          [
+            -12.44194507598877,
+            -68.12446594238281,
+            0.0
+          ],
+          [
+            -14.4418363571167,
+            -68.14529418945312,
+            0.0
+          ],
+          [
+            -16.441728591918945,
+            -68.16612243652344,
+            0.0
+          ],
+          [
+            -18.441619873046875,
+            -68.18695068359375,
+            0.0
+          ],
+          [
+            -20.441511154174805,
+            -68.20777893066406,
+            0.0
+          ],
+          [
+            -22.441402435302734,
+            -68.22860717773438,
+            0.0
+          ],
+          [
+            -24.441293716430664,
+            -68.24944305419922,
+            0.0
+          ],
+          [
+            -26.441184997558594,
+            -68.27027130126953,
+            0.0
+          ],
+          [
+            -28.441076278686523,
+            -68.29109954833984,
+            0.0
+          ],
+          [
+            -30.440969467163086,
+            -68.31192779541016,
+            0.0
+          ],
+          [
+            -32.440860748291016,
+            -68.33275604248047,
+            0.0
+          ],
+          [
+            -34.44075393676758,
+            -68.35359191894531,
+            0.0
+          ],
+          [
+            -36.44064712524414,
+            -68.37442016601562,
+            0.0
+          ],
+          [
+            -38.44053649902344,
+            -68.39524841308594,
+            0.0
+          ],
+          [
+            -40.440425872802734,
+            -68.41607666015625,
+            0.0
+          ],
+          [
+            -42.4403190612793,
+            -68.43690490722656,
+            0.0
+          ],
+          [
+            -44.44021224975586,
+            -68.45773315429688,
+            0.0
+          ],
+          [
+            -46.44010543823242,
+            -68.47856903076172,
+            0.0
+          ],
+          [
+            -48.43999481201172,
+            -68.49939727783203,
+            0.0
+          ],
+          [
+            -50.439884185791016,
+            -68.52022552490234,
+            0.0
+          ],
+          [
+            -52.43977737426758,
+            -68.54105377197266,
+            0.0
+          ],
+          [
+            -54.43967056274414,
+            -68.56188201904297,
+            0.0
+          ],
+          [
+            -56.43955993652344,
+            -68.58271789550781,
+            0.0
+          ],
+          [
+            -58.439453125,
+            -68.60354614257812,
+            0.0
+          ],
+          [
+            -60.4393424987793,
+            -68.62437438964844,
+            0.0
+          ],
+          [
+            -62.43923568725586,
+            -68.64520263671875,
+            0.0
+          ],
+          [
+            -64.43911743164062,
+            -68.66603088378906,
+            0.0
+          ],
+          [
+            -66.43901062011719,
+            -68.6868667602539,
+            0.0
+          ],
+          [
+            -68.43890380859375,
+            -68.70769500732422,
+            0.0
+          ],
+          [
+            -70.43879699707031,
+            -68.72852325439453,
+            0.0
+          ],
+          [
+            -72.73976135253906,
+            -68.6864242553711,
+            0.0
+          ],
+          [
+            -75.03478240966797,
+            -68.51212310791016,
+            0.0
+          ],
+          [
+            -77.31599426269531,
+            -68.20618438720703,
+            0.0
+          ],
+          [
+            -79.57584381103516,
+            -67.76961517333984,
+            0.0
+          ],
+          [
+            -81.80686950683594,
+            -67.20387268066406,
+            0.0
+          ],
+          [
+            -84.00167846679688,
+            -66.51081085205078,
+            0.0
+          ],
+          [
+            -86.15302276611328,
+            -65.69274139404297,
+            0.0
+          ],
+          [
+            -88.2537841796875,
+            -64.75234985351562,
+            0.0
+          ],
+          [
+            -90.29701232910156,
+            -63.6927604675293,
+            0.0
+          ],
+          [
+            -92.27595520019531,
+            -62.51747131347656,
+            0.0
+          ],
+          [
+            -94.18406677246094,
+            -61.230369567871094,
+            0.0
+          ],
+          [
+            -96.0150375366211,
+            -59.83571243286133,
+            0.0
+          ],
+          [
+            -97.7628173828125,
+            -58.33811569213867,
+            0.0
+          ],
+          [
+            -99.4216079711914,
+            -56.742523193359375,
+            0.0
+          ],
+          [
+            -100.98594665527344,
+            -55.05421829223633,
+            0.0
+          ],
+          [
+            -102.42591857910156,
+            -53.319740295410156,
+            0.0
+          ],
+          [
+            -103.77145385742188,
+            -51.54352951049805,
+            0.0
+          ],
+          [
+            -105.0384292602539,
+            -49.71046447753906,
+            0.0
+          ],
+          [
+            -106.22445678710938,
+            -47.82400131225586,
+            0.0
+          ],
+          [
+            -107.32730102539062,
+            -45.887725830078125,
+            0.0
+          ],
+          [
+            -108.34483337402344,
+            -43.905303955078125,
+            0.0
+          ],
+          [
+            -109.27515411376953,
+            -41.880489349365234,
+            0.0
+          ],
+          [
+            -110.11650085449219,
+            -39.81711196899414,
+            0.0
+          ],
+          [
+            -110.86727905273438,
+            -37.71908187866211,
+            0.0
+          ],
+          [
+            -111.52606201171875,
+            -35.59037399291992,
+            0.0
+          ],
+          [
+            -112.09160614013672,
+            -33.435020446777344,
+            0.0
+          ]
+        ],
+        "recycling": false,
+        "traffic_behavior": "UNREGULATED",
+        "trajectory_matching": "Same initial manifest and hazard plan; traffic can diverge after ego intervention"
+      }
+    },
+    "map": "Carla/Maps/Town10HD_Opt",
+    "weather": {
+      "cloudiness": 5.0,
+      "precipitation": 0.0,
+      "wetness": 0.0,
+      "fog_density": 2.0,
+      "sun_altitude_angle": 45.0,
+      "sun_azimuth_angle": -1.0,
+      "precipitation_deposits": 0.0,
+      "wind_intensity": 10.0,
+      "fog_distance": 0.75,
+      "fog_falloff": 0.10000000149011612,
+      "scattering_intensity": 1.0,
+      "mie_scattering_scale": 0.029999999329447746,
+      "rayleigh_scattering_scale": 0.03310000151395798,
+      "dust_storm": 0.0
+    },
+    "camera": {
+      "camera_view": "front",
+      "camera_resolution": "640x360",
+      "camera_fov": 90,
+      "camera_postprocess": false,
+      "camera_motion_blur": 0,
+      "camera_bloom": 0.0
+    },
+    "fixed_delta_seconds": 0.05,
+    "route_points": [
+      [
+        55.809814453125,
+        -67.91976928710938,
+        0.0
+      ],
+      [
+        51.809814453125,
+        -67.91813659667969,
+        0.0
+      ],
+      [
+        47.809814453125,
+        -67.91650390625,
+        0.0
+      ],
+      [
+        43.809814453125,
+        -67.91487121582031,
+        0.0
+      ],
+      [
+        39.809814453125,
+        -67.91323852539062,
+        0.0
+      ],
+      [
+        35.809814453125,
+        -67.9115982055664,
+        0.0
+      ],
+      [
+        31.809812545776367,
+        -67.90996551513672,
+        0.0
+      ],
+      [
+        27.809812545776367,
+        -67.90833282470703,
+        0.0
+      ],
+      [
+        23.809816360473633,
+        -67.90670013427734,
+        0.0
+      ],
+      [
+        19.809816360473633,
+        -67.90506744384766,
+        0.0
+      ],
+      [
+        15.80981731414795,
+        -67.90342712402344,
+        0.0
+      ],
+      [
+        11.80981731414795,
+        -67.90179443359375,
+        0.0
+      ],
+      [
+        7.407855033874512,
+        -67.89999389648438,
+        0.0
+      ],
+      [
+        7.407855033874512,
+        -67.89999389648438,
+        0.0
+      ],
+      [
+        3.478853940963745,
+        -67.92493438720703,
+        0.0
+      ],
+      [
+        -0.5055642127990723,
+        -67.98735046386719,
+        0.0
+      ],
+      [
+        -5.2659759521484375,
+        -68.04972076416016,
+        0.0
+      ],
+      [
+        -5.2659759521484375,
+        -68.04972076416016,
+        0.0
+      ],
+      [
+        -9.265758514404297,
+        -68.09138488769531,
+        0.0
+      ],
+      [
+        -13.265541076660156,
+        -68.13304138183594,
+        0.0
+      ],
+      [
+        -17.26532554626465,
+        -68.17469787597656,
+        0.0
+      ],
+      [
+        -21.265108108520508,
+        -68.21636199951172,
+        0.0
+      ],
+      [
+        -27.7274227142334,
+        -68.2836685180664,
+        0.0
+      ],
+      [
+        -27.7274227142334,
+        -68.2836685180664,
+        0.0
+      ],
+      [
+        -31.727209091186523,
+        -68.32532501220703,
+        0.0
+      ],
+      [
+        -35.726993560791016,
+        -68.36698150634766,
+        0.0
+      ],
+      [
+        -39.726776123046875,
+        -68.40864562988281,
+        0.0
+      ],
+      [
+        -43.726558685302734,
+        -68.45030212402344,
+        0.0
+      ],
+      [
+        -47.726341247558594,
+        -68.4919662475586,
+        0.0
+      ],
+      [
+        -51.72612380981445,
+        -68.53362274169922,
+        0.0
+      ],
+      [
+        -55.72591018676758,
+        -68.57527923583984,
+        0.0
+      ],
+      [
+        -59.72569274902344,
+        -68.616943359375,
+        0.0
+      ],
+      [
+        -67.0452880859375,
+        -68.69317626953125,
+        0.0
+      ],
+      [
+        -67.0452880859375,
+        -68.69317626953125,
+        0.0
+      ],
+      [
+        -71.13634490966797,
+        -68.729736328125,
+        0.0
+      ],
+      [
+        -75.7281494140625,
+        -68.43324279785156,
+        0.0
+      ],
+      [
+        -80.25557708740234,
+        -67.6116714477539,
+        0.0
+      ],
+      [
+        -84.6587905883789,
+        -66.27589416503906,
+        0.0
+      ],
+      [
+        -88.87958526611328,
+        -64.44356536865234,
+        0.0
+      ],
+      [
+        -92.8621826171875,
+        -62.13890075683594,
+        0.0
+      ],
+      [
+        -96.55393981933594,
+        -59.392364501953125,
+        0.0
+      ],
+      [
+        -99.90605926513672,
+        -56.24024963378906,
+        0.0
+      ],
+      [
+        -102.84197235107422,
+        -52.78748321533203,
+        0.0
+      ],
+      [
+        -105.40664672851562,
+        -49.14405059814453,
+        0.0
+      ],
+      [
+        -107.64485931396484,
+        -45.29145050048828,
+        0.0
+      ],
+      [
+        -109.53968811035156,
+        -41.25886154174805,
+        0.0
+      ],
+      [
+        -111.07677459716797,
+        -37.07680892944336,
+        0.0
+      ],
+      [
+        -112.11611938476562,
+        -33.33210754394531,
+        0.0
+      ]
+    ],
+    "destination": [
+      -112.10322570800781,
+      -33.386348724365234,
+      0.0
+    ],
+    "basic_agent_options": {
+      "dt": 0.05,
+      "max_brake": 1.0,
+      "lateral_control_dict": {
+        "K_P": 1.95,
+        "K_I": 0.05,
+        "K_D": 0.2,
+        "dt": 0.05
+      },
+      "longitudinal_control_dict": {
+        "K_P": 1.0,
+        "K_I": 0.05,
+        "K_D": 0.0,
+        "dt": 0.05
+      },
+      "ignore_vehicles": true,
+      "ignore_traffic_lights": true,
+      "ignore_stop_signs": true
+    },
+    "target_speed_kmh": 20,
+    "settling_ticks": 25,
+    "matching_scope": "Compiled starts, seed, weather, route and hazard schedule; actual starts separately audited"
+  },
+  "trajectory_matching": "Identical starts and hazard plan; NPC trajectories can diverge after ego intervention.",
+  "versions": [
+    "0.9.16",
+    "0.9.16"
+  ],
+  "actor_inventory": {
+    "vehicles": 39,
+    "sensors": 7,
+    "walkers": 28,
+    "walker_controllers": 28
+  },
+  "native_actor_losses": {
+    "crossing_0": {
+      "status": "NATIVE_ACTOR_LOST",
+      "position_m": [
+        -30.841615676879883,
+        -65.47774505615234,
+        0.18786461651325226
+      ],
+      "road_observed_at_s": 35.6500005312264,
+      "lost_at_s": 35.700000531971455
+    },
+    "walker_21": {
+      "status": "NATIVE_ACTOR_LOST",
+      "lost_at_s": 46.05000068619847
+    }
+  },
+  "recording": "PASS"
+}

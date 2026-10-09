@@ -21,6 +21,20 @@ class ScenarioTests(unittest.TestCase):
             with self.assertRaises(ValueError):replace(spec,split=split,random_seed=seed)
         self.assertNotEqual(spec.condition_id,replace(spec,random_seed=43).condition_id)
 
+    def test_native_clear_noon_azimuth_is_admitted_without_accepting_invalid_angles(self):
+        provider=MagicMock()
+        provider.world.world.get_map.return_value.name='Town10'
+        provider.world.world.get_map.return_value.get_spawn_points.return_value=[object()]
+        manager=NativeScenarioManager(provider)
+        manager.reset=MagicMock()
+        manager.load(self.spec(weather={'sun_altitude_angle':45.,'sun_azimuth_angle':-1.}))
+        manager.reset.assert_called_once()
+        manager.reset.reset_mock()
+        for weather in ({'sun_azimuth_angle':-2.},{'sun_azimuth_angle':361.},{'sun_altitude_angle':91.}):
+            with self.assertRaisesRegex(ValueError,'Invalid native sun angle'):
+                manager.load(self.spec(weather=weather))
+        manager.reset.assert_not_called()
+
     def test_stationary_survival_cannot_be_a_success_condition(self):
         for value in ({'min_progress_m':0.},{'max_collision_episodes':0.},{'mystery_reward':4.}):
             with self.assertRaises(ValueError):self.spec(success_conditions=value)

@@ -210,6 +210,7 @@ export class DashboardTools {
   }
   fillSettings() {
     const s = this.catalog.settings;
+    const population = s.population?.requested || s.population_saved;
     for (const [id, entries] of [['settingVehicle',s.vehicle_options.map(p => [p.id,p.name])],
       ['settingSpawn',s.spawn_options.map(p => [p.index,p.name])],
       ['settingWeather',[['CUSTOM','Custom'],...s.weather_presets.map(name => [name,({ClearNoon:'Clear — Noon',CloudyNoon:'Cloudy — Noon',WetNoon:'Wet ground',WetCloudyNoon:'Wet and cloudy',MidRainyNoon:'Moderate rain',HardRainNoon:'Heavy rain',SoftRainNoon:'Light rain',ClearSunset:'Clear sunset',CloudySunset:'Cloudy sunset',WetSunset:'Wet sunset',HardRainSunset:'Heavy rain sunset'})[name] || name])]],
@@ -220,13 +221,13 @@ export class DashboardTools {
     }
     const fields = {settingVehicle:s.vehicle,settingSpawn:s.spawn_index,settingResolution:s.camera_resolution,
       settingFov:s.camera_fov,settingHz:s.simulation_hz,settingQuality:s.next_launch.quality,
-      settingWindow:s.next_launch.resolution,settingTrafficCount:s.population_saved.vehicle_count,
-      settingPedestrianCount:s.population_saved.pedestrian_count,settingTrafficSpeed:s.population_saved.speed_behavior,
-      settingFastWalk:s.population_saved.fast_walk_percent,settingSeed:s.population_saved.seed,
-      settingDriverBehavior:s.population_saved.driver_behavior ?? 'NORMAL',
-      settingCompliance:s.population_saved.light_compliance_percent ?? 90,
-      settingCrossing:s.population_saved.crossing_percent ?? 5,
-      settingWorldProfile:s.population_saved.world_profile ?? 'TRAINING_DEVELOPMENT',
+      settingWindow:s.next_launch.resolution,settingTrafficCount:population.vehicle_count,
+      settingPedestrianCount:population.pedestrian_count,settingTrafficSpeed:population.speed_behavior,
+      settingFastWalk:population.fast_walk_percent,settingSeed:population.seed,
+      settingDriverBehavior:population.driver_behavior ?? 'NORMAL',
+      settingCompliance:population.light_compliance_percent ?? 90,
+      settingCrossing:population.crossing_percent ?? 5,
+      settingWorldProfile:population.world_profile ?? 'TRAINING_DEVELOPMENT',
       settingWeather:s.weather_preset,cameraView:s.camera_view,
       settingMotionBlur:s.camera_motion_blur,settingBloom:s.camera_bloom};
     for (const [id,value] of Object.entries(fields)) $(id).value = value ?? 0;

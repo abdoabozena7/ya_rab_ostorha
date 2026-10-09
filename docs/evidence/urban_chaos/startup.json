@@ -1,0 +1,3528 @@
+{
+  "source": "CLEAN_START_POWERSHELL_AND_REAL_NATIVE_SNAPSHOTS",
+  "versions": [
+    "0.9.16",
+    "0.9.16"
+  ],
+  "map": "Carla/Maps/Town10HD_Opt",
+  "fixed_delta_seconds": 0.05,
+  "tick_owner": "simulation-worker",
+  "mode": "PAUSED",
+  "safety": {
+    "type": "RULE_BASED_SAFETY",
+    "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+    "status": "STANDBY",
+    "risk": "UNKNOWN",
+    "active": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "steering_available": false,
+    "rejected_interventions": 0,
+    "actual_generator": "BASE_DRIVER",
+    "enabled": true,
+    "intervention_count": 0,
+    "controller": "RULE",
+    "model_health": "READY",
+    "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "model_error": null,
+    "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+    "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+    "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+    "available_controllers": [
+      "RULE",
+      "HYBRID"
+    ],
+    "source_counts": {
+      "LEARNED_BC": 0,
+      "RULE_GUARD": 0,
+      "RULE_FALLBACK": 0,
+      "RULE": 0,
+      "BASE_DRIVER": 0
+    },
+    "experimental": false
+  },
+  "catalog": {
+    "map": "Carla/Maps/Town10HD_Opt",
+    "vehicle": "vehicle.lincoln.mkz_2020",
+    "spawn_index": 152,
+    "actual_spawn_index": 152,
+    "vehicles": [
+      "vehicle.audi.a2",
+      "vehicle.audi.etron",
+      "vehicle.audi.tt",
+      "vehicle.chevrolet.impala",
+      "vehicle.citroen.c3",
+      "vehicle.dodge.charger_2020",
+      "vehicle.ford.crown",
+      "vehicle.ford.mustang",
+      "vehicle.jeep.wrangler_rubicon",
+      "vehicle.lincoln.mkz_2017",
+      "vehicle.lincoln.mkz_2020",
+      "vehicle.mercedes.coupe",
+      "vehicle.mercedes.coupe_2020",
+      "vehicle.micro.microlino",
+      "vehicle.mini.cooper_s_2021",
+      "vehicle.nissan.micra",
+      "vehicle.nissan.patrol",
+      "vehicle.nissan.patrol_2021",
+      "vehicle.seat.leon",
+      "vehicle.tesla.model3",
+      "vehicle.toyota.prius"
+    ],
+    "maps": [
+      "Town01",
+      "Town01_Opt",
+      "Town02",
+      "Town02_Opt",
+      "Town03",
+      "Town03_Opt",
+      "Town04",
+      "Town04_Opt",
+      "Town05",
+      "Town05_Opt",
+      "Town10HD",
+      "Town10HD_Opt",
+      "AnnotationColorLandscape"
+    ],
+    "vehicle_options": [
+      {
+        "id": "vehicle.audi.a2",
+        "name": "Audi A2"
+      },
+      {
+        "id": "vehicle.audi.etron",
+        "name": "Audi Etron"
+      },
+      {
+        "id": "vehicle.audi.tt",
+        "name": "Audi Tt"
+      },
+      {
+        "id": "vehicle.chevrolet.impala",
+        "name": "Chevrolet Impala"
+      },
+      {
+        "id": "vehicle.citroen.c3",
+        "name": "Citroen C3"
+      },
+      {
+        "id": "vehicle.dodge.charger_2020",
+        "name": "Dodge Charger 2020"
+      },
+      {
+        "id": "vehicle.ford.crown",
+        "name": "Ford Crown"
+      },
+      {
+        "id": "vehicle.ford.mustang",
+        "name": "Ford Mustang"
+      },
+      {
+        "id": "vehicle.jeep.wrangler_rubicon",
+        "name": "Jeep Wrangler Rubicon"
+      },
+      {
+        "id": "vehicle.lincoln.mkz_2017",
+        "name": "Lincoln Mkz 2017"
+      },
+      {
+        "id": "vehicle.lincoln.mkz_2020",
+        "name": "Lincoln Mkz 2020"
+      },
+      {
+        "id": "vehicle.mercedes.coupe",
+        "name": "Mercedes Coupe"
+      },
+      {
+        "id": "vehicle.mercedes.coupe_2020",
+        "name": "Mercedes Coupe 2020"
+      },
+      {
+        "id": "vehicle.micro.microlino",
+        "name": "Micro Microlino"
+      },
+      {
+        "id": "vehicle.mini.cooper_s_2021",
+        "name": "Mini Cooper S 2021"
+      },
+      {
+        "id": "vehicle.nissan.micra",
+        "name": "Nissan Micra"
+      },
+      {
+        "id": "vehicle.nissan.patrol",
+        "name": "Nissan Patrol"
+      },
+      {
+        "id": "vehicle.nissan.patrol_2021",
+        "name": "Nissan Patrol 2021"
+      },
+      {
+        "id": "vehicle.seat.leon",
+        "name": "Seat Leon"
+      },
+      {
+        "id": "vehicle.tesla.model3",
+        "name": "Tesla Model3"
+      },
+      {
+        "id": "vehicle.toyota.prius",
+        "name": "Toyota Prius"
+      }
+    ],
+    "spawn_options": [
+      {
+        "index": 0,
+        "name": "Spawn 01",
+        "location_m": [
+          -64.64484405517578,
+          24.471010208129883,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 1,
+        "name": "Spawn 02",
+        "location_m": [
+          -67.25457000732422,
+          27.96375846862793,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 2,
+        "name": "Spawn 03",
+        "location_m": [
+          -87.62303161621094,
+          12.967159271240234,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 3,
+        "name": "Spawn 04",
+        "location_m": [
+          -84.9327621459961,
+          16.47465705871582,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 4,
+        "name": "Spawn 05",
+        "location_m": [
+          -103.17900085449219,
+          -14.434906959533691,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 5,
+        "name": "Spawn 06",
+        "location_m": [
+          -106.64958953857422,
+          -17.073978424072266,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 6,
+        "name": "Spawn 07",
+        "location_m": [
+          -110.9637451171875,
+          59.68935775756836,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 7,
+        "name": "Spawn 08",
+        "location_m": [
+          -114.43209075927734,
+          56.85029602050781,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 8,
+        "name": "Spawn 09",
+        "location_m": [
+          -111.120361328125,
+          72.89886474609375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 9,
+        "name": "Spawn 10",
+        "location_m": [
+          -114.58869934082031,
+          70.05980682373047,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 10,
+        "name": "Spawn 11",
+        "location_m": [
+          -24.33677864074707,
+          -57.78562545776367,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 11,
+        "name": "Spawn 12",
+        "location_m": [
+          -110.19779968261719,
+          -9.84222412109375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 12,
+        "name": "Spawn 13",
+        "location_m": [
+          -113.64817810058594,
+          -14.281184196472168,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 13,
+        "name": "Spawn 14",
+        "location_m": [
+          -109.92955780029297,
+          -23.42840576171875,
+          0.5999950766563416
+        ]
+      },
+      {
+        "index": 14,
+        "name": "Spawn 15",
+        "location_m": [
+          -113.40350341796875,
+          -25.76747703552246,
+          0.5999950766563416
+        ]
+      },
+      {
+        "index": 15,
+        "name": "Spawn 16",
+        "location_m": [
+          -56.86616134643555,
+          140.53555297851562,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 16,
+        "name": "Spawn 17",
+        "location_m": [
+          -54.34465789794922,
+          137.05099487304688,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 17,
+        "name": "Spawn 18",
+        "location_m": [
+          3.0477840900421143,
+          130.21006774902344,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 18,
+        "name": "Spawn 19",
+        "location_m": [
+          5.62622594833374,
+          133.72601318359375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 19,
+        "name": "Spawn 20",
+        "location_m": [
+          45.76567459106445,
+          137.4599609375,
+          0.6000009179115295
+        ]
+      },
+      {
+        "index": 20,
+        "name": "Spawn 21",
+        "location_m": [
+          48.546077728271484,
+          140.9755401611328,
+          0.6000009179115295
+        ]
+      },
+      {
+        "index": 21,
+        "name": "Spawn 22",
+        "location_m": [
+          99.38441467285156,
+          -6.305729389190674,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 22,
+        "name": "Spawn 23",
+        "location_m": [
+          53.122718811035156,
+          133.94662475585938,
+          0.6000292897224426
+        ]
+      },
+      {
+        "index": 23,
+        "name": "Spawn 24",
+        "location_m": [
+          55.54227828979492,
+          130.46006774902344,
+          0.6000292897224426
+        ]
+      },
+      {
+        "index": 24,
+        "name": "Spawn 25",
+        "location_m": [
+          -52.07392120361328,
+          100.18904876708984,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 25,
+        "name": "Spawn 26",
+        "location_m": [
+          -48.56741714477539,
+          102.47919464111328,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 26,
+        "name": "Spawn 27",
+        "location_m": [
+          -52.07392120361328,
+          63.53809356689453,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 27,
+        "name": "Spawn 28",
+        "location_m": [
+          -48.58211135864258,
+          60.62824249267578,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 28,
+        "name": "Spawn 29",
+        "location_m": [
+          -41.66858673095703,
+          89.7454833984375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 29,
+        "name": "Spawn 30",
+        "location_m": [
+          -45.16095733642578,
+          92.45532989501953,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 30,
+        "name": "Spawn 31",
+        "location_m": [
+          -15.148191452026367,
+          69.71400451660156,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 31,
+        "name": "Spawn 32",
+        "location_m": [
+          -1.0131598711013794,
+          69.71400451660156,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 32,
+        "name": "Spawn 33",
+        "location_m": [
+          98.8006591796875,
+          82.8908462524414,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 33,
+        "name": "Spawn 34",
+        "location_m": [
+          14.130091667175293,
+          69.71400451660156,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 34,
+        "name": "Spawn 35",
+        "location_m": [
+          6.006511211395264,
+          66.28325653076172,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 35,
+        "name": "Spawn 36",
+        "location_m": [
+          -7.966956615447998,
+          66.28325653076172,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 36,
+        "name": "Spawn 37",
+        "location_m": [
+          67.65974426269531,
+          69.8227767944336,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 37,
+        "name": "Spawn 38",
+        "location_m": [
+          79.05529022216797,
+          69.8227767944336,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 38,
+        "name": "Spawn 39",
+        "location_m": [
+          73.63292694091797,
+          66.35848999023438,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 39,
+        "name": "Spawn 40",
+        "location_m": [
+          61.60259246826172,
+          66.35848999023438,
+          0.5999987721443176
+        ]
+      },
+      {
+        "index": 40,
+        "name": "Spawn 41",
+        "location_m": [
+          106.02881622314453,
+          67.41998291015625,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 41,
+        "name": "Spawn 42",
+        "location_m": [
+          109.50276184082031,
+          71.24378967285156,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 42,
+        "name": "Spawn 43",
+        "location_m": [
+          106.00283813476562,
+          92.81285095214844,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 43,
+        "name": "Spawn 44",
+        "location_m": [
+          40.38964080810547,
+          41.94549560546875,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 44,
+        "name": "Spawn 45",
+        "location_m": [
+          109.52326965332031,
+          89.83672332763672,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 45,
+        "name": "Spawn 46",
+        "location_m": [
+          65.23527526855469,
+          13.414804458618164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 46,
+        "name": "Spawn 47",
+        "location_m": [
+          62.02554702758789,
+          16.90589141845703,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 47,
+        "name": "Spawn 48",
+        "location_m": [
+          45.382850646972656,
+          13.414804458618164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 48,
+        "name": "Spawn 49",
+        "location_m": [
+          43.37312316894531,
+          16.90922737121582,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 49,
+        "name": "Spawn 50",
+        "location_m": [
+          15.143111228942871,
+          16.681333541870117,
+          0.699999988079071
+        ]
+      },
+      {
+        "index": 50,
+        "name": "Spawn 51",
+        "location_m": [
+          20.45281219482422,
+          13.196090698242188,
+          0.699999988079071
+        ]
+      },
+      {
+        "index": 51,
+        "name": "Spawn 52",
+        "location_m": [
+          -20.11511993408203,
+          16.749099731445312,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 52,
+        "name": "Spawn 53",
+        "location_m": [
+          -17.10540199279785,
+          13.25745677947998,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 53,
+        "name": "Spawn 54",
+        "location_m": [
+          -0.7641560435295105,
+          24.61313247680664,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 54,
+        "name": "Spawn 55",
+        "location_m": [
+          19.35021209716797,
+          137.4599609375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 55,
+        "name": "Spawn 56",
+        "location_m": [
+          -3.973867654800415,
+          28.104215621948242,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 56,
+        "name": "Spawn 57",
+        "location_m": [
+          19.600942611694336,
+          24.611188888549805,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 57,
+        "name": "Spawn 58",
+        "location_m": [
+          17.091217041015625,
+          28.104215621948242,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 58,
+        "name": "Spawn 59",
+        "location_m": [
+          77.00810241699219,
+          24.849666595458984,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 59,
+        "name": "Spawn 60",
+        "location_m": [
+          74.79875183105469,
+          28.34353256225586,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 60,
+        "name": "Spawn 61",
+        "location_m": [
+          10.912545204162598,
+          -57.40138626098633,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 61,
+        "name": "Spawn 62",
+        "location_m": [
+          7.4111151695251465,
+          -60.89999771118164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 62,
+        "name": "Spawn 63",
+        "location_m": [
+          106.51315307617188,
+          -21.554595947265625,
+          0.8999999761581421
+        ]
+      },
+      {
+        "index": 63,
+        "name": "Spawn 64",
+        "location_m": [
+          109.9569091796875,
+          -27.333675384521484,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 64,
+        "name": "Spawn 65",
+        "location_m": [
+          30.018199920654297,
+          133.94720458984375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 65,
+        "name": "Spawn 66",
+        "location_m": [
+          109.94696807861328,
+          -17.187952041625977,
+          0.5999987721443176
+        ]
+      },
+      {
+        "index": 66,
+        "name": "Spawn 67",
+        "location_m": [
+          -6.554497718811035,
+          137.2259521484375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 67,
+        "name": "Spawn 68",
+        "location_m": [
+          -41.85398864746094,
+          -30.438610076904297,
+          0.6000707745552063
+        ]
+      },
+      {
+        "index": 68,
+        "name": "Spawn 69",
+        "location_m": [
+          -52.07392120361328,
+          82.65496826171875,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 69,
+        "name": "Spawn 70",
+        "location_m": [
+          -28.581729888916016,
+          140.53555297851562,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 70,
+        "name": "Spawn 71",
+        "location_m": [
+          -18.385923385620117,
+          130.21006774902344,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 71,
+        "name": "Spawn 72",
+        "location_m": [
+          -9.875875473022461,
+          -57.55167007446289,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 72,
+        "name": "Spawn 73",
+        "location_m": [
+          11.176283836364746,
+          -64.39876556396484,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 73,
+        "name": "Spawn 74",
+        "location_m": [
+          -15.407496452331543,
+          133.7284698486328,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 74,
+        "name": "Spawn 75",
+        "location_m": [
+          14.274852752685547,
+          -67.89999389648438,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 75,
+        "name": "Spawn 76",
+        "location_m": [
+          -110.76443481445312,
+          46.66007614135742,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 76,
+        "name": "Spawn 77",
+        "location_m": [
+          99.07855987548828,
+          42.14179992675781,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 77,
+        "name": "Spawn 78",
+        "location_m": [
+          -78.03414916992188,
+          12.967159271240234,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 78,
+        "name": "Spawn 79",
+        "location_m": [
+          -71.26968383789062,
+          132.3148956298828,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 79,
+        "name": "Spawn 80",
+        "location_m": [
+          -41.66887664794922,
+          48.905540466308594,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 80,
+        "name": "Spawn 81",
+        "location_m": [
+          -87.27606201171875,
+          24.441530227661133,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 81,
+        "name": "Spawn 82",
+        "location_m": [
+          -5.78348970413208,
+          -64.5486831665039,
+          0.6000048518180847
+        ]
+      },
+      {
+        "index": 82,
+        "name": "Spawn 83",
+        "location_m": [
+          -27.800329208374023,
+          -61.2840461730957,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 83,
+        "name": "Spawn 84",
+        "location_m": [
+          -27.16025161743164,
+          137.04421997070312,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 84,
+        "name": "Spawn 85",
+        "location_m": [
+          52.78997039794922,
+          69.8227767944336,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 85,
+        "name": "Spawn 86",
+        "location_m": [
+          -89.88578796386719,
+          27.93427848815918,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 86,
+        "name": "Spawn 87",
+        "location_m": [
+          -66.79419708251953,
+          12.99838924407959,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 87,
+        "name": "Spawn 88",
+        "location_m": [
+          106.01924896240234,
+          50.86931228637695,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 88,
+        "name": "Spawn 89",
+        "location_m": [
+          21.630592346191406,
+          140.97271728515625,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 89,
+        "name": "Spawn 90",
+        "location_m": [
+          -52.330810546875,
+          -14.039613723754883,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 90,
+        "name": "Spawn 91",
+        "location_m": [
+          -64.10392761230469,
+          16.505887985229492,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 91,
+        "name": "Spawn 92",
+        "location_m": [
+          -76.66610717773438,
+          24.471010208129883,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 92,
+        "name": "Spawn 93",
+        "location_m": [
+          99.43485260009766,
+          -19.65771484375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 93,
+        "name": "Spawn 94",
+        "location_m": [
+          -25.51629638671875,
+          24.613134384155273,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 94,
+        "name": "Spawn 95",
+        "location_m": [
+          -79.27583312988281,
+          27.96375846862793,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 95,
+        "name": "Spawn 96",
+        "location_m": [
+          -45.34004592895508,
+          -25.565021514892578,
+          0.6000707745552063
+        ]
+      },
+      {
+        "index": 96,
+        "name": "Spawn 97",
+        "location_m": [
+          -75.3438720703125,
+          16.47465705871582,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 97,
+        "name": "Spawn 98",
+        "location_m": [
+          44.02894973754883,
+          52.54869842529297,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 98,
+        "name": "Spawn 99",
+        "location_m": [
+          109.50276184082031,
+          53.29315185546875,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 99,
+        "name": "Spawn 100",
+        "location_m": [
+          -52.310935974121094,
+          -1.5852383375167847,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 100,
+        "name": "Spawn 101",
+        "location_m": [
+          -106.68672943115234,
+          -4.847458362579346,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 101,
+        "name": "Spawn 102",
+        "location_m": [
+          -28.72602081298828,
+          28.104217529296875,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 102,
+        "name": "Spawn 103",
+        "location_m": [
+          -48.81998825073242,
+          -4.795074939727783,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 103,
+        "name": "Spawn 104",
+        "location_m": [
+          -45.31125259399414,
+          -1.6943949460983276,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 104,
+        "name": "Spawn 105",
+        "location_m": [
+          -41.82510757446289,
+          -6.604220867156982,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 105,
+        "name": "Spawn 106",
+        "location_m": [
+          83.07522583007812,
+          13.414804458618164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 106,
+        "name": "Spawn 107",
+        "location_m": [
+          -68.73516845703125,
+          129.30384826660156,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 107,
+        "name": "Spawn 108",
+        "location_m": [
+          59.81299591064453,
+          24.850223541259766,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 108,
+        "name": "Spawn 109",
+        "location_m": [
+          -52.186737060546875,
+          42.56512451171875,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 109,
+        "name": "Spawn 110",
+        "location_m": [
+          -67.0452880859375,
+          -68.69316864013672,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 110,
+        "name": "Spawn 111",
+        "location_m": [
+          -48.83995056152344,
+          -17.213199615478516,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 111,
+        "name": "Spawn 112",
+        "location_m": [
+          -45.317440032958984,
+          -11.64532470703125,
+          0.6000024080276489
+        ]
+      },
+      {
+        "index": 112,
+        "name": "Spawn 113",
+        "location_m": [
+          102.56617736816406,
+          43.965667724609375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 113,
+        "name": "Spawn 114",
+        "location_m": [
+          -9.175959587097168,
+          140.70989990234375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 114,
+        "name": "Spawn 115",
+        "location_m": [
+          29.235719680786133,
+          16.765228271484375,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 115,
+        "name": "Spawn 116",
+        "location_m": [
+          -41.8338623046875,
+          -16.555164337158203,
+          0.6000024080276489
+        ]
+      },
+      {
+        "index": 116,
+        "name": "Spawn 117",
+        "location_m": [
+          -48.67435073852539,
+          46.95527267456055,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 117,
+        "name": "Spawn 118",
+        "location_m": [
+          80.26549530029297,
+          16.90700340270996,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 118,
+        "name": "Spawn 119",
+        "location_m": [
+          27.14229393005371,
+          66.28325653076172,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 119,
+        "name": "Spawn 120",
+        "location_m": [
+          57.40364456176758,
+          28.34353256225586,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 120,
+        "name": "Spawn 121",
+        "location_m": [
+          -103.21614074707031,
+          -2.2083921432495117,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 121,
+        "name": "Spawn 122",
+        "location_m": [
+          -64.58186340332031,
+          -65.16736602783203,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 122,
+        "name": "Spawn 123",
+        "location_m": [
+          -48.565467834472656,
+          85.6451187133789,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 123,
+        "name": "Spawn 124",
+        "location_m": [
+          -13.339423179626465,
+          -61.05009078979492,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 124,
+        "name": "Spawn 125",
+        "location_m": [
+          -27.022132873535156,
+          69.71400451660156,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 125,
+        "name": "Spawn 126",
+        "location_m": [
+          -114.23277282714844,
+          43.821014404296875,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 126,
+        "name": "Spawn 127",
+        "location_m": [
+          -52.13356018066406,
+          -40.1802978515625,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 127,
+        "name": "Spawn 128",
+        "location_m": [
+          102.98018646240234,
+          -22.705795288085938,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 128,
+        "name": "Spawn 129",
+        "location_m": [
+          32.33772277832031,
+          130.46006774902344,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 129,
+        "name": "Spawn 130",
+        "location_m": [
+          -41.491477966308594,
+          111.9452896118164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 130,
+        "name": "Spawn 131",
+        "location_m": [
+          -44.98299789428711,
+          114.95514678955078,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 131,
+        "name": "Spawn 132",
+        "location_m": [
+          109.91348266601562,
+          -6.925446510314941,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 132,
+        "name": "Spawn 133",
+        "location_m": [
+          106.3773422241211,
+          -1.6494430303573608,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 133,
+        "name": "Spawn 134",
+        "location_m": [
+          102.31767272949219,
+          80.41472625732422,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 134,
+        "name": "Spawn 135",
+        "location_m": [
+          32.04544448852539,
+          13.273029327392578,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 135,
+        "name": "Spawn 136",
+        "location_m": [
+          -48.6427001953125,
+          -43.35388946533203,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 136,
+        "name": "Spawn 137",
+        "location_m": [
+          85.98224639892578,
+          66.35848999023438,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 137,
+        "name": "Spawn 138",
+        "location_m": [
+          -45.149696350097656,
+          55.715389251708984,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 138,
+        "name": "Spawn 139",
+        "location_m": [
+          -52.330810546875,
+          -28.861330032348633,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 139,
+        "name": "Spawn 140",
+        "location_m": [
+          -48.83995056152344,
+          -32.03491973876953,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 140,
+        "name": "Spawn 141",
+        "location_m": [
+          -41.7498779296875,
+          -41.37368392944336,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 141,
+        "name": "Spawn 142",
+        "location_m": [
+          -45.23593521118164,
+          -36.50009536743164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 142,
+        "name": "Spawn 143",
+        "location_m": [
+          102.93003845214844,
+          -9.381519317626953,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 143,
+        "name": "Spawn 144",
+        "location_m": [
+          26.382587432861328,
+          -57.40138626098633,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 144,
+        "name": "Spawn 145",
+        "location_m": [
+          22.88115692138672,
+          -60.89999771118164,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 145,
+        "name": "Spawn 146",
+        "location_m": [
+          -15.448323249816895,
+          -68.00706481933594,
+          0.6000048518180847
+        ]
+      },
+      {
+        "index": 146,
+        "name": "Spawn 147",
+        "location_m": [
+          -18.782678604125977,
+          -64.70809173583984,
+          0.9000048637390137
+        ]
+      },
+      {
+        "index": 147,
+        "name": "Spawn 148",
+        "location_m": [
+          29.89404296875,
+          -64.39876556396484,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 148,
+        "name": "Spawn 149",
+        "location_m": [
+          32.992610931396484,
+          -67.89999389648438,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 149,
+        "name": "Spawn 150",
+        "location_m": [
+          47.55704879760742,
+          -57.2252197265625,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 150,
+        "name": "Spawn 151",
+        "location_m": [
+          44.055625915527344,
+          -60.72383117675781,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 151,
+        "name": "Spawn 152",
+        "location_m": [
+          54.46977233886719,
+          -64.3486328125,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 152,
+        "name": "Spawn 153",
+        "location_m": [
+          57.56834030151367,
+          -67.849853515625,
+          0.5999999642372131
+        ]
+      },
+      {
+        "index": 153,
+        "name": "Spawn 154",
+        "location_m": [
+          -2.647038221359253,
+          -68.04972076416016,
+          0.6000048518180847
+        ]
+      },
+      {
+        "index": 154,
+        "name": "Spawn 155",
+        "location_m": [
+          106.41629028320312,
+          -12.711931228637695,
+          0.5999987721443176
+        ]
+      }
+    ],
+    "simulation_hz": 20,
+    "camera_view": "front",
+    "camera_resolution": "640x360",
+    "camera_fov": 90,
+    "camera_postprocess": false,
+    "camera_motion_blur": 0.0,
+    "camera_bloom": 0.0,
+    "weather": {
+      "cloudiness": 5.0,
+      "precipitation": 0.0,
+      "wetness": 0.0,
+      "fog_density": 2.0,
+      "sun_altitude_angle": 45.0,
+      "sun_azimuth_angle": -1.0
+    },
+    "weather_preset": "ClearNoon",
+    "weather_presets": [
+      "ClearNoon",
+      "CloudyNoon",
+      "WetNoon",
+      "WetCloudyNoon",
+      "MidRainyNoon",
+      "HardRainNoon",
+      "SoftRainNoon",
+      "ClearSunset",
+      "CloudySunset",
+      "WetSunset",
+      "HardRainSunset"
+    ],
+    "weather_preset_values": {
+      "ClearNoon": {
+        "cloudiness": 5.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 2.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "CloudyNoon": {
+        "cloudiness": 60.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 3.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "WetNoon": {
+        "cloudiness": 5.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 3.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "WetCloudyNoon": {
+        "cloudiness": 60.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 3.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "MidRainyNoon": {
+        "cloudiness": 60.0,
+        "precipitation": 60.0,
+        "wetness": 0.0,
+        "fog_density": 3.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "HardRainNoon": {
+        "cloudiness": 100.0,
+        "precipitation": 100.0,
+        "wetness": 0.0,
+        "fog_density": 7.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "SoftRainNoon": {
+        "cloudiness": 20.0,
+        "precipitation": 30.0,
+        "wetness": 0.0,
+        "fog_density": 3.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "ClearSunset": {
+        "cloudiness": 5.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 2.0,
+        "sun_altitude_angle": 15.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "CloudySunset": {
+        "cloudiness": 60.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 3.0,
+        "sun_altitude_angle": 15.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "WetSunset": {
+        "cloudiness": 5.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 2.0,
+        "sun_altitude_angle": 15.0,
+        "sun_azimuth_angle": -1.0
+      },
+      "HardRainSunset": {
+        "cloudiness": 100.0,
+        "precipitation": 100.0,
+        "wetness": 0.0,
+        "fog_density": 7.0,
+        "sun_altitude_angle": 15.0,
+        "sun_azimuth_angle": -1.0
+      }
+    },
+    "next_launch": {
+      "quality": "Epic",
+      "resolution": "1920x1080"
+    },
+    "traffic_plan": {
+      "vehicle_count": 19,
+      "speed_min_kmh": 20,
+      "speed_max_kmh": 40,
+      "seed": 42
+    },
+    "population_saved": {
+      "vehicle_count": 40,
+      "pedestrian_count": 30,
+      "speed_behavior": "NORMAL",
+      "seed": 2589,
+      "fast_walk_percent": 10,
+      "driver_behavior": "UNREGULATED",
+      "light_compliance_percent": 20,
+      "world_profile": "VISUAL_DEMO",
+      "crossing_percent": 15
+    },
+    "population": {
+      "frame_id": 229,
+      "requested": {
+        "vehicle_count": 40,
+        "pedestrian_count": 30,
+        "speed_behavior": "NORMAL",
+        "seed": 2589,
+        "fast_walk_percent": 10,
+        "driver_behavior": "UNREGULATED",
+        "light_compliance_percent": 20,
+        "world_profile": "VISUAL_DEMO",
+        "crossing_percent": 15
+      },
+      "actual": {
+        "vehicles": 40,
+        "pedestrians": 30,
+        "controllers": 30,
+        "walkers_active": 28
+      },
+      "npc_spawned": 40,
+      "npc_failed": 0,
+      "walkers_spawned": 30,
+      "walkers_failed": 0,
+      "traffic_manager_connected": true,
+      "traffic_manager_port": 8050,
+      "desired_speed_difference_percent": 15.0,
+      "vehicle_ids": [
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71
+      ],
+      "walker_ids": [
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101
+      ],
+      "controller_ids": [
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ],
+      "errors": [],
+      "walkers_lost": 0,
+      "vehicles_removed_native": 0,
+      "behavior": "UNREGULATED",
+      "driver_profiles": {
+        "32": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.4252152265425475,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 11.66181561339117,
+          "ordinal": 0
+        },
+        "33": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.385329566713461,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 12.594394881123133,
+          "ordinal": 1
+        },
+        "34": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.503649698754713,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 12.199390485222875,
+          "ordinal": 2
+        },
+        "35": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.512379930515031,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 12.746986663080214,
+          "ordinal": 3
+        },
+        "36": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.6180970841393947,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 10.135924535976354,
+          "ordinal": 4
+        },
+        "37": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.5126243611661105,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 13.352011668752986,
+          "ordinal": 5
+        },
+        "38": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.295938105845745,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 3.6756621859533283,
+          "ordinal": 6
+        },
+        "39": {
+          "name": "BUSY",
+          "following_distance_m": 2.0316686938311395,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 16.588677376246874,
+          "ordinal": 7
+        },
+        "40": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.1031502281383145,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 4.297114126816669,
+          "ordinal": 8
+        },
+        "41": {
+          "name": "NORMAL",
+          "following_distance_m": 3.7745195083937713,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 20.197914212770375,
+          "ordinal": 9
+        },
+        "42": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.2323818680017111,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 8.621588666341173,
+          "ordinal": 10
+        },
+        "43": {
+          "name": "BUSY",
+          "following_distance_m": 2.018753048133848,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 13.682982478285624,
+          "ordinal": 11
+        },
+        "44": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.161334644056709,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 7.807342777729172,
+          "ordinal": 12
+        },
+        "45": {
+          "name": "BUSY",
+          "following_distance_m": 1.8937412239421103,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 16.342414529065792,
+          "ordinal": 13
+        },
+        "46": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.2297248268592005,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 6.967149528320475,
+          "ordinal": 14
+        },
+        "47": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.307167213713055,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 7.6976785551341775,
+          "ordinal": 15
+        },
+        "48": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.2770877308660158,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 5.179848026781904,
+          "ordinal": 16
+        },
+        "49": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.173812042248429,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 6.503945162829107,
+          "ordinal": 17
+        },
+        "50": {
+          "name": "NORMAL",
+          "following_distance_m": 3.410881190156748,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 17.42444209896238,
+          "ordinal": 18
+        },
+        "51": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.6105021699594824,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 13.088638904547036,
+          "ordinal": 19
+        },
+        "52": {
+          "name": "BUSY",
+          "following_distance_m": 1.9702176099072233,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 11.270998601367872,
+          "ordinal": 20
+        },
+        "53": {
+          "name": "BUSY",
+          "following_distance_m": 1.9159651652699325,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 15.06565607364565,
+          "ordinal": 21
+        },
+        "54": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.2447667489162637,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 8.322719185615732,
+          "ordinal": 22
+        },
+        "55": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.1620198358164004,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 9.000330205469853,
+          "ordinal": 23
+        },
+        "56": {
+          "name": "BUSY",
+          "following_distance_m": 2.1300662776139765,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 18.170009291628638,
+          "ordinal": 24
+        },
+        "57": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.6280277736352793,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 12.871951785453138,
+          "ordinal": 25
+        },
+        "58": {
+          "name": "NORMAL",
+          "following_distance_m": 3.8216765029305506,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 20.80972977713212,
+          "ordinal": 26
+        },
+        "59": {
+          "name": "NORMAL",
+          "following_distance_m": 3.817358542765465,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 17.68541565963101,
+          "ordinal": 27
+        },
+        "60": {
+          "name": "NORMAL",
+          "following_distance_m": 3.7732705379083233,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 17.373882705205922,
+          "ordinal": 28
+        },
+        "61": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.2016706508104693,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 4.994362372993021,
+          "ordinal": 29
+        },
+        "62": {
+          "name": "BUSY",
+          "following_distance_m": 1.9391873529257806,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 16.23459611624457,
+          "ordinal": 30
+        },
+        "63": {
+          "name": "NORMAL",
+          "following_distance_m": 3.5951934751328327,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 22.809103712530614,
+          "ordinal": 31
+        },
+        "64": {
+          "name": "BUSY",
+          "following_distance_m": 1.9101840443053966,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 13.012051620082367,
+          "ordinal": 32
+        },
+        "65": {
+          "name": "BUSY",
+          "following_distance_m": 2.1937318770922483,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 17.340203613052893,
+          "ordinal": 33
+        },
+        "66": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.6138008269073345,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 14.272308433471748,
+          "ordinal": 34
+        },
+        "67": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.1372763823371617,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 7.753726047491161,
+          "ordinal": 35
+        },
+        "68": {
+          "name": "NORMAL",
+          "following_distance_m": 3.715653027933157,
+          "lane_change_percent": 0.0,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 22.723374750053896,
+          "ordinal": 36
+        },
+        "69": {
+          "name": "UNREGULATED",
+          "following_distance_m": 1.3575992609578975,
+          "lane_change_percent": 0.12,
+          "light_violation_percent": 20.0,
+          "sign_violation_percent": 10.0,
+          "speed_difference_percent": 11.444130851833583,
+          "ordinal": 37
+        },
+        "70": {
+          "name": "BUSY",
+          "following_distance_m": 1.803363642129874,
+          "lane_change_percent": 0.08,
+          "light_violation_percent": 0.0,
+          "sign_violation_percent": 0.0,
+          "speed_difference_percent": 12.736412555919063,
+          "ordinal": 38
+        },
+        "71": {
+          "name": "AGGRESSIVE",
+          "following_distance_m": 1.2097451339539849,
+          "lane_change_percent": 0.18,
+          "light_violation_percent": 5.0,
+          "sign_violation_percent": 2.0,
+          "speed_difference_percent": 8.075241023034692,
+          "ordinal": 39
+        }
+      },
+      "local_counts": {
+        "vehicles_120m": 33,
+        "walkers_120m": 27
+      },
+      "recycled_vehicles": 0,
+      "recycled_walkers": 0,
+      "activity_counts": {
+        "WALKING": 26,
+        "WAITING": 0,
+        "CROSSING": 0,
+        "IDLE": 2,
+        "RESELECTING_DESTINATION": 2
+      },
+      "pedestrian_cross_factor": 0.15,
+      "walker_invincible": true,
+      "destinations": "NATIVE_SIDEWALK_WITH_BOUNDED_OPTIONAL_CROSSINGS"
+    },
+    "traffic_speed_mapping": {
+      "SLOW": 30.0,
+      "NORMAL": 15.0,
+      "FAST": 0.0
+    },
+    "traffic_active": true,
+    "graphics_apply": "RESTART_REQUIRED",
+    "capabilities": {
+      "camera_view": "LIVE",
+      "camera_resolution": "LIVE_STOP_REQUIRED",
+      "camera_effects": "LIVE_STOP_REQUIRED_LOW_MAY_IGNORE",
+      "weather": "LIVE",
+      "vehicle": "LIVE_STOP_REQUIRED",
+      "spawn_index": "LIVE_STOP_REQUIRED",
+      "simulation_hz": "LIVE_STOP_REQUIRED",
+      "population": "LIVE_EXPLICIT_APPLY",
+      "next_launch": "NEXT-LAUNCH",
+      "render_fps": "NOT IMPLEMENTED",
+      "nearby_actors": "DISPLAY-ONLY",
+      "navigation": "EXPLICIT_BASIC_AGENT_JOURNEY"
+    },
+    "active_launch": {
+      "quality": "Low",
+      "resolution": "1280x720",
+      "offscreen": true,
+      "renderer": "D3D12",
+      "source": "VERIFIED_NATIVE_PROCESS"
+    },
+    "camera_effects": {
+      "supported": [
+        "camera_postprocess",
+        "camera_motion_blur",
+        "camera_bloom"
+      ],
+      "note": "Quality Low may disable image effects regardless of saved values"
+    }
+  },
+  "initial_inventory": {
+    "vehicles": 41,
+    "walkers": 30,
+    "controllers": 30,
+    "sensors": 7
+  },
+  "population_admission": {
+    "frame_id": 228,
+    "requested": {
+      "vehicle_count": 40,
+      "pedestrian_count": 30,
+      "speed_behavior": "NORMAL",
+      "seed": 2589,
+      "fast_walk_percent": 10,
+      "driver_behavior": "UNREGULATED",
+      "light_compliance_percent": 20,
+      "world_profile": "VISUAL_DEMO",
+      "crossing_percent": 15
+    },
+    "actual": {
+      "vehicles": 40,
+      "pedestrians": 30,
+      "controllers": 30,
+      "walkers_active": 27
+    },
+    "npc_spawned": 40,
+    "npc_failed": 0,
+    "walkers_spawned": 30,
+    "walkers_failed": 0,
+    "traffic_manager_connected": true,
+    "traffic_manager_port": 8050,
+    "desired_speed_difference_percent": 15.0,
+    "vehicle_ids": [
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "walker_ids": [
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101
+    ],
+    "controller_ids": [
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131
+    ],
+    "errors": [],
+    "walkers_lost": 0,
+    "vehicles_removed_native": 0,
+    "behavior": "UNREGULATED",
+    "driver_profiles": {
+      "32": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.4252152265425475,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 11.66181561339117,
+        "ordinal": 0
+      },
+      "33": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.385329566713461,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 12.594394881123133,
+        "ordinal": 1
+      },
+      "34": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.503649698754713,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 12.199390485222875,
+        "ordinal": 2
+      },
+      "35": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.512379930515031,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 12.746986663080214,
+        "ordinal": 3
+      },
+      "36": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.6180970841393947,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 10.135924535976354,
+        "ordinal": 4
+      },
+      "37": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.5126243611661105,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 13.352011668752986,
+        "ordinal": 5
+      },
+      "38": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.295938105845745,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 3.6756621859533283,
+        "ordinal": 6
+      },
+      "39": {
+        "name": "BUSY",
+        "following_distance_m": 2.0316686938311395,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 16.588677376246874,
+        "ordinal": 7
+      },
+      "40": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.1031502281383145,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 4.297114126816669,
+        "ordinal": 8
+      },
+      "41": {
+        "name": "NORMAL",
+        "following_distance_m": 3.7745195083937713,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 20.197914212770375,
+        "ordinal": 9
+      },
+      "42": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.2323818680017111,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 8.621588666341173,
+        "ordinal": 10
+      },
+      "43": {
+        "name": "BUSY",
+        "following_distance_m": 2.018753048133848,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 13.682982478285624,
+        "ordinal": 11
+      },
+      "44": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.161334644056709,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 7.807342777729172,
+        "ordinal": 12
+      },
+      "45": {
+        "name": "BUSY",
+        "following_distance_m": 1.8937412239421103,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 16.342414529065792,
+        "ordinal": 13
+      },
+      "46": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.2297248268592005,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 6.967149528320475,
+        "ordinal": 14
+      },
+      "47": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.307167213713055,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 7.6976785551341775,
+        "ordinal": 15
+      },
+      "48": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.2770877308660158,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 5.179848026781904,
+        "ordinal": 16
+      },
+      "49": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.173812042248429,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 6.503945162829107,
+        "ordinal": 17
+      },
+      "50": {
+        "name": "NORMAL",
+        "following_distance_m": 3.410881190156748,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 17.42444209896238,
+        "ordinal": 18
+      },
+      "51": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.6105021699594824,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 13.088638904547036,
+        "ordinal": 19
+      },
+      "52": {
+        "name": "BUSY",
+        "following_distance_m": 1.9702176099072233,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 11.270998601367872,
+        "ordinal": 20
+      },
+      "53": {
+        "name": "BUSY",
+        "following_distance_m": 1.9159651652699325,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 15.06565607364565,
+        "ordinal": 21
+      },
+      "54": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.2447667489162637,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 8.322719185615732,
+        "ordinal": 22
+      },
+      "55": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.1620198358164004,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 9.000330205469853,
+        "ordinal": 23
+      },
+      "56": {
+        "name": "BUSY",
+        "following_distance_m": 2.1300662776139765,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 18.170009291628638,
+        "ordinal": 24
+      },
+      "57": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.6280277736352793,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 12.871951785453138,
+        "ordinal": 25
+      },
+      "58": {
+        "name": "NORMAL",
+        "following_distance_m": 3.8216765029305506,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 20.80972977713212,
+        "ordinal": 26
+      },
+      "59": {
+        "name": "NORMAL",
+        "following_distance_m": 3.817358542765465,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 17.68541565963101,
+        "ordinal": 27
+      },
+      "60": {
+        "name": "NORMAL",
+        "following_distance_m": 3.7732705379083233,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 17.373882705205922,
+        "ordinal": 28
+      },
+      "61": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.2016706508104693,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 4.994362372993021,
+        "ordinal": 29
+      },
+      "62": {
+        "name": "BUSY",
+        "following_distance_m": 1.9391873529257806,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 16.23459611624457,
+        "ordinal": 30
+      },
+      "63": {
+        "name": "NORMAL",
+        "following_distance_m": 3.5951934751328327,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 22.809103712530614,
+        "ordinal": 31
+      },
+      "64": {
+        "name": "BUSY",
+        "following_distance_m": 1.9101840443053966,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 13.012051620082367,
+        "ordinal": 32
+      },
+      "65": {
+        "name": "BUSY",
+        "following_distance_m": 2.1937318770922483,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 17.340203613052893,
+        "ordinal": 33
+      },
+      "66": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.6138008269073345,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 14.272308433471748,
+        "ordinal": 34
+      },
+      "67": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.1372763823371617,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 7.753726047491161,
+        "ordinal": 35
+      },
+      "68": {
+        "name": "NORMAL",
+        "following_distance_m": 3.715653027933157,
+        "lane_change_percent": 0.0,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 22.723374750053896,
+        "ordinal": 36
+      },
+      "69": {
+        "name": "UNREGULATED",
+        "following_distance_m": 1.3575992609578975,
+        "lane_change_percent": 0.12,
+        "light_violation_percent": 20.0,
+        "sign_violation_percent": 10.0,
+        "speed_difference_percent": 11.444130851833583,
+        "ordinal": 37
+      },
+      "70": {
+        "name": "BUSY",
+        "following_distance_m": 1.803363642129874,
+        "lane_change_percent": 0.08,
+        "light_violation_percent": 0.0,
+        "sign_violation_percent": 0.0,
+        "speed_difference_percent": 12.736412555919063,
+        "ordinal": 38
+      },
+      "71": {
+        "name": "AGGRESSIVE",
+        "following_distance_m": 1.2097451339539849,
+        "lane_change_percent": 0.18,
+        "light_violation_percent": 5.0,
+        "sign_violation_percent": 2.0,
+        "speed_difference_percent": 8.075241023034692,
+        "ordinal": 39
+      }
+    },
+    "local_counts": {
+      "vehicles_120m": 33,
+      "walkers_120m": 27
+    },
+    "recycled_vehicles": 0,
+    "recycled_walkers": 0,
+    "activity_counts": {
+      "WALKING": 25,
+      "WAITING": 0,
+      "CROSSING": 0,
+      "IDLE": 3,
+      "RESELECTING_DESTINATION": 2
+    },
+    "pedestrian_cross_factor": 0.15,
+    "walker_invincible": true,
+    "destinations": "NATIVE_SIDEWALK_WITH_BOUNDED_OPTIONAL_CROSSINGS"
+  },
+  "moved_over_half_meter": {
+    "vehicles": 40,
+    "walkers": 28
+  },
+  "within_120m_of_ego": {
+    "vehicles": 34,
+    "walkers": 27
+  },
+  "ego_distance_m": 0.0,
+  "observed_simulation_duration_s": 4.150000061839819,
+  "sensor_registry": {
+    "frontCamera": {
+      "blueprint": "sensor.camera.rgb",
+      "actorId": 25,
+      "mountTransform": {
+        "positionM": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 228,
+      "latestTimestamp": 6.543157637119293,
+      "latestValidData": {
+        "sensor_id": "frontCamera",
+        "kind": "RGB",
+        "frame_id": 228,
+        "timestamp_s": 6.543157637119293,
+        "sensor_timestamp_s": 6.543157637119293,
+        "transform": {
+          "position_m": [
+            56.06834030151367,
+            -67.84923553466797,
+            1.5949480533599854
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 3.141183592046357
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 25,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {},
+        "asset": {
+          "path": "rgb/frontCamera-25-228.jpg",
+          "media_type": "image/jpeg",
+          "byte_count": 102154,
+          "sha256": "5b322c155474347a4cef128756c68f056eb72b44396ae4e10ccb158d2cdd623a"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "width": 640,
+          "height": 360,
+          "fov_deg": 90.0,
+          "source_encoding": "CARLA BGRA8",
+          "jpeg_quality": 95,
+          "encoding": "JPEG RGB (compressed native image)"
+        }
+      },
+      "eventDriven": false
+    },
+    "depth": {
+      "blueprint": "sensor.camera.depth",
+      "actorId": 26,
+      "mountTransform": {
+        "positionM": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 228,
+      "latestTimestamp": 6.543157637119293,
+      "latestValidData": {
+        "sensor_id": "depth",
+        "kind": "DEPTH",
+        "frame_id": 228,
+        "timestamp_s": 6.543157637119293,
+        "sensor_timestamp_s": 6.543157637119293,
+        "transform": {
+          "position_m": [
+            56.06834030151367,
+            -67.84923553466797,
+            1.5949480533599854
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 3.141183592046357
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 26,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {
+          "depth": "m"
+        },
+        "asset": {
+          "path": "depth/depth-26-228.npy",
+          "media_type": "application/x-npy",
+          "byte_count": 921728,
+          "sha256": "a9157feeb92000f905253d5ade8c3edbb7ca238295710051d035409b7ac55c03"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "width": 640,
+          "height": 360,
+          "fov_deg": 90.0,
+          "source_encoding": "CARLA BGRA8",
+          "dtype": "float32",
+          "shape": [
+            360,
+            640
+          ],
+          "encoding": "linear depth metres"
+        }
+      },
+      "eventDriven": false
+    },
+    "radar": {
+      "blueprint": "sensor.other.radar",
+      "actorId": 27,
+      "mountTransform": {
+        "positionM": [
+          2.5,
+          0.0,
+          0.6499999761581421
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 229,
+      "latestTimestamp": 6.593157637864351,
+      "latestValidData": {
+        "sensor_id": "radar",
+        "kind": "RADAR",
+        "frame_id": 229,
+        "timestamp_s": 6.593157637864351,
+        "sensor_timestamp_s": 6.593157637864351,
+        "transform": {
+          "position_m": [
+            55.06834030151367,
+            -67.84883117675781,
+            0.6449481248855591
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 3.141183592046357
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 27,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "detections": [
+            {
+              "depth_m": 43.82366180419922,
+              "azimuth_rad": 0.0489330030977726,
+              "altitude_rad": 0.0020190237555652857,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 36.922203063964844,
+              "azimuth_rad": 0.09301040321588516,
+              "altitude_rad": 0.015610496513545513,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 5.155124187469482,
+              "azimuth_rad": 0.16932842135429382,
+              "altitude_rad": -0.125397726893425,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 18.932575225830078,
+              "azimuth_rad": 0.023728715255856514,
+              "altitude_rad": -0.03406154364347458,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 46.02740478515625,
+              "azimuth_rad": -0.17003682255744934,
+              "altitude_rad": -0.012219923548400402,
+              "velocity_mps": -2.494321584701538
+            },
+            {
+              "depth_m": 47.962093353271484,
+              "azimuth_rad": -0.06594529002904892,
+              "altitude_rad": 0.005375039763748646,
+              "velocity_mps": 3.227881669998169
+            },
+            {
+              "depth_m": 48.35393524169922,
+              "azimuth_rad": 0.008896937593817711,
+              "altitude_rad": -0.013334330171346664,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 5.76816463470459,
+              "azimuth_rad": 0.11036109924316406,
+              "altitude_rad": -0.11201108247041702,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 4.668311595916748,
+              "azimuth_rad": 0.09437950700521469,
+              "altitude_rad": -0.13855451345443726,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 26.031620025634766,
+              "azimuth_rad": -0.11115273088216782,
+              "altitude_rad": -0.02477041631937027,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 10.466001510620117,
+              "azimuth_rad": 0.007316092494875193,
+              "altitude_rad": -0.0616430938243866,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 12.662314414978027,
+              "azimuth_rad": 0.2085220366716385,
+              "altitude_rad": -0.0007353409309871495,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 21.352827072143555,
+              "azimuth_rad": 0.13411346077919006,
+              "altitude_rad": -0.0301995687186718,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 42.17315673828125,
+              "azimuth_rad": 0.07708790153265,
+              "altitude_rad": 0.010825065895915031,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 5.8628129959106445,
+              "azimuth_rad": -0.11721134185791016,
+              "altitude_rad": -0.11019538342952728,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 28.649837493896484,
+              "azimuth_rad": -0.0983419269323349,
+              "altitude_rad": -0.02250632457435131,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 31.578283309936523,
+              "azimuth_rad": -0.24434609711170197,
+              "altitude_rad": -0.018796667456626892,
+              "velocity_mps": -4.062595844268799
+            },
+            {
+              "depth_m": 9.66455078125,
+              "azimuth_rad": 0.05180849879980087,
+              "altitude_rad": -0.0667622834444046,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 35.98544692993164,
+              "azimuth_rad": 0.06929562240839005,
+              "altitude_rad": -0.0163870882242918,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 7.479239463806152,
+              "azimuth_rad": 0.13397787511348724,
+              "altitude_rad": -0.08631216734647751,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 23.672977447509766,
+              "azimuth_rad": 0.07081557810306549,
+              "altitude_rad": -0.027238985523581505,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 34.101280212402344,
+              "azimuth_rad": -0.05559621751308441,
+              "altitude_rad": -0.01890799030661583,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 12.818617820739746,
+              "azimuth_rad": 0.1942991465330124,
+              "altitude_rad": 0.018841026350855827,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 5.57452917098999,
+              "azimuth_rad": -0.12194059789180756,
+              "altitude_rad": -0.1159190908074379,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 16.13716697692871,
+              "azimuth_rad": 0.10705101490020752,
+              "altitude_rad": -0.03996486961841583,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 10.655214309692383,
+              "azimuth_rad": -0.06863827258348465,
+              "altitude_rad": -0.060547102242708206,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 8.276140213012695,
+              "azimuth_rad": 0.21585184335708618,
+              "altitude_rad": -0.07798346877098083,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 7.73801851272583,
+              "azimuth_rad": -0.1857856810092926,
+              "altitude_rad": -0.0834188312292099,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 9.391763687133789,
+              "azimuth_rad": -0.06319059431552887,
+              "altitude_rad": -0.06870441883802414,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 43.789512634277344,
+              "azimuth_rad": 0.03333009034395218,
+              "altitude_rad": -0.014724334701895714,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 7.84019136428833,
+              "azimuth_rad": 0.03597604110836983,
+              "altitude_rad": -0.08232925087213516,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 5.6341423988342285,
+              "azimuth_rad": -0.041222937405109406,
+              "altitude_rad": -0.11468715220689774,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 13.386876106262207,
+              "azimuth_rad": 0.2124163806438446,
+              "altitude_rad": 0.04644208401441574,
+              "velocity_mps": 0.0
+            },
+            {
+              "depth_m": 32.896846771240234,
+              "azimuth_rad": 0.09291922301054001,
+              "altitude_rad": -0.019600344821810722,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 16.587711334228516,
+              "azimuth_rad": 0.09216327965259552,
+              "altitude_rad": -0.03887882083654404,
+              "velocity_mps": -0.0
+            },
+            {
+              "depth_m": 5.334650039672852,
+              "azimuth_rad": 0.11602441221475601,
+              "altitude_rad": -0.12115661054849625,
+              "velocity_mps": -0.0
+            }
+          ]
+        },
+        "units": {
+          "depth_m": "m",
+          "azimuth_rad": "rad",
+          "altitude_rad": "rad",
+          "velocity_mps": "m/s"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 50,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          }
+        }
+      },
+      "eventDriven": false
+    },
+    "lidar": {
+      "blueprint": "sensor.lidar.ray_cast",
+      "actorId": 28,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          1.899999976158142
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 229,
+      "latestTimestamp": 6.593157637864351,
+      "latestValidData": {
+        "sensor_id": "lidar",
+        "kind": "LIDAR",
+        "frame_id": 229,
+        "timestamp_s": 6.593157637864351,
+        "sensor_timestamp_s": 6.593157637864351,
+        "transform": {
+          "position_m": [
+            57.56834030151367,
+            -67.849853515625,
+            1.894948124885559
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 3.141183592046357
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 28,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {
+          "x": "m",
+          "y": "m",
+          "z": "m",
+          "intensity": "unitless"
+        },
+        "asset": {
+          "path": "lidar/lidar-28-229.bin",
+          "media_type": "application/octet-stream",
+          "byte_count": 12272,
+          "sha256": "c1e632d584740637279dc04dd90ada16771da6a7fe88f93c787a6c1c94604c1b"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 50,
+            "channels": 16,
+            "points_per_second": 32000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -30
+          },
+          "point_count": 767,
+          "channels": 16,
+          "horizontal_angle_rad": 0.0,
+          "dtype": "little-endian float32",
+          "columns": [
+            "x",
+            "y",
+            "z",
+            "intensity"
+          ],
+          "coordinate_frame": "sensor-local-x-forward-y-right-z-up"
+        }
+      },
+      "eventDriven": false
+    },
+    "imu": {
+      "blueprint": "sensor.other.imu",
+      "actorId": 29,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 229,
+      "latestTimestamp": 6.593157637864351,
+      "latestValidData": {
+        "sensor_id": "imu",
+        "kind": "IMU",
+        "frame_id": 229,
+        "timestamp_s": 6.593157637864351,
+        "sensor_timestamp_s": 6.593157637864351,
+        "transform": {
+          "position_m": [
+            57.56834030151367,
+            -67.849853515625,
+            -0.005051841493695974
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 3.141183592046357
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 29,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "accelerometer_mps2": [
+            0.0,
+            0.0,
+            9.8100004196167
+          ],
+          "gyroscope_radps": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "compass_rad": 4.711979866027832
+        },
+        "units": {
+          "accelerometer_mps2": "m/s^2",
+          "gyroscope_radps": "rad/s",
+          "compass_rad": "rad"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05
+          }
+        }
+      },
+      "eventDriven": false
+    },
+    "gnss": {
+      "blueprint": "sensor.other.gnss",
+      "actorId": 30,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          1.600000023841858
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 229,
+      "latestTimestamp": 6.593157637864351,
+      "latestValidData": {
+        "sensor_id": "gnss",
+        "kind": "GNSS",
+        "frame_id": 229,
+        "timestamp_s": 6.593157637864351,
+        "sensor_timestamp_s": 6.593157637864351,
+        "transform": {
+          "position_m": [
+            57.56834030151367,
+            -67.849853515625,
+            1.5949480533599854
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 3.141183592046357
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 30,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "latitude_deg": -0.000609749504160383,
+          "longitude_deg": 0.0005173521406209411,
+          "altitude_m": 1.5949480533599854
+        },
+        "units": {
+          "latitude_deg": "deg",
+          "longitude_deg": "deg",
+          "altitude_m": "m"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05
+          }
+        }
+      },
+      "eventDriven": false
+    },
+    "collision": {
+      "blueprint": "sensor.other.collision",
+      "actorId": 31,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.0,
+      "requestedRateHz": null,
+      "latestFrame": null,
+      "latestTimestamp": null,
+      "latestValidData": null,
+      "eventDriven": true
+    }
+  },
+  "status": "PASS"
+}

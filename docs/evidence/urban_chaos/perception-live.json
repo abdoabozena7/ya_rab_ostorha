@@ -1,0 +1,160 @@
+{
+  "source": "REAL_RUNNING_CARLA_WORKER_HTTP_RESULTS",
+  "status": "PASS",
+  "tab_dependency": "The worker is independent of workflow navigation",
+  "samples": [
+    {
+      "status": "RUNNING",
+      "session_id": "0f05d2e059704b809c163f776ed8dff7",
+      "frame_id": 6109,
+      "timestamp_s": 300.59316201880574,
+      "published_at": 1791564796.6935122,
+      "model": "YOLOv8n ONNX 320",
+      "ocr": "English g2 crop-only",
+      "device": "CPU",
+      "threads": 1,
+      "maximum_rate_hz": 1,
+      "inference_ms": 93.99999999732245,
+      "detector_ms": 31.000000002677552,
+      "ocr_ms": 0.0,
+      "cpu_ms": 31.25,
+      "ocr_regions": 0,
+      "source_image_sha256": "80728c616857bec49db622fb5eb490de7bffe93c6a2047fb91e6027196f313b9",
+      "nlp": {
+        "session_id": "0f05d2e059704b809c163f776ed8dff7",
+        "frame_id": 6060,
+        "timestamp_s": 298.1431619822979,
+        "items": []
+      }
+    },
+    {
+      "status": "RUNNING",
+      "session_id": "0f05d2e059704b809c163f776ed8dff7",
+      "frame_id": 6124,
+      "timestamp_s": 301.3431620299816,
+      "published_at": 1791564798.1328838,
+      "model": "YOLOv8n ONNX 320",
+      "ocr": "English g2 crop-only",
+      "device": "CPU",
+      "threads": 1,
+      "maximum_rate_hz": 1,
+      "inference_ms": 531.0000000026776,
+      "detector_ms": 47.00000000593718,
+      "ocr_ms": 421.0000000020955,
+      "cpu_ms": 437.5,
+      "ocr_regions": 2,
+      "source_image_sha256": "c9a16a8ee525b2dbad9dbe30de6fffe598b115921949eed2bb73d867be4c17b2",
+      "nlp": {
+        "session_id": "0f05d2e059704b809c163f776ed8dff7",
+        "frame_id": 6124,
+        "timestamp_s": 301.3431620299816,
+        "items": []
+      }
+    },
+    {
+      "status": "RUNNING",
+      "session_id": "0f05d2e059704b809c163f776ed8dff7",
+      "frame_id": 6136,
+      "timestamp_s": 301.9431620389223,
+      "published_at": 1791564798.6908126,
+      "model": "YOLOv8n ONNX 320",
+      "ocr": "English g2 crop-only",
+      "device": "CPU",
+      "threads": 1,
+      "maximum_rate_hz": 1,
+      "inference_ms": 93.99999999732245,
+      "detector_ms": 30.999999988125637,
+      "ocr_ms": 0.0,
+      "cpu_ms": 46.875,
+      "ocr_regions": 0,
+      "source_image_sha256": "0700a707759f02be5e038211fb82c6caa1d43b72bfac444b2b25e4dd060994d6",
+      "nlp": {
+        "session_id": "0f05d2e059704b809c163f776ed8dff7",
+        "frame_id": 6124,
+        "timestamp_s": 301.3431620299816,
+        "items": []
+      }
+    },
+    {
+      "status": "RUNNING",
+      "session_id": "0f05d2e059704b809c163f776ed8dff7",
+      "frame_id": 6151,
+      "timestamp_s": 302.6931620500982,
+      "published_at": 1791564799.6852212,
+      "model": "YOLOv8n ONNX 320",
+      "ocr": "English g2 crop-only",
+      "device": "CPU",
+      "threads": 1,
+      "maximum_rate_hz": 1,
+      "inference_ms": 77.99999999406282,
+      "detector_ms": 30.999999988125637,
+      "ocr_ms": 0.0,
+      "cpu_ms": 46.875,
+      "ocr_regions": 0,
+      "source_image_sha256": "23c5e34fc085b2922b8104447b4b63eaed6601c596b181e91e9f22dc95f13ba3",
+      "nlp": {
+        "session_id": "0f05d2e059704b809c163f776ed8dff7",
+        "frame_id": 6124,
+        "timestamp_s": 301.3431620299816,
+        "items": []
+      }
+    },
+    {
+      "status": "RUNNING",
+      "session_id": "0f05d2e059704b809c163f776ed8dff7",
+      "frame_id": 6167,
+      "timestamp_s": 303.4931620620191,
+      "published_at": 1791564800.6877759,
+      "model": "YOLOv8n ONNX 320",
+      "ocr": "English g2 crop-only",
+      "device": "CPU",
+      "threads": 1,
+      "maximum_rate_hz": 1,
+      "inference_ms": 93.99999999732245,
+      "detector_ms": 30.999999988125637,
+      "ocr_ms": 0.0,
+      "cpu_ms": 46.875,
+      "ocr_regions": 0,
+      "source_image_sha256": "1eb974b37051515bf566fd8a8ac8fb3c1097cc02747b8fd605ab20d2b87bbbe1",
+      "nlp": {
+        "session_id": "0f05d2e059704b809c163f776ed8dff7",
+        "frame_id": 6124,
+        "timestamp_s": 301.3431620299816,
+        "items": []
+      }
+    },
+    {
+      "status": "RUNNING",
+      "session_id": "0f05d2e059704b809c163f776ed8dff7",
+      "frame_id": 6184,
+      "timestamp_s": 304.3431620746851,
+      "published_at": 1791564801.9694326,
+      "model": "YOLOv8n ONNX 320",
+      "ocr": "English g2 crop-only",
+      "device": "CPU",
+      "threads": 1,
+      "maximum_rate_hz": 1,
+      "inference_ms": 375.0,
+      "detector_ms": 30.999999988125637,
+      "ocr_ms": 282.00000000651926,
+      "cpu_ms": 328.125,
+      "ocr_regions": 2,
+      "source_image_sha256": "e9b6bcb000b37cc2c4950a65055a750ed3958e45d5b357e6a2bb49b00418e644",
+      "nlp": {
+        "session_id": "0f05d2e059704b809c163f776ed8dff7",
+        "frame_id": 6184,
+        "timestamp_s": 304.3431620746851,
+        "items": []
+      }
+    }
+  ],
+  "approximate_admission_intervals_s": [
+    1.0023717880249023,
+    0.9949285984039307,
+    1.010408639907837,
+    0.9865546226501465,
+    1.0006568431854248
+  ],
+  "worker_image_cache_files": 4,
+  "previous_session_cache_pruned": true
+}

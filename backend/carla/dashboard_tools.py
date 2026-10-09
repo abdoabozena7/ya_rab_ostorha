@@ -37,8 +37,8 @@ def validate_settings(data):
                 raise ValueError(f'Weather {name} outside its supported range')
     if 'camera_view' in data and (not isinstance(data['camera_view'],str) or data['camera_view'] not in CAMERA_VIEWS):
         raise ValueError('Unknown camera view')
-    if 'camera_resolution' in data and data['camera_resolution'] not in ('640x360', '800x450'):
-        raise ValueError('Supported camera resolutions: 640x360, 800x450')
+    if 'camera_resolution' in data and data['camera_resolution'] not in ('640x360', '800x450', '1280x720'):
+        raise ValueError('Supported camera resolutions: 640x360, 800x450, 1280x720')
     if 'camera_postprocess' in data and type(data['camera_postprocess']) is not bool:
         raise ValueError('Postprocessing must be boolean')
     for name, low, high in (('camera_fov', 60, 120), ('camera_motion_blur', 0, 1), ('camera_bloom', 0, 2)):

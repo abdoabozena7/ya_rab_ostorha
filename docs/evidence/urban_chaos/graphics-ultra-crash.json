@@ -1,0 +1,8 @@
+{
+  "source": "LOCAL_NATIVE_CARLA_CRASH_CONTEXT",
+  "observed_local_time": "2026-10-09T19:16:08.012106",
+  "matching_attempt": "ULTRA",
+  "crash_type": "Crash",
+  "error": "Unhandled Exception: EXCEPTION_ACCESS_VIOLATION 0x0000019d1c7bb900",
+  "interpretation": "Native access violation. No verified root cause or out-of-memory diagnosis."
+}

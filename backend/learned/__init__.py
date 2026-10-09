@@ -1,1 +1,1 @@
-"""Experimental sequence-aware behavior cloning; not reinforcement learning."""
+"""Compatibility import; implementation lives in backend.learning.supervised."""

@@ -163,7 +163,7 @@ class CarlaSensorManager:
                'bloom_intensity': options.get('camera_bloom', 0)}
         plans = (
             ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount, rgb),
-            ('depth', SensorKind.DEPTH, 'sensor.camera.depth', camera_mount, camera),
+            ('depth', SensorKind.DEPTH, 'sensor.camera.depth', camera_mount, {**camera,'image_size_x':640,'image_size_y':360}),
             ('radar', SensorKind.RADAR, 'sensor.other.radar', api.Transform(api.Location(x=2.5, z=.65)),
              {'sensor_tick': fixed_delta, 'range': 50, 'horizontal_fov': 30, 'vertical_fov': 20, 'points_per_second': 1500}),
             ('lidar', SensorKind.LIDAR, 'sensor.lidar.ray_cast', api.Transform(api.Location(z=1.9)),

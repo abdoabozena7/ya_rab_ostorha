@@ -10,13 +10,18 @@ supervised imitation, not a successful RL policy. RULE remains the startup defau
 .\Start-YA-RAB-OSTORHA.ps1
 ```
 
-The dashboard now includes **WITHOUT SAFETY** and **WITH YA RAB OSTORHA**
-presentation buttons. Each resets and starts the same recorded native front
-obstacle experiment automatically. Both use BasicAgent with its vehicle/light
-checks explicitly disabled for this controlled comparison; normal journeys
-retain their original checks. The protected arm uses the existing validated
-RULE controller. **Stop / Reset demo** restores stopped normal operation.
-See [presentation rehearsal and controls](docs/PRESENTATION_DEMO.md).
+The presentation dashboard defaults to **Urban Chaos**: 40 traffic vehicles,
+30 pedestrians, four native vehicle hazards and two scripted physical crossings.
+**WITHOUT SAFETY** and **WITH YA RAB OSTORHA** reset the same seeded manifest
+and start recording automatically for 60 simulation seconds. RULE protects the
+second arm; BasicAgent research checks are configured equally in both arms.
+**Validated Front Obstacle** remains available. **Stop / Reset** restores a
+populated city with the ego stopped and RULE enabled.
+
+See [presentation actions and module guides](docs/URBAN_CHAOS_PRESENTATION.md)
+and [actual final rehearsal](docs/URBAN_CHAOS_REHEARSAL.md). The white dashboard
+keeps the camera visible, uses Setup → Drive → Results, and offers four actual
+graphics presets. Scene/text analysis is bounded CPU work; no training starts.
 
 This reuses or starts the verified CARLA 0.9.16 installation and dashboard,
 with seven sensors and the vehicle paused. Open Settings to take control;

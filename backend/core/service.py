@@ -77,8 +77,8 @@ class SimulationService:
             self.provider.active_safety_configuration = to_dict(self.active_safety.config)
             self.provider.active_safety_configuration['learned_safety'] = copy.deepcopy(self.active_safety.learned_config)
             if getattr(provider, 'scenario_outcomes_enabled', False):
-                from ..carla.comparison import ComparisonDemo
-                self.comparison = ComparisonDemo(self)
+                factory=getattr(provider,'create_comparison',None)
+                if factory:self.comparison=factory(self)
 
     def set_safety_enabled(self, value):
         with self.lock:
@@ -211,6 +211,7 @@ class SimulationService:
             label='Controlled scenario native run' if environment and environment.get('mode')=='TRAINING' else 'Living city native run'
             self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
                 label, self.name, DataOrigin.REAL_SIMULATION,
+                seed=(environment.get('scenario') or {}).get('random_seed') if environment else None,
                 created_at_utc=datetime.now(timezone.utc).isoformat(), config=self.provider.recording_metadata()))
             if self.comparison and self.comparison.busy:
                 from .recording import BufferedRunRecorder
@@ -434,7 +435,7 @@ class SimulationService:
 
     def set_journey_speed(self, speed_kmh):
         if self.comparison and self.comparison.busy:
-            raise ValueError('Comparison speed is fixed at 28 km/h')
+            raise ValueError('Comparison speed is fixed by the selected scenario')
         speed = finite(speed_kmh)
         if not 5 <= speed <= 30:
             raise ValueError('Journey speed must be 5–30 km/h')
@@ -574,6 +575,11 @@ class SimulationService:
             self.restart_result = {'status':'STOPPING', 'requested':launch}
             self.restart_configuration = self.provider.restart_configuration()
             self.restart_configuration['restart_operation'] = operation
+            self.restart_configuration['previous_camera']=dict(self.provider.camera_settings)
+            if isinstance(value,dict) and 'preset' in value:
+                from ..graphics import camera
+                self.restart_configuration['camera'].update(camera(value['preset']))
+                self.restart_configuration['graphics_preset']=value['preset']
             threading.Thread(target=self._restart_native, args=(launch, previous),
                              name='native-graphics-restart', daemon=True).start()
 
@@ -679,7 +685,8 @@ class SimulationService:
                     'controlExpired': self.now()-self.command_at > self.CONTROL_TTL}
 
     def _environment_snapshot(self):
-        state = getattr(self.provider, 'environment_state', lambda: None)()
+        compact=getattr(self.provider,'operator_environment_state',None)
+        state=compact() if compact else getattr(self.provider,'environment_state',lambda:None)()
         if isinstance(state,dict):
             frames = self.policy_history.snapshot()
             state['observation_status'] = {'status':self.policy_history.status,'history_frames':len(frames),

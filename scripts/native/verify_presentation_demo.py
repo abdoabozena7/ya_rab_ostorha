@@ -15,12 +15,17 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', default='docs/evidence/presentation_demo/native.json')
+    parser.add_argument('--source', default='REAL_CARLA_DASHBOARD_BUTTONS')
+    args = parser.parse_args()
     with urllib.request.urlopen('http://127.0.0.1:8000/api/simulation/state', timeout=10) as response:
         state = json.load(response)
     demo = state['comparisonDemo']
     if set(demo['results']) != {'WITHOUT', 'WITH'}:
         raise RuntimeError('Finish both real dashboard runs before auditing recordings')
-    report = {'source': 'REAL_CARLA_DASHBOARD_BUTTONS', 'tick_owner': 'simulation-worker',
+    report = {'source': args.source, 'tick_owner': 'simulation-worker',
               'initial_conditions_match': demo['initial_conditions_match'], 'runs': {}}
     full_results = []
     for mode, summary in demo['results'].items():
@@ -80,9 +85,9 @@ def main():
         'walkers': len(actors.filter('walker.pedestrian.*')), 'walker_controllers': len(actors.filter('controller.ai.walker'))}
     assert report['actor_inventory'] == {'vehicles': 2, 'sensors': 7, 'walkers': 0, 'walker_controllers': 0}
     report['recording'] = 'PASS'
-    target = ROOT/'docs/evidence/presentation_demo'
-    target.mkdir(parents=True, exist_ok=True)
-    (target/'native.json').write_text(json.dumps(report, indent=2), encoding='utf8')
+    target = ROOT/args.output
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(report, indent=2), encoding='utf8')
     print(json.dumps(report, indent=2))
 
 

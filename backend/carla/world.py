@@ -6,6 +6,7 @@ class CarlaWorld:
         if not 0 < fixed_delta <= .1:
             raise ValueError('fixed_delta_seconds must be > 0 and <= 0.1')
         self.world = world
+        self.map_name=world.get_map().name
         self.previous = world.get_settings()
         self.spectator_transform = world.get_spectator().get_transform()
         if self.previous.synchronous_mode:
@@ -31,7 +32,7 @@ class CarlaWorld:
         return snapshot
 
     def state(self, snapshot):
-        return {'source': 'carla', 'map': self.world.get_map().name,
+        return {'source': 'carla', 'map': self.map_name,
                 'frame': snapshot.frame, 'timestamp': snapshot.timestamp.elapsed_seconds,
                 'fixedDeltaSeconds': self.world.get_settings().fixed_delta_seconds,
                 'synchronous': True, 'paused': self.paused}
