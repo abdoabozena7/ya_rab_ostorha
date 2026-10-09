@@ -45,7 +45,7 @@ class ActiveSafetyTests(unittest.TestCase):
             o, b = case(distance=None); o, reader = scene(o, clear=True)
             s = ActiveSafetySupervisor()
             self.assertIsNone(s.evaluate(o, replace(b, source=source), reader, as_of_timestamp_s=o.timestamp_s))
-            self.assertEqual(s.snapshot()['risk'], 'CLEAR'); self.assertEqual(s.interventions, 0)
+            self.assertEqual(s.snapshot()['risk'], 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED'); self.assertEqual(s.interventions, 0)
 
     def test_missing_returns_remain_unknown_and_brake_through_admission(self):
         o, b = case(distance=None); o, reader = scene(o)

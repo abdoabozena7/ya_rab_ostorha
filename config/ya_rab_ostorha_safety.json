@@ -1,5 +1,5 @@
 {
-  "version": "YA_RAB_OSTORHA_RULE_BASED_V1",
+  "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
   "enabled_by_default": true,
   "teacher": {
     "version": "YA_RAB_OSTORHA_TEACHER_V1",

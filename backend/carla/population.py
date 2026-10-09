@@ -90,6 +90,7 @@ class WorldPopulationManager:
         self.vehicles_removed_native = 0
         self.last_replacement_at = -float('inf')
         self.last_walker_replacement_at = -float('inf')
+        self.walker_spawn_failures=0;self.controller_spawn_failures=0
         self.errors = []
         self.spawn_report = {'npc_spawned': 0, 'npc_failed': 0, 'walkers_spawned': 0, 'walkers_failed': 0}
         self.frame_id = None
@@ -164,7 +165,7 @@ class WorldPopulationManager:
     def clear_traffic(self):
         self.spawn_traffic(0)
 
-    def spawn_pedestrians(self, count, _attempt=0, replacement=False):
+    def spawn_pedestrians(self, count, _attempt=0, replacement=False, _blocked=()):
         if type(count) is not int or not 0 <= count <= 50:
             raise ValueError('Pedestrian count must be 0–50')
         self.config['pedestrian_count'] = count
@@ -183,9 +184,9 @@ class WorldPopulationManager:
             if location is None: continue
             if replacement:
                 ego = self.world.get_actor(self.ego_id)
-                if ego is not None and location.distance(ego.get_location()) < 120.: continue
+                if ego is not None and location.distance(ego.get_location()) < 15.: continue
                 if self._spawn_visible(location,frusta):continue
-            if any(location.distance(previous) < 1.5 for previous in chosen_locations+existing_locations): continue
+            if any(location.distance(previous) < 1.5 for previous in chosen_locations+existing_locations+list(_blocked)): continue
             chosen_locations.append(location)
             bp = self.random.choice(blueprints)
             if bp.has_attribute('is_invincible'): bp.set_attribute('is_invincible', 'true')
@@ -198,22 +199,25 @@ class WorldPopulationManager:
         spawned = []
         for reply, speed, location in zip(self.client.apply_batch_sync(batch, False), speeds, chosen_locations):
             if not reply.error: spawned.append((reply.actor_id, speed, location))
+            else:self.walker_spawn_failures+=1
         controller = library.find('controller.ai.walker')
         replies = self.client.apply_batch_sync([
             self.api.command.SpawnActor(controller, self.api.Transform(), walker_id)
             for walker_id, _, _ in spawned], False) if spawned else []
         for (walker_id, speed, location), reply in zip(spawned, replies):
             if reply.error:
+                self.controller_spawn_failures+=1
                 self._destroy([walker_id])
             else:
                 self.walkers[walker_id] = {'controller_id': reply.actor_id, 'speed': speed, 'started': False,
                                           'ready_at': None, 'destination': None, 'last_retarget': 0., 'seen': False,
                                           'location': location}
+                self.walkers[walker_id].update(admitted_at_frame=self.frame_id,controller_seen=False)
                 self.walkers[walker_id].update(activity='IDLE', wait_until=None, crossing=False)
                 self.spawn_report['walkers_spawned'] += 1
         self.spawn_report['walkers_failed'] = count-len(self.walkers)
         if self.spawn_report['walkers_failed'] and _attempt < 2:
-            self.spawn_pedestrians(count, _attempt+1, replacement)
+            self.spawn_pedestrians(count, _attempt+1, replacement, tuple(_blocked)+tuple(chosen_locations))
 
     def _remove_walker(self, walker_id):
         entry = self.walkers[walker_id]
@@ -393,10 +397,20 @@ class WorldPopulationManager:
                 self.driver_profiles[actor_id] = {**profile, 'ordinal': entry['ordinal']}
                 self.pending_vehicles.remove(actor_id)
         for walker_id, entry in list(self.walkers.items()):
+            if entry.get('admitted_at_frame') is None:entry['admitted_at_frame']=snapshot.frame
             actor = snapshot.find(walker_id)
             controller = self.world.get_actor(entry['controller_id'])
+            controller_snapshot=snapshot.find(entry['controller_id'])
+            if controller_snapshot is not None:
+                entry['controller_seen']=True;entry['controller_missing_frames']=0
+            elif entry.get('controller_seen') or (entry.get('admitted_at_frame') is not None
+                                                 and snapshot.frame-entry['admitted_at_frame']>20):
+                entry['controller_missing_frames']=entry.get('controller_missing_frames',0)+1
+                if entry['controller_missing_frames']>=2:
+                    self._remove_walker(walker_id);self.walkers_lost+=1
+                    continue
             if actor is None:
-                if entry['seen']:
+                if entry['seen'] or (entry.get('admitted_at_frame') is not None and snapshot.frame-entry['admitted_at_frame']>20):
                     entry['missing_frames'] = entry.get('missing_frames', 0)+1
                     if entry['missing_frames'] >= 2:
                         self._remove_walker(walker_id); self.walkers_lost += 1
@@ -466,6 +480,8 @@ class WorldPopulationManager:
                 'walker_ids': sorted(self.walkers),
                 'controller_ids': sorted(e['controller_id'] for e in self.walkers.values()),
                 'errors': list(self.errors), 'walkers_lost': self.walkers_lost,
+                'walker_spawn_failure_attempts':getattr(self,'walker_spawn_failures',0),
+                'controller_spawn_failure_attempts':getattr(self,'controller_spawn_failures',0),
                 'vehicles_removed_native': self.vehicles_removed_native,
                 'behavior': self.config['driver_behavior'],
                 'driver_profiles': {str(i):dict(p) for i,p in getattr(self, 'driver_profiles', {}).items()},

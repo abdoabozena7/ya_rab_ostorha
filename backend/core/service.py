@@ -20,6 +20,8 @@ class SimulationService:
 
     def __init__(self, provider, recorder=None, *, required_sensors=(), optional_sensors=(), sensor_timeout_s=.25, now=time.monotonic):
         from .safety_policy import ObservationHistory
+        from .recording import RunRecorder,BufferedRunRecorder
+        if isinstance(recorder,RunRecorder):recorder=BufferedRunRecorder(recorder)
         self.policy_history = ObservationHistory()
         self.provider, self.recorder, self.now = provider, recorder, now
         self.lock = threading.RLock()
@@ -45,6 +47,9 @@ class SimulationService:
         self.observation = None
         self.state = self.world = None  # Existing dashboard compatibility view only.
         self.state_at = 0.
+        self.safety_observed_at=None
+        self.navigation_ready_frame=None
+        self.last_recording=recorder if isinstance(recorder,BufferedRunRecorder) else None
         self.sensors, self.sensor_rates = {}, {}
         self.frame = self.frame_metadata = None
         self.error = None
@@ -130,7 +135,8 @@ class SimulationService:
             return
         try:
             history = self.policy_history.snapshot()
-            if not history or self.now()-self.state_at > supervisor.config.maximum_sensor_wall_age_s:
+            receipt=self.state_at if self.safety_observed_at is None else self.safety_observed_at
+            if not history or self.now()-receipt > supervisor.config.maximum_sensor_wall_age_s:
                 raise ValueError('Fresh complete safety observations unavailable')
             observation = history[-1]
             if self.clock.timestamp_s-observation.timestamp_s > supervisor.config.teacher.maximum_observation_age_s:
@@ -153,6 +159,8 @@ class SimulationService:
             else:
                 candidate = supervisor.evaluate(observation, base, self.provider.get_sensor_asset,
                                                 as_of_timestamp_s=self.clock.timestamp_s)
+            if self.now()-receipt > supervisor.config.maximum_sensor_wall_age_s:
+                raise ValueError('Safety processing exceeded sensor wall freshness limit')
             if candidate is None:
                 self._clear_safety_command()
             else:
@@ -202,6 +210,8 @@ class SimulationService:
             raise ValueError('Recording requires an explicit enabled boolean')
         if value['enabled']:
             if self.recorder: raise ValueError('A recording is already active')
+            if self.last_recording and not self.last_recording.closed:
+                raise ValueError('Previous recording is still finalizing; control remains available')
             from datetime import datetime, timezone
             from pathlib import Path
             from .contracts import ExperimentMetadata, DataOrigin
@@ -213,16 +223,20 @@ class SimulationService:
                 label, self.name, DataOrigin.REAL_SIMULATION,
                 seed=(environment.get('scenario') or {}).get('random_seed') if environment else None,
                 created_at_utc=datetime.now(timezone.utc).isoformat(), config=self.provider.recording_metadata()))
-            if self.comparison and self.comparison.busy:
-                from .recording import BufferedRunRecorder
-                self.recorder = BufferedRunRecorder(self.recorder)
+            from .recording import BufferedRunRecorder
+            self.recorder = BufferedRunRecorder(self.recorder)
+            self.last_recording=self.recorder
             self._event(EventType.ControlChanged, recording='STARTED', population=self.provider.population_state())
             return {'enabled': True, 'path': str(self.recorder.root)}
         if not self.recorder: raise ValueError('No recording is active')
         self._event(EventType.ControlChanged, recording='STOPPED')
         recorder = self.recorder; self.recorder = None
-        recorder.close()
-        return {'enabled': False, 'path': str(recorder.root)}
+        from .recording import BufferedRunRecorder
+        if isinstance(recorder, BufferedRunRecorder):
+            recorder.finish()
+        else:recorder.close()
+        return {'enabled': False, 'path': str(recorder.root),
+                'status':recorder.status() if hasattr(recorder,'status') else None}
 
     @staticmethod
     def safe_controls():
@@ -653,6 +667,7 @@ class SimulationService:
                         {'enabled':False,'active':False,'type':'RULE_BASED_SAFETY','status':'SENSORS_UNAVAILABLE','risk':'UNKNOWN','intervention_count':0},
                     'restartResult': copy.deepcopy(self.restart_result),
                     'restarting': self.restarting, 'recording': bool(self.recorder),
+                    'recordingStatus':self.last_recording.status() if self.last_recording else None,
                     'performance': {'nativeTickRateHz': 0 if self.recent_ticks and self.now()-self.recent_ticks[-1]>.5 else
                         (len(self.recent_ticks)-1)/(self.recent_ticks[-1]-self.recent_ticks[0])
                         if len(self.recent_ticks)>1 and self.recent_ticks[-1]>self.recent_ticks[0] else None,
@@ -755,6 +770,10 @@ class SimulationService:
             if tick_started is not None and observation.complete:
                 self.observation_latencies_ms.append((self.now()-tick_started)*1000)
             self.policy_history.append(observation)
+            if observation.complete:
+                arrivals=[s.metadata.get('received_monotonic_s',self.now()) for s in observation.sensors
+                          if s.sensor_id in self.synchronizer.required]
+                self.safety_observed_at=min(arrivals,default=self.now())
             fresh_recovery = (not first and observation.frame_id > self.observation.frame_id
                               and self.lifecycle.state == ConnectionState.ERROR
                               and self.lifecycle.error == 'Observation receipt timeout'
@@ -836,8 +855,10 @@ class SimulationService:
                             self.provider.set_paused(False); self.paused = False
                         result = self.provider.start_navigation(value)
                         self.arbiter.safety.clear()
-                        self.arbiter.machine.transition(ControlMode.AUTOMATIC, connected=True, explicit=True)
-                        self.journey.update(status='RUNNING', reason=None, route_id=result['id'])
+                        # Navigation setup can be slow. Keep ego held and arm
+                        # only on a new synchronized, actually fresh sensor frame.
+                        self.navigation_ready_frame=self.observation.frame_id+2
+                        self.journey.update(status='STARTING', reason=None, route_id=result['id'])
                         self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
                 except (ValueError, ImportError) as error:
                     self._stop_navigation(str(error), status='ERROR')
@@ -914,6 +935,17 @@ class SimulationService:
                 self.paused = value
         with self.lock:
             if training_command is None:
+                if self.navigation_ready_frame is not None:
+                    if self.journey['status']!='STARTING':self.navigation_ready_frame=None
+                    elif self.now()-self.navigation_heartbeat_at>self.CONTROL_TTL:
+                        self.navigation_ready_frame=None;self._stop_navigation('dashboard_heartbeat_timeout')
+                    elif (self.observation.complete and self.observation.frame_id>=self.navigation_ready_frame
+                          and (self.active_safety is None or (self.safety_observed_at is not None
+                          and self.now()-self.safety_observed_at<=self.active_safety.config.maximum_sensor_wall_age_s))):
+                        self.navigation_ready_frame=None
+                        self.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
+                        self.journey.update(status='RUNNING')
+                        self._event(EventType.ControlChanged,journey=copy.deepcopy(self.journey))
                 if self.comparison:
                     try:
                         self.comparison.before_control()
@@ -1080,7 +1112,7 @@ class SimulationService:
                 try:
                     for pending in self.synchronizer.drain(force=True):
                         if self.recorder:
-                            self.recorder.record(pending)
+                            self._record(pending)
                     for sensor_id in self.sensor_ids:
                         self._event(EventType.SensorStopped, sensor_id=sensor_id, cleanup_confirmed=self.error is None)
                     if self.started_session:
@@ -1088,6 +1120,8 @@ class SimulationService:
                 finally:
                     if self.recorder:
                         self.recorder.close()
+                    if self.last_recording and self.last_recording is not self.recorder:
+                        self.last_recording.close()
             finally:
                 self.closed = True
                 self.policy_history.clear()

@@ -141,7 +141,7 @@ def assess_forward_space(observation, asset_reader, config):
         'radar_closing_speed_mps': max(0., -float(points[radar_index, 3])) if radar_index is not None else None,
         'observed_road_range_m': clear_range, 'ground_plane_supported': plane is not None,
         'lidar_observed': lidar_observed, 'depth_observed': depth_observed,
-        'teacher_observation': teacher_observation}
+        'teacher_observation': teacher_observation,'lidar_surfaces':lidar_points[:,:3]+_mount(lidar)[0]}
 
 
 class RuntimeSafetyFeasibilityValidator:
@@ -174,6 +174,8 @@ class ActiveSafetySupervisor:
         self.interventions = 0; self.reset()
 
     def reset(self):
+        from .path_conflicts import LidarPathConflicts
+        self.path_conflicts=LidarPathConflicts()
         self.teacher.reset(); self.active = False; self.brake = 0.; self.started_s = None; self.previous_s = None
         self.last_fault = getattr(self, 'last_fault', None)
         self.status = {'type': 'RULE_BASED_SAFETY', 'version': self.config.version,
@@ -196,6 +198,8 @@ class ActiveSafetySupervisor:
             self.reset(); self.status.update(status='FORWARD_ONLY', reason='Reverse, neutral or handbrake: forward supervisor unavailable')
             return None
         scene = assess_forward_space(observation, asset_reader, c)
+        crossing=self.path_conflicts.assess(scene['lidar_surfaces'],observation)
+        conflict=crossing['conflict']
         speed = observation.ego.speed_mps
         envelope = t.minimum_clearance_m + speed*t.reaction_time_s + speed*speed/(2*t.assumed_deceleration_mps2)
         distance = scene['target_range_m']
@@ -211,9 +215,10 @@ class ActiveSafetySupervisor:
             decision = self.teacher.propose(scene['teacher_observation'], base, as_of_timestamp_s=as_of_timestamp_s)
             hazard = hazard or decision.action[0] > 0
         unknown = distance is None and not clear
-        requested = hazard or unknown
+        requested = hazard or unknown or conflict is not None
         reason = decision.diagnostics['reason'] if decision and decision.action[0]>0 else ('Measured obstacle inside braking envelope/TTC limit' if hazard
             else 'Insufficient measured forward road coverage; missing targets are not clear space' if unknown else 'Observed forward stopping corridor is clear')
+        if conflict:reason='Measured side/rear surface motion enters predicted ego path'
         now = observation.timestamp_s
         dt = .05 if self.previous_s is None else min(.15, max(0., now-self.previous_s))
         if self.previous_s is not None and now <= self.previous_s: raise ValueError('Safety observation did not advance')
@@ -243,12 +248,14 @@ class ActiveSafetySupervisor:
         self.last_fault = None
         if self.active and not was_active: self.interventions += 1
         self.status.update(status='BRAKING' if self.active and requested else 'RELEASING' if self.active else 'MONITORING',
-            risk='UNKNOWN_SPACE' if unknown else 'FORWARD_COLLISION_RISK' if hazard else 'CLEAR',
+            risk='PATH_CONFLICT' if conflict else 'UNKNOWN_SPACE' if unknown else 'FORWARD_COLLISION_RISK' if hazard else 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED',
             active=self.active, reason=reason, frame_id=observation.frame_id, timestamp_s=now,
             stopping_envelope_m=envelope, measured_range_m=distance, closing_speed_mps=closing, ttc_s=ttc,
             observed_road_range_m=scene['observed_road_range_m'], target_source=scene['target_source'],
             teacher_state=self.teacher.state.value, ground_plane_supported=scene['ground_plane_supported'],
             feasibility_validator='YA_RAB_OSTORHA_RUNTIME_BRAKING_V1' if proposed else None,
             depth_observed=scene['depth_observed'], lidar_observed=scene['lidar_observed'],
-            base_driver_brake=base.brake, proposed_safety_brake=desired)
+            base_driver_brake=base.brake, proposed_safety_brake=desired,
+            path_conflict=conflict,side_rear_coverage=crossing['coverage'],
+            side_rear_free_space_verified=False)
         return proposed

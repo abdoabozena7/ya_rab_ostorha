@@ -45,7 +45,11 @@ class CarlaSensorManager:
                     if self.actors.get(sensor_id) is not actor:
                         return
                 try:
+                    received=time.monotonic()
                     decoded = decode(data)
+                    from dataclasses import replace
+                    decoded=replace(decoded,metadata={**decoded.metadata,
+                        'received_monotonic_s':received,'decode_duration_ms':(time.monotonic()-received)*1000})
                 except Exception as error:
                     with self.lock:
                         self.errors[sensor_id] = str(error)

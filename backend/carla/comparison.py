@@ -231,7 +231,7 @@ class ComparisonDemo:
             # Route construction and recorder files can exceed sensor freshness.
             # Do that work while stopped, then prime fresh native observations.
             self.recording_path = s._change_recording({'enabled': True})['path']
-            self.trace = (Path(self.recording_path)/'telemetry/comparison-controls.jsonl').open('w', encoding='utf8')
+            self.trace = True  # The bounded run writer owns the trace stream too.
             self.prepared_frame = p.last_vehicle['frame']
             self.prepared = True
             s._event(EventType.ControlChanged, comparison_mode=self.mode,
@@ -259,14 +259,13 @@ class ComparisonDemo:
         safety = self.service.active_safety.snapshot()
         self.last_safety = safety
         self.last_applied_brake = frame.vehicle.brake
-        self.trace.write(json.dumps({'frame_id': frame.frame_id, 'timestamp_s': frame.timestamp_s,
+        self.service.recorder.record_trace({'frame_id': frame.frame_id, 'timestamp_s': frame.timestamp_s,
             'comparison_phase': self.phase,
             'safety': safety, 'intervention_command': to_dict(self.service.safety_command),
             'hazard_actors': copy.deepcopy(self.service.provider.scenarios.run.get('hazard_observations',{})),
             'applied_command': to_dict(frame.control), 'actual_vehicle_controls': {
                 k: getattr(frame.vehicle, k) for k in ('throttle', 'brake', 'steering')},
-            'complete': frame.complete})+'\n')
-        self.trace.flush()
+            'complete': frame.complete})
 
     def after_tick(self):
         if self.phase != 'RUNNING':
@@ -282,7 +281,6 @@ class ComparisonDemo:
     def finish(self, reason):
         s, p = self.service, self.service.provider
         if self.phase == 'RESETTING' and self.trace:
-            self.trace.close()
             self.trace = None
             if s.recorder:
                 s.reconfiguring = True
@@ -306,7 +304,6 @@ class ComparisonDemo:
                 'final_safety': copy.deepcopy(self.last_safety)}
             s._event(EventType.ControlChanged, comparison_result=result)
             if self.trace:
-                self.trace.close()
                 self.trace = None
             if s.recorder:
                 # End driving before waiting for disk flush. This is a managed

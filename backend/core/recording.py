@@ -12,63 +12,125 @@ MAX_ROW_BYTES = 1_048_576
 
 
 class BufferedRunRecorder:
-    """Bounded demo disk writer; immutable native bytes leave the tick thread.
+    """Bounded disk writer; immutable native bytes leave the tick thread.
 
     Uses the existing versioned writer and checksum validation. Queue exhaustion
     or disk errors stop admission; no frames are silently dropped.
     """
-    def __init__(self, recorder):
+    def __init__(self, recorder, *, capacity=128, maximum_bytes=64*1024*1024):
         from queue import Queue
+        if type(capacity) is not int or capacity<=0 or type(maximum_bytes) is not int or maximum_bytes<=0:
+            raise ValueError('Recording queue requires positive finite item/byte bounds')
         self.writer = recorder
         self.root, self.metadata = recorder.root, recorder.metadata
         # Includes command events as well as frames. Bound a short presentation
         # episode's disk lag without letting file scanning stall sensor freshness.
-        self.queue = Queue(maxsize=640)
+        self.queue = Queue(maxsize=capacity)
+        self.maximum_bytes=maximum_bytes;self.queued_bytes=0
+        self.stats_lock=threading.Lock();self.stopping=threading.Event()
+        self.dropped_frames=0;self.dropped_events=0;self.dropped_trace_rows=0;self.first_dropped_frame=None;self.last_dropped_frame=None
+        self.written_frames=0;self.incomplete=False
+        if isinstance(recorder,RunRecorder):recorder.autoflush=False
         self.error = None
         self.closed = False
-        self.thread = threading.Thread(target=self._run, name='comparison-recording', daemon=True)
+        if isinstance(self.root,Path):
+            # A process crash or full disk must leave a durable incomplete
+            # marker; absence of a final flush is never a valid finished replay.
+            (self.root/'recording-status.json').write_text(json.dumps({**self.status(),
+                'incomplete':True,'error':'RECORDING_NOT_FINALIZED'}),encoding='utf8')
+        self.thread = threading.Thread(target=self._run, name='native-recording', daemon=True)
         self.thread.start()
 
-    def _put(self, item):
+    def _put(self, item, size=0):
         from queue import Full
-        if self.error: raise RuntimeError('Demo recording failed: '+str(self.error))
-        if self.closed: raise RuntimeError('Demo recording is closed')
-        try: self.queue.put(item, timeout=.1)
-        except Full: raise RuntimeError('Demo recording queue exhausted; disk cannot keep up')
+        if self.stopping.is_set(): raise RuntimeError('Recording is closed')
+        with self.stats_lock:
+            rejected=self.incomplete or self.error or self.queued_bytes+size>self.maximum_bytes
+            if not rejected:
+                try:self.queue.put_nowait((item,size));self.queued_bytes+=size;return True
+                except Full:pass
+            # Stop admitting subsequent frames: the saved prefix keeps original
+            # time/IDs. Control never waits for storage or raises its disk error.
+            self.incomplete=True
+            self._lost(item)
+        return False
 
     def submit(self, frame, assets):
-        self._put(('frame', (frame, assets)))
+        return self._put(('frame', (frame, assets)),sum(len(data) for _,data in assets))
 
     def record_event(self, event):
-        self._put(('event', event))
+        return self._put(('event', event))
+
+    def record_trace(self,row):
+        return self._put(('trace',row))
+
+    def status(self):
+        with self.stats_lock:
+            return {'incomplete':self.incomplete or self.error is not None,'error':str(self.error) if self.error else None,
+                    'dropped_frames':self.dropped_frames,'dropped_events':self.dropped_events,'dropped_trace_rows':self.dropped_trace_rows,
+                    'first_dropped_frame':self.first_dropped_frame,'last_dropped_frame':self.last_dropped_frame,
+                    'written_frames':self.written_frames,'queued_bytes':self.queued_bytes,'pending_items':self.queue.qsize(),
+                    'finalized':self.closed}
+
+    def finish(self):
+        """Seal admission immediately; drain and finalize away from control."""
+        self.stopping.set()
+
+    def _lost(self,item):
+        if item[0]=='frame':
+            frame=item[1][0];self.dropped_frames+=1
+            self.first_dropped_frame=frame.frame_id if self.first_dropped_frame is None else min(self.first_dropped_frame,frame.frame_id)
+            self.last_dropped_frame=frame.frame_id if self.last_dropped_frame is None else max(self.last_dropped_frame,frame.frame_id)
+        elif item[0]=='trace':self.dropped_trace_rows+=1
+        else:self.dropped_events+=1
 
     def _run(self):
+        item=None
         try:
             while True:
-                item = self.queue.get()
-                if item is None: break
+                from queue import Empty
+                try:item,size=self.queue.get(timeout=.05)
+                except Empty:
+                    if self.stopping.is_set():break
+                    if isinstance(self.writer,RunRecorder):self.writer.flush()
+                    continue
                 kind, value = item
                 if kind == 'event': self.writer.record_event(value)
+                elif kind=='trace':self.writer.record_trace(value)
                 else:
                     frame, assets = value
                     for asset, data in assets:
                         folder, filename = asset.path.split('/', 1)
                         if self.writer.store_asset(folder, filename, data, asset.media_type) != asset:
                             raise RuntimeError('Recorded bytes differ from native sensor reference')
-                    self.writer.record(frame)
+                    if isinstance(self.writer,RunRecorder):self.writer.record(frame,assets_verified=True)
+                    else:self.writer.record(frame)
+                    self.written_frames+=1
+                    if self.written_frames%16==0 and isinstance(self.writer,RunRecorder):self.writer.flush()
+                with self.stats_lock:self.queued_bytes-=size
+                item=None
         except Exception as error:
-            self.error = error
+            with self.stats_lock:
+                self.error = error;self.incomplete=True
+                if item is not None:self._lost(item);self.queued_bytes-=size
+                while not self.queue.empty():
+                    pending,pending_size=self.queue.get_nowait();self._lost(pending);self.queued_bytes-=pending_size
         finally:
             try: self.writer.close()
             except Exception as error: self.error = error
+            self.closed=True
+            if isinstance(self.root,Path):
+                try:
+                    temporary=self.root/'recording-status.tmp'
+                    temporary.write_text(json.dumps(self.status(),indent=2),encoding='utf8')
+                    temporary.replace(self.root/'recording-status.json')
+                except OSError as error:self.error=error
 
     def close(self):
-        if self.closed: return
-        if self.thread.is_alive(): self.queue.put(None, timeout=10)
+        self.stopping.set()
         self.thread.join(timeout=15)
-        self.closed = True
-        if self.thread.is_alive(): raise RuntimeError('Demo recording writer did not close')
-        if self.error: raise RuntimeError('Demo recording failed: '+str(self.error))
+        if self.thread.is_alive(): raise RuntimeError('Recording writer did not close')
+        if self.error: raise RuntimeError('Recording failed: '+str(self.error))
 
 
 def encode_row(value):
@@ -108,6 +170,8 @@ class RunRecorder:
         self.lock = threading.RLock()
         self.last_frame = self.last_timestamp = None
         self.closed = False
+        self.autoflush=True
+        self.trace_file=None
         self.record_event(SimulationEvent(EventType.RunRecordingStarted, None, None, {'run_id': metadata.run_id}))
         log(LogCategory.RECORDING, 'RunRecordingStarted', run_id=metadata.run_id)
 
@@ -125,7 +189,7 @@ class RunRecorder:
                 file.write(data)
         return asset
 
-    def record(self, frame: SimulationFrame):
+    def record(self, frame: SimulationFrame, *, assets_verified=False):
         if not isinstance(frame, SimulationFrame) or frame.world.provider != self.metadata.provider:
             raise ValueError('Frame must match recorder contract/provider provenance')
         with self.lock:
@@ -134,10 +198,10 @@ class RunRecorder:
             if self.last_frame is not None and (frame.frame_id <= self.last_frame or frame.timestamp_s <= self.last_timestamp):
                 raise ValueError('Recording frames must increase; duplicates/out-of-order frames are rejected')
             for sensor in frame.sensors:
-                if sensor.asset:
+                if sensor.asset and not assets_verified:
                     resolve_asset(self.root, sensor.asset)
             self.frames_file.write(encode_row(frame))
-            self.frames_file.flush()
+            if self.autoflush:self.frames_file.flush()
             self.last_frame, self.last_timestamp = frame.frame_id, frame.timestamp_s
 
     def record_event(self, event):
@@ -147,7 +211,19 @@ class RunRecorder:
             if self.closed:
                 raise RuntimeError('Recorder is closed')
             self.events_file.write(encode_row(event))
-            self.events_file.flush()
+            if self.autoflush:self.events_file.flush()
+
+    def flush(self):
+        with self.lock:
+            self.frames_file.flush();self.events_file.flush()
+            if self.trace_file:self.trace_file.flush()
+
+    def record_trace(self,row):
+        with self.lock:
+            if self.closed:raise RuntimeError('Recorder is closed')
+            if self.trace_file is None:self.trace_file=(self.root/'telemetry/comparison-controls.jsonl').open('xb')
+            self.trace_file.write(encode_row(row))
+            if self.autoflush:self.trace_file.flush()
 
     def close(self):
         with self.lock:
@@ -159,6 +235,7 @@ class RunRecorder:
             finally:
                 self.frames_file.close()
                 self.events_file.close()
+                if self.trace_file:self.trace_file.close()
                 self.closed = True
                 log(LogCategory.RECORDING, 'RunRecordingStopped', run_id=self.metadata.run_id,
                     frame_id=self.last_frame, timestamp_s=self.last_timestamp)

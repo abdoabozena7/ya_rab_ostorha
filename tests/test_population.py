@@ -51,6 +51,47 @@ class PopulationTests(unittest.TestCase):
         self.assertEqual(manager.vehicles,{10})
         self.assertTrue(manager.errors)
 
+    def test_failed_walker_spawn_retries_a_different_location_without_duplicate_ids(self):
+        import random
+        manager=object.__new__(WorldPopulationManager)
+        manager.config=dict(DEFAULT_POPULATION);manager.walkers={};manager.frame_id=1
+        manager.random=random.Random(42);manager.walker_spawn_failures=manager.controller_spawn_failures=0
+        manager.spawn_report={'walkers_spawned':0,'walkers_failed':0}
+        class Location:
+            def __init__(self,x):self.x=x
+            def distance(self,other):return abs(self.x-other.x)
+        a,b=Location(30),Location(40)
+        manager._sidewalk_destination=MagicMock(side_effect=[a,a,b])
+        blueprint=MagicMock();blueprint.has_attribute.return_value=False
+        library=MagicMock();library.filter.return_value=[blueprint];blueprint.id='walker.pedestrian.test'
+        manager.world=MagicMock();manager.world.get_blueprint_library.return_value=library
+        manager.api=SimpleNamespace(Transform=lambda *args:args,
+            command=SimpleNamespace(SpawnActor=lambda *args:args))
+        manager.client=MagicMock();manager.client.apply_batch_sync.side_effect=[
+            [SimpleNamespace(error='occupied',actor_id=0)],
+            [SimpleNamespace(error=None,actor_id=11)],
+            [SimpleNamespace(error=None,actor_id=12)]]
+        manager.spawn_pedestrians(1)
+        self.assertEqual(set(manager.walkers),{11});self.assertEqual(manager.walkers[11]['controller_id'],12)
+        self.assertEqual(manager.walker_spawn_failures,1);self.assertEqual(manager.spawn_report['walkers_failed'],0)
+        self.assertEqual(manager.client.apply_batch_sync.call_args_list[0].args[0][0][1],(a,))
+        self.assertEqual(manager.client.apply_batch_sync.call_args_list[1].args[0][0][1],(b,))
+
+    def test_missing_controller_retires_its_owned_walker_even_if_sdk_handle_survives(self):
+        manager=object.__new__(WorldPopulationManager)
+        manager.config=dict(DEFAULT_POPULATION);manager.vehicles=set();manager.walkers={11:{'controller_id':12,
+            'started':False,'seen':True,'controller_seen':True,'controller_missing_frames':1}}
+        manager.walkers_lost=manager.vehicles_removed_native=0;manager.pending_vehicles=set()
+        manager.last_replacement_at=manager.last_walker_replacement_at=-float('inf');manager.frame_id=1
+        manager.api=SimpleNamespace(command=SimpleNamespace(DestroyActor=lambda i:i))
+        manager.world=MagicMock();manager.client=MagicMock();manager.errors=[];manager.spawn_report={}
+        manager.client.apply_batch_sync.return_value=[SimpleNamespace(error=None)]*2
+        manager.traffic_manager=SimpleNamespace(connected=True,port=8050)
+        snapshot=SimpleNamespace(frame=42,timestamp=SimpleNamespace(elapsed_seconds=2.1),find=lambda i:None)
+        manager.update(snapshot)
+        self.assertFalse(manager.walkers);self.assertEqual(manager.walkers_lost,1)
+        manager.client.apply_batch_sync.assert_called_once_with([12,11],False)
+
     def test_destination_journey_requires_a_live_connection_before_queueing(self):
         service=SimulationService(CarlaProvider())
         with self.assertRaises(RuntimeError):service.start_journey(20)

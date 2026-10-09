@@ -115,7 +115,7 @@ class ResearchSafetySupervisor(ActiveSafetySupervisor):
                 # Symmetric safety guard: minimum braking under measured risk,
                 # plus the existing physical release envelope after risk clears.
                 # Never present this rule-enforced recovery as learned release.
-                if gs['risk']=='CLEAR' and desired>self.guard.brake:
+                if gs['risk']=='FORWARD_CLEAR_SIDE_REAR_UNVERIFIED' and desired>self.guard.brake:
                     release_veto=True
                     desired=self.guard.brake;generator='RULE_GUARD';reason='RULE release guard vetoed unsupported learned braking: '+gs['reason']
                 elif self.guard.brake>desired:

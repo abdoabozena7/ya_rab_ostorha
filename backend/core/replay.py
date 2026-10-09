@@ -12,6 +12,10 @@ from .recording import MAX_ROW_BYTES, resolve_asset
 class ReplayReader:
     def __init__(self, run_directory, *, allow_test_data=False):
         self.root = Path(run_directory).resolve()
+        status_path=self.root/'recording-status.json'
+        self.recording_status=json.loads(status_path.read_text(encoding='utf8')) if status_path.exists() else None
+        if self.recording_status and self.recording_status.get('incomplete'):
+            raise ValueError('Recording is incomplete: '+json.dumps(self.recording_status,sort_keys=True))
         self.metadata = from_dict(ExperimentMetadata, json.loads((self.root/'metadata.json').read_text(encoding='utf-8-sig')))
         if self.metadata.data_origin != DataOrigin.REAL_SIMULATION and not allow_test_data:
             raise ValueError('Test fixture recordings cannot be opened in the user dashboard')
