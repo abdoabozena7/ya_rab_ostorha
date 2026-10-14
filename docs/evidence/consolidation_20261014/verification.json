@@ -1,0 +1,108 @@
+{
+  "date": "2026-10-14",
+  "branch": "main",
+  "upstream": "origin/main",
+  "worktree": "D:\\projects\\Ai\\ya_rab_ostorha",
+  "original_local_branches": 12,
+  "original_worktrees": 4,
+  "final_local_branches": 1,
+  "final_worktrees": 1,
+  "original_branch_integration": [
+    {
+      "original_branch": "codex/experiment1-1-failure-diagnosis",
+      "original_tip": "3d3684f7dfa855b7170c241962e6b7f646f37435",
+      "integrated_tip": "6e52d6eae8d74d2314b74916ca9394256784d979",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/experiment1-safety-supervisor",
+      "original_tip": "13f3b370b7f30e95cc868f4c5132b556bacc578f",
+      "integrated_tip": "29a103e8cda0f53a210cea30deeedb7ea5dc4d7a",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/experiment2a-radar-fix",
+      "original_tip": "4a52b8139dbfe1d8b846ca484b090b5dbfb118a7",
+      "integrated_tip": "8db8489c9855d46a6cf172c130679246cccfb45c",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/experiment2b-safety-teacher",
+      "original_tip": "61c9ea98b87039325935d693939db4b86c820415",
+      "integrated_tip": "7144b6a25808351e831269ad098e9d43a4004c22",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/experiment2c-radar-retention",
+      "original_tip": "27cea1f46350fb0dd15ef6e842cbd1c413796b34",
+      "integrated_tip": "51a7e8f8eb24de72174f5185901ad5d540561b78",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/experiment3a-demonstrations",
+      "original_tip": "f190f39c8e5fc977fe1919db9b7803a09f41474a",
+      "integrated_tip": "89a5ecf1e9313ae08f47c77c79112d486714a185",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/final-active-safety",
+      "original_tip": "0403c621e7d0db60b0e5855f3e581d462198c10e",
+      "integrated_tip": "63e812d6729912f0d9ce3bc5fb77cd6b0b50c1f1",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/final-delivery",
+      "original_tip": "c655dfbb3dfc9ed4a62467f55843bc7c07d5443c",
+      "integrated_tip": "fee71b32100dc0a9b40e4a24ffbd74daa8b08a21",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/gate5-world-foundation",
+      "original_tip": "9c7eb82664ff90fcdd7d0d6234df03b85a198abf",
+      "integrated_tip": "efb97e590e38fd9ec440cd93d879489ef909f269",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/gate6-real-rl",
+      "original_tip": "d0bd8d6ea4c05c897e4be995ae577da5f874ec5d",
+      "integrated_tip": "6fa4fff2adfec5c503fd0651139f0cbced729c0a",
+      "reachable": true
+    },
+    {
+      "original_branch": "codex/live-native-validation",
+      "original_tip": "3ed6205cca6daab899013066ed8033d18d23c8a0",
+      "integrated_tip": "02e47fb87bad6b0831676e090168027d701b748e",
+      "reachable": true
+    },
+    {
+      "original_branch": "main",
+      "original_tip": "8dab36e6b0e3f0e117c6de952a48a2b8bb05783a",
+      "integrated_tip": "5bf06b5bf8e07de7c8538cd96b668f876acda68f",
+      "reachable": true
+    }
+  ],
+  "source_tree_identical_after_model_history_filter": true,
+  "published_history_preserved": true,
+  "verification": {
+    "dashboard_build": "PASS",
+    "javascript": {
+      "tests": 107,
+      "passed": 107,
+      "failed": 0
+    },
+    "python": {
+      "discovered": 425,
+      "passed": 424,
+      "skipped": 1,
+      "failed": 0
+    },
+    "new_native_validation": false
+  },
+  "recovery_bundle": "C:\\Users\\A-plus\\.codex\\backups\\ya_rab_ostorha-consolidation-20261014\\repository-before.bundle",
+  "recovery_bundle_verified": true,
+  "excluded_large_model_paths": [
+    ".cache/models/nlp/Qwen3-1.7B-Q8_0.gguf",
+    ".cache/models/nlp/Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+  ],
+  "local_large_models_retained": true
+}
