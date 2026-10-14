@@ -85,3 +85,25 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(manager.metrics['collision_count'],1)
         self.assertEqual(manager.metrics['collision_callback_count'],2)
         self.assertEqual(manager.metrics['collision_peak_impulse_ns'],5.)
+
+    def test_worker_forwards_native_collision_and_records_outcome_at_event_time(self):
+        from backend.core.contracts import CollisionEvent
+        from backend.core.events import EventType
+        collision=CollisionEvent(22,1.1,11,12,(3.,4.,0.),'carla-world')
+        for enabled in (True,False):
+            with self.subTest(scenario_outcomes_enabled=enabled):
+                observe=MagicMock(return_value={'collision_count':1,'success':False})
+                provider=SimpleNamespace(name='test-fixture',scenario_outcomes_enabled=enabled,
+                    drain_collision_events=lambda:[collision],observe_scenario_collision=observe)
+                service=SimulationService(provider)
+                published=[];service.events.subscribe(published.append)
+                service._drain_collision_events()
+                outcomes=[e for e in published if 'scenario_outcome' in e.payload]
+                self.assertEqual(len(outcomes),int(enabled))
+                if enabled:
+                    observe.assert_called_once_with(collision)
+                    self.assertEqual((outcomes[0].frame_id,outcomes[0].timestamp_s),(22,1.1))
+                    self.assertEqual(outcomes[0].payload['scenario_outcome']['collision_count'],1)
+                else:observe.assert_not_called()
+                self.assertEqual(published[-1].event_type,EventType.CollisionDetected)
+                self.assertEqual((published[-1].frame_id,published[-1].timestamp_s),(22,1.1))

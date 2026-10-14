@@ -1,6 +1,7 @@
 """Development restart with confirmed cleanup before terminating our backend."""
 import json
 import subprocess
+import sys
 import time
 import urllib.request
 from pathlib import Path
@@ -12,7 +13,10 @@ def main():
     import carla
     pid=backend_pid(8000)
     with connect('ws://127.0.0.1:8001',max_size=2**23) as socket:
-        socket.recv(); socket.send(json.dumps({'type':'take_control','sequence':1}))
+        state=json.loads(socket.recv())
+        if state.get('recording') or state.get('rlRuntime',{}).get('active'):
+            raise RuntimeError('An active recording or external experiment owns this native session')
+        socket.send(json.dumps({'type':'take_control','sequence':1}))
         while json.loads(socket.recv()).get('acknowledged')!=1: pass
         socket.send(json.dumps({'type':'disconnect','sequence':2}))
         while json.loads(socket.recv()).get('acknowledged')!=2: pass
@@ -26,7 +30,7 @@ def main():
     root=Path(__file__).resolve().parents[2]
     output=root/'output/native-validation'; output.mkdir(parents=True,exist_ok=True)
     with (output/'gate5-backend.log').open('w') as out, (output/'gate5-backend-error.log').open('w') as err:
-        process=subprocess.Popen([str(root/'.venv-carla/Scripts/python.exe'),'-m','backend.server',
+        process=subprocess.Popen([sys.executable,'-m','backend.server',
                                  '--carla','--sensors','--start-paused'],cwd=root,stdout=out,stderr=err,
                                  creationflags=subprocess.CREATE_NO_WINDOW)
     deadline=time.monotonic()+60

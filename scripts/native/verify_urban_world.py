@@ -83,7 +83,9 @@ def main():
     with Session() as s:
         proof['versions']=[s.client.get_server_version(),s.client.get_client_version()]
         proof['map']=s.world.get_map().name
-        if args.ego_spawn is not None:s.action('settings',{'spawn_index':args.ego_spawn})
+        if args.ego_spawn is not None:
+            s.wait(lambda state:state['vehicle']['speedKmh']<.3)
+            s.action('settings',{'spawn_index':args.ego_spawn})
         proof['sensor_registry']=s.state['sensorRegistry']
         matrix=[(10,5,b) for b in ('NORMAL','BUSY','AGGRESSIVE','UNREGULATED')] if args.profiles_only else [
             (0,0,'NORMAL'),(10,10,'BUSY'),(25,20,'BUSY'),(40,30,'BUSY'),(50,35,'UNREGULATED')]
@@ -173,9 +175,11 @@ def main():
                  'profile_names':sorted({p.get('name') for p in pop['driver_profiles'].values()}),
                  'final_population':pop,'sensor_errors':s.state['sensorErrors']}
             pairs={tuple(sorted((c['actor_id'],c['other_actor_id']))) for c in npc_contacts}
-            row['npc_collision_summary']={'raw_callbacks':len(npc_contacts),'unique_contact_pairs':len(pairs),
-                'maximum_impulse_ns':max((c['impulse_ns'] for c in npc_contacts),default=0.),
-                'notes':'Temporary diagnostic sensors. Paired callbacks count twice; sustained contact is not multiple independent crashes.'}
+            row['npc_collision_summary']={'raw_callbacks':len(npc_contacts) if args.npc_collision_probe else None,
+                'unique_contact_pairs':len(pairs) if args.npc_collision_probe else None,
+                'maximum_impulse_ns':max((c['impulse_ns'] for c in npc_contacts),default=0.) if args.npc_collision_probe else None,
+                'notes':'Temporary diagnostic sensors. Paired callbacks count twice; sustained contact is not multiple independent crashes.'
+                    if args.npc_collision_probe else 'NPC collision sensors were not attached; collision results are unmeasured.'}
             row['pass']=not any(row['sync_issues'].values()) and row['incomplete_frames']==0 and not row['sensor_errors'] and row['actual']['sensors']==7+len(collision_probes)
             row['transport_and_sensors_pass']=row['pass']
             row['collision_free_observed']=not npc_contacts if args.npc_collision_probe else None
