@@ -7,6 +7,62 @@ import {telemetryText} from '../frontend/telemetry.js';
 import {sensorFrameKey, matchesSensorResponse} from '../frontend/sensor-frame.js';
 import {DRIVING_KEYS, isEditableTarget, drivingInputAllowed} from '../frontend/input-policy.js';
 
+test('one explicit start launches the simulation while automatic connection never launches it',async()=>{
+  const calls=[],timers=[];
+  const p=new SimulationClient({fetcher:async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({status:'STARTING'})};},
+    schedule:(callback,delay)=>{timers.push({callback,delay});return timers.length;},cancel:()=>{}});
+  let connections=0;p.connect=async()=>connections++;
+  assert.equal(await p.startSimulation(),true);assert.equal(await p.startSimulation(),false);
+  assert.equal(calls.length,1);assert.equal(calls[0].url,'/api/simulation/start');
+  assert.equal(calls[0].options.method,'POST');assert.equal(calls[0].options.body,'{}');
+  assert.equal(connections,1);assert.equal(p.simulationStarting,true);
+  p.disconnect('backend handoff');assert.equal(p.simulationStarting,true);
+  timers.find(t=>t.delay===180_000).callback();assert.equal(p.simulationStarting,false);
+  assert.match(p.operationError,/timed out/);
+});
+
+test('session reset waits for a new native session and blocks controls during the handoff',async()=>{
+  const {p,snapshot,sent}=clientFixture(),calls=[];
+  p.acceptSnapshot({...snapshot,sessionId:'old',mode:'MANUAL'});
+  p.fetcher=async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({status:'STARTING',operation:'RESET'})};};
+  p.connect=async()=>true;p.schedule=()=>1;p.cancel=()=>{};
+  assert.equal(await p.resetSimulation(),true);assert.equal(await p.resetSimulation(),false);
+  assert.equal(calls[0].url,'/api/simulation/reset-session');assert.equal(calls[0].options.body,'{}');
+  assert.equal(p.startDriving(),false);assert.deepEqual(sent,[]);
+  p.acceptSnapshot({...snapshot,sessionId:'old',simulatorStart:{status:'STARTING',operation:'RESET'},
+    vehicle:{...snapshot.vehicle,frame:2,timestamp:.1},world:{...snapshot.world,frame:2,timestamp:.1}});
+  assert.equal(p.resetReady,false);assert.equal(p.resetting,true);
+  p.acceptSnapshot({...snapshot,sessionId:'new',mode:'PAUSED',simulatorStart:{status:'READY'},
+    vehicle:{...snapshot.vehicle,frame:0,timestamp:0},world:{...snapshot.world,frame:0,timestamp:0}});
+  assert.equal(p.resetReady,true);assert.equal(p.resetting,false);assert.equal(p.simulationStarting,false);
+});
+
+test('failed start gives an actionable error and replay cannot launch CARLA',async()=>{
+  let count=0;
+  const p=new SimulationClient({fetcher:async()=>{count++;return {ok:false,json:async()=>({error:'GPU launch failed'})};},schedule:()=>1,cancel:()=>{}});
+  assert.equal(await p.startSimulation(),false);assert.equal(p.simulationStarting,false);
+  assert.equal(p.operationError,'GPU launch failed');p.isReplay=true;
+  assert.equal(await p.startSimulation(),false);assert.equal(count,1);
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.match(html,/<button id="startSimulationBtn">Start the simulation<\/button>/);
+  assert.doesNotMatch(html,/id="(?:reconnectBtn|nativeReconnectBtn)"/);
+});
+
+test('explicit GPU shutdown works from an observer but cannot grant pedal control',()=>{
+  const {p,sent,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,controller:false});
+  assert.equal(p.stopSimulator(),true);assert.equal(sent.at(-1).type,'stop_simulator');
+  assert.equal(p.send('controls',{controls:{throttle:1}}),false);
+  p.isReplay=true;assert.equal(p.stopSimulator(),false);
+});
+
+test('comparison RUN can explicitly claim control while STOP and pedals require ownership',()=>{
+  const {p,sent,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,controller:false});
+  assert.equal(p.dashboardAction('comparison_v2',{operation:'RUN',side:'MODEL'}),true);
+  assert.equal(p.dashboardAction('comparison_v2',{operation:'STOP'}),false);
+  assert.equal(p.send('controls',{controls:{throttle:1}}),false);
+  assert.equal(sent.at(-1).type,'comparison_v2');
+});
+
 test('keyboard uses physical codes and never admits driving from an editable target', () => {
   assert.equal(DRIVING_KEYS.has('KeyW'),true); assert.equal(DRIVING_KEYS.has('w'),false);
   assert.equal(isEditableTarget({tagName:'INPUT'}),true);
@@ -16,7 +72,7 @@ test('keyboard uses physical codes and never admits driving from an editable tar
   for (const field of ['fresh','owner','focused','armed']) assert.equal(drivingInputAllowed({...policy,[field]:false}),false);
   assert.equal(drivingInputAllowed({...policy,modal:true}),false);
   assert.equal(drivingInputAllowed({...policy,replay:true}),false);
-  assert.equal(drivingInputAllowed({...policy,mode:'AUTOMATIC',armed:false}),true);
+  assert.equal(drivingInputAllowed({...policy,mode:'AUTOMATIC',armed:false}),false);
 });
 
 test('native restart accepts lower frames only after a genuine new session identity', () => {
@@ -85,6 +141,32 @@ function clientFixture() {
     world: {source: 'carla', frame: 1, timestamp: .05}};
   return {p, sent, snapshot, advance: ms => {time += ms;}};
 }
+
+test('disconnect retains explicitly saved journey evidence but clears live run authority',()=>{
+  const {p,snapshot}=clientFixture();
+  const result={side:'RULE',status:'ARRIVED',destination_arrived:true};
+  p.acceptSnapshot({...snapshot,comparisonV2:{phase:'FINISHED',pair_id:'pair',results:{RULE:result},latest_attempt:result}});
+  p.disconnect('offline');
+  assert.equal(p.comparisonV2,null);
+  assert.deepEqual(p.recordedComparisonV2.results.RULE,result);
+  assert.equal(p.startDriving(),false);
+  assert.equal(p.resetVehicle(),false);
+});
+
+test('reset is one atomic backend request without a racing manual pedal command',()=>{
+  const {p,sent,snapshot}=clientFixture(); p.acceptSnapshot(snapshot);
+  assert.equal(p.resetVehicle(),true);
+  assert.deepEqual(sent.map(c=>c.type),['reset']);
+});
+
+test('a coalesced later acknowledgement retires queued start and stop requests together',()=>{
+  const {p,snapshot}=clientFixture(); p.acceptSnapshot(snapshot);
+  p.dashboardAction('comparison_v2',{operation:'RUN',side:'RULE'});
+  p.stopDriving();
+  assert.equal(p.pending.size,2);
+  p.acceptSnapshot({...snapshot,acknowledged:2});
+  assert.equal(p.pending.size,0);
+});
 
 test('read-only dashboard can explicitly claim driving without admitting pedals first', () => {
   const {p, sent, snapshot} = clientFixture();
@@ -180,6 +262,12 @@ test('Shift increases the W pedal without commanding motion on its own or overri
   c.keys.delete('ShiftLeft');assert.equal(c.sample(0,2).throttle,.55);
   c.keys.add('ShiftRight');c.keys.add('Space');assert.equal(c.sample(0,3).throttle,0);
   assert.equal(c.sample(0,3).brake,1);
+  c.keys.delete('Space');
+  assert.equal(c.sample(80/3.6,4).throttle,0);
+  assert.equal(c.sample(81/3.6,5).brake>0,true);
+  c.keys.delete('ShiftRight');
+  assert.equal(c.sample(30/3.6,6).throttle,0);
+  assert.equal(c.sample(60/3.6,7).brake>0,true);
 });
 
 test('neutral, contradictory pedals, missing speed, and handbrake cannot apply throttle', () => {

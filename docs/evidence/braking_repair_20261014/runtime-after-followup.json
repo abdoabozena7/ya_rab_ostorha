@@ -1,0 +1,25 @@
+{
+  "source": "LIVE_NATIVE_READ_ONLY_AFTER_VALIDATION",
+  "mode": "PAUSED",
+  "speed_mps": 0.0,
+  "recording": false,
+  "connected": true,
+  "sensor_errors": {},
+  "session_id": "6fc12e3735964c01b9095f6d30a2e9c6",
+  "journey": {
+    "status": "PAUSED",
+    "reason": "operator_stop",
+    "speed_kmh": 30.0,
+    "driving_mode": "ROBOSPHERE",
+    "pair_id": "69563d4d47814f67bdb93127ab881fd3",
+    "route_id": "e55ea2219cec4eeeb44c5066cff86d0f"
+  },
+  "last_drive_stop": {
+    "reason": "operator_stop",
+    "status": "PAUSED",
+    "frame_id": 93272,
+    "timestamp_s": 4533.239690840244,
+    "detail": "operator_stop"
+  },
+  "route_remaining_m": 267.60644668157596
+}

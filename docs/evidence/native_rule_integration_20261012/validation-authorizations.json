@@ -1,0 +1,23 @@
+{
+  "tickets": [
+    {
+      "scope": "NATIVE_RULE_VALIDATION",
+      "allowance_s": 600.0,
+      "started_at": 1791776097.3936937,
+      "expires_at": 1791776697.3936937,
+      "authorization": "Explicit user authorization for native RULE integration validation only"
+    },
+    {
+      "scope": "NATIVE_RULE_VALIDATION",
+      "allowance_s": 1200.0,
+      "started_at": 1791757479.0396743,
+      "expires_at": 1791758679.0396743,
+      "authorization": "Explicit user authorization for native RULE integration validation only"
+    }
+  ],
+  "research_ledger_unchanged": true,
+  "research_charged_s": 5359.2970000000005,
+  "training_runs": 0,
+  "model_runs": 0,
+  "no_further_driving_experiments": true
+}

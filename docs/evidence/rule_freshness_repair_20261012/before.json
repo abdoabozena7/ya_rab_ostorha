@@ -1,0 +1,14 @@
+{
+  "checksums": {
+    "backend/core/prediction.py": "18dcdb616902daa54f21fa701f2142b81be68551e902cd87f40b223aa9ad8f93",
+    "backend/core/predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend/carla/urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "artifacts/learned_safety/predictive_v2/heads.npz": "511a67dce5a0370f3cdfb2150e4abc74cce103be531aa9d48c96989ddb78a29e",
+    "artifacts/learned_safety/v1/weights.npz": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+    "output/predictive-v2/budget.sqlite": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad",
+    "config/ya_rab_ostorha_safety.json": "81bafddcca3c81059669ad0f65befdbcec2a9d9699253d5b9faea405821f903f"
+  },
+  "research_charged_s": 5359.2970000000005,
+  "pair_id": "90ab411017f54272b96493fd1cfea0de",
+  "seed": 2811
+}

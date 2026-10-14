@@ -69,21 +69,25 @@ def _check(value, annotation, name):
 
 
 def freeze_json(value):
-    if isinstance(value, Mapping):
-        if any(not isinstance(key, str) for key in value):
-            raise ValueError('JSON object keys must be strings')
-        return MappingProxyType({key: freeze_json(item) for key, item in value.items()})
-    if isinstance(value, (tuple, list)):
-        return tuple(freeze_json(item) for item in value)
+    # Numeric trajectory samples dominate these payloads. Validate primitives
+    # before the comparatively costly Mapping ABC checks on every sample.
     if value is None or isinstance(value, (str, bool)):
         return value
     if isinstance(value, (int, float)):
         finite(value)
         return value
+    if isinstance(value, (tuple, list)):
+        return tuple(freeze_json(item) for item in value)
+    if isinstance(value, Mapping):
+        if any(not isinstance(key, str) for key in value):
+            raise ValueError('JSON object keys must be strings')
+        return MappingProxyType({key: freeze_json(item) for key, item in value.items()})
     raise ValueError('Payload must contain JSON data or asset references, not binary objects')
 
 
 def to_dict(value):
+    if type(value) in (str, int, float, bool, type(None)):
+        return value
     if isinstance(value, Enum):
         return value.value
     if is_dataclass(value):

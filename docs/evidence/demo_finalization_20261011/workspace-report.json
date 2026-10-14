@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "checks": [
+    "workspace separation",
+    "keyboard navigation",
+    "intervention cause and timeline",
+    "modal emergency stop",
+    "latch acknowledgement",
+    "reset confirmation",
+    "six responsive viewports",
+    "disconnected controls",
+    "unique IDs",
+    "no runtime errors"
+  ],
+  "layouts": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "overflow": false,
+      "cameraRatio": 2.8819092648879883,
+      "telemetryBottom": 1139.703125
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "overflow": false,
+      "cameraRatio": 4.301207915702904,
+      "telemetryBottom": 827.703125
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "overflow": false,
+      "cameraRatio": 2.9935749164739143,
+      "telemetryBottom": 827.703125
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "overflow": false,
+      "cameraRatio": 1.7777777777777777,
+      "telemetryBottom": 1135.3125
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false,
+      "cameraRatio": 1.7777777777777777,
+      "telemetryBottom": 1133.28125
+    },
+    {
+      "width": 320,
+      "height": 720,
+      "overflow": false,
+      "cameraRatio": 1.7777777777777777,
+      "telemetryBottom": 1112.5
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "scope": "Synthetic measured-history workload, 8 pedestrians and 8 vehicles; no native throughput claim",
+  "native_gate_passed": false,
+  "simulation_degradation_percent": null,
+  "live_comparison": null,
+  "weights_loaded": true,
+  "objects": 16,
+  "valid_modes": 400,
+  "reproducible": true,
+  "cold_latency_ms": 5530.99999999904,
+  "p95_end_to_end_ms": 78.99999999972351,
+  "latency_gate_passed": true,
+  "geometry_p95_ms": 9.47701000040979,
+  "geometry_gate_passed": true,
+  "budget": {
+    "target_s": 1800,
+    "hard_cap_s": 5400,
+    "charged_s": 3665.342999999999,
+    "phases": [
+      [
+        "training",
+        16.078999999999724,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        0.5780000000004293,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        12.359000000000378,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        6.078000000000429,
+        1
+      ],
+      [
+        "native_test_pairs",
+        1500.0,
+        0
+      ],
+      [
+        "trajectron_benchmark",
+        6.719000000000051,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        7.186999999999898,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        7.686999999999898,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        0.0,
+        1
+      ],
+      [
+        "native_test_pairs",
+        0.0,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        385.78200000000015,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        388.1880000000001,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        357.15599999999904,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        281.5149999999994,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        77.98400000000038,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        10.311999999999898,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        600.0,
+        0
+      ],
+      [
+        "trajectron_benchmark",
+        7.718999999999141,
+        1
+      ]
+    ]
+  },
+  "release_predictor": "LIGHTWEIGHT_LEARNED_MOTION",
+  "exclusion_reason": "Trajectron++ full gate is not established: native degradation, safety, arrival and meaningful improvement remain unproven."
+}

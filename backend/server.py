@@ -31,7 +31,7 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def _json(self, status, value):
-        body = json.dumps(value).encode("utf-8")
+        body = json.dumps(value,separators=(',',':'),allow_nan=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
@@ -73,6 +73,10 @@ class Handler(SimpleHTTPRequestHandler):
             if provider is None:
                 return self._json(503, {"error": "CARLA provider is not running"})
             try:
+                if path == '/api/simulation/prediction':
+                    observer = getattr(self.server, 'display_prediction', None)
+                    requested=parse_qs(urlsplit(self.path).query).get('frame_id',[None])[0]
+                    return self._json(200, observer.snapshot(int(requested) if requested is not None else None) if observer else {'status':'UNAVAILABLE'})
                 if path == '/api/simulation/perception':
                     analysis = getattr(self.server, 'perception', None)
                     snapshot = provider.snapshot()
@@ -130,6 +134,7 @@ class Handler(SimpleHTTPRequestHandler):
                         name = parse_qs(urlsplit(self.path).query).get('name', [''])[0]
                         frame, metadata = provider.get_sensor_asset(name, **options)
                     else:
+                        if parse_qs(urlsplit(self.path).query).get('view')==['driving']:options['view']='driving'
                         frame, metadata = provider.get_camera_frame(**options)
                     if not frame:
                         return self._json(503, {"error": "No camera frame yet"})
@@ -163,6 +168,14 @@ class Handler(SimpleHTTPRequestHandler):
                 data = self._read_json()
                 if not isinstance(data, dict):
                     raise ValueError("Expected JSON object")
+                if path in ('/api/simulation/start','/api/simulation/reset-session'):
+                    if getattr(provider,'is_replay',False):raise ValueError('Replay cannot start a simulator')
+                    origins={f'http://{host}:{self.server.server_port}' for host in ('127.0.0.1','localhost','[::1]')}
+                    if self.client_address[0] not in ('127.0.0.1','::1') or self.headers.get('Origin') not in origins|{None}:
+                        return self._json(403,{'error':'Simulation startup is local to this dashboard'})
+                    if self.headers.get_content_type() != 'application/json' or data:
+                        raise ValueError('Simulation startup takes an empty JSON object')
+                    return self._json(202,provider.reset_simulation() if path.endswith('reset-session') else provider.start_simulation())
                 if getattr(provider, 'is_replay', False) and path == '/api/simulation/replay':
                     if set(data)-{'paused', 'timestamp_s'}:
                         raise ValueError('Unknown replay option')
@@ -173,7 +186,8 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(200, {'ok': True, 'mode': 'REPLAY'})
                 if path == '/api/simulation/rl' and not getattr(provider, 'is_replay', False):
                     operation = data.pop('operation', None)
-                    if operation not in ('acquire','reset','step','close','heartbeat','baseline'):
+                    if operation not in ('acquire','reset','step','close','heartbeat','baseline',
+                        'maneuver_acquire','maneuver_reset','maneuver_step','maneuver_close','maneuver_heartbeat'):
                         raise ValueError('Unknown RL operation')
                     return self._json(200, provider.rl_request(operation, **data))
                 provider.require_connected()
@@ -216,12 +230,25 @@ def main():
     parser.add_argument('--replay', help='Read an existing real recorded run; never connects to CARLA')
     parser.add_argument('--experiment-config', help='Strict simulator-independent JSON experiment config')
     parser.add_argument('--restart-ticket', help=argparse.SUPPRESS)
+    parser.add_argument('--stopped-ticket', help=argparse.SUPPRESS)
+    parser.add_argument('--startup-ticket', help=argparse.SUPPRESS)
     parser.add_argument('--start-paused', action='store_true', help='Connect with native brakes applied; requires explicit driving')
+    parser.add_argument('--fresh-start', action='store_true', help='Ignore saved view/population for an empty default session')
+    parser.add_argument('--validation-ticket', help='Explicit expiring RULE integration validation authorization')
     parser.add_argument("--websocket-port", type=int, default=8001)
     args = parser.parse_args()
+    if args.stopped_ticket and (args.carla or args.replay):parser.error('Stopped dashboard cannot own a simulator or replay')
+    if args.startup_ticket and not args.carla:parser.error('Native startup ticket requires CARLA')
     if args.session_duration is not None and args.session_duration <= 0:
         parser.error('Session duration must be positive')
     configure_logging()
+    validation_budget = None
+    if args.validation_ticket:
+        from .learning.native_validation_budget import NativeValidationBudget
+        validation_budget = NativeValidationBudget(args.validation_ticket)
+        remaining = validation_budget.status()['remaining_s']
+        if not args.carla or remaining <= 0: parser.error('Native RULE validation authorization has expired or CARLA is not enabled')
+        args.session_duration = min(args.session_duration or remaining, remaining)
     if args.replay and (args.carla or args.record_run or args.record_log):
         parser.error('Replay, live simulation and recording are separate operating modes')
     if args.record_run and args.record_log:
@@ -255,7 +282,7 @@ def main():
             provider = create_provider('carla', host=args.carla_host, port=args.carla_port,
                                      version=args.carla_version, map_name=args.map,
                                      blueprint=args.vehicle, spawn_index=args.spawn_index,
-                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor, sensor_suite=args.sensors)
+                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor, sensor_suite=args.sensors,fresh_start=args.fresh_start)
             ticket = json.loads(Path(args.restart_ticket).read_text(encoding='utf-8')) if args.restart_ticket else None
             if ticket:
                 provider.camera_settings.update(ticket['configuration']['camera'])
@@ -291,7 +318,7 @@ def main():
                                         created_at_utc=datetime.now(timezone.utc).isoformat(),
                                         config={**(to_dict(config) if config else {}), **provider.recording_metadata()}))
             server.simulation_service = SimulationService(provider, recorder, required_sensors=provider.required_sensors,
-                                                          sensor_timeout_s=.5)
+                                                          sensor_timeout_s=.5, validation_budget=validation_budget)
             server.simulation_service.start()
             if args.start_paused:
                 ready_deadline=time.monotonic()+10
@@ -301,9 +328,25 @@ def main():
             from .carla.restart_helper import dispatch_restart
             provider.restart_handler = lambda launch,previous,configuration: dispatch_restart(
                 server, args, launch, previous, configuration)
+            from .carla.stop_helper import dispatch_stop
+            provider.shutdown_handler=lambda status:dispatch_stop(server,args,status)
+            from .carla.start_helper import dispatch_start
+            provider.startup_handler=lambda status:dispatch_start(server,args,status)
+            provider.reset_handler=lambda status:dispatch_start(server,args,status,fresh=True)
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host,
                                                       args.websocket_port, args.port)
+            server.websocket_bridge.start()
+        elif args.stopped_ticket:
+            from .websocket_bridge import WebSocketBridge
+            from .carla.stop_helper import read_ticket,stopped_service,dispatch_stop
+            from .carla.start_helper import dispatch_start
+            _,ticket=read_ticket(args.stopped_ticket)
+            configuration=ticket.get('configuration') or {'vehicle':args.vehicle,'spawn_index':152,'map':args.map,'fixed_delta':args.fixed_delta}
+            server.simulation_service=stopped_service(ticket,lambda status:dispatch_stop(server,args,status),
+                lambda status:dispatch_start(server,args,status,configuration),lambda status:dispatch_start(server,args,status,fresh=True))
+            server.websocket_port=args.websocket_port
+            server.websocket_bridge=WebSocketBridge(server.simulation_service,args.host,args.websocket_port,args.port)
             server.websocket_bridge.start()
         elif args.replay:
             from .core.replay import ReplayReader
@@ -317,19 +360,53 @@ def main():
             server.websocket_port = args.websocket_port
             server.websocket_bridge = WebSocketBridge(server.simulation_service, args.host, args.websocket_port, args.port)
             server.websocket_bridge.start()
+        else:
+            from .websocket_bridge import WebSocketBridge
+            from .carla.stop_helper import stopped_service,dispatch_stop
+            from .carla.start_helper import dispatch_start
+            server.simulation_service=stopped_service({'result':{'status':'STOPPED'}},
+                lambda status:dispatch_stop(server,args,status),lambda status:dispatch_start(server,args,status),
+                lambda status:dispatch_start(server,args,status,fresh=True))
+            server.websocket_port=args.websocket_port
+            server.websocket_bridge=WebSocketBridge(server.simulation_service,args.host,args.websocket_port,args.port)
+            server.websocket_bridge.start()
         if args.carla:
             from .perception import PerceptionService
             server.perception = PerceptionService(args.port)
+            from .core.display_prediction import DisplayPredictionService
+            server.display_prediction = DisplayPredictionService(server.simulation_service, server.perception)
+            from .computer_vision.service import ControlPerceptionCache
+            server.simulation_service.control_perception = ControlPerceptionCache()
+        if args.startup_ticket:
+            from .carla.stop_helper import read_ticket,save
+            startup_path,startup_ticket=read_ticket(args.startup_ticket)
+            ready=server.simulation_service.snapshot()
+            if ready.get('connected') and ready.get('mode')=='PAUSED' and ready.get('sensorRegistry'):
+                startup_ticket['startup']={'status':'READY','session_id':ready['sessionId']}
+                save(startup_path,startup_ticket)
+                server.simulation_service.simulator_start=startup_ticket['startup']
         log(LogCategory.CONNECTION, 'Control center listening', url=f'http://{args.host}:{args.port}/',
             mode='REPLAY' if args.replay else 'CARLA' if args.carla else 'DISCONNECTED')
         if args.session_duration:
-            timer = threading.Timer(args.session_duration, server.shutdown)
-            timer.daemon = True
-            timer.start()
+            if validation_budget:
+                # A single long monotonic Timer can outlive an absolute grant
+                # across host sleep/clock jumps. Recheck its wall deadline.
+                validation_deadline = time.time() + args.session_duration
+                def expire_validation():
+                    validation_budget.wait_for_expiry(deadline=validation_deadline)
+                    server.shutdown()
+                threading.Thread(target=expire_validation, daemon=True,
+                    name='native-validation-expiry').start()
+            else:
+                timer = threading.Timer(args.session_duration, server.shutdown)
+                timer.daemon = True
+                timer.start()
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        if getattr(server,'display_prediction',None):
+            server.display_prediction.close()
         if getattr(server,'perception',None):
             try: server.perception.close()
             except Exception as error:

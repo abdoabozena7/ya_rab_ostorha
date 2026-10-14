@@ -1,0 +1,412 @@
+/* Approved cool pastel system. Kept after the existing functional layouts. */
+@font-face{font-family:Manrope;src:url('/public/fonts/manrope.ttf') format('truetype');font-style:normal;font-weight:200 800;font-display:swap}
+:root,:root[data-appearance=light],:root[data-appearance=dark]{
+  color-scheme:light;
+  --page:#E6EEFA;--app:#F6FAFE;--navigation:#F9FBFE;--surface:#FFFFFF;--raised:#F3F7FD;
+  --ink:#11182F;--muted:#66738F;--line:#E6ECF6;--input-line:#66738F;
+  --primary:#4B84FC;--primary-hover:#4B84FC;--primary-ink:#FFFFFF;--focus:#4B84FC;
+  --pastel-blue:#E7F0FF;--sky:#E3F4FE;--pastel-mint:#F0FAF7;--success:#00BA69;--success-ink:#11182F;
+  --pastel-pink:#FCEAF3;--danger:#D9254F;--danger-ink:#D9254F;--danger-surface:#FCEAF3;--danger-hover:#FCEAF3;
+  --pastel-lavender:#F1F0FD;--purple:#753CF7;--pastel-amber:#FFF0C7;--warning-ink:#81551B;--warning:#81551B;
+  --overlay:#111827;--camera-bg:#111827;--camera-ink:#FFFFFF;--camera-muted:#E6ECF6;
+  --camera-button:#111827;--camera-line:#66738F;--camera-icon:#E6ECF6;--camera-button-hover:#111827;
+  --bg:var(--app);--text:var(--ink);--accent:var(--primary);--disabled-ink:var(--muted);
+  --radius:16px;--radius-lg:24px;--control-height:44px;--ease:160ms ease;
+  --shadow-soft:0 6px 24px rgba(43,68,112,.06);--shadow-camera:0 8px 28px rgba(43,68,112,.10);
+  --shadow-overlay:0 16px 50px rgba(43,68,112,.18);
+  font-family:Manrope,Inter,'Segoe UI',sans-serif;
+}
+html{height:100%;overflow:hidden}
+body.control-center.light-cockpit{position:relative;display:grid;grid-template-columns:100px minmax(0,1fr);grid-template-rows:100px minmax(0,1fr);gap:18px;padding:18px;height:100dvh;max-height:100dvh;min-height:0;background:var(--page);color:var(--ink);font:500 13px/1.45 Manrope,Inter,'Segoe UI',sans-serif;overflow:hidden;isolation:isolate}
+body.light-cockpit:before{content:'';position:absolute;z-index:-1;inset:18px 18px 18px 136px;background:var(--app);border-radius:30px}
+.light-cockpit button,.light-cockpit input,.light-cockpit select{font-family:inherit;border-radius:16px;transition:background var(--ease),box-shadow var(--ease),border-color var(--ease)}
+.light-cockpit button{font-size:12px;font-weight:700;border-color:var(--line);min-height:44px}
+.light-cockpit button:hover:enabled{border-color:var(--line);background:var(--pastel-blue)}
+.light-cockpit button.primary:hover:enabled{background:var(--primary);box-shadow:0 4px 12px rgba(75,132,252,.2)}
+.light-cockpit :is(button,select,summary,a,input):focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.light-cockpit button:disabled{background:var(--raised);color:var(--muted);border-color:var(--line);box-shadow:none;cursor:not-allowed}
+.light-cockpit :is(h1,h2,h3,h4,strong){color:inherit}
+.light-cockpit h2{font-size:17px;font-weight:700;line-height:1.4}
+.light-cockpit h3{font-size:14px;font-weight:700}
+.light-cockpit .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.light-cockpit .studio-rail{position:relative;inset:auto;grid-column:1;grid-row:1/-1;z-index:30;width:100px;height:100%;display:flex;flex-direction:column;align-items:center;padding:24px 10px;gap:0;border:0;border-radius:30px;background:var(--navigation);color:var(--ink);box-shadow:var(--shadow-soft)}
+.light-cockpit .rail-brand{display:grid;place-items:center;width:56px;height:48px;line-height:1;margin:0 0 36px;padding:0;color:var(--primary)}
+.light-cockpit .rail-brand svg{width:32px;height:32px}
+.light-cockpit .studio-rail .workspace-tabs{display:flex;flex-direction:column;gap:12px;width:100%;margin:0;padding:0;border:0}
+.light-cockpit .studio-rail button,.light-cockpit .studio-rail .workspace-tabs button{display:flex;position:relative;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;width:80px;height:78px;min-height:78px;border:0;border-radius:20px;padding:10px 4px;background:transparent;color:var(--muted);box-shadow:none}
+.light-cockpit .studio-rail button svg{width:23px;height:23px;color:var(--ink)}
+.light-cockpit .studio-rail button span{position:static;opacity:1;pointer-events:none;white-space:normal;top:auto;left:auto;padding:0;border:0;background:transparent;color:inherit;font-size:11px;font-weight:600;line-height:1.3}
+.light-cockpit .studio-rail .workspace-tabs [aria-selected=true]{background:var(--primary);color:var(--surface);box-shadow:0 6px 18px rgba(75,132,252,.20)}
+.light-cockpit .studio-rail [aria-selected=true] svg{color:var(--surface)}
+.light-cockpit .studio-rail button:hover:enabled{background:var(--pastel-blue);color:var(--ink)}
+.light-cockpit .studio-rail [aria-selected=true]:hover:enabled{background:var(--primary);color:var(--surface)}
+.light-cockpit .rail-caption{font-size:9px;line-height:1.5;color:var(--muted);margin-top:auto;white-space:nowrap}
+.light-cockpit[data-ui=guided] .app-header{grid-column:2;grid-row:1;position:relative;top:auto;z-index:20;display:flex;align-items:center;flex-wrap:nowrap;gap:20px;padding:20px 24px;height:100px;min-height:100px;border:0;border-radius:24px;background:var(--surface);box-shadow:var(--shadow-soft)}
+.light-cockpit[data-ui=guided] #brand{display:flex;align-items:center;gap:12px;min-width:290px;width:auto;flex:none}
+.light-cockpit[data-ui=guided] .brand-mark{display:grid;place-items:center;width:48px;height:48px;border:0;border-radius:16px;background:var(--pastel-blue);color:var(--primary)}
+.light-cockpit .brand-mark svg{width:26px;height:26px}
+.light-cockpit[data-ui=guided] .app-header h1{font-size:23px;font-weight:800;letter-spacing:-.8px;line-height:1.2;white-space:nowrap}
+.light-cockpit[data-ui=guided] #brand .eyebrow{display:block;text-transform:none;font-size:12px;letter-spacing:0;color:var(--muted);margin-top:6px}
+.light-cockpit .app-header>.connection,.light-cockpit .studio-town,.light-cockpit #interfaceMode{display:none!important}
+.light-cockpit .cockpit-status-chips{display:flex;align-items:center;gap:8px;flex:1;justify-content:center;min-width:0}
+.light-cockpit .cockpit-chip{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;min-height:38px;border-radius:999px;background:var(--raised);color:var(--muted);white-space:nowrap;font-size:12px;font-weight:700}
+.light-cockpit .cockpit-chip svg{width:17px;height:17px;flex:none}
+.light-cockpit .cockpit-chip i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.light-cockpit .cockpit-chip[data-tone=connected]{background:var(--pastel-mint);color:var(--ink)}
+.light-cockpit .cockpit-chip[data-tone=connected] i{background:var(--success)}
+.light-cockpit .cockpit-chip[data-tone=protection]{background:var(--pastel-lavender);color:var(--purple)}
+.light-cockpit .cockpit-chip[data-tone=warning]{background:var(--pastel-amber);color:var(--warning-ink)}
+.light-cockpit .cockpit-chip[data-tone=danger]{background:var(--pastel-pink);color:var(--danger)}
+.light-cockpit .cockpit-header-actions{display:flex;align-items:center;gap:8px;margin-left:auto;flex:none}
+.light-cockpit #stopSimulatorBtn,.light-cockpit #resetSimulatorBtn{padding:10px 12px;white-space:nowrap;background:var(--pastel-blue);color:var(--ink)}
+.light-cockpit #stopSimulatorBtn{background:var(--pastel-lavender)}
+@media(min-width:768px) and (max-width:1439px){.light-cockpit .cockpit-chip#cockpitDriver{display:none}.light-cockpit[data-ui=guided] #brand{min-width:0}.light-cockpit[data-ui=guided] .app-header h1{font-size:19px}.light-cockpit .cockpit-status-chips{gap:5px}.light-cockpit .cockpit-chip{padding:8px;font-size:10px}.light-cockpit .cockpit-header-actions{gap:5px}.light-cockpit .cockpit-header-actions button{padding:10px}}
+@media(max-width:767px){.light-cockpit .cockpit-header-actions{flex-basis:100%;justify-content:flex-start;flex-wrap:wrap;order:2}}
+.light-cockpit #studioManualStop{min-width:82px;background:var(--raised);color:var(--ink);font-size:12px;padding:10px 16px}
+.light-cockpit[data-ui=guided] #emergencyStopBtn{display:inline-flex;min-height:44px;min-width:0;margin:0;padding:11px 16px;border:0;border-radius:16px;background:var(--pastel-pink);color:var(--danger);font-size:12px;font-weight:800;white-space:nowrap}
+.light-cockpit #emergencyStopBtn:hover:enabled{box-shadow:0 0 0 2px var(--danger-surface)}
+.light-cockpit #acknowledgeStopBtn{font-size:12px;padding:10px 12px;border-radius:16px;white-space:nowrap}
+.light-cockpit[data-ui=guided] .workspace{display:block;grid-column:2;grid-row:2;width:100%;height:100%;min-height:0;margin:0;padding:0;overflow:hidden;background:transparent}
+.light-cockpit .workspace-heading,.light-cockpit .controller-strip,.light-cockpit .app-footer,.light-cockpit .studio-setup-dock,.light-cockpit .studio-setup-shade{display:none!important}
+.light-cockpit[data-ui=guided] #drivePhase,.light-cockpit[data-ui=guided].journey-active #drivePhase{display:block!important;height:100%;min-height:0;overflow:visible}
+.light-cockpit[data-ui=guided] .visual-workspace{display:block;width:100%;height:100%;min-height:0}
+.light-cockpit[data-ui=guided] #cameraCard{display:grid;grid-template-columns:minmax(0,1fr) 224px;grid-template-rows:minmax(0,1fr) 116px;gap:18px;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;overflow:visible;box-shadow:none}
+.light-cockpit[data-ui=guided] #cameraCard .camera-stage,.light-cockpit[data-ui=guided] #cameraCard:not(.camera-expanded) .camera-stage{grid-column:1;grid-row:1;position:relative;display:flex!important;flex-direction:column;flex:none!important;width:100%;height:100%!important;min-height:0!important;overflow:visible!important;gap:0;background:transparent}
+.light-cockpit[data-ui=guided] #frontCameraView,.light-cockpit[data-ui=guided] #cameraCard:not(.camera-expanded) #frontCameraView{position:relative;isolation:isolate;display:block;flex:1;width:100%;height:100%;min-height:0;max-height:none;aspect-ratio:auto;border:0;border-radius:26px;background:var(--overlay);box-shadow:var(--shadow-camera);overflow:hidden}
+.light-cockpit #authoritativeCamera{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;background:var(--overlay);border-radius:0}
+.light-cockpit #cameraCard>.section-heading,.light-cockpit #cameraCard>.camera-tools,.light-cockpit .studio-camera-views,.light-cockpit .studio-hud,.light-cockpit .studio-mode-pill,.light-cockpit .prediction-surroundings,.light-cockpit .prediction-label,.light-cockpit .sensor-overlay-label{display:none!important}
+.light-cockpit .cockpit-camera-tools{position:absolute;z-index:22;display:flex;align-items:flex-start;gap:8px;top:20px;left:20px}
+.light-cockpit .cockpit-camera-select{display:flex;align-items:center;gap:8px;margin:0;padding:0 12px;height:42px;border-radius:999px;background:rgba(17,24,39,.82);color:var(--surface)}
+.light-cockpit .cockpit-camera-select svg{width:19px;height:19px;flex:none}
+.light-cockpit .cockpit-camera-select select{border:0;background:transparent;color:var(--surface);width:126px;min-height:42px;padding:6px 0;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer}
+.light-cockpit .cockpit-camera-select select:disabled{color:var(--line);cursor:wait;background:transparent}
+.light-cockpit .cockpit-camera-select option{background:var(--surface);color:var(--ink)}
+.light-cockpit .cockpit-overlay-settings{position:relative;margin:0;border:0;background:transparent;color:var(--ink);overflow:visible}
+.light-cockpit .cockpit-overlay-settings>summary{display:grid;place-items:center;width:42px;height:42px;min-height:42px;padding:0;list-style:none;border-radius:50%;background:rgba(17,24,39,.82);color:var(--surface);cursor:pointer}
+.light-cockpit .cockpit-overlay-settings>summary::-webkit-details-marker{display:none}
+.light-cockpit .cockpit-overlay-settings>summary svg{width:19px;height:19px}
+.light-cockpit .cockpit-overlay-menu{position:absolute;top:50px;left:0;width:272px;max-width:calc(100vw - 70px);padding:18px;border-radius:20px;background:var(--surface);box-shadow:var(--shadow-overlay);animation:cockpit-reveal 160ms ease-out}
+.light-cockpit .cockpit-overlay-menu strong{display:block;font-size:14px;margin-bottom:12px}
+.light-cockpit .cockpit-overlay-menu label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;min-height:40px;margin:0}
+.light-cockpit .cockpit-overlay-menu input{width:17px;height:17px;min-height:0;accent-color:var(--primary);padding:0}
+.light-cockpit .cockpit-overlay-menu small{margin-left:auto;color:var(--muted)}
+.light-cockpit .cockpit-overlay-menu p{font-size:11px;color:var(--muted);line-height:1.6;margin:10px 0}
+.light-cockpit .cockpit-overlay-menu button{min-height:36px;font-size:11px;padding:7px 10px;width:100%}
+.light-cockpit #expandCameraBtn{position:absolute;z-index:22;top:20px;right:20px;display:grid;place-items:center;min-width:42px;width:42px;height:42px;min-height:42px;padding:10px;border:0;border-radius:50%;background:rgba(17,24,39,.82);color:var(--surface)}
+.light-cockpit #expandCameraBtn svg{width:22px;height:22px}
+.light-cockpit .cockpit-camera-caption{position:absolute;z-index:7;right:20px;bottom:18px;display:flex;gap:12px;align-items:center;border-radius:999px;background:rgba(17,24,39,.72);color:var(--surface);padding:7px 12px;font-size:10px;font-weight:600;letter-spacing:.03em;pointer-events:none}
+.light-cockpit .cockpit-detections{position:absolute;z-index:5;pointer-events:none}
+.light-cockpit .prediction-overlay{z-index:4;pointer-events:none}
+.light-cockpit[data-ui=guided] #cameraUnavailable{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;width:100%;max-width:none;gap:12px;padding:100px 170px 70px 40px;color:var(--line);text-align:center;background:transparent}
+.light-cockpit[data-ui=guided] #cameraUnavailable>.icon{width:36px;height:36px;color:var(--muted)}
+.light-cockpit[data-ui=guided] #cameraUnavailable strong{max-width:440px;font-size:20px;font-weight:700;line-height:1.4;color:var(--surface)}
+.light-cockpit[data-ui=guided] #cameraEmptyDescription{max-width:380px;font-size:12px;line-height:1.7;color:var(--line)}
+.light-cockpit[data-ui=guided] #connectionSetupBtn{min-height:42px;font-size:12px;background:var(--primary);border-color:var(--primary);color:var(--surface);padding:10px 16px}
+.light-cockpit #unifiedMap,.light-cockpit #unifiedMap:not(.map-expanded){position:absolute;z-index:18;inset:78px 20px auto auto;display:block;width:160px;height:160px;min-width:160px;min-height:160px;max-width:160px;max-height:160px;margin:0;padding:0;border:4px solid var(--surface);border-radius:50%;background:var(--raised);box-shadow:var(--shadow-camera);overflow:hidden;transition:width var(--ease),height var(--ease),border-radius var(--ease)}
+.light-cockpit #unifiedMap:not(.map-expanded) :is(header,.map-layer-switch,#unifiedMapRoute,#unifiedMapMeta,.unified-expanded-tools){display:none!important}
+.light-cockpit #unifiedMap:not(.map-expanded) #unifiedMapCanvas{display:block;width:100%;height:100%;min-height:100%;background:var(--raised);cursor:pointer;object-fit:fill}
+.light-cockpit #unifiedMapToggle{position:absolute;z-index:2;inset:0;display:block;width:100%;height:100%;border:0;border-radius:50%;background:transparent;padding:0}
+.light-cockpit #unifiedMapToggle:hover:enabled{background:transparent;box-shadow:inset 0 0 0 2px var(--primary)}
+.light-cockpit #unifiedMap[data-offline=true]:not(.map-expanded):after{content:'Map unavailable';position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--muted);font-size:11px;pointer-events:none}
+.light-cockpit #unifiedMap.map-expanded{inset:20px 20px auto auto;display:flex;width:min(460px,calc(100% - 40px));height:calc(100% - 40px);min-width:0;min-height:0;max-width:calc(100% - 40px);max-height:none;border:1px solid var(--line);border-radius:24px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-overlay);z-index:28}
+.light-cockpit #unifiedMap.map-expanded #unifiedMapToggle{display:none}
+.light-cockpit #unifiedMap.map-expanded header{display:flex;flex:none;align-items:center;justify-content:space-between;padding:12px 16px;gap:8px}
+.light-cockpit #unifiedMap header small{display:block;font-size:9px;color:var(--muted);letter-spacing:.06em}
+.light-cockpit #unifiedMap header strong{font-size:14px}
+.light-cockpit #unifiedMap button{color:var(--ink);background:transparent;border:0;min-height:32px;font-size:11px;padding:5px 8px}
+.light-cockpit #unifiedMap button:hover:enabled{background:var(--pastel-blue)}
+.light-cockpit #unifiedMap .map-layer-switch{padding:0 16px 8px;gap:4px}
+.light-cockpit #unifiedMap .map-layer-switch [aria-pressed=true]{background:var(--pastel-blue)!important;color:var(--primary)!important}
+.light-cockpit #unifiedMap.map-expanded #unifiedMapCanvas{flex:1;height:0;min-height:70px;width:100%;background:var(--raised)}
+.light-cockpit #unifiedMap #unifiedMapRoute{font-size:11px;padding:8px 16px 0;color:var(--ink)}
+.light-cockpit #unifiedMap #unifiedMapMeta{flex:none;font-size:10px;min-height:0;max-height:44px;overflow:hidden;padding:4px 16px 8px;color:var(--muted)}
+.light-cockpit #unifiedMap .unified-expanded-tools{flex:none;padding:8px 16px 12px;background:var(--surface);max-height:40%;overflow:auto;border-color:var(--line)}
+.light-cockpit #unifiedMap :is(.unified-expanded-tools,.unified-expanded-tools label,#unifiedActorInfo){color:var(--ink)}
+.light-cockpit #unifiedMap .unified-zoom button{background:var(--raised)!important;color:var(--ink)}
+.light-cockpit #unifiedMap #unifiedChooseDestination{background:var(--pastel-blue)!important;color:var(--primary)!important}
+.light-cockpit #unifiedMap #unifiedMapActor{background:var(--raised);border-color:var(--line);color:var(--ink);font-size:11px}
+.light-cockpit .studio-safety-alert{position:absolute;z-index:12;display:flex;align-items:center;gap:12px;left:20px;bottom:20px;right:auto;max-width:min(560px,75%);padding:14px 18px;border:0;border-radius:18px;background:var(--pastel-amber);color:var(--warning-ink);box-shadow:var(--shadow-soft)}
+.light-cockpit .studio-safety-alert[data-tone=danger]{background:var(--pastel-pink);color:var(--danger)}
+.light-cockpit .studio-safety-alert[data-tone=neutral]{background:var(--raised);color:var(--ink)}
+.light-cockpit .notice-icon{display:grid;place-items:center;flex:none}
+.light-cockpit .notice-icon svg{width:28px;height:28px}
+.light-cockpit .notice-copy strong{display:block;font-size:14px;font-weight:800}
+.light-cockpit .notice-copy p{font-size:12px;line-height:1.5;margin:3px 0 0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.light-cockpit #cockpitResumeDrive{flex:none;font-size:12px;white-space:nowrap;padding:9px 12px;background:var(--pastel-blue)}
+.light-cockpit .notice-copy{min-width:0;flex:1}
+@media(max-width:767px){.light-cockpit .studio-safety-alert{flex-wrap:wrap}.light-cockpit #cockpitResumeDrive{margin-left:auto}}
+.light-cockpit .cockpit-telemetry{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:12px;min-height:0;padding:18px;background:var(--surface);border-radius:24px;box-shadow:var(--shadow-soft);overflow:auto}
+.light-cockpit .cockpit-speed{flex:1;min-height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 0 8px}
+.light-cockpit .cockpit-rail-heading{display:flex;align-items:center;align-self:flex-start;gap:8px;width:100%;margin-bottom:14px;color:var(--muted)}
+.light-cockpit .cockpit-rail-heading h2{font-size:12px;font-weight:700}
+.light-cockpit .cockpit-rail-heading svg{width:18px;height:18px}
+.light-cockpit .cockpit-gauge{width:100%;position:relative;max-width:195px;height:120px}
+.light-cockpit .cockpit-gauge>svg{width:100%;height:100%;overflow:visible}
+.light-cockpit .cockpit-gauge path{fill:none;stroke-width:8;stroke-linecap:round}
+.light-cockpit .gauge-track{stroke:var(--pastel-blue)}
+.light-cockpit .gauge-value{stroke:var(--primary);stroke-dasharray:0 100;transition:stroke-dasharray 160ms linear}
+.light-cockpit .cockpit-gauge text{font:500 9px Manrope,sans-serif;fill:var(--muted)}
+.light-cockpit .cockpit-speed-value{position:absolute;left:0;right:0;bottom:7px;display:flex;align-items:center;flex-direction:column}
+.light-cockpit .cockpit-speed-value strong{font-size:50px;line-height:1;font-weight:800;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.light-cockpit .cockpit-speed-value span{font-size:11px;color:var(--muted);margin-top:3px}
+.light-cockpit #cockpitTarget{font-size:11px;color:var(--muted);margin:13px 0 0}
+.light-cockpit .cockpit-metric{padding:16px;border-radius:20px;min-height:105px;flex:0 0 auto}
+.light-cockpit .cockpit-brake{background:var(--pastel-pink)}
+.light-cockpit .cockpit-gap{background:var(--pastel-mint)}
+.light-cockpit .cockpit-ttc{background:var(--pastel-lavender)}
+.light-cockpit .cockpit-metric>div:first-child{display:flex;align-items:center;gap:8px}
+.light-cockpit .cockpit-metric svg{width:18px;height:18px;flex:none}
+.light-cockpit .cockpit-brake svg{color:var(--danger)}
+.light-cockpit .cockpit-gap svg{color:var(--muted)}
+.light-cockpit .cockpit-ttc svg{color:var(--purple)}
+.light-cockpit .cockpit-metric h3{font-size:12px;font-weight:700}
+.light-cockpit .cockpit-metric>div>span:not(#cockpitBrakeBar){font-size:10px;margin-left:auto;color:var(--muted)}
+.light-cockpit .cockpit-metric p{display:flex;align-items:baseline;gap:6px;margin:8px 0 2px}
+.light-cockpit .cockpit-metric strong{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15;letter-spacing:-1px}
+.light-cockpit .cockpit-metric p>span{font-size:12px;color:var(--muted)}
+.light-cockpit .cockpit-metric small{display:block;font-size:10px;color:var(--muted);line-height:1.45}
+.light-cockpit .cockpit-brake-track{height:5px;margin-top:12px;border-radius:999px;background:var(--surface);overflow:hidden}
+.light-cockpit #cockpitBrakeBar{display:block;height:100%;width:0;background:var(--danger);border-radius:inherit;transition:width 160ms linear}
+.light-cockpit #cockpitBrakeReason{margin-top:8px;overflow-wrap:anywhere}
+.light-cockpit .cockpit-summary{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:minmax(160px,1fr) repeat(3,minmax(140px,1fr)) auto;align-items:center;gap:16px;padding:16px 20px;border-radius:24px;background:var(--surface);box-shadow:var(--shadow-soft);min-width:0}
+.light-cockpit .cockpit-summary-heading{min-width:0;padding-right:10px}
+.light-cockpit .cockpit-summary-heading h2{font-size:17px}
+.light-cockpit .cockpit-summary-heading p{font-size:11px;color:var(--muted);line-height:1.5;max-width:215px;margin:6px 0 0}
+.light-cockpit .cockpit-object{display:flex;align-items:center;gap:14px;min-width:0;height:84px;border-radius:20px;padding:12px 20px}
+.light-cockpit .cockpit-object>svg{width:29px;height:29px;flex:none}
+.light-cockpit .cockpit-object>div{display:grid;grid-template-columns:auto;gap:2px;min-width:0}
+.light-cockpit .cockpit-object span{font-size:12px;font-weight:600}
+.light-cockpit .cockpit-object strong{font-size:28px;line-height:1.2;font-weight:800;font-variant-numeric:tabular-nums}
+.light-cockpit .cockpit-object small{font-size:9px;color:var(--muted)}
+.light-cockpit .cockpit-object.vehicles{background:var(--sky)}
+.light-cockpit .cockpit-object.people{background:var(--pastel-pink)}
+.light-cockpit .cockpit-object.tracks{background:var(--pastel-lavender)}
+.light-cockpit .cockpit-object.vehicles svg{color:var(--primary)}
+.light-cockpit .cockpit-object.people svg{color:var(--danger)}
+.light-cockpit .cockpit-object.tracks svg{color:var(--purple)}
+.light-cockpit #cockpitViewDetails{padding:10px 8px;border:0;white-space:nowrap;font-size:12px;color:var(--primary);background:transparent}
+.light-cockpit #cockpitViewDetails span{font-size:20px}
+.light-cockpit .cockpit-dialog{width:min(600px,calc(100vw - 36px));max-height:calc(100dvh - 36px);padding:24px;border:1px solid var(--line);border-radius:24px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-overlay);overflow:auto;font-family:inherit;animation:cockpit-reveal 160ms ease-out}
+.light-cockpit dialog::backdrop{background:rgba(17,24,39,.38);backdrop-filter:none}
+.light-cockpit .cockpit-dialog-heading{position:sticky;top:-24px;z-index:10;display:flex;align-items:center;gap:12px;min-height:68px;padding:0 0 16px;background:var(--surface);border-bottom:1px solid var(--line);margin-bottom:18px}
+.light-cockpit .cockpit-dialog-heading>div:first-child,.light-cockpit .cockpit-dialog-heading>h2{margin-right:auto}
+.light-cockpit .cockpit-dialog-heading h2{font-size:20px}
+.light-cockpit .cockpit-dialog-heading .eyebrow{font-size:10px;color:var(--muted);letter-spacing:.06em}
+.light-cockpit .cockpit-dialog-close{border:0;background:var(--raised);font-size:24px;padding:0;width:40px;min-height:40px;border-radius:50%}
+.light-cockpit .cockpit-dialog-emergency{background:var(--pastel-pink);color:var(--danger);border:0;min-height:40px;padding:8px 12px;font-size:11px}
+.light-cockpit .cockpit-scenarios{position:fixed;inset:18px 18px 18px auto;width:440px;max-width:calc(100vw - 36px);height:calc(100dvh - 36px);max-height:none;margin:0;padding:24px;border-radius:24px}
+.light-cockpit[data-ui=guided] .cockpit-scenarios .drive-inspector{position:static;inset:auto;display:block!important;grid-column:auto;grid-row:auto;width:100%;height:auto;max-height:none;overflow:visible;background:transparent;padding:0;box-shadow:none}
+.light-cockpit[data-ui=guided] #guidedDrive{height:auto;max-height:none;overflow:visible;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.light-cockpit .studio-setup-close{display:none!important}
+.light-cockpit .guided-heading p{margin-bottom:16px}
+.light-cockpit .guided-heading h2{font-size:24px;letter-spacing:-.5px}
+.light-cockpit[data-ui=guided] .drive-steps li[aria-current=step]{background:var(--pastel-blue);border-color:transparent;color:var(--primary)}
+.light-cockpit[data-ui=guided] .drive-steps li[aria-current=step] b{background:var(--primary);color:var(--surface);border:0}
+.light-cockpit .studio-control-bar{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;padding:18px 0 0;border-top:1px solid var(--line);background:transparent}
+.light-cockpit .studio-drive-context{width:100%;display:flex;flex-direction:column;gap:4px;font-size:12px}
+.light-cockpit .studio-drive-context>span{font-size:10px;color:var(--muted)}
+.light-cockpit .studio-drive-context>small{color:var(--muted)}
+.light-cockpit .studio-manual-cluster{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%}
+.light-cockpit .studio-manual-modes{display:flex;border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;background:var(--raised)}
+.light-cockpit .studio-manual-modes button{min-height:36px;min-width:90px;border:0;background:transparent;padding:7px 12px;font-size:12px}
+.light-cockpit .studio-manual-modes button[aria-pressed=true]{background:var(--pastel-blue);color:var(--primary)}
+.light-cockpit #studioManualContext{font-size:11px;color:var(--muted)}
+.light-cockpit .studio-drive-buttons{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+.light-cockpit #startDrivingBtn{background:var(--primary);border:0;color:var(--surface);padding:10px 14px;font-size:12px}
+.light-cockpit #startDrivingBtn:disabled{background:var(--raised);color:var(--muted)}
+.light-cockpit #cockpitToolActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.light-cockpit #cockpitToolActions svg{width:20px;height:20px}
+.light-cockpit .cockpit-tool-group{margin-top:20px}
+.light-cockpit .cockpit-tool-group p{font-size:12px;line-height:1.7;color:var(--muted);margin:8px 0 16px}
+.light-cockpit #stopSimulatorBtn{display:inline-flex;font-size:12px;min-height:44px;padding:10px 16px;border:1px solid var(--line);color:var(--ink);background:var(--raised)}
+.light-cockpit .cockpit-details{width:min(900px,calc(100vw - 36px))}
+.light-cockpit .cockpit-details>p{font-size:12px;color:var(--muted);margin:8px 0 16px}
+.light-cockpit .cockpit-details .studio-kpis{margin:12px 0 20px;border-radius:16px}
+.light-cockpit[data-ui=guided] #modelVision,.light-cockpit[data-ui=guided] #modelVision[open]{position:static;inset:auto;display:block;max-height:none;height:auto;width:100%;margin:16px 0;padding:0 16px;background:var(--raised);color:var(--ink);border:0;border-radius:16px;overflow:visible;box-shadow:none}
+.light-cockpit[data-ui=guided] #modelVision[open]>summary{background:var(--raised)}
+.light-cockpit #modelVision #perceptionPanel{max-height:none;color:var(--ink)}
+.light-cockpit #modelVision>.perception-image{background:var(--overlay)}
+.light-cockpit .studio-fullscreen-controls{display:none}
+.light-cockpit[data-ui=guided] #cameraCard.camera-expanded{position:fixed;z-index:180;inset:18px;display:grid;grid-template-columns:minmax(0,1fr) 224px;grid-template-rows:54px minmax(0,1fr);width:auto;height:auto;max-height:none;background:var(--app);border:0;border-radius:30px;padding:16px;gap:16px;box-shadow:0 0 0 100vmax rgba(17,24,39,.6)}
+.light-cockpit[data-ui=guided] #cameraCard.camera-expanded .studio-fullscreen-controls{grid-column:1/-1;grid-row:1;display:flex;align-items:center;gap:8px;padding:0;color:var(--ink)}
+.light-cockpit .studio-fullscreen-controls strong{font-size:14px;margin-right:auto}
+.light-cockpit .studio-fullscreen-controls button{background:var(--surface);color:var(--ink);border:0;min-height:40px;font-size:12px;padding:8px 14px}
+.light-cockpit .studio-fullscreen-controls .emergency{background:var(--pastel-pink);color:var(--danger)}
+.light-cockpit[data-ui=guided] #cameraCard.camera-expanded .camera-stage{grid-column:1;grid-row:2}
+.light-cockpit #cameraCard.camera-expanded .cockpit-telemetry{grid-column:2;grid-row:2}
+.light-cockpit #cameraCard.camera-expanded .cockpit-summary{display:none}
+.light-cockpit[data-ui=guided] #resultsPhase{padding:20px;overflow:auto;background:var(--surface);border-radius:24px;height:100%;min-height:0}
+.light-cockpit .studio-comparison-banner{background:var(--pastel-blue);border:0;border-radius:20px;padding:16px;margin-bottom:16px}
+.light-cockpit .studio-run-panel{border:0;background:var(--pastel-lavender);border-radius:24px;padding:20px;min-height:0}
+.light-cockpit .studio-run-panel[data-mode=NORMAL]{background:var(--pastel-mint)}
+.light-cockpit .studio-result-pair{height:min(60dvh,540px);gap:16px}
+.light-cockpit .studio-run-metrics>div,.light-cockpit .studio-risk-chart{background:var(--surface)}
+.light-cockpit .studio-run-metrics dd{font-weight:800}
+.light-cockpit .run-mode-cta,.light-cockpit .studio-run-panel[data-mode=NORMAL] .run-mode-cta{color:var(--primary);border-color:var(--line);background:var(--surface)}
+.light-cockpit .drawer,.light-cockpit .map-panel,.light-cockpit .phone-panel,.light-cockpit #advancedSetupDialog,.light-cockpit .studio-result-dialog,.light-cockpit #studioShortcutDialog{background:var(--surface);color:var(--ink);border-color:var(--line);border-radius:24px;box-shadow:var(--shadow-overlay);font-family:inherit}
+.light-cockpit #studioShortcutDialog{width:min(520px,calc(100vw - 32px));padding:24px}
+.light-cockpit #studioShortcutDialog header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.light-cockpit #studioShortcutDialog dl{display:grid;grid-template-columns:1fr auto;gap:12px;font-size:12px}
+.light-cockpit #studioShortcutDialog dd{margin:0}
+.light-cockpit .studio-mobile-engine-stop{display:block;width:100%;margin-bottom:16px}
+@keyframes cockpit-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(min-width:1100px) and (max-height:800px){
+  body.control-center.light-cockpit{grid-template-rows:84px minmax(0,1fr);padding:16px;gap:16px}
+  .light-cockpit[data-ui=guided] .app-header{height:84px;min-height:84px}
+  .light-cockpit[data-ui=guided] #cameraCard{grid-template-rows:minmax(0,1fr) 106px;gap:16px}
+  .light-cockpit .cockpit-telemetry{padding:14px;gap:10px}
+  .light-cockpit .cockpit-speed{min-height:150px;padding:0}
+  .light-cockpit .cockpit-gauge{height:100px;max-width:166px}
+  .light-cockpit .cockpit-speed-value strong{font-size:46px}
+  .light-cockpit .cockpit-rail-heading{margin-bottom:8px}
+  .light-cockpit .cockpit-metric{padding:12px;min-height:90px}
+  .light-cockpit .cockpit-metric strong{font-size:26px}
+  .light-cockpit .cockpit-summary{padding:12px 16px}
+}
+@media(min-width:1100px) and (max-width:1439px){
+  body.control-center.light-cockpit{grid-template-columns:84px minmax(0,1fr);padding:16px;gap:16px}
+  body.light-cockpit:before{inset:16px 16px 16px 116px}
+  .light-cockpit .studio-rail{width:84px;padding:22px 8px}
+  .light-cockpit .studio-rail button,.light-cockpit .studio-rail .workspace-tabs button{width:68px;height:72px;min-height:72px}
+  .light-cockpit[data-ui=guided] .app-header{padding:16px;gap:12px}
+  .light-cockpit[data-ui=guided] #brand{min-width:250px;gap:10px}
+  .light-cockpit[data-ui=guided] .app-header h1{font-size:20px}
+  .light-cockpit .cockpit-status-chips{gap:5px}
+  .light-cockpit .cockpit-chip{padding:9px;font-size:11px;gap:5px}
+  .light-cockpit[data-ui=guided] #cameraCard{grid-template-columns:minmax(0,1fr) 208px;gap:16px}
+  .light-cockpit #unifiedMap,.light-cockpit #unifiedMap:not(.map-expanded){width:132px;height:132px;min-width:132px;min-height:132px;max-width:132px;max-height:132px}
+  .light-cockpit .cockpit-summary{grid-template-columns:minmax(140px,.9fr) repeat(3,minmax(125px,1fr)) auto;gap:12px}
+  .light-cockpit .cockpit-object{padding:12px;gap:10px}
+}
+@media(max-width:1099px){
+  html{height:auto;overflow:auto}
+  body.control-center.light-cockpit{display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-rows:84px minmax(0,1fr);height:auto;min-height:100dvh;max-height:none;padding:12px;gap:12px;overflow:visible}
+  body.light-cockpit:before{inset:12px 12px 12px 100px}
+  .light-cockpit .studio-rail{position:sticky;top:12px;width:76px;height:calc(100dvh - 24px);padding:20px 6px;border-radius:26px}
+  .light-cockpit .studio-rail button,.light-cockpit .studio-rail .workspace-tabs button{width:64px;height:68px;min-height:68px;border-radius:18px}
+  .light-cockpit .studio-rail button span{font-size:10px}
+  .light-cockpit .rail-brand{margin-bottom:24px}
+  .light-cockpit .rail-caption{font-size:8px}
+  .light-cockpit[data-ui=guided] .app-header{height:84px;min-height:84px;gap:12px;padding:14px 16px}
+  .light-cockpit[data-ui=guided] #brand{min-width:0;flex:1}
+  .light-cockpit[data-ui=guided] .app-header h1{font-size:19px;letter-spacing:-.6px}
+  .light-cockpit[data-ui=guided] #brand .eyebrow{font-size:11px}
+  .light-cockpit .cockpit-status-chips{position:absolute;top:100px;left:0;right:0;justify-content:flex-start;z-index:25;gap:8px}
+  .light-cockpit .cockpit-chip{padding:8px 10px;font-size:11px;min-height:34px}
+  .light-cockpit .cockpit-header-actions{margin:0;gap:6px}
+  .light-cockpit[data-ui=guided] .workspace{height:auto;padding-top:46px;overflow:visible}
+  .light-cockpit[data-ui=guided] #drivePhase,.light-cockpit[data-ui=guided] .visual-workspace{height:auto;overflow:visible}
+  .light-cockpit[data-ui=guided] #cameraCard{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(350px,calc(100dvh - 370px)) auto auto;gap:12px;overflow:visible}
+  .light-cockpit[data-ui=guided] #cameraCard .camera-stage{grid-column:1;grid-row:1}
+  .light-cockpit[data-ui=guided] #frontCameraView{border-radius:24px;min-height:0}
+  .light-cockpit .cockpit-telemetry{grid-column:1;grid-row:2;display:grid;grid-template-columns:1.1fr repeat(3,1fr);gap:10px;padding:14px}
+  .light-cockpit .cockpit-speed{min-height:0;padding:0;justify-content:center}
+  .light-cockpit .cockpit-gauge{height:90px;max-width:150px}
+  .light-cockpit .cockpit-speed-value strong{font-size:38px}
+  .light-cockpit .cockpit-rail-heading{margin-bottom:6px}
+  .light-cockpit .cockpit-rail-heading h2{font-size:11px}
+  .light-cockpit #cockpitTarget{margin-top:6px;font-size:10px}
+  .light-cockpit .cockpit-metric{min-height:0;display:flex;flex-direction:column;justify-content:center;padding:12px}
+  .light-cockpit .cockpit-metric h3{font-size:11px}
+  .light-cockpit .cockpit-metric svg{width:16px;height:16px}
+  .light-cockpit .cockpit-brake>div:first-child>span{display:none}
+  .light-cockpit .cockpit-metric strong{font-size:26px}
+  .light-cockpit .cockpit-summary{grid-column:1;grid-row:3;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:16px}
+  .light-cockpit .cockpit-summary-heading{grid-column:1/3;padding:0}
+  .light-cockpit .cockpit-summary-heading p{max-width:none;margin-top:4px}
+  .light-cockpit .cockpit-object{grid-row:2;height:82px;gap:10px;padding:12px}
+  .light-cockpit #cockpitViewDetails{grid-column:3;grid-row:1;justify-self:end}
+  .light-cockpit #unifiedMap,.light-cockpit #unifiedMap:not(.map-expanded){width:128px;height:128px;min-width:128px;min-height:128px;max-width:128px;max-height:128px}
+  .light-cockpit[data-ui=guided] #cameraCard.camera-expanded{grid-template-columns:minmax(0,1fr);grid-template-rows:50px minmax(0,1fr) auto;inset:12px;padding:12px}
+  .light-cockpit #cameraCard.camera-expanded .cockpit-telemetry{grid-column:1;grid-row:3}
+  .light-cockpit .studio-fullscreen-controls strong{display:none}
+  .light-cockpit[data-ui=guided] #resultsPhase{height:auto;min-height:calc(100dvh - 160px);overflow:visible;padding:16px}
+  .light-cockpit .studio-result-pair{height:auto;min-height:480px}
+  .light-cockpit .studio-run-panel{height:auto;padding:16px}
+  .light-cockpit .studio-run-metrics>div{min-height:85px}
+}
+@media(max-width:767px){
+  body.control-center.light-cockpit{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;gap:10px;padding:10px 10px 86px}
+  body.light-cockpit:before{inset:10px 10px 82px}
+  .light-cockpit .studio-rail{position:fixed;z-index:70;inset:auto 10px 10px;display:flex;flex-direction:row;justify-content:center;width:auto;height:66px;border-radius:22px;padding:6px;box-shadow:var(--shadow-overlay)}
+  .light-cockpit .studio-rail .workspace-tabs{display:flex;flex-direction:row;gap:3px;width:100%;justify-content:space-between}
+  .light-cockpit .studio-rail button,.light-cockpit .studio-rail .workspace-tabs button{flex:1;width:auto;height:54px;min-height:54px;padding:5px 3px;border-radius:16px;gap:3px}
+  .light-cockpit .studio-rail button svg{width:21px;height:21px}
+  .light-cockpit .studio-rail button span{font-size:9px}
+  .light-cockpit .rail-brand,.light-cockpit .rail-caption{display:none}
+  .light-cockpit[data-ui=guided] .app-header{grid-column:1;grid-row:1;position:sticky;top:10px;height:auto;min-height:110px;align-self:start;flex-wrap:wrap;padding:12px;gap:10px 8px;border-radius:22px}
+  .light-cockpit[data-ui=guided] #brand{gap:8px;min-width:0}
+  .light-cockpit[data-ui=guided] .brand-mark{display:none}
+  .light-cockpit[data-ui=guided] .app-header h1{font-size:14px;letter-spacing:-.4px;white-space:normal;max-width:135px}
+  .light-cockpit[data-ui=guided] #brand .eyebrow{font-size:10px;margin-top:4px}
+  .light-cockpit #studioManualStop{min-width:52px;min-height:42px;padding:8px;font-size:11px}
+  .light-cockpit[data-ui=guided] #emergencyStopBtn{min-height:42px;padding:8px 10px;font-size:10px;max-width:110px;white-space:normal;gap:5px;line-height:1.3}
+  .light-cockpit .cockpit-status-chips{position:static;order:3;display:flex;justify-content:flex-start;flex-wrap:wrap;flex:none;width:100%;gap:5px}
+  .light-cockpit .cockpit-chip{font-size:10px;min-height:28px;padding:6px 8px;gap:4px}
+  .light-cockpit .cockpit-chip svg{width:13px;height:13px}
+  .light-cockpit[data-ui=guided] .workspace{grid-column:1;grid-row:2;height:auto;padding:0}
+  .light-cockpit[data-ui=guided] #cameraCard{grid-template-rows:clamp(250px,70vw,400px) auto auto;gap:10px}
+  .light-cockpit .cockpit-camera-tools{left:12px;top:12px;gap:6px}
+  .light-cockpit .cockpit-camera-select{height:38px;padding:0 10px;gap:6px}
+  .light-cockpit .cockpit-camera-select svg{width:16px;height:16px}
+  .light-cockpit .cockpit-camera-select select{min-height:38px;width:106px;font-size:11px}
+  .light-cockpit .cockpit-overlay-settings>summary{width:38px;height:38px;min-height:38px}
+  .light-cockpit .cockpit-overlay-menu{left:-160px;top:46px;width:260px;max-width:calc(100vw - 44px)}
+  .light-cockpit #expandCameraBtn{top:12px;right:12px;width:38px;height:38px;min-height:38px;padding:9px}
+  .light-cockpit #unifiedMap,.light-cockpit #unifiedMap:not(.map-expanded){inset:65px 12px auto auto;width:90px;height:90px;min-width:90px;min-height:90px;max-width:90px;max-height:90px;border-width:3px}
+  .light-cockpit #unifiedMap[data-offline=true]:not(.map-expanded):after{font-size:9px;padding:10px}
+  .light-cockpit #unifiedMap.map-expanded{inset:10px;max-width:none;max-height:none;min-width:0;min-height:0;width:calc(100% - 20px);height:calc(100% - 20px)}
+  .light-cockpit #unifiedMap .unified-expanded-tools{max-height:46%;padding:7px 12px}
+  .light-cockpit #unifiedMap.map-expanded header{padding:8px 12px}
+  .light-cockpit #unifiedMap.map-expanded #unifiedMapCanvas{min-height:35px}
+  .light-cockpit[data-ui=guided] #cameraUnavailable{padding:85px 70px 55px 18px;gap:10px}
+  .light-cockpit[data-ui=guided] #cameraUnavailable strong{font-size:16px;max-width:240px}
+  .light-cockpit[data-ui=guided] #cameraEmptyDescription{font-size:11px;max-width:220px;line-height:1.6}
+  .light-cockpit[data-ui=guided] #cameraUnavailable>.icon{width:26px;height:26px}
+  .light-cockpit .cockpit-camera-caption{right:12px;bottom:12px;font-size:9px;padding:6px 9px;gap:8px}
+  .light-cockpit .studio-safety-alert{left:12px;right:12px;bottom:45px;max-width:none;padding:10px 12px;gap:8px;border-radius:16px}
+  .light-cockpit .notice-icon svg{width:23px;height:23px}
+  .light-cockpit .notice-copy strong{font-size:12px}
+  .light-cockpit .notice-copy p{font-size:11px}
+  .light-cockpit .cockpit-telemetry{grid-template-columns:1fr 1fr;gap:10px;padding:12px;border-radius:22px}
+  .light-cockpit .cockpit-speed{min-height:148px;padding:4px}
+  .light-cockpit .cockpit-metric{padding:14px;min-height:108px}
+  .light-cockpit .cockpit-metric h3{font-size:12px}
+  .light-cockpit .cockpit-metric strong{font-size:28px}
+  .light-cockpit .cockpit-summary{gap:8px;padding:14px;border-radius:22px}
+  .light-cockpit .cockpit-summary-heading h2{font-size:15px}
+  .light-cockpit .cockpit-summary-heading p{font-size:10px}
+  .light-cockpit .cockpit-object{height:110px;flex-direction:column;gap:6px;align-items:flex-start;padding:12px;border-radius:16px}
+  .light-cockpit .cockpit-object>svg{width:23px;height:23px}
+  .light-cockpit .cockpit-object span{font-size:10px}
+  .light-cockpit .cockpit-object strong{font-size:24px}
+  .light-cockpit .cockpit-object small{font-size:8px;line-height:1.3}
+  .light-cockpit #cockpitViewDetails{font-size:10px;min-height:36px;padding:6px 0}
+  .light-cockpit .cockpit-dialog{max-width:calc(100vw - 20px);width:calc(100vw - 20px);padding:18px;border-radius:22px;max-height:calc(100dvh - 20px)}
+  .light-cockpit .cockpit-scenarios{inset:10px 10px 10px auto;height:calc(100dvh - 20px);max-height:none}
+  .light-cockpit .cockpit-dialog-heading{top:-18px;gap:8px;margin-bottom:16px;padding-bottom:12px}
+  .light-cockpit .cockpit-dialog-heading h2{font-size:17px}
+  .light-cockpit .cockpit-dialog-emergency{max-width:100px;white-space:normal;font-size:10px;padding:6px 8px;line-height:1.4}
+  .light-cockpit .cockpit-details .studio-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .light-cockpit .cockpit-details .studio-kpis strong{font-size:20px}
+  .light-cockpit .cockpit-details .studio-kpis>div{padding:10px}
+  .light-cockpit[data-ui=guided] #modelVision #perceptionPanel{display:flex;flex-direction:column}
+  .light-cockpit[data-ui=guided] .drive-steps li:not([aria-current=step]):not([data-complete=true]){display:flex}
+  .light-cockpit[data-ui=guided] #cameraCard.camera-expanded{inset:6px;padding:8px;grid-template-rows:44px minmax(0,1fr);gap:8px;border-radius:22px}
+  .light-cockpit #cameraCard.camera-expanded .cockpit-telemetry{display:none}
+  .light-cockpit .studio-fullscreen-controls{justify-content:space-between;gap:4px}
+  .light-cockpit .studio-fullscreen-controls button{font-size:10px;padding:8px;min-height:38px;white-space:normal}
+  .light-cockpit #studioFullscreenClose{font-size:0;width:32px;flex:none}
+  .light-cockpit #studioFullscreenClose:after{content:'×';font-size:23px}
+  .light-cockpit .studio-result-pair{grid-template-columns:1fr;height:auto;min-height:480px}
+  .light-cockpit .studio-run-switch{display:flex}
+  .light-cockpit .journey-comparison[data-focus-mode=ROBOSPHERE] .studio-run-panel[data-mode=NORMAL],.light-cockpit .journey-comparison[data-focus-mode=NORMAL] .studio-run-panel[data-mode=ROBOSPHERE]{display:none}
+  .light-cockpit .studio-result-controls{flex-wrap:wrap;gap:8px}
+  .light-cockpit .analysis-heading{flex-wrap:wrap;gap:8px}
+  .light-cockpit .analysis-heading>div{flex:1 1 100%;min-width:0}
+  .light-cockpit .analysis-heading h2{font-size:21px}
+  .light-cockpit .studio-run-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .light-cockpit .studio-result-pair .studio-run-panel{padding:14px}
+  .light-cockpit .studio-run-panel h3{font-size:18px}
+}
+@media(prefers-reduced-motion:reduce){.light-cockpit *,.light-cockpit *:before,.light-cockpit *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

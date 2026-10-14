@@ -1,0 +1,28 @@
+{
+  "position": [
+    -80.97439575195312,
+    24.6741886138916,
+    -0.004675674252212048
+  ],
+  "expected": [
+    -80.97439575195312,
+    24.6741886138916,
+    -0.0047306823544204235
+  ],
+  "destination": {
+    "id": "map-61ec6c341a",
+    "name": "Road destination 466",
+    "map": "Carla/Maps/Town10HD_Opt",
+    "location": [
+      -48.71879577636719,
+      31.165721893310547,
+      0.0
+    ],
+    "spawn_index": null,
+    "road_id": 466,
+    "lane_id": 1,
+    "source": "CARLA_WORLD"
+  },
+  "mode": "PAUSED",
+  "speed_kmh": 0.0
+}

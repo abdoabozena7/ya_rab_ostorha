@@ -1,0 +1,288 @@
+{
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_eaf8370a031c49159633dfeccb265d19",
+  "reason": "destination_arrived",
+  "destination_arrived": true,
+  "independently_verified_arrival": true,
+  "destination_distance_m": 1.226053498097171,
+  "final_speed_mps": 0.0034245136985321272,
+  "collision_count": 0,
+  "collision_callbacks": 0,
+  "duration_sim_s": 133.10000198334455,
+  "distance_traveled_m": 187.83604581392078,
+  "stopped_s": 55.550000827759504,
+  "longest_stop_s": 21.000000312924385,
+  "geometry_p95_ms": 7.9966899994360565,
+  "controller_p95_ms": 13.507170000411861,
+  "useful_route_progress_m": 184.27992915648875,
+  "route_completion": 0.9939532041246029,
+  "interventions": 184,
+  "intervention_s": 53.85000080242753,
+  "emergency_s": 0.0,
+  "reason_durations_s": {
+    "Monitoring resumes with normal forward driving": 0.10000000149011612,
+    "Measured obstacle": 27.000000402331352,
+    "Measured corridor clear": 69.30000103265047,
+    "Predicted time-aligned occupancy conflict": 32.95000049099326,
+    "Holding for three clear readings and minimum hold": 3.7500000558793545
+  },
+  "initial_poses_match_failed_run": {
+    "passed": true,
+    "maximum_position_error_m": 0.0,
+    "maximum_velocity_error_mps": 0.0,
+    "maximum_rotation_error_rad": 0.0
+  },
+  "side": "RULE",
+  "seed": 2811,
+  "weights_sha256": "511a67dce5a0370f3cdfb2150e4abc74cce103be531aa9d48c96989ddb78a29e",
+  "weights_unchanged": true,
+  "code_checksums": {
+    "backend/core/prediction.py": "18dcdb616902daa54f21fa701f2142b81be68551e902cd87f40b223aa9ad8f93",
+    "backend/core/predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend/carla/urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend/carla/comparison_v2.py": "2dce01ec288a49c7fc9295437cf5af487a356279357c106f36afcc218987b2e5"
+  },
+  "source_manifest_sha256": "26f1bb565e3de01333432c617fa4de1d59308a421d78f4accdd13bf4289de630",
+  "wall_s": 241.40600000000086,
+  "samples": [
+    {
+      "wall_s": 0.11,
+      "phase": "FINISHED",
+      "speed_kmh": 0.0,
+      "remaining_m": 1.0798055064357968,
+      "risk": "UNKNOWN",
+      "reason": "Monitoring resumes with normal forward driving",
+      "measured_range_m": null,
+      "target_speed_mps": null
+    },
+    {
+      "wall_s": 10.14,
+      "phase": "RUNNING",
+      "speed_kmh": 6.5260015690176125,
+      "remaining_m": 183.0501911257184,
+      "risk": "PREDICTED_CONFLICT",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "measured_range_m": 21.500652313232422,
+      "target_speed_mps": 0.9597061130908254
+    },
+    {
+      "wall_s": 20.22,
+      "phase": "RUNNING",
+      "speed_kmh": 3.092734674774432,
+      "remaining_m": 178.3587807756895,
+      "risk": "CLEAR",
+      "reason": "Measured obstacle",
+      "measured_range_m": 39.77658462524414,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 30.27,
+      "phase": "RUNNING",
+      "speed_kmh": 14.708715839593909,
+      "remaining_m": 170.81009250413123,
+      "risk": "PREDICTED_CONFLICT",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "measured_range_m": 32.35736083984375,
+      "target_speed_mps": 2.8751605036243237
+    },
+    {
+      "wall_s": 40.34,
+      "phase": "RUNNING",
+      "speed_kmh": 10.409500274997576,
+      "remaining_m": 159.17596075780855,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 50.38,
+      "phase": "RUNNING",
+      "speed_kmh": 0.22307824555961142,
+      "remaining_m": 151.24519754555962,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 60.45,
+      "phase": "RUNNING",
+      "speed_kmh": 4.639844298233748,
+      "remaining_m": 150.03210012998815,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 70.48,
+      "phase": "RUNNING",
+      "speed_kmh": 0.002960051625123425,
+      "remaining_m": 150.43572225941728,
+      "risk": "PREDICTED_CONFLICT",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "measured_range_m": null,
+      "target_speed_mps": 0.0005090035863307476
+    },
+    {
+      "wall_s": 80.52,
+      "phase": "RUNNING",
+      "speed_kmh": 1.5474480556165262,
+      "remaining_m": 147.11879829583174,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 90.55,
+      "phase": "RUNNING",
+      "speed_kmh": 1.058185945992466,
+      "remaining_m": 145.73772802087882,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 100.56,
+      "phase": "RUNNING",
+      "speed_kmh": 16.620819590566295,
+      "remaining_m": 133.1863358215462,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 110.67,
+      "phase": "RUNNING",
+      "speed_kmh": 0.01531954398662436,
+      "remaining_m": 126.46057877440703,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 120.69,
+      "phase": "RUNNING",
+      "speed_kmh": 0.0029205644011961007,
+      "remaining_m": 124.7307011334037,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 130.69,
+      "phase": "RUNNING",
+      "speed_kmh": 13.461473096665507,
+      "remaining_m": 121.30411912354866,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 140.72,
+      "phase": "RUNNING",
+      "speed_kmh": 3.1275272279733733e-06,
+      "remaining_m": 113.02309651020725,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 150.75,
+      "phase": "RUNNING",
+      "speed_kmh": 4.497565482565303e-06,
+      "remaining_m": 113.02309651020725,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 160.83,
+      "phase": "RUNNING",
+      "speed_kmh": 1.3050261244125638e-06,
+      "remaining_m": 113.02309651020725,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 170.84,
+      "phase": "RUNNING",
+      "speed_kmh": 5.465801559890169,
+      "remaining_m": 110.1767119746922,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 180.89,
+      "phase": "RUNNING",
+      "speed_kmh": 2.429731161981073,
+      "remaining_m": 102.53317954142956,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 190.89,
+      "phase": "RUNNING",
+      "speed_kmh": 13.573626420738252,
+      "remaining_m": 87.38839451409972,
+      "risk": "PREDICTED_CONFLICT",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "measured_range_m": null,
+      "target_speed_mps": 2.513634522358936
+    },
+    {
+      "wall_s": 200.91,
+      "phase": "RUNNING",
+      "speed_kmh": 0.007181822761393288,
+      "remaining_m": 78.8907726335658,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 210.94,
+      "phase": "RUNNING",
+      "speed_kmh": 0.002437441847031358,
+      "remaining_m": 63.534215715909525,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 220.95,
+      "phase": "RUNNING",
+      "speed_kmh": 13.828820441997957,
+      "remaining_m": 46.991373211333304,
+      "risk": "CLEAR",
+      "reason": "Measured obstacle",
+      "measured_range_m": 20.753875732421875,
+      "target_speed_mps": 5.555555555555555
+    },
+    {
+      "wall_s": 231.03,
+      "phase": "RUNNING",
+      "speed_kmh": 14.18462249014638,
+      "remaining_m": 18.218919189245916,
+      "risk": "CLEAR",
+      "reason": "Measured corridor clear",
+      "measured_range_m": null,
+      "target_speed_mps": 5.555555555555555
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "side": "RULE",
+  "reason": "destination_arrived",
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_eaf8370a031c49159633dfeccb265d19",
+  "completed": true,
+  "destination_arrived": true,
+  "collision": false,
+  "status": "ARRIVED",
+  "metrics": {
+    "unnecessary_waiting_s": 5.15000007674098,
+    "harsh_braking_events": 144,
+    "emergency_intervention_s": 0.0,
+    "duration_s": 133.00000198185444,
+    "destination_arrived": true
+  },
+  "attempt_id": "72a79a81ae0b400788807fa5418e78a2",
+  "initial_condition_audit": {
+    "passed": true,
+    "maximum_position_error_m": 0.0,
+    "maximum_velocity_error_mps": 0.0,
+    "maximum_rotation_error_rad": 0.0,
+    "configuration_matches": true,
+    "traffic_lights_match": true
+  },
+  "outcome_metrics": {
+    "collision_callback_count": 0,
+    "collision_count": 0,
+    "collision_impulse_total_ns": 0.0,
+    "collision_peak_impulse_ns": 0.0,
+    "distance_traveled_m": 187.83550981077073,
+    "progress_m": 184.27992915648875,
+    "elapsed_simulation_s": 133.0500019825995,
+    "average_speed_mps": 1.4117663059887529,
+    "minimum_clearance_m": 0.11232171043086571,
+    "minimum_ttc_s": null,
+    "near_miss_count": null,
+    "emergency_braking_frequency": null,
+    "steering_intervention_frequency": null,
+    "safety_intervention_count": 184,
+    "unsafe_intervention_count": null,
+    "route_completion": 0.9939532041246029,
+    "control_variation": 395.9059580679807,
+    "progress_under_congestion_m": null
+  },
+  "source": "Existing native recording; no new experiment"
+}

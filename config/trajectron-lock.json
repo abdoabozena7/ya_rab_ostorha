@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/StanfordASL/Trajectron-plus-plus.git",
+  "revision": "ef0165a93ee5ba8cdc14f9b999b3e00070cd8588",
+  "branch": "eccv2020",
+  "configuration": "experiments/nuScenes/models/int_ee/config.json",
+  "config_sha256": "3538638ef65601e80dd2ac146d1a3f7ca87fa28fc2936bae2cb2adea2b18923d",
+  "weights": "experiments/nuScenes/models/int_ee/model_registrar-12.pt",
+  "weights_sha256": "3fcc65cd8f48b70fce4965813e503e03c664e027f1f83f8a27d317773a138028",
+  "sampling_s": 0.5,
+  "prediction_steps": 6,
+  "max_objects": 16,
+  "status": "BENCHMARKED_PARTIAL_GATE_ONLY"
+}

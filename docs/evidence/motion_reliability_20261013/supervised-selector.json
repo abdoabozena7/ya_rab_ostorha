@@ -1,0 +1,95 @@
+{
+  "type": "SUPERVISED_SELECTION_CORRECTION",
+  "control_accepted": false,
+  "test_read": false,
+  "labels": "Subsequently measured tracks; sensor consistency labels, not independent simulator truth",
+  "rl_training": false,
+  "train": {
+    "samples": 121,
+    "moving_samples": 12,
+    "unobservable": 371,
+    "sources": [
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-adjacent_occupied.json",
+        "sha256": "9fcf40837aa945d2ceb96ec585886a2cdab5067ffccfd4523285051cd088a776"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-clear.json",
+        "sha256": "11974d107c30fc3a18ae5d54c6b1d5db8a9c12d22071781bd6ca45ae363cd6ba"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-crossing_person.json",
+        "sha256": "71c8f2c8cdc82b78984cd7f3f883aa2902cff4513f3474318faab17792819a4a"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-cut_in.json",
+        "sha256": "5c779df10bbe930ecf2c427376abe41ff39130536e5327cafb84861786a7021f"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-parallel_person.json",
+        "sha256": "933dd99c878d002036485cdf4219ecae9c95817f21b675e288d0ece0bb6339c7"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-parked_side.json",
+        "sha256": "45a1a2d42603df1c939390be044abdfea04b73bd15b4f97d873bf3c1d390222d"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-pass_return.json",
+        "sha256": "832afbd61a1cb0d1a0b24d744f9462774e31bb3a08664c28deb72b212741d4d6"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-rear_approach.json",
+        "sha256": "e63f6921e5355e6ae6ee6715952cccef97873cdd2b6625ab558fa8baec1b938d"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-TRAIN-sudden_brake.json",
+        "sha256": "38e6643b7d12b7eb5587ca5c7a185c064a840631b80fd9fb9ae9a7c1616078ef"
+      }
+    ]
+  },
+  "validation": {
+    "samples": 70,
+    "moving_samples": 5,
+    "unobservable": 423,
+    "sources": [
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-adjacent_occupied.json",
+        "sha256": "395c6c0f47cdbfbf144e2edf6ea9ca7a3a1b541465671f814ab743fa53bf0055"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-clear.json",
+        "sha256": "f842587f18459c7af4d38de37adebb6257819461d5be78a2691eb816153d74be"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-crossing_person.json",
+        "sha256": "eca90b8b5de8fbfdb6362401a451ea4ba0b7e5da97e9d46c0e5d5160a3e27652"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-cut_in.json",
+        "sha256": "e30d153e0772660cdf9091d6811579648aed6348c29d75cb21de4db9b6e24652"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-parallel_person.json",
+        "sha256": "42d33aabe912b3a261a50d644047c4fd72222a1c663e4448a23a85e43fcbb0c9"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-parked_side.json",
+        "sha256": "58d5b50e57d83c3aa8076d3c9e1985c43e830bc0c548cbb945beacf8156a1fac"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-pass_return.json",
+        "sha256": "07a611b985fc656945bd9698f6a6815b8e4636596a7841d4b353331f80a85be4"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-rear_approach.json",
+        "sha256": "7fb66c0b8bcb9ee06019d279a04dff412be562fedbbf8cc69fa87c10c7048db3"
+      },
+      {
+        "path": "output\\motion-reliability\\fixture-VALIDATION-sudden_brake.json",
+        "sha256": "3c95a439450fc39930a7e0889683fce2fba1e4be1bf1b3f0b4dc09851be2a5b9"
+      }
+    ]
+  },
+  "trained": false,
+  "reason": "Insufficient measured moving trajectories; refusing a stationary-dominated fit"
+}

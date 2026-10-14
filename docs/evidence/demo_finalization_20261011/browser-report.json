@@ -1,0 +1,178 @@
+{
+  "status": "PASS",
+  "nativeCommandsSent": 0,
+  "checks": [
+    "RULE primary/default",
+    "MODEL experimental",
+    "queued stop",
+    "manual start/stop",
+    "reset confirmation",
+    "emergency latch",
+    "five camera controls",
+    "saved arrival distinct from interrupted retry",
+    "budget blocker",
+    "offline result retention",
+    "responsive layouts",
+    "no browser errors"
+  ],
+  "layouts": [
+    {
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "width": 1366,
+      "height": 768
+    },
+    {
+      "width": 900,
+      "height": 900
+    },
+    {
+      "width": 430,
+      "height": 900
+    },
+    {
+      "width": 320,
+      "height": 720
+    }
+  ],
+  "commands": [
+    {
+      "type": "comparison_v2",
+      "value": {
+        "operation": "RUN",
+        "side": "RULE"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "comparison_v2_stop"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "comparison_v2",
+      "value": {
+        "operation": "RUN",
+        "side": "MODEL"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "start_driving"
+    },
+    {
+      "type": "controls"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "reset"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "emergency_stop"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "acknowledge_stop"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "settings",
+      "value": {
+        "camera_view": "front"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "settings",
+      "value": {
+        "camera_view": "hood"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "settings",
+      "value": {
+        "camera_view": "chase"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "settings",
+      "value": {
+        "camera_view": "rear"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "operator_stop"
+    },
+    {
+      "type": "settings",
+      "value": {
+        "camera_view": "top"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "stop_driving",
+      "reason": "workspace_changed"
+    }
+  ],
+  "pageErrors": []
+}

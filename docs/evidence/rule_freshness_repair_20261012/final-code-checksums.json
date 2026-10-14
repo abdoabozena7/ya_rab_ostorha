@@ -1,0 +1,9 @@
+{
+  "backend/core/service.py": "677e03e2c47468ad5acfd066062ea24c908bc6192786d409257c5aeb649ab180",
+  "backend/carla/provider.py": "cbe1b7e5f98d41de026551c997112351b3dadbb4b671e2039c0a831f50eddaf1",
+  "backend/carla/sensors.py": "56211358f41470c8556b61ec526ac28ba5138fb2b8eb7710203c22dc44cd2c51",
+  "scripts/native/audit_rule_integration.py": "1133e91fd2aa88d63422f8f8227872de0aefd1e77b58c0101693c708140bb01b",
+  "scripts/native/observe_rule_integration.py": "3bd86d4a3701b3534a82246b4de19feba0eada41c986c1d507780b89ac39afe7",
+  "scripts/verify_rule_freshness_controls_ui.js": "de59232dd96d3a8b49f078f00eb61a7e055d8250184649aed043587797acd68d",
+  "tests/test_demo_integration.py": "8ef9dc9100e9efcb161bfe0e3fc03cfe072f155296ddbf75555b104720b16be5"
+}

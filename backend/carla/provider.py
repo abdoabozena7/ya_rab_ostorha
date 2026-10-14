@@ -21,9 +21,10 @@ class CarlaProvider:
     allow_navigation = True  # Explicit destination journeys; AI/assisted modes stay disabled.
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
-                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False):
+                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False, fresh_start=False):
         self.connection = CarlaConnection(host, port, version)
         self.map_name, self.blueprint, self.spawn_index = map_name, blueprint, spawn_index
+        self.fresh_start = fresh_start
         self.fixed_delta = fixed_delta
         self.collision_sensor = collision_sensor
         self.sensor_suite = sensor_suite
@@ -35,6 +36,7 @@ class CarlaProvider:
         self.population = None
         self.inspector = None
         self.last_ground_truth = None
+        self.local_population_counts = {}
         self.dashboard_tools = None
         self.world = self.ego = self.sensor_manager = None
         self.gear = 1
@@ -51,6 +53,14 @@ class CarlaProvider:
         if self.world is not None or self.ego is not None or self.cleanup_errors:
             raise RuntimeError('Disconnect the existing CARLA session first')
         try:
+            import json
+            from pathlib import Path
+            from .dashboard_tools import validate_settings
+            preferences_path=Path(__file__).resolve().parents[2]/'config/dashboard-preferences.json'
+            preferences=json.loads(preferences_path.read_text(encoding='utf8')) if preferences_path.exists() and not self.fresh_start else {}
+            saved_view=validate_settings(preferences.get('view',{}))
+            self.camera_settings.update({k:v for k,v in saved_view.items() if k.startswith('camera_')})
+            if 'simulation_hz' in saved_view:self.fixed_delta=1/saved_view['simulation_hz']
             from .runtime import get_runtime
             self.runtime = get_runtime()
             self.active_launch = self.runtime.active
@@ -88,13 +98,18 @@ class CarlaProvider:
             self.world = CarlaWorld(raw_world, self.fixed_delta)
             clear_noon=getattr(getattr(self.connection.api,'WeatherParameters',None),'ClearNoon',None)
             if clear_noon is not None:raw_world.set_weather(clear_noon)
+            if 'weather' in saved_view:
+                weather=raw_world.get_weather()
+                for key,value in saved_view['weather'].items():setattr(weather,key,value)
+                raw_world.set_weather(weather)
             self.spawn_ego_vehicle()
             self.population = WorldPopulationManager(self.connection.client, raw_world, self.connection.api, self.ego.actor.id)
             from .scenarios import NativeScenarioManager
             self.scenarios = NativeScenarioManager(self)
             self.set_controls(brake=1)
             from .urban_chaos import CITY
-            self.population.apply(CITY)
+            from .population import DEFAULT_POPULATION
+            self.population.apply(DEFAULT_POPULATION if self.fresh_start else preferences.get('population',CITY))
             self.step()
         except Exception:
             self.disconnect()
@@ -106,6 +121,13 @@ class CarlaProvider:
             raise RuntimeError('An ego vehicle is already owned by this session')
         self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index, strict_spawn=self.strict_ego_spawn)
         actor = self.ego.spawn()
+        from ..core.motion_geometry import VehicleGeometry
+        import math
+        box=actor.bounding_box;physics=actor.get_physics_control();wheels=physics.wheels
+        front_axle=max(w.position.x for w in wheels)/100.;rear_axle=min(w.position.x for w in wheels)/100.
+        angle=max(w.max_steer_angle for w in wheels)
+        self.vehicle_geometry=VehicleGeometry(box.extent.x+box.location.x,box.extent.x-box.location.x,
+            box.extent.y+abs(box.location.y),front_axle-rear_axle,math.radians(angle),'NATIVE_ONBOARD_SPECIFICATIONS')
         self.inspector = NearbyActorInspector(self.world.world, actor)
         self.sensor_manager = CarlaSensorManager(self.world.world, actor)
         if self.collision_sensor:
@@ -160,6 +182,19 @@ class CarlaProvider:
             self.population.set_route(route['points'] if route else [])
         snapshot = self.world.advance()
         self.last_actor_ids={a.id for a in snapshot} if self.scenarios and self.scenarios.urban else set()
+        # Display counts use the worker's native snapshot. Dashboard requests
+        # must not issue 71 actor queries while holding the control lock.
+        if self.scenarios and self.scenarios.urban:
+            ego_position = snapshot.find(self.ego.actor.id).get_transform().location
+            plans = self.scenarios.spec.metadata['vehicle_plans']
+            counts = {'vehicles_120m': 0, 'walkers_120m': 0}
+            for name, actor_id in tuple(self.scenarios.actors.items()):
+                actor_snapshot = snapshot.find(actor_id)
+                if actor_snapshot and actor_snapshot.get_transform().location.distance(ego_position) <= 120:
+                    counts['vehicles_120m' if name in plans else 'walkers_120m'] += 1
+            self.local_population_counts = counts
+        else:
+            self.local_population_counts = {}
         if self.population: self.population.update(snapshot)
         self.last_vehicle = vehicle_state(self.ego.actor, snapshot)
         self.last_ground_truth = self.inspector.observe(snapshot) if self.inspector else None
@@ -233,9 +268,13 @@ class CarlaProvider:
             elif operation == 'cleanup':self.scenarios.living_city()
             else:return self.scenarios.collect_outcome()
             return self.environment_state()
-        if self.scenarios and self.scenarios.mode.value == 'TRAINING' and action in ('settings','population','scene'):
+        if self.scenarios and self.scenarios.mode.value == 'TRAINING' and action in ('settings','population','scene','crowd_route'):
             raise ValueError('Return to Living city before changing the controlled scene or route')
         if action == 'settings': return self.dashboard_tools.apply(value)
+        if action == 'crowd_route':
+            route = self.dashboard_tools.route_state()
+            self.population.crowd_route(route, self.dashboard_tools.native_route, value)
+            return None  # Published after the next authoritative native frame.
         if action == 'destination': return self.dashboard_tools.set_destination(value)
         if action == 'save_place': return self.dashboard_tools.save_place(value)
         if action == 'favorite_place': return self.dashboard_tools.favorite_place(value)
@@ -283,10 +322,7 @@ class CarlaProvider:
                 pedestrian_cross_factor=1.,walker_invincible=False,
                 destinations='28 native navmesh walkers; 2 scripted native-physics crossings',
                 behavior='UNREGULATED')
-            ego=self.ego.actor.get_location()
-            state['local_counts']={kind:sum(a.id in live and a.get_location().distance(ego)<=120 for n,a in self.scenarios.urban.handles.items()
-                if (n in self.scenarios.spec.metadata['vehicle_plans'])==(kind=='vehicles_120m'))
-                for kind in ('vehicles_120m','walkers_120m')}
+            state['local_counts']=dict(self.local_population_counts)
         return state
 
     def environment_state(self, compact=False):
@@ -314,20 +350,66 @@ class CarlaProvider:
     def validate_graphics(self, value):
         from .dashboard_tools import validate_settings
         if isinstance(value,dict) and set(value)=={'preset'}:
-            from .graphics import PRESETS
+            from ..graphics import PRESETS, launch
             if value['preset'] not in PRESETS:raise ValueError('Unknown graphics preset')
-            value={k:PRESETS[value['preset']][k] for k in ('quality','resolution')}
+            value=launch(value['preset'])
         if self.connection.host not in ('127.0.0.1', 'localhost'):
             raise ValueError('Native restart is available only for the local simulator')
         return validate_settings({'next_launch': value})['next_launch']
 
-    def start_navigation(self, speed_kmh, *, demo_options=None):
+    def journey_manifest(self, speed_kmh):
+        self._ensure_dashboard_tools()
+        route = self.dashboard_tools.route
+        if not route: raise ValueError('Choose a destination first')
+        pose = self.ego.actor.get_transform()
+        from .dashboard_tools import WEATHER_PRESET_FIELDS
+        weather = self.world.world.get_weather()
+        return {'map':self.dashboard_tools.map_name, 'blueprint':self.ego.actor.type_id,
+            'origin':{'location':[pose.location.x, pose.location.y, pose.location.z],
+                      'rotation':[pose.rotation.pitch, pose.rotation.yaw, pose.rotation.roll]},
+            'destination':copy.deepcopy(route['destination']), 'route_length_m':route['length_m'],
+            'speed_kmh':speed_kmh, 'population':copy.deepcopy(self.population.config),
+            'actual_population':copy.deepcopy(self.population_state().get('actual')),
+            'collision_measurement_available': 'collision' in self.sensor_manager.actors,
+            'crowded':bool(self.population.route_crowding),
+            'weather':{key:getattr(weather,key) for key in WEATHER_PRESET_FIELDS if hasattr(weather,key)},
+            'setup_note':'Same origin, destination, weather, speed and seeded traffic settings. Live actor trajectories are not identical.'}
+
+    def prepare_journey_comparison(self, manifest):
+        self._ensure_dashboard_tools()
+        if not manifest or manifest['map'] != self.dashboard_tools.map_name:
+            raise ValueError('Start the saved CARLA map before preparing this comparison')
+        if manifest['blueprint'] != self.ego.actor.type_id:
+            raise ValueError('Select the saved vehicle before preparing this comparison')
+        self.stop_navigation()
+        self.set_controls(brake=1)
+        self.population.reset_population()
+        api, origin = self.connection.api, manifest['origin']
+        self.ego.actor.set_target_velocity(api.Vector3D(0,0,0))
+        self.ego.actor.set_target_angular_velocity(api.Vector3D(0,0,0))
+        self.ego.actor.set_transform(api.Transform(api.Location(*origin['location']),
+            api.Rotation(pitch=origin['rotation'][0],yaw=origin['rotation'][1],roll=origin['rotation'][2])))
+        weather = self.world.world.get_weather()
+        for key, value in manifest['weather'].items(): setattr(weather,key,value)
+        self.world.world.set_weather(weather)
+        tools = self.dashboard_tools
+        tools.route, tools.native_route = tools.route_service.plan(self.ego.actor.get_location(), copy.deepcopy(manifest['destination']))
+        self.population.apply({**manifest['population'], 'vehicle_count':0 if manifest['crowded'] else manifest['population']['vehicle_count']})
+        if manifest['crowded']:
+            self.population.crowd_route(tools.route, tools.native_route, {'route_id':tools.route['id'],
+                'seed':manifest['population']['seed'], 'chaos_percent':manifest['population']['chaos_percent']})
+        self.population.set_route(tools.route['points'])
+        self.set_controls(brake=1)
+
+    def start_navigation(self, speed_kmh, *, demo_options=None, driving_mode='ROBOSPHERE'):
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
             raise ValueError('Choose a valid destination and show its route before starting')
         # Resume always plans from the real vehicle's current location.
         self.dashboard_tools.replan_route()
-        from agents.navigation.basic_agent import BasicAgent
+        self.driving_mode = driving_mode
+        from .route_agent import route_agent_class
+        BasicAgent = route_agent_class()
         delta = self.fixed_delta
         self.navigation_options = {'dt': delta, 'max_brake': 1.,
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
@@ -338,15 +420,100 @@ class CarlaProvider:
             map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.route_service.planner)
         self.navigation.set_global_plan(self.dashboard_tools.native_route,
                                         stop_waypoint_creation=True, clean_queue=True)
+        self.navigation_planner=None
+        self.navigation_recovery=None
+        if driving_mode == 'NORMAL':
+            # NORMAL follows the route and signals without obstacle protection.
+            # Sensor observations remain available for display and recording.
+            self.navigation.ignore_vehicles(True)
+            self.navigation.ignore_traffic_lights(False)
+            self.navigation.ignore_stop_signs(False)
+        elif demo_options is None:
+            import json
+            from pathlib import Path
+            from ..core.maneuver import ManeuverPlanner
+            config=json.loads((Path(__file__).resolve().parents[2]/'config/motion-reliability.json').read_text())
+            # Native target poses are not ordinary driver inputs. The existing
+            # sensor RULE layer owns protected-mode forward obstacle protection.
+            self.navigation.ignore_vehicles(True)
+            gate_enabled=False;ticket=None
+            # Controlled native tests may enable lateral motion only inside
+            # a live, crash-charged reservation of the new experiment ledger.
+            gate=Path(__file__).resolve().parents[2]/'output/motion-reliability/lateral-validation.json'
+            if gate.exists():
+                import sqlite3,time
+                from contextlib import closing
+                ticket=json.loads(gate.read_text())
+                if time.monotonic()<ticket['expires_monotonic_s']:
+                    with closing(sqlite3.connect(gate.parent/'budget.sqlite')) as db:
+                        row=db.execute('SELECT phase,finished FROM phases WHERE id=?',(ticket['reservation_id'],)).fetchone()
+                    gate_enabled=row==('validation',0)
+            if (config['planner_enabled'] and config['longitudinal_native_acceptance']) or gate_enabled:
+                self.navigation_planner=ManeuverPlanner(self.vehicle_geometry,lateral_accepted=config['lateral_native_acceptance'] or gate_enabled)
+                if gate_enabled:self.navigation_planner.lateral_deadline=ticket['expires_monotonic_s']
+            recovery_config=json.loads((Path(__file__).resolve().parents[2]/'config/congestion-recovery.json').read_text())
+            from ..learning.recovery_budget import active_ticket
+            recovery_ticket=active_ticket()
+            recovery_test=recovery_ticket is not None
+            if recovery_config['enabled'] and recovery_config['native_accepted'] or recovery_test:
+                from ..core.congestion_recovery import CongestionRecovery
+                self.navigation_recovery=CongestionRecovery(self.vehicle_geometry,
+                    reverse_accepted=recovery_config['reverse_accepted'] or recovery_test,
+                    lateral_accepted=recovery_config['lateral_accepted'] or recovery_test,
+                    rule_exception_accepted=recovery_config['rule_exception_accepted'] or recovery_test)
+                if recovery_test:
+                    self.navigation_recovery.validation_deadline=recovery_ticket['expires_monotonic_s']
+                    # Validate the new bounded overlay around the existing route
+                    # follower, rather than enabling the rejected full planner.
+                    self.navigation_planner=None
         return self.route_state()
+
+    def local_road_context(self,session_id):
+        """Map rules and ego-local route only; never another native actor."""
+        import math
+        transform=self.ego.actor.get_transform();origin=transform.location
+        f=transform.get_forward_vector();right=transform.get_right_vector()
+        def local(loc):
+            dx,dy=loc.x-origin.x,loc.y-origin.y
+            return [dx*f.x+dy*f.y,dx*right.x+dy*right.y]
+        plan=list(self.navigation.get_local_planner().get_plan())
+        points=[local(w.transform.location) for w,_ in plan if w.transform.location.distance(origin)<60.]
+        ahead=[p for p in points if p[0]>.5]
+        if not ahead:ahead=[[50.,0.]]
+        nearest=min(points,key=lambda p:math.hypot(*p)) if points else [0.,0.]
+        centerline=[[0.,nearest[1]]]+ahead
+        wp=self.dashboard_tools.map.get_waypoint(origin)
+        junction=bool(wp.is_junction or any(w.is_junction and w.transform.location.distance(origin)<20. for w,_ in plan))
+        permissions=str(wp.lane_change)
+        result={'session_id':session_id,'centerline':centerline,'lane_width_m':float(wp.lane_width),
+            'junction_ahead':junction,'left_allowed':False,'right_allowed':False,
+            'traffic_stop':self.navigation_stop_reason if self.navigation_stop_reason and 'traffic light' in self.navigation_stop_reason.lower() else None}
+        for side in ('left','right'):
+            neighbour=getattr(wp,'get_'+side+'_lane')()
+            if neighbour is None:continue
+            direction=neighbour.transform.get_forward_vector()
+            result[side+'_allowed']=bool(not junction and str(neighbour.lane_type)=='Driving' and
+                direction.x*f.x+direction.y*f.y>.8 and (side.title() in permissions or 'Both' in permissions))
+        return result
+
+    def replan_after_recovery(self):
+        self.dashboard_tools.replan_route()
+        self.navigation.set_global_plan(self.dashboard_tools.native_route,
+                                        stop_waypoint_creation=True,clean_queue=True)
+
+    def create_comparison_v2(self, service):
+        from .comparison_v2 import ComparisonV2
+        return ComparisonV2(service)
 
     def navigation_command(self, frame_id, timestamp_s, speed_kmh):
         from ..core.contracts import CommandSource
         if self.navigation is None:
             raise RuntimeError('No active native route controller')
         limit = self.ego.actor.get_speed_limit()
+        self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         self.navigation.set_target_speed(min(speed_kmh, limit) if limit > 0 else speed_kmh)
         value = self.navigation.run_step()
+        self.navigation_stop_reason = getattr(self.navigation,'stop_reason',None)
         # Canonical steering, like native telemetry, is right-positive. The
         # left-positive legacy dashboard adapter is used only in set_controls.
         # This command still goes through ControlSafetyLayer and CommandArbiter.
@@ -359,16 +526,35 @@ class CarlaProvider:
 
     def stop_navigation(self):
         self.navigation = None
+        self.navigation_planner = None
+        self.navigation_recovery = None
 
     @property
     def required_sensors(self):
-        return ('frontCamera', 'depth', 'radar', 'lidar', 'imu', 'gnss') if self.sensor_suite else ()
+        if not self.sensor_suite:return ()
+        extras=tuple(n for n in ('rearDepth','leftDepth','rightDepth') if self.sensor_manager and n in self.sensor_manager.actors)
+        return ('frontCamera', 'depth', 'radar', 'lidar', 'imu', 'gnss')+extras
 
     def drain_sensor_frames(self):
         return self.sensor_manager.drain_frames() if self.sensor_manager else ()
 
     def get_sensor_asset(self, asset):
         return self.sensor_manager.asset_bytes(asset)
+
+    def driving_camera(self, frame_id=None):
+        from ..core.contracts import to_dict
+        manager=self.sensor_manager
+        if not manager:return None,None
+        with manager.lock:
+            frames=manager.driving_frames
+            sensor=frames.get(frame_id) if frame_id is not None else next(reversed(frames.values()),None)
+            if sensor is None:return None,None
+            m=sensor.metadata
+            view={'sensorId':'drivingCamera','source':'carla','frame':sensor.frame_id,'timestamp':sensor.timestamp_s,
+                'width':m['width'],'height':m['height'],'fovDeg':m['fov_deg'],
+                'worldTransform':to_dict(sensor.transform),'mountTransform':to_dict(m['mount_transform']),
+                'contentType':sensor.asset.media_type,'frameAvailable':True}
+            return manager.asset_bytes(sensor.asset),view
 
     def get_sensor_rates(self):
         return self.sensor_manager.rates() if self.sensor_manager else {}
@@ -475,6 +661,7 @@ class CarlaProvider:
         finally:
             self.world = None
             self.population = self.inspector = self.last_ground_truth = None
+            self.local_population_counts = {}
             self.dashboard_tools = None
             self.scenarios = None
             self.strict_ego_spawn = False
@@ -495,8 +682,10 @@ class CarlaProvider:
         return {'native_version':self.connection.server_version,'python_api_version':self.connection.api_version,
                 'map':self.world.world.get_map().name,'blueprint':self.ego.actor.type_id,
                 'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
+                'vehicle_geometry':self.vehicle_geometry.snapshot() if getattr(self,'vehicle_geometry',None) else None,
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
                 'navigation':'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
+                'driving_mode':getattr(self,'driving_mode',None),
                 'population': self.population_state(), 'environment':self.environment_state(),
                 'traffic_active': bool(self.population and self.population.vehicles),
                 'ya_rab_ostorha': {'status':getattr(self, 'active_safety_status', None),

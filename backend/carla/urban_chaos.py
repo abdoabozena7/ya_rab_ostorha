@@ -1,6 +1,7 @@
 """Seed-compiled urban experiment. No tick calls and no ego controls here."""
 import math
 import random
+from dataclasses import replace
 from ..core.scenarios import ScenarioSpec, ScenarioActor, ScenarioPedestrian, ScenarioType, DatasetSplit
 from .scenarios import canonical_transform
 from .population import passenger_blueprints, DEFAULT_POPULATION
@@ -11,7 +12,14 @@ CITY = {**DEFAULT_POPULATION, 'vehicle_count': 40, 'pedestrian_count': 30,
         'world_profile': 'VISUAL_DEMO', 'crossing_percent': 15}
 
 
-def compile_urban(provider, seed=2589):
+def extend_scripted_exits(plans, route, extension):
+    """Keep each hazard, then drive through the destination instead of parking."""
+    plans['sudden_brake']['points'].extend(extension)
+    plans['cut_in']['points'].extend(route[66:]+extension)
+    plans['curb_return']['return_points'].extend(route[70:]+extension)
+
+
+def compile_urban(provider, seed=2589, *, clear_scripted_route=False):
     api=provider.connection.api; world=provider.world.world; native_map=world.get_map()
     rng=random.Random(seed); start=native_map.get_waypoint(native_map.get_spawn_points()[152].location)
     path=[start]
@@ -107,12 +115,21 @@ def compile_urban(provider, seed=2589):
             canonical_transform(api.Transform(api.Location(loc.x,loc.y,loc.z+.4))),(target.x,target.y,target.z),round(rng.uniform(1.,1.8),2)))
         if len(walkers)==30:break
     if len(walkers)!=30:raise ValueError('Urban map admitted fewer than 30 native walker starts')
+    if clear_scripted_route:
+        exit_path=[];previous=path[-1]
+        for _ in range(20):
+            choices=previous.next(2.)
+            if not choices:raise ValueError('Urban hazards have no route beyond the destination')
+            previous=min(choices,key=lambda w:abs((w.transform.rotation.yaw-previous.transform.rotation.yaw+180)%360-180))
+            exit_path.append(point(previous))
+        extend_scripted_exits(plans,[point(w) for w in path],exit_path)
     spec=ScenarioSpec('urban_chaos_v1',ScenarioType.MULTI_HAZARD,seed,native_map.name,152,0.,tuple(vehicles),tuple(walkers),
         weather={k:getattr(world.get_weather(),k) for k in ('cloudiness','precipitation','wetness','sun_altitude_angle','sun_azimuth_angle','fog_density')},
         traffic_density={'vehicle_count':40,'pedestrian_count':30},timeout=60.,split=DatasetSplit.TEST,
         failure_conditions={'max_collision_episodes':1000000},metadata={'urban_chaos':True,'target_speed_kmh':20,
         'hazard_schedule':schedule,'vehicle_plans':plans,'blueprint_attributes':attributes,
-        'route_points':[point(w) for w in path],'recycling':False,'traffic_behavior':'UNREGULATED',
+        'route_points':[point(w) for w in path],'scripted_exits_clear_destination':clear_scripted_route,
+        'recycling':False,'traffic_behavior':'UNREGULATED',
         'trajectory_matching':'Same initial manifest and hazard plan; traffic can diverge after ego intervention'})
     end=path[-1].transform.location
     return spec,{'location':[end.x,end.y,end.z],'name':'Urban Chaos destination'}
@@ -131,20 +148,41 @@ class UrbanPhysics:
         for name,plan in self.manager.spec.metadata['vehicle_plans'].items():
             if plan['kind']=='TRAFFIC_MANAGER':
                 apply_driver(p.population.traffic_manager.manager,self.handles[name],plan['driver_profile'])
+        admitted_walkers=[]; corrections=[]
         for definition in self.manager.spec.pedestrian_definitions:
             from .scenarios import native_transform
             bp=w.get_blueprint_library().find(definition.blueprint)
             bp.set_attribute('role_name','ostorha_scenario')
             if bp.has_attribute('is_invincible'):bp.set_attribute('is_invincible','false')
             actor=w.try_spawn_actor(bp,native_transform(api,definition.transform))
+            if actor is None and self.manager.spec.metadata.get('comparison_v2') and getattr(p,'comparison_v2_admitting',False):
+                # Before the first approval only: bounded deterministic nearby
+                # admission against native static geometry. Persist the admitted
+                # pose; the other side must restore that exact pose without repair.
+                x,y,z=definition.transform.position_m
+                for radius in (.4,.8,1.2):
+                    for dx,dy in ((radius,0),(-radius,0),(0,radius),(0,-radius),(radius,radius),(-radius,-radius)):
+                        location=api.Location(x+dx,y+dy,z-.4)
+                        sidewalk=self.map.get_waypoint(location,lane_type=api.LaneType.Sidewalk)
+                        if sidewalk is None or sidewalk.transform.location.distance(location)>1.:continue
+                        candidate=replace(definition,transform=replace(definition.transform,position_m=(x+dx,y+dy,z)))
+                        actor=w.try_spawn_actor(bp,native_transform(api,candidate.transform))
+                        if actor is not None:
+                            definition=candidate;corrections.append({'name':definition.name,'offset_m':[dx,dy,0.]});break
+                    if actor is not None:break
             if actor is None:raise ValueError('Occupied urban walker start: '+definition.name)
+            admitted_walkers.append(definition)
             self.manager.actors[definition.name]=actor.id
             self.handles[definition.name]=actor
             controller=w.spawn_actor(w.get_blueprint_library().find('controller.ai.walker'),api.Transform(),attach_to=actor)
             self.controllers[definition.name]={'id':controller.id,'started':False,'prepared':False,'handle':controller}
-        for light in w.get_actors().filter('traffic.traffic_light*'):
-            self.light_states.append((light.id,light.get_state(),light.is_frozen()))
-            light.set_state(api.TrafficLightState.Green); light.freeze(True)
+        if corrections:
+            self.manager.spec=replace(self.manager.spec,pedestrian_definitions=tuple(admitted_walkers),
+                metadata={**self.manager.spec.metadata,'walker_spawn_corrections':corrections})
+        if not self.manager.spec.metadata.get('preserve_traffic_lights'):
+            for light in w.get_actors().filter('traffic.traffic_light*'):
+                self.light_states.append((light.id,light.get_state(),light.is_frozen()))
+                light.set_state(api.TrafficLightState.Green); light.freeze(True)
 
     def start(self):
         p=self.manager.provider

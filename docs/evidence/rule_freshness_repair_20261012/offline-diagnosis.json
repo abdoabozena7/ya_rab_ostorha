@@ -1,0 +1,20 @@
+{
+  "failed_recording": "run_6dcb6e9c4f564b84a40a37bc7713f4c5",
+  "fault_frame": 261309,
+  "wall_age_s": 0.265,
+  "wall_age_limit_s": 0.25,
+  "all_required_sensor_simulation_ages_s": 0.0,
+  "confirmed_contention_paths": [
+    "Heartbeat require_connected serialized full dashboard under outer control lock",
+    "Dashboard sensor registry serialized canonical data under control and sensor callback locks",
+    "Population display queried ego plus 70 actor handles under control lock"
+  ],
+  "fix": "Remove display serialization from command admission; serialize registry outside both locks; read local counts from the existing native worker snapshot",
+  "historical_fault_exact_stage": "Not available in the old recording; new control stage timing added",
+  "offline_checks": {
+    "python_tests_run": 277,
+    "python_skipped": 1,
+    "javascript_passed": 64
+  },
+  "safety_thresholds_changed": false
+}

@@ -1,16 +1,64 @@
 # YA RAB OSTORHA: CARLA Collision-Avoidance Prototype
 
-Always-on sensor-derived **RULE** safety protects forward manual and BasicAgent
-driving through the existing feasibility validator and command arbiter. A compact
+The [14 October light dashboard redesign](docs/LIGHT_DASHBOARD_REDESIGN_20261014.md)
+puts the live camera first, with a circular map, compact telemetry and configuration
+in **Scenarios**. **Tools → Stop CARLA · Free GPU** closes the native
+engine while keeping a stopped dashboard available, and preserves saved settings.
+Use **Start Simulation** in Scenarios or connection settings to launch
+CARLA and connect its cameras and sensors in one action. It replaces the separate
+dashboard/simulator reconnect buttons and leaves ego stopped. The launcher below
+is needed only when the dashboard itself is not running.
+
+The [13 October measured-motion implementation and acceptance report](docs/MOTION_RELIABILITY_20261013.md)
+documents fixed policy cameras, physical forecasts, numerical diagnostics and
+the gated maneuver prototype. Ordinary journeys default to 30 km/h. ROBOSPHERE applies RULE protection; NORMAL follows the route and signals with obstacle protection off.
+Rear/lateral avoidance, learned control and the performance gate remain unaccepted;
+the report includes failed native attempts and the successful ordinary RULE smoke.
+
+Sensor-derived **RULE** safety protects ROBOSPHERE manual and route driving
+through the existing feasibility validator and command arbiter. NORMAL preserves
+manual pedals and steering, or autonomous route and signal commands; sensors only
+observe and record. User stops, emergency latches and connection watchdogs remain
+active in both modes. See the [14 October brake correction](docs/BRAKING_DECISION_REPAIR_20261014.md). A compact
 recurrent **behavior-cloned** safety model is supplied as an explicit research
 comparison, with visible rule fallback and an optional hybrid guard. This is
 supervised imitation, not a successful RL policy. RULE remains the startup default.
 
+**Rules driving** is the primary recorded journey action. The saved seed **2811**
+RULE journey reached its destination and stopped in two native recordings, both
+with zero recorded collisions. **YA RAB OSTORHA Model · experimental** remains an
+explicit research choice. Full v2 acceptance and MODEL improvement remain unproven;
+the startup RULE controller and validated safety thresholds are preserved.
+See [native journey evidence](docs/NATIVE_JOURNEY_REPAIR_20261011.md) and
+[dashboard integration verification and blockers](docs/RULE_DEMO_FINALIZATION_20261012.md).
+The latest [freshness repair and native rehearsal](docs/RULE_FRESHNESS_REPAIR_20261012.md)
+completed the saved RULE journey through the updated dashboard and real CARLA,
+with zero recorded collisions or sensor faults. Independent native arrival,
+live recording, Results, manual stop, emergency acknowledgement and reset passed.
+Display work was removed from control/callback lock contention; safety limits
+are unchanged. This verifies the saved demo journey. Frequent harsh braking and
+close clearances remain; general safety and MODEL acceptance are unproven.
+
 ```powershell
 .\Start-YA-RAB-OSTORHA.ps1
+# Read-only launch/asset/telemetry check (does not open a browser or start CARLA):
+.\Start-YA-RAB-OSTORHA.ps1 -Check
 ```
 
-The presentation dashboard defaults to **Urban Chaos**: 40 traffic vehicles,
+The dashboard gives RULE primary emphasis, displays saved destination results in
+**Results**, and keeps historical comparisons separate. Stop cancels queued,
+preparing and running v2 journeys. Reset finalizes an active v2 recording before
+resetting the vehicle and holds it stopped; saved results are retained.
+
+The updated backend is loaded and held stopped with RULE enabled. The experiment
+ledger stands at **89.32 / 90 minutes**, so the dashboard blocks a new comparison journey
+when less than its 600-second allowance remains and offers recorded results.
+Separately authorized native validation windows produced lifecycle evidence,
+the retained failed attempt, and the latest complete updated RULE journey.
+Further live rehearsals require a fresh authorized validation window; do not
+reset the ledger to bypass the cap.
+
+The historical **Urban Chaos** comparison uses 40 traffic vehicles,
 30 pedestrians, four native vehicle hazards and two scripted physical crossings.
 **WITHOUT SAFETY** and **WITH YA RAB OSTORHA** reset the same seeded manifest
 and start recording automatically for 60 simulation seconds. RULE protects the
@@ -170,3 +218,9 @@ Native gate status comes from live measurements, never unit tests.
 [asset licenses](public/assets/ATTRIBUTION.md). BeamNG history is preserved in
 `legacy/beamng-integration`; 0.10.0 preparation in `legacy/carla-0100-preparation`.
 Traffic populations and pedestrians activate only by explicit dashboard application. Egypt maps, RL and perception-based driving remain deferred. Read-only detection/OCR is user-authorized.
+
+The [14 October congestion recovery report](docs/CONGESTION_RECOVERY_20261014.md)
+documents the bounded repositioning implementation and its failed native
+acceptance. Reverse/lateral recovery, rule exceptions and extra depth cameras
+remain gated off. Fresh sensor health can now clear a historical fault while the
+vehicle stays held; the cockpit keeps controller names out of its main status.

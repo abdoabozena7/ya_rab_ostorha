@@ -36,6 +36,8 @@ def fixture():
     actor.get_control.return_value = NS(throttle=.6, brake=0, steer=.2, reverse=False,
                                        gear=2, hand_brake=False)
     actor.destroy.return_value = True
+    actor.bounding_box = NS(extent=vec(2.4,1.,.8),location=vec(0,0,0))
+    actor.get_physics_control.return_value = NS(wheels=[NS(position=vec(x,y,0),max_steer_angle=35 if x>0 else 0) for x in (-140,140) for y in (-80,80)])
     world.try_spawn_actor.return_value = actor
     observed = MagicMock()
     observed.get_transform.return_value = transform()

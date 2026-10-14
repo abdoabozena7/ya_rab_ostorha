@@ -1,0 +1,12 @@
+{
+  "backend/carla/comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+  "backend/learning/native_validation_budget.py": "78985e12feb1db4d145e2c0929f752998bf37346da17a49b55830278438f8ce7",
+  "backend/server.py": "8ee57348f30b0ddd39021e417eecd9d78294ea81a015841346546ccf177cd843",
+  "backend/core/service.py": "df60732223390ecca8ea5e10bd0df67d8d381d80f9be9052ed1597b85b3b71c2",
+  "scripts/final_runtime.py": "f80630eab1368aef82db5fb468d35cb6e0e969665d371eaf31956f067ca69839",
+  "Start-YA-RAB-OSTORHA.ps1": "3a12ba9eed0ec418c56f551d89936009b63a313c314d362c16aecc04b7d458d3",
+  "frontend/dashboard.js": "5026017389f2fa4e44bc9ab2b0e4c413e60842ee877e3349749bdc681e17448e",
+  "frontend/comparison-v2.js": "175f35bb083894ff86f369dbc478d295dd620e2b96e68ddb73be32d5e0edc268",
+  "frontend/dashboard.bundle.js": "7ff3e26c6906f7bf0bb9f40c94f84325133f83914b445098e61a8989f3d725e3",
+  "tests/test_demo_integration.py": "c6a244957ba6fde27f8c7c0c419a9213d89e204b4de4df7ee09d876aea2475cc"
+}

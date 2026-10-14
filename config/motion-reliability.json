@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "planner_enabled": false,
+  "longitudinal_native_acceptance": false,
+  "lateral_native_acceptance": false,
+  "learned_control_accepted": false,
+  "performance_accepted": false,
+  "experimental": true,
+  "horizon_s": 3.0,
+  "control_interval_s": 0.1,
+  "default_speed_kmh": 30,
+  "reason": "Native prototype failed rear-collision/progress/comfort acceptance, prediction coverage is insufficient, and the final matched stopped throughput check exceeded 10% degradation. Ordinary driving uses sensor RULE; motion planning is available only within a bounded validation reservation."
+}

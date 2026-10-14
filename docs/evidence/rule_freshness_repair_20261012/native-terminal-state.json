@@ -1,0 +1,5115 @@
+{
+  "sequence": 3383,
+  "connected": true,
+  "available": true,
+  "sessionId": "90fafc6abb774da882ea904ffd28ef7a",
+  "journey": {
+    "status": "PAUSED",
+    "reason": "destination_arrived",
+    "speed_kmh": 20,
+    "route_id": "007147f30e654c5490652700f25b5f7f"
+  },
+  "comparisonDemo": {
+    "phase": "IDLE",
+    "mode": null,
+    "error": null,
+    "scenario_id": null,
+    "seed": 2589,
+    "safety_enabled": null,
+    "active_controller": null,
+    "metrics": {
+      "collision_callback_count": 0,
+      "collision_count": 0,
+      "collision_impulse_total_ns": 0.0,
+      "collision_peak_impulse_ns": 0.0,
+      "distance_traveled_m": 187.7738625357569,
+      "progress_m": 184.3928667246842,
+      "elapsed_simulation_s": 145.65000217035413,
+      "average_speed_mps": 1.289212905854503,
+      "minimum_clearance_m": 0.010072858570880661,
+      "minimum_ttc_s": null,
+      "near_miss_count": null,
+      "emergency_braking_frequency": null,
+      "steering_intervention_frequency": null,
+      "safety_intervention_count": 240,
+      "unsafe_intervention_count": null,
+      "route_completion": 0.9945623570491116,
+      "control_variation": 512.0655223056131,
+      "progress_under_congestion_m": null
+    },
+    "recording": null,
+    "last_safety": null,
+    "last_applied_brake": null,
+    "latest_outcome": null,
+    "results": {},
+    "initial_conditions_match": false,
+    "archive": [
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_5cf43855e2c04399a9ccaf28b94029e0",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 116.10273547898673,
+          "progress_m": 114.32571018990652,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.9350455624820198,
+          "minimum_clearance_m": 0.21852718982012048,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 8,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.6166401651944478,
+          "control_variation": 69.16076218365282,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "720a0fc054c54baf4449f6bb6fb15aa3ae36060c50544adc22fd2b5d2c3886df"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "presentation_front_obstacle_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_fac309a35328414bb000e3ea1e831c10",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 1,
+          "collision_count": 1,
+          "collision_impulse_total_ns": 14798.857586355694,
+          "collision_peak_impulse_ns": 14798.857586355694,
+          "distance_traveled_m": 16.314031574482957,
+          "progress_m": 16.247402110275306,
+          "elapsed_simulation_s": 3.8000000566244125,
+          "average_speed_mps": 4.293166139838144,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": null,
+          "control_variation": 5.8334770919173025,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "36790460b42bff74ba924c6590fab9ebf6d27d51472c22038e81e8c7731d9744"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "presentation_front_obstacle_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_4bad42a32d814b508028466b0c5a700d",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 28.01741420178026,
+          "progress_m": 28.005008746351447,
+          "elapsed_simulation_s": 14.000000208616257,
+          "average_speed_mps": 2.0012438417348757,
+          "minimum_clearance_m": 3.745784832391749,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 4,
+          "unsafe_intervention_count": null,
+          "route_completion": null,
+          "control_variation": 14.600962178621558,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "36790460b42bff74ba924c6590fab9ebf6d27d51472c22038e81e8c7731d9744"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "presentation_front_obstacle_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_bc3c03e21f3c4d209d8588692999d507",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 1,
+          "collision_count": 1,
+          "collision_impulse_total_ns": 14636.870348689776,
+          "collision_peak_impulse_ns": 14636.870348689776,
+          "distance_traveled_m": 16.29199355328039,
+          "progress_m": 16.21399943658349,
+          "elapsed_simulation_s": 3.8000000566244125,
+          "average_speed_mps": 4.287366660660729,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": null,
+          "control_variation": 5.919144285755465,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "36790460b42bff74ba924c6590fab9ebf6d27d51472c22038e81e8c7731d9744"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "presentation_front_obstacle_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a3c9216226a84598bbf0d009728e7713",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 28.01741420178026,
+          "progress_m": 28.005008746351447,
+          "elapsed_simulation_s": 14.000000208616257,
+          "average_speed_mps": 2.0012438417348757,
+          "minimum_clearance_m": 3.745784832391749,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 4,
+          "unsafe_intervention_count": null,
+          "route_completion": null,
+          "control_variation": 14.600962178621558,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "36790460b42bff74ba924c6590fab9ebf6d27d51472c22038e81e8c7731d9744"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_5311ebe0ed9e42b6b4800495c6e5e6c2",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 69,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 23135.71199212302,
+          "collision_peak_impulse_ns": 9072.833785781047,
+          "distance_traveled_m": 53.235583782331624,
+          "progress_m": 50.44464656913141,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.887259716484327,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.2720839882988192,
+          "control_variation": 26.815455837277483,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "e5deb4c0d8f1d71b6b2d62d30176990a25e4c0618f1f5312658fa0584f5a58c3"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_71b297ee49be4acb8aec16d3cb378661",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 116.10273547898673,
+          "progress_m": 114.32571018990652,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.9350455624820198,
+          "minimum_clearance_m": 0.20974990706531546,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 8,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.6166401651944478,
+          "control_variation": 69.16076218365282,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "e5deb4c0d8f1d71b6b2d62d30176990a25e4c0618f1f5312658fa0584f5a58c3"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_d394c48a823c4df3ac6b3b6a08ad0852",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 68,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 23230.321026002086,
+          "collision_peak_impulse_ns": 9072.833785781047,
+          "distance_traveled_m": 53.22186205713477,
+          "progress_m": 50.453655666026066,
+          "elapsed_simulation_s": 55.40000082552433,
+          "average_speed_mps": 0.9606834163189032,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.272132580789416,
+          "control_variation": 26.815455837277483,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "e5deb4c0d8f1d71b6b2d62d30176990a25e4c0618f1f5312658fa0584f5a58c3"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2589,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a9e06c38d1b84b30b2902a7904588bdb",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 116.10273547898673,
+          "progress_m": 114.32571018990652,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.9350455624820198,
+          "minimum_clearance_m": 0.20974990706531546,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 8,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.6166401651944478,
+          "control_variation": 69.16076218365282,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "e5deb4c0d8f1d71b6b2d62d30176990a25e4c0618f1f5312658fa0584f5a58c3"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2603,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_efbd0642899b4a428140cbc5d1f780be",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 119.65798162719098,
+          "progress_m": 113.2056764441928,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.9942996640691355,
+          "minimum_clearance_m": 0.13109365803861897,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 14,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.6105990236801461,
+          "control_variation": 69.54884726454728,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "7a59307207e2ac1d73609f4a4cff6c73aa6358fe2d7e3fcdde5adce2166567f3"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2604,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2047a9dc23444b59b60f85c8843aaa8a",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 158,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 6639.733444765302,
+          "collision_peak_impulse_ns": 257.53336931792893,
+          "distance_traveled_m": 101.00381103133034,
+          "progress_m": 99.07855563817947,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.683396825437605,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 8,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.5344013766848066,
+          "control_variation": 62.51740178178011,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "05d74d7bc4cdbd79eabc6d3e3bb5be8a012f119b7ac9b35157af3a11b606feff"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2605,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_87c302a5766b43fea4997b73b1a0abf0",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 257,
+          "collision_count": 1,
+          "collision_impulse_total_ns": 50587.593784182616,
+          "collision_peak_impulse_ns": 2988.3033421298014,
+          "distance_traveled_m": 116.94004786268088,
+          "progress_m": 114.02534953216457,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.9490007686689734,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 6,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.615020105758121,
+          "control_variation": 62.24636238444904,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "94340e0c1cef3893129395770373bdf125be18224299dcc70c4ece7f53593758"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2607,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_723ccf293ef94ee6ba4cb6cc5e74d5bf",
+        "status": "INTERRUPTED",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 92.6492209579136,
+          "progress_m": 90.88054448814545,
+          "elapsed_simulation_s": 28.8500004298985,
+          "average_speed_mps": 3.211411423824355,
+          "minimum_clearance_m": 1.2253603733914327,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 4,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.4901836504933343,
+          "control_variation": 51.85679391075493,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "afa5f546ef81363391d5ebb0e1937885b9541cfc8b811024702acb1fb9903e9c"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2608,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_640ef52384eb42da8e4eebd631bf9eca",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 115,
+          "collision_count": 1,
+          "collision_impulse_total_ns": 15974.459463662035,
+          "collision_peak_impulse_ns": 6346.010733361271,
+          "distance_traveled_m": 95.70886421599405,
+          "progress_m": 93.77732043329772,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.595147713163681,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 12,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.5058080309969221,
+          "control_variation": 67.38062527167324,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "7bfbb5fe1b9ac7b055703b3fc6d7c6213b1b1dedc08d2bc20315d30e2d2a6fda"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2609,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2ba622cfcc724b06bd0d2ba9d2dd4649",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 115.50969936033518,
+          "progress_m": 113.7417095132383,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.9251616273184426,
+          "minimum_clearance_m": 0.6575851672753644,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 6,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.6134902326627699,
+          "control_variation": 62.29664452252587,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "776efb4847e496a92b3717d883c32dad4d8d41c38cefae24d5f14d2c67529b7d"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2610,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c6a6afc3bfaf4f5591f15b17e38ed0e1",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 116.38904471930302,
+          "progress_m": 114.61693741359643,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 1.939817383082852,
+          "minimum_clearance_m": 1.1873251475917033,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 7,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.6182109615011312,
+          "control_variation": 66.10096138155464,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "5b4d01abdf512ccb9fbae40c6cea008c8c99c26354155621d92ed2dec99e08ff"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2604,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_d7c1b561f7974060b25a7986e2345572",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 15.84624868271695,
+          "progress_m": 14.024396451806581,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.2641041407764908,
+          "minimum_clearance_m": 0.3312756454926917,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 27,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.07564358122446148,
+          "control_variation": 216.60722706315596,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "05d74d7bc4cdbd79eabc6d3e3bb5be8a012f119b7ac9b35157af3a11b606feff"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2605,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_1ea9bbe26e8d441fa1bece9d59337660",
+        "status": "INTERRUPTED",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 0.0006369398906826973,
+          "progress_m": 0.0,
+          "elapsed_simulation_s": 0.2500000037252903,
+          "average_speed_mps": 0.0025477595247662137,
+          "minimum_clearance_m": 5.876148874979012,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.0,
+          "control_variation": 1.7741644531488419,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "94340e0c1cef3893129395770373bdf125be18224299dcc70c4ece7f53593758"
+      },
+      {
+        "mode": "WITHOUT",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2604,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_ffa81614c432430dacc78811c16ff7ca",
+        "status": "COLLISION",
+        "metrics": {
+          "collision_callback_count": 34,
+          "collision_count": 2,
+          "collision_impulse_total_ns": 10135.62449543375,
+          "collision_peak_impulse_ns": 4915.923757336139,
+          "distance_traveled_m": 50.666751403109394,
+          "progress_m": 48.0358309679157,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.8444458441352662,
+          "minimum_clearance_m": 0.0,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.2590048118929114,
+          "control_variation": 26.815455837277483,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "f05ad3153046d4efb7c8cce4f6858461d3984afa819008c3fe81f011c790316c"
+      },
+      {
+        "mode": "WITH",
+        "scenario_id": "urban_chaos_v1",
+        "seed": 2604,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_aaf7f5a16d19452b915d057d87ef6f4e",
+        "status": "SAFE_PROGRESS",
+        "metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 42.45497916912758,
+          "progress_m": 39.41638215521303,
+          "elapsed_simulation_s": 60.00000089406967,
+          "average_speed_mps": 0.7075829756083184,
+          "minimum_clearance_m": 0.23297272774449734,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 44,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.21252953139145075,
+          "control_variation": 163.69329492110978,
+          "progress_under_congestion_m": null
+        },
+        "condition_id": "f05ad3153046d4efb7c8cce4f6858461d3984afa819008c3fe81f011c790316c"
+      }
+    ],
+    "archived_comparison": {
+      "results": {
+        "WITHOUT": {
+          "mode": "WITHOUT",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_ffa81614c432430dacc78811c16ff7ca",
+          "collision": true,
+          "completed": true,
+          "status": "COLLISION",
+          "outcome": {
+            "run_id": "scenario_7c9920d68e184043966e92adf31d8ec0",
+            "condition_id": "324bd0acc3e672807bfb26967c8d928d3f4e857da82c770fc0d884a2e4267dce",
+            "reason": "timeout",
+            "scenario_success": false,
+            "metrics": {
+              "collision_callback_count": 34,
+              "collision_count": 2,
+              "collision_impulse_total_ns": 10135.62449543375,
+              "collision_peak_impulse_ns": 4915.923757336139,
+              "distance_traveled_m": 50.666751403109394,
+              "progress_m": 48.0358309679157,
+              "elapsed_simulation_s": 60.00000089406967,
+              "average_speed_mps": 0.8444458441352662,
+              "minimum_clearance_m": 0.0,
+              "minimum_ttc_s": null,
+              "near_miss_count": null,
+              "emergency_braking_frequency": null,
+              "steering_intervention_frequency": null,
+              "safety_intervention_count": 0,
+              "unsafe_intervention_count": null,
+              "route_completion": 0.2590048118929114,
+              "control_variation": 26.815455837277483,
+              "progress_under_congestion_m": null
+            },
+            "avoidability": "UNKNOWN",
+            "comparison_group": "NO_YA_RAB_OSTORHA_BASELINE",
+            "safety_policy_enabled": false,
+            "measurement_notes": {
+              "collision_severity": "Native impulse proxy in N*s, not injury or kinetic energy",
+              "clearance": "Planar yaw-oriented bounding boxes; pitch/roll/meshes excluded",
+              "collision_count": "Contact episodes separated by >1 simulation second; raw callbacks retained",
+              "null_metrics": "Not measured; no TTC/near-miss/intervention classifier is supplied"
+            }
+          }
+        },
+        "WITH": {
+          "mode": "WITH",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_aaf7f5a16d19452b915d057d87ef6f4e",
+          "collision": false,
+          "completed": true,
+          "status": "SAFE_PROGRESS",
+          "outcome": {
+            "run_id": "scenario_baf0c198660a4bbfa9bb404aec8754f7",
+            "condition_id": "324bd0acc3e672807bfb26967c8d928d3f4e857da82c770fc0d884a2e4267dce",
+            "reason": "timeout",
+            "scenario_success": true,
+            "metrics": {
+              "collision_callback_count": 0,
+              "collision_count": 0,
+              "collision_impulse_total_ns": 0.0,
+              "collision_peak_impulse_ns": 0.0,
+              "distance_traveled_m": 42.45497916912758,
+              "progress_m": 39.41638215521303,
+              "elapsed_simulation_s": 60.00000089406967,
+              "average_speed_mps": 0.7075829756083184,
+              "minimum_clearance_m": 0.23297272774449734,
+              "minimum_ttc_s": null,
+              "near_miss_count": null,
+              "emergency_braking_frequency": null,
+              "steering_intervention_frequency": null,
+              "safety_intervention_count": 44,
+              "unsafe_intervention_count": null,
+              "route_completion": 0.21252953139145075,
+              "control_variation": 163.69329492110978,
+              "progress_under_congestion_m": null
+            },
+            "avoidability": "UNKNOWN",
+            "comparison_group": "YA_RAB_OSTORHA_RULE_BASED",
+            "safety_policy_enabled": true,
+            "measurement_notes": {
+              "collision_severity": "Native impulse proxy in N*s, not injury or kinetic energy",
+              "clearance": "Planar yaw-oriented bounding boxes; pitch/roll/meshes excluded",
+              "collision_count": "Contact episodes separated by >1 simulation second; raw callbacks retained",
+              "null_metrics": "Not measured; no TTC/near-miss/intervention classifier is supplied"
+            }
+          }
+        }
+      },
+      "scenario_id": "urban_chaos_v1",
+      "seed": 2604,
+      "initial_conditions_match": true,
+      "native_pose_audit": {
+        "maximum_position_error_m": 0.0,
+        "maximum_velocity_error_mps": 0.0,
+        "maximum_rotation_error_rad": 0.0,
+        "actor_identities_match": true,
+        "position_tolerance_m": 0.05,
+        "velocity_tolerance_mps": 0.1,
+        "rotation_tolerance_rad": 0.01,
+        "passed": true
+      }
+    },
+    "native_pose_audit": null,
+    "hazards": {
+      "sudden_brake": {
+        "status": "BLOCKED",
+        "position_m": [
+          -113.75018310546875,
+          2.2103817462921143,
+          0.002427158411592245
+        ],
+        "controls": {
+          "throttle": 0.6000000238418579,
+          "brake": 0.0,
+          "steering": -0.06596491485834122,
+          "reverse": false
+        }
+      },
+      "cut_in": {
+        "status": "TARGET_REACHED",
+        "position_m": [
+          -113.89100646972656,
+          6.6731157302856445,
+          -0.01173696480691433
+        ],
+        "controls": {
+          "throttle": 0.0,
+          "brake": 1.0,
+          "steering": -0.09266453981399536,
+          "reverse": false
+        },
+        "reached_at_s": 56.45000084117055
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "position_m": [
+          -10.42264175415039,
+          -75.48432159423828,
+          0.1536012440919876
+        ],
+        "controls": {
+          "throttle": 0.0,
+          "brake": 1.0,
+          "steering": 0.1236758679151535,
+          "reverse": false
+        },
+        "sidewalk_observed_at_s": 33.30000049620867,
+        "reached_at_s": 36.90000054985285
+      },
+      "curb_return": {
+        "status": "BLOCKED",
+        "position_m": [
+          -113.71080780029297,
+          -7.863386631011963,
+          -0.0070542339235544205
+        ],
+        "controls": {
+          "throttle": 0.949999988079071,
+          "brake": 0.0,
+          "steering": -0.02524605579674244,
+          "reverse": false
+        },
+        "sidewalk_observed_at_s": 34.60000051558018,
+        "road_reentry_observed_at_s": 46.70000069588423
+      },
+      "crossing_0": {
+        "status": "NATIVE_ACTOR_LOST",
+        "position_m": [
+          -61.27806854248047,
+          -72.22564697265625,
+          0.18982110917568207
+        ],
+        "road_observed_at_s": 35.35000052675605,
+        "lost_at_s": 38.000000566244125
+      },
+      "crossing_1": {
+        "status": "ARRIVED",
+        "position_m": [
+          -65.1059799194336,
+          -74.00111389160156,
+          1.1038999557495117
+        ],
+        "road_observed_at_s": 36.55000054463744
+      },
+      "walker_16": {
+        "status": "NATIVE_ACTOR_LOST",
+        "lost_at_s": 57.80000086128712
+      },
+      "walker_21": {
+        "status": "NATIVE_ACTOR_LOST",
+        "lost_at_s": 81.80000121891499
+      },
+      "walker_05": {
+        "status": "NATIVE_ACTOR_LOST",
+        "lost_at_s": 107.75000160560012
+      },
+      "walker_18": {
+        "status": "NATIVE_ACTOR_LOST",
+        "lost_at_s": 123.95000184699893
+      }
+    },
+    "basic_agent_vehicle_checks": "DISABLED_IN_BOTH_RESEARCH_ARMS"
+  },
+  "comparisonV2": {
+    "version": 2,
+    "experimental": true,
+    "phase": "FINISHED",
+    "side": "RULE",
+    "pair_id": "90ab411017f54272b96493fd1cfea0de",
+    "seed": 2811,
+    "error": null,
+    "results": {
+      "RULE": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0.0,
+          "maximum_velocity_error_mps": 0.0,
+          "maximum_rotation_error_rad": 0.0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0.0,
+          "collision_peak_impulse_ns": 0.0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      }
+    },
+    "latest_attempt": {
+      "side": "RULE",
+      "reason": "destination_arrived",
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+      "completed": true,
+      "destination_arrived": true,
+      "collision": false,
+      "status": "ARRIVED",
+      "metrics": {
+        "unnecessary_waiting_s": 10.600000157952309,
+        "harsh_braking_events": 184,
+        "emergency_intervention_s": 0.10000000149011612,
+        "duration_s": 145.60000216960907,
+        "destination_arrived": true
+      },
+      "attempt_id": "04eae298f38048209d38947fa502d7a1",
+      "initial_condition_audit": {
+        "passed": true,
+        "maximum_position_error_m": 0.0,
+        "maximum_velocity_error_mps": 0.0,
+        "maximum_rotation_error_rad": 0.0,
+        "configuration_matches": true,
+        "traffic_lights_match": true
+      },
+      "outcome_metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 187.7738625357569,
+        "progress_m": 184.3928667246842,
+        "elapsed_simulation_s": 145.65000217035413,
+        "average_speed_mps": 1.289212905854503,
+        "minimum_clearance_m": 0.010072858570880661,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 240,
+        "unsafe_intervention_count": null,
+        "route_completion": 0.9945623570491116,
+        "control_variation": 512.0655223056131,
+        "progress_under_congestion_m": null
+      }
+    },
+    "metrics": {
+      "unnecessary_waiting_s": 10.600000157952309,
+      "harsh_braking_events": 184,
+      "emergency_intervention_s": 0.10000000149011612,
+      "duration_s": 145.60000216960907,
+      "destination_arrived": false
+    },
+    "budget": {
+      "charged_s": 401.9635555744171,
+      "hard_cap_s": 600.0,
+      "remaining_s": 198.03644442558289,
+      "recommended_run_allowance_s": 300.0,
+      "scope": "NATIVE_RULE_VALIDATION",
+      "expires_at": 1791778461.3467195,
+      "ticket": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\native-rule-validation\\validation-d0ae9d41dc7c4c3a95917e9045970fa6.json"
+    },
+    "model_available": false,
+    "acceptance": "EXPERIMENTAL_PENDING_NATIVE_ACCEPTANCE"
+  },
+  "stopDiagnostics": {
+    "version": 2,
+    "session_id": "90fafc6abb774da882ea904ffd28ef7a",
+    "evaluation_frame": 289474,
+    "timestamp_s": 12759.13470730558,
+    "braking": true,
+    "decision_source": "EMERGENCY_PROTECTION",
+    "braking_sources": [
+      "EMERGENCY_PROTECTION"
+    ],
+    "reason": "paused",
+    "applied_command": {
+      "frame_id": 289474,
+      "timestamp_s": 12759.13470730558,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "steering": 0.0,
+      "reverse": false,
+      "handbrake": false,
+      "source": "SAFETY",
+      "gear": null
+    },
+    "safety": {
+      "type": "RULE_BASED_SAFETY",
+      "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+      "status": "STANDBY",
+      "risk": "UNKNOWN",
+      "active": false,
+      "reason": "Monitoring resumes with normal forward driving",
+      "steering_available": false,
+      "rejected_interventions": 0,
+      "actual_generator": "BASE_DRIVER",
+      "enabled": true,
+      "intervention_count": 0,
+      "controller": "RULE",
+      "model_health": "READY",
+      "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+      "model_error": null,
+      "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+      "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+      "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+      "available_controllers": [
+        "RULE",
+        "HYBRID"
+      ],
+      "source_counts": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 0
+      },
+      "experimental": false
+    },
+    "sensor_wall_age_s": 0.5469999999986612,
+    "control_timing_ms": {
+      "lock_wait": 0.0,
+      "since_publication": 485.0000000005821,
+      "navigation": 0.0,
+      "safety": 0.0
+    },
+    "sensor_ages_s": {
+      "depth": 0.0,
+      "frontCamera": 0.0,
+      "gnss": 0.0,
+      "imu": 0.0,
+      "lidar": 0.0,
+      "radar": 0.0
+    },
+    "ego_render_pose": {
+      "position_m": [
+        -112.46321105957031,
+        -32.385597229003906,
+        -0.0009640884236432612
+      ],
+      "rotation_rad": {
+        "roll": 3.822629323093076e-05,
+        "pitch": -0.016627072799178733,
+        "yaw": 1.9242871525029837
+      },
+      "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+    }
+  },
+  "rlRuntime": {
+    "active": false,
+    "tick_owner": "simulation-worker"
+  },
+  "navigationAvailable": true,
+  "safetySystem": {
+    "type": "RULE_BASED_SAFETY",
+    "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+    "status": "STANDBY",
+    "risk": "UNKNOWN",
+    "active": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "steering_available": false,
+    "rejected_interventions": 0,
+    "actual_generator": "BASE_DRIVER",
+    "enabled": true,
+    "intervention_count": 0,
+    "controller": "RULE",
+    "model_health": "READY",
+    "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+    "model_error": null,
+    "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+    "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+    "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+    "available_controllers": [
+      "RULE",
+      "HYBRID"
+    ],
+    "source_counts": {
+      "LEARNED_BC": 0,
+      "RULE_GUARD": 0,
+      "RULE_FALLBACK": 0,
+      "RULE": 0,
+      "BASE_DRIVER": 0
+    },
+    "experimental": false
+  },
+  "restartResult": null,
+  "restarting": false,
+  "recording": false,
+  "recordingStatus": {
+    "incomplete": false,
+    "error": null,
+    "dropped_frames": 0,
+    "dropped_events": 0,
+    "dropped_trace_rows": 0,
+    "first_dropped_frame": null,
+    "last_dropped_frame": null,
+    "written_frames": 2915,
+    "queued_bytes": 0,
+    "pending_items": 0,
+    "finalized": true
+  },
+  "performance": {
+    "nativeTickRateHz": 8.763388510219349,
+    "renderFps": null,
+    "clock": "WALL_TIME",
+    "observationPipelineLatencyMs": {
+      "definition": "Native step request to complete synchronized publication; excludes display latency",
+      "samples": 100,
+      "median": 77.99999999406282,
+      "maximum": 109.00000000401633
+    },
+    "sensorWallRatesHz": {
+      "frontCamera": 8.733141720095258,
+      "depth": 0,
+      "radar": 8.717722357097411,
+      "lidar": 8.717722357097411,
+      "imu": 8.717722357097411,
+      "gnss": 8.717722357097411,
+      "collision": null
+    },
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+      "usedMiB": 3513,
+      "totalMiB": 6144,
+      "utilizationPercent": 13,
+      "observedAtUnix": 1791778262.3371491
+    }
+  },
+  "provider": "carla",
+  "mode": "PAUSED",
+  "connectionState": "CONNECTED",
+  "error": null,
+  "vehicle": {
+    "source": "carla",
+    "frame": 289474,
+    "timestamp": 12759.13470730558,
+    "actorId": 2313,
+    "positionWorldM": [
+      -112.46321105957031,
+      -32.385597229003906,
+      -0.0009640884236432612
+    ],
+    "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+    "rotationDeg": {
+      "roll": 0.00219020526856184,
+      "pitch": -0.9526610970497132,
+      "yaw": 110.25353240966797
+    },
+    "velocityWorldMps": [
+      0.001463088789023459,
+      -0.0030081570148468018,
+      -0.0002498626708984375
+    ],
+    "angularVelocityWorldRadps": [
+      0.017568391013305158,
+      0.007062437414929782,
+      -1.3805491879547553e-05
+    ],
+    "accelerationWorldMps2": [
+      0.05500996485352516,
+      -0.1714831292629242,
+      0.0043087005615234375
+    ],
+    "speedMps": -0.0033240327581359405,
+    "speedMagnitudeMps": 0.003354410348309618,
+    "accelerationMps2": -0.17997015921613602,
+    "speedKmh": 0.012075877253914626,
+    "steeringInput": 0.0,
+    "throttle": 0.0,
+    "brake": 1.0,
+    "gear": "1",
+    "gearIndex": 1,
+    "reverse": false,
+    "handbrake": false,
+    "headingRad": 1.9242871525029837,
+    "engineRPM": null,
+    "fuelLevelL": null,
+    "damage": null
+  },
+  "world": {
+    "source": "carla",
+    "frame": 289474,
+    "timestamp": 12759.13470730558,
+    "map": "Carla/Maps/Town10HD_Opt",
+    "version": "0.9.16",
+    "pythonApiVersion": "0.9.16",
+    "fixedDeltaSeconds": 0.05,
+    "synchronous": true
+  },
+  "sensors": {
+    "depth": {
+      "source": "carla",
+      "sensorId": "depth",
+      "frame": 289474,
+      "timestamp": 12759.13470730558,
+      "sensorTimestamp": 12759.13470730558,
+      "actorId": 2315,
+      "mountTransform": {
+        "position_m": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "requestedRateHz": 20.0,
+      "frameAvailable": true,
+      "asset": {
+        "path": "depth/depth-2315-289474.npy",
+        "media_type": "application/x-npy",
+        "byte_count": 921728,
+        "sha256": "233c96265acb1a056d1f4b480fdda24920201f8ac3a6b756bf911479251e1797"
+      },
+      "matchesVehicleFrame": true,
+      "width": 640,
+      "height": 360,
+      "fovDeg": 90.0,
+      "worldTransform": {
+        "position_m": [
+          -112.99166870117188,
+          -30.95359992980957,
+          1.573875069618225
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "sensorTickSeconds": 0.05,
+      "data": {},
+      "units": {
+        "depth": "m"
+      },
+      "metadata": {
+        "mount_transform": {
+          "position_m": [
+            1.5,
+            0.0,
+            1.600000023841858
+          ],
+          "rotation_deg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensor_tick_s": 0.05,
+        "attributes": {
+          "sensor_tick": 0.05,
+          "image_size_x": 640,
+          "image_size_y": 360,
+          "fov": 90,
+          "lens_k": 0,
+          "lens_kcube": 0
+        },
+        "width": 640,
+        "height": 360,
+        "fov_deg": 90.0,
+        "source_encoding": "CARLA BGRA8",
+        "dtype": "float32",
+        "shape": [
+          360,
+          640
+        ],
+        "encoding": "linear depth metres",
+        "received_monotonic_s": 46427.359,
+        "decode_duration_ms": 16.00000000325963
+      }
+    },
+    "frontCamera": {
+      "source": "carla",
+      "sensorId": "frontCamera",
+      "frame": 289474,
+      "timestamp": 12759.13470730558,
+      "sensorTimestamp": 12759.13470730558,
+      "actorId": 2314,
+      "mountTransform": {
+        "position_m": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "requestedRateHz": 20.0,
+      "frameAvailable": true,
+      "asset": {
+        "path": "rgb/frontCamera-2314-289474.jpg",
+        "media_type": "image/jpeg",
+        "byte_count": 92199,
+        "sha256": "9921e9d07c69a619e9bd0f6efde7295e67041c77dab63bbc04e7743b0658235a"
+      },
+      "matchesVehicleFrame": true,
+      "width": 640,
+      "height": 360,
+      "fovDeg": 90.0,
+      "worldTransform": {
+        "position_m": [
+          -112.99166870117188,
+          -30.95359992980957,
+          1.573875069618225
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "sensorTickSeconds": 0.05,
+      "data": {},
+      "units": {},
+      "metadata": {
+        "mount_transform": {
+          "position_m": [
+            1.5,
+            0.0,
+            1.600000023841858
+          ],
+          "rotation_deg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensor_tick_s": 0.05,
+        "attributes": {
+          "sensor_tick": 0.05,
+          "image_size_x": 640,
+          "image_size_y": 360,
+          "fov": 90,
+          "lens_k": 0,
+          "lens_kcube": 0,
+          "enable_postprocess_effects": "false",
+          "motion_blur_intensity": 0,
+          "motion_blur_max_distortion": 0,
+          "bloom_intensity": 0.0
+        },
+        "width": 640,
+        "height": 360,
+        "fov_deg": 90.0,
+        "source_encoding": "CARLA BGRA8",
+        "jpeg_quality": 95,
+        "encoding": "JPEG RGB (compressed native image)",
+        "received_monotonic_s": 46427.359,
+        "decode_duration_ms": 0.0
+      }
+    },
+    "gnss": {
+      "source": "carla",
+      "sensorId": "gnss",
+      "frame": 289474,
+      "timestamp": 12759.13470730558,
+      "sensorTimestamp": 12759.13470730558,
+      "actorId": 2319,
+      "mountTransform": {
+        "position_m": [
+          0.0,
+          0.0,
+          1.600000023841858
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "requestedRateHz": 20.0,
+      "frameAvailable": false,
+      "asset": null,
+      "matchesVehicleFrame": true,
+      "width": null,
+      "height": null,
+      "fovDeg": null,
+      "worldTransform": {
+        "position_m": [
+          -112.47248077392578,
+          -32.360660552978516,
+          1.598814845085144
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "sensorTickSeconds": 0.05,
+      "data": {
+        "latitude_deg": -0.00029081708657884004,
+        "longitude_deg": -0.0010107617898971338,
+        "altitude_m": 1.598814845085144
+      },
+      "units": {
+        "latitude_deg": "deg",
+        "longitude_deg": "deg",
+        "altitude_m": "m"
+      },
+      "metadata": {
+        "mount_transform": {
+          "position_m": [
+            0.0,
+            0.0,
+            1.600000023841858
+          ],
+          "rotation_deg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensor_tick_s": 0.05,
+        "attributes": {
+          "sensor_tick": 0.05
+        },
+        "received_monotonic_s": 46427.328,
+        "decode_duration_ms": 0.0
+      }
+    },
+    "imu": {
+      "source": "carla",
+      "sensorId": "imu",
+      "frame": 289474,
+      "timestamp": 12759.13470730558,
+      "sensorTimestamp": 12759.13470730558,
+      "actorId": 2318,
+      "mountTransform": {
+        "position_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "requestedRateHz": 20.0,
+      "frameAvailable": false,
+      "asset": null,
+      "matchesVehicleFrame": true,
+      "width": null,
+      "height": null,
+      "fovDeg": null,
+      "worldTransform": {
+        "position_m": [
+          -112.46321105957031,
+          -32.385597229003906,
+          -0.0009640884236432612
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "sensorTickSeconds": 0.05,
+      "data": {
+        "accelerometer_mps2": [
+          -0.5818769335746765,
+          0.028122782707214355,
+          9.500020027160645
+        ],
+        "gyroscope_radps": [
+          0.0005441829562187195,
+          -0.01892697811126709,
+          -5.48182288184762e-06
+        ],
+        "compass_rad": 3.495084047317505
+      },
+      "units": {
+        "accelerometer_mps2": "m/s^2",
+        "gyroscope_radps": "rad/s",
+        "compass_rad": "rad"
+      },
+      "metadata": {
+        "mount_transform": {
+          "position_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation_deg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensor_tick_s": 0.05,
+        "attributes": {
+          "sensor_tick": 0.05
+        },
+        "received_monotonic_s": 46427.328,
+        "decode_duration_ms": 0.0
+      }
+    },
+    "lidar": {
+      "source": "carla",
+      "sensorId": "lidar",
+      "frame": 289474,
+      "timestamp": 12759.13470730558,
+      "sensorTimestamp": 12759.13470730558,
+      "actorId": 2317,
+      "mountTransform": {
+        "position_m": [
+          0.0,
+          0.0,
+          1.899999976158142
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "requestedRateHz": 20.0,
+      "frameAvailable": true,
+      "asset": {
+        "path": "lidar/lidar-2317-289474.bin",
+        "media_type": "application/octet-stream",
+        "byte_count": 12064,
+        "sha256": "62693fedfd93b72ed886342b357a66cfe175a058430e996c238b54ec795efaa6"
+      },
+      "matchesVehicleFrame": true,
+      "width": null,
+      "height": null,
+      "fovDeg": null,
+      "worldTransform": {
+        "position_m": [
+          -112.47421264648438,
+          -32.35598373413086,
+          1.8987733125686646
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "sensorTickSeconds": 0.05,
+      "data": {},
+      "units": {
+        "x": "m",
+        "y": "m",
+        "z": "m",
+        "intensity": "unitless"
+      },
+      "metadata": {
+        "mount_transform": {
+          "position_m": [
+            0.0,
+            0.0,
+            1.899999976158142
+          ],
+          "rotation_deg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensor_tick_s": 0.05,
+        "attributes": {
+          "sensor_tick": 0.05,
+          "range": 50,
+          "channels": 16,
+          "points_per_second": 32000,
+          "rotation_frequency": 20.0,
+          "upper_fov": 10,
+          "lower_fov": -30
+        },
+        "point_count": 754,
+        "channels": 16,
+        "horizontal_angle_rad": 0.0,
+        "dtype": "little-endian float32",
+        "columns": [
+          "x",
+          "y",
+          "z",
+          "intensity"
+        ],
+        "coordinate_frame": "sensor-local-x-forward-y-right-z-up",
+        "received_monotonic_s": 46427.328,
+        "decode_duration_ms": 0.0
+      }
+    },
+    "radar": {
+      "source": "carla",
+      "sensorId": "radar",
+      "frame": 289474,
+      "timestamp": 12759.13470730558,
+      "sensorTimestamp": 12759.13470730558,
+      "actorId": 2316,
+      "mountTransform": {
+        "position_m": [
+          2.5,
+          0.0,
+          0.6499999761581421
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "requestedRateHz": 20.0,
+      "frameAvailable": false,
+      "asset": null,
+      "matchesVehicleFrame": true,
+      "width": null,
+      "height": null,
+      "fovDeg": null,
+      "worldTransform": {
+        "position_m": [
+          -113.33229064941406,
+          -30.030364990234375,
+          0.6073800325393677
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "sensorTickSeconds": 0.05,
+      "data": {
+        "detections": [
+          {
+            "depth_m": 6.347228050231934,
+            "azimuth_rad": -0.1707521229982376,
+            "altitude_rad": -0.07942862808704376,
+            "velocity_mps": 0.0007235106895677745
+          },
+          {
+            "depth_m": 19.98846435546875,
+            "azimuth_rad": -0.01502223126590252,
+            "altitude_rad": -0.005781867075711489,
+            "velocity_mps": 0.00045685566146858037
+          },
+          {
+            "depth_m": 4.98307466506958,
+            "azimuth_rad": -0.11141089349985123,
+            "altitude_rad": -0.10563235729932785,
+            "velocity_mps": 0.0008554168744012713
+          },
+          {
+            "depth_m": 8.102032661437988,
+            "azimuth_rad": 0.2144133597612381,
+            "altitude_rad": -0.0495341531932354,
+            "velocity_mps": 0.0006995490984991193
+          },
+          {
+            "depth_m": 5.207930088043213,
+            "azimuth_rad": -0.12206842750310898,
+            "altitude_rad": -0.10035475343465805,
+            "velocity_mps": 0.000829442695248872
+          },
+          {
+            "depth_m": 10.503927230834961,
+            "azimuth_rad": 0.07916291058063507,
+            "altitude_rad": -0.02996836230158806,
+            "velocity_mps": 0.0005863737314939499
+          },
+          {
+            "depth_m": 9.6717529296875,
+            "azimuth_rad": 0.25909873843193054,
+            "altitude_rad": -0.019943227991461754,
+            "velocity_mps": 0.0005799578502774239
+          },
+          {
+            "depth_m": 25.789955139160156,
+            "azimuth_rad": -0.07695544511079788,
+            "altitude_rad": 0.032213255763053894,
+            "velocity_mps": 0.00027381337713450193
+          },
+          {
+            "depth_m": 21.577499389648438,
+            "azimuth_rad": -0.08493313193321228,
+            "altitude_rad": 0.01934325508773327,
+            "velocity_mps": 0.00032701503369025886
+          },
+          {
+            "depth_m": 5.803664207458496,
+            "azimuth_rad": 0.10581326484680176,
+            "altitude_rad": -0.08827383816242218,
+            "velocity_mps": 0.0008426327840425074
+          },
+          {
+            "depth_m": 18.89390754699707,
+            "azimuth_rad": -0.11493705958127975,
+            "altitude_rad": -0.015240234322845936,
+            "velocity_mps": 0.00046673539327457547
+          },
+          {
+            "depth_m": 6.367128849029541,
+            "azimuth_rad": -0.007324235048145056,
+            "altitude_rad": -0.07888035476207733,
+            "velocity_mps": 0.0007732108351774514
+          },
+          {
+            "depth_m": 20.098731994628906,
+            "azimuth_rad": -0.01489871833473444,
+            "altitude_rad": 0.0031177890487015247,
+            "velocity_mps": 0.0004184425051789731
+          },
+          {
+            "depth_m": 8.334733009338379,
+            "azimuth_rad": 0.19893382489681244,
+            "altitude_rad": -0.03967966511845589,
+            "velocity_mps": 0.0006543403724208474
+          },
+          {
+            "depth_m": 5.355810642242432,
+            "azimuth_rad": 0.13221900165081024,
+            "altitude_rad": -0.09712586551904678,
+            "velocity_mps": 0.0008863370167091489
+          },
+          {
+            "depth_m": 12.012998580932617,
+            "azimuth_rad": -0.05889652669429779,
+            "altitude_rad": -0.03396904468536377,
+            "velocity_mps": 0.0005653076223097742
+          },
+          {
+            "depth_m": 14.774715423583984,
+            "azimuth_rad": -0.004528137855231762,
+            "altitude_rad": -0.014172540046274662,
+            "velocity_mps": 0.0004960712394677103
+          },
+          {
+            "depth_m": 4.184725761413574,
+            "azimuth_rad": -0.08795490860939026,
+            "altitude_rad": -0.12904894351959229,
+            "velocity_mps": 0.0009623327059671283
+          },
+          {
+            "depth_m": 7.058847427368164,
+            "azimuth_rad": -0.14917929470539093,
+            "altitude_rad": -0.06968671083450317,
+            "velocity_mps": 0.000689301872625947
+          },
+          {
+            "depth_m": 6.973596096038818,
+            "azimuth_rad": 0.04744192212820053,
+            "altitude_rad": -0.07056853920221329,
+            "velocity_mps": 0.000752593856304884
+          },
+          {
+            "depth_m": 20.07842445373535,
+            "azimuth_rad": -0.01771347038447857,
+            "altitude_rad": 0.008041772060096264,
+            "velocity_mps": 0.0003963428898714483
+          },
+          {
+            "depth_m": 5.408081531524658,
+            "azimuth_rad": -0.02340495027601719,
+            "altitude_rad": -0.09588820487260818,
+            "velocity_mps": 0.0008411459275521338
+          },
+          {
+            "depth_m": 26.411441802978516,
+            "azimuth_rad": -0.11050441861152649,
+            "altitude_rad": 0.015267960727214813,
+            "velocity_mps": 0.0003363829164300114
+          },
+          {
+            "depth_m": 8.56845474243164,
+            "azimuth_rad": 0.014942661859095097,
+            "altitude_rad": -0.054295800626277924,
+            "velocity_mps": 0.0006741682882420719
+          },
+          {
+            "depth_m": 14.551736831665039,
+            "azimuth_rad": -0.04359332472085953,
+            "altitude_rad": -0.022261688485741615,
+            "velocity_mps": 0.0005195334670133889
+          },
+          {
+            "depth_m": 20.8631591796875,
+            "azimuth_rad": -0.012774964794516563,
+            "altitude_rad": 0.04810696840286255,
+            "velocity_mps": 0.0002242521004518494
+          },
+          {
+            "depth_m": 24.825042724609375,
+            "azimuth_rad": -0.08424457907676697,
+            "altitude_rad": 0.09869323670864105,
+            "velocity_mps": -1.6851201507961378e-05
+          },
+          {
+            "depth_m": 12.90719223022461,
+            "azimuth_rad": -0.002210787730291486,
+            "altitude_rad": -0.018878744915127754,
+            "velocity_mps": 0.000517020293045789
+          },
+          {
+            "depth_m": 20.188127517700195,
+            "azimuth_rad": 0.012937240302562714,
+            "altitude_rad": -0.00288585782982409,
+            "velocity_mps": 0.00045224878704175353
+          },
+          {
+            "depth_m": 21.147809982299805,
+            "azimuth_rad": -0.006127890665084124,
+            "altitude_rad": 0.160589799284935,
+            "velocity_mps": -0.00026204661116935313
+          },
+          {
+            "depth_m": 12.980939865112305,
+            "azimuth_rad": -0.027924874797463417,
+            "altitude_rad": -0.0299282968044281,
+            "velocity_mps": 0.0005572228110395372
+          },
+          {
+            "depth_m": 20.299053192138672,
+            "azimuth_rad": 0.02729441598057747,
+            "altitude_rad": -0.002793503925204277,
+            "velocity_mps": 0.00045577457058243454
+          },
+          {
+            "depth_m": 7.1133294105529785,
+            "azimuth_rad": 0.11147467792034149,
+            "altitude_rad": -0.06893396377563477,
+            "velocity_mps": 0.000761350616812706
+          },
+          {
+            "depth_m": 4.116751194000244,
+            "azimuth_rad": 0.12352002412080765,
+            "altitude_rad": -0.1315252184867859,
+            "velocity_mps": 0.0010302134323865175
+          },
+          {
+            "depth_m": 8.538837432861328,
+            "azimuth_rad": -0.07084757834672928,
+            "altitude_rad": -0.05458539351820946,
+            "velocity_mps": 0.0006502168253064156
+          },
+          {
+            "depth_m": 5.176124095916748,
+            "azimuth_rad": 0.0677381083369255,
+            "altitude_rad": -0.10098312795162201,
+            "velocity_mps": 0.000887528934981674
+          },
+          {
+            "depth_m": 20.18689727783203,
+            "azimuth_rad": 0.012886459939181805,
+            "altitude_rad": -0.0004314146935939789,
+            "velocity_mps": 0.00044163395068608224
+          },
+          {
+            "depth_m": 20.008102416992188,
+            "azimuth_rad": -0.011955485679209232,
+            "altitude_rad": -0.002279728651046753,
+            "velocity_mps": 0.000442613527411595
+          },
+          {
+            "depth_m": 7.209129333496094,
+            "azimuth_rad": -0.039591025561094284,
+            "altitude_rad": -0.06771104037761688,
+            "velocity_mps": 0.0007160246022976935
+          },
+          {
+            "depth_m": 20.083126068115234,
+            "azimuth_rad": -0.0012918708380311728,
+            "altitude_rad": -0.0027337016072124243,
+            "velocity_mps": 0.00044760346645489335
+          },
+          {
+            "depth_m": 9.616570472717285,
+            "azimuth_rad": 0.17768071591854095,
+            "altitude_rad": -0.009576237760484219,
+            "velocity_mps": 0.0005205199122428894
+          },
+          {
+            "depth_m": 4.5662946701049805,
+            "azimuth_rad": -0.146553635597229,
+            "altitude_rad": -0.11692197620868683,
+            "velocity_mps": 0.0008916669758036733
+          },
+          {
+            "depth_m": 4.377681255340576,
+            "azimuth_rad": 0.17921029031276703,
+            "altitude_rad": -0.1227804645895958,
+            "velocity_mps": 0.0010050316341221333
+          },
+          {
+            "depth_m": 10.08282470703125,
+            "azimuth_rad": -0.10417300462722778,
+            "altitude_rad": -0.043722692877054214,
+            "velocity_mps": 0.0005929352482780814
+          },
+          {
+            "depth_m": 3.943756341934204,
+            "azimuth_rad": 0.07305633276700974,
+            "altitude_rad": -0.1379891335964203,
+            "velocity_mps": 0.0010455904994159937
+          },
+          {
+            "depth_m": 25.811254501342773,
+            "azimuth_rad": -0.07203912734985352,
+            "altitude_rad": 0.08866576850414276,
+            "velocity_mps": 3.050580562558025e-05
+          },
+          {
+            "depth_m": 9.679696083068848,
+            "azimuth_rad": 0.18124759197235107,
+            "altitude_rad": 0.03400718420743942,
+            "velocity_mps": 0.00033269356936216354
+          },
+          {
+            "depth_m": 4.277304172515869,
+            "azimuth_rad": 0.06476890295743942,
+            "altitude_rad": -0.12584029138088226,
+            "velocity_mps": 0.0009922157041728497
+          },
+          {
+            "depth_m": 11.659810066223145,
+            "azimuth_rad": 0.03493180871009827,
+            "altitude_rad": -0.026171907782554626,
+            "velocity_mps": 0.0005586707266047597
+          },
+          {
+            "depth_m": 20.35531997680664,
+            "azimuth_rad": 0.03447138890624046,
+            "altitude_rad": 0.0004948824644088745,
+            "velocity_mps": 0.0004434943839441985
+          },
+          {
+            "depth_m": 5.644921779632568,
+            "azimuth_rad": 0.06527344137430191,
+            "altitude_rad": -0.09117645025253296,
+            "velocity_mps": 0.0008451601606793702
+          },
+          {
+            "depth_m": 18.57738494873047,
+            "azimuth_rad": 0.07503356039524078,
+            "altitude_rad": -0.007910271175205708,
+            "velocity_mps": 0.0004902540240436792
+          },
+          {
+            "depth_m": 7.245900630950928,
+            "azimuth_rad": 0.06716594099998474,
+            "altitude_rad": -0.06730251014232635,
+            "velocity_mps": 0.000743668235372752
+          },
+          {
+            "depth_m": 18.243993759155273,
+            "azimuth_rad": -0.1459745317697525,
+            "altitude_rad": -0.016842519864439964,
+            "velocity_mps": 0.00046320646652020514
+          },
+          {
+            "depth_m": 4.401489734649658,
+            "azimuth_rad": -0.06897810846567154,
+            "altitude_rad": -0.1218051165342331,
+            "velocity_mps": 0.0009375926456414163
+          },
+          {
+            "depth_m": 13.797831535339355,
+            "azimuth_rad": -0.02603807859122753,
+            "altitude_rad": -0.020710539072752,
+            "velocity_mps": 0.0005180613370612264
+          },
+          {
+            "depth_m": 5.602228164672852,
+            "azimuth_rad": -0.15099702775478363,
+            "altitude_rad": -0.09216325730085373,
+            "velocity_mps": 0.0007847669767215848
+          }
+        ]
+      },
+      "units": {
+        "depth_m": "m",
+        "azimuth_rad": "rad",
+        "altitude_rad": "rad",
+        "velocity_mps": "m/s"
+      },
+      "metadata": {
+        "mount_transform": {
+          "position_m": [
+            2.5,
+            0.0,
+            0.6499999761581421
+          ],
+          "rotation_deg": {
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "roll": 0.0
+          }
+        },
+        "sensor_tick_s": 0.05,
+        "attributes": {
+          "sensor_tick": 0.05,
+          "range": 50,
+          "horizontal_fov": 30,
+          "vertical_fov": 20,
+          "points_per_second": 1500
+        },
+        "received_monotonic_s": 46427.328,
+        "decode_duration_ms": 0.0
+      }
+    }
+  },
+  "sensorRatesHz": {
+    "frontCamera": 19.99999970197678,
+    "depth": 19.99999970197678,
+    "radar": 19.99999970197678,
+    "lidar": 19.99999970197678,
+    "imu": 19.99999970197678,
+    "gnss": 19.99999970197678,
+    "collision": null
+  },
+  "sensorErrors": {},
+  "population": {
+    "frame_id": 289475,
+    "requested": {
+      "vehicle_count": 40,
+      "pedestrian_count": 30,
+      "speed_behavior": "NORMAL",
+      "seed": 2811,
+      "fast_walk_percent": 10,
+      "driver_behavior": "UNREGULATED",
+      "light_compliance_percent": 20,
+      "world_profile": "VISUAL_DEMO",
+      "crossing_percent": 15,
+      "chaos_percent": 0
+    },
+    "actual": {
+      "vehicles": 40,
+      "pedestrians": 25,
+      "controllers": 24,
+      "walkers_active": 25
+    },
+    "npc_spawned": 40,
+    "npc_failed": 0,
+    "walkers_spawned": 30,
+    "walkers_failed": 0,
+    "traffic_manager_connected": true,
+    "traffic_manager_port": 8050,
+    "desired_speed_difference_percent": 15.0,
+    "vehicle_ids": [
+      2321,
+      2322,
+      2323,
+      2324,
+      2325,
+      2326,
+      2327,
+      2328,
+      2329,
+      2330,
+      2331,
+      2332,
+      2333,
+      2334,
+      2335,
+      2336,
+      2337,
+      2338,
+      2339,
+      2340,
+      2341,
+      2342,
+      2343,
+      2344,
+      2345,
+      2346,
+      2347,
+      2348,
+      2349,
+      2350,
+      2351,
+      2352,
+      2353,
+      2354,
+      2355,
+      2356,
+      2357,
+      2358,
+      2359,
+      2360
+    ],
+    "walker_ids": [
+      2361,
+      2363,
+      2365,
+      2367,
+      2369,
+      2371,
+      2373,
+      2375,
+      2377,
+      2379,
+      2381,
+      2383,
+      2385,
+      2387,
+      2389,
+      2391,
+      2393,
+      2395,
+      2397,
+      2399,
+      2401,
+      2403,
+      2405,
+      2407,
+      2409,
+      2411,
+      2413,
+      2415,
+      2417,
+      2419
+    ],
+    "controller_ids": [
+      2362,
+      2364,
+      2366,
+      2368,
+      2370,
+      2372,
+      2374,
+      2376,
+      2378,
+      2380,
+      2382,
+      2384,
+      2386,
+      2388,
+      2390,
+      2392,
+      2394,
+      2396,
+      2398,
+      2400,
+      2402,
+      2404,
+      2406,
+      2408,
+      2410,
+      2412,
+      2414,
+      2416,
+      2418,
+      2420
+    ],
+    "errors": [],
+    "walkers_lost": 5,
+    "walker_spawn_failure_attempts": 0,
+    "controller_spawn_failure_attempts": 0,
+    "vehicles_removed_native": 0,
+    "behavior": "UNREGULATED",
+    "driver_profiles": {},
+    "local_counts": {
+      "vehicles_120m": 26,
+      "walkers_120m": 6
+    },
+    "recycled_vehicles": 0,
+    "recycled_walkers": 0,
+    "activity_counts": {
+      "WALKING": 0,
+      "WAITING": 0,
+      "CROSSING": 0,
+      "IDLE": 0,
+      "RESELECTING_DESTINATION": 0
+    },
+    "pedestrian_cross_factor": 1.0,
+    "walker_invincible": false,
+    "destinations": "28 native navmesh walkers; 2 scripted native-physics crossings",
+    "experiment_actor_ids": {
+      "sudden_brake": 2321,
+      "cut_in": 2322,
+      "curb_up": 2323,
+      "curb_return": 2324,
+      "traffic_00": 2325,
+      "traffic_01": 2326,
+      "traffic_02": 2327,
+      "traffic_03": 2328,
+      "traffic_04": 2329,
+      "traffic_05": 2330,
+      "traffic_06": 2331,
+      "traffic_07": 2332,
+      "traffic_08": 2333,
+      "traffic_09": 2334,
+      "traffic_10": 2335,
+      "traffic_11": 2336,
+      "traffic_12": 2337,
+      "traffic_13": 2338,
+      "traffic_14": 2339,
+      "traffic_15": 2340,
+      "traffic_16": 2341,
+      "traffic_17": 2342,
+      "traffic_18": 2343,
+      "traffic_19": 2344,
+      "traffic_20": 2345,
+      "traffic_21": 2346,
+      "traffic_22": 2347,
+      "traffic_23": 2348,
+      "traffic_24": 2349,
+      "traffic_25": 2350,
+      "traffic_26": 2351,
+      "traffic_27": 2352,
+      "traffic_28": 2353,
+      "traffic_29": 2354,
+      "traffic_30": 2355,
+      "traffic_31": 2356,
+      "traffic_32": 2357,
+      "traffic_33": 2358,
+      "traffic_34": 2359,
+      "traffic_35": 2360,
+      "crossing_0": 2361,
+      "crossing_1": 2363,
+      "walker_00": 2365,
+      "walker_01": 2367,
+      "walker_02": 2369,
+      "walker_03": 2371,
+      "walker_04": 2373,
+      "walker_05": 2375,
+      "walker_06": 2377,
+      "walker_07": 2379,
+      "walker_08": 2381,
+      "walker_09": 2383,
+      "walker_10": 2385,
+      "walker_11": 2387,
+      "walker_12": 2389,
+      "walker_13": 2391,
+      "walker_14": 2393,
+      "walker_15": 2395,
+      "walker_16": 2397,
+      "walker_17": 2399,
+      "walker_18": 2401,
+      "walker_19": 2403,
+      "walker_20": 2405,
+      "walker_21": 2407,
+      "walker_22": 2409,
+      "walker_23": 2411,
+      "walker_24": 2413,
+      "walker_25": 2415,
+      "walker_26": 2417,
+      "walker_27": 2419
+    },
+    "actual_source": "Native admitted experiment actors; no recycling"
+  },
+  "canonical": {
+    "frame_id": 289474,
+    "timestamp_s": 12759.13470730558,
+    "world": {
+      "frame_id": 289474,
+      "timestamp_s": 12759.13470730558,
+      "provider": "carla",
+      "map_name": "Carla/Maps/Town10HD_Opt",
+      "simulator_version": "0.9.16",
+      "api_version": "0.9.16",
+      "fixed_delta_seconds": 0.05,
+      "synchronous": true
+    },
+    "vehicle": {
+      "frame_id": 289474,
+      "timestamp_s": 12759.13470730558,
+      "transform": {
+        "position_m": [
+          -112.46321105957031,
+          -32.385597229003906,
+          -0.0009640884236432612
+        ],
+        "rotation_rad": {
+          "roll": 3.822629323093076e-05,
+          "pitch": -0.016627072799178733,
+          "yaw": 1.9242871525029837
+        },
+        "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+      },
+      "linear_velocity_mps": [
+        0.001463088789023459,
+        -0.0030081570148468018,
+        -0.0002498626708984375
+      ],
+      "angular_velocity_radps": [
+        0.017568391013305158,
+        0.007062437414929782,
+        -1.3805491879547553e-05
+      ],
+      "acceleration_mps2": [
+        0.05500996485352516,
+        -0.1714831292629242,
+        0.0043087005615234375
+      ],
+      "speed_mps": 0.003354410348309618,
+      "steering": 0.0,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "gear": 1,
+      "reverse": false,
+      "handbrake": false,
+      "provider": "carla",
+      "actor_id": 2313,
+      "longitudinal_speed_mps": -0.0033240327581359405,
+      "longitudinal_acceleration_mps2": -0.17997015921613602
+    },
+    "sensors": [
+      {
+        "sensor_id": "depth",
+        "kind": "DEPTH",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -112.99166870117188,
+            -30.95359992980957,
+            1.573875069618225
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2315,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {
+          "depth": "m"
+        },
+        "asset": {
+          "path": "depth/depth-2315-289474.npy",
+          "media_type": "application/x-npy",
+          "byte_count": 921728,
+          "sha256": "233c96265acb1a056d1f4b480fdda24920201f8ac3a6b756bf911479251e1797"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "width": 640,
+          "height": 360,
+          "fov_deg": 90.0,
+          "source_encoding": "CARLA BGRA8",
+          "dtype": "float32",
+          "shape": [
+            360,
+            640
+          ],
+          "encoding": "linear depth metres",
+          "received_monotonic_s": 46427.359,
+          "decode_duration_ms": 16.00000000325963
+        }
+      },
+      {
+        "sensor_id": "frontCamera",
+        "kind": "RGB",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -112.99166870117188,
+            -30.95359992980957,
+            1.573875069618225
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2314,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {},
+        "asset": {
+          "path": "rgb/frontCamera-2314-289474.jpg",
+          "media_type": "image/jpeg",
+          "byte_count": 92199,
+          "sha256": "9921e9d07c69a619e9bd0f6efde7295e67041c77dab63bbc04e7743b0658235a"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "width": 640,
+          "height": 360,
+          "fov_deg": 90.0,
+          "source_encoding": "CARLA BGRA8",
+          "jpeg_quality": 95,
+          "encoding": "JPEG RGB (compressed native image)",
+          "received_monotonic_s": 46427.359,
+          "decode_duration_ms": 0.0
+        }
+      },
+      {
+        "sensor_id": "gnss",
+        "kind": "GNSS",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -112.47248077392578,
+            -32.360660552978516,
+            1.598814845085144
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2319,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "latitude_deg": -0.00029081708657884004,
+          "longitude_deg": -0.0010107617898971338,
+          "altitude_m": 1.598814845085144
+        },
+        "units": {
+          "latitude_deg": "deg",
+          "longitude_deg": "deg",
+          "altitude_m": "m"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "received_monotonic_s": 46427.328,
+          "decode_duration_ms": 0.0
+        }
+      },
+      {
+        "sensor_id": "imu",
+        "kind": "IMU",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -112.46321105957031,
+            -32.385597229003906,
+            -0.0009640884236432612
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2318,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "accelerometer_mps2": [
+            -0.5818769335746765,
+            0.028122782707214355,
+            9.500020027160645
+          ],
+          "gyroscope_radps": [
+            0.0005441829562187195,
+            -0.01892697811126709,
+            -5.48182288184762e-06
+          ],
+          "compass_rad": 3.495084047317505
+        },
+        "units": {
+          "accelerometer_mps2": "m/s^2",
+          "gyroscope_radps": "rad/s",
+          "compass_rad": "rad"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "received_monotonic_s": 46427.328,
+          "decode_duration_ms": 0.0
+        }
+      },
+      {
+        "sensor_id": "lidar",
+        "kind": "LIDAR",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -112.47421264648438,
+            -32.35598373413086,
+            1.8987733125686646
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2317,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {
+          "x": "m",
+          "y": "m",
+          "z": "m",
+          "intensity": "unitless"
+        },
+        "asset": {
+          "path": "lidar/lidar-2317-289474.bin",
+          "media_type": "application/octet-stream",
+          "byte_count": 12064,
+          "sha256": "62693fedfd93b72ed886342b357a66cfe175a058430e996c238b54ec795efaa6"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 50,
+            "channels": 16,
+            "points_per_second": 32000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -30
+          },
+          "point_count": 754,
+          "channels": 16,
+          "horizontal_angle_rad": 0.0,
+          "dtype": "little-endian float32",
+          "columns": [
+            "x",
+            "y",
+            "z",
+            "intensity"
+          ],
+          "coordinate_frame": "sensor-local-x-forward-y-right-z-up",
+          "received_monotonic_s": 46427.328,
+          "decode_duration_ms": 0.0
+        }
+      },
+      {
+        "sensor_id": "radar",
+        "kind": "RADAR",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -113.33229064941406,
+            -30.030364990234375,
+            0.6073800325393677
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2316,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "detections": [
+            {
+              "depth_m": 6.347228050231934,
+              "azimuth_rad": -0.1707521229982376,
+              "altitude_rad": -0.07942862808704376,
+              "velocity_mps": 0.0007235106895677745
+            },
+            {
+              "depth_m": 19.98846435546875,
+              "azimuth_rad": -0.01502223126590252,
+              "altitude_rad": -0.005781867075711489,
+              "velocity_mps": 0.00045685566146858037
+            },
+            {
+              "depth_m": 4.98307466506958,
+              "azimuth_rad": -0.11141089349985123,
+              "altitude_rad": -0.10563235729932785,
+              "velocity_mps": 0.0008554168744012713
+            },
+            {
+              "depth_m": 8.102032661437988,
+              "azimuth_rad": 0.2144133597612381,
+              "altitude_rad": -0.0495341531932354,
+              "velocity_mps": 0.0006995490984991193
+            },
+            {
+              "depth_m": 5.207930088043213,
+              "azimuth_rad": -0.12206842750310898,
+              "altitude_rad": -0.10035475343465805,
+              "velocity_mps": 0.000829442695248872
+            },
+            {
+              "depth_m": 10.503927230834961,
+              "azimuth_rad": 0.07916291058063507,
+              "altitude_rad": -0.02996836230158806,
+              "velocity_mps": 0.0005863737314939499
+            },
+            {
+              "depth_m": 9.6717529296875,
+              "azimuth_rad": 0.25909873843193054,
+              "altitude_rad": -0.019943227991461754,
+              "velocity_mps": 0.0005799578502774239
+            },
+            {
+              "depth_m": 25.789955139160156,
+              "azimuth_rad": -0.07695544511079788,
+              "altitude_rad": 0.032213255763053894,
+              "velocity_mps": 0.00027381337713450193
+            },
+            {
+              "depth_m": 21.577499389648438,
+              "azimuth_rad": -0.08493313193321228,
+              "altitude_rad": 0.01934325508773327,
+              "velocity_mps": 0.00032701503369025886
+            },
+            {
+              "depth_m": 5.803664207458496,
+              "azimuth_rad": 0.10581326484680176,
+              "altitude_rad": -0.08827383816242218,
+              "velocity_mps": 0.0008426327840425074
+            },
+            {
+              "depth_m": 18.89390754699707,
+              "azimuth_rad": -0.11493705958127975,
+              "altitude_rad": -0.015240234322845936,
+              "velocity_mps": 0.00046673539327457547
+            },
+            {
+              "depth_m": 6.367128849029541,
+              "azimuth_rad": -0.007324235048145056,
+              "altitude_rad": -0.07888035476207733,
+              "velocity_mps": 0.0007732108351774514
+            },
+            {
+              "depth_m": 20.098731994628906,
+              "azimuth_rad": -0.01489871833473444,
+              "altitude_rad": 0.0031177890487015247,
+              "velocity_mps": 0.0004184425051789731
+            },
+            {
+              "depth_m": 8.334733009338379,
+              "azimuth_rad": 0.19893382489681244,
+              "altitude_rad": -0.03967966511845589,
+              "velocity_mps": 0.0006543403724208474
+            },
+            {
+              "depth_m": 5.355810642242432,
+              "azimuth_rad": 0.13221900165081024,
+              "altitude_rad": -0.09712586551904678,
+              "velocity_mps": 0.0008863370167091489
+            },
+            {
+              "depth_m": 12.012998580932617,
+              "azimuth_rad": -0.05889652669429779,
+              "altitude_rad": -0.03396904468536377,
+              "velocity_mps": 0.0005653076223097742
+            },
+            {
+              "depth_m": 14.774715423583984,
+              "azimuth_rad": -0.004528137855231762,
+              "altitude_rad": -0.014172540046274662,
+              "velocity_mps": 0.0004960712394677103
+            },
+            {
+              "depth_m": 4.184725761413574,
+              "azimuth_rad": -0.08795490860939026,
+              "altitude_rad": -0.12904894351959229,
+              "velocity_mps": 0.0009623327059671283
+            },
+            {
+              "depth_m": 7.058847427368164,
+              "azimuth_rad": -0.14917929470539093,
+              "altitude_rad": -0.06968671083450317,
+              "velocity_mps": 0.000689301872625947
+            },
+            {
+              "depth_m": 6.973596096038818,
+              "azimuth_rad": 0.04744192212820053,
+              "altitude_rad": -0.07056853920221329,
+              "velocity_mps": 0.000752593856304884
+            },
+            {
+              "depth_m": 20.07842445373535,
+              "azimuth_rad": -0.01771347038447857,
+              "altitude_rad": 0.008041772060096264,
+              "velocity_mps": 0.0003963428898714483
+            },
+            {
+              "depth_m": 5.408081531524658,
+              "azimuth_rad": -0.02340495027601719,
+              "altitude_rad": -0.09588820487260818,
+              "velocity_mps": 0.0008411459275521338
+            },
+            {
+              "depth_m": 26.411441802978516,
+              "azimuth_rad": -0.11050441861152649,
+              "altitude_rad": 0.015267960727214813,
+              "velocity_mps": 0.0003363829164300114
+            },
+            {
+              "depth_m": 8.56845474243164,
+              "azimuth_rad": 0.014942661859095097,
+              "altitude_rad": -0.054295800626277924,
+              "velocity_mps": 0.0006741682882420719
+            },
+            {
+              "depth_m": 14.551736831665039,
+              "azimuth_rad": -0.04359332472085953,
+              "altitude_rad": -0.022261688485741615,
+              "velocity_mps": 0.0005195334670133889
+            },
+            {
+              "depth_m": 20.8631591796875,
+              "azimuth_rad": -0.012774964794516563,
+              "altitude_rad": 0.04810696840286255,
+              "velocity_mps": 0.0002242521004518494
+            },
+            {
+              "depth_m": 24.825042724609375,
+              "azimuth_rad": -0.08424457907676697,
+              "altitude_rad": 0.09869323670864105,
+              "velocity_mps": -1.6851201507961378e-05
+            },
+            {
+              "depth_m": 12.90719223022461,
+              "azimuth_rad": -0.002210787730291486,
+              "altitude_rad": -0.018878744915127754,
+              "velocity_mps": 0.000517020293045789
+            },
+            {
+              "depth_m": 20.188127517700195,
+              "azimuth_rad": 0.012937240302562714,
+              "altitude_rad": -0.00288585782982409,
+              "velocity_mps": 0.00045224878704175353
+            },
+            {
+              "depth_m": 21.147809982299805,
+              "azimuth_rad": -0.006127890665084124,
+              "altitude_rad": 0.160589799284935,
+              "velocity_mps": -0.00026204661116935313
+            },
+            {
+              "depth_m": 12.980939865112305,
+              "azimuth_rad": -0.027924874797463417,
+              "altitude_rad": -0.0299282968044281,
+              "velocity_mps": 0.0005572228110395372
+            },
+            {
+              "depth_m": 20.299053192138672,
+              "azimuth_rad": 0.02729441598057747,
+              "altitude_rad": -0.002793503925204277,
+              "velocity_mps": 0.00045577457058243454
+            },
+            {
+              "depth_m": 7.1133294105529785,
+              "azimuth_rad": 0.11147467792034149,
+              "altitude_rad": -0.06893396377563477,
+              "velocity_mps": 0.000761350616812706
+            },
+            {
+              "depth_m": 4.116751194000244,
+              "azimuth_rad": 0.12352002412080765,
+              "altitude_rad": -0.1315252184867859,
+              "velocity_mps": 0.0010302134323865175
+            },
+            {
+              "depth_m": 8.538837432861328,
+              "azimuth_rad": -0.07084757834672928,
+              "altitude_rad": -0.05458539351820946,
+              "velocity_mps": 0.0006502168253064156
+            },
+            {
+              "depth_m": 5.176124095916748,
+              "azimuth_rad": 0.0677381083369255,
+              "altitude_rad": -0.10098312795162201,
+              "velocity_mps": 0.000887528934981674
+            },
+            {
+              "depth_m": 20.18689727783203,
+              "azimuth_rad": 0.012886459939181805,
+              "altitude_rad": -0.0004314146935939789,
+              "velocity_mps": 0.00044163395068608224
+            },
+            {
+              "depth_m": 20.008102416992188,
+              "azimuth_rad": -0.011955485679209232,
+              "altitude_rad": -0.002279728651046753,
+              "velocity_mps": 0.000442613527411595
+            },
+            {
+              "depth_m": 7.209129333496094,
+              "azimuth_rad": -0.039591025561094284,
+              "altitude_rad": -0.06771104037761688,
+              "velocity_mps": 0.0007160246022976935
+            },
+            {
+              "depth_m": 20.083126068115234,
+              "azimuth_rad": -0.0012918708380311728,
+              "altitude_rad": -0.0027337016072124243,
+              "velocity_mps": 0.00044760346645489335
+            },
+            {
+              "depth_m": 9.616570472717285,
+              "azimuth_rad": 0.17768071591854095,
+              "altitude_rad": -0.009576237760484219,
+              "velocity_mps": 0.0005205199122428894
+            },
+            {
+              "depth_m": 4.5662946701049805,
+              "azimuth_rad": -0.146553635597229,
+              "altitude_rad": -0.11692197620868683,
+              "velocity_mps": 0.0008916669758036733
+            },
+            {
+              "depth_m": 4.377681255340576,
+              "azimuth_rad": 0.17921029031276703,
+              "altitude_rad": -0.1227804645895958,
+              "velocity_mps": 0.0010050316341221333
+            },
+            {
+              "depth_m": 10.08282470703125,
+              "azimuth_rad": -0.10417300462722778,
+              "altitude_rad": -0.043722692877054214,
+              "velocity_mps": 0.0005929352482780814
+            },
+            {
+              "depth_m": 3.943756341934204,
+              "azimuth_rad": 0.07305633276700974,
+              "altitude_rad": -0.1379891335964203,
+              "velocity_mps": 0.0010455904994159937
+            },
+            {
+              "depth_m": 25.811254501342773,
+              "azimuth_rad": -0.07203912734985352,
+              "altitude_rad": 0.08866576850414276,
+              "velocity_mps": 3.050580562558025e-05
+            },
+            {
+              "depth_m": 9.679696083068848,
+              "azimuth_rad": 0.18124759197235107,
+              "altitude_rad": 0.03400718420743942,
+              "velocity_mps": 0.00033269356936216354
+            },
+            {
+              "depth_m": 4.277304172515869,
+              "azimuth_rad": 0.06476890295743942,
+              "altitude_rad": -0.12584029138088226,
+              "velocity_mps": 0.0009922157041728497
+            },
+            {
+              "depth_m": 11.659810066223145,
+              "azimuth_rad": 0.03493180871009827,
+              "altitude_rad": -0.026171907782554626,
+              "velocity_mps": 0.0005586707266047597
+            },
+            {
+              "depth_m": 20.35531997680664,
+              "azimuth_rad": 0.03447138890624046,
+              "altitude_rad": 0.0004948824644088745,
+              "velocity_mps": 0.0004434943839441985
+            },
+            {
+              "depth_m": 5.644921779632568,
+              "azimuth_rad": 0.06527344137430191,
+              "altitude_rad": -0.09117645025253296,
+              "velocity_mps": 0.0008451601606793702
+            },
+            {
+              "depth_m": 18.57738494873047,
+              "azimuth_rad": 0.07503356039524078,
+              "altitude_rad": -0.007910271175205708,
+              "velocity_mps": 0.0004902540240436792
+            },
+            {
+              "depth_m": 7.245900630950928,
+              "azimuth_rad": 0.06716594099998474,
+              "altitude_rad": -0.06730251014232635,
+              "velocity_mps": 0.000743668235372752
+            },
+            {
+              "depth_m": 18.243993759155273,
+              "azimuth_rad": -0.1459745317697525,
+              "altitude_rad": -0.016842519864439964,
+              "velocity_mps": 0.00046320646652020514
+            },
+            {
+              "depth_m": 4.401489734649658,
+              "azimuth_rad": -0.06897810846567154,
+              "altitude_rad": -0.1218051165342331,
+              "velocity_mps": 0.0009375926456414163
+            },
+            {
+              "depth_m": 13.797831535339355,
+              "azimuth_rad": -0.02603807859122753,
+              "altitude_rad": -0.020710539072752,
+              "velocity_mps": 0.0005180613370612264
+            },
+            {
+              "depth_m": 5.602228164672852,
+              "azimuth_rad": -0.15099702775478363,
+              "altitude_rad": -0.09216325730085373,
+              "velocity_mps": 0.0007847669767215848
+            }
+          ]
+        },
+        "units": {
+          "depth_m": "m",
+          "azimuth_rad": "rad",
+          "altitude_rad": "rad",
+          "velocity_mps": "m/s"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 50,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "received_monotonic_s": 46427.328,
+          "decode_duration_ms": 0.0
+        }
+      }
+    ],
+    "control": {
+      "frame_id": 289473,
+      "timestamp_s": 12759.084707304835,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "steering": 0.0,
+      "reverse": false,
+      "handbrake": false,
+      "source": "SAFETY",
+      "gear": null
+    },
+    "collisions": [],
+    "actors": [
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2349,
+        "class_name": "vehicle.lincoln.mkz_2017",
+        "transform": {
+          "position_m": [
+            -109.36215209960938,
+            -40.749488830566406,
+            0.034056682139635086
+          ],
+          "rotation_rad": {
+            "roll": 0.0008198572624727959,
+            "pitch": -0.00019979475323755663,
+            "yaw": 1.9884608126584051
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          -1.1630810499191284,
+          3.084796905517578,
+          2.7465819130156888e-06
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2324,
+        "class_name": "vehicle.nissan.patrol",
+        "transform": {
+          "position_m": [
+            -113.7099609375,
+            -7.863086223602295,
+            -0.006864872295409441
+          ],
+          "rotation_rad": {
+            "roll": -0.002841591322668596,
+            "pitch": 0.03966426823185351,
+            "yaw": 1.5507519116923607
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          0.018361300230026245,
+          0.002964448882266879,
+          0.004069407936185598
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2345,
+        "class_name": "vehicle.citroen.c3",
+        "transform": {
+          "position_m": [
+            -110.13720703125,
+            -7.7571611404418945,
+            0.038797471672296524
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": -5.960464150272474e-07,
+            "yaw": 1.584104275920077
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          -7.376349531185156e-10,
+          -3.3190011849981715e-10,
+          5.7220457705398076e-08
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2352,
+        "class_name": "vehicle.dodge.charger_2020",
+        "transform": {
+          "position_m": [
+            -113.65178680419922,
+            -3.1920666694641113,
+            -0.0003217887715436518
+          ],
+          "rotation_rad": {
+            "roll": -0.001158472993589867,
+            "pitch": -0.02334093831767402,
+            "yaw": 1.5882473556279133
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          -0.00013104882964398712,
+          0.0022737334948033094,
+          -0.0003103629860561341
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2321,
+        "class_name": "vehicle.tesla.model3",
+        "transform": {
+          "position_m": [
+            -113.75022888183594,
+            2.2104647159576416,
+            0.002432231791317463
+          ],
+          "rotation_rad": {
+            "roll": -0.00036165714599559797,
+            "pitch": -0.0024693011679242337,
+            "yaw": 1.6119124713904665
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          -0.005915733054280281,
+          0.003402714617550373,
+          -3.407031181268394e-05
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 22,
+        "class_name": "traffic.traffic_light",
+        "transform": {
+          "position_m": [
+            -119.23003387451172,
+            5.093152046203613,
+            0.26276955008506775
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": -1.570789269418008
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2322,
+        "class_name": "vehicle.audi.tt",
+        "transform": {
+          "position_m": [
+            -113.8910140991211,
+            6.673188209533691,
+            -0.011740855872631073
+          ],
+          "rotation_rad": {
+            "roll": -0.00012197264788846651,
+            "pitch": 0.002433299859309351,
+            "yaw": 1.5280013254481408
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          -0.0002130408538505435,
+          0.0018273513996973634,
+          5.0938389904331416e-05
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2326,
+        "class_name": "vehicle.jeep.wrangler_rubicon",
+        "transform": {
+          "position_m": [
+            -81.716064453125,
+            -63.21873092651367,
+            0.010821666568517685
+          ],
+          "rotation_rad": {
+            "roll": 0.0038369522013492396,
+            "pitch": -2.9802321259320033e-05,
+            "yaw": 2.8428797225532736
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          -6.9006218910217285,
+          2.2829349040985107,
+          -9.489059266343247e-06
+        ]
+      },
+      {
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "actor_id": 2403,
+        "class_name": "walker.pedestrian.0045",
+        "transform": {
+          "position_m": [
+            -89.3319320678711,
+            7.072098731994629,
+            1.0886199474334717
+          ],
+          "rotation_rad": {
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 2.8836473925202064
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "linear_velocity_mps": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "ground_truth": {
+      "frame_id": 289474,
+      "timestamp_s": 12759.13470730558,
+      "objects": [
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2349,
+            "class_name": "vehicle.lincoln.mkz_2017",
+            "transform": {
+              "position_m": [
+                -109.36215209960938,
+                -40.749488830566406,
+                0.034056682139635086
+              ],
+              "rotation_rad": {
+                "roll": 0.0008198572624727959,
+                "pitch": -0.00019979475323755663,
+                "yaw": 1.9884608126584051
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              -1.1630810499191284,
+              3.084796905517578,
+              2.7465819130156888e-06
+            ]
+          },
+          "distance_m": 8.920340538024902
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2324,
+            "class_name": "vehicle.nissan.patrol",
+            "transform": {
+              "position_m": [
+                -113.7099609375,
+                -7.863086223602295,
+                -0.006864872295409441
+              ],
+              "rotation_rad": {
+                "roll": -0.002841591322668596,
+                "pitch": 0.03966426823185351,
+                "yaw": 1.5507519116923607
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              0.018361300230026245,
+              0.002964448882266879,
+              0.004069407936185598
+            ]
+          },
+          "distance_m": 24.554183959960938
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2345,
+            "class_name": "vehicle.citroen.c3",
+            "transform": {
+              "position_m": [
+                -110.13720703125,
+                -7.7571611404418945,
+                0.038797471672296524
+              ],
+              "rotation_rad": {
+                "roll": 0.0,
+                "pitch": -5.960464150272474e-07,
+                "yaw": 1.584104275920077
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              -7.376349531185156e-10,
+              -3.3190011849981715e-10,
+              5.7220457705398076e-08
+            ]
+          },
+          "distance_m": 24.73806381225586
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2352,
+            "class_name": "vehicle.dodge.charger_2020",
+            "transform": {
+              "position_m": [
+                -113.65178680419922,
+                -3.1920666694641113,
+                -0.0003217887715436518
+              ],
+              "rotation_rad": {
+                "roll": -0.001158472993589867,
+                "pitch": -0.02334093831767402,
+                "yaw": 1.5882473556279133
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              -0.00013104882964398712,
+              0.0022737334948033094,
+              -0.0003103629860561341
+            ]
+          },
+          "distance_m": 29.217716217041016
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2321,
+            "class_name": "vehicle.tesla.model3",
+            "transform": {
+              "position_m": [
+                -113.75022888183594,
+                2.2104647159576416,
+                0.002432231791317463
+              ],
+              "rotation_rad": {
+                "roll": -0.00036165714599559797,
+                "pitch": -0.0024693011679242337,
+                "yaw": 1.6119124713904665
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              -0.005915733054280281,
+              0.003402714617550373,
+              -3.407031181268394e-05
+            ]
+          },
+          "distance_m": 34.619991302490234
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 22,
+            "class_name": "traffic.traffic_light",
+            "transform": {
+              "position_m": [
+                -119.23003387451172,
+                5.093152046203613,
+                0.26276955008506775
+              ],
+              "rotation_rad": {
+                "roll": 0.0,
+                "pitch": 0.0,
+                "yaw": -1.570789269418008
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "distance_m": 38.08563995361328
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2322,
+            "class_name": "vehicle.audi.tt",
+            "transform": {
+              "position_m": [
+                -113.8910140991211,
+                6.673188209533691,
+                -0.011740855872631073
+              ],
+              "rotation_rad": {
+                "roll": -0.00012197264788846651,
+                "pitch": 0.002433299859309351,
+                "yaw": 1.5280013254481408
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              -0.0002130408538505435,
+              0.0018273513996973634,
+              5.0938389904331416e-05
+            ]
+          },
+          "distance_m": 39.08487319946289
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2326,
+            "class_name": "vehicle.jeep.wrangler_rubicon",
+            "transform": {
+              "position_m": [
+                -81.716064453125,
+                -63.21873092651367,
+                0.010821666568517685
+              ],
+              "rotation_rad": {
+                "roll": 0.0038369522013492396,
+                "pitch": -2.9802321259320033e-05,
+                "yaw": 2.8428797225532736
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              -6.9006218910217285,
+              2.2829349040985107,
+              -9.489059266343247e-06
+            ]
+          },
+          "distance_m": 43.54387664794922
+        },
+        {
+          "actor": {
+            "frame_id": 289474,
+            "timestamp_s": 12759.13470730558,
+            "actor_id": 2403,
+            "class_name": "walker.pedestrian.0045",
+            "transform": {
+              "position_m": [
+                -89.3319320678711,
+                7.072098731994629,
+                1.0886199474334717
+              ],
+              "rotation_rad": {
+                "roll": 0.0,
+                "pitch": 0.0,
+                "yaw": 2.8836473925202064
+              },
+              "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+            },
+            "linear_velocity_mps": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "distance_m": 45.7509880065918
+        }
+      ]
+    },
+    "predictions": [],
+    "missing_required_sensors": [],
+    "missing_optional_sensors": [],
+    "population": {
+      "frame_id": 289474,
+      "timestamp_s": 12759.13470730558,
+      "traffic_vehicles": 40,
+      "pedestrians": 25,
+      "walker_controllers": 24,
+      "walkers_active": 25,
+      "requested_traffic": 40,
+      "requested_pedestrians": 30,
+      "traffic_manager_connected": true,
+      "speed_behavior": "NORMAL",
+      "desired_speed_difference_percent": 15.0,
+      "seed": 2811
+    }
+  },
+  "frameComplete": true,
+  "missingRequiredSensors": [],
+  "collisionEvents": [],
+  "dashboardResult": {
+    "action": "comparison_v2",
+    "status": "APPLIED"
+  },
+  "route": {
+    "id": "007147f30e654c5490652700f25b5f7f",
+    "destination": {
+      "id": "map-2512a7feed",
+      "name": "Urban Chaos destination",
+      "map": "Carla/Maps/Town10HD_Opt",
+      "location": [
+        -112.10322570800781,
+        -33.386348724365234,
+        0.0
+      ],
+      "spawn_index": null,
+      "road_id": 6,
+      "lane_id": 2,
+      "source": "CARLA_WORLD"
+    },
+    "points": [
+      [
+        55.809814453125,
+        -67.91976928710938,
+        0.0
+      ],
+      [
+        51.809814453125,
+        -67.91813659667969,
+        0.0
+      ],
+      [
+        47.809814453125,
+        -67.91650390625,
+        0.0
+      ],
+      [
+        43.809814453125,
+        -67.91487121582031,
+        0.0
+      ],
+      [
+        39.809814453125,
+        -67.91323852539062,
+        0.0
+      ],
+      [
+        35.809814453125,
+        -67.9115982055664,
+        0.0
+      ],
+      [
+        31.809812545776367,
+        -67.90996551513672,
+        0.0
+      ],
+      [
+        27.809812545776367,
+        -67.90833282470703,
+        0.0
+      ],
+      [
+        23.809816360473633,
+        -67.90670013427734,
+        0.0
+      ],
+      [
+        19.809816360473633,
+        -67.90506744384766,
+        0.0
+      ],
+      [
+        15.80981731414795,
+        -67.90342712402344,
+        0.0
+      ],
+      [
+        11.80981731414795,
+        -67.90179443359375,
+        0.0
+      ],
+      [
+        7.407855033874512,
+        -67.89999389648438,
+        0.0
+      ],
+      [
+        7.407855033874512,
+        -67.89999389648438,
+        0.0
+      ],
+      [
+        3.478853940963745,
+        -67.92493438720703,
+        0.0
+      ],
+      [
+        -0.5055642127990723,
+        -67.98735046386719,
+        0.0
+      ],
+      [
+        -5.2659759521484375,
+        -68.04972076416016,
+        0.0
+      ],
+      [
+        -5.2659759521484375,
+        -68.04972076416016,
+        0.0
+      ],
+      [
+        -9.265758514404297,
+        -68.09138488769531,
+        0.0
+      ],
+      [
+        -13.265541076660156,
+        -68.13304138183594,
+        0.0
+      ],
+      [
+        -17.26532554626465,
+        -68.17469787597656,
+        0.0
+      ],
+      [
+        -21.265108108520508,
+        -68.21636199951172,
+        0.0
+      ],
+      [
+        -27.7274227142334,
+        -68.2836685180664,
+        0.0
+      ],
+      [
+        -27.7274227142334,
+        -68.2836685180664,
+        0.0
+      ],
+      [
+        -31.727209091186523,
+        -68.32532501220703,
+        0.0
+      ],
+      [
+        -35.726993560791016,
+        -68.36698150634766,
+        0.0
+      ],
+      [
+        -39.726776123046875,
+        -68.40864562988281,
+        0.0
+      ],
+      [
+        -43.726558685302734,
+        -68.45030212402344,
+        0.0
+      ],
+      [
+        -47.726341247558594,
+        -68.4919662475586,
+        0.0
+      ],
+      [
+        -51.72612380981445,
+        -68.53362274169922,
+        0.0
+      ],
+      [
+        -55.72591018676758,
+        -68.57527923583984,
+        0.0
+      ],
+      [
+        -59.72569274902344,
+        -68.616943359375,
+        0.0
+      ],
+      [
+        -67.0452880859375,
+        -68.69317626953125,
+        0.0
+      ],
+      [
+        -67.0452880859375,
+        -68.69317626953125,
+        0.0
+      ],
+      [
+        -71.13634490966797,
+        -68.729736328125,
+        0.0
+      ],
+      [
+        -75.7281494140625,
+        -68.43324279785156,
+        0.0
+      ],
+      [
+        -80.25557708740234,
+        -67.6116714477539,
+        0.0
+      ],
+      [
+        -84.6587905883789,
+        -66.27589416503906,
+        0.0
+      ],
+      [
+        -88.87958526611328,
+        -64.44356536865234,
+        0.0
+      ],
+      [
+        -92.8621826171875,
+        -62.13890075683594,
+        0.0
+      ],
+      [
+        -96.55393981933594,
+        -59.392364501953125,
+        0.0
+      ],
+      [
+        -99.90605926513672,
+        -56.24024963378906,
+        0.0
+      ],
+      [
+        -102.84197235107422,
+        -52.78748321533203,
+        0.0
+      ],
+      [
+        -105.40664672851562,
+        -49.14405059814453,
+        0.0
+      ],
+      [
+        -107.64485931396484,
+        -45.29145050048828,
+        0.0
+      ],
+      [
+        -109.53968811035156,
+        -41.25886154174805,
+        0.0
+      ],
+      [
+        -111.07677459716797,
+        -37.07680892944336,
+        0.0
+      ],
+      [
+        -112.11611938476562,
+        -33.33210754394531,
+        0.0
+      ]
+    ],
+    "length_m": 185.4010112264674,
+    "source": "CARLA_ROAD_GRAPH",
+    "mode": "MANUAL_GUIDANCE",
+    "active": true,
+    "instructions": [
+      {
+        "location": [
+          -27.7274227142334,
+          -68.2836685180664,
+          0.0
+        ],
+        "action": "STRAIGHT",
+        "point_index": 23
+      }
+    ],
+    "remaining_m": 1.008742309289473,
+    "next_instruction": null,
+    "arrived": true
+  },
+  "environment": {
+    "mode": "TRAINING",
+    "scenario_phase": "FINISHED",
+    "outcome": {
+      "run_id": "scenario_4765d11e038e46c6bc4e3dcdec07fb10",
+      "condition_id": "b2210117708c371fcf222cf8095bbb97569a6528f86ad540f6f83a2d1dc2d763",
+      "reason": "destination_arrived",
+      "scenario_success": true,
+      "metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0.0,
+        "collision_peak_impulse_ns": 0.0,
+        "distance_traveled_m": 187.7738625357569,
+        "progress_m": 184.3928667246842,
+        "elapsed_simulation_s": 145.65000217035413,
+        "average_speed_mps": 1.289212905854503,
+        "minimum_clearance_m": 0.010072858570880661,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 240,
+        "unsafe_intervention_count": null,
+        "route_completion": 0.9945623570491116,
+        "control_variation": 512.0655223056131,
+        "progress_under_congestion_m": null
+      },
+      "avoidability": "UNKNOWN",
+      "comparison_group": "YA_RAB_OSTORHA_RULE_BASED",
+      "safety_policy_enabled": true,
+      "measurement_notes": {
+        "collision_severity": "Native impulse proxy in N*s, not injury or kinetic energy",
+        "clearance": "Planar yaw-oriented bounding boxes; pitch/roll/meshes excluded",
+        "collision_count": "Contact episodes separated by >1 simulation second; raw callbacks retained",
+        "null_metrics": "Not measured; no TTC/near-miss/intervention classifier is supplied"
+      }
+    },
+    "metrics": {
+      "collision_callback_count": 0,
+      "collision_count": 0,
+      "collision_impulse_total_ns": 0.0,
+      "collision_peak_impulse_ns": 0.0,
+      "distance_traveled_m": 187.7738625357569,
+      "progress_m": 184.3928667246842,
+      "elapsed_simulation_s": 145.65000217035413,
+      "average_speed_mps": 1.289212905854503,
+      "minimum_clearance_m": 0.010072858570880661,
+      "minimum_ttc_s": null,
+      "near_miss_count": null,
+      "emergency_braking_frequency": null,
+      "steering_intervention_frequency": null,
+      "safety_intervention_count": 240,
+      "unsafe_intervention_count": null,
+      "route_completion": 0.9945623570491116,
+      "control_variation": 512.0655223056131,
+      "progress_under_congestion_m": null
+    },
+    "actor_ids": {
+      "sudden_brake": 2321,
+      "cut_in": 2322,
+      "curb_up": 2323,
+      "curb_return": 2324,
+      "traffic_00": 2325,
+      "traffic_01": 2326,
+      "traffic_02": 2327,
+      "traffic_03": 2328,
+      "traffic_04": 2329,
+      "traffic_05": 2330,
+      "traffic_06": 2331,
+      "traffic_07": 2332,
+      "traffic_08": 2333,
+      "traffic_09": 2334,
+      "traffic_10": 2335,
+      "traffic_11": 2336,
+      "traffic_12": 2337,
+      "traffic_13": 2338,
+      "traffic_14": 2339,
+      "traffic_15": 2340,
+      "traffic_16": 2341,
+      "traffic_17": 2342,
+      "traffic_18": 2343,
+      "traffic_19": 2344,
+      "traffic_20": 2345,
+      "traffic_21": 2346,
+      "traffic_22": 2347,
+      "traffic_23": 2348,
+      "traffic_24": 2349,
+      "traffic_25": 2350,
+      "traffic_26": 2351,
+      "traffic_27": 2352,
+      "traffic_28": 2353,
+      "traffic_29": 2354,
+      "traffic_30": 2355,
+      "traffic_31": 2356,
+      "traffic_32": 2357,
+      "traffic_33": 2358,
+      "traffic_34": 2359,
+      "traffic_35": 2360,
+      "crossing_0": 2361,
+      "crossing_1": 2363,
+      "walker_00": 2365,
+      "walker_01": 2367,
+      "walker_02": 2369,
+      "walker_03": 2371,
+      "walker_04": 2373,
+      "walker_05": 2375,
+      "walker_06": 2377,
+      "walker_07": 2379,
+      "walker_08": 2381,
+      "walker_09": 2383,
+      "walker_10": 2385,
+      "walker_11": 2387,
+      "walker_12": 2389,
+      "walker_13": 2391,
+      "walker_14": 2393,
+      "walker_15": 2395,
+      "walker_16": 2397,
+      "walker_17": 2399,
+      "walker_18": 2401,
+      "walker_19": 2403,
+      "walker_20": 2405,
+      "walker_21": 2407,
+      "walker_22": 2409,
+      "walker_23": 2411,
+      "walker_24": 2413,
+      "walker_25": 2415,
+      "walker_26": 2417,
+      "walker_27": 2419
+    },
+    "safety_policy": {
+      "type": "RULE_BASED_SAFETY",
+      "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+      "status": "STANDBY",
+      "risk": "UNKNOWN",
+      "active": false,
+      "reason": "Monitoring resumes with normal forward driving",
+      "steering_available": false,
+      "rejected_interventions": 0,
+      "actual_generator": "BASE_DRIVER",
+      "enabled": true,
+      "intervention_count": 0,
+      "controller": "RULE",
+      "model_health": "READY",
+      "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+      "model_error": null,
+      "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+      "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+      "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+      "available_controllers": [
+        "RULE",
+        "HYBRID"
+      ],
+      "source_counts": {
+        "LEARNED_BC": 0,
+        "RULE_GUARD": 0,
+        "RULE_FALLBACK": 0,
+        "RULE": 0,
+        "BASE_DRIVER": 0
+      },
+      "experimental": false
+    },
+    "scenario": {
+      "scenario_id": "predictive_comparison_v2",
+      "random_seed": 2811,
+      "timeout": 180.0
+    },
+    "run": {
+      "run_id": "scenario_4765d11e038e46c6bc4e3dcdec07fb10",
+      "safety_policy_enabled": true,
+      "hazard_observations": {
+        "sudden_brake": {
+          "status": "BLOCKED",
+          "position_m": [
+            -113.75018310546875,
+            2.2103817462921143,
+            0.002427158411592245
+          ],
+          "controls": {
+            "throttle": 0.6000000238418579,
+            "brake": 0.0,
+            "steering": -0.06596491485834122,
+            "reverse": false
+          }
+        },
+        "cut_in": {
+          "status": "TARGET_REACHED",
+          "position_m": [
+            -113.89100646972656,
+            6.6731157302856445,
+            -0.01173696480691433
+          ],
+          "controls": {
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": -0.09266453981399536,
+            "reverse": false
+          },
+          "reached_at_s": 56.45000084117055
+        },
+        "curb_up": {
+          "status": "TARGET_REACHED",
+          "position_m": [
+            -10.42264175415039,
+            -75.48432159423828,
+            0.1536012440919876
+          ],
+          "controls": {
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.1236758679151535,
+            "reverse": false
+          },
+          "sidewalk_observed_at_s": 33.30000049620867,
+          "reached_at_s": 36.90000054985285
+        },
+        "curb_return": {
+          "status": "BLOCKED",
+          "position_m": [
+            -113.71080780029297,
+            -7.863386631011963,
+            -0.0070542339235544205
+          ],
+          "controls": {
+            "throttle": 0.949999988079071,
+            "brake": 0.0,
+            "steering": -0.02524605579674244,
+            "reverse": false
+          },
+          "sidewalk_observed_at_s": 34.60000051558018,
+          "road_reentry_observed_at_s": 46.70000069588423
+        },
+        "crossing_0": {
+          "status": "NATIVE_ACTOR_LOST",
+          "position_m": [
+            -61.27806854248047,
+            -72.22564697265625,
+            0.18982110917568207
+          ],
+          "road_observed_at_s": 35.35000052675605,
+          "lost_at_s": 38.000000566244125
+        },
+        "crossing_1": {
+          "status": "ARRIVED",
+          "position_m": [
+            -65.1059799194336,
+            -74.00111389160156,
+            1.1038999557495117
+          ],
+          "road_observed_at_s": 36.55000054463744
+        },
+        "walker_16": {
+          "status": "NATIVE_ACTOR_LOST",
+          "lost_at_s": 57.80000086128712
+        },
+        "walker_21": {
+          "status": "NATIVE_ACTOR_LOST",
+          "lost_at_s": 81.80000121891499
+        },
+        "walker_05": {
+          "status": "NATIVE_ACTOR_LOST",
+          "lost_at_s": 107.75000160560012
+        },
+        "walker_18": {
+          "status": "NATIVE_ACTOR_LOST",
+          "lost_at_s": 123.95000184699893
+        }
+      }
+    },
+    "observation_status": {
+      "status": "READY",
+      "history_frames": 4,
+      "frame_id": 289474,
+      "privileged_data_excluded": true,
+      "policy_active": false
+    }
+  },
+  "nearbyActors": {
+    "frame_id": 289475,
+    "timestamp_s": 12759.184707306325,
+    "radius_m": 50.0,
+    "source": "SIMULATOR_GROUND_TRUTH",
+    "actors": [
+      {
+        "actor_id": 2349,
+        "type": "vehicle.lincoln.mkz_2017",
+        "category": "VEHICLE",
+        "distance_m": 8.750398635864258,
+        "relative_position_m": [
+          -8.749865285671858,
+          -0.010231065827881382,
+          -0.0962410108109455
+        ],
+        "velocity_mps": [
+          -1.222955584526062,
+          3.25455641746521,
+          -2.47955313170678e-07
+        ]
+      },
+      {
+        "actor_id": 2324,
+        "type": "vehicle.nissan.patrol",
+        "category": "VEHICLE",
+        "distance_m": 24.553451538085938,
+        "relative_position_m": [
+          23.43454294571342,
+          -7.319431595865594,
+          0.34648416963766415
+        ],
+        "velocity_mps": [
+          0.0007167559815570712,
+          -0.0002109669876517728,
+          0.005067790858447552
+        ]
+      },
+      {
+        "actor_id": 2345,
+        "type": "vehicle.citroen.c3",
+        "category": "VEHICLE",
+        "distance_m": 24.737524032592773,
+        "relative_position_m": [
+          22.296750111374315,
+          -10.707921041957043,
+          0.37474048993230746
+        ],
+        "velocity_mps": [
+          3.2212441047896334e-10,
+          -1.5736865977000747e-10,
+          7.629394360719743e-08
+        ]
+      },
+      {
+        "actor_id": 2352,
+        "type": "vehicle.dodge.charger_2020",
+        "category": "VEHICLE",
+        "distance_m": 29.217262268066406,
+        "relative_position_m": [
+          27.796360031520596,
+          -8.990873706295218,
+          0.41821607451866205
+        ],
+        "velocity_mps": [
+          0.00046631271834485233,
+          0.0006494338158518076,
+          -0.002608437556773424
+        ]
+      },
+      {
+        "actor_id": 2321,
+        "type": "vehicle.tesla.model3",
+        "category": "VEHICLE",
+        "distance_m": 34.61925506591797,
+        "relative_position_m": [
+          32.898006199431535,
+          -10.768776022558022,
+          0.4975002264519739
+        ],
+        "velocity_mps": [
+          -0.0004924238310195506,
+          -0.00033315623295493424,
+          0.0007626438164152205
+        ]
+      },
+      {
+        "actor_id": 22,
+        "type": "traffic.traffic_light",
+        "category": "TRAFFIC LIGHT",
+        "distance_m": 38.085052490234375,
+        "relative_position_m": [
+          37.49515673739812,
+          -6.62575540978233,
+          0.8270567849267989
+        ],
+        "velocity_mps": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "actor_id": 2322,
+        "type": "vehicle.audi.tt",
+        "category": "VEHICLE",
+        "distance_m": 39.0842170715332,
+        "relative_position_m": [
+          37.13334481207186,
+          -12.181595024141595,
+          0.5470424997252277
+        ],
+        "velocity_mps": [
+          1.1489663847896736e-05,
+          0.0002893041237257421,
+          -0.0011034583440050483
+        ]
+      },
+      {
+        "actor_id": 2326,
+        "type": "vehicle.jeep.wrangler_rubicon",
+        "category": "VEHICLE",
+        "distance_m": 43.22114944458008,
+        "relative_position_m": [
+          -39.3419077175532,
+          -17.887062360471564,
+          -0.5790231060020276
+        ],
+        "velocity_mps": [
+          -6.88870906829834,
+          2.324152708053589,
+          -4.644393811759073e-06
+        ]
+      },
+      {
+        "actor_id": 2403,
+        "type": "walker.pedestrian.0045",
+        "category": "WALKER",
+        "distance_m": 45.75061798095703,
+        "relative_position_m": [
+          28.990355084593414,
+          -35.36034082537903,
+          1.5246975482254266
+        ],
+        "velocity_mps": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "traffic_light": {
+      "relevant": false
+    }
+  },
+  "synchronization": {
+    "completeFrames": 3381,
+    "incompleteFrames": 2,
+    "issues": {
+      "MISSING": 12,
+      "LATE": 0,
+      "STALE": 0,
+      "DUPLICATE": 0,
+      "OUT_OF_ORDER": 0,
+      "TIMESTAMP_MISMATCH": 0
+    },
+    "pendingFrames": 1
+  },
+  "backendStepMs": 78.00000000133878,
+  "controlSource": "SAFETY",
+  "controlExpired": true,
+  "sensorRegistry": {
+    "frontCamera": {
+      "blueprint": "sensor.camera.rgb",
+      "actorId": 2314,
+      "mountTransform": {
+        "positionM": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 289475,
+      "latestTimestamp": 12759.184707306325,
+      "latestValidData": {
+        "sensor_id": "frontCamera",
+        "kind": "RGB",
+        "frame_id": 289475,
+        "timestamp_s": 12759.184707306325,
+        "sensor_timestamp_s": 12759.184707306325,
+        "transform": {
+          "position_m": [
+            -112.990966796875,
+            -30.955411911010742,
+            1.5759719610214233
+          ],
+          "rotation_rad": {
+            "roll": 2.0373578546085974e-05,
+            "pitch": -0.01501595916792437,
+            "yaw": 1.9242862203966022
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2314,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {},
+        "asset": {
+          "path": "rgb/frontCamera-2314-289475.jpg",
+          "media_type": "image/jpeg",
+          "byte_count": 92123,
+          "sha256": "014e6ab4edb65a73b032ffd9f58d33da22f59025900379fb172591aa358e5659"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "width": 640,
+          "height": 360,
+          "fov_deg": 90.0,
+          "source_encoding": "CARLA BGRA8",
+          "jpeg_quality": 95,
+          "encoding": "JPEG RGB (compressed native image)",
+          "received_monotonic_s": 46427.921,
+          "decode_duration_ms": 0.0
+        }
+      },
+      "eventDriven": false
+    },
+    "depth": {
+      "blueprint": "sensor.camera.depth",
+      "actorId": 2315,
+      "mountTransform": {
+        "positionM": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 289474,
+      "latestTimestamp": 12759.13470730558,
+      "latestValidData": {
+        "sensor_id": "depth",
+        "kind": "DEPTH",
+        "frame_id": 289474,
+        "timestamp_s": 12759.13470730558,
+        "sensor_timestamp_s": 12759.13470730558,
+        "transform": {
+          "position_m": [
+            -112.99166870117188,
+            -30.95359992980957,
+            1.573875069618225
+          ],
+          "rotation_rad": {
+            "roll": 3.822629323093076e-05,
+            "pitch": -0.016627072799178733,
+            "yaw": 1.9242871525029837
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2315,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {
+          "depth": "m"
+        },
+        "asset": {
+          "path": "depth/depth-2315-289474.npy",
+          "media_type": "application/x-npy",
+          "byte_count": 921728,
+          "sha256": "233c96265acb1a056d1f4b480fdda24920201f8ac3a6b756bf911479251e1797"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "width": 640,
+          "height": 360,
+          "fov_deg": 90.0,
+          "source_encoding": "CARLA BGRA8",
+          "dtype": "float32",
+          "shape": [
+            360,
+            640
+          ],
+          "encoding": "linear depth metres",
+          "received_monotonic_s": 46427.359,
+          "decode_duration_ms": 16.00000000325963
+        }
+      },
+      "eventDriven": false
+    },
+    "radar": {
+      "blueprint": "sensor.other.radar",
+      "actorId": 2316,
+      "mountTransform": {
+        "positionM": [
+          2.5,
+          0.0,
+          0.6499999761581421
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 289475,
+      "latestTimestamp": 12759.184707306325,
+      "latestValidData": {
+        "sensor_id": "radar",
+        "kind": "RADAR",
+        "frame_id": 289475,
+        "timestamp_s": 12759.184707306325,
+        "sensor_timestamp_s": 12759.184707306325,
+        "transform": {
+          "position_m": [
+            -113.33214569091797,
+            -30.03072166442871,
+            0.6110637784004211
+          ],
+          "rotation_rad": {
+            "roll": 2.0373578546085974e-05,
+            "pitch": -0.01501595916792437,
+            "yaw": 1.9242862203966022
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2316,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "detections": [
+            {
+              "depth_m": 20.317155838012695,
+              "azimuth_rad": 0.015270163305103779,
+              "altitude_rad": 0.005403727293014526,
+              "velocity_mps": 0.008413414470851421
+            },
+            {
+              "depth_m": 19.58392906188965,
+              "azimuth_rad": -0.12094130367040634,
+              "altitude_rad": -0.008957535028457642,
+              "velocity_mps": 0.009367808699607849
+            },
+            {
+              "depth_m": 13.074629783630371,
+              "azimuth_rad": -0.1673196703195572,
+              "altitude_rad": -0.031935568898916245,
+              "velocity_mps": 0.010981815867125988
+            },
+            {
+              "depth_m": 11.881851196289062,
+              "azimuth_rad": -0.14243949949741364,
+              "altitude_rad": -0.03657327964901924,
+              "velocity_mps": 0.011362068355083466
+            },
+            {
+              "depth_m": 20.079036712646484,
+              "azimuth_rad": -0.01764604076743126,
+              "altitude_rad": 0.0076193190179765224,
+              "velocity_mps": 0.008240693248808384
+            },
+            {
+              "depth_m": 20.874725341796875,
+              "azimuth_rad": -0.008970329537987709,
+              "altitude_rad": 0.020932098850607872,
+              "velocity_mps": 0.007263415493071079
+            },
+            {
+              "depth_m": 20.255088806152344,
+              "azimuth_rad": 0.006862059235572815,
+              "altitude_rad": 0.00044845420052297413,
+              "velocity_mps": 0.00877645518630743
+            },
+            {
+              "depth_m": 3.9931156635284424,
+              "azimuth_rad": 0.03040231578052044,
+              "altitude_rad": -0.13857266306877136,
+              "velocity_mps": 0.018887395039200783
+            },
+            {
+              "depth_m": 25.094263076782227,
+              "azimuth_rad": -0.06813585013151169,
+              "altitude_rad": 0.13331355154514313,
+              "velocity_mps": -0.0010861456394195557
+            },
+            {
+              "depth_m": 4.40250825881958,
+              "azimuth_rad": -0.14672088623046875,
+              "altitude_rad": -0.1243513748049736,
+              "velocity_mps": 0.017727544531226158
+            },
+            {
+              "depth_m": 8.19490909576416,
+              "azimuth_rad": 0.16628575325012207,
+              "altitude_rad": -0.05945410579442978,
+              "velocity_mps": 0.013087865896522999
+            },
+            {
+              "depth_m": 8.856511116027832,
+              "azimuth_rad": 0.16387774050235748,
+              "altitude_rad": -0.04265790060162544,
+              "velocity_mps": 0.01186440046876669
+            },
+            {
+              "depth_m": 27.574962615966797,
+              "azimuth_rad": -0.10780259966850281,
+              "altitude_rad": 0.1214340329170227,
+              "velocity_mps": -0.0002477747038938105
+            },
+            {
+              "depth_m": 6.6722893714904785,
+              "azimuth_rad": 0.0052702780812978745,
+              "altitude_rad": -0.07666487991809845,
+              "velocity_mps": 0.014416503719985485
+            },
+            {
+              "depth_m": 19.692602157592773,
+              "azimuth_rad": -0.062096621841192245,
+              "altitude_rad": -0.004542690701782703,
+              "velocity_mps": 0.009107248857617378
+            },
+            {
+              "depth_m": 26.143144607543945,
+              "azimuth_rad": -0.09308994561433792,
+              "altitude_rad": 0.08269995450973511,
+              "velocity_mps": 0.0026376789901405573
+            },
+            {
+              "depth_m": 20.244123458862305,
+              "azimuth_rad": 0.008206925354897976,
+              "altitude_rad": 0.012479008175432682,
+              "velocity_mps": 0.007891220040619373
+            },
+            {
+              "depth_m": 20.184717178344727,
+              "azimuth_rad": 0.012255839072167873,
+              "altitude_rad": -0.007486393675208092,
+              "velocity_mps": 0.00936089176684618
+            },
+            {
+              "depth_m": 26.50840950012207,
+              "azimuth_rad": -0.12067174911499023,
+              "altitude_rad": 0.012750721536576748,
+              "velocity_mps": 0.007771172560751438
+            },
+            {
+              "depth_m": 7.0298004150390625,
+              "azimuth_rad": -0.2113521248102188,
+              "altitude_rad": -0.07232886552810669,
+              "velocity_mps": 0.013845422305166721
+            },
+            {
+              "depth_m": 4.5035223960876465,
+              "azimuth_rad": -0.04463138058781624,
+              "altitude_rad": -0.12106071412563324,
+              "velocity_mps": 0.017604514956474304
+            },
+            {
+              "depth_m": 9.84107780456543,
+              "azimuth_rad": 0.18857932090759277,
+              "altitude_rad": 0.0626881867647171,
+              "velocity_mps": 0.004079568199813366
+            },
+            {
+              "depth_m": 18.78326416015625,
+              "azimuth_rad": 0.006262585986405611,
+              "altitude_rad": -0.00940537266433239,
+              "velocity_mps": 0.009500688873231411
+            },
+            {
+              "depth_m": 27.093366622924805,
+              "azimuth_rad": -0.14393235743045807,
+              "altitude_rad": 0.0390692874789238,
+              "velocity_mps": 0.005796658340841532
+            },
+            {
+              "depth_m": 15.48452377319336,
+              "azimuth_rad": -0.03391169384121895,
+              "altitude_rad": -0.014618484303355217,
+              "velocity_mps": 0.009867307730019093
+            },
+            {
+              "depth_m": 19.868032455444336,
+              "azimuth_rad": -0.033055298030376434,
+              "altitude_rad": -0.001343172392807901,
+              "velocity_mps": 0.008892354555428028
+            },
+            {
+              "depth_m": 10.575733184814453,
+              "azimuth_rad": 0.07437148690223694,
+              "altitude_rad": -0.04140356183052063,
+              "velocity_mps": 0.011841212399303913
+            },
+            {
+              "depth_m": 20.129924774169922,
+              "azimuth_rad": -0.010381048545241356,
+              "altitude_rad": 0.0033762240782380104,
+              "velocity_mps": 0.008555925451219082
+            },
+            {
+              "depth_m": 10.690239906311035,
+              "azimuth_rad": 0.07109890133142471,
+              "altitude_rad": -0.032619912177324295,
+              "velocity_mps": 0.01119963824748993
+            },
+            {
+              "depth_m": 25.438798904418945,
+              "azimuth_rad": -0.05616927891969681,
+              "altitude_rad": 0.03388851881027222,
+              "velocity_mps": 0.006280860863626003
+            },
+            {
+              "depth_m": 17.73377799987793,
+              "azimuth_rad": -0.09795811772346497,
+              "altitude_rad": -0.014527689665555954,
+              "velocity_mps": 0.009805457666516304
+            },
+            {
+              "depth_m": 21.030038833618164,
+              "azimuth_rad": -0.005808298010379076,
+              "altitude_rad": 0.030646007508039474,
+              "velocity_mps": 0.006548064760863781
+            },
+            {
+              "depth_m": 20.892318725585938,
+              "azimuth_rad": -0.032370079308748245,
+              "altitude_rad": 0.06090932711958885,
+              "velocity_mps": 0.004300444852560759
+            },
+            {
+              "depth_m": 14.337494850158691,
+              "azimuth_rad": -0.03819921240210533,
+              "altitude_rad": -0.02047990821301937,
+              "velocity_mps": 0.010294884443283081
+            },
+            {
+              "depth_m": 5.616878986358643,
+              "azimuth_rad": -0.07003629952669144,
+              "altitude_rad": -0.09399288147687912,
+              "velocity_mps": 0.015630824491381645
+            },
+            {
+              "depth_m": 11.733086585998535,
+              "azimuth_rad": 0.03145282715559006,
+              "altitude_rad": -0.0334341935813427,
+              "velocity_mps": 0.011265981942415237
+            },
+            {
+              "depth_m": 9.076415061950684,
+              "azimuth_rad": 0.020476173609495163,
+              "altitude_rad": -0.05233999341726303,
+              "velocity_mps": 0.012647504918277264
+            },
+            {
+              "depth_m": 21.29850959777832,
+              "azimuth_rad": -0.23489660024642944,
+              "altitude_rad": -0.014086244627833366,
+              "velocity_mps": 0.009535343386232853
+            },
+            {
+              "depth_m": 12.407175064086914,
+              "azimuth_rad": 0.010224845260381699,
+              "altitude_rad": -0.030600655823946,
+              "velocity_mps": 0.01105638686567545
+            },
+            {
+              "depth_m": 26.95947265625,
+              "azimuth_rad": -0.09674021601676941,
+              "altitude_rad": 0.04932887479662895,
+              "velocity_mps": 0.005101892631500959
+            },
+            {
+              "depth_m": 27.195026397705078,
+              "azimuth_rad": 0.026929425075650215,
+              "altitude_rad": 0.024117665365338326,
+              "velocity_mps": 0.007035831455141306
+            },
+            {
+              "depth_m": 20.23052406311035,
+              "azimuth_rad": 0.0037664202973246574,
+              "altitude_rad": 0.011672894470393658,
+              "velocity_mps": 0.007949584163725376
+            },
+            {
+              "depth_m": 4.6855244636535645,
+              "azimuth_rad": -0.14717966318130493,
+              "altitude_rad": -0.1158943846821785,
+              "velocity_mps": 0.017118073999881744
+            },
+            {
+              "depth_m": 8.086503028869629,
+              "azimuth_rad": 0.1564732789993286,
+              "altitude_rad": -0.06068401411175728,
+              "velocity_mps": 0.013188648968935013
+            },
+            {
+              "depth_m": 4.233752727508545,
+              "azimuth_rad": 0.08663681894540787,
+              "altitude_rad": -0.1298283338546753,
+              "velocity_mps": 0.018247315660119057
+            },
+            {
+              "depth_m": 12.524091720581055,
+              "azimuth_rad": -0.20225343108177185,
+              "altitude_rad": -0.03408883884549141,
+              "velocity_mps": 0.011073309928178787
+            },
+            {
+              "depth_m": 19.996015548706055,
+              "azimuth_rad": 0.035908035933971405,
+              "altitude_rad": -0.00793275237083435,
+              "velocity_mps": 0.009395345114171505
+            },
+            {
+              "depth_m": 27.36346435546875,
+              "azimuth_rad": 0.058613330125808716,
+              "altitude_rad": 0.015606767497956753,
+              "velocity_mps": 0.00766018545255065
+            },
+            {
+              "depth_m": 27.06336784362793,
+              "azimuth_rad": -0.14279763400554657,
+              "altitude_rad": 0.00868359673768282,
+              "velocity_mps": 0.008038888685405254
+            },
+            {
+              "depth_m": 20.816627502441406,
+              "azimuth_rad": -0.017404552549123764,
+              "altitude_rad": 0.02635824866592884,
+              "velocity_mps": 0.006859940011054277
+            },
+            {
+              "depth_m": 21.19284439086914,
+              "azimuth_rad": -0.08009655773639679,
+              "altitude_rad": 0.01729932241141796,
+              "velocity_mps": 0.007483250927180052
+            },
+            {
+              "depth_m": 20.997026443481445,
+              "azimuth_rad": -0.033385492861270905,
+              "altitude_rad": 0.09253112226724625,
+              "velocity_mps": 0.0019596628844738007
+            },
+            {
+              "depth_m": 20.93132781982422,
+              "azimuth_rad": -0.00844319723546505,
+              "altitude_rad": 0.07644834369421005,
+              "velocity_mps": 0.003161871340125799
+            },
+            {
+              "depth_m": 17.27741813659668,
+              "azimuth_rad": -0.2404121458530426,
+              "altitude_rad": -0.020784476771950722,
+              "velocity_mps": 0.01001399103552103
+            },
+            {
+              "depth_m": 4.111950397491455,
+              "azimuth_rad": -0.07777522504329681,
+              "altitude_rad": -0.1341412216424942,
+              "velocity_mps": 0.01851719617843628
+            },
+            {
+              "depth_m": 3.770794630050659,
+              "azimuth_rad": 0.034493863582611084,
+              "altitude_rad": -0.14770805835723877,
+              "velocity_mps": 0.019540943205356598
+            },
+            {
+              "depth_m": 21.13020896911621,
+              "azimuth_rad": -0.0046961428597569466,
+              "altitude_rad": 0.04821522533893585,
+              "velocity_mps": 0.005251108203083277
+            },
+            {
+              "depth_m": 6.225893020629883,
+              "azimuth_rad": -0.043602894991636276,
+              "altitude_rad": -0.0832739844918251,
+              "velocity_mps": 0.014874438755214214
+            },
+            {
+              "depth_m": 11.280609130859375,
+              "azimuth_rad": -0.24688394367694855,
+              "altitude_rad": -0.03962278738617897,
+              "velocity_mps": 0.011378588154911995
+            }
+          ]
+        },
+        "units": {
+          "depth_m": "m",
+          "azimuth_rad": "rad",
+          "altitude_rad": "rad",
+          "velocity_mps": "m/s"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 50,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "received_monotonic_s": 46427.89,
+          "decode_duration_ms": 0.0
+        }
+      },
+      "eventDriven": false
+    },
+    "lidar": {
+      "blueprint": "sensor.lidar.ray_cast",
+      "actorId": 2317,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          1.899999976158142
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 289475,
+      "latestTimestamp": 12759.184707306325,
+      "latestValidData": {
+        "sensor_id": "lidar",
+        "kind": "LIDAR",
+        "frame_id": 289475,
+        "timestamp_s": 12759.184707306325,
+        "sensor_timestamp_s": 12759.184707306325,
+        "transform": {
+          "position_m": [
+            -112.47332763671875,
+            -32.35828399658203,
+            1.8984612226486206
+          ],
+          "rotation_rad": {
+            "roll": 2.0373578546085974e-05,
+            "pitch": -0.01501595916792437,
+            "yaw": 1.9242862203966022
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2317,
+        "update_frequency_hz": 20.0,
+        "data": {},
+        "units": {
+          "x": "m",
+          "y": "m",
+          "z": "m",
+          "intensity": "unitless"
+        },
+        "asset": {
+          "path": "lidar/lidar-2317-289475.bin",
+          "media_type": "application/octet-stream",
+          "byte_count": 12288,
+          "sha256": "3c85170c372ec69477e905b43e0628494a0d5b20ac74eb4c0b41f247ed3045e3"
+        },
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 50,
+            "channels": 16,
+            "points_per_second": 32000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -30
+          },
+          "point_count": 768,
+          "channels": 16,
+          "horizontal_angle_rad": 0.0,
+          "dtype": "little-endian float32",
+          "columns": [
+            "x",
+            "y",
+            "z",
+            "intensity"
+          ],
+          "coordinate_frame": "sensor-local-x-forward-y-right-z-up",
+          "received_monotonic_s": 46427.89,
+          "decode_duration_ms": 0.0
+        }
+      },
+      "eventDriven": false
+    },
+    "imu": {
+      "blueprint": "sensor.other.imu",
+      "actorId": 2318,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 289475,
+      "latestTimestamp": 12759.184707306325,
+      "latestValidData": {
+        "sensor_id": "imu",
+        "kind": "IMU",
+        "frame_id": 289475,
+        "timestamp_s": 12759.184707306325,
+        "sensor_timestamp_s": 12759.184707306325,
+        "transform": {
+          "position_m": [
+            -112.46341705322266,
+            -32.38503646850586,
+            -0.0013244247529655695
+          ],
+          "rotation_rad": {
+            "roll": 2.0373578546085974e-05,
+            "pitch": -0.01501595916792437,
+            "yaw": 1.9242862203966022
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2318,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "accelerometer_mps2": [
+            0.08047766983509064,
+            0.0017270445823669434,
+            9.684309959411621
+          ],
+          "gyroscope_radps": [
+            0.00026268884539604187,
+            -0.03824838995933533,
+            -2.0285136997699738e-05
+          ],
+          "compass_rad": 3.4950828552246094
+        },
+        "units": {
+          "accelerometer_mps2": "m/s^2",
+          "gyroscope_radps": "rad/s",
+          "compass_rad": "rad"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "received_monotonic_s": 46427.89,
+          "decode_duration_ms": 0.0
+        }
+      },
+      "eventDriven": false
+    },
+    "gnss": {
+      "blueprint": "sensor.other.gnss",
+      "actorId": 2319,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          1.600000023841858
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.05,
+      "requestedRateHz": 20.0,
+      "latestFrame": 289475,
+      "latestTimestamp": 12759.184707306325,
+      "latestValidData": {
+        "sensor_id": "gnss",
+        "kind": "GNSS",
+        "frame_id": 289475,
+        "timestamp_s": 12759.184707306325,
+        "sensor_timestamp_s": 12759.184707306325,
+        "transform": {
+          "position_m": [
+            -112.47176361083984,
+            -32.362510681152344,
+            1.5984951257705688
+          ],
+          "rotation_rad": {
+            "roll": 2.0373578546085974e-05,
+            "pitch": -0.01501595916792437,
+            "yaw": 1.9242862203966022
+          },
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+        },
+        "provider": "carla",
+        "actor_id": 2319,
+        "update_frequency_hz": 20.0,
+        "data": {
+          "latitude_deg": -0.00029083371321365323,
+          "longitude_deg": -0.0010107553449335378,
+          "altitude_m": 1.5984951257705688
+        },
+        "units": {
+          "latitude_deg": "deg",
+          "longitude_deg": "deg",
+          "altitude_m": "m"
+        },
+        "asset": null,
+        "metadata": {
+          "mount_transform": {
+            "position_m": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotation_deg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensor_tick_s": 0.05,
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "received_monotonic_s": 46427.89,
+          "decode_duration_ms": 0.0
+        }
+      },
+      "eventDriven": false
+    },
+    "collision": {
+      "blueprint": "sensor.other.collision",
+      "actorId": 2320,
+      "mountTransform": {
+        "positionM": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationDeg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "sensorTickSeconds": 0.0,
+      "requestedRateHz": null,
+      "latestFrame": null,
+      "latestTimestamp": null,
+      "latestValidData": null,
+      "eventDriven": true
+    }
+  }
+}

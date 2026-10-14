@@ -1,0 +1,59 @@
+{
+  "trained_sac_9b3bceb0c77aaea8": {
+    "source": "runs\\experiments\\experiment1_20261008T165154Z\\trained_sac_9b3bceb0c77aaea8.json",
+    "sha256": "7387f8be9c146cd7f1764b811752dc329e5aaac787eeab0055692d226dc8e044",
+    "summary": {
+      "episodes": 8,
+      "collisions": 8,
+      "collision_rate": 1.0,
+      "scenario_completions": 0,
+      "completion_rate": 0.0,
+      "mean_reward": -241.6853714346229,
+      "mean_collision_peak_impulse_ns": 15576.747871056174,
+      "mean_forward_progress_m": 21.694751456972174,
+      "mean_minimum_clearance_m": 0.0,
+      "minimum_clearance_m": 0.0,
+      "mean_unnecessary_intervention_count": 0,
+      "mean_speed_mps": 6.380893051389001,
+      "mean_hard_braking_frequency_hz": 1.4705882133806456,
+      "mean_intervention_step_fraction": 0.0,
+      "mean_inference_ms": 0.6446437483271652,
+      "mean_step_wall_ms": 80.77728823723994,
+      "outcomes": {
+        "COLLISION": 8
+      }
+    },
+    "policy_active_episodes": 0
+  },
+  "untrained_sac_EXPERIMENT1": {
+    "source": "runs\\experiments\\experiment1_20261008T165154Z\\untrained_sac_EXPERIMENT1.json",
+    "sha256": "eecd0ae24ae53080d49c80c2958954d1f579f43d6a3a786205dd173019ce8ce0",
+    "summary": {
+      "episodes": 8,
+      "collisions": 0,
+      "collision_rate": 0.0,
+      "scenario_completions": 0,
+      "completion_rate": 0.0,
+      "mean_reward": 10.04072353659173,
+      "mean_collision_peak_impulse_ns": 0.0,
+      "mean_forward_progress_m": 14.74188207277954,
+      "mean_minimum_clearance_m": 6.887468665621964,
+      "minimum_clearance_m": 6.461935870566658,
+      "mean_unnecessary_intervention_count": 45.375,
+      "mean_speed_mps": 1.2294726818604635,
+      "mean_hard_braking_frequency_hz": 0.8749999869614842,
+      "mean_intervention_step_fraction": 0.29947916666666663,
+      "mean_inference_ms": 0.6699498955034263,
+      "mean_step_wall_ms": 84.61068953074573,
+      "outcomes": {
+        "TIMEOUT": 8
+      }
+    },
+    "policy_active_episodes": 0
+  },
+  "interpretation": "Historical stored reports, not a new paired experiment. The trained report records policy_active=false; its outcomes cannot establish active SAC performance. Existing interface is 47 sensor features and [gate, extra_brake, steering_delta]; the validator admits extra braking only, never acceleration or unverified steering.",
+  "weights": {
+    "initial_model.zip": "bbafb3d2219a1179c3bc340e79c40cd0fd2270cace40d6ca4b7f0c072e1c5a16",
+    "final_model.zip": "9b3bceb0c77aaea8a6cad71600d36f90b1dfbf2277ffad94ea6b91f42f5ac679"
+  }
+}

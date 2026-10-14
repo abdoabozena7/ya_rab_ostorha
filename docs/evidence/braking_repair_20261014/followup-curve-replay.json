@@ -1,0 +1,92 @@
+[
+  {
+    "source": "RECORDED_NATIVE_SENSOR_REEVALUATION_NO_PHYSICS",
+    "frame": 88367,
+    "old_range_m": 1.8922488037496805,
+    "new_range_m": 16.2428438890392,
+    "old_command": {
+      "frame_id": 88367,
+      "timestamp_s": 4315.38037256524,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "steering": -0.30000001192092896,
+      "reverse": false,
+      "handbrake": false,
+      "source": "SAFETY",
+      "gear": 1
+    },
+    "new_command": {
+      "frame_id": 88367,
+      "timestamp_s": 4315.38037256524,
+      "throttle": 0.75,
+      "brake": 0.0,
+      "steering": -0.30000001192092896,
+      "reverse": false,
+      "handbrake": false,
+      "source": "NAVIGATION",
+      "gear": 1
+    },
+    "new_reason": "Observed forward stopping corridor is clear",
+    "road_m": 7.498593799293739
+  },
+  {
+    "source": "RECORDED_NATIVE_SENSOR_REEVALUATION_NO_PHYSICS",
+    "frame": 88394,
+    "old_range_m": 0.804133826866746,
+    "new_range_m": 20.23609240180207,
+    "old_command": {
+      "frame_id": 88394,
+      "timestamp_s": 4316.730372585356,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "steering": -0.26520928740501404,
+      "reverse": false,
+      "handbrake": false,
+      "source": "SAFETY",
+      "gear": 1
+    },
+    "new_command": {
+      "frame_id": 88394,
+      "timestamp_s": 4316.730372585356,
+      "throttle": 0.75,
+      "brake": 0.0,
+      "steering": -0.26520928740501404,
+      "reverse": false,
+      "handbrake": false,
+      "source": "NAVIGATION",
+      "gear": 1
+    },
+    "new_reason": "Observed forward stopping corridor is clear",
+    "road_m": 7.9988517966346455
+  },
+  {
+    "source": "RECORDED_NATIVE_SENSOR_REEVALUATION_NO_PHYSICS",
+    "frame": 88655,
+    "old_range_m": 0.8601910416036844,
+    "new_range_m": 21.448783975099207,
+    "old_command": {
+      "frame_id": 88655,
+      "timestamp_s": 4329.780372779816,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "steering": -0.2630089521408081,
+      "reverse": false,
+      "handbrake": false,
+      "source": "SAFETY",
+      "gear": 1
+    },
+    "new_command": {
+      "frame_id": 88655,
+      "timestamp_s": 4329.780372779816,
+      "throttle": 0.75,
+      "brake": 0.0,
+      "steering": -0.2630089521408081,
+      "reverse": false,
+      "handbrake": false,
+      "source": "NAVIGATION",
+      "gear": 1
+    },
+    "new_reason": "Observed forward stopping corridor is clear",
+    "road_m": 8.498801649433066
+  }
+]

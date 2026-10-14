@@ -1,0 +1,6980 @@
+{
+  "transport": "unmodified actual dashboard WebSocket",
+  "commands": [
+    {
+      "type": "comparison_v2",
+      "sequence": 1,
+      "frame_id": 286529,
+      "timestamp_s": 12611.884705111384,
+      "value": {
+        "operation": "RUN",
+        "side": "RULE"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "sequence": 3536,
+      "frame_id": 289594,
+      "timestamp_s": 12765.134707394987,
+      "reason": "workspace_changed"
+    }
+  ],
+  "errors": [],
+  "heartbeats": 3534,
+  "samples": [
+    {
+      "wall_ms": 1791777905094,
+      "mode": "PAUSED",
+      "phase": "IDLE",
+      "recording": false,
+      "frame": 286528,
+      "speed_kmh": 0,
+      "position": [
+        57.56834030151367,
+        -67.849853515625,
+        -0.005051841493695974
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777906180,
+      "mode": "PAUSED",
+      "phase": "RESETTING",
+      "recording": false,
+      "frame": 286532,
+      "speed_kmh": 0,
+      "position": [
+        57.56834030151367,
+        -67.849853515625,
+        -0.005051841493695974
+      ],
+      "controller": "RULE",
+      "reason": "Waiting for forward driving",
+      "risk": "UNKNOWN",
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777907208,
+      "mode": "PAUSED",
+      "phase": "RESETTING",
+      "recording": false,
+      "frame": 286539,
+      "speed_kmh": 10.583999347686769,
+      "position": [
+        57.56834030151367,
+        -67.849853515625,
+        0.14429987967014313
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777908258,
+      "mode": "PAUSED",
+      "phase": "RESETTING",
+      "recording": false,
+      "frame": 286555,
+      "speed_kmh": 0.15944162160309708,
+      "position": [
+        57.56834030151367,
+        -67.849853515625,
+        -0.01224441546946764
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777909268,
+      "mode": "PAUSED",
+      "phase": "RESETTING",
+      "recording": true,
+      "frame": 286560,
+      "speed_kmh": 0.040222215280444715,
+      "position": [
+        57.56834030151367,
+        -67.849853515625,
+        -0.006334762554615736
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777910322,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286568,
+      "speed_kmh": 0.00745793162005408,
+      "position": [
+        57.56834030151367,
+        -67.849853515625,
+        -0.004915885627269745
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 2,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777911418,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286577,
+      "speed_kmh": 3.971543541098003,
+      "position": [
+        57.44329833984375,
+        -67.85122680664062,
+        -0.005653762724250555
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777912440,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286586,
+      "speed_kmh": 8.641998601076882,
+      "position": [
+        56.64600372314453,
+        -67.86080932617188,
+        -0.005711174104362726
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777913473,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286594,
+      "speed_kmh": 12.06720113958695,
+      "position": [
+        55.411746978759766,
+        -67.86927795410156,
+        -0.005517234560102224
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777914521,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286602,
+      "speed_kmh": 9.283089658371962,
+      "position": [
+        54.158782958984375,
+        -67.87704467773438,
+        -0.003950538579374552
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777915575,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286610,
+      "speed_kmh": 7.612998572659075,
+      "position": [
+        53.281131744384766,
+        -67.88249206542969,
+        -0.003974227700382471
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777916599,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286618,
+      "speed_kmh": 12.527141226445401,
+      "position": [
+        52.188743591308594,
+        -67.8881607055664,
+        -0.005553283728659153
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777917661,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286626,
+      "speed_kmh": 10.61869575384317,
+      "position": [
+        50.7684326171875,
+        -67.89283752441406,
+        -0.004191665444523096
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777918701,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286633,
+      "speed_kmh": 6.4890763738411765,
+      "position": [
+        49.95796585083008,
+        -67.89543151855469,
+        -0.0033312225714325905
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777919774,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286640,
+      "speed_kmh": 0.019520644866216935,
+      "position": [
+        49.87289810180664,
+        -67.89570617675781,
+        -0.002903633052483201
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777920829,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286648,
+      "speed_kmh": 0.7684022146899311,
+      "position": [
+        49.855159759521484,
+        -67.8956298828125,
+        -0.004343719221651554
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777921933,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286657,
+      "speed_kmh": 1.3686281788624324,
+      "position": [
+        49.506858825683594,
+        -67.89700317382812,
+        -0.004966163542121649
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777922962,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286665,
+      "speed_kmh": 6.065377520557778,
+      "position": [
+        49.064109802246094,
+        -67.89842987060547,
+        -0.005333328153938055
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777923984,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286672,
+      "speed_kmh": 6.6759362306444965,
+      "position": [
+        48.380096435546875,
+        -67.90054321289062,
+        -0.004897269885987043
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777925030,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286680,
+      "speed_kmh": 3.381931106234293,
+      "position": [
+        48.07887649536133,
+        -67.90167236328125,
+        -0.004165992606431246
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777926049,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286688,
+      "speed_kmh": 0.010614495137987446,
+      "position": [
+        47.78675079345703,
+        -67.90190124511719,
+        -0.003578033298254013
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777927121,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286697,
+      "speed_kmh": 2.3135774244179603,
+      "position": [
+        47.69259262084961,
+        -67.90200805664062,
+        -0.004851608071476221
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777928134,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286705,
+      "speed_kmh": 0.22666175775528502,
+      "position": [
+        47.63550567626953,
+        -67.90211486816406,
+        -0.004303894005715847
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777929182,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286713,
+      "speed_kmh": 0.6129410231289814,
+      "position": [
+        47.524593353271484,
+        -67.90230560302734,
+        -0.004325447138398886
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777930186,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286720,
+      "speed_kmh": 0.7007327954978682,
+      "position": [
+        47.49125289916992,
+        -67.90237426757812,
+        -0.004527396988123655
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777931189,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286728,
+      "speed_kmh": 0.0057549038076432895,
+      "position": [
+        47.35406494140625,
+        -67.90271759033203,
+        -0.004141616635024548
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777932234,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286735,
+      "speed_kmh": 0.8831706486132413,
+      "position": [
+        47.32991409301758,
+        -67.90274047851562,
+        -0.00457279197871685
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777933258,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286743,
+      "speed_kmh": 4.831660848878468,
+      "position": [
+        47.001609802246094,
+        -67.90361785888672,
+        -0.005421294830739498
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777934340,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286751,
+      "speed_kmh": 1.8755350474449142,
+      "position": [
+        46.79702377319336,
+        -67.90330505371094,
+        -0.004217071458697319
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777935371,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286759,
+      "speed_kmh": 0.5009812940245698,
+      "position": [
+        46.732112884521484,
+        -67.90335083007812,
+        -0.004325828514993191
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777936399,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286767,
+      "speed_kmh": 1.137111131365755,
+      "position": [
+        46.59052658081055,
+        -67.9034423828125,
+        -0.004414367489516735
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777937455,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286774,
+      "speed_kmh": 0.7815530644143049,
+      "position": [
+        46.473289489746094,
+        -67.90348052978516,
+        -0.004228896927088499
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777938539,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286783,
+      "speed_kmh": 2.034554815249227,
+      "position": [
+        46.26359176635742,
+        -67.90355682373047,
+        -0.004511299077421427
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777939622,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286791,
+      "speed_kmh": 0.8107130369338207,
+      "position": [
+        46.17495346069336,
+        -67.90355682373047,
+        -0.004272575490176678
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777940660,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286799,
+      "speed_kmh": 4.2318969880965565,
+      "position": [
+        45.897499084472656,
+        -67.90373229980469,
+        -0.005278091412037611
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777941697,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286807,
+      "speed_kmh": 0.20965065218150566,
+      "position": [
+        45.720218658447266,
+        -67.90422821044922,
+        -0.003791923401877284
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777942777,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286815,
+      "speed_kmh": 1.1062446535882002,
+      "position": [
+        45.67887496948242,
+        -67.90422058105469,
+        -0.004536399617791176
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777943862,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286823,
+      "speed_kmh": 0.0069471187841184945,
+      "position": [
+        45.63504409790039,
+        -67.90425109863281,
+        -0.004430579952895641
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777944917,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286831,
+      "speed_kmh": 0.5059226427055188,
+      "position": [
+        45.58448791503906,
+        -67.90428161621094,
+        -0.004533919971436262
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777945961,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286839,
+      "speed_kmh": 0.000623325287347388,
+      "position": [
+        45.55698776245117,
+        -67.90422821044922,
+        -0.004373207222670317
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777946997,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286847,
+      "speed_kmh": 0.5692552517077717,
+      "position": [
+        45.54035568237305,
+        -67.90422058105469,
+        -0.004604873713105917
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777948030,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286855,
+      "speed_kmh": 0.0006757938674358119,
+      "position": [
+        45.526649475097656,
+        -67.90420532226562,
+        -0.004442519973963499
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777949130,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286864,
+      "speed_kmh": 2.052136655663854,
+      "position": [
+        45.45724868774414,
+        -67.90435028076172,
+        -0.004974593874067068
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777950170,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286872,
+      "speed_kmh": 1.845161353385884,
+      "position": [
+        45.3287353515625,
+        -67.90459442138672,
+        -0.004710807465016842
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777951192,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286880,
+      "speed_kmh": 5.41712300295661,
+      "position": [
+        44.915550231933594,
+        -67.90513610839844,
+        -0.005414390470832586
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777952239,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286888,
+      "speed_kmh": 0.009670745544052402,
+      "position": [
+        44.450809478759766,
+        -67.9058609008789,
+        -0.0030117034912109375
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777953270,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286896,
+      "speed_kmh": 0.4521286041141903,
+      "position": [
+        44.39541244506836,
+        -67.90595245361328,
+        -0.004146728198975325
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777954297,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286904,
+      "speed_kmh": 4.545408998750028,
+      "position": [
+        44.10543441772461,
+        -67.90632629394531,
+        -0.005284042097628117
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777955371,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286913,
+      "speed_kmh": 9.122042804916141,
+      "position": [
+        43.27752685546875,
+        -67.90692138671875,
+        -0.005675315856933594
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777956445,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286922,
+      "speed_kmh": 14.56529166011931,
+      "position": [
+        41.7889404296875,
+        -67.90795135498047,
+        -0.005872878711670637
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777957461,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286930,
+      "speed_kmh": 16.95135004539332,
+      "position": [
+        39.99532699584961,
+        -67.90863037109375,
+        -0.005332755856215954
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777958461,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286938,
+      "speed_kmh": 13.116715387774512,
+      "position": [
+        38.247528076171875,
+        -67.90898132324219,
+        -0.003691024612635374
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777959490,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286946,
+      "speed_kmh": 11.603494587290477,
+      "position": [
+        36.98994064331055,
+        -67.90916442871094,
+        -0.0039916993118822575
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777960523,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286954,
+      "speed_kmh": 9.877277942308964,
+      "position": [
+        35.70223617553711,
+        -67.90912628173828,
+        -0.00397212989628315
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777961562,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286962,
+      "speed_kmh": 0.03784052206097323,
+      "position": [
+        34.96266174316406,
+        -67.90962219238281,
+        -0.0019984818063676357
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777962654,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286971,
+      "speed_kmh": 0.07795226800543187,
+      "position": [
+        34.953514099121094,
+        -67.90962219238281,
+        -0.003854675218462944
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777963731,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286980,
+      "speed_kmh": 0.0011202725875345152,
+      "position": [
+        34.94111633300781,
+        -67.90961456298828,
+        -0.004386863671243191
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777964738,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286989,
+      "speed_kmh": 0.7726999584689412,
+      "position": [
+        34.92269515991211,
+        -67.90966033935547,
+        -0.004631271120160818
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777965791,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 286997,
+      "speed_kmh": 4.617026334578542,
+      "position": [
+        34.60954666137695,
+        -67.90945434570312,
+        -0.005424689967185259
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777966828,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287006,
+      "speed_kmh": 8.789574829871578,
+      "position": [
+        33.75035095214844,
+        -67.90918731689453,
+        -0.005556678865104914
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777967831,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287014,
+      "speed_kmh": 9.533336449586367,
+      "position": [
+        32.71398162841797,
+        -67.90904235839844,
+        -0.004959449637681246
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777968925,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287023,
+      "speed_kmh": 5.991350961124632,
+      "position": [
+        31.75615882873535,
+        -67.90888977050781,
+        -0.0037886810023337603
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777969946,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287032,
+      "speed_kmh": 3.254723940276586,
+      "position": [
+        30.99724578857422,
+        -67.90898895263672,
+        -0.004031333606690168
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777970974,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287039,
+      "speed_kmh": 0.012637056388766253,
+      "position": [
+        30.969478607177734,
+        -67.9093017578125,
+        -0.003454933175817132
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777971999,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287047,
+      "speed_kmh": 0.10539979203245238,
+      "position": [
+        30.960878372192383,
+        -67.90933990478516,
+        -0.0043468475341796875
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777973010,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287056,
+      "speed_kmh": 0.0008533460673777731,
+      "position": [
+        30.941911697387695,
+        -67.90953826904297,
+        -0.004431037697941065
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777974035,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287064,
+      "speed_kmh": 1.916942819015314,
+      "position": [
+        30.877914428710938,
+        -67.90949249267578,
+        -0.004961700178682804
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777975065,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287073,
+      "speed_kmh": 5.879340631553576,
+      "position": [
+        30.382535934448242,
+        -67.90934753417969,
+        -0.0054712677374482155
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777976125,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287081,
+      "speed_kmh": 10.933018925367444,
+      "position": [
+        29.466623306274414,
+        -67.90895080566406,
+        -0.005878486670553684
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777977165,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287090,
+      "speed_kmh": 13.806363655008637,
+      "position": [
+        27.7436466217041,
+        -67.908203125,
+        -0.0052622221410274506
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777978270,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287099,
+      "speed_kmh": 10.231070889283604,
+      "position": [
+        26.289567947387695,
+        -67.90760803222656,
+        -0.003912544343620539
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777979393,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287107,
+      "speed_kmh": 10.187813064600748,
+      "position": [
+        25.249385833740234,
+        -67.90718841552734,
+        -0.00440837861970067
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777980424,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287115,
+      "speed_kmh": 9.157059363069278,
+      "position": [
+        24.06998062133789,
+        -67.9067153930664,
+        -0.004189262166619301
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777981515,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287123,
+      "speed_kmh": 8.749156960193586,
+      "position": [
+        23.11191177368164,
+        -67.9063491821289,
+        -0.004368896596133709
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777982537,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287130,
+      "speed_kmh": 6.410728454899503,
+      "position": [
+        22.36561393737793,
+        -67.90604400634766,
+        -0.003908195532858372
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777983626,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287138,
+      "speed_kmh": 0.053073148462949374,
+      "position": [
+        22.21759033203125,
+        -67.90654754638672,
+        -0.0031928252428770065
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777984633,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287146,
+      "speed_kmh": 0.002564913750145431,
+      "position": [
+        22.195104598999023,
+        -67.90657806396484,
+        -0.004313468933105469
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777985643,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287153,
+      "speed_kmh": 0.0010320981919496452,
+      "position": [
+        22.19491958618164,
+        -67.90657043457031,
+        -0.00442722300067544
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777986657,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287160,
+      "speed_kmh": 0.30886029020403605,
+      "position": [
+        22.18940544128418,
+        -67.90656280517578,
+        -0.004521674942225218
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777987735,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287168,
+      "speed_kmh": 3.996204477103313,
+      "position": [
+        21.945648193359375,
+        -67.90666961669922,
+        -0.0053590391762554646
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777988864,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287176,
+      "speed_kmh": 0.006048870253356577,
+      "position": [
+        21.713871002197266,
+        -67.90756225585938,
+        -0.003635139437392354
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777989880,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287183,
+      "speed_kmh": 0.0032008208427540493,
+      "position": [
+        21.712759017944336,
+        -67.90758514404297,
+        -0.004282951354980469
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777990894,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287190,
+      "speed_kmh": 0.0004380454317263182,
+      "position": [
+        21.712467193603516,
+        -67.9075927734375,
+        -0.004446868784725666
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 12,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777991920,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287197,
+      "speed_kmh": 0.0001921769005792211,
+      "position": [
+        21.712392807006836,
+        -67.90760040283203,
+        -0.0044876099564135075
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777992929,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287204,
+      "speed_kmh": 0.00005659817634847454,
+      "position": [
+        21.712369918823242,
+        -67.90760803222656,
+        -0.004496803041547537
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777993938,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287211,
+      "speed_kmh": 0.000016342778366210384,
+      "position": [
+        21.71236228942871,
+        -67.90760803222656,
+        -0.004498977679759264
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777994978,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287218,
+      "speed_kmh": 0.1824220362727383,
+      "position": [
+        21.71296501159668,
+        -67.90760803222656,
+        -0.004489593207836151
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777996057,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287226,
+      "speed_kmh": 1.8652172990579277,
+      "position": [
+        21.648221969604492,
+        -67.90760040283203,
+        -0.0049686431884765625
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777997073,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287234,
+      "speed_kmh": 5.498310481351082,
+      "position": [
+        21.206790924072266,
+        -67.90760803222656,
+        -0.005466308444738388
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777998147,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287242,
+      "speed_kmh": 0.008253269577803774,
+      "position": [
+        21.130191802978516,
+        -67.90753936767578,
+        -0.003840026678517461
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791777999228,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287250,
+      "speed_kmh": 0.5486473993816489,
+      "position": [
+        21.114328384399414,
+        -67.90753173828125,
+        -0.00450210552662611
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778000244,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287258,
+      "speed_kmh": 2.448427766578374,
+      "position": [
+        20.994619369506836,
+        -67.90762329101562,
+        -0.004939918406307697
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778001259,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287266,
+      "speed_kmh": 5.882026864717828,
+      "position": [
+        20.522878646850586,
+        -67.90734100341797,
+        -0.005435028113424778
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778002264,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287273,
+      "speed_kmh": 5.759798108372263,
+      "position": [
+        19.89368438720703,
+        -67.90678405761719,
+        -0.00473785400390625
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778003344,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287282,
+      "speed_kmh": 0.010609814564671631,
+      "position": [
+        19.802043914794922,
+        -67.90626525878906,
+        -0.0037034605629742146
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778004375,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287290,
+      "speed_kmh": 0.0051881236376130286,
+      "position": [
+        19.78110694885254,
+        -67.90621185302734,
+        -0.00443126680329442
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778005404,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287299,
+      "speed_kmh": 0.020843316069701995,
+      "position": [
+        19.776817321777344,
+        -67.90624237060547,
+        -0.0044874572195112705
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778006432,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287307,
+      "speed_kmh": 3.153693512980236,
+      "position": [
+        19.612581253051758,
+        -67.90608978271484,
+        -0.0052445982582867146
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778007432,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287315,
+      "speed_kmh": 4.4282902039015095,
+      "position": [
+        19.137025833129883,
+        -67.9071273803711,
+        -0.004955406300723553
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778008465,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287324,
+      "speed_kmh": 0.3062337891868412,
+      "position": [
+        19.109832763671875,
+        -67.90736389160156,
+        -0.004097633063793182
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778009531,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287333,
+      "speed_kmh": 3.2663291280922295,
+      "position": [
+        18.93501853942871,
+        -67.9073486328125,
+        -0.0052018738351762295
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778010550,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287341,
+      "speed_kmh": 4.731645760499841,
+      "position": [
+        18.554975509643555,
+        -67.90625762939453,
+        -0.005098647903650999
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778011569,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287348,
+      "speed_kmh": 0.17442225628905442,
+      "position": [
+        18.469552993774414,
+        -67.90656280517578,
+        -0.003827438224107027
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778012648,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287356,
+      "speed_kmh": 2.7678278545841475,
+      "position": [
+        18.340476989746094,
+        -67.90699768066406,
+        -0.005017585586756468
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778013685,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287366,
+      "speed_kmh": 0.5717212558597807,
+      "position": [
+        18.26481819152832,
+        -67.90679168701172,
+        -0.004372520372271538
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778014732,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287375,
+      "speed_kmh": 0.005613364590842859,
+      "position": [
+        18.081880569458008,
+        -67.90676879882812,
+        -0.004058074671775103
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778015764,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287383,
+      "speed_kmh": 0.001267473743243287,
+      "position": [
+        18.067853927612305,
+        -67.90685272216797,
+        -0.004340782295912504
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778016765,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287392,
+      "speed_kmh": 0.0699301951802609,
+      "position": [
+        18.0618839263916,
+        -67.90682983398438,
+        -0.004484253004193306
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778017798,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287399,
+      "speed_kmh": 0.3310130478874335,
+      "position": [
+        18.056291580200195,
+        -67.90680694580078,
+        -0.004535179119557142
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778018882,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287409,
+      "speed_kmh": 0.299746272536221,
+      "position": [
+        18.03830909729004,
+        -67.90680694580078,
+        -0.004508170764893293
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778019887,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287417,
+      "speed_kmh": 0.00007661973610595534,
+      "position": [
+        18.022321701049805,
+        -67.90673065185547,
+        -0.004446181934326887
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778020913,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287426,
+      "speed_kmh": 0.09186738503616193,
+      "position": [
+        18.015413284301758,
+        -67.90673065185547,
+        -0.004492263775318861
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778021954,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287435,
+      "speed_kmh": 2.9537284577061937,
+      "position": [
+        17.903486251831055,
+        -67.90660858154297,
+        -0.005216827150434256
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778022983,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287443,
+      "speed_kmh": 0.0006054087976485078,
+      "position": [
+        17.84593391418457,
+        -67.90648651123047,
+        -0.004220695234835148
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778023984,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287451,
+      "speed_kmh": 0.0009395852334655869,
+      "position": [
+        17.843040466308594,
+        -67.90648651123047,
+        -0.0044306181371212006
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778024999,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287459,
+      "speed_kmh": 0.00015457041641451738,
+      "position": [
+        17.8407039642334,
+        -67.90648651123047,
+        -0.004483833443373442
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778026115,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287467,
+      "speed_kmh": 0.000055163655023155006,
+      "position": [
+        17.84067153930664,
+        -67.90648651123047,
+        -0.004496268928050995
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778027145,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287475,
+      "speed_kmh": 0.00008532355917192072,
+      "position": [
+        17.841066360473633,
+        -67.90648651123047,
+        -0.004500159993767738
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778028222,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287483,
+      "speed_kmh": 0.00000400887762006891,
+      "position": [
+        17.841064453125,
+        -67.90648651123047,
+        -0.004500999581068754
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778029247,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287491,
+      "speed_kmh": 0.2581796789567321,
+      "position": [
+        17.8403263092041,
+        -67.90648651123047,
+        -0.004537239205092192
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778030258,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287499,
+      "speed_kmh": 0.021858672799438757,
+      "position": [
+        17.775184631347656,
+        -67.9068603515625,
+        -0.0046634674072265625
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778031269,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287507,
+      "speed_kmh": 1.1609170603074739,
+      "position": [
+        17.738920211791992,
+        -67.9067153930664,
+        -0.004678688012063503
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778032344,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287515,
+      "speed_kmh": 0.0018174518252827346,
+      "position": [
+        17.652639389038086,
+        -67.9066162109375,
+        -0.004214286804199219
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778033396,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287524,
+      "speed_kmh": 0.029091781277673267,
+      "position": [
+        17.547788619995117,
+        -67.90667724609375,
+        -0.00463458988815546
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778034433,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287532,
+      "speed_kmh": 0.007983858804437348,
+      "position": [
+        17.469329833984375,
+        -67.90657806396484,
+        -0.004284171853214502
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778035437,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287541,
+      "speed_kmh": 0.006702239856817193,
+      "position": [
+        17.464656829833984,
+        -67.9065933227539,
+        -0.004448890686035156
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778036452,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287549,
+      "speed_kmh": 0.5563769907630407,
+      "position": [
+        17.397546768188477,
+        -67.9062728881836,
+        -0.004454612731933594
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778037543,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287557,
+      "speed_kmh": 0.0006106521290468387,
+      "position": [
+        17.341201782226562,
+        -67.90620422363281,
+        -0.004290618933737278
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778038588,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287567,
+      "speed_kmh": 0.967850250704049,
+      "position": [
+        17.31951141357422,
+        -67.90624237060547,
+        -0.004654846154153347
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778039634,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287575,
+      "speed_kmh": 0.9684790763726309,
+      "position": [
+        17.206106185913086,
+        -67.90620422363281,
+        -0.004549522418528795
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778040672,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287583,
+      "speed_kmh": 0.3755473329381042,
+      "position": [
+        17.13892364501953,
+        -67.90603637695312,
+        -0.004360198974609375
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778041730,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287592,
+      "speed_kmh": 0.004526560035933377,
+      "position": [
+        17.020740509033203,
+        -67.90605926513672,
+        -0.004192390479147434
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778042741,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287600,
+      "speed_kmh": 0.0008572962487916866,
+      "position": [
+        17.012775421142578,
+        -67.90608978271484,
+        -0.004389571957290173
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778043824,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287609,
+      "speed_kmh": 0.2271596252231001,
+      "position": [
+        17.00758171081543,
+        -67.90615844726562,
+        -0.004518279805779457
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778044844,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287617,
+      "speed_kmh": 0.678275984490535,
+      "position": [
+        16.957828521728516,
+        -67.9058837890625,
+        -0.004620666615664959
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778045879,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287625,
+      "speed_kmh": 0.006574607301907996,
+      "position": [
+        16.89548110961914,
+        -67.90589904785156,
+        -0.004409255925565958
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778046967,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287634,
+      "speed_kmh": 0.07438555426736389,
+      "position": [
+        16.660717010498047,
+        -67.90536499023438,
+        -0.004677887074649334
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778048007,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287643,
+      "speed_kmh": 0.2354839391214252,
+      "position": [
+        16.63478660583496,
+        -67.90532684326172,
+        -0.004327735863626003
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778049030,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287651,
+      "speed_kmh": 0.0003652156134265531,
+      "position": [
+        16.56709098815918,
+        -67.90508270263672,
+        -0.004262581001967192
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778050034,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287660,
+      "speed_kmh": 0.09433813165637019,
+      "position": [
+        16.55624771118164,
+        -67.9051513671875,
+        -0.004480247385799885
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778051065,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287668,
+      "speed_kmh": 0.03512677266833237,
+      "position": [
+        16.4489688873291,
+        -67.90534973144531,
+        -0.004737434443086386
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778052068,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287677,
+      "speed_kmh": 0.579808449290658,
+      "position": [
+        16.38905143737793,
+        -67.90519714355469,
+        -0.004413185175508261
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778053129,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287686,
+      "speed_kmh": 0.9555330319515002,
+      "position": [
+        16.20578956604004,
+        -67.90459442138672,
+        -0.004231987055391073
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778054131,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287694,
+      "speed_kmh": 0.8905608805795687,
+      "position": [
+        16.154788970947266,
+        -67.90453338623047,
+        -0.004493179265409708
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778055151,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287703,
+      "speed_kmh": 1.0372701591178788,
+      "position": [
+        16.00082778930664,
+        -67.90428161621094,
+        -0.004443245008587837
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778056233,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287710,
+      "speed_kmh": 0.2760977704439336,
+      "position": [
+        15.93248462677002,
+        -67.90411376953125,
+        -0.004265975672751665
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778057386,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287720,
+      "speed_kmh": 0.00423207943405742,
+      "position": [
+        15.820941925048828,
+        -67.90380096435547,
+        -0.004210281185805798
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778058449,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287729,
+      "speed_kmh": 0.5280430226439168,
+      "position": [
+        15.753236770629883,
+        -67.90377044677734,
+        -0.004483871161937714
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778059458,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287738,
+      "speed_kmh": 4.867576835535925,
+      "position": [
+        15.422289848327637,
+        -67.90397644042969,
+        -0.005452117882668972
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778060466,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287746,
+      "speed_kmh": 8.920534831840671,
+      "position": [
+        14.678755760192871,
+        -67.9036636352539,
+        -0.005663719028234482
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778061546,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287755,
+      "speed_kmh": 14.392171479221533,
+      "position": [
+        13.198413848876953,
+        -67.9029312133789,
+        -0.005842170678079128
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778062561,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287762,
+      "speed_kmh": 11.760094950688275,
+      "position": [
+        11.83112907409668,
+        -67.90444946289062,
+        -0.00419071177020669
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778063604,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287770,
+      "speed_kmh": 5.5477209412273565,
+      "position": [
+        10.865535736083984,
+        -67.9066390991211,
+        -0.0030651853885501623
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778064645,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287778,
+      "speed_kmh": 0.016287908369748014,
+      "position": [
+        10.82871150970459,
+        -67.90628051757812,
+        -0.003292198060080409
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778065680,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287786,
+      "speed_kmh": 0.003653095130101999,
+      "position": [
+        10.80533504486084,
+        -67.90632629394531,
+        -0.004348335321992636
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778066691,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287794,
+      "speed_kmh": 2.5426835666276553,
+      "position": [
+        10.681629180908203,
+        -67.90685272216797,
+        -0.005070380866527557
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778067733,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287803,
+      "speed_kmh": 6.8403326848282,
+      "position": [
+        10.086714744567871,
+        -67.9086685180664,
+        -0.005527686793357134
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778068763,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287812,
+      "speed_kmh": 7.684053210754418,
+      "position": [
+        9.206361770629883,
+        -67.91083526611328,
+        -0.0048542022705078125
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778069763,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287820,
+      "speed_kmh": 13.231687202240321,
+      "position": [
+        8.06003189086914,
+        -67.9140853881836,
+        -0.0054545593447983265
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778070829,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287829,
+      "speed_kmh": 16.920887319025304,
+      "position": [
+        6.098105430603027,
+        -67.93106079101562,
+        -0.005497207399457693
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778071867,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287838,
+      "speed_kmh": 16.24348285667008,
+      "position": [
+        4.007293701171875,
+        -67.95074462890625,
+        -0.004463729914277792
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778072896,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287845,
+      "speed_kmh": 15.110815201371574,
+      "position": [
+        2.424884557723999,
+        -67.96739959716797,
+        -0.004266815260052681
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778073910,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287852,
+      "speed_kmh": 9.281465113739161,
+      "position": [
+        1.2768322229385376,
+        -67.9796142578125,
+        -0.0029987716116011143
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778074944,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287861,
+      "speed_kmh": 1.0363841141577002,
+      "position": [
+        0.6413671970367432,
+        -67.98590087890625,
+        -0.0021129227243363857
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778076048,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287869,
+      "speed_kmh": 0.07213837559463913,
+      "position": [
+        0.6352747082710266,
+        -67.98603057861328,
+        -0.003927307203412056
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778077126,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287878,
+      "speed_kmh": 0.0009372884759774745,
+      "position": [
+        0.6191766262054443,
+        -67.98616790771484,
+        -0.00438564270734787
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778078173,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287886,
+      "speed_kmh": 0.1053997423831166,
+      "position": [
+        0.6115595698356628,
+        -67.98623657226562,
+        -0.004504241980612278
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778079223,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287894,
+      "speed_kmh": 4.169235749582384,
+      "position": [
+        0.3651076555252075,
+        -67.98875427246094,
+        -0.005356635898351669
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778080244,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287902,
+      "speed_kmh": 7.83626339233389,
+      "position": [
+        -0.3010556101799011,
+        -67.99581146240234,
+        -0.005564841907471418
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778081349,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287911,
+      "speed_kmh": 5.445935667415741,
+      "position": [
+        -1.1605851650238037,
+        -68.00516510009766,
+        -0.004122886341065168
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778082374,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287919,
+      "speed_kmh": 5.950540940022093,
+      "position": [
+        -1.811156153678894,
+        -68.01211547851562,
+        -0.004538726527243853
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778083497,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287927,
+      "speed_kmh": 0.005109220385539362,
+      "position": [
+        -2.1265766620635986,
+        -68.01541137695312,
+        -0.0030474853701889515
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778084532,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287935,
+      "speed_kmh": 0.2767348570667076,
+      "position": [
+        -2.132014513015747,
+        -68.01549530029297,
+        -0.004220847971737385
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778085580,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287943,
+      "speed_kmh": 2.5086480072184334,
+      "position": [
+        -2.2523093223571777,
+        -68.01679992675781,
+        -0.005058860871940851
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778086642,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287951,
+      "speed_kmh": 6.433533472640205,
+      "position": [
+        -2.7623705863952637,
+        -68.02229309082031,
+        -0.005539817735552788
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778087662,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287960,
+      "speed_kmh": 1.4507774402890883,
+      "position": [
+        -3.3358547687530518,
+        -68.02843475341797,
+        -0.0033052442595362663
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778088745,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287968,
+      "speed_kmh": 0.18398171140090336,
+      "position": [
+        -3.483678102493286,
+        -68.03023529052734,
+        -0.0037253950722515583
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778089753,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287976,
+      "speed_kmh": 0.6455635808155475,
+      "position": [
+        -3.532761573791504,
+        -68.03063201904297,
+        -0.004362258594483137
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778090811,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287985,
+      "speed_kmh": 0.07306496052232091,
+      "position": [
+        -3.788957357406616,
+        -68.03318786621094,
+        -0.004663696046918631
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778091824,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 287993,
+      "speed_kmh": 2.308273022277942,
+      "position": [
+        -3.8767201900482178,
+        -68.03401184082031,
+        -0.0047706603072583675
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778092887,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288002,
+      "speed_kmh": 2.49819494636045,
+      "position": [
+        -4.048198223114014,
+        -68.03594207763672,
+        -0.004884643480181694
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778093902,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288010,
+      "speed_kmh": 0.514100781578251,
+      "position": [
+        -4.1804046630859375,
+        -68.03779602050781,
+        -0.004157142713665962
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778094952,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288018,
+      "speed_kmh": 0.30613867689757457,
+      "position": [
+        -4.247823715209961,
+        -68.03864288330078,
+        -0.0042854310013353825
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778095975,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288027,
+      "speed_kmh": 0.017766854183611954,
+      "position": [
+        -4.33907413482666,
+        -68.03955078125,
+        -0.004505004733800888
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778097034,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288035,
+      "speed_kmh": 0.0009898406096992037,
+      "position": [
+        -4.3573994636535645,
+        -68.03971862792969,
+        -0.004381828010082245
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778098087,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288043,
+      "speed_kmh": 0.6694800414471663,
+      "position": [
+        -4.37712287902832,
+        -68.04005432128906,
+        -0.004594345111399889
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778099144,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288051,
+      "speed_kmh": 0.6265636902258892,
+      "position": [
+        -4.629947185516357,
+        -68.0431900024414,
+        -0.004811553750187159
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778100238,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288060,
+      "speed_kmh": 1.0375525925552669,
+      "position": [
+        -4.679880142211914,
+        -68.04364013671875,
+        -0.004451598972082138
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778101239,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288069,
+      "speed_kmh": 1.7801153888806167,
+      "position": [
+        -4.844829082489014,
+        -68.04570770263672,
+        -0.004654846154153347
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778102263,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288076,
+      "speed_kmh": 1.1882878932805454,
+      "position": [
+        -4.946705341339111,
+        -68.046875,
+        -0.004424857906997204
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778103291,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288084,
+      "speed_kmh": 1.176875851324636,
+      "position": [
+        -5.049156665802002,
+        -68.04821014404297,
+        -0.004546546842902899
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778104386,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288092,
+      "speed_kmh": 0.012002747914501488,
+      "position": [
+        -5.2756242752075195,
+        -68.05021667480469,
+        -0.003958511166274548
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778105412,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288101,
+      "speed_kmh": 2.143662286162655,
+      "position": [
+        -5.3901472091674805,
+        -68.05155181884766,
+        -0.0048409271985292435
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778106441,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288108,
+      "speed_kmh": 0.01179526489143711,
+      "position": [
+        -5.6116623878479,
+        -68.05352020263672,
+        -0.0038738250732421875
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778107442,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288116,
+      "speed_kmh": 1.0432779984884886,
+      "position": [
+        -5.655954837799072,
+        -68.05397033691406,
+        -0.0043882750906050205
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778108442,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288125,
+      "speed_kmh": 0.9009350272118857,
+      "position": [
+        -5.858198642730713,
+        -68.05599212646484,
+        -0.004246177617460489
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778109462,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288134,
+      "speed_kmh": 0.030359860565431714,
+      "position": [
+        -6.150423526763916,
+        -68.05912780761719,
+        -0.004074744880199432
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778110480,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288142,
+      "speed_kmh": 2.1454575304122256,
+      "position": [
+        -6.241086959838867,
+        -68.06007385253906,
+        -0.004718208219856024
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778111528,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288151,
+      "speed_kmh": 1.7901605328339243,
+      "position": [
+        -6.4491119384765625,
+        -68.06263732910156,
+        -0.004526443313807249
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778112557,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288160,
+      "speed_kmh": 0.06158695095091983,
+      "position": [
+        -6.715773582458496,
+        -68.06514739990234,
+        -0.004445190541446209
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778113570,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288169,
+      "speed_kmh": 0.03525189738293805,
+      "position": [
+        -6.883067607879639,
+        -68.06681823730469,
+        -0.0044454955495893955
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778114672,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288178,
+      "speed_kmh": 5.333452998521642,
+      "position": [
+        -7.293424606323242,
+        -68.07112121582031,
+        -0.005352248903363943
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778115672,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288186,
+      "speed_kmh": 0.001531244246746488,
+      "position": [
+        -7.392181396484375,
+        -68.0727310180664,
+        -0.0038941192906349897
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778116697,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288193,
+      "speed_kmh": 0.002646988721984196,
+      "position": [
+        -7.402923583984375,
+        -68.07275390625,
+        -0.004303932189941406
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778117716,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288202,
+      "speed_kmh": 1.9822525347339097,
+      "position": [
+        -7.475215911865234,
+        -68.07374572753906,
+        -0.004932212643325329
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778118735,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288211,
+      "speed_kmh": 3.074499635716857,
+      "position": [
+        -7.762339115142822,
+        -68.07665252685547,
+        -0.00482814759016037
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778119773,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288221,
+      "speed_kmh": 8.139839504417703,
+      "position": [
+        -8.542475700378418,
+        -68.08445739746094,
+        -0.005567741114646196
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778120775,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288230,
+      "speed_kmh": 13.473883598960022,
+      "position": [
+        -9.87125301361084,
+        -68.0981674194336,
+        -0.005860405042767525
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778121908,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288240,
+      "speed_kmh": 16.685882274760864,
+      "position": [
+        -12.00387954711914,
+        -68.1202163696289,
+        -0.005328712519258261
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778122945,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288250,
+      "speed_kmh": 17.093253664305045,
+      "position": [
+        -14.363527297973633,
+        -68.14472198486328,
+        -0.004667396657168865
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778123946,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288258,
+      "speed_kmh": 17.08147564638823,
+      "position": [
+        -16.261625289916992,
+        -68.16444396972656,
+        -0.00452766427770257
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778124953,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288267,
+      "speed_kmh": 13.09705598569995,
+      "position": [
+        -18.2838077545166,
+        -68.18546295166016,
+        -0.0035253141541033983
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 11,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778125994,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288274,
+      "speed_kmh": 1.4436829025042532,
+      "position": [
+        -19.155311584472656,
+        -68.19526672363281,
+        -0.0016196059295907617
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778127064,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288282,
+      "speed_kmh": 0.01704639931805689,
+      "position": [
+        -19.16031837463379,
+        -68.19538879394531,
+        -0.0032652663066983223
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 11,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778128122,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288290,
+      "speed_kmh": 0.003013516372202374,
+      "position": [
+        -19.162113189697266,
+        -68.1954116821289,
+        -0.0042961882427334785
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778129199,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288299,
+      "speed_kmh": 0.0005528136067897093,
+      "position": [
+        -19.162391662597656,
+        -68.1954116821289,
+        -0.004462089389562607
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778130218,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288308,
+      "speed_kmh": 0.0001061633464792314,
+      "position": [
+        -19.162446975708008,
+        -68.1954116821289,
+        -0.004493293818086386
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778131228,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288315,
+      "speed_kmh": 0.00003117567323071616,
+      "position": [
+        -19.162458419799805,
+        -68.1954116821289,
+        -0.004498481750488281
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778132293,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288324,
+      "speed_kmh": 0.000007576773673749434,
+      "position": [
+        -19.162464141845703,
+        -68.1954116821289,
+        -0.004500045906752348
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778133345,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288333,
+      "speed_kmh": 0.0000027128795466326223,
+      "position": [
+        -19.162466049194336,
+        -68.1954116821289,
+        -0.004500465467572212
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778134348,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288341,
+      "speed_kmh": 0.000001645536663435859,
+      "position": [
+        -19.162466049194336,
+        -68.1954116821289,
+        -0.004500465467572212
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778135370,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288350,
+      "speed_kmh": 6.010440956876099e-7,
+      "position": [
+        -19.162466049194336,
+        -68.1954116821289,
+        -0.004500465467572212
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778136391,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288359,
+      "speed_kmh": 6.87178794664436e-8,
+      "position": [
+        -19.162466049194336,
+        -68.1954116821289,
+        -0.004500465467572212
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778137449,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288367,
+      "speed_kmh": 0.000002815247608940136,
+      "position": [
+        -19.162466049194336,
+        -68.1954116821289,
+        -0.004500465467572212
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778138476,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288376,
+      "speed_kmh": 1.374342158261217e-7,
+      "position": [
+        -19.162466049194336,
+        -68.1954116821289,
+        -0.004500465467572212
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778139579,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288385,
+      "speed_kmh": 0.4173848456779526,
+      "position": [
+        -19.172924041748047,
+        -68.19560241699219,
+        -0.004584312438964844
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778140686,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288394,
+      "speed_kmh": 4.821584649604265,
+      "position": [
+        -19.51178550720215,
+        -68.19898986816406,
+        -0.005444678943604231
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778141766,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288403,
+      "speed_kmh": 9.182249998614346,
+      "position": [
+        -20.433504104614258,
+        -68.20947265625,
+        -0.005621185060590506
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778142825,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288412,
+      "speed_kmh": 9.256557939470522,
+      "position": [
+        -21.492048263549805,
+        -68.22118377685547,
+        -0.004828872624784708
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778143830,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288420,
+      "speed_kmh": 12.017708375356102,
+      "position": [
+        -22.67345428466797,
+        -68.23310089111328,
+        -0.0052467347122728825
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778144831,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288428,
+      "speed_kmh": 11.292385109222371,
+      "position": [
+        -24.01268768310547,
+        -68.24651336669922,
+        -0.004489479120820761
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778145860,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288436,
+      "speed_kmh": 0.010915607769242936,
+      "position": [
+        -24.790164947509766,
+        -68.25363159179688,
+        -0.0014091109624132514
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778146928,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288446,
+      "speed_kmh": 0.07367804175807942,
+      "position": [
+        -24.795822143554688,
+        -68.25373077392578,
+        -0.003998489119112492
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778147942,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288455,
+      "speed_kmh": 0.0008643210487130578,
+      "position": [
+        -24.81600570678711,
+        -68.25395965576172,
+        -0.0043844603933393955
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778148978,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288465,
+      "speed_kmh": 1.241566873108728,
+      "position": [
+        -24.84232521057129,
+        -68.25413513183594,
+        -0.00474281283095479
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778150035,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288474,
+      "speed_kmh": 5.45760077740369,
+      "position": [
+        -25.276039123535156,
+        -68.2585220336914,
+        -0.005495109595358372
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778151060,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288484,
+      "speed_kmh": 11.634910173147375,
+      "position": [
+        -26.420257568359375,
+        -68.27040100097656,
+        -0.005940742325037718
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778152164,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288495,
+      "speed_kmh": 13.024405516581997,
+      "position": [
+        -28.539663314819336,
+        -68.29244995117188,
+        -0.004573631100356579
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778153188,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288504,
+      "speed_kmh": 8.403385431806862,
+      "position": [
+        -29.828752517700195,
+        -68.30583190917969,
+        -0.003542137099429965
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778154230,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288513,
+      "speed_kmh": 0.5782658242718295,
+      "position": [
+        -30.37693977355957,
+        -68.3115234375,
+        -0.0023736190050840378
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778155266,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288523,
+      "speed_kmh": 0.27780774205107744,
+      "position": [
+        -30.39930534362793,
+        -68.31183624267578,
+        -0.004214019514620304
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778156345,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288533,
+      "speed_kmh": 0.0009020956112996159,
+      "position": [
+        -30.4182186126709,
+        -68.31201171875,
+        -0.004421996884047985
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778157445,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288544,
+      "speed_kmh": 2.7312458844335774,
+      "position": [
+        -30.540611267089844,
+        -68.31351470947266,
+        -0.005128173623234034
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778158469,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288553,
+      "speed_kmh": 6.811244701514816,
+      "position": [
+        -31.14400863647461,
+        -68.31978607177734,
+        -0.005487937945872545
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778159523,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288563,
+      "speed_kmh": 14.122054528908997,
+      "position": [
+        -32.58006286621094,
+        -68.33464050292969,
+        -0.006159591488540173
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778160552,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288573,
+      "speed_kmh": 14.758048418496811,
+      "position": [
+        -34.71464157104492,
+        -68.3567123413086,
+        -0.0047254180535674095
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778161575,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288582,
+      "speed_kmh": 16.39540008444727,
+      "position": [
+        -36.62063217163086,
+        -68.37651062011719,
+        -0.004913596902042627
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778162693,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288592,
+      "speed_kmh": 17.091714549373233,
+      "position": [
+        -38.96884536743164,
+        -68.4009017944336,
+        -0.004678077530115843
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778163753,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288602,
+      "speed_kmh": 16.887391144548694,
+      "position": [
+        -41.3405647277832,
+        -68.42554473876953,
+        -0.004497222602367401
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778164834,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288612,
+      "speed_kmh": 12.145987139361463,
+      "position": [
+        -43.347835540771484,
+        -68.44642639160156,
+        -0.0036170196253806353
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778165864,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288621,
+      "speed_kmh": 7.326178489349586,
+      "position": [
+        -44.50245666503906,
+        -68.45845031738281,
+        -0.0033288192935287952
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778166915,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288630,
+      "speed_kmh": 7.0662236746658005,
+      "position": [
+        -45.47751235961914,
+        -68.4686050415039,
+        -0.004179115407168865
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778167945,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288640,
+      "speed_kmh": 0.29480407957608695,
+      "position": [
+        -45.76708984375,
+        -68.47161102294922,
+        -0.003387184115126729
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778169033,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288649,
+      "speed_kmh": 0.00315139713325735,
+      "position": [
+        -45.80327224731445,
+        -68.47169494628906,
+        -0.004240455571562052
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778170042,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288658,
+      "speed_kmh": 1.2590910900743764,
+      "position": [
+        -45.8277587890625,
+        -68.4720230102539,
+        -0.004694938659667969
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778171115,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288668,
+      "speed_kmh": 0.22888900528558603,
+      "position": [
+        -45.835609436035156,
+        -68.47212982177734,
+        -0.004532127175480127
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778172133,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288676,
+      "speed_kmh": 3.0558304711984516,
+      "position": [
+        -45.99544906616211,
+        -68.473876953125,
+        -0.005226707551628351
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778173233,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288687,
+      "speed_kmh": 8.757180947306408,
+      "position": [
+        -46.88845443725586,
+        -68.48280334472656,
+        -0.005658874288201332
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778174318,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288696,
+      "speed_kmh": 7.886680307834644,
+      "position": [
+        -48.03907775878906,
+        -68.49491119384766,
+        -0.00434471108019352
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778175324,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288704,
+      "speed_kmh": 10.907935317890407,
+      "position": [
+        -49.022850036621094,
+        -68.50519561767578,
+        -0.005150756798684597
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778176338,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288712,
+      "speed_kmh": 15.057649707915811,
+      "position": [
+        -50.486106872558594,
+        -68.52052307128906,
+        -0.005653419531881809
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778177353,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288721,
+      "speed_kmh": 16.69413825370712,
+      "position": [
+        -52.4660530090332,
+        -68.54120635986328,
+        -0.0050807190127670765
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778178370,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288729,
+      "speed_kmh": 17.081076110189656,
+      "position": [
+        -54.350341796875,
+        -68.56084442138672,
+        -0.004701804835349321
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778179371,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288737,
+      "speed_kmh": 14.266731781786026,
+      "position": [
+        -56.06489944458008,
+        -68.57870483398438,
+        -0.003815040457993746
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778180401,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288746,
+      "speed_kmh": 16.79664234143493,
+      "position": [
+        -58.0367317199707,
+        -68.5992660522461,
+        -0.0049172211438417435
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778181473,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288753,
+      "speed_kmh": 11.660439851193775,
+      "position": [
+        -59.44654083251953,
+        -68.61397552490234,
+        -0.0033564758487045765
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778182504,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288761,
+      "speed_kmh": 0.01768587195492728,
+      "position": [
+        -60.23677062988281,
+        -68.62220764160156,
+        -0.0012284087715670466
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 10,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778183514,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288769,
+      "speed_kmh": 0.2388007199762603,
+      "position": [
+        -60.243431091308594,
+        -68.62227630615234,
+        -0.0036339950747787952
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778184521,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288777,
+      "speed_kmh": 0.002337412300381227,
+      "position": [
+        -60.25852584838867,
+        -68.62239074707031,
+        -0.004314003046602011
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778185542,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288785,
+      "speed_kmh": 0.9353455708384165,
+      "position": [
+        -60.28223419189453,
+        -68.62255096435547,
+        -0.004668426234275103
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778186714,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288795,
+      "speed_kmh": 5.6508801499306145,
+      "position": [
+        -60.74521255493164,
+        -68.62761688232422,
+        -0.005476150196045637
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778187780,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288804,
+      "speed_kmh": 10.595512829690461,
+      "position": [
+        -61.7335205078125,
+        -68.63796997070312,
+        -0.005812873598188162
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 9,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778188896,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288814,
+      "speed_kmh": 13.471582525365347,
+      "position": [
+        -63.3524169921875,
+        -68.65414428710938,
+        -0.00546123506501317
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 8,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778189938,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288822,
+      "speed_kmh": 12.607608943167614,
+      "position": [
+        -64.84010314941406,
+        -68.66861724853516,
+        -0.004560203291475773
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778190984,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288830,
+      "speed_kmh": 11.33362348492087,
+      "position": [
+        -66.16197967529297,
+        -68.68146514892578,
+        -0.004224815405905247
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778192043,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288839,
+      "speed_kmh": 8.77584625169692,
+      "position": [
+        -67.47000122070312,
+        -68.6667709350586,
+        -0.0038401794154196978
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778193043,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288848,
+      "speed_kmh": 6.486393676561187,
+      "position": [
+        -68.34626007080078,
+        -68.6422348022461,
+        -0.003917655907571316
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778194101,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288857,
+      "speed_kmh": 3.1051984252090503,
+      "position": [
+        -69.19133758544922,
+        -68.61842346191406,
+        -0.0038491056766361
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778195126,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288866,
+      "speed_kmh": 0.010180398157695902,
+      "position": [
+        -69.22480773925781,
+        -68.61753845214844,
+        -0.0037553024012595415
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778196148,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288877,
+      "speed_kmh": 0.007248055445486066,
+      "position": [
+        -69.27532196044922,
+        -68.6160888671875,
+        -0.004436340183019638
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778197173,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288886,
+      "speed_kmh": 4.178966507121826,
+      "position": [
+        -69.54466247558594,
+        -68.60832977294922,
+        -0.005319366231560707
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778198179,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288895,
+      "speed_kmh": 8.740095710557865,
+      "position": [
+        -70.33597564697266,
+        -68.5859146118164,
+        -0.005639953538775444
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778199239,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288905,
+      "speed_kmh": 15.807593479850658,
+      "position": [
+        -72.07386779785156,
+        -68.47990417480469,
+        -0.006095733493566513
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778200268,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288914,
+      "speed_kmh": 17.09935823593912,
+      "position": [
+        -74.15432739257812,
+        -68.26895904541016,
+        -0.005006332416087389
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778201350,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288924,
+      "speed_kmh": 17.065279174363138,
+      "position": [
+        -76.49695587158203,
+        -67.92793273925781,
+        -0.004545288160443306
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778202460,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288934,
+      "speed_kmh": 17.08445885445538,
+      "position": [
+        -78.82404327392578,
+        -67.46813201904297,
+        -0.004507484380155802
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778203473,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288943,
+      "speed_kmh": 16.36679020439456,
+      "position": [
+        -80.82740783691406,
+        -66.96424865722656,
+        -0.004342613276094198
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778204562,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288952,
+      "speed_kmh": 12.744668229805555,
+      "position": [
+        -82.68428802490234,
+        -66.39452362060547,
+        -0.0035402679350227118
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 7,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778205644,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288960,
+      "speed_kmh": 7.482506520146631,
+      "position": [
+        -83.7298355102539,
+        -66.06643676757812,
+        -0.0030689621344208717
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778206736,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288970,
+      "speed_kmh": 1.1873142767337688,
+      "position": [
+        -84.38430786132812,
+        -65.86066436767578,
+        -0.0025887680239975452
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778207765,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288979,
+      "speed_kmh": 0.003545311325938936,
+      "position": [
+        -84.42536163330078,
+        -65.8476791381836,
+        -0.004112014546990395
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778208841,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288989,
+      "speed_kmh": 0.0014347494128638112,
+      "position": [
+        -84.4518051147461,
+        -65.83940887451172,
+        -0.004368782043457031
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778209924,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 288999,
+      "speed_kmh": 1.5330196661377213,
+      "position": [
+        -84.50088500976562,
+        -65.82384490966797,
+        -0.004870300181210041
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778210953,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289009,
+      "speed_kmh": 6.2723460830028985,
+      "position": [
+        -85.03812408447266,
+        -65.65438079833984,
+        -0.005499343853443861
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778211990,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289019,
+      "speed_kmh": 8.854387622380058,
+      "position": [
+        -86.11284637451172,
+        -65.20296478271484,
+        -0.005023994483053684
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778213051,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289028,
+      "speed_kmh": 8.099466263943668,
+      "position": [
+        -87.08092498779297,
+        -64.766357421875,
+        -0.00442237826064229
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778214053,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289038,
+      "speed_kmh": 12.055088539189592,
+      "position": [
+        -88.25111389160156,
+        -64.23587036132812,
+        -0.005428581032902002
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778215144,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289048,
+      "speed_kmh": 12.29215944905524,
+      "position": [
+        -89.77277374267578,
+        -63.42209243774414,
+        -0.004533729515969753
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778216209,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289057,
+      "speed_kmh": 16.646654828950496,
+      "position": [
+        -91.38040161132812,
+        -62.47664260864258,
+        -0.005407257005572319
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778217236,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289067,
+      "speed_kmh": 17.092686834605146,
+      "position": [
+        -93.33771514892578,
+        -61.16980743408203,
+        -0.004685172811150551
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778218252,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289076,
+      "speed_kmh": 17.08756157495294,
+      "position": [
+        -95.0528793334961,
+        -59.89642333984375,
+        -0.004521980416029692
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778219346,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289086,
+      "speed_kmh": 11.27763423419497,
+      "position": [
+        -96.61214447021484,
+        -58.646629333496094,
+        -0.003203277476131916
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778220376,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289096,
+      "speed_kmh": 7.722944553381103,
+      "position": [
+        -97.61094665527344,
+        -57.71607208251953,
+        -0.0034891890827566385
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778221383,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289103,
+      "speed_kmh": 0.6648609030973346,
+      "position": [
+        -97.95975494384766,
+        -57.38901901245117,
+        -0.002118987962603569
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778222437,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289112,
+      "speed_kmh": 0.06914378009161987,
+      "position": [
+        -97.97636413574219,
+        -57.37321090698242,
+        -0.0039730072021484375
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778223495,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289122,
+      "speed_kmh": 0.0012353957105872546,
+      "position": [
+        -97.99605560302734,
+        -57.35469055175781,
+        -0.004382400307804346
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778224536,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289132,
+      "speed_kmh": 1.6427007899879018,
+      "position": [
+        -98.03781127929688,
+        -57.31534957885742,
+        -0.004881210159510374
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778225626,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289142,
+      "speed_kmh": 6.279169663804377,
+      "position": [
+        -98.45555114746094,
+        -56.92100143432617,
+        -0.005468444898724556
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778226626,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289151,
+      "speed_kmh": 8.752910705731134,
+      "position": [
+        -99.2167739868164,
+        -56.20397186279297,
+        -0.005115775857120752
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778227681,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289160,
+      "speed_kmh": 3.8820973098231564,
+      "position": [
+        -99.81149291992188,
+        -55.64468765258789,
+        -0.0033639525063335896
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778228772,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289170,
+      "speed_kmh": 7.789362378893025,
+      "position": [
+        -100.3661117553711,
+        -55.08043670654297,
+        -0.005126037634909153
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778229829,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289179,
+      "speed_kmh": 0.0022816216855068637,
+      "position": [
+        -100.76285552978516,
+        -54.6181526184082,
+        -0.002500076312571764
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778230883,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289189,
+      "speed_kmh": 0.4581870258048237,
+      "position": [
+        -100.77344512939453,
+        -54.60569381713867,
+        -0.00430313078686595
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778231976,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289199,
+      "speed_kmh": 1.4182304576929383,
+      "position": [
+        -100.82302856445312,
+        -54.54682540893555,
+        -0.004762382246553898
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778232995,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289210,
+      "speed_kmh": 6.155907740758302,
+      "position": [
+        -101.22660064697266,
+        -54.06956100463867,
+        -0.0054496764205396175
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778234043,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289219,
+      "speed_kmh": 0.009746080060954218,
+      "position": [
+        -101.31529235839844,
+        -53.966156005859375,
+        -0.0037441253662109375
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778235086,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289227,
+      "speed_kmh": 0.0019478293183643235,
+      "position": [
+        -101.3160171508789,
+        -53.96532440185547,
+        -0.00437240581959486
+      ],
+      "controller": "RULE",
+      "reason": "Holding for three clear readings and minimum hold",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778236090,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289235,
+      "speed_kmh": 0.0004167360491281938,
+      "position": [
+        -101.316162109375,
+        -53.96517562866211,
+        -0.0044709015637636185
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778237161,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289244,
+      "speed_kmh": 0.8441292121616752,
+      "position": [
+        -101.32606506347656,
+        -53.95352554321289,
+        -0.0046362304128706455
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778238191,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289254,
+      "speed_kmh": 5.6403413508565325,
+      "position": [
+        -101.63553619384766,
+        -53.58858871459961,
+        -0.005494422744959593
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778239232,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289263,
+      "speed_kmh": 11.163872785583097,
+      "position": [
+        -102.29954528808594,
+        -52.80645751953125,
+        -0.005880660843104124
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778240256,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289272,
+      "speed_kmh": 16.52403493675198,
+      "position": [
+        -103.37336730957031,
+        -51.362361907958984,
+        -0.005854225251823664
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778241270,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289281,
+      "speed_kmh": 15.450489893684919,
+      "position": [
+        -104.58368682861328,
+        -49.65619659423828,
+        -0.004461631644517183
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778242363,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289289,
+      "speed_kmh": 9.823460369891169,
+      "position": [
+        -105.32381439208984,
+        -48.52259826660156,
+        -0.003145103342831135
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778243457,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289298,
+      "speed_kmh": 10.291168598601866,
+      "position": [
+        -105.94341278076172,
+        -47.46315383911133,
+        -0.00433490751311183
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778244477,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289307,
+      "speed_kmh": 9.270789809667738,
+      "position": [
+        -106.62738037109375,
+        -46.2872200012207,
+        -0.004116821102797985
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778245563,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289317,
+      "speed_kmh": 1.0781159326728629,
+      "position": [
+        -106.98177337646484,
+        -45.67753219604492,
+        -0.0023834228049963713
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778246563,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289325,
+      "speed_kmh": 0.005923988705345045,
+      "position": [
+        -106.9963150024414,
+        -45.65258026123047,
+        -0.003931083716452122
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778247662,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289335,
+      "speed_kmh": 0.3335557209234296,
+      "position": [
+        -107.00436401367188,
+        -45.63862228393555,
+        -0.004491233732551336
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778248723,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289345,
+      "speed_kmh": 5.550030220040936,
+      "position": [
+        -107.2242431640625,
+        -45.25846481323242,
+        -0.005537872202694416
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778249760,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289354,
+      "speed_kmh": 10.643172898632368,
+      "position": [
+        -107.70005798339844,
+        -44.38790512084961,
+        -0.00582401268184185
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778250782,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289363,
+      "speed_kmh": 8.547261438838532,
+      "position": [
+        -108.2039794921875,
+        -43.310672760009766,
+        -0.004309882875531912
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778251862,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289373,
+      "speed_kmh": 6.196091802074051,
+      "position": [
+        -108.6143798828125,
+        -42.42121505737305,
+        -0.004084357991814613
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778252933,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289383,
+      "speed_kmh": 0.010660889713585158,
+      "position": [
+        -108.68439483642578,
+        -42.26914596557617,
+        -0.0036264800000935793
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778254064,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289393,
+      "speed_kmh": 1.3734556367583284,
+      "position": [
+        -108.70027160644531,
+        -42.23458480834961,
+        -0.0046758269891142845
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778255127,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289403,
+      "speed_kmh": 0.22369363922502733,
+      "position": [
+        -108.70518493652344,
+        -42.224037170410156,
+        -0.004523200914263725
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778256155,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289413,
+      "speed_kmh": 4.200120705554513,
+      "position": [
+        -108.81876373291016,
+        -41.97673416137695,
+        -0.005372886545956135
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778257238,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289424,
+      "speed_kmh": 9.389718375464028,
+      "position": [
+        -109.25967407226562,
+        -41.02033233642578,
+        -0.00564994802698493
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778258334,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289434,
+      "speed_kmh": 13.685501983974834,
+      "position": [
+        -109.79850006103516,
+        -39.6346321105957,
+        -0.005677490029484034
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778259497,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289444,
+      "speed_kmh": 14.984521242288377,
+      "position": [
+        -110.53897857666016,
+        -37.638572692871094,
+        -0.004697380121797323
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 3,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778260527,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289453,
+      "speed_kmh": 16.785863560630883,
+      "position": [
+        -111.2261962890625,
+        -35.76639175415039,
+        -0.0048905941657722
+      ],
+      "controller": "RULE",
+      "reason": "Measured obstacle",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 4,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778261595,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289462,
+      "speed_kmh": 16.272752691933377,
+      "position": [
+        -111.95380401611328,
+        -33.77786636352539,
+        -0.004483947530388832
+      ],
+      "controller": "RULE",
+      "reason": "Predicted time-aligned occupancy conflict",
+      "risk": "PREDICTED_CONFLICT",
+      "source": "RULE",
+      "prediction_objects": 5,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778262609,
+      "mode": "AUTOMATIC",
+      "phase": "RUNNING",
+      "recording": true,
+      "frame": 289471,
+      "speed_kmh": 5.986667796746755,
+      "position": [
+        -112.44822692871094,
+        -32.428184509277344,
+        -0.002480583032593131
+      ],
+      "controller": "RULE",
+      "reason": "Measured corridor clear",
+      "risk": "CLEAR",
+      "source": "RULE",
+      "prediction_objects": 6,
+      "latest": "001c6cbd47964587aad1e9c160ab5793"
+    },
+    {
+      "wall_ms": 1791778263634,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289478,
+      "speed_kmh": 0.023646152425607768,
+      "position": [
+        -112.46416473388672,
+        -32.3829231262207,
+        -0.002626724075525999
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778264677,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289495,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778265785,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289510,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778266802,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289526,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778267869,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289542,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778268874,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289558,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778269946,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289575,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778270992,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289591,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778272019,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289606,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778273033,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289622,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778274105,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289641,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778275144,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289657,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778276186,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289673,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778277214,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289689,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778278246,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289706,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778279275,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289723,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778280295,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289739,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778281346,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289756,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778282381,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289772,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    },
+    {
+      "wall_ms": 1791778283438,
+      "mode": "PAUSED",
+      "phase": "FINISHED",
+      "recording": false,
+      "frame": 289789,
+      "speed_kmh": 0,
+      "position": [
+        -112.4652328491211,
+        -32.380123138427734,
+        -0.004338111728429794
+      ],
+      "controller": "RULE",
+      "reason": "Monitoring resumes with normal forward driving",
+      "risk": "UNKNOWN",
+      "latest": "04eae298f38048209d38947fa502d7a1"
+    }
+  ],
+  "latest": {
+    "side": "RULE",
+    "reason": "destination_arrived",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+    "completed": true,
+    "destination_arrived": true,
+    "collision": false,
+    "status": "ARRIVED",
+    "metrics": {
+      "unnecessary_waiting_s": 10.600000157952309,
+      "harsh_braking_events": 184,
+      "emergency_intervention_s": 0.10000000149011612,
+      "duration_s": 145.60000216960907,
+      "destination_arrived": true
+    },
+    "attempt_id": "04eae298f38048209d38947fa502d7a1",
+    "initial_condition_audit": {
+      "passed": true,
+      "maximum_position_error_m": 0,
+      "maximum_velocity_error_mps": 0,
+      "maximum_rotation_error_rad": 0,
+      "configuration_matches": true,
+      "traffic_lights_match": true
+    },
+    "outcome_metrics": {
+      "collision_callback_count": 0,
+      "collision_count": 0,
+      "collision_impulse_total_ns": 0,
+      "collision_peak_impulse_ns": 0,
+      "distance_traveled_m": 187.7738625357569,
+      "progress_m": 184.3928667246842,
+      "elapsed_simulation_s": 145.65000217035413,
+      "average_speed_mps": 1.289212905854503,
+      "minimum_clearance_m": 0.010072858570880661,
+      "minimum_ttc_s": null,
+      "near_miss_count": null,
+      "emergency_braking_frequency": null,
+      "steering_intervention_frequency": null,
+      "safety_intervention_count": 240,
+      "unsafe_intervention_count": null,
+      "route_completion": 0.9945623570491116,
+      "control_variation": 512.0655223056131,
+      "progress_under_congestion_m": null
+    }
+  },
+  "results": {
+    "RULE": {
+      "side": "RULE",
+      "reason": "destination_arrived",
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+      "completed": true,
+      "destination_arrived": true,
+      "collision": false,
+      "status": "ARRIVED",
+      "metrics": {
+        "unnecessary_waiting_s": 10.600000157952309,
+        "harsh_braking_events": 184,
+        "emergency_intervention_s": 0.10000000149011612,
+        "duration_s": 145.60000216960907,
+        "destination_arrived": true
+      },
+      "attempt_id": "04eae298f38048209d38947fa502d7a1",
+      "initial_condition_audit": {
+        "passed": true,
+        "maximum_position_error_m": 0,
+        "maximum_velocity_error_mps": 0,
+        "maximum_rotation_error_rad": 0,
+        "configuration_matches": true,
+        "traffic_lights_match": true
+      },
+      "outcome_metrics": {
+        "collision_callback_count": 0,
+        "collision_count": 0,
+        "collision_impulse_total_ns": 0,
+        "collision_peak_impulse_ns": 0,
+        "distance_traveled_m": 187.7738625357569,
+        "progress_m": 184.3928667246842,
+        "elapsed_simulation_s": 145.65000217035413,
+        "average_speed_mps": 1.289212905854503,
+        "minimum_clearance_m": 0.010072858570880661,
+        "minimum_ttc_s": null,
+        "near_miss_count": null,
+        "emergency_braking_frequency": null,
+        "steering_intervention_frequency": null,
+        "safety_intervention_count": 240,
+        "unsafe_intervention_count": null,
+        "route_completion": 0.9945623570491116,
+        "control_variation": 512.0655223056131,
+        "progress_under_congestion_m": null
+      }
+    }
+  },
+  "budget": {
+    "charged_s": 421.30717873573303,
+    "hard_cap_s": 600,
+    "remaining_s": 178.69282126426697,
+    "recommended_run_allowance_s": 300,
+    "scope": "NATIVE_RULE_VALIDATION",
+    "expires_at": 1791778461.3467195,
+    "ticket": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\native-rule-validation\\validation-d0ae9d41dc7c4c3a95917e9045970fa6.json"
+  },
+  "journey": {
+    "status": "PAUSED",
+    "reason": "workspace_changed",
+    "speed_kmh": 20,
+    "route_id": "007147f30e654c5490652700f25b5f7f"
+  }
+}

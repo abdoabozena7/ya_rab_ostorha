@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "attempt_id": "04eae298f38048209d38947fa502d7a1",
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+  "text": "Recorded destination journey\n\nSaved measurements · pair 90ab4110 · seed 2811\n\nLatest attempt · RULE · ARRIVED · destination_arrived\n\nRULE · saved terminal run\n\nARRIVED\n\nDestination reached and stopped: Yes · native arrival check\n\nRULE recorded journey measurements\nCollision episodes\t0\nRecorded duration\t145.65 s\nRoute progress\t184.39 m\nDistance traveled\t187.77 m\nMinimum clearance\t0.01 m\nHarsh braking events\t184\nEmergency intervention\t0.10 s\nWaiting proxy\t10.60 s\n\nD:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078\n\nWaiting is a controller proxy, not all stopped time or a measured unnecessary-delay total. Collision-free arrival does not establish a safe clearance margin. MODEL acceptance and general safety remain unproven.",
+  "checks": [
+    "actual Results display new terminal attempt",
+    "recording reference matches",
+    "duration and progress match",
+    "harsh braking and waiting proxy match",
+    "limitations remain visible"
+  ]
+}

@@ -36,6 +36,24 @@ class ReplayReader:
         if not self.index:
             raise ValueError('Run contains no recorded observations')
         self.timestamps = [entry[0] for entry in self.index]
+        self.safety_index = {}
+        sidecar = self.root/'telemetry/safety-v2.jsonl'
+        if sidecar.exists():
+            with sidecar.open('rb') as stream:
+                while True:
+                    offset = stream.tell(); row = stream.readline(MAX_ROW_BYTES+1)
+                    if not row: break
+                    if len(row)>MAX_ROW_BYTES or not row.endswith(b'\n'): raise ValueError('Invalid safety sidecar row')
+                    entry = json.loads(row)
+                    if entry.get('version') != 2: raise ValueError('Unsupported safety sidecar')
+                    self.safety_index[entry['evaluation_frame']] = offset
+
+    def safety_at(self, frame_id):
+        offset = self.safety_index.get(frame_id)
+        if offset is None: return None  # Old recordings retain their original view.
+        with (self.root/'telemetry/safety-v2.jsonl').open('rb') as stream:
+            stream.seek(offset)
+            return json.loads(stream.readline(MAX_ROW_BYTES+1))
 
     def _decode(self, row):
         if len(row) > MAX_ROW_BYTES or not row.endswith(b'\n'):

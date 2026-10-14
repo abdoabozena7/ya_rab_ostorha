@@ -1,0 +1,126 @@
+[
+  {
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_297de11f58c2432f964e06648adcaaad",
+    "status": "INTERRUPTED",
+    "reason": "vehicle_reset",
+    "data_origin": "REAL_SIMULATION",
+    "frames": 20,
+    "sidecar_frames": 20,
+    "writer_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 20,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "initial_condition_audit": {
+      "passed": true,
+      "maximum_position_error_m": 0.0,
+      "maximum_velocity_error_mps": 0.0,
+      "maximum_rotation_error_rad": 0.0,
+      "configuration_matches": true,
+      "traffic_lights_match": true
+    },
+    "recording_finalized": true,
+    "replay_readable": true
+  },
+  {
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c9237f729bfe49638656bdcdbb8bfdec",
+    "status": "INTERRUPTED",
+    "reason": "comparison_v2_stop",
+    "data_origin": "REAL_SIMULATION",
+    "frames": 21,
+    "sidecar_frames": 21,
+    "writer_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 21,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "initial_condition_audit": {
+      "passed": true,
+      "maximum_position_error_m": 0.0,
+      "maximum_velocity_error_mps": 0.0,
+      "maximum_rotation_error_rad": 0.0,
+      "configuration_matches": true,
+      "traffic_lights_match": true
+    },
+    "recording_finalized": true,
+    "replay_readable": true
+  },
+  {
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_d460ffb9b94b4e8ca3279aa9fda12675",
+    "status": "INTERRUPTED",
+    "reason": "controls_released",
+    "data_origin": "REAL_SIMULATION",
+    "frames": 526,
+    "sidecar_frames": 526,
+    "writer_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 526,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "initial_condition_audit": {
+      "passed": true,
+      "maximum_position_error_m": 0.0,
+      "maximum_velocity_error_mps": 0.0,
+      "maximum_rotation_error_rad": 0.0,
+      "configuration_matches": true,
+      "traffic_lights_match": true
+    },
+    "recording_finalized": true,
+    "replay_readable": true
+  },
+  {
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f495d49cfd044a70beca9a33b31a8b0d",
+    "status": "INTERRUPTED",
+    "reason": "emergency_stop",
+    "data_origin": "REAL_SIMULATION",
+    "frames": 4,
+    "sidecar_frames": 4,
+    "writer_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 4,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "initial_condition_audit": {
+      "passed": true,
+      "maximum_position_error_m": 0.0,
+      "maximum_velocity_error_mps": 0.0,
+      "maximum_rotation_error_rad": 0.0,
+      "configuration_matches": true,
+      "traffic_lights_match": true
+    },
+    "recording_finalized": true,
+    "replay_readable": true
+  }
+]

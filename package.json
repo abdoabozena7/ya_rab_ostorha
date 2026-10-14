@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:dashboard": "esbuild frontend/dashboard.js --bundle --format=iife --platform=browser --target=es2022 --outfile=frontend/dashboard.bundle.js",
+    "build:dashboard": "node scripts/build-dashboard.js",
     "test": "node --test tests/*.test.js"
   },
   "devDependencies": {

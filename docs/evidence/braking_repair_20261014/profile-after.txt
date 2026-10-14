@@ -1,0 +1,26 @@
+         433885 function calls (371793 primitive calls) in 0.397 seconds
+
+   Ordered by: cumulative time
+   List reduced from 785 to 18 due to restriction <18>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        6    0.001    0.000    0.220    0.037 D:\projects\Ai\ya_rab_ostorha\backend\core\active_safety.py:256(evaluate)
+        6    0.003    0.000    0.198    0.033 D:\projects\Ai\ya_rab_ostorha\backend\core\active_safety.py:77(assess_forward_space)
+        6    0.001    0.000    0.153    0.025 D:\projects\Ai\ya_rab_ostorha\backend\core\control_scene.py:89(build)
+        6    0.000    0.000    0.150    0.025 D:\projects\Ai\ya_rab_ostorha\backend\core\control_scene.py:40(continuous_coverage)
+        6    0.001    0.000    0.146    0.024 D:\projects\Ai\ya_rab_ostorha\backend\core\control_scene.py:28(certificate)
+        6    0.006    0.001    0.135    0.023 D:\projects\Ai\ya_rab_ostorha\backend\core\maneuver.py:20(__init__)
+       12    0.062    0.005    0.096    0.008 D:\projects\Ai\ya_rab_ostorha\backend\core\maneuver.py:41(_observe)
+        6    0.001    0.000    0.084    0.014 D:\projects\Ai\ya_rab_ostorha\backend\core\prediction.py:235(evaluate)
+       12    0.014    0.001    0.078    0.007 D:\projects\Ai\ya_rab_ostorha\backend\core\ground_geometry.py:5(measured_ground_plane)
+        6    0.007    0.001    0.076    0.013 D:\projects\Ai\ya_rab_ostorha\backend\core\prediction.py:54(update)
+33194/384    0.027    0.000    0.071    0.000 D:\projects\Ai\ya_rab_ostorha\backend\core\contracts.py:71(freeze_json)
+29005/2264    0.007    0.000    0.067    0.000 D:\projects\Ai\ya_rab_ostorha\backend\core\contracts.py:80(<genexpr>)
+      652    0.002    0.000    0.042    0.000 D:\projects\Ai\ya_rab_ostorha\.venv-carla\Lib\site-packages\numpy\lib\_function_base_impl.py:3827(_ureduce)
+       90    0.001    0.000    0.041    0.000 D:\projects\Ai\ya_rab_ostorha\backend\core\contracts.py:146(__post_init__)
+      601    0.001    0.000    0.039    0.000 D:\projects\Ai\ya_rab_ostorha\.venv-carla\Lib\site-packages\numpy\lib\_function_base_impl.py:3914(median)
+      601    0.004    0.000    0.035    0.000 D:\projects\Ai\ya_rab_ostorha\.venv-carla\Lib\site-packages\numpy\lib\_function_base_impl.py:4003(_median)
+       24    0.000    0.000    0.029    0.001 <stdin>:15(<lambda>)
+     22/6    0.000    0.000    0.028    0.005 <frozen importlib._bootstrap>:1349(_find_and_load)
+
+

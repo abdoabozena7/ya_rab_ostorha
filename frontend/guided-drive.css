@@ -1,0 +1,25 @@
+/* Guided-only visibility and diagnostic readouts. The studio theme lives in driving-studio.css. */
+body[data-ui=guided] #ownershipBtn,
+body[data-ui=guided] .drive-actions,
+body[data-ui=guided] .normal-driving,
+body[data-ui=guided] .comparison-controls,
+body[data-ui=guided] .comparison-v2,
+body[data-ui=guided] .detection-details,
+body[data-ui=guided] .route-overview,
+body[data-ui=guided] .last-intervention { display:none; }
+#motionReadout { border-top:1px solid var(--line); padding:10px 0; flex:none; font-size:11px; font-variant-numeric:tabular-nums; }
+.motion-decision { display:flex; justify-content:space-between; gap:12px; line-height:1.6; }
+.motion-decision span { color:var(--muted); }
+#motionNumbers { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; margin:6px 0; }
+#motionNumbers dt { color:var(--muted); font-size:10px; }
+#motionNumbers dd { margin:3px 0; font:11px var(--mono); }
+#motionReadout details { border-top:1px solid var(--line); padding-top:6px; }
+#motionReadout summary { cursor:pointer; color:var(--muted); }
+#motionReadout table { width:100%; table-layout:fixed; text-align:left; border-collapse:collapse; }
+#motionReadout th,#motionReadout td { padding:4px 6px; border-bottom:1px solid var(--line); }
+#motionReadout caption { text-align:left; color:var(--muted); margin:6px 0; }
+#motionReadout select { width:auto; max-width:240px; padding:4px; margin:6px 8px; }
+@media(max-width:920px) {
+  #motionNumbers { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .motion-decision { display:block; }
+}

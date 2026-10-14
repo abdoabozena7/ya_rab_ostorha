@@ -1,0 +1,212 @@
+[
+  {
+    "source": "LIVE_NATIVE_CARLA",
+    "mode": "ROBOSPHERE",
+    "requested_wall_s": 40.0,
+    "session_id": "83c98e891e6a4d93ac2cc413afa95a31",
+    "initial_remaining_m": 108.0302186020594,
+    "start_position": [
+      43.15957260131836,
+      -67.90843200683594,
+      -0.0049457550048828125
+    ],
+    "final_journey": {
+      "status": "RUNNING",
+      "reason": null,
+      "speed_kmh": 30.0,
+      "driving_mode": "ROBOSPHERE",
+      "pair_id": "50d27990d5034bfdaf52c3d6a69fbefc",
+      "route_id": "f0fef2984dbd4a37b6ce56a5a7a1a730"
+    },
+    "final_remaining_m": 47.023111243951526,
+    "cleanup": {
+      "mode": "PAUSED",
+      "speed_mps": 0.0,
+      "recording": false
+    },
+    "maximum_speed_kmh": 30.714796779221302,
+    "distance_m": 59.60577876470214,
+    "processing_hold_samples": 0,
+    "native_collisions": 0,
+    "file": "robosphere-live.json",
+    "sample_count": 209,
+    "maximum_sensor_age_s": 0.17199999999138527,
+    "median_sensor_age_s": 0.0779999999795109,
+    "driver_pedals_and_steering_preserved": false,
+    "braking_reasons": [
+      "Holding measured clearance/TTC hysteresis",
+      "NAVIGATION",
+      "Navigation speed/route controller",
+      "Red traffic light on the planned route",
+      "Risk cleared; releasing brake smoothly to base driver"
+    ]
+  },
+  {
+    "source": "LIVE_NATIVE_CARLA",
+    "mode": "NORMAL",
+    "requested_wall_s": 15.0,
+    "session_id": "83c98e891e6a4d93ac2cc413afa95a31",
+    "initial_remaining_m": 47.023111243951526,
+    "start_position": [
+      -16.27048110961914,
+      -65.54167175292969,
+      -0.004500617738813162
+    ],
+    "final_journey": {
+      "status": "RUNNING",
+      "reason": null,
+      "speed_kmh": 30.0,
+      "driving_mode": "NORMAL",
+      "pair_id": "f91bc66a935a4d1c86f97c40256c4763",
+      "route_id": "65fcbfa4474149eaabb37e52508eb1e1"
+    },
+    "final_remaining_m": 47.87166989296159,
+    "cleanup": {
+      "mode": "PAUSED",
+      "speed_mps": 0.0,
+      "recording": false
+    },
+    "maximum_speed_kmh": 12.420011893464855,
+    "distance_m": 2.912995600386698,
+    "processing_hold_samples": 0,
+    "native_collisions": 0,
+    "file": "normal-live.json",
+    "sample_count": 76,
+    "maximum_sensor_age_s": 0.21899999998277053,
+    "median_sensor_age_s": 0.07800000000861473,
+    "driver_pedals_and_steering_preserved": true,
+    "braking_reasons": [
+      "NAVIGATION",
+      "Red traffic light on the planned route"
+    ],
+    "evaluation_note": "Short trial moved 2.9 m, then remained RUNNING at a red signal. The motion-distance check did not pass; the subsequent trial reached destination."
+  },
+  {
+    "source": "LIVE_NATIVE_CARLA",
+    "mode": "NORMAL",
+    "requested_wall_s": 40.0,
+    "session_id": "83c98e891e6a4d93ac2cc413afa95a31",
+    "initial_remaining_m": 47.87166989296159,
+    "start_position": [
+      -19.163787841796875,
+      -65.24333190917969,
+      -0.00450069410726428
+    ],
+    "final_journey": {
+      "status": "ARRIVED",
+      "reason": "destination_reached",
+      "speed_kmh": 30.0,
+      "driving_mode": "NORMAL",
+      "pair_id": "5650eac8e3664093890a73cc4d066a4b",
+      "route_id": "253b4ff22f744bacaee36ff8e947ad45"
+    },
+    "final_remaining_m": 2.60860682060232,
+    "cleanup": {
+      "mode": "PAUSED",
+      "speed_mps": 0.008490306412772545,
+      "recording": false
+    },
+    "maximum_speed_kmh": 30.69826867028913,
+    "distance_m": 44.97976226701824,
+    "processing_hold_samples": 0,
+    "native_collisions": 0,
+    "file": "normal-live-followup.json",
+    "sample_count": 77,
+    "maximum_sensor_age_s": 0.1879999999946449,
+    "median_sensor_age_s": 0.07899999999790452,
+    "driver_pedals_and_steering_preserved": true,
+    "braking_reasons": [
+      "NAVIGATION",
+      "Navigation speed/route controller"
+    ]
+  },
+  {
+    "source": "LIVE_NATIVE_CARLA",
+    "mode": "ROBOSPHERE",
+    "requested_wall_s": 45.0,
+    "session_id": "11dbbd4a70584407a14f48036b6296f4",
+    "initial_remaining_m": 331.1917983180874,
+    "start_position": [
+      -49.1371955871582,
+      -40.0703125,
+      -0.004996681120246649
+    ],
+    "final_journey": {
+      "status": "RUNNING",
+      "reason": null,
+      "speed_kmh": 30.0,
+      "driving_mode": "ROBOSPHERE",
+      "pair_id": "8c220e1620354e1e8761ce82fea99758",
+      "route_id": "e84ec36c17a6470db5c7ad4d5d2eda3b"
+    },
+    "final_remaining_m": 330.80273017426003,
+    "cleanup": {
+      "mode": "PAUSED",
+      "speed_mps": 5.43598773678585e-07,
+      "recording": false
+    },
+    "maximum_speed_kmh": 6.009920397247211,
+    "distance_m": 0.5205082445176243,
+    "processing_hold_samples": 0,
+    "native_collisions": 0,
+    "file": "robosphere-with-dashboard.json",
+    "sample_count": 232,
+    "maximum_sensor_age_s": 0.25,
+    "median_sensor_age_s": 0.10899999999674037,
+    "driver_pedals_and_steering_preserved": false,
+    "braking_reasons": [
+      "Holding measured clearance/TTC hysteresis",
+      "Measured obstacle inside braking envelope/TTC limit",
+      "NAVIGATION",
+      "Risk cleared; releasing brake smoothly to base driver"
+    ],
+    "evaluation_note": "Initial live loaded-dashboard trial failed motion-distance check; it exposed the curved-corridor range bug. Superseded by robosphere-curve-corrected.json on the same route."
+  },
+  {
+    "source": "LIVE_NATIVE_CARLA",
+    "mode": "ROBOSPHERE",
+    "requested_wall_s": 45.0,
+    "session_id": "6fc12e3735964c01b9095f6d30a2e9c6",
+    "initial_remaining_m": 330.87017783822694,
+    "start_position": [
+      -49.09144592285156,
+      -39.55554962158203,
+      -0.005102462600916624
+    ],
+    "final_journey": {
+      "status": "RUNNING",
+      "reason": null,
+      "speed_kmh": 30.0,
+      "driving_mode": "ROBOSPHERE",
+      "pair_id": "69563d4d47814f67bdb93127ab881fd3",
+      "route_id": "e55ea2219cec4eeeb44c5066cff86d0f"
+    },
+    "final_remaining_m": 267.60539151856574,
+    "cleanup": {
+      "mode": "PAUSED",
+      "speed_mps": 0.002135235911707052,
+      "recording": false
+    },
+    "maximum_speed_kmh": 30.835871930342964,
+    "distance_m": 64.4091227540866,
+    "processing_hold_samples": 1,
+    "native_collisions": 0,
+    "file": "robosphere-curve-corrected.json",
+    "sample_count": 230,
+    "maximum_sensor_age_s": 0.26600000000325963,
+    "median_sensor_age_s": 0.11000000001513399,
+    "driver_pedals_and_steering_preserved": false,
+    "braking_reasons": [
+      "Braking toward measured coverage speed limit 0.00 m/s",
+      "Braking toward measured coverage speed limit 7.36 m/s",
+      "Holding measured clearance/TTC hysteresis",
+      "Limiting acceleration to stop within 13.50 m of measured road",
+      "Measured obstacle inside braking envelope/TTC limit",
+      "NAVIGATION",
+      "Navigation speed/route controller",
+      "Red traffic light on the planned route",
+      "Risk cleared; releasing brake smoothly to base driver",
+      "Sensor delay; holding until the next fresh sensor frame"
+    ]
+  }
+]

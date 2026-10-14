@@ -81,7 +81,9 @@ class FinalReliabilityTests(unittest.TestCase):
             o=replace(o,ego=replace(o.ego,speed_mps=3.,angular_velocity_radps=(0.,0.,0.)))
             # Independent LiDAR surface samples of a crossing body; no actor object.
             y=4.-frame*.08
-            side=[[4.-frame*.15+dx,y+dy,-1.,.5] for dx in (-.4,0.,.4) for dy in (-.3,0.,.3)]
+            # Start far enough ahead that ingress into the physical corridor
+            # occurs before ego passes it, rather than only into padding.
+            side=[[7.-frame*.15+dx,y+dy,-1.,.5] for dx in (-.4,0.,.4) for dy in (-.3,0.,.3)]
             cloud=np.frombuffer(road(None),'<f4').reshape(-1,4)
             data=np.vstack((cloud,np.asarray(side))).astype('<f4').tobytes()
             c=supervisor.evaluate(o,b,lambda _:data,as_of_timestamp_s=o.timestamp_s)
@@ -111,13 +113,15 @@ class FinalReliabilityTests(unittest.TestCase):
             points=np.asarray([[x,4.,z] for x in np.arange(1+frame*.12,5.,.12) for z in (.6,1.,1.4)])
             self.assertIsNone(tracker.assess(points,o)['conflict'])
 
-    def test_observed_rear_surface_approaching_centerline_can_request_braking(self):
-        tracker=LidarPathConflicts();conflicts=[]
+    def test_observed_rear_surface_approaching_centerline_is_diagnostic_only(self):
+        tracker=LidarPathConflicts();conflicts=[];observations=[]
         for frame in range(1,13):
             o,_=case(frame,distance=None);o=replace(o,ego=replace(o.ego,speed_mps=0.))
             points=np.asarray([[-7+frame*.15,dy,z] for z in (.6,1.,1.4) for dy in (-.3,0.,.3)])
-            conflicts.append(tracker.assess(points,o)['conflict'])
-        self.assertTrue(any(conflicts))
+            result=tracker.assess(points,o)
+            conflicts.append(result['conflict']);observations.extend(result['observations'])
+        self.assertFalse(any(conflicts))
+        self.assertTrue(any(item['relation']=='REAR_APPROACH' for item in observations))
 
     def test_callback_age_cannot_be_refreshed_by_late_publication(self):
         now=[1.];o,b=case(distance=8.,velocity=-8.);o,reader=scene(o)
@@ -130,7 +134,7 @@ class FinalReliabilityTests(unittest.TestCase):
         self.assertEqual(s.active_safety.status['status'],'SENSOR_FAULT_STOP')
         self.assertEqual(s.arbiter.machine.mode,ControlMode.PAUSED);self.assertIsNone(s.safety_command)
 
-    def test_processing_a_fresh_frame_too_long_still_fails_closed(self):
+    def test_processing_overrun_rejects_the_proposal_and_holds_for_a_new_fresh_frame(self):
         now=[0.];o,b=case(distance=8.,velocity=-8.);o,reader=scene(o)
         def delayed(asset):now[0]=.3;return reader(asset)
         p=Mock(sensor_suite=False);p.get_sensor_asset=delayed
@@ -139,8 +143,12 @@ class FinalReliabilityTests(unittest.TestCase):
         s.safety_observed_at=0.;s.arbiter.machine.mode=ControlMode.MANUAL
         s.arbiter.submit(replace(b,source=CommandSource.MANUAL),frame_id=o.frame_id,timestamp_s=o.timestamp_s,connected=True)
         with patch.object(s,'_live',return_value=True):s._active_safety_step()
-        self.assertIn('processing exceeded',s.active_safety.last_fault)
-        self.assertEqual(s.arbiter.machine.mode,ControlMode.PAUSED);self.assertIsNone(s.safety_command)
+        self.assertIn('processing exceeded',s.safety_fault['message'])
+        self.assertIsNone(s.active_safety.last_fault)
+        self.assertEqual(s.arbiter.machine.mode,ControlMode.MANUAL)
+        self.assertEqual(s.safety_command.brake,1.)
+        self.assertEqual(s.safety_command.throttle,0.)
+        self.assertEqual(s.active_safety.status['status'],'SENSOR_DELAY_HOLD')
 
 
 if __name__=='__main__':unittest.main()

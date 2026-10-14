@@ -1,0 +1,31 @@
+         573592 function calls (511484 primitive calls) in 0.591 seconds
+
+   Ordered by: cumulative time
+   List reduced from 784 to 23 due to restriction <23>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        6    0.001    0.000    0.284    0.047 D:\projects\Ai\ya_rab_ostorha\backend\core\active_safety.py:256(evaluate)
+        6    0.001    0.000    0.278    0.046 D:\projects\Ai\ya_rab_ostorha\backend\core\control_scene.py:89(build)
+        6    0.003    0.001    0.262    0.044 D:\projects\Ai\ya_rab_ostorha\backend\core\active_safety.py:77(assess_forward_space)
+        6    0.000    0.000    0.210    0.035 D:\projects\Ai\ya_rab_ostorha\backend\core\control_scene.py:40(continuous_coverage)
+        6    0.001    0.000    0.160    0.027 D:\projects\Ai\ya_rab_ostorha\backend\core\control_scene.py:28(certificate)
+        6    0.007    0.001    0.149    0.025 D:\projects\Ai\ya_rab_ostorha\backend\core\maneuver.py:20(__init__)
+       24    0.000    0.000    0.123    0.005 <stdin>:16(<lambda>)
+       24    0.001    0.000    0.119    0.005 D:\projects\Ai\ya_rab_ostorha\backend\core\recording.py:147(resolve_asset)
+       12    0.068    0.006    0.108    0.009 D:\projects\Ai\ya_rab_ostorha\backend\core\maneuver.py:41(_observe)
+33194/384    0.036    0.000    0.105    0.000 D:\projects\Ai\ya_rab_ostorha\backend\core\contracts.py:71(freeze_json)
+29005/2264    0.007    0.000    0.099    0.000 D:\projects\Ai\ya_rab_ostorha\backend\core\contracts.py:77(<genexpr>)
+       48    0.000    0.000    0.097    0.002 C:\Users\A-plus\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1005(open)
+       48    0.097    0.002    0.097    0.002 {built-in method _io.open}
+        6    0.001    0.000    0.089    0.015 D:\projects\Ai\ya_rab_ostorha\backend\core\prediction.py:235(evaluate)
+       12    0.014    0.001    0.086    0.007 D:\projects\Ai\ya_rab_ostorha\backend\core\ground_geometry.py:5(measured_ground_plane)
+        6    0.007    0.001    0.083    0.014 D:\projects\Ai\ya_rab_ostorha\backend\core\prediction.py:54(update)
+      229    0.015    0.000    0.051    0.000 D:\projects\Ai\ya_rab_ostorha\backend\core\maneuver.py:95(certificate)
+        6    0.001    0.000    0.049    0.008 D:\projects\Ai\ya_rab_ostorha\backend\core\maneuver.py:119(continuous_coverage)
+       90    0.001    0.000    0.048    0.001 D:\projects\Ai\ya_rab_ostorha\backend\core\contracts.py:142(__post_init__)
+      652    0.002    0.000    0.047    0.000 D:\projects\Ai\ya_rab_ostorha\.venv-carla\Lib\site-packages\numpy\lib\_function_base_impl.py:3827(_ureduce)
+   205738    0.030    0.000    0.047    0.000 {built-in method builtins.isinstance}
+      601    0.001    0.000    0.043    0.000 D:\projects\Ai\ya_rab_ostorha\.venv-carla\Lib\site-packages\numpy\lib\_function_base_impl.py:3914(median)
+      601    0.004    0.000    0.039    0.000 D:\projects\Ai\ya_rab_ostorha\.venv-carla\Lib\site-packages\numpy\lib\_function_base_impl.py:4003(_median)
+
+

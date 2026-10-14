@@ -1,0 +1,56 @@
+{
+  "source": "LIVE_NATIVE_CARLA",
+  "scope": "Two repeated sensor fixtures per case, TRAIN and VALIDATION. Independent actor truth is evaluation-only.",
+  "fixtures": [
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "clear",
+      "samples": 1,
+      "native_hz": 11.499593448720814,
+      "camera_hz": 11.757702038973118,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 0.05348817296357777,
+      "stopped_fraction": 1.0,
+      "comfort_accel_exceedances": 0,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "STARTING",
+        "reason": null,
+        "speed_kmh": 30.0
+      },
+      "remaining_m": 94.45580977846025,
+      "actions": [
+        "HOLD"
+      ],
+      "sensor_errors": []
+    }
+  ],
+  "lateral_native_accepted": false,
+  "learned_control_accepted": false,
+  "camera_separation": {
+    "front_unchanged": true,
+    "depth_unchanged": true,
+    "display_changed": true
+  },
+  "complete": false,
+  "error": "Fixture spawn obstructed",
+  "budget": {
+    "scope": "MOTION_RELIABILITY_20261013",
+    "hard_cap_s": 2400.0,
+    "phases": {
+      "validation": {
+        "cap_s": 1800.0,
+        "charged_s": 1041.8129999999946
+      },
+      "training": {
+        "cap_s": 600.0,
+        "charged_s": 0
+      }
+    },
+    "charged_s": 1041.8129999999946,
+    "old_ledger_unchanged": true
+  }
+}

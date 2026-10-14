@@ -1,0 +1,8 @@
+{
+  "status": "ABORTED_BEFORE_DRIVING",
+  "error": "CARLA EXCEPTION_ACCESS_VIOLATION reading address 0x0000000000000000",
+  "reserved_s_charged": 600,
+  "crash_context": "C:/Users/A-plus/AppData/Local/CarlaUE4/Saved/Crashes/UE4CC-Windows-D126DC0F41F75601FDCA92BA9D27CD35_0000/CrashContext.runtime-xml",
+  "observer_error": "None vehicle during reset; observer now accepts that transient state.",
+  "native_crash_root_cause": "UNRESOLVED"
+}

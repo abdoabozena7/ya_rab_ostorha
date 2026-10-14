@@ -36,7 +36,8 @@ def decode_sensor(manager, sensor_id, kind, native, mount, attributes):
         with manager.lock:
             if not hasattr(manager, 'diagnostic_rgb'):
                 manager.diagnostic_rgb = {}
-            manager.diagnostic_rgb[native.frame] = (native.frame, native.timestamp, native.width, native.height, rgb.tobytes())
+            if sensor_id == 'frontCamera':
+                manager.diagnostic_rgb[native.frame] = (native.frame, native.timestamp, native.width, native.height, rgb.tobytes())
             while len(manager.diagnostic_rgb)>8:
                 del manager.diagnostic_rgb[min(manager.diagnostic_rgb)]
         asset = manager.cache_asset('rgb', f'{sensor_id}-{manager.actors[sensor_id].id}-{native.frame}.jpg', encoded.getvalue(), 'image/jpeg')

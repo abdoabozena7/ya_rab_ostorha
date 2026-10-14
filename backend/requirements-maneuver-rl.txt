@@ -1,0 +1,4 @@
+# Independent maneuver pilot; historical SAC/BC environments stay unchanged.
+-r requirements-experiment1.txt
+sb3-contrib==2.9.0
+websockets==15.0.1

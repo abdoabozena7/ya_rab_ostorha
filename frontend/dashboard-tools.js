@@ -1,3 +1,4 @@
+import {comparisonV2Busy} from './comparison-v2.js';
 const $ = id => document.getElementById(id);
 const weatherFields = {cloudiness:'settingCloud', precipitation:'settingRain', wetness:'settingWet',
   fog_density:'settingFog', sun_altitude_angle:'settingSun', sun_azimuth_angle:'settingSunAzimuth'};
@@ -8,8 +9,8 @@ export class DashboardTools {
     Object.assign(this, {provider, controls, clearControls, options});
     this.catalog = null; this.session = null; this.loading = false; this.retryAt = 0;
     this.selectedPlace = null; this.result = null; this.panel = null; this.panelTrigger = null;
-    this.restartAfterSave = null; this.restartSeen = null;
-    this.recordingPath = '';
+    this.restartAfterSave = null; this.restartSeen = null; this.lightingPending = false;
+    this.recordingPath = ''; this.cameraChange = null;
     const populationAction = operation => { clearControls(); provider.dashboardAction('population', operation); };
     $('clearTrafficBtn').onclick = () => populationAction('clear_traffic');
     $('clearPedestriansBtn').onclick = () => populationAction('clear_pedestrians');
@@ -42,11 +43,21 @@ export class DashboardTools {
       const profile = this.catalog?.profiles?.[$('settingProfile').value];
       if (profile) { clearControls(); provider.dashboardAction('settings',{population:profile.population}); }
     };
-    for (const id of Object.values(weatherFields)) $(id).oninput = () => { $('settingWeather').value = 'CUSTOM'; };
+    for (const id of Object.values(weatherFields)) $(id).oninput = () => {
+      $('settingWeather').value = 'CUSTOM'; this.updateLightingValue();
+    };
     $('settingWeather').onchange = () => {
       const values = this.catalog?.settings.weather_preset_values?.[$('settingWeather').value];
       if (values) for (const [key,id] of Object.entries(weatherFields)) $(id).value = values[key];
+      this.updateLightingValue();
     };
+    $('applyLightingBtn').onclick = () => {
+      clearControls();
+      this.lightingPending = provider.dashboardAction('settings', {weather:{sun_altitude_angle:Number($('settingSun').value)}});
+      $('lightingStatus').textContent = this.lightingPending ? 'Applying scene lighting…' : 'Take control in connection settings first.';
+    };
+    $('applyViewDistanceBtn').onclick = () => this.restartGraphics({quality:$('settingQuality').value,
+      resolution:this.catalog?.settings.active_launch?.resolution || $('settingWindow').value});
     $('phoneToggleBtn').onclick = () => this.toggle('inGamePhone','phoneToggleBtn');
     $('mapDestinationsBtn').onclick = () => this.open('inGamePhone','mapDestinationsBtn');
     $('settingsBtn').onclick = () => { this.toggle('settingsPanel','settingsBtn'); this.load(true); };
@@ -81,13 +92,21 @@ export class DashboardTools {
         if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     });
-    $('reconnectBtn').onclick = () => provider.connect();
-    $('nativeReconnectBtn').onclick = () => { clearControls(); provider.reconnectNative(); provider.connect(); };
+    $('startSimulationBtn').onclick = () => { clearControls(); provider.startSimulation(); };
     $('nativeDisconnectBtn').onclick = () => { clearControls(); provider.dashboardAction('disconnect'); };
     $('takeControlBtn').onclick = () => { clearControls(); provider.takeControl(); };
     $('expandCameraBtn').onclick = () => this.expandCamera(!$('cameraCard').classList.contains('camera-expanded'));
     $('cameraView').onchange = () => {
-      clearControls(); provider.dashboardAction('settings', {camera_view:$('cameraView').value});
+      const requested=$('cameraView').value,confirmed=this.catalog?.settings?.camera_view;
+      if(requested===confirmed)return;
+      this.controls.keys.clear();
+      const previousResult=provider.dashboardResult?.operationId;
+      if(provider.dashboardAction('settings',{camera_view:requested}))
+        this.cameraChange={requested,confirmed,previousResult,status:'pending'};
+      else {
+        this.cameraChange={requested,confirmed,status:'failed',error:'Take control before changing the camera.'};
+        if(confirmed)$('cameraView').value=confirmed;
+      }
     };
     $('settingsForm').onsubmit = event => { event.preventDefault(); this.apply(); };
     $('cleanImageBtn').onclick = () => {
@@ -95,14 +114,7 @@ export class DashboardTools {
       $('settingMotionBlur').value = 0; $('settingBloom').value = 0;
       $('settingsStatus').textContent = 'Clear image settings ready. Select Apply changes to activate.';
     };
-    $('restartGraphicsBtn').onclick = () => {
-      const launch = {quality:$('settingQuality').value,resolution:$('settingWindow').value};
-      this.restartAfterSave = launch;
-      clearControls();
-      if (!provider.dashboardAction('settings',{next_launch:launch})) {
-        this.restartAfterSave = null; $('restartStatus').textContent = 'Take control in connection settings first.';
-      } else $('restartStatus').textContent = 'Save settings then restart simulator…';
-    };
+    $('restartGraphicsBtn').onclick = () => this.restartGraphics({quality:$('settingQuality').value,resolution:$('settingWindow').value});
     $('destinationSearch').oninput = () => { this.selectedPlace = null; this.renderPlaces(); };
     $('chooseDestinationBtn').onclick = () => {
       const text = $('destinationSearch').value.trim();
@@ -127,18 +139,25 @@ export class DashboardTools {
   scrollBehavior() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
   expandCamera(enlarged) {
     $('cameraCard').classList.toggle('camera-expanded',enlarged);
-    $('expandCameraBtn').textContent = enlarged ? 'Shrink image' : 'Expand image';
+    if (!$('expandCameraBtn').classList.contains('camera-icon-button')) $('expandCameraBtn').textContent = enlarged ? 'Shrink image' : 'Expand image';
+    $('expandCameraBtn').setAttribute('aria-label',enlarged ? 'Restore camera size' : 'Expand camera');
     $('expandCameraBtn').setAttribute('aria-expanded',String(enlarged));
     if (!enlarged) $('expandCameraBtn').focus({preventScroll:true});
   }
   open(panel, trigger) {
     if (this.panel === panel) return;
+    const advanced=$('advancedSetupDialog');if(advanced?.open)advanced.close();
+    const scenarios=$('cockpitScenarios'),returnToScenarios=scenarios?.open&&panel==='routePanel';
+    if(scenarios?.open)scenarios.close();
     this.close(false);
-    if (this.provider.controlMode === 'MANUAL') this.clearControls();
+    this.returnToScenarios=returnToScenarios;
+    if (this.provider.controlMode === 'MANUAL'||this.options.isManualArmed?.()) this.clearControls('modal_inspection');
     this.panel = panel; this.panelTrigger = trigger; $(panel).hidden = false;
+    // Keep the immediate stop accessible inside the active modal's focus scope.
+    $(panel).querySelector('.section-heading').append($('emergencyStopBtn'));
     $('panelBackdrop').hidden = false;
     document.body.classList.add('panel-open');
-    for (const element of document.querySelectorAll('.app-header,.workspace,.app-footer,.skip-link')) element.inert = true;
+    for (const element of document.querySelectorAll('.app-header,.workspace,.app-footer,.skip-link,.studio-rail')) element.inert = true;
     $(trigger)?.setAttribute('aria-expanded','true');
     $(panel).querySelector('button')?.focus();
     if (panel === 'inGamePhone') this.load();
@@ -146,11 +165,14 @@ export class DashboardTools {
   close(returnFocus = true) {
     if (!this.panel) return;
     $(this.panel).hidden = true; $('panelBackdrop').hidden = true;
+    (document.querySelector('.cockpit-header-actions')||document.querySelector('.app-header')).append($('emergencyStopBtn'));
     document.body.classList.remove('panel-open');
-    for (const element of document.querySelectorAll('.app-header,.workspace,.app-footer,.skip-link')) element.inert = false;
+    for (const element of document.querySelectorAll('.app-header,.workspace,.app-footer,.skip-link,.studio-rail')) element.inert = false;
     $(this.panelTrigger)?.setAttribute('aria-expanded','false');
     if (returnFocus) $(this.panelTrigger)?.focus();
     this.panel = null;
+    if(this.returnToScenarios&&returnFocus)document.body.classList.add('studio-setup-open');
+    this.returnToScenarios=false;
   }
   toggle(panel, trigger) { if (this.panel === panel) this.close(); else this.open(panel,trigger); }
 
@@ -208,6 +230,19 @@ export class DashboardTools {
     }
     if (!places.length) list.textContent = this.catalog ? 'No results. Try an area name or select from the map.' : 'Waiting for map CARLA…';
   }
+  updateLightingValue() {
+    const altitude = Number($('settingSun').value);
+    const phase = altitude < -6 ? 'Night' : altitude <= 6 ? 'Twilight' : altitude < 30 ? 'Low sun' : 'Daylight';
+    $('lightingValue').textContent = phase + ' · ' + altitude + '°';
+  }
+  restartGraphics(launch) {
+    this.restartAfterSave = launch;
+    this.clearControls();
+    const sent = this.provider.dashboardAction('settings',{next_launch:launch});
+    if (!sent) this.restartAfterSave = null;
+    $('restartStatus').textContent = $('viewDistanceStatus').textContent = sent
+      ? 'Saving settings before restarting CARLA…' : 'Take control in connection settings first.';
+  }
   fillSettings() {
     const s = this.catalog.settings;
     const population = s.population?.requested || s.population_saved;
@@ -233,8 +268,11 @@ export class DashboardTools {
     for (const [id,value] of Object.entries(fields)) $(id).value = value ?? 0;
     $('settingPostprocess').checked = s.camera_postprocess === true;
     for (const [key,id] of Object.entries(weatherFields)) $(id).value = s.weather[key];
+    this.updateLightingValue();
     const applied = s.active_launch;
-    $('activeGraphics').textContent = applied ? 'Applied: ' + (applied.quality || 'unknown') +
+    const distance = {Low:'Near · Low · about 50 m',Epic:'Far · Epic · full distance'};
+    $('activeViewDistance').textContent = 'Applied: ' + (distance[applied?.quality] || 'Unavailable');
+    $('activeGraphics').textContent = applied ? 'Applied: ' + (applied.render_profile || applied.quality || 'unknown') +
       ' · ' + (applied.resolution || 'unknown resolution') +
       (applied.offscreen ? ' · displayed in dashboard' : '') : 'Applied graphics settings are unavailable.';
     $('effectsNote').textContent = s.camera_effects?.note || '';
@@ -248,7 +286,8 @@ export class DashboardTools {
     const number = id => Number($(id).value), current = this.catalog.settings;
     const data = {weather:Object.fromEntries(Object.entries(weatherFields).map(([key,id]) => [key,number(id)])),
       next_launch:{quality:$('settingQuality').value,resolution:$('settingWindow').value},
-      population:{vehicle_count:number('settingTrafficCount'),pedestrian_count:number('settingPedestrianCount'),
+      population:{...(this.provider.population?.requested || current.population?.requested || current.population_saved),
+        vehicle_count:number('settingTrafficCount'),pedestrian_count:number('settingPedestrianCount'),
         speed_behavior:$('settingTrafficSpeed').value,fast_walk_percent:number('settingFastWalk'),seed:number('settingSeed'),
         driver_behavior:$('settingDriverBehavior').value,light_compliance_percent:number('settingCompliance'),
         crossing_percent:number('settingCrossing'),world_profile:$('settingWorldProfile').value}};
@@ -265,7 +304,8 @@ export class DashboardTools {
   render(state, controllable) {
     const p = this.provider;
     if (this.session !== p.sessionId) {
-      this.session = p.sessionId; this.catalog = null; this.selectedPlace = null; this.result = null;
+      this.lightingPending = false;
+      this.session = p.sessionId; this.catalog = null; this.selectedPlace = null; this.result = null; this.cameraChange = null;
       this.project = this.inverse = null; $('roadGeometry').replaceChildren(); $('routeLine').setAttribute('d','');
       $('miniRoadGeometry').replaceChildren();$('miniRouteLine').setAttribute('d','');
       $('miniRouteCar').setAttribute('hidden','');$('miniRouteTarget').setAttribute('hidden','');
@@ -302,25 +342,33 @@ export class DashboardTools {
 
     for (const id of ['cameraView','chooseDestinationBtn','savePlaceBtn','nativeDisconnectBtn','resetBtn'])
       this.disable(id,ownerBlocked);
-    const configurationBlocked = ownerBlocked || (p.recording ? 'Finish recording before changing sensor settings' : '');
+    const comparisonBlocked = comparisonV2Busy(p.comparisonV2) || comparisonV2Busy(p.comparisonDemo) ? 'Stop the recorded run before changing settings' : '';
+    const configurationBlocked = ownerBlocked || comparisonBlocked || (p.recording ? 'Finish recording before changing sensor settings' : '');
     this.disable('applySettingsBtn',configurationBlocked);
+    this.disable('applyLightingBtn',configurationBlocked || (!this.catalog ? 'Reading settings' : '') || (this.lightingPending ? 'Applying lighting' : '') ||
+      comparisonBlocked);
     this.disable('worldResetBtn',configurationBlocked);
-    this.disable('restartGraphicsBtn',configurationBlocked || (state.speedMagnitudeMps > .15 ? 'Stop the vehicle first' : ''));
-    this.disable('nativeReconnectBtn',p.isReplay ? 'Replay not connected to simulator' : p.restarting ? 'Restarting' : '');
+    for (const id of ['restartGraphicsBtn','applyViewDistanceBtn']) this.disable(id,configurationBlocked ||
+      (!this.catalog ? 'Reading settings' : '') ||
+      comparisonBlocked ||
+      (this.restartAfterSave ? 'Saving graphics settings' : '') ||
+      (state.speedMagnitudeMps > .15 ? 'Stop the vehicle first' : ''));
+    this.disable('startSimulationBtn',p.isReplay ? 'Replay not connected to simulator' : p.simulationStarting ? 'Starting the simulation' : p.restarting ? 'Restarting' : p.connected&&p.fresh ? 'Simulation is running' : '');
+    $('startSimulationBtn').textContent=p.simulationStarting?'Starting the simulation…':'Start the simulation';
     this.disable('takeControlBtn',blocked);
     this.disable('drivingMode',blocked || emergency);
     this.disable('clearRouteBtn',ownerBlocked || (!p.route ? 'No active route' : ''));
     $('modeExplanation').textContent = p.isReplay ? 'Recorded data and camera; native driving disabled.' :
       'Go drives the vehicle to the destination. Enable manual driving prepares the keyboard for driving.';
     $('manualHint').textContent = p.isReplay ? 'Keyboard sends no driving commands during Replay.' :
-      'Keyboard operates in the dashboard. W/A/S/D Take manual control; destination persists until the route is cleared.';
+      'Select Take manual control first, then use W/A/S/D. The route remains available after takeover.';
     $('drivingInstruction').textContent = blocked || emergency || (!p.controller ? 'Another page controls the vehicle. Take control in settings.' :
-      p.controlMode === 'AUTOMATIC' ? 'Journey running. Stop driving brakes; manual input transfers control to you.'
+      p.controlMode === 'AUTOMATIC' ? 'Autonomous drive active. Use Take manual control before the keyboard.'
       : controllable ? 'Keyboard ready. W+Shift increases throttle from 55% to 100%.' :
         'Vehicle held by command safety. Enable manual driving to move.');
     const reasons = {manual_intervention:'Manual control taken',dashboard_heartbeat_timeout:'Dashboard heartbeat lost',
       destination_reached:'Destination reached and vehicle stopped',collision:'Journey stopped after collision',
-      controls_released:'Control stopped',operator_stop:'Driving stopped',focus_lost:'Dashboard lost focus',
+      controls_released:'Control stopped',operator_stop:'Driving stopped',focus_lost:'Dashboard lost focus',workspace_changed:'Stopped when leaving the driving workspace',
       route_ended_before_destination:'Route ended far from destination; select the route again',
       page_closed:'Driving page closed',ownership_taken:'Control transferred to this page',
       fresh_native_session:'New session; explicitly choose driving to begin'};
@@ -357,9 +405,9 @@ export class DashboardTools {
     $('recordRunBtn').textContent = p.recording ? 'Stop recording' : 'Start recording';
     $('recordRunBtn').dataset.recording = String(!!p.recording);
     $('recordingStatus').textContent = (p.recording ? 'Recording camera and sensor data.' : 'Recording stopped.')+(this.recordingPath?' '+this.recordingPath:'');
-    for (const id of ['recordRunBtn','clearTrafficBtn','clearPedestriansBtn','resetPopulationBtn','respawnPopulationBtn','applyRadiusBtn','applySceneBtn']) this.disable(id,ownerBlocked);
+    for (const id of ['recordRunBtn','clearTrafficBtn','clearPedestriansBtn','resetPopulationBtn','respawnPopulationBtn','applyRadiusBtn','applySceneBtn']) this.disable(id,ownerBlocked || comparisonBlocked);
     this.disable('applyProfileBtn',ownerBlocked || (!Object.keys(this.catalog?.profiles || {}).length ? 'Performance measurements are incomplete' : ''));
-    if (training) for (const id of ['clearTrafficBtn','clearPedestriansBtn','resetPopulationBtn','respawnPopulationBtn','applySceneBtn','applySettingsBtn','applyProfileBtn'])
+    if (training) for (const id of ['clearTrafficBtn','clearPedestriansBtn','resetPopulationBtn','respawnPopulationBtn','applySceneBtn','applySettingsBtn','applyProfileBtn','applyLightingBtn','applyViewDistanceBtn'])
       this.disable(id,ownerBlocked || 'Return to Living city before changing world settings');
     if (this.panel === 'sensorPanel') {
       const native = p.nearbyActors;
@@ -369,19 +417,33 @@ export class DashboardTools {
         a.category+' #'+a.actor_id+' '+a.type+'\n'+a.distance_m.toFixed(1)+' m · relative '+a.relative_position_m.map(v=>v.toFixed(1)).join('/')+' · velocity '+a.velocity_mps.map(v=>v.toFixed(1)).join('/')).join('\n\n') : 'No live data';
     }
     if (p.operationError) {
+      if (this.lightingPending) { $('lightingStatus').textContent = p.operationError; this.lightingPending = false; }
+      if (this.restartAfterSave) {
+        $('restartStatus').textContent = $('viewDistanceStatus').textContent = p.operationError; this.restartAfterSave = null;
+      }
       $('operationStatus').textContent = p.operationError; this.errorShown = true;
     } else if (this.errorShown) {
       $('operationStatus').textContent = ''; this.errorShown = false;
     }
     if (p.dashboardResult && JSON.stringify(p.dashboardResult) !== this.result) {
       const result = p.dashboardResult; this.result = JSON.stringify(result);
+      if(result.action==='settings'&&this.cameraChange?.status==='pending'&&result.operationId!==this.cameraChange.previousResult) {
+        if(result.status==='APPLIED')this.cameraChange.status='applied';
+        if(result.status==='REJECTED') {
+          this.cameraChange.status='failed';this.cameraChange.error=result.error||'Camera change rejected.';
+          if(this.cameraChange.confirmed)$('cameraView').value=this.cameraChange.confirmed;
+        }
+      }
       if (result.status === 'REJECTED') {
         $('operationStatus').textContent = $('settingsStatus').textContent = $('destinationStatus').textContent = result.error;
         if (result.action === 'destination') $('mapSelectionStatus').textContent = result.error;
         this.restartAfterSave = null;
+        if (this.lightingPending) { $('lightingStatus').textContent = result.error; this.lightingPending = false; }
+        $('viewDistanceStatus').textContent = result.error;
       }
       if (result.status === 'APPLIED') {
         if (result.action === 'settings') {
+          if (this.lightingPending) { $('lightingStatus').textContent = 'Scene lighting applied.'; this.lightingPending = false; }
           $('settingsStatus').textContent = 'Live changes applied. Graphics saved for restart.';
           if (this.restartAfterSave) {
             p.dashboardAction('restart_graphics', this.restartAfterSave); this.restartAfterSave = null;
@@ -404,7 +466,7 @@ export class DashboardTools {
       const names = {STOPPING:'Vehicle and sensor cleanup',LAUNCHING:'Start CARLA',ROLLING_BACK:'Restore previous graphics settings',
         VERIFYING:'Inspect images, sensors and performance',APPLIED:'Graphics applied and verified',
         ROLLED_BACK:'Requested settings failed; previous settings restored',FAILED:'Failed to start CARLA'};
-      $('restartStatus').textContent = (names[restart.status] || restart.status) + (restart.error ? ' · ' + restart.error : '');
+      $('restartStatus').textContent = $('viewDistanceStatus').textContent = (names[restart.status] || restart.status) + (restart.error ? ' · ' + restart.error : '');
       if (['APPLIED','ROLLED_BACK'].includes(restart.status)) this.load(true);
     }
     this.load();

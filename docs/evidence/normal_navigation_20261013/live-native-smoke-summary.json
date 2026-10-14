@@ -1,0 +1,29 @@
+{
+  "source": "LIVE_NATIVE_CARLA",
+  "date": "2026-10-13",
+  "map": "Town10HD_Opt",
+  "mode": "NORMAL",
+  "population": {
+    "vehicles": 40,
+    "pedestrians": 30,
+    "chaos_percent": 85
+  },
+  "target_speed_kmh": 20,
+  "duration_wall_s": 41.91,
+  "sample_count": 188,
+  "initial_remaining_m": 94.4558132504742,
+  "final_remaining_m": 20.088425495626133,
+  "max_speed_kmh": 22.181929262889383,
+  "moving_samples": 100,
+  "actual_generators": {
+    "SENSOR_BASELINE": 188
+  },
+  "red_traffic_light_braking_samples": 85,
+  "rear_assist_samples": 0,
+  "collision_callback_count": 0,
+  "safety_interventions": 0,
+  "sensor_errors": {},
+  "final_mode": "PAUSED",
+  "final_speed_kmh": 1.7169358384289976e-6,
+  "scope": "Single short native smoke drive. Zero callbacks do not establish a collision-rate reduction or validate the rear-assist branch in native traffic."
+}

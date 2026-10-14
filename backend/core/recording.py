@@ -64,6 +64,9 @@ class BufferedRunRecorder:
     def record_trace(self,row):
         return self._put(('trace',row))
 
+    def record_safety(self, row):
+        return self._put(('safety',row), len(encode_row(row)))
+
     def status(self):
         with self.stats_lock:
             return {'incomplete':self.incomplete or self.error is not None,'error':str(self.error) if self.error else None,
@@ -81,7 +84,7 @@ class BufferedRunRecorder:
             frame=item[1][0];self.dropped_frames+=1
             self.first_dropped_frame=frame.frame_id if self.first_dropped_frame is None else min(self.first_dropped_frame,frame.frame_id)
             self.last_dropped_frame=frame.frame_id if self.last_dropped_frame is None else max(self.last_dropped_frame,frame.frame_id)
-        elif item[0]=='trace':self.dropped_trace_rows+=1
+        elif item[0] in ('trace','safety'):self.dropped_trace_rows+=1
         else:self.dropped_events+=1
 
     def _run(self):
@@ -97,6 +100,7 @@ class BufferedRunRecorder:
                 kind, value = item
                 if kind == 'event': self.writer.record_event(value)
                 elif kind=='trace':self.writer.record_trace(value)
+                elif kind=='safety':self.writer.record_safety(value)
                 else:
                     frame, assets = value
                     for asset, data in assets:
@@ -172,6 +176,7 @@ class RunRecorder:
         self.closed = False
         self.autoflush=True
         self.trace_file=None
+        self.safety_file=None
         self.record_event(SimulationEvent(EventType.RunRecordingStarted, None, None, {'run_id': metadata.run_id}))
         log(LogCategory.RECORDING, 'RunRecordingStarted', run_id=metadata.run_id)
 
@@ -217,6 +222,7 @@ class RunRecorder:
         with self.lock:
             self.frames_file.flush();self.events_file.flush()
             if self.trace_file:self.trace_file.flush()
+            if self.safety_file:self.safety_file.flush()
 
     def record_trace(self,row):
         with self.lock:
@@ -224,6 +230,13 @@ class RunRecorder:
             if self.trace_file is None:self.trace_file=(self.root/'telemetry/comparison-controls.jsonl').open('xb')
             self.trace_file.write(encode_row(row))
             if self.autoflush:self.trace_file.flush()
+
+    def record_safety(self, row):
+        with self.lock:
+            if self.closed: raise RuntimeError('Recorder is closed')
+            if self.safety_file is None: self.safety_file=(self.root/'telemetry/safety-v2.jsonl').open('xb')
+            self.safety_file.write(encode_row(row))
+            if self.autoflush: self.safety_file.flush()
 
     def close(self):
         with self.lock:
@@ -236,6 +249,7 @@ class RunRecorder:
                 self.frames_file.close()
                 self.events_file.close()
                 if self.trace_file:self.trace_file.close()
+                if self.safety_file:self.safety_file.close()
                 self.closed = True
                 log(LogCategory.RECORDING, 'RunRecordingStopped', run_id=self.metadata.run_id,
                     frame_id=self.last_frame, timestamp_s=self.last_timestamp)

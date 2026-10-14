@@ -1,0 +1,158 @@
+// Pure geometry helpers also used by frame/session/camera regression tests.
+function matrix(pose) {
+  const {roll:r=0,pitch:p=0,yaw:y=0}=pose.rotation_rad||{};
+  const cr=Math.cos(r),sr=Math.sin(r),cp=Math.cos(p),sp=Math.sin(p),cy=Math.cos(y),sy=Math.sin(y);
+  return [[cp*cy,cy*sp*sr-sy*cr,-cy*sp*cr-sy*sr],
+    [cp*sy,sy*sp*sr+cy*cr,-sy*sp*cr+cy*sr],[sp,-cp*sr,cp*cr]];
+}
+const multiply=(m,v)=>m.map(row=>row.reduce((a,x,i)=>a+x*v[i],0));
+export function predictionWorldPoint(point,reference) {
+  if(!reference?.position_m)return null;
+  return multiply(matrix(reference),[point[0],point[1],point[2]??0]).map((x,i)=>x+reference.position_m[i]);
+}
+export function projectPrediction(point,reference,camera) {
+  if(!reference?.position_m||!camera?.worldTransform?.position_m||!camera.width||!camera.height||!camera.fovDeg)return null;
+  const world=predictionWorldPoint([point[0],point[1],point[2]??1],reference);
+  const delta=world.map((x,i)=>x-camera.worldTransform.position_m[i]);
+  const cm=matrix(camera.worldTransform),local=multiply(cm[0].map((_,i)=>cm.map(row=>row[i])),delta);
+  if(local[0]<=.05)return null;
+  const f=camera.width/(2*Math.tan(camera.fovDeg*Math.PI/360));
+  return [(camera.width-1)/2+f*local[1]/local[0],(camera.height-1)/2-f*local[2]/local[0]];
+}
+export function predictionMatches(prediction,session,camera) {
+  return !!prediction&&prediction.session_id===session&&prediction.coordinate_frame==='EGO_AT_EVALUATION'&&
+    Number.isFinite(camera?.timestamp)&&Math.abs(prediction.timestamp_s-camera.timestamp)<=1e-6&&
+    (!Number.isFinite(camera.frame)||prediction.evaluation_frame===camera.frame);
+}
+export function measuredPredictionFresh(prediction,session,timestamp) {
+  const age=timestamp-prediction?.timestamp_s;
+  return !!prediction&&prediction.session_id===session&&Number.isFinite(age)&&age>=0&&age<=.75;
+}
+const visibleModes=prediction=>{
+  const confirmed=new Set(prediction.tracks.filter(t=>t.confirmed).map(t=>t.id)),counts=new Map();
+  return (prediction.trajectories||[]).filter(mode=>{
+    const n=counts.get(mode.track_id)||0;if(!confirmed.has(mode.track_id)||n>=3)return false;
+    counts.set(mode.track_id,n+1);return true;
+  });
+};
+
+export class PredictionView {
+  constructor(provider) {
+    this.provider=provider;
+    this.observed=null;this.nextAt=0;this.busy=false;this.message='Waiting for measured tracks…';
+    this.imagePrediction=null;this.imageRequest=null;this.imageBusy=false;
+    const host=document.getElementById('frontCameraView');host.style.position='relative';
+    this.canvas=document.createElement('canvas');this.canvas.className='prediction-overlay';this.canvas.setAttribute('aria-hidden','true');
+    this.map=document.createElement('canvas');this.map.className='prediction-surroundings';this.map.width=180;this.map.height=180;
+    this.map.setAttribute('aria-label','Measured surroundings including outside the camera view');
+    this.drawMap(null);
+    this.label=document.createElement('p');this.label.className='prediction-label';this.label.setAttribute('role','status');
+    host.append(this.canvas,this.map,this.label);
+    this.diagnostic=document.createElement('p');this.diagnostic.className='prediction-diagnostic';
+    document.getElementById('liveOperationStatus').append(this.diagnostic);
+  }
+  async pollFrame(camera) {
+    const p=this.provider,key=p.sessionId+':'+camera?.frame;
+    if(!p.fresh||p.isReplay||!Number.isFinite(camera?.frame)||this.imageBusy||this.imageRequest===key)return;
+    this.imageRequest=key;this.imageBusy=true;const session=p.sessionId;
+    try {
+      const response=await fetch('/api/simulation/prediction?frame_id='+camera.frame,{cache:'no-store',signal:AbortSignal.timeout(1500)});
+      const value=await response.json();
+      if(p.sessionId===session)this.imagePrediction=value.status==='RUNNING'?value.prediction:null;
+    } catch {this.imagePrediction=null;}
+    finally {this.imageBusy=false;}
+  }
+  async poll() {
+    if(document.hidden)return;
+    const p=this.provider;
+    if(!p.fresh||p.isReplay){this.observed=null;return;}
+    if(this.busy||performance.now()<this.nextAt)return;
+    this.busy=true;this.nextAt=performance.now()+300;
+    const session=p.sessionId;
+    try {
+      const response=await fetch('/api/simulation/prediction',{cache:'no-store',signal:AbortSignal.timeout(2000)});
+      if(!response.ok)throw new Error('Prediction observer unavailable');
+      const result=await response.json();
+      if(p.sessionId!==session||!p.fresh)return;
+      this.observed=result.status==='RUNNING'&&result.prediction?.session_id===session?result.prediction:null;
+      if(!this.observed)this.message=result.error||'Waiting for measured tracks…';
+    } catch(error){this.observed=null;this.message=error.message;}
+    finally{this.busy=false;}
+  }
+  draw(camera) {
+    this.poll();this.pollFrame(camera);
+    const p=this.provider, latest=p.safetySystem?.prediction||this.observed, img=document.getElementById('authoritativeCamera');
+    const applied=latest?.applied_decision_prediction;
+    const appliedFresh=applied&&measuredPredictionFresh(applied,p.sessionId,p.telemetry?.timestamp??camera?.timestamp);
+    const principal=appliedFresh?applied:latest;
+    this.currentPrediction=principal;
+    // The measured map has its own timestamp. Its layout must not depend on
+    // whether this particular RGB frame has an exactly aligned overlay.
+    const measured=(p.fresh||p.isReplay)&&measuredPredictionFresh(principal,p.sessionId,p.telemetry?.timestamp??camera?.timestamp)?principal:null;
+    this.map.hidden=false;
+    const mapKey=[p.sessionId,measured?.timestamp_s,measured?.display_source].join(':');
+    if(mapKey!==this.mapKey){this.mapKey=mapKey;this.drawMap(measured);}
+    this.label.hidden=!measured||img.hidden;
+    if(measured){
+      const age=Math.max(0,(p.telemetry?.timestamp??camera.timestamp)-measured.timestamp_s);
+      this.message=`${measured.display_source||measured.decision_source} · ${measured.tracks.filter(t=>t.confirmed).length} confirmed tracks · measurement age ${age.toFixed(1)} s. ${measured.model_reason||''}`;
+      const conflict=measured.conflict_point;
+      const context=appliedFresh?'Applied decision forecast':'Display forecast';
+      const supplementary=latest?.supplementary_model_candidates?.length??0;
+      this.label.textContent=(conflict?`${context} · overlap in ${conflict.time_s.toFixed(1)} s`:context)+
+        (supplementary?` · ${supplementary} supplementary model candidates`:'');
+      this.label.dataset.tone=conflict?'amber':'neutral';
+    } else this.message=p.fresh?'Waiting for fresh measured motion…':'Motion observations unavailable';
+    const prediction=predictionMatches(latest,p.sessionId,camera)?latest:this.imagePrediction;
+    const ok=(p.fresh||p.isReplay)&&!img.hidden&&predictionMatches(prediction,p.sessionId,camera);
+    this.canvas.hidden=!ok;
+    const diagnostic=p.stopDiagnostics;
+    this.diagnostic.textContent=diagnostic?.braking?`${diagnostic.decision_source} · ${diagnostic.reason||'Brake applied'} · sensor age ${(diagnostic.sensor_wall_age_s??0).toFixed(2)} s`:'';
+    if(!ok)return;
+    const bounds=img.getBoundingClientRect(),host=img.parentElement.getBoundingClientRect();
+    const scale=Math.min(bounds.width/camera.width,bounds.height/camera.height);
+    const width=camera.width*scale,height=camera.height*scale;
+    Object.assign(this.canvas.style,{left:bounds.left-host.left+(bounds.width-width)/2+'px',top:bounds.top-host.top+(bounds.height-height)/2+'px',width:width+'px',height:height+'px'});
+    if(this.canvas.width!==camera.width||this.canvas.height!==camera.height){this.canvas.width=camera.width;this.canvas.height=camera.height;}
+    const ctx=this.canvas.getContext('2d'), conflict=prediction.conflict_point;
+    ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    const red=['STOPPING','BRAKING'].includes(p.safetySystem?.status),color=red?'#D9254F':'#81551B';
+    const project=point=>projectPrediction(point,prediction.render_reference,camera);
+    // Show ordinary, non-conflicting hypotheses too. Keep modes separate and
+    // bound visual density; never invent class boxes for unclassified LiDAR.
+    const visible=this.visualOptions?.trajectories===false?[]:visibleModes(prediction);
+    ctx.lineWidth=2;ctx.setLineDash([6,5]);
+    for(const mode of visible){
+      ctx.strokeStyle=mode.source.includes('TRAJECTRON')?'#753CF7':'#4B84FC';ctx.beginPath();let begun=false;
+      for(const row of mode.points){const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    const maneuver=p.maneuver;
+    if(this.visualOptions?.trajectories!==false&&maneuver?.selected_path&&Math.abs(maneuver.timestamp_s-camera.timestamp)<=.1&&maneuver.render_reference){
+      ctx.strokeStyle='#00BA69';ctx.lineWidth=3;ctx.beginPath();let begun=false;
+      for(const row of maneuver.selected_path){const q=projectPrediction([row[1],row[2],.15],maneuver.render_reference,camera);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
+    }
+    if(conflict&&this.visualOptions?.safety!==false) {
+      // Only the selected actual hypothesis; never average incompatible modes.
+      ctx.strokeStyle=color;ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.beginPath();let begun=false;
+      for(const row of conflict.trajectory) {const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}if(begun)ctx.lineTo(...q);else ctx.moveTo(...q);begun=true;}
+      ctx.stroke();ctx.setLineDash([]);
+      // A forecast conflict point is not a detected object's 3D bounding box.
+      // Mark the supplied point without inventing an object's height or corners.
+      const point=project([conflict.point_m[0],conflict.point_m[1],.1]);
+      if(point){ctx.strokeStyle=color;ctx.beginPath();ctx.arc(...point,6,0,Math.PI*2);ctx.stroke();}
+    }
+  }
+  drawMap(prediction) {
+    const m=this.map.getContext('2d');m.clearRect(0,0,180,180);m.fillStyle='rgba(15,23,42,.88)';m.fillRect(0,0,180,180);
+    if(!prediction){m.fillStyle='#cbd5e1';m.font='11px sans-serif';m.fillText('Waiting for motion',24,94);return;}
+    const conflict=prediction.conflict_point,color='#f59e0b',visible=visibleModes(prediction);
+    const mapPoint=point=>[90+point[1]*3,120-point[0]*3];
+    m.strokeStyle='#ffffff24';m.beginPath();m.moveTo(90,0);m.lineTo(90,180);m.moveTo(0,120);m.lineTo(180,120);m.stroke();
+    m.fillStyle='#e2e8f0';m.fillRect(86.5,112.5,7,15);
+    for(const mode of visible){m.strokeStyle=mode.source.includes('TRAJECTRON')?'#a78bfa99':'#67e8f999';m.setLineDash([3,3]);m.beginPath();mode.points.forEach((row,i)=>{const q=mapPoint([row[1],row[2]]);i?m.lineTo(...q):m.moveTo(...q);});m.stroke();}m.setLineDash([]);
+    for(const tr of prediction.tracks) {const q=mapPoint(tr.position_m);m.fillStyle=tr.id===conflict?.track_id?color:tr.confirmed?'#67e8f9':'#94a3b8';m.beginPath();m.arc(...q,tr.class==='person'?3:4,0,Math.PI*2);m.fill();}
+    if(conflict){m.strokeStyle=color;m.beginPath();conflict.trajectory.forEach((row,i)=>{const q=mapPoint([row[1],row[2]]);i?m.lineTo(...q):m.moveTo(...q);});m.stroke();}
+    m.fillStyle='#f8fafc';m.font='10px sans-serif';m.fillText('Measured · 30 m',8,16);
+  }
+}

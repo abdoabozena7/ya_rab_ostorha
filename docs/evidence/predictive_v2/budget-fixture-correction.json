@@ -1,0 +1,8 @@
+{
+  "reservation": [
+    9,
+    "9d0390b73b3a4e728eb2cb10510fd193",
+    600.0
+  ],
+  "reason": "Earlier unit fixture accidentally reserved an experiment slot. No expensive work ran in this slot. Tests now use a temporary ledger."
+}

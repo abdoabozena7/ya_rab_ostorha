@@ -29,6 +29,9 @@ output/
 .venv-rl/
 .venv-perception/
 .venv-learned/
+.venv-trajectron/
+.cache/trajectron/
+.cache/segformer/
 models/
 .venv-carla-archive-*/
 recordings/
@@ -38,3 +41,7 @@ tech.key
 *.key
 config/dashboard-preferences.json
 config/places-*.json
+
+# Local scratch output and large downloadable language-model weights.
+tmp/
+.cache/models/nlp/*.gguf

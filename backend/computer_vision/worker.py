@@ -76,6 +76,14 @@ def main():
                 source=response.read()
             image=Image.open(io.BytesIO(source)).convert('RGB');rgb=np.asarray(image)
             started=time.monotonic();detections=detector.predict(rgb);detection_ms=(time.monotonic()-started)*1000
+            # Dedicated control semantics are published before OCR/annotation.
+            # Geometry control never waits for either this worker or this file.
+            detection_result={'status':'RUNNING','session_id':session,'frame_id':fid,'timestamp_s':stamp,
+                'detections':detections,'detector_ms':detection_ms,'published_at':time.time(),
+                'source_sensor':'frontCamera','semantic_coverage':'FRONT_CAMERA_ONLY'}
+            detection_temp=OUTPUT/'latest-detections.tmp'
+            detection_temp.write_text(json.dumps(detection_result),encoding='utf8')
+            detection_temp.replace(OUTPUT/'latest-detections.json')
             texts=[];ocr_ms=0.;regions=[]
             if time.monotonic()-last_ocr>=3:
                 regions=text_regions(rgb,detections)

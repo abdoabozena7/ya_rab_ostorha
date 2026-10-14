@@ -22,6 +22,6 @@
   "ego_front_m": 2.5,
   "minimum_foreground_height_m": 0.25,
   "maximum_foreground_height_m": 2.5,
-  "maximum_observed_range_m": 45.0,
+  "maximum_observed_range_m": 90.0,
   "maximum_safety_steering_delta": 0.0
 }

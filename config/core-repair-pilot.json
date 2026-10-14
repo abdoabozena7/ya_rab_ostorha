@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "environment_id": "YaRabOstorha-Maneuver-v1",
+  "enabled_by_default": false,
+  "native_accepted": false,
+  "policy": {"algorithm": "MaskablePPO", "library_version": "2.9.0", "device": "cpu", "policy": "MultiInputPolicy", "environments": 1, "learning_rate": 0.0003, "n_steps": 256, "batch_size": 64, "n_epochs": 4, "gamma": 0.99, "ent_coef": 0.01, "net_arch": [128, 64]},
+  "history_seconds": 2.0,
+  "decision_interval_seconds": 0.1,
+  "modes": ["MANUAL_PROTECTION", "AUTONOMOUS"],
+  "population": {"vehicles": 25, "pedestrians": 20, "placement": "EGO_SURROUNDING"},
+  "planner_costs": {"clearance": 8, "progress_deficit": 5, "discomfort": 2, "route_deviation": 1, "switching": 2, "unnecessary_reverse": 1},
+  "reward": {"collision": -100, "vulnerable_collision": -200, "risk_second": -10, "route_completion": 20, "route_progress": 10, "time_second": -0.02, "discomfort_second": -0.1, "manual_intervention_second": -0.5, "positive_episode_cap": 30},
+  "perception": {"frozen": true, "segmentation_model": "nvidia/segformer-b0-finetuned-cityscapes-1024-1024", "segmentation_admitted": false},
+  "acceptance": {"ordinary_required": 10, "ordinary_completions": 10, "recovery_fraction": 0.9, "fresh_scene_fraction": 0.99, "max_throughput_degradation": 0.1, "prediction_error_improvement": 0.1},
+  "reason": "Unaccepted pilot capabilities remain disabled. A training checkpoint is never proof of native behavioral acceptance."
+}

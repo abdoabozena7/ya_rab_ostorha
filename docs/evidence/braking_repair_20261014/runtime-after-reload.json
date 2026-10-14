@@ -1,0 +1,17 @@
+{
+  "source": "LIVE_NATIVE_READ_ONLY_AFTER_RELOAD",
+  "connected": true,
+  "mode": "PAUSED",
+  "speed_mps": 0.0,
+  "brake": 1.0,
+  "session_id": "c97cf204d99b427ebf310d582adbbb58",
+  "safety_controller": "RULE",
+  "safety_enabled": true,
+  "sensor_errors": {},
+  "diagnostic_fields_present": [
+    "base_command",
+    "vehicle_geometry",
+    "runtime_fault",
+    "safety_fault"
+  ]
+}

@@ -59,6 +59,7 @@ def initial_signature(run, route, agent_options):
 class ComparisonDemo:
     def __init__(self, service):
         self.service = service
+        self.agent_options = AGENT_OPTIONS
         self.phase = 'IDLE'
         self.mode = None
         self.results = {}
@@ -114,7 +115,7 @@ class ComparisonDemo:
         mode=value['mode']
         self._flush()
         self.finish('switched' if mode != 'STOP' else 'operator_reset')
-        s.stop_driving('comparison_reset')
+        s.stop_driving('comparison_reset', cancel_comparison=False)
         if s.recorder:
             s._change_recording({'enabled': False})
         p.scenarios.living_city()
@@ -216,7 +217,7 @@ class ComparisonDemo:
             return
         if not self.prepared:
             p.dashboard_action('destination', self.destination)
-            route = p.start_navigation(self.spec.metadata.get('target_speed_kmh',28), demo_options=AGENT_OPTIONS)
+            route = p.start_navigation(self.spec.metadata.get('target_speed_kmh',28), demo_options=self.agent_options)
             config, signature = initial_signature(p.scenarios.run, route, p.navigation_options)
             if p.scenarios.urban:
                 config['actual_initial_states']=config.pop('actors')

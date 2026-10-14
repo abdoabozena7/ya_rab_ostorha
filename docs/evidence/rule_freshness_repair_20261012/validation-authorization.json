@@ -1,0 +1,13 @@
+{
+  "ticket": {
+    "scope": "NATIVE_RULE_VALIDATION",
+    "allowance_s": 600.0,
+    "started_at": 1791777861.3467195,
+    "expires_at": 1791778461.3467195,
+    "authorization": "Explicit user authorization for native RULE integration validation only"
+  },
+  "validation_backend_retired_at": 1791778381.9920576,
+  "within_window": true,
+  "research_ledger_unchanged": true,
+  "training_or_model_experiments": false
+}

@@ -1,4 +1,5 @@
 import { SimulationProvider } from './provider.js';
+import { trafficCommandBlocked } from './traffic-preparation.js';
 
 export function unavailableState() {
   return { source: 'carla', timestamp: null, physicsTick: null, speedMps: null,
@@ -39,9 +40,50 @@ export class SimulationClient extends SimulationProvider {
     this.route = this.dashboardResult = this.operationError = null;
     this.safetySystem = null;
     this.comparisonDemo = null;
+    this.comparisonV2 = null;
+    this.recordedComparisonV2 = null;
+    this.stopDiagnostics = null;
+    this.rearAssist = false;
+    this.manualDrivingMode = 'ROBOSPHERE';
     this.navigationAvailable = false;
     this.lastControlSentAt = -Infinity;
     this.lastManualFrame = null;
+    this.simulatorStart = null;
+    this.starting = false;
+  }
+
+  get simulationStarting() { return this.starting || this.simulatorStart?.status==='STARTING'; }
+
+  async startSimulation() {
+    return this.requestSimulationStart(false);
+  }
+
+  async resetSimulation() {
+    return this.requestSimulationStart(true);
+  }
+
+  async requestSimulationStart(reset) {
+    if(this.closed || this.isReplay) return false;
+    if(!reset && this.connected && this.fresh) return true;
+    if(this.simulationStarting) return false;
+    this.operationError=null;this.starting=true;this.resetting=reset;this.resetReady=false;this.resetSession=this.sessionId;
+    this.simulatorStart={status:'STARTING',...(reset?{operation:'RESET'}:{})};
+    this.startTimer=this.schedule(()=>{
+      this.starting=false;this.resetting=false;this.simulatorStart={status:'FAILED',error:'Simulation startup timed out. Check runtime details and retry.'};
+      this.operationError=this.simulatorStart.error;
+    },180_000);
+    try {
+      const response=await this.fetcher(reset?'/api/simulation/reset-session':'/api/simulation/start',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const result=await response.json();
+      if(!response.ok || result.status==='FAILED')throw new Error(result.error||'Simulation could not start. Retry from this button.');
+      this.retryMs=1000;
+      await this.connect();
+      return true;
+    } catch(error) {
+      this.cancel(this.startTimer);this.startTimer=null;this.starting=false;this.resetting=false;
+      this.simulatorStart={status:'FAILED',error:error.message};this.operationError=error.message;
+      return false;
+    }
   }
 
   async connect() {
@@ -90,9 +132,17 @@ export class SimulationClient extends SimulationProvider {
     if (message.sessionId && this.sessionId && message.sessionId !== this.sessionId) this.disconnect('New native session');
     this.sessionId = message.sessionId ?? this.sessionId;
     this.journey = message.journey ?? {};
+    this.journeyComparison = message.journeyComparison ?? this.journeyComparison ?? null;
     this.navigationAvailable = message.navigationAvailable === true;
     this.restarting = message.restarting ?? false;
     this.restartResult = message.restartResult ?? null;
+    this.simulatorStop = message.simulatorStop ?? null;
+    this.simulatorStart = message.simulatorStart ?? this.simulatorStart;
+    this.simulatorReset = message.simulatorReset ?? null;
+    if(this.simulatorStart?.status==='FAILED') {
+      this.starting=false;this.cancel(this.startTimer);this.startTimer=null;
+      this.operationError=this.simulatorStart.error;
+    }
     this.performance = message.performance ?? {};
     this.controlSource = message.controlSource;
     this.recording = message.recording ?? false;
@@ -102,6 +152,20 @@ export class SimulationClient extends SimulationProvider {
     this.environment = message.environment ?? null;
     this.safetySystem = message.safetySystem ?? null;
     this.comparisonDemo = message.comparisonDemo ?? null;
+    this.comparisonV2 = message.comparisonV2 ?? null;
+    if (this.comparisonV2) this.recordedComparisonV2 = {
+      pair_id:this.comparisonV2.pair_id, seed:this.comparisonV2.seed,
+      results:this.comparisonV2.results, latest_attempt:this.comparisonV2.latest_attempt};
+    this.stopDiagnostics = message.stopDiagnostics ?? null;
+    this.lastDriveStop = message.lastDriveStop ?? null;
+    this.rearAssist = message.rearAssist === true;
+    this.manualDrivingMode = message.manualDrivingMode ?? this.manualDrivingMode;
+    this.displayCamera = message.displayCamera ?? null;
+    this.motionQuality = message.motionQuality ?? null;
+    this.maneuver = message.maneuver ?? null;
+    this.controlScene = message.controlScene ?? null;
+    this.controlSceneError = message.controlSceneError ?? null;
+    this.controlDecisionPrediction = message.controlDecisionPrediction ?? null;
     this.nearbyActors = message.nearbyActors ?? null;
     const replay = message.mode === 'REPLAY' && message.provider === 'replay' && message.connected === false
       && message.available === true && message.replay?.dataOrigin === 'REAL_SIMULATION';
@@ -119,6 +183,11 @@ export class SimulationClient extends SimulationProvider {
       }
       const newFrame = replay || message.vehicle.frame !== this.lastFrame;
       this.connected = !replay; this.isReplay = replay; this.phase = replay ? 'REPLAY' : 'CONNECTED';
+      if(!replay && this.starting && (!this.resetting || message.sessionId!==this.resetSession)) {
+        this.resetReady=!!this.resetting;this.resetting=false;
+        this.starting=false;this.cancel(this.startTimer);this.startTimer=null;
+        this.simulatorStart={...this.simulatorStart,status:'READY'};this.operationError=null;
+      }
       this.controlMode = replay ? 'REPLAY' : message.mode ?? 'MANUAL';
       this.replay = replay ? message.replay : null;
       this.cancel(this.connectTimer); this.connectTimer = null;
@@ -137,7 +206,11 @@ export class SimulationClient extends SimulationProvider {
     const sent = this.pending.get(message.acknowledged);
     if (sent != null) {
       this.latencyMs = this.now() - sent;
-      this.pending.delete(message.acknowledged);
+    }
+    // Snapshots can coalesce several ordered WebSocket acknowledgements.
+    // Retire every earlier request, including a start immediately followed by stop.
+    if (Number.isInteger(message.acknowledged)) for (const sequence of this.pending.keys()) {
+      if (sequence <= message.acknowledged) this.pending.delete(sequence);
     }
   }
 
@@ -147,6 +220,8 @@ export class SimulationClient extends SimulationProvider {
     this.telemetry = unavailableState();
     this.world = {};
     this.sensorMetadata = {}; this.sensorRates = {}; this.sensorErrors = {};
+    this.displayCamera = this.motionQuality = this.maneuver = null;
+    this.controlScene = this.controlSceneError = this.controlDecisionPrediction = null;
     this.pending.clear(); this.latencyMs = null; this.gearCommand = 1;
     this.lastManualFrame = null;
     this.status = reason; this.phase = 'DISCONNECTED';
@@ -158,6 +233,9 @@ export class SimulationClient extends SimulationProvider {
     this.environment = null;
     this.safetySystem = null;
     this.comparisonDemo = null;
+    this.comparisonV2 = null;
+    this.stopDiagnostics = null;
+    this.rearAssist = false;
   }
 
   retry() {
@@ -179,8 +257,12 @@ export class SimulationClient extends SimulationProvider {
   }
   send(type, payload = {}) {
     if (this.closed || this.isReplay || this.socket?.readyState !== 1) return false;
-    if (this.restarting) return false;
-    if (type !== 'reconnect' && (!this.connected || !this.fresh || (!this.controller && !['start_driving','start_journey','take_control'].includes(type)))) return false;
+    if (this.restarting || this.simulationStarting) return false;
+    if (trafficCommandBlocked(this.trafficPreparation, type, payload)) {
+      return false;
+    }
+    const comparisonStart=type==='comparison_v2'&&payload.value?.operation==='RUN';
+    if (!['reconnect','stop_simulator'].includes(type) && (!this.connected || !this.fresh || (!this.controller && !comparisonStart&&!['start_driving','start_journey','take_control'].includes(type)))) return false;
     if (type === 'controls' && ['PAUSED', 'EMERGENCY_STOP', 'DISCONNECTED'].includes(this.controlMode)) return false;
     if (type === 'controls' && this.now()-this.lastControlSentAt < 30) return false;
     const sequence = ++this.sequence;
@@ -190,12 +272,19 @@ export class SimulationClient extends SimulationProvider {
     if (type === 'controls') this.lastControlSentAt = this.now();
     return true;
   }
-  startDriving() { this.operationError = null; this.lastManualFrame = null; return this.send('start_driving'); }
-  startJourney(speed_kmh) { this.operationError = null; return this.send('start_journey', {speed_kmh}); }
+  startDriving(driving_mode=null) {
+    this.operationError = null; this.lastManualFrame = null;
+    return this.send('start_driving', driving_mode?{driving_mode}:{});
+  }
+  startJourney(speed_kmh, driving_mode=null, pair_id=null) {
+    this.operationError = null;
+    return this.send('start_journey', {speed_kmh,...(driving_mode?{driving_mode}:{}),...(pair_id?{pair_id}:{})});
+  }
   journeyHeartbeat() { return this.send('journey_heartbeat', {session_id:this.sessionId}); }
   journeySpeed(speed_kmh) { this.operationError = null; return this.send('journey_speed', {speed_kmh}); }
   stopDriving(reason = 'operator_stop') { return this.send('stop_driving', {reason}); }
   takeControl() { return this.send('take_control'); }
+  stopSimulator() { this.operationError=null;return this.send('stop_simulator'); }
   reconnectNative() { this.operationError = null; return this.send('reconnect'); }
   dashboardAction(type, value) { this.operationError = null; return this.send(type, {value}); }
   async catalog() {
@@ -217,7 +306,7 @@ export class SimulationClient extends SimulationProvider {
     return false;
   }
   setGear(gear) { this.gearCommand = gear; }
-  resetVehicle() { this.releaseControls(); this.send('reset'); this.gearCommand = 1; }
+  resetVehicle() { this.gearCommand = 1; return this.send('reset'); }
   setPaused(paused) { this.releaseControls(); this.send('pause', {paused}); }
   releaseControls() {
     this.cancel(this.releaseTimer);
@@ -242,6 +331,7 @@ export class SimulationClient extends SimulationProvider {
     this.cancel(this.retryTimer); this.retryTimer = null;
     this.cancel(this.connectTimer); this.connectTimer = null;
     this.cancel(this.releaseTimer); this.releaseTimer = null;
+    this.cancel(this.startTimer); this.startTimer = null;
     this.socket?.close(); this.disconnect('Disconnected');
   }
 }

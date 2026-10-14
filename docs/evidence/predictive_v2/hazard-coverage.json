@@ -1,0 +1,249 @@
+[
+  {
+    "pair_id": "84fe4e0ced9d4d5ca32486ab7f276ccb",
+    "side": "RULE",
+    "schedule": {
+      "sudden_brake_s": 8.07,
+      "cut_in_s": 14.89,
+      "pedestrian_crossing_s": 22.93,
+      "curb_up_s": 28.12,
+      "curb_return_s": 39.67
+    },
+    "observed_final_flags": {
+      "sudden_brake": {
+        "status": "BLOCKED"
+      },
+      "cut_in": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 30.250000450760126
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "sidewalk_observed_at_s": 33.30000049620867,
+        "reached_at_s": 36.90000054985285
+      },
+      "curb_return": {
+        "status": "BLOCKED",
+        "sidewalk_observed_at_s": 34.60000051558018,
+        "road_reentry_observed_at_s": 46.70000069588423
+      },
+      "crossing_0": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 38.000000566244125,
+        "lost_at_s": 38.05000056698918
+      },
+      "crossing_1": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 45.3000006750226,
+        "lost_at_s": 45.35000067576766
+      }
+    },
+    "ego_encountered_all_major_hazards": null,
+    "scope": "Native evaluation diagnostics only; final flags do not establish ego encounter or continuous event coverage"
+  },
+  {
+    "pair_id": "84fe4e0ced9d4d5ca32486ab7f276ccb",
+    "side": "MODEL",
+    "schedule": {
+      "sudden_brake_s": 8.07,
+      "cut_in_s": 14.89,
+      "pedestrian_crossing_s": 22.93,
+      "curb_up_s": 28.12,
+      "curb_return_s": 39.67
+    },
+    "observed_final_flags": {
+      "sudden_brake": {
+        "status": "BLOCKED"
+      },
+      "cut_in": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 30.250000450760126
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "sidewalk_observed_at_s": 33.30000049620867,
+        "reached_at_s": 36.90000054985285
+      },
+      "curb_return": {
+        "status": "BLOCKED",
+        "sidewalk_observed_at_s": 34.60000051558018,
+        "road_reentry_observed_at_s": 46.70000069588423
+      },
+      "crossing_0": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 37.95000056549907,
+        "lost_at_s": 38.000000566244125
+      },
+      "crossing_1": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 44.90000066906214,
+        "lost_at_s": 44.950000669807196
+      }
+    },
+    "ego_encountered_all_major_hazards": null,
+    "scope": "Native evaluation diagnostics only; final flags do not establish ego encounter or continuous event coverage"
+  },
+  {
+    "pair_id": "1012481be9344afaae1bf206151f8702",
+    "side": "RULE",
+    "schedule": {
+      "sudden_brake_s": 11.41,
+      "cut_in_s": 16.87,
+      "pedestrian_crossing_s": 21.29,
+      "curb_up_s": 30.01,
+      "curb_return_s": 36.23
+    },
+    "observed_final_flags": {
+      "sudden_brake": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 47.70000071078539
+      },
+      "cut_in": {
+        "status": "BLOCKED"
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "sidewalk_observed_at_s": 35.200000524520874,
+        "reached_at_s": 38.800000578165054
+      },
+      "curb_return": {
+        "status": "BLOCKED"
+      },
+      "crossing_0": {
+        "status": "ARRIVED",
+        "road_observed_at_s": 34.30000051110983
+      },
+      "crossing_1": {
+        "status": "ARRIVED",
+        "road_observed_at_s": 35.0500005222857
+      }
+    },
+    "ego_encountered_all_major_hazards": null,
+    "scope": "Native evaluation diagnostics only; final flags do not establish ego encounter or continuous event coverage"
+  },
+  {
+    "pair_id": "1012481be9344afaae1bf206151f8702",
+    "side": "MODEL",
+    "schedule": {
+      "sudden_brake_s": 11.41,
+      "cut_in_s": 16.87,
+      "pedestrian_crossing_s": 21.29,
+      "curb_up_s": 30.01,
+      "curb_return_s": 36.23
+    },
+    "observed_final_flags": {
+      "sudden_brake": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 46.45000069215894
+      },
+      "cut_in": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 45.40000067651272
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "sidewalk_observed_at_s": 35.200000524520874,
+        "reached_at_s": 38.800000578165054
+      },
+      "curb_return": {
+        "status": "BLOCKED",
+        "sidewalk_observed_at_s": 36.500000543892384,
+        "road_reentry_observed_at_s": 42.05000062659383
+      },
+      "crossing_0": {
+        "status": "WALKING",
+        "road_observed_at_s": 33.650000501424074
+      },
+      "crossing_1": {
+        "status": "WALKING",
+        "road_observed_at_s": 40.100000597536564
+      }
+    },
+    "ego_encountered_all_major_hazards": null,
+    "scope": "Native evaluation diagnostics only; final flags do not establish ego encounter or continuous event coverage"
+  },
+  {
+    "pair_id": "5973a3b2948143e982d9e44905e3ae5c",
+    "side": "RULE",
+    "schedule": {
+      "sudden_brake_s": 9.8,
+      "cut_in_s": 14.31,
+      "pedestrian_crossing_s": 20.84,
+      "curb_up_s": 29.94,
+      "curb_return_s": 35.49
+    },
+    "observed_final_flags": {
+      "sudden_brake": {
+        "status": "BLOCKED"
+      },
+      "cut_in": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 30.200000450015068
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "sidewalk_observed_at_s": 35.10000052303076,
+        "reached_at_s": 38.70000057667494
+      },
+      "curb_return": {
+        "status": "BLOCKED",
+        "sidewalk_observed_at_s": 36.40000054240227,
+        "road_reentry_observed_at_s": 39.850000593811274
+      },
+      "crossing_0": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 27.400000408291817,
+        "lost_at_s": 34.55000051483512
+      },
+      "crossing_1": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 41.900000624358654,
+        "lost_at_s": 41.95000062510371
+      }
+    },
+    "ego_encountered_all_major_hazards": null,
+    "scope": "Native evaluation diagnostics only; final flags do not establish ego encounter or continuous event coverage"
+  },
+  {
+    "pair_id": "5973a3b2948143e982d9e44905e3ae5c",
+    "side": "MODEL",
+    "schedule": {
+      "sudden_brake_s": 9.8,
+      "cut_in_s": 14.31,
+      "pedestrian_crossing_s": 20.84,
+      "curb_up_s": 29.94,
+      "curb_return_s": 35.49
+    },
+    "observed_final_flags": {
+      "sudden_brake": {
+        "status": "BLOCKED"
+      },
+      "cut_in": {
+        "status": "TARGET_REACHED",
+        "reached_at_s": 30.200000450015068
+      },
+      "curb_up": {
+        "status": "TARGET_REACHED",
+        "sidewalk_observed_at_s": 35.10000052303076,
+        "reached_at_s": 38.70000057667494
+      },
+      "curb_return": {
+        "status": "BLOCKED",
+        "sidewalk_observed_at_s": 36.40000054240227,
+        "road_reentry_observed_at_s": 39.850000593811274
+      },
+      "crossing_0": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 27.35000040754676,
+        "lost_at_s": 34.55000051483512
+      },
+      "crossing_1": {
+        "status": "NATIVE_ACTOR_LOST",
+        "road_observed_at_s": 41.850000623613596,
+        "lost_at_s": 41.900000624358654
+      }
+    },
+    "ego_encountered_all_major_hazards": null,
+    "scope": "Native evaluation diagnostics only; final flags do not establish ego encounter or continuous event coverage"
+  }
+]

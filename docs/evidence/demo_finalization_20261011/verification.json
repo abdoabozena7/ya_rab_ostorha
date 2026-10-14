@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-12",
+  "status": "OFFLINE_VERIFIED_LIVE_REHEARSAL_BLOCKED",
+  "python": {
+    "run": 270,
+    "skipped": 1,
+    "failures": 0
+  },
+  "javascript": {
+    "passed": 64,
+    "failures": 0
+  },
+  "browser_integration": "PASS",
+  "historical_workspace": "PASS",
+  "native_commands_sent": 0,
+  "new_training_or_expensive_experiments": 0,
+  "budget_charged_s": 5359.2970000000005,
+  "budget_remaining_s": 40.70299999999952,
+  "launch": {
+    "dashboard": "http://127.0.0.1:8000/",
+    "connected": true,
+    "mode": "PAUSED",
+    "controller": "RULE",
+    "safety_enabled": true,
+    "journey_interface_current": false
+  },
+  "cold_start_and_new_native_journey_verified": false,
+  "model_experimental": true,
+  "startup_default": "RULE",
+  "prediction_policy_unchanged": {
+    "backend/core/prediction.py": true,
+    "backend/core/predictive_safety.py": true,
+    "backend/carla/urban_chaos.py": true
+  }
+}

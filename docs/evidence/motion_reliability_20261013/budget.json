@@ -1,0 +1,16 @@
+{
+  "scope": "MOTION_RELIABILITY_20261013",
+  "hard_cap_s": 2400.0,
+  "phases": {
+    "validation": {
+      "cap_s": 1800.0,
+      "charged_s": 1735.5489999999845
+    },
+    "training": {
+      "cap_s": 600.0,
+      "charged_s": 0
+    }
+  },
+  "charged_s": 1735.5489999999845,
+  "old_ledger_unchanged": true
+}

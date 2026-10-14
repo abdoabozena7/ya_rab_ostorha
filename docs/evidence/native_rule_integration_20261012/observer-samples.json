@@ -1,0 +1,128 @@
+[
+  {
+    "observer_wall_s": 0.09,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.014971446025562897,
+    "recording": true,
+    "reason": "Measured obstacle",
+    "remaining_s": 540.5383062362671
+  },
+  {
+    "observer_wall_s": 20.28,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 13.194365081614464,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 520.4518508911133
+  },
+  {
+    "observer_wall_s": 41.16,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 8.968733620059757,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 500.3492670059204
+  },
+  {
+    "observer_wall_s": 61.44,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 5.503753120039722,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 480.03065824508667
+  },
+  {
+    "observer_wall_s": 81.45,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.11053675740572112,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 459.88228249549866
+  },
+  {
+    "observer_wall_s": 101.58,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.004427607024586254,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 439.6680529117584
+  },
+  {
+    "observer_wall_s": 122.55,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 6.896577131677996,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 418.6032967567444
+  },
+  {
+    "observer_wall_s": 142.58,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.07306496052232091,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 398.48298621177673
+  },
+  {
+    "observer_wall_s": 162.58,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 2.519863674492833,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 378.3136975765228
+  },
+  {
+    "observer_wall_s": 182.58,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 6.97107383414694e-07,
+    "recording": true,
+    "reason": "Holding for three clear readings and minimum hold",
+    "remaining_s": 358.2262101173401
+  },
+  {
+    "observer_wall_s": 203.58,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.01519088027825906,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 336.9994022846222
+  },
+  {
+    "observer_wall_s": 224.42,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 1.332811861842551,
+    "recording": true,
+    "reason": "Measured obstacle",
+    "remaining_s": 316.8817582130432
+  },
+  {
+    "observer_wall_s": 245.19,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 16.467623420750805,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 295.68696188926697
+  },
+  {
+    "observer_wall_s": 266.19,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 3.0336758608128864,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 274.50008821487427
+  }
+]

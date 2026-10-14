@@ -26,12 +26,19 @@ class WebSocketBridge:
         """Ownership changes and command admission are atomic across dashboards."""
         with self.ownership_lock:
             kind = message.get('type')
+            comparison_start = kind == 'comparison_v2' and isinstance(message.get('value'),dict) and message['value'].get('operation') == 'RUN'
             runtime = getattr(self.service, 'rl_runtime', None)
             if runtime and runtime.active and kind != 'emergency_stop':
                 raise RuntimeError('Exclusive RL session owns simulation ticks and ego commands')
             if getattr(self.service, 'restarting', False):
                 raise ValueError('Restarting CARLA; driving is stopped until verification completes')
-            if kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
+            if kind=='stop_simulator':
+                if getattr(self.service,'is_replay',False):raise ValueError('Replay cannot stop a native simulator')
+                # This explicit global shutdown is available to an observing
+                # dashboard too; it never grants that page vehicle control.
+                self.service.stop_simulator()
+                return True
+            if comparison_start or kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
                 if getattr(self.service, 'is_replay', False):
                     raise ValueError('Replay has no native connection or control sink')
                 if kind == 'start_journey' and not self.service.arbiter.machine.allow_navigation:
@@ -42,20 +49,26 @@ class WebSocketBridge:
                     self.service.require_connected()
                     if kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
-                        self.service.start_journey(message.get('speed_kmh', 20))
+                        options = {key:message[key] for key in ('driving_mode','pair_id') if key in message}
+                        self.service.start_journey(message.get('speed_kmh', 30), **options)
+                    elif comparison_start:
+                        self.service.queue_dashboard_action(kind,message.get('value'))
+                        self.service.release_controls()
+                    elif kind == 'start_driving':
+                        # Admission may reject a queued comparison. Do not take
+                        # ownership away from its dashboard until this succeeds.
+                        self.service.set_paused(False, driving_mode=message.get('driving_mode'))
                     else:
                         self.service.release_controls()
                     self.owner = socket
                     if not self.controller_lock.locked():
                         self.controller_lock.acquire()
-                    if kind == 'start_driving':
-                        self.service.set_paused(False)
-                    elif kind == 'take_control':
+                    if kind == 'take_control':
                         self.service.stop_driving('ownership_taken')
                 return True
             if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'journey_speed', 'restart_graphics',
                             'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect',
-                            'clear_route', 'population', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode', 'comparison'}:
+                            'clear_route', 'population', 'crowd_route', 'prepare_journey_mode', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode', 'comparison', 'comparison_v2'}:
                 return False
             if self.owner is not socket:
                 raise ValueError('Another dashboard controls this vehicle; select Start driving')

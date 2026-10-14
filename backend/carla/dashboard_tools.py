@@ -52,8 +52,11 @@ def validate_settings(data):
         raise ValueError('Spawn index must be a nonnegative integer')
     if 'next_launch' in data:
         launch = data['next_launch']
-        if not isinstance(launch, dict) or set(launch) != {'quality', 'resolution'} or launch['quality'] not in ('Low', 'Epic') or launch['resolution'] not in ('1280x720', '1600x900', '1920x1080'):
+        from ..graphics import PRESETS
+        if not isinstance(launch, dict) or not {'quality','resolution'} <= set(launch) or set(launch)-{'quality','resolution','render_profile'} or launch['quality'] not in ('Low', 'Epic') or launch['resolution'] not in ('1280x720', '1600x900', '1920x1080'):
             raise ValueError('Invalid next-launch graphics settings')
+        if 'render_profile' in launch and (not isinstance(launch['render_profile'],str) or launch['render_profile'] not in PRESETS or PRESETS[launch['render_profile']]['quality'] != launch['quality']):
+            raise ValueError('Render profile must match the native quality')
     if 'traffic_plan' in data:
         plan = data['traffic_plan']
         if not isinstance(plan, dict) or set(plan) != {'vehicle_count', 'speed_min_kmh', 'speed_max_kmh', 'seed'}:
@@ -296,4 +299,11 @@ class NativeDashboardTools:
             p.sensor_manager.enable_suite(p.connection.api, p.fixed_delta, p.camera_settings)
         if 'population' in data:
             p.population.apply(data['population'])
+        view_keys={'camera_view','camera_resolution','camera_fov','camera_postprocess','camera_motion_blur','camera_bloom','simulation_hz','weather'}
+        view={k:v for k,v in data.items() if k in view_keys}
+        if 'weather_preset' in data:
+            view['weather']={k:getattr(p.world.world.get_weather(),k) for k in WEATHER_RANGES}
+        if view:
+            self.preferences.setdefault('view',{}).update(view)
+            write_json(self.settings_path,self.preferences)
         return self.settings()

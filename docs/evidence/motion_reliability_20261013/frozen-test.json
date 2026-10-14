@@ -1,0 +1,22 @@
+{
+  "split": "TEST",
+  "selection": "First three lexicographic complete native TEST recordings between 2 and 40 MB, frozen before scoring",
+  "not_training_or_tuning": true,
+  "runs": [
+    {
+      "directory": "runs\\normal_city\\run_0858bcea9d164d22856cd58808314c7d",
+      "frames_sha256": "c22fe84885e92080c88b3ed92568a01ec8b9539bdeec49960f4c660d9fa62da8",
+      "seed": 2589
+    },
+    {
+      "directory": "runs\\normal_city\\run_0b77b20fd16341d7852283e23ed1c512",
+      "frames_sha256": "8da403201e808a58d8d851131e23406633720d70def752ddfc4a2f633e5e6954",
+      "seed": 2589
+    },
+    {
+      "directory": "runs\\normal_city\\run_109c14dc04ed400ab236896e5dc556f9",
+      "frames_sha256": "9de9a654b04b59a419d88c3d4de8ee637ad90898bd07087e24178c0f2c91461e",
+      "seed": 2589
+    }
+  ]
+}

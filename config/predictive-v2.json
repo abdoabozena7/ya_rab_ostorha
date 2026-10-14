@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "enabled_by_default": false,
+  "experimental": true,
+  "release_predictor": "LIGHTWEIGHT_LEARNED_MOTION",
+  "trajectron_status": "BENCHMARKED_PARTIAL_GATE_ONLY",
+  "native_acceptance": false,
+  "risk_calibrated_on_measured_validation": false,
+  "horizon_s": 3.0,
+  "control_interval_s": 0.1,
+  "confirmation_observations": 3,
+  "occlusion_s": 0.3,
+  "learned_source_max_simulation_age_s": 0.75,
+  "learned_source_max_wall_age_s": 1.0,
+  "training_max_s": 900,
+  "experiment_target_s": 1800,
+  "experiment_hard_cap_s": 5400,
+  "reason": "Destination arrival, false-stop rate, risk calibration and live improvement have not passed acceptance. Historical RULE stays the startup default."
+}

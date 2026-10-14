@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "enabled": false,
+  "native_accepted": false,
+  "reverse_accepted": false,
+  "lateral_accepted": false,
+  "rule_exception_accepted": false,
+  "depth_sensors_accepted": false,
+  "reason": "2026-10-14 native testing achieved 100% measured rear coverage in the clear-rear fixture, but did not execute reverse or lateral recovery. Motion-scene freshness and uncertain tracks prevented admission; two final fixtures stopped on sensor freshness faults. All recovery and additional depth sensing acceptance flags remain false. See docs/CONGESTION_RECOVERY_20261014.md. The historical motion budget is unchanged."
+}

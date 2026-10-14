@@ -1,0 +1,173 @@
+[
+  {
+    "observer_wall_s": 0.05,
+    "phase": "IDLE",
+    "mode": "PAUSED",
+    "speed_kmh": 0.0,
+    "recording": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "remaining_s": 573.084566116333
+  },
+  {
+    "observer_wall_s": 21.03,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.00900590485272463,
+    "recording": true,
+    "reason": "Measured obstacle",
+    "remaining_s": 551.9495553970337
+  },
+  {
+    "observer_wall_s": 42.0,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.0057549038076432895,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 530.5743041038513
+  },
+  {
+    "observer_wall_s": 62.98,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.009670745544052402,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 509.3287088871002
+  },
+  {
+    "observer_wall_s": 83.78,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.0008931506140594728,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 489.2004988193512
+  },
+  {
+    "observer_wall_s": 103.81,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 4.593412298817142e-05,
+    "recording": true,
+    "reason": "Holding for three clear readings and minimum hold",
+    "remaining_s": 469.1257355213165
+  },
+  {
+    "observer_wall_s": 124.77,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 1.6251680626030867,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 447.9894049167633
+  },
+  {
+    "observer_wall_s": 144.8,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 1.4851089128776362,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 427.83226323127747
+  },
+  {
+    "observer_wall_s": 165.44,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 2.723131726786093,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 407.61308312416077
+  },
+  {
+    "observer_wall_s": 186.34,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.017078442000404245,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 386.350825548172
+  },
+  {
+    "observer_wall_s": 207.36,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.2973432076103481,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 365.168160200119
+  },
+  {
+    "observer_wall_s": 228.17,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.5995209376082934,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 344.03810572624207
+  },
+  {
+    "observer_wall_s": 248.91,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 1.9913202773612287e-06,
+    "recording": true,
+    "reason": "Holding for three clear readings and minimum hold",
+    "remaining_s": 323.9760890007019
+  },
+  {
+    "observer_wall_s": 269.73,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 9.39237183260337,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 302.81703066825867
+  },
+  {
+    "observer_wall_s": 290.69,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 15.690707146372533,
+    "recording": true,
+    "reason": "Measured obstacle",
+    "remaining_s": 281.6075065135956
+  },
+  {
+    "observer_wall_s": 311.58,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 17.06334960046156,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 261.45506501197815
+  },
+  {
+    "observer_wall_s": 332.47,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.0077535077025148785,
+    "recording": true,
+    "reason": "Holding for three clear readings and minimum hold",
+    "remaining_s": 240.30347871780396
+  },
+  {
+    "observer_wall_s": 353.44,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 9.803408460960757,
+    "recording": true,
+    "reason": "Predicted time-aligned occupancy conflict",
+    "remaining_s": 219.14060807228088
+  },
+  {
+    "observer_wall_s": 374.19,
+    "phase": "FINISHED",
+    "mode": "PAUSED",
+    "speed_kmh": 0.012075877253914626,
+    "recording": false,
+    "reason": "Monitoring resumes with normal forward driving",
+    "remaining_s": 198.03644442558289
+  }
+]

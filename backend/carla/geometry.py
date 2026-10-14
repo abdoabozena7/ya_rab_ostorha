@@ -29,6 +29,7 @@ def rectangle_clearance(a,b):
     if not separated:return 0.
     def distance(p,q,r):
         dx,dy=r[0]-q[0],r[1]-q[1]
+        if dx*dx+dy*dy <= 1e-16: return math.hypot(p[0]-q[0],p[1]-q[1])
         t=max(0.,min(1.,((p[0]-q[0])*dx+(p[1]-q[1])*dy)/(dx*dx+dy*dy)))
         return math.hypot(p[0]-q[0]-t*dx,p[1]-q[1]-t*dy)
     return min(distance(p,q,r) for first,second in ((a,b),(b,a)) for p in first

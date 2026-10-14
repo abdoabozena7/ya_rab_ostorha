@@ -4,5 +4,5 @@ export function isEditableTarget(target) {
 }
 export function drivingInputAllowed({fresh, replay, owner, focused, modal, mode, armed}) {
   return fresh && !replay && owner && focused && !modal &&
-    (mode === 'AUTOMATIC' || mode === 'MANUAL' && armed);
+    mode === 'MANUAL' && armed;
 }

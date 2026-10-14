@@ -1,0 +1,332 @@
+{
+  "matched_stopped_performance": {
+    "samples": 241,
+    "native_hz": 12.877211238302413,
+    "camera_hz": 12.929623567920208,
+    "contact_half_second_bins": 0,
+    "contacts": [],
+    "max_speed_kmh": 0.0,
+    "stopped_fraction": 1.0,
+    "comfort_accel_exceedances": 0,
+    "comfort_decel_exceedances": 0,
+    "arrived": false,
+    "terminal": {
+      "status": "PAUSED",
+      "reason": "operator_stop",
+      "speed_kmh": 30
+    },
+    "remaining_m": 518.3677128377365,
+    "actions": [
+      "HOLD"
+    ],
+    "sensor_errors": []
+  },
+  "degradation_percent": {
+    "native_hz": 6.906867846033404,
+    "camera_hz": 6.153846153908438
+  },
+  "performance_gate": true,
+  "journeys": [
+    {
+      "chaos": 0,
+      "seed": 7301,
+      "telemetry": "journey-0-7301.json",
+      "samples": 424,
+      "native_hz": 10.542008305821067,
+      "camera_hz": 10.512308715902345,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 6.335654739207633,
+      "stopped_fraction": 0.714622641509434,
+      "comfort_accel_exceedances": 14,
+      "comfort_decel_exceedances": 9,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "9f61fbc0da08440ba8b3adfc7ae10710"
+      },
+      "remaining_m": 90.09737572532302,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 0,
+      "seed": 7302,
+      "telemetry": "journey-0-7302.json",
+      "samples": 391,
+      "native_hz": 9.542168674698795,
+      "camera_hz": 9.539910638808653,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.760875810683421,
+      "stopped_fraction": 0.7902813299232737,
+      "comfort_accel_exceedances": 11,
+      "comfort_decel_exceedances": 8,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "684c9bbfd556486baedc3058c261ab81"
+      },
+      "remaining_m": 89.94978095679284,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 0,
+      "seed": 7303,
+      "telemetry": "journey-0-7303.json",
+      "samples": 397,
+      "native_hz": 9.733077740666094,
+      "camera_hz": 9.760316283670143,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 5.447515440025343,
+      "stopped_fraction": 0.6700251889168766,
+      "comfort_accel_exceedances": 14,
+      "comfort_decel_exceedances": 9,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "acbf3748e39447c596f0a46d22a46c77"
+      },
+      "remaining_m": 88.84308102241695,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 50,
+      "seed": 7301,
+      "telemetry": "journey-50-7301.json",
+      "samples": 378,
+      "native_hz": 9.297129376485646,
+      "camera_hz": 9.486071085484904,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 5.742750244167444,
+      "stopped_fraction": 0.7248677248677249,
+      "comfort_accel_exceedances": 12,
+      "comfort_decel_exceedances": 7,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "ef9e342716634a18a73c7a855942ed6c"
+      },
+      "remaining_m": 88.83188317403123,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 50,
+      "seed": 7302,
+      "telemetry": "journey-50-7302.json",
+      "samples": 400,
+      "native_hz": 9.9,
+      "camera_hz": 9.884275203506213,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 6.361591338796539,
+      "stopped_fraction": 0.805,
+      "comfort_accel_exceedances": 5,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "edb51f6393b442048ad9b28391a39381"
+      },
+      "remaining_m": 89.63155302280666,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 50,
+      "seed": 7303,
+      "telemetry": "journey-50-7303.json",
+      "samples": 370,
+      "native_hz": 8.942689620019786,
+      "camera_hz": 9.044075558098996,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.487985126168597,
+      "stopped_fraction": 0.518918918918919,
+      "comfort_accel_exceedances": 13,
+      "comfort_decel_exceedances": 7,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "852a9dd2a372410d9a44d2c0370fd10b"
+      },
+      "remaining_m": 89.83511511075451,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 85,
+      "seed": 7301,
+      "telemetry": "journey-85-7301.json",
+      "samples": 380,
+      "native_hz": 9.276611694147762,
+      "camera_hz": 9.294117647058824,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.947861172343962,
+      "stopped_fraction": 0.4421052631578947,
+      "comfort_accel_exceedances": 11,
+      "comfort_decel_exceedances": 7,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "9df8e9b5164b4f8995a7ff58c30a1bec"
+      },
+      "remaining_m": 86.2364027833117,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 85,
+      "seed": 7302,
+      "telemetry": "journey-85-7302.json",
+      "samples": 212,
+      "native_hz": 9.03861955627884,
+      "camera_hz": 9.012092174321443,
+      "contact_half_second_bins": 1,
+      "contacts": [
+        {
+          "frame_id": 129006,
+          "timestamp_s": 6241.9639127366245,
+          "ego_actor_id": 1732,
+          "other_actor_id": 2554,
+          "impulse_ns": [
+            -3015.0986328125,
+            -519.0570678710938,
+            289.22705078125
+          ],
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up",
+          "contact_position_m": null,
+          "ego_transform": {
+            "position_m": [
+              53.90780258178711,
+              -67.88460540771484,
+              -0.004518470726907253
+            ],
+            "rotation_rad": {
+              "roll": 7.687264967346609e-07,
+              "pitch": 8.356570865671425e-05,
+              "yaw": -3.1353771019216574
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "other_actor_type": "vehicle.audi.tt",
+          "impulse_magnitude_ns": 3073.0916504716165
+        }
+      ],
+      "max_speed_kmh": 6.748723174300589,
+      "stopped_fraction": 0.7452830188679245,
+      "comfort_accel_exceedances": 4,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "collision",
+        "speed_kmh": 30.0,
+        "route_id": "e26f1597128f482fadede9ea4908b6d9"
+      },
+      "remaining_m": 90.66797568990373,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "chaos": 85,
+      "seed": 7303,
+      "telemetry": "journey-85-7303.json",
+      "samples": 330,
+      "native_hz": 8.159904210329854,
+      "camera_hz": 8.141811810785153,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 3.890468130530727,
+      "stopped_fraction": 0.6393939393939394,
+      "comfort_accel_exceedances": 7,
+      "comfort_decel_exceedances": 9,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "462e53fd49b14b46b8f22d85331daba0"
+      },
+      "remaining_m": 89.589385274834,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    }
+  ],
+  "native_lateral_gate": false,
+  "learned_control_gate": false
+}

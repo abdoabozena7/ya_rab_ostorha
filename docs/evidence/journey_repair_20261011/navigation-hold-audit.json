@@ -1,0 +1,10 @@
+{
+  "interval_s": [
+    70,
+    91
+  ],
+  "stopped_s": 21.000000312179328,
+  "navigation_full_brake_s": 20.65000030696392,
+  "safety_only_full_brake_s": 0.0,
+  "note": "Shared navigation request is measured; exact traffic-signal state is not independently logged."
+}

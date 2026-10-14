@@ -12,7 +12,8 @@ SPEED_DIFFERENCE = {'SLOW': 30., 'NORMAL': 15., 'FAST': 0.}
 DEFAULT_POPULATION = {'vehicle_count': 0, 'pedestrian_count': 0,
                       'speed_behavior': 'NORMAL', 'seed': 42, 'fast_walk_percent': 10,
                       'driver_behavior': 'NORMAL', 'light_compliance_percent': 90,
-                      'world_profile': 'TRAINING_DEVELOPMENT', 'crossing_percent': 5}
+                      'world_profile': 'TRAINING_DEVELOPMENT', 'crossing_percent': 5,
+                      'chaos_percent': 0, 'placement': 'EGO_SURROUNDING', 'vehicle_mix': 'MIXED'}
 
 
 def validate_population(value):
@@ -22,13 +23,15 @@ def validate_population(value):
     value = {**DEFAULT_POPULATION, **value}
     for key, maximum in (('vehicle_count', 75), ('pedestrian_count', 50),
                          ('seed', 2147483647), ('fast_walk_percent', 20),
-                         ('light_compliance_percent', 100), ('crossing_percent', 15)):
+                         ('light_compliance_percent', 100), ('crossing_percent', 60), ('chaos_percent', 100)):
         if type(value[key]) is not int or not 0 <= value[key] <= maximum:
             raise ValueError(f'{key} must be an integer from 0 to {maximum}')
     if not isinstance(value['speed_behavior'], str) or value['speed_behavior'] not in SPEED_DIFFERENCE:
         raise ValueError('Traffic speed behavior must be SLOW, NORMAL or FAST')
     if not isinstance(value['driver_behavior'],str) or value['driver_behavior'] not in MIXTURES or not isinstance(value['world_profile'],str) or value['world_profile'] not in WORLD_PROFILES:
         raise ValueError('Unknown urban driver behavior or world profile')
+    if value['placement'] not in ('EGO_SURROUNDING','ROUTE') or value['vehicle_mix'] not in ('MIXED','CARS'):
+        raise ValueError('Unknown traffic placement or native mixture')
     return dict(value)
 
 
@@ -39,6 +42,20 @@ def passenger_blueprints(library):
                    bp.get_attribute('number_of_wheels').as_int() == 4 and
                    bp.has_attribute('base_type') and
                    bp.get_attribute('base_type').as_str() == 'car' and 'police' not in bp.id), key=lambda bp: bp.id)
+
+
+def mixed_blueprints(library):
+    """Only native CARLA blueprints with working vehicle physics."""
+    allowed={'car','motorcycle','bicycle','van','bus','truck'}
+    return sorted((bp for bp in library.filter('vehicle.*') if bp.has_attribute('base_type') and
+                   bp.get_attribute('base_type').as_str() in allowed and 'police' not in bp.id),key=lambda bp:bp.id)
+
+
+def sector(location,transform):
+    dx=location.x-transform.location.x;dy=location.y-transform.location.y
+    f=transform.get_forward_vector();r=transform.get_right_vector()
+    x=dx*f.x+dy*f.y;y=dx*r.x+dy*r.y
+    return ('FRONT' if x>=0 else 'REAR') if abs(x)>=abs(y) else ('RIGHT' if y>=0 else 'LEFT')
 
 
 class TrafficManagerService:
@@ -79,6 +96,9 @@ class WorldPopulationManager:
         self.driver_profiles = {}
         self.driver_ordinal = 0
         self.route_points = []
+        self.route_crowding = None
+        self.crowd_slots = []
+        self.crowd_paths = {}
         self.road_candidates = None
         self.last_recycle_at = -float('inf')
         self.recycled_vehicles = self.recycled_walkers = 0
@@ -102,10 +122,18 @@ class WorldPopulationManager:
 
     def apply(self, value):
         config = validate_population(value)
+        self.route_crowding = None
+        self.crowd_slots = []
+        self.crowd_paths = {}
         # Explicit application only: stored preferences never populate a session.
         if config['seed'] != self.config['seed'] or not self.vehicles and not self.walkers:
             self.random = random.Random(config['seed'])
             if not self.vehicles and not self.walkers:self.driver_ordinal = 0
+        # Native crossing eligibility is assigned when walkers are spawned.
+        # Rebuild just the owned walkers when changing that setting explicitly;
+        # changing destinations alone cannot make existing walkers eligible.
+        if config['crossing_percent'] != self.config['crossing_percent'] and self.walkers:
+            self.clear_pedestrians()
         self.config = config
         self.world.set_pedestrians_seed(config['seed'])
         self.world.set_pedestrians_cross_factor(config['crossing_percent']/100.)
@@ -115,6 +143,34 @@ class WorldPopulationManager:
         self.spawn_traffic(config['vehicle_count'])
         self.spawn_pedestrians(config['pedestrian_count'])
         return self.get_population_state()
+
+    def crowd_route(self, route, native_route, options):
+        from .route_crowding import destination_key, route_slots
+        if not isinstance(options, dict) or set(options)-{'route_id', 'seed', 'chaos_percent'}:
+            raise ValueError('Road traffic requires a route, seed and randomness')
+        if not route or route.get('arrived') or options.get('route_id') != route.get('id'):
+            raise ValueError('The destination changed. Choose its road traffic again')
+        config = validate_population({**self.config,
+            **{key: options[key] for key in ('seed', 'chaos_percent') if key in options}})
+        ego = self.world.get_actor(self.ego_id)
+        if ego is None: raise ValueError('Ego vehicle is unavailable')
+        occupied = [actor.get_location() for actor in self.world.get_actors().filter('vehicle.*')
+                    if actor.id != self.ego_id and actor.id not in self.vehicles]
+        slots, report = route_slots(native_route, ego.get_location(), self.api, occupied=occupied)
+        # Validate before touching actors. Only this project's traffic is moved;
+        # pedestrians, ego, destination and sensors are retained.
+        self.clear_traffic()
+        self.config = config
+        self.random = random.Random(config['seed'])
+        self.driver_ordinal = 0
+        self.errors = []
+        self.spawn_report.update(npc_spawned=0, npc_failed=0)
+        self.traffic_manager.configure(config['speed_behavior'], config['seed'])
+        self.crowd_slots = slots
+        self.route_crowding = {**report, 'active': True, 'route_id': route['id'],
+            'destination': destination_key(route), 'status': 'APPLYING',
+            'seed': config['seed'], 'chaos_percent': config['chaos_percent']}
+        self.spawn_traffic(report['target_count'])
 
     def _destroy(self, ids):
         ids = list(ids)
@@ -138,15 +194,23 @@ class WorldPopulationManager:
         for actor_id in remove: getattr(self, 'driver_profiles', {}).pop(actor_id, None)
         needed = count-len(self.vehicles)
         if needed <= 0: return
-        blueprints = passenger_blueprints(self.world.get_blueprint_library())
+        blueprints = (mixed_blueprints if self.config.get('vehicle_mix','MIXED')=='MIXED' else passenger_blueprints)(self.world.get_blueprint_library())
         if not blueprints: raise RuntimeError('No native passenger vehicle blueprints')
+        categories={name:[bp for bp in blueprints if bp.has_attribute('base_type') and bp.get_attribute('base_type').as_str()==name]
+                    for name in ('car','motorcycle','bicycle','van','bus')}
+        self.unavailable_vehicle_categories=[name for name,values in categories.items() if not values]
+        available_categories=[values for values in categories.values() if values]
         spawns = self._local_road_spawns(replacement)
         # Batch only as many attempts as required; retry occupied native road points.
         attempted = 0
         while needed and attempted < len(spawns):
             batch = []
-            for transform in spawns[attempted:attempted+needed]:
-                bp = self.random.choice(blueprints)
+            selected_blueprints=[]
+            selected = spawns[attempted:attempted+needed]
+            for transform in selected:
+                ordinal=self.driver_ordinal+len(batch)
+                choices=available_categories[ordinal%len(available_categories)] if self.config.get('vehicle_mix')=='MIXED' and available_categories else blueprints
+                bp = self.random.choice(choices);selected_blueprints.append(bp)
                 bp.set_attribute('role_name', 'ostorha_npc')
                 for name in ('color', 'driver_id'):
                     if bp.has_attribute(name) and bp.get_attribute(name).recommended_values:
@@ -154,16 +218,22 @@ class WorldPopulationManager:
                 batch.append(self.api.command.SpawnActor(bp, transform).then(
                     self.api.command.SetAutopilot(self.api.command.FutureActor, True, self.traffic_manager.port)))
             attempted += len(batch)
-            for reply in self.client.apply_batch_sync(batch, False):
+            for transform, bp, reply in zip(selected,selected_blueprints,self.client.apply_batch_sync(batch, False)):
                 if not reply.error:
                     self.vehicles.add(reply.actor_id); self.pending_vehicles.add(reply.actor_id)
-                    self.driver_profiles[reply.actor_id] = {'ordinal': self.driver_ordinal}
+                    self.driver_profiles[reply.actor_id] = {'ordinal': self.driver_ordinal,'category':bp.get_attribute('base_type').as_str()}
                     self.driver_ordinal += 1
                     self.spawn_report['npc_spawned'] += 1; needed -= 1
+                    if getattr(self, 'route_crowding', None):
+                        slot = next(s for s in self.crowd_slots if s['transform'] is transform)
+                        self.crowd_paths[reply.actor_id] = slot['path']
         self.spawn_report['npc_failed'] = needed
 
     def clear_traffic(self):
         self.spawn_traffic(0)
+        self.route_crowding = None
+        self.crowd_slots = []
+        self.crowd_paths = {}
 
     def spawn_pedestrians(self, count, _attempt=0, replacement=False, _blocked=()):
         if type(count) is not int or not 0 <= count <= 50:
@@ -278,6 +348,15 @@ class WorldPopulationManager:
         return self.random.choice(candidates) if candidates else None
 
     def _local_road_spawns(self, replacement):
+        if getattr(self, 'route_crowding', None):
+            ego = self.world.get_actor(self.ego_id)
+            if ego is None: return []
+            occupied = [a.get_location() for a in self.world.get_actors().filter('vehicle.*')]
+            frusta = self._view_frusta() if replacement else ()
+            return [s['transform'] for s in self.crowd_slots
+                    if s['transform'].location.distance(ego.get_location()) >= (40. if replacement else 16.)
+                    and all(s['transform'].location.distance(p) >= 3. for p in occupied)
+                    and (not replacement or not self._spawn_visible(s['transform'].location, frusta))]
         if self.road_candidates is None:
             waypoints = self.map.generate_waypoints(12.)
             self.road_candidates = []
@@ -303,6 +382,15 @@ class WorldPopulationManager:
             route_gap = min((t.location.distance(p) for p in self.route_points), default=distance)
             return min(distance, route_gap+35.)
         candidates.sort(key=score)
+        if self.config.get('placement')=='EGO_SURROUNDING' and not replacement:
+            pose=ego.get_transform()
+            grouped={name:[] for name in ('FRONT','REAR','LEFT','RIGHT')}
+            for t in candidates:grouped[sector(t.location,pose)].append(t)
+            self.available_sectors={k:len(v) for k,v in grouped.items()}
+            candidates=[]
+            while any(grouped.values()):
+                for name in grouped:
+                    if grouped[name]:candidates.append(grouped[name].pop(0))
         # Native points cover both legal driving directions. SpawnActor rejects
         # occupied volumes, retaining actual counts rather than claimed counts.
         return candidates
@@ -355,6 +443,9 @@ class WorldPopulationManager:
             distant = [i for i in sorted(self.vehicles) if snapshot.find(i) is not None
                        and snapshot.find(i).get_transform().location.distance(ego_position) > retirement_radius
                        and not self._spawn_visible(snapshot.find(i).get_transform().location,frusta)][:3]
+            # Future route traffic must not be recycled merely for being far
+            # ahead of ego; otherwise a long route would empty before arrival.
+            if getattr(self, 'route_crowding', None): distant = []
             self._destroy(distant)
             for i in distant:
                 self.vehicles.discard(i); self.pending_vehicles.discard(i); self.seen_vehicles.discard(i)
@@ -392,9 +483,25 @@ class WorldPopulationManager:
             if actor is not None and actor.is_alive:
                 entry = self.driver_profiles[actor_id]
                 profile = sample_driver(self.config['seed'], entry['ordinal'], self.config['driver_behavior'],
-                                        SPEED_DIFFERENCE[self.config['speed_behavior']], self.config['light_compliance_percent'])
+                                        SPEED_DIFFERENCE[self.config['speed_behavior']], self.config['light_compliance_percent'],
+                                        self.config.get('chaos_percent', 0))
                 apply_driver(self.traffic_manager.manager, actor, profile)
-                self.driver_profiles[actor_id] = {**profile, 'ordinal': entry['ordinal']}
+                path = getattr(self, 'crowd_paths', {}).pop(actor_id, None)
+                independent=[]
+                if not path and self.config.get('placement')=='EGO_SURROUNDING':
+                    waypoint=self.map.get_waypoint(actor.get_location(),lane_type=self.api.LaneType.Driving)
+                    route_rng=random.Random(self.config['seed']*100003+entry['ordinal'])
+                    if waypoint is not None:
+                        for _ in range(20):
+                            choices=sorted(waypoint.next(6.),key=lambda q:(q.road_id,q.lane_id,q.s))
+                            if not choices:break
+                            waypoint=choices[route_rng.randrange(len(choices))]
+                            independent.append(waypoint.transform.location)
+                        if independent:path=independent
+                if path:
+                    self.traffic_manager.manager.set_path(actor, path, True)
+                self.driver_profiles[actor_id] = {**profile, 'ordinal': entry['ordinal'], 'blueprint':actor.type_id,'category':entry.get('category','UNKNOWN'),
+                    'route_points':[[v.x,v.y,v.z] for v in path] if path else [],'route_source':'SEEDED_INDEPENDENT_NATIVE_TOPOLOGY' if independent else 'ROUTE_CROWDING' if path else 'NATIVE_TM'}
                 self.pending_vehicles.remove(actor_id)
         for walker_id, entry in list(self.walkers.items()):
             if entry.get('admitted_at_frame') is None:entry['admitted_at_frame']=snapshot.frame
@@ -436,8 +543,9 @@ class WorldPopulationManager:
             # Retarget stationary walkers after 20 simulation seconds; never teleport.
             stationary = timestamp-entry['last_moved_at'] > 20. and timestamp-entry['last_retarget'] > 20.
             if destination is None or reached or stationary:
-                if reached and self.random.random() < .35:
-                    entry.update(activity='WAITING', wait_until=timestamp+self.random.uniform(2.,6.))
+                chaos = self.config.get('chaos_percent', 0)/100.
+                if reached and self.random.random() < .35-.25*chaos:
+                    entry.update(activity='WAITING', wait_until=timestamp+self.random.uniform(2.-chaos,6.-3.*chaos))
                     controller.set_max_speed(0.)
                     continue
                 entry['activity'] = 'RESELECTING_DESTINATION'
@@ -460,6 +568,13 @@ class WorldPopulationManager:
             self.local_counts = {name:sum(snapshot.find(i) is not None and
                 snapshot.find(i).get_transform().location.distance(ego_position) <= 120. for i in ids)
                 for name,ids in [('vehicles_120m',self.vehicles),('walkers_120m',self.walkers)]}
+            ego_pose=ego_snapshot.get_transform()
+            self.sector_counts={name:{side:0 for side in ('FRONT','REAR','LEFT','RIGHT')} for name in ('vehicles','pedestrians')}
+            for name,ids in (('vehicles',self.vehicles),('pedestrians',self.walkers)):
+                for key in ids:
+                    item=snapshot.find(key)
+                    if item is not None and item.get_transform().location.distance(ego_position)<=120.:
+                        self.sector_counts[name][sector(item.get_transform().location,ego_pose)]+=1
         self.actual = {'vehicles': sum(snapshot.find(i) is not None for i in self.vehicles),
                        'pedestrians': sum(snapshot.find(i) is not None for i in self.walkers),
                        'controllers': sum(snapshot.find(e['controller_id']) is not None for e in self.walkers.values()),
@@ -472,7 +587,24 @@ class WorldPopulationManager:
         return copy.deepcopy(self.state_cache)
 
     def _build_population_state(self):
+        crowding = copy.deepcopy(getattr(self, 'route_crowding', None))
+        if crowding:
+            count = self.actual['vehicles']
+            crowding.update(placed_count=count, frame_id=self.frame_id,
+                status='READY' if count == crowding['target_count'] and not self.spawn_report['npc_failed']
+                    and not self.errors and not self.pending_vehicles else 'PARTIAL')
         return {'frame_id': self.frame_id, 'requested': dict(self.config), 'actual': dict(self.actual),
+                'admitted': {'vehicles':len(self.vehicles),'pedestrians':len(self.walkers)},
+                'active': {'vehicles':self.actual['vehicles'],'walkers':self.actual['walkers_active']},
+                'walker_controllers_ready': self.actual['walkers_active']==self.config['pedestrian_count'] and
+                    self.actual['controllers']==self.config['pedestrian_count'],
+                'sector_capacity':getattr(self,'available_sectors',{}),
+                'unavailable_sectors':[k for k,v in getattr(self,'available_sectors',{}).items() if not v],
+                'local_sector_counts':getattr(self,'sector_counts',{}),
+                'unavailable_vehicle_categories':getattr(self,'unavailable_vehicle_categories',[]),
+                'native_vehicle_categories':{kind:sum(p.get('category')==kind for p in getattr(self,'driver_profiles',{}).values())
+                    for kind in ('car','motorcycle','bicycle','van','bus')},
+                'route_crowding': crowding,
                 **self.spawn_report, 'traffic_manager_connected': self.traffic_manager.connected,
                 'traffic_manager_port': self.traffic_manager.port,
                 'desired_speed_difference_percent': SPEED_DIFFERENCE[self.config['speed_behavior']],
@@ -485,6 +617,10 @@ class WorldPopulationManager:
                 'vehicles_removed_native': self.vehicles_removed_native,
                 'behavior': self.config['driver_behavior'],
                 'driver_profiles': {str(i):dict(p) for i,p in getattr(self, 'driver_profiles', {}).items()},
+                'walker_profiles':{str(i):{'speed_mps':e['speed'],'ready_at_s':e.get('ready_at'),
+                    'activity':e.get('activity'),'wait_until_s':e.get('wait_until'),
+                    'destination':[e['destination'].x,e['destination'].y,e['destination'].z] if e.get('destination') is not None else None}
+                    for i,e in self.walkers.items()},
                 'local_counts': getattr(self, 'local_counts', {}),
                 'recycled_vehicles': getattr(self, 'recycled_vehicles', 0),
                 'recycled_walkers': getattr(self, 'recycled_walkers', 0),

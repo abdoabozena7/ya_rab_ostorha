@@ -1,0 +1,17 @@
+{
+  "source": "independent CARLA SDK observer; never ticks",
+  "actor_id": 1573,
+  "world_frame": 261312,
+  "position_m": [
+    -107.41873168945312,
+    -44.94977569580078,
+    -0.004483451601117849
+  ],
+  "speed_mps": 6.65603442291421e-05,
+  "destination_distance_m": 12.426800238923235,
+  "arrival_verified": false,
+  "control": {
+    "throttle": 0.0,
+    "brake": 1.0
+  }
+}

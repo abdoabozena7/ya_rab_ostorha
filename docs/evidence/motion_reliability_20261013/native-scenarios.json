@@ -1,0 +1,602 @@
+{
+  "source": "LIVE_NATIVE_CARLA",
+  "scope": "Two repeated sensor fixtures per case, TRAIN and VALIDATION. Independent actor truth is evaluation-only.",
+  "fixtures": [
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "clear",
+      "samples": 60,
+      "native_hz": 14.431486880465247,
+      "camera_hz": 14.53007173071955,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 3.3676496095550412,
+      "stopped_fraction": 0.5833333333333334,
+      "comfort_accel_exceedances": 1,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "dashboard_heartbeat_timeout",
+        "speed_kmh": 30.0,
+        "route_id": "2d6fba7067804b0696e20b7780508118"
+      },
+      "remaining_m": 93.13811055677385,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "parked_side",
+      "samples": 75,
+      "native_hz": 15.047879616967856,
+      "camera_hz": 15.001898974585911,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 6.119541844201651,
+      "stopped_fraction": 0.4666666666666667,
+      "comfort_accel_exceedances": 1,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "7617e2691eab448ba7d4ca683e05e880"
+      },
+      "remaining_m": 90.36198072989595,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "parallel_person",
+      "samples": 78,
+      "native_hz": 15.605296343007847,
+      "camera_hz": 15.557306025968094,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.242582859027022,
+      "stopped_fraction": 0.3717948717948718,
+      "comfort_accel_exceedances": 2,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "1ea6b5f2fde7454581c0b7044f696da2"
+      },
+      "remaining_m": 93.94556033938368,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "crossing_person",
+      "samples": 77,
+      "native_hz": 15.644753476590585,
+      "camera_hz": 15.652863086986518,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 7.238544936199935,
+      "stopped_fraction": 0.42857142857142855,
+      "comfort_accel_exceedances": 2,
+      "comfort_decel_exceedances": 3,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "345c9fd80f0447138f4afa41dad02ef2"
+      },
+      "remaining_m": 89.56562981273717,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "cut_in",
+      "samples": 77,
+      "native_hz": 15.547724750276757,
+      "camera_hz": 15.508441303502458,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 8.173936385107647,
+      "stopped_fraction": 0.4025974025974026,
+      "comfort_accel_exceedances": 1,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "723b06ea765648fe947f25aa4548938f"
+      },
+      "remaining_m": 89.3705943957675,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "sudden_brake",
+      "samples": 76,
+      "native_hz": 14.97957330913131,
+      "camera_hz": 14.827327327303353,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.446933909257596,
+      "stopped_fraction": 0.5657894736842105,
+      "comfort_accel_exceedances": 7,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "3938ed092ec44f9c8a4729b3d3b55963"
+      },
+      "remaining_m": 93.46107778113964,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "rear_approach",
+      "samples": 18,
+      "native_hz": 14.908851402744002,
+      "camera_hz": 15.092177040944387,
+      "contact_half_second_bins": 1,
+      "contacts": [
+        {
+          "frame_id": 135224,
+          "timestamp_s": 6521.640999540687,
+          "ego_actor_id": 2749,
+          "other_actor_id": 2963,
+          "impulse_ns": [
+            14699.0048828125,
+            -991.5531005859375,
+            298.5657653808594
+          ],
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up",
+          "contact_position_m": null,
+          "ego_transform": {
+            "position_m": [
+              57.37162780761719,
+              -67.8526382446289,
+              -0.004176292102783918
+            ],
+            "rotation_rad": {
+              "roll": 8.161264800231128e-05,
+              "pitch": -0.0015259980665478588,
+              "yaw": -3.1401830424248143
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "other_actor_type": "vehicle.tesla.model3",
+          "impulse_magnitude_ns": 14735.435643797056
+        }
+      ],
+      "max_speed_kmh": 1.7027064402667933,
+      "stopped_fraction": 0.7222222222222222,
+      "comfort_accel_exceedances": 1,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "collision",
+        "speed_kmh": 30.0,
+        "route_id": "2665c9644c144c8ebdae37ce415560d5"
+      },
+      "remaining_m": 94.26975064846872,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "adjacent_occupied",
+      "samples": 74,
+      "native_hz": 14.769506191238664,
+      "camera_hz": 14.741556260505329,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.120387207232042,
+      "stopped_fraction": 0.17567567567567569,
+      "comfort_accel_exceedances": 4,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "ce9059a1bddd4ed58c2f5e5650c2ba7a"
+      },
+      "remaining_m": 94.34920384794125,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "pass_return",
+      "samples": 185,
+      "native_hz": 14.499121265359562,
+      "camera_hz": 14.654053051373072,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 6.5535907767194965,
+      "stopped_fraction": 0.7783783783783784,
+      "comfort_accel_exceedances": 2,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "8ecd056bf32741268d0ed7b64dc0507d"
+      },
+      "remaining_m": 89.24353311477068,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "clear",
+      "samples": 78,
+      "native_hz": 15.799553143943266,
+      "camera_hz": 15.752741774677801,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 5.62047621986276,
+      "stopped_fraction": 0.2948717948717949,
+      "comfort_accel_exceedances": 4,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "01876954659a471c95138bea74254655"
+      },
+      "remaining_m": 90.1046050944809,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "parked_side",
+      "samples": 76,
+      "native_hz": 15.193370165738257,
+      "camera_hz": 15.274555297739619,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 6.5285929630993795,
+      "stopped_fraction": 0.5921052631578947,
+      "comfort_accel_exceedances": 3,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "94be67070e334eb5afd8ca90d70c99e8"
+      },
+      "remaining_m": 90.60659891658163,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "parallel_person",
+      "samples": 76,
+      "native_hz": 15.84,
+      "camera_hz": 15.8,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 8.08902139365307,
+      "stopped_fraction": 0.21052631578947367,
+      "comfort_accel_exceedances": 2,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "5b454f6cf0bf4c8cb791d8a92dd9941b"
+      },
+      "remaining_m": 89.60394665033157,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "crossing_person",
+      "samples": 76,
+      "native_hz": 15.123739688354462,
+      "camera_hz": 15.136999425185003,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.472554373649887,
+      "stopped_fraction": 0.4605263157894737,
+      "comfort_accel_exceedances": 4,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "74787b7ec2ac48c98e84fec2de476e07"
+      },
+      "remaining_m": 94.01346919995866,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "cut_in",
+      "samples": 44,
+      "native_hz": 14.366565084916882,
+      "camera_hz": 14.203523912248102,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 5.062781686348415,
+      "stopped_fraction": 0.3409090909090909,
+      "comfort_accel_exceedances": 2,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "dashboard_heartbeat_timeout",
+        "speed_kmh": 30.0,
+        "route_id": "1088259a238347c3ba96e029931baa22"
+      },
+      "remaining_m": 92.99154591420306,
+      "actions": [
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "sudden_brake",
+      "samples": 76,
+      "native_hz": 15.193370165738257,
+      "camera_hz": 15.180630284402731,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.692813247165164,
+      "stopped_fraction": 0.15789473684210525,
+      "comfort_accel_exceedances": 3,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "b9a65c15cbab4d8f90cba6676952650d"
+      },
+      "remaining_m": 90.20804973133227,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "rear_approach",
+      "samples": 18,
+      "native_hz": 16.183105648150466,
+      "camera_hz": 16.230136119024035,
+      "contact_half_second_bins": 1,
+      "contacts": [
+        {
+          "frame_id": 137136,
+          "timestamp_s": 6617.241000965238,
+          "ego_actor_id": 2749,
+          "other_actor_id": 2972,
+          "impulse_ns": [
+            14844.728515625,
+            989.2081909179688,
+            301.5039367675781
+          ],
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up",
+          "contact_position_m": null,
+          "ego_transform": {
+            "position_m": [
+              57.466922760009766,
+              -67.85122680664062,
+              -0.004385146778076887
+            ],
+            "rotation_rad": {
+              "roll": 2.3911375687315067e-05,
+              "pitch": -0.0005444287992955702,
+              "yaw": -3.141388389134184
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "other_actor_type": "vehicle.tesla.model3",
+          "impulse_magnitude_ns": 14880.705701393183
+        }
+      ],
+      "max_speed_kmh": 1.19733319446249,
+      "stopped_fraction": 0.8333333333333334,
+      "comfort_accel_exceedances": 1,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "collision",
+        "speed_kmh": 30.0,
+        "route_id": "03aa412cc20b4ef4b869ac014c074916"
+      },
+      "remaining_m": 94.36623863815576,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "adjacent_occupied",
+      "samples": 72,
+      "native_hz": 14.838129496389675,
+      "camera_hz": 14.805130729523643,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 3.8977118950729186,
+      "stopped_fraction": 0.4444444444444444,
+      "comfort_accel_exceedances": 3,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "fe6570fecc7a48ff81f90e354d9ea3d3"
+      },
+      "remaining_m": 93.87190675309088,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "pass_return",
+      "samples": 184,
+      "native_hz": 15.031902799542467,
+      "camera_hz": 15.093618647315475,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 5.629349622275188,
+      "stopped_fraction": 0.6032608695652174,
+      "comfort_accel_exceedances": 5,
+      "comfort_decel_exceedances": 3,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "21721a3b960a487fa3089344e5ea47e0"
+      },
+      "remaining_m": 89.33637500741492,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    }
+  ],
+  "lateral_native_accepted": false,
+  "learned_control_accepted": false,
+  "camera_separation": {
+    "front_unchanged": true,
+    "depth_unchanged": true,
+    "display_changed": true
+  },
+  "complete": true,
+  "budget": {
+    "scope": "MOTION_RELIABILITY_20261013",
+    "hard_cap_s": 2400.0,
+    "phases": {
+      "validation": {
+        "cap_s": 1800.0,
+        "charged_s": 1303.2189999999828
+      },
+      "training": {
+        "cap_s": 600.0,
+        "charged_s": 0
+      }
+    },
+    "charged_s": 1303.2189999999828,
+    "old_ledger_unchanged": true
+  }
+}

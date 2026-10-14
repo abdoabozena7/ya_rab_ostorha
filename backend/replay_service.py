@@ -16,7 +16,10 @@ class ReplayService:
 
     def snapshot(self):
         frame = self.session.current()
+        diagnostic = self.session.reader.safety_at(frame.frame_id)
         return {'connected': False, 'available': True, 'provider': 'replay', 'mode': 'REPLAY',
+                'sessionId': diagnostic.get('session_id') if diagnostic else self.session.reader.metadata.run_id,
+                'safetySystem': diagnostic.get('safety') if diagnostic else None, 'stopDiagnostics': diagnostic,
                 'connectionState': 'DISCONNECTED', 'error': None, 'sequence': frame.frame_id,
                 'controller': False, 'controlSource': frame.control.source.value if frame.control else None,
                 'replay': {'runId': self.session.reader.metadata.run_id,

@@ -55,11 +55,14 @@ class EgoMeasurements(Contract):
     reverse: bool
     handbrake: bool
     state_source: str = 'SIMULATED_ONBOARD_VEHICLE_STATE'
+    longitudinal_speed_mps: float | None = None
 
     def validate(self):
         validate_inputs(self.throttle,self.brake,self.steering)
         if self.speed_mps < 0 or not self.angular_velocity_frame or not self.state_source:
             raise ValueError('Invalid onboard state')
+        if self.longitudinal_speed_mps is not None and abs(self.longitudinal_speed_mps)>self.speed_mps+1e-3:
+            raise ValueError('Signed onboard speed exceeds measured speed magnitude')
 
 
 @dataclass(frozen=True)
@@ -90,7 +93,8 @@ def sensor_observation(frame: SimulationFrame):
     v=frame.vehicle
     # Use actual native IMU sensor readings; no exact world pose is exposed.
     ego=EgoMeasurements(v.speed_mps,tuple(imu.data['gyroscope_radps']),'IMU_SENSOR_LOCAL',
-                        v.throttle,v.brake,v.steering,v.gear,v.reverse,v.handbrake)
+                        v.throttle,v.brake,v.steering,v.gear,v.reverse,v.handbrake,
+                        longitudinal_speed_mps=v.longitudinal_speed_mps)
     return SensorObservation(frame.frame_id,frame.timestamp_s,ego,sensors,frame.world.provider)
 
 

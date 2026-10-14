@@ -40,15 +40,25 @@ REQUIRED_TM_METHODS = ('distance_to_leading_vehicle', 'vehicle_percentage_speed_
                        'ignore_walkers_percentage', 'ignore_vehicles_percentage')
 
 
-def sample_driver(seed, ordinal, behavior, speed_difference, compliance):
+def sample_driver(seed, ordinal, behavior, speed_difference, compliance, chaos_percent=0):
     """Stable per owned actor; seeds do not depend on native actor IDs."""
     rng = random.Random(f'{seed}:{ordinal}:driver')
-    name = rng.choices(tuple(PROFILES), weights=MIXTURES[behavior], k=1)[0]
+    chaos = chaos_percent/100.
+    weights = tuple((1.-chaos)*a+chaos*b for a,b in zip(MIXTURES[behavior], (5,15,40,40)))
+    name = rng.choices(tuple(PROFILES), weights=weights, k=1)[0]
     profile = asdict(PROFILES[name])
     profile['speed_difference_percent'] = max(-10., min(60.,
-        speed_difference + profile.pop('speed_offset_percent') + rng.uniform(-4., 4.)))
+        speed_difference + profile.pop('speed_offset_percent') + rng.uniform(-4.-6.*chaos, 4.+6.*chaos)))
     profile['following_distance_m'] *= rng.uniform(.9, 1.1)
     profile['light_violation_percent'] = min(profile['light_violation_percent'], 100.-compliance)
+    # Eligibility requests, not promised maneuvers: 0.6% per direction per
+    # 20 Hz step is roughly one request / 4.2 s at the maximum. CARLA also
+    # imposes speed, junction, topology and inter-maneuver distance limits.
+    profile['lane_change_percent'] = min(.6, profile['lane_change_percent']+.42*chaos)
+    profile['light_violation_percent'] = min(100.-compliance,
+        profile['light_violation_percent']+50.*chaos)
+    profile['sign_violation_percent'] = min(50., profile['sign_violation_percent']+25.*chaos)
+    profile['chaos_percent'] = chaos_percent
     return profile
 
 

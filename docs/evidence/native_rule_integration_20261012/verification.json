@@ -1,0 +1,40 @@
+{
+  "status": "BLOCKED_NATIVE_SENSOR_FRESHNESS",
+  "end_to_end_acceptance": "FAIL",
+  "native_lifecycle": "PASS",
+  "active_rule_emergency": "PASS",
+  "failure_result_display": "PASS",
+  "native_new_arrival": false,
+  "latest_failure_reason": "Fresh complete safety observations unavailable",
+  "destination_remaining_m": 12.426800238923235,
+  "recorded_collisions": 0,
+  "python_tests": {
+    "run": 273,
+    "passed": 272,
+    "skipped": 1,
+    "failed": 0
+  },
+  "javascript_tests": {
+    "passed": 64,
+    "failed": 0
+  },
+  "research_charged_s": 5359.2970000000005,
+  "research_ledger_unchanged": true,
+  "training_runs": 0,
+  "model_runs": 0,
+  "preserved": {
+    "backend/core/prediction.py": true,
+    "backend/core/predictive_safety.py": true,
+    "backend/carla/urban_chaos.py": true,
+    "artifacts/learned_safety/predictive_v2/heads.npz": true,
+    "artifacts/learned_safety/v1/weights.npz": true,
+    "output/predictive-v2/budget.sqlite": true
+  },
+  "final_state": {
+    "mode": "PAUSED",
+    "controller": "RULE",
+    "safety_enabled": true,
+    "recording": false,
+    "pair_id": "90ab411017f54272b96493fd1cfea0de"
+  }
+}

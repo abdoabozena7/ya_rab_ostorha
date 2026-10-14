@@ -21,6 +21,7 @@ class CarlaSensorManager:
         self.queue_overflows = 0
         self.configurations = {}
         self.camera_mount_history = []
+        self.driving_frames = OrderedDict()
 
     def spawn(self, sensor_id, blueprint_id, transform, attributes, decode):
         if sensor_id in self.actors:
@@ -47,9 +48,13 @@ class CarlaSensorManager:
                 try:
                     received=time.monotonic()
                     decoded = decode(data)
-                    from dataclasses import replace
-                    decoded=replace(decoded,metadata={**decoded.metadata,
-                        'received_monotonic_s':received,'decode_duration_ms':(time.monotonic()-received)*1000})
+                    from ..core.contracts import SensorFrame
+                    if isinstance(decoded, SensorFrame):
+                        from dataclasses import replace
+                        decoded=replace(decoded,metadata={**decoded.metadata,
+                            'received_monotonic_s':received,'decode_duration_ms':(time.monotonic()-received)*1000})
+                    elif not isinstance(decoded, dict):
+                        raise TypeError('Unexpected decoded sensor payload: '+sensor_id)
                 except Exception as error:
                     with self.lock:
                         self.errors[sensor_id] = str(error)
@@ -58,7 +63,7 @@ class CarlaSensorManager:
                             'frame': data.frame, 'timestamp': data.timestamp,
                             'mountTransform': ({'positionM': vector(self.camera_mount_at(data.frame).location),
                                                 'rotationDeg': rotation(self.camera_mount_at(data.frame).rotation)}
-                                               if sensor_id in ('frontCamera', 'depth') else mount),
+                                               if sensor_id == 'drivingCamera' else mount),
                             'worldTransform': {'positionM': vector(data.transform.location),
                                                'rotationDeg': rotation(data.transform.rotation)},
                             'sensorTickSeconds': tick, 'requestedRateHz': 1/tick if tick else None,
@@ -69,7 +74,10 @@ class CarlaSensorManager:
                         self.sample_times[sensor_id].append(data.timestamp)
                         self.wall_sample_times[sensor_id].append(envelope['receivedMonotonic'])
                         from ..core.contracts import SensorFrame
-                        if isinstance(decoded, SensorFrame):
+                        if isinstance(decoded, SensorFrame) and sensor_id == 'drivingCamera':
+                            self.driving_frames[decoded.frame_id]=decoded
+                            while len(self.driving_frames)>32:self.driving_frames.popitem(last=False)
+                        elif isinstance(decoded, SensorFrame):
                             if len(self.pending_frames) >= 512:
                                 self.pending_frames.popleft()
                                 self.queue_overflows += 1
@@ -145,10 +153,15 @@ class CarlaSensorManager:
     def registry(self):
         from ..core.contracts import to_dict
         with self.lock:
-            return {name: {**config, 'latestFrame': self.frames[name]['frame'] if name in self.frames else None,
-                           'latestTimestamp': self.frames[name]['timestamp'] if name in self.frames else None,
-                           'latestValidData': to_dict(self.frames[name]['data']) if name in self.frames else None,
-                           'eventDriven': name == 'collision'} for name, config in self.configurations.items()}
+            # Callbacks replace whole envelopes. Capture their references, then
+            # serialize outside the callback lock so display work cannot delay
+            # admission of the next complete safety observation.
+            frames = dict(self.frames)
+            configurations = dict(self.configurations)
+        return {name: {**config, 'latestFrame': frames[name]['frame'] if name in frames else None,
+                       'latestTimestamp': frames[name]['timestamp'] if name in frames else None,
+                       'latestValidData': to_dict(frames[name]['data']) if name in frames else None,
+                       'eventDriven': name == 'collision'} for name, config in configurations.items()}
 
     def enable_suite(self, api, fixed_delta, options=None):
         from ..core.contracts import SensorKind
@@ -156,8 +169,10 @@ class CarlaSensorManager:
         from .dashboard_tools import CAMERA_VIEWS
         options = options or {'camera_view':'front', 'camera_resolution':'640x360', 'camera_fov':90}
         x,y,z,pitch,yaw = CAMERA_VIEWS[options['camera_view']]
-        camera_mount = api.Transform(api.Location(x=x,y=y,z=z), api.Rotation(pitch=pitch,yaw=yaw))
-        self.camera_mount_history = [(0, camera_mount)]
+        driving_mount = api.Transform(api.Location(x=x,y=y,z=z), api.Rotation(pitch=pitch,yaw=yaw))
+        fx,fy,fz,fp,fw = CAMERA_VIEWS['front']
+        camera_mount=api.Transform(api.Location(x=fx,y=fy,z=fz),api.Rotation(pitch=fp,yaw=fw))
+        self.camera_mount_history = [(0, driving_mount)]
         width,height = map(int, options['camera_resolution'].split('x'))
         camera = {'sensor_tick': fixed_delta, 'image_size_x': width, 'image_size_y': height,
                   'fov': options['camera_fov'], 'lens_k': 0, 'lens_kcube': 0}
@@ -165,21 +180,46 @@ class CarlaSensorManager:
                'motion_blur_intensity': options.get('camera_motion_blur', 0),
                'motion_blur_max_distortion': 0 if not options.get('camera_motion_blur', 0) else .35,
                'bloom_intensity': options.get('camera_bloom', 0)}
+        import json
+        from pathlib import Path
+        from ..learning.recovery_budget import active_ticket
+        recovery=json.loads((Path(__file__).resolve().parents[2]/'config/congestion-recovery.json').read_text())
+        surround=bool(recovery.get('depth_sensors_accepted') or active_ticket() and not options.get('_suppress_pilot_surround',False))
+        depth_mount=camera_mount;depth_attributes={**camera,'image_size_x':320,'image_size_y':180,'fov':90}
+        if surround:
+            box=self.ego.bounding_box
+            # Wide views on the measured body boundary expose the near-body
+            # strip needed for a complete turning/reversing footprint. The RGB
+            # observer retains its independently calibrated fixed front view.
+            depth_mount=api.Transform(api.Location(x=box.extent.x+box.location.x+.1,z=1.),api.Rotation(pitch=-5))
+            depth_attributes={**depth_attributes,'fov':170}
         plans = (
-            ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount, rgb),
-            ('depth', SensorKind.DEPTH, 'sensor.camera.depth', camera_mount, {**camera,'image_size_x':640,'image_size_y':360}),
+            ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount,
+             {**rgb,'image_size_x':320,'image_size_y':180,'fov':90,'enable_postprocess_effects':'false'}),
+            ('drivingCamera', SensorKind.RGB, 'sensor.camera.rgb', driving_mount, rgb),
+            ('depth', SensorKind.DEPTH, 'sensor.camera.depth', depth_mount, depth_attributes),
             ('radar', SensorKind.RADAR, 'sensor.other.radar', api.Transform(api.Location(x=2.5, z=.65)),
-             {'sensor_tick': fixed_delta, 'range': 50, 'horizontal_fov': 30, 'vertical_fov': 20, 'points_per_second': 1500}),
+             {'sensor_tick': fixed_delta, 'range': 100, 'horizontal_fov': 30, 'vertical_fov': 20, 'points_per_second': 1500}),
             ('lidar', SensorKind.LIDAR, 'sensor.lidar.ray_cast', api.Transform(api.Location(z=1.9)),
-             {'sensor_tick': fixed_delta, 'range': 50, 'channels': 16, 'points_per_second': 32000,
+             {'sensor_tick': fixed_delta, 'range': 100, 'channels': 16, 'points_per_second': 32000,
               'rotation_frequency': 1/fixed_delta, 'upper_fov': 10, 'lower_fov': -30}),
             ('imu', SensorKind.IMU, 'sensor.other.imu', api.Transform(), {'sensor_tick': fixed_delta}),
             ('gnss', SensorKind.GNSS, 'sensor.other.gnss', api.Transform(api.Location(z=1.6)), {'sensor_tick': fixed_delta}),
         )
+        if surround:
+            # Low resolution native depth, mounted outside our own body. No
+            # display camera movement changes these calibrated observations.
+            box=self.ego.bounding_box
+            rear=-box.location.x+box.extent.x+.1
+            half=box.extent.y+abs(box.location.y)+.1
+            attrs={**camera,'image_size_x':160,'image_size_y':90,'fov':170}
+            plans+=tuple((name,SensorKind.DEPTH,'sensor.camera.depth',
+                api.Transform(api.Location(x=x,y=y,z=1.),api.Rotation(pitch=-5,yaw=yaw)),attrs)
+                for name,x,y,yaw in (('rearDepth',-rear,0.,180),('leftDepth',0.,-half,-90),('rightDepth',0.,half,90)))
         for name, kind, blueprint, mount, attrs in plans:
             self.spawn(name, blueprint, mount, attrs,
                        lambda data, n=name, k=kind, m=mount, a=attrs: decode_sensor(self, n, k, data,
-                           self.camera_mount_at(data.frame) if n in ('frontCamera','depth') else m, a))
+                           self.camera_mount_at(data.frame) if n == 'drivingCamera' else m, a))
         if 'collision' not in self.actors:
             self.enable_collision(api)
 
@@ -191,14 +231,14 @@ class CarlaSensorManager:
         from .dashboard_tools import CAMERA_VIEWS
         x,y,z,pitch,yaw = CAMERA_VIEWS[view]
         mount = api.Transform(api.Location(x=x,y=y,z=z), api.Rotation(pitch=pitch,yaw=yaw))
-        # No intervening simulation tick: both cameras adopt this mount at N+1.
+        # Changing presentation does not change perception or depth calibration.
         effective_frame = self.world.get_snapshot().frame+1
-        for name in ('frontCamera','depth'):
+        for name in ('drivingCamera',):
             self.actors[name].set_transform(mount)
         with self.lock:
             self.camera_mount_history.append((effective_frame,mount))
             self.camera_mount_history = self.camera_mount_history[-32:]
-            for name in ('frontCamera','depth'):
+            for name in ('drivingCamera',):
                 self.configurations[name]['mountTransform'] = {'positionM':vector(mount.location), 'rotationDeg':rotation(mount.rotation)}
 
     def close(self):
@@ -207,6 +247,7 @@ class CarlaSensorManager:
             self.actors.clear(); self.frames.clear(); self.sample_times.clear()
             self.wall_sample_times.clear()
             self.pending_frames.clear(); self.assets.clear(); self.configurations.clear()
+            self.driving_frames.clear()
             self.pending_collisions.clear()
         self.cleanup_errors = []
         for actor in actors:

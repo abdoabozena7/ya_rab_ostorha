@@ -1,0 +1,170 @@
+[
+  {
+    "pair_id": "84fe4e0ced9d4d5ca32486ab7f276ccb",
+    "side": "RULE",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_33ffaf36df074ee1bcd55f8f70f53894",
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 3602,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "braking_rows": 1956,
+    "rows_without_source_or_reason": 0,
+    "braking_source_counts": {
+      "EMERGENCY_PROTECTION": 10,
+      "RULE": 1946
+    },
+    "geometry_p95_ms": 11.616045000346274,
+    "learned_trajectory_rows": 0,
+    "total_trajectory_rows": 24379,
+    "scope": "Schema/cause presence audit; does not establish correctness of every detection or false-stop rate"
+  },
+  {
+    "pair_id": "84fe4e0ced9d4d5ca32486ab7f276ccb",
+    "side": "MODEL",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7a0299625d0b4dfa8fb018de2968b765",
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 3602,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "braking_rows": 3221,
+    "rows_without_source_or_reason": 0,
+    "braking_source_counts": {
+      "EMERGENCY_PROTECTION": 2,
+      "MODEL": 3219
+    },
+    "geometry_p95_ms": 11.440450001373392,
+    "learned_trajectory_rows": 11121,
+    "total_trajectory_rows": 27091,
+    "scope": "Schema/cause presence audit; does not establish correctness of every detection or false-stop rate"
+  },
+  {
+    "pair_id": "1012481be9344afaae1bf206151f8702",
+    "side": "RULE",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c6393ad606b24a28b3f2f5f480f5d32e",
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 3602,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "braking_rows": 1301,
+    "rows_without_source_or_reason": 0,
+    "braking_source_counts": {
+      "EMERGENCY_PROTECTION": 2,
+      "RULE": 1299
+    },
+    "geometry_p95_ms": 10.943534999569238,
+    "learned_trajectory_rows": 0,
+    "total_trajectory_rows": 24535,
+    "scope": "Schema/cause presence audit; does not establish correctness of every detection or false-stop rate"
+  },
+  {
+    "pair_id": "1012481be9344afaae1bf206151f8702",
+    "side": "MODEL",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3bc9676cbbbd4dfbb13ec3f2fc1804a7",
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 3602,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "braking_rows": 3496,
+    "rows_without_source_or_reason": 0,
+    "braking_source_counts": {
+      "EMERGENCY_PROTECTION": 2,
+      "MODEL": 3494
+    },
+    "geometry_p95_ms": 7.468574999984412,
+    "learned_trajectory_rows": 11559,
+    "total_trajectory_rows": 26302,
+    "scope": "Schema/cause presence audit; does not establish correctness of every detection or false-stop rate"
+  },
+  {
+    "pair_id": "5973a3b2948143e982d9e44905e3ae5c",
+    "side": "RULE",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7d0683c2085e44b2ae86c3e522b3bfb1",
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 2491,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "braking_rows": 2097,
+    "rows_without_source_or_reason": 0,
+    "braking_source_counts": {
+      "EMERGENCY_PROTECTION": 2,
+      "RULE": 2095
+    },
+    "geometry_p95_ms": 7.275679999656859,
+    "learned_trajectory_rows": 0,
+    "total_trajectory_rows": 13257,
+    "scope": "Schema/cause presence audit; does not establish correctness of every detection or false-stop rate"
+  },
+  {
+    "pair_id": "5973a3b2948143e982d9e44905e3ae5c",
+    "side": "MODEL",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_1dcebbcc59514359b153975f397bbf38",
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 3602,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "braking_rows": 3284,
+    "rows_without_source_or_reason": 0,
+    "braking_source_counts": {
+      "EMERGENCY_PROTECTION": 2,
+      "MODEL": 3282
+    },
+    "geometry_p95_ms": 7.517425000696674,
+    "learned_trajectory_rows": 11420,
+    "total_trajectory_rows": 28900,
+    "scope": "Schema/cause presence audit; does not establish correctness of every detection or false-stop rate"
+  }
+]

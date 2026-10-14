@@ -1,0 +1,316 @@
+{
+  "trained": true,
+  "control_admitted": false,
+  "sources": {
+    "output\\core-repair-pilot\\episodes\\TRAIN\\maneuver_c19ada4b9df749568610489121a981e4\\transitions.jsonl": {
+      "split": "TRAIN",
+      "sha256": "071c6a418cd328a3fdbbbd2f49701f036a28c2224b12dc43c4e030b641fa0151",
+      "condition_hash": "03bc73b2b79c6023c99abb303d9827f09b58e5bda0c4c15ddb97cdeb8856587a"
+    },
+    "output\\core-repair-pilot\\episodes\\TRAIN\\maneuver_70909a25267b46b087d7afc81094911d\\transitions.jsonl": {
+      "split": "TRAIN",
+      "sha256": "517f6bb4acf91d4ce050e37c4420a624cc5e6683e44dcfb7f4319a3ab6ba1e21",
+      "condition_hash": "7f328123b0e530e15f4bd3e0fab4e29e8245265b08cb8874c07de0fbcb44a570"
+    },
+    "output\\core-repair-pilot\\episodes\\VALIDATION\\maneuver_6d810f6726a6451597d8860092f7f6bf\\transitions.jsonl": {
+      "split": "VALIDATION",
+      "sha256": "df9079c92acd1eb05521cd60cbf3d3ec960615aecde61be44bfd8c1159679671",
+      "condition_hash": "fc3a6f0c26585c2d7921eaa09562c25f10058a2c5dada2c817248fc1dfc43a09"
+    },
+    "output\\core-repair-pilot\\episodes\\VALIDATION\\maneuver_4e7bb87d257743ee8d75ad91f5afdeb0\\transitions.jsonl": {
+      "split": "VALIDATION",
+      "sha256": "a6db4f033fa6b583c56c5c800bb4721134307aa631e8d6f9e43d2c1e30d7ac54",
+      "condition_hash": "ed67c69e8dcc9d3ab8a77941e226aa7dc79c778c55f695b16bd873119ef80986"
+    }
+  },
+  "historical_before": {
+    "output\\motion-reliability\\budget.sqlite": "a3ef4ef261ccf8723bca99f286432dfc180dac10e4c89e74f9c2596400de9c55",
+    "output\\congestion-recovery\\budget.sqlite": "55def5ce5ce94d53a2ee548944805dedc53581f31e86ec94a1eeac80ab54245c",
+    "output\\predictive-v2\\budget.sqlite": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad"
+  },
+  "labels": "INDEPENDENT_FUTURE_NATIVE_ACTOR_POSITIONS",
+  "hypothesis": "SELECTED_MEASURED_KINEMATIC_MODE",
+  "checkpoint": "D:\\projects\\Ai\\ya_rab_ostorha\\artifacts\\learned_safety\\independent_prediction_v1\\760ec313329b430388c30708eba6e62f\\residual-mlp.pt",
+  "sha256": "b82848b5192a124efa277835147a19fba3191cc31830c6ea434af9010990dcd4",
+  "epochs": 300,
+  "train_examples": 288,
+  "validation_examples": 186,
+  "coverage": [
+    {
+      "source": "output\\core-repair-pilot\\episodes\\TRAIN\\maneuver_c19ada4b9df749568610489121a981e4\\transitions.jsonl",
+      "horizons": {
+        "1": {
+          "relevant": 100,
+          "associated": 58,
+          "ambiguous": 0,
+          "missing_future": 2,
+          "scored": 56
+        },
+        "2": {
+          "relevant": 100,
+          "associated": 58,
+          "ambiguous": 0,
+          "missing_future": 4,
+          "scored": 54
+        },
+        "3": {
+          "relevant": 100,
+          "associated": 58,
+          "ambiguous": 0,
+          "missing_future": 6,
+          "scored": 52
+        }
+      }
+    },
+    {
+      "source": "output\\core-repair-pilot\\episodes\\TRAIN\\maneuver_70909a25267b46b087d7afc81094911d\\transitions.jsonl",
+      "horizons": {
+        "1": {
+          "relevant": 100,
+          "associated": 46,
+          "ambiguous": 0,
+          "missing_future": 2,
+          "scored": 44
+        },
+        "2": {
+          "relevant": 100,
+          "associated": 46,
+          "ambiguous": 0,
+          "missing_future": 4,
+          "scored": 42
+        },
+        "3": {
+          "relevant": 100,
+          "associated": 46,
+          "ambiguous": 0,
+          "missing_future": 6,
+          "scored": 40
+        }
+      }
+    },
+    {
+      "source": "output\\core-repair-pilot\\episodes\\VALIDATION\\maneuver_6d810f6726a6451597d8860092f7f6bf\\transitions.jsonl",
+      "horizons": {
+        "1": {
+          "relevant": 30,
+          "associated": 16,
+          "ambiguous": 1,
+          "missing_future": 0,
+          "scored": 16
+        },
+        "2": {
+          "relevant": 30,
+          "associated": 16,
+          "ambiguous": 1,
+          "missing_future": 0,
+          "scored": 16
+        },
+        "3": {
+          "relevant": 30,
+          "associated": 16,
+          "ambiguous": 1,
+          "missing_future": 1,
+          "scored": 15
+        }
+      }
+    },
+    {
+      "source": "output\\core-repair-pilot\\episodes\\VALIDATION\\maneuver_4e7bb87d257743ee8d75ad91f5afdeb0\\transitions.jsonl",
+      "horizons": {
+        "1": {
+          "relevant": 68,
+          "associated": 47,
+          "ambiguous": 2,
+          "missing_future": 0,
+          "scored": 47
+        },
+        "2": {
+          "relevant": 68,
+          "associated": 47,
+          "ambiguous": 2,
+          "missing_future": 0,
+          "scored": 47
+        },
+        "3": {
+          "relevant": 68,
+          "associated": 47,
+          "ambiguous": 2,
+          "missing_future": 2,
+          "scored": 45
+        }
+      }
+    }
+  ],
+  "scores": {
+    "1": {
+      "scored": 63,
+      "baseline_fde_m": 1.1332451029441453,
+      "candidate_fde_m": 1.368501138448196,
+      "relative_improvement": -0.20759501619981488
+    },
+    "2": {
+      "scored": 63,
+      "baseline_fde_m": 1.6845029222283883,
+      "candidate_fde_m": 1.5661551527022923,
+      "relative_improvement": 0.07025679086952044
+    },
+    "3": {
+      "scored": 60,
+      "baseline_fde_m": 2.2893732743242388,
+      "candidate_fde_m": 1.9197478354749957,
+      "relative_improvement": 0.16145267484104203
+    }
+  },
+  "reason": "Supplementary candidate only; all-actor coverage, matched driving and TEST gates remain required",
+  "budget": {
+    "scope": "CORE_REPAIR_PREDICTIVE_RL_V1",
+    "combined_cap_s": 14400.0,
+    "charged_s": 3685.82600000003,
+    "phase_caps_s": {
+      "control": 2700.0,
+      "scenario_prediction": 2700.0,
+      "rl": 5400.0,
+      "evaluation": 3600.0
+    },
+    "phase_charged_s": {
+      "control": 2676.265000000014,
+      "scenario_prediction": 1009.5610000000161,
+      "rl": 0,
+      "evaluation": 0
+    },
+    "phases": [
+      {
+        "id": "8269be222130460381c5b91e37d83c89",
+        "phase": "control",
+        "charged_s": 124.2960000000021,
+        "finished": 1,
+        "started_monotonic_s": 205900.75
+      },
+      {
+        "id": "3845f6331ecc4729bbffd5abbc615fd1",
+        "phase": "control",
+        "charged_s": 211.5470000000205,
+        "finished": 1,
+        "started_monotonic_s": 206158.718
+      },
+      {
+        "id": "e062d2d6b07f4485b626f2aba19c3039",
+        "phase": "control",
+        "charged_s": 227.40599999998813,
+        "finished": 1,
+        "started_monotonic_s": 206478.937
+      },
+      {
+        "id": "245f795dc1fd43e6b8070f914532f7fc",
+        "phase": "control",
+        "charged_s": 196.21900000001187,
+        "finished": 1,
+        "started_monotonic_s": 206727.796
+      },
+      {
+        "id": "43a309ba481d4864aa3bcfb95d27cb1c",
+        "phase": "control",
+        "charged_s": 79.81299999999464,
+        "finished": 1,
+        "started_monotonic_s": 207164.64
+      },
+      {
+        "id": "d1e1532a1292451cacf9635fbd8784a0",
+        "phase": "scenario_prediction",
+        "charged_s": 15.25,
+        "finished": 1,
+        "started_monotonic_s": 207302.14
+      },
+      {
+        "id": "331d09bc4741441b996bb8e4a15f32dc",
+        "phase": "scenario_prediction",
+        "charged_s": 7.844000000011874,
+        "finished": 1,
+        "started_monotonic_s": 207407.546
+      },
+      {
+        "id": "119fbaff3ae2419e83ee0452604ad535",
+        "phase": "control",
+        "charged_s": 389.03100000001723,
+        "finished": 1,
+        "started_monotonic_s": 207462.984
+      },
+      {
+        "id": "98561854c28843548360d68bd878b8ad",
+        "phase": "scenario_prediction",
+        "charged_s": 161.85899999999674,
+        "finished": 1,
+        "started_monotonic_s": 208045.234
+      },
+      {
+        "id": "40cbc27b8fe4475f83bd992d89ec7942",
+        "phase": "scenario_prediction",
+        "charged_s": 198.07800000000861,
+        "finished": 1,
+        "started_monotonic_s": 208317.484
+      },
+      {
+        "id": "f951ec87829c42ada7d83009fae8ceb1",
+        "phase": "scenario_prediction",
+        "charged_s": 45.78100000001723,
+        "finished": 1,
+        "started_monotonic_s": 208565.484
+      },
+      {
+        "id": "5ecbaab668a44d659e527f6127b1acba",
+        "phase": "scenario_prediction",
+        "charged_s": 105.93700000000536,
+        "finished": 1,
+        "started_monotonic_s": 209030.781
+      },
+      {
+        "id": "a10836af40fd498fa06413ccdcd93b93",
+        "phase": "scenario_prediction",
+        "charged_s": 143.31200000000536,
+        "finished": 1,
+        "started_monotonic_s": 209385.328
+      },
+      {
+        "id": "74909db03bd3466fbd8b94d1e10d7b43",
+        "phase": "control",
+        "charged_s": 533.9529999999795,
+        "finished": 1,
+        "started_monotonic_s": 210385.515
+      },
+      {
+        "id": "89017ebc67e749b28779152b1fb4bc21",
+        "phase": "control",
+        "charged_s": 578.0160000000033,
+        "finished": 1,
+        "started_monotonic_s": 233964.218
+      },
+      {
+        "id": "eabd47c864bb4ff2948b53efec5e4728",
+        "phase": "control",
+        "charged_s": 335.98399999999674,
+        "finished": 1,
+        "started_monotonic_s": 234640.125
+      },
+      {
+        "id": "50434a339b5f4aa4bd515b09002d95e1",
+        "phase": "scenario_prediction",
+        "charged_s": 319.34399999998277,
+        "finished": 1,
+        "started_monotonic_s": 235074.515
+      },
+      {
+        "id": "760ec313329b430388c30708eba6e62f",
+        "phase": "scenario_prediction",
+        "charged_s": 12.155999999988126,
+        "finished": 1,
+        "started_monotonic_s": 235608.203
+      }
+    ]
+  },
+  "historical_after": {
+    "output\\motion-reliability\\budget.sqlite": "a3ef4ef261ccf8723bca99f286432dfc180dac10e4c89e74f9c2596400de9c55",
+    "output\\congestion-recovery\\budget.sqlite": "55def5ce5ce94d53a2ee548944805dedc53581f31e86ec94a1eeac80ab54245c",
+    "output\\predictive-v2\\budget.sqlite": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad"
+  },
+  "historical_ledgers_unchanged": true
+}

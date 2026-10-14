@@ -1,0 +1,727 @@
+{
+  "status": "PASS",
+  "transport": "actual application controls and native HTTP observations",
+  "samples": [
+    {
+      "label": "manual-start",
+      "mode": "MANUAL",
+      "vehicle": {
+        "source": "carla",
+        "frame": 289969,
+        "timestamp": 12783.884707674384,
+        "actorId": 2313,
+        "positionWorldM": [
+          -112.4652328491211,
+          -32.380123138427734,
+          -0.004338111728429794
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0.000024637713067932054,
+          "pitch": -0.04303019121289253,
+          "yaw": 110.25333404541016
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          0
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          0
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0,
+        "accelerationMps2": 0,
+        "speedKmh": 0,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 1.9242836903935665,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "workspace_changed",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    },
+    {
+      "label": "native-throttle",
+      "mode": "MANUAL",
+      "vehicle": {
+        "source": "carla",
+        "frame": 289984,
+        "timestamp": 12784.63470768556,
+        "actorId": 2313,
+        "positionWorldM": [
+          -112.48860931396484,
+          -32.316524505615234,
+          -0.005025214981287718
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 6.003110541996648e-8,
+          "pitch": 0.12938426434993744,
+          "yaw": 110.2590103149414
+        },
+        "velocityWorldMps": [
+          -0.17995725572109222,
+          0.4878578186035156,
+          0.00023603439331054688
+        ],
+        "angularVelocityWorldRadps": [
+          0.006998350940010547,
+          0.0026765369726987564,
+          -0.0028293332394988004
+        ],
+        "accelerationWorldMps2": [
+          -0.45333683490753174,
+          1.2690609693527222,
+          -0.0013599393423646688
+        ],
+        "speedMps": 0.5199894589602782,
+        "speedMagnitudeMps": 0.5199903083438019,
+        "accelerationMps2": 1.3475209240495514,
+        "speedKmh": 1.8719651100376868,
+        "steeringInput": 0,
+        "throttle": 0.550000011920929,
+        "brake": 0,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 1.9243827599861174,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "workspace_changed",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    },
+    {
+      "label": "manual-stop",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 289988,
+        "timestamp": 12784.83470768854,
+        "actorId": 2313,
+        "positionWorldM": [
+          -112.51150512695312,
+          -32.25379180908203,
+          -0.004320831038057804
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.000762938754633069,
+          "pitch": -0.052735887467861176,
+          "yaw": 110.29102325439453
+        },
+        "velocityWorldMps": [
+          -0.0010687436442822218,
+          0.0033388601150363684,
+          0.00009894371032714844
+        ],
+        "angularVelocityWorldRadps": [
+          -0.017731081027584576,
+          -0.006299681031001267,
+          -4.3748450870009467e-7
+        ],
+        "accelerationWorldMps2": [
+          0.028660297393798828,
+          -0.09700741618871689,
+          -0.0006105421925894916
+        ],
+        "speedMps": 0.0035021969453435872,
+        "speedMagnitudeMps": 0.0035071341153123325,
+        "accelerationMps2": -0.10092591309454592,
+        "speedKmh": 0.012625682815124398,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 1.9249414911828162,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "operator_stop",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    },
+    {
+      "label": "emergency-preparation",
+      "mode": "MANUAL",
+      "vehicle": {
+        "source": "carla",
+        "frame": 289988,
+        "timestamp": 12784.83470768854,
+        "actorId": 2313,
+        "positionWorldM": [
+          -112.51150512695312,
+          -32.25379180908203,
+          -0.004320831038057804
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.000762938754633069,
+          "pitch": -0.052735887467861176,
+          "yaw": 110.29102325439453
+        },
+        "velocityWorldMps": [
+          -0.0010687436442822218,
+          0.0033388601150363684,
+          0.00009894371032714844
+        ],
+        "angularVelocityWorldRadps": [
+          -0.017731081027584576,
+          -0.006299681031001267,
+          -4.3748450870009467e-7
+        ],
+        "accelerationWorldMps2": [
+          0.028660297393798828,
+          -0.09700741618871689,
+          -0.0006105421925894916
+        ],
+        "speedMps": 0.0035021969453435872,
+        "speedMagnitudeMps": 0.0035071341153123325,
+        "accelerationMps2": -0.10092591309454592,
+        "speedKmh": 0.012625682815124398,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 1.9249414911828162,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "operator_stop",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    },
+    {
+      "label": "emergency-latch",
+      "mode": "EMERGENCY_STOP",
+      "vehicle": {
+        "source": "carla",
+        "frame": 289989,
+        "timestamp": 12784.884707689285,
+        "actorId": 2313,
+        "positionWorldM": [
+          -112.51143646240234,
+          -32.25396728515625,
+          -0.004208907950669527
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.001098634325899184,
+          "pitch": -0.08188030123710634,
+          "yaw": 110.29102325439453
+        },
+        "velocityWorldMps": [
+          -0.0003285376005806029,
+          0.001001186785288155,
+          0.00007005691441008821
+        ],
+        "angularVelocityWorldRadps": [
+          -0.005335633881298046,
+          -0.001916259227126589,
+          -1.6597826286721872e-7
+        ],
+        "accelerationWorldMps2": [
+          0.014804121106863022,
+          -0.04675346612930298,
+          -0.000577735947445035
+        ],
+        "speedMps": 0.001052888337034571,
+        "speedMagnitudeMps": 0.0010560397271350886,
+        "accelerationMps2": -0.04898512494359242,
+        "speedKmh": 0.003801743017686319,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 1.9249414911828162,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "emergency_stop",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    },
+    {
+      "label": "explicit-emergency-acknowledgement",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 290001,
+        "timestamp": 12785.484707698226,
+        "actorId": 2313,
+        "positionWorldM": [
+          -112.51156616210938,
+          -32.25371551513672,
+          -0.0043579102493822575
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.00048828189028427,
+          "pitch": -0.03912332281470299,
+          "yaw": 110.29104614257814
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          0
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          0
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0,
+        "accelerationMps2": 0,
+        "speedKmh": 0,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 1.9249418906569797,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "operator_stop",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    },
+    {
+      "label": "native-reset",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 290009,
+        "timestamp": 12785.884707704186,
+        "actorId": 2421,
+        "positionWorldM": [
+          57.56834030151367,
+          -67.849853515625,
+          0.5853000283241272
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0,
+          "pitch": 0,
+          "yaw": 179.9765625
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          -0.4899999797344208
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          -9.799999237060547
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0.4899999797344208,
+        "accelerationMps2": 0,
+        "speedKmh": 1.7639999270439148,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "N",
+        "gearIndex": 0,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141183592046357,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "vehicle_reset",
+        "speed_kmh": 20,
+        "route_id": "007147f30e654c5490652700f25b5f7f"
+      },
+      "latest": {
+        "side": "RULE",
+        "reason": "destination_arrived",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+        "completed": true,
+        "destination_arrived": true,
+        "collision": false,
+        "status": "ARRIVED",
+        "metrics": {
+          "unnecessary_waiting_s": 10.600000157952309,
+          "harsh_braking_events": 184,
+          "emergency_intervention_s": 0.10000000149011612,
+          "duration_s": 145.60000216960907,
+          "destination_arrived": true
+        },
+        "attempt_id": "04eae298f38048209d38947fa502d7a1",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 187.7738625357569,
+          "progress_m": 184.3928667246842,
+          "elapsed_simulation_s": 145.65000217035413,
+          "average_speed_mps": 1.289212905854503,
+          "minimum_clearance_m": 0.010072858570880661,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 240,
+          "unsafe_intervention_count": null,
+          "route_completion": 0.9945623570491116,
+          "control_variation": 512.0655223056131,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false
+    }
+  ]
+}

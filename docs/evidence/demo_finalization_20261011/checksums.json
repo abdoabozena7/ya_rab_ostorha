@@ -1,0 +1,29 @@
+{
+  "files": {
+    "backend/core/prediction.py": "18dcdb616902daa54f21fa701f2142b81be68551e902cd87f40b223aa9ad8f93",
+    "backend/core/predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend/carla/urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend/carla/comparison.py": "d8fa4cbf5735d58a3b578014d908da5ec9b49c04c63ff474baf607a21fe4b760",
+    "backend/carla/comparison_v2.py": "ceca2fb4fc682740f9c750bdbb1fd0ae4ea5b35afc6b69e1bb73d40db84ce561",
+    "backend/core/service.py": "964716d68de47c1f390d38aaacfcf762963f3ce69cc7668b1e9bf667036166b0",
+    "backend/websocket_bridge.py": "e1bb8a67e73fbb7aec2c944552e4593462b38ca572ffd8b49871b8d28c08a4e1",
+    "scripts/final_runtime.py": "db11e22d12c30b999d0410487e2e15dccb73cda771b725fb993a19b5f1412428",
+    "Start-YA-RAB-OSTORHA.ps1": "c0d1c42189cd49cac5abb7f45d7056e3f8c1cc1cb09579a092dd39da82dd7004",
+    "frontend/dashboard.bundle.js": "be22f53796ecb78070578988c7c6c1d5d0ab1529dd6a16ce58701cc556c699b7",
+    "frontend/comparison-v2.js": "b8b854ac68a169dad3ac0e30dd2d41159cea1aaa1748795837c8b9028c02ca96",
+    "frontend/results-view.js": "a1b2f2b3b3c204ececb0d63b0c27eef77db424c0ce90746afa8a5bfbfb74d9ab",
+    "frontend/simulation-client.js": "65ad7ba838a89dc1790da50b8112ce8ba83d087074582665f589959f6d280d09",
+    "frontend/presentation-ui.js": "d4bec4327bc01d1a6b0a0a3c4b349dc422a946377cf931dc6654a706f32a10c4",
+    "scripts/verify_demo_integration_ui.js": "6ff986fa8f7a942dbcf69b7498ba2283a52e4b2c6b2728049d2b7f71546e8601",
+    "tests/test_demo_integration.py": "820edacaa0f1b059fc0fbd719c3e8c24e45701e128337a7a419bbfce0c0f711d"
+  },
+  "weights": {
+    "artifacts/learned_safety/predictive_v2/heads.npz": "511a67dce5a0370f3cdfb2150e4abc74cce103be531aa9d48c96989ddb78a29e",
+    "artifacts/learned_safety/v1/weights.npz": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629"
+  },
+  "native_prediction_policy_unchanged": {
+    "backend/core/prediction.py": true,
+    "backend/core/predictive_safety.py": true,
+    "backend/carla/urban_chaos.py": true
+  }
+}

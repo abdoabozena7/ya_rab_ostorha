@@ -1,0 +1,20 @@
+[
+  {
+    "observer_wall_s": 0.06,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 1.048345561759058,
+    "recording": true,
+    "reason": "Measured obstacle",
+    "remaining_s": 781.4856481552124
+  },
+  {
+    "observer_wall_s": 20.89,
+    "phase": "RUNNING",
+    "mode": "AUTOMATIC",
+    "speed_kmh": 0.0008366449585896119,
+    "recording": true,
+    "reason": "Measured corridor clear",
+    "remaining_s": 760.27130818367
+  }
+]

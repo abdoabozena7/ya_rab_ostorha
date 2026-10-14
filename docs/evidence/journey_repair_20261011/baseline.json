@@ -1,0 +1,33 @@
+{
+  "recording": "runs\\normal_city\\run_33ffaf36df074ee1bcd55f8f70f53894",
+  "reason": "timeout",
+  "destination_arrived": false,
+  "independently_verified_arrival": false,
+  "destination_distance_m": 60.80285938838744,
+  "final_speed_mps": 9.558307114941867e-09,
+  "collision_count": 0,
+  "collision_callbacks": 0,
+  "duration_sim_s": 180.05000268295407,
+  "distance_traveled_m": 120.2605953116398,
+  "stopped_s": 116.90000174194574,
+  "useful_route_progress_m": 112.74348710643794,
+  "route_completion": 0.6081061066529013,
+  "interventions": 158,
+  "intervention_s": 118.30000176280737,
+  "emergency_s": 0.4000000059604645,
+  "reason_durations_s": {
+    "Monitoring resumes with normal forward driving": 0.05000000074505806,
+    "Measured obstacle": 27.80000041425228,
+    "Predicted time-aligned occupancy conflict": 46.800000697374344,
+    "Holding for three clear readings and minimum hold": 62.9500009380281,
+    "Measured corridor clear": 42.05000062659383,
+    "Measured hazard within emergency stopping distance": 0.4000000059604645
+  },
+  "initial_poses_match_failed_run": {
+    "passed": true,
+    "scope": "Persisted original approved initial states"
+  },
+  "longest_stop_s": 65.90000098198652,
+  "geometry_p95_ms": 11.616045000346274,
+  "controller_p95_ms": 17.48599499987904
+}

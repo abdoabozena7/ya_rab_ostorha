@@ -1,0 +1,203 @@
+{
+  "source": "LIVE_NATIVE_CARLA",
+  "scope": "Two repeated sensor fixtures per case, TRAIN and VALIDATION. Independent actor truth is evaluation-only.",
+  "fixtures": [
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "clear",
+      "samples": 71,
+      "native_hz": 15.086863761036149,
+      "camera_hz": 15.160265314690701,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 6.621406552814965,
+      "stopped_fraction": 0.4507042253521127,
+      "comfort_accel_exceedances": 6,
+      "comfort_decel_exceedances": 1,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "4f095f82f64a4f4ba4ba20adfe32849c"
+      },
+      "remaining_m": 89.69761081345334,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "TRAIN",
+      "seed": 9101,
+      "case": "rear_approach",
+      "samples": 17,
+      "native_hz": 14.30222479054077,
+      "camera_hz": 14.044444444444444,
+      "contact_half_second_bins": 1,
+      "contacts": [
+        {
+          "frame_id": 145137,
+          "timestamp_s": 6952.250365417451,
+          "ego_actor_id": 3194,
+          "other_actor_id": 3303,
+          "impulse_ns": [
+            8088.40625,
+            -545.6218872070312,
+            164.58265686035156
+          ],
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up",
+          "contact_position_m": null,
+          "ego_transform": {
+            "position_m": [
+              57.510101318359375,
+              -67.85054779052734,
+              -0.004468078725039959
+            ],
+            "rotation_rad": {
+              "roll": 9.336777993645462e-06,
+              "pitch": -0.00015401838856346405,
+              "yaw": -3.1415473798512616
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "other_actor_type": "vehicle.tesla.model3",
+          "impulse_magnitude_ns": 8108.45893865028
+        }
+      ],
+      "max_speed_kmh": 16.23022741209617,
+      "stopped_fraction": 0.9411764705882353,
+      "comfort_accel_exceedances": 1,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "collision",
+        "speed_kmh": 30.0,
+        "route_id": "8d548c6e995a466d8546953d9ea11052"
+      },
+      "remaining_m": 94.21793647270549,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "clear",
+      "samples": 70,
+      "native_hz": 15.123739688354462,
+      "camera_hz": 15.090735434573299,
+      "contact_half_second_bins": 0,
+      "contacts": [],
+      "max_speed_kmh": 4.075152607546011,
+      "stopped_fraction": 0.35714285714285715,
+      "comfort_accel_exceedances": 2,
+      "comfort_decel_exceedances": 2,
+      "arrived": false,
+      "terminal": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 30.0,
+        "route_id": "0a60dd75451144f68c53d279fc39ba8f"
+      },
+      "remaining_m": 94.31470702625343,
+      "actions": [
+        "CONTINUE",
+        "RULE_FOLLOW",
+        "SLOW"
+      ],
+      "sensor_errors": []
+    },
+    {
+      "split": "VALIDATION",
+      "seed": 9102,
+      "case": "rear_approach",
+      "samples": 17,
+      "native_hz": 14.802631578959222,
+      "camera_hz": 14.82732732734385,
+      "contact_half_second_bins": 1,
+      "contacts": [
+        {
+          "frame_id": 145431,
+          "timestamp_s": 6966.950365636498,
+          "ego_actor_id": 3194,
+          "other_actor_id": 3304,
+          "impulse_ns": [
+            16588.021484375,
+            -1118.9813232421875,
+            337.4973449707031
+          ],
+          "coordinate_frame": "left-handed-x-forward-y-right-z-up",
+          "contact_position_m": null,
+          "ego_transform": {
+            "position_m": [
+              57.50785827636719,
+              -67.85038757324219,
+              -0.004498100373893976
+            ],
+            "rotation_rad": {
+              "roll": -5.326320656285477e-06,
+              "pitch": -1.2755393027604259e-05,
+              "yaw": -3.141216082611656
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "other_actor_type": "vehicle.tesla.model3",
+          "impulse_magnitude_ns": 16629.14551099105
+        }
+      ],
+      "max_speed_kmh": 0.3561849116371844,
+      "stopped_fraction": 1.0,
+      "comfort_accel_exceedances": 0,
+      "comfort_decel_exceedances": 0,
+      "arrived": false,
+      "terminal": {
+        "status": "PAUSED",
+        "reason": "collision",
+        "speed_kmh": 30.0,
+        "route_id": "b731051bb9934c6a8e0e6f2ea28ebeb3"
+      },
+      "remaining_m": 94.41537671773487,
+      "actions": [
+        "BRAKE",
+        "CONTINUE",
+        "HOLD",
+        "RULE_FOLLOW"
+      ],
+      "sensor_errors": []
+    }
+  ],
+  "lateral_native_accepted": false,
+  "learned_control_accepted": false,
+  "camera_separation": {
+    "front_unchanged": true,
+    "depth_unchanged": true,
+    "display_changed": true
+  },
+  "complete": true,
+  "budget": {
+    "scope": "MOTION_RELIABILITY_20261013",
+    "hard_cap_s": 2400.0,
+    "phases": {
+      "validation": {
+        "cap_s": 1800.0,
+        "charged_s": 1349.5479999999807
+      },
+      "training": {
+        "cap_s": 600.0,
+        "charged_s": 0
+      }
+    },
+    "charged_s": 1349.5479999999807,
+    "old_ledger_unchanged": true
+  }
+}

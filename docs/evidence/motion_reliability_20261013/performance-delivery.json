@@ -1,0 +1,34 @@
+{
+  "matched_stopped_performance": {
+    "samples": 242,
+    "native_hz": 11.096166778741775,
+    "camera_hz": 11.087719298245615,
+    "contact_half_second_bins": 0,
+    "contacts": [],
+    "max_speed_kmh": 0.0,
+    "stopped_fraction": 1.0,
+    "comfort_accel_exceedances": 0,
+    "comfort_decel_exceedances": 0,
+    "arrived": false,
+    "terminal": {
+      "status": "PAUSED",
+      "reason": "operator_stop",
+      "speed_kmh": 30.0,
+      "route_id": "74337d45c1f248e182b0614a27e3b605"
+    },
+    "remaining_m": 518.3677438510367,
+    "actions": [
+      "HOLD"
+    ],
+    "sensor_errors": []
+  },
+  "degradation_percent": {
+    "native_hz": 19.782559964277024,
+    "camera_hz": 19.522807017589606
+  },
+  "stopped_performance_gate": false,
+  "driving_performance_accepted": false,
+  "journeys": [],
+  "native_lateral_gate": false,
+  "learned_control_gate": false
+}

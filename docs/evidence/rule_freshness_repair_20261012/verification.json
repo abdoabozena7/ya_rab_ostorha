@@ -1,0 +1,23 @@
+{
+  "status": "PASS_SAVED_RULE_NATIVE_JOURNEY",
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+  "native_journey": "PASS",
+  "browser_results": "PASS",
+  "updated_controls": "PASS",
+  "browser_journey_commands": 1,
+  "browser_pedal_commands_during_journey": 0,
+  "browser_application_errors": [],
+  "heartbeats": 3534,
+  "python_tests_run": 278,
+  "python_tests_skipped": 1,
+  "javascript_passed": 64,
+  "pair_preserved": true,
+  "latest_result_retained": true,
+  "frozen_assets_and_ledger_preserved": true,
+  "model_status": "EXPERIMENTAL_UNPROVEN",
+  "limitations": [
+    "Single inspected seed; no unseen TEST or MODEL acceptance",
+    "184 harsh braking events and 0.0101 m minimum planar clearance",
+    "Seven camera setup 503 responses and one recovered camera connection refusal; cause of the latter unproven"
+  ]
+}

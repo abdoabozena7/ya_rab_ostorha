@@ -1,0 +1,9 @@
+{
+  "scope": "Offline inference ablation, not a native driving benefit claim",
+  "weights_sha256": "511a67dce5a0370f3cdfb2150e4abc74cce103be531aa9d48c96989ddb78a29e",
+  "learned_target_mps": 0.9007814526557922,
+  "ablated_target_mps": 5.5,
+  "speed_changed": true,
+  "prediction_changed": true,
+  "maximum_trajectory_delta_m": 5.9620834896383474
+}

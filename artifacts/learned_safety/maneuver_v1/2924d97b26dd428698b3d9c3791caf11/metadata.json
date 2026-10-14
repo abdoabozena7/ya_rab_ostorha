@@ -1,0 +1,275 @@
+{
+  "trained": true,
+  "algorithm": "MaskablePPO",
+  "environment_id": "YaRabOstorha-Maneuver-v1",
+  "capabilities_accepted": false,
+  "stage": {
+    "name": "ordinary",
+    "scenarios": [
+      "EMPTY_ROAD",
+      "CURVE",
+      "BENIGN_MANUAL"
+    ],
+    "retain_benign_fraction": 0.5
+  },
+  "requested_timesteps": 4096,
+  "qualification_kind": "CONTROLLED_STAGE_ZERO_MOTION_VIABILITY",
+  "full_ordinary_acceptance_passed": false,
+  "historical_before": {
+    "output\\motion-reliability\\budget.sqlite": "a3ef4ef261ccf8723bca99f286432dfc180dac10e4c89e74f9c2596400de9c55",
+    "output\\congestion-recovery\\budget.sqlite": "55def5ce5ce94d53a2ee548944805dedc53581f31e86ec94a1eeac80ab54245c",
+    "output\\predictive-v2\\budget.sqlite": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad"
+  },
+  "implementation_sha256": {
+    "backend/core/control_scene.py": "d0bf981cb050b0a7b35cab96360cbde1c60e71aa3332bc3f2ea6d6905d8aba3c",
+    "backend/core/control_semantics.py": "acc70e37ae08e180ff588df72182849231ce88bb32b551e518d6cfe5fb15e7e1",
+    "backend/core/ground_geometry.py": "6297d684553107f42fe9464e758378ed642454da084252cdee08116813f2332e",
+    "backend/core/maneuver.py": "604bc20cbb42bc7e0efc3cdd9064cda70e29a869a23cd1bcc3768bfc2e042e07",
+    "backend/core/maneuver_candidates.py": "834dcc3e58ac82d8f65cdb194bb035007521df993e7c0998b9d191655172b416",
+    "backend/core/motion_geometry.py": "f482daa25caa6ee06253e9f158984ec33304d83e05d2f3659ee3dcef44284b3c",
+    "backend/core/path_conflicts.py": "71da314b822392fbb05505b429e090c7775ca3bc20315e56b8157cb778cdd9fb",
+    "backend/core/prediction.py": "4a6d1c3c6c1760b2b5039a554843e171913e8a6a43d26fdd3cf0076c62982c21",
+    "backend/core/kinematic_prediction.py": "db957cc2573cc84850a88587aa2b8055ca5d9adeefd8f0ce82fa29888880edf0",
+    "backend/core/ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+    "backend/core/corridor_uncertainty.py": "4d1b0e274275c0e1392c8513eec029cdca4cbad000fea0c76a293a97092ee95e",
+    "backend/core/reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+    "backend/learning/rl/maneuver_runtime.py": "ae1f31e11a19a1b6d59d19a6c9fdcca6c01d4e13fd26524db35d45abfe0fe55d",
+    "backend/learning/rl/maneuver_observations.py": "13292ffcf34610ae967590d6a5a83b3c52b32226d058a9585a1660c0e2de75fc",
+    "backend/carla/pilot_world.py": "0ff21f4ab3b8c0d602340b68c196d5e6490be0f479d6b8dc0c01fef28881e5ea",
+    "backend/carla/sensors.py": "e991089500d1dab175efc15c2f558650423572bf31b9b79f92cb51b5b3f944df",
+    "backend/carla/provider.py": "09eb93e0555c4325edd5f2d15f13482504fa71050cbfe328aa3a23fce502d046",
+    "backend/core/service.py": "dc8681f6861a8f67a09275722219942ff52f592ae368ad3b5cff2b4efa7ec7ec",
+    "backend/server.py": "ea098d7f5e02e9ff810ff136918d5dd21e459363894b532d7ed1a267545a4c5c",
+    "config/core-repair-pilot.json": "c753170b576c6ff2c5d4b396d9e1a9e6a6142807650724b0f52734314f146e12"
+  },
+  "configuration_sha256": "c753170b576c6ff2c5d4b396d9e1a9e6a6142807650724b0f52734314f146e12",
+  "curriculum_sha256": "0f58eb6de9d791c8c2a4992249f9b432824b5aeadef41cba1080ec4bbac6f7e4",
+  "physical_report_sha256": "7179a54d242f9d41c97951dbd20e01348aa8e3a9515d442eafc12a16380c6030",
+  "checkpoint": "D:\\projects\\Ai\\ya_rab_ostorha\\artifacts\\learned_safety\\maneuver_v1\\2924d97b26dd428698b3d9c3791caf11\\maskable-ppo.zip",
+  "sha256": "d04d73727eeea12241d898924d67c9d5d471db737cbcbe14ed94f1ff0b76c364",
+  "actual_updates": 64,
+  "actual_timesteps": 4096,
+  "valid_transitions": 4096,
+  "completed_episodes": 0,
+  "episodes_started": 7,
+  "restoration": {
+    "active": false,
+    "restored": true,
+    "actor_inventory": {
+      "vehicles": 1,
+      "sensors": 8,
+      "walkers": 0,
+      "controllers": 0
+    }
+  },
+  "budget": {
+    "scope": "CORE_REPAIR_PREDICTIVE_RL_V1",
+    "combined_cap_s": 14400.0,
+    "charged_s": 6402.513000000035,
+    "phase_caps_s": {
+      "control": 3900.0,
+      "scenario_prediction": 2700.0,
+      "rl": 4200.0,
+      "evaluation": 3600.0
+    },
+    "phase_charged_s": {
+      "control": 3884.3280000000086,
+      "scenario_prediction": 1323.1230000000214,
+      "rl": 1195.0620000000054,
+      "evaluation": 0
+    },
+    "phases": [
+      {
+        "id": "8269be222130460381c5b91e37d83c89",
+        "phase": "control",
+        "charged_s": 124.2960000000021,
+        "finished": 1,
+        "started_monotonic_s": 205900.75
+      },
+      {
+        "id": "3845f6331ecc4729bbffd5abbc615fd1",
+        "phase": "control",
+        "charged_s": 211.5470000000205,
+        "finished": 1,
+        "started_monotonic_s": 206158.718
+      },
+      {
+        "id": "e062d2d6b07f4485b626f2aba19c3039",
+        "phase": "control",
+        "charged_s": 227.40599999998813,
+        "finished": 1,
+        "started_monotonic_s": 206478.937
+      },
+      {
+        "id": "245f795dc1fd43e6b8070f914532f7fc",
+        "phase": "control",
+        "charged_s": 196.21900000001187,
+        "finished": 1,
+        "started_monotonic_s": 206727.796
+      },
+      {
+        "id": "43a309ba481d4864aa3bcfb95d27cb1c",
+        "phase": "control",
+        "charged_s": 79.81299999999464,
+        "finished": 1,
+        "started_monotonic_s": 207164.64
+      },
+      {
+        "id": "d1e1532a1292451cacf9635fbd8784a0",
+        "phase": "scenario_prediction",
+        "charged_s": 15.25,
+        "finished": 1,
+        "started_monotonic_s": 207302.14
+      },
+      {
+        "id": "331d09bc4741441b996bb8e4a15f32dc",
+        "phase": "scenario_prediction",
+        "charged_s": 7.844000000011874,
+        "finished": 1,
+        "started_monotonic_s": 207407.546
+      },
+      {
+        "id": "119fbaff3ae2419e83ee0452604ad535",
+        "phase": "control",
+        "charged_s": 389.03100000001723,
+        "finished": 1,
+        "started_monotonic_s": 207462.984
+      },
+      {
+        "id": "98561854c28843548360d68bd878b8ad",
+        "phase": "scenario_prediction",
+        "charged_s": 161.85899999999674,
+        "finished": 1,
+        "started_monotonic_s": 208045.234
+      },
+      {
+        "id": "40cbc27b8fe4475f83bd992d89ec7942",
+        "phase": "scenario_prediction",
+        "charged_s": 198.07800000000861,
+        "finished": 1,
+        "started_monotonic_s": 208317.484
+      },
+      {
+        "id": "f951ec87829c42ada7d83009fae8ceb1",
+        "phase": "scenario_prediction",
+        "charged_s": 45.78100000001723,
+        "finished": 1,
+        "started_monotonic_s": 208565.484
+      },
+      {
+        "id": "5ecbaab668a44d659e527f6127b1acba",
+        "phase": "scenario_prediction",
+        "charged_s": 105.93700000000536,
+        "finished": 1,
+        "started_monotonic_s": 209030.781
+      },
+      {
+        "id": "a10836af40fd498fa06413ccdcd93b93",
+        "phase": "scenario_prediction",
+        "charged_s": 143.31200000000536,
+        "finished": 1,
+        "started_monotonic_s": 209385.328
+      },
+      {
+        "id": "74909db03bd3466fbd8b94d1e10d7b43",
+        "phase": "control",
+        "charged_s": 533.9529999999795,
+        "finished": 1,
+        "started_monotonic_s": 210385.515
+      },
+      {
+        "id": "89017ebc67e749b28779152b1fb4bc21",
+        "phase": "control",
+        "charged_s": 578.0160000000033,
+        "finished": 1,
+        "started_monotonic_s": 233964.218
+      },
+      {
+        "id": "eabd47c864bb4ff2948b53efec5e4728",
+        "phase": "control",
+        "charged_s": 335.98399999999674,
+        "finished": 1,
+        "started_monotonic_s": 234640.125
+      },
+      {
+        "id": "50434a339b5f4aa4bd515b09002d95e1",
+        "phase": "scenario_prediction",
+        "charged_s": 319.34399999998277,
+        "finished": 1,
+        "started_monotonic_s": 235074.515
+      },
+      {
+        "id": "760ec313329b430388c30708eba6e62f",
+        "phase": "scenario_prediction",
+        "charged_s": 12.155999999988126,
+        "finished": 1,
+        "started_monotonic_s": 235608.203
+      },
+      {
+        "id": "ea523159b7924ed08d84c9f97c270370",
+        "phase": "scenario_prediction",
+        "charged_s": 153.0,
+        "finished": 1,
+        "started_monotonic_s": 235700.609
+      },
+      {
+        "id": "ff30cfd7a64640eab4c9187ed53b5918",
+        "phase": "scenario_prediction",
+        "charged_s": 160.56200000000536,
+        "finished": 1,
+        "started_monotonic_s": 236209.031
+      },
+      {
+        "id": "6870e09f6fa04f02a13955bdfe85d74f",
+        "phase": "control",
+        "charged_s": 586.125,
+        "finished": 1,
+        "started_monotonic_s": 236718.859
+      },
+      {
+        "id": "e9e7daf935b34b4e8f2d069a499d8527",
+        "phase": "control",
+        "charged_s": 585.8910000000033,
+        "finished": 1,
+        "started_monotonic_s": 237708.796
+      },
+      {
+        "id": "4ba6f0fb2f764450bf9c1d649294dd2d",
+        "phase": "control",
+        "charged_s": 36.046999999991385,
+        "finished": 1,
+        "started_monotonic_s": 238686.765
+      },
+      {
+        "id": "7e3640dd441f460d9e0f30e41c03bdbd",
+        "phase": "rl",
+        "charged_s": 0.015000000013969839,
+        "finished": 1,
+        "started_monotonic_s": 239159.781
+      },
+      {
+        "id": "2924d97b26dd428698b3d9c3791caf11",
+        "phase": "rl",
+        "charged_s": 1195.0469999999914,
+        "finished": 1,
+        "started_monotonic_s": 239226.953
+      }
+    ],
+    "reallocations": [
+      {
+        "id": "0c0397747140406a9224760792a06d0b",
+        "source": "rl",
+        "destination": "control",
+        "seconds": 1200.0,
+        "authorization": "User approved: Transfer 20 minutes to control validation; combined cap remains four hours"
+      }
+    ]
+  },
+  "historical_after": {
+    "output\\motion-reliability\\budget.sqlite": "a3ef4ef261ccf8723bca99f286432dfc180dac10e4c89e74f9c2596400de9c55",
+    "output\\congestion-recovery\\budget.sqlite": "55def5ce5ce94d53a2ee548944805dedc53581f31e86ec94a1eeac80ab54245c",
+    "output\\predictive-v2\\budget.sqlite": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad"
+  },
+  "historical_ledgers_unchanged": true,
+  "requested_rollout_complete": true
+}

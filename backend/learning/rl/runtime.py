@@ -101,7 +101,7 @@ class RLRuntime:
     def _clear_sync(self, timeout=2.):
         s=self.service
         s._drain_collision_events();s.provider.drain_sensor_frames()
-        s.synchronizer=SensorSynchronizer(s.synchronizer.required,s.synchronizer.optional,timeout_s=timeout,now=s.now)
+        s.synchronizer=SensorSynchronizer(s._required_after_sensor_rebuild(),s.synchronizer.optional,timeout_s=timeout,now=s.now)
         s.policy_history.clear();s.camera_cache.clear();s.sensor_frame_cache.clear();s.collision_events.clear()
         s.frame_tick_started.clear()
 

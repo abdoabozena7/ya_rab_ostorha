@@ -1,0 +1,106 @@
+{
+  "status": "PASS",
+  "checks": {
+    "new_native_arrival": true,
+    "independent_native_arrival": true,
+    "recorded_arrival": true,
+    "zero_collision_callbacks_and_episodes": true,
+    "no_sensor_or_communication_faults": true,
+    "approved_initial_conditions": true,
+    "finalized_without_loss": true,
+    "one_native_ego_in_recording": true,
+    "sensor_sidecar_matches_frames": true,
+    "commands_auditable": true,
+    "evaluated_driving_commands_within_wall_freshness_limit": true,
+    "intervention_causes_present": true,
+    "safety_scenario_weights_and_research_ledger_preserved": true,
+    "geometry_p95_within_10ms": true,
+    "paused_rule_after_arrival": true
+  },
+  "measurements": {
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b308fe67540b4a5d85c0775357ad2078",
+    "reason": "destination_arrived",
+    "destination_arrived": true,
+    "independently_verified_arrival": true,
+    "destination_distance_m": 1.1132745553616556,
+    "final_speed_mps": 0.003354410348309618,
+    "collision_count": 0,
+    "collision_callbacks": 0,
+    "duration_sim_s": 145.7000021710992,
+    "distance_traveled_m": 187.77439853890695,
+    "stopped_s": 57.75000086054206,
+    "longest_stop_s": 5.550000082701445,
+    "geometry_p95_ms": 7.975215002807089,
+    "controller_p95_ms": 14.758775002337641,
+    "useful_route_progress_m": 184.3928667246842,
+    "route_completion": 0.9945623570491116,
+    "interventions": 240,
+    "intervention_s": 65.25000097230077,
+    "emergency_s": 0.10000000149011612,
+    "reason_durations_s": {
+      "Monitoring resumes with normal forward driving": 0.10000000149011612,
+      "Measured obstacle": 30.200000450015068,
+      "Measured corridor clear": 65.00000096857548,
+      "Predicted time-aligned occupancy conflict": 40.20000059902668,
+      "Holding for three clear readings and minimum hold": 10.100000150501728,
+      "Measured hazard within emergency stopping distance": 0.10000000149011612
+    },
+    "initial_poses_match_verified_pair": {
+      "passed": true,
+      "maximum_position_error_m": 0.0,
+      "maximum_velocity_error_mps": 0.0,
+      "maximum_rotation_error_rad": 0.0
+    }
+  },
+  "maximum_sensor_wall_age_s_all_rows_including_paused_setup": 0.7030000000013388,
+  "maximum_sensor_wall_age_s_driving": 0.23400000000401633,
+  "terminal_paused_holds_without_policy_proposal": 1,
+  "maximum_control_timing_ms": {
+    "lock_wait": 15.999999995983671,
+    "since_publication": 78.99999999790452,
+    "navigation": 16.00000000325963,
+    "safety": 46.999999998661224
+  },
+  "independent_native_arrival": {
+    "source": "independent CARLA SDK observer; never ticks",
+    "actor_id": 2313,
+    "world_frame": 289476,
+    "position_m": [
+      -112.46366882324219,
+      -32.38431167602539,
+      -0.0017771529965102673
+    ],
+    "speed_mps": 0.007626645182763892,
+    "destination_distance_m": 1.1146401748400665,
+    "arrival_verified": true,
+    "control": {
+      "throttle": 0.0,
+      "brake": 1.0
+    }
+  },
+  "recording_status": {
+    "incomplete": false,
+    "error": null,
+    "dropped_frames": 0,
+    "dropped_events": 0,
+    "dropped_trace_rows": 0,
+    "first_dropped_frame": null,
+    "last_dropped_frame": null,
+    "written_frames": 2915,
+    "queued_bytes": 0,
+    "pending_items": 0,
+    "finalized": true
+  },
+  "recording_frames": 2915,
+  "safety_sidecar_frames": 2915,
+  "command_trace_rows": 2913,
+  "preserved": {
+    "backend/core/prediction.py": true,
+    "backend/core/predictive_safety.py": true,
+    "backend/carla/urban_chaos.py": true,
+    "artifacts/learned_safety/predictive_v2/heads.npz": true,
+    "artifacts/learned_safety/v1/weights.npz": true,
+    "output/predictive-v2/budget.sqlite": true,
+    "config/ya_rab_ostorha_safety.json": true
+  }
+}

@@ -1,0 +1,3678 @@
+{
+  "status": "PASS",
+  "transport": "unmodified real dashboard WebSocket",
+  "checks": [
+    "native launch and RGB camera",
+    "paused RULE default",
+    "MODEL experimental",
+    "manual throttle and stop",
+    "emergency latch and explicit acknowledgement",
+    "RULE start, recording and stop",
+    "active recording reset",
+    "interrupted result display"
+  ],
+  "commands": [
+    {
+      "type": "start_driving",
+      "sequence": 1,
+      "frame_id": 218092,
+      "timestamp_s": 10873.769101254642
+    },
+    {
+      "type": "stop_driving",
+      "sequence": 18,
+      "frame_id": 218114,
+      "timestamp_s": 10874.869101271033,
+      "reason": "operator_stop"
+    },
+    {
+      "type": "start_driving",
+      "sequence": 19,
+      "frame_id": 218118,
+      "timestamp_s": 10875.069101274014
+    },
+    {
+      "type": "stop_driving",
+      "sequence": 21,
+      "frame_id": 218120,
+      "timestamp_s": 10875.169101275504,
+      "reason": "operator_stop"
+    },
+    {
+      "type": "emergency_stop",
+      "sequence": 22,
+      "frame_id": 218120,
+      "timestamp_s": 10875.169101275504
+    },
+    {
+      "type": "stop_driving",
+      "sequence": 23,
+      "frame_id": 218133,
+      "timestamp_s": 10875.81910128519,
+      "reason": "operator_stop"
+    },
+    {
+      "type": "acknowledge_stop",
+      "sequence": 24,
+      "frame_id": 218133,
+      "timestamp_s": 10875.81910128519
+    },
+    {
+      "type": "comparison_v2",
+      "sequence": 25,
+      "frame_id": 218144,
+      "timestamp_s": 10876.369101293385,
+      "value": {
+        "operation": "RUN",
+        "side": "RULE"
+      }
+    },
+    {
+      "type": "stop_driving",
+      "sequence": 42,
+      "frame_id": 218191,
+      "timestamp_s": 10878.719101328403,
+      "reason": "comparison_v2_stop"
+    },
+    {
+      "type": "stop_driving",
+      "sequence": 44,
+      "frame_id": 218194,
+      "timestamp_s": 10878.869101330638,
+      "reason": "workspace_changed"
+    },
+    {
+      "type": "comparison_v2",
+      "sequence": 45,
+      "frame_id": 218197,
+      "timestamp_s": 10879.019101332873,
+      "value": {
+        "operation": "RUN",
+        "side": "RULE"
+      }
+    },
+    {
+      "type": "reset",
+      "sequence": 61,
+      "frame_id": 218244,
+      "timestamp_s": 10881.36910136789
+    }
+  ],
+  "samples": [
+    {
+      "label": "native-launch",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218090,
+        "timestamp": 10873.669101253152,
+        "actorId": 709,
+        "positionWorldM": [
+          57.56834030151367,
+          -67.849853515625,
+          -0.005051841493695974
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0,
+          "pitch": 0,
+          "yaw": 179.9765625
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          0
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          0
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0,
+        "accelerationMps2": 0,
+        "speedKmh": 0,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "N",
+        "gearIndex": 0,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141183592046357,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "page_closed",
+        "speed_kmh": 20,
+        "route_id": "1cdf5c4f6fc440afa71397b7b78fe690"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c869c75180e24c78a1c50a52a9943846",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.7500000111758709,
+          "destination_arrived": false
+        },
+        "attempt_id": "ff1af0ddcac8414bb90cbfe7dcd10160",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.1505882256739388,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.800000011920929,
+          "average_speed_mps": 0.18823527928749928,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.004784978926181793,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "STANDBY",
+        "risk": "UNKNOWN",
+        "active": false,
+        "reason": "Monitoring resumes with normal forward driving",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "BASE_DRIVER",
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 0
+        },
+        "experimental": false
+      }
+    },
+    {
+      "label": "manual-moving",
+      "mode": "MANUAL",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218114,
+        "timestamp": 10874.869101271033,
+        "actorId": 709,
+        "positionWorldM": [
+          57.54365158081055,
+          -67.84981536865234,
+          -0.004936446901410818
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.000762939453125,
+          "pitch": 0.10263041406869888,
+          "yaw": 179.99234008789062
+        },
+        "velocityWorldMps": [
+          -0.5525137186050415,
+          -0.001962753012776375,
+          0.0002829933073371649
+        ],
+        "angularVelocityWorldRadps": [
+          -0.0011371046368453713,
+          0.03353393563800551,
+          0.011816098297383108
+        ],
+        "accelerationWorldMps2": [
+          -7.379384994506836,
+          -0.04062613472342491,
+          -0.0014976499369367957
+        ],
+        "speedMps": 0.5525130739872386,
+        "speedMagnitudeMps": 0.5525172773148114,
+        "accelerationMps2": 7.379365005728502,
+        "speedKmh": 1.989062198333321,
+        "steeringInput": 0,
+        "throttle": 0.550000011920929,
+        "brake": 0,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141458962903071,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "page_closed",
+        "speed_kmh": 20,
+        "route_id": "1cdf5c4f6fc440afa71397b7b78fe690"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c869c75180e24c78a1c50a52a9943846",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.7500000111758709,
+          "destination_arrived": false
+        },
+        "attempt_id": "ff1af0ddcac8414bb90cbfe7dcd10160",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.1505882256739388,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.800000011920929,
+          "average_speed_mps": 0.18823527928749928,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.004784978926181793,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "MONITORING",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "active": false,
+        "reason": "Observed forward stopping corridor is clear",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "frame_id": 218114,
+        "timestamp_s": 10874.869101271033,
+        "stopping_envelope_m": 3.223908581233321,
+        "measured_range_m": 17.207014083862305,
+        "closing_speed_mps": 0.413662314414978,
+        "ttc_s": 41.59676500431838,
+        "observed_road_range_m": 24.65431785583496,
+        "target_source": "DEPTH",
+        "teacher_state": "MONITORING",
+        "ground_plane_supported": true,
+        "feasibility_validator": null,
+        "depth_observed": true,
+        "lidar_observed": true,
+        "base_driver_brake": 0,
+        "proposed_safety_brake": 0,
+        "path_conflict": null,
+        "side_rear_coverage": "OBSERVED_LIDAR_SURFACES_ONLY; sparse/occluded side and rear directions remain UNKNOWN",
+        "side_rear_free_space_verified": false,
+        "actual_generator": "BASE_DRIVER",
+        "inference_ms": 0,
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 20
+        },
+        "experimental": false
+      }
+    },
+    {
+      "label": "manual-stopped",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218118,
+        "timestamp": 10875.069101274014,
+        "actorId": 709,
+        "positionWorldM": [
+          57.45554733276367,
+          -67.85005950927734,
+          -0.004444274585694075
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0.0004452875000424683,
+          "pitch": -0.02084573544561863,
+          "yaw": 179.97471618652344
+        },
+        "velocityWorldMps": [
+          -0.005035913083702326,
+          -0.00013520602078642696,
+          0.00013057708565611392
+        ],
+        "angularVelocityWorldRadps": [
+          0.00020306956037657747,
+          -0.026995040843425726,
+          -0.0000016193438966176324
+        ],
+        "accelerationWorldMps2": [
+          0.1318516880273819,
+          0.004824697505682707,
+          -0.000732040498405695
+        ],
+        "speedMps": 0.00503580501945624,
+        "speedMagnitudeMps": 0.0050394197711601295,
+        "accelerationMps2": -0.13184926933580435,
+        "speedKmh": 0.018141911176176466,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141151367797167,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "operator_stop",
+        "speed_kmh": 20,
+        "route_id": "1cdf5c4f6fc440afa71397b7b78fe690"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c869c75180e24c78a1c50a52a9943846",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.7500000111758709,
+          "destination_arrived": false
+        },
+        "attempt_id": "ff1af0ddcac8414bb90cbfe7dcd10160",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.1505882256739388,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.800000011920929,
+          "average_speed_mps": 0.18823527928749928,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.004784978926181793,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "STANDBY",
+        "risk": "UNKNOWN",
+        "active": false,
+        "reason": "Monitoring resumes with normal forward driving",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "BASE_DRIVER",
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 21
+        },
+        "experimental": false
+      }
+    },
+    {
+      "label": "emergency-latched",
+      "mode": "EMERGENCY_STOP",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218130,
+        "timestamp": 10875.669101282954,
+        "actorId": 709,
+        "positionWorldM": [
+          57.45563888549805,
+          -67.85005950927734,
+          -0.004355850163847208
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0.0003679514047689736,
+          "pitch": -0.03973803669214249,
+          "yaw": 179.97471618652344
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          0
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          0
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0,
+        "accelerationMps2": 0,
+        "speedKmh": 0,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141151367797167,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "emergency_stop",
+        "speed_kmh": 20,
+        "route_id": "1cdf5c4f6fc440afa71397b7b78fe690"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c869c75180e24c78a1c50a52a9943846",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.7500000111758709,
+          "destination_arrived": false
+        },
+        "attempt_id": "ff1af0ddcac8414bb90cbfe7dcd10160",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.1505882256739388,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.800000011920929,
+          "average_speed_mps": 0.18823527928749928,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.004784978926181793,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "STANDBY",
+        "risk": "UNKNOWN",
+        "active": false,
+        "reason": "Monitoring resumes with normal forward driving",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "BASE_DRIVER",
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 22
+        },
+        "experimental": false
+      }
+    },
+    {
+      "label": "emergency-acknowledged",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218144,
+        "timestamp": 10876.369101293385,
+        "actorId": 709,
+        "positionWorldM": [
+          57.45563888549805,
+          -67.85005950927734,
+          -0.004355850163847208
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0.0003679514047689736,
+          "pitch": -0.03973803669214249,
+          "yaw": 179.97471618652344
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          0
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          0
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0,
+        "accelerationMps2": 0,
+        "speedKmh": 0,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141151367797167,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "operator_stop",
+        "speed_kmh": 20,
+        "route_id": "1cdf5c4f6fc440afa71397b7b78fe690"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c869c75180e24c78a1c50a52a9943846",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.7500000111758709,
+          "destination_arrived": false
+        },
+        "attempt_id": "ff1af0ddcac8414bb90cbfe7dcd10160",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.1505882256739388,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.800000011920929,
+          "average_speed_mps": 0.18823527928749928,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.004784978926181793,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "STANDBY",
+        "risk": "UNKNOWN",
+        "active": false,
+        "reason": "Monitoring resumes with normal forward driving",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "BASE_DRIVER",
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 22
+        },
+        "experimental": false
+      }
+    },
+    {
+      "label": "rule-before-stop",
+      "mode": "AUTOMATIC",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218190,
+        "timestamp": 10878.669101327658,
+        "actorId": 817,
+        "positionWorldM": [
+          57.41883850097656,
+          -67.85161590576172,
+          -0.005617179907858372
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.015075678937137125,
+          "pitch": 0.2816428244113922,
+          "yaw": -179.89996337890625
+        },
+        "velocityWorldMps": [
+          -1.0971219539642334,
+          -0.01636827364563942,
+          0.0003430271171964705
+        ],
+        "angularVelocityWorldRadps": [
+          -0.000890930894212936,
+          0.010766712959351011,
+          0.014652986956103384
+        ],
+        "accelerationWorldMps2": [
+          -3.858182430267334,
+          -0.05674824118614197,
+          -0.0018703460227698088
+        ],
+        "speedMps": 1.0971372451361763,
+        "speedMagnitudeMps": 1.0972441022489203,
+        "accelerationMps2": 3.8582196606229227,
+        "speedKmh": 3.9500787680961134,
+        "steeringInput": 0.019747458398342133,
+        "throttle": 0.75,
+        "brake": 0,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": -3.1398466851791373,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 20,
+        "route_id": "f307a1d7d5344525ad54229ac217202a"
+      },
+      "phase": "RUNNING",
+      "latest": {
+        "side": "RULE",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c869c75180e24c78a1c50a52a9943846",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.7500000111758709,
+          "destination_arrived": false
+        },
+        "attempt_id": "ff1af0ddcac8414bb90cbfe7dcd10160",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.1505882256739388,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.800000011920929,
+          "average_speed_mps": 0.18823527928749928,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.004784978926181793,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": true,
+      "safety": {
+        "type": "PREDICTIVE_V2",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "MONITORING",
+        "risk": "CLEAR",
+        "active": false,
+        "reason": "Measured obstacle",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "RULE",
+        "frame_id": 218190,
+        "timestamp_s": 10878.669101327658,
+        "decision_source": "RULE",
+        "measured_range_m": 17.287004470825195,
+        "target_source": "DEPTH",
+        "observed_road_range_m": 42.115142822265625,
+        "measured_ttc_s": null,
+        "raw_measured_range_m": 17.287004470825195,
+        "target_support_points": 6,
+        "weak_confirmation_readings": 0,
+        "target_speed_mps": 5.555555555555555,
+        "clear_readings": 17,
+        "pre_protection_command": {
+          "frame_id": 218190,
+          "timestamp_s": 10878.669101327658,
+          "throttle": 0.75,
+          "brake": 0,
+          "steering": 0.015966905280947685,
+          "reverse": false,
+          "handbrake": false,
+          "source": "SAFETY",
+          "gear": 1
+        },
+        "applied_command": {
+          "frame_id": 218190,
+          "timestamp_s": 10878.669101327658,
+          "throttle": 0.75,
+          "brake": 0,
+          "steering": 0.015966905280947685,
+          "reverse": false,
+          "handbrake": false,
+          "source": "SAFETY",
+          "gear": 1
+        },
+        "emergency_active": false,
+        "sensor_ages_s": {
+          "depth": 0,
+          "frontCamera": 0,
+          "gnss": 0,
+          "imu": 0,
+          "lidar": 0,
+          "radar": 0
+        },
+        "base_driver_brake": 0,
+        "base_command_source": "NAVIGATION",
+        "proposed_safety_brake": 0,
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "experimental": true,
+        "available_controllers": [
+          "RULE"
+        ],
+        "model_health": "NOT_USED",
+        "model_weights_sha256": null,
+        "model_identity": "PREDICTIVE_V2",
+        "prediction": {
+          "version": 2,
+          "session_id": "8434999af46b4fe1ad24b2e9d2149c23",
+          "evaluation_frame": 218190,
+          "timestamp_s": 10878.669101327658,
+          "prediction_source_frame": 218190,
+          "prediction_source_timestamp_s": 10878.669101327658,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "odometry_origin_m": [
+            0.14269332717091238,
+            0.0001345508971042891
+          ],
+          "odometry_yaw_rad": 0.002231537422436839,
+          "horizon_s": 3,
+          "control_interval_s": 0.1,
+          "tracks": [
+            {
+              "id": "1",
+              "position_m": [
+                3.17582768201828,
+                5.1493942737579355
+              ],
+              "half_size_m": [
+                1.679636299610138,
+                0.6997215747833252
+              ],
+              "velocity_mps": [
+                0.56401313007637,
+                -0.01468979859906319
+              ],
+              "acceleration_mps2": [
+                3.2373669274190644,
+                -0.2061444925631881
+              ],
+              "class": "UNKNOWN",
+              "confirmed": true,
+              "consecutive_observations": 17,
+              "occlusion_s": 0,
+              "uncertainty_m": 0.15,
+              "quality": 1,
+              "history": [
+                [
+                  10878.169101327658,
+                  3.2857596358835996,
+                  5.136489154934052,
+                  0.0028603708231407536,
+                  -1.0857802034734217e-10
+                ],
+                [
+                  10878.669101327658,
+                  3.3070220452761565,
+                  5.156602975726159,
+                  0.564044506560242,
+                  -0.013431146661337715
+                ]
+              ],
+              "fixed_position_m": [
+                3.3070220452761565,
+                5.156602975726159
+              ]
+            },
+            {
+              "id": "2",
+              "position_m": [
+                11.255375862121582,
+                6.684096574783325
+              ],
+              "half_size_m": [
+                0.5194187164306641,
+                1.1433203220367432
+              ],
+              "velocity_mps": [
+                0.09001822585016078,
+                -0.07281239134578016
+              ],
+              "acceleration_mps2": [
+                0,
+                0
+              ],
+              "class": "UNKNOWN",
+              "confirmed": true,
+              "consecutive_observations": 9,
+              "occlusion_s": 0,
+              "uncertainty_m": 0.15,
+              "quality": 0.8333333333333334,
+              "history": [
+                [
+                  10878.169101327658,
+                  11.313862450377872,
+                  6.9391892136765145,
+                  0.0028494816807095443,
+                  2.433257098746273e-9
+                ],
+                [
+                  10878.669101327658,
+                  11.383125365510704,
+                  6.709331254685395,
+                  0.09018048515695698,
+                  -0.07261133117880059
+                ]
+              ],
+              "fixed_position_m": [
+                11.383125365510704,
+                6.709331254685395
+              ]
+            },
+            {
+              "id": "3",
+              "position_m": [
+                -6.213349469897854,
+                5.201126382602086
+              ],
+              "half_size_m": [
+                0.7652783393859863,
+                0.35
+              ],
+              "velocity_mps": [
+                0,
+                0
+              ],
+              "acceleration_mps2": [
+                0,
+                0
+              ],
+              "class": "UNKNOWN",
+              "confirmed": false,
+              "consecutive_observations": 0,
+              "occlusion_s": 0.05000000074505806,
+              "uncertainty_m": 0.25000000149011614,
+              "quality": 0.29166666604578495,
+              "history": [],
+              "fixed_position_m": [
+                -6.082247170769725,
+                5.187382672972814
+              ]
+            }
+          ],
+          "trajectories": [
+            {
+              "track_id": "1",
+              "source": "CONSTANT_VELOCITY",
+              "mode": 0,
+              "probability": 1,
+              "points": [
+                [
+                  0,
+                  3.17582768201828,
+                  5.1493942737579355
+                ],
+                [
+                  0.1,
+                  3.232228995025917,
+                  5.147925293898029
+                ],
+                [
+                  0.2,
+                  3.288630308033554,
+                  5.146456314038123
+                ],
+                [
+                  0.3,
+                  3.345031621041191,
+                  5.144987334178216
+                ],
+                [
+                  0.4,
+                  3.401432934048828,
+                  5.14351835431831
+                ],
+                [
+                  0.5,
+                  3.457834247056465,
+                  5.142049374458404
+                ],
+                [
+                  0.6,
+                  3.514235560064102,
+                  5.140580394598498
+                ],
+                [
+                  0.7,
+                  3.570636873071739,
+                  5.139111414738591
+                ],
+                [
+                  0.8,
+                  3.627038186079376,
+                  5.137642434878685
+                ],
+                [
+                  0.9,
+                  3.683439499087013,
+                  5.1361734550187785
+                ],
+                [
+                  1,
+                  3.7398408120946502,
+                  5.134704475158872
+                ],
+                [
+                  1.1,
+                  3.796242125102287,
+                  5.133235495298966
+                ],
+                [
+                  1.2,
+                  3.852643438109924,
+                  5.131766515439059
+                ],
+                [
+                  1.3,
+                  3.909044751117561,
+                  5.130297535579153
+                ],
+                [
+                  1.4,
+                  3.965446064125198,
+                  5.128828555719247
+                ],
+                [
+                  1.5,
+                  4.021847377132835,
+                  5.127359575859341
+                ],
+                [
+                  1.6,
+                  4.078248690140472,
+                  5.125890595999435
+                ],
+                [
+                  1.7,
+                  4.134650003148109,
+                  5.124421616139528
+                ],
+                [
+                  1.8,
+                  4.191051316155746,
+                  5.122952636279622
+                ],
+                [
+                  1.9,
+                  4.247452629163383,
+                  5.1214836564197155
+                ],
+                [
+                  2,
+                  4.3038539421710205,
+                  5.120014676559809
+                ],
+                [
+                  2.1,
+                  4.360255255178657,
+                  5.118545696699902
+                ],
+                [
+                  2.2,
+                  4.416656568186294,
+                  5.117076716839996
+                ],
+                [
+                  2.3,
+                  4.473057881193931,
+                  5.11560773698009
+                ],
+                [
+                  2.4,
+                  4.529459194201568,
+                  5.114138757120184
+                ],
+                [
+                  2.5,
+                  4.585860507209205,
+                  5.112669777260278
+                ],
+                [
+                  2.6,
+                  4.6422618202168415,
+                  5.111200797400371
+                ],
+                [
+                  2.7,
+                  4.698663133224479,
+                  5.109731817540465
+                ],
+                [
+                  2.8,
+                  4.755064446232116,
+                  5.1082628376805586
+                ],
+                [
+                  2.9,
+                  4.811465759239753,
+                  5.106793857820652
+                ],
+                [
+                  3,
+                  4.86786707224739,
+                  5.105324877960746
+                ]
+              ]
+            },
+            {
+              "track_id": "2",
+              "source": "CONSTANT_VELOCITY",
+              "mode": 0,
+              "probability": 1,
+              "points": [
+                [
+                  0,
+                  11.255375862121582,
+                  6.684096574783325
+                ],
+                [
+                  0.1,
+                  11.264377684706599,
+                  6.676815335648747
+                ],
+                [
+                  0.2,
+                  11.273379507291613,
+                  6.669534096514169
+                ],
+                [
+                  0.3,
+                  11.28238132987663,
+                  6.662252857379591
+                ],
+                [
+                  0.4,
+                  11.291383152461647,
+                  6.654971618245013
+                ],
+                [
+                  0.5,
+                  11.300384975046663,
+                  6.647690379110435
+                ],
+                [
+                  0.6,
+                  11.309386797631678,
+                  6.640409139975857
+                ],
+                [
+                  0.7,
+                  11.318388620216695,
+                  6.633127900841279
+                ],
+                [
+                  0.8,
+                  11.327390442801711,
+                  6.625846661706701
+                ],
+                [
+                  0.9,
+                  11.336392265386726,
+                  6.618565422572123
+                ],
+                [
+                  1,
+                  11.345394087971743,
+                  6.611284183437545
+                ],
+                [
+                  1.1,
+                  11.35439591055676,
+                  6.604002944302967
+                ],
+                [
+                  1.2,
+                  11.363397733141776,
+                  6.596721705168389
+                ],
+                [
+                  1.3,
+                  11.37239955572679,
+                  6.589440466033811
+                ],
+                [
+                  1.4,
+                  11.381401378311807,
+                  6.582159226899233
+                ],
+                [
+                  1.5,
+                  11.390403200896824,
+                  6.574877987764655
+                ],
+                [
+                  1.6,
+                  11.399405023481838,
+                  6.567596748630077
+                ],
+                [
+                  1.7,
+                  11.408406846066855,
+                  6.560315509495499
+                ],
+                [
+                  1.8,
+                  11.417408668651872,
+                  6.553034270360921
+                ],
+                [
+                  1.9,
+                  11.426410491236888,
+                  6.545753031226343
+                ],
+                [
+                  2,
+                  11.435412313821903,
+                  6.538471792091765
+                ],
+                [
+                  2.1,
+                  11.44441413640692,
+                  6.531190552957187
+                ],
+                [
+                  2.2,
+                  11.453415958991936,
+                  6.5239093138226085
+                ],
+                [
+                  2.3,
+                  11.462417781576951,
+                  6.516628074688031
+                ],
+                [
+                  2.4,
+                  11.471419604161968,
+                  6.509346835553453
+                ],
+                [
+                  2.5,
+                  11.480421426746984,
+                  6.502065596418875
+                ],
+                [
+                  2.6,
+                  11.489423249332,
+                  6.4947843572842965
+                ],
+                [
+                  2.7,
+                  11.498425071917016,
+                  6.487503118149719
+                ],
+                [
+                  2.8,
+                  11.507426894502032,
+                  6.480221879015141
+                ],
+                [
+                  2.9,
+                  11.516428717087049,
+                  6.472940639880563
+                ],
+                [
+                  3,
+                  11.525430539672064,
+                  6.465659400745984
+                ]
+              ]
+            },
+            {
+              "track_id": "3",
+              "source": "CONSTANT_VELOCITY",
+              "mode": 0,
+              "probability": 1,
+              "points": [
+                [
+                  0,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.1,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.2,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.3,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.4,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.5,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.6,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.7,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.8,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  0.9,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.1,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.2,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.3,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.4,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.5,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.6,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.7,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.8,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  1.9,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.1,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.2,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.3,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.4,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.5,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.6,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.7,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.8,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  2.9,
+                  -6.213349469897854,
+                  5.201126382602086
+                ],
+                [
+                  3,
+                  -6.213349469897854,
+                  5.201126382602086
+                ]
+              ]
+            }
+          ],
+          "ego_trajectories": [
+            {
+              "intent": "CONTINUE",
+              "points": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.1,
+                  0.10972440829170317,
+                  0.000020596990410931084,
+                  0.0003754313281735323
+                ],
+                [
+                  0.2,
+                  0.21944880111789578,
+                  0.00008238795874060573,
+                  0.0007508626563470646
+                ],
+                [
+                  0.3,
+                  0.3291731630130694,
+                  0.00018537289627966846,
+                  0.001126293984520597
+                ],
+                [
+                  0.4,
+                  0.4388974785117201,
+                  0.00032955178851252825,
+                  0.0015017253126941292
+                ],
+                [
+                  0.5,
+                  0.5486217321483503,
+                  0.0005149246151173604,
+                  0.0018771566408676615
+                ],
+                [
+                  0.6,
+                  0.6583459084574712,
+                  0.0007414913499661097,
+                  0.002252587969041194
+                ],
+                [
+                  0.7,
+                  0.768069991973605,
+                  0.0010092519611244939,
+                  0.0026280192972147256
+                ],
+                [
+                  0.8,
+                  0.8777939672312869,
+                  0.0013182064108520077,
+                  0.003003450625388258
+                ],
+                [
+                  0.9,
+                  0.9875178187650673,
+                  0.0016683546556019297,
+                  0.00337888195356179
+                ],
+                [
+                  1,
+                  1.0972415311095143,
+                  0.0020596966460213265,
+                  0.0037543132817353226
+                ],
+                [
+                  1.1,
+                  1.2069650887992152,
+                  0.002492232326951061,
+                  0.004129744609908854
+                ],
+                [
+                  1.2,
+                  1.3166884763687794,
+                  0.0029659616374257992,
+                  0.004505175938082386
+                ],
+                [
+                  1.3,
+                  1.4264116783528402,
+                  0.0034808845106740205,
+                  0.004880607266255919
+                ],
+                [
+                  1.4,
+                  1.536134679286057,
+                  0.004037000874118025,
+                  0.005256038594429451
+                ],
+                [
+                  1.5,
+                  1.6458574637031178,
+                  0.004634310649373945,
+                  0.005631469922602983
+                ],
+                [
+                  1.6,
+                  1.7555800161387407,
+                  0.005272813752251757,
+                  0.006006901250776514
+                ],
+                [
+                  1.7,
+                  1.8653023211276767,
+                  0.005952510092755289,
+                  0.006382332578950047
+                ],
+                [
+                  1.8,
+                  1.9750243632047118,
+                  0.0066733995750822405,
+                  0.006757763907123579
+                ],
+                [
+                  1.9,
+                  2.084746126904669,
+                  0.007435482097624189,
+                  0.007133195235297112
+                ],
+                [
+                  2,
+                  2.19446759676241,
+                  0.00823875755296661,
+                  0.007508626563470645
+                ],
+                [
+                  2.1,
+                  2.304188757312839,
+                  0.009083225827888886,
+                  0.007884057891644177
+                ],
+                [
+                  2.2,
+                  2.413909593090903,
+                  0.00996888680336433,
+                  0.008259489219817711
+                ],
+                [
+                  2.3,
+                  2.523630088631595,
+                  0.010895740354560195,
+                  0.008634920547991243
+                ],
+                [
+                  2.4,
+                  2.6333502284699564,
+                  0.011863786350837695,
+                  0.009010351876164776
+                ],
+                [
+                  2.5,
+                  2.7430699971410775,
+                  0.012873024655752026,
+                  0.009385783204338308
+                ],
+                [
+                  2.6,
+                  2.8527893791801016,
+                  0.013923455127052379,
+                  0.009761214532511843
+                ],
+                [
+                  2.7,
+                  2.962508359122227,
+                  0.015015077616681966,
+                  0.010136645860685375
+                ],
+                [
+                  2.8,
+                  3.0722269215027085,
+                  0.01614789197077804,
+                  0.010512077188858908
+                ],
+                [
+                  2.9,
+                  3.181945050856859,
+                  0.017321898029671906,
+                  0.01088750851703244
+                ],
+                [
+                  3,
+                  3.291662731720053,
+                  0.018537095627888963,
+                  0.011262939845205974
+                ]
+              ]
+            },
+            {
+              "intent": "BRAKE",
+              "points": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.1,
+                  0.08472440933489167,
+                  0.000012280452403428836,
+                  0.00028989171866365996
+                ],
+                [
+                  0.2,
+                  0.1194488174414372,
+                  0.000024409618105200123,
+                  0.0004087042183075753
+                ],
+                [
+                  0.3,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  0.4,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  0.5,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  0.6,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  0.7,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  0.8,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  0.9,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.1,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.2,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.3,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.4,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.5,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.6,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.7,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.8,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  1.9,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.1,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.2,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.3,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.4,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.5,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.6,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.7,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.8,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  2.9,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ],
+                [
+                  3,
+                  0.12431102213109574,
+                  0.000026437266690291745,
+                  0.00042534066337459675
+                ]
+              ]
+            },
+            {
+              "intent": "LAUNCH",
+              "points": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.1,
+                  0.11972440771351084,
+                  0.000024522382861186066,
+                  0.00040964717197748126
+                ],
+                [
+                  0.2,
+                  0.2594487885407857,
+                  0.00011515972935769902,
+                  0.0008877260315628603
+                ],
+                [
+                  0.3,
+                  0.41917309112121315,
+                  0.0003005967419486865,
+                  0.0014342365787561372
+                ],
+                [
+                  0.4,
+                  0.5988972287450683,
+                  0.0006136239721608186,
+                  0.0020491788135573123
+                ],
+                [
+                  0.5,
+                  0.7986210681339856,
+                  0.0010911377740211899,
+                  0.0027325527359663847
+                ],
+                [
+                  0.6,
+                  1.0183444168166313,
+                  0.0017741402345528776,
+                  0.003484358345983356
+                ],
+                [
+                  0.7,
+                  1.2580670090996218,
+                  0.002707739075285877,
+                  0.004304595643608224
+                ],
+                [
+                  0.8,
+                  1.5177884906337478,
+                  0.003941147518063265,
+                  0.005193264628840991
+                ],
+                [
+                  0.9,
+                  1.797508401575592,
+                  0.005527684107749609,
+                  0.006150365301681656
+                ],
+                [
+                  1,
+                  2.0972261583446525,
+                  0.007524772483775902,
+                  0.0071758976621302175
+                ],
+                [
+                  1.1,
+                  2.416941033976113,
+                  0.009993941091782605,
+                  0.008269861710186678
+                ],
+                [
+                  1.2,
+                  2.7566521370694437,
+                  0.013000822825949832,
+                  0.009432257445851036
+                ],
+                [
+                  1.3,
+                  3.1163583893330538,
+                  0.01661515459193129,
+                  0.010663084869123292
+                ],
+                [
+                  1.4,
+                  3.496058501725271,
+                  0.020910776779636316,
+                  0.011962343980003447
+                ],
+                [
+                  1.5,
+                  3.8957509491919766,
+                  0.02596563263443234,
+                  0.013330034778491498
+                ],
+                [
+                  1.6,
+                  4.315433944001282,
+                  0.031861767514668224,
+                  0.014766157264587446
+                ],
+                [
+                  1.7,
+                  4.755105407675719,
+                  0.038685328022747566,
+                  0.016270711438291292
+                ],
+                [
+                  1.8,
+                  5.214762941522473,
+                  0.04652656099630974,
+                  0.01784369729960304
+                ],
+                [
+                  1.9,
+                  5.694403795762288,
+                  0.05547981234540584,
+                  0.019485114848522684
+                ],
+                [
+                  2,
+                  6.1940248372577775,
+                  0.06564352572088636,
+                  0.021194964085050224
+                ],
+                [
+                  2.1,
+                  6.713622515841937,
+                  0.07712024099854765,
+                  0.022973245009185662
+                ],
+                [
+                  2.2,
+                  7.2531928292478325,
+                  0.09001659256291539,
+                  0.024819957620928996
+                ],
+                [
+                  2.3,
+                  7.8127312866405,
+                  0.10444330737387432,
+                  0.026735101920280235
+                ],
+                [
+                  2.4,
+                  8.392232870752272,
+                  0.12051520279868679,
+                  0.028718677907239372
+                ],
+                [
+                  2.5,
+                  8.991691998622853,
+                  0.13835118419127496,
+                  0.0307706855818064
+                ],
+                [
+                  2.6,
+                  9.611102480945663,
+                  0.1580742421999767,
+                  0.032891124943981324
+                ],
+                [
+                  2.7,
+                  10.250457480022092,
+                  0.17981144978432026,
+                  0.03507999599376415
+                ],
+                [
+                  2.8,
+                  10.90974946632553,
+                  0.2036939589206994,
+                  0.03733729873115488
+                ],
+                [
+                  2.9,
+                  11.588970173677188,
+                  0.22985699697616918,
+                  0.03966303315615349
+                ],
+                [
+                  3,
+                  12.288110553035963,
+                  0.25843986272892205,
+                  0.04205719926876002
+                ]
+              ]
+            }
+          ],
+          "conflict_point": null,
+          "conflicts": [],
+          "decision_source": "RULE",
+          "quality_metrics": {
+            "geometry_ms": 1.8882000003941357,
+            "confirmed_tracks": 2,
+            "coverage": "MEASURED_SURFACES_ONLY; OCCLUDED SPACE UNKNOWN",
+            "classification_error": null,
+            "controller_pipeline_ms": 9.737700002006022
+          },
+          "render_reference": {
+            "position_m": [
+              57.41883850097656,
+              -67.85161590576172,
+              -0.005617179907858372
+            ],
+            "rotation_rad": {
+              "roll": -0.0002631202344266021,
+              "pitch": 0.004915594600595054,
+              "yaw": -3.1398466851791373
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          }
+        }
+      }
+    },
+    {
+      "label": "rule-stop-finalized",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218193,
+        "timestamp": 10878.819101329893,
+        "actorId": 817,
+        "positionWorldM": [
+          57.217041015625,
+          -67.85376739501953,
+          -0.005750236567109823
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.015014645643532278,
+          "pitch": 0.3279241919517517,
+          "yaw": -179.76763916015625
+        },
+        "velocityWorldMps": [
+          -1.567609190940857,
+          -0.020757032558321953,
+          0.0001691436773398891
+        ],
+        "angularVelocityWorldRadps": [
+          -0.00033115432876415816,
+          0.0033046879885035543,
+          0.010330364417714536
+        ],
+        "accelerationWorldMps2": [
+          -3.3112287521362305,
+          -0.04214901477098465,
+          -0.0009338377276435494
+        ],
+        "speedMps": 1.5676557463261727,
+        "speedMagnitudeMps": 1.5677466180899446,
+        "accelerationMps2": 3.311312824256572,
+        "speedKmh": 5.643887825123801,
+        "steeringInput": 0.01361358817666769,
+        "throttle": 0.75,
+        "brake": 0,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": -3.1375371918818207,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "comparison_v2_stop",
+        "speed_kmh": 20,
+        "route_id": "f307a1d7d5344525ad54229ac217202a"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "comparison_v2_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c9237f729bfe49638656bdcdbb8bfdec",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.9000000134110451,
+          "destination_arrived": false
+        },
+        "attempt_id": "c2c76bd2e786447f9fc2f3f7b717edb3",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.35239723567363884,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.9500000141561031,
+          "average_speed_mps": 0.3709444530763273,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.011644178070127964,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "STANDBY",
+        "risk": "UNKNOWN",
+        "active": false,
+        "reason": "Waiting for forward driving",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 0
+        },
+        "experimental": false,
+        "actual_generator": "RULE"
+      }
+    },
+    {
+      "label": "rule-before-reset",
+      "mode": "AUTOMATIC",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218241,
+        "timestamp": 10881.219101365656,
+        "actorId": 925,
+        "positionWorldM": [
+          57.548973083496094,
+          -67.85009765625,
+          -0.004970817361027002
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": -0.004882811568677425,
+          "pitch": 0.08588962256908417,
+          "yaw": 179.99172973632812
+        },
+        "velocityWorldMps": [
+          -0.5027762651443481,
+          -0.006344042252749205,
+          0.0006666088011115789
+        ],
+        "angularVelocityWorldRadps": [
+          -0.001524748409415258,
+          0.034210020692614154,
+          0.000351546886640492
+        ],
+        "accelerationWorldMps2": [
+          -8.02309799194336,
+          -0.09255795925855637,
+          -0.0017305370420217514
+        ],
+        "speedMps": 0.5027757789980493,
+        "speedMagnitudeMps": 0.5028167300636468,
+        "accelerationMps2": 8.023072946886472,
+        "speedKmh": 1.8101402282291286,
+        "steeringInput": 0.024166662245988846,
+        "throttle": 0.75,
+        "brake": 0,
+        "gear": "1",
+        "gearIndex": 1,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.1414483102587107,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "RUNNING",
+        "reason": null,
+        "speed_kmh": 20,
+        "route_id": "a7c363350c8f4915a9c3926eeba2106c"
+      },
+      "phase": "RUNNING",
+      "latest": {
+        "side": "RULE",
+        "reason": "comparison_v2_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c9237f729bfe49638656bdcdbb8bfdec",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.9000000134110451,
+          "destination_arrived": false
+        },
+        "attempt_id": "c2c76bd2e786447f9fc2f3f7b717edb3",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.35239723567363884,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.9500000141561031,
+          "average_speed_mps": 0.3709444530763273,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.011644178070127964,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": true,
+      "safety": {
+        "type": "PREDICTIVE_V2",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "MONITORING",
+        "risk": "CLEAR",
+        "active": false,
+        "reason": "Measured obstacle",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "RULE",
+        "frame_id": 218241,
+        "timestamp_s": 10881.219101365656,
+        "decision_source": "RULE",
+        "measured_range_m": 17.209726333618164,
+        "target_source": "RADAR",
+        "observed_road_range_m": 40.9547004699707,
+        "measured_ttc_s": null,
+        "raw_measured_range_m": 17.209726333618164,
+        "target_support_points": 13,
+        "weak_confirmation_readings": 0,
+        "target_speed_mps": 5.555555555555555,
+        "clear_readings": 14,
+        "pre_protection_command": {
+          "frame_id": 218241,
+          "timestamp_s": 10881.219101365656,
+          "throttle": 0.75,
+          "brake": 0,
+          "steering": 0.02267516404390335,
+          "reverse": false,
+          "handbrake": false,
+          "source": "SAFETY",
+          "gear": 1
+        },
+        "applied_command": {
+          "frame_id": 218241,
+          "timestamp_s": 10881.219101365656,
+          "throttle": 0.75,
+          "brake": 0,
+          "steering": 0.02267516404390335,
+          "reverse": false,
+          "handbrake": false,
+          "source": "SAFETY",
+          "gear": 1
+        },
+        "emergency_active": false,
+        "sensor_ages_s": {
+          "depth": 0,
+          "frontCamera": 0,
+          "gnss": 0,
+          "imu": 0,
+          "lidar": 0,
+          "radar": 0
+        },
+        "base_driver_brake": 0,
+        "base_command_source": "NAVIGATION",
+        "proposed_safety_brake": 0,
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "experimental": true,
+        "available_controllers": [
+          "RULE"
+        ],
+        "model_health": "NOT_USED",
+        "model_weights_sha256": null,
+        "model_identity": "PREDICTIVE_V2",
+        "prediction": {
+          "version": 2,
+          "session_id": "8434999af46b4fe1ad24b2e9d2149c23",
+          "evaluation_frame": 218241,
+          "timestamp_s": 10881.219101365656,
+          "prediction_source_frame": 218241,
+          "prediction_source_timestamp_s": 10881.219101365656,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "odometry_origin_m": [
+            0.019024188818934584,
+            0.0000011121954274232178
+          ],
+          "odometry_yaw_rad": 0.0000773430478987104,
+          "horizon_s": 3,
+          "control_interval_s": 0.1,
+          "tracks": [
+            {
+              "id": "1",
+              "position_m": [
+                3.2901902794837947,
+                5.131591796874999
+              ],
+              "half_size_m": [
+                1.6776952147483826,
+                0.6739354133605957
+              ],
+              "velocity_mps": [
+                0.07927499032780486,
+                -0.033588866493462856
+              ],
+              "acceleration_mps2": [
+                1.3191245245851901,
+                -0.6154849954920784
+              ],
+              "class": "UNKNOWN",
+              "confirmed": true,
+              "consecutive_observations": 14,
+              "occlusion_s": 0,
+              "uncertainty_m": 0.15,
+              "quality": 1,
+              "history": [
+                [
+                  10880.719101365656,
+                  3.307125198145417,
+                  5.226398933506832,
+                  0.002549972255089311,
+                  3.578026889526491e-11
+                ],
+                [
+                  10881.219101365656,
+                  3.308817565512111,
+                  5.1318473670661,
+                  0.07927758795600294,
+                  -0.03358273502363147
+                ]
+              ],
+              "fixed_position_m": [
+                3.308817565512111,
+                5.1318473670661
+              ]
+            },
+            {
+              "id": "2",
+              "position_m": [
+                11.359487056732176,
+                6.240915536880493
+              ],
+              "half_size_m": [
+                0.5060696601867676,
+                0.6574194431304932
+              ],
+              "velocity_mps": [
+                0.010868355458934881,
+                -0.06261219610360093
+              ],
+              "acceleration_mps2": [
+                -0.30871259379766663,
+                -1.4530394777281315
+              ],
+              "class": "UNKNOWN",
+              "confirmed": true,
+              "consecutive_observations": 6,
+              "occlusion_s": 0,
+              "uncertainty_m": 0.15,
+              "quality": 0.6666666666666666,
+              "history": [
+                [
+                  10880.719101365656,
+                  11.332244449622875,
+                  7.1910738279845665,
+                  0.002564074710261214,
+                  1.1416734914190554e-10
+                ],
+                [
+                  10881.219101365656,
+                  11.378028520146366,
+                  6.241795207760165,
+                  0.010873198044505374,
+                  -0.06261135532459351
+                ]
+              ],
+              "fixed_position_m": [
+                11.378028520146366,
+                6.241795207760165
+              ]
+            }
+          ],
+          "trajectories": [
+            {
+              "track_id": "1",
+              "source": "CONSTANT_VELOCITY",
+              "mode": 0,
+              "probability": 1,
+              "points": [
+                [
+                  0,
+                  3.2901902794837947,
+                  5.131591796874999
+                ],
+                [
+                  0.1,
+                  3.298117778516575,
+                  5.128232910225653
+                ],
+                [
+                  0.2,
+                  3.3060452775493556,
+                  5.124874023576306
+                ],
+                [
+                  0.3,
+                  3.313972776582136,
+                  5.12151513692696
+                ],
+                [
+                  0.4,
+                  3.3219002756149165,
+                  5.118156250277614
+                ],
+                [
+                  0.5,
+                  3.329827774647697,
+                  5.114797363628267
+                ],
+                [
+                  0.6,
+                  3.3377552736804774,
+                  5.111438476978922
+                ],
+                [
+                  0.7,
+                  3.3456827727132583,
+                  5.1080795903295755
+                ],
+                [
+                  0.8,
+                  3.3536102717460388,
+                  5.104720703680229
+                ],
+                [
+                  0.9,
+                  3.361537770778819,
+                  5.101361817030883
+                ],
+                [
+                  1,
+                  3.3694652698115997,
+                  5.098002930381536
+                ],
+                [
+                  1.1,
+                  3.37739276884438,
+                  5.09464404373219
+                ],
+                [
+                  1.2,
+                  3.3853202678771606,
+                  5.091285157082844
+                ],
+                [
+                  1.3,
+                  3.393247766909941,
+                  5.087926270433497
+                ],
+                [
+                  1.4,
+                  3.4011752659427215,
+                  5.084567383784151
+                ],
+                [
+                  1.5,
+                  3.409102764975502,
+                  5.081208497134805
+                ],
+                [
+                  1.6,
+                  3.4170302640082824,
+                  5.077849610485458
+                ],
+                [
+                  1.7,
+                  3.424957763041063,
+                  5.074490723836112
+                ],
+                [
+                  1.8,
+                  3.4328852620738433,
+                  5.0711318371867655
+                ],
+                [
+                  1.9,
+                  3.440812761106624,
+                  5.06777295053742
+                ],
+                [
+                  2,
+                  3.4487402601394046,
+                  5.064414063888074
+                ],
+                [
+                  2.1,
+                  3.456667759172185,
+                  5.061055177238727
+                ],
+                [
+                  2.2,
+                  3.4645952582049655,
+                  5.057696290589381
+                ],
+                [
+                  2.3,
+                  3.472522757237746,
+                  5.054337403940035
+                ],
+                [
+                  2.4,
+                  3.4804502562705264,
+                  5.050978517290688
+                ],
+                [
+                  2.5,
+                  3.488377755303307,
+                  5.047619630641342
+                ],
+                [
+                  2.6,
+                  3.4963052543360873,
+                  5.0442607439919955
+                ],
+                [
+                  2.7,
+                  3.5042327533688677,
+                  5.040901857342649
+                ],
+                [
+                  2.8,
+                  3.512160252401648,
+                  5.037542970693303
+                ],
+                [
+                  2.9,
+                  3.5200877514344286,
+                  5.0341840840439565
+                ],
+                [
+                  3,
+                  3.528015250467209,
+                  5.030825197394611
+                ]
+              ]
+            },
+            {
+              "track_id": "2",
+              "source": "CONSTANT_VELOCITY",
+              "mode": 0,
+              "probability": 1,
+              "points": [
+                [
+                  0,
+                  11.359487056732176,
+                  6.240915536880493
+                ],
+                [
+                  0.1,
+                  11.360573892278069,
+                  6.234654317270133
+                ],
+                [
+                  0.2,
+                  11.361660727823963,
+                  6.228393097659773
+                ],
+                [
+                  0.3,
+                  11.362747563369856,
+                  6.222131878049413
+                ],
+                [
+                  0.4,
+                  11.363834398915749,
+                  6.215870658439052
+                ],
+                [
+                  0.5,
+                  11.364921234461644,
+                  6.209609438828693
+                ],
+                [
+                  0.6,
+                  11.366008070007537,
+                  6.2033482192183325
+                ],
+                [
+                  0.7,
+                  11.367094905553431,
+                  6.197086999607973
+                ],
+                [
+                  0.8,
+                  11.368181741099324,
+                  6.1908257799976125
+                ],
+                [
+                  0.9,
+                  11.369268576645217,
+                  6.184564560387252
+                ],
+                [
+                  1,
+                  11.370355412191111,
+                  6.178303340776893
+                ],
+                [
+                  1.1,
+                  11.371442247737004,
+                  6.172042121166532
+                ],
+                [
+                  1.2,
+                  11.372529083282897,
+                  6.165780901556172
+                ],
+                [
+                  1.3,
+                  11.373615918828792,
+                  6.159519681945812
+                ],
+                [
+                  1.4,
+                  11.374702754374685,
+                  6.153258462335452
+                ],
+                [
+                  1.5,
+                  11.375789589920577,
+                  6.146997242725091
+                ],
+                [
+                  1.6,
+                  11.376876425466472,
+                  6.140736023114732
+                ],
+                [
+                  1.7,
+                  11.377963261012365,
+                  6.1344748035043715
+                ],
+                [
+                  1.8,
+                  11.37905009655826,
+                  6.128213583894011
+                ],
+                [
+                  1.9,
+                  11.380136932104152,
+                  6.1219523642836515
+                ],
+                [
+                  2,
+                  11.381223767650045,
+                  6.115691144673291
+                ],
+                [
+                  2.1,
+                  11.38231060319594,
+                  6.109429925062932
+                ],
+                [
+                  2.2,
+                  11.383397438741833,
+                  6.103168705452571
+                ],
+                [
+                  2.3,
+                  11.384484274287725,
+                  6.096907485842211
+                ],
+                [
+                  2.4,
+                  11.38557110983362,
+                  6.090646266231851
+                ],
+                [
+                  2.5,
+                  11.386657945379513,
+                  6.084385046621491
+                ],
+                [
+                  2.6,
+                  11.387744780925406,
+                  6.07812382701113
+                ],
+                [
+                  2.7,
+                  11.3888316164713,
+                  6.071862607400771
+                ],
+                [
+                  2.8,
+                  11.389918452017193,
+                  6.0656013877904105
+                ],
+                [
+                  2.9,
+                  11.391005287563088,
+                  6.05934016818005
+                ],
+                [
+                  3,
+                  11.39209212310898,
+                  6.0530789485696905
+                ]
+              ]
+            }
+          ],
+          "ego_trajectories": [
+            {
+              "intent": "CONTINUE",
+              "points": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.1,
+                  0.050281672631149785,
+                  0.000006142708346778125,
+                  0.00024433190046321937
+                ],
+                [
+                  0.2,
+                  0.10056334226058039,
+                  0.000024570833020404623,
+                  0.0004886638009264387
+                ],
+                [
+                  0.3,
+                  0.15084500588657282,
+                  0.000055284372920755875,
+                  0.000732995701389658
+                ],
+                [
+                  0.4,
+                  0.20112666050740843,
+                  0.00009828332621429262,
+                  0.0009773276018528775
+                ],
+                [
+                  0.5,
+                  0.25140830312136914,
+                  0.00015356769033406,
+                  0.0012216595023160966
+                ],
+                [
+                  0.6,
+                  0.3016899307267375,
+                  0.0002211374619796878,
+                  0.001465991402779316
+                ],
+                [
+                  0.7,
+                  0.35197154032179706,
+                  0.0003009926371173905,
+                  0.0017103233032425352
+                ],
+                [
+                  0.8,
+                  0.4022531289048324,
+                  0.00039313321097996775,
+                  0.001954655203705754
+                ],
+                [
+                  0.9,
+                  0.4525346934741294,
+                  0.0004975591780668044,
+                  0.0021989871041689733
+                ],
+                [
+                  1,
+                  0.5028162310279752,
+                  0.0006142705321438712,
+                  0.002443319004632193
+                ],
+                [
+                  1.1,
+                  0.5530977385646589,
+                  0.0007432672662437244,
+                  0.002687650905095412
+                ],
+                [
+                  1.2,
+                  0.603379213082471,
+                  0.0008845493726655071,
+                  0.002931982805558631
+                ],
+                [
+                  1.3,
+                  0.6536606515797042,
+                  0.0010381168429749493,
+                  0.0031763147060218503
+                ],
+                [
+                  1.4,
+                  0.7039420510546534,
+                  0.0012039696680043682,
+                  0.0034206466064850695
+                ],
+                [
+                  1.5,
+                  0.7542234085056155,
+                  0.001382107837852669,
+                  0.0036649785069482886
+                ],
+                [
+                  1.6,
+                  0.8045047209308903,
+                  0.0015725313418853456,
+                  0.003909310407411508
+                ],
+                [
+                  1.7,
+                  0.8547859853287801,
+                  0.0017752401687344808,
+                  0.004153642307874727
+                ],
+                [
+                  1.8,
+                  0.9050671986975901,
+                  0.0019902343062987477,
+                  0.0043979742083379465
+                ],
+                [
+                  1.9,
+                  0.9553483580356286,
+                  0.0022175137417434093,
+                  0.004642306108801166
+                ],
+                [
+                  2,
+                  1.0056294603412068,
+                  0.0024570784615003203,
+                  0.004886638009264386
+                ],
+                [
+                  2.1,
+                  1.0559105026126399,
+                  0.0027089284512679277,
+                  0.005130969909727605
+                ],
+                [
+                  2.2,
+                  1.1061914818482461,
+                  0.0029730636960112714,
+                  0.005375301810190824
+                ],
+                [
+                  2.3,
+                  1.1564723950463478,
+                  0.003249484179961985,
+                  0.005619633710654043
+                ],
+                [
+                  2.4,
+                  1.206753239205271,
+                  0.0035381898866182968,
+                  0.005863965611117262
+                ],
+                [
+                  2.5,
+                  1.2570340113233462,
+                  0.0038391807987450317,
+                  0.0061082975115804815
+                ],
+                [
+                  2.6,
+                  1.3073147083989078,
+                  0.00415245689837361,
+                  0.006352629412043701
+                ],
+                [
+                  2.7,
+                  1.357595327430295,
+                  0.004478018166802053,
+                  0.00659696131250692
+                ],
+                [
+                  2.8,
+                  1.4078758654158512,
+                  0.004815864584594978,
+                  0.006841293212970139
+                ],
+                [
+                  2.9,
+                  1.4581563193539253,
+                  0.0051659961315836025,
+                  0.007085625113433358
+                ],
+                [
+                  3,
+                  1.5084366862428706,
+                  0.005528412786865747,
+                  0.007329957013896577
+                ]
+              ]
+            },
+            {
+              "intent": "BRAKE",
+              "points": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.1,
+                  0.025281672958670173,
+                  0.000001552930706329758,
+                  0.00012285031191688572
+                ],
+                [
+                  0.2,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.3,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.4,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.5,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.6,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.7,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.8,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  0.9,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.1,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.2,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.3,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.4,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.5,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.6,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.7,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.8,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  1.9,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.1,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.2,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.3,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.4,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.5,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.6,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.7,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.8,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  2.9,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ],
+                [
+                  3,
+                  0.025422509460783817,
+                  0.0000015702807061844399,
+                  0.00012353467360216177
+                ]
+              ]
+            },
+            {
+              "intent": "LAUNCH",
+              "points": [
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.1,
+                  0.06028167235980769,
+                  0.000008828990512217078,
+                  0.0002929245358817528
+                ],
+                [
+                  0.2,
+                  0.1405633358076787,
+                  0.00004800479473242249,
+                  0.0006830343426005724
+                ],
+                [
+                  0.3,
+                  0.24084496575613917,
+                  0.0001409339908414187,
+                  0.001170329420156459
+                ],
+                [
+                  0.4,
+                  0.36112651011467295,
+                  0.00031685424581962354,
+                  0.0017548097685494124
+                ],
+                [
+                  0.5,
+                  0.5014078750823892,
+                  0.0006108342775282328,
+                  0.0024364753877794327
+                ],
+                [
+                  0.6,
+                  0.6616889081072581,
+                  0.0010637737879200014,
+                  0.00321532627784652
+                ],
+                [
+                  0.7,
+                  0.8419693780119767,
+                  0.0017224033557869142,
+                  0.004091362438750673
+                ],
+                [
+                  0.8,
+                  1.0422489522865577,
+                  0.002639284275524531,
+                  0.005064583870491895
+                ],
+                [
+                  0.9,
+                  1.2625271715477882,
+                  0.003872808326465426,
+                  0.006134990573070183
+                ],
+                [
+                  1,
+                  1.5028034211657602,
+                  0.005487197455406904,
+                  0.007302582546485539
+                ],
+                [
+                  1.1,
+                  1.7630769000577544,
+                  0.007552503353031191,
+                  0.008567359790737961
+                ],
+                [
+                  1.2,
+                  2.043346586649853,
+                  0.010144606902989593,
+                  0.00992932230582745
+                ],
+                [
+                  1.3,
+                  2.3436112020067617,
+                  0.013345217480495821,
+                  0.011388470091754007
+                ],
+                [
+                  1.4,
+                  2.663869170130467,
+                  0.017241872075347917,
+                  0.01294480314851763
+                ],
+                [
+                  1.5,
+                  3.0041185754284903,
+                  0.021927934212373074,
+                  0.014598321476118318
+                ],
+                [
+                  1.6,
+                  3.364357117352694,
+                  0.027502592640365434,
+                  0.016349025074556076
+                ],
+                [
+                  1.7,
+                  3.7445820622097905,
+                  0.03407085975866358,
+                  0.018196913943830897
+                ],
+                [
+                  1.8,
+                  4.144790192144934,
+                  0.041743569748592516,
+                  0.020141988083942786
+                ],
+                [
+                  1.9,
+                  4.564977751300033,
+                  0.050637376375074344,
+                  0.022184247494891746
+                ],
+                [
+                  2,
+                  5.005140389148716,
+                  0.06087475042179295,
+                  0.02432369217667777
+                ],
+                [
+                  2.1,
+                  5.465273101010199,
+                  0.07258397672138153,
+                  0.02656032212930086
+                ],
+                [
+                  2.2,
+                  5.945370165744656,
+                  0.08589915074018725,
+                  0.02889413735276102
+                ],
+                [
+                  2.3,
+                  6.445425080633085,
+                  0.10096017467525586,
+                  0.031325137847058246
+                ],
+                [
+                  2.4,
+                  6.965430493445098,
+                  0.11791275301927093,
+                  0.03385332361219254
+                ],
+                [
+                  2.5,
+                  7.5053781316985075,
+                  0.1369083875472773,
+                  0.0364786946481639
+                ],
+                [
+                  2.6,
+                  8.065258729115117,
+                  0.15810437167711863,
+                  0.039201250954972316
+                ],
+                [
+                  2.7,
+                  8.645061949277636,
+                  0.18166378415362197,
+                  0.04202099253261781
+                ],
+                [
+                  2.8,
+                  9.244776306493277,
+                  0.20775548200467298,
+                  0.04493791938110037
+                ],
+                [
+                  2.9,
+                  9.864389083870167,
+                  0.23655409271543992,
+                  0.047952031500419996
+                ],
+                [
+                  3,
+                  10.50388624861346,
+                  0.26824000556512717,
+                  0.051063328890576694
+                ]
+              ]
+            }
+          ],
+          "conflict_point": null,
+          "conflicts": [],
+          "decision_source": "RULE",
+          "quality_metrics": {
+            "geometry_ms": 1.5382999990833923,
+            "confirmed_tracks": 2,
+            "coverage": "MEASURED_SURFACES_ONLY; OCCLUDED SPACE UNKNOWN",
+            "classification_error": null,
+            "controller_pipeline_ms": 9.584499999618856
+          },
+          "render_reference": {
+            "position_m": [
+              57.548973083496094,
+              -67.85009765625,
+              -0.004970817361027002
+            ],
+            "rotation_rad": {
+              "roll": -0.0000852211386278903,
+              "pitch": 0.0014990567071257496,
+              "yaw": 3.1414483102587107
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          }
+        }
+      }
+    },
+    {
+      "label": "rule-reset-finalized",
+      "mode": "PAUSED",
+      "vehicle": {
+        "source": "carla",
+        "frame": 218247,
+        "timestamp": 10881.519101370126,
+        "actorId": 1033,
+        "positionWorldM": [
+          57.56834030151367,
+          -67.849853515625,
+          0.5853000283241272
+        ],
+        "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+        "rotationDeg": {
+          "roll": 0,
+          "pitch": 0,
+          "yaw": 179.9765625
+        },
+        "velocityWorldMps": [
+          0,
+          0,
+          -0.4899999797344208
+        ],
+        "angularVelocityWorldRadps": [
+          0,
+          0,
+          0
+        ],
+        "accelerationWorldMps2": [
+          0,
+          0,
+          -9.799999237060547
+        ],
+        "speedMps": 0,
+        "speedMagnitudeMps": 0.4899999797344208,
+        "accelerationMps2": 0,
+        "speedKmh": 1.7639999270439148,
+        "steeringInput": 0,
+        "throttle": 0,
+        "brake": 1,
+        "gear": "N",
+        "gearIndex": 0,
+        "reverse": false,
+        "handbrake": false,
+        "headingRad": 3.141183592046357,
+        "engineRPM": null,
+        "fuelLevelL": null,
+        "damage": null
+      },
+      "journey": {
+        "status": "PAUSED",
+        "reason": "vehicle_reset",
+        "speed_kmh": 20,
+        "route_id": "a7c363350c8f4915a9c3926eeba2106c"
+      },
+      "phase": "FINISHED",
+      "latest": {
+        "side": "RULE",
+        "reason": "vehicle_reset",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_297de11f58c2432f964e06648adcaaad",
+        "completed": false,
+        "destination_arrived": false,
+        "collision": false,
+        "status": "INTERRUPTED",
+        "metrics": {
+          "unnecessary_waiting_s": 0,
+          "harsh_braking_events": 0,
+          "emergency_intervention_s": 0,
+          "duration_s": 0.850000012665987,
+          "destination_arrived": false
+        },
+        "attempt_id": "dceb65c6a5d34afa92a49f6a6cee2990",
+        "initial_condition_audit": {
+          "passed": true,
+          "maximum_position_error_m": 0,
+          "maximum_velocity_error_mps": 0,
+          "maximum_rotation_error_rad": 0,
+          "configuration_matches": true,
+          "traffic_lights_match": true
+        },
+        "outcome_metrics": {
+          "collision_callback_count": 0,
+          "collision_count": 0,
+          "collision_impulse_total_ns": 0,
+          "collision_peak_impulse_ns": 0,
+          "distance_traveled_m": 0.27746077064295577,
+          "progress_m": 0,
+          "elapsed_simulation_s": 0.9000000134110451,
+          "average_speed_mps": 0.3082897405649646,
+          "minimum_clearance_m": 5.024061992387329,
+          "minimum_ttc_s": null,
+          "near_miss_count": null,
+          "emergency_braking_frequency": null,
+          "steering_intervention_frequency": null,
+          "safety_intervention_count": 0,
+          "unsafe_intervention_count": null,
+          "route_completion": 0,
+          "control_variation": 0.008928196504712105,
+          "progress_under_congestion_m": null
+        }
+      },
+      "recording": false,
+      "safety": {
+        "type": "RULE_BASED_SAFETY",
+        "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+        "status": "STANDBY",
+        "risk": "UNKNOWN",
+        "active": false,
+        "reason": "Monitoring resumes with normal forward driving",
+        "steering_available": false,
+        "rejected_interventions": 0,
+        "actual_generator": "BASE_DRIVER",
+        "enabled": true,
+        "intervention_count": 0,
+        "controller": "RULE",
+        "model_health": "READY",
+        "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+        "model_error": null,
+        "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+        "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+        "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+        "available_controllers": [
+          "RULE",
+          "HYBRID"
+        ],
+        "source_counts": {
+          "LEARNED_BC": 0,
+          "RULE_GUARD": 0,
+          "RULE_FALLBACK": 0,
+          "RULE": 0,
+          "BASE_DRIVER": 0
+        },
+        "experimental": false
+      }
+    }
+  ],
+  "errors": []
+}

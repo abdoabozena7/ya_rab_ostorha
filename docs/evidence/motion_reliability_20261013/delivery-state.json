@@ -1,0 +1,70 @@
+{
+  "mode": "PAUSED",
+  "speed_kmh": 0.0,
+  "position": [
+    -80.97439575195312,
+    24.6741886138916,
+    -0.004675674252212048
+  ],
+  "original_position": [
+    -80.97438049316406,
+    24.674224853515625,
+    -0.005140113644301891
+  ],
+  "position_error_m": 0.0004661009439142959,
+  "destination_restored": true,
+  "population_restored": true,
+  "preferences_semantically_restored": true,
+  "display_camera": {
+    "width": 800,
+    "height": 450,
+    "fovDeg": 90.0,
+    "mountTransform": {
+      "position_m": [
+        -6.0,
+        0.0,
+        3.0
+      ],
+      "rotation_deg": {
+        "pitch": -15.0,
+        "yaw": 0.0,
+        "roll": 0.0
+      }
+    }
+  },
+  "sensor_errors": {},
+  "old_ledger_sha256": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad",
+  "old_ledger_hash_unchanged": true,
+  "old_bc_weights_match_metadata": true,
+  "trajectron_weights_match_lock": true,
+  "frozen_test_files_unchanged": true,
+  "prototype_config": {
+    "version": 1,
+    "planner_enabled": false,
+    "longitudinal_native_acceptance": false,
+    "lateral_native_acceptance": false,
+    "learned_control_accepted": false,
+    "performance_accepted": false,
+    "experimental": true,
+    "horizon_s": 3.0,
+    "control_interval_s": 0.1,
+    "default_speed_kmh": 30,
+    "reason": "Native prototype failed rear-collision/progress/comfort acceptance, prediction coverage is insufficient, and the final matched stopped throughput check exceeded 10% degradation. Ordinary driving uses sensor RULE; motion planning is available only within a bounded validation reservation."
+  },
+  "budget": {
+    "scope": "MOTION_RELIABILITY_20261013",
+    "hard_cap_s": 2400.0,
+    "phases": {
+      "validation": {
+        "cap_s": 1800.0,
+        "charged_s": 1735.5489999999845
+      },
+      "training": {
+        "cap_s": 600.0,
+        "charged_s": 0
+      }
+    },
+    "charged_s": 1735.5489999999845,
+    "old_ledger_unchanged": true
+  }
+}

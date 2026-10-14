@@ -1,0 +1,102 @@
+{
+  "scope": "Matched stopped city throughput; driving safety is assessed separately",
+  "settings": {
+    "vehicle": {
+      "source": "carla",
+      "frame": 113576,
+      "timestamp": 5551.635377161205,
+      "actorId": 1048,
+      "positionWorldM": [
+        -80.97438049316406,
+        24.674224853515625,
+        -0.005140113644301891
+      ],
+      "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+      "rotationDeg": {
+        "roll": -0.003997801803052425,
+        "pitch": -0.00131139624863863,
+        "yaw": 13.858628273010254
+      },
+      "velocityWorldMps": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "angularVelocityWorldRadps": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "accelerationWorldMps2": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "speedMps": 0.0,
+      "speedMagnitudeMps": 0.0,
+      "accelerationMps2": 0.0,
+      "speedKmh": 0.0,
+      "steeringInput": 0.0,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "gear": "1",
+      "gearIndex": 1,
+      "reverse": false,
+      "handbrake": false,
+      "headingRad": 0.24187869317400454,
+      "engineRPM": null,
+      "fuelLevelL": null,
+      "damage": null
+    },
+    "destination": {
+      "id": "map-d0d9502038",
+      "name": "Road destination 466",
+      "map": "Carla/Maps/Town10HD_Opt",
+      "location": [
+        -48.71879577636719,
+        31.165721893310547,
+        0.0
+      ],
+      "spawn_index": null,
+      "road_id": 466,
+      "lane_id": 1,
+      "source": "CARLA_WORLD"
+    },
+    "population": {
+      "vehicle_count": 40,
+      "pedestrian_count": 30,
+      "speed_behavior": "NORMAL",
+      "seed": 2589,
+      "fast_walk_percent": 10,
+      "driver_behavior": "UNREGULATED",
+      "light_compliance_percent": 20,
+      "world_profile": "VISUAL_DEMO",
+      "crossing_percent": 15,
+      "chaos_percent": 50
+    },
+    "preferences": "{\n  \"next_launch\": {\n    \"quality\": \"Epic\",\n    \"resolution\": \"1280x720\",\n    \"render_profile\": \"HIGH\"\n  },\n  \"traffic_plan\": {\n    \"vehicle_count\": 19,\n    \"speed_min_kmh\": 20,\n    \"speed_max_kmh\": 40,\n    \"seed\": 42\n  },\n  \"favorite_places\": {\n    \"Carla/Maps/Town10HD_Opt\": [\n      \"road-point-135\",\n      \"saved-acd560119757\",\n      \"saved-5dcb734601a4\",\n      \"saved-c5042e0217d6\",\n      \"saved-b738ced704bc\"\n    ]\n  },\n  \"population\": {\n    \"vehicle_count\": 40,\n    \"pedestrian_count\": 30,\n    \"speed_behavior\": \"NORMAL\",\n    \"seed\": 2589,\n    \"fast_walk_percent\": 10,\n    \"driver_behavior\": \"UNREGULATED\",\n    \"light_compliance_percent\": 20,\n    \"world_profile\": \"VISUAL_DEMO\",\n    \"crossing_percent\": 15,\n    \"chaos_percent\": 50\n  },\n  \"view\": {\n    \"camera_view\": \"chase\",\n    \"camera_resolution\": \"800x450\",\n    \"camera_fov\": 90,\n    \"camera_postprocess\": true,\n    \"camera_motion_blur\": 0.0,\n    \"camera_bloom\": 0.15,\n    \"simulation_hz\": 20,\n    \"weather\": {\n      \"cloudiness\": 5.0,\n      \"precipitation\": 0.0,\n      \"wetness\": 0.0,\n      \"fog_density\": 2.0,\n      \"sun_altitude_angle\": 45.0,\n      \"sun_azimuth_angle\": -1.0\n    }\n  }\n}"
+  },
+  "result": {
+    "samples": 241,
+    "native_hz": 13.832611429385373,
+    "camera_hz": 13.777467736317563,
+    "contact_half_second_bins": 0,
+    "contacts": [],
+    "max_speed_kmh": 0.0,
+    "stopped_fraction": 1.0,
+    "comfort_accel_exceedances": 0,
+    "comfort_decel_exceedances": 0,
+    "arrived": false,
+    "terminal": {
+      "status": "PAUSED",
+      "reason": "operator_stop",
+      "speed_kmh": 20.0,
+      "route_id": "7f1f666adb924acab76ac59344dacfa6"
+    },
+    "remaining_m": 518.3677392062424,
+    "actions": [
+      "BASELINE"
+    ],
+    "sensor_errors": []
+  }
+}

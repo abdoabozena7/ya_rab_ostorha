@@ -10,7 +10,7 @@ from tests.test_rl import policy_fixture
 
 def case(frame=1,speed=8.,distance=30.,velocity=-3.):
     o=sensor_observation(policy_fixture(frame=frame,timestamp=frame*.05))
-    ego=replace(o.ego,speed_mps=speed,reverse=False,handbrake=False)
+    ego=replace(o.ego,speed_mps=speed,reverse=False,handbrake=False,longitudinal_speed_mps=None)
     radar=next(s for s in o.channels if s.kind==SensorKind.RADAR)
     radar=replace(radar,data={'detections':[] if distance is None else
         [{'depth_m':distance,'azimuth_rad':0.,'altitude_rad':0.,'velocity_mps':velocity}]})

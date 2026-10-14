@@ -13,8 +13,17 @@ export class DrivingControls {
     if (w) {
       this.reverseSince = null;
       const oppositeMotion = this.mode === 'R' ? speedMps > .35 : speedMps < -.35;
-      const pedal = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? 1 : .55;
-      result.brake = Number(oppositeMotion); result.throttle = oppositeMotion ? 0 : pedal;
+      const boost = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+      const speedLimitMps = (boost ? 80 : 30) / 3.6;
+      const forwardSpeed = Math.max(0, speedMps);
+      // Manual boost raises the speed ceiling; it never bypasses a brake or
+      // asks the simulator to exceed 80 km/h on a clear straight road.
+      const remaining = Math.max(0, speedLimitMps - forwardSpeed);
+      const pedal = boost ? Math.min(1, remaining / 3) : Math.min(.55, remaining / 3);
+      result.brake = Number(oppositeMotion);
+      result.throttle = oppositeMotion ? 0 : this.mode === 'R' ? .55 : pedal;
+      if (!oppositeMotion && this.mode === 'D' && forwardSpeed > speedLimitMps)
+        result.brake = Math.min(.35, Math.max(.05, (forwardSpeed - speedLimitMps) / 4));
       if (!oppositeMotion) this.gear = result.gear = this.mode === 'R' ? -1 : 1;
     } else if (s) {
       if (this.mode === 'R') { result.brake = 1; return result; }

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "environment_id": "YaRabOstorha-Maneuver-v1",
+  "split_locations": {"TRAIN": {"map": "Town10HD_Opt", "spawn_indices": [152, 54, 73, 91]}, "VALIDATION": {"map": "Town10HD_Opt", "spawn_indices": [18, 38]}, "TEST": [{"map": "Town10HD_Opt", "spawn_indices": [120, 138]}, {"map": "Town03", "spawn_indices": [0, 10]}]},
+  "scenario_locations": {"CURVE": {"TRAIN": [54, 73], "route_length_m": 60}},
+  "stages": [
+    {"name": "ordinary", "scenarios": ["EMPTY_ROAD", "CURVE", "BENIGN_MANUAL"], "retain_benign_fraction": 0.5},
+    {"name": "front", "scenarios": ["SUDDEN_BRAKING", "FRONT_OBSTACLE"], "retain_benign_fraction": 0.3},
+    {"name": "surround", "scenarios": ["PEDESTRIAN_CROSSING", "CUT_IN", "REAR_APPROACH", "PARALLEL_TRAFFIC"], "retain_benign_fraction": 0.25},
+    {"name": "occlusion", "scenarios": ["OCCLUDED_PEDESTRIAN", "HESITATION_RETREAT"], "retain_benign_fraction": 0.25},
+    {"name": "recovery", "scenarios": ["BLOCKED_REVERSE", "LEFT_EXIT", "RIGHT_EXIT", "PASS_RETURN", "ALTERNATE_STREET", "FULLY_BLOCKED"], "retain_benign_fraction": 0.25},
+    {"name": "mixed", "scenarios": ["MIXED_TRAFFIC"], "retain_benign_fraction": 0.25}
+  ],
+  "promotion": "Only scenario-valid native behavior can pass a stage. Unsupported/unrealized cases produce failure, not substitution."
+}

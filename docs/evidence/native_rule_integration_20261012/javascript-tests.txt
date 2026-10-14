@@ -1,0 +1,398 @@
+
+> test
+> node --test tests/*.test.js
+
+TAP version 13
+# Subtest: visible destination journey survives inspection without requiring keyboard focus
+ok 1 - visible destination journey survives inspection without requiring keyboard focus
+  ---
+  duration_ms: 1.7887
+  type: 'test'
+  ...
+# Subtest: lease cannot revive stopped, collided, stale, read-only or emergency journeys
+ok 2 - lease cannot revive stopped, collided, stale, read-only or emergency journeys
+  ---
+  duration_ms: 0.7337
+  type: 'test'
+  ...
+# Subtest: city presets stay within the declared ordinary population bounds and preserve the seed
+ok 3 - city presets stay within the declared ordinary population bounds and preserve the seed
+  ---
+  duration_ms: 1.353
+  type: 'test'
+  ...
+# Subtest: RULE journey admission shows exhausted/unknown budget and all lifecycle blocks
+ok 4 - RULE journey admission shows exhausted/unknown budget and all lifecycle blocks
+  ---
+  duration_ms: 2.2297
+  type: 'test'
+  ...
+# Subtest: RULE is the default journey action; latest interrupted/failing attempts never show arrival
+ok 5 - RULE is the default journey action; latest interrupted/failing attempts never show arrival
+  ---
+  duration_ms: 2.9237
+  type: 'test'
+  ...
+# Subtest: comparison RUN can explicitly claim control while STOP and pedals require ownership
+ok 6 - comparison RUN can explicitly claim control while STOP and pedals require ownership
+  ---
+  duration_ms: 31.6876
+  type: 'test'
+  ...
+# Subtest: keyboard uses physical codes and never admits driving from an editable target
+ok 7 - keyboard uses physical codes and never admits driving from an editable target
+  ---
+  duration_ms: 0.4454
+  type: 'test'
+  ...
+# Subtest: native restart accepts lower frames only after a genuine new session identity
+ok 8 - native restart accepts lower frames only after a genuine new session identity
+  ---
+  duration_ms: 0.3073
+  type: 'test'
+  ...
+# Subtest: choosing a route and heartbeating never emit manual pedal commands
+ok 9 - choosing a route and heartbeating never emit manual pedal commands
+  ---
+  duration_ms: 1.0061
+  type: 'test'
+  ...
+# Subtest: safety comparison carries no driving commands and disconnect clears active status
+ok 10 - safety comparison carries no driving commands and disconnect clears active status
+  ---
+  duration_ms: 0.272
+  type: 'test'
+  ...
+# Subtest: explicit destination start emits only journey request, never manual pedals or AI opt-in
+ok 11 - explicit destination start emits only journey request, never manual pedals or AI opt-in
+  ---
+  duration_ms: 0.286
+  type: 'test'
+  ...
+# Subtest: production modules have no legacy world, renderer, or mock physics dependency
+ok 12 - production modules have no legacy world, renderer, or mock physics dependency
+  ---
+  duration_ms: 5.1595
+  type: 'test'
+  ...
+# Subtest: missing observations stay unavailable, rather than decorative zero values
+ok 13 - missing observations stay unavailable, rather than decorative zero values
+  ---
+  duration_ms: 0.6441
+  type: 'test'
+  ...
+# Subtest: disconnect retains explicitly saved journey evidence but clears live run authority
+ok 14 - disconnect retains explicitly saved journey evidence but clears live run authority
+  ---
+  duration_ms: 0.704
+  type: 'test'
+  ...
+# Subtest: reset is one atomic backend request without a racing manual pedal command
+ok 15 - reset is one atomic backend request without a racing manual pedal command
+  ---
+  duration_ms: 1.2915
+  type: 'test'
+  ...
+# Subtest: a coalesced later acknowledgement retires queued start and stop requests together
+ok 16 - a coalesced later acknowledgement retires queued start and stop requests together
+  ---
+  duration_ms: 0.6259
+  type: 'test'
+  ...
+# Subtest: read-only dashboard can explicitly claim driving without admitting pedals first
+ok 17 - read-only dashboard can explicitly claim driving without admitting pedals first
+  ---
+  duration_ms: 0.3761
+  type: 'test'
+  ...
+# Subtest: native reconnect is available on a disconnected socket but cannot escape replay
+ok 18 - native reconnect is available on a disconnected socket but cannot escape replay
+  ---
+  duration_ms: 0.3428
+  type: 'test'
+  ...
+# Subtest: commands require fresh CARLA state and exclusive control ownership
+ok 19 - commands require fresh CARLA state and exclusive control ownership
+  ---
+  duration_ms: 0.2432
+  type: 'test'
+  ...
+# Subtest: pedal release deferred by the rate guard sends brake and never carries old throttle
+ok 20 - pedal release deferred by the rate guard sends brake and never carries old throttle
+  ---
+  duration_ms: 0.275
+  type: 'test'
+  ...
+# Subtest: disconnect clears cached telemetry and never accepts a different source
+ok 21 - disconnect clears cached telemetry and never accepts a different source
+  ---
+  duration_ms: 0.1268
+  type: 'test'
+  ...
+# Subtest: missing CARLA schedules bounded retry without creating a simulator
+ok 22 - missing CARLA schedules bounded retry without creating a simulator
+  ---
+  duration_ms: 0.7535
+  type: 'test'
+  ...
+# Subtest: mismatched vehicle and world frames cannot enable controls
+ok 23 - mismatched vehicle and world frames cannot enable controls
+  ---
+  duration_ms: 0.2811
+  type: 'test'
+  ...
+# Subtest: S brakes forward motion before requesting reverse, and W brakes reverse first
+ok 24 - S brakes forward motion before requesting reverse, and W brakes reverse first
+  ---
+  duration_ms: 0.4093
+  type: 'test'
+  ...
+# Subtest: Shift increases the W pedal without commanding motion on its own or overriding brakes
+ok 25 - Shift increases the W pedal without commanding motion on its own or overriding brakes
+  ---
+  duration_ms: 0.3079
+  type: 'test'
+  ...
+# Subtest: neutral, contradictory pedals, missing speed, and handbrake cannot apply throttle
+ok 26 - neutral, contradictory pedals, missing speed, and handbrake cannot apply throttle
+  ---
+  duration_ms: 0.1999
+  type: 'test'
+  ...
+# Subtest: recorded camera identity changes with frame, time or file reference
+ok 27 - recorded camera identity changes with frame, time or file reference
+  ---
+  duration_ms: 0.2496
+  type: 'test'
+  ...
+# Subtest: camera bytes cannot be paired with metadata from another simulation frame
+ok 28 - camera bytes cannot be paired with metadata from another simulation frame
+  ---
+  duration_ms: 0.3436
+  type: 'test'
+  ...
+# Subtest: recorded replay displays data but can never send native commands or claim connection
+ok 29 - recorded replay displays data but can never send native commands or claim connection
+  ---
+  duration_ms: 0.3337
+  type: 'test'
+  ...
+# Subtest: test-fixture replay is rejected by the production browser client
+ok 30 - test-fixture replay is rejected by the production browser client
+  ---
+  duration_ms: 0.2512
+  type: 'test'
+  ...
+# Subtest: paused and emergency-stop states block pedals; controls carry explicit frame and time
+ok 31 - paused and emergency-stop states block pedals; controls carry explicit frame and time
+  ---
+  duration_ms: 0.2703
+  type: 'test'
+  ...
+# Subtest: duplicate frames cannot refresh stale native data and invalid time ordering is rejected
+ok 32 - duplicate frames cannot refresh stale native data and invalid time ordering is rejected
+  ---
+  duration_ms: 0.391
+  type: 'test'
+  ...
+# Subtest: connection timeout ignores a late HTTP completion instead of opening a socket
+ok 33 - connection timeout ignores a late HTTP completion instead of opening a socket
+  ---
+  duration_ms: 0.6547
+  type: 'test'
+  ...
+# Subtest: an unavailable processed JPEG cannot relabel the previously displayed frame
+ok 34 - an unavailable processed JPEG cannot relabel the previously displayed frame
+  ---
+  duration_ms: 4.345
+  type: 'test'
+  ...
+# Subtest: camera projections transform all five poses, including rear and top
+ok 35 - camera projections transform all five poses, including rear and top
+  ---
+  duration_ms: 3.1365
+  type: 'test'
+  ...
+# Subtest: predictions clear on a session change, future/stale image or missing metadata
+ok 36 - predictions clear on a session change, future/stale image or missing metadata
+  ---
+  duration_ms: 0.2715
+  type: 'test'
+  ...
+# Subtest: custom city waits for actual pedestrian and controller admission as well as vehicles
+ok 37 - custom city waits for actual pedestrian and controller admission as well as vehicles
+  ---
+  duration_ms: 3.3655
+  type: 'test'
+  ...
+# Subtest: zero-traffic city is explicit and invalid custom counts never send a request
+ok 38 - zero-traffic city is explicit and invalid custom counts never send a request
+  ---
+  duration_ms: 0.5743
+  type: 'test'
+  ...
+# Subtest: explicit preparation sends only population count change and stops first
+ok 39 - explicit preparation sends only population count change and stops first
+  ---
+  duration_ms: 0.5654
+  type: 'test'
+  ...
+# Subtest: only new applied settings plus a matching native snapshot admit ready
+ok 40 - only new applied settings plus a matching native snapshot admit ready
+  ---
+  duration_ms: 0.3783
+  type: 'test'
+  ...
+# Subtest: does not admit partial population evidence
+ok 41 - does not admit partial population evidence
+  ---
+  duration_ms: 0.5486
+  type: 'test'
+  ...
+# Subtest: does not admit nativeFailure population evidence
+ok 42 - does not admit nativeFailure population evidence
+  ---
+  duration_ms: 0.3573
+  type: 'test'
+  ...
+# Subtest: does not admit stale population evidence
+ok 43 - does not admit stale population evidence
+  ---
+  duration_ms: 0.3142
+  type: 'test'
+  ...
+# Subtest: does not admit disconnectedTM population evidence
+ok 44 - does not admit disconnectedTM population evidence
+  ---
+  duration_ms: 0.2429
+  type: 'test'
+  ...
+# Subtest: does not admit errors population evidence
+ok 45 - does not admit errors population evidence
+  ---
+  duration_ms: 0.5796
+  type: 'test'
+  ...
+# Subtest: does not admit missingErrors population evidence
+ok 46 - does not admit missingErrors population evidence
+  ---
+  duration_ms: 2.7269
+  type: 'test'
+  ...
+# Subtest: does not admit changedSeed population evidence
+ok 47 - does not admit changedSeed population evidence
+  ---
+  duration_ms: 0.3969
+  type: 'test'
+  ...
+# Subtest: absent or wrong-action completion never becomes success
+ok 48 - absent or wrong-action completion never becomes success
+  ---
+  duration_ms: 0.2607
+  type: 'test'
+  ...
+# Subtest: native rejection and protocol error are visible without retries
+ok 49 - native rejection and protocol error are visible without retries
+  ---
+  duration_ms: 0.376
+  type: 'test'
+  ...
+# Subtest: disconnect, replay and lost ownership keep completion unverified
+ok 50 - disconnect, replay and lost ownership keep completion unverified
+  ---
+  duration_ms: 0.2911
+  type: 'test'
+  ...
+# Subtest: timeout holds driving without repeating the request; late authentic completion is accepted
+ok 51 - timeout holds driving without repeating the request; late authentic completion is accepted
+  ---
+  duration_ms: 0.2413
+  type: 'test'
+  ...
+# Subtest: request rejection never reports success and supports an explicit retry
+ok 52 - request rejection never reports success and supports an explicit retry
+  ---
+  duration_ms: 0.244
+  type: 'test'
+  ...
+# Subtest: new native session resets only the old preparation result
+ok 53 - new native session resets only the old preparation result
+  ---
+  duration_ms: 0.158
+  type: 'test'
+  ...
+# Subtest: an independently loaded controlled scene clears the normal-city gate without claiming success
+ok 54 - an independently loaded controlled scene clears the normal-city gate without claiming success
+  ---
+  duration_ms: 0.2135
+  type: 'test'
+  ...
+# Subtest: preparation is unavailable during movement, recordings, controlled scenarios and other ownership
+ok 55 - preparation is unavailable during movement, recordings, controlled scenarios and other ownership
+  ---
+  duration_ms: 0.2958
+  type: 'test'
+  ...
+# Subtest: transport holds starts and motion but always permits stop and emergency controls
+ok 56 - transport holds starts and motion but always permits stop and emergency controls
+  ---
+  duration_ms: 33.6202
+  type: 'test'
+  ...
+# Subtest: unknown risk and unavailable intervention counts never imply a safe live drive
+ok 57 - unknown risk and unavailable intervention counts never imply a safe live drive
+  ---
+  duration_ms: 3.0911
+  type: 'test'
+  ...
+# Subtest: emergency acknowledgement takes priority over active intervention and completed results
+ok 58 - emergency acknowledgement takes priority over active intervention and completed results
+  ---
+  duration_ms: 0.3212
+  type: 'test'
+  ...
+# Subtest: read-only, replay and starting states cannot offer an active driving command
+ok 59 - read-only, replay and starting states cannot offer an active driving command
+  ---
+  duration_ms: 0.3456
+  type: 'test'
+  ...
+# Subtest: a completed collision and a sensor fault cannot use a success state
+ok 60 - a completed collision and a sensor fault cannot use a success state
+  ---
+  duration_ms: 0.2319
+  type: 'test'
+  ...
+# Subtest: autonomous driving, safety intervention and arrival have distinct states and actions
+ok 61 - autonomous driving, safety intervention and arrival have distinct states and actions
+  ---
+  duration_ms: 0.4786
+  type: 'test'
+  ...
+# Subtest: current results and archived comparison are separate scopes, including partial comparisons
+ok 62 - current results and archived comparison are separate scopes, including partial comparisons
+  ---
+  duration_ms: 0.3015
+  type: 'test'
+  ...
+# Subtest: missing or interrupted collision observations are never reported as a completed safe run
+ok 63 - missing or interrupted collision observations are never reported as a completed safe run
+  ---
+  duration_ms: 0.3816
+  type: 'test'
+  ...
+# Subtest: detection age uses simulation time, flags half-second delays and rejects future frames
+ok 64 - detection age uses simulation time, flags half-second delays and rejects future frames
+  ---
+  duration_ms: 0.3401
+  type: 'test'
+  ...
+1..64
+# tests 64
+# suites 0
+# pass 64
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 250.9181

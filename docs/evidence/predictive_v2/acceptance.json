@@ -1,0 +1,291 @@
+{
+  "version": 2,
+  "experimental": true,
+  "enabled_by_default": false,
+  "acceptance_passed": false,
+  "weights_sha256": "511a67dce5a0370f3cdfb2150e4abc74cce103be531aa9d48c96989ddb78a29e",
+  "frozen_before_test": true,
+  "completed_independent_pairs": 3,
+  "requested_pairs": 3,
+  "matrix_completed": true,
+  "attempt_failures": [
+    "Native TEST budget reached",
+    "Occupied urban walker start: walker_16"
+  ],
+  "runs": [
+    {
+      "side": "RULE",
+      "status": "TIMEOUT",
+      "reason": "timeout",
+      "failure_reason": null,
+      "completed": true,
+      "collision": false,
+      "destination_arrived": false,
+      "metrics": {
+        "unnecessary_waiting_s": 6.150000091642141,
+        "harsh_braking_events": 118,
+        "emergency_intervention_s": 0.4000000059604645,
+        "duration_s": 179.95000268146396,
+        "destination_arrived": false
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_33ffaf36df074ee1bcd55f8f70f53894",
+      "initial_condition_audit": null,
+      "pair_id": "84fe4e0ced9d4d5ca32486ab7f276ccb",
+      "wall_s": 385.8909999999996,
+      "sampled_tick_hz_median": 9.853687667961006
+    },
+    {
+      "side": "MODEL",
+      "status": "TIMEOUT",
+      "reason": "timeout",
+      "failure_reason": null,
+      "completed": true,
+      "collision": false,
+      "destination_arrived": false,
+      "metrics": {
+        "unnecessary_waiting_s": 54.80000081658363,
+        "harsh_braking_events": 21,
+        "emergency_intervention_s": 0.0,
+        "duration_s": 179.95000268146396,
+        "destination_arrived": false
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7a0299625d0b4dfa8fb018de2968b765",
+      "initial_condition_audit": null,
+      "pair_id": "84fe4e0ced9d4d5ca32486ab7f276ccb",
+      "wall_s": 388.26600000000053,
+      "sampled_tick_hz_median": 9.290185804860823
+    },
+    {
+      "side": "RULE",
+      "status": "TIMEOUT",
+      "reason": "timeout",
+      "failure_reason": null,
+      "completed": true,
+      "collision": false,
+      "destination_arrived": false,
+      "metrics": {
+        "unnecessary_waiting_s": 3.200000047683716,
+        "harsh_braking_events": 105,
+        "emergency_intervention_s": 0.0,
+        "duration_s": 179.95000268146396,
+        "destination_arrived": false
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c6393ad606b24a28b3f2f5f480f5d32e",
+      "initial_condition_audit": null,
+      "pair_id": "1012481be9344afaae1bf206151f8702",
+      "wall_s": 357.25,
+      "sampled_tick_hz_median": 10.203029990725023
+    },
+    {
+      "pair_id": "1012481be9344afaae1bf206151f8702",
+      "side": "MODEL",
+      "terminal_result": false,
+      "note": "Observer did not capture a terminal result; do not count this as a completed TEST side."
+    },
+    {
+      "side": "MODEL",
+      "status": "TIMEOUT",
+      "reason": "timeout",
+      "failure_reason": null,
+      "completed": true,
+      "collision": false,
+      "destination_arrived": false,
+      "metrics": {
+        "unnecessary_waiting_s": 9.150000136345625,
+        "harsh_braking_events": 6,
+        "emergency_intervention_s": 0.0,
+        "duration_s": 179.95000268146396,
+        "destination_arrived": false
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3bc9676cbbbd4dfbb13ec3f2fc1804a7",
+      "initial_condition_audit": {
+        "passed": true,
+        "maximum_position_error_m": 0.0,
+        "maximum_velocity_error_mps": 0.0,
+        "maximum_rotation_error_rad": 0.0,
+        "configuration_matches": true,
+        "traffic_lights_match": true
+      },
+      "pair_id": "1012481be9344afaae1bf206151f8702",
+      "wall_s": 307.8130000000001,
+      "sampled_tick_hz_median": 12.092341517039358
+    },
+    {
+      "side": "RULE",
+      "status": "COLLISION",
+      "reason": "collision",
+      "failure_reason": null,
+      "completed": true,
+      "collision": true,
+      "destination_arrived": false,
+      "metrics": {
+        "unnecessary_waiting_s": 4.050000060349703,
+        "harsh_braking_events": 29,
+        "emergency_intervention_s": 0.0,
+        "duration_s": 124.40000185370445,
+        "destination_arrived": false
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7d0683c2085e44b2ae86c3e522b3bfb1",
+      "initial_condition_audit": {
+        "passed": true,
+        "maximum_position_error_m": 0.0,
+        "maximum_velocity_error_mps": 0.0,
+        "maximum_rotation_error_rad": 0.0,
+        "configuration_matches": true,
+        "traffic_lights_match": true
+      },
+      "pair_id": "5973a3b2948143e982d9e44905e3ae5c",
+      "wall_s": 204.96900000000096,
+      "sampled_tick_hz_median": 12.697191227397331
+    },
+    {
+      "side": "MODEL",
+      "status": "TIMEOUT",
+      "reason": "timeout",
+      "failure_reason": null,
+      "completed": true,
+      "collision": false,
+      "destination_arrived": false,
+      "metrics": {
+        "unnecessary_waiting_s": 46.60000069439411,
+        "harsh_braking_events": 17,
+        "emergency_intervention_s": 0.0,
+        "duration_s": 179.95000268146396,
+        "destination_arrived": false
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_1dcebbcc59514359b153975f397bbf38",
+      "initial_condition_audit": {
+        "passed": true,
+        "maximum_position_error_m": 0.0,
+        "maximum_velocity_error_mps": 0.0,
+        "maximum_rotation_error_rad": 0.0,
+        "configuration_matches": true,
+        "traffic_lights_match": true
+      },
+      "pair_id": "5973a3b2948143e982d9e44905e3ae5c",
+      "wall_s": 315.1880000000001,
+      "sampled_tick_hz_median": 11.798355380765637
+    }
+  ],
+  "coverage": "Recipes contain all major hazards. Ego encounter/occlusion/ID-switch coverage is not established.",
+  "implementation_scope": "Initial native runs precede final signal audit, diagnostic and surface-order repairs; weights remained frozen.",
+  "budget": {
+    "target_s": 1800,
+    "hard_cap_s": 5400,
+    "charged_s": 3893.9529999999995,
+    "phases": [
+      [
+        "training",
+        16.078999999999724,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        0.5780000000004293,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        12.359000000000378,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        6.078000000000429,
+        1
+      ],
+      [
+        "native_test_pairs",
+        1500.0,
+        0
+      ],
+      [
+        "trajectron_benchmark",
+        6.719000000000051,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        7.186999999999898,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        7.686999999999898,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        0.0,
+        1
+      ],
+      [
+        "native_test_pairs",
+        0.0,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        385.78200000000015,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        388.1880000000001,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        357.15599999999904,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        281.5149999999994,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        77.98400000000038,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        10.311999999999898,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        307.7039999999997,
+        1
+      ],
+      [
+        "trajectron_benchmark",
+        7.718999999999141,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        0.9060000000008586,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        204.875,
+        1
+      ],
+      [
+        "comparison_v2_run",
+        315.125,
+        1
+      ]
+    ]
+  },
+  "gate_failures": [
+    "Destination arrival and useful driving benefit not established",
+    "Measured VALIDATION risk calibration missing",
+    "Matched native throughput and false-stop comparison missing",
+    "Full native all-camera/Replay/manual-drive acceptance missing",
+    "Live causal ablation missing"
+  ]
+}

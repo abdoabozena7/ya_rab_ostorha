@@ -1,0 +1,18 @@
+{
+  "python_tests": 255,
+  "python_skipped": 1,
+  "frontend_tests": 59,
+  "browser_viewports": [
+    1366,
+    900,
+    430
+  ],
+  "page_errors": [],
+  "all_five_camera_pose_projection_tests": true,
+  "actual_replay_checked": {
+    "frames": 3602,
+    "sidecar_frames": 3602,
+    "matching_midpoint_frame": 33630
+  },
+  "native_acceptance": false
+}

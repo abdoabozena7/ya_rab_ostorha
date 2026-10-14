@@ -1,0 +1,201 @@
+{
+  "frozen": {
+    "split": "TEST",
+    "selection": "First three lexicographic complete native TEST recordings between 2 and 40 MB, frozen before scoring",
+    "not_training_or_tuning": true,
+    "runs": [
+      {
+        "directory": "runs\\normal_city\\run_0858bcea9d164d22856cd58808314c7d",
+        "frames_sha256": "c22fe84885e92080c88b3ed92568a01ec8b9539bdeec49960f4c660d9fa62da8",
+        "seed": 2589
+      },
+      {
+        "directory": "runs\\normal_city\\run_0b77b20fd16341d7852283e23ed1c512",
+        "frames_sha256": "8da403201e808a58d8d851131e23406633720d70def752ddfc4a2f633e5e6954",
+        "seed": 2589
+      },
+      {
+        "directory": "runs\\normal_city\\run_109c14dc04ed400ab236896e5dc556f9",
+        "frames_sha256": "9de9a654b04b59a419d88c3d4de8ee637ad90898bd07087e24178c0f2c91461e",
+        "seed": 2589
+      }
+    ]
+  },
+  "runs": [
+    {
+      "directory": "runs\\normal_city\\run_0858bcea9d164d22856cd58808314c7d",
+      "frames_sha256": "c22fe84885e92080c88b3ed92568a01ec8b9539bdeec49960f4c660d9fa62da8",
+      "seed": 2589,
+      "frames_considered": 362,
+      "queries": 19,
+      "unmatched_associations": 278,
+      "ambiguous_associations": 0,
+      "invalid_frames": 0
+    },
+    {
+      "directory": "runs\\normal_city\\run_0b77b20fd16341d7852283e23ed1c512",
+      "frames_sha256": "8da403201e808a58d8d851131e23406633720d70def752ddfc4a2f633e5e6954",
+      "seed": 2589,
+      "frames_considered": 282,
+      "queries": 15,
+      "unmatched_associations": 120,
+      "ambiguous_associations": 0,
+      "invalid_frames": 0
+    },
+    {
+      "directory": "runs\\normal_city\\run_109c14dc04ed400ab236896e5dc556f9",
+      "frames_sha256": "9de9a654b04b59a419d88c3d4de8ee637ad90898bd07087e24178c0f2c91461e",
+      "seed": 2589,
+      "frames_considered": 146,
+      "queries": 8,
+      "unmatched_associations": 52,
+      "ambiguous_associations": 0,
+      "invalid_frames": 0
+    }
+  ],
+  "scope": "Independent native actor motion labels are read only by the evaluator; no target truth enters either tracker or model",
+  "sources": [
+    "OLD_GEOMETRIC",
+    "MEASURED_KINEMATIC",
+    "TRAJECTRON_RANKED"
+  ],
+  "training_performed": false,
+  "learned_control_accepted": false,
+  "supervised_reason": "No native TRAIN motion dataset with independent selection validation has been established in this run",
+  "complete": true,
+  "worker_error": null,
+  "invalid_frames": [],
+  "metrics": {
+    "OLD_GEOMETRIC": {
+      "1": {
+        "samples": 23,
+        "selected_ade_m": 0.9263980026424703,
+        "selected_fde_m": 1.8548657450832333,
+        "best_alternative_fde_m": 1.8548657450832333,
+        "inside_bound_percent": 52.17391304347826
+      },
+      "2": {
+        "samples": 21,
+        "selected_ade_m": 2.0054178949858206,
+        "selected_fde_m": 4.16357073602352,
+        "best_alternative_fde_m": 4.16357073602352,
+        "inside_bound_percent": 33.33333333333333
+      },
+      "3": {
+        "samples": 19,
+        "selected_ade_m": 3.2575441469360196,
+        "selected_fde_m": 6.802700966299305,
+        "best_alternative_fde_m": 6.802700966299305,
+        "inside_bound_percent": 31.57894736842105
+      },
+      "unscored_forecasts": 369,
+      "coverage_percent": 14.583333333333334
+    },
+    "MEASURED_KINEMATIC": {
+      "1": {
+        "samples": 24,
+        "selected_ade_m": 1.2869615181053873,
+        "selected_fde_m": 2.6354310073225746,
+        "best_alternative_fde_m": 2.572548712496692,
+        "inside_bound_percent": 16.666666666666664
+      },
+      "2": {
+        "samples": 22,
+        "selected_ade_m": 2.548734900837364,
+        "selected_fde_m": 5.132411707137438,
+        "best_alternative_fde_m": 4.901962841392382,
+        "inside_bound_percent": 13.636363636363635
+      },
+      "3": {
+        "samples": 20,
+        "selected_ade_m": 4.0626316943372,
+        "selected_fde_m": 8.070092601477182,
+        "best_alternative_fde_m": 7.6458880911437435,
+        "inside_bound_percent": 5.0
+      },
+      "unscored_forecasts": 510,
+      "coverage_percent": 11.458333333333334
+    },
+    "TRAJECTRON_RANKED": {
+      "1": {
+        "samples": 0,
+        "selected_ade_m": null,
+        "selected_fde_m": null,
+        "best_alternative_fde_m": null,
+        "inside_bound_percent": null
+      },
+      "2": {
+        "samples": 0,
+        "selected_ade_m": null,
+        "selected_fde_m": null,
+        "best_alternative_fde_m": null,
+        "inside_bound_percent": null
+      },
+      "3": {
+        "samples": 0,
+        "selected_ade_m": null,
+        "selected_fde_m": null,
+        "best_alternative_fde_m": null,
+        "inside_bound_percent": null
+      },
+      "unscored_forecasts": 576,
+      "coverage_percent": 0.0
+    }
+  },
+  "old_ledger_sha256": "befdb2cdbbab4be177d590183ea684347a32b5ca6c721f7103499d0a27861bad",
+  "paired_comparison": {
+    "scope": "Same recording, query frame, independently associated actor and horizon; duplicate associations excluded from paired means only and retained in all-forecast metrics",
+    "horizons": {
+      "1": {
+        "samples": 9,
+        "OLD_GEOMETRIC": {
+          "selected_ade_m": 1.788146806193313,
+          "selected_fde_m": 3.589088011482143
+        },
+        "MEASURED_KINEMATIC": {
+          "selected_ade_m": 0.8236741778052701,
+          "selected_fde_m": 1.7297876346688044
+        }
+      },
+      "2": {
+        "samples": 8,
+        "OLD_GEOMETRIC": {
+          "selected_ade_m": 3.858126642941995,
+          "selected_fde_m": 7.798906808518918
+        },
+        "MEASURED_KINEMATIC": {
+          "selected_ade_m": 1.5554513238197307,
+          "selected_fde_m": 3.2313606659663954
+        }
+      },
+      "3": {
+        "samples": 7,
+        "OLD_GEOMETRIC": {
+          "selected_ade_m": 6.132353384255558,
+          "selected_fde_m": 12.171592124679176
+        },
+        "MEASURED_KINEMATIC": {
+          "selected_ade_m": 2.656853380521033,
+          "selected_fde_m": 5.258750645421729
+        }
+      }
+    },
+    "ambiguous_duplicate_pairs": 3
+  },
+  "budget": {
+    "scope": "MOTION_RELIABILITY_20261013",
+    "hard_cap_s": 2400.0,
+    "phases": {
+      "validation": {
+        "cap_s": 1800.0,
+        "charged_s": 1562.9239999999845
+      },
+      "training": {
+        "cap_s": 600.0,
+        "charged_s": 0
+      }
+    },
+    "charged_s": 1562.9239999999845,
+    "old_ledger_unchanged": true
+  }
+}

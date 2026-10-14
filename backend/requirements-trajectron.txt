@@ -1,0 +1,9 @@
+# Installed only in .venv-trajectron. Existing CPU Torch is exposed read-only.
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.14.1
+orjson==3.10.15
+dill==0.3.9
+ncls==0.0.68
+tqdm==4.67.1
+scikit-learn==1.6.1

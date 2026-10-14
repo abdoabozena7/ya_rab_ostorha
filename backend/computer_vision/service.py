@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import subprocess
 import time
+import threading
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / 'output' / 'perception'
@@ -59,3 +60,22 @@ class PerceptionService:
             except subprocess.TimeoutExpired:
                 self.process.kill(); self.process.wait(timeout=5)
         if hasattr(self,'log'): self.log.close()
+
+
+class ControlPerceptionCache:
+    """File polling belongs to a separate thread; the control read is atomic."""
+    def __init__(self):
+        self.value=None;self.stop=threading.Event()
+        self.thread=threading.Thread(target=self._run,name='control-semantic-cache',daemon=True);self.thread.start()
+
+    def _run(self):
+        while not self.stop.is_set():
+            try:self.value=json.loads((OUTPUT/'latest-detections.json').read_text(encoding='utf8'))
+            except (OSError,ValueError):pass
+            self.stop.wait(.1)
+
+    def latest(self,session_id):
+        value=self.value
+        return value if value and value.get('session_id')==session_id else None
+
+    def close(self):self.stop.set();self.thread.join(timeout=1.)

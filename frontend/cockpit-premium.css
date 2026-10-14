@@ -1,0 +1,173 @@
+/* The driving surfaces share one black cockpit, one type system and one accent. */
+:root[data-appearance=dark]{
+  color-scheme:dark;
+  --bg:#080b10;--surface:#10151c;--raised:#19212b;--ink:#f5f7fb;
+  --muted:#9da8b5;--line:#28323d;--input-line:#3a4857;
+  --primary:#aac8ff;--primary-hover:#c2d7ff;--primary-ink:#0b1422;--focus:#aac8ff;
+  --pastel-blue:#202d40;--pastel-mint:#16362e;--pastel-pink:#222831;
+  --pastel-lavender:#252f3d;--pastel-amber:#302b21;
+  --shadow-soft:none;--shadow-overlay:0 32px 90px #000b;
+}
+body.control-center{font-family:Geist,'Segoe UI',sans-serif;letter-spacing:-.01em}
+body[data-ui=guided] .app-header{background:var(--bg);border-bottom:1px solid var(--line);height:68px;min-height:68px;padding:9px 22px}
+body[data-ui=guided] #brand{min-width:218px}
+body[data-ui=guided] .app-header h1{font-weight:680;font-size:19px;letter-spacing:-.045em}
+body[data-ui=guided] #brand .eyebrow{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+:root[data-appearance=dark] body[data-ui=guided] .brand-mark{background:#1a2636;color:#aac8ff;border:1px solid #35455b}
+.studio-town{margin-right:0;padding-left:19px}
+body[data-ui=guided] .app-header .connection{margin-left:auto}
+body[data-ui=guided] #interfaceMode,body[data-ui=guided] #stopSimulatorBtn{background:transparent;border-color:var(--line);color:var(--muted)}
+body[data-ui=guided] #emergencyStopBtn{min-height:38px;padding:8px 14px;background:#8d2330;color:white;border:1px solid #af3645;font-weight:620}
+body.control-center{padding-left:78px}
+.studio-rail{width:78px;background:#06090d;border-right:1px solid #202a35;padding:18px 8px;gap:7px}
+.rail-brand{font-size:33px;margin-bottom:16px;font-weight:650;color:#f6f8fc}
+.rail-brand>span{background:#aac8ff}
+.studio-rail .workspace-tabs{gap:7px;margin-bottom:16px}
+.studio-rail button,.studio-rail .workspace-tabs button{width:60px;height:56px;min-height:56px;padding:6px 4px;flex-direction:column;gap:3px;border-radius:11px;color:#8d9ba8}
+.studio-rail button svg{width:19px;height:19px}
+.studio-rail button span{position:static;opacity:1;pointer-events:none;top:auto;left:auto;background:transparent;border:0;padding:0;color:inherit;font-size:9px;font-weight:550;letter-spacing:.02em}
+.studio-rail .workspace-tabs [aria-selected=true]{background:#1d2b3c;color:#dce9ff;box-shadow:inset 3px 0 #aac8ff}
+.studio-rail button:hover:enabled{background:#18212c;color:#f5f7fb}
+.rail-orb{width:18px;height:18px;background:#aac8ff;border:5px solid #223348}
+body[data-ui=guided] .workspace{padding:13px 18px 14px}
+body[data-ui=guided] .driving-layout,body[data-ui=guided].journey-active .driving-layout{grid-template-columns:clamp(240px,21vw,276px) minmax(0,1fr);gap:15px}
+body[data-ui=guided] #guidedDrive{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:none}
+.guided-heading h2{font-size:22px;letter-spacing:-.055em;font-weight:650}
+.guided-heading .eyebrow{font-size:9px;font-weight:650;letter-spacing:.18em}
+body[data-ui=guided] .drive-steps{gap:2px;margin-bottom:10px}
+body[data-ui=guided] .drive-steps li{min-height:40px;padding:6px 4px;border-radius:8px}
+body[data-ui=guided] .drive-steps li[aria-current=step]{min-height:46px;background:var(--raised);border-color:var(--line);color:var(--ink)}
+body[data-ui=guided] .drive-steps li[aria-current=step] b{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+body[data-ui=guided] .drive-steps li[data-complete=true]{min-height:32px}
+body[data-ui=guided] #guidedPrimary{min-height:41px;margin-top:8px;border-radius:10px;font-weight:650}
+body[data-ui=guided] #guidedStatus{font-size:10px;line-height:1.5;min-height:0;margin:7px 0}
+body[data-ui=guided] #guidedModeChoices{gap:7px;margin:7px 0}
+body[data-ui=guided] #guidedModeChoices button,
+body[data-ui=guided] #guidedModeChoices #normalModeBtn{background:var(--raised);border:1px solid var(--line);border-radius:11px;padding:10px;color:var(--ink);box-shadow:none}
+body[data-ui=guided] #guidedModeChoices [aria-pressed=true]{border-color:var(--primary);outline:1px solid var(--primary);outline-offset:0}
+body[data-ui=guided] #guidedModeChoices em{border-color:var(--line);color:var(--primary);margin-top:4px;padding-top:6px}
+body[data-ui=guided] #guidedModeChoices .mode-symbol,[data-mode=NORMAL] .mode-symbol{background:#263447;color:var(--primary)}
+body[data-ui=guided] #guidedLiveCounts{border-color:var(--line);font-size:10px}
+body[data-ui=guided] #cameraCard{gap:8px}
+.studio-control-bar{display:grid;grid-template-columns:minmax(155px,1fr) auto auto;align-items:center;gap:14px;flex:none;min-height:70px;padding:9px 13px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.studio-drive-context{display:flex;flex-direction:column;min-width:0;gap:2px}
+.studio-drive-context span{font-size:9px;letter-spacing:.15em;font-weight:700;color:var(--primary)}
+.studio-drive-context strong{font-size:13px;font-weight:640;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.studio-drive-context small{font-size:10px;color:var(--muted)}
+.studio-manual-cluster{display:flex;align-items:center;gap:9px}
+.studio-manual-modes{display:flex;gap:2px;padding:3px;background:#090d13;border:1px solid var(--line);border-radius:10px}
+.studio-manual-modes button{min-height:32px;min-width:73px;padding:5px 9px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:10px;font-weight:600}
+.studio-manual-modes button[aria-pressed=true]{background:#2a3b52;color:#f2f7ff}
+.studio-manual-modes button:disabled{opacity:.78}
+#studioManualContext{max-width:132px;font-size:9px;line-height:1.35;color:var(--muted)}
+.studio-drive-buttons{display:flex;align-items:center;gap:6px}
+.studio-drive-buttons button{min-height:37px;border-radius:9px;white-space:nowrap;font-size:10px;padding:6px 10px}
+.studio-drive-buttons #startDrivingBtn{background:var(--primary);border-color:var(--primary);color:var(--primary-ink);font-weight:700}
+.studio-drive-buttons #startDrivingBtn:disabled{background:var(--raised);border-color:var(--line);color:var(--muted)}
+.studio-drive-buttons #studioManualStop,.studio-drive-buttons #studioResultsLink{background:transparent;border-color:var(--line);color:var(--ink)}
+.studio-viewport-switch{display:none}
+body[data-ui=guided] .camera-stage{gap:8px}
+.studio-visual-pair{display:grid;grid-template-columns:minmax(0,1.95fr) minmax(255px,.9fr);gap:9px;position:relative;flex:1 1 0;min-height:0;width:100%}
+body[data-ui=guided] #frontCameraView{width:100%;height:100%;min-height:0;max-height:none;aspect-ratio:auto;border:1px solid var(--line);border-radius:14px;background:#080b10;box-shadow:none}
+#authoritativeCamera{object-fit:contain;background:#080b10}
+.studio-mode-pill{border-color:#d9e5f83a;background:#0b121be8;color:#f4f7fc}
+.studio-hud{border-color:#d9e5f832;background:#0b121be8}
+.studio-safety-alert{background:#3d2d19f2;border-color:#876741;color:#ffe5b5}
+.studio-safety-alert[data-tone=info]{background:#1c324af2;border-color:#4d7199;color:#d6eaff}
+#unifiedMap,#unifiedMap.map-expanded{position:relative;inset:auto;right:auto;top:auto;z-index:1;display:flex;flex-direction:column;width:100%;height:100%;max-width:none;min-width:0;min-height:0;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:none;overflow:hidden}
+#unifiedMap header{flex:none;display:flex;align-items:center;padding:13px 13px 8px;gap:8px}
+#unifiedMap header>span:first-child{display:flex;flex-direction:column;gap:2px}
+#unifiedMap header small{font-size:8px;letter-spacing:.17em;font-weight:700;color:var(--muted)}
+#unifiedMap header strong{font-size:15px;font-weight:650;letter-spacing:-.045em;color:var(--ink)}
+#unifiedMap .unified-map-actions{display:flex;gap:3px;margin-left:auto}
+#unifiedMap .unified-map-actions button{min-height:28px;padding:4px 7px;color:var(--muted);font-size:10px}
+#unifiedMap #unifiedRouteAction{color:var(--primary)}
+#unifiedMap .map-layer-switch{display:flex;gap:3px;flex:none;padding:0 10px 8px}
+#unifiedMap .map-layer-switch button{flex:1;min-height:29px;padding:4px 3px;font-size:10px;color:var(--muted)}
+#unifiedMap .map-layer-switch [aria-pressed=true]{background:#293b52!important;color:#f5f8ff!important}
+#unifiedMapCanvas,#unifiedMap.map-expanded #unifiedMapCanvas{display:block;width:100%;height:0;min-height:0;flex:1 1 0;object-fit:fill;background:#111923}
+#unifiedMap #unifiedMapRoute{font-size:11px;line-height:1.3;min-height:0;margin:0;padding:10px 12px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+#unifiedMap #unifiedMapMeta{min-height:0;max-height:54px;margin:0;padding:4px 12px 12px;font-size:9px;line-height:1.4;color:var(--muted);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#unifiedMap.map-expanded{position:absolute;inset:0;z-index:12;width:100%;height:100%;border-color:#425771}
+#unifiedMap.map-expanded .unified-expanded-tools{display:block;flex:none;max-height:42%;overflow:auto;background:var(--surface)}
+#unifiedMap.map-expanded #unifiedMapMeta{-webkit-line-clamp:unset;display:block;max-height:none}
+#unifiedMap .unified-expanded-tools{border-color:var(--line)}
+body[data-ui=guided] #cameraCard.camera-expanded .studio-control-bar{display:none}
+body[data-ui=guided] #cameraCard.camera-expanded .studio-visual-pair{display:block;height:100%}
+body[data-ui=guided] #cameraCard.camera-expanded #unifiedMap{display:none}
+body[data-ui=guided] #cameraCard.camera-expanded #frontCameraView{height:100%}
+.studio-camera-views{background:var(--surface);border-color:var(--line);border-radius:12px;padding:6px 10px}
+.studio-view-buttons [aria-pressed=true]{background:var(--raised);color:var(--ink)}
+body[data-ui=guided] #modelVision{background:var(--surface);border-color:var(--line);border-radius:12px}
+.studio-kpis{background:var(--line);border-color:var(--line);border-radius:12px}
+.studio-kpis>div{background:var(--surface);padding:8px 11px}
+.studio-kpis strong{font-weight:650}
+body[data-ui=guided] .analysis-heading h2{font-weight:650;letter-spacing:-.05em}
+.studio-back-to-drive{min-height:35px;padding:6px 11px;margin-left:auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:10px}
+:root[data-appearance=dark] .studio-comparison-banner{background:#17212b;border-color:#31404e;color:var(--ink)}
+:root[data-appearance=dark] .studio-run-panel,:root[data-appearance=dark] .studio-run-panel[data-mode=NORMAL]{background:var(--surface);border-color:var(--line)}
+:root[data-appearance=dark] .studio-run-metrics>div,:root[data-appearance=dark] .studio-risk-chart{background:var(--raised)}
+:root[data-appearance=dark] .studio-run-panel[data-mode=NORMAL] .run-mode-cta{color:var(--primary);border-color:var(--line)}
+:root[data-appearance=dark] .run-mode-cta{background:var(--raised);border-color:var(--line);color:var(--primary)}
+:root[data-appearance=dark] .studio-result-view,:root[data-appearance=dark] .studio-run-switch{background:var(--surface)}
+:root[data-appearance=dark] .studio-result-controls [aria-pressed=true]{background:var(--raised);color:var(--ink)}
+:root[data-appearance=dark] .studio-result-dialog,:root[data-appearance=dark] #advancedSetupDialog{background:var(--surface)}
+:root[data-appearance=dark] .drawer,:root[data-appearance=dark] .phone-panel,:root[data-appearance=dark] .map-panel{background:var(--surface);color:var(--ink)}
+@media(max-width:1250px){
+  .studio-control-bar{gap:7px;padding:8px 10px}
+  .studio-manual-cluster{gap:4px}
+  #studioManualContext{display:none}
+  .studio-visual-pair{grid-template-columns:minmax(0,1.6fr) minmax(220px,.9fr)}
+}
+@media(max-width:1000px){
+  body[data-ui=guided] .app-header{height:68px;min-height:68px;flex-wrap:nowrap}
+  body[data-ui=guided] .app-header .connection{display:none}
+  .studio-drive-context small{display:none}
+  .studio-drive-buttons #studioResultsLink{display:none}
+  .studio-visual-pair{grid-template-columns:minmax(0,1.35fr) minmax(190px,.9fr)}
+}
+@media(max-width:760px){
+  body.control-center{padding-left:56px}
+  .studio-rail{width:56px;padding:12px 4px;gap:4px}
+  .studio-rail .workspace-tabs{gap:3px;margin-bottom:7px}
+  .studio-rail button,.studio-rail .workspace-tabs button{width:46px;height:44px;min-height:44px;padding:7px}
+  .studio-rail button span{display:none}
+  .studio-rail button svg{width:19px;height:19px}
+  .rail-brand{font-size:28px;margin-bottom:10px}
+  body[data-ui=guided] .app-header{height:58px;min-height:58px;padding:8px 10px;gap:5px}
+  body[data-ui=guided] #brand{min-width:0}
+  body[data-ui=guided] .app-header h1{font-size:15px}
+  body[data-ui=guided] .workspace{padding:8px 9px 9px}
+  body[data-ui=guided] .driving-layout,body[data-ui=guided].journey-active .driving-layout{gap:0}
+  body[data-ui=guided] #cameraCard{gap:5px}
+  .studio-control-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:7px 8px;min-height:0;border-radius:11px}
+  .studio-drive-context{grid-column:1/-1;flex-direction:row;align-items:center;gap:8px}
+  .studio-drive-context span{display:none}
+  .studio-drive-context strong{font-size:11px;max-width:64%}
+  .studio-drive-context small{display:block;margin-left:auto;font-size:9px;white-space:nowrap}
+  .studio-manual-cluster{grid-column:1;min-width:0}
+  .studio-manual-modes{width:100%;justify-content:space-between}
+  .studio-manual-modes button{min-height:30px;min-width:0;flex:1;font-size:9px;padding:3px 5px}
+  .studio-drive-buttons{grid-column:2;gap:4px}
+  .studio-drive-buttons button{min-height:35px;padding:5px 7px;font-size:9px}
+  .studio-drive-buttons #startDrivingBtn{max-width:116px;white-space:normal;line-height:1.1}
+  .studio-drive-buttons #studioResultsLink{display:none}
+  .studio-viewport-switch{grid-column:1/-1;display:flex;gap:3px;padding:2px;background:#090d13;border:1px solid var(--line);border-radius:8px}
+  .studio-viewport-switch button{flex:1;min-height:27px;padding:3px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:9px}
+  .studio-viewport-switch [aria-pressed=true]{background:var(--raised);color:var(--ink)}
+  .studio-visual-pair{display:block;min-height:0;height:100%}
+  .studio-visual-pair:not([data-focus=map]) #unifiedMap{display:none}
+  .studio-visual-pair[data-focus=map] #frontCameraView{display:none}
+  body[data-ui=guided] #frontCameraView,#unifiedMap{width:100%;height:100%;border-radius:11px}
+  #unifiedMap header{padding:9px 10px 6px}
+  #unifiedMap .map-layer-switch{padding:0 8px 6px}
+  #unifiedMapCanvas{flex:1}
+  .studio-back-to-drive{margin-left:0}
+}
+@media(max-width:420px){
+  .studio-drive-context small{display:none}
+  .studio-drive-context strong{max-width:100%}
+  .studio-drive-buttons #studioManualStop{padding:5px 6px}
+  body[data-ui=guided] #guidedDrive{padding:12px}
+}
+@media(prefers-reduced-motion:reduce){.studio-visual-pair,.studio-control-bar{transition:none!important}}

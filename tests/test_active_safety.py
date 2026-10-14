@@ -3,7 +3,7 @@ from dataclasses import replace
 import unittest
 from unittest.mock import patch
 import numpy as np
-from backend.core.active_safety import ActiveSafetySupervisor, RuntimeSafetyConfig, assess_forward_space
+from backend.core.active_safety import ActiveSafetySupervisor, RuntimeSafetyConfig, assess_forward_space, coverage_speed_limit
 from backend.core.contracts import CommandSource, SensorKind
 from backend.core.control import CommandArbiter, ControlMode, ControlSafetyLayer
 from tests.test_safety_teacher import case
@@ -11,7 +11,7 @@ from tests.test_safety_teacher import case
 
 def scene(observation, *, clear=False, obstacle=False):
     # Explicit sensor-local point geometry, solely to check projection units.
-    points = [[x, y, -1.9, .5] for x in (8., 20., 35.) for y in (-.8, .8)] if clear else []
+    points = [[x, y, -1.9, .5] for x in np.arange(2.5,38.,.5) for y in np.arange(-1.5,1.51,.5)] if clear else []
     if obstacle: points += [[10., 0., -1.4, .5]]
     data = np.asarray(points, '<f4').reshape(-1, 4).tobytes()
     channels = []
@@ -27,13 +27,110 @@ def scene(observation, *, clear=False, obstacle=False):
 
 
 class ActiveSafetyTests(unittest.TestCase):
+    def test_far_side_of_a_turn_uses_arc_distance_and_does_not_become_a_near_obstacle(self):
+        from backend.core.motion_geometry import VehicleGeometry
+        geometry=VehicleGeometry(2.44,2.45,.92,2.86,1.22,'ONBOARD_TEST')
+        for sign in (-1.,1.):
+            with self.subTest(sign=sign):
+                steering=sign*.265
+                curvature=np.tan(steering*geometry.max_steer_rad)/geometry.wheelbase_m
+                angle=sign*2.8
+                x,y=np.sin(angle)/curvature,(1-np.cos(angle))/curvature
+                o,b=case(distance=None,speed=0.)
+                o,reader=scene(o,clear=True)
+                cloud=np.frombuffer(reader(None),'<f4').reshape(-1,4)
+                cloud=np.vstack((cloud,[[x,y,-.9,.5]])).astype('<f4')
+                assessed=assess_forward_space(o,lambda _:cloud.tobytes(),RuntimeSafetyConfig.load(),steering=steering,geometry=geometry)
+                self.assertEqual(assessed['target_source'],'LIDAR')
+                self.assertAlmostEqual(assessed['target_range_m'],angle/curvature-geometry.front_m,places=4)
+                self.assertGreater(assessed['target_range_m'],20.)
+                # Keep explicit measured-space evidence separate from the
+                # turn-range regression, so missing curve coverage cannot hold.
+                assessed['observed_road_range_m']=10.
+                supervisor=ActiveSafetySupervisor();supervisor.geometry=geometry
+                with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+                    applied=supervisor.evaluate(o,replace(b,steering=steering),lambda _:cloud.tobytes(),as_of_timestamp_s=o.timestamp_s)
+                self.assertIsNone(applied)
+
+    def test_near_obstacle_on_turn_arc_still_requires_protective_braking(self):
+        from backend.core.motion_geometry import VehicleGeometry
+        geometry=VehicleGeometry(2.44,2.45,.92,2.86,1.22,'ONBOARD_TEST')
+        steering=-.265;curvature=np.tan(steering*geometry.max_steer_rad)/geometry.wheelbase_m
+        arc=geometry.front_m+2.;angle=arc*curvature
+        o,b=case(distance=None,speed=0.);o,reader=scene(o,clear=True)
+        cloud=np.frombuffer(reader(None),'<f4').reshape(-1,4)
+        cloud=np.vstack((cloud,[[np.sin(angle)/curvature,(1-np.cos(angle))/curvature,-.9,.5]])).astype('<f4')
+        supervisor=ActiveSafetySupervisor();supervisor.geometry=geometry
+        applied=supervisor.evaluate(o,replace(b,steering=steering),lambda _:cloud.tobytes(),as_of_timestamp_s=o.timestamp_s)
+        self.assertEqual(applied.brake,1.)
+        self.assertAlmostEqual(supervisor.status['measured_range_m'],2.,places=4)
+        self.assertEqual(supervisor.status['risk'],'FORWARD_COLLISION_RISK')
+
+    def test_release_padding_does_not_start_braking_on_saved_coverage_boundary(self):
+        o, b = case(distance=None, speed=.00021824)
+        o, reader = scene(o, clear=True)
+        assessed = assess_forward_space(o, reader, RuntimeSafetyConfig.load())
+        assessed['observed_road_range_m'] = 4.986027110061446
+        with patch('backend.core.active_safety.assess_forward_space', return_value=assessed):
+            supervisor = ActiveSafetySupervisor()
+            applied = supervisor.evaluate(o, b, reader, as_of_timestamp_s=o.timestamp_s)
+        self.assertIsNone(applied)
+        self.assertFalse(supervisor.active)
+        self.assertFalse(supervisor.status['forward_release_clear'])
+        self.assertEqual(supervisor.status['risk'], 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED')
+        self.assertGreater(supervisor.status['coverage_speed_limit_mps'], 0.)
+
+    def test_short_coverage_sets_a_stopping_speed_and_progressive_braking(self):
+        supervisor = ActiveSafetySupervisor()
+        o, b = case(distance=None, speed=4.)
+        o, reader = scene(o, clear=True)
+        assessed = assess_forward_space(o, reader, supervisor.config)
+        assessed['observed_road_range_m'] = 4.986027110061446
+        with patch('backend.core.active_safety.assess_forward_space', return_value=assessed):
+            applied = supervisor.evaluate(o, b, reader, as_of_timestamp_s=o.timestamp_s)
+        limit = supervisor.status['coverage_speed_limit_mps']
+        t = supervisor.config.teacher
+        self.assertAlmostEqual(t.minimum_clearance_m + limit*t.reaction_time_s + limit**2/(2*t.assumed_deceleration_mps2), assessed['observed_road_range_m'])
+        self.assertGreater(applied.brake, 0.)
+        self.assertLess(applied.brake, 1.)
+        self.assertEqual(applied.throttle, 0.)
+        self.assertIn('coverage speed limit', supervisor.status['reason'])
+
+    def test_distant_surface_does_not_cancel_a_short_measured_coverage_speed_limit(self):
+        supervisor=ActiveSafetySupervisor()
+        o,b=case(distance=None,speed=4.);o,reader=scene(o,clear=True)
+        assessed=assess_forward_space(o,reader,supervisor.config)
+        assessed.update(target_range_m=30.,target_source='LIDAR',observed_road_range_m=4.986027110061446)
+        with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+            applied=supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+        self.assertGreater(applied.brake,0.)
+        self.assertLess(applied.brake,1.)
+        self.assertEqual(applied.throttle,0.)
+        self.assertEqual(supervisor.status['risk'],'UNKNOWN_SPACE')
+        self.assertAlmostEqual(supervisor.status['coverage_speed_limit_mps'],3.0377730836595065)
+
+    def test_coverage_limit_recovers_without_an_emergency_hold_or_release_padding(self):
+        supervisor = ActiveSafetySupervisor()
+        for frame, speed in ((1, 4.), (2, 0.)):
+            o, b = case(frame, distance=None, speed=speed)
+            o, reader = scene(o, clear=True)
+            assessed = assess_forward_space(o, reader, supervisor.config)
+            assessed['observed_road_range_m'] = 4.986027110061446
+            with patch('backend.core.active_safety.assess_forward_space', return_value=assessed):
+                applied = supervisor.evaluate(o, b, reader, as_of_timestamp_s=o.timestamp_s)
+        # Any residual brake releases smoothly; limited coverage never latches
+        # the full hazard brake while stationary.
+        self.assertLess(applied.brake if applied else 0., .2)
+        self.assertIsNone(supervisor.started_s)
+        self.assertEqual(coverage_speed_limit(0., supervisor.config.teacher), 0.)
+
     def test_sensor_geometry_distinguishes_measured_road_from_unknown(self):
         o, _ = case(distance=None)
         empty, reader = scene(o)
         self.assertEqual(assess_forward_space(empty, reader, RuntimeSafetyConfig.load())['observed_road_range_m'], 0.)
         road, reader = scene(o, clear=True)
         s = assess_forward_space(road, reader, RuntimeSafetyConfig.load())
-        self.assertEqual(s['observed_road_range_m'], 32.5)
+        self.assertGreater(s['observed_road_range_m'], 30.)
         self.assertIsNone(s['target_range_m']); self.assertFalse(s['depth_observed'])
         target, reader = scene(o, clear=True, obstacle=True)
         s = assess_forward_space(target, reader, RuntimeSafetyConfig.load())
@@ -103,6 +200,22 @@ class ActiveSafetyTests(unittest.TestCase):
         reader=lambda asset:encoded.getvalue() if asset==depth.asset else lidar_reader(asset)
         assessed=assess_forward_space(o,reader,RuntimeSafetyConfig.load())
         self.assertIsNone(assessed['target_range_m']);self.assertGreater(assessed['observed_road_range_m'],10.)
+
+    def test_disconnected_narrow_depth_returns_do_not_certify_forward_space(self):
+        import io
+        o,_=case(distance=None);o,lidar_reader=scene(o)
+        depth=next(s for s in o.channels if s.kind==SensorKind.DEPTH)
+        cal={'width':80,'height':45,'fov_deg':90.,'mount_transform':{'position_m':[1.5,0.,1.6],
+            'rotation_deg':{'roll':0.,'pitch':0.,'yaw':0.}}}
+        depth=replace(depth,calibration=cal)
+        o=replace(o,channels=tuple(depth if s.kind==SensorKind.DEPTH else s for s in o.channels))
+        values=np.full((45,80),1000.,np.float32)
+        values[27,36]=values[27,40]=1.6*40/(27-22.)
+        encoded=io.BytesIO();np.save(encoded,values,allow_pickle=False)
+        reader=lambda asset:encoded.getvalue() if asset==depth.asset else lidar_reader(asset)
+        assessed=assess_forward_space(o,reader,RuntimeSafetyConfig.load())
+        self.assertIsNone(assessed['target_range_m'])
+        self.assertEqual(assessed['observed_road_range_m'],0.)
 
     def test_fresh_safety_commands_cannot_resurrect_expired_driver_commands(self):
         now=[0.];a=CommandArbiter(ControlSafetyLayer(now=lambda:now[0]))
