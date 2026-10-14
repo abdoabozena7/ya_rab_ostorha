@@ -1,0 +1,16 @@
+worktree D:/projects/Ai/ya_rab_ostorha
+HEAD c655dfbb3dfc9ed4a62467f55843bc7c07d5443c
+branch refs/heads/codex/final-delivery
+
+worktree C:/Users/A-plus/.codex/worktrees/gate5-world-foundation/ya_rab_ostorha
+HEAD 9c7eb82664ff90fcdd7d0d6234df03b85a198abf
+branch refs/heads/codex/gate5-world-foundation
+
+worktree C:/Users/A-plus/.codex/worktrees/suv-rule-v1-reconstruction/ya_rab_ostorha
+HEAD 2199161ef2473935f41a73ebfc0b358724452fb6
+detached
+
+worktree C:/Users/A-plus/.codex/worktrees/suv-rule-v2-reconstruction/ya_rab_ostorha
+HEAD c655dfbb3dfc9ed4a62467f55843bc7c07d5443c
+detached
+

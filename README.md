@@ -1,5 +1,9 @@
 # YA RAB OSTORHA: CARLA Collision-Avoidance Prototype
 
+All project work is consolidated on **`main`**, in one working checkout.
+Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
+for the Git workflow, implementation index, verification and recovery details.
+
 The [14 October light dashboard redesign](docs/LIGHT_DASHBOARD_REDESIGN_20261014.md)
 puts the live camera first, with a circular map, compact telemetry and configuration
 in **Scenarios**. **Tools → Stop CARLA · Free GPU** closes the native
