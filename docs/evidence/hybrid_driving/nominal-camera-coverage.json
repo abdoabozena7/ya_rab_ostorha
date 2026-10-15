@@ -1,0 +1,1881 @@
+{
+  "source": "NATIVE_SENSOR_MOUNT_GEOMETRY_AUDIT",
+  "native_accepted": false,
+  "method": "MOUNT_AND_INTRINSIC_PROJECTION_ONLY",
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\native-recordings\\normal_city\\run_dbe7b5d4d7a8401f86476d173ef802d1",
+  "frame_id": 73945,
+  "frame_row_sha256": "6dcff2f60d3e1162dd149a14b5e5a632b91942a6edbd596334716def27b3b26e",
+  "geometry_row_sha256": "09ddc47e34ad6b585efe9cb8c621ccc995d483fbe99b145251e045a547a30c2c",
+  "depth_mounts": {
+    "depth": {
+      "mount_transform": {
+        "position_m": [
+          1.5,
+          0.0,
+          1.600000023841858
+        ],
+        "rotation_deg": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        }
+      },
+      "width": 320,
+      "height": 180,
+      "fov_deg": 90.0
+    },
+    "frontLeftDepth": {
+      "mount_transform": {
+        "position_m": [
+          2.5398969650268555,
+          -1.0183589458465576,
+          1.0
+        ],
+        "rotation_deg": {
+          "pitch": -5.0,
+          "yaw": -45.0,
+          "roll": 0.0
+        }
+      },
+      "width": 240,
+      "height": 135,
+      "fov_deg": 120.0
+    },
+    "frontRightDepth": {
+      "mount_transform": {
+        "position_m": [
+          2.5398969650268555,
+          1.0183589458465576,
+          1.0
+        ],
+        "rotation_deg": {
+          "pitch": -5.0,
+          "yaw": 45.0,
+          "roll": 0.0
+        }
+      },
+      "width": 240,
+      "height": 135,
+      "fov_deg": 120.0
+    },
+    "rearLeftDepth": {
+      "mount_transform": {
+        "position_m": [
+          -2.5524847507476807,
+          -1.0183589458465576,
+          1.0
+        ],
+        "rotation_deg": {
+          "pitch": -5.0,
+          "yaw": -135.0,
+          "roll": 0.0
+        }
+      },
+      "width": 240,
+      "height": 135,
+      "fov_deg": 120.0
+    },
+    "rearRightDepth": {
+      "mount_transform": {
+        "position_m": [
+          -2.5524847507476807,
+          1.0183589458465576,
+          1.0
+        ],
+        "rotation_deg": {
+          "pitch": -5.0,
+          "yaw": 135.0,
+          "roll": 0.0
+        }
+      },
+      "width": 240,
+      "height": 135,
+      "fov_deg": 120.0
+    }
+  },
+  "regions": {
+    "front": {
+      "targets": 72,
+      "outside_all_depth_images": 16
+    },
+    "rear": {
+      "targets": 72,
+      "outside_all_depth_images": 30
+    },
+    "left": {
+      "targets": 80,
+      "outside_all_depth_images": 74
+    },
+    "right": {
+      "targets": 80,
+      "outside_all_depth_images": 74
+    }
+  },
+  "side_examples": [
+    {
+      "point_m": [
+        0.0,
+        -3.0,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "point_m": [
+        0.0,
+        3.0,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    }
+  ],
+  "outside_depth_images": [
+    {
+      "region": "left",
+      "point_m": [
+        -2.452484780922532,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -2.452484780922532,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -2.452484780922532,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -2.452484780922532,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.952484780922532,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -1.452484780922532,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.9524847809225321,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        -0.4524847809225321,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.04751521907746792,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        0.5475152190774679,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.047515219077468,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        1.547515219077468,
+        -2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        2.047515219077468,
+        -1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        2.047515219077468,
+        -1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        2.047515219077468,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        2.047515219077468,
+        -1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        2.047515219077468,
+        -1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "left",
+      "point_m": [
+        2.047515219077468,
+        -1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -2.452484780922532,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -2.452484780922532,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -2.452484780922532,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -2.452484780922532,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.952484780922532,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -1.452484780922532,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.9524847809225321,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        -0.4524847809225321,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.04751521907746792,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        0.5475152190774679,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.047515219077468,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        2.918358965572452,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        1.547515219077468,
+        2.918358965572452,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        2.047515219077468,
+        1.1683589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        2.047515219077468,
+        1.1683589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        2.047515219077468,
+        1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        2.047515219077468,
+        1.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        2.047515219077468,
+        1.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "right",
+      "point_m": [
+        2.047515219077468,
+        1.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.6898968871682882,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.6898968871682882,
+        -0.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.6898968871682882,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.6898968871682882,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.6898968871682882,
+        0.5816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.6898968871682882,
+        1.0816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.9398968871682882,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.9398968871682882,
+        -0.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.9398968871682882,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.9398968871682882,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.9398968871682882,
+        0.5816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        2.9398968871682882,
+        1.0816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        3.4398968871682882,
+        -0.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        3.4398968871682882,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        3.4398968871682882,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "front",
+      "point_m": [
+        3.4398968871682882,
+        0.5816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        -0.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        -0.9183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        -0.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        0.08164103442754822,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        0.5816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        0.5816410344275482,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.702484780922532,
+        1.0816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        -1.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        -0.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        -0.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        0.08164103442754822,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        0.5816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        0.5816410344275482,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -2.952484780922532,
+        1.0816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        -0.9183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        -0.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        0.08164103442754822,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        0.5816410344275482,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -3.452484780922532,
+        0.5816410344275482,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -4.452484780922532,
+        -0.4183589655724518,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -4.452484780922532,
+        -0.4183589655724518,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -4.452484780922532,
+        0.08164103442754822,
+        0.25
+      ],
+      "nominal_depth_cameras": []
+    },
+    {
+      "region": "rear",
+      "point_m": [
+        -4.452484780922532,
+        0.08164103442754822,
+        1.0
+      ],
+      "nominal_depth_cameras": []
+    }
+  ],
+  "qualification": "No depth/range returns or occlusion are assessed. LiDAR/radar may cover these points. This audits camera layout only and cannot pass surround calibration."
+}

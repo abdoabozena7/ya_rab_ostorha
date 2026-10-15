@@ -76,7 +76,35 @@ def _check(value, annotation, name):
         raise ValueError(f'{name} must be {annotation.__name__}')
 
 
+class _FrozenJSONSequence(tuple):
+    """Internally validated values, safe to share across contract boundaries."""
+    def __new__(cls, values):
+        return tuple.__new__(cls, (freeze_json(value) for value in values))
+
+
+class _FrozenJSONMapping(Mapping):
+    __slots__ = ('_data',)
+
+    def __init__(self, values):
+        if hasattr(self,'_data'):raise TypeError('Frozen JSON cannot be reinitialized')
+        if any(not isinstance(key,str) for key in values):
+            raise ValueError('JSON object keys must be strings')
+        object.__setattr__(self,'_data',MappingProxyType({key:freeze_json(value) for key,value in values.items()}))
+
+    def __setattr__(self, name, value):raise TypeError('Frozen JSON cannot be modified')
+    def __delattr__(self, name):raise TypeError('Frozen JSON cannot be modified')
+    def __getitem__(self,key):return self._data[key]
+    def __iter__(self):return iter(self._data)
+    def __len__(self):return len(self._data)
+    def get(self,key,default=None):return self._data.get(key,default)
+    def items(self):return self._data.items()
+    def values(self):return self._data.values()
+
+
 def freeze_json(value, _memo=None):
+    # Only containers created here can skip validation. An arbitrary tuple or
+    # MappingProxyType may still contain mutable or non-finite nested values.
+    if type(value) in (_FrozenJSONSequence,_FrozenJSONMapping):return value
     # Numeric trajectory samples dominate these payloads. Validate primitives
     # before the comparatively costly Mapping ABC checks on every sample.
     if type(value) is float:
@@ -98,11 +126,12 @@ def freeze_json(value, _memo=None):
         return frozen
     _memo[identity]=None
     if sequence:
-        frozen=tuple(freeze_json(item,_memo) for item in value)
+        frozen=tuple.__new__(_FrozenJSONSequence,(freeze_json(item,_memo) for item in value))
     else:
         if any(not isinstance(key, str) for key in value):
             raise ValueError('JSON object keys must be strings')
-        frozen=MappingProxyType({key: freeze_json(item,_memo) for key, item in value.items()})
+        frozen=object.__new__(_FrozenJSONMapping)
+        object.__setattr__(frozen,'_data',MappingProxyType({key: freeze_json(item,_memo) for key, item in value.items()}))
     _memo[identity]=frozen
     return frozen
 

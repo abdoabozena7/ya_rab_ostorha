@@ -16,7 +16,7 @@ class ControlRadarTests(unittest.TestCase):
         mount=np.array([2.5,0.,.65]);r=rotation(yaw)
         poses=[(observation.timestamp_s-.05,0.,0.,0.),(observation.timestamp_s,.2,0.,yaw)]
         sensor_velocity=r.T@((np.array([.2,0.])+r@mount[:2])-mount[:2])/.05
-        points=[(x,y,1.) for x in (8.,9.,10.) for y in ((0.,) if collinear else (2.,3.,4.))]
+        points=[(x,y,1.) for x in ((8.,8.5,9.,9.5,10.) if collinear else (8.,9.,10.)) for y in ((0.,) if collinear else (2.,3.,4.))]
         data=[]
         for point in points:
             delta=np.array(point)-mount;distance=np.linalg.norm(delta);direction=delta/distance
@@ -58,11 +58,29 @@ class ControlRadarTests(unittest.TestCase):
 
     def test_unobservable_lateral_velocity_and_ambiguous_boxes_are_not_invented(self):
         observation,poses,tracker,prediction=self.packet(collinear=True)
-        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),0)
-        self.assertEqual(prediction['tracks'][0]['velocity_mps'],[2.,-1.])
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),1)
+        track=prediction['tracks'][0]
+        np.testing.assert_allclose(track['velocity_mps'],[0.,-1.],atol=1e-10)
+        self.assertEqual(track['doppler_evidence']['observable_rank'],1)
+        self.assertEqual(track['doppler_evidence']['unobserved_directions'],'RETAINED_UNCALIBRATED_SURFACE_ESTIMATE')
         observation,poses,tracker,prediction=self.packet()
         prediction['tracks'].append({**prediction['tracks'][0],'id':'2'})
         self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),0)
+
+    def test_rank_one_doppler_preserves_true_radial_motion_and_does_not_zero_the_other_axis(self):
+        observation,poses,tracker,prediction=self.packet((1.5,2.),collinear=True)
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),1)
+        np.testing.assert_allclose(prediction['tracks'][0]['velocity_mps'],[1.5,-1.],atol=1e-10)
+        self.assertEqual(prediction['tracks'][0]['half_size_m'],[1.1,1.1])
+
+    def test_inconsistent_doppler_cannot_overwrite_the_surface_estimate(self):
+        observation,poses,tracker,prediction=self.packet(collinear=True)
+        channel=next(c for c in observation.channels if c.kind==SensorKind.RADAR)
+        detections=[{**d,'velocity_mps':d['velocity_mps']+(4. if i%2 else -4.)} for i,d in enumerate(channel.data['detections'])]
+        bad=replace(channel,data={'detections':detections})
+        observation=replace(observation,channels=tuple(bad if c is channel else c for c in observation.channels))
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),0)
+        self.assertEqual(prediction['tracks'][0]['velocity_mps'],[2.,-1.])
 
 
 if __name__=='__main__':unittest.main()

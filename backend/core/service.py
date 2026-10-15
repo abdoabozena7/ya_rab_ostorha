@@ -16,6 +16,7 @@ from .lifecycle import ConnectionLifecycle, ConnectionState
 from .logging import LogCategory, log
 from .timing import FrameIssue, SimulationClock, SensorSynchronizer
 from .hybrid_config import status as hybrid_capability_status
+from .journey_comparison import benchmark_terminal_supported
 
 
 class SimulationService:
@@ -587,7 +588,10 @@ class SimulationService:
         """Controlled experiment step through the same safety/arbitration worker."""
         if self.thread is not None or self.closed:
             raise RuntimeError('Manual stepping requires an open, unthreaded service')
-        self._iteration()
+        try:self._iteration()
+        except Exception as error:
+            self._iteration_failed(error)
+            raise
 
     def _drain_collision_events(self):
         from .contracts import to_dict
@@ -757,7 +761,7 @@ class SimulationService:
                 'mode': self.journey.get('driving_mode') or 'UNPAIRED', 'applied': False}
         fixture=getattr(self.provider,'benchmark_fixture',None)
         if fixture and self.journey.get('benchmark') and (
-                self.journey.get('driving_mode')=='HYBRID' or reason not in ('destination_reached','collision')):
+                self.journey.get('driving_mode')=='HYBRID' or not benchmark_terminal_supported({'status':status,'reason':reason})):
             try:fixture.close()
             except RuntimeError as error:
                 self._event(EventType.ControlChanged,benchmark_cleanup_error=str(error))
@@ -900,7 +904,7 @@ class SimulationService:
             # Keep the still-valid selected command; never bypass the rate guard.
             return
         route = self.provider.route_state()
-        if (self.journey.get('driving_mode')=='HYBRID' and route.get('arrived')
+        if (self.journey.get('driving_mode') in ('HYBRID','BASELINE') and route.get('arrived')
                 and route.get('remaining_m',float('inf'))<6. and self.observation.vehicle.speed_mps<.15):
             driver=getattr(self.provider,'hybrid_driver',None)
             if driver and driver.alternative_started is not None and math.dist(
@@ -1894,6 +1898,23 @@ class SimulationService:
             with self.lock:
                 self.comparison.after_tick()
 
+    def _iteration_failed(self,error):
+        """Same original-fault boundary for native thread and manual tick owner."""
+        with self.lock:
+            frame_id,stamp=self._context()
+            native_controls=getattr(self.provider,'controls',None)
+            self.runtime_fault={'stage':'simulation_iteration','exception_type':type(error).__name__,
+                'message':str(error),'traceback':traceback.format_exc(),
+                'evaluation_frame':frame_id,'timestamp_s':stamp,
+                'sensor_frames':to_dict(self.observation.sensors) if self.observation else [],
+                'base_command':to_dict(self.base_driver_command),
+                'last_applied_native_controls':copy.deepcopy(native_controls) if isinstance(native_controls,dict) else None,
+                'observed_vehicle':to_dict(self.observation.vehicle) if self.observation else None}
+            self.error=str(error)
+            self._event(EventType.ConnectionLost,reason=str(error),runtime_fault=copy.deepcopy(self.runtime_fault))
+            self._stop_navigation('runtime_failure',status='ERROR')
+            self.release_controls();self.arbiter.disconnect();self.lifecycle.fail(error)
+
     def _run(self):
         try:
             while not self.stop_event.is_set():
@@ -1909,19 +1930,7 @@ class SimulationService:
                             continue
                     self._iteration()
                 except Exception as error:
-                    with self.lock:
-                        frame_id, stamp = self._context()
-                        self.runtime_fault = {'stage':'simulation_iteration', 'exception_type':type(error).__name__,
-                            'message':str(error), 'traceback':traceback.format_exc(),
-                            'evaluation_frame':frame_id, 'timestamp_s':stamp,
-                            'sensor_frames':to_dict(self.observation.sensors) if self.observation else [],
-                            'base_command':to_dict(self.base_driver_command)}
-                        self.error = str(error)
-                        self._event(EventType.ConnectionLost, reason=str(error), runtime_fault=copy.deepcopy(self.runtime_fault))
-                        self._stop_navigation('runtime_failure', status='ERROR')
-                        self.release_controls()
-                        self.arbiter.disconnect()
-                        self.lifecycle.fail(error)
+                    self._iteration_failed(error)
                     break
                 self.stop_event.wait(max(0, getattr(self.provider, 'fixed_delta', .05)-(self.now()-started)))
         finally:

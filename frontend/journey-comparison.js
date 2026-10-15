@@ -1,4 +1,6 @@
 export const JOURNEY_MODES=['ROBOSPHERE','NORMAL'];
+export const benchmarkTerminalSupported=journey=>journey?.status==='ARRIVED'||
+  ['PAUSED','ERROR'].includes(journey?.status)&&['collision','route_ended_before_destination'].includes(journey?.reason);
 export const modeName=mode=>({NORMAL:'Normal Mode',HYBRID:'النظام الهجين',BASELINE:'سائق CARLA العادي'}[mode]||'Ya Rab Ostorha Mode');
 
 export function comparisonSummary(data) {

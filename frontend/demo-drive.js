@@ -1,9 +1,16 @@
 import {CITY_PRESETS, cityPopulation} from './city-setup.js';
 import {showWorkspace} from './presentation-ui.js';
 import {controlReasonText} from './cockpit-state.js';
+import {benchmarkTerminalSupported} from './journey-comparison.js';
 
 const $=id=>document.getElementById(id);
 export const benchmarkModes=['BASELINE','HYBRID'];
+export function benchmarkSpeedText(run) {
+  if(!run)return '';
+  const measured=value=>run.samples!==0&&Number.isFinite(value)?value.toFixed(1):'—';
+  const requested=Number.isFinite(run.setup?.speed_kmh)?run.setup.speed_kmh.toFixed(0):'—';
+  return `السرعة كم/س: متوسط ${measured(run.mean_speed_kmh)} · أقصى ${measured(run.maximum_speed_kmh)} · المطلوب ${requested}`;
+}
 export function selectPlaybackLeader(items) {
   return items.reduce((best,item)=>!best||((item.duration_s||item.video?.duration||0)>(best.duration_s||best.video?.duration||0))?item:best,null);
 }
@@ -38,7 +45,7 @@ export function installDemoDrive(p,tools,clearControls) {
   results.innerHTML='<div class="hybrid-results-heading"><div><h2>السائق العادي والنظام الهجين</h2><p id="hybridPairStatus">المقارنة تستخدم نفس البداية والطريق والسرعة والمرور.</p></div><button id="hybridPlayPair">تشغيل الفيديوهين</button></div><div class="hybrid-videos"></div><p id="hybridVideoStatus" role="status"></p>';
   $('resultsPhase').querySelector('.analysis-heading').after(results);
   const videos={};
-  for(const mode of benchmarkModes){const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='BASELINE'?'سائق CARLA العادي':'النظام الهجين')+'</h3><video controls playsinline preload="metadata"></video><p class="hybrid-run-result">لم يبدأ</p>';
+  for(const mode of benchmarkModes){const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='BASELINE'?'سائق CARLA العادي':'النظام الهجين')+'</h3><video controls playsinline preload="metadata"></video><p class="hybrid-run-result">لم يبدأ</p><p class="hybrid-run-result hybrid-run-speed"></p>';
     results.querySelector('.hybrid-videos').append(box);videos[mode]={box,video:box.querySelector('video'),key:null,status:'MISSING'};}
   let linkedPlayback=false,playbackLeader=null;
   for(const item of Object.values(videos)){
@@ -108,7 +115,7 @@ export function installDemoDrive(p,tools,clearControls) {
       }
     }
     if(pair?.stage==='first'&&p.journey?.driving_mode==='BASELINE'&&['ARRIVED','ERROR','PAUSED'].includes(p.journey.status)&&!p.recording&&p.recordingStatus?.finalized!==false){
-      if(p.journey.status==='ARRIVED'||p.journey.reason==='collision'){
+      if(benchmarkTerminalSupported(p.journey)){
         const id=p.journeyComparison?.pair_id;
         if(id&&p.dashboardAction('prepare_journey_mode',{mode:'HYBRID',pair_id:id})){pending={stage:'restore',id};pair.stage='restoring';}
       }else{pair=null;message='المحاولة الأولى لم تكتمل؛ نتيجتها محفوظة. أعد المقارنة من البداية.';}
@@ -125,6 +132,7 @@ export function installDemoDrive(p,tools,clearControls) {
       for(const mode of benchmarkModes){const run=data.runs?.[mode],item=videos[mode];
         const status={ARRIVED:'وصل',ERROR:'توقف بسبب خطأ',PAUSED:'متوقف',RUNNING:'يعمل',STARTING:'يبدأ'};
         item.box.querySelector('.hybrid-run-result').textContent=run?`${status[run.status]||run.status} · ${run.distance_m.toFixed(1)} متر · تلامس ${run.collisions} · ${run.route_completion_percent.toFixed(0)}% من الطريق`:'لم يبدأ';
+        item.box.querySelector('.hybrid-run-speed').textContent=benchmarkSpeedText(run);
         const root=recordingVideoRoot(run?.recording);
         if(root&&item.status!=='READY'&&performance.now()-lastVideoPoll>2000){
           fetch(root+'video-status.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(status=>{

@@ -13,6 +13,7 @@ from .maneuver import route_path
 from .maneuver_candidates import ExecutionShield, signed_path
 from .motion_geometry import GRID, footprint_centers, path_coordinates
 from .prediction import assess_conflicts
+from .route_terminal import terminal_speed_mps
 
 
 class HybridDriver:
@@ -238,7 +239,7 @@ class HybridDriver:
         target = max(0., cap_mps)
         if self.phase in ('EXIT','RETURN'):target=min(target,2.)
         if road.get('remaining_m') is not None:
-            target=min(target,max(0.,(road['remaining_m']-2.5)/2.))
+            target=min(target,terminal_speed_mps(road['remaining_m']))
         # Curvature limits the intended speed before the low-level controller;
         # it is not allowed to rely on emergency braking to negotiate a turn.
         seg = np.diff(line, axis=0)

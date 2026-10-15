@@ -198,6 +198,14 @@ class CarlaSensorManager:
             # observer retains its independently calibrated fixed front view.
             depth_mount=api.Transform(api.Location(x=box.extent.x+box.location.x+.1,z=1.),api.Rotation(pitch=-5))
             depth_attributes={**depth_attributes,'fov':170}
+        lidar_attributes={'sensor_tick':fixed_delta,'range':100,'channels':16,'points_per_second':32000,
+                          'rotation_frequency':1/fixed_delta,'upper_fov':10,'lower_fov':-30}
+        if hybrid_surround:
+            # Diagnostic rig only: denser measured side returns and downward
+            # beams address short-lived surface fragments without declaring
+            # them static or dropping their reachable uncertainty. Native
+            # timing/occlusion calibration is still required for admission.
+            lidar_attributes.update(channels=32,points_per_second=128000,lower_fov=-60)
         plans = (
             ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount,
              {**rgb,'image_size_x':320,'image_size_y':180,'fov':90,'enable_postprocess_effects':'false'}),
@@ -206,8 +214,7 @@ class CarlaSensorManager:
             ('radar', SensorKind.RADAR, 'sensor.other.radar', api.Transform(api.Location(x=2.5, z=.65)),
              {'sensor_tick': fixed_delta, 'range': 100, 'horizontal_fov': 30, 'vertical_fov': 20, 'points_per_second': 1500}),
             ('lidar', SensorKind.LIDAR, 'sensor.lidar.ray_cast', api.Transform(api.Location(z=1.9)),
-             {'sensor_tick': fixed_delta, 'range': 100, 'channels': 16, 'points_per_second': 32000,
-              'rotation_frequency': 1/fixed_delta, 'upper_fov': 10, 'lower_fov': -30}),
+             lidar_attributes),
             ('imu', SensorKind.IMU, 'sensor.other.imu', api.Transform(), {'sensor_tick': fixed_delta}),
             ('gnss', SensorKind.GNSS, 'sensor.other.gnss', api.Transform(api.Location(z=1.6)), {'sensor_tick': fixed_delta}),
         )

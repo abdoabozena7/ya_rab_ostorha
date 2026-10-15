@@ -14,6 +14,11 @@ MODES = ('ROBOSPHERE', 'NORMAL')
 BENCHMARK_MODES = ('HYBRID', 'BASELINE')
 
 
+def benchmark_terminal_supported(journey):
+    return (journey.get('status')=='ARRIVED' or journey.get('status') in ('PAUSED','ERROR')
+            and journey.get('reason') in ('collision','route_ended_before_destination'))
+
+
 def validate_mode(mode):
     if mode not in MODES+BENCHMARK_MODES:
         raise ValueError('Choose ROBOSPHERE, NORMAL, HYBRID or BASELINE')
@@ -89,6 +94,7 @@ class JourneyComparison:
                'safety_intervention_s': 0., 'harsh_braking_events': 0, 'destination_reached': False,
                'acceleration_samples': 0, 'intervention_samples': 0,
                'minimum_forward_range_m': None, 'mean_speed_kmh': 0.,
+               'maximum_speed_kmh':0.,
                'samples': 0, 'observed_samples': 0, 'risk_timeline': [], 'events': []}
         self.data['runs'][mode] = self.active = run
         self.previous = None
@@ -125,6 +131,7 @@ class JourneyComparison:
         if previous:
             run['distance_m'] += math.dist(frame.vehicle.transform.position_m, previous.vehicle.transform.position_m)
         run['mean_speed_kmh'] += (frame.vehicle.speed_mps*3.6-run['mean_speed_kmh'])/run['samples']
+        run['maximum_speed_kmh']=max(run['maximum_speed_kmh'],frame.vehicle.speed_mps*3.6)
         length = run['setup'].get('route_length_m', 0.)
         if route and length > 0:
             run['route_completion_percent'] = max(run['route_completion_percent'], min(100., max(0., 100*(1-route.get('remaining_m', length)/length))))

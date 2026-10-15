@@ -12,9 +12,11 @@ import subprocess
 import time
 import uuid
 import sys
+import zipfile
 from contextlib import nullcontext
 
 from backend.learning.hybrid_budget import HybridBudget, DIRECTORY,working_time
+from backend.core.journey_comparison import benchmark_terminal_supported
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,6 +25,22 @@ def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
         for pattern in ('backend/core/*.py','backend/carla/*.py','backend/learning/hybrid_budget.py',
                         'config/hybrid-driving.json','scripts/validate_hybrid_native.py') for p in ROOT.glob(pattern)}
+
+
+def archive_sources(folder,hashes,root=ROOT):
+    root=Path(root).resolve();sources={}
+    for name,expected in hashes.items():
+        source=(root/name).resolve()
+        if not source.is_relative_to(root):raise ValueError('Source archive escaped the checkout')
+        data=source.read_bytes()
+        if hashlib.sha256(data).hexdigest()!=expected:
+            raise RuntimeError('Source changed before archival: '+name)
+        sources[source.relative_to(root).as_posix()]=data
+    path=Path(folder)/'source.zip'
+    with zipfile.ZipFile(path,'x',compression=zipfile.ZIP_DEFLATED) as archive:
+        for name,data in sorted(sources.items()):archive.writestr(name,data)
+    return {'path':str(path.resolve()),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+            'files':len(sources),'scope':'EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC'}
 
 
 def worker(args):
@@ -34,12 +52,25 @@ def worker(args):
     folder=Path(args.folder).resolve()
     if not folder.is_relative_to(DIRECTORY.resolve()):raise ValueError('Invalid native evidence directory')
     report=json.loads((folder/'initial-report.json').read_text(encoding='utf8'))
-    service = None; signal_restore=[];provider=None;fixture=None
+    service = None; signal_restore=[];provider=None;fixture=None;arm=None
+    profiler=None;profiled_steps=0
+    if args.profile_steps:
+        import cProfile
+        profiler=cProfile.Profile()
     with nullcontext():
         began=args.began
         def stage(name):
             with (folder/'stages.jsonl').open('a',encoding='utf8') as stream:
                 stream.write(json.dumps({'stage':name,'wall_s':time.monotonic()-began})+'\n');stream.flush()
+        def capture_arm():
+            if arm is None or service is None:return
+            arm.update(journey=dict(service.journey),native_planar_distance_m=distance,
+                maximum_speed_kmh=max((r['speed_kmh'] for r in arm['samples']),default=0.),
+                maximum_unexplained_stop_s=maximum_stop,
+                contacts=[to_dict(c) for c in service.collision_events if c.timestamp_s>=start_sim],
+                recording=service.journey_comparison.snapshot(),wall_s=time.monotonic()-began)
+            if not any(saved is arm for saved in report['arms']):report['arms'].append(arm)
+            report.update(arm)
         try:
             stage('ensure_native_runtime')
             from backend.carla.runtime import NativeRuntime
@@ -114,7 +145,12 @@ def worker(args):
                         if fixture.started is None:fixture.begin(service.observation.timestamp_s)
                         fixture.before_tick(service.observation.timestamp_s)
                     service.journey_heartbeat(service.session_id)
-                    service.step_once()
+                    profile_this_step=(profiler is not None and mode=='HYBRID'
+                        and service.journey['status']=='RUNNING' and profiled_steps<args.profile_steps)
+                    if profile_this_step:profiler.enable()
+                    try:service.step_once()
+                    finally:
+                        if profile_this_step:profiler.disable();profiled_steps+=1
                     frame=service.observation; vehicle=frame.vehicle
                     if previous:
                         distance+=math.dist(previous.vehicle.transform.position_m[:2],vehicle.transform.position_m[:2])
@@ -136,13 +172,8 @@ def worker(args):
                         with (folder/'progress.jsonl').open('a',encoding='utf8') as stream:
                             stream.write(json.dumps(arm['samples'][-1],allow_nan=False)+'\n')
                     if service.journey['status'] in ('ARRIVED','ERROR','PAUSED'):break
-                arm.update(journey=dict(service.journey),native_planar_distance_m=distance,
-                              maximum_speed_kmh=max((r['speed_kmh'] for r in arm['samples']),default=0.),
-                              maximum_unexplained_stop_s=maximum_stop,contacts=[to_dict(c) for c in service.collision_events if c.timestamp_s>=start_sim],
-                              recording=service.journey_comparison.snapshot(),wall_s=time.monotonic()-began)
-                report['arms'].append(arm)
-                report.update(arm)
-                if args.paired and service.journey['status']!='ARRIVED' and service.journey.get('reason')!='collision':
+                capture_arm()
+                if args.paired and not benchmark_terminal_supported(service.journey):
                     report['pair_interrupted']=mode+' arm did not reach a supported terminal outcome'
                     break
             if fixture:
@@ -152,8 +183,19 @@ def worker(args):
             import traceback
             report.update(error=str(error),traceback=traceback.format_exc())
             if service:report['original_runtime_fault']=service.runtime_fault
+            try:
+                if arm is not None:arm.update(incomplete_episode=True,exception_type=type(error).__name__)
+                capture_arm()
+            except Exception as capture_error:report['partial_capture_error']=str(capture_error)
         finally:
             stage('cleanup')
+            if profiler is not None:
+                import pstats
+                profiler.dump_stats(str(folder/'native-control.pstats'))
+                with (folder/'native-control-profile.txt').open('w',encoding='utf8') as stream:
+                    pstats.Stats(profiler,stream=stream).sort_stats('cumtime').print_stats(90)
+                report['profiled_control_steps']=profiled_steps
+                report['profiling_qualification']='Instrumented diagnostic; profile overhead is included and cannot establish acceptance timing'
             if service:
                 try:
                     service.stop_driving('operator_stop')
@@ -200,6 +242,7 @@ def run(args):
     prior=NativeRuntime().active
     (folder/'prior-graphics.json').write_text(json.dumps(prior),encoding='utf8')
     report['source_hashes']=source_hashes()
+    report['source_archive']=archive_sources(folder,report['source_hashes'])
     (folder/'initial-report.json').write_text(json.dumps(report),encoding='utf8')
     with HybridBudget().experiment('physical-diagnostic',args.seconds):
         began=time.monotonic();working_began=working_time()
@@ -261,11 +304,13 @@ if __name__=='__main__':
     parser.add_argument('--scenario',default='DIAGNOSTIC')
     parser.add_argument('--seed',type=int,default=1701)
     parser.add_argument('--recording-directory',help='Optional local evidence disk for diagnostic recordings')
+    parser.add_argument('--profile-steps',type=int,default=0,help='Instrument up to 100 running hybrid ticks; diagnostic timing only')
     parser.add_argument('--graphics-profile',choices=('REUSE','LOW','BALANCED','HIGH'),default='REUSE')
     parser.add_argument('--renderer',choices=('D3D11','D3D12'),default='D3D12')
     parser.add_argument('--worker',action='store_true',help=argparse.SUPPRESS)
     parser.add_argument('--folder',help=argparse.SUPPRESS);parser.add_argument('--began',type=float,help=argparse.SUPPRESS)
     args=parser.parse_args()
     if not 180<=args.seconds<=1800 or not 5<=args.speed<=50:parser.error('Use a bounded 180–1800 second probe and 5–50 km/h')
+    if not 0<=args.profile_steps<=100:parser.error('Profile 0–100 control ticks')
     if args.paired and args.scenario!='DIAGNOSTIC':parser.error('Matched scripted hazards require fixture-reset validation first')
     raise SystemExit(worker(args) if args.worker else run(args))

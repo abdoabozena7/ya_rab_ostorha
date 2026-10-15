@@ -33,6 +33,15 @@ def measured_returns(observation,poses):
     return np.asarray(rows,float).reshape(-1,6)
 
 
+def observable_velocity(directions,speeds,prior):
+    """Correct only well-observed axes; retain the surface estimate elsewhere."""
+    u,singular,axes=np.linalg.svd(directions,full_matrices=False)
+    observable=singular>=max(1e-6,singular[0]/10.)
+    axes=axes[observable]
+    correction=(u[:,observable].T@(speeds-directions@prior))/singular[observable]
+    return prior+axes.T@correction,axes
+
+
 class RadarVelocityFusion:
     def __init__(self):self.previous={}
 
@@ -50,12 +59,12 @@ class RadarVelocityFusion:
             points=returns[unambiguous&association[:,i]]
             if len(points)<4:continue
             directions=points[:,3:5];speeds=points[:,5]
-            if np.linalg.cond(directions.T@directions)>100.:continue
-            velocity=np.linalg.lstsq(directions,speeds,rcond=None)[0]
+            prior=np.asarray(track['velocity_mps'],float)
+            velocity,axes=observable_velocity(directions,speeds,prior)
             residual=np.abs(directions@velocity-speeds)
             selected=residual<=max(.15,float(np.quantile(residual,.8)))
-            if selected.sum()<4 or np.linalg.cond(directions[selected].T@directions[selected])>100.:continue
-            velocity=np.linalg.lstsq(directions[selected],speeds[selected],rcond=None)[0]
+            if selected.sum()<4:continue
+            velocity,axes=observable_velocity(directions[selected],speeds[selected],prior)
             residual=np.abs(directions[selected]@velocity-speeds[selected])
             if np.median(residual)>.2 or np.max(residual)>.5 or np.linalg.norm(velocity)>30.:continue
             world_velocity=r@velocity;old=self.previous.get(track['id'])
@@ -76,9 +85,12 @@ class RadarVelocityFusion:
             track.update(velocity_mps=velocity.tolist(),acceleration_mps2=(r.T@acceleration).tolist(),
                 motion_anchor_m=(r.T@(anchor-origin)).tolist(),turn_rate_radps=turn_rate,
                 heading_rad=math.atan2(velocity[1],velocity[0]) if np.linalg.norm(velocity)>=.3 else None,
-                velocity_source='MEASURED_SURROUND_DOPPLER_UNCALIBRATED',
+                velocity_source='MEASURED_SURROUND_DOPPLER_UNCALIBRATED' if len(axes)==2 else
+                    'PARTIAL_DOPPLER_WITH_UNCALIBRATED_SURFACE_COMPONENT',
                 doppler_evidence={'returns':int(selected.sum()),'maximum_residual_mps':float(np.max(residual)),
-                                  'source_frame':observation.frame_id,'unobserved_directions':'NOT_INFERRED'})
+                    'source_frame':observation.frame_id,'observable_rank':len(axes),
+                    'observable_axes_ego':axes.tolist(),
+                    'unobserved_directions':'NONE' if len(axes)==2 else 'RETAINED_UNCALIBRATED_SURFACE_ESTIMATE'})
             track['history']=tracker.sample_history(native['history'],now)
             self.previous[track['id']]={'timestamp_s':now,'velocity':world_velocity,'anchor':anchor,'turn_rate':turn_rate}
             count+=1

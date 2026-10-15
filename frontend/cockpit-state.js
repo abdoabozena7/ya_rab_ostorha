@@ -15,6 +15,7 @@ export function controlReasonText(reason) {
     TRAFFIC_RULE_STOP:'انتظار إشارة المرور.',
     HYBRID_CONTROLLED_DECELERATION:'تهدئة محسوبة حسب المسار والمساحة المتاحة.',
     HYBRID_VALIDATION_EXPIRED:'انتهى وقت الاختبار الحركي؛ السيارة متوقفة.',
+    route_ended_before_destination:'انتهى متابع المسار قبل الوصول للوجهة. المحاولة محفوظة كفشل.',
   })[reason]||String(reason||'');
 }
 

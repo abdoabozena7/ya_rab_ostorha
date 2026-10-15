@@ -139,7 +139,7 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     selected = (~((heights > config.minimum_foreground_height_m) & ~path))
     filtered = replace(radar, data={'detections': [d for d, keep in zip(radar.data['detections'], selected) if keep]})
     teacher_observation = retained_radar_observation(replace(observation,
-        channels=tuple(filtered if s.kind == SensorKind.RADAR else s for s in observation.channels)))
+        channels=tuple(filtered if s.sensor_id == radar.sensor_id else s for s in observation.channels)))
     road_support = []; lidar_observed = False; depth_observed = False
 
     def surfaces(xyz, source):

@@ -20,6 +20,17 @@ async (page)=>{
   },fixture);
   await page.locator('#resultsTab').click();
   await page.locator('#hybridResults').waitFor({state:'visible'});
+  let measuredSpeedChecks=0;
+  for(const [index,mode] of ['BASELINE','HYBRID'].entries()){
+    const run=fixture.comparison.runs[mode];
+    if(!Number.isFinite(run.maximum_speed_kmh))continue;
+    await page.waitForFunction(({index,peak})=>document.querySelectorAll('.hybrid-run-speed')[index]?.textContent.includes('أقصى '+peak),
+      {index,peak:run.maximum_speed_kmh.toFixed(1)});
+    const text=await page.locator('.hybrid-run-speed').nth(index).innerText();
+    if(!text.includes('أقصى '+run.maximum_speed_kmh.toFixed(1))||!text.includes('المطلوب '+run.setup.speed_kmh.toFixed(0)))
+      throw new Error('Native measured speed and requested speed are not displayed separately: '+mode);
+    measuredSpeedChecks++;
+  }
   await page.waitForFunction(()=>!document.getElementById('hybridPlayPair').disabled);
   await page.waitForFunction(()=>[...document.querySelectorAll('#hybridResults video')].every(v=>v.readyState>=2&&Number.isFinite(v.duration)));
   const duration=await page.locator('#hybridResults video').evaluateAll(videos=>{
@@ -39,6 +50,6 @@ async (page)=>{
   const result=await page.locator('#hybridResults video').evaluateAll(videos=>videos.map(v=>({time_s:v.currentTime,duration_s:v.duration,paused:v.paused,ended:v.ended})));
   await page.locator('#hybridResults video').evaluateAll(videos=>videos.forEach(v=>v.pause()));
   await page.screenshot({path:'output/playwright/hybrid-native-video.png',fullPage:true});
-  return {source:fixture.source,transport:fixture.transport||'INTERCEPTED_NATIVE_FILES',checks:3,durations_s:duration,playback_after_shorter_ended:result,
+  return {source:fixture.source,transport:fixture.transport||'INTERCEPTED_NATIVE_FILES',checks:3+measuredSpeedChecks,durations_s:duration,playback_after_shorter_ended:result,
           qualification:'Native video playback with synthetic dashboard state; not behavioral acceptance'};
 }

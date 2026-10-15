@@ -51,6 +51,18 @@ class HybridDrivingTests(unittest.TestCase):
         self.assertEqual(service.safety_command.throttle,0.)
         self.assertEqual(service.safety_command.brake,1.)
 
+    def test_terminal_stop_with_unspecified_gear_remains_a_valid_shield_command(self):
+        from backend.core.control import safe_command
+        from backend.core.maneuver_candidates import ExecutionShield,signed_path
+        scene,base,road=self.measured()
+        command=safe_command(base.frame_id,base.timestamp_s,source=base.source)
+        self.assertIsNone(command.gear)
+        path=signed_path(0.,0.,-5.,scene.geometry)
+        for _ in range(2):
+            accepted,reason,_=ExecutionShield().check(scene,path,command,road,timestamp_s=base.timestamp_s,wall_s=100.)
+            self.assertTrue(accepted,reason)
+        self.assertEqual(scene.space.proof_cache_hits,1)
+
     def test_stale_scene_cannot_be_relabelled_fresh_to_make_progress(self):
         scene,base,road=self.measured()
         command,status=HybridDriver(scene.geometry).evaluate(scene,base,road,5.,wall=100.251)
@@ -358,6 +370,18 @@ class HybridDrivingTests(unittest.TestCase):
             self.assertEqual(read_trace_row(recorder.root,row)['prediction'],prediction)
             (recorder.root/row['prediction_asset']['path']).write_bytes(b'corrupted')
             with self.assertRaises(ValueError):read_trace_row(recorder.root,row)
+
+    def test_direct_recording_encoder_preserves_contract_and_frozen_forecast_wire_bytes(self):
+        from backend.core.recording import encode_row
+        from backend.core.contracts import freeze_json,to_dict
+        from tests.core_packets import packet
+        for value in (packet(),{'kind':'HYBRID_DECISION','prediction':freeze_json({
+                'tracks':[{'id':'sensor-only','velocity_mps':[1.,-2.]}],
+                'trajectories':[{'points':[[0.,1.,2.],[.1,1.1,2.]]}]})}):
+            expected=(json.dumps(to_dict(value),allow_nan=False,separators=(',',':'))+'\n').encode('utf8')
+            self.assertEqual(encode_row(value),expected)
+        with self.assertRaises(ValueError):encode_row({'invalid':float('nan')})
+        with self.assertRaises(TypeError):encode_row({'invalid':object()})
 
     def test_high_speed_route_steering_respects_the_lateral_acceleration_bound(self):
         scene,base,road=self.measured()

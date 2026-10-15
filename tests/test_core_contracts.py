@@ -59,6 +59,24 @@ class ContractTests(unittest.TestCase):
         for invalid in (float('nan'),float('inf'),10**400,b'raw'):
             with self.assertRaises(ValueError):freeze_json({'value':invalid})
 
+    def test_validated_snapshots_are_shared_but_arbitrary_readonly_wrappers_are_checked(self):
+        from types import MappingProxyType
+        snapshot=freeze_json({'nested':[{'value':1.}]})
+        self.assertIs(freeze_json(snapshot),snapshot)
+        self.assertIs(freeze_json(snapshot['nested']),snapshot['nested'])
+        observed=replace(sensor(),data=snapshot)
+        self.assertIs(observed.data,snapshot)
+        with self.assertRaises(TypeError):snapshot._data={}
+        with self.assertRaises(TypeError):del snapshot._data
+        with self.assertRaises(TypeError):snapshot.__init__({'replacement':1.})
+        self.assertEqual(to_dict(snapshot),{'nested':[{'value':1.}]})
+        mutable={'nested':[1.]}
+        copied=freeze_json(MappingProxyType(mutable))
+        mutable['nested'].append(float('nan'))
+        self.assertEqual(to_dict(copied),{'nested':[1.]})
+        with self.assertRaises(ValueError):freeze_json(MappingProxyType(mutable))
+        with self.assertRaises(ValueError):freeze_json(({'value':float('nan')},))
+
     def test_large_sensors_are_references_and_cannot_escape_run(self):
         for path in ('../x.png', 'C:/x.png', '/x.png', 'rgb\\x.png', 'https://x/y'):
             with self.subTest(path=path), self.assertRaises(ValueError):

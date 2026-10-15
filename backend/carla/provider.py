@@ -392,6 +392,7 @@ class CarlaProvider:
                 self.benchmark_fixture.capture()
             self.benchmark_prepared = False
             manifest.update(protocol='HYBRID_NATIVE_BASELINE_V1', initial_condition_id=self.benchmark_fixture.condition['id'],
+                destination_stop_policy='SHARED_2S_APPROACH_2_5M_SHORT_WITHIN_EXISTING_5M_ARRIVAL',
                 initial_conditions=copy.deepcopy(self.benchmark_fixture.condition),
                 actual_population={'vehicles':len(self.population.vehicles),'pedestrians':len(self.population.walkers),
                                    'controllers':len(self.population.walkers),'walkers_active':0})
@@ -608,7 +609,13 @@ class CarlaProvider:
             waypoint = self.dashboard_tools.map.get_waypoint(self.ego.actor.get_location())
             limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
-        self.navigation.set_target_speed(min(speed_kmh, limit) if limit > 0 else speed_kmh)
+        requested=min(speed_kmh,limit) if limit>0 else speed_kmh
+        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE'):
+            from ..core.route_terminal import terminal_speed_mps
+            route=self.route_state()
+            if route and route.get('remaining_m') is not None:
+                requested=min(requested,terminal_speed_mps(route['remaining_m'])*3.6)
+        self.navigation.set_target_speed(requested)
         value = self.navigation.run_step()
         self.navigation_stop_reason = getattr(self.navigation,'stop_reason',None)
         # Canonical steering, like native telemetry, is right-positive. The

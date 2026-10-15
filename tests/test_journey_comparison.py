@@ -15,6 +15,17 @@ def manifest():
 
 
 class JourneyComparisonTests(unittest.TestCase):
+    def test_measured_peak_does_not_become_the_requested_speed_or_count_duplicate_samples(self):
+        with tempfile.TemporaryDirectory() as directory:
+            comparison=JourneyComparison(directory);run=comparison.begin('HYBRID',manifest())
+            comparison.sample(packet(1,.1,speed=3.),None,{})
+            comparison.sample(packet(2,.2,speed=5.),None,{})
+            comparison.sample(packet(2,.2,speed=20.),None,{})
+            self.assertEqual(run['maximum_speed_kmh'],18.)
+            self.assertAlmostEqual(run['mean_speed_kmh'],14.4)
+            self.assertEqual(run['setup']['speed_kmh'],30)
+            self.assertEqual(run['samples'],2)
+
     def test_comparability_requires_complete_finite_matching_manifests(self):
         a=manifest();self.assertTrue(matching_setup(a,copy.deepcopy(a)))
         for change in ({'origin':None},{'weather':None},{'live_speed_changed':True},{'actual_population':{'vehicles':3}},

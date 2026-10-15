@@ -90,8 +90,8 @@ passes. The default reverse lease remains 1 m/s, 2 m and 4 s.
 17. During an automatic transmission shift, observed native gear zero could
     become an application command for manual Neutral in a protective hold or
     deceleration. These automatic commands now retain D/R selection. A regression
-    reproduced the incorrect Neutral command before the fix. Native response
-    after this change remains to be measured.
+    reproduced the incorrect Neutral command before the fix. A later 30 km/h
+    diagnostic arrived, but sustained speed failed and comfort remains unaccepted.
 18. Navigation-origin hybrid braking could be displayed with the generic reason
     NAVIGATION. The original behavior decision now accompanies the applied brake;
     the dashboard distinguishes processing delay, unmeasured space, predicted
@@ -101,6 +101,47 @@ passes. The default reverse lease remains 1 m/s, 2 m and 4 s.
     a native recording, verifies the export hash, and streams byte ranges for
     seeking. Incomplete exports retain their errors. Playback follows the
     longer journey so the shorter video's ending cannot truncate it.
+20. The terminal stop uses an unspecified gear. Hashing that valid command as
+    an integer raised `TypeError` before final arrival. The proof key now binds
+    `None` explicitly; a regression reproduces and checks that terminal command.
+21. Manually stepped native diagnostics bypassed the production thread's
+    original-exception boundary. Both tick owners now retain the original fault,
+    measured vehicle and last applied control before recording is finalized.
+    The harness additionally preserves partial episode metrics on failure.
+22. Filtering the front radar replaced every surround radar with that same
+    sensor ID, producing `Duplicate policy sensor channel` in the baseline's
+    observer. Only the selected front channel is now replaced. All surround
+    channels retain their own measurements and calibration.
+23. Contracts repeatedly froze already validated immutable sensor payloads.
+    Internally validated immutable containers can now be shared between
+    contracts. Arbitrary read-only wrappers are still copied and checked, and
+    mutable inputs, cycles and non-finite values retain their rejection checks.
+24. A baseline route-end failure prematurely discarded its matched fixture.
+    The comparison can now retain this failed outcome and restore the second
+    arm from the recorded initial conditions. Explicit operator stops still
+    close the fixture. A failed first arm remains a failed result.
+25. The native baseline began stopping only after consuming its last waypoint
+    and overshot the destination at 50 km/h. Both matched drivers now use the
+    same two-second goal approach, aiming 2.5 m short inside the existing 5 m
+    arrival radius. Arrival still requires a measured speed below 0.15 m/s.
+    BehaviorAgent's own obstacle, pedestrian and signal checks remain enabled.
+26. Buffered recording still recursively converted every forecast float in a
+    Python writer thread, competing for the GIL. The JSON encoder now traverses
+    numeric tuples directly, with contract/mapping adapters. The retained
+    70-track, 93-mode forecast benchmark measured 36.48 versus 15.34 ms, with
+    identical wire bytes. This uncontrolled-host offline benchmark does not
+    establish native timing acceptance; see
+    [the benchmark](evidence/hybrid_driving/recording-serialization-benchmark.json).
+27. Nearly parallel Doppler rays were discarded when they could not establish
+    both velocity axes. A singular-value projection now corrects only the
+    well-observed axes. The other component retains its uncalibrated surface
+    estimate, explicitly recorded as partial evidence. Ambiguous association,
+    residual gates, measured occupied bounds and confirmation requirements are
+    unchanged. This does not establish full two-dimensional motion calibration.
+28. Comparison results could show arrival without revealing a missed requested
+    speed. New recordings retain the measured peak as well as the mean, and the
+    video comparison displays both beside the request. Missing legacy peaks stay
+    unknown rather than becoming zero or the requested speed.
 
 These fixes are individually reproduced or software-verified. Their combined
 native acceptance remains a separate requirement.
@@ -110,8 +151,15 @@ native acceptance remains a separate requirement.
 Native reports and original assets are retained locally under
 `output/hybrid-driving/probe-*`, `runs/normal_city/`, and the explicit diagnostic
 recording disk `C:/Users/A-plus/.codex/native-evidence/ya_rab_ostorha/normal_city`.
+New diagnostic recordings also use the ignored
+`output/hybrid-driving/native-recordings/normal_city` directory on D:.
 Diagnostic journeys use their own result directory and do not overwrite the
 operator's ordinary journey result index. Original files remain out of Git.
+New diagnostics also retain a ZIP of the exact source bytes before launching
+the native worker, checked against its source manifest. The checksum is indexed
+with the report. Older diagnostics retain their original hashes; they are not
+retroactively assigned a source archive from today's code. Incomplete setup
+directories are indexed separately rather than being counted as native success.
 
 The diagnostic versions are different source revisions and cannot be aggregated
 into the required 10/10 acceptance matrix. One earlier revision arrived after
@@ -143,6 +191,97 @@ sustain the requested speed. A prior batched-registration revision also failed
 arrival after 148.61 m with 94.00% freshness. These failures are retained; the
 later Neutral/immutable-publication fixes do not retroactively pass them.
 
+After the Neutral and terminal-key repairs, diagnostic
+`84276d15a4c94303a5e7ff1cfd14ec73` arrived after 174.57 m with no recorded
+contact, a 0.95 s maximum stop and 99.48% measured execution freshness. Its peak
+speed was only 26.97 km/h for a 30 km/h request. It did not sustain the requested
+speed for five seconds. Acceleration extrema are retained; comfort outside
+verified emergencies was not established by this diagnostic.
+The preceding `63be37bbab9544cd87f563879aeb0c54` trial retains its terminal
+exception and failed outcome; it is not retroactively classified as an arrival.
+
+The audited 50 km/h diagnostic pair
+`f6371b916124406eb57cf6b8a2841370` retained both outcomes. BASELINE reached
+50.30 km/h but overshot the destination and ended with
+`route_ended_before_destination`. HYBRID remained incomplete after 192.57 m
+and 100 simulation seconds, with a 26.09 km/h peak and 94.74% freshness.
+Both initial-condition audits passed and neither arm recorded contact. This
+pair fails the intended driving behavior; matching starts do not imply success.
+
+The immutable-sharing-only diagnostic `c113f6bfda0a4fb8bf8e380e60509bde` arrived
+after 174.55 m but had 97.74% freshness, a 28.20 km/h peak for a 30 km/h request,
+and only 0.50 s within the requested-speed tolerance. An optimization does not
+make every following native run pass.
+
+After the goal-approach and encoding changes, source-frozen pair
+`53b7387b994e49a68cf7486a38217d49` completed both arms with passing initial
+audits and no recorded contact: BASELINE traveled 229.22 m, HYBRID 230.91 m.
+Their peaks were 50.30 and 28.68 km/h for the same 50 km/h request. HYBRID's
+maximum unexplained stop was 1.00 s and execution freshness was
+1,413/1,427 (99.02%). Sustained speed failed; non-emergency comfort remains
+unverified.
+The largest veto category was reachable-corridor uncertainty (66 decisions),
+followed by processing deadlines (10), stale scenes (4), and predicted
+intersections (4). Arrival in this diagnostic is not general behavioral
+acceptance or evidence of superiority over BehaviorAgent.
+
+Exact matching decision frames for 26 of those 66 uncertainty vetoes expose
+short-lived, unconfirmed side surfaces, often around 2.7 m lateral offset.
+Their observation quality and missing scans remain visible. They are not
+discarded or labelled static to obtain progress. A denser downward LiDAR rig
+was evaluated separately; changing it creates a new source/sensor cohort.
+Per-stage latency distributions are now included in the diagnostic index,
+with the previous-control versus current-observation frame boundary stated.
+
+With the experimental LiDAR changed from 16 channels / 32,000 points per second
+to 32 / 128,000 and its lower vertical limit from -30° to -60°,
+`43cd79c9219e4f7593af4e1788c0abfe` arrived after 231.06 m without contact.
+Peak speed was 34.31 km/h, the longest stop 0.95 s, and freshness
+1,101/1,110 (99.19%). Reachable-uncertainty vetoes were 13, predicted
+intersections 15, timing vetoes 9 and road-body vetoes 3. Sustained 50 km/h failed;
+comfort remains unverified. This is a diagnostic observation, not a controlled causal
+estimate or admission of the revised rig. Ordinary unticketed operation retains
+the original 16-channel LiDAR.
+
+With partial observable-axis Doppler fusion,
+`c3b90cdcbc714872b2188a47b887bc7f` arrived after 230.89 m without contact, at
+the same 34.31 km/h peak. Its longest stop was 0.95 s, and measured execution
+freshness was 1,093/1,097 (99.64%). There were 23 reachable-uncertainty vetoes,
+8 predicted intersections, 4 processing deadlines and 3 road-body vetoes.
+At 5.30 simulation seconds the recorded 50 km/h following target gave way to a
+full hold because of reachable-corridor uncertainty, immediately after reaching
+that peak. The trace demonstrates a perception/admission interruption in this
+case, rather than a configured 34 km/h target. It does not establish that the
+unconfirmed surface was harmless. Sustained speed failed; comfort remains
+unverified. Reported acceleration extrema include protective braking and do not
+separate independently verified emergencies from ordinary driving.
+
+The first 20 km/h regression attempt
+`ddef39c3ebd74dc984e36f5047901180` failed before warmup: the first native
+`world.tick()` in provider connection exceeded the 30 s RPC timeout. It has no
+driving samples and cannot pass a driving gate. Its original traceback and
+successful restoration to the paused, ticking ordinary dashboard are retained.
+The simulator's underlying reason for that timeout was not captured.
+
+The single retry, `c2786658cb7f49a0876026ffe191bd8f`, arrived after 89.30 m
+without contact at a 20 km/h request. Peak speed was 18.91 km/h, the longest
+stop 0.95 s and measured freshness 455/456 (99.78%). It remained within
+3 km/h of the request for 4.50 s, short of the required five seconds. The
+measured peak and mean also persisted correctly in the new comparison fields.
+Its exact source ZIP is retained and checksum-verified.
+
+With that same control revision on the longer route at 30 km/h,
+`4b4f4e3bde15483b8cd5f26ddf2e7071` arrived after 230.88 m without contact.
+Peak speed was 28.06 km/h, the longest stop 0.95 s and freshness
+1,131/1,138 (99.38%). The sustained-speed interval was only 0.45 s. Source
+identity and restoration passed; the speed criterion failed. The remaining
+problem cannot be described solely as a too-short arrival route.
+
+A subsequent instrumented 60-tick diagnostic retained a call profile and its
+overhead qualification (`e462b1b7d4e341f9a496e24c2878ba6e`). Repeated immutable
+contract validation and measured-space construction were identified as costs.
+Profiling timing cannot establish the freshness acceptance gate.
+
 Failed light phase audits remain failures. Graphics trials using Low/D3D12 and Low/D3D11 also
 failed; missing native exception details are not replaced with an inferred cause.
 Epic/D3D12 is the retained working renderer for diagnostics.
@@ -152,15 +291,17 @@ browser rehearsals verified the simplified controls, comparison sequencing,
 emergency acknowledgement, unavailable-capability gating and responsive layout.
 Those rehearsals use labelled fixtures and do not establish driving behavior or
 native performance while inference/display are active.
-The latest isolated browser rehearsal passed 53 existing checks and 12 new
+The latest isolated browser rehearsal passed 53 existing checks and 14 new
 hybrid-flow checks without browser exceptions. It is explicitly labelled as a
 synthetic UI fixture.
-Three additional playback checks used the retained native camera exports from
+Five additional playback/display checks used the retained native camera exports from
 the successful diagnostic pair: approximately 21.8 and 28.3 seconds in the browser.
 The longer video continued playing after the shorter video ended. The dashboard
 state in this playback rehearsal is synthetic; this is not another native drive.
 The final rehearsal streamed through the production HTTP handler, with native
 metadata/checksums and actual byte-range requests rather than mocked file URLs.
+Measured mean/peak speeds were copied from that same retained native pair's
+reports; missing data in historical files was not rewritten.
 
 The current experimental rig has the original front sensors, four corner depth
 cameras and four corner Doppler radars (16 sensor actors including collision and
@@ -168,6 +309,21 @@ the presentation camera). The added radars do not add render targets. Their
 motion fusion remains uncalibrated and requires native static/moving-target and
 crisis validation. Outside admitted/ticketed hybrid operation the original
 eight-sensor rig is retained. Earlier diagnostic results used a different rig.
+
+## Current repair order
+
+| Priority | Remaining blocker | Next acceptance evidence |
+| --- | --- | --- |
+| P0 | Unconfirmed short-lived side surfaces and incomplete near-body camera coverage | Static/moving target and occlusion calibration, with rejected tracks retained; unknown space must remain unknown |
+| P0 | Requested 50 km/h is not sustained; brake pulses and high measured acceleration remain | Measured throttle/brake/gear calibration and emergency-separated comfort scoring, followed by the frozen 10/10 speed-and-curve cohort |
+| P0 | Full reverse, lane change, pass/return and detour journeys remain unaccepted | Independently feasible cases, complete return to route and at least 90% recovery; blocked cases separate |
+| P1 | A single fresh diagnostic does not prove reliable timing under presentation load | At least 99% freshness across the frozen cohort plus matched display/recording throughput |
+| P1 | Crisis performance is unproven | Eight crisis classes with three frozen seeds and verified actual interaction speeds |
+| P1 | A retained pre-drive native tick timeout interrupted a regression attempt | Repeated startup/restore checks with original failures preserved |
+
+The new comparison now measures real arrival for the baseline and preserves
+failed first arms. That repair removes a comparison defect; it does not remove
+the hybrid's measured speed, perception and maneuver blockers.
 
 ## Remaining acceptance work
 
@@ -184,8 +340,15 @@ eight-sensor rig is retained. Earlier diagnostic results used a different rig.
 - Complete matched initial-condition audits for both drivers, and measure
   throughput with display, inference and recording active.
 
-The current corner rig still needs near-side coverage measurement and target
-motion calibration. Matching measured stationary poses does not prove identical
+The retained [nominal camera audit](evidence/hybrid_driving/nominal-camera-coverage.json)
+projects explicit body-adjacent targets through the actual native camera mounts
+and intrinsics. For the current five depth images, 74 of 80 targets on each
+side lie outside every image; the example points `(0, ±3, 1)` are also outside.
+This is a camera-layout defect, not a measured percentage of full sensor
+coverage: LiDAR/radar returns, occlusion and free space are not assessed.
+The surround calibration gate remains false. Revised layouts require actual
+target/occlusion validation and a timing measurement before admission.
+Matching measured stationary poses does not prove identical
 hidden transmission/engine state between comparison arms. Scripted high-speed
 crises must also verify actual interaction speed, rather than merely a 50 km/h
 request. These limitations remain part of the missing acceptance work.
@@ -210,7 +373,7 @@ The API's exclusion of sleep is documented by
 ## Verification and admission
 
 `npm run build:dashboard` regenerates the checked-in assets. `npm test` passed
-112 checks. The full Python run discovered 483 tests: 482 passed and one optional
+114 checks. The full Python run discovered 498 tests: 497 passed and one optional
 test was skipped. These are software checks, separate from native admission.
 
 `python -m scripts.evaluate_hybrid_readiness` publishes explicit failed/missing

@@ -3121,6 +3121,7 @@
 
   // frontend/journey-comparison.js
   var JOURNEY_MODES = ["ROBOSPHERE", "NORMAL"];
+  var benchmarkTerminalSupported = (journey) => journey?.status === "ARRIVED" || ["PAUSED", "ERROR"].includes(journey?.status) && ["collision", "route_ended_before_destination"].includes(journey?.reason);
   var modeName = (mode) => ({ NORMAL: "Normal Mode", HYBRID: "\u0627\u0644\u0646\u0638\u0627\u0645 \u0627\u0644\u0647\u062C\u064A\u0646", BASELINE: "\u0633\u0627\u0626\u0642 CARLA \u0627\u0644\u0639\u0627\u062F\u064A" })[mode] || "Ya Rab Ostorha Mode";
   function comparisonSummary(data) {
     const runs = data?.runs || {}, count = JOURNEY_MODES.filter((m) => runs[m] && runs[m].status !== "RUNNING").length;
@@ -3463,7 +3464,8 @@
       BODY_OUTSIDE_DRIVABLE_ROAD: "\u0627\u0644\u0645\u0646\u0627\u0648\u0631\u0629 \u062A\u064F\u062E\u0631\u062C \u062C\u0632\u0621\u064B\u0627 \u0645\u0646 \u0627\u0644\u0633\u064A\u0627\u0631\u0629 \u0639\u0646 \u0627\u0644\u0637\u0631\u064A\u0642.",
       TRAFFIC_RULE_STOP: "\u0627\u0646\u062A\u0638\u0627\u0631 \u0625\u0634\u0627\u0631\u0629 \u0627\u0644\u0645\u0631\u0648\u0631.",
       HYBRID_CONTROLLED_DECELERATION: "\u062A\u0647\u062F\u0626\u0629 \u0645\u062D\u0633\u0648\u0628\u0629 \u062D\u0633\u0628 \u0627\u0644\u0645\u0633\u0627\u0631 \u0648\u0627\u0644\u0645\u0633\u0627\u062D\u0629 \u0627\u0644\u0645\u062A\u0627\u062D\u0629.",
-      HYBRID_VALIDATION_EXPIRED: "\u0627\u0646\u062A\u0647\u0649 \u0648\u0642\u062A \u0627\u0644\u0627\u062E\u062A\u0628\u0627\u0631 \u0627\u0644\u062D\u0631\u0643\u064A\u061B \u0627\u0644\u0633\u064A\u0627\u0631\u0629 \u0645\u062A\u0648\u0642\u0641\u0629."
+      HYBRID_VALIDATION_EXPIRED: "\u0627\u0646\u062A\u0647\u0649 \u0648\u0642\u062A \u0627\u0644\u0627\u062E\u062A\u0628\u0627\u0631 \u0627\u0644\u062D\u0631\u0643\u064A\u061B \u0627\u0644\u0633\u064A\u0627\u0631\u0629 \u0645\u062A\u0648\u0642\u0641\u0629.",
+      route_ended_before_destination: "\u0627\u0646\u062A\u0647\u0649 \u0645\u062A\u0627\u0628\u0639 \u0627\u0644\u0645\u0633\u0627\u0631 \u0642\u0628\u0644 \u0627\u0644\u0648\u0635\u0648\u0644 \u0644\u0644\u0648\u062C\u0647\u0629. \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629 \u0645\u062D\u0641\u0648\u0638\u0629 \u0643\u0641\u0634\u0644."
     }[reason] || String(reason || "");
   }
   function observationCurrent(value, provider2, maxAge = 0.75) {
@@ -4418,6 +4420,12 @@
   // frontend/demo-drive.js
   var $7 = (id) => document.getElementById(id);
   var benchmarkModes = ["BASELINE", "HYBRID"];
+  function benchmarkSpeedText(run) {
+    if (!run) return "";
+    const measured = (value) => run.samples !== 0 && Number.isFinite(value) ? value.toFixed(1) : "\u2014";
+    const requested = Number.isFinite(run.setup?.speed_kmh) ? run.setup.speed_kmh.toFixed(0) : "\u2014";
+    return `\u0627\u0644\u0633\u0631\u0639\u0629 \u0643\u0645/\u0633: \u0645\u062A\u0648\u0633\u0637 ${measured(run.mean_speed_kmh)} \xB7 \u0623\u0642\u0635\u0649 ${measured(run.maximum_speed_kmh)} \xB7 \u0627\u0644\u0645\u0637\u0644\u0648\u0628 ${requested}`;
+  }
   function selectPlaybackLeader(items) {
     return items.reduce((best, item) => !best || (item.duration_s || item.video?.duration || 0) > (best.duration_s || best.video?.duration || 0) ? item : best, null);
   }
@@ -4457,7 +4465,7 @@
     const videos = {};
     for (const mode of benchmarkModes) {
       const box = document.createElement("article");
-      box.innerHTML = "<h3>" + (mode === "BASELINE" ? "\u0633\u0627\u0626\u0642 CARLA \u0627\u0644\u0639\u0627\u062F\u064A" : "\u0627\u0644\u0646\u0638\u0627\u0645 \u0627\u0644\u0647\u062C\u064A\u0646") + '</h3><video controls playsinline preload="metadata"></video><p class="hybrid-run-result">\u0644\u0645 \u064A\u0628\u062F\u0623</p>';
+      box.innerHTML = "<h3>" + (mode === "BASELINE" ? "\u0633\u0627\u0626\u0642 CARLA \u0627\u0644\u0639\u0627\u062F\u064A" : "\u0627\u0644\u0646\u0638\u0627\u0645 \u0627\u0644\u0647\u062C\u064A\u0646") + '</h3><video controls playsinline preload="metadata"></video><p class="hybrid-run-result">\u0644\u0645 \u064A\u0628\u062F\u0623</p><p class="hybrid-run-result hybrid-run-speed"></p>';
       results.querySelector(".hybrid-videos").append(box);
       videos[mode] = { box, video: box.querySelector("video"), key: null, status: "MISSING" };
     }
@@ -4569,7 +4577,7 @@
         }
       }
       if (pair?.stage === "first" && p.journey?.driving_mode === "BASELINE" && ["ARRIVED", "ERROR", "PAUSED"].includes(p.journey.status) && !p.recording && p.recordingStatus?.finalized !== false) {
-        if (p.journey.status === "ARRIVED" || p.journey.reason === "collision") {
+        if (benchmarkTerminalSupported(p.journey)) {
           const id = p.journeyComparison?.pair_id;
           if (id && p.dashboardAction("prepare_journey_mode", { mode: "HYBRID", pair_id: id })) {
             pending2 = { stage: "restore", id };
@@ -4606,6 +4614,7 @@
           const run = data.runs?.[mode], item = videos[mode];
           const status = { ARRIVED: "\u0648\u0635\u0644", ERROR: "\u062A\u0648\u0642\u0641 \u0628\u0633\u0628\u0628 \u062E\u0637\u0623", PAUSED: "\u0645\u062A\u0648\u0642\u0641", RUNNING: "\u064A\u0639\u0645\u0644", STARTING: "\u064A\u0628\u062F\u0623" };
           item.box.querySelector(".hybrid-run-result").textContent = run ? `${status[run.status] || run.status} \xB7 ${run.distance_m.toFixed(1)} \u0645\u062A\u0631 \xB7 \u062A\u0644\u0627\u0645\u0633 ${run.collisions} \xB7 ${run.route_completion_percent.toFixed(0)}% \u0645\u0646 \u0627\u0644\u0637\u0631\u064A\u0642` : "\u0644\u0645 \u064A\u0628\u062F\u0623";
+          item.box.querySelector(".hybrid-run-speed").textContent = benchmarkSpeedText(run);
           const root = recordingVideoRoot(run?.recording);
           if (root && item.status !== "READY" && performance.now() - lastVideoPoll > 2e3) {
             fetch(root + "video-status.json", { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then((status2) => {

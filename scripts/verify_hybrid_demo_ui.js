@@ -3,6 +3,8 @@
 // not operate CARLA or establish behavioral acceptance.
 async (page)=>{
   const checks=[],errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route(/\/runs\/normal_city\/run_(?:a{32}|b{32})\/video-status\.json$/,route=>route.fulfill({
+    contentType:'application/json',body:JSON.stringify({status:'PENDING',source:'ISOLATED_BROWSER_FIXTURE'})}));
   const check=(value,label)=>{if(!value)throw new Error(label);checks.push(label);};
   await page.evaluate(()=>{
     const f=window.__redesign,s=f.state;
@@ -38,11 +40,14 @@ async (page)=>{
   await page.waitForFunction(()=>window.__redesign.commands.some(c=>c.type==='start_journey'&&c.driving_mode==='BASELINE'));
   const seed=await page.evaluate(()=>window.__redesign.state.population.requested.seed);
   check(Number.isInteger(seed),'Comparison seed is internal');
-  await page.evaluate(()=>{const s=window.__redesign.state;s.mode='PAUSED';s.journey={...s.journey,status:'ARRIVED'};s.recording=false;s.vehicle.speedKmh=s.vehicle.speedMps=0;
-    s.journeyComparison.runs.BASELINE.status='ARRIVED';s.journeyComparison.runs.BASELINE.distance_m=100;s.journeyComparison.runs.BASELINE.route_completion_percent=100;});
+  await page.evaluate(()=>{const s=window.__redesign.state;s.mode='PAUSED';s.journey={...s.journey,status:'ERROR',reason:'route_ended_before_destination'};s.recording=false;s.vehicle.speedKmh=s.vehicle.speedMps=0;
+    s.journeyComparison.runs.BASELINE.status='ERROR';s.journeyComparison.runs.BASELINE.reason='route_ended_before_destination';s.journeyComparison.runs.BASELINE.distance_m=100;s.journeyComparison.runs.BASELINE.route_completion_percent=98;
+    Object.assign(s.journeyComparison.runs.BASELINE,{samples:40,mean_speed_kmh:19.2,maximum_speed_kmh:31.5,setup:{speed_kmh:50}});});
   await page.waitForFunction(()=>window.__redesign.commands.some(c=>c.type==='start_journey'&&c.driving_mode==='HYBRID'));
   check(await page.evaluate(()=>window.__redesign.commands.some(c=>c.type==='prepare_journey_mode'&&c.value.mode==='HYBRID'&&c.value.pair_id==='hybrid-fixture-pair')),'Second arm restores the saved pair');
   check(await page.evaluate(()=>window.__redesign.state.population.requested.seed)===seed,'Both arms retain the same seed');
+  check(await page.evaluate(()=>window.__redesign.state.journeyComparison.runs.BASELINE.status==='ERROR'),'Baseline route failure remains saved when the second arm starts');
+  check(await page.locator('.hybrid-run-speed').first().innerText().then(text=>text.includes('أقصى 31.5')&&text.includes('المطلوب 50')),'Actual speed remains visible separately from the requested speed');
   check(await page.locator('#hybridResults').count()===1,'Separate native-baseline results exist');
   await page.locator('#emergencyStopBtn').click();await page.locator('#acknowledgeStopBtn').waitFor({state:'visible'});
   check(await page.locator('#simpleRun').isDisabled(),'Emergency locks simple start');

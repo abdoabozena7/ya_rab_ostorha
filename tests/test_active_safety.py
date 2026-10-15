@@ -27,6 +27,23 @@ def scene(observation, *, clear=False, obstacle=False):
 
 
 class ActiveSafetyTests(unittest.TestCase):
+    def test_forward_radar_filter_preserves_unique_surround_channels(self):
+        observation,_=case(distance=15.,speed=0.)
+        observation,reader=scene(observation,clear=True)
+        front=next(c for c in observation.channels if c.kind==SensorKind.RADAR)
+        observation=replace(observation,channels=tuple(replace(c,sensor_id='radar') if c is front else c for c in observation.channels))
+        front=next(c for c in observation.channels if c.sensor_id=='radar')
+        surround=replace(front,sensor_id='rearRightRadar')
+        observation=replace(observation,channels=observation.channels+(surround,))
+        from backend.core.active_safety import retained_radar_observation
+        with patch('backend.core.active_safety.retained_radar_observation',wraps=retained_radar_observation) as retained:
+            assessed=assess_forward_space(observation,reader,RuntimeSafetyConfig.load())
+        filtered=retained.call_args.args[0]
+        self.assertEqual(len(filtered.channels),len(observation.channels))
+        self.assertEqual(sum(c.sensor_id==front.sensor_id for c in filtered.channels),1)
+        self.assertIs(next(c for c in filtered.channels if c.sensor_id==surround.sensor_id),surround)
+        self.assertIsNotNone(assessed)
+
     def test_far_side_of_a_turn_uses_arc_distance_and_does_not_become_a_near_obstacle(self):
         from backend.core.motion_geometry import VehicleGeometry
         geometry=VehicleGeometry(2.44,2.45,.92,2.86,1.22,'ONBOARD_TEST')

@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 from backend.learning.hybrid_budget import HybridBudget,DIRECTORY
 
@@ -9,6 +10,28 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def percentiles(values):
+    values=sorted(float(v) for v in values if type(v) in (int,float) and math.isfinite(v) and v>=0)
+    if not values:return {'samples':0,'p50':None,'p95':None,'p99':None,'maximum':None}
+    def at(fraction):
+        index=(len(values)-1)*fraction;low=int(index);high=min(len(values)-1,low+1)
+        return values[low]+(values[high]-values[low])*(index-low)
+    return {'samples':len(values),'p50':at(.5),'p95':at(.95),'p99':at(.99),'maximum':values[-1]}
+
+
+def latency_summary(samples):
+    running=[s for s in samples if s.get('journey',{}).get('status')=='RUNNING']
+    stages={name:percentiles(((s.get('stop') or {}).get('control_timing_ms') or {}).get(name) for s in running)
+            for name in ('navigation','safety','actuator_submit','sensor_to_scene','scene_to_control')}
+    stages['backend_step']=percentiles(s.get('backend_step_ms') for s in running)
+    stages['scene_build']=percentiles((s.get('control_scene') or {}).get('build_ms') for s in running)
+    for name in ('input_wait_before_build','lidar_decode','depth_decode_and_fusion','tracking_and_forecasts','semantics_and_freezing'):
+        stages[name]=percentiles(((s.get('control_scene') or {}).get('timings_ms') or {}).get(name) for s in running)
+    return {'unit':'milliseconds','scope':'RUNNING_SAMPLES_ONLY',
+        'qualification':'Control stages describe the previously applied decision; scene stages describe the observed frame. Distributions are not a sum of same-frame components.',
+        'stages':stages}
 
 
 def summarize(path):
@@ -19,6 +42,10 @@ def summarize(path):
             'cleanup_error','restore_error','restored','wall_s','reservation_wall_s','scenario_validity',
             'reservation_working_s','platform_suspend_s','platform_interrupted')
     row={key:report.get(key) for key in fields}
+    row['source_archive']=report.get('source_archive')
+    archive=path.parent/'source.zip'
+    row['source_archive_verified']=bool(report.get('source_archive') and archive.is_file()
+        and digest(archive)==report['source_archive'].get('sha256'))
     row.update(native_report=str(path.resolve()),native_report_sha256=digest(path),
         source_identity_sha256=hashlib.sha256(json.dumps(report.get('source_hashes',{}),sort_keys=True).encode()).hexdigest(),
         contacts=len(report['contacts']) if isinstance(report.get('contacts'),list) else None,
@@ -39,7 +66,16 @@ def summarize(path):
     row['response']={'acceleration_samples':len(accelerations),
         'maximum_acceleration_mps2':max(accelerations) if accelerations else None,
         'minimum_acceleration_mps2':min(accelerations) if accelerations else None}
-    runs=report.get('recording',{}).get('runs',{})
+    row['latency_ms']=latency_summary(samples)
+    if report.get('profiled_control_steps'):
+        row.update(profiled_control_steps=report['profiled_control_steps'],
+                   profiling_qualification=report.get('profiling_qualification'))
+    recorded=report.get('recording',{})
+    if not recorded.get('runs') and (path.parent/'journeys/latest.json').exists():
+        recorded=json.loads((path.parent/'journeys/latest.json').read_text(encoding='utf8'))
+        row['recording_recovered_from_journey_index']=str((path.parent/'journeys/latest.json').resolve())
+        row['recovery_qualification']='Recording reference only; cleanup status is not a replacement for the failed native outcome'
+    runs=recorded.get('runs',{})
     arm=runs.get(report.get('mode'),{})
     row['initial_condition_audit']=arm.get('initial_condition_audit')
     row['matched_pair_verified']=report.get('recording',{}).get('conditions_match') is True
@@ -82,6 +118,10 @@ def summarize(path):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--output',default='docs/evidence/hybrid_driving/diagnostics.json');args=parser.parse_args()
     rows=[summarize(p) for p in sorted(DIRECTORY.glob('probe-*/report.json'),key=lambda p:p.parent.stat().st_mtime)]
+    incomplete_preflights=[{'directory':str(folder.resolve()),'status':'NO_NATIVE_REPORT',
+        'retained_files':{p.name:digest(p) for p in folder.iterdir() if p.is_file()},
+        'qualification':'An incomplete setup directory is retained. No native outcome or acceptance is inferred.'}
+        for folder in sorted(DIRECTORY.glob('probe-*')) if folder.is_dir() and not (folder/'report.json').exists()]
     budget=HybridBudget().status()
     for adjustment in budget.get('sleep_adjustments',[]):
         for row in rows:
@@ -89,7 +129,7 @@ def main():
                 row.update(platform_interrupted=True,verified_sleep_excluded_s=adjustment['excluded_s'],
                            interruption_evidence='budget_sleep_reconciliation.json')
     result={'version':1,'scope':'DIAGNOSTICS_ACROSS_DIFFERENT_SOURCE_REVISIONS_NOT_ACCEPTANCE',
-        'native_accepted':False,'budget':budget,'trials':rows,
+        'native_accepted':False,'budget':budget,'trials':rows,'incomplete_preflights':incomplete_preflights,
         'qualification':'Raw reports/assets are retained locally and referenced by checksums. Incomplete or changed-source trials never prove a frozen acceptance gate.'}
     output=ROOT/args.output;output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(result,indent=2,ensure_ascii=False,allow_nan=False),encoding='utf8')

@@ -95,6 +95,7 @@ class ControlScene:
                 'proof_cache_hits':self.space.proof_cache_hits,
                 'track_count': len(self.prediction['tracks']),
                 'radar_velocity_tracks':self.prediction.get('radar_velocity_tracks',0),
+                'radar_velocity_observability':to_dict(self.prediction.get('radar_velocity_observability',{})),
                 'timings_ms': to_dict(self.timings_ms),
                 'coordinate_frame': 'EGO_AT_MEASUREMENT_X_FORWARD_Y_RIGHT_Z_UP',
                 'space_states': ['FREE', 'OCCUPIED', 'UNKNOWN'],
@@ -160,6 +161,9 @@ class ControlSceneBuilder:
         if any(c.kind==SensorKind.RADAR and c.sensor_id!='radar' for c in observation.channels):
             radar_tracks=self.radar_velocity.apply(prediction,observation,self.poses,self.engine.tracker)
         prediction['radar_velocity_tracks']=radar_tracks
+        prediction['radar_velocity_observability']={
+            'full':sum(t.get('doppler_evidence',{}).get('observable_rank')==2 for t in prediction['tracks']),
+            'partial':sum(t.get('doppler_evidence',{}).get('observable_rank')==1 for t in prediction['tracks'])}
         semantics=self.semantics.apply(prediction,observation,self.poses,semantic_result)
         from .kinematic_prediction import kinematic_modes
         # Include a complete command lease, reaction and braking tail, even at

@@ -31,14 +31,14 @@
     "identity"
   ],
   "missing_hazards": [
-    "PARALLEL",
     "OCCLUDED_PEDESTRIAN",
-    "OCCUPIED_LANE",
-    "CUT_IN",
     "PEDESTRIAN",
-    "SUDDEN_BRAKING",
     "DENSE_TRAFFIC",
-    "REAR_APPROACH"
+    "REAR_APPROACH",
+    "PARALLEL",
+    "SUDDEN_BRAKING",
+    "OCCUPIED_LANE",
+    "CUT_IN"
   ],
   "missing_maneuvers": [
     "REVERSE",
@@ -47,9 +47,9 @@
     "ALTERNATE_ROUTE"
   ],
   "version": 1,
-  "generated_at_utc": "2026-10-15T16:00:38.635606+00:00",
+  "generated_at_utc": "2026-10-15T17:37:53.395476+00:00",
   "scope": "FROZEN_NATIVE_ACCEPTANCE_ONLY_DIAGNOSTICS_ARE_NOT_A_COHORT",
-  "source_fingerprint": "c820f8ad624ee569db90a6a6e7b7b7c02a99780e0e7a921b86e08f05fd06cd35",
+  "source_fingerprint": "dcf1b290dab5eca316502df8697be1b3cd2ec5fab3840d88a8d71478c93ca6c6",
   "accepted_speed_kmh": 0,
   "native_results_source": null,
   "diagnostic_index": "docs/evidence/hybrid_driving/diagnostics.json",

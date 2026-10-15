@@ -1,0 +1,21 @@
+{
+  "source": "OFFLINE_RETAINED_NATIVE_FORECAST_BENCHMARK",
+  "native_accepted": false,
+  "frame_id": 103353,
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\native-recordings\\normal_city\\run_86a4151495ec4038a229727d72d7fece",
+  "tracks": 70,
+  "physical_modes": 93,
+  "repeats": 9,
+  "iterations_per_repeat": 10,
+  "reference_method": "json.dumps(to_dict(frozen_prediction),allow_nan=False,separators=comma_colon)",
+  "current_method": "recording._json_text(frozen_prediction)",
+  "reference_median_ms": 36.475200000131736,
+  "current_median_ms": 15.341189999890048,
+  "identical_wire_bytes": true,
+  "wire_sha256": "e5e1602526f7c38957f81a96e9351a6e3bf3921ebe57e5de8b60f433c7028ab2",
+  "source_sha256": {
+    "backend/core/contracts.py": "b51500d5cb5ac2a02558f85060e001bcf3805785e1681f3d1ce11a0092b3f63c",
+    "backend/core/recording.py": "bab7dc6c168787f236d81158be25120a2601912e72d18e046b606adb6fcc1d3e"
+  },
+  "qualification": "Same retained numeric forecast, single process, uncontrolled host load; not a native latency or acceptance measurement."
+}

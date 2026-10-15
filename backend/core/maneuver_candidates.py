@@ -93,7 +93,7 @@ class ExecutionShield:
         digest=hashlib.sha256(np.asarray(path,dtype='<f8').tobytes())
         digest.update(np.asarray(road.get('drivable_strips',()),dtype='<f8').tobytes())
         digest.update(repr((int(command.frame_id),float(command.timestamp_s),float(command.throttle),float(command.brake),
-            float(command.steering),bool(command.reverse),int(command.gear),bool(command.handbrake),
+            float(command.steering),bool(command.reverse),None if command.gear is None else int(command.gear),bool(command.handbrake),
             bool(road.get('traffic_stop')),bool(full_maneuver),'drivable_strips' in road,float(timestamp_s))).encode())
         key=digest.hexdigest();proof=lookup(scene.space,key)
         if proof is not None:

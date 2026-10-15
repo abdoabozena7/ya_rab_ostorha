@@ -1,5 +1,8 @@
 """Versioned run directories with bounded JSONL rows and separate binary assets."""
 from datetime import datetime, timezone
+from collections.abc import Mapping
+from dataclasses import fields, is_dataclass
+from enum import Enum
 import hashlib
 import gzip
 import json
@@ -145,8 +148,22 @@ class BufferedRunRecorder:
         if self.error: raise RuntimeError('Recording failed: '+str(self.error))
 
 
+def _json_default(value):
+    # Let the C encoder traverse numeric forecast tuples directly. Walking
+    # every float through to_dict in the writer thread still competes with
+    # control for the GIL, even though disk writes themselves are buffered.
+    if is_dataclass(value):return {field.name:getattr(value,field.name) for field in fields(value)}
+    if isinstance(value,Enum):return value.value
+    if isinstance(value,Mapping):return dict(value.items())
+    raise TypeError(f'Object of type {type(value).__name__} is not JSON serializable')
+
+
+def _json_text(value):
+    return json.dumps(value,default=_json_default,allow_nan=False,separators=(',',':'))
+
+
 def encode_row(value):
-    row = (json.dumps(to_dict(value), allow_nan=False, separators=(',', ':'))+'\n').encode('utf-8')
+    row = (_json_text(value)+'\n').encode('utf-8')
     if len(row) > MAX_ROW_BYTES:
         raise ValueError('Recording row exceeds 1 MiB; store large sensor payloads as asset references')
     return row
@@ -248,9 +265,9 @@ class RunRecorder:
         with self.lock:
             if self.closed:raise RuntimeError('Recorder is closed')
             if self.trace_file is None:self.trace_file=(self.root/'telemetry/comparison-controls.jsonl').open('xb')
-            wire=to_dict(row)
+            wire=dict(row)
             if wire.get('kind')=='HYBRID_DECISION' and 'prediction' in wire:
-                data=json.dumps(wire['prediction'],allow_nan=False,separators=(',',':')).encode('utf8')
+                data=_json_text(wire['prediction']).encode('utf8')
                 if len(data)>MAX_ROW_BYTES//2:
                     if len(data)>32*MAX_ROW_BYTES:raise ValueError('Control prediction asset exceeds its size bound')
                     compressed=gzip.compress(data,compresslevel=1,mtime=0)

@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-10-15T15:59:27.997998+00:00",
+  "generated_at_utc": "2026-10-15T17:40:36.342668+00:00",
   "software_only": true,
   "native_accepted": false,
   "javascript": {
-    "passed": 112,
+    "passed": 114,
     "failed": 0,
     "dashboard_build": "PASSED"
   },
   "python": {
-    "discovered": 483,
-    "passed": 482,
+    "discovered": 498,
+    "passed": 497,
     "skipped": 1,
     "failed": 0
   },
@@ -21,14 +21,14 @@
     },
     "second": {
       "source": "ISOLATED_BROWSER_FIXTURE",
-      "checks": 12,
+      "checks": 14,
       "errors": []
     }
   },
   "native_video_playback": {
     "source": "NATIVE_VIDEO_ISOLATED_DASHBOARD",
     "transport": "PRODUCTION_HTTP_HANDLER",
-    "checks": 3,
+    "checks": 5,
     "durations_s": [
       21.801,
       28.301
@@ -41,7 +41,7 @@
         "ended": true
       },
       {
-        "time_s": 22.115213,
+        "time_s": 22.11463,
         "duration_s": 28.301,
         "paused": false,
         "ended": false
@@ -50,12 +50,27 @@
     "qualification": "Native video playback with synthetic dashboard state; not behavioral acceptance"
   },
   "assets": {
-    "frontend/dashboard.bundle.js": "4e828964d07552f4f37fa3058e8daafd6f47cf0bdaee1840aee3da2384441d59",
+    "frontend/dashboard.bundle.js": "b8b2ff7b57d2efe88e92e1804f91f6993215f9c07604205787564d259f3b9159",
     "frontend/dashboard.styles.css": "a6db1696be7f3252df7b3f7b87fe41bd9516c0a09e6f25e11b98371c7ba35c1a"
   },
   "screenshot": {
     "path": "docs/evidence/hybrid_driving/native-video-ui.png",
-    "sha256": "ddc0f0d9a2ec9ba5d9d256481c525f960e966b2fd6871d91bfb20a88ae3953f3"
+    "sha256": "b94858a79ac26e809507931aeba75b4390c7242679bd8de2eb504c39f5bc305a"
   },
-  "qualification": "UI fixture state is synthetic. Native MP4 files were streamed by the actual production HTTP handler. Software checks and successful diagnostics do not establish frozen behavioral acceptance."
+  "qualification": "UI fixture state is synthetic. Native MP4 files were streamed by the actual production HTTP handler. Software checks and successful diagnostics do not establish frozen behavioral acceptance.",
+  "source_fingerprint": "dcf1b290dab5eca316502df8697be1b3cd2ec5fab3840d88a8d71478c93ca6c6",
+  "runtime_restoration": {
+    "connected": true,
+    "mode": "PAUSED",
+    "speed_kmh": 0.0,
+    "frame": 181593,
+    "recording": false,
+    "sensor_count": 8,
+    "controller": "RULE",
+    "safety_enabled": true,
+    "hybrid_available": false,
+    "active_ticket_exists": false,
+    "unfinished_reservations": 0,
+    "native_budget_remaining_s": 4132.372797384731
+  }
 }

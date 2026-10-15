@@ -4,6 +4,57 @@ from backend.carla.benchmark_fixture import BenchmarkFixture,pose_data
 
 
 class HybridBenchmarkTests(unittest.TestCase):
+    def test_both_matched_drivers_finish_only_after_stopping_inside_existing_arrival_radius(self):
+        from backend.core.service import SimulationService
+        from backend.core.control import ControlMode
+        from unittest.mock import Mock
+        from tests.core_packets import packet
+        for mode in ('BASELINE','HYBRID'):
+            for arrived,speed,expected in ((True,.1,'ARRIVED'),(True,1.,'RUNNING'),(False,0.,'RUNNING')):
+                with self.subTest(mode=mode,arrived=arrived,speed=speed):
+                    provider=NS(name='test-fixture',allow_navigation=True,route_state=lambda:{'arrived':arrived,'remaining_m':4.},
+                        navigation_done=lambda:False,navigation_command=Mock(side_effect=RuntimeError('continue navigation')))
+                    service=SimulationService(provider,now=lambda:100.);service._publish(packet(speed=speed))
+                    service.journey.update(driving_mode=mode,status='RUNNING');service.navigation_heartbeat_at=100.
+                    service.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
+                    if expected=='ARRIVED':service._navigation_step()
+                    else:
+                        with self.assertRaisesRegex(RuntimeError,'continue navigation'):service._navigation_step()
+                    self.assertEqual(service.journey['status'],expected)
+
+    def test_native_driver_gets_goal_approach_without_disabling_obstacle_handling(self):
+        from backend.carla.provider import CarlaProvider
+        from backend.core.route_terminal import terminal_speed_mps
+        from unittest.mock import Mock
+        for mode in ('BASELINE','HYBRID'):
+            native=NS(throttle=.2,brake=0.,steer=0.,reverse=False,hand_brake=False)
+            navigation=NS(set_target_speed=Mock(),run_step=Mock(return_value=native))
+            provider=NS(navigation=navigation,driving_mode=mode,
+                ego=NS(actor=NS(get_speed_limit=lambda:60.,get_location=lambda:None)),
+                dashboard_tools=NS(map=NS(get_waypoint=lambda _:None)),
+                hybrid_speed_policy=NS(limit=lambda *_:(60.,'TEST')),
+                route_state=lambda:{'remaining_m':10.})
+            CarlaProvider.navigation_command(provider,1,.05,50.)
+            navigation.set_target_speed.assert_called_once_with(terminal_speed_mps(10.)*3.6)
+            navigation.run_step.assert_called_once()
+
+    def test_route_end_failure_retains_baseline_fixture_until_restore_or_explicit_stop(self):
+        from unittest.mock import Mock
+        from backend.core.service import SimulationService
+        from backend.core.journey_comparison import benchmark_terminal_supported
+        from tests.core_packets import packet
+        fixture=Mock()
+        provider=NS(name='test-fixture',benchmark_fixture=fixture,benchmark_prepared=True)
+        service=SimulationService(provider,now=lambda:100.);service._publish(packet(speed=0.))
+        service.journey.update(driving_mode='BASELINE',benchmark=True,status='RUNNING')
+        service._stop_navigation('route_ended_before_destination',status='ERROR')
+        fixture.close.assert_not_called();self.assertIs(provider.benchmark_fixture,fixture)
+        self.assertTrue(benchmark_terminal_supported(service.journey))
+        service.stop_driving('operator_stop');fixture.close.assert_called_once()
+        self.assertIsNone(provider.benchmark_fixture)
+        for journey in ({'status':'ERROR','reason':'runtime_failure'},{'status':'PAUSED','reason':'operator_stop'},
+                        {'status':'RUNNING','reason':'collision'}):self.assertFalse(benchmark_terminal_supported(journey))
+
     def fixture(self):
         pose=NS(location=NS(x=0.,y=0.,z=0.),rotation=NS(pitch=0.,yaw=0.,roll=0.))
         ego=NS(type_id='vehicle.test',get_transform=lambda:pose,

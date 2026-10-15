@@ -16,6 +16,22 @@ from tests.core_packets import packet
 
 
 class DemoIntegrationTests(unittest.TestCase):
+    def test_manual_tick_failure_preserves_original_fault_before_recording_closes(self):
+        from unittest.mock import Mock
+        saved=[];recorder=Mock();recorder.record_event.side_effect=saved.append
+        recorder.metadata.run_id='test-fault-fixture'
+        provider=SimpleNamespace(name='test-fixture',controls={'throttle':.4,'brake':0.,'gear':1})
+        service=SimulationService(provider,recorder=recorder,now=lambda:100.)
+        service._publish(packet(speed=2.))
+        with patch.object(service,'_iteration',side_effect=ValueError('original sensor decode failure')):
+            with self.assertRaisesRegex(ValueError,'original sensor decode failure'):service.step_once()
+        self.assertEqual(service.journey['status'],'ERROR')
+        self.assertEqual(service.runtime_fault['exception_type'],'ValueError')
+        self.assertEqual(service.runtime_fault['last_applied_native_controls'],provider.controls)
+        self.assertIn('original sensor decode failure',service.runtime_fault['traceback'])
+        self.assertTrue(any(event.payload.get('runtime_fault',{}).get('message')=='original sensor decode failure' for event in saved))
+        recorder.close.assert_not_called()
+
     def test_recording_audit_allows_only_verified_rule_arrival_hold_without_policy_proposal(self):
         from scripts.native.audit_rule_integration import command_audit
         applied={'frame_id':10,'throttle':0.,'brake':1.}
