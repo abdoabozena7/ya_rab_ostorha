@@ -114,7 +114,7 @@ class ControlSceneBuilder:
         from .control_radar import RadarVelocityFusion
         self.radar_velocity=RadarVelocityFusion()
 
-    def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None):
+    def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None, track_motion=True):
         began = time.perf_counter()
         began_wall=time.monotonic()
         if not isinstance(observation, SensorObservation):
@@ -138,6 +138,21 @@ class ControlSceneBuilder:
                   if c.kind == SensorKind.DEPTH and c.asset}
         from .recovery_depth import depth_surfaces
         sources=depth_surfaces(observation,lambda a:assets[a.path])
+        if not track_motion:
+            # RULE consumes current calibrated geometry, not the hybrid motion
+            # forecasts. Display tracking runs in its own observer thread.
+            self.last_frame=observation.frame_id
+            published=time.monotonic();finished=time.perf_counter()
+            prediction=freeze_json({'tracks':[],'trajectories':[], 'motion_tracking_complete':False,
+                'timestamp_s':observation.timestamp_s, 'frame_id':observation.frame_id,
+                'source':'RULE_GEOMETRY_ONLY'})
+            timing=freeze_json({'input_wait_before_build':(began_wall-received_wall_s)*1000,
+                'lidar_decode':(lidar_ready-began)*1000,
+                'depth_decode_and_fusion':(finished-lidar_ready)*1000, 'tracking_and_forecasts':0.})
+            return ControlScene(1,self.session_id,observation,self.geometry,points,prediction,
+                MeasuredSpace(points,self.geometry,observation,assets,measured_surfaces=sources),
+                received_wall_s,published,(finished-began)*1000,
+                freeze_json({'motion_tracking':'DISPLAY_OBSERVER_ONLY','classified':False}),timing)
         # Tracking and space use the same synchronized surround measurements.
         # Sparse LiDAR alone repeatedly split parked bodies between rotations.
         # Voxel sampling bounds cost while preserving original sensor evidence.
@@ -174,6 +189,7 @@ class ControlSceneBuilder:
         prediction['trajectories']=kinematic_modes(prediction['tracks'],grid=grid)
         prediction['horizon_s']=float(grid[-1])
         prediction.update(published_wall_s=received_wall_s, publication_wall_s=time.monotonic(),
+                          motion_tracking_complete=True,
                           control_trajectories=prediction['trajectories'],
                           scene_version=1, source='CONTROL_SENSOR_PIPELINE')
         coverage = {'front': 'GEOMETRY_ONLY', 'left': 'GEOMETRY_ONLY',

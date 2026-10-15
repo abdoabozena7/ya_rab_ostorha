@@ -75,10 +75,10 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
   chips.innerHTML='<span class="cockpit-chip" id="cockpitConnection"><i></i><span id="cockpitConnectionText">CARLA Disconnected</span></span><span class="cockpit-chip" id="cockpitProtection">'+icons.shield+'<span id="cockpitProtectionText">Protection offline</span></span><span class="cockpit-chip" id="cockpitDriver">'+icons.car+'<span id="cockpitDriverText">Vehicle held</span></span>';
   const actions=el('div','cockpit-header-actions');actions.append($('replayPauseBtn'),$('stopSimulatorBtn'),$('resetSimulatorBtn'),$('studioManualStop'),$('emergencyStopBtn'),$('acknowledgeStopBtn'));
   header.append(chips,actions);
-  $('studioManualStop').innerHTML='<span aria-hidden="true">■</span> إيقاف العربية';$('studioManualStop').setAttribute('aria-label','إيقاف العربية');
+  $('studioManualStop').innerHTML='<span aria-hidden="true">■</span> Stop vehicle';$('studioManualStop').setAttribute('aria-label','Stop vehicle');
   $('studioManualStop').title='Full brake and end the current drive; start driving again to resume';
-  $('emergencyStopBtn').textContent='إيقاف طوارئ';
-  for(const btn of document.querySelectorAll('.cockpit-dialog-emergency'))btn.textContent='إيقاف طوارئ';
+  $('emergencyStopBtn').textContent='Emergency stop';
+  for(const btn of document.querySelectorAll('.cockpit-dialog-emergency'))btn.textContent='Emergency stop';
   for(const btn of document.querySelectorAll('.cockpit-dialog-emergency'))btn.onclick=()=>{btn.closest('dialog').close();$('emergencyStopBtn').click();};
 
   const camera=$('frontCameraView');camera.tabIndex=-1;
@@ -112,7 +112,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
   $('cameraCard').append(summary);
 
   const details=el('dialog','cockpit-dialog cockpit-details');details.id='cockpitDetails';details.setAttribute('aria-labelledby','cockpitDetailsTitle');
-  details.innerHTML='<header class="cockpit-dialog-heading"><h2 id="cockpitDetailsTitle">Camera & sensor details</h2><button type="button" class="cockpit-dialog-emergency">إيقاف طوارئ</button><button type="button" class="cockpit-dialog-close" aria-label="Close camera details">×</button></header><p id="cockpitDetailsStatus"></p><h3>Scenario population</h3><p class="muted">Actors configured in the world. These counts are separate from camera detections.</p>';
+  details.innerHTML='<header class="cockpit-dialog-heading"><h2 id="cockpitDetailsTitle">Camera & sensor details</h2><button type="button" class="cockpit-dialog-emergency">Emergency stop</button><button type="button" class="cockpit-dialog-close" aria-label="Close camera details">×</button></header><p id="cockpitDetailsStatus"></p><h3>Scenario population</h3><p class="muted">Actors configured in the world. These counts are separate from camera detections.</p>';
   const kpis=document.querySelector('.studio-kpis');kpis.firstElementChild.firstElementChild.textContent='Scenario vehicles';kpis.children[1].firstElementChild.textContent='Scenario pedestrians';
   details.append(kpis,$('modelVision'));
   const diagnosticButton=el('button','','Open full Diagnostics ↗');diagnosticButton.onclick=()=>{details.close();tools.open('sensorPanel','cockpitViewDetails');};details.append(diagnosticButton);
@@ -121,10 +121,13 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
   const openDetails=()=>{if(p.controlMode==='MANUAL'||tools.options.isManualArmed?.())tools.clearControls('details_inspection');details.showModal();};
   $('cockpitViewDetails').onclick=openDetails;$('cockpitAnalysisLink').onclick=()=>{options.open=false;$('modelVision').open=true;openDetails();};
   // The existing empty-state action becomes the same native start/setup flow.
-  $('connectionSetupBtn').onclick=openSetup;$('connectionSetupBtn').textContent='Set up simulation';
+  $('connectionSetupBtn').onclick=()=>{
+    const restart=$('presentationRestart');
+    if(restart&&!p.simulationStarting&&!p.restarting)restart.click();else openSetup();
+  };$('connectionSetupBtn').textContent='Run presentation';
   const safety=$('studioSafetyAlert');safety.replaceChildren();safety.setAttribute('aria-live','polite');safety.append(el('span','notice-icon'),el('div','notice-copy'));
   safety.firstElementChild.innerHTML=icons.shield;safety.lastElementChild.append(el('strong'),el('p'));
-  const resume=el('button','','استئناف القيادة');resume.id='cockpitResumeDrive';resume.type='button';resume.hidden=true;
+  const resume=el('button','','Resume driving');resume.id='cockpitResumeDrive';resume.type='button';resume.hidden=true;
   resume.onclick=()=>onResume?.(p.journey?.driving_mode||p.manualDrivingMode||'ROBOSPHERE');safety.append(resume);
   let lastNotice='',lastBoxKey='',previousMode=p.controlMode;
 
@@ -152,6 +155,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     set('cockpitTarget',p.isReplay?'Recorded replay':p.controlMode==='MANUAL'?'Manual control':'Target '+metricText(m.target)+(Number.isFinite(m.target)?' km/h':''));
     $('cockpitSpeedArc').style.strokeDasharray=`${Number.isFinite(m.speed)?Math.min(100,Math.max(0,m.speed/120*100)):0} 100`;
     $('cockpitBrakeBar').style.width=(Number.isFinite(m.brake)?m.brake:0)+'%';
+    document.querySelector('.cockpit-brake>div>span:last-child').textContent=Number.isFinite(m.brake)?m.brake>0?'Applied':'Released':'Unavailable';
     set('cockpitBrakeReason',fresh ? (p.stopDiagnostics?.decision_source||'Driver')+' · '+
       controlReasonText(p.stopDiagnostics?.reason||'No braking requested') : 'Waiting for live command');
     set('cockpitGapStatus',Number.isFinite(m.gap)?'Measured forward distance':fresh?'Unavailable or stale':'Waiting for live sensors');
@@ -168,8 +172,8 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     if($('authoritativeCamera').hidden){
       const starting=p.simulationStarting,restarting=p.restarting,failed=p.simulatorStart?.status==='FAILED'||p.phase==='ERROR',stopped=p.simulatorStop?.status==='STOPPED';
       set('cameraEmptyTitle',starting?'Starting CARLA':restarting?'Restarting CARLA':failed?'Simulator connection failed':stopped?'CARLA is stopped':fresh?'Waiting for camera frames':'Simulator disconnected');
-      set('cameraEmptyDescription',failed?p.simulatorStart?.error||p.operationError||p.status:starting||restarting?'Connecting the simulator, vehicle and sensors. Driving remains stopped.':fresh?'The connection is live. Camera frames are not available; inspect Diagnostics.':'Open Scenarios to start the simulator and prepare your drive.');
-      $('connectionSetupBtn').hidden=fresh||p.isReplay;set('connectionSetupBtn',starting||restarting?'View startup progress':'Set up simulation');
+      set('cameraEmptyDescription',failed?p.simulatorStart?.error||p.operationError||p.status:starting||restarting?'Connecting the simulator, vehicle and sensors. Driving remains stopped.':fresh?'The connection is live. Camera frames are not available; inspect Diagnostics.':'Use Restart above to start the simulator and run the presentation.');
+      $('connectionSetupBtn').hidden=fresh||p.isReplay;set('connectionSetupBtn',starting||restarting?'View startup progress':'Run presentation');
     }
     set('cockpitCameraRate',!$('authoritativeCamera').hidden&&Number.isFinite(p.performance?.sensorWallRatesHz?.[displayed?.sensorId])?p.performance.sensorWallRatesHz[displayed.sensorId].toFixed(1)+' Hz':'');
     const counts=perceptionCounts(perception.result,p);set('cockpitVehicles',metricText(counts.vehicles));set('cockpitPeople',metricText(counts.people));set('cockpitObjectsStatus',counts.label);

@@ -37,6 +37,7 @@ runtime versions and should not be read as current capability guarantees.
 | Native city population and route traffic | `backend/carla/population.py`, `backend/carla/urban.py`, `backend/carla/route_crowding.py` | [Gate 5 foundation](GATE5_WORLD_FOUNDATION.md), [Route crowding](ROUTE_CROWDING_20261013.md) |
 | Recording, replay and matched journey results | `backend/core/recording.py`, `backend/core/replay.py`, `backend/core/journey_comparison.py` | [Native journey repair](NATIVE_JOURNEY_REPAIR_20261011.md), [Final demonstration integration](RULE_DEMO_FINALIZATION_20261012.md) |
 | Gated hybrid behavior, native baseline, MP4 and simplified discussion controls | `backend/core/hybrid_driver.py`, `backend/carla/hybrid_navigation.py`, `frontend/demo-drive.js` | [15 October implementation and unfinished native acceptance](HYBRID_DRIVING_IMPLEMENTATION_20261015.md) |
+| Automatic presentation, English interface and journey continuity | `backend/core/presentation.py`, `backend/carla/presentation.py`, `frontend/presentation-run.js`, `backend/websocket_bridge.py` | [15 October presentation and continuity evidence](AUTOMATIC_PRESENTATION_20261015.md) |
 
 The detailed reports link their JSON summaries, screenshots and measured results
 under `docs/evidence/`. Raw simulator recordings remain local in ignored `runs/`

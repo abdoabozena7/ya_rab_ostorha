@@ -4,18 +4,34 @@ export const metricText = (value, digits = 0) => finite(value) ? value.toFixed(d
 
 export function controlReasonText(reason) {
   return ({
-    CONTROL_PROCESSING_DEADLINE:'حساب قرار القيادة تأخر؛ انتظار فريم حديث.',
-    STALE_CONTROL_SCENE:'بيانات الحساسات قديمة أو غير متزامنة؛ انتظار فريم جديد.',
-    AWAITING_CURRENT_SENSOR_FRAME:'انتظار حساسات نفس فريم السيارة.',
-    NO_VERIFIED_SAFE_ACTION:'لم تتأكد مساحة مناورة آمنة؛ السيارة متوقفة.',
-    SWEPT_SPACE_UNKNOWN_OR_OCCUPIED:'مساحة الحركة لم تُقَس بالكامل أو بها عائق.',
-    REACHABLE_CORRIDOR_UNCERTAINTY:'حركة جسم قريب غير مؤكدة؛ انتظار قياس أوضح.',
-    PREDICTED_INTERSECTION:'مسار جسم متوقّع يتقاطع مع مسار السيارة.',
-    BODY_OUTSIDE_DRIVABLE_ROAD:'المناورة تُخرج جزءًا من السيارة عن الطريق.',
-    TRAFFIC_RULE_STOP:'انتظار إشارة المرور.',
-    HYBRID_CONTROLLED_DECELERATION:'تهدئة محسوبة حسب المسار والمساحة المتاحة.',
-    HYBRID_VALIDATION_EXPIRED:'انتهى وقت الاختبار الحركي؛ السيارة متوقفة.',
-    route_ended_before_destination:'انتهى متابع المسار قبل الوصول للوجهة. المحاولة محفوظة كفشل.',
+    CONTROL_PROCESSING_DEADLINE:'Control calculation missed its deadline. Waiting for a fresh frame.',
+    STALE_CONTROL_SCENE:'Sensors are stale or out of sync. Waiting for a fresh frame.',
+    AWAITING_CURRENT_SENSOR_FRAME:'Waiting for sensors from the current vehicle frame.',
+    NO_VERIFIED_SAFE_ACTION:'No verified maneuver is available. Vehicle held.',
+    SWEPT_SPACE_UNKNOWN_OR_OCCUPIED:'The movement corridor is unmeasured or occupied.',
+    REACHABLE_CORRIDOR_UNCERTAINTY:'A nearby object has uncertain motion. Waiting for a clearer measurement.',
+    PREDICTED_INTERSECTION:'A predicted object path intersects the vehicle path.',
+    BODY_OUTSIDE_DRIVABLE_ROAD:'This maneuver would take part of the vehicle outside the drivable road.',
+    TRAFFIC_RULE_STOP:'Waiting for the traffic signal.',
+    HYBRID_CONTROLLED_DECELERATION:'Slowing for the route and measured available space.',
+    HYBRID_VALIDATION_EXPIRED:'Native validation time expired. Vehicle held.',
+    route_ended_before_destination:'The route follower ended before the destination. This failed attempt is saved.',
+    dashboard_disconnected:'Dashboard connection lost. Reconnect, then resume driving.',
+    dashboard_heartbeat_timeout:'Dashboard connection lease expired. Reconnect, then resume driving.',
+    destination_reached:'Destination reached. The vehicle has stopped.',
+    operator_stop:'Stopped by the operator.',
+    simulator_shutdown:'The simulator was stopped. Use Restart to start the presentation.',
+    command_timeout:'The latest driving command expired. Vehicle held.',
+    presentation_route_timeout:'The route did not finish within the presentation time limit. This attempt is saved.',
+    presentation_failed:'The presentation stopped after a failure. Its evidence is saved.',
+    fresh_native_session:'Vehicle held after simulator startup. Select a destination or use Restart.',
+    ya_rab_ostorha_sensor_fault:'Sensor processing could not recover. Use Restart to prepare a fresh run.',
+    controls_released:'Driving controls released. Vehicle held.',
+    emergency_stop:'Emergency stop active. Movement remains locked until explicitly released.',
+    emergency_stop_released:'Emergency stop released. The vehicle is held until you start driving.',
+    NAVIGATION:'Following the selected route.',
+    page_closed:'The previous dashboard page closed. Vehicle held; start driving when ready.',
+    ownership_taken:'Vehicle control moved to this dashboard. The vehicle remains held.',
   })[reason]||String(reason||'');
 }
 
@@ -46,24 +62,30 @@ export function safetyNotice(provider) {
   if (!provider.fresh || provider.isReplay) return null;
   if (provider.controlMode === 'EMERGENCY_STOP') return {
     tone: 'danger', title: 'Emergency stop active',
-    detail: 'Movement locked. Use فك إيقاف الطوارئ in the header, then start driving again.',
+    detail: 'Movement locked. Use Release emergency stop in the header, then start driving again.',
   };
+  if(provider.controlMode==='PAUSED'&&provider.journey?.reason==='emergency_stop_released')return {
+    tone:'neutral',title:'Emergency stop released',detail:'The lock is released. The vehicle remains held; use Restart or Resume driving when ready.'};
   if(provider.controlMode==='PAUSED'&&provider.lastDriveStop?.status!=='ERROR'&&
       (provider.journey?.status==='ARRIVED'||provider.route?.arrived))return {
-    tone:'neutral',title:'وصلت للوجهة',detail:'العربية وصلت وتوقفت. اختار وجهة جديدة لبدء مشوار آخر.'};
+    tone:'neutral',title:'Destination reached',detail:'The vehicle has arrived and stopped. Choose a new destination to drive again.'};
   if (provider.controlMode === 'PAUSED' && provider.route && ['PAUSED','ERROR'].includes(provider.journey?.status)) {
     const stopped=provider.lastDriveStop;
     const reason=stopped?.detail || provider.stopDiagnostics?.reason || provider.journey?.reason;
-    const names={focus_lost:'القيادة توقفت عند فقدان تركيز الصفحة',operator_stop:'إيقاف العربية بطلب المستخدم',
-      controls_released:'أوامر القيادة اتقفلت',dashboard_heartbeat_timeout:'انقطع اتصال أوامر القيادة'};
-    return {tone:stopped?.status==='ERROR'?'warning':'neutral', title:'القيادة متوقفة',
-      detail:(names[reason]||reason||'العربية متوقفة')+' · اضغط استئناف القيادة للمتابعة.'};
+    const names={focus_lost:'Driving was paused when the page lost focus',operator_stop:'Stopped by the operator',
+      controls_released:'Driving controls were released',dashboard_heartbeat_timeout:'The dashboard connection lease expired'};
+    const failed=stopped?.status==='ERROR';
+    return {tone:failed?'warning':'neutral', title:failed?'Drive needs attention':'Driving paused',
+      detail:(names[reason]||controlReasonText(reason)||'Vehicle held')+(failed?' · Use Restart to prepare a fresh run.':' · Use Resume driving here to continue.')};
   }
   if(provider.controlMode==='AUTOMATIC'&&provider.stopDiagnostics?.braking&&
       provider.stopDiagnostics?.decision_source==='NAVIGATION'&&/red traffic light/i.test(provider.stopDiagnostics.reason||''))return {
-    tone:'neutral',title:'انتظار الإشارة الحمراء',detail:'المشوار شغّال؛ العربية تتحرك تلقائيًا لما الإشارة تسمح.'};
+    tone:'neutral',title:'Waiting at a red light',detail:'The journey is active. Driving resumes automatically when the signal permits.'};
   if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='HYBRID'&&provider.stopDiagnostics?.braking)return {
-    tone:'warning',title:'القيادة الهجينة تهدّئ أو تتوقف',detail:controlReasonText(provider.stopDiagnostics.reason)};
+    tone:'warning',title:'Hybrid slowing or holding',detail:controlReasonText(provider.stopDiagnostics.reason)};
+  if(provider.controlMode==='AUTOMATIC'&&provider.stopDiagnostics?.braking&&
+      /vehicle footprint|blocked.*vehicle/i.test(provider.stopDiagnostics.reason||''))return {
+    tone:'neutral',title:'Waiting for a vehicle on the route',detail:'A vehicle overlaps the planned path. The journey remains active and resumes when it clears.'};
   const safety = provider.safetySystem;
   if (!safety) return {tone:'neutral', title:'Safety unavailable', detail:'Waiting for safety telemetry. Inspect Diagnostics before driving.'};
   if (/FAULT|UNAVAILABLE/.test(safety.status || '')) return {
@@ -73,7 +95,7 @@ export function safetyNotice(provider) {
     tone:'warning', title:'Safety supervision suspended', detail:safety.reason || 'Inspect the active mode in Scenarios.',
   };
   if (!safety.active) return null;
-  if(safety.status==='SENSOR_DELAY_HOLD')return {tone:'warning',title:'انتظار فريم حساسات جديد',detail:safety.reason};
+  if(safety.status==='SENSOR_DELAY_HOLD')return {tone:'warning',title:'Waiting for a fresh sensor frame',detail:safety.reason};
   const releasing = /RELEAS/.test(safety.status || '');
   const holding = /HOLD/.test(safety.teacher_state || safety.status || '');
   return {
@@ -90,7 +112,7 @@ export function safetyChip(provider) {
   if (!s) return {label:'Safety unavailable', tone:'neutral'};
   if (provider.controlMode === 'EMERGENCY_STOP') return {label:'Emergency stopped', tone:'danger'};
   if (/FAULT|UNAVAILABLE/.test(s.status || '')) return {label:'Safety unavailable', tone:'danger'};
-  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='BASELINE')return {label:'حماية سائق CARLA',tone:'protection'};
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='BASELINE')return {label:'CARLA driver protection',tone:'protection'};
   if (s.status === 'STANDARD_DRIVER') return {label:'Normal · protection off', tone:'neutral'};
   if (!s.enabled) return {label:'Protection off', tone:'danger'};
   if (/SUSPENDED/.test(s.status || '')) return {label:'Protection suspended', tone:'warning'};
@@ -106,8 +128,8 @@ export function driverCaption(provider) {
     (provider.journey?.status==='ARRIVED'||provider.route?.arrived)?'Arrived':'Vehicle held';
   if(provider.safetySystem?.status==='SENSOR_DELAY_HOLD')return 'Waiting for sensors';
   if(provider.safetySystem?.active)return 'Safety override';
-  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='HYBRID')return 'القيادة الهجينة';
-  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='BASELINE')return 'سائق CARLA العادي';
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='HYBRID')return 'Hybrid driving';
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='BASELINE')return 'CARLA normal driver';
   const m=provider.maneuver;
   if(provider.controlMode==='AUTOMATIC'&&observationCurrent(m,provider,.1)){
     if(m.phase==='REVERSING'&&m.action==='BACK_UP')return 'Repositioning · Reverse';

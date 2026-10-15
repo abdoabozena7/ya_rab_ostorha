@@ -93,13 +93,13 @@ async (page) => {
     s.safetySystem={...s.safetySystem,status:'COVERAGE_LIMITED',active:true,reason:s.stopDiagnostics.reason};
   });
   await page.waitForFunction(()=>document.getElementById('cockpitBrakeReason').textContent.includes('coverage speed limit 3.04'));
-  check(await page.locator('#studioManualStop').textContent().then(t=>t.includes('إيقاف العربية')),'Clear ordinary stop label');
-  check(await page.locator('#emergencyStopBtn').textContent()==='إيقاف طوارئ','Clear emergency label');
+  check(await page.locator('#studioManualStop').textContent().then(t=>t.includes('Stop vehicle')),'Clear ordinary stop label');
+  check(await page.locator('#emergencyStopBtn').textContent()==='Emergency stop','Clear emergency label');
   check(await page.locator('#cockpitBrakeReason').isVisible(),'Applied brake reason visible beside percentage');
   await page.locator('#emergencyStopBtn').click();
   await page.waitForFunction(()=>document.getElementById('acknowledgeStopBtn').hidden===false);
   check(await page.locator('.cockpit-header-actions #acknowledgeStopBtn').count()===1,'Release action in the main header');
-  check(await page.locator('#acknowledgeStopBtn').textContent()==='فك إيقاف الطوارئ','Clear emergency release label');
+  check(await page.locator('#acknowledgeStopBtn').textContent()==='Release emergency stop','Clear emergency release label');
   for(const [width,height] of [[1720,914],[1440,900],[1366,768],[1100,768],[1024,768],[768,1024],[390,844],[320,720]]){
     await page.setViewportSize({width,height});
     check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Emergency: no horizontal overflow at '+width);

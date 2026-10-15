@@ -16,6 +16,7 @@ import {installComparisonV2} from './comparison-v2.js';
 import {installDrivingStudio} from './driving-studio.js';
 import {installLightCockpit} from './light-cockpit.js';
 import {installDemoDrive} from './demo-drive.js';
+import {installPresentationRun} from './presentation-run.js';
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
 presentationUI(provider);
@@ -34,6 +35,7 @@ const motionReadout=installMotionReadout(provider,predictionView);
 const studio=installDrivingStudio(provider,guided,predictionView,tools);
 const cockpit=installLightCockpit(provider,tools,perception,predictionView,mode=>startJourney(mode));
 const demoDrive=installDemoDrive(provider,tools,clearControls);
+const presentationRun=installPresentationRun(provider,tools,clearControls);
 $('stopSimulatorBtn').onclick=()=>{clearControls('simulator_shutdown');provider.stopSimulator();};
 $('resetSimulatorBtn').onclick=()=>{resetKeys();manualArmed=false;manualRequestedUntil=0;clearCamera();provider.resetSimulation();};
 function canInput() {
@@ -212,6 +214,7 @@ function refresh() {
   studio.update(state);
   cockpit.update(state,displayedCamera);
   demoDrive.update();
+  presentationRun.update();
 }
 $('startDrivingBtn').onclick = () => {
   showWorkspace('drive');
@@ -319,7 +322,7 @@ function inspectWithoutManualControl(reason) {
 }
 document.addEventListener('workspacechange',event => { if(event.detail.phase !== 'drive') inspectWithoutManualControl('workspace_changed'); });
 window.addEventListener('blur',()=>inspectWithoutManualControl('focus_lost'));
-document.addEventListener('visibilitychange',()=>{if(document.hidden)clearControls('focus_lost');});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)inspectWithoutManualControl('focus_lost');});
 window.addEventListener('pagehide',()=>{clearControls('page_closed');clearCamera();provider.close();});
 provider.connect(); refresh(); setInterval(refresh,50);
 // Separate the short control lease from camera/layout work. No automatic resume

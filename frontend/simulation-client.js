@@ -137,6 +137,7 @@ export class SimulationClient extends SimulationProvider {
     this.navigationAvailable = message.navigationAvailable === true;
     this.restarting = message.restarting ?? false;
     this.restartResult = message.restartResult ?? null;
+    this.presentation = message.presentation ?? null;
     this.simulatorStop = message.simulatorStop ?? null;
     this.simulatorStart = message.simulatorStart ?? this.simulatorStart;
     this.simulatorReset = message.simulatorReset ?? null;
@@ -263,7 +264,8 @@ export class SimulationClient extends SimulationProvider {
       return false;
     }
     const comparisonStart=type==='comparison_v2'&&payload.value?.operation==='RUN';
-    if (!['reconnect','stop_simulator'].includes(type) && (!this.connected || !this.fresh || (!this.controller && !comparisonStart&&!['start_driving','start_journey','take_control'].includes(type)))) return false;
+    const presentationStart=type==='presentation'&&payload.value?.operation==='RESTART';
+    if (!['reconnect','stop_simulator'].includes(type) && (!this.connected || !this.fresh || (!this.controller && !comparisonStart&&!presentationStart&&!['start_driving','start_journey','take_control'].includes(type)))) return false;
     if (type === 'controls' && ['PAUSED', 'EMERGENCY_STOP', 'DISCONNECTED'].includes(this.controlMode)) return false;
     if (type === 'controls' && this.now()-this.lastControlSentAt < 30) return false;
     const sequence = ++this.sequence;

@@ -7,6 +7,19 @@ from backend.core.driving_video import export_video
 
 
 class DrivingVideoTests(unittest.TestCase):
+    def test_presentation_video_starts_at_admitted_drive_instead_of_setup_frames(self):
+        try:import imageio_ffmpeg
+        except ImportError:self.skipTest('Optional MP4 encoder is not installed')
+        for mode in ('ROBOSPHERE','NORMAL'):
+            with self.subTest(mode=mode),tempfile.TemporaryDirectory() as directory:
+                root=Path(directory);self.recording(root)
+                (root/'events/events.jsonl').write_text(json.dumps({'timestamp_s':.1,
+                    'payload':{'journey':{'status':'RUNNING','driving_mode':mode,'presentation_id':'test'}}})+'\n')
+                status=export_video(root,allow_test_data=True)
+                self.assertEqual(status['alignment_source'],'ADMITTED_JOURNEY_START')
+                self.assertEqual(status['frames'],3)
+                self.assertAlmostEqual(status['clock_zero_timestamp_s'],.1)
+
     def recording(self,root):
         from PIL import Image
         (root/'telemetry').mkdir();(root/'events').mkdir()

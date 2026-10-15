@@ -27,16 +27,16 @@ test('native benchmark drivers remain distinct from legacy protection modes',()=
 });
 test('comparison distinguishes measured speed from the request and missing legacy peaks',()=>{
   const run={samples:20,mean_speed_kmh:14.2,maximum_speed_kmh:28.68,setup:{speed_kmh:50}};
-  assert.match(benchmarkSpeedText(run),/متوسط 14.2.*أقصى 28.7.*المطلوب 50/);
-  assert.match(benchmarkSpeedText({...run,maximum_speed_kmh:undefined}),/أقصى —/);
-  assert.match(benchmarkSpeedText({...run,samples:0}),/متوسط —.*أقصى —/);
+  assert.match(benchmarkSpeedText(run),/mean 14.2.*peak 28.7.*requested 50/);
+  assert.match(benchmarkSpeedText({...run,maximum_speed_kmh:undefined}),/peak —/);
+  assert.match(benchmarkSpeedText({...run,samples:0}),/mean —.*peak —/);
   assert.equal(benchmarkSpeedText(null),'');
 });
 test('unaccepted driving and missing disk space offer factual recovery messages',()=>{
-  assert.match(demoFailure('Hybrid native acceptance is unfinished'),/لم يكتمل/);
-  assert.match(demoFailure('No space left on device'),/مساحة/);
-  assert.match(demoFailure('Recording queue exhausted'),/أبطأ/);
-  assert.match(demoFailure('SWEPT_SPACE_UNKNOWN_OR_OCCUPIED'),/مساحة الحركة/);
-  assert.doesNotMatch(demoFailure('SWEPT_SPACE_UNKNOWN_OR_OCCUPIED'),/التسجيل/);
-  assert.match(demoFailure('sensor freshness fault'),/بيانات الحركة/);
+  assert.match(demoFailure('Hybrid native acceptance is unfinished'),/unfinished/);
+  assert.match(demoFailure('No space left on device'),/space/);
+  assert.match(demoFailure('Recording queue exhausted'),/falling behind/);
+  assert.match(demoFailure('SWEPT_SPACE_UNKNOWN_OR_OCCUPIED'),/movement corridor/);
+  assert.doesNotMatch(demoFailure('SWEPT_SPACE_UNKNOWN_OR_OCCUPIED'),/recording/);
+  assert.match(demoFailure('sensor freshness fault'),/Motion sensors/);
 });

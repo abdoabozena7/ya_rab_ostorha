@@ -406,7 +406,7 @@ class CarlaProvider:
             raise ValueError('Select the saved vehicle before preparing this comparison')
         self.stop_navigation()
         self.set_controls(brake=1)
-        if manifest.get('protocol') == 'HYBRID_NATIVE_BASELINE_V1':
+        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1'):
             if not self.benchmark_fixture or self.benchmark_fixture.condition['id'] != manifest['initial_condition_id']:
                 raise ValueError('The live benchmark fixture expired; start a new pair')
             self.benchmark_fixture.restore()
@@ -439,14 +439,19 @@ class CarlaProvider:
         self.population.set_route(tools.route['points'])
         self.set_controls(brake=1)
 
-    def start_navigation(self, speed_kmh, *, demo_options=None, driving_mode='ROBOSPHERE'):
+    def prepare_presentation(self, seed, speed):
+        from .presentation import prepare
+        return prepare(self, seed, speed)
+
+    def start_navigation(self, speed_kmh, *, demo_options=None, driving_mode='ROBOSPHERE', presentation=False):
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
             raise ValueError('Choose a valid destination and show its route before starting')
         # Resume always plans from the real vehicle's current location.
         self.dashboard_tools.replan_route()
         self.driving_mode = driving_mode
-        if driving_mode not in ('HYBRID','BASELINE') and self.benchmark_fixture:
+        self.presentation_mode = presentation
+        if driving_mode not in ('HYBRID','BASELINE') and not presentation and self.benchmark_fixture:
             self.benchmark_fixture.close(); self.benchmark_fixture = None
         self.hybrid_driver = None
         self.hybrid_alternative = None
@@ -457,7 +462,7 @@ class CarlaProvider:
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
-        if driving_mode in ('HYBRID', 'BASELINE'):
+        if driving_mode in ('HYBRID', 'BASELINE') or presentation:
             from .hybrid_navigation import RoadSpeedPolicy, behavior_agent_class
             self.hybrid_speed_policy = RoadSpeedPolicy(self.dashboard_tools.map)
         if driving_mode == 'BASELINE':
@@ -605,12 +610,12 @@ class CarlaProvider:
         if self.navigation is None:
             raise RuntimeError('No active native route controller')
         limit = self.ego.actor.get_speed_limit()
-        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE'):
+        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False):
             waypoint = self.dashboard_tools.map.get_waypoint(self.ego.actor.get_location())
             limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         requested=min(speed_kmh,limit) if limit>0 else speed_kmh
-        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE'):
+        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False):
             from ..core.route_terminal import terminal_speed_mps
             route=self.route_state()
             if route and route.get('remaining_m') is not None:

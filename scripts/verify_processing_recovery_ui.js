@@ -93,13 +93,13 @@ async (page) => {
     s.safetySystem={...s.safetySystem,status:'COVERAGE_LIMITED',active:true,reason:s.stopDiagnostics.reason};
   });
   await page.waitForFunction(()=>document.getElementById('cockpitBrakeReason').textContent.includes('coverage speed limit 3.04'));
-  check(await page.locator('#studioManualStop').textContent().then(t=>t.includes('إيقاف العربية')),'Clear ordinary stop label');
-  check(await page.locator('#emergencyStopBtn').textContent()==='إيقاف طوارئ','Clear emergency label');
+  check(await page.locator('#studioManualStop').textContent().then(t=>t.includes('Stop vehicle')),'Clear ordinary stop label');
+  check(await page.locator('#emergencyStopBtn').textContent()==='Emergency stop','Clear emergency label');
   check(await page.locator('#cockpitBrakeReason').isVisible(),'Applied brake reason visible beside percentage');
   await page.locator('#emergencyStopBtn').click();
   await page.waitForFunction(()=>document.getElementById('acknowledgeStopBtn').hidden===false);
   check(await page.locator('.cockpit-header-actions #acknowledgeStopBtn').count()===1,'Release action in the main header');
-  check(await page.locator('#acknowledgeStopBtn').textContent()==='فك إيقاف الطوارئ','Clear emergency release label');
+  check(await page.locator('#acknowledgeStopBtn').textContent()==='Release emergency stop','Clear emergency release label');
   for(const [width,height] of [[1720,914],[1440,900],[1366,768],[1100,768],[1024,768],[768,1024],[390,844],[320,720]]){
     await page.setViewportSize({width,height});
     check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Emergency: no horizontal overflow at '+width);
@@ -148,14 +148,14 @@ async (page) => {
     s.stopDiagnostics={braking:true,decision_source:'NAVIGATION',reason:'Red traffic light on the planned route'};
     s.lastDriveStop=null;
   });
-  await page.waitForFunction(()=>document.querySelector('.notice-copy strong').textContent==='انتظار الإشارة الحمراء');
+  await page.waitForFunction(()=>document.querySelector('.notice-copy strong').textContent==='Waiting at a red light');
   check(await page.locator('#cockpitResumeDrive').isHidden(),'Red signal never offers a restart or brake bypass');
   await page.evaluate(()=>{
     const s=window.__redesign.state;s.mode='PAUSED';s.journey={status:'ARRIVED',reason:'destination_reached'};s.route.arrived=true;
     s.lastDriveStop={status:'ARRIVED',detail:'destination_reached'};
   });
   await waitText('#cockpitDriverText','Arrived');
-  await page.waitForFunction(()=>document.querySelector('.notice-copy strong').textContent==='وصلت للوجهة');
+  await page.waitForFunction(()=>document.querySelector('.notice-copy strong').textContent==='Destination reached');
   check(await page.locator('#cockpitResumeDrive').isHidden(),'Arrival offers a new destination instead of restarting the completed route');
   await page.screenshot({path:'output/playwright/processing-recovery-arrived.png',fullPage:true});
   check(errors.length===0,'No browser exceptions');

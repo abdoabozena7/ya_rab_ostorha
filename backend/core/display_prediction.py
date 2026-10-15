@@ -74,8 +74,7 @@ class DisplayPredictionService:
                     previous=key
                     lidar=next(c for c in observation.channels if c.kind==SensorKind.LIDAR)
                     data=s.provider.get_sensor_asset(lidar.asset)
-                    if planning_active:
-                        depth_assets={c.asset.path:s.provider.get_sensor_asset(c.asset) for c in observation.channels if c.kind==SensorKind.DEPTH}
+                    depth_assets={c.asset.path:s.provider.get_sensor_asset(c.asset) for c in observation.channels if c.kind==SensorKind.DEPTH}
                     reference=copy.deepcopy(s.render_pose_cache.get(observation.frame_id))
                     source_frames=s.sensor_frame_cache.get(observation.frame_id,())
                     front=next((f for f in source_frames if f.sensor_id=='frontCamera'),None)
@@ -93,8 +92,12 @@ class DisplayPredictionService:
                 base=ControlCommand(observation.frame_id,observation.timestamp_s,ego.throttle,ego.brake,
                     ego.steering,ego.reverse,ego.handbrake,CommandSource.SYSTEM,ego.gear)
                 measured=getattr(s,'control_scene',None)
-                if measured is None or measured.observation.frame_id!=observation.frame_id:
-                    continue
+                if measured is None or measured.observation.frame_id!=observation.frame_id or not measured.prediction.get('motion_tracking_complete',True):
+                    from .control_scene import ControlSceneBuilder
+                    if getattr(self,'scene_builder',None) is None or self.scene_builder.session_id!=key[0]:
+                        self.scene_builder=ControlSceneBuilder(key[0],getattr(s.provider,'vehicle_geometry',None))
+                    assets={lidar.asset.path:data,**depth_assets}
+                    measured=self.scene_builder.build(observation,lambda a:assets[a.path],received_wall_s=captured)
                 prediction=to_dict(measured.prediction)
                 applied=getattr(s,'control_decision_prediction',None)
                 if applied and 0<=observation.timestamp_s-applied['timestamp_s']<=.1+1e-6:

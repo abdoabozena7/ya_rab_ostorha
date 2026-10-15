@@ -49,6 +49,9 @@ class SimulationService:
         self.last_video_frame = -1
         self.motion_snapshot=None
         self.navigation_heartbeat_at = -float('inf')
+        self.navigation_transport_at = -float('inf')
+        from .presentation import Presentation
+        self.presentation = Presentation(self)
         self.restart_result = None
         self.restarting = False
         self.simulator_stop = {'status':'IDLE'}
@@ -260,6 +263,8 @@ class SimulationService:
                     event_safety['prediction_reference'] = {k:prediction[k] for k in
                         ('session_id','evaluation_frame','prediction_source_frame','decision_source')}
                 self._event(EventType.ControlChanged, ya_rab_ostorha=event_safety)
+            supervisor.status.pop('decision_source',None)
+            self.safety_fault = None
         except (ValueError, KeyError, OSError, TypeError, ArithmeticError) as error:
             self._clear_safety_command()
             sensor_delay = not observer_only and stage == 'processing_freshness'
@@ -306,7 +311,11 @@ class SimulationService:
                     source=CommandSource.SAFETY, throttle=0., brake=1.)
                 self.safety_command = self.arbiter.submit(hold, frame_id=frame_id,
                     timestamp_s=timestamp_s, connected=True)
-                supervisor.brake=1.;supervisor.active=True;supervisor.started_s=observation.timestamp_s
+                # The applied timing hold is not evidence of an obstacle.
+                # Keep it out of obstacle hysteresis: the next independently
+                # fresh decision must assess the real scene, not release a
+                # fictitious full-brake hazard for another half second.
+                supervisor.active=True
                 supervisor.status.update(active=True, actual_generator='SENSOR_FRESHNESS',
                     decision_source='SENSOR_FRESHNESS', reason='Sensor delay; holding until the next fresh sensor frame')
                 self.safety_decision_key = self.safety_decision_command = None
@@ -450,7 +459,7 @@ class SimulationService:
                 if reason in ('operator_stop','operator_pause','controls_released','comparison_v2_stop'): source = 'DRIVER'
                 elif reason == 'destination_reached': source = 'NAVIGATION'
                 elif reason == 'emergency_stop': source = 'EMERGENCY_PROTECTION'
-                elif reason in ('focus_lost','workspace_changed','page_closed','ownership_taken'): source = 'VEHICLE_HOLD'
+                elif reason in ('focus_lost','workspace_changed','page_closed','ownership_taken','emergency_stop_released'): source = 'VEHICLE_HOLD'
             elif self.arbiter.machine.mode == ControlMode.PAUSED:
                 source = 'VEHICLE_HOLD'
                 reason = self.journey.get('reason') or 'Vehicle held; explicit driving start required'
@@ -480,6 +489,16 @@ class SimulationService:
             'control_timing_ms': dict(getattr(self,'control_timing_ms',{})),
             'sensor_ages_s': {s.sensor_id: stamp-s.sensor_timestamp_s for s in self.observation.sensors} if self.observation else {},
             'ego_render_pose': to_dict(self.observation.vehicle.transform) if self.observation else None}
+        stopped = (self.observation is not None and abs(self.observation.vehicle.speed_mps) < .15 and
+            self.journey.get('status') == 'RUNNING')
+        if not stopped: self.automatic_stopped_since = None
+        elif getattr(self,'automatic_stopped_since',None) is None: self.automatic_stopped_since = stamp
+        self.stop_diagnostics['stopped_for_s'] = max(0.,stamp-self.automatic_stopped_since) if stopped else 0.
+        event_reason = reason if stopped and command.brake > .01 else None
+        if getattr(self,'journey_comparison',None) and self.journey_comparison.active and event_reason != getattr(self,'previous_stop_event',None):
+            if event_reason: self.journey_comparison.event('Waiting', stamp, event_reason)
+            elif getattr(self,'previous_stop_event',None): self.journey_comparison.event('Driving resumed', stamp, 'Automatic continuation')
+        self.previous_stop_event = event_reason
         prediction = safety.get('prediction')
         if prediction and self.observation:
             reference = getattr(self,'render_pose_cache',{}).get(prediction['evaluation_frame'])
@@ -556,7 +575,7 @@ class SimulationService:
         from .recording import BufferedRunRecorder
         if isinstance(recorder, BufferedRunRecorder):
             recorder.finish()
-            if self.journey.get('driving_mode') in ('HYBRID','BASELINE'):
+            if self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id'):
                 from .driving_video import export_after_close
                 export_after_close(recorder)
         else:recorder.close()
@@ -604,7 +623,7 @@ class SimulationService:
                     if self.journey_auto_recording and self.recorder:
                         self.recorder.record_event(SimulationEvent(EventType.CollisionDetected,
                             collision.frame_id, collision.timestamp_s, {'collision': to_dict(collision)}))
-                    if self.journey.get('driving_mode') in ('HYBRID','BASELINE') and self.journey.get('status') == 'RUNNING':
+                    if (self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id')) and self.journey.get('status') == 'RUNNING':
                         self._stop_navigation('collision')
                     if getattr(self.provider,'scenario_outcomes_enabled',False) is True and not (self.rl_runtime and self.rl_runtime.active):
                         outcome=self.provider.observe_scenario_collision(collision)
@@ -761,7 +780,9 @@ class SimulationService:
                 'mode': self.journey.get('driving_mode') or 'UNPAIRED', 'applied': False}
         fixture=getattr(self.provider,'benchmark_fixture',None)
         if fixture and self.journey.get('benchmark') and (
-                self.journey.get('driving_mode')=='HYBRID' or not benchmark_terminal_supported({'status':status,'reason':reason})):
+                self.journey.get('driving_mode')=='HYBRID' or self.journey.get('presentation_id') and
+                self.journey.get('driving_mode')=='NORMAL' or not (benchmark_terminal_supported({'status':status,'reason':reason}) or
+                self.journey.get('presentation_id') and reason=='presentation_route_timeout')):
             try:fixture.close()
             except RuntimeError as error:
                 self._event(EventType.ControlChanged,benchmark_cleanup_error=str(error))
@@ -793,10 +814,15 @@ class SimulationService:
         if self.recorder:
             self._change_recording({'enabled': False})
 
-    def stop_driving(self, reason='operator_stop', *, cancel_comparison=True, failure=False):
+    def stop_driving(self, reason='operator_stop', *, cancel_comparison=True, failure=False, cancel_presentation=True):
         with self.lock:
             self._require_normal_runtime()
             self.require_connected()
+            if cancel_presentation:
+                if failure and self.presentation.busy:
+                    fault=self.runtime_fault or self.safety_fault or {}
+                    self.presentation.transition('ERROR', reason=fault.get('message') or reason)
+                else: self.presentation.cancel(reason)
             if cancel_comparison and self.comparison_v2: self.comparison_v2.request_stop(reason)
             self._stop_navigation(reason, status='ERROR' if failure else 'PAUSED')
             if self.arbiter.machine.mode == ControlMode.MANUAL:
@@ -809,9 +835,15 @@ class SimulationService:
     def _comparison_busy(self):
         return bool(self.comparison and self.comparison.busy or self.comparison_v2 and self.comparison_v2.busy)
 
-    def start_journey(self, speed_kmh=30, *, driving_mode=None, pair_id=None, benchmark=False):
+    def start_journey(self, speed_kmh=30, *, driving_mode=None, pair_id=None, benchmark=False, presentation_id=None):
         if type(benchmark) is not bool: raise ValueError('Benchmark must be an explicit boolean')
-        if benchmark and driving_mode not in ('HYBRID','BASELINE'):
+        if self.presentation.busy and presentation_id is None:
+            raise ValueError('Stop the presentation before starting a separate journey')
+        presentation = (presentation_id is not None and self.presentation.busy and
+            presentation_id == self.presentation.data['id'] and driving_mode in self.presentation.MODES)
+        if presentation_id is not None and not presentation:
+            raise ValueError('Presentation request belongs to an inactive session')
+        if benchmark and not presentation and driving_mode not in ('HYBRID','BASELINE'):
             raise ValueError('The matched benchmark uses HYBRID and BASELINE drivers')
         if self._comparison_busy():
             raise ValueError('Stop/Reset the comparison before starting another journey')
@@ -819,7 +851,7 @@ class SimulationService:
         if not self.arbiter.machine.allow_navigation:
             raise ValueError('Destination journeys are unavailable in this mode')
         speed = finite(speed_kmh)
-        maximum = 50 if driving_mode in ('HYBRID','BASELINE') else 30
+        maximum = 50 if driving_mode in ('HYBRID','BASELINE') or presentation else 30
         if not 5 <= speed <= maximum:
             raise ValueError(f'Journey speed must be 5–{maximum} km/h')
         if driving_mode == 'HYBRID':
@@ -855,6 +887,7 @@ class SimulationService:
             self.release_controls()
             self.navigation_heartbeat_at = self.now()
             self.journey = {'status': 'STARTING', 'reason': None, 'speed_kmh': speed}
+            if presentation: self.journey.update(presentation_id=presentation_id, benchmark=True)
             if driving_mode in ('HYBRID','BASELINE'):self.journey['benchmark']=benchmark or pair_id is not None
             self.last_drive_stop = None
             self.safety_processing_wait_at = None
@@ -871,6 +904,20 @@ class SimulationService:
             if self.journey['status'] not in ('STARTING', 'RUNNING'):
                 return
             self.navigation_heartbeat_at = self.now()
+
+    def navigation_transport_heartbeat(self, session_id):
+        """Only the current owner's verified WebSocket pong renews this lease.
+
+        It is separate from the 350 ms actuator and sensor freshness guards.
+        Browser timers may be throttled while the autonomous drive is hidden.
+        """
+        with self.lock:
+            if session_id == self.session_id:
+                self.navigation_transport_at = self.now()
+
+    def _navigation_connection_alive(self):
+        return (self.now()-self.navigation_heartbeat_at <= self.CONTROL_TTL or
+                self.now()-self.navigation_transport_at <= 1.)
 
     def set_journey_speed(self, speed_kmh):
         if self._comparison_busy():
@@ -895,7 +942,7 @@ class SimulationService:
     def _navigation_step(self):
         if self.arbiter.machine.mode != ControlMode.AUTOMATIC:
             return
-        if self.now()-self.navigation_heartbeat_at > self.CONTROL_TTL:
+        if not self._navigation_connection_alive():
             self._stop_navigation('dashboard_heartbeat_timeout')
             return
         receipt = self.arbiter.safety.receipts.get(CommandSource.NAVIGATION)
@@ -904,7 +951,7 @@ class SimulationService:
             # Keep the still-valid selected command; never bypass the rate guard.
             return
         route = self.provider.route_state()
-        if (self.journey.get('driving_mode') in ('HYBRID','BASELINE') and route.get('arrived')
+        if ((self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id')) and route.get('arrived')
                 and route.get('remaining_m',float('inf'))<6. and self.observation.vehicle.speed_mps<.15):
             driver=getattr(self.provider,'hybrid_driver',None)
             if driver and driver.alternative_started is not None and math.dist(
@@ -1067,6 +1114,7 @@ class SimulationService:
     def emergency_stop(self):
         with self.lock:
             self.require_connected()
+            self.presentation.cancel('emergency_stop')
             if self.comparison_v2: self.comparison_v2.request_stop('emergency_stop')
             self._stop_navigation('emergency_stop')
             self.arbiter.emergency_stop(connected=True)
@@ -1076,6 +1124,10 @@ class SimulationService:
         with self.lock:
             self.require_connected()
             self.arbiter.acknowledge_stop(connected=True)
+            if self.journey.get('reason')=='emergency_stop':
+                self.journey['reason']='emergency_stop_released'
+                self.maneuver_status.update(reason='emergency_stop_released')
+                self._event(EventType.ControlChanged,journey=copy.deepcopy(self.journey))
 
     def reset_vehicle(self):
         if self.comparison and self.comparison.busy and self.comparison is not self.comparison_v2:
@@ -1244,6 +1296,7 @@ class SimulationService:
             if self.simulator_start['status']=='STARTING':raise ValueError('Wait for simulation startup to finish')
             if self.restarting:raise ValueError('Wait for the CARLA restart to finish')
             if self.simulator_stop['status'] in ('STOPPING','STOPPED'):return
+            self.presentation.cancel('simulator_shutdown')
             self.simulator_stop={'status':'STOPPING','launch':copy.deepcopy(getattr(self.provider.runtime,'active',None))}
             self._stop_navigation('simulator_shutdown')
             self.release_controls()
@@ -1317,6 +1370,7 @@ class SimulationService:
             # Replace complete state atomically; WebSocket observers cannot see a
             # partially initialized service while reconnect is in progress.
             self.__dict__.update(fresh.__dict__)
+            self.presentation.service = self
             self.events.subscribe(self._log_event)
             self.events.subscribe(self._record_event)
             self.start()
@@ -1330,7 +1384,10 @@ class SimulationService:
         controlled_idle = self.rl_runtime is not None and self.rl_runtime.active and not self.rl_runtime.expired()
         return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and not self.reconfiguring and (controlled_idle or self.now()-self.state_at < 1)
 
-    def snapshot(self):
+    def stream_snapshot(self):
+        return self.snapshot(stream=True)
+
+    def snapshot(self, *, stream=False):
         with self.lock:
             status = getattr(self.provider, 'restart_status', lambda: None)()
             if isinstance(status, dict) and isinstance(status.get('status'), str):
@@ -1351,7 +1408,7 @@ class SimulationService:
             display_observation=self.observation if live else None
             result = {'sequence': self.sequence, 'connected': live, 'available': live,
                     'sessionId': self.session_id, 'journey': copy.deepcopy(self.journey),
-                    'journeyComparison': self.journey_comparison.snapshot(),
+                    'journeyComparison': self.journey_comparison.snapshot(compact=stream),
                     'hybridDriving': hybrid_capability_status(),
                     'comparisonDemo': self.historical_comparison.snapshot() if self.historical_comparison else self.comparison.snapshot() if self.comparison else None,
                     'comparisonV2': self.comparison_v2.snapshot() if self.comparison_v2 else None,
@@ -1401,13 +1458,16 @@ class SimulationService:
                     'controlSource': self.arbiter.last_selection.source.value if self.arbiter.last_selection else None,
                     'manualDrivingMode': self.manual_driving_mode,
                     'controlExpired': self.now()-self.command_at > self.CONTROL_TTL}
+        result['presentation'] = self.presentation.snapshot()
         if display_observation is not None:
-            rich_view=dashboard_frame(display_observation)
+            rich_view=dashboard_frame(display_observation,rich=not stream)
             for key in ('vehicle','world','sensors','canonical','frameComplete','missingRequiredSensors'):
                 result[key]=rich_view[key]
         # Registry serialization can traverse large sensor payloads. It is a
         # display operation, never work protected by the control lock.
-        result['sensorRegistry'] = getattr(self.provider, 'sensor_registry', lambda: {})() if live else {}
+        result['sensorRegistry'] = getattr(self.provider, 'sensor_registry', lambda: {})() if live and not stream else {}
+        if stream and isinstance(result.get('population'),dict):
+            result['population']={k:v for k,v in result['population'].items() if k not in ('driver_profiles','walker_profiles')}
         result['displayCamera'] = self.provider.driving_camera()[1] if live and hasattr(self.provider,'driving_camera') else None
         motion=getattr(self,'motion_snapshot',None)
         result['motionQuality']=motion.get('motionQuality') if motion and motion.get('session_id')==self.session_id else None
@@ -1514,6 +1574,9 @@ class SimulationService:
                     self.control_scene_ego_actor_id = observation.vehicle.actor_id
                 measured = sensor_observation(observation)
                 scene = self.control_scene_builder.build(measured, self.provider.get_sensor_asset,
+                    track_motion=(self.journey.get('driving_mode')=='HYBRID' or
+                        getattr(self.provider,'navigation_planner',None) is not None or
+                        getattr(self.provider,'navigation_recovery',None) is not None),
                     received_wall_s=min((c.metadata.get('received_monotonic_s', self.now()) for c in observation.sensors
                         if c.sensor_id in self.synchronizer.required), default=self.now()),
                     semantic_result=getattr(self, 'control_perception', None).latest(self.session_id)
@@ -1634,7 +1697,7 @@ class SimulationService:
                 try:
                     with self.lock:
                         journey = self.journey
-                        if self.journey['status'] != 'STARTING' or self.now()-self.navigation_heartbeat_at > self.CONTROL_TTL:
+                        if self.journey['status'] != 'STARTING' or not self._navigation_connection_alive():
                             raise ValueError('Dashboard heartbeat expired before journey start')
                         if self.paused:
                             self.provider.set_paused(False); self.paused = False
@@ -1643,19 +1706,22 @@ class SimulationService:
                     # planning; this worker remains the only native tick owner.
                     driving_mode = journey.get('driving_mode')
                     if driving_mode:
-                        manifest = (self.provider.journey_manifest(value, benchmark=True) if driving_mode in ('HYBRID','BASELINE') and journey.get('benchmark')
+                        manifest = (self.provider.journey_manifest(value, benchmark=True) if journey.get('benchmark')
                                     else self.provider.journey_manifest(value))
+                        if journey.get('presentation_id'):
+                            manifest.update(presentation_id=journey['presentation_id'], protocol='PRESENTATION_RULE_NORMAL_V1')
                         self.active_safety.set_controller('RULE')
                         self.active_safety.enabled = True
                         self.active_safety.reset()
                         self.journey_observer = {}
-                        result = self.provider.start_navigation(value, driving_mode=driving_mode)
+                        result = self.provider.start_navigation(value, driving_mode=driving_mode,
+                            **({'presentation': True} if journey.get('presentation_id') else {}))
                     else:
                         result = self.provider.start_navigation(value)
                     with self.lock:
                         if self.journey is not journey or journey['status'] != 'STARTING':
                             self.provider.stop_navigation()
-                        elif self.now()-self.navigation_heartbeat_at > self.CONTROL_TTL:
+                        elif not self._navigation_connection_alive():
                             self._stop_navigation('dashboard_heartbeat_timeout')
                         else:
                             if driving_mode:
@@ -1789,7 +1855,7 @@ class SimulationService:
             if training_command is None:
                 if self.navigation_ready_frame is not None:
                     if self.journey['status']!='STARTING':self.navigation_ready_frame=None
-                    elif self.now()-self.navigation_heartbeat_at>self.CONTROL_TTL:
+                    elif not self._navigation_connection_alive():
                         self.navigation_ready_frame=None;self._stop_navigation('dashboard_heartbeat_timeout')
                     elif (self.observation.complete and self.observation.frame_id>=self.navigation_ready_frame
                           and (self.active_safety is None or (self.safety_observed_at is not None
@@ -1893,6 +1959,7 @@ class SimulationService:
         if any(name == 'reset' for name, _ in actions):
             self._event(EventType.VehicleSpawned, actor_id=observation.vehicle.actor_id)
         self._finish_journey_recording()
+        self.presentation.tick()
         self.backend_step_ms = (self.now()-started)*1000
         if self.comparison:
             with self.lock:
@@ -1911,6 +1978,7 @@ class SimulationService:
                 'last_applied_native_controls':copy.deepcopy(native_controls) if isinstance(native_controls,dict) else None,
                 'observed_vehicle':to_dict(self.observation.vehicle) if self.observation else None}
             self.error=str(error)
+            if self.presentation.busy: self.presentation.transition('ERROR', reason=str(error))
             self._event(EventType.ConnectionLost,reason=str(error),runtime_fault=copy.deepcopy(self.runtime_fault))
             self._stop_navigation('runtime_failure',status='ERROR')
             self.release_controls();self.arbiter.disconnect();self.lifecycle.fail(error)

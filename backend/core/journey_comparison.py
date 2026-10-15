@@ -49,7 +49,7 @@ class JourneyComparison:
         self.near = self.intervening = False
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
-            if saved.get('version') in (1, 2) and isinstance(saved.get('runs'), dict):
+            if saved.get('version') in (1, 2, 3) and isinstance(saved.get('runs'), dict):
                 self.data = saved
                 for run in saved['runs'].values():
                     if run['status'] == 'RUNNING':
@@ -77,7 +77,7 @@ class JourneyComparison:
             raise ValueError('Comparison changed; prepare its mode again')
         if pair_id is None:
             benchmark = mode in BENCHMARK_MODES
-            self.data = {'version': 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
+            self.data = {'version': 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
                          'driver_modes':list(BENCHMARK_MODES if benchmark else MODES),
                          'manifest': copy.deepcopy(manifest), 'runs': {}}
         elif mode not in self.data.get('driver_modes', MODES):
@@ -184,11 +184,18 @@ class JourneyComparison:
         self.active = self.previous = None
         self.save()
 
-    def snapshot(self):
-        result = copy.deepcopy(self.data)
+    def snapshot(self, *, compact=False):
+        data=self.data
+        if compact:
+            def setup(value):
+                return {k:v for k,v in (value or {}).items() if k!='initial_conditions'}
+            data={**data,'manifest':setup(data.get('manifest')),
+                'runs':{mode:{**{k:v for k,v in run.items() if k not in ('setup','stop_diagnostics')},
+                    'setup':setup(run.get('setup'))} for mode,run in data.get('runs',{}).items()}}
+        result = copy.deepcopy(data)
         modes = result.get('driver_modes', MODES)
         result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))
-        if result.get('version') == 2:
+        if result.get('version') in (2, 3):
             audits = [result['runs'].get(m, {}).get('setup', {}).get('initial_condition_id') for m in modes]
             verified = all(result['runs'].get(m, {}).get('initial_condition_audit', {}).get('passed') is True for m in modes)
             result['conditions_match'] = result['conditions_match'] and bool(audits[0]) and audits[0] == audits[1] and verified

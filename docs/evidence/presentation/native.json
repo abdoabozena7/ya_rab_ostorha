@@ -1,0 +1,1101 @@
+{
+  "source": "RETAINED_NATIVE_PRESENTATION_RECORDINGS",
+  "presentations": [
+    {
+      "id": "76269057f5174159b3f8f093a0b2db74",
+      "status": "CANCELLED",
+      "reason": "ya_rab_ostorha_sensor_fault",
+      "seed": 2106167374,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            100.63584899902344,
+            -50.60443878173828,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 264.5237088994975,
+        "origin_index": 80,
+        "population": {
+          "vehicle_count": 20,
+          "pedestrian_count": 15,
+          "speed_behavior": "FAST",
+          "seed": 2106167374,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "EGO_SURROUNDING",
+          "vehicle_mix": "MIXED"
+        },
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 14587.843,
+          "timestamp_s": 19.394690230488777
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 14587.953,
+          "timestamp_s": 19.444690231233835
+        },
+        {
+          "status": "READY",
+          "wall_s": 14588.75,
+          "timestamp_s": 19.494690231978893
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 14589.015,
+          "timestamp_s": 19.54469023272395
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 14589.828,
+          "timestamp_s": 19.644690234214067
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 14610.937,
+          "timestamp_s": 24.344690304249525
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "53ea2d9d3f96b301273398c80feff22141dd08f8eb10cbb6c94eff3837ebf6a4",
+      "pair_id": "6ad843f2a58a46758ebbb18625b78dd8",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "b1af2519db1747f6b3a00e802b3e848a",
+          "status": "ERROR",
+          "reason": "ya_rab_ostorha_sensor_fault",
+          "duration_s": 4.750000070780516,
+          "distance_m": 0.7729568108916283,
+          "route_completion_percent": 0.0,
+          "destination_reached": false,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 0,
+          "safety_interventions": 3,
+          "safety_intervention_s": 4.350000064820051,
+          "mean_speed_kmh": 0.576230725227532,
+          "maximum_speed_kmh": 10.583999347686769,
+          "samples": 96,
+          "sensor_coverage_percent": 69.79166666666667,
+          "recording_id": "run_c73a02fd6ba84866aac829edbb7a8f2c",
+          "maximum_stopped_s": 3.8500000573694706,
+          "delay_hold_decisions": 24,
+          "sensor_age_p50_ms": 188.00000000010186,
+          "decision_reasons": [
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Holding measured clearance/TTC hysteresis",
+              "count": 33
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Sensor delay; holding until the next fresh sensor frame",
+              "count": 24
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Risk cleared; releasing brake smoothly to base driver",
+              "count": 24
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 8
+            },
+            {
+              "source": "RULE",
+              "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+              "count": 4
+            },
+            {
+              "source": "RULE",
+              "reason": "Risk cleared; releasing brake smoothly to base driver",
+              "count": 2
+            },
+            {
+              "source": "COMMUNICATION_FAILURE",
+              "reason": "disconnected",
+              "count": 1
+            },
+            {
+              "source": "SENSOR_FAILURE",
+              "reason": "Fresh complete safety observations unavailable",
+              "count": 1
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "14cbbeade8e725a17962b828d2eba3680b056fb8aed5c919d4f459a7b4136bd6"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 128,
+            "first_timestamp_s": 18.04469021037221,
+            "last_timestamp_s": 24.394690304994583,
+            "duration_s": 6.350000094622374,
+            "video": "driving.mp4",
+            "sha256": "d94471af8bdfe3b0ed7e32eef892694f4f6bd5943ab53233c0bcdf54b0dee091",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 18.04469021037221,
+            "alignment_source": "FIRST_RECORDED_CAMERA_FRAME",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        }
+      }
+    },
+    {
+      "id": "901c901f48564822ae4939ea31b9d69f",
+      "status": "ERROR",
+      "reason": "Stop the vehicle before selecting a journey mode",
+      "seed": 816734807,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            100.63584899902344,
+            -50.60443878173828,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 264.5237088994975,
+        "origin_index": 80,
+        "population": {
+          "vehicle_count": 20,
+          "pedestrian_count": 15,
+          "speed_behavior": "FAST",
+          "seed": 816734807,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "EGO_SURROUNDING",
+          "vehicle_mix": "MIXED"
+        },
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 14831.343,
+          "timestamp_s": 108.67010866478086
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 14831.39,
+          "timestamp_s": 108.72010866552591
+        },
+        {
+          "status": "READY",
+          "wall_s": 14831.656,
+          "timestamp_s": 108.77010866627097
+        },
+        {
+          "status": "ERROR",
+          "wall_s": 14831.75,
+          "timestamp_s": 108.82010866701603
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "f5eff0d3ce2f6d283d1d9d9ffa32b0109fc81cdd859e332cb37c35f7e05e76e5",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "c3ee31cd36a9410c9e03bfc357ae37b8",
+      "status": "CANCELLED",
+      "reason": "operator_stop",
+      "seed": 1619811554,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            -114.2754135131836,
+            47.62446594238281,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 266.46573230486626,
+        "origin_index": 152,
+        "population": {
+          "vehicle_count": 20,
+          "pedestrian_count": 15,
+          "speed_behavior": "FAST",
+          "seed": 1619811554,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "EGO_SURROUNDING",
+          "vehicle_mix": "MIXED"
+        },
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 14928.312,
+          "timestamp_s": 164.19114668294787
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 14928.406,
+          "timestamp_s": 164.24114668369293
+        },
+        {
+          "status": "READY",
+          "wall_s": 14929.156,
+          "timestamp_s": 164.291146684438
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 14929.984,
+          "timestamp_s": 164.79114669188857
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 14930.687,
+          "timestamp_s": 164.94114669412374
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 15133.875,
+          "timestamp_s": 224.39114757999778
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "9633fca9ea11a98f657e2d34dfbd3554b912087e1f17f0a94d1f1e5959f1e66f",
+      "pair_id": "b725a9d70b314f468758a7f9cc09b47c",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "7eaa4494dfca4984925e534123997ec8",
+          "status": "INTERRUPTED",
+          "reason": "operator_stop",
+          "duration_s": 59.50000088661909,
+          "distance_m": 13.501720049621927,
+          "route_completion_percent": 4.335266570202235,
+          "destination_reached": false,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 7,
+          "safety_interventions": 49,
+          "safety_intervention_s": 38.750000577419996,
+          "mean_speed_kmh": 0.8248920403863607,
+          "maximum_speed_kmh": 11.793400276144602,
+          "samples": 1191,
+          "sensor_coverage_percent": 90.76406381192275,
+          "recording_id": "run_d71d5812cc8c4815a551d62744407a6a",
+          "maximum_stopped_s": 5.15000007674098,
+          "delay_hold_decisions": 110,
+          "sensor_age_p50_ms": 139.99999999941792,
+          "decision_reasons": [
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Risk cleared; releasing brake smoothly to base driver",
+              "count": 450
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 415
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Holding measured clearance/TTC hysteresis",
+              "count": 214
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Sensor delay; holding until the next fresh sensor frame",
+              "count": 110
+            },
+            {
+              "source": "VEHICLE_HOLD",
+              "reason": "Vehicle held; explicit driving start required",
+              "count": 2
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "No valid foreground return; absence is not free space",
+              "count": 2
+            },
+            {
+              "source": "DRIVER",
+              "reason": "operator_stop",
+              "count": 1
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "a1a2b85e1a434986e442306b53ddbcf4f2dc05467608f450bf4fb65f2548e055"
+          },
+          "video": {
+            "status": "ENCODING",
+            "file_checksum_verified": false
+          }
+        }
+      }
+    },
+    {
+      "id": "ebce6a36a3384331a97dd86d1581bafa",
+      "status": "COMPLETE",
+      "reason": null,
+      "seed": 261971779,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            -114.2754135131836,
+            47.62446594238281,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 266.46573230486626,
+        "origin_index": 152,
+        "population": {
+          "vehicle_count": 20,
+          "pedestrian_count": 15,
+          "speed_behavior": "FAST",
+          "seed": 261971779,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "EGO_SURROUNDING",
+          "vehicle_mix": "MIXED"
+        },
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 15294.859,
+          "timestamp_s": 44.07489688321948
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 15294.89,
+          "timestamp_s": 44.12489688396454
+        },
+        {
+          "status": "READY",
+          "wall_s": 15295.515,
+          "timestamp_s": 44.1748968847096
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 15296.25,
+          "timestamp_s": 44.67489689216018
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 15296.781,
+          "timestamp_s": 44.82489689439535
+        },
+        {
+          "status": "FINALIZING",
+          "wall_s": 15535.312,
+          "timestamp_s": 161.3748986311257
+        },
+        {
+          "status": "RESTORING",
+          "wall_s": 15535.359,
+          "timestamp_s": 161.42489863187075
+        },
+        {
+          "status": "READY",
+          "wall_s": 15535.484,
+          "timestamp_s": 161.4748986326158
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 15536.14,
+          "timestamp_s": 161.97489864006639
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 15536.562,
+          "timestamp_s": 162.12489864230156
+        },
+        {
+          "status": "FINALIZING",
+          "wall_s": 15581.0,
+          "timestamp_s": 176.82489886134863
+        },
+        {
+          "status": "EXPORTING",
+          "wall_s": 15582.5,
+          "timestamp_s": 177.87489887699485
+        },
+        {
+          "status": "PLAYBACK",
+          "wall_s": 15601.718,
+          "timestamp_s": 192.07489908859134
+        },
+        {
+          "status": "COMPLETE",
+          "wall_s": 15721.578,
+          "timestamp_s": 286.9249005019665
+        }
+      ],
+      "conditions_match": true,
+      "evidence_sha256": "57f841f29b0d3a761b0188db59ca501af2ff740d4d97447c8a21aadfed202742",
+      "pair_id": "b6bf7a3ae4ed445ab542e258178da81f",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "5f24c208ef4a4e87ab0abc84af8a2b32",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "duration_s": 116.55000173673034,
+          "distance_m": 262.7079401222149,
+          "route_completion_percent": 100.0,
+          "destination_reached": true,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 14,
+          "safety_interventions": 73,
+          "safety_intervention_s": 22.000000327825546,
+          "mean_speed_kmh": 8.111482318878858,
+          "maximum_speed_kmh": 45.62352219217814,
+          "samples": 2332,
+          "sensor_coverage_percent": 98.88507718696398,
+          "recording_id": "run_77a89ec21556425a963dfac77200c1f2",
+          "maximum_stopped_s": 30.550000455230474,
+          "delay_hold_decisions": 24,
+          "sensor_age_p50_ms": 77.99999999951979,
+          "decision_reasons": [
+            {
+              "source": "NAVIGATION",
+              "reason": "Red traffic light on the planned route",
+              "count": 1199
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 631
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Risk cleared; releasing brake smoothly to base driver",
+              "count": 136
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "Navigation speed/route controller",
+              "count": 61
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Holding measured clearance/TTC hysteresis",
+              "count": 50
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Limiting acceleration to stop within 17.50 m of measured road",
+              "count": 36
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Limiting acceleration to stop within 18.00 m of measured road",
+              "count": 34
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Limiting acceleration to stop within 11.50 m of measured road",
+              "count": 25
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Sensor delay; holding until the next fresh sensor frame",
+              "count": 24
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Limiting acceleration to stop within 11.00 m of measured road",
+              "count": 22
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Limiting acceleration to stop within 14.50 m of measured road",
+              "count": 15
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Limiting acceleration to stop within 16.00 m of measured road",
+              "count": 15
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "e87f9485beb72d06d8bcb0837db495b87461b0762de6fd69d4761d9e7c6bfb40"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 2365,
+            "first_timestamp_s": 43.174896869808435,
+            "last_timestamp_s": 161.3748986311257,
+            "duration_s": 118.20000176131725,
+            "video": "driving.mp4",
+            "sha256": "5fa93a5b6a96931ca94d70820c90b08508ca62fe24058b9ce8fbde5f1aa8657a",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 43.174896869808435,
+            "alignment_source": "FIRST_RECORDED_CAMERA_FRAME",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        },
+        "NORMAL": {
+          "id": "6eaf7c6f4b684759aac5d384354b13f6",
+          "status": "COLLISION",
+          "reason": "collision",
+          "duration_s": 14.70000021904707,
+          "distance_m": 139.3029850342048,
+          "route_completion_percent": 0.0,
+          "destination_reached": false,
+          "collisions": 1,
+          "near_misses": 2,
+          "harsh_braking_events": 1,
+          "safety_interventions": 0,
+          "safety_intervention_s": 0.0,
+          "mean_speed_kmh": 34.05662877289167,
+          "maximum_speed_kmh": 50.273301718195746,
+          "samples": 295,
+          "sensor_coverage_percent": 95.2542372881356,
+          "recording_id": "run_a41b1261f20147dda00b0c621115ad6f",
+          "maximum_stopped_s": 0.2500000037252903,
+          "delay_hold_decisions": 0,
+          "sensor_age_p50_ms": 125.0,
+          "decision_reasons": [
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 262
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "Navigation speed/route controller",
+              "count": 33
+            },
+            {
+              "source": "VEHICLE_HOLD",
+              "reason": "Vehicle held; explicit driving start required",
+              "count": 2
+            },
+            {
+              "source": "COMMAND_WATCHDOG",
+              "reason": "collision",
+              "count": 1
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "e87f9485beb72d06d8bcb0837db495b87461b0762de6fd69d4761d9e7c6bfb40"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 329,
+            "first_timestamp_s": 160.47489861771464,
+            "last_timestamp_s": 176.8748988620937,
+            "duration_s": 16.400000244379044,
+            "video": "driving.mp4",
+            "sha256": "15bb62d19410a03264aabe339a4dff78fb916a03b7f79321ffde4bc3c3baad81",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 160.47489861771464,
+            "alignment_source": "FIRST_RECORDED_CAMERA_FRAME",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        }
+      }
+    },
+    {
+      "id": "1603fc8a4d304c839d93c35f8b39fd1c",
+      "status": "COMPLETE",
+      "reason": null,
+      "seed": 1133428039,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            100.63584899902344,
+            -50.60443878173828,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 264.5237088994975,
+        "origin_index": 80,
+        "population": {
+          "vehicle_count": 20,
+          "pedestrian_count": 15,
+          "speed_behavior": "FAST",
+          "seed": 1133428039,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "EGO_SURROUNDING",
+          "vehicle_mix": "MIXED"
+        },
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 22308.343,
+          "timestamp_s": 9.406258132308722
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 22308.375,
+          "timestamp_s": 9.406258132308722
+        },
+        {
+          "status": "READY",
+          "wall_s": 22309.171,
+          "timestamp_s": 9.45625813305378
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 22310.14,
+          "timestamp_s": 9.95625814050436
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 22310.734,
+          "timestamp_s": 10.106258142739534
+        },
+        {
+          "status": "FINALIZING",
+          "wall_s": 22494.39,
+          "timestamp_s": 101.65625950694084
+        },
+        {
+          "status": "RESTORING",
+          "wall_s": 22494.484,
+          "timestamp_s": 101.7062595076859
+        },
+        {
+          "status": "READY",
+          "wall_s": 22494.75,
+          "timestamp_s": 101.75625950843096
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 22495.5,
+          "timestamp_s": 102.25625951588154
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 22495.89,
+          "timestamp_s": 102.40625951811671
+        },
+        {
+          "status": "FINALIZING",
+          "wall_s": 22663.562,
+          "timestamp_s": 190.4062608294189
+        },
+        {
+          "status": "EXPORTING",
+          "wall_s": 22663.656,
+          "timestamp_s": 190.506260830909
+        },
+        {
+          "status": "PLAYBACK",
+          "wall_s": 22704.781,
+          "timestamp_s": 221.90626129880548
+        },
+        {
+          "status": "COMPLETE",
+          "wall_s": 22798.031,
+          "timestamp_s": 297.7062624283135
+        }
+      ],
+      "conditions_match": true,
+      "evidence_sha256": "99bb62ab749254ba4054ed8ba61be3388abd670d27b69d33817e64fe17707a5f",
+      "pair_id": "e320fd336a1a4ea592f70ca802d18269",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "d28f928736084c85981db695eaff7518",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "duration_s": 91.55000136420131,
+          "distance_m": 257.2764699235455,
+          "route_completion_percent": 100.0,
+          "destination_reached": true,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 6,
+          "safety_interventions": 57,
+          "safety_intervention_s": 12.700000189244747,
+          "mean_speed_kmh": 10.020803457823337,
+          "maximum_speed_kmh": 49.295452740139964,
+          "samples": 1827,
+          "sensor_coverage_percent": 98.0295566502463,
+          "recording_id": "run_383536ff237e455d96230b92ac87406f",
+          "maximum_stopped_s": 41.95000062510371,
+          "delay_hold_decisions": 25,
+          "sensor_age_p50_ms": 77.9999999977008,
+          "decision_reasons": [
+            {
+              "source": "NAVIGATION",
+              "reason": "Red traffic light on the planned route",
+              "count": 1132
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 369
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "Navigation speed/route controller",
+              "count": 74
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 18.00 m of measured road",
+              "count": 45
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 17.50 m of measured road",
+              "count": 40
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Sensor delay; holding until the next fresh sensor frame",
+              "count": 25
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 16.00 m of measured road",
+              "count": 9
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 16.50 m of measured road",
+              "count": 9
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 33.00 m of measured road",
+              "count": 9
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 11.50 m of measured road",
+              "count": 8
+            },
+            {
+              "source": "RULE",
+              "reason": "Risk cleared; releasing brake smoothly to base driver",
+              "count": 8
+            },
+            {
+              "source": "RULE",
+              "reason": "Limiting acceleration to stop within 11.00 m of measured road",
+              "count": 7
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "7f2250e79f54fc279273cc90a51d6a6f4ba18156ec2d87d1e103457251f74bb8"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 1833,
+            "first_timestamp_s": 10.056258141994476,
+            "last_timestamp_s": 101.65625950694084,
+            "duration_s": 91.60000136494637,
+            "video": "driving.mp4",
+            "sha256": "89bd0fd5eaca32eb5fb0ccf723b9654f4c7ae71bbf64076a145434f663021dd9",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 10.056258141994476,
+            "alignment_source": "ADMITTED_JOURNEY_START",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        },
+        "NORMAL": {
+          "id": "fd2d7381c65a4a12a86e952f81573f09",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "duration_s": 88.00000131130219,
+          "distance_m": 256.95750773774796,
+          "route_completion_percent": 100.0,
+          "destination_reached": true,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 5,
+          "safety_interventions": 0,
+          "safety_intervention_s": 0.0,
+          "mean_speed_kmh": 10.448423123459083,
+          "maximum_speed_kmh": 50.32445157476326,
+          "samples": 1757,
+          "sensor_coverage_percent": 97.66647694934548,
+          "recording_id": "run_a3a44c54d8114104bd9fcabdc0379ac1",
+          "maximum_stopped_s": 41.95000062510371,
+          "delay_hold_decisions": 0,
+          "sensor_age_p50_ms": 77.9999999977008,
+          "decision_reasons": [
+            {
+              "source": "NAVIGATION",
+              "reason": "Red traffic light on the planned route",
+              "count": 1140
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 518
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "Navigation speed/route controller",
+              "count": 102
+            },
+            {
+              "source": "VEHICLE_HOLD",
+              "reason": "Vehicle held; explicit driving start required",
+              "count": 2
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "destination_reached",
+              "count": 1
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "7f2250e79f54fc279273cc90a51d6a6f4ba18156ec2d87d1e103457251f74bb8"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 1762,
+            "first_timestamp_s": 102.35625951737165,
+            "last_timestamp_s": 190.4062608294189,
+            "duration_s": 88.05000131204724,
+            "video": "driving.mp4",
+            "sha256": "a07b60bf1ef65658da9426a69eb3a5fc45fbfd4c944fbeb4ac20c3b48f4a307e",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 102.35625951737165,
+            "alignment_source": "ADMITTED_JOURNEY_START",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        }
+      }
+    },
+    {
+      "id": "48a4b92e4be8494195104fc276b6fd67",
+      "status": "CANCELLED",
+      "reason": "operator_stop",
+      "seed": 1568483395,
+      "setup": null,
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 23032.703,
+          "timestamp_s": 5.890888132154942
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 23032.765,
+          "timestamp_s": 5.9408881329
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 23032.828,
+          "timestamp_s": 5.990888133645058
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "10c5f6eab3c434dc5ec064f921144ef3846aa3c58b2481e77307cc8fa9d4ec96",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "35ec7b18bd8f4b63aeefd3fe82a74aeb",
+      "status": "CANCELLED",
+      "reason": "emergency_stop",
+      "seed": 991595078,
+      "setup": null,
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 23034.671,
+          "timestamp_s": 6.890888147056103
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 23034.765,
+          "timestamp_s": 6.940888147801161
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 23034.906,
+          "timestamp_s": 6.990888148546219
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "c5ed9c050ee7340c7680d1948b159c45f2d36304301419def61d2cd59a4b44a7",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "5033498c807e48b0a364cb8c78baefd3",
+      "status": "CANCELLED",
+      "reason": "operator_stop",
+      "seed": 190541179,
+      "setup": null,
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 23073.296,
+          "timestamp_s": 36.64088859036565
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 23073.375,
+          "timestamp_s": 36.690888591110706
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 23073.546,
+          "timestamp_s": 36.740888591855764
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "666abfe0b7cbc85541a5babd43477c60a7af5e89aec4a197262c8fcff77ced94",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "760a987612b540ffa678ba290ce0a638",
+      "status": "CANCELLED",
+      "reason": "emergency_stop",
+      "seed": 1147115929,
+      "setup": null,
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 23074.828,
+          "timestamp_s": 37.64088860526681
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 23074.89,
+          "timestamp_s": 37.69088860601187
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 23075.046,
+          "timestamp_s": 37.740888606756926
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "3d865aa554f899d09a92960d32d439a03c56a8e77a6a92273d400f4edfdecc42",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "e162c715646845c79ea46303ee904216",
+      "status": "CANCELLED",
+      "reason": "operator_stop",
+      "seed": 1959092396,
+      "setup": null,
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 23321.609,
+          "timestamp_s": 4.904645547270775
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 23321.828,
+          "timestamp_s": 5.054645549505949
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 23321.906,
+          "timestamp_s": 5.104645550251007
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "c5b90834bc30882ae245c83823672bf238de19bae065dc8bd15655aa4f35f697",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "9312a79914224136b759e62c979e6e2e",
+      "status": "CANCELLED",
+      "reason": "emergency_stop",
+      "seed": 1795813421,
+      "setup": null,
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 23323.968,
+          "timestamp_s": 5.954645562916994
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 23324.046,
+          "timestamp_s": 6.004645563662052
+        },
+        {
+          "status": "CANCELLED",
+          "wall_s": 23324.25,
+          "timestamp_s": 6.05464556440711
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "02bca88ce2ff9b9b9b3e8e2871baf121d69c8b820d44767e508eb27f43a81474",
+      "pair_id": null,
+      "runs": {}
+    }
+  ],
+  "limits": [
+    "Individual presentations are not the frozen hybrid behavioral acceptance cohort.",
+    "Normal retains its historical obstacle-protection-off behavior; it is not the independent BehaviorAgent baseline.",
+    "Matched initial conditions do not imply identical reactive traffic futures.",
+    "Interventions are not proven prevented collisions. Actual speeds differ from the request."
+  ]
+}

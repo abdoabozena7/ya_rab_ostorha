@@ -47,13 +47,13 @@ async (page)=>{
   check(await page.evaluate(()=>window.__redesign.commands.some(c=>c.type==='prepare_journey_mode'&&c.value.mode==='HYBRID'&&c.value.pair_id==='hybrid-fixture-pair')),'Second arm restores the saved pair');
   check(await page.evaluate(()=>window.__redesign.state.population.requested.seed)===seed,'Both arms retain the same seed');
   check(await page.evaluate(()=>window.__redesign.state.journeyComparison.runs.BASELINE.status==='ERROR'),'Baseline route failure remains saved when the second arm starts');
-  check(await page.locator('.hybrid-run-speed').first().innerText().then(text=>text.includes('أقصى 31.5')&&text.includes('المطلوب 50')),'Actual speed remains visible separately from the requested speed');
+  check(await page.locator('.hybrid-run-speed').first().innerText().then(text=>text.includes('peak 31.5')&&text.includes('requested 50')),'Actual speed remains visible separately from the requested speed');
   check(await page.locator('#hybridResults').count()===1,'Separate native-baseline results exist');
   await page.locator('#emergencyStopBtn').click();await page.locator('#acknowledgeStopBtn').waitFor({state:'visible'});
   check(await page.locator('#simpleRun').isDisabled(),'Emergency locks simple start');
   await page.locator('#acknowledgeStopBtn').click();
   await page.evaluate(()=>{window.__redesign.state.hybridDriving={available:false,accepted:false};});
-  await page.waitForFunction(()=>document.getElementById('simpleStatus').textContent.includes('قيد التحقق'));
+  await page.waitForFunction(()=>document.getElementById('simpleStatus').textContent.includes('awaiting native acceptance'));
   check(await page.locator('#simpleRun').isDisabled(),'Unaccepted native capability is not silently enabled');
   for(const width of [1440,390]){
     await page.setViewportSize({width,height:900});

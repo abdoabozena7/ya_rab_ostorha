@@ -65,6 +65,18 @@ class ControlSceneTests(unittest.TestCase):
         with self.assertRaises(ValueError):measured.points[0,0]=100.
         self.assertFalse(measured.usable(.2,100.))
 
+    def test_rule_geometry_omits_forecasts_but_preserves_measured_coverage(self):
+        full,base,reader=self.measured()
+        builder=ControlSceneBuilder('test')
+        builder.engine.evaluate=Mock(side_effect=AssertionError('RULE must not wait for hybrid forecasts'))
+        geometry=builder.build(full.observation,reader,received_wall_s=100.,track_motion=False)
+        path=signed_path(.5,0.,0.,full.geometry)
+        self.assertEqual(geometry.space.certificate(path)['verified'],full.space.certificate(path)['verified'])
+        self.assertFalse(geometry.prediction['motion_tracking_complete'])
+        self.assertEqual(geometry.prediction['tracks'],())
+        self.assertEqual(geometry.received_wall_s,full.received_wall_s)
+        self.assertFalse(geometry.usable(full.observation.timestamp_s,100.251))
+
     def test_sensor_geometry_can_admit_forward_and_reject_unobserved_reverse(self):
         measured,base,_=self.measured()
         road={'session_id':'test','centerline':[[0.,0.],[50.,0.]],'junction_ahead':False,'lane_width_m':3.5}

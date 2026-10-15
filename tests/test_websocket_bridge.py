@@ -8,6 +8,24 @@ from tests.core_packets import packet
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
+    def test_native_pong_keeps_autonomous_intent_without_browser_js_and_close_stops_it(self):
+        from websockets.sync.client import connect
+        from backend.websocket_bridge import WebSocketBridge
+        service=SimulationService(None);service._publish(packet())
+        service.journey.update(status='RUNNING')
+        bridge=WebSocketBridge(service,'127.0.0.1',0,8000);bridge.start()
+        try:
+            with connect(f'ws://127.0.0.1:{bridge.server.socket.getsockname()[1]}') as socket:
+                socket.recv(timeout=2)
+                time.sleep(.65)  # No application heartbeat or controls are sent.
+                self.assertTrue(service._navigation_connection_alive())
+                self.assertEqual(service.navigation_heartbeat_at,-float('inf'))
+            until=time.monotonic()+1
+            while bridge.owner is not None and time.monotonic()<until:time.sleep(.01)
+            self.assertEqual(service.journey['status'],'PAUSED')
+            self.assertEqual(service.journey['reason'],'dashboard_disconnected')
+        finally:bridge.close()
+
     def test_stream_controls_exclusive_owner_and_release_on_disconnect(self):
         from websockets.sync.client import connect
         from backend.websocket_bridge import WebSocketBridge

@@ -97,6 +97,8 @@ class BrakingDecisionTests(unittest.TestCase):
         self.assertEqual(service._choose().brake, 1.)
         self.assertEqual(service.journey['status'], 'RUNNING')
         self.assertEqual(service.safety_command.throttle, 0.)
+        self.assertEqual(service.active_safety.brake,0.)
+        self.assertIsNone(service.active_safety.started_s)
         brakes=[]
         for frame in range(2,15):
             now[0] += .05
@@ -115,6 +117,8 @@ class BrakingDecisionTests(unittest.TestCase):
         self.assertEqual(brakes[-1],0.)
         self.assertIsNone(service.safety_processing_wait_at)
         self.assertIsNone(service.last_drive_stop)
+        self.assertIsNone(service.safety_fault)
+        self.assertNotEqual(service.active_safety.snapshot().get('decision_source'),'SENSOR_FRESHNESS')
 
     def test_repeated_processing_delays_are_terminal_and_focus_loss_keeps_original_cause(self):
         service,now,base=fixture(driving_mode='ROBOSPHERE',automatic=True)
@@ -137,6 +141,24 @@ class BrakingDecisionTests(unittest.TestCase):
         self.assertEqual(service.last_drive_stop,original)
         self.assertIn('processing exceeded',original['detail'])
         self.assertEqual(service._choose().brake,1.)
+
+    def test_fresh_obstacle_still_brakes_after_an_expired_proposal(self):
+        service,now,base=fixture(driving_mode='ROBOSPHERE',automatic=True)
+        service._navigation_step()
+        def delayed(*args,**kwargs):now[0]+=.26;return None
+        with patch.object(service.active_safety,'evaluate',side_effect=delayed):service._active_safety_step()
+        self.assertEqual(service._choose().brake,1.)
+        now[0]+=.05
+        service._publish(packet(2,.1,speed=2.));service.clock.observe(service.observation.world)
+        observation,_=case(2,distance=1.,speed=2.)
+        observation,reader=scene(observation,clear=True)
+        service.policy_history.frames.append(observation);service.provider.get_sensor_asset=reader
+        service.provider.navigation_command.return_value=replace(base,frame_id=2,timestamp_s=.1)
+        service.navigation_heartbeat_at=now[0]
+        service._navigation_step();service._active_safety_step()
+        self.assertEqual(service._choose().brake,1.)
+        self.assertEqual(service._choose().throttle,0.)
+        self.assertEqual(service.journey['status'],'RUNNING')
 
     def test_empty_straight_curve_and_parallel_surface_preserve_both_mode_commands(self):
         for mode in ('NORMAL', 'ROBOSPHERE'):

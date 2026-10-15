@@ -58,7 +58,7 @@
       <button id="driveJourneyBtn" class="primary" disabled>Go to destination</button>
       <p id="driveJourneyAvailability" class="muted" role="status">Choose a destination and show its route first.</p>
       <button id="startDrivingBtn" disabled>Enable manual driving</button>
-      <button id="pauseBtn" disabled>إيقاف العربية</button>
+      <button id="pauseBtn" disabled>Stop vehicle</button>
       <p id="drivingInstruction" role="status"></p><p id="journeyStatus" role="status"></p>
       <div class="manual-controls">
         <label for="gearSelect">Gear</label><select id="gearSelect" disabled><option value="D">D — Forward</option><option value="N">N — Neutral</option><option value="R">R — Reverse</option></select>
@@ -66,8 +66,8 @@
         <p id="controlStatus" role="status">Keyboard not enabled</p>
         <p id="manualHint" class="muted">Keyboard operates in the dashboard. Destination remains saved after taking manual control.</p>
       </div>
-      <button id="emergencyStopBtn" class="emergency" disabled title="Full brake; movement stays locked until you release the emergency stop">إيقاف طوارئ</button>
-      <button id="acknowledgeStopBtn" hidden title="Release the emergency lock; start driving explicitly to move">فك إيقاف الطوارئ</button>
+      <button id="emergencyStopBtn" class="emergency" disabled title="Full brake; movement stays locked until you release the emergency stop">Emergency stop</button>
+      <button id="acknowledgeStopBtn" hidden title="Release the emergency lock; start driving explicitly to move">Release emergency stop</button>
       <button id="replayPauseBtn" hidden>Pause replay</button>
       <section class="city-state" aria-label="City population"><h3>Living city</h3><div class="population-counts"><span>Traffic vehicles <strong id="trafficActual">—</strong></span><span>Pedestrians <strong id="pedestrianActual">—</strong></span></div><p id="populationHealth" class="muted" role="status">Waiting for data CARLA</p><button id="recordRunBtn">Start recording</button><p id="recordingStatus" class="muted"></p></section>
       <section class="city-state" aria-label="Training environment">

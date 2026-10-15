@@ -24,10 +24,10 @@ async (page)=>{
   for(const [index,mode] of ['BASELINE','HYBRID'].entries()){
     const run=fixture.comparison.runs[mode];
     if(!Number.isFinite(run.maximum_speed_kmh))continue;
-    await page.waitForFunction(({index,peak})=>document.querySelectorAll('.hybrid-run-speed')[index]?.textContent.includes('أقصى '+peak),
+    await page.waitForFunction(({index,peak})=>document.querySelectorAll('.hybrid-run-speed')[index]?.textContent.includes('peak '+peak),
       {index,peak:run.maximum_speed_kmh.toFixed(1)});
     const text=await page.locator('.hybrid-run-speed').nth(index).innerText();
-    if(!text.includes('أقصى '+run.maximum_speed_kmh.toFixed(1))||!text.includes('المطلوب '+run.setup.speed_kmh.toFixed(0)))
+    if(!text.includes('peak '+run.maximum_speed_kmh.toFixed(1))||!text.includes('requested '+run.setup.speed_kmh.toFixed(0)))
       throw new Error('Native measured speed and requested speed are not displayed separately: '+mode);
     measuredSpeedChecks++;
   }

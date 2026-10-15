@@ -33,7 +33,7 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
         with events.open(encoding='utf8') as stream:
             for line in stream:
                 event=json.loads(line);journey=event.get('payload',{}).get('journey',{})
-                if journey.get('status')=='RUNNING' and journey.get('driving_mode') in ('HYBRID','BASELINE'):
+                if journey.get('status')=='RUNNING' and (journey.get('driving_mode') in ('HYBRID','BASELINE') or journey.get('presentation_id')):
                     anchor=event['timestamp_s'];break
     if anchor is not None:
         frames=[row for row in frames if row['timestamp_s']>=anchor-1e-6]

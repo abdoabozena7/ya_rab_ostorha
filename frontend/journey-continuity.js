@@ -1,5 +1,6 @@
 // Destination intent survives inspection of a visible dashboard. Keyboard
-// commands still require focus. Hidden pages cannot safely maintain the lease.
+// commands still require focus. Autonomous intent also has a server-verified
+// WebSocket pong lease, so inspecting another tab does not cancel the route.
 export function journeyActive(p) {
   return p.fresh && p.connected && p.controller && !p.isReplay && !p.restarting &&
     !['EMERGENCY_STOP','DISCONNECTED','REPLAY'].includes(p.controlMode) &&
@@ -8,9 +9,11 @@ export function journeyActive(p) {
 }
 
 export function keepJourneyOnInspection(p, hidden) {
-  return !hidden && journeyActive(p);
+  const presenting=p.presentation?.id&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(p.presentation.status)&&
+    p.connected&&p.controller&&!p.isReplay&&p.controlMode!=='MANUAL'&&p.controlMode!=='EMERGENCY_STOP';
+  return journeyActive(p)||!!presenting;
 }
 
 export function journeyHeartbeatAllowed(p, hidden, manualOverridePending) {
-  return !hidden && !manualOverridePending && journeyActive(p);
+  return !manualOverridePending && journeyActive(p);
 }

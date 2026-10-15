@@ -4,6 +4,14 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [15 October automatic presentation and continuity repair](docs/AUTOMATIC_PRESENTATION_20261015.md)
+adds an English dashboard and **Restart**: start the simulator, choose a seeded
+route/traffic setup, record Robosphere and Normal at a requested 50 km/h, then
+play both MP4s and reveal their measured results automatically. Autonomous
+journeys continue through tab/workspace inspection; Stop, Emergency stop and
+connection loss still hold the vehicle. This presentation uses the existing
+RULE/Normal drivers and does not enable the unaccepted experimental hybrid.
+
 The [15 October hybrid implementation report](docs/HYBRID_DRIVING_IMPLEMENTATION_20261015.md)
 tracks the new sensor-based behavior owner, native BehaviorAgent comparison,
 simple driving controls and MP4 recording. **Native acceptance is still in

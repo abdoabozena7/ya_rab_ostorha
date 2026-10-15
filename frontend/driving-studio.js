@@ -75,7 +75,7 @@ export function installDrivingStudio(p,guided,predictionView,tools) {
   $('modelVision').before(views);
   const cameraStatus=node('span','studio-camera-status','');cameraStatus.id='studioCameraStatus';cameraStatus.setAttribute('role','status');
   views.append(cameraStatus,$('replayPauseBtn'),$('expandCameraBtn'));
-  const fullscreen=node('div','studio-fullscreen-controls');fullscreen.innerHTML='<strong>Ya Rab Ostorha · Live simulation</strong><button id="studioFullscreenStop">إيقاف العربية</button><button id="studioFullscreenEmergency" class="emergency">إيقاف طوارئ</button><button id="studioFullscreenClose" aria-label="Exit expanded simulator">Close ×</button>';
+  const fullscreen=node('div','studio-fullscreen-controls');fullscreen.innerHTML='<strong>Ya Rab Ostorha · Live simulation</strong><button id="studioFullscreenStop">Stop vehicle</button><button id="studioFullscreenEmergency" class="emergency">Emergency stop</button><button id="studioFullscreenClose" aria-label="Exit expanded simulator">Close ×</button>';
   $('cameraCard').prepend(fullscreen);
   $('studioFullscreenStop').onclick=()=>tools.clearControls('operator_stop');
   $('studioFullscreenEmergency').onclick=()=>$('emergencyStopBtn').click();$('studioFullscreenClose').onclick=()=>tools.expandCamera(false);
@@ -155,7 +155,8 @@ export function installDrivingStudio(p,guided,predictionView,tools) {
     txt($('studioManualContext'),manualMode==='NORMAL'?'Normal · obstacle protection off':'Robosphere · '+(p.safetySystem?.controller||'RULE')+' protection');
     txt($('startDrivingBtn'),automatic?'Take manual control':p.controlMode==='MANUAL'?'Keyboard active':'Start keyboard control');
     $('startDrivingBtn').disabled ||= p.controlMode==='MANUAL';
-    $('studioManualStop').disabled=!p.fresh||p.isReplay||!p.controller||!['MANUAL','AUTOMATIC'].includes(p.controlMode);
+    const presenting=p.presentation?.id&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(p.presentation.status);
+    $('studioManualStop').disabled=!p.fresh||p.isReplay||!p.controller||!presenting&&!['MANUAL','AUTOMATIC'].includes(p.controlMode);
     $('studioResultsLink').disabled=p.isReplay&&!p.journeyComparison;
     mobileEngineStop.disabled=$('stopSimulatorBtn').disabled;
     txt($('studioSetupDockLabel'),$('guidedPrimary').textContent||'Open driving setup');
@@ -189,7 +190,7 @@ export function installDrivingStudio(p,guided,predictionView,tools) {
     txt($('studioHealthStatus'),fresh?p.controlMode==='AUTOMATIC'?'Active':'Ready':'Offline');
     $('studioHealthStatus').dataset.tone=!fresh?'neutral':p.safetySystem?.active?'danger':p.safetySystem?.status?.includes('FAULT')?'danger':'success';
     txt($('studioSensorHealth'),fresh?healthy+' / '+sensorKeys.length:'Waiting');
-    txt($('studioControlHealth'),fresh?p.controlMode==='AUTOMATIC'&&p.journey?.driving_mode==='BASELINE'?'حماية سائق CARLA':p.controlMode==='AUTOMATIC'&&p.journey?.driving_mode==='HYBRID'?'متابعة الحركة':p.journey?.driving_mode==='NORMAL'&&p.controlMode==='AUTOMATIC'?'Normal · route and signals':p.safetySystem?.active?'RULE braking':p.controlMode==='AUTOMATIC'?'RULE monitoring':'Vehicle held':'Vehicle held');
+    txt($('studioControlHealth'),fresh?p.controlMode==='AUTOMATIC'&&p.journey?.driving_mode==='BASELINE'?'CARLA driver protection':p.controlMode==='AUTOMATIC'&&p.journey?.driving_mode==='HYBRID'?'Motion supervision':p.journey?.driving_mode==='NORMAL'&&p.controlMode==='AUTOMATIC'?'Normal · route and signals':p.safetySystem?.active?'RULE braking':p.controlMode==='AUTOMATIC'?'RULE monitoring':'Vehicle held':'Vehicle held');
     txt($('studioRate'),fresh?num(p.performance?.nativeTickRateHz,' Hz',1):'Offline');
     const cameraChange=tools.cameraChange,confirmedView=cameraChange?.status==='applied'?cameraChange.requested:tools.catalog?.settings?.camera_view;
     views.querySelectorAll('[data-camera]').forEach(b=>{b.setAttribute('aria-pressed',String(!!confirmedView&&b.dataset.camera===confirmedView));b.disabled=$('cameraView').disabled||cameraChange?.status==='pending';});

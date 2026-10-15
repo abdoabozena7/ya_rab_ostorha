@@ -11,6 +11,8 @@ class WebSocketBridge:
         self.service = service
         self.controller_lock = threading.Lock()
         self.ownership_lock = threading.RLock()
+        self.snapshot_lock = threading.Lock()
+        self.snapshot_cache = None
         self.owner = None
         self.sockets = set()
         self.server = serve(self.handle, host, port, max_size=16_384,
@@ -22,10 +24,23 @@ class WebSocketBridge:
     def start(self):
         self.thread.start()
 
+    def snapshot_payload(self):
+        # Share serialization across all connected pages. Control admission,
+        # pong liveness and acknowledgements remain per connection.
+        with self.snapshot_lock:
+            now=time.monotonic()
+            if self.snapshot_cache and now-self.snapshot_cache[0]<.05:
+                return self.snapshot_cache[1]
+            snapshot=getattr(self.service,'stream_snapshot',self.service.snapshot)()
+            payload=json.dumps(snapshot,allow_nan=False)
+            self.snapshot_cache=(time.monotonic(),payload)
+            return payload
+
     def process_message(self, socket, message):
         """Ownership changes and command admission are atomic across dashboards."""
         with self.ownership_lock:
             kind = message.get('type')
+            presentation_start = kind == 'presentation' and isinstance(message.get('value'),dict) and message['value'].get('operation') == 'RESTART'
             comparison_start = kind == 'comparison_v2' and isinstance(message.get('value'),dict) and message['value'].get('operation') == 'RUN'
             runtime = getattr(self.service, 'rl_runtime', None)
             if runtime and runtime.active and kind != 'emergency_stop':
@@ -38,7 +53,7 @@ class WebSocketBridge:
                 # dashboard too; it never grants that page vehicle control.
                 self.service.stop_simulator()
                 return True
-            if comparison_start or kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
+            if presentation_start or comparison_start or kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
                 if getattr(self.service, 'is_replay', False):
                     raise ValueError('Replay has no native connection or control sink')
                 if kind == 'start_journey' and not self.service.arbiter.machine.allow_navigation:
@@ -47,7 +62,9 @@ class WebSocketBridge:
                     self.service.reconnect()
                 else:
                     self.service.require_connected()
-                    if kind == 'start_journey':
+                    if presentation_start:
+                        self.service.presentation.start(message['value'].get('speed_kmh', 50))
+                    elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}
                         self.service.start_journey(message.get('speed_kmh', 30), **options)
@@ -55,6 +72,8 @@ class WebSocketBridge:
                         self.service.queue_dashboard_action(kind,message.get('value'))
                         self.service.release_controls()
                     elif kind == 'start_driving':
+                        if getattr(self.service,'presentation',None) and self.service.presentation.busy:
+                            raise ValueError('Stop the presentation before enabling manual driving')
                         # Admission may reject a queued comparison. Do not take
                         # ownership away from its dashboard until this succeeds.
                         self.service.set_paused(False, driving_mode=message.get('driving_mode'))
@@ -68,11 +87,15 @@ class WebSocketBridge:
                 return True
             if kind not in {'controls', 'reset', 'pause', 'stop_driving', 'journey_heartbeat', 'journey_speed', 'restart_graphics',
                             'emergency_stop', 'acknowledge_stop', 'settings', 'destination', 'save_place', 'favorite_place', 'disconnect',
-                            'clear_route', 'population', 'crowd_route', 'prepare_journey_mode', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode', 'comparison', 'comparison_v2'}:
+                            'clear_route', 'population', 'crowd_route', 'prepare_journey_mode', 'inspector', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode', 'comparison', 'comparison_v2', 'presentation'}:
                 return False
             if self.owner is not socket:
                 raise ValueError('Another dashboard controls this vehicle; select Start driving')
             self.service.require_connected()
+            presentation = getattr(self.service, 'presentation', None)
+            if presentation and presentation.busy and kind in ('destination', 'population', 'crowd_route',
+                    'prepare_journey_mode', 'recording', 'world_reset', 'scene', 'environment', 'scenario', 'safety_mode', 'comparison', 'comparison_v2','journey_speed','restart_graphics'):
+                raise ValueError('Stop the presentation before changing its setup')
             if kind == 'controls':
                 if 'frame_id' not in message or 'timestamp_s' not in message:
                     raise ValueError('Controls require simulation frame_id and timestamp_s')
@@ -103,6 +126,11 @@ class WebSocketBridge:
                 self.service.set_safety_enabled(message.get('value'))
             elif kind == 'journey_heartbeat':
                 self.service.journey_heartbeat(message.get('session_id'))
+            elif kind == 'presentation':
+                value = message.get('value')
+                if not isinstance(value, dict) or value.get('operation') != 'PLAYBACK_FINISHED':
+                    raise ValueError('Unknown presentation operation')
+                self.service.presentation.playback_finished(value.get('id'))
             elif kind == 'journey_speed':
                 self.service.set_journey_speed(message.get('speed_kmh'))
             elif kind == 'restart_graphics':
@@ -126,8 +154,21 @@ class WebSocketBridge:
             if not getattr(self.service, 'is_replay', False) and self.controller_lock.acquire(blocking=False):
                 self.owner = socket
         acknowledged = None
+        pending_ping = None
+        last_ping = -float('inf')
         try:
             while True:
+                # Native WebSocket ping/pong works when hidden tabs throttle JS.
+                # Only a received pong from the current owner renews intent.
+                now = time.monotonic()
+                if pending_ping and pending_ping[0].is_set():
+                    with self.ownership_lock:
+                        if self.owner is socket and hasattr(self.service, 'navigation_transport_heartbeat'):
+                            self.service.navigation_transport_heartbeat(pending_ping[1])
+                    pending_ping = None
+                if now-last_ping >= .2 and pending_ping is None and hasattr(self.service,'session_id'):
+                    pending_ping = (socket.ping(), self.service.session_id)
+                    last_ping = now
                 try:
                     message = json.loads(socket.recv(timeout=.05))
                     if not isinstance(message, dict):
@@ -138,10 +179,9 @@ class WebSocketBridge:
                     pass
                 except (ValueError, TypeError, RuntimeError) as error:
                     socket.send(json.dumps({'type': 'error', 'error': str(error)}))
-                snapshot = self.service.snapshot()
-                socket.send(json.dumps({'type': 'snapshot', **snapshot,
-                                        'controller': self.owner is socket,
-                                        'acknowledged': acknowledged}, allow_nan=False))
+                payload=self.snapshot_payload()
+                prefix=json.dumps({'type':'snapshot','controller':self.owner is socket,'acknowledged':acknowledged})
+                socket.send(prefix[:-1]+(','+payload[1:] if len(payload)>2 else '}'))
                 time.sleep(.01)
         except ConnectionClosed:
             pass
@@ -149,6 +189,10 @@ class WebSocketBridge:
             with self.ownership_lock:
                 self.sockets.discard(socket)
                 if self.owner is socket:
+                    if hasattr(self.service, 'journey') and (self.service.journey.get('status') in ('RUNNING', 'STARTING') or
+                            getattr(self.service, 'presentation', None) and self.service.presentation.busy):
+                        try: self.service.stop_driving('dashboard_disconnected')
+                        except (ValueError, RuntimeError): pass
                     self.service.release_controls()
                     self.owner = None
                     self.controller_lock.release()

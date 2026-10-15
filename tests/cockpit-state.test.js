@@ -10,10 +10,10 @@ test('hybrid brake distinguishes processing delay from an uncertain maneuver cor
   const p=provider();p.journey.driving_mode='HYBRID';
   p.stopDiagnostics={braking:true,decision_source:'EXECUTION_SHIELD',reason:'CONTROL_PROCESSING_DEADLINE'};
   assert.equal(cockpitMeasurements(p,{speedKmh:0,brake:1}).brake,100);
-  assert.match(safetyNotice(p).detail,/تأخر/);
+  assert.match(safetyNotice(p).detail,/deadline/);
   p.stopDiagnostics.reason='NO_VERIFIED_SAFE_ACTION';
-  assert.match(safetyNotice(p).detail,/مساحة مناورة/);
-  assert.doesNotMatch(safetyNotice(p).detail,/تأخر/);
+  assert.match(safetyNotice(p).detail,/verified maneuver/);
+  assert.doesNotMatch(safetyNotice(p).detail,/deadline/);
   assert.equal(controlReasonText('Original exception text'),'Original exception text');
 });
 
@@ -22,22 +22,22 @@ test('held journey retains its original failure after focus loss and offers expl
   p.journey={status:'PAUSED',reason:'focus_lost'};
   p.lastDriveStop={status:'ERROR',detail:'Safety processing exceeded sensor wall freshness limit'};
   const notice=safetyNotice(p);
-  assert.equal(notice.title,'القيادة متوقفة');
+  assert.equal(notice.title,'Drive needs attention');
   assert.match(notice.detail,/processing exceeded/);
-  assert.match(notice.detail,/استئناف القيادة/);
+  assert.match(notice.detail,/Restart/);
   p.controlMode='AUTOMATIC';p.safetySystem.status='SENSOR_DELAY_HOLD';p.safetySystem.active=true;p.safetySystem.reason='Waiting for next fresh frame';
   assert.equal(driverCaption(p),'Waiting for sensors');
-  assert.equal(safetyNotice(p).title,'انتظار فريم حساسات جديد');
+  assert.equal(safetyNotice(p).title,'Waiting for a fresh sensor frame');
 });
 test('arrival is distinct from a failed or interrupted held drive',()=>{
   const p=provider();p.controlMode='PAUSED';p.route={arrived:true};p.journey={status:'ARRIVED'};
-  assert.equal(driverCaption(p),'Arrived');assert.equal(safetyNotice(p).title,'وصلت للوجهة');
+  assert.equal(driverCaption(p),'Arrived');assert.equal(safetyNotice(p).title,'Destination reached');
   p.lastDriveStop={status:'ERROR',detail:'Sensor input invalid'};p.journey.status='ERROR';
   assert.equal(driverCaption(p),'Vehicle held');assert.match(safetyNotice(p).detail,/Sensor input invalid/);
 });
 test('a red signal keeps the journey active and explains the navigation brake',()=>{
   const p=provider();p.stopDiagnostics={braking:true,decision_source:'NAVIGATION',reason:'Red traffic light on the planned route'};
-  assert.equal(safetyNotice(p).title,'انتظار الإشارة الحمراء');
+  assert.equal(safetyNotice(p).title,'Waiting at a red light');
   assert.equal(driverCaption(p),'Self Driving');
 });
 
@@ -68,6 +68,14 @@ test('emergency, holding, releasing and unavailable safety have factual distinct
   p.safetySystem.status='RELEASING';assert.equal(safetyNotice(p).title,'Safety brake releasing');
   p.controlMode='EMERGENCY_STOP';assert.equal(safetyNotice(p).tone,'danger');assert.equal(safetyChip(p).label,'Emergency stopped');
   p.controlMode='PAUSED';p.safetySystem.status='SENSOR_FAULT';assert.equal(safetyNotice(p).title,'Safety sensors unavailable');
+});
+
+test('an acknowledged emergency does not keep claiming that movement is locked',()=>{
+  const p=provider();p.controlMode='PAUSED';p.journey={status:'PAUSED',reason:'emergency_stop_released'};
+  p.lastDriveStop={status:'PAUSED',detail:'emergency_stop'};
+  assert.equal(safetyNotice(p).title,'Emergency stop released');
+  assert.match(safetyNotice(p).detail,/remains held/);
+  assert.doesNotMatch(safetyNotice(p).detail,/Movement locked/);
 });
 test('experimental protection remains factual without exposing controller names',()=>{
   const p=provider();p.safetySystem.status='STANDARD_DRIVER';p.safetySystem.actual_generator='SENSOR_BASELINE';
