@@ -1,6 +1,7 @@
 import {showWorkspace} from './presentation-ui.js';
 import {JOURNEY_MODES,modeName,comparisonSummary,metricValue,measuredDifference} from './journey-comparison.js';
 import {installUnifiedMap} from './unified-map.js';
+import {controlReasonText} from './cockpit-state.js';
 
 const $=id=>document.getElementById(id);
 const node=(tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el;};
@@ -177,7 +178,7 @@ export function installDrivingStudio(p,guided,predictionView,tools) {
     if(!document.body.classList.contains('light-cockpit')){
       intervention.hidden=!fresh||!(active||braking||rear);
       intervention.dataset.tone=rear&&!active&&!braking?'info':'warning';
-      txt(intervention,rear&&Number.isFinite(front)&&front<5?`Rear vehicle closing · front gap ${front.toFixed(1)} m; holding to avoid a front collision`:active?'Safety intervention · '+(p.safetySystem.reason||'RULE braking'):braking?(p.stopDiagnostics.decision_source||'Vehicle hold')+' · '+(p.stopDiagnostics.reason||'Brake applied'):rear?`Rear vehicle closing · ${p.rearAssist?'accelerating within target speed':'keeping lane and forward clearance'}`:'');
+      txt(intervention,rear&&Number.isFinite(front)&&front<5?`Rear vehicle closing · front gap ${front.toFixed(1)} m; holding to avoid a front collision`:active?'Safety intervention · '+controlReasonText(p.safetySystem.reason||'RULE braking'):braking?(p.stopDiagnostics.decision_source||'Vehicle hold')+' · '+controlReasonText(p.stopDiagnostics.reason||'Brake applied'):rear?`Rear vehicle closing · ${p.rearAssist?'accelerating within target speed':'keeping lane and forward clearance'}`:'');
     }
     txt($('studioElapsed'),run?.status==='RUNNING'?num(run.duration_s,' s'):'');
     mode.dataset.mode=p.controlMode==='MANUAL'?p.manualDrivingMode:p.journey?.driving_mode||'';
@@ -188,7 +189,7 @@ export function installDrivingStudio(p,guided,predictionView,tools) {
     txt($('studioHealthStatus'),fresh?p.controlMode==='AUTOMATIC'?'Active':'Ready':'Offline');
     $('studioHealthStatus').dataset.tone=!fresh?'neutral':p.safetySystem?.active?'danger':p.safetySystem?.status?.includes('FAULT')?'danger':'success';
     txt($('studioSensorHealth'),fresh?healthy+' / '+sensorKeys.length:'Waiting');
-    txt($('studioControlHealth'),fresh?p.journey?.driving_mode==='NORMAL'&&p.controlMode==='AUTOMATIC'?'Normal · route and signals':p.safetySystem?.active?'RULE braking':p.controlMode==='AUTOMATIC'?'RULE monitoring':'Vehicle held':'Vehicle held');
+    txt($('studioControlHealth'),fresh?p.controlMode==='AUTOMATIC'&&p.journey?.driving_mode==='BASELINE'?'حماية سائق CARLA':p.controlMode==='AUTOMATIC'&&p.journey?.driving_mode==='HYBRID'?'متابعة الحركة':p.journey?.driving_mode==='NORMAL'&&p.controlMode==='AUTOMATIC'?'Normal · route and signals':p.safetySystem?.active?'RULE braking':p.controlMode==='AUTOMATIC'?'RULE monitoring':'Vehicle held':'Vehicle held');
     txt($('studioRate'),fresh?num(p.performance?.nativeTickRateHz,' Hz',1):'Offline');
     const cameraChange=tools.cameraChange,confirmedView=cameraChange?.status==='applied'?cameraChange.requested:tools.catalog?.settings?.camera_view;
     views.querySelectorAll('[data-camera]').forEach(b=>{b.setAttribute('aria-pressed',String(!!confirmedView&&b.dataset.camera===confirmedView));b.disabled=$('cameraView').disabled||cameraChange?.status==='pending';});

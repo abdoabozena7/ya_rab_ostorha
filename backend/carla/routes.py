@@ -38,6 +38,35 @@ class RouteService:
                                   and (i == 0 or points[i-1][1] != option)]}
         return route, points
 
+    def alternative(self, origin, target, blocked_location):
+        """Find a different legal graph route without a measured blocked edge.
+
+        The original graph and previous turn state are restored even on failure.
+        A missing detour is an explicit result, never permission to cross space.
+        """
+        import networkx as nx
+        self.plan(origin, target)  # Ensure the ordinary graph has been built.
+        planner = self.planner
+        edge = planner._localize(blocked_location)
+        if edge is None or not planner._graph.has_edge(*edge): return None
+        original = planner._graph
+        modified = original.copy()
+        modified.remove_edge(*edge)
+        turn = planner._previous_decision, planner._intersection_end_node
+        try:
+            planner._graph = modified
+            route, points = self.plan(origin, target)
+            sequence = [(w.road_id, w.section_id, w.lane_id) for w, _ in points]
+            blocked = self.map.get_waypoint(blocked_location)
+            key = (blocked.road_id, blocked.section_id, blocked.lane_id)
+            if key in sequence[2:]: return None
+            return route, points
+        except (nx.NetworkXNoPath, nx.NodeNotFound, KeyError, ValueError, IndexError):
+            return None
+        finally:
+            planner._graph = original
+            planner._previous_decision, planner._intersection_end_node = turn
+
     @staticmethod
     def progress(route, position):
         if route is None: return None

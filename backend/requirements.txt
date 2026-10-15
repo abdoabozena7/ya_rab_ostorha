@@ -4,3 +4,4 @@ numpy==2.5.3
 Pillow==12.3.0
 networkx==3.7
 Shapely==2.1.2
+imageio-ffmpeg==0.6.0

@@ -11,6 +11,7 @@ import numpy as np
 from .contracts import CommandSource
 from .motion_geometry import GRID, VehicleGeometry, footprint_centers,object_assessments
 from .prediction import assess_conflicts
+from .measured_rows import unique_row_indices
 
 
 class ObservedSpace:
@@ -55,7 +56,7 @@ class ObservedSpace:
         if len(xyz):
             cells=self.indices(xyz[:,:2])
             keys=np.column_stack((cells,xyz[:,2]>.25,np.floor(xyz[:,2]/.2).astype(int)))
-            _,keep=np.unique(keys,axis=0,return_index=True)
+            keep=unique_row_indices(keys)
             xyz=xyz[keep]
         # Lane paint/ground stay out of actor tracking; low curbs still retain
         # geometric protection. Sloped surfaces require independent admission.

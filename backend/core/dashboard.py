@@ -3,7 +3,7 @@ import math
 from .contracts import to_dict
 
 
-def dashboard_frame(frame):
+def dashboard_frame(frame, *, rich=True):
     vehicle, world = frame.vehicle, frame.world
     rotation = vehicle.transform.rotation_rad
     state = {'source': vehicle.provider, 'frame': frame.frame_id, 'timestamp': frame.timestamp_s,
@@ -33,8 +33,9 @@ def dashboard_frame(frame):
         sensors[sensor.sensor_id].update(width=capture.get('width'), height=capture.get('height'),
             fovDeg=capture.get('fov_deg'), worldTransform=to_dict(sensor.transform),
             mountTransform=to_dict(capture.get('mount_transform', to_dict(sensor.transform))),
-            sensorTickSeconds=capture.get('sensor_tick_s'), data=to_dict(sensor.data), units=to_dict(sensor.units),
-            metadata=to_dict(capture))
+            sensorTickSeconds=capture.get('sensor_tick_s'))
+        if rich:
+            sensors[sensor.sensor_id].update(data=to_dict(sensor.data),units=to_dict(sensor.units),metadata=to_dict(capture))
     population = frame.population
     population_view = None if population is None else {
         'frame_id': population.frame_id,
@@ -48,5 +49,5 @@ def dashboard_frame(frame):
                                        'fixedDeltaSeconds': world.fixed_delta_seconds, 'synchronous': world.synchronous},
             'sensors': sensors, 'sensorRatesHz': {}, 'sensorErrors': {},
             'population': population_view,
-            'canonical': to_dict(frame), 'frameComplete': frame.complete,
+            'canonical': to_dict(frame) if rich else None, 'frameComplete': frame.complete,
             'missingRequiredSensors': list(frame.missing_required_sensors)}

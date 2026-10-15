@@ -11,11 +11,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 MODES = ('ROBOSPHERE', 'NORMAL')
+BENCHMARK_MODES = ('HYBRID', 'BASELINE')
 
 
 def validate_mode(mode):
-    if mode not in MODES:
-        raise ValueError('Choose ROBOSPHERE or NORMAL')
+    if mode not in MODES+BENCHMARK_MODES:
+        raise ValueError('Choose ROBOSPHERE, NORMAL, HYBRID or BASELINE')
     return mode
 
 
@@ -43,7 +44,7 @@ class JourneyComparison:
         self.near = self.intervening = False
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
-            if saved.get('version') == 1 and isinstance(saved.get('runs'), dict):
+            if saved.get('version') in (1, 2) and isinstance(saved.get('runs'), dict):
                 self.data = saved
                 for run in saved['runs'].values():
                     if run['status'] == 'RUNNING':
@@ -70,11 +71,17 @@ class JourneyComparison:
         if pair_id is not None and pair_id != self.data['pair_id']:
             raise ValueError('Comparison changed; prepare its mode again')
         if pair_id is None:
-            self.data = {'version': 1, 'pair_id': uuid.uuid4().hex, 'manifest': copy.deepcopy(manifest), 'runs': {}}
+            benchmark = mode in BENCHMARK_MODES
+            self.data = {'version': 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
+                         'driver_modes':list(BENCHMARK_MODES if benchmark else MODES),
+                         'manifest': copy.deepcopy(manifest), 'runs': {}}
+        elif mode not in self.data.get('driver_modes', MODES):
+            raise ValueError('Legacy protection comparisons and the hybrid benchmark are separate protocols')
         old = self.data['runs'].get(mode)
         if old:
             self.data.setdefault('previous_attempts', []).append(copy.deepcopy(old))
         run = {'id': uuid.uuid4().hex, 'mode': mode, 'status': 'RUNNING', 'reason': None, 'setup':copy.deepcopy(manifest),
+               'driver_id': 'CARLA_BEHAVIOR_NORMAL' if mode == 'BASELINE' else 'ROBOSPHERE_HYBRID_V1' if mode == 'HYBRID' else mode,
                'created_at_utc': datetime.now(timezone.utc).isoformat(), 'recording': recording,
                'duration_s': 0., 'distance_m': 0., 'route_completion_percent': 0.,
                'collisions': 0, 'maximum_impulse_ns': 0., 'near_misses': 0,
@@ -139,7 +146,7 @@ class JourneyComparison:
         self.near = bool(near or self.near and frame.timestamp_s-getattr(self, 'last_near', 0) < 1)
         observer_current = frame.complete and safety.get('frame_id') == frame.frame_id and isinstance(safety.get('active'), bool)
         run['intervention_samples'] += int(observer_current)
-        active = observer_current and run['mode'] == 'ROBOSPHERE' and safety['active']
+        active = observer_current and run['mode'] in ('ROBOSPHERE','HYBRID') and safety['active']
         if observer_current and self.intervening: run['safety_intervention_s'] += dt
         if active and not self.intervening:
             run['safety_interventions'] += 1
@@ -172,5 +179,10 @@ class JourneyComparison:
 
     def snapshot(self):
         result = copy.deepcopy(self.data)
-        result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in MODES))
+        modes = result.get('driver_modes', MODES)
+        result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))
+        if result.get('version') == 2:
+            audits = [result['runs'].get(m, {}).get('setup', {}).get('initial_condition_id') for m in modes]
+            verified = all(result['runs'].get(m, {}).get('initial_condition_audit', {}).get('passed') is True for m in modes)
+            result['conditions_match'] = result['conditions_match'] and bool(audits[0]) and audits[0] == audits[1] and verified
         return result

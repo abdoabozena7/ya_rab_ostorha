@@ -38,6 +38,7 @@ class CarlaSensorManager:
         self.sample_times[sensor_id] = deque(maxlen=40)
         self.wall_sample_times[sensor_id] = deque(maxlen=80)
         self.configurations[sensor_id] = {'blueprint': blueprint_id, 'actorId': actor.id,
+                                         'attributes': dict(attributes),
                                          'mountTransform': mount, 'sensorTickSeconds': tick,
                                          'requestedRateHz': 1/tick if tick else None}
         try:
@@ -184,9 +185,13 @@ class CarlaSensorManager:
         from pathlib import Path
         from ..learning.recovery_budget import active_ticket
         recovery=json.loads((Path(__file__).resolve().parents[2]/'config/congestion-recovery.json').read_text())
-        surround=bool(recovery.get('depth_sensors_accepted') or active_ticket() and not options.get('_suppress_pilot_surround',False))
+        from ..learning.hybrid_budget import active_ticket as hybrid_ticket
+        hybrid=json.loads((Path(__file__).resolve().parents[2]/'config/hybrid-driving.json').read_text())
+        hybrid_surround=bool(hybrid.get('surround_rig_accepted') or hybrid_ticket()) and not options.get('_suppress_pilot_surround',False)
+        surround=bool(recovery.get('depth_sensors_accepted') or hybrid.get('surround_rig_accepted') or
+                      (active_ticket() or hybrid_ticket()) and not options.get('_suppress_pilot_surround',False))
         depth_mount=camera_mount;depth_attributes={**camera,'image_size_x':320,'image_size_y':180,'fov':90}
-        if surround:
+        if surround and not hybrid_surround:
             box=self.ego.bounding_box
             # Wide views on the measured body boundary expose the near-body
             # strip needed for a complete turning/reversing footprint. The RGB
@@ -206,7 +211,22 @@ class CarlaSensorManager:
             ('imu', SensorKind.IMU, 'sensor.other.imu', api.Transform(), {'sensor_tick': fixed_delta}),
             ('gnss', SensorKind.GNSS, 'sensor.other.gnss', api.Transform(api.Location(z=1.6)), {'sensor_tick': fixed_delta}),
         )
-        if surround:
+        if hybrid_surround:
+            box=self.ego.bounding_box
+            front=box.location.x+box.extent.x+.1;rear=box.location.x-box.extent.x-.1
+            half=box.extent.y+abs(box.location.y)+.1
+            attrs={**camera,'image_size_x':240,'image_size_y':135,'fov':120}
+            plans+=tuple((name,SensorKind.DEPTH,'sensor.camera.depth',
+                api.Transform(api.Location(x=x,y=y,z=1.),api.Rotation(pitch=-5,yaw=yaw)),attrs)
+                for name,x,y,yaw in (('frontLeftDepth',front,-half,-45),('frontRightDepth',front,half,45),
+                                    ('rearLeftDepth',rear,-half,-135),('rearRightDepth',rear,half,135)))
+            radar_attrs={'sensor_tick':fixed_delta,'range':60,'horizontal_fov':100,
+                         'vertical_fov':10,'points_per_second':2000}
+            plans+=tuple((name,SensorKind.RADAR,'sensor.other.radar',
+                api.Transform(api.Location(x=x,y=y,z=.65),api.Rotation(yaw=yaw)),radar_attrs)
+                for name,x,y,yaw in (('frontLeftRadar',front,-half,-45),('frontRightRadar',front,half,45),
+                                    ('rearLeftRadar',rear,-half,-135),('rearRightRadar',rear,half,135)))
+        elif surround:
             # Low resolution native depth, mounted outside our own body. No
             # display camera movement changes these calibrated observations.
             box=self.ego.bounding_box

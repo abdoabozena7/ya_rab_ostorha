@@ -1,5 +1,5 @@
 export const JOURNEY_MODES=['ROBOSPHERE','NORMAL'];
-export const modeName=mode=>mode==='NORMAL'?'Normal Mode':'Ya Rab Ostorha Mode';
+export const modeName=mode=>({NORMAL:'Normal Mode',HYBRID:'النظام الهجين',BASELINE:'سائق CARLA العادي'}[mode]||'Ya Rab Ostorha Mode');
 
 export function comparisonSummary(data) {
   const runs=data?.runs||{}, count=JOURNEY_MODES.filter(m=>runs[m]&&runs[m].status!=='RUNNING').length;

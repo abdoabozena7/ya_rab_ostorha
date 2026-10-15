@@ -56,12 +56,16 @@ def signed_path(speed,steering,acceleration,geometry,reverse=False,*,bounded=Fal
     return path
 
 
-def stopping_tail(path,speed,geometry,reverse):
+def stopping_tail(path,speed,geometry,reverse,*,reaction_s=.35,initial_deceleration=0.):
     """Reaction plus measured assumed stopping distance, with full curved body."""
     speed=0. if abs(speed)<1e-4 else speed
     end=path[-1]
-    times=np.arange(.05,.35+speed/3.+.051,.05)
-    velocities=np.where(times<=.35,speed,np.maximum(0.,speed-3.*(times-.35)))
+    initial_deceleration=max(0.,min(3.,initial_deceleration))
+    remaining=max(0.,speed-initial_deceleration*reaction_s)
+    duration=(speed/initial_deceleration if initial_deceleration>0 and remaining==0 else reaction_s+remaining/3.)
+    times=np.arange(.05,duration+.051,.05)
+    velocities=np.where(times<=reaction_s,np.maximum(0.,speed-initial_deceleration*times),
+                         np.maximum(0.,remaining-3.*(times-reaction_s)))
     dist=np.cumsum((np.r_[speed,velocities[:-1]]+velocities)*.025)
     signed=dist*(-1. if reverse else 1.)
     # Continue terminal measured curvature through the stopping tail.
@@ -78,7 +82,28 @@ def stopping_tail(path,speed,geometry,reverse):
 
 class ExecutionShield:
     """No learned dependency; checks fresh space, every mode and entire body."""
-    def check(self,scene,path,command,road,*,timestamp_s,wall_s):
+    def check(self,scene,path,command,road,*,timestamp_s,wall_s,full_maneuver=False):
+        if not scene.usable(timestamp_s,wall_s):return False,'STALE_CONTROL_SCENE',{}
+        lookup=getattr(type(scene.space),'get_execution_proof',None)
+        if lookup is None:
+            return self._check(scene,path,command,road,timestamp_s=timestamp_s,wall_s=wall_s,full_maneuver=full_maneuver)
+        # Reuse deterministic geometry, never a previous frame's permission.
+        # The independent check revalidates freshness and binds every proposed
+        # control, its exact path and the measured road context before lookup.
+        digest=hashlib.sha256(np.asarray(path,dtype='<f8').tobytes())
+        digest.update(np.asarray(road.get('drivable_strips',()),dtype='<f8').tobytes())
+        digest.update(repr((int(command.frame_id),float(command.timestamp_s),float(command.throttle),float(command.brake),
+            float(command.steering),bool(command.reverse),int(command.gear),bool(command.handbrake),
+            bool(road.get('traffic_stop')),bool(full_maneuver),'drivable_strips' in road,float(timestamp_s))).encode())
+        key=digest.hexdigest();proof=lookup(scene.space,key)
+        if proof is not None:
+            ok,reason,evidence=to_dict(proof)
+            return ok,reason,evidence
+        result=self._check(scene,path,command,road,timestamp_s=timestamp_s,wall_s=wall_s,full_maneuver=full_maneuver)
+        scene.space.put_execution_proof(key,result)
+        return result
+
+    def _check(self,scene,path,command,road,*,timestamp_s,wall_s,full_maneuver=False):
         if not scene.usable(timestamp_s,wall_s):return False,'STALE_CONTROL_SCENE',{}
         # The command lease is one decision interval, followed by a complete
         # reaction/braking tail. A three-second advisory forecast is not a
@@ -90,15 +115,26 @@ class ExecutionShield:
         speed=float(motion_speed(scene.observation.ego))
         braking_reverse=signed_speed(scene.observation.ego)<0
         if command.brake>0:
-            leased=signed_path(speed,command.steering,-3.,scene.geometry,braking_reverse)[:2]
+            # Preserve the proposed partial brake during its command lease.
+            # Brake pressure is not a promise of instantaneous -3 m/s².
+            leased=signed_path(speed,command.steering,-command.brake*5.,scene.geometry,braking_reverse)[:2]
         terminal=np.linalg.norm(leased[-1,1:3]-leased[-2,1:3])/max(.001,leased[-1,0]-leased[-2,0])
-        checked=stopping_tail(leased,max(speed,terminal),scene.geometry,braking_reverse if command.brake>0 else command.reverse)
+        checked=stopping_tail(leased,terminal,scene.geometry,braking_reverse if command.brake>0 else command.reverse,
+                              initial_deceleration=command.brake*5.)
+        if full_maneuver:
+            # Admission of a lane change requires its intended corridor as
+            # well as the independent check of the actual command each tick.
+            checked=planned
         prediction=scene.prediction
         tracks=prediction['tracks'];modes=prediction['control_trajectories']
-        uncertain=uncertain_corridor_tracks(tracks,modes,checked,scene.geometry)
+        incomplete=[m['track_id'] for m in modes if not len(m['points']) or m['points'][-1][0]+1e-6<checked[-1,0]]
+        if incomplete:return False,'FORECAST_HORIZON_INCOMPLETE',{'track_ids':sorted(set(incomplete)),
+            'required_horizon_s':float(checked[-1,0])}
+        uncertain=uncertain_corridor_tracks(tracks,modes,checked,scene.geometry,retained_forecasts=True)
         if uncertain:return False,'REACHABLE_CORRIDOR_UNCERTAINTY',{'track_ids':uncertain}
-        conflict_path=np.column_stack((GRID,*(np.interp(GRID,checked[:,0],checked[:,i]) for i in (1,2,3))))
-        conflicts=assess_conflicts(tracks,modes,[{'intent':'CANDIDATE','points':footprint_centers(conflict_path,scene.geometry),'half':scene.geometry.half}])
+        grid=np.unique(np.round(np.r_[GRID,checked[:,0]],6))
+        conflict_path=np.column_stack((grid,*(np.interp(grid,checked[:,0],checked[:,i]) for i in (1,2,3))))
+        conflicts=assess_conflicts(tracks,modes,[{'intent':'CANDIDATE','points':footprint_centers(conflict_path,scene.geometry),'half':scene.geometry.half}],grid=grid)
         conflicts=[c for c in conflicts if not c.get('separating_rear_overlap')]
         future_hold_conflicts=[c for c in conflicts if c['time_s']>checked[-1,0]+.1]
         conflicts=[c for c in conflicts if c['time_s']<=checked[-1,0]+.1]
@@ -107,11 +143,17 @@ class ExecutionShield:
         moving=bool(np.any(np.linalg.norm(path[:,1:3],axis=1)>.01))
         certificate=scene.space.certificate(checked)
         if not certificate['verified']:return False,'SWEPT_SPACE_UNKNOWN_OR_OCCUPIED',certificate
+        if 'drivable_strips' in road:
+            from .drivable_corridor import certificate as road_certificate
+            road_evidence=road_certificate(checked,scene.geometry,road['drivable_strips'])
+            if not road_evidence['verified']:return False,'BODY_OUTSIDE_DRIVABLE_ROAD',road_evidence
+            certificate={**certificate,'drivable_body':road_evidence}
         if road.get('traffic_stop') and moving:return False,'TRAFFIC_RULE_STOP',certificate
         if command.reverse!=scene.observation.ego.reverse and speed>=.15:
             return False,'GEAR_CHANGE_REQUIRES_STOP',certificate
         return True,'VERIFIED_MEASURED_CORRIDOR',{**certificate,'execution_lease_s':.1,
-            'complete_stopping_tail_verified':True,'advisory_path_horizon_s':float(planned[-1,0]),
+            'complete_stopping_tail_verified':not full_maneuver,'intended_maneuver_verified':full_maneuver,
+            'advisory_path_horizon_s':float(planned[-1,0]),
             'future_hold_conflicts':[{k:c[k] for k in ('track_id','time_s','point_m')} for c in future_hold_conflicts],
             'fallback_hold_safe_against_rear_impact':not any(c['point_m'][0]<-scene.geometry.rear_m for c in future_hold_conflicts)}
 

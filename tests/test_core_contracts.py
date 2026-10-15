@@ -46,6 +46,19 @@ class ContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             replace(sensor(), units={})
 
+    def test_shared_forecasts_are_frozen_once_without_aliasing_mutable_inputs(self):
+        modes=[{'points':[[0.,1.,2.],[.1,1.1,2.]]}]
+        snapshot=freeze_json({'trajectories':modes,'control_trajectories':modes})
+        expected=to_dict(snapshot)
+        self.assertIs(snapshot['trajectories'],snapshot['control_trajectories'])
+        modes[0]['points'][0][1]=999.
+        self.assertEqual(to_dict(snapshot),expected)
+        with self.assertRaises(TypeError):snapshot['trajectories'][0]['points'][0][1]=3.
+        cyclic=[];cyclic.append(cyclic)
+        with self.assertRaises(ValueError):freeze_json(cyclic)
+        for invalid in (float('nan'),float('inf'),10**400,b'raw'):
+            with self.assertRaises(ValueError):freeze_json({'value':invalid})
+
     def test_large_sensors_are_references_and_cannot_escape_run(self):
         for path in ('../x.png', 'C:/x.png', '/x.png', 'rgb\\x.png', 'https://x/y'):
             with self.subTest(path=path), self.assertRaises(ValueError):

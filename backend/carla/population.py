@@ -86,10 +86,10 @@ class TrafficManagerService:
 
 
 class WorldPopulationManager:
-    def __init__(self, client, world, api, ego_id):
+    def __init__(self, client, world, api, ego_id, *, traffic_manager_port=8050):
         self.client, self.world, self.api, self.ego_id = client, world, api, ego_id
         self.map = world.get_map()
-        self.traffic_manager = TrafficManagerService(client)
+        self.traffic_manager = TrafficManagerService(client, traffic_manager_port)
         self.config = dict(DEFAULT_POPULATION)
         self.random = random.Random(self.config['seed'])
         self.vehicles = set()
@@ -426,10 +426,11 @@ class WorldPopulationManager:
 
     def update(self, snapshot):
         """Register controllers after the sole worker has advanced the native frame."""
+        if getattr(self, 'benchmark_frozen', False): return
         timestamp = snapshot.timestamp.elapsed_seconds
         ego_snapshot = snapshot.find(self.ego_id) if hasattr(self, 'ego_id') else None
         ego_position = ego_snapshot.get_transform().location if ego_snapshot is not None else None
-        if ego_position is not None and timestamp-self.last_recycle_at >= 10.:
+        if ego_position is not None and not getattr(self, 'benchmark_locked', False) and timestamp-self.last_recycle_at >= 10.:
             self.last_recycle_at = timestamp
             frusta=self._view_frusta()
             nearby=sum(snapshot.find(i) is not None and snapshot.find(i).get_transform().location.distance(ego_position)<=120.

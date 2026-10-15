@@ -15,7 +15,7 @@ LATERAL_SPEED_NOISE_MPS = .3
 PATH_CONFLICT_POLICY = 'FORWARD_PHYSICAL_INGRESS_V3'
 
 
-def surfaces(points, *, bounds=(-10.,30.,9.), geometry=None,ground_plane=None):
+def surfaces(points, *, bounds=(-10.,30.,9.), geometry=None,ground_plane=None,split_large_frame=None):
     front=geometry.front_m if geometry else 2.5
     rear=geometry.rear_m if geometry else 2.5
     width=geometry.half_width_m if geometry else 1.15
@@ -37,12 +37,24 @@ def surfaces(points, *, bounds=(-10.,30.,9.), geometry=None,ground_plane=None):
             pending.extend((key[0]+x,key[1]+y) for x in (-1,0,1) for y in (-1,0,1) if x or y)
         if len(cloud)<3:continue
         cloud=np.asarray(cloud);low=cloud.min(0);high=cloud.max(0)
-        if np.max(high-low)>7:continue  # walls/unresolved merged surfaces
+        chunks=[cloud]
+        if np.max(high-low)>7:
+            if split_large_frame is None:continue  # Legacy forward-only tracker.
+            origin,rotation=split_large_frame
+            # Preserve unresolved connected returns instead of making whole
+            # parked rows disappear when two visible bodies merge. Odometry-
+            # fixed tiles do not slide across the surface as ego advances.
+            keys=np.floor((cloud@rotation.T+origin)/4.).astype(int)
+            _,inverse=np.unique(keys,axis=0,return_inverse=True)
+            chunks=[cloud[inverse==i] for i in range(int(inverse.max())+1)]
         # Stable sampling order prevents cell traversal changes from inventing
         # motion when the same stationary surface crosses voxel boundaries.
-        cloud=cloud[np.lexsort((cloud[:,1],cloud[:,0]))]
-        clusters.append({'center':(low+high)/2,'half':np.maximum((high-low)/2,.35),
-                         'cloud':cloud[::max(1,len(cloud)//64)],'points':len(cloud)})
+        for cloud in chunks:
+            if len(cloud)<3:continue
+            low=cloud.min(0);high=cloud.max(0)
+            cloud=cloud[np.lexsort((cloud[:,1],cloud[:,0]))]
+            clusters.append({'center':(low+high)/2,'half':np.maximum((high-low)/2,.35),
+                             'cloud':cloud[::max(1,len(cloud)//64)],'points':len(cloud)})
     return clusters
 
 

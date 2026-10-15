@@ -1,0 +1,68 @@
+"""Explicit Doppler geometry packets; these tests simulate no vehicle physics."""
+from collections import deque
+from dataclasses import replace
+import math
+import unittest
+import numpy as np
+from backend.core.contracts import SensorKind
+from backend.core.control_radar import RadarVelocityFusion
+from backend.core.prediction import MotionTracker,rotation
+from tests.test_safety_teacher import case
+
+
+class ControlRadarTests(unittest.TestCase):
+    def packet(self,velocity=(0.,0.),*,collinear=False,yaw=.0):
+        observation,_=case(1,distance=None,speed=4.)
+        mount=np.array([2.5,0.,.65]);r=rotation(yaw)
+        poses=[(observation.timestamp_s-.05,0.,0.,0.),(observation.timestamp_s,.2,0.,yaw)]
+        sensor_velocity=r.T@((np.array([.2,0.])+r@mount[:2])-mount[:2])/.05
+        points=[(x,y,1.) for x in (8.,9.,10.) for y in ((0.,) if collinear else (2.,3.,4.))]
+        data=[]
+        for point in points:
+            delta=np.array(point)-mount;distance=np.linalg.norm(delta);direction=delta/distance
+            data.append({'depth_m':distance,'azimuth_rad':math.atan2(delta[1],delta[0])-math.pi/4,
+                         'altitude_rad':math.asin(direction[2]),
+                         'velocity_mps':float((np.asarray(velocity)-sensor_velocity)@direction[:2])})
+        channel=next(c for c in observation.channels if c.kind==SensorKind.RADAR)
+        channel=replace(channel,sensor_id='frontRightRadar',data={'detections':data},
+            calibration={'mount_transform':{'position_m':mount.tolist(),'rotation_deg':{'roll':0.,'pitch':0.,'yaw':45.}}})
+        observation=replace(observation,channels=tuple(channel if c.kind==SensorKind.RADAR else c for c in observation.channels))
+        position=np.array([9.,0. if collinear else 3.]);world=np.array([.2,0.])+r@position
+        track={'id':'1','position_m':position.tolist(),'half_size_m':[1.1,1.1],
+               'velocity_mps':[2.,-1.],'acceleration_mps2':[1.,-1.],'occlusion_s':0.,
+               'confirmed':True,'history':[]}
+        tracker=MotionTracker(enhanced=True)
+        tracker.tracks[1]={'position':world.copy(),'anchor':world.copy(),'velocity':r@np.array([2.,-1.]),
+            'acceleration':np.zeros(2),'history':deque([(observation.timestamp_s,*world,2.,-1.)])}
+        prediction={'tracks':[track],'odometry_yaw_rad':yaw,'odometry_origin_m':[.2,0.]}
+        return observation,poses,tracker,prediction
+
+    def test_parked_body_keeps_its_measured_bounds_and_loses_spurious_registered_motion(self):
+        observation,poses,tracker,prediction=self.packet()
+        count=RadarVelocityFusion().apply(prediction,observation,poses,tracker)
+        self.assertEqual(count,1)
+        track=prediction['tracks'][0]
+        np.testing.assert_allclose(track['velocity_mps'],[0.,0.],atol=1e-10)
+        self.assertEqual(track['position_m'],[9.,3.]);self.assertEqual(track['half_size_m'],[1.1,1.1])
+        self.assertEqual(track['doppler_evidence']['source_frame'],observation.frame_id)
+
+    def test_crossing_velocity_is_recovered_from_relative_doppler_without_actor_labels(self):
+        observation,poses,tracker,prediction=self.packet((1.,2.))
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),1)
+        np.testing.assert_allclose(prediction['tracks'][0]['velocity_mps'],[1.,2.],atol=1e-10)
+
+    def test_own_yaw_and_offset_sensor_motion_use_the_same_finite_pose_interval(self):
+        observation,poses,tracker,prediction=self.packet(yaw=.05)
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),1)
+        np.testing.assert_allclose(prediction['tracks'][0]['velocity_mps'],[0.,0.],atol=1e-10)
+
+    def test_unobservable_lateral_velocity_and_ambiguous_boxes_are_not_invented(self):
+        observation,poses,tracker,prediction=self.packet(collinear=True)
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),0)
+        self.assertEqual(prediction['tracks'][0]['velocity_mps'],[2.,-1.])
+        observation,poses,tracker,prediction=self.packet()
+        prediction['tracks'].append({**prediction['tracks'][0],'id':'2'})
+        self.assertEqual(RadarVelocityFusion().apply(prediction,observation,poses,tracker),0)
+
+
+if __name__=='__main__':unittest.main()

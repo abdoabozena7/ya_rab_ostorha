@@ -8,7 +8,7 @@ import numpy as np
 from .active_safety import _mount
 from .contracts import ControlCommand, CommandSource, SensorKind, to_dict
 from .camera_geometry import project
-from .prediction import PredictionEngine, rotation, intended_conflict
+from .prediction import PredictionEngine, rotation, intended_conflict,ego_paths,assess_conflicts
 from .motion_quality import MotionQuality
 from .kinematic_prediction import rank_learned_modes
 from .maneuver import ObservedSpace
@@ -156,6 +156,12 @@ class DisplayPredictionService:
                     'front_ttc_s':min((v[1] for v in front if v[1] is not None),default=None),'rear_ttc_s':min((v[1] for v in rear if v[1] is not None),default=None)}
                 prediction['measured_trajectories']=prediction['trajectories']
                 prediction['control_trajectories']=prediction['measured_trajectories']
+                if not prediction['ego_trajectories']:
+                    # The shared control scene deliberately omits display-only
+                    # default forecasts. Build those here, outside control.
+                    paths=ego_paths(ego.speed_mps,ego.steering,ego.throttle,geometry=self.engine.geometry)
+                    prediction['ego_trajectories']=[{'intent':p['intent'],'points':p['points'].tolist()} for p in paths]
+                    prediction['conflicts']=assess_conflicts(prediction['tracks'],prediction['control_trajectories'],paths)
                 prediction['object_assessments']=object_assessments(prediction['tracks'],prediction['control_trajectories'],
                     prediction['ego_trajectories'][0]['points'],self.engine.geometry,prediction['conflicts'],centered=True)
                 # Rear-only padded overlaps remain in the diagnostic list, but

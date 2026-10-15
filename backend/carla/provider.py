@@ -1,5 +1,6 @@
 """CARLA is the rendered simulator. This provider sends controls and reads state."""
 import copy
+import math
 from .connection import CarlaConnection
 from .controls import native_control
 from .sensors import CarlaSensorManager
@@ -21,16 +22,23 @@ class CarlaProvider:
     allow_navigation = True  # Explicit destination journeys; AI/assisted modes stay disabled.
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
-                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False, fresh_start=False):
+                 blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False, fresh_start=False,
+                 traffic_manager_port=8050):
         self.connection = CarlaConnection(host, port, version)
         self.map_name, self.blueprint, self.spawn_index = map_name, blueprint, spawn_index
         self.fresh_start = fresh_start
+        self.traffic_manager_port = traffic_manager_port
         self.fixed_delta = fixed_delta
         self.collision_sensor = collision_sensor
         self.sensor_suite = sensor_suite
         self.camera_settings = {'camera_view': 'front', 'camera_resolution': '640x360', 'camera_fov': 90,
                                 'camera_postprocess': False, 'camera_motion_blur': 0., 'camera_bloom': 0.}
         self.navigation = None
+        self.hybrid_driver = None
+        self.hybrid_alternative = None
+        self.hybrid_speed_policy = None
+        self.benchmark_fixture = None
+        self.benchmark_prepared = False
         self.scenarios = None
         self.strict_ego_spawn = False
         self.population = None
@@ -103,7 +111,8 @@ class CarlaProvider:
                 for key,value in saved_view['weather'].items():setattr(weather,key,value)
                 raw_world.set_weather(weather)
             self.spawn_ego_vehicle()
-            self.population = WorldPopulationManager(self.connection.client, raw_world, self.connection.api, self.ego.actor.id)
+            self.population = WorldPopulationManager(self.connection.client, raw_world, self.connection.api, self.ego.actor.id,
+                traffic_manager_port=self.traffic_manager_port)
             from .scenarios import NativeScenarioManager
             self.scenarios = NativeScenarioManager(self)
             self.set_controls(brake=1)
@@ -176,6 +185,7 @@ class CarlaProvider:
         self._set_control_field('parkingbrake', int(enabled))
 
     def step(self):
+        if self.benchmark_fixture:self.benchmark_fixture.prepare_tick()
         if self.scenarios: self.scenarios.before_tick()
         if self.population and self.dashboard_tools:
             route = self.dashboard_tools.route
@@ -357,14 +367,14 @@ class CarlaProvider:
             raise ValueError('Native restart is available only for the local simulator')
         return validate_settings({'next_launch': value})['next_launch']
 
-    def journey_manifest(self, speed_kmh):
+    def journey_manifest(self, speed_kmh, *, benchmark=False):
         self._ensure_dashboard_tools()
         route = self.dashboard_tools.route
         if not route: raise ValueError('Choose a destination first')
         pose = self.ego.actor.get_transform()
         from .dashboard_tools import WEATHER_PRESET_FIELDS
         weather = self.world.world.get_weather()
-        return {'map':self.dashboard_tools.map_name, 'blueprint':self.ego.actor.type_id,
+        manifest = {'map':self.dashboard_tools.map_name, 'blueprint':self.ego.actor.type_id,
             'origin':{'location':[pose.location.x, pose.location.y, pose.location.z],
                       'rotation':[pose.rotation.pitch, pose.rotation.yaw, pose.rotation.roll]},
             'destination':copy.deepcopy(route['destination']), 'route_length_m':route['length_m'],
@@ -374,6 +384,18 @@ class CarlaProvider:
             'crowded':bool(self.population.route_crowding),
             'weather':{key:getattr(weather,key) for key in WEATHER_PRESET_FIELDS if hasattr(weather,key)},
             'setup_note':'Same origin, destination, weather, speed and seeded traffic settings. Live actor trajectories are not identical.'}
+        if benchmark:
+            from .benchmark_fixture import BenchmarkFixture
+            if not self.benchmark_prepared:
+                if self.benchmark_fixture: self.benchmark_fixture.close()
+                self.benchmark_fixture = BenchmarkFixture(self)
+                self.benchmark_fixture.capture()
+            self.benchmark_prepared = False
+            manifest.update(protocol='HYBRID_NATIVE_BASELINE_V1', initial_condition_id=self.benchmark_fixture.condition['id'],
+                initial_conditions=copy.deepcopy(self.benchmark_fixture.condition),
+                actual_population={'vehicles':len(self.population.vehicles),'pedestrians':len(self.population.walkers),
+                                   'controllers':len(self.population.walkers),'walkers_active':0})
+        return manifest
 
     def prepare_journey_comparison(self, manifest):
         self._ensure_dashboard_tools()
@@ -383,6 +405,21 @@ class CarlaProvider:
             raise ValueError('Select the saved vehicle before preparing this comparison')
         self.stop_navigation()
         self.set_controls(brake=1)
+        if manifest.get('protocol') == 'HYBRID_NATIVE_BASELINE_V1':
+            if not self.benchmark_fixture or self.benchmark_fixture.condition['id'] != manifest['initial_condition_id']:
+                raise ValueError('The live benchmark fixture expired; start a new pair')
+            self.benchmark_fixture.restore()
+            api, origin = self.connection.api, manifest['origin']
+            self.ego.actor.set_target_velocity(api.Vector3D()); self.ego.actor.set_target_angular_velocity(api.Vector3D())
+            self.ego.actor.set_transform(api.Transform(api.Location(*origin['location']),
+                api.Rotation(pitch=origin['rotation'][0],yaw=origin['rotation'][1],roll=origin['rotation'][2])))
+            weather = self.world.world.get_weather()
+            for key,value in manifest['weather'].items(): setattr(weather,key,value)
+            self.world.world.set_weather(weather)
+            tools = self.dashboard_tools
+            tools.route,tools.native_route = tools.route_service.plan(self.ego.actor.get_location(), copy.deepcopy(manifest['destination']))
+            self.benchmark_prepared = True
+            return
         self.population.reset_population()
         api, origin = self.connection.api, manifest['origin']
         self.ego.actor.set_target_velocity(api.Vector3D(0,0,0))
@@ -408,6 +445,10 @@ class CarlaProvider:
         # Resume always plans from the real vehicle's current location.
         self.dashboard_tools.replan_route()
         self.driving_mode = driving_mode
+        if driving_mode not in ('HYBRID','BASELINE') and self.benchmark_fixture:
+            self.benchmark_fixture.close(); self.benchmark_fixture = None
+        self.hybrid_driver = None
+        self.hybrid_alternative = None
         from .route_agent import route_agent_class
         BasicAgent = route_agent_class()
         delta = self.fixed_delta
@@ -415,14 +456,35 @@ class CarlaProvider:
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
-        self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
-            opt_dict=copy.deepcopy(self.navigation_options),
-            map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.route_service.planner)
+        if driving_mode in ('HYBRID', 'BASELINE'):
+            from .hybrid_navigation import RoadSpeedPolicy, behavior_agent_class
+            self.hybrid_speed_policy = RoadSpeedPolicy(self.dashboard_tools.map)
+        if driving_mode == 'BASELINE':
+            self.navigation = behavior_agent_class()(self.ego.actor, speed_policy=self.hybrid_speed_policy,
+                requested_speed=speed_kmh, opt_dict=copy.deepcopy(self.navigation_options),
+                map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.route_service.planner)
+        else:
+            self.navigation = BasicAgent(self.ego.actor, target_speed=speed_kmh,
+                opt_dict=copy.deepcopy(self.navigation_options),
+                map_inst=self.dashboard_tools.map, grp_inst=self.dashboard_tools.route_service.planner)
         self.navigation.set_global_plan(self.dashboard_tools.native_route,
                                         stop_waypoint_creation=True, clean_queue=True)
         self.navigation_planner=None
         self.navigation_recovery=None
-        if driving_mode == 'NORMAL':
+        if driving_mode == 'HYBRID':
+            from ..core.hybrid_driver import HybridDriver
+            from ..core.hybrid_config import admission
+            config, ticket = admission(self.dashboard_tools.map_name, speed_kmh)
+            self.navigation.ignore_vehicles(True)
+            self.navigation.ignore_traffic_lights(False)
+            self.navigation.ignore_stop_signs(False)
+            self.hybrid_driver = HybridDriver(self.vehicle_geometry,
+                deadline=ticket['expires_monotonic_s'] if ticket else float('inf'))
+        elif driving_mode == 'BASELINE':
+            self.navigation.ignore_vehicles(False)
+            self.navigation.ignore_traffic_lights(False)
+            self.navigation.ignore_stop_signs(False)
+        elif driving_mode == 'NORMAL':
             # NORMAL follows the route and signals without obstacle protection.
             # Sensor observations remain available for display and recording.
             self.navigation.ignore_vehicles(True)
@@ -501,6 +563,38 @@ class CarlaProvider:
         self.navigation.set_global_plan(self.dashboard_tools.native_route,
                                         stop_waypoint_creation=True,clean_queue=True)
 
+    def hybrid_road_context(self, session_id):
+        from .hybrid_navigation import road_context
+        return road_context(self, session_id)
+
+    def find_hybrid_alternative(self, scene):
+        """Project a *measured* front blocker onto the map for detour search."""
+        if self.hybrid_alternative is not None: return self.hybrid_alternative
+        driver = self.hybrid_driver
+        if not driver or not driver.last: return None
+        blocker=driver.last.get('front_blocker')
+        if not blocker or blocker['gap_m']>max(25.,scene.observation.ego.speed_mps*3.):return None
+        stamp=scene.observation.timestamp_s
+        if stamp-getattr(self,'hybrid_alternative_attempt_at',-float('inf'))<2.:return None
+        pose = self.ego.actor.get_transform(); f = pose.get_forward_vector(); r = pose.get_right_vector()
+        front = [t for t in scene.prediction['tracks'] if t.get('confirmed') and t['id']==blocker['track_id']
+                 and math.hypot(*t['velocity_mps'])<.3]
+        if not front: return None
+        self.hybrid_alternative_attempt_at=stamp
+        target = min(front, key=lambda t:t['position_m'][0])
+        x,y = target['position_m']; location = self.connection.api.Location(
+            x=pose.location.x+f.x*x+r.x*y, y=pose.location.y+f.y*x+r.y*y, z=pose.location.z)
+        self.hybrid_alternative = self.dashboard_tools.route_service.alternative(
+            pose.location, self.dashboard_tools.route['destination'], location)
+        return self.hybrid_alternative
+
+    def apply_hybrid_alternative(self):
+        if self.hybrid_alternative is None: return False
+        self.dashboard_tools.route, self.dashboard_tools.native_route = self.hybrid_alternative
+        self.navigation.set_global_plan(self.dashboard_tools.native_route, stop_waypoint_creation=True, clean_queue=True)
+        self.hybrid_alternative = None
+        return True
+
     def create_comparison_v2(self, service):
         from .comparison_v2 import ComparisonV2
         return ComparisonV2(service)
@@ -510,6 +604,9 @@ class CarlaProvider:
         if self.navigation is None:
             raise RuntimeError('No active native route controller')
         limit = self.ego.actor.get_speed_limit()
+        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE'):
+            waypoint = self.dashboard_tools.map.get_waypoint(self.ego.actor.get_location())
+            limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         self.navigation.set_target_speed(min(speed_kmh, limit) if limit > 0 else speed_kmh)
         value = self.navigation.run_step()
@@ -528,11 +625,15 @@ class CarlaProvider:
         self.navigation = None
         self.navigation_planner = None
         self.navigation_recovery = None
+        self.hybrid_driver = None
+        self.hybrid_alternative = None
 
     @property
     def required_sensors(self):
         if not self.sensor_suite:return ()
-        extras=tuple(n for n in ('rearDepth','leftDepth','rightDepth') if self.sensor_manager and n in self.sensor_manager.actors)
+        extras=tuple(n for n in ('rearDepth','leftDepth','rightDepth','frontLeftDepth','frontRightDepth','rearLeftDepth','rearRightDepth',
+                                'frontLeftRadar','frontRightRadar','rearLeftRadar','rearRightRadar')
+                     if self.sensor_manager and n in self.sensor_manager.actors)
         return ('frontCamera', 'depth', 'radar', 'lidar', 'imu', 'gnss')+extras
 
     def drain_sensor_frames(self):
@@ -641,6 +742,12 @@ class CarlaProvider:
     def disconnect(self):
         self.cleanup_errors = []
         try:
+            if self.benchmark_fixture:self.benchmark_fixture.close()
+        except RuntimeError as error:
+            self.cleanup_errors.append(str(error))
+        finally:
+            self.benchmark_fixture=None;self.benchmark_prepared=False
+        try:
             if self.scenarios:
                 self.scenarios.stop(reason='disconnect'); self.scenarios.cleanup()
         except RuntimeError as error:
@@ -684,8 +791,13 @@ class CarlaProvider:
                 'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
                 'vehicle_geometry':self.vehicle_geometry.snapshot() if getattr(self,'vehicle_geometry',None) else None,
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
-                'navigation':'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
+                'navigation':'CARLA BehaviorAgent normal' if getattr(self,'driving_mode',None)=='BASELINE' else
+                    'Sensor hybrid behavior with native route/signals follower' if getattr(self,'driving_mode',None)=='HYBRID' else
+                    'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
                 'driving_mode':getattr(self,'driving_mode',None),
+                'driver_id':'CARLA_BEHAVIOR_NORMAL' if getattr(self,'driving_mode',None)=='BASELINE' else
+                    'ROBOSPHERE_HYBRID_V1' if getattr(self,'driving_mode',None)=='HYBRID' else getattr(self,'driving_mode',None),
+                'native_obstacle_handling':getattr(self,'driving_mode',None)=='BASELINE',
                 'population': self.population_state(), 'environment':self.environment_state(),
                 'traffic_active': bool(self.population and self.population.vehicles),
                 'ya_rab_ostorha': {'status':getattr(self, 'active_safety_status', None),

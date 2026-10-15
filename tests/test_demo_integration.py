@@ -3,6 +3,7 @@ import io
 import tempfile
 import threading
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, MagicMock, patch
@@ -49,6 +50,52 @@ class DemoIntegrationTests(unittest.TestCase):
             release.set();reader.join(2)
         self.assertEqual(returned[0]['sensorRegistry']['imu']['latestFrame'],1)
         self.assertEqual(returned[0]['vehicle']['frame'],1)
+
+    def test_hybrid_navigation_brake_reports_its_original_behavior_cause(self):
+        from backend.core.contracts import CommandSource
+        from backend.core.control import ControlMode
+        from tests.core_packets import command
+        provider=SimpleNamespace(name='test-fixture',navigation_stop_reason=None,allow_navigation=True)
+        service=SimulationService(provider,now=lambda:100.)
+        service._publish(packet(speed=0))
+        service.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
+        service.journey.update(driving_mode='HYBRID',status='RUNNING')
+        service.maneuver_status={'decision_id':'behavior-12','action':'HOLD','reason':'NO_VERIFIED_SAFE_ACTION'}
+        applied=replace(command(),source=CommandSource.NAVIGATION,throttle=0.,brake=1.)
+        service.arbiter.submit(applied,frame_id=applied.frame_id,timestamp_s=applied.timestamp_s,connected=True)
+        service.arbiter.choose(frame_id=applied.frame_id,timestamp_s=applied.timestamp_s,connected=True)
+        service._audit_command(applied)
+        self.assertEqual(service.stop_diagnostics['decision_source'],'HYBRID')
+        self.assertEqual(service.stop_diagnostics['reason'],'NO_VERIFIED_SAFE_ACTION')
+        self.assertEqual(service.stop_diagnostics['behavior_decision']['decision_id'],'behavior-12')
+        provider.navigation_stop_reason='Red traffic light on the planned route'
+        service._audit_command(applied)
+        self.assertEqual(service.stop_diagnostics['decision_source'],'NAVIGATION')
+        self.assertEqual(service.stop_diagnostics['reason'],provider.navigation_stop_reason)
+
+    def test_canonical_display_serialization_leaves_the_tick_and_control_lock(self):
+        from backend.core.dashboard import dashboard_frame
+        from backend.core.contracts import to_dict
+        entered=threading.Event();release=threading.Event();returned=[]
+        frame=packet(speed=0)
+        provider=SimpleNamespace(name='test-fixture')
+        service=SimulationService(provider)
+        def display(observation,*,rich=True):
+            if rich:entered.set();release.wait(2)
+            return dashboard_frame(observation,rich=rich)
+        with patch('backend.core.service.dashboard_frame',side_effect=display):
+            service._publish(frame)
+            self.assertFalse(entered.is_set(),'Control publication serialized the canonical display')
+            reader=threading.Thread(target=lambda:returned.append(service.snapshot()));reader.start()
+            try:
+                self.assertTrue(entered.wait(1))
+                acquired=service.lock.acquire(timeout=.1)
+                self.assertTrue(acquired,'Canonical display blocked control admission')
+                if acquired:service.lock.release()
+                service.require_connected()
+            finally:release.set();reader.join(2)
+        self.assertEqual(returned[0]['canonical'],to_dict(frame))
+        self.assertEqual(returned[0]['sensors'],dashboard_frame(frame)['sensors'])
 
     def test_sensor_registry_serialization_does_not_hold_callback_lock(self):
         from backend.carla.sensors import CarlaSensorManager

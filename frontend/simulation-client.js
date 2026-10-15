@@ -133,6 +133,7 @@ export class SimulationClient extends SimulationProvider {
     this.sessionId = message.sessionId ?? this.sessionId;
     this.journey = message.journey ?? {};
     this.journeyComparison = message.journeyComparison ?? this.journeyComparison ?? null;
+    this.hybridDriving = message.hybridDriving ?? null;
     this.navigationAvailable = message.navigationAvailable === true;
     this.restarting = message.restarting ?? false;
     this.restartResult = message.restartResult ?? null;
@@ -276,9 +277,9 @@ export class SimulationClient extends SimulationProvider {
     this.operationError = null; this.lastManualFrame = null;
     return this.send('start_driving', driving_mode?{driving_mode}:{});
   }
-  startJourney(speed_kmh, driving_mode=null, pair_id=null) {
+  startJourney(speed_kmh, driving_mode=null, pair_id=null, benchmark=false) {
     this.operationError = null;
-    return this.send('start_journey', {speed_kmh,...(driving_mode?{driving_mode}:{}),...(pair_id?{pair_id}:{})});
+    return this.send('start_journey', {speed_kmh,...(driving_mode?{driving_mode}:{}),...(pair_id?{pair_id}:{}),...(benchmark?{benchmark:true}:{})});
   }
   journeyHeartbeat() { return this.send('journey_heartbeat', {session_id:this.sessionId}); }
   journeySpeed(speed_kmh) { this.operationError = null; return this.send('journey_speed', {speed_kmh}); }

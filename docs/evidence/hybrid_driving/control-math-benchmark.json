@@ -1,0 +1,24 @@
+{
+  "source": "OFFLINE_NUMERICAL_BENCHMARK_NOT_NATIVE_ACCEPTANCE",
+  "registration": {
+    "surfaces": 50,
+    "samples_per_surface": 24,
+    "scalar_median_ms": 54.038000000218744,
+    "batch_median_ms": 16.092899999421206,
+    "maximum_translation_error_m": 0.0
+  },
+  "freezing": {
+    "shared_forecasts": 50,
+    "previous_median_ms": 11.746099999982107,
+    "current_median_ms": 5.434300000160874,
+    "wire_values_equal": true
+  },
+  "cell_rows": {
+    "sensor_rows": 20000,
+    "previous_median_ms": 14.568900000085705,
+    "current_median_ms": 2.8050000000803266,
+    "indices_and_order_equal": true
+  },
+  "seed": 442,
+  "qualification": "Numerical parity and local comparative timings only; host load was not controlled"
+}

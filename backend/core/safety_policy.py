@@ -109,6 +109,12 @@ class ObservationHistory:
         try:observation=sensor_observation(frame)
         except ValueError:
             self.frames.clear();self.status='INCOMPLETE_OR_UNAVAILABLE';return None
+        return self.append_observation(observation)
+
+    def append_observation(self,observation):
+        """Reuse the already validated immutable sensor boundary of this tick."""
+        if not isinstance(observation,SensorObservation):
+            raise ValueError('Policy history requires a validated sensor observation')
         if self.frames:
             previous=self.frames[-1]
             if observation.frame_id<=previous.frame_id or observation.timestamp_s<=previous.timestamp_s:

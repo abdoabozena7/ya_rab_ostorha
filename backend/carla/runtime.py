@@ -89,7 +89,8 @@ class NativeRuntime:
                 marker.get('version') != '0.9.16' or not marker.get('packageVerified') or not marker.get('pythonApiValidated'):
             raise RuntimeError('Official CARLA installation verification failed')
         width, height = settings['resolution'].split('x')
-        renderer = 'D3D12'
+        renderer = settings.get('renderer') or 'D3D12'
+        if renderer not in ('D3D11','D3D12'):raise ValueError('Unsupported verified native renderer')
         from ..graphics import write_render_config
         profile = settings.get('render_profile') or ('HIGH' if settings['quality']=='Epic' else 'LOW')
         user_config = Path(os.environ['LOCALAPPDATA'])/'CarlaUE4/Saved/Config/WindowsNoEditor/Engine.ini'

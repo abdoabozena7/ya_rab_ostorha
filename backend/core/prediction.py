@@ -12,6 +12,7 @@ from .motion_geometry import VehicleGeometry, integrate, footprint_centers
 from .kinematic_prediction import kinematic_modes
 
 GRID = np.round(np.arange(31) * .1, 6)
+MAX_TRACK_OCCLUSION_S=.3
 
 
 def rotation(yaw):
@@ -35,10 +36,10 @@ def ego_paths(speed, steering, throttle, half=(2.5, 1.15), geometry=None):
     return paths
 
 
-def occupied_overlap(centers, half, ego, ego_half, uncertainty):
+def occupied_overlap(centers, half, ego, ego_half, uncertainty, *, padding=.2):
     """Vectorized rectangle SAT (object axis-aligned conservative measured bounds)."""
     delta = centers-ego[:, 1:3]; co = np.cos(ego[:, 3]); si = np.sin(ego[:, 3])
-    oh = np.asarray(half)[None, :] + np.asarray(uncertainty)[:, None] + .2
+    oh = np.broadcast_to(np.asarray(half),(len(ego),2)) + np.asarray(uncertainty)[:, None] + padding
     return ((np.abs(delta[:, 0]) <= oh[:, 0]+ego_half[0]*np.abs(co)+ego_half[1]*np.abs(si)) &
             (np.abs(delta[:, 1]) <= oh[:, 1]+ego_half[0]*np.abs(si)+ego_half[1]*np.abs(co)) &
             (np.abs(delta[:, 0]*co+delta[:, 1]*si) <= ego_half[0]+oh[:, 0]*np.abs(co)+oh[:, 1]*np.abs(si)) &
@@ -50,6 +51,7 @@ class MotionTracker:
         self.enhanced=enhanced;self.geometry=geometry
         self.tracks = {}; self.next_id = 1; self.timestamp = None
         self.origin = np.zeros(2); self.yaw = 0.; self.speed = 0.
+        self.surface_history = deque(maxlen=3)
 
     def update(self, points, observation):
         now = observation.timestamp_s
@@ -66,9 +68,15 @@ class MotionTracker:
         if self.enhanced:
             from .ground_geometry import measured_ground_plane
             plane,_=measured_ground_plane(points,self.geometry or VehicleGeometry())
+        r = rotation(self.yaw)
         clusters = surfaces(np.asarray(points),bounds=(-40.,45.,15.) if self.enhanced else (-10.,30.,9.),
-                            geometry=self.geometry,ground_plane=plane)
-        r = rotation(self.yaw); available = set(self.tracks)
+                            geometry=self.geometry,ground_plane=plane,
+                            split_large_frame=(self.origin,r) if self.enhanced else None)
+        available = set(self.tracks)
+        spatial_frames=[]
+        if self.enhanced:
+            spatial_frames=[keys for stamp,keys in self.surface_history if 0<now-stamp<=.16+1e-6]
+        current_surface_keys=set()
         # Global nearest association with one-to-one assignment, dimension gate.
         measurements = [(c, self.origin+r@c['center']) for c in clusters]
         pairs = []
@@ -84,50 +92,61 @@ class MotionTracker:
         for _, key, j in sorted(pairs):
             if key in available and j not in used:
                 assigned[j] = key; available.remove(key); used.add(j)
+        clouds=[c['cloud'][::max(1,math.ceil(len(c['cloud'])/24))]@r.T+self.origin for c,_ in measurements]
+        registered={}
+        if assigned:
+            from .surface_registration import register_surfaces
+            indices=sorted(assigned);old=[self.tracks[assigned[j]] for j in indices]
+            prior=[t['velocity']*(now-t['last_seen']) for t in old]
+            centers=[measurements[j][1]-t.get('surface_center',t['position']) for j,t in zip(indices,old)]
+            registered=dict(zip(indices,register_surfaces([clouds[j] for j in indices],
+                [t['cloud'] for t in old],prior,centers,enhanced=self.enhanced)))
         for j, (c, pos) in enumerate(measurements):
             key = assigned.get(j)
-            cloud = c['cloud'][::max(1,math.ceil(len(c['cloud'])/24))]@r.T+self.origin
+            cloud = clouds[j]
+            spatial_support=1
+            if self.enhanced:
+                # Object IDs can split as a parked body's visible faces change.
+                # Count repeated *occupied measurements* in the odometry frame,
+                # without carrying free space or pretending an ID has history.
+                keys=np.rint(cloud/.2).astype(int)
+                current_surface_keys.update(map(tuple,keys.tolist()))
+                for previous_keys in spatial_frames:
+                    supported=sum(any((int(x)+dx,int(y)+dy) in previous_keys
+                        for dx in (-1,0,1) for dy in (-1,0,1)) for x,y in keys)
+                    if len(keys) and supported/len(keys)>=.8:spatial_support+=1
             if key is None:
                 key = self.next_id; self.next_id += 1
                 tr = {'id': key, 'position': pos, 'half': c['half'], 'velocity': np.zeros(2),
+                      'anchor': pos.copy(),
                       'acceleration': np.zeros(2), 'hits': 0, 'history': deque(maxlen=100),
                       'class': 'UNKNOWN', 'quality': 0., 'last_seen': now, 'cloud': cloud}
                 self.tracks[key] = tr
             else:
                 tr = self.tracks[key]; elapsed = now-tr['last_seen']
-                # Register surfaces rather than differentiate unstable box centers.
-                translation = tr['velocity']*elapsed
-                seeds=[translation]
-                if self.enhanced:
-                    # A fast target can move farther than the registration
-                    # inlier radius between scans. A zero-velocity initial guess
-                    # then incorrectly freezes its anchor and repeatedly births
-                    # new IDs. Seed from measured surface displacement too.
-                    seeds.append(pos-tr.get('surface_center',tr['position']))
-                registrations=[]
-                for seed in seeds:
-                    trial=seed.copy();count=0
-                    for _ in range(3 if self.enhanced else 2):
-                        differences = cloud[:, None, :]-(tr['cloud']+trial)[None, :, :]
-                        nearest = np.argmin(np.sum(differences*differences, axis=2), axis=1)
-                        residual = differences[np.arange(len(cloud)), nearest]
-                        selected = residual[np.linalg.norm(residual, axis=1) < .65]
-                        if len(selected) < 3:break
-                        count=len(selected);trial+=np.median(selected,axis=0)
-                    if count>=3:
-                        residuals=cloud[:,None,:]-(tr['cloud']+trial)[None,:,:]
-                        fit=float(np.median(np.min(np.linalg.norm(residuals,axis=2),axis=1)))
-                        registrations.append((fit+.01*np.linalg.norm(trial-translation),trial))
-                if registrations:translation=min(registrations,key=lambda r:r[0])[1]
+                translation=registered[j]
                 measured = translation/max(.025, elapsed)
                 if self.enhanced:
                     # Carry a registered material anchor through changing visible
                     # faces. Box-centroid changes are not object displacement.
-                    pos=tr['position']+translation
+                    # Material registration estimates motion. Current measured
+                    # box half sizes must stay around their measured center;
+                    # using the old anchor invented occupied space in the lane.
+                    tr['anchor']=tr.get('anchor',tr['position'])+translation
                     if np.linalg.norm(measured)<.25: measured=np.zeros(2)
                 if np.linalg.norm(measured) <= 18:
                     old = tr['velocity'].copy()
-                    tr['velocity'] = .65*old+.35*measured
+                    filtered = .65*old+.35*measured
+                    if self.enhanced and tr.get('confirmed', False):
+                        # A new visible face is not an instantaneous multi-m/s
+                        # change in the established velocity of the same body.
+                        # Initial velocity estimation remains unconstrained;
+                        # established tracks obey a bounded physical change.
+                        change = filtered-old
+                        magnitude = np.linalg.norm(change)
+                        limit = 6.*elapsed
+                        if magnitude > limit: filtered = old+change*limit/max(1e-9,magnitude)
+                    tr['velocity'] = filtered
                     change=(tr['velocity']-old)/max(.025, elapsed)
                     tr['acceleration'] = (.8*tr['acceleration']+.2*np.clip(change,-3.,2.)) if self.enhanced else np.clip(change,-5.,5.)
                     old_angle=math.atan2(old[1],old[0]);new_angle=math.atan2(tr['velocity'][1],tr['velocity'][0])
@@ -136,21 +155,25 @@ class MotionTracker:
                 tr['hits'] = tr['hits'] if elapsed <= (.251 if self.enhanced else .151) else 0
             surface_center=self.origin+r@c['center']
             tr.update(position=pos, surface_center=surface_center,half=c['half'], last_seen=now, cloud=cloud, hits=tr['hits']+1)
+            tr['spatially_supported_frames']=spatial_support
             tr['quality'] = min(1., tr['hits']/3.)*min(1., c['points']/6.)
-            tr['history'].append((now, *pos, *tr['velocity']))
+            tr['history'].append((now, *(tr.get('anchor',pos) if self.enhanced else pos), *tr['velocity']))
         for key in list(available):
-            if now-self.tracks[key]['last_seen'] > .3+1e-6: del self.tracks[key]
+            if now-self.tracks[key]['last_seen'] > MAX_TRACK_OCCLUSION_S+1e-6: del self.tracks[key]
             else: self.tracks[key]['hits'] = 0  # reacquisition requires consecutive evidence
         result = []
+        if self.enhanced:self.surface_history.append((now,current_surface_keys))
         for tr in self.tracks.values():
             age = now-tr['last_seen']
-            if tr['hits'] >= 3: tr['confirmed'] = True
+            if tr['hits'] >= 3 or tr.get('spatially_supported_frames',0)>=3: tr['confirmed'] = True
             local = r.T@(tr['position']+tr['velocity']*age-self.origin)
             result.append({'id': str(tr['id']), 'position_m': local.tolist(),
+                'motion_anchor_m': (r.T@(tr.get('anchor',tr['position'])-self.origin)).tolist(),
                 'half_size_m': tr['half'].tolist(), 'velocity_mps': (r.T@tr['velocity']).tolist(),
                 'acceleration_mps2': (r.T@tr['acceleration']).tolist(),
                 'class': tr['class'], 'confirmed': tr.get('confirmed', False),
                 'motion_observations':tr['hits'],'turn_rate_radps':float(tr.get('turn_rate',0.)),
+                'spatially_supported_frames':tr.get('spatially_supported_frames',0),
                 'heading_rad':float(math.atan2(tr['velocity'][1],tr['velocity'][0])-self.yaw) if np.linalg.norm(tr['velocity'])>=.3 else None,
                 'gaze_direction':'UNKNOWN',
                 'consecutive_observations': tr['hits'], 'occlusion_s': age,
@@ -183,18 +206,19 @@ def intended_conflict(conflicts, speed, throttle):
         and not c.get('separating_rear_overlap') and not c.get('braking_worsens_rear_conflict')), None)
 
 
-def assess_conflicts(tracks, modes, paths):
+def assess_conflicts(tracks, modes, paths, *, grid=GRID):
+    grid=np.asarray(grid,float)
     conflicts = []; indexed = {t['id']: t for t in tracks if t['confirmed']}
     accepted = [m for m in modes if m['track_id'] in indexed]
     if not accepted: return conflicts
     centers = []
     for mode in accepted:
         points = np.asarray(mode['points'])
-        centers.append(np.column_stack([np.interp(GRID,points[:,0],points[:,i]) for i in (1,2)]))
+        centers.append(np.column_stack([np.interp(grid,points[:,0],points[:,i]) for i in (1,2)]))
     centers=np.asarray(centers); ego=np.array([p['points'] for p in paths]); eh=np.array([p['half'] for p in paths])[None,:,None,:]
     half=np.array([indexed[m['track_id']]['half_size_m'] for m in accepted])[:,None,None,:]
     uncertainty=np.array([indexed[m['track_id']]['uncertainty_m'] for m in accepted])[:,None,None,None]
-    oh=half+uncertainty+.12*GRID[None,None,:,None]+.2
+    oh=half+uncertainty+.12*grid[None,None,:,None]+.2
     delta=centers[:,None,:,:]-ego[None,:,:,1:3];co=np.cos(ego[None,:,:,3]);si=np.sin(ego[None,:,:,3])
     dx,dy=delta[...,0],delta[...,1];hx,hy=oh[...,0],oh[...,1];ex,ey=eh[...,0],eh[...,1]
     mask=((np.abs(dx)<=hx+ex*np.abs(co)+ey*np.abs(si)) & (np.abs(dy)<=hy+ex*np.abs(si)+ey*np.abs(co)) &
@@ -221,7 +245,7 @@ def assess_conflicts(tracks, modes, paths):
             and not mask[mi,pi,-1] and not np.any(mask[mi,pi] & ~mask[mi,brake_index])
             and np.sum(mask[mi,pi]) < np.sum(mask[mi,brake_index]))
         conflicts.append({'track_id':tr['id'],'mode':mode['mode'],'source':mode['source'],
-            'ego_intent':paths[pi]['intent'],'time_s':float(GRID[i]),'point_m':centers[mi,i].tolist(),
+            'ego_intent':paths[pi]['intent'],'time_s':float(grid[i]),'point_m':centers[mi,i].tolist(),
             'half_size_m':tr['half_size_m'],'trajectory':mode['points'],'probability':mode['probability'],
             'separating_rear_overlap':rear_separating,'braking_worsens_rear_conflict':brake_worse})
     return sorted(conflicts, key=lambda c: c['time_s'])
@@ -232,12 +256,14 @@ class PredictionEngine:
         self.session_id = session_id;self.enhanced=enhanced;self.geometry=geometry
         self.tracker = MotionTracker(enhanced=enhanced,geometry=geometry); self.latest = None
 
-    def evaluate(self, points, observation, base, learned_modes=None):
+    def evaluate(self, points, observation, base, learned_modes=None, *, control_only=False):
         began = time.perf_counter()
         tracks = self.tracker.update(points, observation)
-        modes = (kinematic_modes(tracks) if self.enhanced else geometric_modes(tracks)) if learned_modes is None else learned_modes
-        paths = ego_paths(observation.ego.speed_mps, base.steering, base.throttle,geometry=self.geometry)
-        conflicts = assess_conflicts(tracks, modes, paths)
+        # Control labels are associated after tracking; its physical modes are
+        # then generated once from those labels and the complete stop horizon.
+        modes = [] if control_only else (kinematic_modes(tracks) if self.enhanced else geometric_modes(tracks)) if learned_modes is None else learned_modes
+        paths = [] if control_only else ego_paths(observation.ego.speed_mps, base.steering, base.throttle,geometry=self.geometry)
+        conflicts = [] if control_only else assess_conflicts(tracks, modes, paths)
         self.latest = {'version': 3 if self.enhanced else 2, 'session_id': self.session_id, 'evaluation_frame': observation.frame_id,
             'timestamp_s': observation.timestamp_s, 'prediction_source_frame': observation.frame_id,
             'prediction_source_timestamp_s': observation.timestamp_s, 'coordinate_frame': 'EGO_AT_EVALUATION',

@@ -1,9 +1,11 @@
 """Versioned run directories with bounded JSONL rows and separate binary assets."""
 from datetime import datetime, timezone
 import hashlib
+import gzip
 import json
 from pathlib import Path
 import threading
+import shutil
 from .contracts import AssetReference, ExperimentMetadata, SimulationFrame, to_dict
 from .events import EventType, SimulationEvent
 from .logging import log, LogCategory
@@ -64,6 +66,9 @@ class BufferedRunRecorder:
     def record_trace(self,row):
         return self._put(('trace',row))
 
+    def record_video(self, sensor, data):
+        return self._put(('video',(sensor,data)),len(data))
+
     def record_safety(self, row):
         return self._put(('safety',row), len(encode_row(row)))
 
@@ -98,9 +103,12 @@ class BufferedRunRecorder:
                     if isinstance(self.writer,RunRecorder):self.writer.flush()
                     continue
                 kind, value = item
+                if self.written_frames and self.written_frames%16 == 0 and shutil.disk_usage(self.root).free < 128*1024*1024:
+                    raise OSError(28, 'Recording stopped before exhausting the disk reserve; recorded prefix preserved')
                 if kind == 'event': self.writer.record_event(value)
                 elif kind=='trace':self.writer.record_trace(value)
                 elif kind=='safety':self.writer.record_safety(value)
+                elif kind=='video':self.writer.record_video(*value)
                 else:
                     frame, assets = value
                     for asset, data in assets:
@@ -159,6 +167,17 @@ def resolve_asset(root, asset):
     return target
 
 
+def read_trace_row(root, row):
+    """Resolve a checksummed, losslessly stored large control prediction."""
+    if 'prediction_asset' not in row:return row
+    reference=AssetReference(**row['prediction_asset'])
+    path=resolve_asset(root,reference)
+    with gzip.open(path,'rb') as stream:
+        data=stream.read(32*MAX_ROW_BYTES+1)
+    if len(data)>32*MAX_ROW_BYTES:raise ValueError('Control prediction asset exceeds its size bound')
+    return {**row,'prediction':json.loads(data)}
+
+
 class RunRecorder:
     def __init__(self, output_directory, metadata: ExperimentMetadata):
         if not isinstance(metadata, ExperimentMetadata):
@@ -177,6 +196,7 @@ class RunRecorder:
         self.autoflush=True
         self.trace_file=None
         self.safety_file=None
+        self.video_file=None
         self.record_event(SimulationEvent(EventType.RunRecordingStarted, None, None, {'run_id': metadata.run_id}))
         log(LogCategory.RECORDING, 'RunRecordingStarted', run_id=metadata.run_id)
 
@@ -228,7 +248,20 @@ class RunRecorder:
         with self.lock:
             if self.closed:raise RuntimeError('Recorder is closed')
             if self.trace_file is None:self.trace_file=(self.root/'telemetry/comparison-controls.jsonl').open('xb')
-            self.trace_file.write(encode_row(row))
+            wire=to_dict(row)
+            if wire.get('kind')=='HYBRID_DECISION' and 'prediction' in wire:
+                data=json.dumps(wire['prediction'],allow_nan=False,separators=(',',':')).encode('utf8')
+                if len(data)>MAX_ROW_BYTES//2:
+                    if len(data)>32*MAX_ROW_BYTES:raise ValueError('Control prediction asset exceeds its size bound')
+                    compressed=gzip.compress(data,compresslevel=1,mtime=0)
+                    digest=hashlib.sha256(compressed).hexdigest()
+                    filename='telemetry/prediction-'+digest+'.json.gz'
+                    target=self.root/filename
+                    if not target.exists():
+                        with target.open('xb') as stream:stream.write(compressed)
+                    wire.pop('prediction')
+                    wire.update(trace_version=2,prediction_asset=to_dict(AssetReference(filename,'application/gzip',len(compressed),digest)))
+            self.trace_file.write(encode_row(wire))
             if self.autoflush:self.trace_file.flush()
 
     def record_safety(self, row):
@@ -237,6 +270,18 @@ class RunRecorder:
             if self.safety_file is None: self.safety_file=(self.root/'telemetry/safety-v2.jsonl').open('xb')
             self.safety_file.write(encode_row(row))
             if self.autoflush: self.safety_file.flush()
+
+    def record_video(self, sensor, data):
+        if sensor.sensor_id != 'drivingCamera' or not sensor.asset:
+            raise ValueError('Expected original native driving-camera bytes')
+        folder,filename=sensor.asset.path.split('/',1)
+        stored=self.store_asset(folder,filename,data,sensor.asset.media_type)
+        if stored != sensor.asset: raise ValueError('Driving-camera bytes changed before recording')
+        with self.lock:
+            if self.video_file is None:self.video_file=(self.root/'telemetry/video-frames.jsonl').open('xb')
+            self.video_file.write(encode_row({'sensor_id':sensor.sensor_id,'frame_id':sensor.frame_id,
+                'timestamp_s':sensor.timestamp_s,'asset':to_dict(sensor.asset),'calibration':to_dict(sensor.metadata)}))
+            if self.autoflush:self.video_file.flush()
 
     def close(self):
         with self.lock:
@@ -250,6 +295,7 @@ class RunRecorder:
                 self.events_file.close()
                 if self.trace_file:self.trace_file.close()
                 if self.safety_file:self.safety_file.close()
+                if self.video_file:self.video_file.close()
                 self.closed = True
                 log(LogCategory.RECORDING, 'RunRecordingStopped', run_id=self.metadata.run_id,
                     frame_id=self.last_frame, timestamp_s=self.last_timestamp)

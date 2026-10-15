@@ -48,6 +48,8 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = unquote(urlsplit(self.path).path)
         provider = getattr(self.server, "simulation_service", None)
+        from .core.video_http import serve_video
+        if serve_video(self,path,getattr(provider,'recording_directory',ROOT/'runs/normal_city')):return
         if any(part.startswith(".") for part in Path(path).parts) or path.startswith(("/backend/", "/tests/", "/runs/", "/recordings/", '/config/')) or Path(path).name == "tech.key":
             return self._json(404, {"error": "Not found"})
         if path.startswith(("/legacy/", "/api/legacy/")):
@@ -155,6 +157,12 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(503, {"error": str(error)})
             return self._json(404, {"error": "Unknown simulation endpoint"})
         return super().do_GET()
+
+    def do_HEAD(self):
+        from .core.video_http import serve_video
+        provider=getattr(self.server,'simulation_service',None)
+        if serve_video(self,unquote(urlsplit(self.path).path),getattr(provider,'recording_directory',ROOT/'runs/normal_city')):return
+        return super().do_HEAD()
 
     def do_POST(self):
         path = urlsplit(self.path).path

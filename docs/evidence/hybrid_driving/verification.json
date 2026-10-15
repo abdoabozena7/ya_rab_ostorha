@@ -1,0 +1,61 @@
+{
+  "generated_at_utc": "2026-10-15T15:59:27.997998+00:00",
+  "software_only": true,
+  "native_accepted": false,
+  "javascript": {
+    "passed": 112,
+    "failed": 0,
+    "dashboard_build": "PASSED"
+  },
+  "python": {
+    "discovered": 483,
+    "passed": 482,
+    "skipped": 1,
+    "failed": 0
+  },
+  "isolated_dashboard": {
+    "first": {
+      "source": "ISOLATED_BROWSER_FIXTURE",
+      "checks": 53,
+      "errors": []
+    },
+    "second": {
+      "source": "ISOLATED_BROWSER_FIXTURE",
+      "checks": 12,
+      "errors": []
+    }
+  },
+  "native_video_playback": {
+    "source": "NATIVE_VIDEO_ISOLATED_DASHBOARD",
+    "transport": "PRODUCTION_HTTP_HANDLER",
+    "checks": 3,
+    "durations_s": [
+      21.801,
+      28.301
+    ],
+    "playback_after_shorter_ended": [
+      {
+        "time_s": 21.801,
+        "duration_s": 21.801,
+        "paused": true,
+        "ended": true
+      },
+      {
+        "time_s": 22.115213,
+        "duration_s": 28.301,
+        "paused": false,
+        "ended": false
+      }
+    ],
+    "qualification": "Native video playback with synthetic dashboard state; not behavioral acceptance"
+  },
+  "assets": {
+    "frontend/dashboard.bundle.js": "4e828964d07552f4f37fa3058e8daafd6f47cf0bdaee1840aee3da2384441d59",
+    "frontend/dashboard.styles.css": "a6db1696be7f3252df7b3f7b87fe41bd9516c0a09e6f25e11b98371c7ba35c1a"
+  },
+  "screenshot": {
+    "path": "docs/evidence/hybrid_driving/native-video-ui.png",
+    "sha256": "ddc0f0d9a2ec9ba5d9d256481c525f960e966b2fd6871d91bfb20a88ae3953f3"
+  },
+  "qualification": "UI fixture state is synthetic. Native MP4 files were streamed by the actual production HTTP handler. Software checks and successful diagnostics do not establish frozen behavioral acceptance."
+}

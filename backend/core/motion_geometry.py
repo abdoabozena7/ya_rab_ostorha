@@ -69,6 +69,24 @@ def footprint_centers(path, geometry):
     return p
 
 
+def rectangle_clearances(centers,half,ego,ego_half):
+    """Exact per-time edge distances of oriented ego and measured rectangles."""
+    from .prediction import occupied_overlap
+    centers=np.asarray(centers,float);ego=np.asarray(ego,float)
+    half=np.broadcast_to(np.asarray(half,float),(len(ego),2))
+    overlap=occupied_overlap(centers,half,ego,ego_half,np.zeros(len(ego)),padding=0.)
+    signs=np.array([[-1,-1],[1,-1],[1,1],[-1,1]])
+    body=signs*np.asarray(ego_half);co=np.cos(ego[:,3]);si=np.sin(ego[:,3])
+    corners=ego[:,None,1:3]+np.stack((co[:,None]*body[None,:,0]-si[:,None]*body[None,:,1],
+                                     si[:,None]*body[None,:,0]+co[:,None]*body[None,:,1]),axis=2)
+    other=centers[:,None,:]+signs[None,:,:]*half[:,None,:]
+    def distances(vertices,polygon):
+        edges=np.roll(polygon,-1,axis=1)-polygon;delta=vertices[:,:,None,:]-polygon[:,None,:,:]
+        fraction=np.clip(np.sum(delta*edges[:,None,:,:],axis=-1)/np.maximum(1e-8,np.sum(edges**2,axis=-1))[:,None,:],0.,1.)
+        return np.linalg.norm(delta-fraction[:,:,:,None]*edges[:,None,:,:],axis=-1).min(axis=(1,2))
+    return np.where(overlap,0.,np.minimum(distances(corners,other),distances(other,corners)))
+
+
 def minimum_clearance(centers,half,ego,ego_half,margin=0.):
     """Minimum edge-to-edge distance of entire rectangles at equal times."""
     from .prediction import occupied_overlap

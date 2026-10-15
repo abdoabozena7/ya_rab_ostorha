@@ -14,26 +14,46 @@ from .motion_geometry import VehicleGeometry
 from .prediction import PredictionEngine
 from .safety_policy import SensorObservation
 from collections import deque
+from collections import OrderedDict
 from .control_semantics import SemanticAssociator
+from .measured_rows import unique_row_indices
 
 
 class MeasuredSpace:
     """Lazy map from immutable calibrated measurements, with their original age."""
-    def __init__(self, points, geometry, observation, depth_assets):
+    def __init__(self, points, geometry, observation, depth_assets, *, measured_surfaces=None):
         self.points, self.geometry, self.observation = points, geometry, observation
         self.depth_assets = depth_assets
+        self.measured_surfaces=measured_surfaces
         self._map = None
         self._lock = threading.Lock()
+        self.build_ms = None
+        self.queries = 0
+        self.execution_proofs=OrderedDict();self.proof_lock=threading.Lock();self.proof_cache_hits=0
+
+    def get_execution_proof(self,key):
+        with self.proof_lock:
+            proof=self.execution_proofs.get(key)
+            if proof is not None:self.proof_cache_hits+=1
+            return proof
+
+    def put_execution_proof(self,key,proof):
+        with self.proof_lock:
+            self.execution_proofs[key]=freeze_json(proof)
+            while len(self.execution_proofs)>32:self.execution_proofs.popitem(last=False)
 
     def certificate(self, path):
         from .maneuver import ObservedSpace
         from .recovery_depth import depth_surfaces
         with self._lock:
             if self._map is None:
-                sources = depth_surfaces(self.observation, lambda a: self.depth_assets[a.path])
+                began = time.perf_counter()
+                sources = self.measured_surfaces if self.measured_surfaces is not None else depth_surfaces(self.observation, lambda a: self.depth_assets[a.path])
                 speed=self.observation.ego.speed_mps
                 scope=max(6.,self.geometry.front_m+speed*.45+speed**2/6.+3.)
                 self._map = ObservedSpace(self.points, self.geometry, measured_surfaces=sources,scope_m=scope)
+                self.build_ms = (time.perf_counter()-began)*1000
+        self.queries += 1
         return {**self._map.certificate(path), 'measurement_frame': self.observation.frame_id,
                 'measurement_timestamp_s': self.observation.timestamp_s}
 
@@ -55,6 +75,7 @@ class ControlScene:
     published_wall_s: float
     build_ms: float
     semantic_coverage: object
+    timings_ms: object = None
 
     def usable(self, timestamp_s, wall_s, *, max_sim_age_s=.1, max_wall_age_s=.25):
         return (0 <= timestamp_s-self.observation.timestamp_s <= max_sim_age_s+1e-6
@@ -70,7 +91,11 @@ class ControlScene:
                 'simulation_age_s': timestamp_s-self.observation.timestamp_s,
                 'wall_age_s': wall_s-self.received_wall_s,
                 'usable': self.usable(timestamp_s, wall_s), 'build_ms': self.build_ms,
+                'space_build_ms': self.space.build_ms, 'space_queries': self.space.queries,
+                'proof_cache_hits':self.space.proof_cache_hits,
                 'track_count': len(self.prediction['tracks']),
+                'radar_velocity_tracks':self.prediction.get('radar_velocity_tracks',0),
+                'timings_ms': to_dict(self.timings_ms),
                 'coordinate_frame': 'EGO_AT_MEASUREMENT_X_FORWARD_Y_RIGHT_Z_UP',
                 'space_states': ['FREE', 'OCCUPIED', 'UNKNOWN'],
                 'occlusion_policy': 'UNOBSERVED_CELLS_UNKNOWN',
@@ -85,9 +110,12 @@ class ControlSceneBuilder:
         self.engine = PredictionEngine(session_id, enhanced=True, geometry=self.geometry)
         self.last_frame = -1
         self.poses=deque(maxlen=80);self.semantics=SemanticAssociator()
+        from .control_radar import RadarVelocityFusion
+        self.radar_velocity=RadarVelocityFusion()
 
     def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None):
         began = time.perf_counter()
+        began_wall=time.monotonic()
         if not isinstance(observation, SensorObservation):
             raise ValueError('ControlScene accepts sensor observations only')
         if observation.frame_id <= self.last_frame:
@@ -104,28 +132,58 @@ class ControlSceneBuilder:
             raise ValueError('Invalid control LiDAR samples')
         points = samples.reshape(-1, 4)[:, :3] + position
         points.flags.writeable = False
+        lidar_ready=time.perf_counter()
+        assets = {c.asset.path: asset_reader(c.asset) for c in observation.channels
+                  if c.kind == SensorKind.DEPTH and c.asset}
+        from .recovery_depth import depth_surfaces
+        sources=depth_surfaces(observation,lambda a:assets[a.path])
+        # Tracking and space use the same synchronized surround measurements.
+        # Sparse LiDAR alone repeatedly split parked bodies between rotations.
+        # Voxel sampling bounds cost while preserving original sensor evidence.
+        measured=[points]
+        for xyz,_ in sources:
+            valid=xyz[(xyz[:,0]>-40.)&(xyz[:,0]<45.)&(np.abs(xyz[:,1])<15.)&
+                      (xyz[:,2]>-.6)&(xyz[:,2]<3.)]
+            if len(valid):
+                indices=unique_row_indices(np.floor(valid/.2).astype(int))
+                measured.append(valid[indices])
+        tracking_points=np.concatenate(measured)
+        depth_ready=time.perf_counter()
         ego = observation.ego
         base = ControlCommand(observation.frame_id, observation.timestamp_s,
                               ego.throttle, ego.brake, ego.steering, ego.reverse,
                               ego.handbrake, CommandSource.SYSTEM, ego.gear)
-        prediction = self.engine.evaluate(points, observation, base)
+        prediction = self.engine.evaluate(tracking_points, observation, base, control_only=True)
+        tracked=time.perf_counter()
         self.poses.append((observation.timestamp_s,*prediction['odometry_origin_m'],prediction['odometry_yaw_rad']))
+        radar_tracks=0
+        if any(c.kind==SensorKind.RADAR and c.sensor_id!='radar' for c in observation.channels):
+            radar_tracks=self.radar_velocity.apply(prediction,observation,self.poses,self.engine.tracker)
+        prediction['radar_velocity_tracks']=radar_tracks
         semantics=self.semantics.apply(prediction,observation,self.poses,semantic_result)
         from .kinematic_prediction import kinematic_modes
-        prediction['trajectories']=kinematic_modes(prediction['tracks'])
-        published = time.monotonic()
-        prediction.update(published_wall_s=received_wall_s, publication_wall_s=published,
+        # Include a complete command lease, reaction and braking tail, even at
+        # 50 km/h. The display's historical three-second window is not a limit
+        # on the physical hypotheses used to authorize movement.
+        horizon=max(3.,.1+.35+(abs(ego.speed_mps)+.25)/3.+.15)
+        grid=np.round(np.arange(int(np.ceil(horizon/.1))+1)*.1,6)
+        prediction['trajectories']=kinematic_modes(prediction['tracks'],grid=grid)
+        prediction['horizon_s']=float(grid[-1])
+        prediction.update(published_wall_s=received_wall_s, publication_wall_s=time.monotonic(),
                           control_trajectories=prediction['trajectories'],
                           scene_version=1, source='CONTROL_SENSOR_PIPELINE')
-        assets = {c.asset.path: asset_reader(c.asset) for c in observation.channels
-                  if c.kind == SensorKind.DEPTH and c.asset}
         coverage = {'front': 'GEOMETRY_ONLY', 'left': 'GEOMETRY_ONLY',
                     'right': 'GEOMETRY_ONLY', 'rear': 'GEOMETRY_ONLY',
                     'classified': False, 'segmentation_admitted': False,
                     'depth_sensor_ids': [c.sensor_id for c in observation.channels if c.kind == SensorKind.DEPTH]}
         coverage.update(semantics)
         self.last_frame = observation.frame_id
+        frozen_prediction=freeze_json(prediction);frozen_coverage=freeze_json(coverage)
+        published=time.monotonic();finished=time.perf_counter()
+        timing={'input_wait_before_build':(began_wall-received_wall_s)*1000,
+                'lidar_decode':(lidar_ready-began)*1000,'depth_decode_and_fusion':(depth_ready-lidar_ready)*1000,
+                'tracking_and_forecasts':(tracked-depth_ready)*1000,'semantics_and_freezing':(finished-tracked)*1000}
         return ControlScene(1, self.session_id, observation, self.geometry, points,
-                            freeze_json(prediction), MeasuredSpace(points, self.geometry, observation, assets),
-                            received_wall_s, published, (time.perf_counter()-began)*1000,
-                            freeze_json(coverage))
+                            frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources),
+                            received_wall_s, published, (finished-began)*1000,
+                            frozen_coverage,freeze_json(timing))

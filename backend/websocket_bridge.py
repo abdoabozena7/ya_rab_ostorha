@@ -49,7 +49,7 @@ class WebSocketBridge:
                     self.service.require_connected()
                     if kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
-                        options = {key:message[key] for key in ('driving_mode','pair_id') if key in message}
+                        options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}
                         self.service.start_journey(message.get('speed_kmh', 30), **options)
                     elif comparison_start:
                         self.service.queue_dashboard_action(kind,message.get('value'))

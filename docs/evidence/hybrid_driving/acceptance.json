@@ -1,0 +1,57 @@
+{
+  "accepted": false,
+  "gates": {
+    "ordinary": false,
+    "speed": false,
+    "recovery": false,
+    "all_maneuvers": false,
+    "hazards": false,
+    "surround": false,
+    "freshness": false,
+    "comfort": false,
+    "throughput": false,
+    "comparison": false,
+    "identity": false
+  },
+  "provided_cases": 0,
+  "invalid_case_ids": [],
+  "failed_case_ids": [],
+  "missing_case_ids": [],
+  "unfinished_gates": [
+    "ordinary",
+    "speed",
+    "recovery",
+    "all_maneuvers",
+    "hazards",
+    "surround",
+    "freshness",
+    "comfort",
+    "throughput",
+    "comparison",
+    "identity"
+  ],
+  "missing_hazards": [
+    "PARALLEL",
+    "OCCLUDED_PEDESTRIAN",
+    "OCCUPIED_LANE",
+    "CUT_IN",
+    "PEDESTRIAN",
+    "SUDDEN_BRAKING",
+    "DENSE_TRAFFIC",
+    "REAR_APPROACH"
+  ],
+  "missing_maneuvers": [
+    "REVERSE",
+    "LANE_CHANGE",
+    "PASS_RETURN",
+    "ALTERNATE_ROUTE"
+  ],
+  "version": 1,
+  "generated_at_utc": "2026-10-15T16:00:38.635606+00:00",
+  "scope": "FROZEN_NATIVE_ACCEPTANCE_ONLY_DIAGNOSTICS_ARE_NOT_A_COHORT",
+  "source_fingerprint": "c820f8ad624ee569db90a6a6e7b7b7c02a99780e0e7a921b86e08f05fd06cd35",
+  "accepted_speed_kmh": 0,
+  "native_results_source": null,
+  "diagnostic_index": "docs/evidence/hybrid_driving/diagnostics.json",
+  "explanation": "Missing native evidence stays missing. Source-changing diagnostics and isolated browser fixtures do not satisfy these gates."
+}

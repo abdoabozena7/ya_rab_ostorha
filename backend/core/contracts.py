@@ -10,6 +10,14 @@ from enum import Enum
 import math
 from types import MappingProxyType, UnionType
 from typing import Any, get_args, get_origin, get_type_hints, Union
+from functools import lru_cache
+
+
+@lru_cache(maxsize=None)
+def _contract_hints(cls):
+    # Contract schemas are immutable class metadata. Resolving forward/type
+    # annotations per actor/sensor instance wastes the control freshness lease.
+    return get_type_hints(cls)
 
 SCHEMA_VERSION = 1
 Vec3 = tuple[float, float, float]
@@ -68,21 +76,35 @@ def _check(value, annotation, name):
         raise ValueError(f'{name} must be {annotation.__name__}')
 
 
-def freeze_json(value):
+def freeze_json(value, _memo=None):
     # Numeric trajectory samples dominate these payloads. Validate primitives
     # before the comparatively costly Mapping ABC checks on every sample.
+    if type(value) is float:
+        if not math.isfinite(value):raise ValueError('value must be a finite number')
+        return value
     if value is None or isinstance(value, (str, bool)):
         return value
     if isinstance(value, (int, float)):
         finite(value)
         return value
-    if isinstance(value, (tuple, list)):
-        return tuple(freeze_json(item) for item in value)
-    if isinstance(value, Mapping):
+    sequence=isinstance(value,(tuple,list));mapping=isinstance(value,Mapping)
+    if not sequence and not mapping:
+        raise ValueError('Payload must contain JSON data or asset references, not binary objects')
+    if _memo is None:_memo={}
+    identity=id(value)
+    if identity in _memo:
+        frozen=_memo[identity]
+        if frozen is None:raise ValueError('JSON payload must not contain cycles')
+        return frozen
+    _memo[identity]=None
+    if sequence:
+        frozen=tuple(freeze_json(item,_memo) for item in value)
+    else:
         if any(not isinstance(key, str) for key in value):
             raise ValueError('JSON object keys must be strings')
-        return MappingProxyType({key: freeze_json(item) for key, item in value.items()})
-    raise ValueError('Payload must contain JSON data or asset references, not binary objects')
+        frozen=MappingProxyType({key: freeze_json(item,_memo) for key, item in value.items()})
+    _memo[identity]=frozen
+    return frozen
 
 
 def to_dict(value):
@@ -133,7 +155,7 @@ def _decode(annotation, value):
 def from_dict(cls, data):
     if not isinstance(data, Mapping):
         raise ValueError('Contract must be an object')
-    hints = get_type_hints(cls)
+    hints = _contract_hints(cls)
     if set(data) - set(hints):
         raise ValueError(f'Unknown {cls.__name__} fields: {sorted(set(data)-set(hints))}')
     try:
@@ -144,7 +166,7 @@ def from_dict(cls, data):
 
 class Contract:
     def __post_init__(self):
-        hints = get_type_hints(type(self))
+        hints = _contract_hints(type(self))
         for field in fields(self):
             value = getattr(self, field.name)
             _check(value, hints[field.name], field.name)

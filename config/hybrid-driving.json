@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "driver_id": "ROBOSPHERE_HYBRID_V1",
+  "map": "Town10HD_Opt",
+  "enabled": false,
+  "native_accepted": false,
+  "accepted_speed_kmh": 0,
+  "requested_maximum_kmh": 50,
+  "learned_control_enabled": false,
+  "surround_rig_accepted": false,
+  "default_graphics": "BALANCED",
+  "decision_interval_s": 0.1,
+  "maximum_scene_sim_age_s": 0.1,
+  "maximum_scene_wall_age_s": 0.25,
+  "maximum_acceleration_mps2": 2.0,
+  "normal_deceleration_mps2": 3.0,
+  "maximum_lateral_acceleration_mps2": 2.0,
+  "reverse_speed_mps": 1.0,
+  "reposition_distance_m": 2.0,
+  "reposition_duration_s": 4.0,
+  "acceptance": {
+    "ordinary_required": 10,
+    "recovery_fraction": 0.9,
+    "fresh_scene_fraction": 0.99,
+    "maximum_unexplained_stop_s": 3.0,
+    "maximum_throughput_degradation": 0.1,
+    "required_speeds_kmh": [20, 30, 50],
+    "required_hazards": ["SUDDEN_BRAKING", "CUT_IN", "PEDESTRIAN", "OCCLUDED_PEDESTRIAN", "REAR_APPROACH", "PARALLEL", "OCCUPIED_LANE", "DENSE_TRAFFIC"],
+    "required_maneuvers": ["REVERSE", "LANE_CHANGE", "PASS_RETURN", "ALTERNATE_ROUTE"]
+  },
+  "reason": "Implementation and native behavioral acceptance are separate. Frozen experimental models and historical experiment ledgers are unchanged."
+}

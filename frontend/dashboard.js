@@ -15,6 +15,7 @@ import {installMotionReadout} from './motion-readout.js';
 import {installComparisonV2} from './comparison-v2.js';
 import {installDrivingStudio} from './driving-studio.js';
 import {installLightCockpit} from './light-cockpit.js';
+import {installDemoDrive} from './demo-drive.js';
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
 presentationUI(provider);
@@ -32,6 +33,7 @@ const guided = installGuidedDrive(provider,trafficPreparation.preparation,tools,
 const motionReadout=installMotionReadout(provider,predictionView);
 const studio=installDrivingStudio(provider,guided,predictionView,tools);
 const cockpit=installLightCockpit(provider,tools,perception,predictionView,mode=>startJourney(mode));
+const demoDrive=installDemoDrive(provider,tools,clearControls);
 $('stopSimulatorBtn').onclick=()=>{clearControls('simulator_shutdown');provider.stopSimulator();};
 $('resetSimulatorBtn').onclick=()=>{resetKeys();manualArmed=false;manualRequestedUntil=0;clearCamera();provider.resetSimulation();};
 function canInput() {
@@ -209,6 +211,7 @@ function refresh() {
   motionReadout.update(state);
   studio.update(state);
   cockpit.update(state,displayedCamera);
+  demoDrive.update();
 }
 $('startDrivingBtn').onclick = () => {
   showWorkspace('drive');
@@ -216,14 +219,16 @@ $('startDrivingBtn').onclick = () => {
   $('drivingMode').value = 'MANUAL';
   const selected=document.querySelector('#studioManualMode')?.dataset.mode;
   const drivingMode=provider.controlMode==='AUTOMATIC' ? provider.journey?.driving_mode : selected||provider.manualDrivingMode;
-  if(!provider.startDriving(drivingMode||'ROBOSPHERE')){manualArmed=false;manualRequestedUntil=0;return;}
+  const manualMode=['ROBOSPHERE','NORMAL'].includes(drivingMode)?drivingMode:provider.manualDrivingMode||'ROBOSPHERE';
+  if(!provider.startDriving(manualMode)){manualArmed=false;manualRequestedUntil=0;return;}
   document.activeElement?.blur(); $('drivingInstruction').textContent = 'Switching to keyboard control…';
 };
 function startJourney(drivingMode=null,pairId=null) {
   if(typeof drivingMode!=='string')drivingMode=null;
-  const speed = Number($('journeySpeed').value);
-  if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
-    $('operationStatus').textContent = 'Choose a speed between 5 and 30 km/h.'; return;
+  const hybrid=['HYBRID','BASELINE'].includes(drivingMode);
+  const speed = Number(hybrid ? provider.journey?.speed_kmh||30 : $('journeySpeed').value);
+  if (!Number.isFinite(speed) || speed < 5 || speed > (hybrid?50:30)) {
+    $('operationStatus').textContent = 'Choose a valid driving speed.'; return;
   }
   showWorkspace('drive');tools.close(false); resetKeys(); manualArmed = false; manualRequestedUntil = 0;
   $('drivingMode').value = 'AUTOMATIC';

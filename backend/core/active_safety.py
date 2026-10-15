@@ -83,7 +83,7 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     certify road support; other camera views retain fixed forward LiDAR.
     """
     channels = {s.kind: s for s in observation.channels}
-    radar = channels[SensorKind.RADAR]
+    radar = next((s for s in observation.channels if s.kind==SensorKind.RADAR and s.sensor_id=='radar'),channels[SensorKind.RADAR])
     validate_radar_calibration(radar.calibration)
     columns = ('depth_m', 'azimuth_rad', 'altitude_rad', 'velocity_mps')
     points = np.asarray([[d[k] for k in columns] for d in radar.data['detections']], np.float32).reshape(-1, 4)

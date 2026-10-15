@@ -2,6 +2,22 @@
 const finite = value => Number.isFinite(value) && value >= 0;
 export const metricText = (value, digits = 0) => finite(value) ? value.toFixed(digits) : '—';
 
+export function controlReasonText(reason) {
+  return ({
+    CONTROL_PROCESSING_DEADLINE:'حساب قرار القيادة تأخر؛ انتظار فريم حديث.',
+    STALE_CONTROL_SCENE:'بيانات الحساسات قديمة أو غير متزامنة؛ انتظار فريم جديد.',
+    AWAITING_CURRENT_SENSOR_FRAME:'انتظار حساسات نفس فريم السيارة.',
+    NO_VERIFIED_SAFE_ACTION:'لم تتأكد مساحة مناورة آمنة؛ السيارة متوقفة.',
+    SWEPT_SPACE_UNKNOWN_OR_OCCUPIED:'مساحة الحركة لم تُقَس بالكامل أو بها عائق.',
+    REACHABLE_CORRIDOR_UNCERTAINTY:'حركة جسم قريب غير مؤكدة؛ انتظار قياس أوضح.',
+    PREDICTED_INTERSECTION:'مسار جسم متوقّع يتقاطع مع مسار السيارة.',
+    BODY_OUTSIDE_DRIVABLE_ROAD:'المناورة تُخرج جزءًا من السيارة عن الطريق.',
+    TRAFFIC_RULE_STOP:'انتظار إشارة المرور.',
+    HYBRID_CONTROLLED_DECELERATION:'تهدئة محسوبة حسب المسار والمساحة المتاحة.',
+    HYBRID_VALIDATION_EXPIRED:'انتهى وقت الاختبار الحركي؛ السيارة متوقفة.',
+  })[reason]||String(reason||'');
+}
+
 export function observationCurrent(value, provider, maxAge = .75) {
   const age = provider.telemetry?.timestamp - value?.timestamp_s;
   return provider.fresh && !provider.isReplay && Number.isFinite(value?.timestamp_s) &&
@@ -45,6 +61,8 @@ export function safetyNotice(provider) {
   if(provider.controlMode==='AUTOMATIC'&&provider.stopDiagnostics?.braking&&
       provider.stopDiagnostics?.decision_source==='NAVIGATION'&&/red traffic light/i.test(provider.stopDiagnostics.reason||''))return {
     tone:'neutral',title:'انتظار الإشارة الحمراء',detail:'المشوار شغّال؛ العربية تتحرك تلقائيًا لما الإشارة تسمح.'};
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='HYBRID'&&provider.stopDiagnostics?.braking)return {
+    tone:'warning',title:'القيادة الهجينة تهدّئ أو تتوقف',detail:controlReasonText(provider.stopDiagnostics.reason)};
   const safety = provider.safetySystem;
   if (!safety) return {tone:'neutral', title:'Safety unavailable', detail:'Waiting for safety telemetry. Inspect Diagnostics before driving.'};
   if (/FAULT|UNAVAILABLE/.test(safety.status || '')) return {
@@ -71,6 +89,7 @@ export function safetyChip(provider) {
   if (!s) return {label:'Safety unavailable', tone:'neutral'};
   if (provider.controlMode === 'EMERGENCY_STOP') return {label:'Emergency stopped', tone:'danger'};
   if (/FAULT|UNAVAILABLE/.test(s.status || '')) return {label:'Safety unavailable', tone:'danger'};
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='BASELINE')return {label:'حماية سائق CARLA',tone:'protection'};
   if (s.status === 'STANDARD_DRIVER') return {label:'Normal · protection off', tone:'neutral'};
   if (!s.enabled) return {label:'Protection off', tone:'danger'};
   if (/SUSPENDED/.test(s.status || '')) return {label:'Protection suspended', tone:'warning'};
@@ -86,6 +105,8 @@ export function driverCaption(provider) {
     (provider.journey?.status==='ARRIVED'||provider.route?.arrived)?'Arrived':'Vehicle held';
   if(provider.safetySystem?.status==='SENSOR_DELAY_HOLD')return 'Waiting for sensors';
   if(provider.safetySystem?.active)return 'Safety override';
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='HYBRID')return 'القيادة الهجينة';
+  if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='BASELINE')return 'سائق CARLA العادي';
   const m=provider.maneuver;
   if(provider.controlMode==='AUTOMATIC'&&observationCurrent(m,provider,.1)){
     if(m.phase==='REVERSING'&&m.action==='BACK_UP')return 'Repositioning · Reverse';

@@ -1,0 +1,24 @@
+{
+  "cap_s": 14400.0,
+  "used_s": 5587.492457115266,
+  "remaining_s": 8812.507542884734,
+  "gross_recorded_s": 25775.437000000093,
+  "excluded_verified_sleep_s": 20187.944542884827,
+  "sleep_adjustments": [
+    {
+      "reservation_id": "d2020c9c6bae47029edf1e5eda7e00db",
+      "excluded_s": 20187.944542884827,
+      "evidence_sha256": "c9a851048c8e40b9ac751f8f9a5adb418fc3c3bcaa6fc7e541df9617e74f9bba",
+      "evidence_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\power-resume-20261015.xml",
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-e4ecc75b25114bc6830bc98fb59ef111\\report.json"
+    }
+  ],
+  "original_reservation": {
+    "id": "d2020c9c6bae47029edf1e5eda7e00db",
+    "phase": "physical-diagnostic",
+    "charged_s": 20312.561999999976,
+    "finished": 1,
+    "started": 304355.359
+  },
+  "interpretation": "Only the proven OS sleep interval is excluded. Original charge is retained; prior ledgers and the four-hour cap are unchanged."
+}

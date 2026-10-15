@@ -4,6 +4,13 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [15 October hybrid implementation report](docs/HYBRID_DRIVING_IMPLEMENTATION_20261015.md)
+tracks the new sensor-based behavior owner, native BehaviorAgent comparison,
+simple driving controls and MP4 recording. **Native acceptance is still in
+progress.** The new hybrid remains gated; historical RULE/NORMAL behavior and
+research evidence retain their own meanings. Fresh setup installs the MP4 encoder
+with `backend/requirements.txt`.
+
 The [14 October light dashboard redesign](docs/LIGHT_DASHBOARD_REDESIGN_20261014.md)
 puts the live camera first, with a circular map, compact telemetry and configuration
 in **Scenarios**. **Tools → Stop CARLA · Free GPU** closes the native

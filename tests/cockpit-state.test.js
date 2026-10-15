@@ -1,10 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox} from '../frontend/cockpit-state.js';
+import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox,controlReasonText} from '../frontend/cockpit-state.js';
 
 const provider=()=>({fresh:true,isReplay:false,sessionId:'a',controlMode:'AUTOMATIC',telemetry:{frame:20,timestamp:1},journey:{speed_kmh:30},safetySystem:{enabled:true,controller:'RULE',status:'MONITORING',active:false,timestamp_s:1,frame_id:20,measured_range_m:12,ttc_s:null}});
 const result=()=>({session_id:'a',frame_id:20,timestamp_s:1,width:800,height:450,detections:[{class:'car'},{class:'person'},{class:'truck'}]});
 const front=()=>({sensorId:'frontCamera',frame:20,timestamp:1,width:800,height:450,fovDeg:90,mountTransform:{position_m:[1.5,0,1.6],rotation_deg:{}}});
+
+test('hybrid brake distinguishes processing delay from an uncertain maneuver corridor',()=>{
+  const p=provider();p.journey.driving_mode='HYBRID';
+  p.stopDiagnostics={braking:true,decision_source:'EXECUTION_SHIELD',reason:'CONTROL_PROCESSING_DEADLINE'};
+  assert.equal(cockpitMeasurements(p,{speedKmh:0,brake:1}).brake,100);
+  assert.match(safetyNotice(p).detail,/تأخر/);
+  p.stopDiagnostics.reason='NO_VERIFIED_SAFE_ACTION';
+  assert.match(safetyNotice(p).detail,/مساحة مناورة/);
+  assert.doesNotMatch(safetyNotice(p).detail,/تأخر/);
+  assert.equal(controlReasonText('Original exception text'),'Original exception text');
+});
 
 test('held journey retains its original failure after focus loss and offers explicit resume',()=>{
   const p=provider();p.controlMode='PAUSED';p.route={id:'route'};

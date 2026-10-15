@@ -1,6 +1,6 @@
 import {showWorkspace} from './presentation-ui.js';
 import {measuredPredictionFresh} from './prediction-view.js';
-import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox} from './cockpit-state.js';
+import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox,controlReasonText} from './cockpit-state.js';
 
 const $ = id => document.getElementById(id);
 const el = (tag,cls,text) => {const n=document.createElement(tag); if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
@@ -153,7 +153,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     $('cockpitSpeedArc').style.strokeDasharray=`${Number.isFinite(m.speed)?Math.min(100,Math.max(0,m.speed/120*100)):0} 100`;
     $('cockpitBrakeBar').style.width=(Number.isFinite(m.brake)?m.brake:0)+'%';
     set('cockpitBrakeReason',fresh ? (p.stopDiagnostics?.decision_source||'Driver')+' · '+
-      (p.stopDiagnostics?.reason||'No braking requested') : 'Waiting for live command');
+      controlReasonText(p.stopDiagnostics?.reason||'No braking requested') : 'Waiting for live command');
     set('cockpitGapStatus',Number.isFinite(m.gap)?'Measured forward distance':fresh?'Unavailable or stale':'Waiting for live sensors');
     set('cockpitTtcStatus',Number.isFinite(m.ttc)?'Measured closing time':fresh?'No valid closing measurement':'Waiting for live sensors');
     set('cockpitConnectionText',p.isReplay?'Recorded replay':fresh?'CARLA Connected':p.simulationStarting?'CARLA Starting':p.restarting?'CARLA Restarting':p.phase==='ERROR'?'CARLA Error':'CARLA Disconnected');
@@ -178,7 +178,8 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     const notice=safetyNotice(p),noticeKey=JSON.stringify(notice);safety.hidden=!notice;
     if(noticeKey!==lastNotice){lastNotice=noticeKey;if(notice){safety.dataset.tone=notice.tone;safety.querySelector('.notice-copy strong').textContent=notice.title;safety.querySelector('.notice-copy p').textContent=notice.detail;}}
     resume.hidden=!(notice&&p.controlMode==='PAUSED'&&p.route&&!p.route.arrived&&['PAUSED','ERROR'].includes(p.journey?.status));
-    resume.disabled=!fresh||!p.controller||p.recording||p.recordingStatus?.finalized===false||p.restarting||!onResume;
+    resume.disabled=!fresh||!p.controller||p.recording||p.recordingStatus?.finalized===false||p.restarting||!onResume||
+      (p.journey?.driving_mode==='HYBRID'&&p.hybridDriving?.available!==true);
     for(const btn of document.querySelectorAll('.cockpit-dialog-emergency'))btn.disabled=$('emergencyStopBtn').disabled;
     set('cockpitDetailsStatus',p.isReplay?'Recorded replay · live inference is stopped.':fresh?'Live measurements · '+(p.world?.map?.split('/').pop()||'CARLA'):'Simulator disconnected · live measurements unavailable.');
     if(setup.open&&p.controlMode!==previousMode&&['MANUAL','AUTOMATIC'].includes(p.controlMode))document.body.classList.remove('studio-setup-open');

@@ -4,45 +4,48 @@ import numpy as np
 from .motion_geometry import GRID
 
 
-def kinematic_modes(tracks):
+def kinematic_modes(tracks, *, grid=GRID):
+    grid=np.asarray(grid,float)
+    if grid.ndim!=1 or len(grid)<2 or grid[0]!=0 or np.any(np.diff(grid)<=0):
+        raise ValueError('Physical forecast needs an increasing time grid starting at zero')
     modes=[]
     for tr in tracks:
         p=np.asarray(tr['position_m'],float); v=np.asarray(tr['velocity_mps'],float)
         speed=float(np.linalg.norm(v)); a=np.asarray(tr.get('acceleration_mps2',[0.,0.]),float)
         a=np.clip(a,-3.,2.); quality=float(tr.get('quality',0.))
         if speed<.3:
-            modes.append(_mode(tr,0,'STATIONARY',p+GRID[:,None]*np.zeros(2),0))
+            modes.append(_mode(tr,0,'STATIONARY',p+grid[:,None]*np.zeros(2),0,grid))
             if tr.get('class','UNKNOWN').upper() in ('PERSON','PEDESTRIAN'):
                 # Observable person, unknown intent: waiting, starting toward
                 # the corridor, or retreating remain separate possibilities.
                 toward=np.array([0.,-1. if p[1]>=0 else 1.])
-                distance=np.minimum(1.5*GRID, .75*GRID**2)
-                modes.append(_mode(tr,1,'PEDESTRIAN_POSSIBLE_START',p+distance[:,None]*toward,1))
-                modes.append(_mode(tr,2,'PEDESTRIAN_POSSIBLE_RETREAT',p-distance[:,None]*toward,2))
+                distance=np.minimum(1.5*grid, .75*grid**2)
+                modes.append(_mode(tr,1,'PEDESTRIAN_POSSIBLE_START',p+distance[:,None]*toward,1,grid))
+                modes.append(_mode(tr,2,'PEDESTRIAN_POSSIBLE_RETREAT',p-distance[:,None]*toward,2,grid))
             continue
-        cv=p+GRID[:,None]*v
-        modes.append(_mode(tr,0,'CONSTANT_VELOCITY',cv,0))
+        cv=p+grid[:,None]*v
+        modes.append(_mode(tr,0,'CONSTANT_VELOCITY',cv,0,grid))
         if quality>=.7 and tr.get('motion_observations',tr.get('consecutive_observations',0))>=5:
             direction=v/speed; longitudinal=float(np.dot(a,direction))
             if abs(longitudinal)>.2:
-                vel=np.maximum(0.,speed+longitudinal*GRID)
-                distance=np.r_[0.,np.cumsum((vel[:-1]+vel[1:])*.05)]
-                modes.append(_mode(tr,1,'CONSTANT_ACCELERATION',p+distance[:,None]*direction,1))
+                vel=np.maximum(0.,speed+longitudinal*grid)
+                distance=np.r_[0.,np.cumsum((vel[:-1]+vel[1:])*np.diff(grid)/2)]
+                modes.append(_mode(tr,1,'CONSTANT_ACCELERATION',p+distance[:,None]*direction,1,grid))
             rate=float(np.clip(tr.get('turn_rate_radps',0.),-.7,.7))
             if abs(rate)>.04:
-                heading=math.atan2(v[1],v[0]); angles=heading+rate*GRID
-                step=.1*speed*np.column_stack((np.cos((angles[:-1]+angles[1:])/2),np.sin((angles[:-1]+angles[1:])/2)))
+                heading=math.atan2(v[1],v[0]); angles=heading+rate*grid
+                step=np.diff(grid)[:,None]*speed*np.column_stack((np.cos((angles[:-1]+angles[1:])/2),np.sin((angles[:-1]+angles[1:])/2)))
                 xy=p+np.vstack((np.zeros(2),np.cumsum(step,axis=0)))
-                modes.append(_mode(tr,2,'COORDINATED_TURN',xy,2))
+                modes.append(_mode(tr,2,'COORDINATED_TURN',xy,2,grid))
     return modes
 
 
-def _mode(tr,index,source,xy,rank):
+def _mode(tr,index,source,xy,rank,grid):
     return {'track_id':tr['id'],'source':source,'mode':index,'rank':rank,'selected':rank==0,
         'probability':None,'weight_kind':'UNRANKED_PHYSICAL_ALTERNATIVE',
-        'uncertainty_bounds':{'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':GRID.tolist(),
-            'radius_m':(float(tr.get('uncertainty_m',.15))+.12*GRID).tolist()},
-        'points':np.column_stack((GRID,xy)).tolist()}
+        'uncertainty_bounds':{'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':grid.tolist(),
+            'radius_m':(float(tr.get('uncertainty_m',.15))+.12*grid).tolist()},
+        'points':np.column_stack((grid,xy)).tolist()}
 
 
 def rank_learned_modes(modes, tracks):

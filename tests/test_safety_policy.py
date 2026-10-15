@@ -55,6 +55,16 @@ class PolicyBoundaryTests(unittest.TestCase):
         self.assertTrue(admit_proposal(o,base,proposal,replace(evidence,acceleration_path_verified=True)).accepted)
         self.assertFalse(admit_proposal(o,base,proposal,replace(evidence,frame_id=0)).accepted)
 
+    def test_prepared_history_reuses_the_frozen_boundary_and_preserves_ordering(self):
+        history=ObservationHistory(2)
+        prepared=sensor_observation(observation_frame())
+        self.assertIs(history.append_observation(prepared),prepared)
+        self.assertIs(history.snapshot()[-1],prepared)
+        with self.assertRaises(ValueError):history.append_observation(prepared)
+        with self.assertRaises(ValueError):history.append_observation(observation_frame(2,.1))
+        history.append_observation(sensor_observation(observation_frame(20,1.)))
+        self.assertEqual([o.frame_id for o in history.snapshot()],[20])
+
     def test_comparisons_require_matched_unseen_conditions_and_real_policy_identity(self):
         metrics=ResearchMetrics()
         baseline=ComparisonRun('baseline','scenario','initial',DatasetSplit.TEST,'script-v1','MANUAL_SCRIPTED_TRACE',False,None,metrics)
