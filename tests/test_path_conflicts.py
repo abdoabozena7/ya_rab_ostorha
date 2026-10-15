@@ -3,11 +3,13 @@ from dataclasses import replace
 import math
 import json
 import unittest
+from pathlib import Path
 
 import numpy as np
 
 from backend.core.path_conflicts import LidarPathConflicts
 from backend.core.active_safety import ActiveSafetySupervisor
+from backend.core.motion_geometry import VehicleGeometry
 from tests.test_active_safety import scene
 from tests.test_safety_teacher import case
 
@@ -27,6 +29,56 @@ def observe(tracker, frame, points, speed=0.):
 
 
 class DirectionalPathConflictTests(unittest.TestCase):
+    def test_recorded_changing_roadside_returns_do_not_invent_crossing(self):
+        fixture=json.loads((Path(__file__).parent/'fixtures/static_roadside_returns.json').read_text())
+        tracker=LidarPathConflicts();states=[]
+        for sample in fixture['samples']:
+            o,_=case(sample['frame'],speed=sample['speed_mps'],distance=None)
+            o=replace(o,ego=replace(o.ego,angular_velocity_radps=tuple(sample['angular_velocity_radps']),
+                longitudinal_speed_mps=sample['longitudinal_speed_mps']))
+            result=tracker.assess(np.asarray(sample['points']),o,geometry=VehicleGeometry())
+            self.assertIsNone(result['conflict'],sample['frame'])
+            self.assertFalse(result['side_rear_free_space_verified'])
+            states.extend(t['motion_evidence']['state'] for t in result['observations'])
+            json.dumps(result,allow_nan=False)
+        self.assertIn('UNRESOLVED',states)
+
+    def test_sloped_road_returns_are_ground_not_moving_objects(self):
+        tracker=LidarPathConflicts()
+        ground=np.asarray([[x,y,.035*x+.02*y] for x in np.arange(3.,16.,.5) for y in np.arange(-5.,5.1,.5)])
+        for frame in range(1,20):
+            # Changing sampled road patches exceed 30 cm in raw ego z.
+            points=ground[(np.arange(len(ground))+frame)%3!=0]
+            result=observe(tracker,frame,points)
+            self.assertEqual(result['tracked_surface_count'],0)
+            self.assertIsNone(result['conflict'])
+        self.assertEqual(tracker.previous,[])
+
+    def test_static_roadside_surface_stays_static_during_ego_turn(self):
+        tracker=LidarPathConflicts();origin=np.zeros(2);yaw=0.
+        fixed=surface(8.,3.)
+        for frame in range(1,25):
+            if frame>1:
+                origin+=.1*np.array([math.cos(yaw+.0075),math.sin(yaw+.0075)])
+                yaw+=.015
+            rotation=np.array([[math.cos(yaw),-math.sin(yaw)],[math.sin(yaw),math.cos(yaw)]])
+            points=fixed.copy();points[:,:2]=(fixed[:,:2]-origin)@rotation
+            o,_=case(frame,speed=2.,distance=None)
+            o=replace(o,ego=replace(o.ego,angular_velocity_radps=(0.,0.,.3)))
+            self.assertIsNone(tracker.assess(points,o)['conflict'])
+
+    def test_person_bike_and_vehicle_sized_moving_returns_need_no_class_label(self):
+        for hx,hy in ((.2,.2),(.9,.25),(1.8,.8)):
+            with self.subTest(size=(hx,hy)):
+                tracker=LidarPathConflicts();conflicts=[]
+                for frame in range(1,21):
+                    points=np.asarray([[7.-frame*.15+dx,4.-frame*.08+dy,z]
+                        for dx in np.linspace(-hx,hx,7) for dy in np.linspace(-hy,hy,5) for z in (.6,1.4)])
+                    result=observe(tracker,frame,points,speed=3.)
+                    if result['conflict']:conflicts.append(result['conflict'])
+                self.assertTrue(conflicts)
+                self.assertTrue(all(c['motion_evidence']['state']=='MOVING' for c in conflicts))
+
     def test_closing_car_behind_does_not_request_forward_braking(self):
         tracker = LidarPathConflicts()
         for frame in range(1, 18):

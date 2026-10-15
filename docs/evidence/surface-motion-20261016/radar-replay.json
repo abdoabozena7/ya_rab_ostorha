@@ -1,0 +1,698 @@
+{
+  "source": "OFFLINE_REPLAY_OF_RECORDED_NATIVE_SENSOR_WINDOW",
+  "native_acceptance": false,
+  "scope": "Forward supervisor over recorded ego commands; both arms use repaired crossing tracker. No counterfactual physics.",
+  "recording": "runs/normal_city/run_e738114fc214478c88bc78a2756d4712",
+  "baseline_ref": "cbb862e",
+  "baseline_active_safety_sha256": "577e3623bf290b5a696a41d145d15829f291aae408be4b1b72abf1d68de0f743",
+  "samples": [
+    {
+      "frame": 1300,
+      "timestamp_s": 61.13469038903713,
+      "recorded_reason": "Limiting acceleration to stop within 18.00 m of measured road",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      }
+    },
+    {
+      "frame": 1301,
+      "timestamp_s": 61.18469038978219,
+      "recorded_reason": "Limiting acceleration to stop within 18.00 m of measured road",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.0
+      }
+    },
+    {
+      "frame": 1302,
+      "timestamp_s": 61.23469039052725,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.5
+      }
+    },
+    {
+      "frame": 1303,
+      "timestamp_s": 61.284690391272306,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.0
+      }
+    },
+    {
+      "frame": 1304,
+      "timestamp_s": 61.334690392017365,
+      "recorded_reason": "Navigation speed/route controller",
+      "before": {
+        "brake": 0.11787763237953186,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      },
+      "after": {
+        "brake": 0.11787763237953186,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      }
+    },
+    {
+      "frame": 1305,
+      "timestamp_s": 61.38469039276242,
+      "recorded_reason": "Navigation speed/route controller",
+      "before": {
+        "brake": 0.08573971688747406,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      },
+      "after": {
+        "brake": 0.08573971688747406,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      }
+    },
+    {
+      "frame": 1306,
+      "timestamp_s": 61.43469039350748,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      }
+    },
+    {
+      "frame": 1307,
+      "timestamp_s": 61.48469039425254,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.0
+      }
+    },
+    {
+      "frame": 1308,
+      "timestamp_s": 61.5346903949976,
+      "recorded_reason": "Limiting acceleration to stop within 18.00 m of measured road",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.5
+      }
+    },
+    {
+      "frame": 1309,
+      "timestamp_s": 61.584690395742655,
+      "recorded_reason": "Limiting acceleration to stop within 17.50 m of measured road",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.0
+      }
+    },
+    {
+      "frame": 1310,
+      "timestamp_s": 61.63469039648771,
+      "recorded_reason": "Limiting acceleration to stop within 17.50 m of measured road",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      }
+    },
+    {
+      "frame": 1311,
+      "timestamp_s": 61.68469039723277,
+      "recorded_reason": "Sensor delay; holding until the next fresh sensor frame",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      }
+    },
+    {
+      "frame": 1312,
+      "timestamp_s": 61.73469039797783,
+      "recorded_reason": "No valid foreground return; absence is not free space",
+      "before": {
+        "brake": 1.0,
+        "reason": "No valid foreground return; absence is not free space",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      }
+    },
+    {
+      "frame": 1313,
+      "timestamp_s": 61.78469039872289,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      }
+    },
+    {
+      "frame": 1314,
+      "timestamp_s": 61.834690399467945,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.5
+      }
+    },
+    {
+      "frame": 1315,
+      "timestamp_s": 61.884690400213,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 31.0
+      }
+    },
+    {
+      "frame": 1316,
+      "timestamp_s": 61.93469040095806,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 30.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 30.0
+      }
+    },
+    {
+      "frame": 1317,
+      "timestamp_s": 61.98469040170312,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 29.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 29.5
+      }
+    },
+    {
+      "frame": 1318,
+      "timestamp_s": 62.03469040244818,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 39.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 39.5
+      }
+    },
+    {
+      "frame": 1319,
+      "timestamp_s": 62.084690403193235,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      }
+    },
+    {
+      "frame": 1320,
+      "timestamp_s": 62.13469040393829,
+      "recorded_reason": "Complete protective stop; hold near obstacle",
+      "before": {
+        "brake": 1.0,
+        "reason": "Complete protective stop; hold near obstacle",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 35.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 35.5
+      }
+    },
+    {
+      "frame": 1321,
+      "timestamp_s": 62.18469040468335,
+      "recorded_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "before": {
+        "brake": 0.8499999977648258,
+        "reason": "Risk cleared; releasing brake smoothly to base driver",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 32.5
+      }
+    },
+    {
+      "frame": 1322,
+      "timestamp_s": 62.23469040542841,
+      "recorded_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "before": {
+        "brake": 0.6999999955296516,
+        "reason": "Risk cleared; releasing brake smoothly to base driver",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 40.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 40.0
+      }
+    },
+    {
+      "frame": 1323,
+      "timestamp_s": 62.28469040617347,
+      "recorded_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "before": {
+        "brake": 0.5499999932944775,
+        "reason": "Risk cleared; releasing brake smoothly to base driver",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 34.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 34.0
+      }
+    },
+    {
+      "frame": 1324,
+      "timestamp_s": 62.334690406918526,
+      "recorded_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "before": {
+        "brake": 0.3999999910593033,
+        "reason": "Risk cleared; releasing brake smoothly to base driver",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 29.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 29.5
+      }
+    },
+    {
+      "frame": 1325,
+      "timestamp_s": 62.384690407663584,
+      "recorded_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "before": {
+        "brake": 0.2499999888241291,
+        "reason": "Risk cleared; releasing brake smoothly to base driver",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 37.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 37.0
+      }
+    },
+    {
+      "frame": 1326,
+      "timestamp_s": 62.43469040840864,
+      "recorded_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "before": {
+        "brake": 0.09999998658895493,
+        "reason": "Risk cleared; releasing brake smoothly to base driver",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      }
+    },
+    {
+      "frame": 1327,
+      "timestamp_s": 62.4846904091537,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 30.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 30.0
+      }
+    },
+    {
+      "frame": 1328,
+      "timestamp_s": 62.53469040989876,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.5
+      }
+    },
+    {
+      "frame": 1329,
+      "timestamp_s": 62.584690410643816,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      }
+    },
+    {
+      "frame": 1330,
+      "timestamp_s": 62.634690411388874,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 30.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 30.0
+      }
+    },
+    {
+      "frame": 1331,
+      "timestamp_s": 62.68469041213393,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 33.0
+      }
+    },
+    {
+      "frame": 1332,
+      "timestamp_s": 62.73469041287899,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 35.5
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 35.5
+      }
+    },
+    {
+      "frame": 1333,
+      "timestamp_s": 62.78469041362405,
+      "recorded_reason": "NAVIGATION",
+      "before": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 38.0
+      }
+    },
+    {
+      "frame": 1334,
+      "timestamp_s": 62.834690414369106,
+      "recorded_reason": "No valid foreground return; absence is not free space",
+      "before": {
+        "brake": 1.0,
+        "reason": "No valid foreground return; absence is not free space",
+        "risk": "FORWARD_COLLISION_RISK",
+        "measured_range_m": null,
+        "observed_road_range_m": 29.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 29.0
+      }
+    },
+    {
+      "frame": 1335,
+      "timestamp_s": 62.884690415114164,
+      "recorded_reason": "Holding measured clearance/TTC hysteresis",
+      "before": {
+        "brake": 1.0,
+        "reason": "Holding measured clearance/TTC hysteresis",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 40.0
+      },
+      "after": {
+        "brake": 0.0,
+        "reason": "Observed forward stopping corridor is clear",
+        "risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED",
+        "measured_range_m": null,
+        "observed_road_range_m": 40.0
+      }
+    }
+  ],
+  "hazard_frames": {
+    "before": 10,
+    "after": 0
+  }
+}

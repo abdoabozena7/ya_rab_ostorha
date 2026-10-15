@@ -1,0 +1,191 @@
+{
+  "source": "SOFTWARE_VERIFICATION_AND_BOUNDED_NATIVE_DRIVE",
+  "software": {
+    "javascript_passed": 119,
+    "python_discovered": 516,
+    "python_passed": 515,
+    "python_optional_skipped": 1,
+    "dashboard_built": true
+  },
+  "native": [
+    {
+      "label": "native-before-radar-guard",
+      "raw_observation": "output/path-conflict-repair/native-before-radar-guard.json",
+      "raw_observation_sha256": "b3689431845ea0438f148445e4e66fee43a1f67d1bc3c423e4f5e8cb1a64a13c",
+      "source_sha256": {
+        "backend/core/path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+        "backend/core/surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+        "backend/core/active_safety.py": "b49f2c64e31bc36f8ce3038b2596cf8b0e1e00e2d9725faa04de07208cf8e2c0",
+        "backend/core/control_scene.py": "344c27011946bcef96c875cdf661acf708a1da2f0b8b43088317087f1a58d61e",
+        "frontend/cockpit-state.js": "829cb1eb12733e7ffe15856d2996eb2dcc573c99dc3999a6a3212063d9b49bc9",
+        "frontend/dashboard.bundle.js": "64c34f9f14ee2f96efa3fbf6d1dfdf78eb4c4f1062a4ea7b5437f12b38a8adac"
+      },
+      "outcome": {
+        "status": "ARRIVED",
+        "reason": "destination_reached",
+        "speed_kmh": 30.0,
+        "driving_mode": "ROBOSPHERE",
+        "pair_id": "cb6abee8541b4acda129e5e94fd825d0",
+        "route_id": "c62f5b78426b41199c11fda9765cf44e"
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e738114fc214478c88bc78a2756d4712",
+      "metrics": {
+        "distance_m": 142.0937933996811,
+        "duration_s": 51.45000076666474,
+        "collisions": 0,
+        "maximum_speed_kmh": 30.76272201201914,
+        "mean_speed_kmh": 9.933133805898139,
+        "harsh_braking_events": 3,
+        "safety_interventions": 41
+      },
+      "recorded_decisions": 1032,
+      "crossing_frames": 0,
+      "missing_target_hazard_frames": 10,
+      "reason_counts": {
+        "Vehicle held; explicit driving start required": 2,
+        "NAVIGATION": 209,
+        "Limiting acceleration to stop within 11.50 m of measured road": 13,
+        "Limiting acceleration to stop within 11.00 m of measured road": 7,
+        "Limiting acceleration to stop within 12.00 m of measured road": 3,
+        "Limiting acceleration to stop within 12.50 m of measured road": 5,
+        "Limiting acceleration to stop within 14.00 m of measured road": 8,
+        "Limiting acceleration to stop within 14.50 m of measured road": 7,
+        "Limiting acceleration to stop within 16.00 m of measured road": 7,
+        "Limiting acceleration to stop within 16.50 m of measured road": 5,
+        "Limiting acceleration to stop within 17.00 m of measured road": 8,
+        "Sensor delay; holding until the next fresh sensor frame": 7,
+        "Navigation speed/route controller": 53,
+        "Limiting acceleration to stop within 18.00 m of measured road": 46,
+        "Limiting acceleration to stop within 17.50 m of measured road": 51,
+        "No valid foreground return; absence is not free space": 2,
+        "Complete protective stop; hold near obstacle": 8,
+        "Risk cleared; releasing brake smoothly to base driver": 12,
+        "Holding measured clearance/TTC hysteresis": 2,
+        "Limiting acceleration to stop within 15.00 m of measured road": 1,
+        "Red traffic light on the planned route": 559,
+        "Limiting acceleration to stop within 13.50 m of measured road": 6,
+        "Braking toward measured coverage speed limit 6.80 m/s": 2,
+        "Limiting acceleration to stop within 10.00 m of measured road": 2,
+        "Braking toward measured coverage speed limit 6.19 m/s": 2,
+        "Limiting acceleration to stop within 8.50 m of measured road": 1,
+        "Braking toward measured coverage speed limit 5.53 m/s": 1,
+        "Braking toward measured coverage speed limit 5.18 m/s": 1,
+        "Limiting acceleration to stop within 7.50 m of measured road": 1,
+        "destination_reached": 1
+      },
+      "risk_counts": {
+        "UNKNOWN": 19,
+        "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED": 997,
+        "FORWARD_COLLISION_RISK": 10,
+        "UNKNOWN_SPACE": 6
+      },
+      "motion_evidence_counts": {
+        "NOT_REQUIRED": 2004
+      },
+      "full_brake_sources": {
+        "VEHICLE_HOLD": 2,
+        "SENSOR_FRESHNESS": 7,
+        "RULE": 12,
+        "NAVIGATION": 570
+      },
+      "final_mode": "PAUSED",
+      "final_brake": 1.0
+    },
+    {
+      "label": "native",
+      "raw_observation": "output/path-conflict-repair/native.json",
+      "raw_observation_sha256": "8808057df4f4f9b259bdd2f89263eb7c8c04adaf97a2c95179baab8ab6c1de29",
+      "source_sha256": {
+        "backend/core/path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+        "backend/core/surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+        "backend/core/active_safety.py": "d09f616149af3ed77d8601c211516a3e8983187faa46138cba92fa66f2e83d4a",
+        "backend/core/control_scene.py": "344c27011946bcef96c875cdf661acf708a1da2f0b8b43088317087f1a58d61e",
+        "frontend/cockpit-state.js": "15f1aaafa33fde6efbd2b8cce5b5f9c20b2b078e3a99b47cb0cc07c926210f80",
+        "frontend/dashboard.bundle.js": "0d51bd3a9f2508c227fff554a2e2ad18ef59fc303ff0178b1b6531ae2ef3f879"
+      },
+      "outcome": {
+        "status": "ARRIVED",
+        "reason": "destination_reached",
+        "speed_kmh": 30.0,
+        "driving_mode": "ROBOSPHERE",
+        "pair_id": "29bc6496c2144219902635157044def2",
+        "route_id": "2ea15159005245a6bf28d1e7d894b513"
+      },
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_abe584c4f5074db2bb1987e4ab9079f8",
+      "metrics": {
+        "distance_m": 141.4872213541555,
+        "duration_s": 29.700000442564487,
+        "collisions": 0,
+        "maximum_speed_kmh": 30.651667525942674,
+        "mean_speed_kmh": 17.12295862245986,
+        "harsh_braking_events": 3,
+        "safety_interventions": 32
+      },
+      "recorded_decisions": 597,
+      "crossing_frames": 0,
+      "missing_target_hazard_frames": 0,
+      "reason_counts": {
+        "Vehicle held; explicit driving start required": 2,
+        "NAVIGATION": 161,
+        "Limiting acceleration to stop within 11.50 m of measured road": 9,
+        "Limiting acceleration to stop within 11.00 m of measured road": 7,
+        "Limiting acceleration to stop within 12.00 m of measured road": 5,
+        "Limiting acceleration to stop within 12.50 m of measured road": 5,
+        "Limiting acceleration to stop within 14.00 m of measured road": 5,
+        "Limiting acceleration to stop within 14.50 m of measured road": 4,
+        "Limiting acceleration to stop within 16.00 m of measured road": 9,
+        "Limiting acceleration to stop within 16.50 m of measured road": 7,
+        "Limiting acceleration to stop within 17.00 m of measured road": 7,
+        "Navigation speed/route controller": 52,
+        "Sensor delay; holding until the next fresh sensor frame": 1,
+        "Limiting acceleration to stop within 18.00 m of measured road": 59,
+        "Limiting acceleration to stop within 17.50 m of measured road": 63,
+        "Red traffic light on the planned route": 178,
+        "Measured obstacle inside braking envelope/TTC limit": 1,
+        "Holding measured clearance/TTC hysteresis": 5,
+        "Risk cleared; releasing brake smoothly to base driver": 6,
+        "Limiting acceleration to stop within 10.50 m of measured road": 5,
+        "Limiting acceleration to stop within 9.50 m of measured road": 3,
+        "Braking toward measured coverage speed limit 5.87 m/s": 2,
+        "destination_reached": 1
+      },
+      "risk_counts": {
+        "UNKNOWN": 8,
+        "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED": 584,
+        "FORWARD_COLLISION_RISK": 1,
+        "UNKNOWN_SPACE": 4
+      },
+      "motion_evidence_counts": {
+        "NOT_REQUIRED": 452
+      },
+      "full_brake_sources": {
+        "VEHICLE_HOLD": 2,
+        "SENSOR_FRESHNESS": 1,
+        "NAVIGATION": 184,
+        "RULE": 6
+      },
+      "final_mode": "PAUSED",
+      "final_brake": 1.0
+    }
+  ],
+  "observer_rehearsal_issue": {
+    "artifact": "output/path-conflict-repair/native-observer-start-race.json",
+    "accepted_as_driving_evidence": false,
+    "reason": "Observer read READY before queued journey started; its previous-run metrics are excluded. Observer fixed to await a new RUNNING pair."
+  },
+  "browser": {
+    "connected": true,
+    "english": true,
+    "camera_natural_width": 800,
+    "horizontal_overflow": false,
+    "console_errors": 0
+  },
+  "final": {
+    "connected": true,
+    "mode": "PAUSED",
+    "speed_kmh": 0.0,
+    "brake": 1.0,
+    "recording": false,
+    "policy": "FORWARD_PHYSICAL_INGRESS_V4"
+  }
+}

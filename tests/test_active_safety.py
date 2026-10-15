@@ -27,6 +27,32 @@ def scene(observation, *, clear=False, obstacle=False):
 
 
 class ActiveSafetyTests(unittest.TestCase):
+    def test_out_of_range_radar_return_does_not_invent_hazard_on_measured_clear_road(self):
+        from unittest.mock import Mock
+        supervisor=ActiveSafetySupervisor()
+        o,b=case(distance=None,speed=8.);o,reader=scene(o,clear=True)
+        assessed=assess_forward_space(o,reader,supervisor.config)
+        assessed.update(radar_range_m=95.,target_range_m=None,observed_road_range_m=25.)
+        supervisor.teacher.propose=Mock(side_effect=AssertionError('No usable foreground target'))
+        with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+            command=supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+        self.assertEqual(command.brake if command else 0.,0.)
+        self.assertNotEqual(supervisor.status['risk'],'FORWARD_COLLISION_RISK')
+
+    def test_legacy_missing_foreground_is_not_a_measured_obstacle(self):
+        from backend.learning.rl.teacher import TeacherDecision
+        supervisor=ActiveSafetySupervisor()
+        o,b=case(distance=None,speed=4.);o,reader=scene(o,clear=True)
+        assessed=assess_forward_space(o,reader,supervisor.config)
+        assessed.update(radar_range_m=30.,target_range_m=27.5,target_source='RADAR',observed_road_range_m=35.)
+        missing=TeacherDecision('BRAKE_INTERVENTION','PROTECTIVE_BRAKING',(1.,1.,0.),None,
+            {'foreground_valid':False,'reason':'No valid foreground return; absence is not free space'})
+        with patch('backend.core.active_safety.assess_forward_space',return_value=assessed),patch.object(supervisor.teacher,'propose',return_value=missing):
+            command=supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+        self.assertIsNone(command)
+        self.assertNotEqual(supervisor.status['risk'],'FORWARD_COLLISION_RISK')
+        self.assertEqual(supervisor.teacher.state.value,'MONITORING')
+
     def test_forward_radar_filter_preserves_unique_surround_channels(self):
         observation,_=case(distance=15.,speed=0.)
         observation,reader=scene(observation,clear=True)

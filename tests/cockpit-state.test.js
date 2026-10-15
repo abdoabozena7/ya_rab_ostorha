@@ -41,6 +41,19 @@ test('a red signal keeps the journey active and explains the navigation brake',(
   assert.equal(driverCaption(p),'Self Driving');
 });
 
+test('surface movement and physical obstacles do not claim pedestrian recognition',()=>{
+  const p=provider();Object.assign(p.safetySystem,{active:true,status:'BRAKING',risk:'PATH_CONFLICT',path_conflict:{source:'LIDAR_SURFACE_TRACK'}});
+  assert.equal(safetyNotice(p).title,'Moving object approaching the route');
+  assert.match(safetyNotice(p).detail,/Object type is unconfirmed/);
+  assert.doesNotMatch(safetyNotice(p).detail,/person|pedestrian/i);
+  p.safetySystem.risk='FORWARD_COLLISION_RISK';p.safetySystem.path_conflict=null;
+  assert.equal(safetyNotice(p).title,'Obstacle on the driving path');
+  assert.doesNotMatch(safetyNotice(p).detail,/sideways|person|pedestrian/i);
+  p.safetySystem.measured_range_m=null;p.safetySystem.reason='Holding a prior protective brake';
+  assert.equal(safetyNotice(p).detail,'Holding a prior protective brake');
+  p.safetySystem.active=false;assert.equal(safetyNotice(p),null);
+});
+
 test('live applied brake, valid zero and missing TTC remain distinct',()=>{
   const p=provider(),m=cockpitMeasurements(p,{speedKmh:0,brake:1});
   assert.deepEqual([m.speed,m.brake,m.target,m.gap,m.ttc],[0,100,30,12,null]);

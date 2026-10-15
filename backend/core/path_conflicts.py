@@ -8,11 +8,12 @@ and may worsen it. Steering remains unverified.
 """
 import math
 import numpy as np
+from .surface_motion import surface_motion_evidence, register_material, MOTION_WINDOW_S
 
 LATERAL_EVIDENCE_WINDOW_S = .5
 MINIMUM_LATERAL_INGRESS_M = .1
 LATERAL_SPEED_NOISE_MPS = .3
-PATH_CONFLICT_POLICY = 'FORWARD_PHYSICAL_INGRESS_V3'
+PATH_CONFLICT_POLICY = 'FORWARD_PHYSICAL_INGRESS_V4'
 
 
 def surfaces(points, *, bounds=(-10.,30.,9.), geometry=None,ground_plane=None,split_large_frame=None):
@@ -73,8 +74,12 @@ class LidarPathConflicts:
 
     def reset(self):self.previous=[];self.timestamp=None;self.speed=0.;self.estimates=[]
 
-    def assess(self, points, observation, *, geometry=None,forward_path=None):
-        now=observation.timestamp_s;current=surfaces(points,geometry=geometry)
+    def assess(self, points, observation, *, geometry=None,forward_path=None,ground_plane=None):
+        if ground_plane is None:
+            from .ground_geometry import measured_ground_plane
+            from .motion_geometry import VehicleGeometry
+            ground_plane,_=measured_ground_plane(points,geometry or VehicleGeometry())
+        now=observation.timestamp_s;current=surfaces(points,geometry=geometry,ground_plane=ground_plane)
         dt=None if self.timestamp is None else now-self.timestamp
         from .ego_motion import signed_speed
         speed=signed_speed(observation.ego);yaw_rate=observation.ego.angular_velocity_radps[2]
@@ -82,13 +87,15 @@ class LidarPathConflicts:
         if dt is not None and .025<=dt<=.15 and abs(yaw_rate)<.5:
             angle=yaw_rate*dt;co,si=math.cos(angle),math.sin(angle)
             rotation=np.asarray([[co,si],[-si,co]])
+            distance=(speed+self.speed)*.5*dt
+            ego_translation=distance*np.array([math.cos(angle*.5),math.sin(angle*.5)])
             available=set(range(len(self.previous)))
             for cluster in current:
                 if abs(cluster['center'][1])<1.1 and cluster['center'][0]>=0:continue # forward supervisor
                 pairs=[]
                 for i in available:
                     old=self.previous[i]
-                    predicted=rotation@(old['center']-np.asarray([(speed+self.speed)*.5*dt,0.]))
+                    predicted=rotation@(old['center']-ego_translation)
                     gap=np.linalg.norm(cluster['center']-predicted)
                     if gap<1.6 and np.linalg.norm(cluster['half']-old['half'])<1.5:pairs.append((gap,i,predicted))
                 if not pairs:continue
@@ -97,17 +104,13 @@ class LidarPathConflicts:
                 # Surface bounds shift as rays expose different parts of even a
                 # stationary wall. Register measured returns instead of turning
                 # bounding-box centroid jitter into invented lateral velocity.
-                old_cloud=(rotation@(old['cloud']-np.asarray([(speed+self.speed)*.5*dt,0.])).T).T
-                new_cloud=cluster['cloud'];translation=np.zeros(2)
-                for _ in range(3):
-                    difference=new_cloud[:,None,:]-(old_cloud+translation)[None,:,:]
-                    distance2=np.sum(difference*difference,axis=2);nearest=np.argmin(distance2,axis=1)
-                    residual=difference[np.arange(len(new_cloud)),nearest]
-                    lengths=np.linalg.norm(residual,axis=1)
-                    selected=residual[lengths<=max(.12,min(.65,float(np.quantile(lengths,.7))))]
-                    if len(selected)<3:break
-                    translation+=np.median(selected,axis=0)
-                if len(selected)<3:continue
+                old_cloud=(old['cloud']-ego_translation)@rotation.T
+                new_cloud=cluster['cloud']
+                # Starting only at zero sticks to the interior of dense small
+                # bodies (pedestrians/bikes). Compare prior-motion and measured
+                # center seeds; the long baseline below still verifies motion.
+                translation=register_material(new_cloud,old_cloud,
+                    rotation@old.get('velocity',np.zeros(2))*dt,cluster['center']-predicted)
                 measured=translation/dt
                 if np.linalg.norm(measured)>12:continue
                 velocity=.8*old.get('velocity',measured)+.2*measured
@@ -119,9 +122,16 @@ class LidarPathConflicts:
                 motion=[(stamp,rotation@delta) for stamp,delta in old.get('motion',[])
                         if stamp>now-LATERAL_EVIDENCE_WINDOW_S]
                 motion.append((now,translation));cluster['motion']=motion
+                # Keep original measured clouds, not an integrated motion
+                # estimate. Each is compensated into this frame using ego/IMU.
+                # This independent baseline can reject cumulative ICP drift.
+                history=[(stamp,(cloud-ego_translation)@rotation.T)
+                         for stamp,cloud in old.get('surface_history',[(self.timestamp,old['cloud'])])
+                         if stamp>=now-MOTION_WINDOW_S-1e-6]
+                cluster['surface_history']=[*history,(now,cluster['cloud'])]
                 side=math.copysign(1.,cluster['center'][1])
                 edge=np.asarray([cluster['center'][0],cluster['center'][1]-side*cluster['half'][1]])
-                edges=[(stamp,rotation@(point-np.asarray([(speed+self.speed)*.5*dt,0.])))
+                edges=[(stamp,rotation@(point-ego_translation))
                        for stamp,point in old.get('edges',[]) if stamp>now-.75]
                 edges.append((now,edge));cluster['edges']=edges
                 if cluster['hits']<5:continue
@@ -139,15 +149,33 @@ class LidarPathConflicts:
                     edge_speed=float(x@y/(x@x))
                     edge_fit=max(0.,1.-float(np.sum((y-edge_speed*x)**2))/variance) if variance>1e-8 else 0.
                 edge_ingress=(side*edge_speed<-LATERAL_SPEED_NOISE_MPS and edge_fit>=.8)
-                verified_relative=relative.copy()
-                verified_relative[1]=math.copysign(min(abs(relative[1]),abs(edge_speed)),relative[1])
+                lateral_displacement=float(sum(delta[1] for _,delta in motion))
+                inward=(cluster['center'][1]*velocity[1]<0 and
+                        cluster['center'][1]*lateral_displacement<0 and
+                        abs(lateral_displacement)>=MINIMUM_LATERAL_INGRESS_M and
+                        abs(velocity[1])>LATERAL_SPEED_NOISE_MPS and edge_ingress)
+                evidence={'state':'NOT_REQUIRED'}
+                if inward:
+                    baseline_stamp,baseline=history[0]
+                    expected=sum((delta for stamp,delta in motion if stamp>baseline_stamp+1e-6),np.zeros(2))
+                    evidence=surface_motion_evidence(cluster['cloud'],baseline,now-baseline_stamp,expected)
+                measured_delta=evidence.get('displacement_m',[0.,0.])[1]
+                measured_velocity=evidence.get('velocity_mps',[0.,0.])[1]
+                verified=(evidence['state']=='MOVING' and side*measured_delta<-MINIMUM_LATERAL_INGRESS_M
+                          and side*measured_velocity<-LATERAL_SPEED_NOISE_MPS
+                          and np.linalg.norm(evidence['velocity_mps'])<=12.)
+                # Forecast using the displacement that actually passed the
+                # baseline test, not the biased accumulation it checked.
+                forecast_velocity=np.asarray(evidence['velocity_mps']) if verified else velocity.copy()
+                verified_relative=forecast_velocity-np.array([speed,0.])
+                verified_relative[1]=math.copysign(min(abs(verified_relative[1]),abs(edge_speed)),verified_relative[1])
                 time_to_conflict=overlap_time(cluster['center'],half,verified_relative,2.5)
                 future_forward=None
                 if geometry is not None:
                     from .motion_geometry import GRID,integrate,footprint_centers
                     from .prediction import occupied_overlap
                     path=np.asarray(forward_path) if forward_path is not None else integrate(speed,observation.ego.steering,geometry=geometry)
-                    center=cluster['center']+GRID[:,None]*np.array([velocity[0],verified_relative[1]])
+                    center=cluster['center']+GRID[:,None]*np.array([forecast_velocity[0],verified_relative[1]])
                     footprint=footprint_centers(path,geometry)
                     overlap=occupied_overlap(center,cluster['half'],footprint,geometry.half,np.full(31,.2))
                     indices=np.flatnonzero(overlap)
@@ -155,20 +183,17 @@ class LidarPathConflicts:
                     if len(indices):
                         i=indices[0];delta=center[i]-footprint[i,1:3]
                         future_forward=float(delta@np.array([np.cos(path[i,3]),np.sin(path[i,3])]))>0
-                lateral_displacement=float(sum(delta[1] for _,delta in motion))
-                inward=(cluster['center'][1]*velocity[1]<0 and
-                        cluster['center'][1]*lateral_displacement<0 and
-                        abs(lateral_displacement)>=MINIMUM_LATERAL_INGRESS_M and
-                        abs(velocity[1])>LATERAL_SPEED_NOISE_MPS and edge_ingress)
                 rear_approach=cluster['center'][0]<0 and relative[0]>.5
                 # Test the relative longitudinal position at the predicted
                 # overlap, not proximity or closing speed alone. A rear-only
                 # catch-up/merge must not veto forward motion away from it.
                 forward_overlap=(time_to_conflict is not None and
-                    cluster['center'][0]+relative[0]*time_to_conflict>0)
+                    cluster['center'][0]+verified_relative[0]*time_to_conflict>0)
                 if future_forward is not None:forward_overlap=future_forward
-                actionable=inward and forward_overlap
+                actionable=inward and forward_overlap and verified
                 relation=('FORWARD_CUT_IN' if actionable else
+                          'STATIC_SURFACE' if evidence['state']=='STATIC_COMPATIBLE' else
+                          'UNRESOLVED_SURFACE_MOTION' if inward and not verified else
                           'REAR_APPROACH' if rear_approach else
                           'BEHIND' if cluster['center'][0]<0 else
                           'PARALLEL_OR_LATERAL_NOISE' if abs(lateral_displacement)<MINIMUM_LATERAL_INGRESS_M else
@@ -180,7 +205,9 @@ class LidarPathConflicts:
                           'lateral_displacement_m':lateral_displacement,
                           'surface_half_size_m':cluster['half'].tolist()}
                 estimate['lateral_motion_above_noise']=bool(abs(velocity[1])>LATERAL_SPEED_NOISE_MPS)
-                estimate.update(edge_lateral_speed_mps=edge_speed,edge_motion_fit=edge_fit)
+                estimate.update(edge_lateral_speed_mps=edge_speed,edge_motion_fit=edge_fit,motion_evidence=evidence)
+                if verified:estimate['forecast_motion_mps']=forecast_velocity.tolist()
+                elif inward:estimate['time_to_conflict_s']=None
                 observations.append(estimate)
                 if actionable:
                     estimates.append(estimate)

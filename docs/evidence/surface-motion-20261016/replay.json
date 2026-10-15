@@ -1,0 +1,105 @@
+{
+  "source": "OFFLINE_REPLAY_OF_RECORDED_NATIVE_SENSORS",
+  "native_acceptance": false,
+  "scope": "Crossing tracker only, using recorded ego commands and paths inferred from steering. Does not simulate counterfactual physics.",
+  "baseline_ref": "cbb862e",
+  "baseline_sha256": "7800f054dd3727300b1f084d63055f14f6397532dd09a7316eda61b17c620fa4",
+  "policy": "FORWARD_PHYSICAL_INGRESS_V4",
+  "runs": [
+    {
+      "recording": "runs/normal_city/run_77a89ec21556425a963dfac77200c1f2",
+      "frames": 2334,
+      "original_applied_crossing_frames": [
+        2465,
+        2466
+      ],
+      "baseline_replay": [
+        {
+          "frame": 2465,
+          "timestamp_s": 117.27489797398448,
+          "conflict": {
+            "source": "LIDAR_SURFACE_TRACK",
+            "center_m": [
+              6.866020202636719,
+              5.755668878555298
+            ],
+            "motion_mps": [
+              0.9534842370777931,
+              -1.5453464096874272
+            ],
+            "relative_motion_mps": [
+              -2.2303730030014277,
+              -1.5453464096874272
+            ],
+            "time_to_conflict_s": 2.1,
+            "matched_frames": 6,
+            "relation": "FORWARD_CUT_IN",
+            "lateral_displacement_m": -0.4829844434645496,
+            "surface_half_size_m": [
+              1.1842432022094727,
+              1.3300144672393799
+            ],
+            "lateral_motion_above_noise": true,
+            "edge_lateral_speed_mps": -3.8720166003649394,
+            "edge_motion_fit": 0.8292169067445265
+          }
+        },
+        {
+          "frame": 2466,
+          "timestamp_s": 117.32489797472954,
+          "conflict": {
+            "source": "LIDAR_SURFACE_TRACK",
+            "center_m": [
+              6.818911075592041,
+              5.573496103286743
+            ],
+            "motion_mps": [
+              1.1417755094007451,
+              -1.5064373556948991
+            ],
+            "relative_motion_mps": [
+              -2.2034373525068727,
+              -1.5064373556948991
+            ],
+            "time_to_conflict_s": 2.1,
+            "matched_frames": 7,
+            "relation": "FORWARD_CUT_IN",
+            "lateral_displacement_m": -0.550452100452495,
+            "surface_half_size_m": [
+              1.169194221496582,
+              1.2558495998382568
+            ],
+            "lateral_motion_above_noise": true,
+            "edge_lateral_speed_mps": -3.8311308151856163,
+            "edge_motion_fit": 0.8836597386607031
+          }
+        }
+      ],
+      "repaired_replay": [],
+      "motion_evidence_counts": {
+        "NOT_REQUIRED": 4818,
+        "UNRESOLVED": 9
+      },
+      "repaired_tracker_ms": {
+        "median": 10.6091000016022,
+        "p95": 22.63214500071626,
+        "max": 51.947399999335175
+      }
+    },
+    {
+      "recording": "runs/normal_city/run_383536ff237e455d96230b92ac87406f",
+      "frames": 1834,
+      "original_applied_crossing_frames": [],
+      "baseline_replay": [],
+      "repaired_replay": [],
+      "motion_evidence_counts": {
+        "NOT_REQUIRED": 1002
+      },
+      "repaired_tracker_ms": {
+        "median": 4.538249997494859,
+        "p95": 10.874959997636322,
+        "max": 20.404599999892525
+      }
+    }
+  ]
+}

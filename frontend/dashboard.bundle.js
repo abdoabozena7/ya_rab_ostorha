@@ -3568,6 +3568,16 @@
     };
     if (!safety.active) return null;
     if (safety.status === "SENSOR_DELAY_HOLD") return { tone: "warning", title: "Waiting for a fresh sensor frame", detail: safety.reason };
+    if (safety.risk === "PATH_CONFLICT" && safety.path_conflict) return {
+      tone: "warning",
+      title: "Moving object approaching the route",
+      detail: "Measured sideways movement may enter the driving path. Braking until it clears. Object type is unconfirmed."
+    };
+    if (safety.risk === "FORWARD_COLLISION_RISK" && Number.isFinite(safety.measured_range_m)) return {
+      tone: "warning",
+      title: "Obstacle on the driving path",
+      detail: "Braking for the measured obstacle ahead. Object type is unconfirmed."
+    };
     const releasing = /RELEAS/.test(safety.status || "");
     const holding = /HOLD/.test(safety.teacher_state || safety.status || "");
     return {

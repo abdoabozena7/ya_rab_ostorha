@@ -4,6 +4,12 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [16 October surface-motion repair](docs/STATIC_SURFACE_MOTION_REPAIR_20261016.md)
+checks actual displacement before RULE predicts a crossing, separates sloped
+ground from object returns, and keeps unclassified obstacles distinct from
+pedestrian detections. The report separates recorded-sensor replay from native
+driving verification.
+
 The [15 October automatic presentation and continuity repair](docs/AUTOMATIC_PRESENTATION_20261015.md)
 adds an English dashboard and **Restart**: start the simulator, choose a seeded
 route/traffic setup, record Robosphere and Normal at a requested 50 km/h, then

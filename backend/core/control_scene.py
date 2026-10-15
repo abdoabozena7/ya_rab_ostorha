@@ -61,6 +61,14 @@ class MeasuredSpace:
         self.certificate(np.asarray(path)[:1])
         return self._map.continuous_coverage(path)
 
+    @property
+    def ground_plane(self):
+        # Forward coverage constructs this map before the crossing tracker
+        # runs. Reuse its measured calibration instead of fitting a second plane.
+        if self._map is None:
+            raise ValueError('Ground calibration requires measured space first')
+        return self._map.ground_plane
+
 
 @dataclass(frozen=True)
 class ControlScene:

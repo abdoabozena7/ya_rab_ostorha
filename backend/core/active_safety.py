@@ -215,7 +215,8 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
         'radar_closing_speed_mps': max(0., -float(points[radar_index, 3])) if radar_index is not None else None,
         'observed_road_range_m': clear_range, 'ground_plane_supported': plane is not None,
         'lidar_observed': lidar_observed, 'depth_observed': depth_observed,
-        'teacher_observation': teacher_observation,'lidar_surfaces':lidar_points[:,:3]+_mount(lidar)[0]}
+        'teacher_observation': teacher_observation,'lidar_surfaces':lidar_points[:,:3]+_mount(lidar)[0],
+        'lidar_ground_plane':measured_space.ground_plane}
 
 
 class RuntimeSafetyFeasibilityValidator:
@@ -276,7 +277,8 @@ class ActiveSafetySupervisor:
             steering=base.steering if abs(base.steering)>=.05 else None,
             geometry=getattr(self,'geometry',None),forward_path=getattr(self,'forward_path',None),
             measured_space=getattr(self,'measured_space',None))
-        crossing=self.path_conflicts.assess(scene['lidar_surfaces'],observation,geometry=getattr(self,'geometry',None),forward_path=getattr(self,'forward_path',None))
+        crossing=self.path_conflicts.assess(scene['lidar_surfaces'],observation,geometry=getattr(self,'geometry',None),
+            forward_path=getattr(self,'forward_path',None),ground_plane=scene['lidar_ground_plane'])
         conflict=crossing['conflict']
         speed = observation.ego.speed_mps
         envelope = t.minimum_clearance_m + speed*t.reaction_time_s + speed*speed/(2*t.assumed_deceleration_mps2)
@@ -291,9 +293,16 @@ class ActiveSafetySupervisor:
         release_clear = distance is None and road_range >= envelope+t.release_hysteresis_m
         hazard = distance is not None and (distance <= envelope or ttc is not None and ttc <= c.ttc_trigger_s)
         decision = None
-        if scene['radar_range_m'] is not None:
-            decision = self.teacher.propose(scene['teacher_observation'], base, as_of_timestamp_s=as_of_timestamp_s)
-            hazard = hazard or decision.action[0] > 0
+        if scene['radar_range_m'] is not None and distance is not None:
+            candidate = self.teacher.propose(scene['teacher_observation'], base, as_of_timestamp_s=as_of_timestamp_s)
+            # The legacy nearest-32 filter can disagree with the full calibrated
+            # scene (or retain a return beyond its usable range). Its missing-
+            # target fallback is not a measured obstacle. Current fused space
+            # already handles unknown coverage with a stopping speed/hold.
+            if candidate.diagnostics['foreground_valid']:
+                decision=candidate
+                hazard = hazard or decision.action[0] > 0
+            else:self.teacher.reset()
         coverage_limited = distance is None or distance > road_range
         unknown = coverage_limited and road_range < envelope
         target_speed = coverage_speed_limit(road_range, t)
@@ -306,7 +315,7 @@ class ActiveSafetySupervisor:
         requested = hazard or conflict is not None
         reason = decision.diagnostics['reason'] if decision and decision.action[0]>0 else ('Measured obstacle inside braking envelope/TTC limit' if hazard
             else 'Insufficient measured forward road coverage; missing targets are not clear space' if unknown else 'Observed forward stopping corridor is clear')
-        if conflict:reason='Sustained lateral surface motion enters the forward driving path'
+        if conflict:reason='Measured moving object approaches the driving path; object type unconfirmed'
         now = observation.timestamp_s
         dt = .05 if self.previous_s is None else min(.15, max(0., now-self.previous_s))
         if self.previous_s is not None and now <= self.previous_s: raise ValueError('Safety observation did not advance')
