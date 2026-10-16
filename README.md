@@ -64,6 +64,10 @@ Display work was removed from control/callback lock contention; safety limits
 are unchanged. This verifies the saved demo journey. Frequent harsh braking and
 close clearances remain; general safety and MODEL acceptance are unproven.
 
+Double-click **Start-YA-RAB-OSTORHA.cmd** in the project folder (or the
+**YA RAB OSTORHA** desktop shortcut on this PC) to start and open the dashboard.
+The launcher keeps errors visible if startup fails. PowerShell options remain available:
+
 ```powershell
 .\Start-YA-RAB-OSTORHA.ps1
 # Read-only launch/asset/telemetry check (does not open a browser or start CARLA):
