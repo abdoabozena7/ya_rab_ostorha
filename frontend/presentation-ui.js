@@ -8,6 +8,7 @@ const history=[];
 
 export function showWorkspace(phase,{focus=false}={}) {
   if(phase==='setup') {
+    if(document.body.classList.contains('sequential-drive')){document.dispatchEvent(new CustomEvent('detailsnavigate',{detail:{page:'research'}}));return;}
     const dialog=$('advancedSetupDialog');
     if(dialog){$('setupPhase').hidden=false;dialog.showModal();document.dispatchEvent(new CustomEvent('advancedsetupopen'));return;}
   }

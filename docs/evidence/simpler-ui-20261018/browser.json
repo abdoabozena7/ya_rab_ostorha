@@ -1,0 +1,232 @@
+{
+  "browser-checks": {
+    "scope": "Simulated UI states only; isolated HTTP server and intercepted WebSocket; no native commands",
+    "checks": {
+      "offline_has_two_buttons": true,
+      "root_four_groups": true,
+      "root_five_buttons": true,
+      "automatic_hides_custom": true,
+      "custom_fields_revealed": true,
+      "back_keeps_draft": true,
+      "close_returns_focus": true,
+      "close_discards_draft": true,
+      "one_dialog_diagnostics": true,
+      "diagnostics_back_to_view": true,
+      "offline_inspection_no_commands": true,
+      "connected_main_three": true,
+      "camera_draft_not_overwritten": true,
+      "view_back_keeps_camera_draft": true,
+      "view_close_discards_camera_draft": true,
+      "settings_single_dialog": true,
+      "settings_back_keeps_edit": true,
+      "settings_close_discards_edit": true,
+      "reset_requires_final_action": true,
+      "connected_inspection_no_mutation": true,
+      "PREPARING_stop_visible": true,
+      "PREPARING_single_emergency": true,
+      "PREPARING_configuration_readonly": true,
+      "PREPARING_readable_lock": true,
+      "DRIVING_stop_visible": true,
+      "DRIVING_single_emergency": true,
+      "DRIVING_configuration_readonly": true,
+      "DRIVING_readable_lock": true,
+      "RECOVERING_stop_visible": true,
+      "RECOVERING_single_emergency": true,
+      "RECOVERING_configuration_readonly": true,
+      "RECOVERING_readable_lock": true,
+      "ordinary_pause_resume": true,
+      "failure_restart_only": true,
+      "emergency_release_replaces_stop": true,
+      "released_stays_held": true,
+      "disconnect_restart_no_emergency": true,
+      "view_fits_1600": true,
+      "view_fits_390": true,
+      "layouts_fit_english": true,
+      "no_page_errors": true
+    },
+    "states": [
+      {
+        "status": "PREPARING",
+        "buttons": [
+          "Stop",
+          "Details",
+          "Emergency stop"
+        ]
+      },
+      {
+        "status": "DRIVING",
+        "buttons": [
+          "Stop",
+          "Details",
+          "Emergency stop"
+        ]
+      },
+      {
+        "status": "RECOVERING",
+        "buttons": [
+          "Stop",
+          "Details",
+          "Emergency stop"
+        ]
+      }
+    ],
+    "layouts": [
+      {
+        "width": 1600,
+        "overflow": false,
+        "english": true
+      },
+      {
+        "width": 390,
+        "overflow": false,
+        "english": true
+      }
+    ],
+    "errors": [],
+    "command_counts": {
+      "journey_heartbeat": 19
+    }
+  },
+  "action-checks": {
+    "scope": "Simulated UI states only; isolated HTTP server and intercepted WebSocket; no native commands",
+    "checks": {
+      "local_overlay_apply_sends_no_native_command": true,
+      "applied_overlay_retained": true,
+      "applying_view_does_not_commit_other_forms": true,
+      "staged_camera_sends_nothing": true,
+      "explicit_camera_apply_once": true,
+      "keyboard_trapped_1600": true,
+      "settings_fit_1600": true,
+      "diagnostics_fit_1600": true,
+      "keyboard_trapped_390": true,
+      "settings_fit_390": true,
+      "diagnostics_fit_390": true,
+      "changed_route_requires_restart": true,
+      "no_page_errors": true
+    },
+    "cameraCommands": [
+      {
+        "type": "settings",
+        "sequence": 1,
+        "frame_id": 2102,
+        "timestamp_s": 105.10000000000001,
+        "value": {
+          "camera_view": "front"
+        }
+      }
+    ],
+    "errors": []
+  },
+  "navigation-checks": {
+    "scope": "Simulated UI states only; isolated HTTP server and intercepted WebSocket; no native commands",
+    "checks": {
+      "fullscreen_keeps_main_actions": true,
+      "restore_from_details": true,
+      "camera_shortcut_opens_view": true,
+      "map_shortcut_opens_diagnostics": true,
+      "research_is_single_drawer": true,
+      "saved_legacy_results": true,
+      "saved_legacy_status": true,
+      "no_page_errors": true
+    },
+    "legacy_pair": "004fa050e1f146408308531c374caae3",
+    "errors": []
+  },
+  "playback-checks": {
+    "scope": "Real retained native MP4s in isolated UI fixture; not a native driving acceptance run",
+    "checks": {
+      "both_real_recordings": true,
+      "pause_holds_both": true,
+      "resumed_and_synchronized": true,
+      "both_end": true,
+      "restart_after_playback": true,
+      "original_failures_retained": true,
+      "main_buttons_1600": true,
+      "fits_1600": true,
+      "main_buttons_390": true,
+      "fits_390": true,
+      "native_mp4_download": true,
+      "no_page_errors": true
+    },
+    "playing": [
+      {
+        "time": 0.811745,
+        "duration": 4.151,
+        "ended": false,
+        "paused": false,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_a88de58ef52842f99d53cf6bab39ad8b/driving.mp4"
+      },
+      {
+        "time": 0.809862,
+        "duration": 12.851,
+        "ended": false,
+        "paused": false,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_6c7edaf0eced404aacce20cc5996093d/driving.mp4"
+      }
+    ],
+    "paused": [
+      {
+        "time": 0.836092,
+        "duration": 4.151,
+        "ended": false,
+        "paused": true,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_a88de58ef52842f99d53cf6bab39ad8b/driving.mp4"
+      },
+      {
+        "time": 0.834262,
+        "duration": 12.851,
+        "ended": false,
+        "paused": true,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_6c7edaf0eced404aacce20cc5996093d/driving.mp4"
+      }
+    ],
+    "held": [
+      {
+        "time": 0.836092,
+        "duration": 4.151,
+        "ended": false,
+        "paused": true,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_a88de58ef52842f99d53cf6bab39ad8b/driving.mp4"
+      },
+      {
+        "time": 0.834262,
+        "duration": 12.851,
+        "ended": false,
+        "paused": true,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_6c7edaf0eced404aacce20cc5996093d/driving.mp4"
+      }
+    ],
+    "finished": [
+      {
+        "time": 4.151,
+        "duration": 4.151,
+        "ended": true,
+        "paused": true,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_a88de58ef52842f99d53cf6bab39ad8b/driving.mp4"
+      },
+      {
+        "time": 12.851,
+        "duration": 12.851,
+        "ended": true,
+        "paused": true,
+        "src": "http://127.0.0.1:8010/runs/normal_city/run_6c7edaf0eced404aacce20cc5996093d/driving.mp4"
+      }
+    ],
+    "maximumDrift_s": 0.0018930000000003666,
+    "outcomes": [
+      "ERROR \u00b7 Current synchronized sensor scene unavailable for one second \u00b7 Injected validation fault; excluded from driving acceptance.",
+      "COLLISION \u00b7 Contact ended this attempt. Its recording and result are saved. Additional runtime error: A required record was lost: 1226"
+    ],
+    "errors": [],
+    "download": "60f43c037f5142a197856a73dbf32e62-robosphere.mp4"
+  },
+  "visual-checks": {
+    "scope": "Final source visual checks, isolated offline UI",
+    "checks": {
+      "main_fits_1600": true,
+      "view_fits_1600": true,
+      "main_fits_390": true,
+      "view_fits_390": true
+    }
+  }
+}

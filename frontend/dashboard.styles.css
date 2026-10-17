@@ -9641,5 +9641,400 @@ body.light-cockpit.sequential-drive:before {
     scroll-behavior: auto !important;
   }
 }
+.sequential-drive .guided-details [hidden],
+.sequential-drive .guided-details [data-details-legacy-action],
+.sequential-drive .guided-details [data-details-legacy-extra] {
+  display: none !important;
+}
+.sequential-drive #cockpitDetails.guided-details {
+  width: min(600px, calc(100vw - 32px));
+  max-width: 600px;
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  border: 0;
+  border-radius: 22px;
+  overscroll-behavior: contain;
+}
+.sequential-drive .guided-details-heading {
+  position: sticky;
+  top: -24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 18px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.sequential-drive .guided-details-heading h2 {
+  flex: 1;
+  font-size: 20px;
+  margin: 0;
+  outline: none;
+}
+.sequential-drive .guided-details-heading #detailsBack {
+  padding: 8px 12px;
+  min-width: 64px;
+  background: var(--raised);
+  border: 0;
+}
+.sequential-drive .details-groups {
+  display: flex;
+  flex-direction: column;
+}
+.sequential-drive .details-groups > button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 22px 34px 22px 0;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.sequential-drive .details-groups > button:last-child {
+  border-bottom: 0;
+}
+.sequential-drive .details-groups strong {
+  font-size: 17px;
+}
+.sequential-drive .details-groups span {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.sequential-drive .details-groups i {
+  position: absolute;
+  right: 4px;
+  top: 32px;
+  font-style: normal;
+  color: var(--primary);
+  transition: transform 140ms ease;
+}
+.sequential-drive .details-groups > button:hover i {
+  transform: translateX(4px);
+}
+.sequential-drive .guided-details > section:not(.details-groups) {
+  animation: details-page-in 140ms ease-out;
+}
+.sequential-drive .guided-details label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin: 18px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.sequential-drive .guided-details label:has(input[type=checkbox]) {
+  flex-direction: row;
+  align-items: center;
+  color: var(--ink);
+}
+.sequential-drive .guided-details input[type=checkbox] {
+  width: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  flex: 0 0 18px;
+  padding: 0;
+  accent-color: var(--primary);
+}
+.sequential-drive .guided-details label:has(input[type=checkbox]) {
+  justify-content: flex-start;
+  gap: 12px;
+  margin: 16px 0;
+  min-height: 28px;
+}
+.sequential-drive .guided-details label:has(input[type=checkbox]) small {
+  margin-left: auto;
+}
+.sequential-drive .guided-details select,
+.sequential-drive .guided-details input:not([type=checkbox]) {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  min-height: 44px;
+}
+.sequential-drive .guided-details fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+  min-width: 0;
+}
+.sequential-drive .guided-details legend {
+  font-size: 14px;
+  font-weight: 700;
+}
+.sequential-drive .guided-details fieldset:disabled {
+  opacity: .6;
+}
+.sequential-drive .details-copy,
+.sequential-drive .details-lock-reason {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.sequential-drive .details-lock-reason {
+  background: var(--raised);
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+.sequential-drive .details-summary {
+  margin: 24px 0;
+}
+.sequential-drive .details-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.sequential-drive .details-summary dt {
+  color: var(--muted);
+}
+.sequential-drive .details-summary dd {
+  text-align: right;
+  margin: 0;
+  max-width: 65%;
+}
+.sequential-drive .details-embedded {
+  position: static !important;
+  inset: auto !important;
+  display: block;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+.sequential-drive .details-embedded > .section-heading,
+.sequential-drive #setupPhase > .analysis-heading,
+.sequential-drive #sensorPanel button,
+.sequential-drive #settingsPanel button,
+.sequential-drive #setupPhase button,
+.sequential-drive #settingsPanel .settings-save,
+.sequential-drive #settingsPanel > details > summary,
+.sequential-drive #settingsForm > details > summary {
+  display: none !important;
+}
+.sequential-drive #settingsPanel details {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background: transparent;
+}
+.sequential-drive #settingsPanel details[open] > fieldset {
+  display: block !important;
+}
+.sequential-drive #settingsPanel details[hidden] {
+  display: none !important;
+}
+.sequential-drive .guided-details #sensorPanel {
+  font-size: 13px;
+}
+.sequential-drive .guided-details pre {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+  font-size: 11px;
+}
+.sequential-drive .guided-details .cockpit-summary {
+  padding: 0 !important;
+}
+.sequential-drive #modelVision .studio-camera-views,
+.sequential-drive #cockpitViewDetails,
+.sequential-drive #cockpitAnalysisLink {
+  display: none !important;
+}
+.sequential-drive .guided-details .studio-camera-views {
+  display: none !important;
+}
+.sequential-drive.details-open .cockpit-header-actions {
+  display: none !important;
+}
+.sequential-drive .studio-fullscreen-controls {
+  display: none !important;
+}
+.sequential-drive:has(#cameraCard.camera-expanded) .app-header {
+  position: relative;
+  z-index: 210;
+}
+.sequential-drive:has(#cameraCard.camera-expanded) .cockpit-header-actions {
+  position: fixed;
+  z-index: 200;
+  right: 36px;
+  top: 36px;
+  padding: 8px;
+  background: var(--surface);
+  border-radius: 16px;
+}
+.sequential-drive #cameraEmptyTitle,
+.sequential-drive #cameraEmptyDescription,
+.sequential-drive .studio-result-subtitle {
+  display: none !important;
+}
+.sequential-drive #resultsPhase #ordinaryComparison button,
+.sequential-drive #resultsPhase #hybridResults button,
+.sequential-drive #resultsPhase #studioDiagnostics {
+  display: none !important;
+}
+.sequential-drive .guided-details .setup-columns {
+  display: block;
+}
+.sequential-drive .guided-details #settingsStatus {
+  display: block !important;
+}
+.sequential-drive.archive-review #resultsPhase > section:not(#detailsArchivedResults),
+.sequential-drive.archive-review #resultsPhase > details {
+  display: none !important;
+}
+.sequential-drive:not(.archive-review) #detailsArchivedResults {
+  display: none !important;
+}
+.sequential-drive #detailsArchivedResults {
+  padding: 24px;
+}
+.sequential-drive #presentationControls {
+  padding: 12px 24px;
+  gap: 8px;
+}
+.sequential-drive .presentation-intro > .eyebrow,
+.sequential-drive .presentation-intro > strong {
+  display: none;
+}
+.sequential-drive .presentation-intro {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 13px;
+}
+.sequential-drive .presentation-steps {
+  padding: 7px 0;
+}
+.sequential-drive #presentationNotice {
+  padding: 4px 0;
+}
+@media (max-width: 700px) {
+  .sequential-drive #presentationControls {
+    padding: 10px 8px;
+    gap: 8px;
+  }
+  .sequential-drive .presentation-intro {
+    gap: 4px;
+  }
+  .sequential-drive .presentation-intro > span {
+    display: block;
+    flex-basis: 100%;
+  }
+  .sequential-drive #cameraCard:not(.camera-expanded) {
+    min-height: 360px;
+  }
+  .sequential-drive .cockpit-speed {
+    padding: 12px !important;
+  }
+  .sequential-drive .cockpit-gauge {
+    transform: scale(.8);
+    margin: -12px auto;
+  }
+  .sequential-drive .cockpit-rail-heading {
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 700px) {
+  .light-cockpit.sequential-drive[data-ui=guided] #cameraCard:not(.camera-expanded) {
+    grid-template-rows: clamp(300px, 78vw, 450px) auto;
+  }
+  .sequential-drive .cockpit-speed {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 3px 16px;
+  }
+  .sequential-drive .cockpit-speed .cockpit-gauge {
+    width: auto;
+    height: auto;
+    min-height: 0;
+    transform: none;
+    margin: 0;
+  }
+  .sequential-drive .cockpit-gauge svg {
+    display: none;
+  }
+  .sequential-drive .cockpit-speed-value {
+    position: static;
+    inset: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .sequential-drive .cockpit-speed-value strong {
+    font-size: 28px;
+  }
+  .sequential-drive #cockpitTarget {
+    grid-column: 1/-1;
+    text-align: left;
+    margin: 2px 0;
+    font-size: 11px;
+  }
+}
+@keyframes details-page-in {
+  from {
+    opacity: .5;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 700px) {
+  .sequential-drive #cockpitDetails.guided-details {
+    padding: 18px;
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+  .sequential-drive .guided-details-heading {
+    gap: 8px;
+    top: -18px;
+  }
+  .sequential-drive .guided-details-heading h2 {
+    font-size: 17px;
+  }
+  .sequential-drive .guided-details .cockpit-dialog-emergency {
+    font-size: 10px;
+    padding: 8px;
+  }
+  .sequential-drive:has(#cameraCard.camera-expanded) .cockpit-header-actions {
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    width: auto;
+  }
+  .sequential-drive .details-summary > div {
+    gap: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sequential-drive .guided-details > section,
+  .sequential-drive .details-groups i {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 
 /* frontend/dashboard-theme.css */

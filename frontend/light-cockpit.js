@@ -166,7 +166,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     set('cockpitDriverText',driverCaption(p));
     $('cockpitDriver').title=!fresh?'No live control session':p.controller?'This page owns vehicle control':'Observer · another page owns vehicle control';
     const cameraChange=tools.cameraChange,confirmed=cameraChange?.status==='applied'?cameraChange.requested:tools.catalog?.settings?.camera_view;
-    if(confirmed&&select.value!==confirmed)select.value=confirmed;select.disabled=$('cameraView').disabled||cameraChange?.status==='pending';
+    if(confirmed&&select.value!==confirmed&&!select.dataset.detailsDraft)select.value=confirmed;select.disabled=$('cameraView').disabled||cameraChange?.status==='pending';
     selector.title=cameraChange?.status==='failed'?cameraChange.error:cameraChange?.status==='pending'?'Changing camera…':'Select a camera view';
     set('cockpitCameraState',$('authoritativeCamera').hidden?fresh?'Waiting for live camera':'Camera offline':p.isReplay?'RECORDED · RGB':'LIVE · CARLA RGB');
     if($('authoritativeCamera').hidden){

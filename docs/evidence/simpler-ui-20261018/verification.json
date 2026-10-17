@@ -1,0 +1,38 @@
+{
+  "scope": "Sequential interface delivery only",
+  "implemented": true,
+  "javascript_passed": 135,
+  "python_discovered": 574,
+  "python_passed": 573,
+  "python_optional_skipped": 1,
+  "dashboard_build": "PASSED",
+  "browser_checks_passed": 78,
+  "browser_check_groups": {
+    "browser-checks": 41,
+    "action-checks": 13,
+    "navigation-checks": 8,
+    "playback-checks": 12,
+    "visual-checks": 4
+  },
+  "desktop_width": 1600,
+  "mobile_width": 390,
+  "main_buttons": {
+    "offline": 2,
+    "connected_maximum": 3
+  },
+  "details_root_controls": {
+    "offline": 5,
+    "connected_maximum": 6
+  },
+  "fixture": "Isolated HTTP 8010 and intercepted WebSocket 8011; simulated UI states, real saved MP4s",
+  "inspection_native_commands": 0,
+  "explicit_camera_apply": "One settings request captured by intercepted socket; not delivered to CARLA",
+  "download_checksum_matches": true,
+  "new_native_acceptance_run": false,
+  "backend_changed": false,
+  "new_backend_api": false,
+  "control_source_fingerprint": "a7f1f2bdff5db5b9b70bbdf785a432b312a0d20c71fdb0e7a6593454cfdeb51c",
+  "native_driving_acceptance": "Unchanged; FAILED in retained 17 October report",
+  "native_validation_ledgers_changed": false,
+  "raw_recordings_committed": false
+}

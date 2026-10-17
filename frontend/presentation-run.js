@@ -5,7 +5,6 @@ import {recordingVideoRoot,selectPlaybackLeader,benchmarkSpeedText,demoFailure} 
 import {metricValue} from './journey-comparison.js';
 
 const $=id=>document.getElementById(id);
-const terminal=new Set(['IDLE','COMPLETE','CANCELLED','ERROR']);
 const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Confirming route traffic',
   STARTING:'Starting the recording',DRIVING:'Driving and recording',FINALIZING:'Saving the recording',RESTORING:'Restoring the same initial conditions',
   RECOVERING:'Checking sensors before Normal',EXPORTING:'Exporting both videos',PLAYBACK:'Playing the comparison',COMPLETE:'Presentation complete',CANCELLED:'Presentation stopped',ERROR:'Presentation needs attention'};
@@ -87,6 +86,7 @@ export function installPresentationRun(p,tools,clearControls){
     item.video.addEventListener('error',()=>{$('presentationPlaybackStatus').textContent='Video playback failed. The saved run remains available; use Replay both to retry.';});
   }
   $('presentationRestart').onclick=()=>{
+    p.reviewedComparison=null;p.presentationPlayback=false;
     p.operationError=null;tools.close(false);document.body.classList.remove('studio-setup-open');showWorkspace('drive');
     pendingStart=true;pendingAt=performance.now();
     if(!p.connected)p.startSimulation();
@@ -96,7 +96,7 @@ export function installPresentationRun(p,tools,clearControls){
   $('presentationChoose').onclick=()=>tools.open('routePanel','presentationChoose');
   $('presentationCustomStart').onclick=()=>{p.operationError=null;p.startJourney(Number($('presentationCustomSpeed').value),'ROBOSPHERE');};
   return {update(){
-    const data=p.presentation,status=data?.status||'IDLE',busy=!terminal.has(status),active=['STARTING','RUNNING'].includes(p.journey?.status);
+    const data=p.presentation,state=driveState(p),status=state.presentationStatus,busy=state.busy,active=['STARTING','RUNNING'].includes(p.journey?.status);
     $('presentationPopulation').textContent=presentationTrafficText(p.fresh?p.population:null,data?.setup);
     if(['CANCELLED','ERROR'].includes(status)&&lastPhase!==status){linked=false;p.presentationPlayback=false;for(const i of items)i.video.pause();}
     if(pendingStart&&p.connected&&p.fresh&&!p.simulationStarting){
@@ -125,14 +125,15 @@ export function installPresentationRun(p,tools,clearControls){
     $('presentationNotice').dataset.tone=p.operationError||status==='ERROR'?'warning':notice?.tone||'neutral';
     const step=presentationStep(status,data?.arm);
     panel.querySelectorAll('.presentation-steps li').forEach((el,i)=>{el.dataset.active=String(busy&&i===step);el.dataset.complete=String(status==='COMPLETE'||i<step);});
-    const pair=p.journeyComparison,isPresentation=pair?.version===3;
+    const archived=p.reviewedComparison;
+    const pair=archived||p.journeyComparison,isPresentation=pair?.version===3;
     results.hidden=!isPresentation;
     if(isPresentation){
       $('ordinaryComparison').hidden=true;$('hybridResults').hidden=true;
       $('presentationMatch').textContent=pair.conditions_match?'Verified matching initial conditions · reactive traffic can diverge':'Initial conditions pending or unverified';
       $('presentationSummary').textContent=presentationSummary(pair);
       for(const item of items){const run=pair.runs?.[item.mode];
-        item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,data?.failures?.find(f=>f.mode===item.mode));
+        item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,!archived&&data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
         fields.forEach(([,field,digits,suffix],i)=>{item.box.querySelectorAll('dd')[i].textContent=metricValue(run,field,digits,suffix);});
         const events=run?.events||[],key=run?.id+':'+events.length;
@@ -144,7 +145,8 @@ export function installPresentationRun(p,tools,clearControls){
         Promise.allSettled(items.filter(i=>i.root&&i.status!=='READY').map(async i=>{const root=i.root,response=await fetch(root+'video-status.json',{cache:'no-store'});if(!response.ok)return;const v=await response.json();if(i.root!==root)return;i.status=v.status;i.duration_s=v.duration_s;if(v.status==='READY')i.video.src=root+'driving.mp4';})).finally(()=>{polling=false;});
       }
       $('presentationReplay').disabled=!items.every(i=>i.status==='READY');
-      if(status==='PLAYBACK'&&autoplayId!==data.id&&items.every(i=>i.status==='READY')){autoplayId=data.id;showWorkspace('results');results.scrollIntoView({behavior:'smooth',block:'start'});play();}
+      if(status==='PLAYBACK'&&archived)p.reviewedComparison=null;
+      if(status==='PLAYBACK'&&!archived&&autoplayId!==data.id&&items.every(i=>i.status==='READY')){autoplayId=data.id;showWorkspace('results');results.scrollIntoView({behavior:'smooth',block:'start'});play();}
       if(status==='COMPLETE'&&lastPhase!=='COMPLETE'){$('presentationPlaybackStatus').textContent='Playback complete. Both measured results are shown below.';showWorkspace('results');$('presentationConclusion').scrollIntoView({behavior:'smooth',block:'center'});}
     }
     lastPhase=status;

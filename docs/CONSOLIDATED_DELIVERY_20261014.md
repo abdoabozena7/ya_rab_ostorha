@@ -29,6 +29,7 @@ runtime versions and should not be read as current capability guarantees.
 
 | Area | Entry points | Detailed report |
 | --- | --- | --- |
+| Sequential interface and grouped Details navigation | `frontend/guided-details.js`, `frontend/details-state.js`, `frontend/drive-state.js` | [18 October UI behavior and isolated browser verification](SIMPLER_UI_20261018.md) |
 | Launch and simulator lifecycle | `Start-YA-RAB-OSTORHA.ps1`, `backend/server.py`, `backend/carla/start_helper.py`, `backend/carla/stop_helper.py` | [Simulation start](SIMULATION_START_20261013.md), [GPU release and UI stability](UI_STABILITY_GPU_RELEASE_20261013.md) |
 | Camera-first dashboard, map, driving and results | `index.html`, `frontend/dashboard.js`, `frontend/light-cockpit.js`, `frontend/driving-studio.js` | [Latest dashboard redesign](LIGHT_DASHBOARD_REDESIGN_20261014.md), [UI implementation](UI_REDESIGN_IMPLEMENTATION.md) |
 | RULE protection, NORMAL commands and brake recovery | `backend/core/service.py`, `backend/core/active_safety.py`, `backend/core/congestion_recovery.py` | [Brake decision repair](BRAKING_DECISION_REPAIR_20261014.md), [Congestion recovery](CONGESTION_RECOVERY_20261014.md), [Normal navigation](NORMAL_SENSOR_NAVIGATION_20261013.md) |

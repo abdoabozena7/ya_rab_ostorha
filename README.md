@@ -4,6 +4,12 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [18 October sequential interface](docs/SIMPLER_UI_20261018.md) keeps one main
+task action beside Details, with Emergency stop during connected operation.
+Details now reveals Run setup, View, Results and System one page at a time.
+Draft edits require Apply; saved comparison review and video downloads retain
+the original outcomes. This frontend delivery does not change driving acceptance.
+
 The [17 October reliable-driving repair](docs/RELIABLE_DRIVING_20261017.md)
 separates unclassified surfaces from recognized road users, simplifies the main
 screen to one task action plus Details and Emergency stop, and adds stricter

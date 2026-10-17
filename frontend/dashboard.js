@@ -39,7 +39,7 @@ const studio=installDrivingStudio(provider,guided,predictionView,tools);
 const cockpit=installLightCockpit(provider,tools,perception,predictionView,mode=>startJourney(mode));
 const demoDrive=installDemoDrive(provider,tools,clearControls);
 const presentationRun=installPresentationRun(provider,tools,clearControls);
-const sequentialDrive=installSequentialDrive(provider);
+const sequentialDrive=installSequentialDrive(provider,tools);
 $('stopSimulatorBtn').onclick=()=>{clearControls('simulator_shutdown');provider.stopSimulator();};
 $('resetSimulatorBtn').onclick=()=>{resetKeys();manualArmed=false;manualRequestedUntil=0;clearCamera();provider.resetSimulation();};
 function canInput() {
@@ -297,12 +297,14 @@ document.addEventListener('keydown',event => {
   if (isEditableTarget(event.target)||event.altKey||event.ctrlKey||event.metaKey||tools.panel||document.querySelector('dialog[open]')) return;
   if (!event.repeat&&document.body.dataset.workspace==='drive') {
     if(event.code==='KeyM'){
+      if(document.body.classList.contains('sequential-drive')){event.preventDefault();document.dispatchEvent(new CustomEvent('detailsnavigate',{detail:{page:'diagnostics'}}));return;}
       event.preventDefault();document.getElementById('unifiedMapToggle')?.click();return;
     }
     if(event.code==='KeyF'){
       event.preventDefault();$('expandCameraBtn').click();return;
     }
     if(event.code==='KeyC'){
+      if(document.body.classList.contains('sequential-drive')){event.preventDefault();document.dispatchEvent(new CustomEvent('detailsnavigate',{detail:{page:'view'}}));return;}
       event.preventDefault();
       const select=$('cameraView');
       if(!select.disabled){

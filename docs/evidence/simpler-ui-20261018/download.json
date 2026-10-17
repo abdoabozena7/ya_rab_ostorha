@@ -1,0 +1,9 @@
+{
+  "recording": "run_a88de58ef52842f99d53cf6bab39ad8b",
+  "source": "Retained real native driving camera",
+  "expected_sha256": "abbb9d3b89678db2f055c915d1b9a5223b4a5d1738190a67a5c98e1af0e00d00",
+  "downloaded_sha256": "abbb9d3b89678db2f055c915d1b9a5223b4a5d1738190a67a5c98e1af0e00d00",
+  "byte_count": 460563,
+  "checksum_matches": true,
+  "raw_video_committed": false
+}

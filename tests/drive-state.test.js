@@ -10,7 +10,7 @@ test('unknown surface and unconfirmed label never become a vehicle marker',()=>{
   assert.deepEqual(mapTracks(tracks,'both',{vehicles:true}).map(t=>t.id),['4']);
 });
 test('fault, ordinary pause, preparation, playback and emergency have a single next action',()=>{
-  const p={fresh:true,controller:true,controlMode:'PAUSED',route:{},journey:{status:'PAUSED',reason:'operator_stop',route_id:'route'}};
+  const p={fresh:true,controller:true,controlMode:'PAUSED',route:{id:'route'},journey:{status:'PAUSED',reason:'operator_stop',route_id:'route'}};
   assert.equal(driveState({...p,journey:{status:'PAUSED',reason:'operator_stop'}}).action,'RESTART');
   assert.equal(driveState(p).action,'RESUME');
   assert.equal(driveState({...p,lastDriveStop:{status:'ERROR'}}).action,'RESTART');
@@ -20,4 +20,6 @@ test('fault, ordinary pause, preparation, playback and emergency have a single n
   assert.equal(driveState({...p,presentationPlayback:true}).action,'PLAYBACK');
   assert.equal(driveState({...p,controlMode:'EMERGENCY_STOP',presentation:{status:'DRIVING'}}).action,'RELEASE');
   assert.equal(driveState({...p,controller:false}).enabled,false);
+  assert.equal(driveState({...p,route:{id:'another-route'}}).action,'RESTART');
+  assert.equal(driveState({...p,presentation:{status:'ERROR',id:'previous-presentation'}}).action,'RESUME');
 });

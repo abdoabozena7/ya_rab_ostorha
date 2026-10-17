@@ -371,6 +371,10 @@
   var history = [];
   function showWorkspace(phase, { focus = false } = {}) {
     if (phase === "setup") {
+      if (document.body.classList.contains("sequential-drive")) {
+        document.dispatchEvent(new CustomEvent("detailsnavigate", { detail: { page: "research" } }));
+        return;
+      }
       const dialog = $2("advancedSetupDialog");
       if (dialog) {
         $2("setupPhase").hidden = false;
@@ -914,7 +918,7 @@
     return result;
   }
   function installCitySetup(p, preparation, tools2, startJourney2) {
-    const $10 = (id) => document.getElementById(id);
+    const $11 = (id) => document.getElementById(id);
     const panel = document.createElement("section");
     panel.className = "city-setup";
     panel.setAttribute("aria-label", "Live city setup");
@@ -931,7 +935,7 @@
     <label>Destination</label><strong id="cityRouteName">Choose a destination</strong><button id="cityChooseRoute">Choose route on map \u2197</button>
     <div class="city-start-actions"><button id="cityApply" class="primary">Apply city</button><button id="cityGo">Go to destination \u2197</button></div><p id="citySetupStatus" class="muted" role="status"></p>
   </fieldset></div>`;
-    const setup = $10("setupPhase");
+    const setup = $11("setupPhase");
     setup.querySelector(".analysis-heading h2").textContent = "City & driving setup";
     setup.querySelector(".analysis-heading p").textContent = "Direct controls for your next destination journey.";
     setup.querySelector(".analysis-heading").after(panel);
@@ -943,30 +947,30 @@
     const fields = { vehicle_count: "cityVehicles", pedestrian_count: "cityWalkers", chaos_percent: "cityChaos", crossing_percent: "cityCrossing", seed: "citySeed", light_compliance_percent: "cityCompliance", speed_behavior: "cityTrafficPace" };
     let session = null, dirty = false, behavior = "NORMAL", error = "", modePending = null;
     const describe = () => {
-      $10("cityChaosValue").value = $10("cityChaos").value + "%";
-      $10("cityCrossingValue").value = $10("cityCrossing").value + "%";
+      $11("cityChaosValue").value = $11("cityChaos").value + "%";
+      $11("cityCrossingValue").value = $11("cityCrossing").value + "%";
     };
     const markDirty = () => {
       dirty = true;
       error = "";
       describe();
     };
-    Object.values(fields).forEach((id) => $10(id).oninput = markDirty);
+    Object.values(fields).forEach((id) => $11(id).oninput = markDirty);
     panel.querySelectorAll("[data-city-preset]").forEach((button) => button.onclick = () => {
       const values = CITY_PRESETS[button.dataset.cityPreset];
       behavior = values.driver_behavior;
-      for (const [key, id] of Object.entries(fields)) if (key in values) $10(id).value = values[key];
+      for (const [key, id] of Object.entries(fields)) if (key in values) $11(id).value = values[key];
       markDirty();
     });
-    $10("cityShuffle").onclick = () => {
+    $11("cityShuffle").onclick = () => {
       const seed = new Uint32Array(1);
       crypto.getRandomValues(seed);
-      $10("citySeed").value = seed[0] % 2147483648;
+      $11("citySeed").value = seed[0] % 2147483648;
       markDirty();
     };
-    $10("cityApply").onclick = () => {
+    $11("cityApply").onclick = () => {
       try {
-        const values = Object.fromEntries(Object.entries(fields).map(([key, id]) => [key, key === "speed_behavior" ? $10(id).value : Number($10(id).value)]));
+        const values = Object.fromEntries(Object.entries(fields).map(([key, id]) => [key, key === "speed_behavior" ? $11(id).value : Number($11(id).value)]));
         const config = cityPopulation(p.population.requested, { ...values, driver_behavior: behavior });
         if (preparation.request(config)) {
           dirty = false;
@@ -976,15 +980,15 @@
         error = e.message;
       }
     };
-    for (const [id, enabled] of [["cityNormalMode", false], ["citySafetyMode", true]]) $10(id).onclick = () => {
+    for (const [id, enabled] of [["cityNormalMode", false], ["citySafetyMode", true]]) $11(id).onclick = () => {
       if (p.dashboardAction("safety_mode", { enabled, controller: "RULE" })) modePending = enabled;
     };
-    $10("cityDrivePace").onchange = () => {
-      $10("journeySpeed").value = $10("cityDrivePace").value;
-      $10("journeySpeed").dispatchEvent(new Event("change"));
+    $11("cityDrivePace").onchange = () => {
+      $11("journeySpeed").value = $11("cityDrivePace").value;
+      $11("journeySpeed").dispatchEvent(new Event("change"));
     };
-    $10("cityChooseRoute").onclick = () => tools2.open("routePanel", "cityChooseRoute");
-    $10("cityGo").onclick = () => {
+    $11("cityChooseRoute").onclick = () => tools2.open("routePanel", "cityChooseRoute");
+    $11("cityGo").onclick = () => {
       startJourney2();
       showWorkspace("drive");
     };
@@ -997,7 +1001,7 @@
       }
       const current = p.population?.requested;
       if (!dirty && current && !["REQUESTED", "APPLYING"].includes(preparation.state?.status)) {
-        for (const [key, id] of Object.entries(fields)) $10(id).value = current[key] ?? (key === "chaos_percent" ? 0 : $10(id).value);
+        for (const [key, id] of Object.entries(fields)) $11(id).value = current[key] ?? (key === "chaos_percent" ? 0 : $11(id).value);
         behavior = current.driver_behavior || "NORMAL";
         describe();
       }
@@ -1006,15 +1010,15 @@
         el2.disabled = locked;
         el2.title = reason;
       }
-      $10("cityChooseRoute").disabled = !p.fresh || p.isReplay || !p.controller || ["REQUESTED", "APPLYING"].includes(preparation.state?.status);
+      $11("cityChooseRoute").disabled = !p.fresh || p.isReplay || !p.controller || ["REQUESTED", "APPLYING"].includes(preparation.state?.status);
       if (modePending === p.safetySystem?.enabled || p.operationError) modePending = null;
-      $10("cityNormalMode").setAttribute("aria-pressed", String(p.safetySystem?.enabled === false));
-      $10("citySafetyMode").setAttribute("aria-pressed", String(p.safetySystem?.enabled === true));
-      $10("cityModeStatus").textContent = modePending !== null ? "Applying protection choice\u2026" : p.safetySystem?.enabled === true ? "YA RAB OSTORHA \xB7 " + p.safetySystem.controller : p.safetySystem?.enabled === false ? "Normal \xB7 additional safety OFF" : "Waiting for live protection state";
-      $10("cityGo").disabled = dirty || locked || modePending !== null || $10("driveJourneyBtn").disabled;
-      $10("cityGo").title = dirty ? "Apply your city changes first." : reason || $10("driveJourneyBtn").title;
-      $10("cityRouteName").textContent = p.route?.destination?.name || "Choose a destination";
-      $10("citySetupStatus").textContent = error || p.operationError || (dirty ? "Changes ready \xB7 Apply city before driving." : reason || preparation.state?.reason || `Live: ${p.population?.actual?.vehicles ?? "\u2014"} vehicles \xB7 ${p.population?.actual?.pedestrians ?? "\u2014"} pedestrians`);
+      $11("cityNormalMode").setAttribute("aria-pressed", String(p.safetySystem?.enabled === false));
+      $11("citySafetyMode").setAttribute("aria-pressed", String(p.safetySystem?.enabled === true));
+      $11("cityModeStatus").textContent = modePending !== null ? "Applying protection choice\u2026" : p.safetySystem?.enabled === true ? "YA RAB OSTORHA \xB7 " + p.safetySystem.controller : p.safetySystem?.enabled === false ? "Normal \xB7 additional safety OFF" : "Waiting for live protection state";
+      $11("cityGo").disabled = dirty || locked || modePending !== null || $11("driveJourneyBtn").disabled;
+      $11("cityGo").title = dirty ? "Apply your city changes first." : reason || $11("driveJourneyBtn").title;
+      $11("cityRouteName").textContent = p.route?.destination?.name || "Choose a destination";
+      $11("citySetupStatus").textContent = error || p.operationError || (dirty ? "Changes ready \xB7 Apply city before driving." : reason || preparation.state?.reason || `Live: ${p.population?.actual?.vehicles ?? "\u2014"} vehicles \xB7 ${p.population?.actual?.pedestrians ?? "\u2014"} pedestrians`);
     } };
   }
 
@@ -1052,7 +1056,7 @@
     return p.simulatorStop?.status === "STOPPED" || p.simulatorStart?.status === "FAILED" || !p.simulatorStop && p.simulatorStart?.available === true && !p.connected;
   }
   function installGuidedDrive(p, preparation, tools2, startJourney2, stop, predictionView2) {
-    const $10 = (id) => document.getElementById(id), body = document.body;
+    const $11 = (id) => document.getElementById(id), body = document.body;
     body.dataset.ui = "guided";
     let choosing = false, review = false, submitting = false, session = null, destination = null, action = "connect";
     let modeChoice = false, selectedMode = null, preparedKey = null, startPending = false, setupOpen = false, placeKey = "", recoveryPending = false;
@@ -1064,7 +1068,7 @@
       tools2.close(false);
       showWorkspace("setup");
     };
-    document.querySelector(".app-header").insertBefore(toggle, $10("emergencyStopBtn"));
+    document.querySelector(".app-header").insertBefore(toggle, $11("emergencyStopBtn"));
     const panel = document.createElement("section");
     panel.id = "guidedDrive";
     panel.setAttribute("aria-label", "Guided simulation setup");
@@ -1084,10 +1088,10 @@
     vision.id = "modelVision";
     vision.setAttribute("aria-label", "Camera analysis");
     vision.innerHTML = '<summary>Camera analysis <span id="guidedPredictionStatus">Waiting for measured tracks</span></summary>';
-    vision.append($10("perceptionPanel"));
+    vision.append($11("perceptionPanel"));
     document.querySelector(".camera-stage").append(vision);
     const set2 = (id, value) => {
-      if ($10(id).textContent !== String(value)) $10(id).textContent = String(value);
+      if ($11(id).textContent !== String(value)) $11(id).textContent = String(value);
     };
     const route = () => tools2.open("routePanel", "guidedPrimary");
     const choose = () => {
@@ -1095,46 +1099,46 @@
       review = false;
       submitting = false;
       p.operationError = null;
-      $10("guidedChaos").value = p.population?.requested?.chaos_percent ?? 0;
-      $10("guidedChaos").oninput();
-      $10("guidedSeed").value = p.population?.requested?.seed ?? 2589;
+      $11("guidedChaos").value = p.population?.requested?.chaos_percent ?? 0;
+      $11("guidedChaos").oninput();
+      $11("guidedSeed").value = p.population?.requested?.seed ?? 2589;
     };
     const validate = () => {
-      const seed = Number($10("guidedSeed").value);
+      const seed = Number($11("guidedSeed").value);
       if (!Number.isInteger(seed) || seed < 0 || seed > 2147483647) {
         p.operationError = "Choose a seed between 0 and 2147483647.";
-        $10("guidedSeed").closest("details").open = true;
-        $10("guidedSeed").focus();
+        $11("guidedSeed").closest("details").open = true;
+        $11("guidedSeed").focus();
         return false;
       }
       return true;
     };
-    $10("guidedChaos").oninput = () => {
-      set2("guidedChaosValue", $10("guidedChaos").value + "%");
-      panel.querySelectorAll("[data-chaos]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.chaos === $10("guidedChaos").value)));
+    $11("guidedChaos").oninput = () => {
+      set2("guidedChaosValue", $11("guidedChaos").value + "%");
+      panel.querySelectorAll("[data-chaos]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.chaos === $11("guidedChaos").value)));
     };
     panel.querySelectorAll("[data-chaos]").forEach((b) => b.onclick = () => {
-      $10("guidedChaos").value = b.dataset.chaos;
-      $10("guidedChaos").oninput();
+      $11("guidedChaos").value = b.dataset.chaos;
+      $11("guidedChaos").oninput();
     });
-    $10("guidedShuffle").onclick = () => {
-      $10("guidedSeed").value = crypto.getRandomValues(new Uint32Array(1))[0] % 2147483648;
+    $11("guidedShuffle").onclick = () => {
+      $11("guidedSeed").value = crypto.getRandomValues(new Uint32Array(1))[0] % 2147483648;
     };
-    $10("guidedSpeed").onchange = () => {
-      $10("journeySpeed").value = $10("guidedSpeed").value;
-      $10("journeySpeed").dispatchEvent(new Event("change"));
+    $11("guidedSpeed").onchange = () => {
+      $11("journeySpeed").value = $11("guidedSpeed").value;
+      $11("journeySpeed").dispatchEvent(new Event("change"));
     };
-    $10("guidedRoute").onclick = route;
-    $10("guidedEditTraffic").onclick = choose;
-    $10("guidedViewResults").onclick = () => showWorkspace("results", { focus: true });
-    $10("guidedOtherMode").onclick = () => {
+    $11("guidedRoute").onclick = route;
+    $11("guidedEditTraffic").onclick = choose;
+    $11("guidedViewResults").onclick = () => showWorkspace("results", { focus: true });
+    $11("guidedOtherMode").onclick = () => {
       showWorkspace("results");
       document.querySelector(`#ordinaryComparisonPanels [data-mode="${p.journey?.driving_mode === "NORMAL" ? "ROBOSPHERE" : "NORMAL"}"] .run-mode-cta`)?.click();
     };
-    $10("guidedInspectSetup").onclick = () => {
+    $11("guidedInspectSetup").onclick = () => {
       setupOpen = !setupOpen;
       panel.classList.toggle("inspect-running-setup", setupOpen);
-      $10("guidedInspectSetup").setAttribute("aria-expanded", String(setupOpen));
+      $11("guidedInspectSetup").setAttribute("aria-expanded", String(setupOpen));
     };
     panel.querySelectorAll("[data-step]").forEach((li) => {
       const b = document.createElement("button");
@@ -1146,21 +1150,21 @@
       li.append(b);
     });
     const renderPlaces = () => {
-      const query = $10("guidedDestinationSearch").value.toLocaleLowerCase(), places = (tools2.catalog?.places || []).filter((v) => v.name.toLocaleLowerCase().includes(query)).sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite)).slice(0, 4);
+      const query = $11("guidedDestinationSearch").value.toLocaleLowerCase(), places = (tools2.catalog?.places || []).filter((v) => v.name.toLocaleLowerCase().includes(query)).sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite)).slice(0, 4);
       const key = JSON.stringify([p.sessionId, query, places]);
       if (key === placeKey) return;
       placeKey = key;
-      $10("guidedPlaceResults").replaceChildren(...places.map((place) => {
+      $11("guidedPlaceResults").replaceChildren(...places.map((place) => {
         const b = document.createElement("button");
         b.type = "button";
         b.textContent = (place.favorite ? "\u2605 " : "") + place.name;
         b.onclick = () => tools2.choose(place.id);
         return b;
       }));
-      if (!places.length) $10("guidedPlaceResults").textContent = tools2.catalog ? "No matching places. Choose on the map." : "Waiting for native destinations.";
+      if (!places.length) $11("guidedPlaceResults").textContent = tools2.catalog ? "No matching places. Choose on the map." : "Waiting for native destinations.";
     };
-    $10("guidedDestinationSearch").oninput = renderPlaces;
-    $10("guidedPrimary").onclick = () => {
+    $11("guidedDestinationSearch").oninput = renderPlaces;
+    $11("guidedPrimary").onclick = () => {
       if (action === "connect") {
         if (simulatorNeedsStart(p)) p.startSimulation();
         else {
@@ -1205,14 +1209,14 @@
         ...p.population.requested,
         vehicle_count: TRAFFIC_COUNT,
         pedestrian_count: PEDESTRIAN_COUNT,
-        seed: Number($10("guidedSeed").value),
-        chaos_percent: Number($10("guidedChaos").value),
+        seed: Number($11("guidedSeed").value),
+        chaos_percent: Number($11("guidedChaos").value),
         placement: "EGO_SURROUNDING",
         vehicle_mix: "MIXED"
       })) {
         submitting = true;
         review = true;
-        $10("guidedPrimary").disabled = true;
+        $11("guidedPrimary").disabled = true;
       }
     };
     panel.querySelectorAll("[data-mode]").forEach((button) => button.onclick = () => {
@@ -1245,7 +1249,7 @@
         preparedKey = key;
         modeChoice = true;
         selectedMode = p.journey.prepared_mode;
-        $10("guidedSpeed").value = $10("journeySpeed").value = String(p.journey.speed_kmh);
+        $11("guidedSpeed").value = $11("journeySpeed").value = String(p.journey.speed_kmh);
       }
       const configured = trafficPrepared(p, preparation), failed = preparation.state?.status === "FAILED";
       if (submitting && configured) {
@@ -1260,18 +1264,18 @@
       const running = ["RUNNING", "STARTING"].includes(p.journey?.status), ended = !!p.journey?.pair_id && !running && p.journey.status !== "READY" && p.journeyComparison?.pair_id === p.journey.pair_id;
       body.classList.toggle("journey-active", running);
       panel.classList.toggle("journey-running", running);
-      $10("guidedDestination").hidden = action !== "destination";
+      $11("guidedDestination").hidden = action !== "destination";
       if (action === "destination") renderPlaces();
-      $10("guidedBehaviour").hidden = action !== "behaviour";
-      $10("guidedPreparation").hidden = !["prepare", "pending"].includes(action);
+      $11("guidedBehaviour").hidden = action !== "behaviour";
+      $11("guidedPreparation").hidden = !["prepare", "pending"].includes(action);
       set2("guidedPreparationTitle", failed ? "Road preparation failed" : action === "pending" ? "Preparing the road\u2026" : "Verify your road traffic");
-      set2("guidedPreparationDetail", failed ? preparation.state.reason : action === "pending" ? "Waiting for native placement confirmation. Vehicle held." : $10("guidedChaos").value + "% randomness \xB7 seed " + $10("guidedSeed").value);
+      set2("guidedPreparationDetail", failed ? preparation.state.reason : action === "pending" ? "Waiting for native placement confirmation. Vehicle held." : $11("guidedChaos").value + "% randomness \xB7 seed " + $11("guidedSeed").value);
       const names = { connect: simulatorNeedsStart(p) ? "Start Simulation" : "Connect to Simulator", starting: "Starting simulation\u2026", "journey-starting": "Starting your drive\u2026", ownership: "Take Vehicle Control", acknowledge: "Release emergency stop", stop: "Stop vehicle", pending: "Preparing road traffic\u2026", traffic: "Configure Traffic", behaviour: "Continue to preparation", prepare: failed ? "Retry preparation" : "Apply Road Traffic", destination: "Choose on Map", drive: "Start Driving" };
       set2("guidedPrimary", p.isReplay ? "Recorded replay" : names[action]);
       const blocked = action === "drive" ? recoveryPending ? "Restore the saved comparison setup before driving." : modeBlockedReason(p, vehicle, configured) : ["behaviour", "prepare"].includes(action) ? trafficPreparationReason(p, vehicle) : "";
-      $10("guidedPrimary").disabled = ["pending", "starting", "journey-starting"].includes(action) || p.isReplay || !!blocked || startPending;
-      $10("guidedPrimary").hidden = action === "drive" && modeChoice;
-      $10("guidedModeChoices").hidden = action !== "drive" || !modeChoice;
+      $11("guidedPrimary").disabled = ["pending", "starting", "journey-starting"].includes(action) || p.isReplay || !!blocked || startPending;
+      $11("guidedPrimary").hidden = action === "drive" && modeChoice;
+      $11("guidedModeChoices").hidden = action !== "drive" || !modeChoice;
       panel.querySelectorAll("[data-mode]").forEach((b) => {
         b.disabled = action !== "drive" || !!blocked || startPending;
         b.title = blocked || "";
@@ -1282,15 +1286,15 @@
       panel.dataset.error = String(!!p.operationError || failed);
       const crowd = p.population?.route_crowding, live = p.fresh && !p.isReplay;
       set2("guidedLiveCounts", !live ? "Live measurements unavailable" : configured ? `Surrounding traffic \xB7 ${p.population.actual.vehicles}/${p.population.requested.vehicle_count} vehicles \xB7 ${p.population.actual.pedestrians}/${p.population.requested.pedestrian_count} pedestrians` : `Live city \xB7 ${p.population?.actual?.vehicles ?? "\u2014"} vehicles \xB7 ${p.population?.actual?.pedestrians ?? "\u2014"} pedestrians`);
-      $10("guidedJourneyOptions").hidden = action !== "drive";
-      $10("guidedRoute").hidden = !["traffic", "behaviour", "prepare", "drive"].includes(action);
-      $10("guidedEditTraffic").hidden = action !== "drive";
-      $10("guidedViewResults").hidden = !ended;
-      $10("guidedOtherMode").hidden = !ended;
+      $11("guidedJourneyOptions").hidden = action !== "drive";
+      $11("guidedRoute").hidden = !["traffic", "behaviour", "prepare", "drive"].includes(action);
+      $11("guidedEditTraffic").hidden = action !== "drive";
+      $11("guidedViewResults").hidden = !ended;
+      $11("guidedOtherMode").hidden = !ended;
       set2("guidedActiveMode", p.journey?.driving_mode === "NORMAL" ? "Normal Mode" : "Ya Rab Ostorha Mode");
       set2("guidedActiveDestination", p.route?.destination?.name || "Destination journey");
       set2("guidedActiveTraffic", `${p.population?.requested?.chaos_percent ?? "\u2014"}% randomness \xB7 ${p.journeyComparison?.runs?.[p.journey?.driving_mode]?.duration_s?.toFixed(1) ?? "\u2014"} s`);
-      $10("guidedActiveSummary").hidden = !running;
+      $11("guidedActiveSummary").hidden = !running;
       set2("guidedHeadingDetail", ended ? { ARRIVED: "Destination reached and stopped", COLLISION: "Run ended with a collision", ERROR: "Run failed", PAUSED: "Run interrupted" }[p.journey.status] || "Review the saved run." : "Choose a road. Then compare both modes.");
       panel.querySelector(".guided-heading h2").textContent = running ? "Simulation active" : ended ? "Run recorded" : "Prepare your drive";
       const order = ["destination", "behaviour", "traffic", "drive"], step = action === "traffic" ? "behaviour" : ["prepare", "pending"].includes(action) ? "traffic" : action === "stop" || action === "journey-starting" ? "drive" : action, current = order.indexOf(step);
@@ -3072,7 +3076,7 @@
     host.setAttribute("aria-label", "Motion and maneuver measurements");
     host.innerHTML = '<div class="motion-decision"><strong id="motionState">Insufficient data</strong><span id="motionAction"></span></div><dl id="motionNumbers"></dl><details><summary>Objects, prediction quality & alternatives</summary><label for="motionObject">Measured object</label><select id="motionObject"></select><p id="motionObjectData"></p><table><caption>Forecast error against subsequent measured tracks</caption><thead><tr><th>Horizon</th><th>ADE</th><th>FDE</th><th>Inside bound</th><th>Samples</th></tr></thead><tbody id="motionScores"></tbody></table><p id="motionCoverage"></p><p id="motionRejected"></p></details>';
     document.querySelector(".visual-workspace").append(host);
-    const $10 = (id) => host.querySelector("#" + id);
+    const $11 = (id) => host.querySelector("#" + id);
     let signature = "", lastUpdate = "", lastTracks = [], trackSession = null;
     const text = (el2, value) => {
       if (el2.textContent !== String(value)) el2.textContent = value;
@@ -3081,23 +3085,23 @@
       const d = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd");
       dt.textContent = label;
       d.append(dt, dd);
-      $10("motionNumbers").append(d);
+      $11("motionNumbers").append(d);
       return dd;
     });
     const scores = [1, 2, 3].map(() => {
       const tr = document.createElement("tr"), cells = Array.from({ length: 5 }, () => document.createElement("td"));
       tr.append(...cells);
-      $10("motionScores").append(tr);
+      $11("motionScores").append(tr);
       return cells;
     });
     return { update(vehicle) {
       const prediction = predictionView2.currentPrediction, m = p.maneuver, v = motionReadout(p, prediction, vehicle);
-      const updateKey = [p.sessionId, vehicle.frame, prediction?.timestamp_s, m?.action, m?.reason, $10("motionObject").value, p.motionQuality?.issued].join("|");
+      const updateKey = [p.sessionId, vehicle.frame, prediction?.timestamp_s, m?.action, m?.reason, $11("motionObject").value, p.motionQuality?.issued].join("|");
       if (updateKey === lastUpdate) return;
       lastUpdate = updateKey;
-      text($10("motionState"), v.state);
-      $10("motionState").dataset.tone = v.state === "Possible intersection" ? "warning" : "neutral";
-      text($10("motionAction"), v.action + " \xB7 " + v.reason + (m?.experimental ? " \xB7 experimental" : ""));
+      text($11("motionState"), v.state);
+      $11("motionState").dataset.tone = v.state === "Possible intersection" ? "warning" : "neutral";
+      text($11("motionAction"), v.action + " \xB7 " + v.reason + (m?.experimental ? " \xB7 experimental" : ""));
       v.values.forEach(([, value], i) => text(numbers[i], value));
       if (trackSession !== p.sessionId) {
         trackSession = p.sessionId;
@@ -3105,26 +3109,26 @@
       }
       if (v.valid) lastTracks = prediction.tracks;
       const tracks = lastTracks, key = tracks.map((t) => t.id + ":" + t.class).join();
-      $10("motionObject").disabled = !v.valid;
+      $11("motionObject").disabled = !v.valid;
       if (key !== signature) {
         signature = key;
-        const selected = $10("motionObject").value;
-        $10("motionObject").replaceChildren(...tracks.map((t) => {
+        const selected = $11("motionObject").value;
+        $11("motionObject").replaceChildren(...tracks.map((t) => {
           const o = document.createElement("option");
           o.value = t.id;
           o.textContent = t.class + " #" + t.id;
           return o;
         }));
-        if (tracks.some((t) => t.id === selected)) $10("motionObject").value = selected;
+        if (tracks.some((t) => t.id === selected)) $11("motionObject").value = selected;
       }
-      text($10("motionObjectData"), objectReadout(tracks.find((t) => t.id === $10("motionObject").value), prediction, m, vehicle.speedMps) + (tracks.length && !v.valid ? " \xB7 stale measurement" : ""));
+      text($11("motionObjectData"), objectReadout(tracks.find((t) => t.id === $11("motionObject").value), prediction, m, vehicle.speedMps) + (tracks.length && !v.valid ? " \xB7 stale measurement" : ""));
       const q = p.motionQuality;
       [1, 2, 3].forEach((h, i) => {
         const s = q?.horizons?.[h];
         [h + " s", num(s?.ade_m, " m", 2), num(s?.fde_m, " m", 2), num(s?.within_threshold_percent, "%", 0), s?.samples ?? "\u2014"].forEach((value, j) => text(scores[i][j], value));
       });
-      $10("motionCoverage").textContent = `Coverage ${num(q?.coverage_percent, "%")} \xB7 unobservable ${q?.unobservable_samples ?? "\u2014"} \xB7 bounds 0.5 m person / 1 m other. These measure track consistency; independent accuracy is pending.`;
-      $10("motionRejected").textContent = (m?.rejected || []).map((r) => r.action + ": " + r.reason.replaceAll("_", " ")).join(" \xB7 ") || "No alternatives rejected";
+      $11("motionCoverage").textContent = `Coverage ${num(q?.coverage_percent, "%")} \xB7 unobservable ${q?.unobservable_samples ?? "\u2014"} \xB7 bounds 0.5 m person / 1 m other. These measure track consistency; independent accuracy is pending.`;
+      $11("motionRejected").textContent = (m?.rejected || []).map((r) => r.action + ": " + r.reason.replaceAll("_", " ")).join(" \xB7 ") || "No alternatives rejected";
     } };
   }
 
@@ -3164,18 +3168,24 @@
 
   // frontend/drive-state.js
   function driveState2(p) {
-    const status = p.presentation?.status || "IDLE";
+    const savedStatus = p.presentation?.status || "IDLE";
+    const ordinary = !!p.journey?.route_id && !p.journey?.presentation_id;
+    const status = ordinary && ["ERROR", "COMPLETE", "CANCELLED"].includes(savedStatus) ? "IDLE" : savedStatus;
     const busy = !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(status);
+    const driving = ["STARTING", "RUNNING"].includes(p.journey?.status);
     const emergency = p.controlMode === "EMERGENCY_STOP";
     const failed = p.lastDriveStop?.status === "ERROR" || p.journey?.status === "ERROR" || status === "ERROR";
-    const resumable = !busy && !failed && !p.journey?.presentation_id && p.controlMode === "PAUSED" && p.journey?.status === "PAUSED" && p.journey?.route_id && p.route && !p.route.arrived && ["operator_stop", "focus_lost", "dashboard_disconnected", "dashboard_heartbeat_timeout", "controls_released"].includes(p.journey.reason);
-    const action = emergency ? "RELEASE" : status === "PLAYBACK" || p.presentationPlayback ? "PLAYBACK" : busy || ["STARTING", "RUNNING"].includes(p.journey?.status) || p.simulationStarting ? "STOP" : resumable ? "RESUME" : "RESTART";
+    const resumable = !busy && !failed && !p.journey?.presentation_id && p.controlMode === "PAUSED" && p.journey?.status === "PAUSED" && p.journey?.route_id && p.route && p.journey.route_id === p.route.id && !p.route.arrived && ["operator_stop", "focus_lost", "dashboard_disconnected", "dashboard_heartbeat_timeout", "controls_released"].includes(p.journey.reason);
+    const action = emergency ? "RELEASE" : status === "PLAYBACK" || p.presentationPlayback ? "PLAYBACK" : p.connected === false && !p.simulationStarting && !p.restarting ? "RESTART" : busy || driving || p.simulationStarting ? "STOP" : resumable ? "RESUME" : "RESTART";
     return {
       action,
       busy,
       failed,
       resumable: !!resumable,
-      enabled: action === "PLAYBACK" ? true : action === "RESTART" ? !p.restarting : !!p.fresh && !!p.controller && (action !== "RESUME" || !p.recording && p.recordingStatus?.finalized !== false)
+      presentationStatus: status,
+      configurationLocked: busy || driving || !!p.recording || !!p.simulationStarting || !!p.restarting || emergency || p.controlMode === "TRAINING",
+      emergencyVisible: !!p.connected && !p.isReplay && !emergency,
+      enabled: action === "PLAYBACK" ? true : action === "RESTART" ? !p.restarting && !p.isReplay && p.controlMode !== "TRAINING" : !!p.fresh && !!p.controller && (action !== "RESUME" || !p.recording && p.recordingStatus?.finalized !== false)
     };
   }
   var vehicles = /* @__PURE__ */ new Set(["car", "truck", "bus", "motorcycle", "bicycle", "train"]);
@@ -3222,7 +3232,7 @@
     panel.setAttribute("aria-label", "Unified Navigation & Prediction Map");
     panel.innerHTML = '<button id="unifiedMapToggle" type="button" aria-expanded="false" aria-label="Open route map (M)"></button><header><span><small>LIVE GEOMETRY</small><strong>Navigation</strong></span><span class="unified-map-actions"><button id="unifiedRouteAction" aria-label="Choose a destination">Route \u2197</button><button id="expandUnifiedMap" aria-expanded="false" aria-label="Collapse navigation and prediction map">\xD7</button></span></header><div class="map-layer-switch" role="group" aria-label="Map layers"><button data-layer="route">Route</button><button data-layer="predictions">Predictions</button><button data-layer="both" aria-pressed="true">Both</button></div><canvas width="480" height="360" id="unifiedMapCanvas" role="img" aria-label="Actual CARLA road geometry and measured motion forecasts"></canvas><p id="unifiedMapRoute">Waiting for route</p><p id="unifiedMapMeta" role="status">Waiting for map data</p><div class="unified-expanded-tools"><div class="unified-filters"><label><input type="checkbox" data-filter="vehicles" checked>Vehicles</label><label><input type="checkbox" data-filter="people" checked>People</label><label><input type="checkbox" data-filter="paths" checked>Paths</label><label><input type="checkbox" data-filter="conflicts" checked>Conflicts</label></div><label for="unifiedMapActor">Measured object</label><select id="unifiedMapActor"><option value="">Overview</option></select><p id="unifiedActorInfo">Select a measured object to inspect its motion.</p><button id="unifiedChooseDestination">Choose destination \u2197</button></div>';
     document.getElementById("frontCameraView").append(panel);
-    const $10 = (id) => panel.querySelector("#" + id), canvas = $10("unifiedMapCanvas"), ctx = canvas.getContext("2d");
+    const $11 = (id) => panel.querySelector("#" + id), canvas = $11("unifiedMapCanvas"), ctx = canvas.getContext("2d");
     let layer = "route", expanded = false, selected = "", markers = [], lastKey = "", actorKey = "", lastPrediction = null, lastPose = null, lastSession = null, lastVehicle = null, zoom = 1;
     const redraw = () => {
       lastKey = "";
@@ -3252,21 +3262,21 @@
     const toggle = () => {
       expanded = !expanded;
       panel.classList.toggle("map-expanded", expanded);
-      $10("expandUnifiedMap").setAttribute("aria-expanded", String(expanded));
-      $10("expandUnifiedMap").setAttribute("aria-label", expanded ? "Collapse navigation and prediction map" : "Expand navigation and prediction map");
-      $10("unifiedMapToggle").setAttribute("aria-expanded", String(expanded));
-      $10("unifiedMapToggle").setAttribute("aria-label", expanded ? "Close route map (M)" : "Open route map (M)");
-      $10("expandUnifiedMap").textContent = "\xD7";
+      $11("expandUnifiedMap").setAttribute("aria-expanded", String(expanded));
+      $11("expandUnifiedMap").setAttribute("aria-label", expanded ? "Collapse navigation and prediction map" : "Expand navigation and prediction map");
+      $11("unifiedMapToggle").setAttribute("aria-expanded", String(expanded));
+      $11("unifiedMapToggle").setAttribute("aria-label", expanded ? "Close route map (M)" : "Open route map (M)");
+      $11("expandUnifiedMap").textContent = "\xD7";
       redraw();
       if (expanded && (p.controlMode === "MANUAL" || tools2.options.isManualArmed?.())) tools2.controls.keys.clear();
     };
-    $10("expandUnifiedMap").onclick = toggle;
-    $10("unifiedMapToggle").onclick = toggle;
+    $11("expandUnifiedMap").onclick = toggle;
+    $11("unifiedMapToggle").onclick = toggle;
     panel.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && expanded) {
         e.stopPropagation();
         toggle();
-        $10("expandUnifiedMap").focus();
+        $11("expandUnifiedMap").focus();
       }
     });
     panel.querySelectorAll("[data-layer]").forEach((b) => b.onclick = () => {
@@ -3278,10 +3288,10 @@
       filters[box.dataset.filter] = box.checked;
       redraw();
     });
-    $10("unifiedChooseDestination").onclick = () => tools2.open("routePanel", "unifiedChooseDestination");
-    $10("unifiedRouteAction").onclick = () => tools2.open("routePanel", "unifiedRouteAction");
-    $10("unifiedMapActor").onchange = () => {
-      selected = $10("unifiedMapActor").value;
+    $11("unifiedChooseDestination").onclick = () => tools2.open("routePanel", "unifiedChooseDestination");
+    $11("unifiedRouteAction").onclick = () => tools2.open("routePanel", "unifiedRouteAction");
+    $11("unifiedMapActor").onchange = () => {
+      selected = $11("unifiedMapActor").value;
       redraw();
     };
     new ResizeObserver(() => {
@@ -3298,7 +3308,7 @@
       const box = canvas.getBoundingClientRect(), [x, y] = mapCanvasPoint(event.clientX, event.clientY, box, canvas.width, canvas.height);
       const close = markers.map((m) => ({ ...m, d: Math.hypot(m.x - x, m.y - y) })).sort((a, b) => a.d - b.d)[0];
       selected = close?.d < 18 ? close.id : "";
-      $10("unifiedMapActor").value = selected;
+      $11("unifiedMapActor").value = selected;
       if (!expanded) toggle();
       else redraw();
     };
@@ -3326,7 +3336,7 @@
       ctx.fillStyle = ground;
       ctx.fillRect(0, 0, mapWidth, mapHeight);
       if (!origin || !Number.isFinite(yaw)) {
-        text($10("unifiedMapMeta"), "Map unavailable \xB7 simulator disconnected");
+        text($11("unifiedMapMeta"), "Map unavailable \xB7 simulator disconnected");
         return;
       }
       const project = (world) => perspectivePoint(world, origin, yaw, zoom, expanded, mapWidth, mapHeight);
@@ -3469,25 +3479,25 @@
       const coverage = p.safetySystem?.observed_road_range_m;
       const gap = p.safetySystem?.measured_range_m;
       const measuredRoad = p.fresh && Number.isFinite(coverage) ? `Road seen ${coverage.toFixed(1)} m${Number.isFinite(gap) ? ` \xB7 Front gap ${gap.toFixed(1)} m` : ""} \xB7 ` : "";
-      text($10("unifiedMapMeta"), (!p.fresh && !p.isReplay ? "Last measured map \xB7 " : roads ? "" : "Road geometry unavailable \xB7 ") + measuredRoad + mapForecastStatus(view.currentPrediction, p));
-      text($10("unifiedMapRoute"), p.route?.destination?.name ? `${p.route.destination.name} \xB7 ${Number.isFinite(p.route.remaining_m) ? Math.round(p.route.remaining_m) + " m remaining" : "route selected"}` : "Choose a destination to see the route");
+      text($11("unifiedMapMeta"), (!p.fresh && !p.isReplay ? "Last measured map \xB7 " : roads ? "" : "Road geometry unavailable \xB7 ") + measuredRoad + mapForecastStatus(view.currentPrediction, p));
+      text($11("unifiedMapRoute"), p.route?.destination?.name ? `${p.route.destination.name} \xB7 ${Number.isFinite(p.route.remaining_m) ? Math.round(p.route.remaining_m) + " m remaining" : "route selected"}` : "Choose a destination to see the route");
       const ids = tracks.map((t) => t.id).join("|");
       if (ids !== actorKey) {
         actorKey = ids;
         const empty = document.createElement("option");
         empty.value = "";
         empty.textContent = "Overview";
-        $10("unifiedMapActor").replaceChildren(empty, ...tracks.map((t) => {
+        $11("unifiedMapActor").replaceChildren(empty, ...tracks.map((t) => {
           const o = document.createElement("option");
           o.value = t.id;
           o.textContent = t.class + " #" + t.id;
           return o;
         }));
         if (!tracks.some((t) => String(t.id) === selected)) selected = "";
-        $10("unifiedMapActor").value = selected;
+        $11("unifiedMapActor").value = selected;
       }
       const tr = tracks.find((t) => String(t.id) === selected), assessment = prediction?.object_assessments?.[selected];
-      text($10("unifiedActorInfo"), tr ? `${tr.class} #${tr.id} \xB7 ${(Math.hypot(...tr.velocity_mps) * 3.6).toFixed(1)} km/h \xB7 ${Math.hypot(...tr.velocity_mps) < 0.3 ? "stationary" : Math.round(Math.atan2(tr.velocity_mps[1], tr.velocity_mps[0]) * 180 / Math.PI) + "\xB0 relative to ego at measurement"} \xB7 ${assessment?.status?.replaceAll("_", " ") || "intersection unassessed"}${Number.isFinite(assessment?.minimum_clearance_m) ? " \xB7 gap " + assessment.minimum_clearance_m.toFixed(1) + " m" : ""} \xB7 gaze unknown` : "Select a measured object to inspect its motion.");
+      text($11("unifiedActorInfo"), tr ? `${tr.class} #${tr.id} \xB7 ${(Math.hypot(...tr.velocity_mps) * 3.6).toFixed(1)} km/h \xB7 ${Math.hypot(...tr.velocity_mps) < 0.3 ? "stationary" : Math.round(Math.atan2(tr.velocity_mps[1], tr.velocity_mps[0]) * 180 / Math.PI) + "\xB0 relative to ego at measurement"} \xB7 ${assessment?.status?.replaceAll("_", " ") || "intersection unassessed"}${Number.isFinite(assessment?.minimum_clearance_m) ? " \xB7 gap " + assessment.minimum_clearance_m.toFixed(1) + " m" : ""} \xB7 gaze unknown` : "Select a measured object to inspect its motion.");
       canvas.setAttribute("aria-label", `${roads ? "CARLA road geometry" : "Road geometry unavailable"}; ${p.route ? "route selected" : "no route"}; ${prediction ? tracks.length + " measured objects, " + age + " seconds old" : "prediction unavailable"}. Expand for keyboard object selection.`);
     } };
     new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-appearance"] });
@@ -4520,7 +4530,7 @@
       set("cockpitDriverText", driverCaption(p));
       $6("cockpitDriver").title = !fresh ? "No live control session" : p.controller ? "This page owns vehicle control" : "Observer \xB7 another page owns vehicle control";
       const cameraChange = tools2.cameraChange, confirmed = cameraChange?.status === "applied" ? cameraChange.requested : tools2.catalog?.settings?.camera_view;
-      if (confirmed && select.value !== confirmed) select.value = confirmed;
+      if (confirmed && select.value !== confirmed && !select.dataset.detailsDraft) select.value = confirmed;
       select.disabled = $6("cameraView").disabled || cameraChange?.status === "pending";
       selector.title = cameraChange?.status === "failed" ? cameraChange.error : cameraChange?.status === "pending" ? "Changing camera\u2026" : "Select a camera view";
       set("cockpitCameraState", $6("authoritativeCamera").hidden ? fresh ? "Waiting for live camera" : "Camera offline" : p.isReplay ? "RECORDED \xB7 RGB" : "LIVE \xB7 CARLA RGB");
@@ -4783,7 +4793,6 @@
 
   // frontend/presentation-run.js
   var $8 = (id) => document.getElementById(id);
-  var terminal = /* @__PURE__ */ new Set(["IDLE", "COMPLETE", "CANCELLED", "ERROR"]);
   var phases = {
     STOPPING: "Stopping the previous drive",
     PREPARING: "Choosing the route and preparing traffic",
@@ -4911,6 +4920,8 @@
       });
     }
     $8("presentationRestart").onclick = () => {
+      p.reviewedComparison = null;
+      p.presentationPlayback = false;
       p.operationError = null;
       tools2.close(false);
       document.body.classList.remove("studio-setup-open");
@@ -4930,7 +4941,7 @@
       p.startJourney(Number($8("presentationCustomSpeed").value), "ROBOSPHERE");
     };
     return { update() {
-      const data = p.presentation, status = data?.status || "IDLE", busy = !terminal.has(status), active = ["STARTING", "RUNNING"].includes(p.journey?.status);
+      const data = p.presentation, state = driveState2(p), status = state.presentationStatus, busy = state.busy, active = ["STARTING", "RUNNING"].includes(p.journey?.status);
       $8("presentationPopulation").textContent = presentationTrafficText(p.fresh ? p.population : null, data?.setup);
       if (["CANCELLED", "ERROR"].includes(status) && lastPhase !== status) {
         linked = false;
@@ -4975,7 +4986,8 @@
         el2.dataset.active = String(busy && i === step);
         el2.dataset.complete = String(status === "COMPLETE" || i < step);
       });
-      const pair = p.journeyComparison, isPresentation = pair?.version === 3;
+      const archived = p.reviewedComparison;
+      const pair = archived || p.journeyComparison, isPresentation = pair?.version === 3;
       results.hidden = !isPresentation;
       if (isPresentation) {
         $8("ordinaryComparison").hidden = true;
@@ -4984,7 +4996,7 @@
         $8("presentationSummary").textContent = presentationSummary(pair);
         for (const item of items) {
           const run = pair.runs?.[item.mode];
-          item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, data?.failures?.find((f) => f.mode === item.mode));
+          item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, !archived && data?.failures?.find((f) => f.mode === item.mode));
           item.box.querySelector(".presentation-speed").textContent = benchmarkSpeedText(run);
           fields.forEach(([, field, digits, suffix], i) => {
             item.box.querySelectorAll("dd")[i].textContent = metricValue(run, field, digits, suffix);
@@ -5024,7 +5036,8 @@
           });
         }
         $8("presentationReplay").disabled = !items.every((i) => i.status === "READY");
-        if (status === "PLAYBACK" && autoplayId !== data.id && items.every((i) => i.status === "READY")) {
+        if (status === "PLAYBACK" && archived) p.reviewedComparison = null;
+        if (status === "PLAYBACK" && !archived && autoplayId !== data.id && items.every((i) => i.status === "READY")) {
           autoplayId = data.id;
           showWorkspace("results");
           results.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -5040,38 +5053,631 @@
     } };
   }
 
-  // frontend/sequential-drive.js
-  function installSequentialDrive(p) {
-    const $10 = (id) => document.getElementById(id);
-    document.body.classList.add("sequential-drive");
-    const drawer = $10("cockpitDetails");
-    drawer.querySelector("h2").textContent = "Drive details";
-    drawer.querySelector(".cockpit-dialog-close").setAttribute("aria-label", "Close drive details");
-    const configuration = document.createElement("section");
-    configuration.className = "drive-detail-actions";
-    const heading = document.createElement("h3");
-    heading.textContent = "Configure & inspect";
-    configuration.append(heading);
-    for (const id of ["presentationChoose", "scenariosNav", "cockpitToolsNav", "resultsTab", "settingsBtn", "stopSimulatorBtn", "resetSimulatorBtn", "presentationReplay"]) {
-      const button = $10(id);
-      if (button) configuration.append(button);
+  // frontend/details-state.js
+  var detailGroups = [
+    ["run", "Run setup", "Automatic presentation or a custom drive"],
+    ["view", "View", "Camera, overlays and measured details"],
+    ["results", "Results", "Saved comparisons and recordings"],
+    ["system", "System", "Reset, GPU and research settings"]
+  ];
+  var DetailsNavigation = class {
+    constructor() {
+      this.stack = ["root"];
     }
-    const returnToDrive = document.querySelector(".studio-back-to-drive");
-    if (returnToDrive) configuration.append(returnToDrive);
-    for (const selector of [".presentation-custom", ".cockpit-camera-tools", "#expandCameraBtn", ".cockpit-summary", ".cockpit-gap", ".cockpit-ttc", ".cockpit-brake"]) {
-      const node3 = document.querySelector(selector);
-      if (node3) drawer.append(node3);
+    get page() {
+      return this.stack.at(-1);
     }
-    drawer.querySelector("header").after(configuration);
-    $10("resultsTab").removeAttribute("role");
-    $10("resultsTab").tabIndex = 0;
-    const mapButton = document.createElement("button");
-    mapButton.textContent = "Map & measured surfaces";
-    mapButton.onclick = () => {
-      drawer.close();
-      $10("unifiedMapToggle").click();
+    open(page) {
+      if (page !== this.page) this.stack.push(page);
+    }
+    back() {
+      if (this.stack.length > 1) this.stack.pop();
+      return this.page;
+    }
+    reset() {
+      this.stack = ["root"];
+    }
+  };
+  function configurationReason(p) {
+    if (driveState2(p).configurationLocked) return "This run is active. Stop it before changing its setup.";
+    if (p.isReplay) return "Recorded playback is read-only.";
+    if (!p.fresh) return "Connect CARLA before applying changes.";
+    if (!p.controller) return "This page does not own vehicle control.";
+    return "";
+  }
+  function availableRecordings(pair) {
+    return Object.entries(pair?.runs || {}).flatMap(([mode, run]) => {
+      const match = String(run.recording || "").replaceAll("\\", "/").match(/\/normal_city\/(run_[a-f0-9]{32})$/);
+      return match ? [{ mode, run, root: "/runs/normal_city/" + match[1] + "/" }] : [];
+    });
+  }
+  function recordedConditionsMatch(pair) {
+    const modes2 = pair.driver_modes || ["ROBOSPHERE", "NORMAL"];
+    const [a, b] = modes2.map((m) => pair.runs?.[m]);
+    if (!a?.setup || !b?.setup) return false;
+    const x = a.setup, y = b.setup;
+    if (x.live_speed_changed || y.live_speed_changed) return false;
+    const same = (u, v) => {
+      if (u === v) return true;
+      if (!u || !v || typeof u !== "object" || typeof v !== "object") return false;
+      const keys = Object.keys(u);
+      return keys.length === Object.keys(v).length && keys.every((k) => Object.hasOwn(v, k) && same(u[k], v[k]));
     };
-    configuration.append(mapButton);
+    if (!["map", "blueprint", "destination", "speed_kmh", "population", "weather", "actual_population"].every((k) => x[k] != null && y[k] != null && same(x[k], y[k]))) return false;
+    const valid = (v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
+    if (![x.origin?.location, y.origin?.location, x.origin?.rotation, y.origin?.rotation].every(valid)) return false;
+    if (Math.hypot(...x.origin.location.map((v, i) => v - y.origin.location[i])) > 0.5 || x.origin.rotation.some((v, i) => Math.abs(((v - y.origin.rotation[i] + 180) % 360 + 360) % 360 - 180) > 1)) return false;
+    return ![2, 3].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
+  }
+
+  // frontend/guided-details.js
+  var $9 = (id) => document.getElementById(id);
+  var node3 = (tag, text, cls) => {
+    const e = document.createElement(tag);
+    if (text) e.textContent = text;
+    if (cls) e.className = cls;
+    return e;
+  };
+  var selectField = (parent, id, title, options) => {
+    const label = node3("label", title), select = node3("select");
+    select.id = id;
+    for (const [value, text] of options) select.add(new Option(text, value));
+    label.append(select);
+    parent.append(label);
+    return select;
+  };
+  function installGuidedDetails(p, tools2, trigger) {
+    const drawer = $9("cockpitDetails"), navigation = new DetailsNavigation(), pages = /* @__PURE__ */ new Map();
+    const legacy = node3("div");
+    legacy.hidden = true;
+    legacy.id = "detailsLegacy";
+    drawer.querySelector("h2").id = "legacyDetailsTitle";
+    legacy.append(...drawer.children);
+    for (const id of ["stopSimulatorBtn", "resetSimulatorBtn", "presentationChoose", "resultsTab", "presentationReplay", "scenariosNav", "cockpitToolsNav", "settingsBtn", "expandCameraBtn"]) legacy.append($9(id));
+    legacy.append(document.querySelector(".presentation-custom"), document.querySelector(".cockpit-camera-tools"));
+    const returnToDrive = document.querySelector(".studio-back-to-drive");
+    if (returnToDrive) legacy.append(returnToDrive);
+    const header = node3("header", null, "guided-details-heading");
+    const back = node3("button", "Close");
+    back.id = "detailsBack";
+    back.type = "button";
+    const title = node3("h2", "Details");
+    title.id = "cockpitDetailsTitle";
+    title.tabIndex = -1;
+    const emergency = node3("button", "Emergency stop", "cockpit-dialog-emergency");
+    emergency.type = "button";
+    emergency.onclick = () => {
+      close();
+      $9("emergencyStopBtn").click();
+    };
+    header.append(back, title, emergency);
+    drawer.replaceChildren(header, legacy);
+    drawer.classList.add("guided-details");
+    const page = (id, heading) => {
+      const e = node3("section");
+      e.dataset.detailsPage = id;
+      e.hidden = true;
+      pages.set(id, { element: e, title: heading });
+      drawer.append(e);
+      return e;
+    };
+    const root = page("root", "Details");
+    root.className = "details-groups";
+    for (const [id, label, description] of detailGroups) {
+      const button = node3("button");
+      button.type = "button";
+      button.dataset.detailsGroup = id;
+      button.append(node3("strong", label), node3("span", description), node3("i", "\u2192"));
+      button.onclick = () => open(id);
+      root.append(button);
+    }
+    let baseline = /* @__PURE__ */ new Map(), dirty = /* @__PURE__ */ new Set(), catalogKey = "", mediaKey = "", selectedPair = null, historyLoaded = false, opening = false;
+    const value = (e) => e.type === "checkbox" || e.type === "radio" ? e.checked : e.value;
+    const inputs = () => [...drawer.querySelectorAll("input,select,textarea")];
+    const capture = () => new Map(inputs().map((e) => [e, value(e)]));
+    const restore = (values) => {
+      for (const [e, v] of values) if (e.type === "checkbox" || e.type === "radio") e.checked = v;
+      else e.value = v;
+    };
+    const commitDraft = (elements = inputs()) => {
+      for (const e of elements) {
+        baseline.set(e, value(e));
+        dirty.delete(e);
+        delete e.dataset.detailsDraft;
+      }
+    };
+    const originalFill = tools2.fillSettings.bind(tools2);
+    tools2.fillSettings = () => {
+      const pending2 = new Map([...dirty].map((e) => [e, value(e)]));
+      originalFill();
+      if (drawer.open) {
+        baseline = capture();
+        restore(pending2);
+      }
+    };
+    const markDirty = (e) => {
+      dirty.add(e);
+      e.dataset.detailsDraft = "true";
+    };
+    drawer.addEventListener("input", (e) => {
+      if (e.target.matches("input,select,textarea")) markDirty(e.target);
+    });
+    const staged = [...document.querySelectorAll("#cockpitCameraView,[data-overlay],#safetyEnabled,#safetyController")];
+    const applyHandlers = new Map(staged.map((e) => [e, e.onchange]));
+    drawer.addEventListener("change", (e) => {
+      if (e.target.matches("input,select,textarea")) markDirty(e.target);
+      if (applyHandlers.has(e.target)) {
+        e.stopImmediatePropagation();
+        update();
+      }
+    }, true);
+    const run = page("run", "Run setup");
+    const runMode = selectField(run, "detailsRunMode", "Drive type", [
+      ["automatic", "Automatic presentation"],
+      ["custom", "Custom drive"]
+    ]);
+    run.append(node3("p", "Restart prepares and records Robosphere \u2192 Normal at 50 km/h, then plays the comparison.", "details-copy"));
+    const runSummary = node3("dl", null, "details-summary");
+    for (const [label, text] of [["Route", "Chosen automatically"], ["Traffic", "Up to 40 vehicles and 30 pedestrians"], ["Recording", "Automatic for both runs"]]) {
+      const row = node3("div");
+      row.append(node3("dt", label), node3("dd", text));
+      runSummary.append(row);
+    }
+    run.append(runSummary);
+    const custom = node3("fieldset");
+    custom.id = "detailsCustomDrive";
+    custom.append(node3("legend", "Custom drive"));
+    const place = selectField(custom, "detailsDestination", "Destination", [["", "Use the current destination"]]);
+    const speedLabel = node3("label", "Target speed");
+    speedLabel.append($9("presentationCustomSpeed"));
+    custom.append(speedLabel);
+    const destinationNote = node3("p", null, "muted");
+    custom.append(destinationNote);
+    const start = node3("button", "Start driving & recording", "primary");
+    start.id = "detailsCustomStart";
+    start.type = "button";
+    start.onclick = () => {
+      if (configurationReason(p)) return;
+      if (place.value) {
+        tools2.selectedPlace = tools2.catalog?.places.find((v) => v.id === place.value);
+        tools2.choose(place.value);
+      } else {
+        $9("presentationCustomStart").click();
+        close();
+      }
+    };
+    custom.append(start);
+    run.append(custom);
+    const originalChoose = tools2.choose.bind(tools2);
+    tools2.choose = (value2) => {
+      if (configurationReason(p)) return false;
+      originalChoose(value2);
+      return true;
+    };
+    const view = page("view", "View");
+    const cameraTools = document.querySelector(".cockpit-camera-tools");
+    const cameraLabel = cameraTools.querySelector("label");
+    cameraLabel.querySelector(".sr-only").classList.remove("sr-only");
+    cameraLabel.className = "";
+    cameraLabel.querySelector("svg").remove();
+    view.append(cameraLabel);
+    const overlaySettings = cameraTools.querySelector(".cockpit-overlay-settings");
+    const overlays = node3("fieldset");
+    overlays.append(node3("legend", "Camera overlays"));
+    for (const label of overlaySettings.querySelectorAll("label")) overlays.append(label);
+    view.append(overlays);
+    const applyView = node3("button", "Apply view", "primary");
+    applyView.type = "button";
+    applyView.id = "detailsApplyView";
+    applyView.onclick = () => {
+      if (configurationReason(p)) return;
+      for (const e of staged.filter((e2) => view.contains(e2) && dirty.has(e2))) applyHandlers.get(e)?.call(e, new Event("change"));
+      commitDraft([...view.querySelectorAll("input,select")]);
+      viewStatus.textContent = tools2.cameraChange?.status === "pending" ? "Applying camera view\u2026" : tools2.cameraChange?.status === "failed" ? tools2.cameraChange.error : "View preferences applied.";
+    };
+    const viewStatus = node3("p", null, "muted");
+    viewStatus.setAttribute("role", "status");
+    view.append(applyView, viewStatus);
+    const inspect = selectField(view, "detailsInspect", "Inspect", [["fullscreen", "Fullscreen camera"], ["diagnostics", "Diagnostics"]]);
+    const inspectButton = node3("button", "Open");
+    inspectButton.type = "button";
+    inspectButton.onclick = () => {
+      if (inspect.value === "diagnostics") open("diagnostics");
+      else {
+        close();
+        tools2.expandCamera(!$9("cameraCard").classList.contains("camera-expanded"));
+      }
+    };
+    view.append(inspectButton);
+    const diagnostics = page("diagnostics", "Diagnostics");
+    for (const selector of ["#cockpitDetailsStatus", ".studio-kpis", "#modelVision", ".cockpit-summary", ".cockpit-gap", ".cockpit-ttc", ".cockpit-brake", "#sensorPanel"]) {
+      const e = document.querySelector(selector);
+      if (e) diagnostics.append(e);
+    }
+    const embed = (e) => {
+      e.hidden = false;
+      e.removeAttribute("role");
+      e.removeAttribute("aria-modal");
+      e.classList.remove("drawer");
+      e.classList.add("details-embedded");
+    };
+    embed($9("sensorPanel"));
+    const diagnosticAction = selectField(diagnostics, "detailsDiagnosticAction", "Diagnostic action", [["applyRadiusBtn", "Update inspection radius"]]);
+    const diagnosticApply = node3("button", "Apply", "primary");
+    diagnosticApply.type = "button";
+    diagnosticApply.onclick = () => {
+      if (p.fresh && p.controller && !p.isReplay) $9(diagnosticAction.value).click();
+    };
+    diagnostics.append(diagnosticApply);
+    const results = page("results", "Results");
+    const comparison = selectField(results, "detailsComparison", "Saved comparison", [["current", "Latest received comparison"]]);
+    const resultAction = selectField(results, "detailsResultAction", "Action", [
+      ["view", "View results"],
+      ["replay", "Replay both videos"],
+      ["downloadROBOSPHERE", "Download Robosphere MP4"],
+      ["downloadNORMAL", "Download Normal MP4"]
+    ]);
+    const resultNote = node3("p", null, "muted");
+    resultNote.setAttribute("role", "status");
+    const resultOpen = node3("button", "Open", "primary");
+    resultOpen.type = "button";
+    resultOpen.id = "detailsResultOpen";
+    results.append(resultNote, resultOpen);
+    const files = /* @__PURE__ */ new Map();
+    let replayRequest = 0;
+    const currentPair = () => comparison.value === "current" ? p.journeyComparison : selectedPair;
+    async function loadHistory() {
+      if (historyLoaded) return;
+      historyLoaded = true;
+      try {
+        const response = await fetch("/output/journey-comparisons/", { cache: "no-store" });
+        if (!response.ok) throw new Error("Saved comparison list unavailable.");
+        const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+        const ids = [...doc.querySelectorAll("a")].map((a) => a.getAttribute("href")).filter((v) => /^[a-f0-9]{32}\.json$/.test(v || ""));
+        for (const file of ids.reverse()) comparison.add(new Option("Saved comparison \xB7 " + file.slice(0, 8), file.slice(0, 32)));
+      } catch {
+        resultNote.textContent = "Only the latest received comparison is available.";
+      }
+    }
+    let selection = 0;
+    comparison.onchange = async () => {
+      const token = ++selection;
+      selectedPair = null;
+      resultNote.textContent = "Loading saved comparison\u2026";
+      update();
+      if (comparison.value === "current") {
+        resultNote.textContent = "";
+        return;
+      }
+      try {
+        const r = await fetch("/output/journey-comparisons/" + comparison.value + ".json", { cache: "no-store" });
+        if (!r.ok) throw new Error("Saved comparison unavailable.");
+        const pair = await r.json();
+        if (token !== selection) return;
+        if (pair.pair_id !== comparison.value || !pair.runs) throw new Error("Saved comparison identity does not match.");
+        selectedPair = { ...pair, conditions_match: recordedConditionsMatch(pair) };
+        resultNote.textContent = pair.version === 3 ? "Saved presentation; each original outcome is retained." : "Saved legacy comparison; paired video playback is available for presentations.";
+        mediaKey = "";
+        update();
+      } catch (error) {
+        if (token === selection) resultNote.textContent = error.message;
+      }
+    };
+    resultOpen.onclick = () => {
+      const pair = currentPair();
+      if (!pair || driveState2(p).busy || ["STARTING", "RUNNING"].includes(p.journey?.status)) return;
+      const action = resultAction.value;
+      if (action.startsWith("download")) {
+        const mode = action.slice(8), file = files.get(pair.pair_id + ":" + mode);
+        if (!file) return;
+        const link = node3("a");
+        link.href = file;
+        link.download = pair.pair_id + "-" + mode.toLowerCase() + ".mp4";
+        link.click();
+        return;
+      }
+      const request = ++replayRequest;
+      p.presentationPlayback = false;
+      for (const video of document.querySelectorAll("#presentationResults video")) video.pause();
+      p.reviewedComparison = comparison.value === "current" ? null : pair;
+      document.body.classList.toggle("archive-review", pair.version !== 3);
+      if (pair.version !== 3) renderLegacy(pair);
+      close();
+      showWorkspace("results");
+      if (action === "replay") {
+        let attempts = 0;
+        const replay = () => {
+          if (request !== replayRequest || driveState2(p).busy || ["STARTING", "RUNNING"].includes(p.journey?.status)) return;
+          if (++attempts > 50) {
+            $9("presentationPlaybackStatus").textContent = "Videos are still loading. Open Details \u2192 Results to retry playback.";
+            return;
+          }
+          const expected = availableRecordings(pair).map((v) => v.root + "driving.mp4");
+          const loaded = [...document.querySelectorAll("#presentationResults video")].every((v) => expected.some((path) => v.getAttribute("src") === path));
+          if (loaded && !$9("presentationReplay").disabled) $9("presentationReplay").click();
+          else setTimeout(replay, 200);
+        };
+        setTimeout(replay, 150);
+      }
+    };
+    const legacyResults = node3("section");
+    legacyResults.id = "detailsArchivedResults";
+    legacyResults.hidden = true;
+    $9("resultsPhase").append(legacyResults);
+    function renderLegacy(pair) {
+      legacyResults.hidden = false;
+      legacyResults.replaceChildren(
+        node3("h2", "Saved comparison \xB7 " + pair.pair_id.slice(0, 8)),
+        node3("p", pair.conditions_match ? "Matching initial conditions verified. Reactive traffic can diverge." : "Matching initial conditions were not verified.", "muted")
+      );
+      for (const [mode, run2] of Object.entries(pair.runs)) {
+        const section = node3("article");
+        section.append(node3("h3", mode), node3("p", run2.status + " \xB7 " + String(run2.reason || "").replaceAll("_", " ")));
+        const fault = run2.stop_diagnostics?.runtime_fault;
+        if (fault) section.append(node3("p", fault.exception_type + ": " + fault.message));
+        const metrics = node3("dl", null, "details-summary");
+        for (const [label, key, suffix] of [["Contacts", "collisions", ""], ["Distance", "distance_m", " m"], ["Duration", "duration_s", " s"]]) {
+          const row = node3("div");
+          row.append(node3("dt", label), node3("dd", Number.isFinite(run2[key]) ? run2[key].toFixed(key === "collisions" ? 0 : 1) + suffix : "Not measured"));
+          metrics.append(row);
+        }
+        section.append(metrics);
+        legacyResults.append(section);
+      }
+    }
+    document.addEventListener("workspacechange", (e) => {
+      if (e.detail.phase === "drive") document.body.classList.remove("archive-review");
+    });
+    const system = page("system", "System");
+    const operation = selectField(system, "detailsSystemAction", "Operation", [
+      ["reset", "Reset session"],
+      ["gpu", "Free GPU"],
+      ["settings", "Advanced settings"],
+      ["research", "Research tools"]
+    ]);
+    const operationInfo = node3("p", null, "details-copy");
+    const operationButton = node3("button", "Continue", "primary");
+    operationButton.type = "button";
+    operationButton.id = "detailsSystemContinue";
+    const descriptions = {
+      reset: "Restart CARLA with an empty session. Saved recordings are kept.",
+      gpu: "Close CARLA and release its GPU memory. Saved recordings are kept.",
+      settings: "Inspect simulator settings. Changes apply only when you select Apply.",
+      research: "Controlled research tools. These actions can alter the scene or start experiments."
+    };
+    operation.onchange = () => {
+      operationInfo.textContent = descriptions[operation.value];
+      update();
+    };
+    operationInfo.textContent = descriptions.reset;
+    operationButton.onclick = () => {
+      if (operation.value === "settings" || operation.value === "research") open(operation.value);
+      else open("confirm");
+    };
+    system.append(operationInfo, operationButton);
+    const confirm = page("confirm", "Confirm operation");
+    const confirmText = node3("p", null, "details-copy");
+    const confirmButton = node3("button", null, "primary");
+    confirmButton.type = "button";
+    confirmButton.id = "detailsConfirm";
+    confirmButton.onclick = () => {
+      if (driveState2(p).configurationLocked) return;
+      const button = $9(operation.value === "gpu" ? "stopSimulatorBtn" : "resetSimulatorBtn");
+      if (button.disabled) return;
+      close();
+      button.click();
+    };
+    confirm.append(confirmText, confirmButton);
+    const settings = page("settings", "Advanced settings");
+    embed($9("settingsPanel"));
+    settings.append($9("settingsPanel"));
+    settings.append($9("settingsStatus"));
+    const sections = [...$9("settingsForm").querySelectorAll(":scope > details"), $9("connectionSettings")];
+    const sectionPicker = selectField(settings, "detailsSettingsSection", "Section", sections.map((e) => [e.id, e.querySelector("summary span,summary").childNodes[0].textContent.trim()]));
+    settings.prepend(sectionPicker.parentElement);
+    const settingAction = selectField(settings, "detailsSettingAction", "Action", []);
+    const settingApply = node3("button", "Apply", "primary");
+    settingApply.type = "button";
+    settingApply.id = "detailsApplySettings";
+    settings.append(settingApply);
+    const settingButtons = {
+      visibilitySettings: ["applyLightingBtn", "applyViewDistanceBtn"],
+      cameraSettings: ["applySettingsBtn"],
+      graphicsSettings: ["restartGraphicsBtn"],
+      weatherSettings: ["applySettingsBtn"],
+      vehicleSettings: ["applySettingsBtn", "resetBtn"],
+      timingSettings: ["applySettingsBtn"],
+      populationSettings: ["applySettingsBtn", "clearTrafficBtn", "clearPedestriansBtn", "respawnPopulationBtn", "resetPopulationBtn", "applyProfileBtn", "applySceneBtn"],
+      connectionSettings: ["takeControlBtn", "worldResetBtn", "nativeDisconnectBtn"]
+    };
+    function selectSettings() {
+      for (const section of sections) {
+        section.hidden = section.id !== sectionPicker.value;
+        section.open = section.id === sectionPicker.value;
+      }
+      settingAction.replaceChildren();
+      for (const id of settingButtons[sectionPicker.value]) settingAction.add(new Option($9(id).textContent, id));
+      update();
+    }
+    sectionPicker.onchange = selectSettings;
+    settingApply.onclick = () => {
+      if (configurationReason(p)) return;
+      const button = $9(settingAction.value);
+      if (button.disabled) return;
+      button.click();
+      commitDraft([...settings.querySelectorAll("input,select,textarea")]);
+    };
+    for (const button of settings.querySelectorAll("button:not(#detailsApplySettings)")) button.dataset.detailsLegacyAction = "";
+    $9("settingsPanel").querySelectorAll(":scope > label,:scope > p,:scope > select").forEach((e) => e.dataset.detailsLegacyExtra = "");
+    const research = page("research", "Research tools");
+    const researchSource = $9("setupPhase");
+    embed(researchSource);
+    research.append(researchSource);
+    const researchAction = selectField(research, "detailsResearchAction", "Action", []);
+    const researchButtons = [...researchSource.querySelectorAll("button")].filter((b) => !["setupDriveBtn", "setupSettings"].includes(b.id));
+    researchButtons.forEach((b, i) => {
+      if (!b.id) b.id = "detailsResearchLegacy" + i;
+      researchAction.add(new Option(b.textContent, b.id));
+      b.dataset.detailsLegacyAction = "";
+    });
+    const researchApply = node3("button", "Run selected action", "primary");
+    researchApply.type = "button";
+    researchApply.id = "detailsApplyResearch";
+    research.append(researchApply);
+    researchApply.onclick = () => {
+      if (!configurationReason(p) && !$9(researchAction.value)?.disabled) {
+        $9(researchAction.value)?.click();
+        commitDraft([...research.querySelectorAll("input,select")]);
+      }
+    };
+    for (const id of ["setupDriveBtn", "setupSettings"]) $9(id).dataset.detailsLegacyAction = "";
+    const reason = node3("p", null, "details-lock-reason");
+    reason.id = "detailsLockReason";
+    reason.setAttribute("role", "status");
+    header.after(reason);
+    function render() {
+      const entry = pages.get(navigation.page);
+      if (!entry) return;
+      for (const [id, e] of pages) e.element.hidden = id !== navigation.page;
+      title.textContent = entry.title;
+      back.textContent = navigation.page === "root" ? "Close" : "\u2190 Back";
+      if (navigation.page === "research") $9("setupPhase").hidden = false;
+      back.setAttribute("aria-label", navigation.page === "root" ? "Close details" : "Back");
+      drawer.dataset.page = navigation.page;
+      drawer.scrollTop = 0;
+      update();
+      title.focus({ preventScroll: true });
+    }
+    function open(id = "root") {
+      if (!pages.has(id)) return;
+      if (!drawer.open) {
+        navigation.reset();
+        baseline = capture();
+        dirty.clear();
+        opening = true;
+        drawer.showModal();
+        opening = false;
+        document.body.classList.add("details-open");
+        trigger.setAttribute("aria-expanded", "true");
+        tools2.load();
+      }
+      if (id !== "root") navigation.open(id);
+      if (id === "results") loadHistory();
+      if (id === "settings") selectSettings();
+      render();
+    }
+    function finishClose() {
+      restore(baseline);
+      for (const e of dirty) delete e.dataset.detailsDraft;
+      dirty.clear();
+      navigation.reset();
+      document.body.classList.remove("details-open");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.focus({ preventScroll: true });
+    }
+    function close() {
+      if (drawer.open) {
+        drawer.close();
+        finishClose();
+      }
+    }
+    back.onclick = () => {
+      if (navigation.page === "root") close();
+      else {
+        navigation.back();
+        render();
+      }
+    };
+    drawer.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      close();
+    });
+    drawer.addEventListener("close", () => {
+      if (!drawer.open) finishClose();
+    });
+    const oldShow = drawer.showModal.bind(drawer);
+    drawer.showModal = () => {
+      if (opening) oldShow();
+      else open();
+    };
+    document.addEventListener("detailsnavigate", (e) => open(e.detail.page));
+    const originalOpen = tools2.open.bind(tools2), originalClose = tools2.close.bind(tools2);
+    const destinations = { routePanel: "run", inGamePhone: "run", sensorPanel: "diagnostics", settingsPanel: "settings" };
+    tools2.open = (panel, source) => {
+      if (destinations[panel]) {
+        open(destinations[panel]);
+        if (panel === "routePanel" || panel === "inGamePhone") runMode.value = "custom";
+        update();
+      } else originalOpen(panel, source);
+    };
+    tools2.close = (focus = true) => {
+      if (drawer.open) close();
+      else originalClose(focus);
+    };
+    $9("cockpitViewDetails").onclick = () => open("diagnostics");
+    $9("cockpitAnalysisLink").onclick = () => open("diagnostics");
+    function update() {
+      const state = driveState2(p), blocked = configurationReason(p);
+      emergency.hidden = !state.emergencyVisible;
+      emergency.disabled = $9("emergencyStopBtn").disabled;
+      const editing = ["run", "view", "settings", "research", "confirm"].includes(navigation.page);
+      reason.textContent = editing ? blocked : "";
+      reason.hidden = !reason.textContent;
+      custom.hidden = runMode.value !== "custom";
+      runSummary.hidden = runMode.value === "custom";
+      runMode.onchange = update;
+      const key = (tools2.catalog?.places || []).map((v) => v.id).join();
+      if (key !== catalogKey) {
+        catalogKey = key;
+        const selected = place.value;
+        place.replaceChildren(new Option("Use the current destination", ""));
+        for (const v of tools2.catalog?.places || []) place.add(new Option(v.name, v.id));
+        place.value = selected;
+      }
+      destinationNote.textContent = p.route?.destination?.name ? "Current route: " + p.route.destination.name : "Choose a destination first, then start the recorded drive.";
+      start.textContent = place.value ? "Use destination" : "Start driving & recording";
+      start.disabled = !!blocked || !place.value && $9("presentationCustomStart").disabled;
+      for (const e of [place, $9("presentationCustomSpeed")]) e.disabled = !!blocked;
+      for (const e of view.querySelectorAll("input,#cockpitCameraView")) e.disabled = !!blocked || e.id === "cockpitCameraView" && tools2.cameraChange?.status === "pending";
+      inspect.options[0].textContent = $9("cameraCard").classList.contains("camera-expanded") ? "Restore camera size" : "Fullscreen camera";
+      applyView.disabled = !!blocked || !staged.some((e) => view.contains(e) && dirty.has(e));
+      for (const e of settings.querySelectorAll("fieldset")) e.disabled = !!blocked;
+      for (const e of research.querySelectorAll("input,select")) e.disabled = !!blocked;
+      settingApply.disabled = !!blocked || !settingAction.value || $9(settingAction.value)?.disabled;
+      researchApply.disabled = !!blocked || !researchAction.value || $9(researchAction.value)?.disabled;
+      diagnosticApply.disabled = !p.fresh || !p.controller || p.isReplay;
+      operationButton.disabled = state.configurationLocked && ["reset", "gpu"].includes(operation.value);
+      confirmText.textContent = descriptions[operation.value];
+      confirmButton.textContent = operation.value === "gpu" ? "Free GPU" : "Reset session";
+      confirmButton.disabled = state.configurationLocked || $9(operation.value === "gpu" ? "stopSimulatorBtn" : "resetSimulatorBtn").disabled;
+      if (!drawer.open || navigation.page !== "results") return;
+      const pair = currentPair(), pairKey = pair?.pair_id + ":" + JSON.stringify(availableRecordings(pair).map((r) => r.run.recording));
+      if (pairKey !== mediaKey) {
+        mediaKey = pairKey;
+        for (const file of availableRecordings(pair)) fetch(file.root + "video-status.json", { cache: "no-store" }).then((r) => r.ok ? r.json() : null).then((v) => {
+          if (v?.status === "READY") files.set(pair.pair_id + ":" + file.mode, file.root + "driving.mp4");
+        }).catch(() => {
+        });
+      }
+      const active = state.busy || ["STARTING", "RUNNING"].includes(p.journey?.status);
+      const action = resultAction.value, download = action.startsWith("download");
+      resultOpen.disabled = !pair || active || action === "replay" && (pair.version !== 3 || !["ROBOSPHERE", "NORMAL"].every((m) => files.has(pair.pair_id + ":" + m))) || download && !files.has(pair.pair_id + ":" + action.slice(8));
+      if (active) resultNote.textContent = "Finish or stop the current run before opening saved results.";
+      else if (pair && !resultNote.textContent) resultNote.textContent = "Original outcomes and failures remain attached to each recording.";
+    }
+    runMode.onchange = update;
+    place.onchange = update;
+    resultAction.onchange = update;
+    settingAction.onchange = update;
+    researchAction.onchange = update;
+    pages.get("root").element.hidden = false;
+    return { open, close, update };
+  }
+
+  // frontend/sequential-drive.js
+  function installSequentialDrive(p, tools2) {
+    const $11 = (id) => document.getElementById(id);
+    document.body.classList.add("sequential-drive");
     const actions = document.querySelector(".cockpit-header-actions");
     const primary = document.createElement("button");
     primary.id = "drivePrimaryAction";
@@ -5081,21 +5687,13 @@
     details.textContent = "Details";
     details.setAttribute("aria-controls", "cockpitDetails");
     details.setAttribute("aria-expanded", "false");
-    details.onclick = () => {
-      drawer.showModal();
-      details.setAttribute("aria-expanded", "true");
-    };
-    drawer.addEventListener("close", () => {
-      details.setAttribute("aria-expanded", "false");
-      details.focus();
-    });
-    configuration.addEventListener("click", (e) => {
-      if (e.target.closest("button")) drawer.close();
-    });
     actions.prepend(primary, details);
+    const navigator = installGuidedDetails(p, tools2, details);
+    details.onclick = () => navigator.open();
     const target = { RESTART: "presentationRestart", RESUME: "presentationResume", STOP: "studioManualStop", RELEASE: "acknowledgeStopBtn" };
     primary.onclick = () => {
       const state = driveState2(p);
+      if (!state.enabled) return;
       if (state.action === "PLAYBACK") {
         const videos = [...document.querySelectorAll("#presentationResults video")];
         if (videos.every((v) => v.paused)) {
@@ -5104,7 +5702,7 @@
         } else {
           for (const v of videos) v.pause();
         }
-      } else $10(target[state.action])?.click();
+      } else $11(target[state.action])?.click();
     };
     return { update() {
       const state = driveState2(p);
@@ -5117,9 +5715,10 @@
       }[state.action];
       primary.disabled = !state.enabled;
       primary.dataset.action = state.action;
-      $10("emergencyStopBtn").hidden = state.action === "RELEASE";
-      for (const id of ["presentationRestart", "presentationResume", "studioManualStop", "acknowledgeStopBtn", "cockpitResumeDrive", "replayPauseBtn"]) $10(id)?.setAttribute("hidden", "");
-      $10("connectionSetupBtn")?.setAttribute("hidden", "");
+      $11("emergencyStopBtn").hidden = !state.emergencyVisible;
+      for (const id of ["presentationRestart", "presentationResume", "studioManualStop", "acknowledgeStopBtn", "cockpitResumeDrive", "replayPauseBtn"]) $11(id)?.setAttribute("hidden", "");
+      $11("connectionSetupBtn")?.setAttribute("hidden", "");
+      navigator.update();
     } };
   }
 
@@ -5174,7 +5773,7 @@
   };
 
   // frontend/dashboard.js
-  var $9 = (id) => document.getElementById(id);
+  var $10 = (id) => document.getElementById(id);
   var provider = new SimulationClient();
   var controls = new DrivingControls();
   var cameraPerformance = new CameraPerformance();
@@ -5207,12 +5806,12 @@
   var cockpit = installLightCockpit(provider, tools, perception, predictionView, (mode) => startJourney(mode));
   var demoDrive = installDemoDrive(provider, tools, clearControls);
   var presentationRun = installPresentationRun(provider, tools, clearControls);
-  var sequentialDrive = installSequentialDrive(provider);
-  $9("stopSimulatorBtn").onclick = () => {
+  var sequentialDrive = installSequentialDrive(provider, tools);
+  $10("stopSimulatorBtn").onclick = () => {
     clearControls("simulator_shutdown");
     provider.stopSimulator();
   };
-  $9("resetSimulatorBtn").onclick = () => {
+  $10("resetSimulatorBtn").onclick = () => {
     resetKeys();
     manualArmed = false;
     manualRequestedUntil = 0;
@@ -5233,7 +5832,7 @@
   }
   function resetKeys() {
     controls.clear();
-    controls.setMode($9("gearSelect").value);
+    controls.setMode($10("gearSelect").value);
     controls.gear = controls.mode === "R" ? -1 : controls.mode === "N" ? 0 : 1;
     lastGear = null;
     manualOverridePending = false;
@@ -5259,11 +5858,11 @@
     cameraRequest = null;
     if (cameraUrl) URL.revokeObjectURL(cameraUrl);
     cameraUrl = cameraReceipt = null;
-    $9("authoritativeCamera").hidden = true;
-    $9("authoritativeCamera").removeAttribute("src");
-    $9("cameraUnavailable").hidden = false;
-    $9("cameraActivity").textContent = "Image unavailable";
-    $9("cameraTimestamp").textContent = "t \u2014";
+    $10("authoritativeCamera").hidden = true;
+    $10("authoritativeCamera").removeAttribute("src");
+    $10("cameraUnavailable").hidden = false;
+    $10("cameraActivity").textContent = "Image unavailable";
+    $10("cameraTimestamp").textContent = "t \u2014";
   }
   async function updateCamera(metadata) {
     if (document.hidden) return;
@@ -5298,17 +5897,17 @@
       cameraUrl = nextUrl;
       cameraReceipt = key;
       displayedCamera = { ...metadata };
-      $9("authoritativeCamera").src = cameraUrl;
-      $9("authoritativeCamera").hidden = false;
+      $10("authoritativeCamera").src = cameraUrl;
+      $10("authoritativeCamera").hidden = false;
       if (provider.journey?.status === "RUNNING") requestAnimationFrame(() => {
         cameraPerformance.present(metadata.frame, metadata.timestamp, performance.now(), provider.journey.pair_id + ":" + provider.journey.driving_mode);
-        $9("authoritativeCamera").dataset.performance = JSON.stringify(cameraPerformance.snapshot());
+        $10("authoritativeCamera").dataset.performance = JSON.stringify(cameraPerformance.snapshot());
       });
       if (previousUrl) URL.revokeObjectURL(previousUrl);
-      $9("cameraUnavailable").hidden = true;
-      $9("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 Recorded image" : "RGB \xB7 Live image";
-      $9("cameraTimestamp").textContent = "t " + number2(Number(response.headers.get("X-Sensor-Time")), " s", 3);
-      $9("cameraMetadata").textContent = "Frame " + response.headers.get("X-Sensor-Frame") + " \xB7 " + metadata.width + "\xD7" + metadata.height + " \xB7 FOV " + metadata.fovDeg + "\xB0 \xB7 mount " + JSON.stringify(metadata.mountTransform ?? null);
+      $10("cameraUnavailable").hidden = true;
+      $10("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 Recorded image" : "RGB \xB7 Live image";
+      $10("cameraTimestamp").textContent = "t " + number2(Number(response.headers.get("X-Sensor-Time")), " s", 3);
+      $10("cameraMetadata").textContent = "Frame " + response.headers.get("X-Sensor-Frame") + " \xB7 " + metadata.width + "\xD7" + metadata.height + " \xB7 FOV " + metadata.fovDeg + "\xB0 \xB7 mount " + JSON.stringify(metadata.mountTransform ?? null);
     } catch (error) {
       if (error.name !== "AbortError" && !provider.fresh) clearCamera();
     } finally {
@@ -5332,26 +5931,26 @@
       clearCamera();
     }
     const state = provider.getVehicleState(), live = provider.fresh;
-    $9("cameraEmptyTitle").textContent = live ? "Waiting for camera image" : "Waiting for simulator connection";
-    $9("cameraEmptyDescription").textContent = live ? "No image available yet. Inspect sensor status in Details." : "Select Start the simulation to launch CARLA and connect cameras and telemetry.";
-    $9("connectionSetupBtn").hidden = live || provider.isReplay;
-    if (!live) $9("mapEmpty").hidden = false;
+    $10("cameraEmptyTitle").textContent = live ? "Waiting for camera image" : "Waiting for simulator connection";
+    $10("cameraEmptyDescription").textContent = live ? "No image available yet. Inspect sensor status in Details." : "Select Start the simulation to launch CARLA and connect cameras and telemetry.";
+    $10("connectionSetupBtn").hidden = live || provider.isReplay;
+    if (!live) $10("mapEmpty").hidden = false;
     if (!live || provider.isReplay || !document.hasFocus() || document.hidden || performance.now() > manualRequestedUntil && (!provider.controller || provider.controlMode === "PAUSED" && lastMode === "MANUAL" || provider.controlMode === "EMERGENCY_STOP")) manualArmed = false;
     lastMode = provider.controlMode;
     const controllable = canInput();
     const stopped = provider.simulatorStop;
     const connectedLabel = provider.isReplay ? "REPLAY \u2014 real recording" : provider.simulationStarting ? "CARLA \u2014 STARTING" : stopped?.status === "STOPPING" ? "CARLA \u2014 STOPPING" : stopped?.status === "STOPPED" ? "CARLA \u2014 STOPPED" : provider.restarting ? "CARLA \u2014 RESTARTING" : "CARLA \u2014 " + (live && provider.connected ? "CONNECTED" : "DISCONNECTED");
-    $9("cityStatus").textContent = $9("simulationState").textContent = connectedLabel;
-    const stopButton = $9("stopSimulatorBtn");
+    $10("cityStatus").textContent = $10("simulationState").textContent = connectedLabel;
+    const stopButton = $10("stopSimulatorBtn");
     stopButton.disabled = !stopped?.available || provider.isReplay || provider.simulationStarting || provider.restarting || ["STOPPING", "STOPPED"].includes(stopped?.status) || provider.controlMode === "TRAINING";
     stopButton.textContent = provider.simulationStarting ? "Starting\u2026" : stopped?.status === "STOPPING" ? "Stopping\u2026" : stopped?.status === "STOPPED" ? "GPU released" : stopped?.status === "FAILED" ? "Retry GPU release" : "Free GPU";
     stopButton.title = stopped?.error || (stopped?.status === "STOPPED" ? "GPU resources released. Select Start the simulation to start again." : "Stop CARLA and release its GPU and VRAM");
-    const resetButton = $9("resetSimulatorBtn");
+    const resetButton = $10("resetSimulatorBtn");
     resetButton.disabled = !provider.simulatorReset?.available || provider.isReplay || provider.simulationStarting || provider.restarting || stopped?.status === "STOPPING" || provider.controlMode === "TRAINING";
     resetButton.textContent = provider.resetting ? "Resetting\u2026" : "Reset";
     resetButton.title = provider.operationError || "Restart CARLA and the application: default start, zero speed, no traffic or route. Recordings are kept.";
-    $9("connectionDot").classList.toggle("connected", live && provider.connected);
-    $9("missionText").textContent = provider.isReplay ? "Replay \xB7 Driving disabled" : provider.population ? provider.population.actual.vehicles + " traffic vehicle \xB7 " + provider.population.actual.pedestrians + " walkers" : "Waiting for population CARLA";
+    $10("connectionDot").classList.toggle("connected", live && provider.connected);
+    $10("missionText").textContent = provider.isReplay ? "Replay \xB7 Driving disabled" : provider.population ? provider.population.actual.vehicles + " traffic vehicle \xB7 " + provider.population.actual.pedestrians + " walkers" : "Waiting for population CARLA";
     const modeNames = {
       MANUAL: manualArmed ? "Manual driving" : "Vehicle held by command safety",
       AUTOMATIC: "Destination journey",
@@ -5360,53 +5959,53 @@
       DISCONNECTED: "Simulator disconnected",
       REPLAY: "Replay"
     };
-    $9("controlMode").textContent = modeNames[provider.controlMode] || provider.controlMode;
-    $9("controlSource").textContent = provider.controlSource || "";
+    $10("controlMode").textContent = modeNames[provider.controlMode] || provider.controlMode;
+    $10("controlSource").textContent = provider.controlSource || "";
     const safety = provider.safetySystem;
     const demo = provider.comparisonDemo;
     const demoBusy = ["RESETTING", "RUNNING", "STOPPING"].includes(demo?.phase);
     for (const id of ["demoWithoutBtn", "demoWithBtn", "demoStopBtn"]) {
-      $9(id).disabled = !live || provider.isReplay || !provider.controller || provider.restarting || provider.controlMode === "EMERGENCY_STOP";
+      $10(id).disabled = !live || provider.isReplay || !provider.controller || provider.restarting || provider.controlMode === "EMERGENCY_STOP";
     }
-    $9("demoWithoutBtn").setAttribute("aria-pressed", String(demo?.mode === "WITHOUT" && demoBusy));
-    $9("demoWithBtn").setAttribute("aria-pressed", String(demo?.mode === "WITH" && demoBusy));
-    $9("demoStatus").textContent = demo?.mode ? (demo.mode === "WITH" ? "WITH YA RAB OSTORHA" : "WITHOUT SAFETY") + " \xB7 " + demo.phase + " \xB7 Safety " + (demo.safety_enabled ? "ON" : "OFF") + " during run \xB7 Controller: " + demo.active_controller + (demo.latest_outcome ? " \xB7 Outcome: " + demo.latest_outcome : "") + (demo.error ? " \xB7 " + demo.error : "") : demo?.error || "Choose a comparison mode. Each button resets and automatically records a fresh run.";
+    $10("demoWithoutBtn").setAttribute("aria-pressed", String(demo?.mode === "WITHOUT" && demoBusy));
+    $10("demoWithBtn").setAttribute("aria-pressed", String(demo?.mode === "WITH" && demoBusy));
+    $10("demoStatus").textContent = demo?.mode ? (demo.mode === "WITH" ? "WITH YA RAB OSTORHA" : "WITHOUT SAFETY") + " \xB7 " + demo.phase + " \xB7 Safety " + (demo.safety_enabled ? "ON" : "OFF") + " during run \xB7 Controller: " + demo.active_controller + (demo.latest_outcome ? " \xB7 Outcome: " + demo.latest_outcome : "") + (demo.error ? " \xB7 " + demo.error : "") : demo?.error || "Choose a comparison mode. Each button resets and automatically records a fresh run.";
     const measured = demo?.mode && ["RUNNING", "STOPPING", "FINISHED"].includes(demo.phase);
     const ds = demoBusy ? safety : demo?.last_safety;
-    $9("demoMeasurements").textContent = measured ? "Hazard: " + (demo.mode === "WITHOUT" ? "Safety detection OFF" : ds?.risk ?? "UNKNOWN") + " \xB7 Reason: " + (ds?.reason ?? "Waiting for sensors") + " \xB7 Run brake: " + number2((demoBusy ? state.brake : demo.last_applied_brake) == null ? null : (demoBusy ? state.brake : demo.last_applied_brake) * 100, "%") + " \xB7 Interventions: " + (demo.metrics?.safety_intervention_count ?? "\u2014") + " \xB7 Collision: " + (demo.metrics?.collision_count == null ? "Not assessed" : demo.metrics.collision_count > 0 ? "Collision detected" : "No collision recorded") + " \xB7 Time: " + number2(demo.metrics?.elapsed_simulation_s, " s") + " \xB7 Distance: " + number2(demo.metrics?.distance_traveled_m, " m") + " \xB7 Progress: " + number2(demo.metrics?.progress_m, " m") : "Measurements appear during the real CARLA run.";
-    $9("safetyEnabled").checked = safety?.enabled === true;
-    $9("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || demoBusy || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
-    $9("safetyController").disabled = $9("safetyEnabled").disabled;
-    $9("safetyController").value = safety?.controller ?? "RULE";
-    for (const option of $9("safetyController").options) option.disabled = !(safety?.available_controllers ?? ["RULE"]).includes(option.value);
-    $9("connectionDetail").textContent = provider.isReplay ? "Recorded data view; no simulator controls." : live ? provider.controller ? "Take control from this page." : "Another page controls the vehicle; take control in Settings." : provider.restarting ? "Restarting CARLA and reconnecting\u2026" : "Simulator disconnected. Open connection setup to continue.";
-    $9("phoneStatus").textContent = live ? "Destinations from map " + (provider.world.map?.split("/").at(-1) || "CARLA") : "Waiting for simulator connection.";
-    $9("providerStatus").textContent = provider.status;
-    $9("providerTitle").textContent = provider.isReplay ? "Recorded camera" : "Camera CARLA";
-    $9("cameraSource").textContent = provider.isReplay ? "RECORDED RGB" : "CARLA RGB";
-    $9("speedVal").textContent = number2(state.speedKmh, "", 0);
-    $9("gearVal").textContent = state.gear ?? "\u2014";
-    $9("throttleVal").textContent = number2(state.throttle == null ? null : state.throttle * 100, "%");
-    $9("brakeVal").textContent = number2(state.brake == null ? null : state.brake * 100, "%");
-    $9("steerVal").textContent = number2(state.steeringInput);
-    $9("versionVal").textContent = provider.world.version ?? "\u2014";
-    $9("mapVal").textContent = provider.world.map?.split("/").at(-1) ?? "\u2014";
-    $9("frameVal").textContent = state.frame ?? "\u2014";
-    $9("timeVal").textContent = number2(state.timestamp, " s", 3);
-    $9("accelVal").textContent = number2(state.accelerationMps2, " m/s\xB2");
-    $9("reverseVal").textContent = state.reverse == null ? "\u2014" : state.reverse ? "Yes" : "No";
-    $9("positionVal").textContent = state.positionWorldM ? "X / Y / Z: " + state.positionWorldM.map((v) => number2(v)).join(" / ") + " m" : "Position unavailable";
-    $9("headingVal").textContent = state.rotationDeg ? "Yaw " + number2(state.rotationDeg.yaw, "\xB0") : "";
-    $9("gearSelect").disabled = !controllable || provider.controlMode === "AUTOMATIC";
-    $9("gearSelect").title = !$9("gearSelect").disabled ? "" : provider.isReplay ? "Replay is read-only; driving is disabled" : !live ? "Waiting for native connection to CARLA" : provider.controlMode === "AUTOMATIC" ? "Journey controller selects the gear; take manual control to change it" : !provider.controller ? "Take control in connection settings first" : "Enable manual driving to change gear";
-    $9("controlStatus").textContent = provider.isReplay ? "REPLAY \xB7 Driving disabled" : !document.hasFocus() || document.hidden ? "Focus the dashboard to use the keyboard" : controllable ? "WASD ready \xB7 W+Shift More throttle" : "Keyboard stopped \u2014 Enable driving first";
+    $10("demoMeasurements").textContent = measured ? "Hazard: " + (demo.mode === "WITHOUT" ? "Safety detection OFF" : ds?.risk ?? "UNKNOWN") + " \xB7 Reason: " + (ds?.reason ?? "Waiting for sensors") + " \xB7 Run brake: " + number2((demoBusy ? state.brake : demo.last_applied_brake) == null ? null : (demoBusy ? state.brake : demo.last_applied_brake) * 100, "%") + " \xB7 Interventions: " + (demo.metrics?.safety_intervention_count ?? "\u2014") + " \xB7 Collision: " + (demo.metrics?.collision_count == null ? "Not assessed" : demo.metrics.collision_count > 0 ? "Collision detected" : "No collision recorded") + " \xB7 Time: " + number2(demo.metrics?.elapsed_simulation_s, " s") + " \xB7 Distance: " + number2(demo.metrics?.distance_traveled_m, " m") + " \xB7 Progress: " + number2(demo.metrics?.progress_m, " m") : "Measurements appear during the real CARLA run.";
+    $10("safetyEnabled").checked = safety?.enabled === true;
+    $10("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || demoBusy || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
+    $10("safetyController").disabled = $10("safetyEnabled").disabled;
+    $10("safetyController").value = safety?.controller ?? "RULE";
+    for (const option of $10("safetyController").options) option.disabled = !(safety?.available_controllers ?? ["RULE"]).includes(option.value);
+    $10("connectionDetail").textContent = provider.isReplay ? "Recorded data view; no simulator controls." : live ? provider.controller ? "Take control from this page." : "Another page controls the vehicle; take control in Settings." : provider.restarting ? "Restarting CARLA and reconnecting\u2026" : "Simulator disconnected. Open connection setup to continue.";
+    $10("phoneStatus").textContent = live ? "Destinations from map " + (provider.world.map?.split("/").at(-1) || "CARLA") : "Waiting for simulator connection.";
+    $10("providerStatus").textContent = provider.status;
+    $10("providerTitle").textContent = provider.isReplay ? "Recorded camera" : "Camera CARLA";
+    $10("cameraSource").textContent = provider.isReplay ? "RECORDED RGB" : "CARLA RGB";
+    $10("speedVal").textContent = number2(state.speedKmh, "", 0);
+    $10("gearVal").textContent = state.gear ?? "\u2014";
+    $10("throttleVal").textContent = number2(state.throttle == null ? null : state.throttle * 100, "%");
+    $10("brakeVal").textContent = number2(state.brake == null ? null : state.brake * 100, "%");
+    $10("steerVal").textContent = number2(state.steeringInput);
+    $10("versionVal").textContent = provider.world.version ?? "\u2014";
+    $10("mapVal").textContent = provider.world.map?.split("/").at(-1) ?? "\u2014";
+    $10("frameVal").textContent = state.frame ?? "\u2014";
+    $10("timeVal").textContent = number2(state.timestamp, " s", 3);
+    $10("accelVal").textContent = number2(state.accelerationMps2, " m/s\xB2");
+    $10("reverseVal").textContent = state.reverse == null ? "\u2014" : state.reverse ? "Yes" : "No";
+    $10("positionVal").textContent = state.positionWorldM ? "X / Y / Z: " + state.positionWorldM.map((v) => number2(v)).join(" / ") + " m" : "Position unavailable";
+    $10("headingVal").textContent = state.rotationDeg ? "Yaw " + number2(state.rotationDeg.yaw, "\xB0") : "";
+    $10("gearSelect").disabled = !controllable || provider.controlMode === "AUTOMATIC";
+    $10("gearSelect").title = !$10("gearSelect").disabled ? "" : provider.isReplay ? "Replay is read-only; driving is disabled" : !live ? "Waiting for native connection to CARLA" : provider.controlMode === "AUTOMATIC" ? "Journey controller selects the gear; take manual control to change it" : !provider.controller ? "Take control in connection settings first" : "Enable manual driving to change gear";
+    $10("controlStatus").textContent = provider.isReplay ? "REPLAY \xB7 Driving disabled" : !document.hasFocus() || document.hidden ? "Focus the dashboard to use the keyboard" : controllable ? "WASD ready \xB7 W+Shift More throttle" : "Keyboard stopped \u2014 Enable driving first";
     const sensorCount = Object.keys(provider.sensorMetadata).length;
-    $9("sensorStatus").textContent = provider.isReplay ? sensorCount + " sensors from recorded frame \xB7 recorded collision events" : live ? sensorCount + " periodic sensors receiving data \xB7 Collision sensor is event-driven" : "Sensors unavailable";
+    $10("sensorStatus").textContent = provider.isReplay ? sensorCount + " sensors from recorded frame \xB7 recorded collision events" : live ? sensorCount + " periodic sensors receiving data \xB7 Collision sensor is event-driven" : "Sensors unavailable";
     const displayedSensor = provider.displayCamera ? "drivingCamera" : "frontCamera";
-    $9("cameraFps").textContent = number2(provider.performance?.sensorWallRatesHz?.[displayedSensor]) + " /wall seconds \xB7 " + number2(provider.sensorRates[displayedSensor]) + " Hz sim";
+    $10("cameraFps").textContent = number2(provider.performance?.sensorWallRatesHz?.[displayedSensor]) + " /wall seconds \xB7 " + number2(provider.sensorRates[displayedSensor]) + " Hz sim";
     const perf = provider.performance || {}, gpu = perf.gpu;
-    $9("performance").textContent = "actual steps: " + number2(perf.nativeTickRateHz) + " /s \xB7 Simulation time: " + (provider.world.fixedDeltaSeconds ? number2(1 / provider.world.fixedDeltaSeconds) + " Hz" : "\u2014") + (gpu ? " \xB7 VRAM " + gpu.usedMiB + " / " + gpu.totalMiB + " MiB" : "") + " \xB7 FPS Rendering unavailable";
-    $9("debugTelemetry").textContent = telemetryText(state, {
+    $10("performance").textContent = "actual steps: " + number2(perf.nativeTickRateHz) + " /s \xB7 Simulation time: " + (provider.world.fixedDeltaSeconds ? number2(1 / provider.world.fixedDeltaSeconds) + " Hz" : "\u2014") + (gpu ? " \xB7 VRAM " + gpu.usedMiB + " / " + gpu.totalMiB + " MiB" : "") + " \xB7 FPS Rendering unavailable";
+    $10("debugTelemetry").textContent = telemetryText(state, {
       remote: true,
       latencyMs: provider.latencyMs,
       sensorRates: provider.sensorRates,
@@ -5414,8 +6013,8 @@
       world: provider.world,
       mode: provider.controlMode
     });
-    $9("replayPauseBtn").hidden = !provider.isReplay;
-    $9("replayPauseBtn").textContent = provider.replay?.paused ? "Resume replay" : "Pause replay";
+    $10("replayPauseBtn").hidden = !provider.isReplay;
+    $10("replayPauseBtn").textContent = provider.replay?.paused ? "Resume replay" : "Pause replay";
     if (controllable && provider.controlMode === "MANUAL") sendManual(state);
     updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
     tools.render(state, controllable);
@@ -5433,12 +6032,12 @@
     presentationRun.update();
     sequentialDrive.update();
   }
-  $9("startDrivingBtn").onclick = () => {
+  $10("startDrivingBtn").onclick = () => {
     showWorkspace("drive");
     resetKeys();
     manualArmed = true;
     manualRequestedUntil = performance.now() + 1e3;
-    $9("drivingMode").value = "MANUAL";
+    $10("drivingMode").value = "MANUAL";
     const selected = document.querySelector("#studioManualMode")?.dataset.mode;
     const drivingMode = provider.controlMode === "AUTOMATIC" ? provider.journey?.driving_mode : selected || provider.manualDrivingMode;
     const manualMode = ["ROBOSPHERE", "NORMAL"].includes(drivingMode) ? drivingMode : provider.manualDrivingMode || "ROBOSPHERE";
@@ -5448,14 +6047,14 @@
       return;
     }
     document.activeElement?.blur();
-    $9("drivingInstruction").textContent = "Switching to keyboard control\u2026";
+    $10("drivingInstruction").textContent = "Switching to keyboard control\u2026";
   };
   function startJourney(drivingMode = null, pairId = null) {
     if (typeof drivingMode !== "string") drivingMode = null;
     const hybrid = ["HYBRID", "BASELINE"].includes(drivingMode);
-    const speed = Number(hybrid ? provider.journey?.speed_kmh || 30 : $9("journeySpeed").value);
+    const speed = Number(hybrid ? provider.journey?.speed_kmh || 30 : $10("journeySpeed").value);
     if (!Number.isFinite(speed) || speed < 5 || speed > (hybrid ? 50 : 30)) {
-      $9("operationStatus").textContent = "Choose a valid driving speed.";
+      $10("operationStatus").textContent = "Choose a valid driving speed.";
       return;
     }
     showWorkspace("drive");
@@ -5463,58 +6062,58 @@
     resetKeys();
     manualArmed = false;
     manualRequestedUntil = 0;
-    $9("drivingMode").value = "AUTOMATIC";
+    $10("drivingMode").value = "AUTOMATIC";
     const sent = provider.startJourney(speed, drivingMode, pairId);
-    if (sent) $9("journeyStatus").textContent = "Starting destination journey\u2026";
+    if (sent) $10("journeyStatus").textContent = "Starting destination journey\u2026";
     document.activeElement?.blur();
     return sent;
   }
-  $9("startJourneyBtn").onclick = $9("phoneJourneyBtn").onclick = $9("driveJourneyBtn").onclick = () => startJourney();
-  $9("journeySpeed").onchange = () => {
-    const speed = Number($9("journeySpeed").value);
+  $10("startJourneyBtn").onclick = $10("phoneJourneyBtn").onclick = $10("driveJourneyBtn").onclick = () => startJourney();
+  $10("journeySpeed").onchange = () => {
+    const speed = Number($10("journeySpeed").value);
     if (!Number.isFinite(speed) || speed < 5 || speed > 30) {
-      $9("operationStatus").textContent = "Choose a speed between 5 and 30 km/h.";
+      $10("operationStatus").textContent = "Choose a speed between 5 and 30 km/h.";
       return;
     }
     if (provider.controlMode === "AUTOMATIC") provider.journeySpeed(speed);
   };
-  $9("drivingMode").onchange = () => {
+  $10("drivingMode").onchange = () => {
     clearControls();
   };
-  $9("safetyEnabled").onchange = () => provider.dashboardAction("safety_mode", { enabled: $9("safetyEnabled").checked });
+  $10("safetyEnabled").onchange = () => provider.dashboardAction("safety_mode", { enabled: $10("safetyEnabled").checked });
   for (const [id, mode] of [["demoWithoutBtn", "WITHOUT"], ["demoWithBtn", "WITH"], ["demoStopBtn", "STOP"]]) {
-    $9(id).onclick = () => {
+    $10(id).onclick = () => {
       if (mode === "STOP" && !window.confirm("Reset the simulation? This returns the vehicle to its starting position and rebuilds traffic. Saved recordings are kept.")) return;
-      const seed = Number($9("comparisonSeed").value);
+      const seed = Number($10("comparisonSeed").value);
       if (!Number.isInteger(seed) || seed < 2e3 || seed > 2999) {
-        $9("operationStatus").textContent = "Choose a whole scenario seed between 2000 and 2999.";
+        $10("operationStatus").textContent = "Choose a whole scenario seed between 2000 and 2999.";
         return;
       }
       resetKeys();
       manualArmed = false;
       manualRequestedUntil = 0;
-      if (provider.dashboardAction("comparison", { mode, scenario: $9("comparisonScenario").value, seed })) {
+      if (provider.dashboardAction("comparison", { mode, scenario: $10("comparisonScenario").value, seed })) {
         if (mode !== "STOP") showWorkspace("drive");
-        $9("demoStatus").textContent = mode === "STOP" ? "Resetting simulation\u2026" : "Starting comparison\u2026";
-        $9("primaryActionHint").textContent = $9("demoStatus").textContent;
+        $10("demoStatus").textContent = mode === "STOP" ? "Resetting simulation\u2026" : "Starting comparison\u2026";
+        $10("primaryActionHint").textContent = $10("demoStatus").textContent;
       }
     };
   }
-  $9("safetyController").onchange = () => provider.dashboardAction("safety_mode", { enabled: $9("safetyEnabled").checked, controller: $9("safetyController").value });
-  $9("gearSelect").onchange = () => {
-    controls.setMode($9("gearSelect").value);
+  $10("safetyController").onchange = () => provider.dashboardAction("safety_mode", { enabled: $10("safetyEnabled").checked, controller: $10("safetyController").value });
+  $10("gearSelect").onchange = () => {
+    controls.setMode($10("gearSelect").value);
     provider.releaseControls();
     lastGear = null;
   };
-  $9("pauseBtn").onclick = () => clearControls();
-  $9("resetBtn").onclick = () => {
+  $10("pauseBtn").onclick = () => clearControls();
+  $10("resetBtn").onclick = () => {
     if (!window.confirm("Reset the vehicle to its spawn point? The current drive will end.")) return;
     resetKeys();
     manualArmed = false;
     manualRequestedUntil = 0;
     provider.resetVehicle();
   };
-  $9("emergencyStopBtn").onclick = () => {
+  $10("emergencyStopBtn").onclick = () => {
     tools.close(false);
     tools.expandCamera(false);
     resetKeys();
@@ -5522,32 +6121,42 @@
     manualRequestedUntil = 0;
     provider.emergencyStop();
   };
-  $9("acknowledgeStopBtn").onclick = () => {
+  $10("acknowledgeStopBtn").onclick = () => {
     resetKeys();
     manualArmed = false;
     manualRequestedUntil = 0;
     provider.acknowledgeStop();
   };
-  $9("replayPauseBtn").onclick = () => provider.setReplayPaused(!provider.replay?.paused).catch((e) => {
-    $9("operationStatus").textContent = e.message;
+  $10("replayPauseBtn").onclick = () => provider.setReplayPaused(!provider.replay?.paused).catch((e) => {
+    $10("operationStatus").textContent = e.message;
   });
   document.addEventListener("keydown", (event) => {
     if (event.target.closest?.('button, a, summary, [role="button"]')) return;
     if (isEditableTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey || tools.panel || document.querySelector("dialog[open]")) return;
     if (!event.repeat && document.body.dataset.workspace === "drive") {
       if (event.code === "KeyM") {
+        if (document.body.classList.contains("sequential-drive")) {
+          event.preventDefault();
+          document.dispatchEvent(new CustomEvent("detailsnavigate", { detail: { page: "diagnostics" } }));
+          return;
+        }
         event.preventDefault();
         document.getElementById("unifiedMapToggle")?.click();
         return;
       }
       if (event.code === "KeyF") {
         event.preventDefault();
-        $9("expandCameraBtn").click();
+        $10("expandCameraBtn").click();
         return;
       }
       if (event.code === "KeyC") {
+        if (document.body.classList.contains("sequential-drive")) {
+          event.preventDefault();
+          document.dispatchEvent(new CustomEvent("detailsnavigate", { detail: { page: "view" } }));
+          return;
+        }
         event.preventDefault();
-        const select = $9("cameraView");
+        const select = $10("cameraView");
         if (!select.disabled) {
           const options = [...select.options].filter((option) => !option.disabled);
           const index = options.findIndex((option) => option.value === select.value);
@@ -5558,7 +6167,7 @@
       }
       if (event.code === "KeyH") {
         event.preventDefault();
-        $9("studioShortcutButton")?.click();
+        $10("studioShortcutButton")?.click();
         return;
       }
     }
