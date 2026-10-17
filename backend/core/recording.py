@@ -16,6 +16,31 @@ from .logging import log, LogCategory
 MAX_ROW_BYTES = 1_048_576
 
 
+def queued_snapshot(value):
+    """Own mutable producer data and charge a conservative memory/wire bound.
+
+    JSON encoding happens once, on the writer. Strings include the worst-case
+    escaped representation; container/object overhead is included in the charge.
+    """
+    kind=type(value)
+    if kind is str:return value,64+len(value)*6
+    if kind in (int,float,bool,type(None)):return value,64
+    if isinstance(value,Mapping):
+        result={};size=256
+        for key,item in value.items():
+            copied,charge=queued_snapshot(item);result[key]=copied
+            size+=charge+128+len(str(key))*6
+        return result,size
+    if isinstance(value,(tuple,list)):
+        result=[];size=64
+        for item in value:
+            copied,charge=queued_snapshot(item);result.append(copied);size+=charge+16
+        return result,size
+    if is_dataclass(value):return queued_snapshot({f.name:getattr(value,f.name) for f in fields(value)})
+    if isinstance(value,str):return value,64+len(value)*6
+    return value,64
+
+
 class BufferedRunRecorder:
     """Bounded disk writer; immutable native bytes leave the tick thread.
 
@@ -67,13 +92,15 @@ class BufferedRunRecorder:
         return self._put(('event', event))
 
     def record_trace(self,row):
-        return self._put(('trace',row))
+        snapshot,size=queued_snapshot(row)
+        return self._put(('trace',snapshot),size)
 
     def record_video(self, sensor, data):
         return self._put(('video',(sensor,data)),len(data))
 
     def record_safety(self, row):
-        return self._put(('safety',row), len(encode_row(row)))
+        snapshot,size=queued_snapshot(row)
+        return self._put(('safety',snapshot),size)
 
     def status(self):
         with self.stats_lock:

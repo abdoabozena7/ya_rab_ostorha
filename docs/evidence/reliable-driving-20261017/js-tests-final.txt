@@ -1,0 +1,794 @@
+
+> test
+> node --test tests/*.test.js
+
+TAP version 13
+# Subtest: camera quality uses decoded distinct frames and fails a visible gap
+ok 1 - camera quality uses decoded distinct frames and fails a visible gap
+  ---
+  duration_ms: 1.3492
+  type: 'test'
+  ...
+# Subtest: autonomous journey survives inspection and hidden tabs with transport liveness
+ok 2 - autonomous journey survives inspection and hidden tabs with transport liveness
+  ---
+  duration_ms: 1.2544
+  type: 'test'
+  ...
+# Subtest: lease cannot revive stopped, collided, stale, read-only or emergency journeys
+ok 3 - lease cannot revive stopped, collided, stale, read-only or emergency journeys
+  ---
+  duration_ms: 0.4033
+  type: 'test'
+  ...
+# Subtest: presentation preparation and playback survive workspace changes without releasing manual controls
+ok 4 - presentation preparation and playback survive workspace changes without releasing manual controls
+  ---
+  duration_ms: 0.3137
+  type: 'test'
+  ...
+# Subtest: city presets stay within the declared ordinary population bounds and preserve the seed
+ok 5 - city presets stay within the declared ordinary population bounds and preserve the seed
+  ---
+  duration_ms: 0.7836
+  type: 'test'
+  ...
+# Subtest: hybrid brake distinguishes processing delay from an uncertain maneuver corridor
+ok 6 - hybrid brake distinguishes processing delay from an uncertain maneuver corridor
+  ---
+  duration_ms: 1.9874
+  type: 'test'
+  ...
+# Subtest: stationary rear blockage is factual and never claims a person or a moving crossing
+ok 7 - stationary rear blockage is factual and never claims a person or a moving crossing
+  ---
+  duration_ms: 0.4952
+  type: 'test'
+  ...
+# Subtest: presentation timeouts explain the retained incomplete attempt and recovery
+ok 8 - presentation timeouts explain the retained incomplete attempt and recovery
+  ---
+  duration_ms: 0.2112
+  type: 'test'
+  ...
+# Subtest: the original synchronized-scene failure takes precedence over generic presentation cleanup
+ok 9 - the original synchronized-scene failure takes precedence over generic presentation cleanup
+  ---
+  duration_ms: 0.2323
+  type: 'test'
+  ...
+# Subtest: held journey retains its original failure after focus loss and offers explicit resume
+ok 10 - held journey retains its original failure after focus loss and offers explicit resume
+  ---
+  duration_ms: 0.5428
+  type: 'test'
+  ...
+# Subtest: arrival is distinct from a failed or interrupted held drive
+ok 11 - arrival is distinct from a failed or interrupted held drive
+  ---
+  duration_ms: 0.2984
+  type: 'test'
+  ...
+# Subtest: a red signal keeps the journey active and explains the navigation brake
+ok 12 - a red signal keeps the journey active and explains the navigation brake
+  ---
+  duration_ms: 0.3657
+  type: 'test'
+  ...
+# Subtest: ordinary bypass explains preparation, returning and an actual execution veto
+ok 13 - ordinary bypass explains preparation, returning and an actual execution veto
+  ---
+  duration_ms: 0.7328
+  type: 'test'
+  ...
+# Subtest: a known occupied passing lane explains a stationary wait without claiming a pass
+ok 14 - a known occupied passing lane explains a stationary wait without claiming a pass
+  ---
+  duration_ms: 0.6359
+  type: 'test'
+  ...
+# Subtest: an expired navigation control frame cannot be described as an active pass
+ok 15 - an expired navigation control frame cannot be described as an active pass
+  ---
+  duration_ms: 0.5613
+  type: 'test'
+  ...
+# Subtest: surface movement and physical obstacles do not claim pedestrian recognition
+ok 16 - surface movement and physical obstacles do not claim pedestrian recognition
+  ---
+  duration_ms: 1.4829
+  type: 'test'
+  ...
+# Subtest: live applied brake, valid zero and missing TTC remain distinct
+ok 17 - live applied brake, valid zero and missing TTC remain distinct
+  ---
+  duration_ms: 1.184
+  type: 'test'
+  ...
+# Subtest: stale, future and faulty observations cannot appear as current gap or TTC
+ok 18 - stale, future and faulty observations cannot appear as current gap or TTC
+  ---
+  duration_ms: 0.3784
+  type: 'test'
+  ...
+# Subtest: disconnection clears stale numeric measurements and never promises protection
+ok 19 - disconnection clears stale numeric measurements and never promises protection
+  ---
+  duration_ms: 0.417
+  type: 'test'
+  ...
+# Subtest: emergency, holding, releasing and unavailable safety have factual distinct notices
+ok 20 - emergency, holding, releasing and unavailable safety have factual distinct notices
+  ---
+  duration_ms: 0.306
+  type: 'test'
+  ...
+# Subtest: an acknowledged emergency does not keep claiming that movement is locked
+ok 21 - an acknowledged emergency does not keep claiming that movement is locked
+  ---
+  duration_ms: 0.2169
+  type: 'test'
+  ...
+# Subtest: experimental protection remains factual without exposing controller names
+ok 22 - experimental protection remains factual without exposing controller names
+  ---
+  duration_ms: 0.1665
+  type: 'test'
+  ...
+# Subtest: recovery caption needs current maneuver data and never overrides a held or emergency vehicle
+ok 23 - recovery caption needs current maneuver data and never overrides a held or emergency vehicle
+  ---
+  duration_ms: 0.1881
+  type: 'test'
+  ...
+# Subtest: camera counts use current inference, never population or unrelated measured tracks
+ok 24 - camera counts use current inference, never population or unrelated measured tracks
+  ---
+  duration_ms: 0.5666
+  type: 'test'
+  ...
+# Subtest: 2D overlay requires exact displayed frame, timestamp and sensor viewpoint
+ok 25 - 2D overlay requires exact displayed frame, timestamp and sensor viewpoint
+  ---
+  duration_ms: 0.3816
+  type: 'test'
+  ...
+# Subtest: identical calibrated front view may resize, but differing FOV or ratio is rejected
+ok 26 - identical calibrated front view may resize, but differing FOV or ratio is rejected
+  ---
+  duration_ms: 0.2163
+  type: 'test'
+  ...
+# Subtest: contain coordinates account for both horizontal and vertical letterboxing
+ok 27 - contain coordinates account for both horizontal and vertical letterboxing
+  ---
+  duration_ms: 0.2647
+  type: 'test'
+  ...
+# Subtest: invalid or out-of-frame boxes cannot draw arbitrary screen geometry
+ok 28 - invalid or out-of-frame boxes cannot draw arbitrary screen geometry
+  ---
+  duration_ms: 0.2513
+  type: 'test'
+  ...
+# Subtest: replay displays recorded actuation with recorded provenance and no live inference
+ok 29 - replay displays recorded actuation with recorded provenance and no live inference
+  ---
+  duration_ms: 0.175
+  type: 'test'
+  ...
+# Subtest: RULE journey admission shows exhausted/unknown budget and all lifecycle blocks
+ok 30 - RULE journey admission shows exhausted/unknown budget and all lifecycle blocks
+  ---
+  duration_ms: 1.6525
+  type: 'test'
+  ...
+# Subtest: RULE is the default journey action; latest interrupted/failing attempts never show arrival
+ok 31 - RULE is the default journey action; latest interrupted/failing attempts never show arrival
+  ---
+  duration_ms: 1.2357
+  type: 'test'
+  ...
+# Subtest: one explicit start launches the simulation while automatic connection never launches it
+ok 32 - one explicit start launches the simulation while automatic connection never launches it
+  ---
+  duration_ms: 31.766
+  type: 'test'
+  ...
+# Subtest: session reset waits for a new native session and blocks controls during the handoff
+ok 33 - session reset waits for a new native session and blocks controls during the handoff
+  ---
+  duration_ms: 2.0263
+  type: 'test'
+  ...
+# Subtest: failed start gives an actionable error and replay cannot launch CARLA
+ok 34 - failed start gives an actionable error and replay cannot launch CARLA
+  ---
+  duration_ms: 1.4311
+  type: 'test'
+  ...
+# Subtest: explicit GPU shutdown works from an observer but cannot grant pedal control
+ok 35 - explicit GPU shutdown works from an observer but cannot grant pedal control
+  ---
+  duration_ms: 0.5746
+  type: 'test'
+  ...
+# Subtest: comparison RUN can explicitly claim control while STOP and pedals require ownership
+ok 36 - comparison RUN can explicitly claim control while STOP and pedals require ownership
+  ---
+  duration_ms: 0.3882
+  type: 'test'
+  ...
+# Subtest: keyboard uses physical codes and never admits driving from an editable target
+ok 37 - keyboard uses physical codes and never admits driving from an editable target
+  ---
+  duration_ms: 0.5282
+  type: 'test'
+  ...
+# Subtest: native restart accepts lower frames only after a genuine new session identity
+ok 38 - native restart accepts lower frames only after a genuine new session identity
+  ---
+  duration_ms: 0.335
+  type: 'test'
+  ...
+# Subtest: choosing a route and heartbeating never emit manual pedal commands
+ok 39 - choosing a route and heartbeating never emit manual pedal commands
+  ---
+  duration_ms: 0.7043
+  type: 'test'
+  ...
+# Subtest: safety comparison carries no driving commands and disconnect clears active status
+ok 40 - safety comparison carries no driving commands and disconnect clears active status
+  ---
+  duration_ms: 0.7728
+  type: 'test'
+  ...
+# Subtest: explicit destination start emits only journey request, never manual pedals or AI opt-in
+ok 41 - explicit destination start emits only journey request, never manual pedals or AI opt-in
+  ---
+  duration_ms: 0.9435
+  type: 'test'
+  ...
+# Subtest: production modules have no legacy world, renderer, or mock physics dependency
+ok 42 - production modules have no legacy world, renderer, or mock physics dependency
+  ---
+  duration_ms: 7.8021
+  type: 'test'
+  ...
+# Subtest: missing observations stay unavailable, rather than decorative zero values
+ok 43 - missing observations stay unavailable, rather than decorative zero values
+  ---
+  duration_ms: 2.0662
+  type: 'test'
+  ...
+# Subtest: disconnect retains explicitly saved journey evidence but clears live run authority
+ok 44 - disconnect retains explicitly saved journey evidence but clears live run authority
+  ---
+  duration_ms: 0.6263
+  type: 'test'
+  ...
+# Subtest: reset is one atomic backend request without a racing manual pedal command
+ok 45 - reset is one atomic backend request without a racing manual pedal command
+  ---
+  duration_ms: 0.3673
+  type: 'test'
+  ...
+# Subtest: a coalesced later acknowledgement retires queued start and stop requests together
+ok 46 - a coalesced later acknowledgement retires queued start and stop requests together
+  ---
+  duration_ms: 0.4271
+  type: 'test'
+  ...
+# Subtest: read-only dashboard can explicitly claim driving without admitting pedals first
+ok 47 - read-only dashboard can explicitly claim driving without admitting pedals first
+  ---
+  duration_ms: 0.3751
+  type: 'test'
+  ...
+# Subtest: native reconnect is available on a disconnected socket but cannot escape replay
+ok 48 - native reconnect is available on a disconnected socket but cannot escape replay
+  ---
+  duration_ms: 0.263
+  type: 'test'
+  ...
+# Subtest: commands require fresh CARLA state and exclusive control ownership
+ok 49 - commands require fresh CARLA state and exclusive control ownership
+  ---
+  duration_ms: 0.3862
+  type: 'test'
+  ...
+# Subtest: pedal release deferred by the rate guard sends brake and never carries old throttle
+ok 50 - pedal release deferred by the rate guard sends brake and never carries old throttle
+  ---
+  duration_ms: 0.3699
+  type: 'test'
+  ...
+# Subtest: disconnect clears cached telemetry and never accepts a different source
+ok 51 - disconnect clears cached telemetry and never accepts a different source
+  ---
+  duration_ms: 0.2022
+  type: 'test'
+  ...
+# Subtest: missing CARLA schedules bounded retry without creating a simulator
+ok 52 - missing CARLA schedules bounded retry without creating a simulator
+  ---
+  duration_ms: 0.7473
+  type: 'test'
+  ...
+# Subtest: mismatched vehicle and world frames cannot enable controls
+ok 53 - mismatched vehicle and world frames cannot enable controls
+  ---
+  duration_ms: 0.2743
+  type: 'test'
+  ...
+# Subtest: S brakes forward motion before requesting reverse, and W brakes reverse first
+ok 54 - S brakes forward motion before requesting reverse, and W brakes reverse first
+  ---
+  duration_ms: 0.3947
+  type: 'test'
+  ...
+# Subtest: Shift increases the W pedal without commanding motion on its own or overriding brakes
+ok 55 - Shift increases the W pedal without commanding motion on its own or overriding brakes
+  ---
+  duration_ms: 0.4025
+  type: 'test'
+  ...
+# Subtest: neutral, contradictory pedals, missing speed, and handbrake cannot apply throttle
+ok 56 - neutral, contradictory pedals, missing speed, and handbrake cannot apply throttle
+  ---
+  duration_ms: 0.2166
+  type: 'test'
+  ...
+# Subtest: recorded camera identity changes with frame, time or file reference
+ok 57 - recorded camera identity changes with frame, time or file reference
+  ---
+  duration_ms: 0.3852
+  type: 'test'
+  ...
+# Subtest: camera bytes cannot be paired with metadata from another simulation frame
+ok 58 - camera bytes cannot be paired with metadata from another simulation frame
+  ---
+  duration_ms: 0.3543
+  type: 'test'
+  ...
+# Subtest: recorded replay displays data but can never send native commands or claim connection
+ok 59 - recorded replay displays data but can never send native commands or claim connection
+  ---
+  duration_ms: 0.3511
+  type: 'test'
+  ...
+# Subtest: test-fixture replay is rejected by the production browser client
+ok 60 - test-fixture replay is rejected by the production browser client
+  ---
+  duration_ms: 0.2194
+  type: 'test'
+  ...
+# Subtest: paused and emergency-stop states block pedals; controls carry explicit frame and time
+ok 61 - paused and emergency-stop states block pedals; controls carry explicit frame and time
+  ---
+  duration_ms: 0.3225
+  type: 'test'
+  ...
+# Subtest: duplicate frames cannot refresh stale native data and invalid time ordering is rejected
+ok 62 - duplicate frames cannot refresh stale native data and invalid time ordering is rejected
+  ---
+  duration_ms: 0.1707
+  type: 'test'
+  ...
+# Subtest: connection timeout ignores a late HTTP completion instead of opening a socket
+ok 63 - connection timeout ignores a late HTTP completion instead of opening a socket
+  ---
+  duration_ms: 0.6438
+  type: 'test'
+  ...
+# Subtest: a stopped route-end failure remains comparable while user stops and runtime faults cancel
+ok 64 - a stopped route-end failure remains comparable while user stops and runtime faults cancel
+  ---
+  duration_ms: 1.5872
+  type: 'test'
+  ...
+# Subtest: paired playback continues to the longer journey after the shorter one ends
+ok 65 - paired playback continues to the longer journey after the shorter one ends
+  ---
+  duration_ms: 0.3068
+  type: 'test'
+  ...
+# Subtest: video references are confined to native ordinary recording IDs
+ok 66 - video references are confined to native ordinary recording IDs
+  ---
+  duration_ms: 0.4158
+  type: 'test'
+  ...
+# Subtest: native benchmark drivers remain distinct from legacy protection modes
+ok 67 - native benchmark drivers remain distinct from legacy protection modes
+  ---
+  duration_ms: 1.3349
+  type: 'test'
+  ...
+# Subtest: comparison distinguishes measured speed from the request and missing legacy peaks
+ok 68 - comparison distinguishes measured speed from the request and missing legacy peaks
+  ---
+  duration_ms: 0.6325
+  type: 'test'
+  ...
+# Subtest: unaccepted driving and missing disk space offer factual recovery messages
+ok 69 - unaccepted driving and missing disk space offer factual recovery messages
+  ---
+  duration_ms: 1.2277
+  type: 'test'
+  ...
+# Subtest: unknown surface and unconfirmed label never become a vehicle marker
+ok 70 - unknown surface and unconfirmed label never become a vehicle marker
+  ---
+  duration_ms: 2.1784
+  type: 'test'
+  ...
+# Subtest: fault, ordinary pause, preparation, playback and emergency have a single next action
+ok 71 - fault, ordinary pause, preparation, playback and emergency have a single next action
+  ---
+  duration_ms: 0.4796
+  type: 'test'
+  ...
+# Subtest: starting state stays visible during backend handoff
+ok 72 - starting state stays visible during backend handoff
+  ---
+  duration_ms: 1.6294
+  type: 'test'
+  ...
+# Subtest: guided sequence selects destination before crowding that road and driving
+ok 73 - guided sequence selects destination before crowding that road and driving
+  ---
+  duration_ms: 0.4159
+  type: 'test'
+  ...
+# Subtest: ownership, disconnection and emergency take priority over driving
+ok 74 - ownership, disconnection and emergency take priority over driving
+  ---
+  duration_ms: 0.3028
+  type: 'test'
+  ...
+# Subtest: failed population and moving vehicle cannot advance to start
+ok 75 - failed population and moving vehicle cannot advance to start
+  ---
+  duration_ms: 0.2098
+  type: 'test'
+  ...
+# Subtest: comparison retains neither, left, right, both and incomplete states
+ok 76 - comparison retains neither, left, right, both and incomplete states
+  ---
+  duration_ms: 1.8099
+  type: 'test'
+  ...
+# Subtest: unavailable measurements remain distinct from measured zero and arrival
+ok 77 - unavailable measurements remain distinct from measured zero and arrival
+  ---
+  duration_ms: 1.2551
+  type: 'test'
+  ...
+# Subtest: differences require complete matching arms and valid observation coverage
+ok 78 - differences require complete matching arms and valid observation coverage
+  ---
+  duration_ms: 0.6387
+  type: 'test'
+  ...
+# Subtest: world and forecast poses share CARLA axes through turns
+ok 79 - world and forecast poses share CARLA axes through turns
+  ---
+  duration_ms: 1.4305
+  type: 'test'
+  ...
+# Subtest: perspective map keeps native route turns and actors aligned with the car
+ok 80 - perspective map keeps native route turns and actors aligned with the car
+  ---
+  duration_ms: 0.3599
+  type: 'test'
+  ...
+# Subtest: actor selection compensates for letterboxing in expanded maps
+ok 81 - actor selection compensates for letterboxing in expanded maps
+  ---
+  duration_ms: 0.3317
+  type: 'test'
+  ...
+# Subtest: map rejects old/future/foreign forecasts and identifies empty measured scenes
+ok 82 - map rejects old/future/foreign forecasts and identifies empty measured scenes
+  ---
+  duration_ms: 0.4479
+  type: 'test'
+  ...
+# Subtest: mode admission explains readiness and respects research, recording and emergency locks
+ok 83 - mode admission explains readiness and respects research, recording and emergency locks
+  ---
+  duration_ms: 1.0184
+  type: 'test'
+  ...
+# Subtest: stale scenes never claim a clear path and zero remains a measured value
+ok 84 - stale scenes never claim a clear path and zero remains a measured value
+  ---
+  duration_ms: 2.7293
+  type: 'test'
+  ...
+# Subtest: object direction uses movement and gaze remains unknown
+ok 85 - object direction uses movement and gaze remains unknown
+  ---
+  duration_ms: 0.4619
+  type: 'test'
+  ...
+# Subtest: ordinary RULE driving still reports the measured conflict and applied braking
+ok 86 - ordinary RULE driving still reports the measured conflict and applied braking
+  ---
+  duration_ms: 1.2769
+  type: 'test'
+  ...
+# Subtest: unknown road coverage cannot be displayed as a clear prediction
+ok 87 - unknown road coverage cannot be displayed as a clear prediction
+  ---
+  duration_ms: 0.2743
+  type: 'test'
+  ...
+# Subtest: an unavailable processed JPEG cannot relabel the previously displayed frame
+ok 88 - an unavailable processed JPEG cannot relabel the previously displayed frame
+  ---
+  duration_ms: 3.3244
+  type: 'test'
+  ...
+# Subtest: measured map freshness is independent from exact camera overlay matching
+ok 89 - measured map freshness is independent from exact camera overlay matching
+  ---
+  duration_ms: 1.3769
+  type: 'test'
+  ...
+# Subtest: camera projections transform all five poses, including rear and top
+ok 90 - camera projections transform all five poses, including rear and top
+  ---
+  duration_ms: 2.4367
+  type: 'test'
+  ...
+# Subtest: predictions clear on a session change, future/stale image or missing metadata
+ok 91 - predictions clear on a session change, future/stale image or missing metadata
+  ---
+  duration_ms: 0.2135
+  type: 'test'
+  ...
+# Subtest: a recovered presentation retains failure and injection identity under its video
+ok 92 - a recovered presentation retains failure and injection identity under its video
+  ---
+  duration_ms: 1.4111
+  type: 'test'
+  ...
+# Subtest: automatic route population shows actual counts and capacity limits
+ok 93 - automatic route population shows actual counts and capacity limits
+  ---
+  duration_ms: 0.3769
+  type: 'test'
+  ...
+# Subtest: presentation results never infer superiority from a failed or mismatched pair
+ok 94 - presentation results never infer superiority from a failed or mismatched pair
+  ---
+  duration_ms: 0.4429
+  type: 'test'
+  ...
+# Subtest: shipped dashboard interface contains no Arabic UI strings
+ok 95 - shipped dashboard interface contains no Arabic UI strings
+  ---
+  duration_ms: 5.0089
+  type: 'test'
+  ...
+# Subtest: custom city waits for actual pedestrian and controller admission as well as vehicles
+ok 96 - custom city waits for actual pedestrian and controller admission as well as vehicles
+  ---
+  duration_ms: 3.0758
+  type: 'test'
+  ...
+# Subtest: zero-traffic city is explicit and invalid custom counts never send a request
+ok 97 - zero-traffic city is explicit and invalid custom counts never send a request
+  ---
+  duration_ms: 0.5159
+  type: 'test'
+  ...
+# Subtest: explicit preparation requests 25 vehicles and 20 walkers around ego and stops first
+ok 98 - explicit preparation requests 25 vehicles and 20 walkers around ego and stops first
+  ---
+  duration_ms: 0.5257
+  type: 'test'
+  ...
+# Subtest: only new applied settings plus a matching native snapshot admit ready
+ok 99 - only new applied settings plus a matching native snapshot admit ready
+  ---
+  duration_ms: 0.4184
+  type: 'test'
+  ...
+# Subtest: does not admit partial population evidence
+ok 100 - does not admit partial population evidence
+  ---
+  duration_ms: 1.2709
+  type: 'test'
+  ...
+# Subtest: does not admit nativeFailure population evidence
+ok 101 - does not admit nativeFailure population evidence
+  ---
+  duration_ms: 0.3525
+  type: 'test'
+  ...
+# Subtest: does not admit stale population evidence
+ok 102 - does not admit stale population evidence
+  ---
+  duration_ms: 0.2038
+  type: 'test'
+  ...
+# Subtest: does not admit disconnectedTM population evidence
+ok 103 - does not admit disconnectedTM population evidence
+  ---
+  duration_ms: 0.1369
+  type: 'test'
+  ...
+# Subtest: does not admit errors population evidence
+ok 104 - does not admit errors population evidence
+  ---
+  duration_ms: 0.3876
+  type: 'test'
+  ...
+# Subtest: does not admit missingErrors population evidence
+ok 105 - does not admit missingErrors population evidence
+  ---
+  duration_ms: 0.4575
+  type: 'test'
+  ...
+# Subtest: does not admit changedSeed population evidence
+ok 106 - does not admit changedSeed population evidence
+  ---
+  duration_ms: 0.1946
+  type: 'test'
+  ...
+# Subtest: absent or wrong-action completion never becomes success
+ok 107 - absent or wrong-action completion never becomes success
+  ---
+  duration_ms: 0.1842
+  type: 'test'
+  ...
+# Subtest: native rejection and protocol error are visible without retries
+ok 108 - native rejection and protocol error are visible without retries
+  ---
+  duration_ms: 0.2517
+  type: 'test'
+  ...
+# Subtest: disconnect, replay and lost ownership keep completion unverified
+ok 109 - disconnect, replay and lost ownership keep completion unverified
+  ---
+  duration_ms: 0.1717
+  type: 'test'
+  ...
+# Subtest: timeout holds driving without repeating the request; late authentic completion is accepted
+ok 110 - timeout holds driving without repeating the request; late authentic completion is accepted
+  ---
+  duration_ms: 0.1651
+  type: 'test'
+  ...
+# Subtest: request rejection never reports success and supports an explicit retry
+ok 111 - request rejection never reports success and supports an explicit retry
+  ---
+  duration_ms: 0.1997
+  type: 'test'
+  ...
+# Subtest: new native session resets only the old preparation result
+ok 112 - new native session resets only the old preparation result
+  ---
+  duration_ms: 0.1035
+  type: 'test'
+  ...
+# Subtest: an independently loaded controlled scene clears the normal-city gate without claiming success
+ok 113 - an independently loaded controlled scene clears the normal-city gate without claiming success
+  ---
+  duration_ms: 0.135
+  type: 'test'
+  ...
+# Subtest: preparation is unavailable during movement, recordings, controlled scenarios and other ownership
+ok 114 - preparation is unavailable during movement, recordings, controlled scenarios and other ownership
+  ---
+  duration_ms: 0.1934
+  type: 'test'
+  ...
+# Subtest: transport holds starts and motion but always permits stop and emergency controls
+ok 115 - transport holds starts and motion but always permits stop and emergency controls
+  ---
+  duration_ms: 19.3879
+  type: 'test'
+  ...
+# Subtest: road crowding requires a destination and sends no fixed vehicle count
+ok 116 - road crowding requires a destination and sends no fixed vehicle count
+  ---
+  duration_ms: 0.7686
+  type: 'test'
+  ...
+# Subtest: partial or mismatched road placement cannot advance to driving
+ok 117 - partial or mismatched road placement cannot advance to driving
+  ---
+  duration_ms: 0.3703
+  type: 'test'
+  ...
+# Subtest: a new destination invalidates road readiness but replanning the same destination preserves it
+ok 118 - a new destination invalidates road readiness but replanning the same destination preserves it
+  ---
+  duration_ms: 0.1893
+  type: 'test'
+  ...
+# Subtest: native preparation receipt survives circulating traffic count changes and page reload
+ok 119 - native preparation receipt survives circulating traffic count changes and page reload
+  ---
+  duration_ms: 0.3704
+  type: 'test'
+  ...
+# Subtest: initial partial admission or another unfinished request cannot use an old receipt
+ok 120 - initial partial admission or another unfinished request cannot use an old receipt
+  ---
+  duration_ms: 0.2124
+  type: 'test'
+  ...
+# Subtest: a delayed native admission advances once without requesting another fleet
+ok 121 - a delayed native admission advances once without requesting another fleet
+  ---
+  duration_ms: 0.4033
+  type: 'test'
+  ...
+# Subtest: route confirmation waits for aligned telemetry instead of rejecting a frame in flight
+ok 122 - route confirmation waits for aligned telemetry instead of rejecting a frame in flight
+  ---
+  duration_ms: 0.2308
+  type: 'test'
+  ...
+# Subtest: unknown risk and unavailable intervention counts never imply a safe live drive
+ok 123 - unknown risk and unavailable intervention counts never imply a safe live drive
+  ---
+  duration_ms: 1.7948
+  type: 'test'
+  ...
+# Subtest: emergency acknowledgement takes priority over active intervention and completed results
+ok 124 - emergency acknowledgement takes priority over active intervention and completed results
+  ---
+  duration_ms: 0.178
+  type: 'test'
+  ...
+# Subtest: read-only, replay and starting states cannot offer an active driving command
+ok 125 - read-only, replay and starting states cannot offer an active driving command
+  ---
+  duration_ms: 0.282
+  type: 'test'
+  ...
+# Subtest: a completed collision and a sensor fault cannot use a success state
+ok 126 - a completed collision and a sensor fault cannot use a success state
+  ---
+  duration_ms: 0.2512
+  type: 'test'
+  ...
+# Subtest: autonomous driving, safety intervention and arrival have distinct states and actions
+ok 127 - autonomous driving, safety intervention and arrival have distinct states and actions
+  ---
+  duration_ms: 0.2017
+  type: 'test'
+  ...
+# Subtest: current results and archived comparison are separate scopes, including partial comparisons
+ok 128 - current results and archived comparison are separate scopes, including partial comparisons
+  ---
+  duration_ms: 0.1741
+  type: 'test'
+  ...
+# Subtest: missing or interrupted collision observations are never reported as a completed safe run
+ok 129 - missing or interrupted collision observations are never reported as a completed safe run
+  ---
+  duration_ms: 0.228
+  type: 'test'
+  ...
+# Subtest: detection age uses simulation time, flags half-second delays and rejects future frames
+ok 130 - detection age uses simulation time, flags half-second delays and rejects future frames
+  ---
+  duration_ms: 0.1971
+  type: 'test'
+  ...
+1..130
+# tests 130
+# suites 0
+# pass 130
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 344.7653

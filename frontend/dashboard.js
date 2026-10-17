@@ -17,8 +17,11 @@ import {installDrivingStudio} from './driving-studio.js';
 import {installLightCockpit} from './light-cockpit.js';
 import {installDemoDrive} from './demo-drive.js';
 import {installPresentationRun} from './presentation-run.js';
+import {installSequentialDrive} from './sequential-drive.js';
+import {CameraPerformance} from './camera-performance.js';
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
+const cameraPerformance=new CameraPerformance();
 presentationUI(provider);
 const perception = new PerceptionView(provider);
 const predictionView = new PredictionView(provider);
@@ -36,6 +39,7 @@ const studio=installDrivingStudio(provider,guided,predictionView,tools);
 const cockpit=installLightCockpit(provider,tools,perception,predictionView,mode=>startJourney(mode));
 const demoDrive=installDemoDrive(provider,tools,clearControls);
 const presentationRun=installPresentationRun(provider,tools,clearControls);
+const sequentialDrive=installSequentialDrive(provider);
 $('stopSimulatorBtn').onclick=()=>{clearControls('simulator_shutdown');provider.stopSimulator();};
 $('resetSimulatorBtn').onclick=()=>{resetKeys();manualArmed=false;manualRequestedUntil=0;clearCamera();provider.resetSimulation();};
 function canInput() {
@@ -85,6 +89,10 @@ async function updateCamera(metadata) {
     const previousUrl=cameraUrl;cameraUrl=nextUrl;cameraReceipt=key;
     displayedCamera = {...metadata};
     $('authoritativeCamera').src = cameraUrl; $('authoritativeCamera').hidden = false;
+    if(provider.journey?.status==='RUNNING')requestAnimationFrame(()=>{
+      cameraPerformance.present(metadata.frame,metadata.timestamp,performance.now(),provider.journey.pair_id+':'+provider.journey.driving_mode);
+      $('authoritativeCamera').dataset.performance=JSON.stringify(cameraPerformance.snapshot());
+    });
     if(previousUrl)URL.revokeObjectURL(previousUrl);
     $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = provider.isReplay ? 'REPLAY · Recorded image' : 'RGB · Live image';
     $('cameraTimestamp').textContent = 't '+number(Number(response.headers.get('X-Sensor-Time')),' s',3);
@@ -215,6 +223,7 @@ function refresh() {
   cockpit.update(state,displayedCamera);
   demoDrive.update();
   presentationRun.update();
+  sequentialDrive.update();
 }
 $('startDrivingBtn').onclick = () => {
   showWorkspace('drive');
@@ -284,6 +293,7 @@ $('acknowledgeStopBtn').onclick = () => {
 };
 $('replayPauseBtn').onclick = () => provider.setReplayPaused(!provider.replay?.paused).catch(e=>{$('operationStatus').textContent=e.message;});
 document.addEventListener('keydown',event => {
+  if (event.target.closest?.('button, a, summary, [role="button"]')) return;
   if (isEditableTarget(event.target)||event.altKey||event.ctrlKey||event.metaKey||tools.panel||document.querySelector('dialog[open]')) return;
   if (!event.repeat&&document.body.dataset.workspace==='drive') {
     if(event.code==='KeyM'){

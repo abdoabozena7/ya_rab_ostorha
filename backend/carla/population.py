@@ -497,7 +497,8 @@ class WorldPopulationManager:
             self.vehicles_removed_native += 1
         # TM may destroy blocked vehicles. Replace only the missing owned NPCs,
         # outside the ego's immediate view, without resetting the world or fleet.
-        if len(self.vehicles) < self.config['vehicle_count'] and timestamp-self.last_replacement_at >= 5.:
+        if (not getattr(self,'benchmark_locked',False) and len(self.vehicles) < self.config['vehicle_count']
+                and timestamp-self.last_replacement_at >= 5.):
             self.last_replacement_at = timestamp
             self.spawn_traffic(self.config['vehicle_count'], replacement=True)
         for actor_id in list(self.pending_vehicles):

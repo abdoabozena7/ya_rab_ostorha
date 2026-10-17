@@ -1,0 +1,5391 @@
+{
+  "pair_id": "01ce0fb82ad246b3836c8a72ceb36388",
+  "seed": 320418473,
+  "population": {
+    "vehicles": {
+      "total": 24,
+      "ahead": 24
+    },
+    "pedestrians": {
+      "total": 30,
+      "ahead": 30
+    }
+  },
+  "ahead_definition": "Positive longitudinal coordinate at frozen initial ego pose; all owned fixture actors",
+  "dense_setup_valid": true,
+  "arms": {
+    "ROBOSPHERE": {
+      "run": {
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2b48d6b66dd84b77ad5b07666b4945f6",
+        "duration_s": 4.100000061094761,
+        "distance_m": 0.0008513648062944412,
+        "maximum_speed_kmh": 0.006419174112748742,
+        "collisions": 0
+      },
+      "samples": 85,
+      "quality": {
+        "accepted": false,
+        "gates": {
+          "arrived": false,
+          "no_contacts": true,
+          "complete_measurements": true,
+          "fresh_fraction": false,
+          "no_control_delays": false,
+          "all_stops_independently_verified": false,
+          "comfort": true,
+          "no_oscillation": false,
+          "cruise_50_verified": false,
+          "display": false
+        },
+        "fresh_fraction": 0.7176470588235294,
+        "delay_frames": [
+          60930,
+          60932,
+          60939,
+          60940,
+          60941,
+          60943,
+          60944,
+          60947,
+          60948,
+          60957,
+          60961,
+          60966,
+          60974,
+          60981,
+          60982,
+          60983,
+          60984,
+          60991,
+          60996,
+          60997,
+          60998,
+          60999,
+          61000,
+          61001
+        ],
+        "stop_frames": [
+          {
+            "frame": 60917,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 60918,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60919,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60920,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60921,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60922,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60923,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60924,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60925,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60926,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60927,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60928,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60929,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60930,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60931,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60932,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60933,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60934,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60935,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60936,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60937,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60938,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60939,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60940,
+            "reason": null
+          },
+          {
+            "frame": 60941,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60942,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60943,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60944,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60945,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60946,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60947,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60948,
+            "reason": null
+          },
+          {
+            "frame": 60949,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60950,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60951,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60952,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60953,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60954,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60955,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60956,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60957,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60958,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60959,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60960,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60961,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60962,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60963,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60964,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60965,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60966,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60967,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60968,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60969,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60970,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60971,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60972,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60973,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60974,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60975,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60976,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60977,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60978,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60979,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60980,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60981,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60982,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60983,
+            "reason": null
+          },
+          {
+            "frame": 60984,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60985,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60986,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60987,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60988,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60989,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60990,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60991,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60992,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60993,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60994,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60995,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60996,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60997,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60998,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60999,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 61000,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 61001,
+            "reason": null
+          }
+        ],
+        "unresolved_stop_frames": [
+          {
+            "frame": 60917,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 60918,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60919,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60920,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60921,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60922,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60923,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60924,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60925,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60926,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60927,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60928,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60929,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60930,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60931,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60932,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60933,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60934,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60935,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60936,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60937,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60938,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60939,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60940,
+            "reason": null
+          },
+          {
+            "frame": 60941,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60942,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60943,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60944,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60945,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60946,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60947,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60948,
+            "reason": null
+          },
+          {
+            "frame": 60949,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60950,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60951,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60952,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60953,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60954,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60955,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60956,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60957,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60958,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60959,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60960,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60961,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60962,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60963,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60964,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60965,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60966,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60967,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60968,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60969,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60970,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60971,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60972,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60973,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60974,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60975,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60976,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60977,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60978,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60979,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60980,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60981,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60982,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60983,
+            "reason": null
+          },
+          {
+            "frame": 60984,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60985,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60986,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60987,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60988,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60989,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60990,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60991,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60992,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60993,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60994,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60995,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 60996,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60997,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60998,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 60999,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 61000,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 61001,
+            "reason": null
+          }
+        ],
+        "comfort_violations": [],
+        "maximum_jerk_0_2s_mps3": 9.426446285230516e-06,
+        "oscillations": [
+          {
+            "frame": 60951,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60958,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60960,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60962,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60965,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60967,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60969,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60975,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60977,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60992,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 60994,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          }
+        ],
+        "camera": null,
+        "missing_measurements": [],
+        "evidence_note": "Every recorded frame is included, including startup/terminal holds and frames without decisions. Stops require independent review; no logged reason automatically authorizes a stop. Browser performance is audited separately."
+      },
+      "video": {
+        "status": "READY",
+        "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+        "clock": "SIMULATION_TIME",
+        "frames": 84,
+        "first_timestamp_s": 2728.3820299841464,
+        "last_timestamp_s": 2732.532030045986,
+        "duration_s": 4.150000061839819,
+        "video": "driving.mp4",
+        "sha256": "11b4af68af0e9e98e842c52d578e900ea36b2e2d26d6e88b95d0593ea899d408",
+        "frame_index": "telemetry/video-frames.jsonl",
+        "clock_zero_timestamp_s": 2728.3820299841464,
+        "alignment_source": "ADMITTED_JOURNEY_START",
+        "maximum_frame_gap_s": 0.05000000074505806,
+        "verified_sha256": "11b4af68af0e9e98e842c52d578e900ea36b2e2d26d6e88b95d0593ea899d408",
+        "checksum_matches": true
+      },
+      "recording_status": {
+        "incomplete": false,
+        "error": null,
+        "dropped_frames": 0,
+        "dropped_events": 0,
+        "dropped_trace_rows": 0,
+        "first_dropped_frame": null,
+        "last_dropped_frame": null,
+        "written_frames": 85,
+        "queued_bytes": 0,
+        "pending_items": 0,
+        "finalized": true
+      }
+    },
+    "NORMAL": {
+      "run": {
+        "status": "INTERRUPTED",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_062c472209fc4311ba45358b4db8bad4",
+        "duration_s": 32.600000485777855,
+        "distance_m": 43.217617730525504,
+        "maximum_speed_kmh": 36.62811462643396,
+        "collisions": 0
+      },
+      "samples": 656,
+      "quality": {
+        "accepted": false,
+        "gates": {
+          "arrived": false,
+          "no_contacts": true,
+          "complete_measurements": true,
+          "fresh_fraction": false,
+          "no_control_delays": false,
+          "all_stops_independently_verified": false,
+          "comfort": false,
+          "no_oscillation": true,
+          "cruise_50_verified": false,
+          "display": false
+        },
+        "fresh_fraction": 0.8277439024390244,
+        "delay_frames": [
+          61026,
+          61035,
+          61041,
+          61044,
+          61047,
+          61051,
+          61055,
+          61059,
+          61061,
+          61063,
+          61072,
+          61077,
+          61081,
+          61082,
+          61087,
+          61091,
+          61092,
+          61097,
+          61101,
+          61102,
+          61103,
+          61107,
+          61108,
+          61112,
+          61115,
+          61119,
+          61121,
+          61123,
+          61124,
+          61126,
+          61127,
+          61128,
+          61137,
+          61139,
+          61140,
+          61141,
+          61148,
+          61150,
+          61152,
+          61153,
+          61155,
+          61159,
+          61161,
+          61163,
+          61165,
+          61166,
+          61168,
+          61170,
+          61171,
+          61174,
+          61176,
+          61177,
+          61178,
+          61181,
+          61182,
+          61184,
+          61185,
+          61187,
+          61188,
+          61189,
+          61191,
+          61193,
+          61194,
+          61197,
+          61198,
+          61199,
+          61200,
+          61201,
+          61202,
+          61203,
+          61204,
+          61205,
+          61209,
+          61210,
+          61211,
+          61212,
+          61214,
+          61215,
+          61217,
+          61231,
+          61263,
+          61299,
+          61315,
+          61330,
+          61346,
+          61359,
+          61374,
+          61388,
+          61403,
+          61416,
+          61429,
+          61442,
+          61455,
+          61470,
+          61483,
+          61493,
+          61507,
+          61519,
+          61531,
+          61554,
+          61566,
+          61579,
+          61580,
+          61591,
+          61592,
+          61603,
+          61616,
+          61617,
+          61629,
+          61640,
+          61650,
+          61653,
+          61680
+        ],
+        "stop_frames": [
+          {
+            "frame": 61025,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61026,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61027,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61028,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61029,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61030,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61031,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61032,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61033,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61034,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61035,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61036,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61037,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61038,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61039,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61040,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61041,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61042,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61043,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61044,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61045,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61046,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61047,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61048,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61049,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61050,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61051,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61052,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61053,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61054,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61055,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61056,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61057,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61058,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61059,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61060,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61061,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61062,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61063,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61064,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61065,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61066,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61067,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61068,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61237,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61238,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61239,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61240,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61241,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61242,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61243,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61244,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61245,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61246,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61247,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61248,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61249,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61250,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61251,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61252,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61253,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61254,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61255,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61256,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61257,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61258,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61259,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61260,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61261,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61262,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61263,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61264,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61265,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61266,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61267,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61268,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61269,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61270,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61271,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61272,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61273,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61274,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61275,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61276,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61277,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61278,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61279,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61280,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61281,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61282,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61283,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61284,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61285,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61286,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61287,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61288,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61289,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61290,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61291,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61292,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61293,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61294,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61295,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61296,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61297,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61298,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61299,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61300,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61301,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61302,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61303,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61304,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61305,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61306,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61307,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61308,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61309,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61310,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61311,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61312,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61313,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61314,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61315,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61316,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61317,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61318,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61319,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61320,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61321,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61322,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61323,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61324,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61325,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61326,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61327,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61328,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61329,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61330,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61331,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61332,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61333,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61334,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61335,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61336,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61337,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61338,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61339,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61340,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61341,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61342,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61343,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61344,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61345,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61346,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61347,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61348,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61349,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61350,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61351,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61352,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61353,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61354,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61355,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61356,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61357,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61358,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61359,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61360,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61361,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61362,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61363,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61364,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61365,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61366,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61367,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61368,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61369,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61370,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61371,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61372,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61373,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61374,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61375,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61376,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61377,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61378,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61379,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61380,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61381,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61382,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61383,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61384,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61385,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61386,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61387,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61388,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61389,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61390,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61391,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61392,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61393,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61394,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61395,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61396,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61397,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61398,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61399,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61400,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61401,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61402,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61403,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61404,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61405,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61406,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61407,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61408,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61409,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61410,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61411,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61412,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61413,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61414,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61415,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61416,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61417,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61418,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61419,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61420,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61421,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61422,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61423,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61424,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61425,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61426,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61427,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61428,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61429,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61430,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61431,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61432,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61433,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61434,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61435,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61436,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61437,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61438,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61439,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61440,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61441,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61442,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61443,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61444,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61445,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61446,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61447,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61448,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61449,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61450,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61451,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61452,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61453,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61454,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61455,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61456,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61457,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61458,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61459,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61460,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61461,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61462,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61463,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61464,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61465,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61466,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61467,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61468,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61469,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61470,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61471,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61472,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61473,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61474,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61475,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61476,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61477,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61478,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61479,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61480,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61481,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61482,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61483,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61484,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61485,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61486,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61487,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61488,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61489,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61490,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61491,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61492,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61493,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61494,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61495,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61496,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61497,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61498,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61499,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61500,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61501,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61502,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61503,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61504,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61505,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61506,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61507,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61508,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61509,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61510,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61511,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61512,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61513,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61514,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61515,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61516,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61517,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61518,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61519,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61520,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61521,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61522,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61523,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61524,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61525,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61526,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61527,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61528,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61529,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61530,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61531,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61532,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61533,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61534,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61535,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61536,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61537,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61538,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61539,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61540,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61541,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61542,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61543,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61544,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61545,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61546,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61547,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61548,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61549,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61550,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61551,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61552,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61553,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61554,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61555,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61556,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61557,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61558,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61559,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61560,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61561,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61562,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61563,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61564,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61565,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61566,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61567,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61568,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61569,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61570,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61571,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61572,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61573,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61574,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61575,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61576,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61577,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61578,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61579,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61580,
+            "reason": null
+          },
+          {
+            "frame": 61581,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61582,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61583,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61584,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61585,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61586,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61587,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61588,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61589,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61590,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61591,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61592,
+            "reason": null
+          },
+          {
+            "frame": 61593,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61594,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61595,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61596,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61597,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61598,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61599,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61600,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61601,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61602,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61603,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61604,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61605,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61606,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61607,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61608,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61609,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61610,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61611,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61612,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61613,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61614,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61615,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61616,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61617,
+            "reason": null
+          },
+          {
+            "frame": 61618,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61619,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61620,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61621,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61622,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61623,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61624,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61625,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61626,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61627,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61628,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61629,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61630,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61631,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61632,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61633,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61634,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61635,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61636,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61637,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61638,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61639,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61640,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61641,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61642,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61643,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61644,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61645,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61646,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61647,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61648,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61649,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61650,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61651,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61652,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61653,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61654,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61655,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61656,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61657,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61658,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61659,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61660,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61661,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61662,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61663,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61664,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61665,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61666,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61667,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61668,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61669,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61670,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61671,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61672,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61673,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61674,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61675,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61676,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61677,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61678,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61679,
+            "reason": "operator_stop"
+          },
+          {
+            "frame": 61680,
+            "reason": null
+          }
+        ],
+        "unresolved_stop_frames": [
+          {
+            "frame": 61025,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61026,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61027,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61028,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61029,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61030,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61031,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61032,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61033,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61034,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61035,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61036,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61037,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61038,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61039,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61040,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61041,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61042,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61043,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61044,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61045,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61046,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61047,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61048,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61049,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61050,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61051,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61052,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61053,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61054,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61055,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61056,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61057,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61058,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61059,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61060,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61061,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61062,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61063,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61064,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61065,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61066,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61067,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61068,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 61237,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61238,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61239,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61240,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61241,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61242,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61243,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61244,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61245,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61246,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61247,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61248,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61249,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61250,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61251,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61252,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61253,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61254,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61255,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61256,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61257,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61258,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61259,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61260,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61261,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61262,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61263,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61264,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61265,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61266,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61267,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61268,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61269,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61270,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61271,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61272,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61273,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61274,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61275,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61276,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61277,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61278,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61279,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61280,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61281,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61282,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61283,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61284,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61285,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61286,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61287,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61288,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61289,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61290,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61291,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61292,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61293,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61294,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61295,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61296,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61297,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61298,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61299,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61300,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61301,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61302,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61303,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61304,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61305,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61306,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61307,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61308,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61309,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61310,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61311,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61312,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61313,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61314,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61315,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61316,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61317,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61318,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61319,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61320,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61321,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61322,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61323,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61324,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61325,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61326,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61327,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61328,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61329,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61330,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61331,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61332,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61333,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61334,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61335,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61336,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61337,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61338,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61339,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61340,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61341,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61342,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61343,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61344,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61345,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61346,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61347,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61348,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61349,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61350,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61351,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61352,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61353,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61354,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61355,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61356,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61357,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61358,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61359,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61360,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61361,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61362,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61363,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61364,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61365,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61366,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61367,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61368,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61369,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61370,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61371,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61372,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61373,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61374,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61375,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61376,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61377,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61378,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61379,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61380,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61381,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61382,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61383,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61384,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61385,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61386,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61387,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61388,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61389,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61390,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61391,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61392,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61393,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61394,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61395,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61396,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61397,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61398,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61399,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61400,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61401,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61402,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61403,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61404,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61405,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61406,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61407,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61408,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61409,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61410,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61411,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61412,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61413,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61414,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61415,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61416,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61417,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61418,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61419,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61420,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61421,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61422,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61423,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61424,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61425,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61426,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61427,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61428,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61429,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61430,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61431,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61432,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61433,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61434,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61435,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61436,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61437,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61438,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61439,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61440,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61441,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61442,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61443,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61444,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61445,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61446,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61447,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61448,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61449,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61450,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61451,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61452,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61453,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61454,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61455,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61456,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61457,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61458,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61459,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61460,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61461,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61462,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61463,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61464,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61465,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61466,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61467,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61468,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61469,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61470,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61471,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61472,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61473,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61474,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61475,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61476,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61477,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61478,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61479,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61480,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61481,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61482,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61483,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61484,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61485,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61486,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61487,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61488,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61489,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61490,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61491,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61492,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61493,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61494,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61495,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61496,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61497,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61498,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61499,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61500,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61501,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61502,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61503,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61504,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61505,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61506,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61507,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61508,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61509,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61510,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61511,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61512,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61513,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61514,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61515,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61516,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61517,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61518,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61519,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61520,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61521,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61522,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61523,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61524,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61525,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61526,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61527,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61528,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61529,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61530,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61531,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61532,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61533,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61534,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61535,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61536,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61537,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61538,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61539,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61540,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61541,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61542,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61543,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61544,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61545,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61546,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61547,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61548,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61549,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61550,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61551,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61552,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61553,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61554,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61555,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61556,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61557,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61558,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61559,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61560,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61561,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61562,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61563,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61564,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61565,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61566,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61567,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61568,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61569,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61570,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61571,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61572,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61573,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61574,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61575,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61576,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61577,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61578,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61579,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61580,
+            "reason": null
+          },
+          {
+            "frame": 61581,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61582,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61583,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61584,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61585,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61586,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61587,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61588,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61589,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61590,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61591,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61592,
+            "reason": null
+          },
+          {
+            "frame": 61593,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61594,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61595,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61596,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61597,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61598,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61599,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61600,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61601,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61602,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61603,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61604,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61605,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61606,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61607,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61608,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61609,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61610,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61611,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61612,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61613,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61614,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61615,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61616,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61617,
+            "reason": null
+          },
+          {
+            "frame": 61618,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61619,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61620,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61621,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61622,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61623,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61624,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61625,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61626,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61627,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61628,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61629,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61630,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61631,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61632,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61633,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61634,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61635,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61636,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61637,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61638,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61639,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61640,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61641,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61642,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61643,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61644,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61645,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61646,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61647,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61648,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61649,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61650,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61651,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61652,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61653,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61654,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61655,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61656,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61657,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61658,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61659,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61660,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61661,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61662,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61663,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61664,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61665,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61666,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61667,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61668,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61669,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61670,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61671,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61672,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61673,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61674,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61675,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61676,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61677,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61678,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 61679,
+            "reason": "operator_stop"
+          },
+          {
+            "frame": 61680,
+            "reason": null
+          }
+        ],
+        "comfort_violations": [
+          {
+            "frame": 61069,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 5.844364474853806
+          },
+          {
+            "frame": 61069,
+            "reason": "JERK_0_2S",
+            "value": 29.221818030141943
+          },
+          {
+            "frame": 61070,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 5.404386417793689
+          },
+          {
+            "frame": 61070,
+            "reason": "JERK_0_2S",
+            "value": 27.021932245740288
+          },
+          {
+            "frame": 61071,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.987845309304423
+          },
+          {
+            "frame": 61071,
+            "reason": "JERK_0_2S",
+            "value": 14.939231087132853
+          },
+          {
+            "frame": 61073,
+            "reason": "JERK_0_2S",
+            "value": 25.18556526429163
+          },
+          {
+            "frame": 61074,
+            "reason": "JERK_0_2S",
+            "value": 26.08554199701428
+          },
+          {
+            "frame": 61075,
+            "reason": "JERK_0_2S",
+            "value": 13.273703184873975
+          },
+          {
+            "frame": 61146,
+            "reason": "JERK_0_2S",
+            "value": 4.73197458855281
+          },
+          {
+            "frame": 61147,
+            "reason": "JERK_0_2S",
+            "value": 12.471201643022127
+          },
+          {
+            "frame": 61148,
+            "reason": "JERK_0_2S",
+            "value": 12.846667889427259
+          },
+          {
+            "frame": 61149,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.4594971330924658
+          },
+          {
+            "frame": 61149,
+            "reason": "JERK_0_2S",
+            "value": 5.46063767926068
+          },
+          {
+            "frame": 61150,
+            "reason": "JERK_0_2S",
+            "value": 7.548892261049003
+          },
+          {
+            "frame": 61151,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.07471967794541
+          },
+          {
+            "frame": 61151,
+            "reason": "JERK_0_2S",
+            "value": 20.975162920083335
+          },
+          {
+            "frame": 61153,
+            "reason": "JERK_0_2S",
+            "value": 19.93628763721854
+          },
+          {
+            "frame": 61154,
+            "reason": "JERK_0_2S",
+            "value": 3.4265840399841667
+          },
+          {
+            "frame": 61155,
+            "reason": "JERK_0_2S",
+            "value": 20.33806672364862
+          },
+          {
+            "frame": 61156,
+            "reason": "JERK_0_2S",
+            "value": 10.636048661202588
+          },
+          {
+            "frame": 61157,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 6.899043833150704
+          },
+          {
+            "frame": 61157,
+            "reason": "JERK_0_2S",
+            "value": 42.13402185791273
+          },
+          {
+            "frame": 61158,
+            "reason": "JERK_0_2S",
+            "value": 3.1630943685481188
+          },
+          {
+            "frame": 61159,
+            "reason": "JERK_0_2S",
+            "value": 5.110793728148316
+          },
+          {
+            "frame": 61160,
+            "reason": "JERK_0_2S",
+            "value": 9.233842062526167
+          },
+          {
+            "frame": 61161,
+            "reason": "JERK_0_2S",
+            "value": 31.240101079850366
+          },
+          {
+            "frame": 61162,
+            "reason": "JERK_0_2S",
+            "value": 4.313201410177105
+          },
+          {
+            "frame": 61165,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 9.93562806702838
+          },
+          {
+            "frame": 61165,
+            "reason": "JERK_0_2S",
+            "value": 46.42302485791614
+          },
+          {
+            "frame": 61166,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 4.703535135311065
+          },
+          {
+            "frame": 61166,
+            "reason": "JERK_0_2S",
+            "value": 24.367743990276757
+          },
+          {
+            "frame": 61167,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 4.213941768608405
+          },
+          {
+            "frame": 61167,
+            "reason": "JERK_0_2S",
+            "value": 19.183119008847484
+          },
+          {
+            "frame": 61168,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.137285845847407
+          },
+          {
+            "frame": 61168,
+            "reason": "JERK_0_2S",
+            "value": 15.913068191062703
+          },
+          {
+            "frame": 61169,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.1800654066342604
+          },
+          {
+            "frame": 61169,
+            "reason": "JERK_0_2S",
+            "value": 33.77781174259025
+          },
+          {
+            "frame": 61170,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.3104018365975563
+          },
+          {
+            "frame": 61170,
+            "reason": "JERK_0_2S",
+            "value": 11.965666347648444
+          },
+          {
+            "frame": 61171,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.580361885635015
+          },
+          {
+            "frame": 61171,
+            "reason": "JERK_0_2S",
+            "value": 8.167899093978898
+          },
+          {
+            "frame": 61172,
+            "reason": "JERK_0_2S",
+            "value": 6.764460062617837
+          },
+          {
+            "frame": 61173,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.174289458156961
+          },
+          {
+            "frame": 61173,
+            "reason": "JERK_0_2S",
+            "value": 5.02887948319074
+          },
+          {
+            "frame": 61174,
+            "reason": "JERK_0_2S",
+            "value": 4.401780853247613
+          },
+          {
+            "frame": 61175,
+            "reason": "JERK_0_2S",
+            "value": 3.3984567272855193
+          },
+          {
+            "frame": 61218,
+            "reason": "JERK_0_2S",
+            "value": 3.6574372374701785
+          },
+          {
+            "frame": 61219,
+            "reason": "JERK_0_2S",
+            "value": 15.65374008080535
+          },
+          {
+            "frame": 61220,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.252049206854383
+          },
+          {
+            "frame": 61220,
+            "reason": "JERK_0_2S",
+            "value": 27.2688450714492
+          },
+          {
+            "frame": 61221,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -5.134735072467923
+          },
+          {
+            "frame": 61221,
+            "reason": "JERK_0_2S",
+            "value": 34.04756953850165
+          },
+          {
+            "frame": 61222,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.943303482615143
+          },
+          {
+            "frame": 61222,
+            "reason": "JERK_0_2S",
+            "value": 37.05472618896647
+          },
+          {
+            "frame": 61223,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.340010327445922
+          },
+          {
+            "frame": 61223,
+            "reason": "JERK_0_2S",
+            "value": 24.456533233900377
+          },
+          {
+            "frame": 61224,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -7.784898680634331
+          },
+          {
+            "frame": 61224,
+            "reason": "JERK_0_2S",
+            "value": 17.664247105822803
+          },
+          {
+            "frame": 61225,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.545841898706111
+          },
+          {
+            "frame": 61225,
+            "reason": "JERK_0_2S",
+            "value": 7.055533592162657
+          },
+          {
+            "frame": 61226,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -7.882556835813334
+          },
+          {
+            "frame": 61226,
+            "reason": "JERK_0_2S",
+            "value": 4.6962669457973005
+          },
+          {
+            "frame": 61227,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.251001727418546
+          },
+          {
+            "frame": 61227,
+            "reason": "JERK_0_2S",
+            "value": 10.445043430773442
+          },
+          {
+            "frame": 61228,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.04647408693825
+          },
+          {
+            "frame": 61228,
+            "reason": "JERK_0_2S",
+            "value": 8.692122599190174
+          },
+          {
+            "frame": 61229,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.3885055127185275
+          },
+          {
+            "frame": 61229,
+            "reason": "JERK_0_2S",
+            "value": 10.78668232833432
+          },
+          {
+            "frame": 61230,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.062191625055229
+          },
+          {
+            "frame": 61230,
+            "reason": "JERK_0_2S",
+            "value": 9.101824971436722
+          },
+          {
+            "frame": 61231,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.3317272624181635
+          },
+          {
+            "frame": 61232,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -11.441614580675115
+          },
+          {
+            "frame": 61232,
+            "reason": "JERK_0_2S",
+            "value": 26.97570296282761
+          },
+          {
+            "frame": 61233,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -20.927297349974957
+          },
+          {
+            "frame": 61233,
+            "reason": "JERK_0_2S",
+            "value": 82.69395868745437
+          },
+          {
+            "frame": 61234,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -26.483527020645337
+          },
+          {
+            "frame": 61234,
+            "reason": "JERK_0_2S",
+            "value": 102.10667749370056
+          },
+          {
+            "frame": 61235,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -26.376716409638405
+          },
+          {
+            "frame": 61235,
+            "reason": "JERK_0_2S",
+            "value": 110.22494361706038
+          },
+          {
+            "frame": 61236,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -26.03192287098798
+          },
+          {
+            "frame": 61236,
+            "reason": "JERK_0_2S",
+            "value": 72.95153862443807
+          },
+          {
+            "frame": 61237,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -20.473286701746698
+          },
+          {
+            "frame": 61238,
+            "reason": "JERK_0_2S",
+            "value": 130.24835762812538
+          },
+          {
+            "frame": 61239,
+            "reason": "JERK_0_2S",
+            "value": 131.33144478962052
+          },
+          {
+            "frame": 61240,
+            "reason": "JERK_0_2S",
+            "value": 130.01865978320666
+          },
+          {
+            "frame": 61241,
+            "reason": "JERK_0_2S",
+            "value": 102.39795688091704
+          }
+        ],
+        "maximum_jerk_0_2s_mps3": 131.33144478962052,
+        "oscillations": [],
+        "camera": null,
+        "missing_measurements": [],
+        "evidence_note": "Every recorded frame is included, including startup/terminal holds and frames without decisions. Stops require independent review; no logged reason automatically authorizes a stop. Browser performance is audited separately."
+      },
+      "video": {
+        "status": "WAITING_FOR_RECORDING"
+      },
+      "recording_status": {
+        "incomplete": false,
+        "error": null,
+        "dropped_frames": 0,
+        "dropped_events": 0,
+        "dropped_trace_rows": 0,
+        "first_dropped_frame": null,
+        "last_dropped_frame": null,
+        "written_frames": 656,
+        "queued_bytes": 0,
+        "pending_items": 0,
+        "finalized": true
+      }
+    }
+  },
+  "accepted": false
+}

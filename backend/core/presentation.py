@@ -48,10 +48,11 @@ class Presentation:
         except OSError as error:
             self.data['storage_error'] = str(error)
 
-    def start(self, speed=50):
+    def start(self, speed=50, *, seed=None):
         s = self.service
         if type(speed) not in (int, float) or not 5 <= speed <= 50:
             raise ValueError('Presentation speed must be 5–50 km/h')
+        if seed is not None and (type(seed) is not int or not 0<=seed<2147483648):raise ValueError('Invalid presentation seed')
         if not callable(getattr(s.provider, 'prepare_presentation', None)):
             raise ValueError('Restart requires the native CARLA presentation adapter')
         if s.arbiter.safety.emergency:
@@ -62,18 +63,30 @@ class Presentation:
             raise ValueError('Stop the current research comparison before Restart')
         s.stop_driving('presentation_restart')
         self.data = {'id': uuid.uuid4().hex, 'status': 'IDLE', 'speed_kmh': float(speed),
-            'seed': secrets.randbelow(2147483648), 'modes': list(self.MODES), 'arm': 0,
+            'outcome':'PENDING','failures':[],'recovery':None,
+            'seed': secrets.randbelow(2147483648) if seed is None else seed, 'modes': list(self.MODES), 'arm': 0,
             'pair_id': None, 'events': [], 'source': 'LIVE_NATIVE_CARLA',
             'comparison_note': 'Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.'}
         self.transition('STOPPING')
 
     def cancel(self, reason):
         if self.busy:
-            self.transition('CANCELLED', reason=reason)
+            self.transition('CANCELLED', reason=reason,outcome='INCOMPLETE')
+
+    def inject_validation_timeout(self):
+        budget=self.service.native_validation_budget
+        if (not budget or budget.ticket.get('scope')!='NATIVE_RULE_REPAIR' or
+                budget.status()['remaining_s']<30 or self.data.get('status')!='DRIVING' or self.data.get('arm')!=0):
+            raise ValueError('Timeout injection requires a live repair window and the Robosphere presentation arm')
+        if self.data.get('injected_fault'):raise ValueError('This presentation already contains an injected fault')
+        self.data['injected_fault']={'kind':'CONTROL_APPLICATION_TIMEOUT','driving_acceptance_excluded':True,
+            'frame_id':self.service.observation.frame_id}
+        self.service.validation_timeout_until=self.service.now()+1.5
+        self.save()
 
     def fail(self, reason):
         if not self.busy:return
-        self.transition('ERROR', reason=str(reason))
+        self.transition('ERROR', reason=str(reason),outcome='INCOMPLETE')
         # Failure handling also runs after telemetry/transport loss. An explicit
         # stop must not depend on require_connected() succeeding at that point.
         with self.service.lock:
@@ -83,7 +96,9 @@ class Presentation:
     def playback_finished(self, presentation_id):
         if presentation_id != self.data.get('id') or self.data['status'] != 'PLAYBACK':
             raise ValueError('Playback completion belongs to another presentation or phase')
-        self.transition('COMPLETE')
+        runs=self.data.get('runs',{})
+        outcome='BOTH_ARRIVED' if all(runs.get(m,{}).get('status')=='ARRIVED' for m in self.MODES) else 'FAILED_ARMS'
+        self.transition('COMPLETE',outcome=outcome)
 
     def video_states(self):
         states = {}
@@ -102,6 +117,9 @@ class Presentation:
             return
         s = self.service
         try:
+            if self.data.get('storage_error') or s.journey_comparison.data.get('storage_error'):
+                self.fail('Comparison storage failed; recording retained where available. Free disk space before Restart.')
+                return
             phase = self.data['status']
             def advance(status, **values):
                 return self.transition(status, expected=phase, **values)
@@ -120,7 +138,14 @@ class Presentation:
                 # This changes a held ego/route/population, not the sensor rig.
                 # Keep the owner socket and its stop controls live while the
                 # sole tick worker prepares it. A stop must survive completion.
-                setup = s.provider.prepare_presentation(self.data['seed'], self.data['speed_kmh'])
+                setup=self.data.get('setup')
+                if setup and setup.get('population_pending'):
+                    if s.observation.frame_id<self.ready_frame:return
+                    setup=s.provider.finish_presentation_setup(self.data['seed'],setup)
+                else:
+                    setup = s.provider.prepare_presentation(self.data['seed'], self.data['speed_kmh'])
+                    if setup.get('population_pending'):
+                        self.data['setup']=setup;self.ready_frame=s.observation.frame_id+1;self.save();return
                 self.ready_frame = s.observation.frame_id + 10
                 advance('READY', setup=setup)
             elif phase == 'READY' and stopped and closed and s.observation.frame_id >= getattr(self,'ready_frame',0):
@@ -131,7 +156,13 @@ class Presentation:
                 # until its first admitted control frame. Initial setup waits
                 # for genuine native controller readiness instead.
                 walkers_ready=self.data['arm']>0 or population.get('walker_controllers_ready',True)
-                if traffic_ready and walkers_ready:self._start_arm()
+                if traffic_ready and walkers_ready:
+                    audit=getattr(s.provider,'presentation_population_audit',None)
+                    if callable(audit) and self.data['arm']==0:
+                        self.data['population_audit']=audit()
+                        if not self.data['population_audit']['passed']:
+                            self.fail('Dense setup below required population: '+str(self.data['population_audit']['counts']));return
+                    self._start_arm()
             elif phase == 'STARTING':
                 if s.journey['status'] == 'RUNNING':
                     advance('DRIVING', pair_id=s.journey_comparison.data['pair_id'])
@@ -142,12 +173,22 @@ class Presentation:
                 if run and run['duration_s'] > 180:
                     s.stop_driving('presentation_route_timeout', cancel_presentation=False)
                 if s.journey['status'] in ('ARRIVED', 'ERROR', 'PAUSED'):
-                    if s.journey.get('reason') not in ('destination_reached', 'collision',
+                    fault=getattr(s,'runtime_fault',None)
+                    recoverable=s.journey.get('reason')=='runtime_failure' and fault and fault.get('exception_type')=='ControlSceneTimeout'
+                    if recoverable:
+                        self.data.setdefault('failures',[]).append({'mode':self.MODES[self.data['arm']],
+                            'fault':copy.deepcopy(fault),'reason':s.journey['reason']})
+                        self.data['outcome']='FAILED_ARMS'
+                        if self.data['arm']==0:self.data['recovery']={'status':'PENDING','attempts':1,'fresh_frames':0}
+                        advance('FINALIZING')
+                    elif s.journey.get('reason') not in ('destination_reached', 'collision',
                             'route_ended_before_destination', 'presentation_route_timeout'):
                         self.fail(s.journey.get('reason') or 'Journey interrupted')
                     else:
                         advance('FINALIZING')
             elif phase == 'FINALIZING' and stopped and closed:
+                if s.last_recording and s.last_recording.status().get('incomplete'):
+                    self.fail('Recording incomplete; automatic continuation cancelled');return
                 self.data['runs'] = {m: {k: r.get(k) for k in ('id', 'status', 'reason', 'recording')}
                     for m, r in s.journey_comparison.data['runs'].items()}
                 if self.data['arm'] == 0:
@@ -164,7 +205,25 @@ class Presentation:
                     elif result['status'] == 'APPLIED':
                         self.data['arm'] = 1
                         self.ready_frame = s.observation.frame_id + 10
-                        advance('READY')
+                        advance('RECOVERING' if self.data.get('recovery') else 'READY')
+            elif phase=='RECOVERING':
+                recovery=self.data['recovery'];scene=s.control_scene
+                if s.now()-self.phase_at>10.:
+                    recovery.update(status='FAILED',reason='Fresh sensor recovery timed out')
+                    self.fail(recovery['reason']);return
+                valid=bool(scene and scene.session_id==s.session_id and scene.observation.frame_id==s.clock.frame_id
+                    and scene.usable(s.clock.timestamp_s,s.now()) and s.observation.complete)
+                frame=scene.observation.frame_id if scene else None
+                if not valid:recovery['fresh_frames']=0
+                elif frame!=recovery.get('last_frame'):recovery['fresh_frames']+=1
+                recovery['last_frame']=frame
+                if recovery['fresh_frames']>=20:
+                    fixture=getattr(s.provider,'benchmark_fixture',None)
+                    audit=fixture.verify() if fixture else {'passed':False,'failures':['Matched fixture missing']}
+                    recovery['initial_condition_audit']=audit
+                    if not audit['passed']:
+                        recovery['status']='FAILED';self.fail('Recovery initial conditions did not match');return
+                    recovery['status']='READY';advance('READY')
             elif phase == 'EXPORTING':
                 states = self.video_states()
                 if any(v.get('status') == 'ERROR' for v in states.values()):

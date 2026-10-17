@@ -9,6 +9,7 @@ class NearbyActorInspector:
         self.world, self.ego = world, ego
         self.radius = 50.
         self.actor_types = {}
+        self.actor_bounds = {}
         self.refreshed_at = -float('inf')
         self.latest = {'radius_m': self.radius, 'actors': [], 'traffic_light': None}
 
@@ -20,8 +21,11 @@ class NearbyActorInspector:
     def observe(self, snapshot):
         timestamp = snapshot.timestamp.elapsed_seconds
         if timestamp-self.refreshed_at >= 1.:
-            self.actor_types = {a.id: a.type_id for a in self.world.get_actors()
-                                if not a.type_id.startswith(('sensor.', 'controller.', 'spectator'))}
+            actors=[a for a in self.world.get_actors() if not a.type_id.startswith(('sensor.','controller.','spectator'))]
+            self.actor_types={a.id:a.type_id for a in actors}
+            self.actor_bounds={a.id:{'extent_m':[a.bounding_box.extent.x,a.bounding_box.extent.y,a.bounding_box.extent.z],
+                'offset_m':[a.bounding_box.location.x,a.bounding_box.location.y,a.bounding_box.location.z]}
+                for a in actors if hasattr(a,'bounding_box')}
             self.refreshed_at = timestamp
         ego = snapshot.find(self.ego.id)
         ego_transform = ego.get_transform()
@@ -46,6 +50,7 @@ class NearbyActorInspector:
             objects.append(GroundTruthObject(state, distance))
             rows.append({'actor_id': actor_id, 'type': type_id, 'category': category,
                          'distance_m': distance, 'relative_position_m': relative,
+                         'bounding_box':self.actor_bounds.get(actor_id),'yaw_deg':rotation.yaw,
                          'velocity_mps': [velocity.x, velocity.y, velocity.z]})
         paired = sorted(zip(objects, rows), key=lambda p: p[0].distance_m)[:256]
         objects = tuple(p[0] for p in paired); rows = [p[1] for p in paired]

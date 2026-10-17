@@ -254,6 +254,7 @@ def main():
     if args.validation_ticket:
         from .learning.native_validation_budget import NativeValidationBudget
         validation_budget = NativeValidationBudget(args.validation_ticket)
+        if validation_budget.ticket.get('scope')=='NATIVE_RULE_REPAIR':validation_budget.activate_rule()
         remaining = validation_budget.status()['remaining_s']
         if not args.carla or remaining <= 0: parser.error('Native RULE validation authorization has expired or CARLA is not enabled')
         args.session_duration = min(args.session_duration or remaining, remaining)

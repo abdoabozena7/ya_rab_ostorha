@@ -89,8 +89,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
   selector.append(select);cameraTools.append(selector);
   const options=el('details','cockpit-overlay-settings');options.innerHTML='<summary aria-label="Overlay settings" title="Overlay settings">'+icons.layers+'</summary><div class="cockpit-overlay-menu"><strong>Camera overlays</strong><label><input type="checkbox" data-overlay="boxes">Bounding boxes <small>2D</small></label><label><input type="checkbox" data-overlay="labels">Object labels</label><label><input type="checkbox" data-overlay="trajectories">Trajectory predictions</label><label><input type="checkbox" data-overlay="safety">Safety highlights</label><p id="cockpitOverlayState">3D geometry unavailable. 2D boxes require the matching front-camera frame.</p><button type="button" id="cockpitAnalysisLink">View analyzed frame ↗</button></div>';
   cameraTools.append(options);camera.append(cameraTools);
-  let preferences={boxes:true,labels:true,trajectories:true,safety:true};
-  try{const saved=JSON.parse(localStorage.getItem('camera-overlays-v1'));for(const k of Object.keys(preferences))if(typeof saved?.[k]==='boolean')preferences[k]=saved[k];}catch{/* Optional browser-local preferences. */}
+  let preferences={boxes:false,labels:false,trajectories:false,safety:true};
   predictionView.visualOptions=preferences;
   for(const box of options.querySelectorAll('input')){box.checked=preferences[box.dataset.overlay];box.onchange=()=>{preferences[box.dataset.overlay]=box.checked;try{localStorage.setItem('camera-overlays-v1',JSON.stringify(preferences));}catch{/* Keep in-memory settings. */}};}
   select.onchange=()=>{
@@ -182,7 +181,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     set('cockpitTracks',fresh&&measuredPredictionFresh(prediction,p.sessionId,p.telemetry?.timestamp)?(prediction.tracks||[]).filter(t=>t.confirmed).length:'—');
     const notice=safetyNotice(p),noticeKey=JSON.stringify(notice);safety.hidden=!notice;
     if(noticeKey!==lastNotice){lastNotice=noticeKey;if(notice){safety.dataset.tone=notice.tone;safety.querySelector('.notice-copy strong').textContent=notice.title;safety.querySelector('.notice-copy p').textContent=notice.detail;}}
-    resume.hidden=!(notice&&p.controlMode==='PAUSED'&&p.route&&!p.route.arrived&&!p.journey?.presentation_id&&['PAUSED','ERROR'].includes(p.journey?.status));
+    resume.hidden=true; // The single header task action owns recovery.
     resume.disabled=!fresh||!p.controller||p.recording||p.recordingStatus?.finalized===false||p.restarting||!onResume||
       (p.journey?.driving_mode==='HYBRID'&&p.hybridDriving?.available!==true);
     for(const btn of document.querySelectorAll('.cockpit-dialog-emergency'))btn.disabled=$('emergencyStopBtn').disabled;

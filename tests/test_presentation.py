@@ -79,6 +79,45 @@ class PresentationTests(unittest.TestCase):
         self.assertEqual(self.service.stop_diagnostics['reason'],'emergency_stop_released')
         self.assertEqual(self.service.stop_diagnostics['decision_source'],'VEHICLE_HOLD')
 
+    def test_timeout_preserved_then_requires_twenty_distinct_fresh_frames_before_normal(self):
+        s=self.service;self.p.start(seed=320418473)
+        self.tick();self.tick();self.tick()
+        s.journey_comparison.data.update(pair_id='pair',runs={})
+        s.journey.update(status='RUNNING');self.tick()
+        s.runtime_fault={'exception_type':'ControlSceneTimeout','message':'original timeout'}
+        s.journey.update(status='ERROR',reason='runtime_failure');self.tick();self.tick()
+        self.assertEqual(self.p.data['status'],'RESTORING')
+        s.dashboard_result={'action':'prepare_journey_mode','status':'APPLIED'};self.tick()
+        self.assertEqual(self.p.data['status'],'RECOVERING')
+        s.provider.benchmark_fixture=SimpleNamespace(verify=lambda:{'passed':True})
+        for i in range(20):
+            s.observation=packet(100+i,5+i*.05,speed=0)
+            s.clock.frame_id=s.observation.frame_id;s.clock.timestamp_s=s.observation.timestamp_s
+            s.control_scene=SimpleNamespace(session_id=s.session_id,observation=s.observation,usable=lambda t,w:True)
+            s.navigation_transport_heartbeat(s.session_id);self.p.tick()
+            if i<19:self.assertEqual(self.p.data['status'],'RECOVERING')
+        self.assertEqual(self.p.data['status'],'READY');self.tick()
+        self.assertEqual(s.start_journey.call_args.kwargs['driving_mode'],'NORMAL')
+        self.assertEqual(self.p.data['failures'][0]['fault']['message'],'original timeout')
+        self.assertEqual(self.p.data['outcome'],'FAILED_ARMS')
+
+    def test_failed_recovery_cannot_start_normal_or_erase_original_fault(self):
+        self.p.data={'status':'RECOVERING','id':'p','arm':1,'recovery':{'fresh_frames':0},
+            'failures':[{'fault':{'message':'original timeout'}}]}
+        self.time=11.;self.service.navigation_transport_heartbeat(self.service.session_id)
+        self.p.tick()
+        self.assertEqual(self.p.data['status'],'ERROR')
+        self.assertEqual(self.p.data['failures'][0]['fault']['message'],'original timeout')
+        self.service.start_journey.assert_not_called()
+
+    def test_comparison_storage_failure_stops_automatic_continuation(self):
+        self.p.start()
+        self.service.journey_comparison.data['storage_error']='disk full'
+        self.tick()
+        self.assertEqual(self.p.data['status'],'ERROR')
+        self.assertEqual(self.p.data['outcome'],'INCOMPLETE')
+        self.service.start_journey.assert_not_called()
+
     def test_initial_arm_waits_for_confirmed_traffic_and_walker_controllers(self):
         population={'route_crowding':{'status':'PARTIAL'},'walker_controllers_ready':False}
         self.provider.population_state=lambda:population
@@ -99,6 +138,19 @@ class PresentationTests(unittest.TestCase):
         self.tick();self.tick()
         self.assertEqual(self.p.data['status'],'CANCELLED')
         self.assertEqual(self.p.data['reason'],'operator_stop')
+        self.service.start_journey.assert_not_called()
+
+    def test_population_placement_waits_for_new_native_pose_and_rejects_small_setup(self):
+        self.provider.prepare_presentation.return_value={'population_pending':True}
+        self.provider.finish_presentation_setup=Mock(return_value={'population_pending':False})
+        self.provider.presentation_population_audit=Mock(return_value={'passed':False,'counts':{'vehicles':18}})
+        self.p.start();self.tick();self.tick()
+        self.assertEqual(self.p.data['status'],'PREPARING')
+        self.p.tick();self.provider.finish_presentation_setup.assert_not_called()
+        self.tick();self.provider.finish_presentation_setup.assert_called_once()
+        self.tick()
+        self.assertEqual(self.p.data['status'],'ERROR')
+        self.assertIn('below required population',self.p.data['reason'])
         self.service.start_journey.assert_not_called()
 
     def test_route_timeout_keeps_first_fixture_for_the_second_measured_attempt(self):
@@ -152,6 +204,13 @@ class PresentationTests(unittest.TestCase):
         self.assertEqual(compact['runs']['ROBOSPHERE']['setup']['initial_condition_id'],'condition')
         self.assertEqual(compact['runs']['ROBOSPHERE']['collisions'],full['runs']['ROBOSPHERE']['collisions'])
         self.assertIn('initial_conditions',comparison.data['manifest'])
+        comparison.data['runs']['ROBOSPHERE']['stop_diagnostics']={'runtime_fault':{
+            'exception_type':'ControlSceneTimeout','message':'original timeout','injected_validation_fault':True,
+            'sensor_frames':['large raw data']},'reason':'runtime_failure'}
+        fault=comparison.snapshot(compact=True)['runs']['ROBOSPHERE']['stop_diagnostics']['runtime_fault']
+        self.assertEqual(fault['message'],'original timeout')
+        self.assertTrue(fault['injected_validation_fault'])
+        self.assertNotIn('sensor_frames',fault)
 
 
 if __name__ == '__main__': unittest.main()

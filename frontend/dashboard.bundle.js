@@ -2703,6 +2703,12 @@
       }
     }
     draw(camera) {
+      if (document.body.classList.contains("sequential-drive") && !document.querySelector("#cockpitDetails[open]") && !document.querySelector("#unifiedMap.map-expanded")) {
+        this.canvas.hidden = true;
+        this.label.hidden = true;
+        this.currentPrediction = this.provider.safetySystem?.prediction || null;
+        return;
+      }
       this.poll();
       this.pollFrame(camera);
       const p = this.provider, latest = p.safetySystem?.prediction || this.observed, img = document.getElementById("authoritativeCamera");
@@ -3156,6 +3162,33 @@
     return Number.isFinite(a[field]) && Number.isFinite(b[field]) ? a[field] - b[field] : null;
   }
 
+  // frontend/drive-state.js
+  function driveState2(p) {
+    const status = p.presentation?.status || "IDLE";
+    const busy = !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(status);
+    const emergency = p.controlMode === "EMERGENCY_STOP";
+    const failed = p.lastDriveStop?.status === "ERROR" || p.journey?.status === "ERROR" || status === "ERROR";
+    const resumable = !busy && !failed && !p.journey?.presentation_id && p.controlMode === "PAUSED" && p.journey?.status === "PAUSED" && p.journey?.route_id && p.route && !p.route.arrived && ["operator_stop", "focus_lost", "dashboard_disconnected", "dashboard_heartbeat_timeout", "controls_released"].includes(p.journey.reason);
+    const action = emergency ? "RELEASE" : status === "PLAYBACK" || p.presentationPlayback ? "PLAYBACK" : busy || ["STARTING", "RUNNING"].includes(p.journey?.status) || p.simulationStarting ? "STOP" : resumable ? "RESUME" : "RESTART";
+    return {
+      action,
+      busy,
+      failed,
+      resumable: !!resumable,
+      enabled: action === "PLAYBACK" ? true : action === "RESTART" ? !p.restarting : !!p.fresh && !!p.controller && (action !== "RESUME" || !p.recording && p.recordingStatus?.finalized !== false)
+    };
+  }
+  var vehicles = /* @__PURE__ */ new Set(["car", "truck", "bus", "motorcycle", "bicycle", "train"]);
+  function trackKind(track) {
+    const label = String(track.class || "UNKNOWN").toLowerCase();
+    if (!track.confirmed || !track.semantic_evidence) return "surface";
+    return label === "person" || label === "pedestrian" ? "person" : vehicles.has(label) ? "vehicle" : "surface";
+  }
+  function mapTracks(tracks, layer, filters) {
+    if (layer === "route") return [];
+    return (tracks || []).filter((t) => filters[{ person: "people", vehicle: "vehicles", surface: "surfaces" }[trackKind(t)]]);
+  }
+
   // frontend/unified-map.js
   function worldToEgo(point, origin, yaw) {
     const dx = point[0] - origin[0], dy = point[1] - origin[1], c = Math.cos(yaw), s = Math.sin(yaw);
@@ -3190,7 +3223,7 @@
     panel.innerHTML = '<button id="unifiedMapToggle" type="button" aria-expanded="false" aria-label="Open route map (M)"></button><header><span><small>LIVE GEOMETRY</small><strong>Navigation</strong></span><span class="unified-map-actions"><button id="unifiedRouteAction" aria-label="Choose a destination">Route \u2197</button><button id="expandUnifiedMap" aria-expanded="false" aria-label="Collapse navigation and prediction map">\xD7</button></span></header><div class="map-layer-switch" role="group" aria-label="Map layers"><button data-layer="route">Route</button><button data-layer="predictions">Predictions</button><button data-layer="both" aria-pressed="true">Both</button></div><canvas width="480" height="360" id="unifiedMapCanvas" role="img" aria-label="Actual CARLA road geometry and measured motion forecasts"></canvas><p id="unifiedMapRoute">Waiting for route</p><p id="unifiedMapMeta" role="status">Waiting for map data</p><div class="unified-expanded-tools"><div class="unified-filters"><label><input type="checkbox" data-filter="vehicles" checked>Vehicles</label><label><input type="checkbox" data-filter="people" checked>People</label><label><input type="checkbox" data-filter="paths" checked>Paths</label><label><input type="checkbox" data-filter="conflicts" checked>Conflicts</label></div><label for="unifiedMapActor">Measured object</label><select id="unifiedMapActor"><option value="">Overview</option></select><p id="unifiedActorInfo">Select a measured object to inspect its motion.</p><button id="unifiedChooseDestination">Choose destination \u2197</button></div>';
     document.getElementById("frontCameraView").append(panel);
     const $10 = (id) => panel.querySelector("#" + id), canvas = $10("unifiedMapCanvas"), ctx = canvas.getContext("2d");
-    let layer = "both", expanded = false, selected = "", markers = [], lastKey = "", actorKey = "", lastPrediction = null, lastPose = null, lastSession = null, lastVehicle = null, zoom = 1;
+    let layer = "route", expanded = false, selected = "", markers = [], lastKey = "", actorKey = "", lastPrediction = null, lastPose = null, lastSession = null, lastVehicle = null, zoom = 1;
     const redraw = () => {
       lastKey = "";
       if (lastVehicle) map.update(lastVehicle);
@@ -3208,7 +3241,11 @@
       zoomTools.append(b);
     }
     panel.querySelector(".unified-expanded-tools").prepend(zoomTools);
-    const filters = { vehicles: true, people: true, paths: true, conflicts: true };
+    const filters = { vehicles: true, people: true, surfaces: false, paths: true, conflicts: true };
+    const surfaces = document.createElement("label");
+    surfaces.innerHTML = '<input type="checkbox" data-filter="surfaces">Unclassified surfaces';
+    panel.querySelector(".unified-filters").append(surfaces);
+    panel.querySelectorAll("[data-layer]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.layer === layer)));
     const text = (el2, value) => {
       if (el2.textContent !== value) el2.textContent = value;
     };
@@ -3352,7 +3389,7 @@
         }
       }
       const convert = (point) => project(predictionWorldPoint(point, prediction.render_reference));
-      const tracks = (prediction?.tracks || []).filter((t) => t.class === "person" ? filters.people : filters.vehicles);
+      const tracks = mapTracks(prediction?.tracks, layer, filters);
       if (prediction && layer !== "route") {
         const ids2 = new Set(tracks.filter((t) => t.confirmed).map((t) => String(t.id))), counts = /* @__PURE__ */ new Map();
         if (filters.paths) for (const mode of prediction.trajectories || []) {
@@ -3379,15 +3416,20 @@
         }
       }
       if (prediction) for (const tr2 of tracks) {
-        const [x, y] = convert([...tr2.position_m, 0]), id = String(tr2.id);
+        const [x, y] = convert([...tr2.position_m, 0]), id = String(tr2.id), kind = trackKind(tr2);
         markers.push({ id, x, y });
-        ctx.fillStyle = selected === id ? colors.route : tr2.confirmed ? tr2.class === "person" ? colors.person : colors.actor : colors.muted;
-        if (tr2.class === "person") {
+        ctx.fillStyle = selected === id ? colors.route : kind === "person" ? colors.person : kind === "vehicle" ? colors.actor : colors.muted;
+        if (kind === "person") {
           ctx.beginPath();
           ctx.arc(x, y, 4, 0, Math.PI * 2);
           ctx.fill();
-        } else {
+        } else if (kind === "vehicle") {
           ctx.fillRect(x - 4, y - 7, 8, 14);
+        } else {
+          ctx.strokeStyle = colors.muted;
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.stroke();
         }
         if (selected === id) {
           ctx.strokeStyle = colors.route;
@@ -3544,7 +3586,7 @@
       return {
         tone: failed ? "warning" : "neutral",
         title: failed ? "Drive needs attention" : "Driving paused",
-        detail: (names[reason] || controlReasonText(reason) || "Vehicle held") + (failed ? " \xB7 Use Restart to prepare a fresh run." : " \xB7 Use Resume driving here to continue.")
+        detail: (names[reason] || controlReasonText(reason) || "Vehicle held") + (driveState2(provider2).resumable ? " \xB7 Use Resume driving to continue." : " \xB7 Use Restart to prepare a fresh run.")
       };
     }
     if (provider2.controlMode === "AUTOMATIC" && provider2.stopDiagnostics?.braking && provider2.stopDiagnostics?.decision_source === "NAVIGATION" && /red traffic light/i.test(provider2.stopDiagnostics.reason || "")) return {
@@ -3595,6 +3637,11 @@
         tone: "warning",
         title: "Waiting for a verified passing path",
         detail: "The adjacent road or traffic does not yet permit this maneuver. " + controlReasonText(bypass.reason)
+      };
+      if (bypass.phase === "FOLLOW" && !bypass.front_blocker) return {
+        tone: "neutral",
+        title: "Checking forward clearance at low speed",
+        detail: "The recovery controller is still checking clearance before returning to route speed. No current front blocker is identified."
       };
       return {
         tone: "neutral",
@@ -4314,12 +4361,7 @@
     options.innerHTML = '<summary aria-label="Overlay settings" title="Overlay settings">' + icons2.layers + '</summary><div class="cockpit-overlay-menu"><strong>Camera overlays</strong><label><input type="checkbox" data-overlay="boxes">Bounding boxes <small>2D</small></label><label><input type="checkbox" data-overlay="labels">Object labels</label><label><input type="checkbox" data-overlay="trajectories">Trajectory predictions</label><label><input type="checkbox" data-overlay="safety">Safety highlights</label><p id="cockpitOverlayState">3D geometry unavailable. 2D boxes require the matching front-camera frame.</p><button type="button" id="cockpitAnalysisLink">View analyzed frame \u2197</button></div>';
     cameraTools.append(options);
     camera.append(cameraTools);
-    let preferences = { boxes: true, labels: true, trajectories: true, safety: true };
-    try {
-      const saved = JSON.parse(localStorage.getItem("camera-overlays-v1"));
-      for (const k of Object.keys(preferences)) if (typeof saved?.[k] === "boolean") preferences[k] = saved[k];
-    } catch {
-    }
+    let preferences = { boxes: false, labels: false, trajectories: false, safety: true };
     predictionView2.visualOptions = preferences;
     for (const box of options.querySelectorAll("input")) {
       box.checked = preferences[box.dataset.overlay];
@@ -4506,7 +4548,7 @@
           safety.querySelector(".notice-copy p").textContent = notice.detail;
         }
       }
-      resume.hidden = !(notice && p.controlMode === "PAUSED" && p.route && !p.route.arrived && !p.journey?.presentation_id && ["PAUSED", "ERROR"].includes(p.journey?.status));
+      resume.hidden = true;
       resume.disabled = !fresh || !p.controller || p.recording || p.recordingStatus?.finalized === false || p.restarting || !onResume || p.journey?.driving_mode === "HYBRID" && p.hybridDriving?.available !== true;
       for (const btn of document.querySelectorAll(".cockpit-dialog-emergency")) btn.disabled = $6("emergencyStopBtn").disabled;
       set("cockpitDetailsStatus", p.isReplay ? "Recorded replay \xB7 live inference is stopped." : fresh ? "Live measurements \xB7 " + (p.world?.map?.split("/").pop() || "CARLA") : "Simulator disconnected \xB7 live measurements unavailable.");
@@ -4750,6 +4792,7 @@
     DRIVING: "Driving and recording",
     FINALIZING: "Saving the recording",
     RESTORING: "Restoring the same initial conditions",
+    RECOVERING: "Checking sensors before Normal",
     EXPORTING: "Exporting both videos",
     PLAYBACK: "Playing the comparison",
     COMPLETE: "Presentation complete",
@@ -4767,6 +4810,13 @@
     if (runs.some((r) => r.status !== "ARRIVED")) return "One or both attempts ended early. Review each outcome and its covered distance.";
     if (!data.conditions_match) return "Initial conditions were not verified. These are separate observations.";
     return "Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.";
+  }
+  function presentationOutcome(run, failure) {
+    if (!run) return "Not started";
+    const fault = failure?.fault || run.stop_diagnostics?.runtime_fault;
+    const faultText = fault?.exception_type === "KeyError" ? "A required record was lost: " + fault.message : fault?.message;
+    const reason = run.reason === "collision" ? demoFailure(run.reason) + (faultText ? " Additional runtime error: " + faultText : "") : faultText || run.reason;
+    return (run.status === "ARRIVED" ? "Destination reached" : run.status) + (reason && reason !== "destination_reached" ? " \xB7 " + (fault ? reason : demoFailure(reason)) : "") + (fault?.injected_validation_fault ? " \xB7 Injected validation fault; excluded from driving acceptance." : "");
   }
   function presentationTrafficText(population, setup) {
     const requested = setup?.requested_route_vehicles ?? 40, walkers = setup?.requested_route_pedestrians ?? 30;
@@ -4795,7 +4845,7 @@
     $8("resultsPhase").querySelector(".analysis-heading").after(results);
     const items = ["ROBOSPHERE", "NORMAL"].map((mode) => {
       const box = document.createElement("article");
-      box.innerHTML = "<h3>" + (mode === "ROBOSPHERE" ? "Robosphere \xB7 RULE protection" : "Normal \xB7 obstacle protection off") + '</h3><video controls muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
+      box.innerHTML = "<h3>" + (mode === "ROBOSPHERE" ? "Robosphere \xB7 RULE protection" : "Normal \xB7 obstacle protection off") + '</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
       results.querySelector(".presentation-videos").append(box);
       return { mode, box, video: box.querySelector("video"), root: null, status: "PENDING" };
     });
@@ -4817,6 +4867,8 @@
     let pendingStart = false, pendingAt = 0, lastPoll = 0, polling = false, lastPhase = "", autoplayId = null, leader = null, linked = false, acknowledged = null;
     const play = async () => {
       if (!items.every((i) => i.status === "READY")) return;
+      p.presentationPlayback = true;
+      showWorkspace("results");
       linked = true;
       leader = selectPlaybackLeader(items);
       for (const i of items) i.video.currentTime = 0;
@@ -4846,9 +4898,12 @@
         }
       });
       item.video.addEventListener("ended", () => {
-        if (linked && leader === item && p.presentation?.status === "PLAYBACK" && acknowledged !== p.presentation.id) {
-          acknowledged = p.presentation.id;
-          p.dashboardAction("presentation", { operation: "PLAYBACK_FINISHED", id: acknowledged });
+        if (linked && leader === item) {
+          p.presentationPlayback = false;
+          if (p.presentation?.status === "PLAYBACK" && acknowledged !== p.presentation.id) {
+            acknowledged = p.presentation.id;
+            p.dashboardAction("presentation", { operation: "PLAYBACK_FINISHED", id: acknowledged });
+          } else $8("presentationPlaybackStatus").textContent = "Saved playback complete. These recorded outcomes are unchanged.";
         }
       });
       item.video.addEventListener("error", () => {
@@ -4879,6 +4934,7 @@
       $8("presentationPopulation").textContent = presentationTrafficText(p.fresh ? p.population : null, data?.setup);
       if (["CANCELLED", "ERROR"].includes(status) && lastPhase !== status) {
         linked = false;
+        p.presentationPlayback = false;
         for (const i of items) i.video.pause();
       }
       if (pendingStart && p.connected && p.fresh && !p.simulationStarting) {
@@ -4894,7 +4950,7 @@
       $8("presentationDestination").textContent = p.route?.destination?.name || "Choose a destination on the map";
       $8("presentationCustomStart").disabled = busy || active || !p.fresh || !p.route || p.recording || p.controlMode === "EMERGENCY_STOP";
       $8("presentationCustomSpeed").disabled = busy || active;
-      const resumable = !busy && p.route && !p.route.arrived && ["PAUSED", "ERROR"].includes(p.journey?.status) && !p.journey?.presentation_id;
+      const resumable = driveState2(p).resumable;
       $8("presentationResume").hidden = !resumable;
       $8("presentationResume").disabled = !p.fresh || p.recording || p.recordingStatus?.finalized === false || p.controlMode === "EMERGENCY_STOP";
       const notice = safetyNotice(p);
@@ -4928,7 +4984,7 @@
         $8("presentationSummary").textContent = presentationSummary(pair);
         for (const item of items) {
           const run = pair.runs?.[item.mode];
-          item.box.querySelector(".presentation-outcome").textContent = run ? (run.status === "ARRIVED" ? "Destination reached" : run.status) + (run.reason && run.reason !== "destination_reached" ? " \xB7 " + demoFailure(run.reason) : "") : "Not started";
+          item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, data?.failures?.find((f) => f.mode === item.mode));
           item.box.querySelector(".presentation-speed").textContent = benchmarkSpeedText(run);
           fields.forEach(([, field, digits, suffix], i) => {
             item.box.querySelectorAll("dd")[i].textContent = metricValue(run, field, digits, suffix);
@@ -4984,10 +5040,144 @@
     } };
   }
 
+  // frontend/sequential-drive.js
+  function installSequentialDrive(p) {
+    const $10 = (id) => document.getElementById(id);
+    document.body.classList.add("sequential-drive");
+    const drawer = $10("cockpitDetails");
+    drawer.querySelector("h2").textContent = "Drive details";
+    drawer.querySelector(".cockpit-dialog-close").setAttribute("aria-label", "Close drive details");
+    const configuration = document.createElement("section");
+    configuration.className = "drive-detail-actions";
+    const heading = document.createElement("h3");
+    heading.textContent = "Configure & inspect";
+    configuration.append(heading);
+    for (const id of ["presentationChoose", "scenariosNav", "cockpitToolsNav", "resultsTab", "settingsBtn", "stopSimulatorBtn", "resetSimulatorBtn", "presentationReplay"]) {
+      const button = $10(id);
+      if (button) configuration.append(button);
+    }
+    const returnToDrive = document.querySelector(".studio-back-to-drive");
+    if (returnToDrive) configuration.append(returnToDrive);
+    for (const selector of [".presentation-custom", ".cockpit-camera-tools", "#expandCameraBtn", ".cockpit-summary", ".cockpit-gap", ".cockpit-ttc", ".cockpit-brake"]) {
+      const node3 = document.querySelector(selector);
+      if (node3) drawer.append(node3);
+    }
+    drawer.querySelector("header").after(configuration);
+    $10("resultsTab").removeAttribute("role");
+    $10("resultsTab").tabIndex = 0;
+    const mapButton = document.createElement("button");
+    mapButton.textContent = "Map & measured surfaces";
+    mapButton.onclick = () => {
+      drawer.close();
+      $10("unifiedMapToggle").click();
+    };
+    configuration.append(mapButton);
+    const actions = document.querySelector(".cockpit-header-actions");
+    const primary = document.createElement("button");
+    primary.id = "drivePrimaryAction";
+    primary.className = "primary";
+    const details = document.createElement("button");
+    details.id = "driveDetailsAction";
+    details.textContent = "Details";
+    details.setAttribute("aria-controls", "cockpitDetails");
+    details.setAttribute("aria-expanded", "false");
+    details.onclick = () => {
+      drawer.showModal();
+      details.setAttribute("aria-expanded", "true");
+    };
+    drawer.addEventListener("close", () => {
+      details.setAttribute("aria-expanded", "false");
+      details.focus();
+    });
+    configuration.addEventListener("click", (e) => {
+      if (e.target.closest("button")) drawer.close();
+    });
+    actions.prepend(primary, details);
+    const target = { RESTART: "presentationRestart", RESUME: "presentationResume", STOP: "studioManualStop", RELEASE: "acknowledgeStopBtn" };
+    primary.onclick = () => {
+      const state = driveState2(p);
+      if (state.action === "PLAYBACK") {
+        const videos = [...document.querySelectorAll("#presentationResults video")];
+        if (videos.every((v) => v.paused)) {
+          for (const v of videos) if (!v.ended) v.play().catch(() => {
+          });
+        } else {
+          for (const v of videos) v.pause();
+        }
+      } else $10(target[state.action])?.click();
+    };
+    return { update() {
+      const state = driveState2(p);
+      primary.textContent = {
+        RESTART: "Restart",
+        RESUME: "Resume driving",
+        STOP: "Stop",
+        RELEASE: "Release emergency stop",
+        PLAYBACK: [...document.querySelectorAll("#presentationResults video")].every((v) => v.paused) ? "Play" : "Pause"
+      }[state.action];
+      primary.disabled = !state.enabled;
+      primary.dataset.action = state.action;
+      $10("emergencyStopBtn").hidden = state.action === "RELEASE";
+      for (const id of ["presentationRestart", "presentationResume", "studioManualStop", "acknowledgeStopBtn", "cockpitResumeDrive", "replayPauseBtn"]) $10(id)?.setAttribute("hidden", "");
+      $10("connectionSetupBtn")?.setAttribute("hidden", "");
+    } };
+  }
+
+  // frontend/camera-performance.js
+  var CameraPerformance = class {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.arm = null;
+      this.started = null;
+      this.previous = null;
+      this.frames = [];
+      this.windows = [];
+      this.maxGapMs = 0;
+    }
+    present(frame, simTime, wallMs, arm) {
+      if (this.arm !== arm) {
+        this.reset();
+        this.arm = arm;
+      }
+      if (this.previous?.frame === frame) return;
+      if (this.started === null) this.started = wallMs;
+      const gap = this.previous ? wallMs - this.previous.wallMs : 0;
+      this.maxGapMs = Math.max(this.maxGapMs, gap);
+      this.previous = { frame, simTime, wallMs };
+      this.frames.push(this.previous);
+      while (wallMs - this.started >= 1e4) {
+        const end = this.started + 1e4, rows = this.frames.filter((f) => f.wallMs >= this.started && f.wallMs < end);
+        const rate = rows.length / 10, ratio = rows.length > 1 ? (rows.at(-1).simTime - rows[0].simTime) / ((rows.at(-1).wallMs - rows[0].wallMs) / 1e3) : 0;
+        const maxGap = Math.max(0, ...rows.slice(1).map((f, i) => f.wallMs - rows[i].wallMs));
+        this.windows.push({
+          start_wall_ms: this.started,
+          frames: rows.length,
+          fps: rate,
+          simulation_wall_ratio: ratio,
+          max_frame_gap_ms: maxGap,
+          passed: rate >= 15 && maxGap <= 250 && ratio >= 0.9
+        });
+        this.started = end;
+        this.frames = this.frames.filter((f) => f.wallMs >= end);
+      }
+    }
+    snapshot() {
+      return {
+        arm: this.arm,
+        windows: this.windows,
+        maximum_gap_ms: this.maxGapMs,
+        passed: this.windows.length > 0 && this.maxGapMs <= 250 && this.windows.every((w) => w.passed)
+      };
+    }
+  };
+
   // frontend/dashboard.js
   var $9 = (id) => document.getElementById(id);
   var provider = new SimulationClient();
   var controls = new DrivingControls();
+  var cameraPerformance = new CameraPerformance();
   presentationUI(provider);
   var perception = new PerceptionView(provider);
   var predictionView = new PredictionView(provider);
@@ -5017,6 +5207,7 @@
   var cockpit = installLightCockpit(provider, tools, perception, predictionView, (mode) => startJourney(mode));
   var demoDrive = installDemoDrive(provider, tools, clearControls);
   var presentationRun = installPresentationRun(provider, tools, clearControls);
+  var sequentialDrive = installSequentialDrive(provider);
   $9("stopSimulatorBtn").onclick = () => {
     clearControls("simulator_shutdown");
     provider.stopSimulator();
@@ -5109,6 +5300,10 @@
       displayedCamera = { ...metadata };
       $9("authoritativeCamera").src = cameraUrl;
       $9("authoritativeCamera").hidden = false;
+      if (provider.journey?.status === "RUNNING") requestAnimationFrame(() => {
+        cameraPerformance.present(metadata.frame, metadata.timestamp, performance.now(), provider.journey.pair_id + ":" + provider.journey.driving_mode);
+        $9("authoritativeCamera").dataset.performance = JSON.stringify(cameraPerformance.snapshot());
+      });
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       $9("cameraUnavailable").hidden = true;
       $9("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 Recorded image" : "RGB \xB7 Live image";
@@ -5236,6 +5431,7 @@
     cockpit.update(state, displayedCamera);
     demoDrive.update();
     presentationRun.update();
+    sequentialDrive.update();
   }
   $9("startDrivingBtn").onclick = () => {
     showWorkspace("drive");
@@ -5336,6 +5532,7 @@
     $9("operationStatus").textContent = e.message;
   });
   document.addEventListener("keydown", (event) => {
+    if (event.target.closest?.('button, a, summary, [role="button"]')) return;
     if (isEditableTarget(event.target) || event.altKey || event.ctrlKey || event.metaKey || tools.panel || document.querySelector("dialog[open]")) return;
     if (!event.repeat && document.body.dataset.workspace === "drive") {
       if (event.code === "KeyM") {

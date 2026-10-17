@@ -1,0 +1,6 @@
+{
+  "accepted": false,
+  "source_fingerprint": "a7f1f2bdff5db5b9b70bbdf785a432b312a0d20c71fdb0e7a6593454cfdeb51c",
+  "scope": "Expanded reliable driving delivery; does not replace historical scoped bypass evidence",
+  "reason": "Failed native quality and workflow gates; final cleanup/semantic changes lack a new native cohort."
+}

@@ -63,7 +63,7 @@ class WebSocketBridge:
                 else:
                     self.service.require_connected()
                     if presentation_start:
-                        self.service.presentation.start(message['value'].get('speed_kmh', 50))
+                        self.service.presentation.start(message['value'].get('speed_kmh', 50),seed=message['value'].get('seed'))
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}
@@ -128,9 +128,11 @@ class WebSocketBridge:
                 self.service.journey_heartbeat(message.get('session_id'))
             elif kind == 'presentation':
                 value = message.get('value')
-                if not isinstance(value, dict) or value.get('operation') != 'PLAYBACK_FINISHED':
+                if isinstance(value,dict) and value.get('operation')=='VALIDATION_TIMEOUT':
+                    self.service.presentation.inject_validation_timeout()
+                elif not isinstance(value, dict) or value.get('operation') != 'PLAYBACK_FINISHED':
                     raise ValueError('Unknown presentation operation')
-                self.service.presentation.playback_finished(value.get('id'))
+                else:self.service.presentation.playback_finished(value.get('id'))
             elif kind == 'journey_speed':
                 self.service.set_journey_speed(message.get('speed_kmh'))
             elif kind == 'restart_graphics':

@@ -1,0 +1,1722 @@
+{
+  "pair_id": "60f43c037f5142a197856a73dbf32e62",
+  "seed": 320418473,
+  "population": {
+    "vehicles": {
+      "total": 24,
+      "ahead": 24
+    },
+    "pedestrians": {
+      "total": 30,
+      "ahead": 30
+    }
+  },
+  "ahead_definition": "Positive longitudinal coordinate at frozen initial ego pose; all owned fixture actors",
+  "dense_setup_valid": true,
+  "arms": {
+    "ROBOSPHERE": {
+      "run": {
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a88de58ef52842f99d53cf6bab39ad8b",
+        "duration_s": 4.050000060349703,
+        "distance_m": 0.1688242580976298,
+        "maximum_speed_kmh": 2.711301977258523,
+        "collisions": 0
+      },
+      "samples": 84,
+      "quality": {
+        "accepted": false,
+        "gates": {
+          "arrived": false,
+          "no_contacts": true,
+          "complete_measurements": true,
+          "fresh_fraction": false,
+          "no_control_delays": false,
+          "all_stops_independently_verified": false,
+          "comfort": false,
+          "no_oscillation": false,
+          "cruise_50_verified": false,
+          "display": false
+        },
+        "fresh_fraction": 0.7857142857142857,
+        "delay_frames": [
+          63525,
+          63536,
+          63537,
+          63543,
+          63549,
+          63555,
+          63568,
+          63582,
+          63587,
+          63591,
+          63593,
+          63597,
+          63598,
+          63599,
+          63600,
+          63601,
+          63602,
+          63603
+        ],
+        "stop_frames": [
+          {
+            "frame": 63520,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 63521,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63522,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63523,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63524,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63525,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63526,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63527,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63528,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63529,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63530,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63531,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63532,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63533,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63534,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63535,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63536,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63537,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63538,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63539,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63540,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63541,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63542,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63543,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63544,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63545,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63546,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63547,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63548,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63549,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63550,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63551,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63552,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63553,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63554,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63555,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63556,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63557,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63558,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63559,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63560,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63561,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63562,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63563,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63564,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63565,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63566,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63567,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63568,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63569,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63570,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63571,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63572,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63573,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63574,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63575,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63576,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63577,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63578,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63582,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63583,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63584,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63587,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63588,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63589,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63590,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63591,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63592,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63593,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63594,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63595,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63596,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63597,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63598,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63599,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63600,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63601,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63602,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63603,
+            "reason": null
+          }
+        ],
+        "unresolved_stop_frames": [
+          {
+            "frame": 63520,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 63521,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63522,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63523,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63524,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63525,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63526,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63527,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63528,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63529,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63530,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63531,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63532,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63533,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63534,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63535,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63536,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63537,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63538,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63539,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63540,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63541,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63542,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63543,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63544,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63545,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63546,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63547,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63548,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63549,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63550,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63551,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63552,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63553,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63554,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63555,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63556,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63557,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63558,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63559,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63560,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63561,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63562,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63563,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63564,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63565,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63566,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63567,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63568,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63569,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63570,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63571,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63572,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63573,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63574,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63575,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63576,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63577,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63578,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63582,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63583,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63584,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63587,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63588,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63589,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63590,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63591,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63592,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63593,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63594,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63595,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63596,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63597,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63598,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63599,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63600,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63601,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63602,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 63603,
+            "reason": null
+          }
+        ],
+        "comfort_violations": [
+          {
+            "frame": 63579,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 7.809916717158677
+          },
+          {
+            "frame": 63579,
+            "reason": "JERK_0_2S",
+            "value": 39.049583559251296
+          },
+          {
+            "frame": 63580,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.877022496147215
+          },
+          {
+            "frame": 63580,
+            "reason": "JERK_0_2S",
+            "value": 19.385112299599108
+          },
+          {
+            "frame": 63581,
+            "reason": "JERK_0_2S",
+            "value": 4.218095873802662
+          },
+          {
+            "frame": 63582,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.5306906557653734
+          },
+          {
+            "frame": 63582,
+            "reason": "JERK_0_2S",
+            "value": 12.653459618210618
+          },
+          {
+            "frame": 63583,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -14.717623442526094
+          },
+          {
+            "frame": 63583,
+            "reason": "JERK_0_2S",
+            "value": 112.63769962625851
+          },
+          {
+            "frame": 63584,
+            "reason": "JERK_0_2S",
+            "value": 10.725787569359552
+          },
+          {
+            "frame": 63585,
+            "reason": "JERK_0_2S",
+            "value": 4.7428590631487015
+          },
+          {
+            "frame": 63586,
+            "reason": "JERK_0_2S",
+            "value": 8.862654049277179
+          },
+          {
+            "frame": 63587,
+            "reason": "JERK_0_2S",
+            "value": 72.16256839685533
+          },
+          {
+            "frame": 63588,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.299355678690876
+          },
+          {
+            "frame": 63588,
+            "reason": "JERK_0_2S",
+            "value": 30.156102418730857
+          },
+          {
+            "frame": 63590,
+            "reason": "JERK_0_2S",
+            "value": 9.194309717205373
+          },
+          {
+            "frame": 63591,
+            "reason": "JERK_0_2S",
+            "value": 6.827919870707633
+          },
+          {
+            "frame": 63592,
+            "reason": "JERK_0_2S",
+            "value": 11.938695650876205
+          },
+          {
+            "frame": 63594,
+            "reason": "JERK_0_2S",
+            "value": 4.007681000196508
+          },
+          {
+            "frame": 63595,
+            "reason": "JERK_0_2S",
+            "value": 3.578108265462597
+          },
+          {
+            "frame": 63599,
+            "reason": "JERK_0_2S",
+            "value": 8.997441778842182
+          },
+          {
+            "frame": 63600,
+            "reason": "JERK_0_2S",
+            "value": 10.441949986200244
+          },
+          {
+            "frame": 63601,
+            "reason": "JERK_0_2S",
+            "value": 9.322049825373146
+          },
+          {
+            "frame": 63602,
+            "reason": "JERK_0_2S",
+            "value": 7.820244198596614
+          }
+        ],
+        "maximum_jerk_0_2s_mps3": 112.63769962625851,
+        "oscillations": [
+          {
+            "frame": 63544,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63547,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63550,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63552,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63556,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63558,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63569,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63572,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63583,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63585,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63588,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63590,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63592,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 63596,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          }
+        ],
+        "camera": null,
+        "missing_measurements": [],
+        "evidence_note": "Every recorded frame is included, including startup/terminal holds and frames without decisions. Stops require independent review; no logged reason automatically authorizes a stop. Browser performance is audited separately."
+      },
+      "video": {
+        "status": "READY",
+        "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+        "clock": "SIMULATION_TIME",
+        "frames": 83,
+        "first_timestamp_s": 2816.062914673239,
+        "last_timestamp_s": 2820.1629147343338,
+        "duration_s": 4.100000061094761,
+        "video": "driving.mp4",
+        "sha256": "abbb9d3b89678db2f055c915d1b9a5223b4a5d1738190a67a5c98e1af0e00d00",
+        "frame_index": "telemetry/video-frames.jsonl",
+        "clock_zero_timestamp_s": 2816.062914673239,
+        "alignment_source": "ADMITTED_JOURNEY_START",
+        "maximum_frame_gap_s": 0.05000000074505806,
+        "verified_sha256": "abbb9d3b89678db2f055c915d1b9a5223b4a5d1738190a67a5c98e1af0e00d00",
+        "checksum_matches": true
+      },
+      "recording_status": {
+        "incomplete": false,
+        "error": null,
+        "dropped_frames": 0,
+        "dropped_events": 0,
+        "dropped_trace_rows": 0,
+        "first_dropped_frame": null,
+        "last_dropped_frame": null,
+        "written_frames": 84,
+        "queued_bytes": 0,
+        "pending_items": 0,
+        "finalized": true
+      }
+    },
+    "NORMAL": {
+      "run": {
+        "status": "COLLISION",
+        "reason": "collision",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_6c7edaf0eced404aacce20cc5996093d",
+        "duration_s": 12.750000189989805,
+        "distance_m": 75.1705497540986,
+        "maximum_speed_kmh": 49.36189597548916,
+        "collisions": 1
+      },
+      "samples": 258,
+      "quality": {
+        "accepted": false,
+        "gates": {
+          "arrived": false,
+          "no_contacts": false,
+          "complete_measurements": true,
+          "fresh_fraction": false,
+          "no_control_delays": false,
+          "all_stops_independently_verified": false,
+          "comfort": false,
+          "no_oscillation": true,
+          "cruise_50_verified": false,
+          "display": false
+        },
+        "fresh_fraction": 0.8992248062015504,
+        "delay_frames": [
+          63640,
+          63665,
+          63668,
+          63669,
+          63679,
+          63711,
+          63720,
+          63734,
+          63735,
+          63747,
+          63761,
+          63769,
+          63776,
+          63777,
+          63785,
+          63793,
+          63800,
+          63808,
+          63820,
+          63841,
+          63842,
+          63853,
+          63859,
+          63862,
+          63871,
+          63888
+        ],
+        "stop_frames": [
+          {
+            "frame": 63636,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 63637,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63638,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63639,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63640,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63641,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63642,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63643,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63644,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63645,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63646,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63647,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63648,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63649,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63650,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63651,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63652,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63653,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63654,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63655,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63656,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63657,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63658,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63659,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63660,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63661,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63662,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63663,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63664,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63665,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63666,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63667,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63668,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63669,
+            "reason": null
+          },
+          {
+            "frame": 63670,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63671,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63672,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63673,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63674,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63675,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63676,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63677,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63678,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63679,
+            "reason": "NAVIGATION"
+          }
+        ],
+        "unresolved_stop_frames": [
+          {
+            "frame": 63636,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 63637,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63638,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63639,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63640,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63641,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63642,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63643,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63644,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63645,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63646,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63647,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63648,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63649,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63650,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63651,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63652,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63653,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63654,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63655,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63656,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63657,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63658,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63659,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63660,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63661,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63662,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63663,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63664,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63665,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63666,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63667,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63668,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63669,
+            "reason": null
+          },
+          {
+            "frame": 63670,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63671,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63672,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63673,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63674,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63675,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63676,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63677,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63678,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 63679,
+            "reason": "NAVIGATION"
+          }
+        ],
+        "comfort_violations": [
+          {
+            "frame": 63680,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.6632293455080354
+          },
+          {
+            "frame": 63680,
+            "reason": "JERK_0_2S",
+            "value": 18.31614631311075
+          },
+          {
+            "frame": 63681,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 6.6291126161632885
+          },
+          {
+            "frame": 63681,
+            "reason": "JERK_0_2S",
+            "value": 33.14556274171301
+          },
+          {
+            "frame": 63682,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.7025601511638726
+          },
+          {
+            "frame": 63682,
+            "reason": "JERK_0_2S",
+            "value": 18.512805064124727
+          },
+          {
+            "frame": 63684,
+            "reason": "JERK_0_2S",
+            "value": 9.203571663014657
+          },
+          {
+            "frame": 63685,
+            "reason": "JERK_0_2S",
+            "value": 30.959696425716476
+          },
+          {
+            "frame": 63686,
+            "reason": "JERK_0_2S",
+            "value": 19.57098317777297
+          },
+          {
+            "frame": 63688,
+            "reason": "JERK_0_2S",
+            "value": 8.597623448695295
+          },
+          {
+            "frame": 63758,
+            "reason": "JERK_0_2S",
+            "value": 4.6831925756187225
+          },
+          {
+            "frame": 63759,
+            "reason": "JERK_0_2S",
+            "value": 16.755695884142156
+          },
+          {
+            "frame": 63760,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.1985171237204018
+          },
+          {
+            "frame": 63760,
+            "reason": "JERK_0_2S",
+            "value": 4.129601912410276
+          },
+          {
+            "frame": 63761,
+            "reason": "JERK_0_2S",
+            "value": 15.394812438539258
+          },
+          {
+            "frame": 63762,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.674808037592922
+          },
+          {
+            "frame": 63762,
+            "reason": "JERK_0_2S",
+            "value": 11.191955406953639
+          },
+          {
+            "frame": 63764,
+            "reason": "JERK_0_2S",
+            "value": 17.03818840869637
+          },
+          {
+            "frame": 63765,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.31654739354579
+          },
+          {
+            "frame": 63765,
+            "reason": "JERK_0_2S",
+            "value": 25.1352082607354
+          },
+          {
+            "frame": 63766,
+            "reason": "JERK_0_2S",
+            "value": 4.262457378700726
+          },
+          {
+            "frame": 63769,
+            "reason": "JERK_0_2S",
+            "value": 19.39077712653404
+          },
+          {
+            "frame": 63770,
+            "reason": "JERK_0_2S",
+            "value": 10.629245607192011
+          },
+          {
+            "frame": 63771,
+            "reason": "JERK_0_2S",
+            "value": 5.953803867544056
+          },
+          {
+            "frame": 63772,
+            "reason": "JERK_0_2S",
+            "value": 5.387349250325386
+          },
+          {
+            "frame": 63773,
+            "reason": "JERK_0_2S",
+            "value": 5.360439936984776
+          },
+          {
+            "frame": 63776,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 8.495723490175399
+          },
+          {
+            "frame": 63776,
+            "reason": "JERK_0_2S",
+            "value": 41.24598509290768
+          },
+          {
+            "frame": 63777,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 8.182674726960649
+          },
+          {
+            "frame": 63777,
+            "reason": "JERK_0_2S",
+            "value": 38.36097438728469
+          },
+          {
+            "frame": 63778,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.798646730391307
+          },
+          {
+            "frame": 63778,
+            "reason": "JERK_0_2S",
+            "value": 19.16252780332813
+          },
+          {
+            "frame": 63779,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.4083026606566045
+          },
+          {
+            "frame": 63779,
+            "reason": "JERK_0_2S",
+            "value": 17.279837249463643
+          },
+          {
+            "frame": 63780,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.8590159298152407
+          },
+          {
+            "frame": 63780,
+            "reason": "JERK_0_2S",
+            "value": 28.183537708499298
+          },
+          {
+            "frame": 63781,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.300224568140772
+          },
+          {
+            "frame": 63781,
+            "reason": "JERK_0_2S",
+            "value": 29.412249487477496
+          },
+          {
+            "frame": 63782,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.1057695986019778
+          },
+          {
+            "frame": 63782,
+            "reason": "JERK_0_2S",
+            "value": 8.46438554260795
+          },
+          {
+            "frame": 63783,
+            "reason": "JERK_0_2S",
+            "value": 7.273526700774687
+          },
+          {
+            "frame": 63784,
+            "reason": "JERK_0_2S",
+            "value": 5.1021845248948425
+          },
+          {
+            "frame": 63837,
+            "reason": "JERK_0_2S",
+            "value": 8.12385682252731
+          },
+          {
+            "frame": 63838,
+            "reason": "JERK_0_2S",
+            "value": 7.537891673121826
+          },
+          {
+            "frame": 63839,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 6.009531405842427
+          },
+          {
+            "frame": 63839,
+            "reason": "JERK_0_2S",
+            "value": 22.91152394358617
+          },
+          {
+            "frame": 63840,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 5.362975598289657
+          },
+          {
+            "frame": 63840,
+            "reason": "JERK_0_2S",
+            "value": 19.68496699415569
+          },
+          {
+            "frame": 63841,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.9041235754019885
+          },
+          {
+            "frame": 63841,
+            "reason": "JERK_0_2S",
+            "value": 20.51024167162826
+          },
+          {
+            "frame": 63842,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.9303428249353742
+          },
+          {
+            "frame": 63842,
+            "reason": "JERK_0_2S",
+            "value": 15.057583878492954
+          },
+          {
+            "frame": 63843,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.2867596282572724
+          },
+          {
+            "frame": 63843,
+            "reason": "JERK_0_2S",
+            "value": 18.61385869522537
+          },
+          {
+            "frame": 63844,
+            "reason": "JERK_0_2S",
+            "value": 17.602962667526068
+          },
+          {
+            "frame": 63845,
+            "reason": "JERK_0_2S",
+            "value": 11.614357624427019
+          },
+          {
+            "frame": 63846,
+            "reason": "JERK_0_2S",
+            "value": 7.501618204775493
+          },
+          {
+            "frame": 63847,
+            "reason": "JERK_0_2S",
+            "value": 4.910043696864424
+          },
+          {
+            "frame": 63893,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -338.4568188960196
+          },
+          {
+            "frame": 63893,
+            "reason": "JERK_0_2S",
+            "value": 1694.1393713796156
+          }
+        ],
+        "maximum_jerk_0_2s_mps3": 1694.1393713796156,
+        "oscillations": [],
+        "camera": null,
+        "missing_measurements": [],
+        "evidence_note": "Every recorded frame is included, including startup/terminal holds and frames without decisions. Stops require independent review; no logged reason automatically authorizes a stop. Browser performance is audited separately."
+      },
+      "video": {
+        "status": "READY",
+        "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+        "clock": "SIMULATION_TIME",
+        "frames": 257,
+        "first_timestamp_s": 2821.8629147596657,
+        "last_timestamp_s": 2834.6629149504006,
+        "duration_s": 12.800000190734863,
+        "video": "driving.mp4",
+        "sha256": "ae92c75f3e99a09141f546b1948feb012188c36f525e41d9787358ee6b63347c",
+        "frame_index": "telemetry/video-frames.jsonl",
+        "clock_zero_timestamp_s": 2821.8629147596657,
+        "alignment_source": "ADMITTED_JOURNEY_START",
+        "maximum_frame_gap_s": 0.05000000074505806,
+        "verified_sha256": "ae92c75f3e99a09141f546b1948feb012188c36f525e41d9787358ee6b63347c",
+        "checksum_matches": true
+      },
+      "recording_status": {
+        "incomplete": false,
+        "error": null,
+        "dropped_frames": 0,
+        "dropped_events": 0,
+        "dropped_trace_rows": 0,
+        "first_dropped_frame": null,
+        "last_dropped_frame": null,
+        "written_frames": 258,
+        "queued_bytes": 0,
+        "pending_items": 0,
+        "finalized": true
+      }
+    }
+  },
+  "accepted": false
+}

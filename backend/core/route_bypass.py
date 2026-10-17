@@ -34,7 +34,8 @@ def source_fingerprint():
 
 @lru_cache(maxsize=2)
 def availability(second):
-    config=configuration();ticket=active_ticket()
+    from ..learning.native_validation_budget import active_rule_ticket
+    config=configuration();ticket=active_ticket() or active_rule_ticket()
     accepted=False
     if config['enabled']:
         try:

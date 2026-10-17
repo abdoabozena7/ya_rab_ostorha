@@ -5,12 +5,32 @@ import math
 import unittest
 import numpy as np
 from backend.core.contracts import SensorKind
-from backend.core.control_radar import RadarVelocityFusion
+from backend.core.control_radar import RadarVelocityFusion, measured_returns
 from backend.core.prediction import MotionTracker,rotation
 from tests.test_safety_teacher import case
 
 
 class ControlRadarTests(unittest.TestCase):
+    def test_vectorized_returns_preserve_scalar_geometry_and_filtering(self):
+        from backend.core.active_safety import _mount
+        observation,poses,_,_=self.packet((1.,2.),yaw=.05)
+        channel=next(c for c in observation.channels if c.kind==SensorKind.RADAR)
+        bad=[dict(channel.data['detections'][0],**change) for change in
+             ({'depth_m':-1.},{'altitude_rad':.8},{'altitude_rad':-.8})]
+        revised=replace(channel,data={'detections':[*channel.data['detections'],*bad]})
+        observation=replace(observation,channels=tuple(revised if c is channel else c for c in observation.channels))
+        expected=[];old,current=poses;dt=current[0]-old[0]
+        r,prior=rotation(current[3]),rotation(old[3])
+        position,angles=_mount(revised)
+        velocity=r.T@((np.array(current[1:3])+r@position[:2])-(np.array(old[1:3])+prior@position[:2]))/dt
+        for d in revised.data['detections']:
+            distance,az,alt,speed=(d[k] for k in ('depth_m','azimuth_rad','altitude_rad','velocity_mps'))
+            if not all(math.isfinite(v) for v in (distance,az,alt,speed)) or distance<=0:continue
+            direction=rotation(math.radians(angles[2]))@np.array([math.cos(alt)*math.cos(az),math.cos(alt)*math.sin(az)])
+            xyz=np.r_[position[:2]+distance*direction,position[2]+distance*math.sin(alt)]
+            if .25<xyz[2]<2.5 and abs(alt)<.2:expected.append([*xyz,*direction,speed+direction@velocity])
+        np.testing.assert_allclose(measured_returns(observation,poses),expected,atol=1e-12)
+
     def packet(self,velocity=(0.,0.),*,collinear=False,yaw=.0):
         observation,_=case(1,distance=None,speed=4.)
         mount=np.array([2.5,0.,.65]);r=rotation(yaw)

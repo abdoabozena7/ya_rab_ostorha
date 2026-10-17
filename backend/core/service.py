@@ -163,7 +163,7 @@ class SimulationService:
         value=getattr(self.provider,'navigation_bypass',None)
         return value if isinstance(value,RuleRouteBypass) else None
 
-    def _active_safety_step(self):
+    def _active_safety_step(self, observer_base=None):
         supervisor = self.active_safety
         if supervisor is None: return
         bypass=self._route_bypass()
@@ -196,8 +196,9 @@ class SimulationService:
             self.provider.active_safety_status = supervisor.snapshot()
             return
         frame_id, timestamp_s = self._context()
-        base = self.arbiter.choose(frame_id=frame_id, timestamp_s=timestamp_s, connected=self._live(),
-                                   exclude_sources=(CommandSource.SAFETY,))
+        base = observer_base if observer_only and observer_base is not None else self.arbiter.choose(
+            frame_id=frame_id, timestamp_s=timestamp_s, connected=self._live(),
+            exclude_sources=(CommandSource.SAFETY,))
         if base.source not in (CommandSource.MANUAL, CommandSource.NAVIGATION):
             self._clear_safety_command(); supervisor.reset()
             self.provider.active_safety_status = supervisor.snapshot()
@@ -351,7 +352,8 @@ class SimulationService:
             path = signed_path(scene.observation.ego.speed_mps, base.steering,
                                base.throttle*2.5-base.brake*5., scene.geometry, base.reverse, bounded=base.reverse)
             road = self.provider.hybrid_road_context(self.session_id)
-            ok, reason, evidence = ExecutionShield().check(scene, path, base, road, timestamp_s=stamp, wall_s=self.now())
+            ok, reason, evidence = ExecutionShield().check(scene, path, base, road, timestamp_s=stamp, wall_s=self.now(),
+                forward_recovery=self.maneuver_status.get('action') in ('FOLLOW','SLOW'))
             if self.now()-scene.received_wall_s > .25:
                 ok, reason = False, 'CONTROL_PROCESSING_DEADLINE'
         if not ok:
@@ -374,7 +376,7 @@ class SimulationService:
         self.provider.active_safety_status = dict(status)
         self.journey_observer = dict(status)
         if self.recorder:
-            self.recorder.record_trace({'kind':'RULE_BYPASS_EXECUTION' if route_bypass else 'HYBRID_EXECUTION', 'decision_id':self.maneuver_status.get('decision_id'),
+            self._record_control_trace({'kind':'RULE_BYPASS_EXECUTION' if route_bypass else 'HYBRID_EXECUTION', 'decision_id':self.maneuver_status.get('decision_id'),
                 'frame_id':frame_id, 'timestamp_s':stamp, 'proposal':to_dict(base),
                 'applied':to_dict(self.safety_command or base), 'reason':reason,
                 'accepted':ok, 'evidence':evidence, 'scene_build_ms':scene.build_ms if scene else None,
@@ -497,6 +499,7 @@ class SimulationService:
                 if self.journey.get('driving_mode')=='HYBRID' else None,
             'sensor_wall_age_s': self.now()-(self.state_at if self.safety_observed_at is None else self.safety_observed_at),
             'control_timing_ms': dict(getattr(self,'control_timing_ms',{})),
+            'application_timing':dict(getattr(self,'application_timing',{})),
             'sensor_ages_s': {s.sensor_id: stamp-s.sensor_timestamp_s for s in self.observation.sensors} if self.observation else {},
             'ego_render_pose': to_dict(self.observation.vehicle.transform) if self.observation else None}
         stopped = (self.observation is not None and abs(self.observation.vehicle.speed_mps) < .15 and
@@ -517,9 +520,44 @@ class SimulationService:
             if reference is not None: prediction['render_reference'] = reference
             else: prediction.pop('render_reference',None)
         if self.recorder and hasattr(self.recorder,'record_safety'):
-            self.recorder.record_safety(copy.deepcopy(self.stop_diagnostics))
+            self.recorder.record_safety(self.stop_diagnostics)
         if getattr(self, 'journey_recording_stop_pending', None):
             self.journey_recording_stop_pending['applied'] = True
+
+    def _record_control_trace(self,row):
+        pending=getattr(self,'pending_control_traces',None)
+        if pending is None:self.recorder.record_trace(row)
+        else:pending.append((self.recorder,row))
+
+    def _application_guard(self,chosen):
+        """Final freshness observation immediately before the native RPC."""
+        now=self.now();scene=self.control_scene;frame,stamp=self._context()
+        if self.clock.frame_id is not None:frame,stamp=self.clock.frame_id,self.clock.timestamp_s
+        fresh=bool(scene and scene.session_id==self.session_id and scene.observation.frame_id==frame and scene.usable(stamp,now))
+        injected=now<getattr(self,'validation_timeout_until',0.)
+        if injected:fresh=False
+        self.application_timing={'decision_id':getattr(self,'maneuver_status',{}).get('decision_id'),
+            'session_id':self.session_id,'frame_id':frame,'source_frame':scene.observation.frame_id if scene else None,
+            'submitted_wall_s':now,'sensor_received_wall_s':scene.received_wall_s if scene else None,
+            'wall_age_s':now-scene.received_wall_s if scene else None,
+            'simulation_age_s':stamp-scene.observation.timestamp_s if scene else None,'fresh_aligned':fresh,
+            'injected_timeout':injected}
+        guarded=(self.arbiter.machine.mode==ControlMode.AUTOMATIC and not self._normal_driving()
+            and getattr(self.provider,'sensor_suite',False) is True)
+        if guarded and not fresh:
+            chosen=replace(chosen,source=CommandSource.SAFETY,throttle=0.,brake=1.)
+            self.safety_command=chosen
+            if self.active_safety:self.active_safety.status.update(reason='CONTROL_PROCESSING_DEADLINE',
+                decision_source='EXECUTION_SHIELD',active=True,status='HOLD')
+            if getattr(self,'application_stale_since',None) is None:self.application_stale_since=now
+            if now-self.application_stale_since>=1.:
+                self.runtime_fault={'stage':'command_application','exception_type':'ControlSceneTimeout',
+                    'message':'Current synchronized sensor scene unavailable for one second',
+                    'evaluation_frame':frame,'timestamp_s':stamp,'applied_command':to_dict(chosen),
+                    'injected_validation_fault':injected}
+                self._stop_navigation('runtime_failure',status='ERROR')
+        else:self.application_stale_since=None
+        return chosen
 
     @property
     def name(self):
@@ -736,6 +774,11 @@ class SimulationService:
     def _choose(self):
         frame_id, timestamp_s = self._context()
         chosen = self.arbiter.choose(frame_id=frame_id, timestamp_s=timestamp_s, connected=self._live())
+        if self.arbiter.reason == 'command_timeout' and self.journey.get('status') == 'RUNNING':
+            self.runtime_fault={'stage':'command_arbitration','exception_type':'CommandLeaseTimeout',
+                'message':'The driving command expired before application',
+                'evaluation_frame':frame_id,'timestamp_s':timestamp_s,'applied_command':to_dict(chosen)}
+            self._stop_navigation('runtime_failure',status='ERROR')
         if self.observation and chosen.source == CommandSource.SAFETY and self.arbiter.reason != 'SAFETY':
             chosen = replace(chosen, reverse=self.observation.vehicle.reverse,
                              gear=0 if self.observation.vehicle.gear == 0 else -1 if self.observation.vehicle.reverse else None)
@@ -789,7 +832,9 @@ class SimulationService:
             self.journey_recording_stop_pending = {
                 'mode': self.journey.get('driving_mode') or 'UNPAIRED', 'applied': False}
         fixture=getattr(self.provider,'benchmark_fixture',None)
-        if fixture and self.journey.get('benchmark') and (
+        presentation_fixture=bool(fixture and self.journey.get('presentation_id'))
+        if presentation_fixture:self.presentation_traffic_hold_pending=True
+        if fixture and not presentation_fixture and self.journey.get('benchmark') and (
                 self.journey.get('driving_mode')=='HYBRID' or self.journey.get('presentation_id') and
                 self.journey.get('driving_mode')=='NORMAL' or not (benchmark_terminal_supported({'status':status,'reason':reason}) or
                 self.journey.get('presentation_id') and reason=='presentation_route_timeout')):
@@ -861,7 +906,9 @@ class SimulationService:
         if not self.arbiter.machine.allow_navigation:
             raise ValueError('Destination journeys are unavailable in this mode')
         speed = finite(speed_kmh)
-        maximum = 50 if driving_mode in ('HYBRID','BASELINE') or presentation else 30
+        from ..learning.native_validation_budget import active_rule_ticket
+        rule_validation = active_rule_ticket() if driving_mode == 'ROBOSPHERE' else None
+        maximum = 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
         if not 5 <= speed <= maximum:
             raise ValueError(f'Journey speed must be 5–{maximum} km/h')
         if driving_mode == 'HYBRID':
@@ -897,6 +944,7 @@ class SimulationService:
             self.release_controls()
             self.navigation_heartbeat_at = self.now()
             self.journey = {'status': 'STARTING', 'reason': None, 'speed_kmh': speed}
+            if rule_validation:self.journey['validation_deadline']=rule_validation['expires_monotonic_s']
             if presentation: self.journey.update(presentation_id=presentation_id, benchmark=True)
             if driving_mode in ('HYBRID','BASELINE'):self.journey['benchmark']=benchmark or pair_id is not None
             self.last_drive_stop = None
@@ -952,6 +1000,8 @@ class SimulationService:
     def _navigation_step(self):
         if self.arbiter.machine.mode != ControlMode.AUTOMATIC:
             return
+        if self.now() >= self.journey.get('validation_deadline',float('inf')):
+            self._stop_navigation('native_validation_expired');return
         if not self._navigation_connection_alive():
             self._stop_navigation('dashboard_heartbeat_timeout')
             return
@@ -961,7 +1011,7 @@ class SimulationService:
             # Keep the still-valid selected command; never bypass the rate guard.
             return
         route = self.provider.route_state()
-        if ((self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id')) and route.get('arrived')
+        if ((self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id') or self.journey.get('validation_deadline')) and route.get('arrived')
                 and route.get('remaining_m',float('inf'))<6. and self.observation.vehicle.speed_mps<.15):
             driver=getattr(self.provider,'hybrid_driver',None)
             if driver and driver.alternative_started is not None and math.dist(
@@ -984,6 +1034,13 @@ class SimulationService:
             return
         frame_id, timestamp_s = self._context()
         command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
+        if self.journey.get('presentation_id') or self.journey.get('validation_deadline'):
+            from .comfort_control import ComfortControl
+            if getattr(self,'comfort_controller',None) is None:self.comfort_controller=ComfortControl()
+            stop_reason=getattr(self.provider,'navigation_stop_reason',None)
+            command=self.comfort_controller.apply(command,self.observation.vehicle,
+                getattr(self.provider,'navigation_target_mps',self.journey['speed_kmh']/3.6),
+                hazard=bool(stop_reason and stop_reason!='Navigation speed/route controller'))
         self.base_driver_command = command
         bypass=self._route_bypass()
         if bypass is not None and self.journey.get('driving_mode','ROBOSPHERE')=='ROBOSPHERE':
@@ -1018,7 +1075,7 @@ class SimulationService:
                 if updated is not None:reused=updated
                 self.arbiter.submit(reused,frame_id=frame_id,timestamp_s=timestamp_s,connected=True)
                 self.command_at=self.now()
-                if self.recorder:self.recorder.record_trace({'kind':'HYBRID_REUSE',
+                if self.recorder:self._record_control_trace({'kind':'HYBRID_REUSE',
                     'decision_id':self.maneuver_status.get('decision_id'),'frame_id':frame_id,'timestamp_s':timestamp_s,
                     'behavior_source_frame':self.maneuver_status.get('source_frame'),
                     'actuation_source_frame':self.control_scene.observation.frame_id if updated is not None else None,
@@ -1041,7 +1098,7 @@ class SimulationService:
                     'decision_id':self.maneuver_status['decision_id'],'used_for_applied_decision':True,
                     'selected_candidate':self.maneuver_status['action']})
             if self.recorder and self.control_scene:
-                self.recorder.record_trace({'kind':'HYBRID_DECISION','decision_id':self.maneuver_status['decision_id'],
+                self._record_control_trace({'kind':'HYBRID_DECISION','decision_id':self.maneuver_status['decision_id'],
                     'frame_id':frame_id,'timestamp_s':timestamp_s,'road_context':road,
                     'base_command':to_dict(self.base_driver_command),'selected_command':to_dict(command),
                     'decision':self.maneuver_status,'prediction':self.control_scene.prediction})
@@ -1793,6 +1850,7 @@ class SimulationService:
                     self.policy_history.clear()
                     self.journey_observer = {}
                     self.motion_snapshot = None
+                    self.runtime_fault=None;self.safety_fault=None;self.error=None;self.application_stale_since=None
                     self._clear_safety_command()
                     if self.active_safety: self.active_safety.reset()
                     self.synchronizer = SensorSynchronizer(self._required_after_sensor_rebuild(), self.synchronizer.optional,
@@ -1880,6 +1938,7 @@ class SimulationService:
             else:
                 self.provider.set_paused(value)
                 self.paused = value
+        self.pending_control_traces=[]
         control_requested = self.now()
         with self.lock:
             control_acquired = self.now()
@@ -1926,7 +1985,8 @@ class SimulationService:
                 self._navigation_step()
                 safety_started = self.now()
                 self.control_timing_ms['navigation'] = (safety_started-navigation_started)*1000
-                self._active_safety_step()
+                normal_observer=self._normal_driving()
+                if not normal_observer:self._active_safety_step()
                 if self.journey_comparison.active and self.journey.get('status') == 'RUNNING':
                     self.journey_comparison.sample(self.observation, self.provider.route_state(), self.journey_observer)
                 self.control_timing_ms['safety'] = (self.now()-safety_started)*1000
@@ -1940,11 +2000,30 @@ class SimulationService:
         if chosen.source != CommandSource.NAVIGATION or chosen.brake > .01:
             self.rear_assist = False
         apply_started=self.now()
+        if training_command is None:chosen=self._application_guard(chosen)
         if (training_command is not None and self.rl_runtime and self.rl_runtime.supervisor) or chosen == self.safety_command:
             self.provider.apply_control_confirmed(chosen)
         else:self.provider.apply_control(chosen)
         self.control_timing_ms['actuator_submit']=(self.now()-apply_started)*1000
+        if hasattr(self,'application_timing'):self.application_timing['rpc_completed_wall_s']=self.now()
+        # Normal's sensor analysis has no control authority. Run it after the
+        # native command is applied so diagnostic work cannot expire that command.
+        # Supply the selected command directly: observing must not select again.
+        if training_command is None and normal_observer and self._normal_driving():
+            observer_started=self.now()
+            with self.lock:self._active_safety_step(observer_base=chosen)
+            self.control_timing_ms['observer_after_application']=(self.now()-observer_started)*1000
+        traces=self.pending_control_traces;self.pending_control_traces=None
+        for recorder,row in traces:recorder.record_trace(row)
         self._audit_command(chosen)
+        if getattr(self,'presentation_traffic_hold_pending',False):
+            self.presentation_traffic_hold_pending=False
+            fixture=getattr(self.provider,'benchmark_fixture',None)
+            if fixture:
+                held=fixture.hold_current()
+                if held and not held['passed']:
+                    self.presentation.data['fixture_fault']=held
+                    self.presentation.fail('The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.')
         native_step_started = self.now()
         self.provider.step()
         # Native weather/population setters become observable on the following
@@ -2017,7 +2096,9 @@ class SimulationService:
                 'last_applied_native_controls':copy.deepcopy(native_controls) if isinstance(native_controls,dict) else None,
                 'observed_vehicle':to_dict(self.observation.vehicle) if self.observation else None}
             self.error=str(error)
-            if self.presentation.busy: self.presentation.transition('ERROR', reason=str(error))
+            if self.presentation.busy:
+                self.presentation.transition('ERROR', reason=str(error),outcome='INCOMPLETE',
+                    failure=copy.deepcopy(self.runtime_fault))
             self._event(EventType.ConnectionLost,reason=str(error),runtime_fault=copy.deepcopy(self.runtime_fault))
             self._stop_navigation('runtime_failure',status='ERROR')
             self.release_controls();self.arbiter.disconnect();self.lifecycle.fail(error)

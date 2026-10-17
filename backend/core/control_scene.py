@@ -179,7 +179,7 @@ class ControlSceneBuilder:
                               ego.handbrake, CommandSource.SYSTEM, ego.gear)
         prediction = self.engine.evaluate(tracking_points, observation, base, control_only=True)
         tracked=time.perf_counter()
-        self.poses.append((observation.timestamp_s,*prediction['odometry_origin_m'],prediction['odometry_yaw_rad']))
+        self.poses.append((observation.timestamp_s,*prediction['odometry_origin_m'],prediction['odometry_yaw_rad'],observation.frame_id))
         radar_tracks=0
         if any(c.kind==SensorKind.RADAR and c.sensor_id!='radar' for c in observation.channels):
             radar_tracks=self.radar_velocity.apply(prediction,observation,self.poses,self.engine.tracker)
@@ -188,6 +188,12 @@ class ControlSceneBuilder:
             'full':sum(t.get('doppler_evidence',{}).get('observable_rank')==2 for t in prediction['tracks']),
             'partial':sum(t.get('doppler_evidence',{}).get('observable_rank')==1 for t in prediction['tracks'])}
         semantics=self.semantics.apply(prediction,observation,self.poses,semantic_result)
+        for track in prediction['tracks']:
+            track['measurement_evidence']={'frame_id':observation.frame_id,'timestamp_s':observation.timestamp_s,
+                'session_id':self.session_id,'coordinate_frame':'EGO_AT_EVALUATION',
+                'sensor_ids':[c.sensor_id for c in observation.channels if c.kind in (SensorKind.LIDAR,SensorKind.DEPTH)],
+                'support_points':track.get('support_points'), 'occlusion_s':track.get('occlusion_s'),
+                'motion_observations':track.get('motion_observations')}
         from .kinematic_prediction import kinematic_modes
         # Include a complete command lease, reaction and braking tail, even at
         # 50 km/h. The display's historical three-second window is not a limit

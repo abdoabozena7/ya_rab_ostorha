@@ -7,7 +7,7 @@ import time
 import numpy as np
 from .active_safety import _mount
 from .contracts import ControlCommand, CommandSource, SensorKind, to_dict
-from .camera_geometry import project
+from .control_semantics import SemanticAssociator
 from .prediction import PredictionEngine, rotation, intended_conflict,ego_paths,assess_conflicts
 from .motion_quality import MotionQuality
 from .kinematic_prediction import rank_learned_modes
@@ -38,7 +38,7 @@ def measured_control_view(scene,reference):
     Do not copy/rebuild/score their full graph in a competing Python thread
     while the synchronized control owner is proving a maneuver.
     """
-    keys=('id','position_m','half_size_m','velocity_mps','class','confirmed','occlusion_s')
+    keys=('id','position_m','half_size_m','velocity_mps','class','confirmed','occlusion_s','semantic_evidence','measurement_evidence')
     return {'version':3,'session_id':scene.session_id,'evaluation_frame':scene.observation.frame_id,
         'timestamp_s':scene.observation.timestamp_s,'coordinate_frame':'EGO_AT_EVALUATION',
         'published_wall_s':time.monotonic(),
@@ -53,6 +53,7 @@ class DisplayPredictionService:
     def __init__(self, service, perception):
         self.service=service;self.perception=perception;self.latest=None;self.error=None
         self.engine=None;self.poses=deque(maxlen=64);self.worker=None;self.worker_error=None
+        self.requested_until=0.
         self.quality=MotionQuality()
         self.frames=OrderedDict()
         root=Path(__file__).resolve().parents[2]
@@ -73,6 +74,9 @@ class DisplayPredictionService:
         while not self.stop.wait(max(0.,due-time.monotonic())):
             observed_began=time.monotonic();due=observed_began+.1
             try:
+                # This observer has no control consumer. Build optional visual
+                # forecasts only while a Details client actually requests them.
+                if observed_began>self.requested_until:continue
                 s=self.service
                 # Only copy immutable sensor data under the service lock. All
                 # tracking, classification and learned inference run outside it.
@@ -115,7 +119,7 @@ class DisplayPredictionService:
                 captured=time.monotonic()
                 if self.engine is None or self.engine.session_id!=key[0]:
                     self.engine=PredictionEngine(key[0],enhanced=True,geometry=getattr(s.provider,'vehicle_geometry',None));self.poses.clear();self.quality=MotionQuality()
-                    self.frames.clear()
+                    self.frames.clear();self.semantics=SemanticAssociator()
                 position,angles=_mount(lidar)
                 if np.any(np.abs(angles)>1e-4):raise ValueError('Display LiDAR mount must be level')
                 points=np.frombuffer(data,dtype='<f4').reshape(-1,4)[:,:3]+position
@@ -150,29 +154,9 @@ class DisplayPredictionService:
                     # ControlScene is published by the synchronized sensor owner.
                     # Display/model work never replaces that measured scene.
                 space_ready=time.monotonic()
-                rgb=next(c for c in observation.channels if c.kind==SensorKind.RGB)
-                self.poses.append((observation.timestamp_s,*prediction['odometry_origin_m'],prediction['odometry_yaw_rad']))
+                self.poses.append((observation.timestamp_s,*prediction['odometry_origin_m'],prediction['odometry_yaw_rad'],observation.frame_id))
                 detected=self.perception.latest(key[0]) if self.perception else {}
-                if detected.get('status')=='RUNNING' and 0<=observation.timestamp_s-detected['timestamp_s']<=.75:
-                    # YOLO samples at 1 Hz, the observer at 10 Hz. Interpolate
-                    # measured odometry/history to the actual analyzed time;
-                    # matching only identical frame IDs silently loses classes.
-                    poses=np.asarray(self.poses);stamp=detected['timestamp_s']
-                    old_origin=np.array([np.interp(stamp,poses[:,0],poses[:,i]) for i in (1,2)])
-                    old_yaw=np.interp(stamp,poses[:,0],np.unwrap(poses[:,3]))
-                    for tr in prediction['tracks']:
-                        history=np.asarray(tr['history'])
-                        if len(history)==0:continue
-                        if stamp<max(poses[0,0],history[0,0]) or stamp>min(poses[-1,0],history[-1,0]):continue
-                        fixed=np.array([np.interp(stamp,history[:,0],history[:,i]) for i in (1,2)])
-                        local=rotation(old_yaw).T@(fixed-old_origin)
-                        point=project(local,rgb.calibration)
-                        if point is None:continue
-                        choices=[d for d in detected['detections'] if d['confidence']>=.5 and
-                            d['xyxy'][0]<=point[0]<=d['xyxy'][2] and d['xyxy'][1]<=point[1]<=d['xyxy'][3]]
-                        if choices:
-                            kind=max(choices,key=lambda d:d['confidence'])['class']
-                            tr['class']=kind
+                self.semantics.apply(prediction,observation,self.poses,detected)
                 prediction.update(render_reference=reference,display_only=True,display_source='MEASURED_KINEMATIC',
                     model_status='WARMING_UP',model_reason='Waiting for classified motion history',
                     published_wall_s=time.monotonic())
@@ -254,6 +238,7 @@ class DisplayPredictionService:
                 self.error=str(error);self.latest=None
 
     def snapshot(self,frame_id=None):
+        self.requested_until=time.monotonic()+2.
         result=self.frames.get(frame_id) if frame_id is not None else self.latest
         if frame_id is not None:
             return {'status':'RUNNING','prediction':result} if result else {'status':'WAITING','error':'No measured forecast for this exact image frame'}

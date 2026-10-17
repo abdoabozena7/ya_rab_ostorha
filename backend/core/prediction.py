@@ -154,7 +154,7 @@ class MotionTracker:
                     tr['turn_rate']=.8*tr.get('turn_rate',0.)+.2*np.clip(turn/max(.025,elapsed),-.7,.7) if min(np.linalg.norm(old),np.linalg.norm(tr['velocity']))>.5 else 0.
                 tr['hits'] = tr['hits'] if elapsed <= (.251 if self.enhanced else .151) else 0
             surface_center=self.origin+r@c['center']
-            tr.update(position=pos, surface_center=surface_center,half=c['half'], last_seen=now, cloud=cloud, hits=tr['hits']+1)
+            tr.update(position=pos, surface_center=surface_center,half=c['half'], last_seen=now, cloud=cloud, hits=tr['hits']+1,support_points=c['points'])
             tr['spatially_supported_frames']=spatial_support
             tr['quality'] = min(1., tr['hits']/3.)*min(1., c['points']/6.)
             tr['history'].append((now, *(tr.get('anchor',pos) if self.enhanced else pos), *tr['velocity']))
@@ -173,6 +173,7 @@ class MotionTracker:
                 'acceleration_mps2': (r.T@tr['acceleration']).tolist(),
                 'class': tr['class'], 'confirmed': tr.get('confirmed', False),
                 'motion_observations':tr['hits'],'turn_rate_radps':float(tr.get('turn_rate',0.)),
+                'support_points':tr.get('support_points'),
                 'spatially_supported_frames':tr.get('spatially_supported_frames',0),
                 'heading_rad':float(math.atan2(tr['velocity'][1],tr['velocity'][0])-self.yaw) if np.linalg.norm(tr['velocity'])>=.3 else None,
                 'gaze_direction':'UNKNOWN',

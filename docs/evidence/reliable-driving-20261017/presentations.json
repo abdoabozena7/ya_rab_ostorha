@@ -1,0 +1,812 @@
+[
+  {
+    "id": "cab445c08fcc471c9f2d7860d09b7a73",
+    "status": "CANCELLED",
+    "speed_kmh": 50.0,
+    "outcome": "INCOMPLETE",
+    "failures": [],
+    "recovery": null,
+    "seed": 320418473,
+    "modes": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "arm": 0,
+    "pair_id": "7c57c1b9e17a45f7b0ea75de951d11c9",
+    "events": [
+      {
+        "status": "STOPPING",
+        "wall_s": 31215.359,
+        "timestamp_s": 2223.9014477543533
+      },
+      {
+        "status": "PREPARING",
+        "wall_s": 31215.437,
+        "timestamp_s": 2223.9514477550983
+      },
+      {
+        "status": "READY",
+        "wall_s": 31215.968,
+        "timestamp_s": 2224.0014477558434
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 31221.203,
+        "timestamp_s": 2226.051447786391
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 31222.156,
+        "timestamp_s": 2226.201447788626
+      },
+      {
+        "status": "CANCELLED",
+        "wall_s": 31386.218,
+        "timestamp_s": 2267.3014484010637
+      }
+    ],
+    "source": "LIVE_NATIVE_CARLA",
+    "comparison_note": "Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.",
+    "setup": {
+      "destination": {
+        "map": "Carla/Maps/Town10HD_Opt",
+        "location": [
+          -114.2754135131836,
+          47.62446594238281,
+          0.0
+        ],
+        "name": "Presentation destination"
+      },
+      "route_length_m": 266.46573230486626,
+      "origin_index": 152,
+      "population": {
+        "vehicle_count": 22,
+        "pedestrian_count": 30,
+        "speed_behavior": "FAST",
+        "seed": 320418473,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 30,
+        "chaos_percent": 45,
+        "placement": "ROUTE",
+        "vehicle_mix": "MIXED"
+      },
+      "planned_vehicle_capacity": 24,
+      "requested_route_vehicles": 40,
+      "requested_route_pedestrians": 30,
+      "speed_kmh": 50.0
+    },
+    "reason": "operator_stop"
+  },
+  {
+    "id": "a4997aac37a844e1bc4a9b2dcb8817e3",
+    "status": "CANCELLED",
+    "speed_kmh": 50.0,
+    "outcome": "INCOMPLETE",
+    "failures": [],
+    "recovery": null,
+    "seed": 912833484,
+    "modes": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "arm": 0,
+    "pair_id": "e05119f1fc02416eaffd6282744ea4ce",
+    "events": [
+      {
+        "status": "STOPPING",
+        "wall_s": 31430.625,
+        "timestamp_s": 2287.451448701322
+      },
+      {
+        "status": "PREPARING",
+        "wall_s": 31430.703,
+        "timestamp_s": 2287.451448701322
+      },
+      {
+        "status": "READY",
+        "wall_s": 31431.265,
+        "timestamp_s": 2287.501448702067
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 31436.734,
+        "timestamp_s": 2289.4514487311244
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 31437.703,
+        "timestamp_s": 2289.6014487333596
+      },
+      {
+        "status": "CANCELLED",
+        "wall_s": 31537.343,
+        "timestamp_s": 2315.1514491140842
+      }
+    ],
+    "source": "LIVE_NATIVE_CARLA",
+    "comparison_note": "Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.",
+    "setup": {
+      "destination": {
+        "map": "Carla/Maps/Town10HD_Opt",
+        "location": [
+          -114.2754135131836,
+          47.62446594238281,
+          0.0
+        ],
+        "name": "Presentation destination"
+      },
+      "route_length_m": 266.46573230486626,
+      "origin_index": 152,
+      "population": {
+        "vehicle_count": 18,
+        "pedestrian_count": 30,
+        "speed_behavior": "FAST",
+        "seed": 912833484,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 30,
+        "chaos_percent": 45,
+        "placement": "ROUTE",
+        "vehicle_mix": "MIXED"
+      },
+      "planned_vehicle_capacity": 24,
+      "requested_route_vehicles": 40,
+      "requested_route_pedestrians": 30,
+      "speed_kmh": 50.0
+    },
+    "reason": "operator_stop"
+  },
+  {
+    "id": "342b80b521674c6788213bd50724c820",
+    "status": "CANCELLED",
+    "speed_kmh": 50.0,
+    "outcome": "INCOMPLETE",
+    "failures": [],
+    "recovery": null,
+    "seed": 850261841,
+    "modes": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "arm": 0,
+    "pair_id": "cb1ab18abc13419385411a3e2d164f86",
+    "events": [
+      {
+        "status": "STOPPING",
+        "wall_s": 31552.39,
+        "timestamp_s": 2321.5014492087066
+      },
+      {
+        "status": "PREPARING",
+        "wall_s": 31552.468,
+        "timestamp_s": 2321.5014492087066
+      },
+      {
+        "status": "READY",
+        "wall_s": 31552.968,
+        "timestamp_s": 2321.5514492094517
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 31558.421,
+        "timestamp_s": 2323.601449239999
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 31559.078,
+        "timestamp_s": 2323.7514492422342
+      },
+      {
+        "status": "CANCELLED",
+        "wall_s": 31673.671,
+        "timestamp_s": 2353.2514496818185
+      }
+    ],
+    "source": "LIVE_NATIVE_CARLA",
+    "comparison_note": "Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.",
+    "setup": {
+      "destination": {
+        "map": "Carla/Maps/Town10HD_Opt",
+        "location": [
+          -114.2754135131836,
+          47.62446594238281,
+          0.0
+        ],
+        "name": "Presentation destination"
+      },
+      "route_length_m": 266.46573230486626,
+      "origin_index": 152,
+      "population": {
+        "vehicle_count": 16,
+        "pedestrian_count": 30,
+        "speed_behavior": "FAST",
+        "seed": 850261841,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 30,
+        "chaos_percent": 45,
+        "placement": "ROUTE",
+        "vehicle_mix": "MIXED"
+      },
+      "planned_vehicle_capacity": 24,
+      "requested_route_vehicles": 40,
+      "requested_route_pedestrians": 30,
+      "speed_kmh": 50.0
+    },
+    "reason": "operator_stop"
+  },
+  {
+    "id": "32a36d89601c4523aabde8bd9edca98c",
+    "status": "CANCELLED",
+    "speed_kmh": 50.0,
+    "outcome": "INCOMPLETE",
+    "failures": [
+      {
+        "mode": "ROBOSPHERE",
+        "fault": {
+          "stage": "command_application",
+          "exception_type": "ControlSceneTimeout",
+          "message": "Current synchronized sensor scene unavailable for one second",
+          "evaluation_frame": 61000,
+          "timestamp_s": 2732.482030045241,
+          "applied_command": {
+            "frame_id": 61000,
+            "timestamp_s": 2732.482030045241,
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.024225782603025436,
+            "reverse": false,
+            "handbrake": false,
+            "source": "SAFETY",
+            "gear": 1
+          },
+          "injected_validation_fault": true
+        },
+        "reason": "runtime_failure"
+      }
+    ],
+    "recovery": {
+      "status": "READY",
+      "attempts": 1,
+      "fresh_frames": 20,
+      "last_frame": 61023,
+      "initial_condition_audit": {
+        "passed": true,
+        "failures": [],
+        "light_samples": [
+          {
+            "id": 9,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 10,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 11,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 12,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 13,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 14,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 15,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 16,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 17,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 18,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 19,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 20,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 21,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 22,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 23,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          }
+        ],
+        "condition_id": "da382ec399e60eef6de033c07ac530e45d3761fc322012f8b8b4b64e46230139",
+        "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+      }
+    },
+    "seed": 320418473,
+    "modes": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "arm": 1,
+    "pair_id": "01ce0fb82ad246b3836c8a72ceb36388",
+    "events": [
+      {
+        "status": "STOPPING",
+        "wall_s": 32473.218,
+        "timestamp_s": 2726.0820299498737
+      },
+      {
+        "status": "PREPARING",
+        "wall_s": 32474.296,
+        "timestamp_s": 2726.1320299506187
+      },
+      {
+        "status": "READY",
+        "wall_s": 32475.468,
+        "timestamp_s": 2726.232029952109
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 32481.671,
+        "timestamp_s": 2728.2820299826562
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 32482.656,
+        "timestamp_s": 2728.4320299848914
+      },
+      {
+        "status": "FINALIZING",
+        "wall_s": 32501.75,
+        "timestamp_s": 2732.532030045986
+      },
+      {
+        "status": "RESTORING",
+        "wall_s": 32501.859,
+        "timestamp_s": 2732.5820300467312
+      },
+      {
+        "status": "RECOVERING",
+        "wall_s": 32502.109,
+        "timestamp_s": 2732.6320300474763
+      },
+      {
+        "status": "READY",
+        "wall_s": 32504.578,
+        "timestamp_s": 2733.6320300623775
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 32504.718,
+        "timestamp_s": 2733.6820300631225
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 32505.406,
+        "timestamp_s": 2733.8320300653577
+      },
+      {
+        "status": "CANCELLED",
+        "wall_s": 32620.062,
+        "timestamp_s": 2766.4320305511355
+      }
+    ],
+    "source": "LIVE_NATIVE_CARLA",
+    "comparison_note": "Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.",
+    "setup": {
+      "destination": {
+        "map": "Carla/Maps/Town10HD_Opt",
+        "location": [
+          -114.2754135131836,
+          47.62446594238281,
+          0.0
+        ],
+        "name": "Presentation destination"
+      },
+      "route_length_m": 266.46573230486626,
+      "origin_index": 152,
+      "planned_vehicle_capacity": 24,
+      "population_pending": false,
+      "requested_route_vehicles": 40,
+      "requested_route_pedestrians": 30,
+      "speed_kmh": 50.0,
+      "population": {
+        "vehicle_count": 24,
+        "pedestrian_count": 30,
+        "speed_behavior": "FAST",
+        "seed": 320418473,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 30,
+        "chaos_percent": 45,
+        "placement": "ROUTE",
+        "vehicle_mix": "MIXED"
+      }
+    },
+    "population_audit": {
+      "frame_id": 60916,
+      "counts": {
+        "vehicles": {
+          "total": 24,
+          "ahead": 24
+        },
+        "pedestrians": {
+          "total": 30,
+          "ahead": 30
+        }
+      },
+      "passed": true
+    },
+    "injected_fault": {
+      "kind": "CONTROL_APPLICATION_TIMEOUT",
+      "driving_acceptance_excluded": true,
+      "frame_id": 60996
+    },
+    "runs": {
+      "ROBOSPHERE": {
+        "id": "c4595c4a350c4ef482e80c49c81d0144",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2b48d6b66dd84b77ad5b07666b4945f6"
+      }
+    },
+    "reason": "operator_stop"
+  },
+  {
+    "id": "6088534a90874d86b76673eb3b83ed48",
+    "status": "ERROR",
+    "speed_kmh": 50.0,
+    "outcome": "FAILED_ARMS",
+    "failures": [
+      {
+        "mode": "ROBOSPHERE",
+        "fault": {
+          "stage": "command_application",
+          "exception_type": "ControlSceneTimeout",
+          "message": "Current synchronized sensor scene unavailable for one second",
+          "evaluation_frame": 63602,
+          "timestamp_s": 2820.1129147335887,
+          "applied_command": {
+            "frame_id": 63602,
+            "timestamp_s": 2820.1129147335887,
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.020503289997577667,
+            "reverse": false,
+            "handbrake": false,
+            "source": "SAFETY",
+            "gear": 1
+          },
+          "injected_validation_fault": true
+        },
+        "reason": "runtime_failure"
+      }
+    ],
+    "recovery": {
+      "status": "READY",
+      "attempts": 1,
+      "fresh_frames": 20,
+      "last_frame": 63634,
+      "initial_condition_audit": {
+        "passed": true,
+        "failures": [],
+        "light_samples": [
+          {
+            "id": 9,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 10,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 11,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 12,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 13,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 14,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 15,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 16,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 17,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 18,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 19,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 20,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 21,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 22,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 23,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          }
+        ],
+        "condition_id": "facf6f2e6e3fa80c58e923807d1a089468dc0a87e5da50873c17a15b0b546d8d",
+        "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+      }
+    },
+    "seed": 320418473,
+    "modes": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "arm": 1,
+    "pair_id": "60f43c037f5142a197856a73dbf32e62",
+    "events": [
+      {
+        "status": "STOPPING",
+        "wall_s": 32736.015,
+        "timestamp_s": 2813.7629146389663
+      },
+      {
+        "status": "PREPARING",
+        "wall_s": 32736.218,
+        "timestamp_s": 2813.8129146397114
+      },
+      {
+        "status": "READY",
+        "wall_s": 32736.796,
+        "timestamp_s": 2813.9129146412015
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 32742.359,
+        "timestamp_s": 2815.962914671749
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 32743.375,
+        "timestamp_s": 2816.112914673984
+      },
+      {
+        "status": "FINALIZING",
+        "wall_s": 32761.375,
+        "timestamp_s": 2820.1629147343338
+      },
+      {
+        "status": "RESTORING",
+        "wall_s": 32761.64,
+        "timestamp_s": 2820.212914735079
+      },
+      {
+        "status": "RECOVERING",
+        "wall_s": 32761.812,
+        "timestamp_s": 2820.262914735824
+      },
+      {
+        "status": "READY",
+        "wall_s": 32766.046,
+        "timestamp_s": 2821.7129147574306
+      },
+      {
+        "status": "STARTING",
+        "wall_s": 32766.125,
+        "timestamp_s": 2821.7629147581756
+      },
+      {
+        "status": "DRIVING",
+        "wall_s": 32766.906,
+        "timestamp_s": 2821.912914760411
+      },
+      {
+        "status": "FINALIZING",
+        "wall_s": 32841.875,
+        "timestamp_s": 2834.6629149504006
+      },
+      {
+        "status": "ERROR",
+        "wall_s": 32841.875,
+        "timestamp_s": 2834.6629149504006
+      }
+    ],
+    "source": "LIVE_NATIVE_CARLA",
+    "comparison_note": "Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.",
+    "setup": {
+      "destination": {
+        "map": "Carla/Maps/Town10HD_Opt",
+        "location": [
+          -114.2754135131836,
+          47.62446594238281,
+          0.0
+        ],
+        "name": "Presentation destination"
+      },
+      "route_length_m": 266.46573230486626,
+      "origin_index": 152,
+      "planned_vehicle_capacity": 24,
+      "population_pending": false,
+      "requested_route_vehicles": 40,
+      "requested_route_pedestrians": 30,
+      "speed_kmh": 50.0,
+      "population": {
+        "vehicle_count": 24,
+        "pedestrian_count": 30,
+        "speed_behavior": "FAST",
+        "seed": 320418473,
+        "fast_walk_percent": 10,
+        "driver_behavior": "BUSY",
+        "light_compliance_percent": 80,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 30,
+        "chaos_percent": 45,
+        "placement": "ROUTE",
+        "vehicle_mix": "MIXED"
+      }
+    },
+    "population_audit": {
+      "frame_id": 63519,
+      "counts": {
+        "vehicles": {
+          "total": 24,
+          "ahead": 24
+        },
+        "pedestrians": {
+          "total": 30,
+          "ahead": 30
+        }
+      },
+      "passed": true
+    },
+    "injected_fault": {
+      "kind": "CONTROL_APPLICATION_TIMEOUT",
+      "driving_acceptance_excluded": true,
+      "frame_id": 63596
+    },
+    "runs": {
+      "ROBOSPHERE": {
+        "id": "23a2c3128d194739b608907ae2cc8997",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a88de58ef52842f99d53cf6bab39ad8b"
+      }
+    },
+    "reason": "1226"
+  }
+]

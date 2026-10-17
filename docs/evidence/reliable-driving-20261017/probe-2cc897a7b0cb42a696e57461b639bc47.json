@@ -1,0 +1,1637 @@
+{
+  "id": "2cc897a7b0cb42a696e57461b639bc47",
+  "scope": "Diagnostic production-worker probe; not complete behavioral acceptance",
+  "source": "LIVE_NATIVE_CARLA",
+  "speed_kmh": 50.0,
+  "mode": "ROBOSPHERE",
+  "scenario": "EMPTY_ROAD",
+  "seed": 320418473,
+  "source_hashes": {
+    "backend\\core\\active_safety.py": "fd7cb48932e735368c27f45f2929781da349718a305cc2d605e86890103f8973",
+    "backend\\core\\agents.py": "ffe208794346410d37c52ba0b726c5f4b35632df3efe1d02037475d70d6332f6",
+    "backend\\core\\camera_geometry.py": "c8200bc92d5c921f6a7006ebb6b24bc2b9dbedde48505ed9c47de4556104fc01",
+    "backend\\core\\comfort_control.py": "3ffd35d76d08468a8e48b82d2c3ba774b29cd11c5c4527a140ba8f7961090c2b",
+    "backend\\core\\config.py": "7e239f339fedcf20a028c374dd86751a72cfaa2b14aab2097dcc83fd1ebd0693",
+    "backend\\core\\congestion_recovery.py": "772f60d18374d4ce687c7b690dceba1c5a907fea37131a3465c814a1f378052c",
+    "backend\\core\\contracts.py": "b51500d5cb5ac2a02558f85060e001bcf3805785e1681f3d1ce11a0092b3f63c",
+    "backend\\core\\control.py": "8675b041666717fccf7774ad316222f733e2f6877e398d59d3238e4a87687641",
+    "backend\\core\\control_radar.py": "da10e3feaaa2db625f298812f1ecf437cee4b803a06a3217809d90f5fd48d53c",
+    "backend\\core\\control_scene.py": "ece64faf7aab283ec1c611700da8bc5192552487f00261df45a35e82e17245b0",
+    "backend\\core\\control_semantics.py": "64629306f3c1b229081cbc23e0869c28d3e5b114d65abdc46611a5aab5795b68",
+    "backend\\core\\corridor_uncertainty.py": "c25e7446eb890dbac414d6b4338ea8e756a53a3561509ef1395e05478d77bdce",
+    "backend\\core\\dashboard.py": "aea250be06b57815b225a7b6a0eb82043132c6eb9d54bbf20b520dc0f56bfabe",
+    "backend\\core\\display_prediction.py": "13aa72fc723ad7156dd584faaa6c14f3dc612765a594a2ff46373f832ec4f806",
+    "backend\\core\\drivable_corridor.py": "f1f5f8ff7fc0ae00ad2ee9f52e1b7f86e8bee7398169b5141934113924926d4f",
+    "backend\\core\\driving_quality.py": "6ac7e92dff59a18afc80cb91c101fbd22b5dbc4770d1ea81d94af996e30e7cd0",
+    "backend\\core\\driving_video.py": "ba2884007527c19d82a8ba788e2789ccaad0f3337856674039989b2a420d858f",
+    "backend\\core\\ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+    "backend\\core\\evaluation.py": "e2ea328052d0404a282699806cf7a18fe4e19aadcd636c3a5af5710a04b36104",
+    "backend\\core\\events.py": "4370d63b8d44fb96f8264eeca5e44921f7deea951dd390646c40db5411f07a67",
+    "backend\\core\\ground_geometry.py": "6297d684553107f42fe9464e758378ed642454da084252cdee08116813f2332e",
+    "backend\\core\\hybrid_acceptance.py": "ac0807310941958fec939d0b6449a593ed0f07df0f6d83b3ab4866b902f346e6",
+    "backend\\core\\hybrid_config.py": "5cab29e9efa1f4cdc90e4163ea3968b0b0a18b8520b7c0b805075a06024a17c8",
+    "backend\\core\\hybrid_driver.py": "0350ba49d6ed4066af9671ef74913198bd1b7a832e080921ce561cc71b014a9d",
+    "backend\\core\\journey_comparison.py": "9dd48932e3e38f060f794bd4511519d8bfb2212d7de39dd34d514d209c3a7346",
+    "backend\\core\\kinematic_prediction.py": "d8a6d3c20c6e53f7fd09bcd45befead6f926a6e10cea8f7c38d42a6e086c87a8",
+    "backend\\core\\lifecycle.py": "629160fdca0e44b0bec2cff96c258b687accaba2e1b0a4ebbf1cfdbe54ae8f1d",
+    "backend\\core\\logging.py": "a4734de93047bf2470699d4acb9cff37237ff0a84677dcc1349340bbc7b04d5d",
+    "backend\\core\\maneuver.py": "915322c425703cfc4bd9ace1f69a3bb529b10174bc5ceb54f00f9a94a092458e",
+    "backend\\core\\maneuver_candidates.py": "da2e4a7d50e76d664ec33042834eacecb168ed7bd2db654c86fb871f159f9e06",
+    "backend\\core\\measured_rows.py": "29b31182f03257db164e30bf278527c58f8ca666cc4634304e1b56bd677e07c6",
+    "backend\\core\\motion_geometry.py": "36679f4f8d36abe0e8b8e359eafeef8343e1d1836e08688bef522457a8a8c419",
+    "backend\\core\\motion_quality.py": "14c16ae36468dcfc977fde47547624a43f553b10eb95de10fdf3d347ea499239",
+    "backend\\core\\motion_scene.py": "5881a39c96f00929f4985889e36f34af9e65a4fdf96dfeaedabc08d6912090d7",
+    "backend\\core\\normal_navigation.py": "184d1c047c328d6cff7107a3896115932bb923eb3ef0abf7ce32cff1e349a6cd",
+    "backend\\core\\path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+    "backend\\core\\prediction.py": "51edd2ffeb0f725cb7ec37ef873cebf90b2e1e35e393443fc6a8b876d5c59991",
+    "backend\\core\\predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend\\core\\presentation.py": "8438ae532d465fc6f7c28fc25ef85c339b64fca9a7e807c01cfc0e8d581b0228",
+    "backend\\core\\rear_separation.py": "64c118d963bcb67220d7bf526adecd165752a407b2de7cdd4da527e12da05b6d",
+    "backend\\core\\recording.py": "ae4a91a7a5f2dc5629c6073a3c32b369b8684e02b7f596225fd48657875b5bf4",
+    "backend\\core\\recovery_depth.py": "15bfc77e400602be98ab1bde4cc921af42aa45a355ca1ddd7d766a59f3ef7fb8",
+    "backend\\core\\replay.py": "a90d3e3216ff4c4f671d82057f51a7007cb3f9ea83adaca3ed2aadf4dfb8e3f4",
+    "backend\\core\\reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+    "backend\\core\\research.py": "d698624a37c30779c520714b8ffa2089334ef1ec153d442122b327e1914cbbc0",
+    "backend\\core\\research_safety.py": "1bf6818fb37b6ce275c9af0291999d930b4668f8179ddfb777558abfda289a57",
+    "backend\\core\\route_bypass.py": "91f3300692dcb0f6ab2c5c6fc28814c0520aaef79fc6e5f62d2bb7b41c6aa2c9",
+    "backend\\core\\route_terminal.py": "4be10620a3da84c32d6744195bf122e984d030f49346910fcf999c7d41328ccc",
+    "backend\\core\\safety_policy.py": "4c64603f924dcfb2a51b9d376a699587658b082e9cbb0117aa953f29b53123bc",
+    "backend\\core\\scenarios.py": "669a4befd5b9a848843cb49aa1373c3816671b7c9bbb1e35f1e82b99edbfcbf4",
+    "backend\\core\\service.py": "470903bbcc64f91f4ef3aaad0ee12aee983c186451a76e1cecb3da4686248f12",
+    "backend\\core\\surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+    "backend\\core\\surface_registration.py": "2d1ca8a30fd41de7613ef04c18f61e67cc41b1c495b00a1d0e17d3476830420d",
+    "backend\\core\\timing.py": "6d5d02c0f5989a1a041b03a09f250fe1a864a0e41b53d9224b5b403ec4976482",
+    "backend\\core\\video_http.py": "c0a1d7edb822730aa74654389a08849ef80ade80ee1e8f9d03f35e958b2bca3a",
+    "backend\\core\\__init__.py": "e64fb6a47bad83efe0387337fcbb8dd4b3f50d4d2e20034c01ef6d6ddb1714f6",
+    "backend\\carla\\benchmark_fixture.py": "b0baa267bd8b573d0370c208f7bfff2cf8e1cb038a511347ecc97a12e3e14616",
+    "backend\\carla\\comparison.py": "d8fa4cbf5735d58a3b578014d908da5ec9b49c04c63ff474baf607a21fe4b760",
+    "backend\\carla\\comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+    "backend\\carla\\connection.py": "632a59f7801dafcc90d625ca19b6aa1187282d146e61f50da110aaed8bc74b88",
+    "backend\\carla\\contracts.py": "179544f49a950f589f14ed215d103f36bdddcce1180641aa5559b4343d1534c1",
+    "backend\\carla\\controls.py": "1786ebb30bef1f3a5f93463ae6f287d342839884593ed9ddfae1778ddfa12743",
+    "backend\\carla\\dashboard_tools.py": "85f5605b0e7550e3b2fc986943ccabb27185ccad3ecd71cf5d4364f275bdc9e8",
+    "backend\\carla\\geometry.py": "9e71ed70eb0524780aa7798f8bcb77abdfdf6a84904cbe762afd171f54c0c1cd",
+    "backend\\carla\\graphics.py": "c37718359776004bdc717c700f15148f01fa4bfd9fad08e328d57d3cbfdc2b72",
+    "backend\\carla\\ground_truth.py": "61cb8f904910d630b7c820e07549b8026ffbdfe45cfdbf54168aad86b7b9ae09",
+    "backend\\carla\\hybrid_navigation.py": "9754b468bb51c0dfe120b4ad2c1137f8b9d6309eec58fb18ce90bac21e92fde0",
+    "backend\\carla\\hybrid_world.py": "c4b9c8741c81592b4784ed76badd87cb22c5889151e949d0855ce3adec13185a",
+    "backend\\carla\\pilot_world.py": "3f94efdd945346c2cd2ec72eaabb7a2d46f8caa702cd6f02c3cc1025c99f091f",
+    "backend\\carla\\population.py": "df328b29276de9e5c0b4eaba5af6771630a0ffa552968e23ca5c130d61e06c82",
+    "backend\\carla\\preflight.py": "1698845580fbc394c9d6a4e1bd7baea0f679281be21d0acc2438ac8c3b254bd6",
+    "backend\\carla\\presentation.py": "c72ae8f9afd91f108393e139dd660782990a35f609412e423eb927221852bd7c",
+    "backend\\carla\\provider.py": "38e80a0deeb6a0e1fe7f4be6757e9e73d4c43a6cea4a1df8c61701a5b6385ed1",
+    "backend\\carla\\restart_helper.py": "5aea662f9d989aa30e3574a0598e807c06ab3676f8fb4300e1a26cecae1d191d",
+    "backend\\carla\\routes.py": "d1b5dc419f05d0867c5d77c58acd3d3f2d86dc2abe00996edd69bb7ddef5d4b6",
+    "backend\\carla\\route_agent.py": "a168a9941168e3a66b87770e05ef8eb57b5bec2fe9d7931870a54eb8dc2167e3",
+    "backend\\carla\\route_crowding.py": "5a6faf6ba2baf58fb5903d8f63b927ebbba4843dad6f75bf957abc8f26ab66a0",
+    "backend\\carla\\runtime.py": "89e6af23037fcfbf7215bcc00d4856617837ef28d406ed9a0fc16b1607f5f62a",
+    "backend\\carla\\scenarios.py": "9e039492af3bc8b842b7e05886427ddd1fde8b8ec00b2a561b346a27c3f6485c",
+    "backend\\carla\\sensors.py": "8bfe3fa6cc40490b46b70820d1614e6b557bff843e1f24a3b972abaa789849fb",
+    "backend\\carla\\sensor_decoders.py": "f7bfd23f08ab81911510993035ecb4258d0eece4794f00f8cf7f496c4ee5f233",
+    "backend\\carla\\start_helper.py": "59dcabe042320e533db659daf41f0c2466f8cfcb3df3f75e9f6cd21c103de739",
+    "backend\\carla\\stop_helper.py": "85065cabff9232a1a97bcff1580f1604e0398277077eac452eb192e4bb79030c",
+    "backend\\carla\\target.py": "77f1aa4455aa843ec5b8786cea10e7127ab0c3cb7c08b0dd9e6b7f7041679b8c",
+    "backend\\carla\\telemetry.py": "474323d59a8879cc6d3665b9ae5e58f490589ef989d1534d33903412eaf4c2a4",
+    "backend\\carla\\urban.py": "f49798dbe285628ac58c2e3cb6362a0889a57540129df01d9c162877ba079229",
+    "backend\\carla\\urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend\\carla\\vehicle.py": "6f2e6522406552f651291e0792d74efa2df848c0cf83449d98995f158df9e593",
+    "backend\\carla\\world.py": "2cbc3db5cb0b9b8360bc931ce59dc598b68eb1efd2a770862aa576b1baf3ba73",
+    "backend\\carla\\__init__.py": "ce728f3803a6cd778e37986b03762a4d926ec12a7a69787391ac67e200232b60",
+    "backend\\learning\\hybrid_budget.py": "f81f36eed0b67ffcf285f36fdb607ba6bbd4625979c1c1a69e180eb75b72b8bc",
+    "config\\hybrid-driving.json": "e2b254a4da315b381f2a78c96149ad6904482f2ffdcfd5ead8318d9f6195bf05",
+    "config\\route-bypass.json": "3694cc54e293ddb1315fe70594d0653e991d34ffd7590e02225f8ee187676d58",
+    "scripts\\validate_hybrid_native.py": "92831608f403176f78ad0ab8d87df047478401d0ddb721c07c92e4d24b1e8184",
+    "scripts\\native\\route_bypass_world.py": "c0f1918f2ea7a09db7369c4976c68a05b8b129f50386454228182ba99ccdce7c"
+  },
+  "source_archive": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-2cc897a7b0cb42a696e57461b639bc47\\source.zip",
+    "sha256": "3c40abda09f2dcba9bad57be3e1d33810b411b6412bfdc5c96feed030e703654",
+    "files": 95,
+    "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+  },
+  "graphics": {
+    "quality": "Epic",
+    "resolution": "1280x720",
+    "offscreen": true,
+    "renderer": "D3D12",
+    "render_profile": "HIGH",
+    "source": "VERIFIED_NATIVE_PROCESS"
+  },
+  "sensor_ids": [
+    "collision",
+    "frontCamera",
+    "drivingCamera",
+    "depth",
+    "radar",
+    "lidar",
+    "imu",
+    "gnss",
+    "frontLeftDepth",
+    "frontRightDepth",
+    "rearLeftDepth",
+    "rearRightDepth",
+    "frontLeftRadar",
+    "frontRightRadar",
+    "rearLeftRadar",
+    "rearRightRadar"
+  ],
+  "journey": {
+    "status": "ARRIVED",
+    "reason": "destination_reached",
+    "speed_kmh": 50.0,
+    "validation_deadline": 33319.44553102493,
+    "driving_mode": "ROBOSPHERE",
+    "pair_id": "76609bed0fc04650b4a856475a630a4f",
+    "route_id": "5ee6011ab83d4acb8795085f211920b8"
+  },
+  "native_planar_distance_m": 120.5249153442189,
+  "maximum_speed_kmh": 49.935251647966034,
+  "maximum_unexplained_stop_s": 2.7000000402331352,
+  "contacts": [],
+  "recording": {
+    "version": 1,
+    "pair_id": "76609bed0fc04650b4a856475a630a4f",
+    "driver_modes": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "manifest": {
+      "map": "Carla/Maps/Town10HD_Opt",
+      "blueprint": "vehicle.lincoln.mkz_2020",
+      "origin": {
+        "location": [
+          57.56834030151367,
+          -67.849853515625,
+          -0.0178818516433239
+        ],
+        "rotation": [
+          0.0,
+          179.9765625,
+          0.0
+        ]
+      },
+      "destination": {
+        "id": "map-f184c0ae90",
+        "name": "Pilot destination",
+        "map": "Carla/Maps/Town10HD_Opt",
+        "location": [
+          -62.43924331665039,
+          -68.64520263671875,
+          0.0
+        ],
+        "spawn_index": null,
+        "road_id": 90,
+        "lane_id": 2,
+        "source": "CARLA_WORLD"
+      },
+      "route_length_m": 118.25314319719104,
+      "speed_kmh": 50.0,
+      "population": {
+        "vehicle_count": 0,
+        "pedestrian_count": 0,
+        "speed_behavior": "NORMAL",
+        "seed": 320418473,
+        "fast_walk_percent": 10,
+        "driver_behavior": "NORMAL",
+        "light_compliance_percent": 90,
+        "world_profile": "TRAINING_DEVELOPMENT",
+        "crossing_percent": 5,
+        "chaos_percent": 0,
+        "placement": "EGO_SURROUNDING",
+        "vehicle_mix": "MIXED"
+      },
+      "actual_population": {
+        "vehicles": 0,
+        "pedestrians": 0,
+        "controllers": 0,
+        "walkers_active": 0
+      },
+      "collision_measurement_available": true,
+      "crowded": false,
+      "weather": {
+        "cloudiness": 5.0,
+        "precipitation": 0.0,
+        "wetness": 0.0,
+        "fog_density": 2.0,
+        "sun_altitude_angle": 45.0,
+        "sun_azimuth_angle": -1.0,
+        "precipitation_deposits": 0.0,
+        "wind_intensity": 10.0,
+        "fog_distance": 0.75,
+        "fog_falloff": 0.10000000149011612,
+        "scattering_intensity": 1.0,
+        "mie_scattering_scale": 0.029999999329447746,
+        "rayleigh_scattering_scale": 0.03310000151395798,
+        "dust_storm": 0.0
+      },
+      "setup_note": "Same origin, destination, weather, speed and seeded traffic settings. Live actor trajectories are not identical."
+    },
+    "runs": {
+      "ROBOSPHERE": {
+        "id": "2ff5cd72c0bc4264a7b5d392069f7801",
+        "mode": "ROBOSPHERE",
+        "status": "ARRIVED",
+        "reason": "destination_reached",
+        "setup": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "blueprint": "vehicle.lincoln.mkz_2020",
+          "origin": {
+            "location": [
+              57.56834030151367,
+              -67.849853515625,
+              -0.0178818516433239
+            ],
+            "rotation": [
+              0.0,
+              179.9765625,
+              0.0
+            ]
+          },
+          "destination": {
+            "id": "map-f184c0ae90",
+            "name": "Pilot destination",
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -62.43924331665039,
+              -68.64520263671875,
+              0.0
+            ],
+            "spawn_index": null,
+            "road_id": 90,
+            "lane_id": 2,
+            "source": "CARLA_WORLD"
+          },
+          "route_length_m": 118.25314319719104,
+          "speed_kmh": 50.0,
+          "population": {
+            "vehicle_count": 0,
+            "pedestrian_count": 0,
+            "speed_behavior": "NORMAL",
+            "seed": 320418473,
+            "fast_walk_percent": 10,
+            "driver_behavior": "NORMAL",
+            "light_compliance_percent": 90,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 5,
+            "chaos_percent": 0,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          },
+          "actual_population": {
+            "vehicles": 0,
+            "pedestrians": 0,
+            "controllers": 0,
+            "walkers_active": 0
+          },
+          "collision_measurement_available": true,
+          "crowded": false,
+          "weather": {
+            "cloudiness": 5.0,
+            "precipitation": 0.0,
+            "wetness": 0.0,
+            "fog_density": 2.0,
+            "sun_altitude_angle": 45.0,
+            "sun_azimuth_angle": -1.0,
+            "precipitation_deposits": 0.0,
+            "wind_intensity": 10.0,
+            "fog_distance": 0.75,
+            "fog_falloff": 0.10000000149011612,
+            "scattering_intensity": 1.0,
+            "mie_scattering_scale": 0.029999999329447746,
+            "rayleigh_scattering_scale": 0.03310000151395798,
+            "dust_storm": 0.0
+          },
+          "setup_note": "Same origin, destination, weather, speed and seeded traffic settings. Live actor trajectories are not identical."
+        },
+        "driver_id": "ROBOSPHERE",
+        "created_at_utc": "2026-10-17T18:09:51.910298+00:00",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f3eb56d1b8f44d64aa1a3cd6e29f7522",
+        "duration_s": 17.25000025704503,
+        "distance_m": 120.53195418724502,
+        "route_completion_percent": 100.0,
+        "collisions": 0,
+        "maximum_impulse_ns": 0.0,
+        "near_misses": 0,
+        "safety_interventions": 1,
+        "high_risk_s": 0.0,
+        "sensor_coverage_percent": 97.6878612716763,
+        "safety_intervention_s": 0.05000000074505806,
+        "harsh_braking_events": 1,
+        "destination_reached": true,
+        "acceleration_samples": 346,
+        "intervention_samples": 339,
+        "minimum_forward_range_m": 28.08887737430632,
+        "mean_speed_kmh": 25.086463771314815,
+        "maximum_speed_kmh": 49.935251647966034,
+        "samples": 346,
+        "observed_samples": 338,
+        "risk_timeline": [
+          {
+            "timestamp_s": 2424.560022879392,
+            "elapsed_s": 0.0,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2425.560022894293,
+            "elapsed_s": 1.0000000149011612,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2426.5600229091942,
+            "elapsed_s": 2.0000000298023224,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2427.5600229240954,
+            "elapsed_s": 3.0000000447034836,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2428.5600229389966,
+            "elapsed_s": 4.000000059604645,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2429.5600229538977,
+            "elapsed_s": 5.000000074505806,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2430.560022968799,
+            "elapsed_s": 6.000000089406967,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2431.5600229837,
+            "elapsed_s": 7.000000104308128,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2432.560022998601,
+            "elapsed_s": 8.00000011920929,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2433.5600230135024,
+            "elapsed_s": 9.00000013411045,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2434.5600230284035,
+            "elapsed_s": 10.000000149011612,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2435.5600230433047,
+            "elapsed_s": 11.000000163912773,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2436.560023058206,
+            "elapsed_s": 12.000000178813934,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2437.560023073107,
+            "elapsed_s": 13.000000193715096,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2438.560023088008,
+            "elapsed_s": 14.000000208616257,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2439.5600231029093,
+            "elapsed_s": 15.000000223517418,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2440.5600231178105,
+            "elapsed_s": 16.00000023841858,
+            "risk": "CLEAR"
+          },
+          {
+            "timestamp_s": 2441.5600231327116,
+            "elapsed_s": 17.00000025331974,
+            "risk": "UNKNOWN"
+          }
+        ],
+        "events": [
+          {
+            "title": "Waiting",
+            "timestamp_s": 2424.560022879392,
+            "detail": "NAVIGATION"
+          },
+          {
+            "title": "Driving resumed",
+            "timestamp_s": 2425.1600228883326,
+            "detail": "Automatic continuation"
+          },
+          {
+            "title": "RULE intervention",
+            "timestamp_s": 2440.4100231155753,
+            "detail": "Sensor delay; holding until the next fresh sensor frame"
+          },
+          {
+            "title": "Harsh braking",
+            "timestamp_s": 2440.5100231170654,
+            "detail": "-3.83 m/s\u00b2"
+          },
+          {
+            "title": "Run ended",
+            "timestamp_s": 2441.810023136437,
+            "detail": "destination_reached"
+          }
+        ],
+        "stop_diagnostics": {
+          "version": 2,
+          "session_id": "887b5fd23d4b4aba91706bc0bb7f5e51",
+          "evaluation_frame": 54144,
+          "timestamp_s": 2441.810023136437,
+          "braking": true,
+          "decision_source": "NAVIGATION",
+          "braking_sources": [
+            "NAVIGATION"
+          ],
+          "reason": "destination_reached",
+          "base_command": {
+            "frame_id": 54143,
+            "timestamp_s": 2441.760023135692,
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.0,
+            "reverse": false,
+            "handbrake": false,
+            "source": "NAVIGATION",
+            "gear": null
+          },
+          "applied_command": {
+            "frame_id": 54144,
+            "timestamp_s": 2441.810023136437,
+            "throttle": 0.0,
+            "brake": 1.0,
+            "steering": 0.0,
+            "reverse": false,
+            "handbrake": false,
+            "source": "SAFETY",
+            "gear": null
+          },
+          "safety": {
+            "type": "RULE_BASED_SAFETY",
+            "version": "YA_RAB_OSTORHA_RULE_BASED_V2_LIDAR_PATH_CONFLICT",
+            "path_conflict_policy": "FORWARD_PHYSICAL_INGRESS_V4",
+            "status": "STANDBY",
+            "risk": "UNKNOWN",
+            "active": false,
+            "reason": "Monitoring resumes with normal forward driving",
+            "steering_available": false,
+            "rejected_interventions": 0,
+            "actual_generator": "BASE_DRIVER",
+            "enabled": true,
+            "intervention_count": 0,
+            "controller": "RULE",
+            "model_health": "READY",
+            "model_identity": "YA_RAB_OSTORHA_SEQUENCE_BC_V1",
+            "model_error": null,
+            "model_weights_sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629",
+            "model_validation": "Standalone LEARNED failed progress (0/2). HYBRID V2 passed 3/3 forward-hazard pilots with required rule release guard; experimental, no learned safety improvement claim.",
+            "hybrid_version": "YA_RAB_OSTORHA_RULE_RELEASE_GUARD_V2",
+            "available_controllers": [
+              "RULE",
+              "HYBRID"
+            ],
+            "source_counts": {
+              "LEARNED_BC": 0,
+              "RULE_GUARD": 0,
+              "RULE_FALLBACK": 0,
+              "RULE": 0,
+              "BASE_DRIVER": 345
+            },
+            "experimental": false
+          },
+          "vehicle_geometry": {
+            "front_m": 2.4398968871682882,
+            "rear_m": 2.452484780922532,
+            "half_width_m": 0.9183589655724518,
+            "wheelbase_m": 2.861123046875001,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          },
+          "safety_fault": null,
+          "runtime_fault": null,
+          "behavior_decision": null,
+          "sensor_wall_age_s": 0.0779999999977008,
+          "control_timing_ms": {
+            "lock_wait": 0.0,
+            "since_publication": 0.0,
+            "sensor_to_scene": 77.9999999977008,
+            "scene_to_control": 0.0,
+            "navigation": 0.0,
+            "safety": 0.0,
+            "actuator_submit": 0.0
+          },
+          "application_timing": {
+            "decision_id": null,
+            "session_id": "887b5fd23d4b4aba91706bc0bb7f5e51",
+            "frame_id": 54144,
+            "source_frame": 54144,
+            "submitted_wall_s": 31861.406,
+            "sensor_received_wall_s": 31861.328,
+            "wall_age_s": 0.0779999999977008,
+            "simulation_age_s": 0.0,
+            "fresh_aligned": true,
+            "injected_timeout": false,
+            "rpc_completed_wall_s": 31861.406
+          },
+          "sensor_ages_s": {
+            "depth": 0.0,
+            "frontCamera": 0.0,
+            "frontLeftDepth": 0.0,
+            "frontLeftRadar": 0.0,
+            "frontRightDepth": 0.0,
+            "frontRightRadar": 0.0,
+            "gnss": 0.0,
+            "imu": 0.0,
+            "lidar": 0.0,
+            "radar": 0.0,
+            "rearLeftDepth": 0.0,
+            "rearLeftRadar": 0.0,
+            "rearRightDepth": 0.0,
+            "rearRightRadar": 0.0
+          },
+          "ego_render_pose": {
+            "position_m": [
+              -62.951839447021484,
+              -68.65056610107422,
+              0.0025416563730686903
+            ],
+            "rotation_rad": {
+              "roll": -3.355582770316774e-05,
+              "pitch": -0.03364527033573303,
+              "yaw": -3.131244142225963
+            },
+            "coordinate_frame": "left-handed-x-forward-y-right-z-up"
+          },
+          "stopped_for_s": 0.0
+        }
+      }
+    },
+    "conditions_match": false
+  },
+  "wall_s": 65.65700000000288,
+  "driving_quality": {
+    "accepted": false,
+    "gates": {
+      "arrived": true,
+      "no_contacts": true,
+      "complete_measurements": true,
+      "fresh_fraction": true,
+      "no_control_delays": false,
+      "all_stops_independently_verified": false,
+      "comfort": false,
+      "no_oscillation": true,
+      "cruise_50_verified": false,
+      "display": false
+    },
+    "fresh_fraction": 0.9971014492753624,
+    "delay_frames": [
+      54117
+    ],
+    "stop_frames": [
+      {
+        "frame": 53800,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53801,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53802,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53803,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53804,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53805,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53806,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53807,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53808,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53809,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53810,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53811,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53812,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53813,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53814,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53815,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53816,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53817,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53818,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53819,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53820,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53821,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53822,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53823,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53824,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53825,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53826,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53827,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53828,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53829,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53830,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53831,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53832,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53833,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53834,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53835,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53836,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53837,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53838,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53839,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53840,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53841,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53842,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53843,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53844,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53845,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53846,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53847,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53848,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53849,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53850,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53851,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53852,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53853,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 54117,
+        "reason": "CONTROL_PROCESSING_DEADLINE"
+      },
+      {
+        "frame": 54144,
+        "reason": "Navigation speed/route controller"
+      }
+    ],
+    "unresolved_stop_frames": [
+      {
+        "frame": 53800,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53801,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53802,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53803,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53804,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53805,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53806,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53807,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53808,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53809,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53810,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53811,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53812,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53813,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53814,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53815,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53816,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53817,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53818,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53819,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53820,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53821,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53822,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53823,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53824,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53825,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53826,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53827,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53828,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53829,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53830,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53831,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53832,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53833,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53834,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53835,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53836,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53837,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53838,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53839,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53840,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53841,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53842,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53843,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53844,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53845,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53846,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53847,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53848,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53849,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53850,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53851,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53852,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 53853,
+        "reason": "NAVIGATION"
+      },
+      {
+        "frame": 54117,
+        "reason": "CONTROL_PROCESSING_DEADLINE"
+      },
+      {
+        "frame": 54144,
+        "reason": "Navigation speed/route controller"
+      }
+    ],
+    "comfort_violations": [
+      {
+        "frame": 53854,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 5.838547054735999
+      },
+      {
+        "frame": 53854,
+        "reason": "JERK_0_2S",
+        "value": 29.192731016627555
+      },
+      {
+        "frame": 53855,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 4.7984089047968
+      },
+      {
+        "frame": 53855,
+        "reason": "JERK_0_2S",
+        "value": 23.99204161919774
+      },
+      {
+        "frame": 53856,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 3.067865765296475
+      },
+      {
+        "frame": 53856,
+        "reason": "JERK_0_2S",
+        "value": 15.33932848144386
+      },
+      {
+        "frame": 53857,
+        "reason": "JERK_0_2S",
+        "value": 9.759405783159847
+      },
+      {
+        "frame": 53858,
+        "reason": "JERK_0_2S",
+        "value": 25.032473279159177
+      },
+      {
+        "frame": 53859,
+        "reason": "JERK_0_2S",
+        "value": 25.079155566154412
+      },
+      {
+        "frame": 53860,
+        "reason": "JERK_0_2S",
+        "value": 15.838166434977909
+      },
+      {
+        "frame": 53861,
+        "reason": "JERK_0_2S",
+        "value": 8.812485071953141
+      },
+      {
+        "frame": 53932,
+        "reason": "JERK_0_2S",
+        "value": 17.704499390805896
+      },
+      {
+        "frame": 53934,
+        "reason": "JERK_0_2S",
+        "value": 8.782094868047988
+      },
+      {
+        "frame": 53936,
+        "reason": "JERK_0_2S",
+        "value": 5.599069126334265
+      },
+      {
+        "frame": 53938,
+        "reason": "JERK_0_2S",
+        "value": 11.176051999467743
+      },
+      {
+        "frame": 53939,
+        "reason": "JERK_0_2S",
+        "value": 15.913588664229831
+      },
+      {
+        "frame": 53940,
+        "reason": "JERK_0_2S",
+        "value": 3.1634917480694034
+      },
+      {
+        "frame": 53941,
+        "reason": "JERK_0_2S",
+        "value": 10.506796696186948
+      },
+      {
+        "frame": 53942,
+        "reason": "JERK_0_2S",
+        "value": 8.460790752977173
+      },
+      {
+        "frame": 53943,
+        "reason": "JERK_0_2S",
+        "value": 5.456621881924184
+      },
+      {
+        "frame": 53944,
+        "reason": "JERK_0_2S",
+        "value": 5.697528408057419
+      },
+      {
+        "frame": 53945,
+        "reason": "JERK_0_2S",
+        "value": 6.166368485234678
+      },
+      {
+        "frame": 53948,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 4.045265658942338
+      },
+      {
+        "frame": 53948,
+        "reason": "JERK_0_2S",
+        "value": 16.615705197847305
+      },
+      {
+        "frame": 53949,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 7.8950188733757685
+      },
+      {
+        "frame": 53949,
+        "reason": "JERK_0_2S",
+        "value": 38.21240244648053
+      },
+      {
+        "frame": 53950,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 4.967181847087531
+      },
+      {
+        "frame": 53950,
+        "reason": "JERK_0_2S",
+        "value": 21.893120306470937
+      },
+      {
+        "frame": 53951,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 3.69141896267797
+      },
+      {
+        "frame": 53951,
+        "reason": "JERK_0_2S",
+        "value": 20.52047158482637
+      },
+      {
+        "frame": 53952,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 3.452736550350813
+      },
+      {
+        "frame": 53953,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 2.529363132812135
+      },
+      {
+        "frame": 53953,
+        "reason": "JERK_0_2S",
+        "value": 26.828277830201497
+      },
+      {
+        "frame": 53954,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 2.7333583756240944
+      },
+      {
+        "frame": 53954,
+        "reason": "JERK_0_2S",
+        "value": 11.169116977087015
+      },
+      {
+        "frame": 53955,
+        "reason": "JERK_0_2S",
+        "value": 8.915484630544261
+      },
+      {
+        "frame": 53956,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 2.2636158694234223
+      },
+      {
+        "frame": 53956,
+        "reason": "JERK_0_2S",
+        "value": 5.945603129433438
+      },
+      {
+        "frame": 53957,
+        "reason": "JERK_0_2S",
+        "value": 5.168303053575885
+      },
+      {
+        "frame": 53958,
+        "reason": "JERK_0_2S",
+        "value": 3.9168293434130494
+      },
+      {
+        "frame": 53959,
+        "reason": "JERK_0_2S",
+        "value": 3.40168453976319
+      },
+      {
+        "frame": 54012,
+        "reason": "JERK_0_2S",
+        "value": 5.307184470145098
+      },
+      {
+        "frame": 54013,
+        "reason": "JERK_0_2S",
+        "value": 7.355846705367813
+      },
+      {
+        "frame": 54014,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 3.4814175706670976
+      },
+      {
+        "frame": 54014,
+        "reason": "JERK_0_2S",
+        "value": 9.163944026343842
+      },
+      {
+        "frame": 54015,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 5.927612820310626
+      },
+      {
+        "frame": 54015,
+        "reason": "JERK_0_2S",
+        "value": 23.60523973391852
+      },
+      {
+        "frame": 54016,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 4.530019251877037
+      },
+      {
+        "frame": 54016,
+        "reason": "JERK_0_2S",
+        "value": 19.68961509998303
+      },
+      {
+        "frame": 54017,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 3.134988142938392
+      },
+      {
+        "frame": 54017,
+        "reason": "JERK_0_2S",
+        "value": 17.02714822740005
+      },
+      {
+        "frame": 54018,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": 2.5605197395859856
+      },
+      {
+        "frame": 54018,
+        "reason": "JERK_0_2S",
+        "value": 4.60448988447304
+      },
+      {
+        "frame": 54019,
+        "reason": "JERK_0_2S",
+        "value": 21.05494623715061
+      },
+      {
+        "frame": 54020,
+        "reason": "JERK_0_2S",
+        "value": 14.009886789032912
+      },
+      {
+        "frame": 54021,
+        "reason": "JERK_0_2S",
+        "value": 9.677214149578608
+      },
+      {
+        "frame": 54022,
+        "reason": "JERK_0_2S",
+        "value": 5.764138842846068
+      },
+      {
+        "frame": 54023,
+        "reason": "JERK_0_2S",
+        "value": 3.4794572325408812
+      },
+      {
+        "frame": 54117,
+        "reason": "JERK_0_2S",
+        "value": 4.815032761040442
+      },
+      {
+        "frame": 54118,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -3.825089271884304
+      },
+      {
+        "frame": 54118,
+        "reason": "JERK_0_2S",
+        "value": 12.15326889524007
+      },
+      {
+        "frame": 54119,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -4.862268092441463
+      },
+      {
+        "frame": 54119,
+        "reason": "JERK_0_2S",
+        "value": 15.781902594899252
+      },
+      {
+        "frame": 54120,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -4.49404982587897
+      },
+      {
+        "frame": 54120,
+        "reason": "JERK_0_2S",
+        "value": 15.052764680120129
+      },
+      {
+        "frame": 54121,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -5.125393590107452
+      },
+      {
+        "frame": 54121,
+        "reason": "JERK_0_2S",
+        "value": 12.867408055168926
+      },
+      {
+        "frame": 54122,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -4.49642133306126
+      },
+      {
+        "frame": 54122,
+        "reason": "JERK_0_2S",
+        "value": 3.3566599967625432
+      },
+      {
+        "frame": 54123,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -3.5017049664500908
+      },
+      {
+        "frame": 54123,
+        "reason": "JERK_0_2S",
+        "value": 6.802815520212571
+      },
+      {
+        "frame": 54124,
+        "reason": "JERK_0_2S",
+        "value": 11.691092448328915
+      },
+      {
+        "frame": 54125,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -7.096534204252159
+      },
+      {
+        "frame": 54125,
+        "reason": "JERK_0_2S",
+        "value": 9.855703258183315
+      },
+      {
+        "frame": 54126,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -11.6038596014588
+      },
+      {
+        "frame": 54126,
+        "reason": "JERK_0_2S",
+        "value": 35.53719163845436
+      },
+      {
+        "frame": 54127,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -9.704853923809093
+      },
+      {
+        "frame": 54127,
+        "reason": "JERK_0_2S",
+        "value": 31.015745187921073
+      },
+      {
+        "frame": 54128,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -8.613579868581379
+      },
+      {
+        "frame": 54128,
+        "reason": "JERK_0_2S",
+        "value": 32.28874100114034
+      },
+      {
+        "frame": 54129,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -6.374144914251086
+      },
+      {
+        "frame": 54129,
+        "reason": "JERK_0_2S",
+        "value": 3.6119477933749833
+      },
+      {
+        "frame": 54130,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -6.935395998952094
+      },
+      {
+        "frame": 54130,
+        "reason": "JERK_0_2S",
+        "value": 23.342317446551196
+      },
+      {
+        "frame": 54131,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -5.423604826875589
+      },
+      {
+        "frame": 54131,
+        "reason": "JERK_0_2S",
+        "value": 21.406245159422664
+      },
+      {
+        "frame": 54132,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -6.303778781469824
+      },
+      {
+        "frame": 54132,
+        "reason": "JERK_0_2S",
+        "value": 11.549004768113424
+      },
+      {
+        "frame": 54133,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -4.90743896753564
+      },
+      {
+        "frame": 54133,
+        "reason": "JERK_0_2S",
+        "value": 7.333529900853293
+      },
+      {
+        "frame": 54134,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -4.447552421703935
+      },
+      {
+        "frame": 54134,
+        "reason": "JERK_0_2S",
+        "value": 12.439217435664425
+      },
+      {
+        "frame": 54135,
+        "reason": "JERK_0_2S",
+        "value": 19.748489004310894
+      },
+      {
+        "frame": 54136,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -5.402933166464125
+      },
+      {
+        "frame": 54136,
+        "reason": "JERK_0_2S",
+        "value": 4.504227658861408
+      },
+      {
+        "frame": 54137,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -13.96556930285119
+      },
+      {
+        "frame": 54137,
+        "reason": "JERK_0_2S",
+        "value": 45.29065181364299
+      },
+      {
+        "frame": 54138,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -9.291647665476889
+      },
+      {
+        "frame": 54138,
+        "reason": "JERK_0_2S",
+        "value": 24.22047710513422
+      },
+      {
+        "frame": 54139,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -7.892261182901782
+      },
+      {
+        "frame": 54139,
+        "reason": "JERK_0_2S",
+        "value": 32.09176935110109
+      },
+      {
+        "frame": 54140,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -26.8173654750547
+      },
+      {
+        "frame": 54140,
+        "reason": "JERK_0_2S",
+        "value": 107.07215899093273
+      },
+      {
+        "frame": 54141,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -26.602211525966734
+      },
+      {
+        "frame": 54141,
+        "reason": "JERK_0_2S",
+        "value": 63.183212508599915
+      },
+      {
+        "frame": 54142,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -26.248791434528194
+      },
+      {
+        "frame": 54142,
+        "reason": "JERK_0_2S",
+        "value": 84.78571926233165
+      },
+      {
+        "frame": 54143,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -25.718918139957257
+      },
+      {
+        "frame": 54143,
+        "reason": "JERK_0_2S",
+        "value": 89.1332791448126
+      },
+      {
+        "frame": 54144,
+        "reason": "LONGITUDINAL_ACCELERATION",
+        "value": -8.859923043340409
+      },
+      {
+        "frame": 54144,
+        "reason": "JERK_0_2S",
+        "value": 89.78721209444666
+      }
+    ],
+    "maximum_jerk_0_2s_mps3": 107.07215899093273,
+    "oscillations": [],
+    "camera": null
+  },
+  "native_cleanup_confirmed": true,
+  "video_exports_finished": true,
+  "source_unchanged": true,
+  "native_worker_exit_code": 0,
+  "restored": {
+    "connected": true,
+    "mode": "PAUSED",
+    "speed_kmh": 0.0,
+    "continued_ticking": true
+  },
+  "reservation_wall_s": 91.6720000000023,
+  "original_safety_fault": null,
+  "scenario_validity": {
+    "valid": true,
+    "events": [],
+    "errors": [],
+    "unmanaged_actor_ids": [],
+    "population_valid": true,
+    "feasibility": "UNVERIFIED: no successful behavior is inferred from fixture construction"
+  },
+  "raw_report": "output\\hybrid-driving\\probe-2cc897a7b0cb42a696e57461b639bc47\\report.json",
+  "raw_report_sha256": "42d4c90b7cb3449dce3fbe539e672c4dd3ef11c7d73d4ca79e524bc1f89b84c4",
+  "sample_count": 348
+}

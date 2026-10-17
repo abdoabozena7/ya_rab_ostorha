@@ -45,6 +45,7 @@ class HybridDriver:
         self.acceleration_trim = 0.
         self.motion_stamp = None
         self.raw_acceleration = 0.
+        self.requested_acceleration = None
         self.control_dt = .05
         self.maneuver_curve = None
         self.blocker_anchor = None
@@ -107,6 +108,12 @@ class HybridDriver:
         desired=float(np.clip(error*.9,-3.,2.))
         actual=self.ego
         if not reverse:
+            prior=0. if actual and actual.brake>.2 else self.requested_acceleration
+            if prior is None:
+                prior=float(np.clip(actual.throttle*self.calibration.get('throttle_acceleration_gain',9.)-
+                    self.calibration.get('coasting_deceleration_mps2',3.5),0.,2.)) if actual else 0.
+            desired=float(np.clip(desired,prior-3.*dt,prior+3.*dt))
+            if commit:self.requested_acceleration=desired
             # Provisional identification from native moving samples (4–25
             # km/h): a ~= 9*throttle - 3.5 without service brake. Engine drag
             # means a small positive pedal can still request deceleration.
@@ -352,7 +359,8 @@ class HybridDriver:
                     result['rejected'].append({'action':name,'reason':'INTENDED_MANEUVER_'+reason,'evidence':evidence})
                     continue
             ok, reason, evidence = self.shield.check(scene, path, command, road, timestamp_s=base.timestamp_s,
-                                                     wall_s=wall+time.perf_counter()-began)
+                                                     wall_s=wall+time.perf_counter()-began,
+                                                     forward_recovery=name in ('FOLLOW','SLOW') and abs(offset)<.01)
             if not ok:
                 result['rejected'].append({'action': name, 'reason': reason, 'evidence': evidence})
                 continue

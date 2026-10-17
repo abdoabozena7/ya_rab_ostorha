@@ -1,5 +1,6 @@
 import {showWorkspace} from './presentation-ui.js';
 import {safetyNotice} from './cockpit-state.js';
+import {driveState} from './drive-state.js';
 import {recordingVideoRoot,selectPlaybackLeader,benchmarkSpeedText,demoFailure} from './demo-drive.js';
 import {metricValue} from './journey-comparison.js';
 
@@ -7,7 +8,7 @@ const $=id=>document.getElementById(id);
 const terminal=new Set(['IDLE','COMPLETE','CANCELLED','ERROR']);
 const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Confirming route traffic',
   STARTING:'Starting the recording',DRIVING:'Driving and recording',FINALIZING:'Saving the recording',RESTORING:'Restoring the same initial conditions',
-  EXPORTING:'Exporting both videos',PLAYBACK:'Playing the comparison',COMPLETE:'Presentation complete',CANCELLED:'Presentation stopped',ERROR:'Presentation needs attention'};
+  RECOVERING:'Checking sensors before Normal',EXPORTING:'Exporting both videos',PLAYBACK:'Playing the comparison',COMPLETE:'Presentation complete',CANCELLED:'Presentation stopped',ERROR:'Presentation needs attention'};
 export function presentationStep(status,arm=0){
   if(['PLAYBACK','COMPLETE'].includes(status))return status==='COMPLETE'?4:3;
   if(status==='EXPORTING')return 2;
@@ -19,6 +20,16 @@ export function presentationSummary(data){
   if(runs.some(r=>r.status!=='ARRIVED'))return 'One or both attempts ended early. Review each outcome and its covered distance.';
   if(!data.conditions_match)return 'Initial conditions were not verified. These are separate observations.';
   return 'Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.';
+}
+
+export function presentationOutcome(run, failure){
+  if(!run)return 'Not started';
+  const fault=failure?.fault||run.stop_diagnostics?.runtime_fault;
+  const faultText=fault?.exception_type==='KeyError'?'A required record was lost: '+fault.message: fault?.message;
+  const reason=run.reason==='collision'?demoFailure(run.reason)+(faultText?' Additional runtime error: '+faultText:''):faultText||run.reason;
+  return (run.status==='ARRIVED'?'Destination reached':run.status)+
+    (reason&&reason!=='destination_reached'?' · '+(fault?reason:demoFailure(reason)):'')+
+    (fault?.injected_validation_fault?' · Injected validation fault; excluded from driving acceptance.':'');
 }
 
 export function presentationTrafficText(population,setup){
@@ -42,7 +53,7 @@ export function installPresentationRun(p,tools,clearControls){
   results.innerHTML='<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Robosphere & Normal</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Normal follows the route and traffic signals with obstacle protection off. An intervention is not a proven prevented collision. Requested speed and measured speed are reported separately.</p></section>';
   $('resultsPhase').querySelector('.analysis-heading').after(results);
   const items=['ROBOSPHERE','NORMAL'].map(mode=>{
-    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · RULE protection':'Normal · obstacle protection off')+'</h3><video controls muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
+    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · RULE protection':'Normal · obstacle protection off')+'</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
     results.querySelector('.presentation-videos').append(box);
     return {mode,box,video:box.querySelector('video'),root:null,status:'PENDING'};
   });
@@ -52,6 +63,7 @@ export function installPresentationRun(p,tools,clearControls){
   let pendingStart=false,pendingAt=0,lastPoll=0,polling=false,lastPhase='',autoplayId=null,leader=null,linked=false,acknowledged=null;
   const play=async()=>{
     if(!items.every(i=>i.status==='READY'))return;
+    p.presentationPlayback=true;showWorkspace('results');
     linked=true;leader=selectPlaybackLeader(items);
     for(const i of items)i.video.currentTime=0;
     const attempts=await Promise.allSettled(items.map(i=>i.video.play()));
@@ -66,8 +78,11 @@ export function installPresentationRun(p,tools,clearControls){
     }});
     item.video.addEventListener('pause',()=>{if(linked&&leader===item&&!item.video.ended)for(const peer of items)if(peer!==item)peer.video.pause();});
     item.video.addEventListener('play',()=>{if(linked&&leader===item)for(const peer of items)if(peer!==item&&!peer.video.ended)peer.video.play().catch(()=>{});});
-    item.video.addEventListener('ended',()=>{if(linked&&leader===item&&p.presentation?.status==='PLAYBACK'&&acknowledged!==p.presentation.id){
-      acknowledged=p.presentation.id;p.dashboardAction('presentation',{operation:'PLAYBACK_FINISHED',id:acknowledged});
+    item.video.addEventListener('ended',()=>{if(linked&&leader===item){
+      p.presentationPlayback=false;
+      if(p.presentation?.status==='PLAYBACK'&&acknowledged!==p.presentation.id){
+        acknowledged=p.presentation.id;p.dashboardAction('presentation',{operation:'PLAYBACK_FINISHED',id:acknowledged});
+      } else $('presentationPlaybackStatus').textContent='Saved playback complete. These recorded outcomes are unchanged.';
     }});
     item.video.addEventListener('error',()=>{$('presentationPlaybackStatus').textContent='Video playback failed. The saved run remains available; use Replay both to retry.';});
   }
@@ -83,7 +98,7 @@ export function installPresentationRun(p,tools,clearControls){
   return {update(){
     const data=p.presentation,status=data?.status||'IDLE',busy=!terminal.has(status),active=['STARTING','RUNNING'].includes(p.journey?.status);
     $('presentationPopulation').textContent=presentationTrafficText(p.fresh?p.population:null,data?.setup);
-    if(['CANCELLED','ERROR'].includes(status)&&lastPhase!==status){linked=false;for(const i of items)i.video.pause();}
+    if(['CANCELLED','ERROR'].includes(status)&&lastPhase!==status){linked=false;p.presentationPlayback=false;for(const i of items)i.video.pause();}
     if(pendingStart&&p.connected&&p.fresh&&!p.simulationStarting){
       if(p.dashboardAction('presentation',{operation:'RESTART',speed_kmh:50}))pendingStart=false;
     }
@@ -94,7 +109,7 @@ export function installPresentationRun(p,tools,clearControls){
     $('presentationDestination').textContent=p.route?.destination?.name||'Choose a destination on the map';
     $('presentationCustomStart').disabled=busy||active||!p.fresh||!p.route||p.recording||p.controlMode==='EMERGENCY_STOP';
     $('presentationCustomSpeed').disabled=busy||active;
-    const resumable=!busy&&p.route&&!p.route.arrived&&['PAUSED','ERROR'].includes(p.journey?.status)&&!p.journey?.presentation_id;
+    const resumable=driveState(p).resumable;
     $('presentationResume').hidden=!resumable;
     $('presentationResume').disabled=!p.fresh||p.recording||p.recordingStatus?.finalized===false||p.controlMode==='EMERGENCY_STOP';
     const notice=safetyNotice(p);
@@ -117,7 +132,7 @@ export function installPresentationRun(p,tools,clearControls){
       $('presentationMatch').textContent=pair.conditions_match?'Verified matching initial conditions · reactive traffic can diverge':'Initial conditions pending or unverified';
       $('presentationSummary').textContent=presentationSummary(pair);
       for(const item of items){const run=pair.runs?.[item.mode];
-        item.box.querySelector('.presentation-outcome').textContent=run?(run.status==='ARRIVED'?'Destination reached':run.status)+(run.reason&&run.reason!=='destination_reached'?' · '+demoFailure(run.reason):''):'Not started';
+        item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
         fields.forEach(([,field,digits,suffix],i)=>{item.box.querySelectorAll('dd')[i].textContent=metricValue(run,field,digits,suffix);});
         const events=run?.events||[],key=run?.id+':'+events.length;

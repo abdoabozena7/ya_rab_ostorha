@@ -189,9 +189,16 @@ class JourneyComparison:
         if compact:
             def setup(value):
                 return {k:v for k,v in (value or {}).items() if k!='initial_conditions'}
+            def diagnostic(value):
+                value=value or {}
+                fault=value.get('runtime_fault') or value.get('safety_fault')
+                return {'reason':value.get('reason'),'runtime_fault':{k:fault.get(k) for k in (
+                    'stage','exception_type','message','evaluation_frame','timestamp_s','injected_validation_fault')}
+                    if fault else None}
             data={**data,'manifest':setup(data.get('manifest')),
                 'runs':{mode:{**{k:v for k,v in run.items() if k not in ('setup','stop_diagnostics')},
-                    'setup':setup(run.get('setup'))} for mode,run in data.get('runs',{}).items()}}
+                    'setup':setup(run.get('setup')),'stop_diagnostics':diagnostic(run.get('stop_diagnostics'))}
+                    for mode,run in data.get('runs',{}).items()}}
         result = copy.deepcopy(data)
         modes = result.get('driver_modes', MODES)
         result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))

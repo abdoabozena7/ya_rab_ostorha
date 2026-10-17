@@ -1,4 +1,5 @@
 import {predictionWorldPoint,measuredPredictionFresh} from './prediction-view.js';
+import {mapTracks,trackKind} from './drive-state.js';
 
 export function worldToEgo(point,origin,yaw) {
   const dx=point[0]-origin[0],dy=point[1]-origin[1],c=Math.cos(yaw),s=Math.sin(yaw);
@@ -39,12 +40,15 @@ export function installUnifiedMap(p,view,tools) {
   panel.innerHTML='<button id="unifiedMapToggle" type="button" aria-expanded="false" aria-label="Open route map (M)"></button><header><span><small>LIVE GEOMETRY</small><strong>Navigation</strong></span><span class="unified-map-actions"><button id="unifiedRouteAction" aria-label="Choose a destination">Route ↗</button><button id="expandUnifiedMap" aria-expanded="false" aria-label="Collapse navigation and prediction map">×</button></span></header><div class="map-layer-switch" role="group" aria-label="Map layers"><button data-layer="route">Route</button><button data-layer="predictions">Predictions</button><button data-layer="both" aria-pressed="true">Both</button></div><canvas width="480" height="360" id="unifiedMapCanvas" role="img" aria-label="Actual CARLA road geometry and measured motion forecasts"></canvas><p id="unifiedMapRoute">Waiting for route</p><p id="unifiedMapMeta" role="status">Waiting for map data</p><div class="unified-expanded-tools"><div class="unified-filters"><label><input type="checkbox" data-filter="vehicles" checked>Vehicles</label><label><input type="checkbox" data-filter="people" checked>People</label><label><input type="checkbox" data-filter="paths" checked>Paths</label><label><input type="checkbox" data-filter="conflicts" checked>Conflicts</label></div><label for="unifiedMapActor">Measured object</label><select id="unifiedMapActor"><option value="">Overview</option></select><p id="unifiedActorInfo">Select a measured object to inspect its motion.</p><button id="unifiedChooseDestination">Choose destination ↗</button></div>';
   document.getElementById('frontCameraView').append(panel);
   const $=id=>panel.querySelector('#'+id),canvas=$('unifiedMapCanvas'),ctx=canvas.getContext('2d');
-  let layer='both',expanded=false,selected='',markers=[],lastKey='',actorKey='',lastPrediction=null,lastPose=null,lastSession=null,lastVehicle=null,zoom=1;
+  let layer='route',expanded=false,selected='',markers=[],lastKey='',actorKey='',lastPrediction=null,lastPose=null,lastSession=null,lastVehicle=null,zoom=1;
   const redraw=()=>{lastKey='';if(lastVehicle)map.update(lastVehicle);};
   const zoomTools=document.createElement('div');zoomTools.className='unified-zoom';
   for(const [label,factor] of [['−',.8],['+',1.25],['Recenter',0]]){const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-label',label==='+'?'Zoom map in':label==='−'?'Zoom map out':'Recenter map on vehicle');b.onclick=()=>{zoom=factor?Math.max(.25,Math.min(4,zoom*factor)):1;redraw();};zoomTools.append(b);}
   panel.querySelector('.unified-expanded-tools').prepend(zoomTools);
-  const filters={vehicles:true,people:true,paths:true,conflicts:true};
+  const filters={vehicles:true,people:true,surfaces:false,paths:true,conflicts:true};
+  const surfaces=document.createElement('label');surfaces.innerHTML='<input type="checkbox" data-filter="surfaces">Unclassified surfaces';
+  panel.querySelector('.unified-filters').append(surfaces);
+  panel.querySelectorAll('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layer===layer)));
   const text=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
   const toggle=()=>{
     expanded=!expanded;panel.classList.toggle('map-expanded',expanded);$('expandUnifiedMap').setAttribute('aria-expanded',String(expanded));
@@ -122,7 +126,7 @@ export function installUnifiedMap(p,view,tools) {
       }
     }
     const convert=point=>project(predictionWorldPoint(point,prediction.render_reference));
-    const tracks=(prediction?.tracks||[]).filter(t=>t.class==='person'?filters.people:filters.vehicles);
+    const tracks=mapTracks(prediction?.tracks,layer,filters);
     if(prediction&&layer!=='route') {
       const ids=new Set(tracks.filter(t=>t.confirmed).map(t=>String(t.id))),counts=new Map();
       if(filters.paths)for(const mode of prediction.trajectories||[]) {
@@ -133,9 +137,10 @@ export function installUnifiedMap(p,view,tools) {
       }
       if(filters.conflicts&&prediction.conflict_point){const q=convert([...prediction.conflict_point.point_m,0]);ctx.strokeStyle='#dc8b36';ctx.lineWidth=2;ctx.beginPath();ctx.arc(...q,13,0,Math.PI*2);ctx.stroke();}
     }
-    // Measured actors remain visible when only the route layer is selected.
-    if(prediction)for(const tr of tracks){const [x,y]=convert([...tr.position_m,0]),id=String(tr.id);markers.push({id,x,y});ctx.fillStyle=selected===id?colors.route:tr.confirmed?tr.class==='person'?colors.person:colors.actor:colors.muted;
-        if(tr.class==='person'){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}else{ctx.fillRect(x-4,y-7,8,14);}
+    if(prediction)for(const tr of tracks){const [x,y]=convert([...tr.position_m,0]),id=String(tr.id),kind=trackKind(tr);markers.push({id,x,y});ctx.fillStyle=selected===id?colors.route:kind==='person'?colors.person:kind==='vehicle'?colors.actor:colors.muted;
+        if(kind==='person'){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}
+        else if(kind==='vehicle'){ctx.fillRect(x-4,y-7,8,14);}
+        else{ctx.strokeStyle=colors.muted;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.stroke();}
         if(selected===id){ctx.strokeStyle=colors.route;ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.stroke();}
       }
     const carX=mapWidth/2;ctx.shadowColor='#b05c7955';ctx.shadowBlur=12;ctx.fillStyle=colors.route;ctx.beginPath();ctx.arc(carX,carY,Math.min(19,mapWidth*.08),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;

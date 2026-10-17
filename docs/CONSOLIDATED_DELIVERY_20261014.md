@@ -40,6 +40,7 @@ runtime versions and should not be read as current capability guarantees.
 | Automatic presentation, English interface and journey continuity | `backend/core/presentation.py`, `backend/carla/presentation.py`, `frontend/presentation-run.js`, `backend/websocket_bridge.py` | [15 October presentation and continuity evidence](AUTOMATIC_PRESENTATION_20261015.md) |
 | Static surfaces versus measured crossing motion | `backend/core/path_conflicts.py`, `backend/core/surface_motion.py` | [16 October motion repair and scoped evidence](STATIC_SURFACE_MOTION_REPAIR_20261016.md) |
 | Ordinary stationary-obstacle bypass and route-focused Restart traffic | `backend/core/route_bypass.py`, `backend/core/hybrid_driver.py`, `backend/carla/route_crowding.py`, `scripts/validate_rule_bypass.py` | [17 October scoped repair and retained native attempts](RULE_ROUTE_BYPASS_20261017.md) |
+| Trustworthy surface display, sequential controls, timeout recovery and strict driving-quality audit | `backend/core/control_semantics.py`, `backend/core/presentation.py`, `backend/core/driving_quality.py`, `frontend/sequential-drive.js` | [17 October reliable-driving repair; native acceptance failed](RELIABLE_DRIVING_20261017.md) |
 
 The detailed reports link their JSON summaries, screenshots and measured results
 under `docs/evidence/`. Raw simulator recordings remain local in ignored `runs/`

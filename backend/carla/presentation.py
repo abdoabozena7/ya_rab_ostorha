@@ -43,6 +43,16 @@ def prepare(provider, seed, speed):
     # Establish the route before spawning: both traffic and native sidewalk
     # selection need the road ahead, rather than the previous trip's route.
     p.population.set_route(tools.route['points'])
+    p.set_paused(False)
+    return {'destination': target, 'route_length_m': tools.route['length_m'],
+        'origin_index': index,'planned_vehicle_capacity':capacity,'population_pending':True,
+        'requested_route_vehicles':40,'requested_route_pedestrians':30,'speed_kmh': speed}
+
+
+def finish_prepare(p,seed,setup):
+    # The sole worker has advanced the teleport. Population geometry now sees
+    # the actual new ego pose instead of CARLA's previous-frame actor cache.
+    tools=p.dashboard_tools
     config = {**p.population.config, 'vehicle_count': 0, 'pedestrian_count': 30,
         'seed': seed, 'chaos_percent': 45, 'speed_behavior': 'FAST', 'driver_behavior': 'BUSY',
         'light_compliance_percent': 80, 'crossing_percent': 30,'placement':'ROUTE','vehicle_mix':'MIXED'}
@@ -50,7 +60,17 @@ def prepare(provider, seed, speed):
     p.population.crowd_route(tools.route,tools.native_route,{'route_id':tools.route['id'],
         'seed':seed,'chaos_percent':45,'vehicle_count':40})
     p.population.admit_route_capacity()
-    p.set_paused(False)
-    return {'destination': target, 'route_length_m': tools.route['length_m'],
-        'origin_index': index, 'population': dict(p.population.config),'planned_vehicle_capacity':capacity,
-        'requested_route_vehicles':40,'requested_route_pedestrians':30,'speed_kmh': speed}
+    return {**setup,'population_pending':False,'population':dict(p.population.config)}
+
+
+def population_audit(p):
+    snapshot=p.world.world.get_snapshot();ego=snapshot.find(p.ego.actor.id)
+    if ego is None:raise ValueError('Presentation ego is absent from the current frame')
+    pose=ego.get_transform();forward=pose.get_forward_vector();origin=pose.location
+    counts={}
+    for category,ids in [('vehicles',p.population.vehicles),('pedestrians',p.population.walkers)]:
+        actors=[snapshot.find(i) for i in ids];actors=[a for a in actors if a is not None]
+        counts[category]={'total':len(actors),'ahead':sum(
+            (a.get_transform().location.x-origin.x)*forward.x+(a.get_transform().location.y-origin.y)*forward.y>0 for a in actors)}
+    return {'frame_id':snapshot.frame,'counts':counts,'passed':counts['vehicles']['total']>=20 and
+        counts['vehicles']['ahead']>=10 and counts['pedestrians']['total']>=30 and counts['pedestrians']['ahead']>=15}

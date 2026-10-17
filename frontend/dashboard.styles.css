@@ -9499,4 +9499,147 @@ body.light-cockpit:before {
   padding: 8px 12px;
 }
 
+/* frontend/sequential-drive.css */
+.sequential-drive .studio-rail,
+.sequential-drive .presentation-actions,
+.sequential-drive .cockpit-protection,
+.sequential-drive #cockpitProtection,
+.sequential-drive #cockpitDriver {
+  display: none !important;
+}
+.sequential-drive #presentationNotice {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+}
+.sequential-drive #presentationNotice p {
+  margin: 4px 0;
+}
+.sequential-drive .studio-safety-alert {
+  display: none !important;
+}
+.sequential-drive .studio-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+body.control-center.light-cockpit.sequential-drive {
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: 18px;
+}
+body.light-cockpit.sequential-drive:before {
+  inset: 18px;
+}
+.sequential-drive .app-header,
+.sequential-drive main {
+  grid-column: 1 !important;
+}
+.light-cockpit.sequential-drive[data-ui=guided] #cameraCard {
+  grid-template-rows: minmax(0, 1fr);
+}
+@media (max-width: 1000px) {
+  .light-cockpit.sequential-drive[data-ui=guided] #cameraCard {
+    grid-template-rows: clamp(250px, 60vw, 500px) auto;
+  }
+  .sequential-drive .cockpit-telemetry {
+    display: block;
+  }
+}
+.sequential-drive .cockpit-header-actions > [hidden] {
+  display: none !important;
+}
+.sequential-drive .cockpit-header-actions {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sequential-drive #drivePrimaryAction {
+  min-width: 112px;
+  background: #3768dc;
+  color: #fff;
+}
+.sequential-drive .cockpit-telemetry {
+  background: transparent;
+  box-shadow: none;
+}
+.sequential-drive .cockpit-camera-tools {
+  position: static;
+  display: flex;
+  margin: 16px 0;
+}
+.sequential-drive #cockpitDetails {
+  max-width: 720px;
+  padding: 28px;
+}
+.sequential-drive .drive-detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sequential-drive .drive-detail-actions h3 {
+  flex-basis: 100%;
+}
+.sequential-drive .drive-detail-actions svg {
+  width: 20px;
+  height: 20px;
+}
+.sequential-drive #cockpitDetails .cockpit-summary {
+  display: block;
+  padding: 16px 0;
+}
+.sequential-drive #cockpitViewDetails {
+  display: none;
+}
+.sequential-drive #presentationControls {
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+}
+.sequential-drive .presentation-intro {
+  gap: 5px;
+}
+.sequential-drive .presentation-steps {
+  transition: color .15s ease;
+}
+.sequential-drive #unifiedMapToggle {
+  display: none !important;
+}
+.sequential-drive #unifiedMap.map-expanded #unifiedMapToggle {
+  display: block !important;
+}
+.sequential-drive #unifiedMap:not(.map-expanded) canvas {
+  pointer-events: none;
+}
+.sequential-drive #presentationResults video {
+  pointer-events: none;
+}
+.sequential-drive #newDriveBtn {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  .sequential-drive .app-header {
+    padding: 14px;
+    gap: 12px;
+  }
+  .sequential-drive .cockpit-header-actions {
+    width: 100%;
+  }
+  .sequential-drive #drivePrimaryAction {
+    flex: 1;
+  }
+  .sequential-drive #cockpitDetails {
+    padding: 16px;
+  }
+  .sequential-drive .cockpit-status-chips {
+    display: none;
+  }
+  .sequential-drive .presentation-intro .eyebrow {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sequential-drive * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* frontend/dashboard-theme.css */

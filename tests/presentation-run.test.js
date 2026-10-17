@@ -1,7 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
-import {presentationSummary,presentationStep,presentationTrafficText} from '../frontend/presentation-run.js';
+import {presentationSummary,presentationStep,presentationTrafficText,presentationOutcome} from '../frontend/presentation-run.js';
+
+test('a recovered presentation retains failure and injection identity under its video',()=>{
+  const result=presentationOutcome({status:'ERROR',reason:'runtime_failure'},
+    {fault:{message:'Current synchronized sensor scene unavailable for one second',injected_validation_fault:true}});
+  assert.match(result,/ERROR/);
+  assert.match(result,/synchronized sensor scene unavailable/);
+  assert.match(result,/Injected validation fault; excluded/);
+  const collision=presentationOutcome({status:'COLLISION',reason:'collision',stop_diagnostics:{runtime_fault:{exception_type:'KeyError',message:'1226'}}});
+  assert.match(collision,/Contact ended this attempt/);
+  assert.match(collision,/required record was lost: 1226/);
+});
 
 test('automatic route population shows actual counts and capacity limits',()=>{
   assert.match(presentationTrafficText(null,null),/up to 40 vehicles · 30 pedestrians/);

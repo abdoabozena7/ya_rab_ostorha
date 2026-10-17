@@ -1,0 +1,1394 @@
+{
+  "browser-320418473-final.txt": {
+    "buttons": [
+      {
+        "text": "Stop",
+        "disabled": false
+      },
+      {
+        "text": "Details",
+        "disabled": false
+      },
+      {
+        "text": "Emergency stop",
+        "disabled": false
+      },
+      {
+        "text": "",
+        "disabled": false
+      }
+    ],
+    "text": "Waiting for a fresh control frame\n\nControl calculation missed its deadline. Waiting for a fresh frame. The journey remains active.",
+    "camera": {
+      "7c57c1b9e17a45f7b0ea75de951d11c9:ROBOSPHERE": {
+        "arm": "7c57c1b9e17a45f7b0ea75de951d11c9:ROBOSPHERE",
+        "windows": [
+          {
+            "start_wall_ms": 16059.699999999255,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.24621136355947879,
+            "max_frame_gap_ms": 423.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 26059.699999999255,
+            "frames": 46,
+            "fps": 4.6,
+            "simulation_wall_ratio": 0.23606934632113058,
+            "max_frame_gap_ms": 409.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 36059.699999999255,
+            "frames": 45,
+            "fps": 4.5,
+            "simulation_wall_ratio": 0.22802359623892338,
+            "max_frame_gap_ms": 451.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 46059.699999999255,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2509935197409315,
+            "max_frame_gap_ms": 437.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 56059.699999999255,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.2555270539011921,
+            "max_frame_gap_ms": 354.0999999977648,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 66059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.26266184996320313,
+            "max_frame_gap_ms": 403.6000000014901,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 76059.69999999925,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25368606220920903,
+            "max_frame_gap_ms": 451.4000000022352,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 86059.69999999925,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2556760111733384,
+            "max_frame_gap_ms": 409.20000000298023,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 96059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25263243368435656,
+            "max_frame_gap_ms": 402.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 106059.69999999925,
+            "frames": 48,
+            "fps": 4.8,
+            "simulation_wall_ratio": 0.2460579503129656,
+            "max_frame_gap_ms": 395.79999999701977,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 116059.69999999925,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25399392866474635,
+            "max_frame_gap_ms": 360.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 126059.69999999925,
+            "frames": 53,
+            "fps": 5.3,
+            "simulation_wall_ratio": 0.2618222869918039,
+            "max_frame_gap_ms": 395.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 136059.69999999925,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.24634081618493395,
+            "max_frame_gap_ms": 438.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 146059.69999999925,
+            "frames": 52,
+            "fps": 5.2,
+            "simulation_wall_ratio": 0.2649843596798201,
+            "max_frame_gap_ms": 430.5,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 156059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.26622678742551004,
+            "max_frame_gap_ms": 341.0999999977648,
+            "passed": false
+          }
+        ],
+        "maximum_gap_ms": 451.4000000022352,
+        "passed": false
+      }
+    },
+    "overflow": false,
+    "viewport": 1600
+  },
+  "browser-912833484.txt": {
+    "buttons": [
+      {
+        "text": "Stop",
+        "disabled": false
+      },
+      {
+        "text": "Details",
+        "disabled": false
+      },
+      {
+        "text": "Emergency stop",
+        "disabled": false
+      },
+      {
+        "text": "",
+        "disabled": false
+      }
+    ],
+    "text": "Passing the stopped obstacle\n\nFollowing the measured passing corridor at low speed. Requested route speed resumes after the obstacle is cleared.",
+    "camera": {
+      "7c57c1b9e17a45f7b0ea75de951d11c9:ROBOSPHERE": {
+        "arm": "7c57c1b9e17a45f7b0ea75de951d11c9:ROBOSPHERE",
+        "windows": [
+          {
+            "start_wall_ms": 16059.699999999255,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.24621136355947879,
+            "max_frame_gap_ms": 423.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 26059.699999999255,
+            "frames": 46,
+            "fps": 4.6,
+            "simulation_wall_ratio": 0.23606934632113058,
+            "max_frame_gap_ms": 409.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 36059.699999999255,
+            "frames": 45,
+            "fps": 4.5,
+            "simulation_wall_ratio": 0.22802359623892338,
+            "max_frame_gap_ms": 451.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 46059.699999999255,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2509935197409315,
+            "max_frame_gap_ms": 437.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 56059.699999999255,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.2555270539011921,
+            "max_frame_gap_ms": 354.0999999977648,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 66059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.26266184996320313,
+            "max_frame_gap_ms": 403.6000000014901,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 76059.69999999925,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25368606220920903,
+            "max_frame_gap_ms": 451.4000000022352,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 86059.69999999925,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2556760111733384,
+            "max_frame_gap_ms": 409.20000000298023,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 96059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25263243368435656,
+            "max_frame_gap_ms": 402.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 106059.69999999925,
+            "frames": 48,
+            "fps": 4.8,
+            "simulation_wall_ratio": 0.2460579503129656,
+            "max_frame_gap_ms": 395.79999999701977,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 116059.69999999925,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25399392866474635,
+            "max_frame_gap_ms": 360.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 126059.69999999925,
+            "frames": 53,
+            "fps": 5.3,
+            "simulation_wall_ratio": 0.2618222869918039,
+            "max_frame_gap_ms": 395.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 136059.69999999925,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.24634081618493395,
+            "max_frame_gap_ms": 438.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 146059.69999999925,
+            "frames": 52,
+            "fps": 5.2,
+            "simulation_wall_ratio": 0.2649843596798201,
+            "max_frame_gap_ms": 430.5,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 156059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.26622678742551004,
+            "max_frame_gap_ms": 341.0999999977648,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 166059.69999999925,
+            "frames": 46,
+            "fps": 4.6,
+            "simulation_wall_ratio": 0.2349000177985805,
+            "max_frame_gap_ms": 368,
+            "passed": false
+          }
+        ],
+        "maximum_gap_ms": 451.4000000022352,
+        "passed": false
+      },
+      "e05119f1fc02416eaffd6282744ea4ce:ROBOSPHERE": {
+        "arm": "e05119f1fc02416eaffd6282744ea4ce:ROBOSPHERE",
+        "windows": [
+          {
+            "start_wall_ms": 231950.09999999776,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25769742583496136,
+            "max_frame_gap_ms": 412.5,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 241950.09999999776,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.25212033574897674,
+            "max_frame_gap_ms": 430.8999999985099,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 251950.09999999776,
+            "frames": 47,
+            "fps": 4.7,
+            "simulation_wall_ratio": 0.24228379166466563,
+            "max_frame_gap_ms": 451.3999999985099,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 261950.09999999776,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25896738412456516,
+            "max_frame_gap_ms": 451.69999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 271950.09999999776,
+            "frames": 54,
+            "fps": 5.4,
+            "simulation_wall_ratio": 0.2728485428103142,
+            "max_frame_gap_ms": 395.8999999985099,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 281950.09999999776,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.24861234096502483,
+            "max_frame_gap_ms": 498.0999999977648,
+            "passed": false
+          }
+        ],
+        "maximum_gap_ms": 498.0999999977648,
+        "passed": false
+      }
+    },
+    "overflow": false,
+    "viewport": 1600
+  },
+  "browser-850261841-final.txt": {
+    "buttons": [
+      {
+        "text": "Stop",
+        "disabled": false
+      },
+      {
+        "text": "Details",
+        "disabled": false
+      },
+      {
+        "text": "Emergency stop",
+        "disabled": false
+      },
+      {
+        "text": "",
+        "disabled": false
+      }
+    ],
+    "text": "Passing the stopped obstacle\n\nFollowing the measured passing corridor at low speed. Requested route speed resumes after the obstacle is cleared.",
+    "camera": {
+      "7c57c1b9e17a45f7b0ea75de951d11c9:ROBOSPHERE": {
+        "arm": "7c57c1b9e17a45f7b0ea75de951d11c9:ROBOSPHERE",
+        "windows": [
+          {
+            "start_wall_ms": 16059.699999999255,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.24621136355947879,
+            "max_frame_gap_ms": 423.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 26059.699999999255,
+            "frames": 46,
+            "fps": 4.6,
+            "simulation_wall_ratio": 0.23606934632113058,
+            "max_frame_gap_ms": 409.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 36059.699999999255,
+            "frames": 45,
+            "fps": 4.5,
+            "simulation_wall_ratio": 0.22802359623892338,
+            "max_frame_gap_ms": 451.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 46059.699999999255,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2509935197409315,
+            "max_frame_gap_ms": 437.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 56059.699999999255,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.2555270539011921,
+            "max_frame_gap_ms": 354.0999999977648,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 66059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.26266184996320313,
+            "max_frame_gap_ms": 403.6000000014901,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 76059.69999999925,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25368606220920903,
+            "max_frame_gap_ms": 451.4000000022352,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 86059.69999999925,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2556760111733384,
+            "max_frame_gap_ms": 409.20000000298023,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 96059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25263243368435656,
+            "max_frame_gap_ms": 402.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 106059.69999999925,
+            "frames": 48,
+            "fps": 4.8,
+            "simulation_wall_ratio": 0.2460579503129656,
+            "max_frame_gap_ms": 395.79999999701977,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 116059.69999999925,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25399392866474635,
+            "max_frame_gap_ms": 360.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 126059.69999999925,
+            "frames": 53,
+            "fps": 5.3,
+            "simulation_wall_ratio": 0.2618222869918039,
+            "max_frame_gap_ms": 395.80000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 136059.69999999925,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.24634081618493395,
+            "max_frame_gap_ms": 438.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 146059.69999999925,
+            "frames": 52,
+            "fps": 5.2,
+            "simulation_wall_ratio": 0.2649843596798201,
+            "max_frame_gap_ms": 430.5,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 156059.69999999925,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.26622678742551004,
+            "max_frame_gap_ms": 341.0999999977648,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 166059.69999999925,
+            "frames": 46,
+            "fps": 4.6,
+            "simulation_wall_ratio": 0.2349000177985805,
+            "max_frame_gap_ms": 368,
+            "passed": false
+          }
+        ],
+        "maximum_gap_ms": 451.4000000022352,
+        "passed": false
+      },
+      "e05119f1fc02416eaffd6282744ea4ce:ROBOSPHERE": {
+        "arm": "e05119f1fc02416eaffd6282744ea4ce:ROBOSPHERE",
+        "windows": [
+          {
+            "start_wall_ms": 231950.09999999776,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25769742583496136,
+            "max_frame_gap_ms": 412.5,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 241950.09999999776,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.25212033574897674,
+            "max_frame_gap_ms": 430.8999999985099,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 251950.09999999776,
+            "frames": 47,
+            "fps": 4.7,
+            "simulation_wall_ratio": 0.24228379166466563,
+            "max_frame_gap_ms": 451.3999999985099,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 261950.09999999776,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.25896738412456516,
+            "max_frame_gap_ms": 451.69999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 271950.09999999776,
+            "frames": 54,
+            "fps": 5.4,
+            "simulation_wall_ratio": 0.2728485428103142,
+            "max_frame_gap_ms": 395.8999999985099,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 281950.09999999776,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.24861234096502483,
+            "max_frame_gap_ms": 498.0999999977648,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 291950.09999999776,
+            "frames": 48,
+            "fps": 4.8,
+            "simulation_wall_ratio": 0.24207338789607824,
+            "max_frame_gap_ms": 402.70000000298023,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 301950.09999999776,
+            "frames": 52,
+            "fps": 5.2,
+            "simulation_wall_ratio": 0.2651627220730443,
+            "max_frame_gap_ms": 451.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 311950.09999999776,
+            "frames": 54,
+            "fps": 5.4,
+            "simulation_wall_ratio": 0.26951711072448997,
+            "max_frame_gap_ms": 423.5999999977648,
+            "passed": false
+          }
+        ],
+        "maximum_gap_ms": 498.0999999977648,
+        "passed": false
+      },
+      "cb1ab18abc13419385411a3e2d164f86:ROBOSPHERE": {
+        "arm": "cb1ab18abc13419385411a3e2d164f86:ROBOSPHERE",
+        "windows": [
+          {
+            "start_wall_ms": 353398.8999999985,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25899221337360245,
+            "max_frame_gap_ms": 409.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 363398.8999999985,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.25492155039212183,
+            "max_frame_gap_ms": 395.30000000074506,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 373398.8999999985,
+            "frames": 49,
+            "fps": 4.9,
+            "simulation_wall_ratio": 0.2401633146301556,
+            "max_frame_gap_ms": 534.6999999992549,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 383398.8999999985,
+            "frames": 50,
+            "fps": 5,
+            "simulation_wall_ratio": 0.24950354259461735,
+            "max_frame_gap_ms": 354.79999999701977,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 393398.8999999985,
+            "frames": 53,
+            "fps": 5.3,
+            "simulation_wall_ratio": 0.2685393526163107,
+            "max_frame_gap_ms": 458.1000000014901,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 403398.8999999985,
+            "frames": 53,
+            "fps": 5.3,
+            "simulation_wall_ratio": 0.2655255914320423,
+            "max_frame_gap_ms": 402.6000000014901,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 413398.8999999985,
+            "frames": 51,
+            "fps": 5.1,
+            "simulation_wall_ratio": 0.255699546619496,
+            "max_frame_gap_ms": 430.19999999925494,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 423398.8999999985,
+            "frames": 52,
+            "fps": 5.2,
+            "simulation_wall_ratio": 0.26590577104924623,
+            "max_frame_gap_ms": 444.5,
+            "passed": false
+          },
+          {
+            "start_wall_ms": 433398.8999999985,
+            "frames": 53,
+            "fps": 5.3,
+            "simulation_wall_ratio": 0.2632938094303144,
+            "max_frame_gap_ms": 445.80000000074506,
+            "passed": false
+          }
+        ],
+        "maximum_gap_ms": 534.6999999992549,
+        "passed": false
+      }
+    },
+    "overflow": false,
+    "viewport": 1600
+  },
+  "final-layout.txt": {
+    "buttons": [
+      {
+        "text": "Stop",
+        "label": null,
+        "id": "drivePrimaryAction"
+      },
+      {
+        "text": "Details",
+        "label": null,
+        "id": "driveDetailsAction"
+      },
+      {
+        "text": "Emergency stop",
+        "label": null,
+        "id": "emergencyStopBtn"
+      }
+    ],
+    "mobile": {
+      "overflow": false,
+      "buttons": [
+        "Stop",
+        "Details",
+        "Emergency stop"
+      ],
+      "englishOnly": true
+    }
+  },
+  "details.txt": {
+    "opened": true,
+    "buttons": [
+      "Choose destination",
+      "Scenarios",
+      "Tools",
+      "Settings",
+      "Free GPU",
+      "Reset",
+      "Replay both",
+      "Settings",
+      "Map & measured surfaces",
+      "Emergency stop",
+      "\u00d7",
+      "Open full Diagnostics \u2197",
+      ""
+    ],
+    "closed": true,
+    "focus": "driveDetailsAction"
+  },
+  "saved-playback.txt": {
+    "scope": "Manual saved failed-pair playback only; automatic native presentation remains failed",
+    "before": {
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_a88de58ef52842f99d53cf6bab39ad8b/driving.mp4",
+          "duration": 4.151,
+          "ready": 4
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_6c7edaf0eced404aacce20cc5996093d/driving.mp4",
+          "duration": 12.851,
+          "ready": 4
+        }
+      ],
+      "outcomes": [
+        "ERROR \u00b7 Current synchronized sensor scene unavailable for one second \u00b7 Injected validation fault; excluded from driving acceptance.",
+        "COLLISION \u00b7 Contact ended this attempt. Its recording and result are saved. Additional runtime error: A required record was lost: 1226"
+      ]
+    },
+    "samples": [
+      {
+        "wall": 100658.60000000149,
+        "videos": [
+          {
+            "time": 0,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 0,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Restart"
+      },
+      {
+        "wall": 101164.70000000298,
+        "videos": [
+          {
+            "time": 0.421949,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 0.433005,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 101675.10000000149,
+        "videos": [
+          {
+            "time": 0.93233,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 0.943386,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 102182.70000000298,
+        "videos": [
+          {
+            "time": 1.439867,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 1.450919,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 102691.40000000596,
+        "videos": [
+          {
+            "time": 1.948628,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 1.959683,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 103203,
+        "videos": [
+          {
+            "time": 2.460177,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 2.47123,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 103713.10000000149,
+        "videos": [
+          {
+            "time": 2.970317,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 2.981368,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 104221.90000000596,
+        "videos": [
+          {
+            "time": 3.479108,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 3.490158,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 104732.90000000596,
+        "videos": [
+          {
+            "time": 3.990161,
+            "duration": 4.151,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "time": 4.001218,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 105242.70000000298,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 4.511007,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 105750.80000000447,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 5.019108,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 106257.30000000447,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 5.525529,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 106769.60000000149,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 6.037861,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 107277.90000000596,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 6.54622,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 107789,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 7.057264,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 108296.80000000447,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 7.565035,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 108805.90000000596,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 8.074115,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 109315.40000000596,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 8.583667,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 109823.80000000447,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 9.092044,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 110329.70000000298,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 9.597942,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 110839.20000000298,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 10.1075,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 111346.5,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 10.614736,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 111862.70000000298,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 11.131018,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 112373.5,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 11.641772,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 112886.90000000596,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 12.15518,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 113395.20000000298,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 12.663508,
+            "duration": 12.851,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "action": "Pause"
+      },
+      {
+        "wall": 113903.70000000298,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 12.851,
+            "duration": 12.851,
+            "paused": true,
+            "ended": true
+          }
+        ],
+        "action": "Restart"
+      },
+      {
+        "wall": 114415,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 12.851,
+            "duration": 12.851,
+            "paused": true,
+            "ended": true
+          }
+        ],
+        "action": "Restart"
+      },
+      {
+        "wall": 114922.60000000149,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 12.851,
+            "duration": 12.851,
+            "paused": true,
+            "ended": true
+          }
+        ],
+        "action": "Restart"
+      },
+      {
+        "wall": 115433.10000000149,
+        "videos": [
+          {
+            "time": 4.151,
+            "duration": 4.151,
+            "paused": true,
+            "ended": true
+          },
+          {
+            "time": 12.851,
+            "duration": 12.851,
+            "paused": true,
+            "ended": true
+          }
+        ],
+        "action": "Restart"
+      }
+    ],
+    "final": {
+      "buttons": [
+        "Restart",
+        "Details",
+        "Emergency stop"
+      ],
+      "outcomes": [
+        "ERROR \u00b7 Current synchronized sensor scene unavailable for one second \u00b7 Injected validation fault; excluded from driving acceptance.",
+        "COLLISION \u00b7 Contact ended this attempt. Its recording and result are saved. Additional runtime error: A required record was lost: 1226"
+      ],
+      "status": "Saved playback complete. These recorded outcomes are unchanged.",
+      "englishOnly": true
+    },
+    "mobile": {
+      "overflow": false,
+      "buttons": [
+        "Restart",
+        "Details",
+        "Emergency stop"
+      ]
+    },
+    "errors": [],
+    "maximumDrift": 0.01105699999999965,
+    "checks": {
+      "bothRealVideos": true,
+      "bothPlayed": true,
+      "bothEnded": true,
+      "synchronized": true,
+      "originalFailure": true,
+      "injectionNamed": true,
+      "contactNotHidden": true,
+      "threeButtons": true,
+      "mobileFits": true,
+      "english": true,
+      "noPageErrors": true
+    }
+  },
+  "playback-controls.txt": {
+    "scope": "Keyboard and Pause/Play on real saved videos; no native simulation",
+    "checks": {
+      "keyboardDetailsOpenClose": true,
+      "bothPaused": true,
+      "heldPosition": true,
+      "bothResumed": true,
+      "bothEnded": true,
+      "noPageErrors": true
+    },
+    "paused": [
+      {
+        "time": 0.538255,
+        "paused": true,
+        "ended": false
+      },
+      {
+        "time": 0.536648,
+        "paused": true,
+        "ended": false
+      }
+    ],
+    "held": [
+      {
+        "time": 0.538255,
+        "paused": true,
+        "ended": false
+      },
+      {
+        "time": 0.536648,
+        "paused": true,
+        "ended": false
+      }
+    ],
+    "resumed": [
+      {
+        "time": 1.353006,
+        "paused": false,
+        "ended": false
+      },
+      {
+        "time": 1.351327,
+        "paused": false,
+        "ended": false
+      }
+    ],
+    "ended": [
+      {
+        "time": 4.151,
+        "paused": true,
+        "ended": true
+      },
+      {
+        "time": 12.851,
+        "paused": true,
+        "ended": true
+      }
+    ],
+    "errors": []
+  }
+}

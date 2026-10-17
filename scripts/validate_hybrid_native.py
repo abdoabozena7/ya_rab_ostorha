@@ -46,7 +46,10 @@ def archive_sources(folder,hashes,root=ROOT):
 
 def worker(args):
     from backend.learning.hybrid_budget import active_ticket
-    if active_ticket() is None:raise RuntimeError('A live parent-owned hybrid reservation is required')
+    if args.rule_ticket:
+        from backend.learning.native_validation_budget import NativeValidationBudget
+        NativeValidationBudget(args.rule_ticket).activate_rule()
+    elif active_ticket() is None:raise RuntimeError('A live parent-owned hybrid reservation is required')
     from backend.carla.provider import CarlaProvider
     from backend.core.service import SimulationService
     from backend.core.contracts import to_dict
@@ -70,6 +73,9 @@ def worker(args):
                 maximum_unexplained_stop_s=maximum_stop,
                 contacts=[to_dict(c) for c in service.collision_events if c.timestamp_s>=start_sim],
                 recording=service.journey_comparison.snapshot(),wall_s=time.monotonic()-began)
+            from backend.core.driving_quality import evaluate_quality
+            arm['driving_quality']=evaluate_quality(arm['samples'],
+                arrived=service.journey.get('status')=='ARRIVED',contacts=len(arm['contacts']))
             report['original_safety_fault']=service.safety_fault
             if not any(saved is arm for saved in report['arms']):report['arms'].append(arm)
             report.update(arm)
@@ -152,7 +158,7 @@ def worker(args):
                         if fixture.started is None:fixture.begin(service.observation.timestamp_s)
                         fixture.before_tick(service.observation.timestamp_s)
                     service.journey_heartbeat(service.session_id)
-                    profile_this_step=(profiler is not None and mode=='HYBRID'
+                    profile_this_step=(profiler is not None and mode in ('HYBRID','ROBOSPHERE')
                         and service.journey['status']=='RUNNING' and profiled_steps<args.profile_steps)
                     if profile_this_step:profiler.enable()
                     try:service.step_once()
@@ -184,6 +190,7 @@ def worker(args):
                         'journey':dict(service.journey),'control_scene':service.control_scene.snapshot(frame.timestamp_s,service.now()) if service.control_scene else None,
                         'maneuver':dict(getattr(service,'maneuver_status',{})),'stop':service._public_stop_diagnostics(),
                         'route_bypass':bypass_state,
+                        'independent_reference':provider.ground_truth_debug(),
                         'backend_step_ms':service.backend_step_ms})
                     if len(arm['samples'])%20==0:
                         with (folder/'progress.jsonl').open('a',encoding='utf8') as stream:
@@ -261,7 +268,11 @@ def run(args):
     report['source_hashes']=source_hashes()
     report['source_archive']=archive_sources(folder,report['source_hashes'])
     (folder/'initial-report.json').write_text(json.dumps(report),encoding='utf8')
-    with HybridBudget().experiment('physical-diagnostic',args.seconds):
+    if args.rule_ticket:
+        from backend.learning.native_validation_budget import NativeValidationBudget
+        budget=NativeValidationBudget(args.rule_ticket)
+    else:budget=HybridBudget()
+    with budget.experiment('physical-diagnostic',args.seconds):
         began=time.monotonic();working_began=working_time()
         try:
             final_runtime.disconnect_backend()
@@ -287,9 +298,11 @@ def run(args):
             report['orchestration_error']=str(error)
         finally:
             ticket=DIRECTORY/'active-ticket.json'
-            if ticket.exists():ticket.unlink()
+            if not args.rule_ticket and ticket.exists():ticket.unlink()
             try:
-                subprocess.run([sys.executable,'-m','scripts.final_runtime'],cwd=ROOT,check=True,
+                restore_command=[sys.executable,'-m','scripts.final_runtime']
+                if args.rule_ticket and budget.status()['remaining_s']>0:restore_command+=['--validation-ticket',args.rule_ticket]
+                subprocess.run(restore_command,cwd=ROOT,check=True,
                     timeout=90,capture_output=True,text=True)
                 final_runtime.restore_operator(saved)
                 restored=final_runtime.state()
@@ -313,6 +326,7 @@ def run(args):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--seconds',type=float,default=600)
+    parser.add_argument('--rule-ticket',help='Separate expiring RULE repair authorization; never admits hybrid')
     parser.add_argument('--speed',type=float,default=20);parser.add_argument('--mode',choices=('HYBRID','BASELINE','ROBOSPHERE'),default='HYBRID')
     parser.add_argument('--spawn',type=int,default=152);parser.add_argument('--length',type=float,default=60)
     parser.add_argument('--sim-seconds',type=float,default=45)
@@ -327,6 +341,7 @@ if __name__=='__main__':
     parser.add_argument('--worker',action='store_true',help=argparse.SUPPRESS)
     parser.add_argument('--folder',help=argparse.SUPPRESS);parser.add_argument('--began',type=float,help=argparse.SUPPRESS)
     args=parser.parse_args()
+    if args.rule_ticket and (args.mode!='ROBOSPHERE' or args.paired):parser.error('RULE repair ticket cannot enable hybrid or paired hybrid diagnostics')
     if not 180<=args.seconds<=1800 or not 5<=args.speed<=50:parser.error('Use a bounded 180–1800 second probe and 5–50 km/h')
     if not 0<=args.profile_steps<=100:parser.error('Profile 0–100 control ticks')
     if args.paired and args.scenario!='DIAGNOSTIC':parser.error('Matched scripted hazards require fixture-reset validation first')

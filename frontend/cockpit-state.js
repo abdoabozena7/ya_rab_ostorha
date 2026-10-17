@@ -1,4 +1,5 @@
 // Display rules only. These checks never issue controls or change safety limits.
+import {driveState} from './drive-state.js';
 const finite = value => Number.isFinite(value) && value >= 0;
 export const metricText = (value, digits = 0) => finite(value) ? value.toFixed(digits) : '—';
 
@@ -82,7 +83,7 @@ export function safetyNotice(provider) {
       controls_released:'Driving controls were released',dashboard_heartbeat_timeout:'The dashboard connection lease expired'};
     const failed=stopped?.status==='ERROR';
     return {tone:failed?'warning':'neutral', title:failed?'Drive needs attention':'Driving paused',
-      detail:(names[reason]||controlReasonText(reason)||'Vehicle held')+(failed?' · Use Restart to prepare a fresh run.':' · Use Resume driving here to continue.')};
+      detail:(names[reason]||controlReasonText(reason)||'Vehicle held')+(driveState(provider).resumable?' · Use Resume driving to continue.':' · Use Restart to prepare a fresh run.')};
   }
   if(provider.controlMode==='AUTOMATIC'&&provider.stopDiagnostics?.braking&&
       provider.stopDiagnostics?.decision_source==='NAVIGATION'&&/red traffic light/i.test(provider.stopDiagnostics.reason||''))return {
@@ -111,6 +112,8 @@ export function safetyNotice(provider) {
       detail:'Another stationary obstacle blocks the passing route. The journey remains active and resumes when a verified route opens.'};
     if(bypass.action==='HOLD')return {tone:'warning',title:'Waiting for a verified passing path',
       detail:'The adjacent road or traffic does not yet permit this maneuver. '+controlReasonText(bypass.reason)};
+    if(bypass.phase==='FOLLOW'&&!bypass.front_blocker)return {tone:'neutral',title:'Checking forward clearance at low speed',
+      detail:'The recovery controller is still checking clearance before returning to route speed. No current front blocker is identified.'};
     return {tone:'neutral',title:bypass.phase==='RETURN'?'Returning to the original lane':'Passing the stopped obstacle',
       detail:'Following the measured passing corridor at low speed. Requested route speed resumes after the obstacle is cleared.'};
   }

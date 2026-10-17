@@ -444,6 +444,14 @@ class CarlaProvider:
         from .presentation import prepare
         return prepare(self, seed, speed)
 
+    def finish_presentation_setup(self,seed,setup):
+        from .presentation import finish_prepare
+        return finish_prepare(self,seed,setup)
+
+    def presentation_population_audit(self):
+        from .presentation import population_audit
+        return population_audit(self)
+
     def start_navigation(self, speed_kmh, *, demo_options=None, driving_mode='ROBOSPHERE', presentation=False):
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
@@ -452,6 +460,8 @@ class CarlaProvider:
         self.dashboard_tools.replan_route()
         self.driving_mode = driving_mode
         self.presentation_mode = presentation
+        from ..learning.native_validation_budget import active_rule_ticket
+        self.rule_validation_mode = driving_mode == 'ROBOSPHERE' and active_rule_ticket() is not None
         if driving_mode not in ('HYBRID','BASELINE') and not presentation and self.benchmark_fixture:
             self.benchmark_fixture.close(); self.benchmark_fixture = None
         self.hybrid_driver = None
@@ -463,7 +473,7 @@ class CarlaProvider:
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
-        if driving_mode in ('HYBRID', 'BASELINE') or presentation:
+        if driving_mode in ('HYBRID', 'BASELINE') or presentation or self.rule_validation_mode:
             from .hybrid_navigation import RoadSpeedPolicy, behavior_agent_class
             self.hybrid_speed_policy = RoadSpeedPolicy(self.dashboard_tools.map)
         if driving_mode == 'BASELINE':
@@ -632,19 +642,20 @@ class CarlaProvider:
         if self.navigation is None:
             raise RuntimeError('No active native route controller')
         limit = self.ego.actor.get_speed_limit()
-        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False):
+        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False):
             waypoint = self.dashboard_tools.map.get_waypoint(self.ego.actor.get_location())
             limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         requested=min(speed_kmh,limit) if limit>0 else speed_kmh
         bypass=getattr(self,'navigation_bypass',None)
         if bypass and bypass.motion_required:requested=min(requested,bypass.config['maneuver_speed_mps']*3.6)
-        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False):
+        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False):
             from ..core.route_terminal import terminal_speed_mps
             route=self.route_state()
             if route and route.get('remaining_m') is not None:
                 requested=min(requested,terminal_speed_mps(route['remaining_m'])*3.6)
         self.navigation.set_target_speed(requested)
+        self.navigation_target_mps=requested/3.6
         value = self.navigation.run_step()
         self.navigation_stop_reason = getattr(self.navigation,'stop_reason',None)
         # Canonical steering, like native telemetry, is right-positive. The

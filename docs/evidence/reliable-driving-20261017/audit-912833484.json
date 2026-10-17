@@ -1,0 +1,5235 @@
+{
+  "pair_id": "e05119f1fc02416eaffd6282744ea4ce",
+  "seed": 912833484,
+  "population": {
+    "vehicles": {
+      "total": 18,
+      "ahead": 18
+    },
+    "pedestrians": {
+      "total": 30,
+      "ahead": 30
+    }
+  },
+  "ahead_definition": "Positive longitudinal coordinate at frozen initial ego pose; all owned fixture actors",
+  "dense_setup_valid": false,
+  "arms": {
+    "ROBOSPHERE": {
+      "run": {
+        "status": "INTERRUPTED",
+        "reason": "operator_stop",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3452ae153c7947288ad34b14ac7dd2fa",
+        "duration_s": 25.600000381469727,
+        "distance_m": 5.922177239015636,
+        "maximum_speed_kmh": 5.692040946199634,
+        "collisions": 0
+      },
+      "samples": 516,
+      "quality": {
+        "accepted": false,
+        "gates": {
+          "arrived": false,
+          "no_contacts": true,
+          "complete_measurements": true,
+          "fresh_fraction": false,
+          "no_control_delays": false,
+          "all_stops_independently_verified": false,
+          "comfort": false,
+          "no_oscillation": false,
+          "cruise_50_verified": false,
+          "display": false
+        },
+        "fresh_fraction": 0.9011627906976745,
+        "delay_frames": [
+          50593,
+          50604,
+          50624,
+          50633,
+          50652,
+          50661,
+          50669,
+          50677,
+          50685,
+          50686,
+          50705,
+          50740,
+          50741,
+          50742,
+          50758,
+          50759,
+          50768,
+          50780,
+          50793,
+          50799,
+          50803,
+          50815,
+          50816,
+          50828,
+          50837,
+          50867,
+          50868,
+          50878,
+          50890,
+          50901,
+          50914,
+          50915,
+          50922,
+          50925,
+          50926,
+          50935,
+          50939,
+          50965,
+          50974,
+          50985,
+          50997,
+          51009,
+          51028,
+          51047,
+          51057,
+          51070,
+          51080,
+          51092,
+          51093,
+          51104,
+          51106
+        ],
+        "stop_frames": [
+          {
+            "frame": 50591,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 50592,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50593,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50594,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50595,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50596,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50597,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50598,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50599,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50600,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50601,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50602,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50603,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50604,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50605,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50606,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50607,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50608,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50609,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50610,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50611,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50612,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50613,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50614,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50615,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50616,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50617,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50618,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50619,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50620,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50621,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50622,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50623,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50624,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50625,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50626,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50634,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50635,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50636,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50637,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50638,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50639,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50640,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50641,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50653,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50654,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50662,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50663,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50664,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50665,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50666,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50667,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50668,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50669,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50670,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50671,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50672,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50673,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50674,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50675,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50676,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50677,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50678,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50679,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50680,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50681,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50682,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50683,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50684,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50685,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50686,
+            "reason": null
+          },
+          {
+            "frame": 50687,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50688,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50689,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50690,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50691,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50692,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50693,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50694,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50695,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50696,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50697,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50698,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50699,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50706,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50707,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50744,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50759,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50760,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50761,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50762,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50763,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50764,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50765,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50766,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50767,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50768,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50769,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50770,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50771,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50772,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50773,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50774,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50775,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50776,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50777,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50778,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50779,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50780,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50781,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50782,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50783,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50784,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50785,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50786,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50787,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50788,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50789,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50790,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50791,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50794,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50795,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50798,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50799,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50800,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50801,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50802,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50803,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50804,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50805,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50806,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50807,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50808,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50809,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50810,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50811,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50812,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50813,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50814,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50815,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50816,
+            "reason": null
+          },
+          {
+            "frame": 50817,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50818,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50819,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50820,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50821,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50822,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50823,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50824,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50825,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50826,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50827,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50829,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50830,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50831,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50832,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50833,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50834,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50835,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50836,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50837,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50838,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50839,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50840,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50841,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50842,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50843,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50844,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50845,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50846,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50847,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50848,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50869,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50870,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50871,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50872,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50873,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50874,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50875,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50876,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50877,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50878,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50879,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50880,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50881,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50882,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50883,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50884,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50885,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50886,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50887,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50888,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50889,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50891,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50892,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50893,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50894,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50895,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50896,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50897,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50898,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50899,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50902,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50903,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50904,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50905,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50906,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50907,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50908,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50909,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50910,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50911,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50912,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50913,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50916,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50917,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50918,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50919,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50920,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50921,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50922,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50923,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50924,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50925,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50926,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50927,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50928,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50929,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50930,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50931,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50932,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50933,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50934,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50935,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50936,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50937,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50938,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50939,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50940,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50941,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50942,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50943,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50944,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50945,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50946,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50947,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50948,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50949,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50950,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50951,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50952,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50953,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50966,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50967,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50975,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50976,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50977,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50978,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50979,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50980,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50981,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50982,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50983,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50984,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50985,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50986,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50987,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50988,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50989,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50990,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50991,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50992,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50993,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50994,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50995,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50996,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50997,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50998,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50999,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51000,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51001,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51002,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51003,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51004,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51005,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51006,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51007,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51010,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51011,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51012,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51013,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51014,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51015,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51016,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51017,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51018,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51019,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51029,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51030,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51048,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51049,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51058,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51059,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51060,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51062,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51063,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51064,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51065,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51071,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51072,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51073,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51074,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51075,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51076,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51077,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51078,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51081,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51082,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51083,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51084,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51085,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51086,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51087,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51088,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51089,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51090,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51091,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51092,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 51093,
+            "reason": null
+          },
+          {
+            "frame": 51094,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51095,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51096,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51097,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51098,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51099,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51100,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51101,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51102,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51103,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51105,
+            "reason": "operator_stop"
+          },
+          {
+            "frame": 51106,
+            "reason": null
+          }
+        ],
+        "unresolved_stop_frames": [
+          {
+            "frame": 50591,
+            "reason": "Vehicle held; explicit driving start required"
+          },
+          {
+            "frame": 50592,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50593,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50594,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50595,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50596,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50597,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50598,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50599,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50600,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50601,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50602,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50603,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50604,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50605,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50606,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50607,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50608,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50609,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50610,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50611,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50612,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50613,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50614,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50615,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50616,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50617,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50618,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50619,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50620,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50621,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50622,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50623,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50624,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50625,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50626,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50634,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50635,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50636,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50637,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50638,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50639,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50640,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50641,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50653,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50654,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50662,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50663,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50664,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50665,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50666,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50667,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50668,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50669,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50670,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50671,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50672,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50673,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50674,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50675,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50676,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50677,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50678,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50679,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50680,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50681,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50682,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50683,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50684,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50685,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50686,
+            "reason": null
+          },
+          {
+            "frame": 50687,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50688,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50689,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50690,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50691,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50692,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50693,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50694,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50695,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50696,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50697,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50698,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50699,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50706,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50707,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50744,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50759,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50760,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50761,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50762,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50763,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50764,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50765,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50766,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50767,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50768,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50769,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50770,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50771,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50772,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50773,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50774,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50775,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50776,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50777,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50778,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50779,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50780,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50781,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50782,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50783,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50784,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50785,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50786,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50787,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50788,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50789,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50790,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50791,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50794,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50795,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50798,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50799,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50800,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50801,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50802,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50803,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50804,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50805,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50806,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50807,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50808,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50809,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50810,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50811,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50812,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50813,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50814,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50815,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50816,
+            "reason": null
+          },
+          {
+            "frame": 50817,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50818,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50819,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50820,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50821,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50822,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50823,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50824,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50825,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50826,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50827,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50829,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50830,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50831,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50832,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50833,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50834,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50835,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50836,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50837,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50838,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50839,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50840,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50841,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50842,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50843,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50844,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50845,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50846,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50847,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50848,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50869,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50870,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50871,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50872,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50873,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50874,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50875,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50876,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50877,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50878,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50879,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50880,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50881,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50882,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50883,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50884,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50885,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50886,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50887,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50888,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50889,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50891,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50892,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50893,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50894,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50895,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50896,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50897,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50898,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50899,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50902,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50903,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50904,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50905,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50906,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50907,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50908,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50909,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50910,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50911,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50912,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50913,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50916,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50917,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50918,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50919,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50920,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50921,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50922,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50923,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50924,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50925,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50926,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50927,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50928,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50929,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50930,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50931,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50932,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50933,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50934,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50935,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50936,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50937,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50938,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50939,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50940,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50941,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50942,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50943,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50944,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50945,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50946,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50947,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50948,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50949,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50950,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50951,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50952,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50953,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50966,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50967,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50975,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50976,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50977,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50978,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50979,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50980,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50981,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50982,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50983,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50984,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50985,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50986,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50987,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50988,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50989,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50990,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50991,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50992,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50993,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50994,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50995,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50996,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50997,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 50998,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 50999,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51000,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51001,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51002,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51003,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51004,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51005,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51006,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51007,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51010,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51011,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51012,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51013,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51014,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51015,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51016,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51017,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51018,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51019,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51029,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51030,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51048,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51049,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51058,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51059,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51060,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51062,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51063,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51064,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51065,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51071,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51072,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51073,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51074,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51075,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51076,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51077,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51078,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51081,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51082,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51083,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51084,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51085,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51086,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51087,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51088,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51089,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51090,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51091,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51092,
+            "reason": "CONTROL_PROCESSING_DEADLINE"
+          },
+          {
+            "frame": 51093,
+            "reason": null
+          },
+          {
+            "frame": 51094,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51095,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51096,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51097,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51098,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51099,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51100,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51101,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51102,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51103,
+            "reason": "NAVIGATION"
+          },
+          {
+            "frame": 51105,
+            "reason": "operator_stop"
+          },
+          {
+            "frame": 51106,
+            "reason": null
+          }
+        ],
+        "comfort_violations": [
+          {
+            "frame": 50626,
+            "reason": "JERK_0_2S",
+            "value": 8.615898635634863
+          },
+          {
+            "frame": 50627,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 4.02707421987663
+          },
+          {
+            "frame": 50627,
+            "reason": "JERK_0_2S",
+            "value": 20.135371537115134
+          },
+          {
+            "frame": 50628,
+            "reason": "JERK_0_2S",
+            "value": 8.919006146089835
+          },
+          {
+            "frame": 50629,
+            "reason": "JERK_0_2S",
+            "value": 5.562598763623294
+          },
+          {
+            "frame": 50630,
+            "reason": "JERK_0_2S",
+            "value": 10.697584835489916
+          },
+          {
+            "frame": 50631,
+            "reason": "JERK_0_2S",
+            "value": 21.438159443742943
+          },
+          {
+            "frame": 50632,
+            "reason": "JERK_0_2S",
+            "value": 9.838619561714806
+          },
+          {
+            "frame": 50634,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -8.44946645097085
+          },
+          {
+            "frame": 50634,
+            "reason": "JERK_0_2S",
+            "value": 40.16564633121851
+          },
+          {
+            "frame": 50635,
+            "reason": "JERK_0_2S",
+            "value": 10.402089204685922
+          },
+          {
+            "frame": 50638,
+            "reason": "JERK_0_2S",
+            "value": 41.10927327295891
+          },
+          {
+            "frame": 50639,
+            "reason": "JERK_0_2S",
+            "value": 7.964337810813798
+          },
+          {
+            "frame": 50642,
+            "reason": "JERK_0_2S",
+            "value": 10.73071487047276
+          },
+          {
+            "frame": 50644,
+            "reason": "JERK_0_2S",
+            "value": 7.759678316209724
+          },
+          {
+            "frame": 50645,
+            "reason": "JERK_0_2S",
+            "value": 3.053524943452506
+          },
+          {
+            "frame": 50646,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.792591549561458
+          },
+          {
+            "frame": 50646,
+            "reason": "JERK_0_2S",
+            "value": 4.370299260316974
+          },
+          {
+            "frame": 50648,
+            "reason": "JERK_0_2S",
+            "value": 6.429050068394004
+          },
+          {
+            "frame": 50650,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.786931526759527
+          },
+          {
+            "frame": 50653,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -14.321882776221871
+          },
+          {
+            "frame": 50653,
+            "reason": "JERK_0_2S",
+            "value": 78.5446036577293
+          },
+          {
+            "frame": 50654,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.277050951139696
+          },
+          {
+            "frame": 50655,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.4809210037515816
+          },
+          {
+            "frame": 50655,
+            "reason": "JERK_0_2S",
+            "value": 9.634401371041921
+          },
+          {
+            "frame": 50656,
+            "reason": "JERK_0_2S",
+            "value": 3.5637179487319472
+          },
+          {
+            "frame": 50657,
+            "reason": "JERK_0_2S",
+            "value": 79.84509706301286
+          },
+          {
+            "frame": 50658,
+            "reason": "JERK_0_2S",
+            "value": 17.567991191397326
+          },
+          {
+            "frame": 50659,
+            "reason": "JERK_0_2S",
+            "value": 8.736772886678553
+          },
+          {
+            "frame": 50661,
+            "reason": "JERK_0_2S",
+            "value": 5.316030586993792
+          },
+          {
+            "frame": 50662,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.329776692355279
+          },
+          {
+            "frame": 50662,
+            "reason": "JERK_0_2S",
+            "value": 25.466147674014685
+          },
+          {
+            "frame": 50663,
+            "reason": "JERK_0_2S",
+            "value": 5.471969565910057
+          },
+          {
+            "frame": 50666,
+            "reason": "JERK_0_2S",
+            "value": 30.612997593964508
+          },
+          {
+            "frame": 50667,
+            "reason": "JERK_0_2S",
+            "value": 8.1394434681152
+          },
+          {
+            "frame": 50670,
+            "reason": "JERK_0_2S",
+            "value": 8.237045091568092
+          },
+          {
+            "frame": 50671,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.1348007722762534
+          },
+          {
+            "frame": 50671,
+            "reason": "JERK_0_2S",
+            "value": 9.673647403422219
+          },
+          {
+            "frame": 50672,
+            "reason": "JERK_0_2S",
+            "value": 4.300764230015459
+          },
+          {
+            "frame": 50673,
+            "reason": "JERK_0_2S",
+            "value": 4.451898444620874
+          },
+          {
+            "frame": 50674,
+            "reason": "JERK_0_2S",
+            "value": 4.344957458522871
+          },
+          {
+            "frame": 50675,
+            "reason": "JERK_0_2S",
+            "value": 6.992079822657755
+          },
+          {
+            "frame": 50676,
+            "reason": "JERK_0_2S",
+            "value": 8.381661885853877
+          },
+          {
+            "frame": 50677,
+            "reason": "JERK_0_2S",
+            "value": 11.051097189373781
+          },
+          {
+            "frame": 50679,
+            "reason": "JERK_0_2S",
+            "value": 6.181971876838621
+          },
+          {
+            "frame": 50680,
+            "reason": "JERK_0_2S",
+            "value": 5.910630419732305
+          },
+          {
+            "frame": 50681,
+            "reason": "JERK_0_2S",
+            "value": 6.233329462672677
+          },
+          {
+            "frame": 50682,
+            "reason": "JERK_0_2S",
+            "value": 6.356000751358673
+          },
+          {
+            "frame": 50683,
+            "reason": "JERK_0_2S",
+            "value": 8.996798448490406
+          },
+          {
+            "frame": 50687,
+            "reason": "JERK_0_2S",
+            "value": 7.557950160999187
+          },
+          {
+            "frame": 50688,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.030513166726237
+          },
+          {
+            "frame": 50688,
+            "reason": "JERK_0_2S",
+            "value": 11.187733764296343
+          },
+          {
+            "frame": 50689,
+            "reason": "JERK_0_2S",
+            "value": 8.343981481701915
+          },
+          {
+            "frame": 50690,
+            "reason": "JERK_0_2S",
+            "value": 6.397057251375085
+          },
+          {
+            "frame": 50692,
+            "reason": "JERK_0_2S",
+            "value": 7.027288622228451
+          },
+          {
+            "frame": 50693,
+            "reason": "JERK_0_2S",
+            "value": 6.394075296164261
+          },
+          {
+            "frame": 50694,
+            "reason": "JERK_0_2S",
+            "value": 4.487602129103012
+          },
+          {
+            "frame": 50695,
+            "reason": "JERK_0_2S",
+            "value": 4.405787167703584
+          },
+          {
+            "frame": 50700,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.321643534398075
+          },
+          {
+            "frame": 50700,
+            "reason": "JERK_0_2S",
+            "value": 15.537625948405523
+          },
+          {
+            "frame": 50701,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.393615669192211
+          },
+          {
+            "frame": 50701,
+            "reason": "JERK_0_2S",
+            "value": 17.775828989668632
+          },
+          {
+            "frame": 50702,
+            "reason": "JERK_0_2S",
+            "value": 6.775552456978389
+          },
+          {
+            "frame": 50703,
+            "reason": "JERK_0_2S",
+            "value": 7.593528743816172
+          },
+          {
+            "frame": 50704,
+            "reason": "JERK_0_2S",
+            "value": 11.208650201138424
+          },
+          {
+            "frame": 50705,
+            "reason": "JERK_0_2S",
+            "value": 8.11012025117563
+          },
+          {
+            "frame": 50706,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -13.625629017904721
+          },
+          {
+            "frame": 50706,
+            "reason": "JERK_0_2S",
+            "value": 76.10174678949423
+          },
+          {
+            "frame": 50707,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.2540508861622235
+          },
+          {
+            "frame": 50707,
+            "reason": "JERK_0_2S",
+            "value": 4.214793457631712
+          },
+          {
+            "frame": 50709,
+            "reason": "JERK_0_2S",
+            "value": 5.5774512998769765
+          },
+          {
+            "frame": 50710,
+            "reason": "JERK_0_2S",
+            "value": 70.79222365367983
+          },
+          {
+            "frame": 50711,
+            "reason": "JERK_0_2S",
+            "value": 7.7414330317448625
+          },
+          {
+            "frame": 50712,
+            "reason": "JERK_0_2S",
+            "value": 9.140162072306516
+          },
+          {
+            "frame": 50714,
+            "reason": "JERK_0_2S",
+            "value": 3.2970693779294082
+          },
+          {
+            "frame": 50716,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.341249298210554
+          },
+          {
+            "frame": 50716,
+            "reason": "JERK_0_2S",
+            "value": 15.145985024551225
+          },
+          {
+            "frame": 50717,
+            "reason": "JERK_0_2S",
+            "value": 6.914527296561562
+          },
+          {
+            "frame": 50718,
+            "reason": "JERK_0_2S",
+            "value": 4.350564400827519
+          },
+          {
+            "frame": 50720,
+            "reason": "JERK_0_2S",
+            "value": 8.0966940927996
+          },
+          {
+            "frame": 50721,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.224343448060925
+          },
+          {
+            "frame": 50721,
+            "reason": "JERK_0_2S",
+            "value": 3.8094082315510325
+          },
+          {
+            "frame": 50722,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.5148378260162714
+          },
+          {
+            "frame": 50722,
+            "reason": "JERK_0_2S",
+            "value": 8.856610334397638
+          },
+          {
+            "frame": 50725,
+            "reason": "JERK_0_2S",
+            "value": 7.557220199239408
+          },
+          {
+            "frame": 50726,
+            "reason": "JERK_0_2S",
+            "value": 6.396119079042089
+          },
+          {
+            "frame": 50728,
+            "reason": "JERK_0_2S",
+            "value": 4.315724059765254
+          },
+          {
+            "frame": 50742,
+            "reason": "JERK_0_2S",
+            "value": 3.7224502694307238
+          },
+          {
+            "frame": 50743,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -16.98764871447314
+          },
+          {
+            "frame": 50743,
+            "reason": "JERK_0_2S",
+            "value": 87.5193181762073
+          },
+          {
+            "frame": 50744,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -14.374857314296245
+          },
+          {
+            "frame": 50744,
+            "reason": "JERK_0_2S",
+            "value": 75.14770511189874
+          },
+          {
+            "frame": 50745,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 4.903740304593219
+          },
+          {
+            "frame": 50745,
+            "reason": "JERK_0_2S",
+            "value": 22.075869377927514
+          },
+          {
+            "frame": 50746,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.231661910461905
+          },
+          {
+            "frame": 50746,
+            "reason": "JERK_0_2S",
+            "value": 11.492467523418181
+          },
+          {
+            "frame": 50747,
+            "reason": "JERK_0_2S",
+            "value": 87.12326036825314
+          },
+          {
+            "frame": 50748,
+            "reason": "JERK_0_2S",
+            "value": 70.90928913236614
+          },
+          {
+            "frame": 50749,
+            "reason": "JERK_0_2S",
+            "value": 21.362350653969806
+          },
+          {
+            "frame": 50750,
+            "reason": "JERK_0_2S",
+            "value": 10.376853453081589
+          },
+          {
+            "frame": 50751,
+            "reason": "JERK_0_2S",
+            "value": 4.066316891981109
+          },
+          {
+            "frame": 50752,
+            "reason": "JERK_0_2S",
+            "value": 4.974086950514592
+          },
+          {
+            "frame": 50757,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.146435558300916
+          },
+          {
+            "frame": 50757,
+            "reason": "JERK_0_2S",
+            "value": 4.850986086905089
+          },
+          {
+            "frame": 50758,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.5140058886099723
+          },
+          {
+            "frame": 50758,
+            "reason": "JERK_0_2S",
+            "value": 13.778319784266074
+          },
+          {
+            "frame": 50759,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -15.282329697458852
+          },
+          {
+            "frame": 50759,
+            "reason": "JERK_0_2S",
+            "value": 76.76509673882789
+          },
+          {
+            "frame": 50760,
+            "reason": "JERK_0_2S",
+            "value": 5.39330667924324
+          },
+          {
+            "frame": 50761,
+            "reason": "JERK_0_2S",
+            "value": 11.018292378813648
+          },
+          {
+            "frame": 50762,
+            "reason": "JERK_0_2S",
+            "value": 3.7305400303277434
+          },
+          {
+            "frame": 50763,
+            "reason": "JERK_0_2S",
+            "value": 75.37797026831683
+          },
+          {
+            "frame": 50766,
+            "reason": "JERK_0_2S",
+            "value": 7.957061729757012
+          },
+          {
+            "frame": 50769,
+            "reason": "JERK_0_2S",
+            "value": 8.391737417649368
+          },
+          {
+            "frame": 50770,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.131475409358325
+          },
+          {
+            "frame": 50770,
+            "reason": "JERK_0_2S",
+            "value": 9.774955344306324
+          },
+          {
+            "frame": 50771,
+            "reason": "JERK_0_2S",
+            "value": 5.138948386454921
+          },
+          {
+            "frame": 50773,
+            "reason": "JERK_0_2S",
+            "value": 8.361254888184476
+          },
+          {
+            "frame": 50774,
+            "reason": "JERK_0_2S",
+            "value": 9.626383761992741
+          },
+          {
+            "frame": 50775,
+            "reason": "JERK_0_2S",
+            "value": 4.856018984489968
+          },
+          {
+            "frame": 50781,
+            "reason": "JERK_0_2S",
+            "value": 6.122036312860419
+          },
+          {
+            "frame": 50782,
+            "reason": "JERK_0_2S",
+            "value": 7.3522021007386735
+          },
+          {
+            "frame": 50785,
+            "reason": "JERK_0_2S",
+            "value": 5.931279761539561
+          },
+          {
+            "frame": 50786,
+            "reason": "JERK_0_2S",
+            "value": 7.518028418901237
+          },
+          {
+            "frame": 50792,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.282786720312288
+          },
+          {
+            "frame": 50792,
+            "reason": "JERK_0_2S",
+            "value": 10.370587627305818
+          },
+          {
+            "frame": 50793,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.6766800878571675
+          },
+          {
+            "frame": 50793,
+            "reason": "JERK_0_2S",
+            "value": 18.824036252259244
+          },
+          {
+            "frame": 50794,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -7.572901843572313
+          },
+          {
+            "frame": 50794,
+            "reason": "JERK_0_2S",
+            "value": 38.829968556943
+          },
+          {
+            "frame": 50795,
+            "reason": "JERK_0_2S",
+            "value": 10.31109617950086
+          },
+          {
+            "frame": 50796,
+            "reason": "JERK_0_2S",
+            "value": 6.512473834694865
+          },
+          {
+            "frame": 50797,
+            "reason": "JERK_0_2S",
+            "value": 18.26888650265331
+          },
+          {
+            "frame": 50798,
+            "reason": "JERK_0_2S",
+            "value": 36.18039595514612
+          },
+          {
+            "frame": 50799,
+            "reason": "JERK_0_2S",
+            "value": 9.488495094786963
+          },
+          {
+            "frame": 50800,
+            "reason": "JERK_0_2S",
+            "value": 18.58765304022168
+          },
+          {
+            "frame": 50801,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.0122246145053966
+          },
+          {
+            "frame": 50801,
+            "reason": "JERK_0_2S",
+            "value": 9.946612595948418
+          },
+          {
+            "frame": 50804,
+            "reason": "JERK_0_2S",
+            "value": 4.166431108544207
+          },
+          {
+            "frame": 50806,
+            "reason": "JERK_0_2S",
+            "value": 9.207613553098405
+          },
+          {
+            "frame": 50807,
+            "reason": "JERK_0_2S",
+            "value": 8.754883582855829
+          },
+          {
+            "frame": 50810,
+            "reason": "JERK_0_2S",
+            "value": 5.737645280027019
+          },
+          {
+            "frame": 50811,
+            "reason": "JERK_0_2S",
+            "value": 4.970756008578863
+          },
+          {
+            "frame": 50812,
+            "reason": "JERK_0_2S",
+            "value": 9.307497982733448
+          },
+          {
+            "frame": 50813,
+            "reason": "JERK_0_2S",
+            "value": 5.151033005040244
+          },
+          {
+            "frame": 50814,
+            "reason": "JERK_0_2S",
+            "value": 3.967226753393467
+          },
+          {
+            "frame": 50815,
+            "reason": "JERK_0_2S",
+            "value": 3.065896206034846
+          },
+          {
+            "frame": 50817,
+            "reason": "JERK_0_2S",
+            "value": 5.485184933849389
+          },
+          {
+            "frame": 50818,
+            "reason": "JERK_0_2S",
+            "value": 9.33787846286088
+          },
+          {
+            "frame": 50821,
+            "reason": "JERK_0_2S",
+            "value": 3.3081277748102593
+          },
+          {
+            "frame": 50822,
+            "reason": "JERK_0_2S",
+            "value": 7.677160823573479
+          },
+          {
+            "frame": 50828,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.7802999074943933
+          },
+          {
+            "frame": 50828,
+            "reason": "JERK_0_2S",
+            "value": 17.727992099861353
+          },
+          {
+            "frame": 50829,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -5.760464325015075
+          },
+          {
+            "frame": 50829,
+            "reason": "JERK_0_2S",
+            "value": 27.884898962607817
+          },
+          {
+            "frame": 50830,
+            "reason": "JERK_0_2S",
+            "value": 7.97058657778861
+          },
+          {
+            "frame": 50832,
+            "reason": "JERK_0_2S",
+            "value": 17.971859879519172
+          },
+          {
+            "frame": 50833,
+            "reason": "JERK_0_2S",
+            "value": 27.76699628866405
+          },
+          {
+            "frame": 50834,
+            "reason": "JERK_0_2S",
+            "value": 8.061975406738462
+          },
+          {
+            "frame": 50838,
+            "reason": "JERK_0_2S",
+            "value": 10.75066899488311
+          },
+          {
+            "frame": 50839,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.410390598904203
+          },
+          {
+            "frame": 50839,
+            "reason": "JERK_0_2S",
+            "value": 12.98290863343673
+          },
+          {
+            "frame": 50840,
+            "reason": "JERK_0_2S",
+            "value": 7.041723454906182
+          },
+          {
+            "frame": 50841,
+            "reason": "JERK_0_2S",
+            "value": 4.778793656753618
+          },
+          {
+            "frame": 50842,
+            "reason": "JERK_0_2S",
+            "value": 4.092100772231456
+          },
+          {
+            "frame": 50843,
+            "reason": "JERK_0_2S",
+            "value": 5.638768044387224
+          },
+          {
+            "frame": 50847,
+            "reason": "JERK_0_2S",
+            "value": 4.952539798408739
+          },
+          {
+            "frame": 50848,
+            "reason": "JERK_0_2S",
+            "value": 4.600981038831296
+          },
+          {
+            "frame": 50850,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.0896690674951506
+          },
+          {
+            "frame": 50850,
+            "reason": "JERK_0_2S",
+            "value": 18.48380471687905
+          },
+          {
+            "frame": 50851,
+            "reason": "JERK_0_2S",
+            "value": 7.341588217441611
+          },
+          {
+            "frame": 50852,
+            "reason": "JERK_0_2S",
+            "value": 6.023212278694758
+          },
+          {
+            "frame": 50853,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.2876080897798308
+          },
+          {
+            "frame": 50853,
+            "reason": "JERK_0_2S",
+            "value": 4.241729794532049
+          },
+          {
+            "frame": 50854,
+            "reason": "JERK_0_2S",
+            "value": 11.823710891340816
+          },
+          {
+            "frame": 50855,
+            "reason": "JERK_0_2S",
+            "value": 4.209066616310226
+          },
+          {
+            "frame": 50857,
+            "reason": "JERK_0_2S",
+            "value": 3.7704112696325387
+          },
+          {
+            "frame": 50860,
+            "reason": "JERK_0_2S",
+            "value": 4.128085431765736
+          },
+          {
+            "frame": 50864,
+            "reason": "JERK_0_2S",
+            "value": 3.234822041126013
+          },
+          {
+            "frame": 50868,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -18.897927318182912
+          },
+          {
+            "frame": 50868,
+            "reason": "JERK_0_2S",
+            "value": 99.52172605801366
+          },
+          {
+            "frame": 50869,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.786947760471228
+          },
+          {
+            "frame": 50869,
+            "reason": "JERK_0_2S",
+            "value": 39.48891618992135
+          },
+          {
+            "frame": 50870,
+            "reason": "JERK_0_2S",
+            "value": 5.4985433993392085
+          },
+          {
+            "frame": 50871,
+            "reason": "JERK_0_2S",
+            "value": 3.3554190803869868
+          },
+          {
+            "frame": 50872,
+            "reason": "JERK_0_2S",
+            "value": 93.46014820918154
+          },
+          {
+            "frame": 50873,
+            "reason": "JERK_0_2S",
+            "value": 34.90432880209634
+          },
+          {
+            "frame": 50875,
+            "reason": "JERK_0_2S",
+            "value": 6.519173148373765
+          },
+          {
+            "frame": 50879,
+            "reason": "JERK_0_2S",
+            "value": 8.367211946867178
+          },
+          {
+            "frame": 50880,
+            "reason": "JERK_0_2S",
+            "value": 9.518766774786268
+          },
+          {
+            "frame": 50883,
+            "reason": "JERK_0_2S",
+            "value": 6.409881465397946
+          },
+          {
+            "frame": 50884,
+            "reason": "JERK_0_2S",
+            "value": 7.641467945424481
+          },
+          {
+            "frame": 50889,
+            "reason": "JERK_0_2S",
+            "value": 5.455436258449078
+          },
+          {
+            "frame": 50890,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.65615342687656
+          },
+          {
+            "frame": 50890,
+            "reason": "JERK_0_2S",
+            "value": 12.152219270475923
+          },
+          {
+            "frame": 50891,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -5.342690382736472
+          },
+          {
+            "frame": 50891,
+            "reason": "JERK_0_2S",
+            "value": 26.127616379597484
+          },
+          {
+            "frame": 50892,
+            "reason": "JERK_0_2S",
+            "value": 8.315435413597015
+          },
+          {
+            "frame": 50893,
+            "reason": "JERK_0_2S",
+            "value": 5.663882645204668
+          },
+          {
+            "frame": 50894,
+            "reason": "JERK_0_2S",
+            "value": 12.39004619134746
+          },
+          {
+            "frame": 50895,
+            "reason": "JERK_0_2S",
+            "value": 25.739008022549957
+          },
+          {
+            "frame": 50896,
+            "reason": "JERK_0_2S",
+            "value": 8.210708363289035
+          },
+          {
+            "frame": 50900,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.705564195147392
+          },
+          {
+            "frame": 50900,
+            "reason": "JERK_0_2S",
+            "value": 12.56584310642619
+          },
+          {
+            "frame": 50902,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.692842974670408
+          },
+          {
+            "frame": 50902,
+            "reason": "JERK_0_2S",
+            "value": 24.391566112255607
+          },
+          {
+            "frame": 50903,
+            "reason": "JERK_0_2S",
+            "value": 8.741294059148425
+          },
+          {
+            "frame": 50904,
+            "reason": "JERK_0_2S",
+            "value": 14.689898955045205
+          },
+          {
+            "frame": 50906,
+            "reason": "JERK_0_2S",
+            "value": 22.396796246891952
+          },
+          {
+            "frame": 50907,
+            "reason": "JERK_0_2S",
+            "value": 7.1592289814951755
+          },
+          {
+            "frame": 50914,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.4870308031157493
+          },
+          {
+            "frame": 50914,
+            "reason": "JERK_0_2S",
+            "value": 13.318906382516026
+          },
+          {
+            "frame": 50915,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.6780801580635036
+          },
+          {
+            "frame": 50915,
+            "reason": "JERK_0_2S",
+            "value": 12.275470574977497
+          },
+          {
+            "frame": 50916,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.8756566406716635
+          },
+          {
+            "frame": 50916,
+            "reason": "JERK_0_2S",
+            "value": 34.27879001469332
+          },
+          {
+            "frame": 50917,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.0068283434342042
+          },
+          {
+            "frame": 50917,
+            "reason": "JERK_0_2S",
+            "value": 9.167826650887667
+          },
+          {
+            "frame": 50918,
+            "reason": "JERK_0_2S",
+            "value": 10.0163308277569
+          },
+          {
+            "frame": 50919,
+            "reason": "JERK_0_2S",
+            "value": 12.851639347932712
+          },
+          {
+            "frame": 50920,
+            "reason": "JERK_0_2S",
+            "value": 34.867753847399605
+          },
+          {
+            "frame": 50921,
+            "reason": "JERK_0_2S",
+            "value": 9.770539172532219
+          },
+          {
+            "frame": 50922,
+            "reason": "JERK_0_2S",
+            "value": 3.7890039140484455
+          },
+          {
+            "frame": 50923,
+            "reason": "JERK_0_2S",
+            "value": 13.037721453151256
+          },
+          {
+            "frame": 50924,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.1617187184321347
+          },
+          {
+            "frame": 50924,
+            "reason": "JERK_0_2S",
+            "value": 10.319120314234832
+          },
+          {
+            "frame": 50925,
+            "reason": "JERK_0_2S",
+            "value": 7.610909244051833
+          },
+          {
+            "frame": 50927,
+            "reason": "JERK_0_2S",
+            "value": 12.459190446410725
+          },
+          {
+            "frame": 50928,
+            "reason": "JERK_0_2S",
+            "value": 10.825534958896156
+          },
+          {
+            "frame": 50929,
+            "reason": "JERK_0_2S",
+            "value": 15.889805090409673
+          },
+          {
+            "frame": 50930,
+            "reason": "JERK_0_2S",
+            "value": 6.787819415901439
+          },
+          {
+            "frame": 50931,
+            "reason": "JERK_0_2S",
+            "value": 9.422370404933567
+          },
+          {
+            "frame": 50932,
+            "reason": "JERK_0_2S",
+            "value": 10.0506907853045
+          },
+          {
+            "frame": 50934,
+            "reason": "JERK_0_2S",
+            "value": 9.04509612997636
+          },
+          {
+            "frame": 50935,
+            "reason": "JERK_0_2S",
+            "value": 8.4818176225146
+          },
+          {
+            "frame": 50936,
+            "reason": "JERK_0_2S",
+            "value": 3.3612360799059893
+          },
+          {
+            "frame": 50938,
+            "reason": "JERK_0_2S",
+            "value": 9.094456262166497
+          },
+          {
+            "frame": 50939,
+            "reason": "JERK_0_2S",
+            "value": 8.52533573589827
+          },
+          {
+            "frame": 50946,
+            "reason": "JERK_0_2S",
+            "value": 5.549850774807983
+          },
+          {
+            "frame": 50947,
+            "reason": "JERK_0_2S",
+            "value": 3.5378335113457915
+          },
+          {
+            "frame": 50948,
+            "reason": "JERK_0_2S",
+            "value": 8.297372321659052
+          },
+          {
+            "frame": 50949,
+            "reason": "JERK_0_2S",
+            "value": 5.036142822657533
+          },
+          {
+            "frame": 50950,
+            "reason": "JERK_0_2S",
+            "value": 4.192189820888351
+          },
+          {
+            "frame": 50951,
+            "reason": "JERK_0_2S",
+            "value": 4.456376821335664
+          },
+          {
+            "frame": 50954,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.3940381151236103
+          },
+          {
+            "frame": 50954,
+            "reason": "JERK_0_2S",
+            "value": 17.639841433077933
+          },
+          {
+            "frame": 50955,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.447808805246031
+          },
+          {
+            "frame": 50955,
+            "reason": "JERK_0_2S",
+            "value": 15.885432684742687
+          },
+          {
+            "frame": 50956,
+            "reason": "JERK_0_2S",
+            "value": 7.2568633533881375
+          },
+          {
+            "frame": 50957,
+            "reason": "JERK_0_2S",
+            "value": 7.689199914052214
+          },
+          {
+            "frame": 50958,
+            "reason": "JERK_0_2S",
+            "value": 16.557840208053847
+          },
+          {
+            "frame": 50959,
+            "reason": "JERK_0_2S",
+            "value": 10.378197522258514
+          },
+          {
+            "frame": 50962,
+            "reason": "JERK_0_2S",
+            "value": 7.20727210520924
+          },
+          {
+            "frame": 50966,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -20.074523238811018
+          },
+          {
+            "frame": 50966,
+            "reason": "JERK_0_2S",
+            "value": 107.99223903068946
+          },
+          {
+            "frame": 50968,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 4.635088584410792
+          },
+          {
+            "frame": 50968,
+            "reason": "JERK_0_2S",
+            "value": 17.139224980005
+          },
+          {
+            "frame": 50970,
+            "reason": "JERK_0_2S",
+            "value": 101.83899746495408
+          },
+          {
+            "frame": 50971,
+            "reason": "JERK_0_2S",
+            "value": 6.658776810986741
+          },
+          {
+            "frame": 50972,
+            "reason": "JERK_0_2S",
+            "value": 24.83244067478678
+          },
+          {
+            "frame": 50974,
+            "reason": "JERK_0_2S",
+            "value": 3.7112961507791944
+          },
+          {
+            "frame": 50975,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -9.616759455624281
+          },
+          {
+            "frame": 50975,
+            "reason": "JERK_0_2S",
+            "value": 50.116219043952356
+          },
+          {
+            "frame": 50976,
+            "reason": "JERK_0_2S",
+            "value": 11.548731745771486
+          },
+          {
+            "frame": 50978,
+            "reason": "JERK_0_2S",
+            "value": 4.942235376550805
+          },
+          {
+            "frame": 50979,
+            "reason": "JERK_0_2S",
+            "value": 46.43138114501841
+          },
+          {
+            "frame": 50980,
+            "reason": "JERK_0_2S",
+            "value": 9.507008188354101
+          },
+          {
+            "frame": 50981,
+            "reason": "JERK_0_2S",
+            "value": 5.087327961904631
+          },
+          {
+            "frame": 50984,
+            "reason": "JERK_0_2S",
+            "value": 5.972220415418873
+          },
+          {
+            "frame": 50985,
+            "reason": "JERK_0_2S",
+            "value": 6.246898316815841
+          },
+          {
+            "frame": 50986,
+            "reason": "JERK_0_2S",
+            "value": 15.404866123686647
+          },
+          {
+            "frame": 50987,
+            "reason": "JERK_0_2S",
+            "value": 7.29987302351985
+          },
+          {
+            "frame": 50988,
+            "reason": "JERK_0_2S",
+            "value": 4.452929730251978
+          },
+          {
+            "frame": 50989,
+            "reason": "JERK_0_2S",
+            "value": 4.305875601064269
+          },
+          {
+            "frame": 50990,
+            "reason": "JERK_0_2S",
+            "value": 13.08963149054832
+          },
+          {
+            "frame": 50991,
+            "reason": "JERK_0_2S",
+            "value": 7.537601825914557
+          },
+          {
+            "frame": 50998,
+            "reason": "JERK_0_2S",
+            "value": 8.707582426354195
+          },
+          {
+            "frame": 50999,
+            "reason": "JERK_0_2S",
+            "value": 7.902084003058306
+          },
+          {
+            "frame": 51002,
+            "reason": "JERK_0_2S",
+            "value": 8.22521975262255
+          },
+          {
+            "frame": 51003,
+            "reason": "JERK_0_2S",
+            "value": 8.281716241884434
+          },
+          {
+            "frame": 51008,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.432275119424607
+          },
+          {
+            "frame": 51008,
+            "reason": "JERK_0_2S",
+            "value": 12.352972915415254
+          },
+          {
+            "frame": 51009,
+            "reason": "JERK_0_2S",
+            "value": 6.239358734545513
+          },
+          {
+            "frame": 51010,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -5.9219494828146715
+          },
+          {
+            "frame": 51010,
+            "reason": "JERK_0_2S",
+            "value": 28.416910405955356
+          },
+          {
+            "frame": 51011,
+            "reason": "JERK_0_2S",
+            "value": 8.414968269848348
+          },
+          {
+            "frame": 51012,
+            "reason": "JERK_0_2S",
+            "value": 12.920648058498529
+          },
+          {
+            "frame": 51013,
+            "reason": "JERK_0_2S",
+            "value": 6.343953074642183
+          },
+          {
+            "frame": 51014,
+            "reason": "JERK_0_2S",
+            "value": 28.564274858162968
+          },
+          {
+            "frame": 51015,
+            "reason": "JERK_0_2S",
+            "value": 8.451049322767881
+          },
+          {
+            "frame": 51020,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.8948016786377706
+          },
+          {
+            "frame": 51020,
+            "reason": "JERK_0_2S",
+            "value": 14.893103185241765
+          },
+          {
+            "frame": 51021,
+            "reason": "JERK_0_2S",
+            "value": 6.688034872005799
+          },
+          {
+            "frame": 51022,
+            "reason": "JERK_0_2S",
+            "value": 8.771032690020624
+          },
+          {
+            "frame": 51023,
+            "reason": "JERK_0_2S",
+            "value": 3.8842753132762557
+          },
+          {
+            "frame": 51024,
+            "reason": "JERK_0_2S",
+            "value": 8.549552614147927
+          },
+          {
+            "frame": 51025,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.5444042730214105
+          },
+          {
+            "frame": 51025,
+            "reason": "JERK_0_2S",
+            "value": 5.194422141701238
+          },
+          {
+            "frame": 51026,
+            "reason": "JERK_0_2S",
+            "value": 5.275397397088035
+          },
+          {
+            "frame": 51027,
+            "reason": "JERK_0_2S",
+            "value": 3.6436429372955117
+          },
+          {
+            "frame": 51028,
+            "reason": "JERK_0_2S",
+            "value": 4.672851843462071
+          },
+          {
+            "frame": 51029,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -14.996887992548924
+          },
+          {
+            "frame": 51029,
+            "reason": "JERK_0_2S",
+            "value": 87.70646072656906
+          },
+          {
+            "frame": 51030,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.2421426357311263
+          },
+          {
+            "frame": 51030,
+            "reason": "JERK_0_2S",
+            "value": 8.575923953601174
+          },
+          {
+            "frame": 51031,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.6207527420008363
+          },
+          {
+            "frame": 51031,
+            "reason": "JERK_0_2S",
+            "value": 9.548270054531068
+          },
+          {
+            "frame": 51033,
+            "reason": "JERK_0_2S",
+            "value": 73.6671765066447
+          },
+          {
+            "frame": 51034,
+            "reason": "JERK_0_2S",
+            "value": 10.813729242452835
+          },
+          {
+            "frame": 51035,
+            "reason": "JERK_0_2S",
+            "value": 16.019268422749793
+          },
+          {
+            "frame": 51036,
+            "reason": "JERK_0_2S",
+            "value": 4.102672180180147
+          },
+          {
+            "frame": 51037,
+            "reason": "JERK_0_2S",
+            "value": 5.877387185599271
+          },
+          {
+            "frame": 51038,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.089594221138347
+          },
+          {
+            "frame": 51038,
+            "reason": "JERK_0_2S",
+            "value": 10.050986658016482
+          },
+          {
+            "frame": 51040,
+            "reason": "JERK_0_2S",
+            "value": 6.896017941534802
+          },
+          {
+            "frame": 51042,
+            "reason": "JERK_0_2S",
+            "value": 6.538075578393931
+          },
+          {
+            "frame": 51044,
+            "reason": "JERK_0_2S",
+            "value": 6.97466060684633
+          },
+          {
+            "frame": 51046,
+            "reason": "JERK_0_2S",
+            "value": 3.09835750641917
+          },
+          {
+            "frame": 51048,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -17.728946199928444
+          },
+          {
+            "frame": 51048,
+            "reason": "JERK_0_2S",
+            "value": 97.46816736975029
+          },
+          {
+            "frame": 51049,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.302350956832962
+          },
+          {
+            "frame": 51049,
+            "reason": "JERK_0_2S",
+            "value": 7.291971570697658
+          },
+          {
+            "frame": 51050,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 3.21037805748749
+          },
+          {
+            "frame": 51050,
+            "reason": "JERK_0_2S",
+            "value": 9.043637383177929
+          },
+          {
+            "frame": 51051,
+            "reason": "JERK_0_2S",
+            "value": 7.595808884970621
+          },
+          {
+            "frame": 51052,
+            "reason": "JERK_0_2S",
+            "value": 90.34407783626237
+          },
+          {
+            "frame": 51053,
+            "reason": "JERK_0_2S",
+            "value": 17.385829157558387
+          },
+          {
+            "frame": 51054,
+            "reason": "JERK_0_2S",
+            "value": 7.909374339091378
+          },
+          {
+            "frame": 51056,
+            "reason": "JERK_0_2S",
+            "value": 4.563309980881643
+          },
+          {
+            "frame": 51057,
+            "reason": "JERK_0_2S",
+            "value": 6.369428007065905
+          },
+          {
+            "frame": 51058,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -7.905392541947637
+          },
+          {
+            "frame": 51058,
+            "reason": "JERK_0_2S",
+            "value": 47.66947720294981
+          },
+          {
+            "frame": 51059,
+            "reason": "JERK_0_2S",
+            "value": 10.182641365325741
+          },
+          {
+            "frame": 51062,
+            "reason": "JERK_0_2S",
+            "value": 37.84616896306859
+          },
+          {
+            "frame": 51063,
+            "reason": "JERK_0_2S",
+            "value": 9.567697803999291
+          },
+          {
+            "frame": 51064,
+            "reason": "JERK_0_2S",
+            "value": 5.5318786448971435
+          },
+          {
+            "frame": 51066,
+            "reason": "JERK_0_2S",
+            "value": 4.3821498722300145
+          },
+          {
+            "frame": 51068,
+            "reason": "JERK_0_2S",
+            "value": 3.595558005302245
+          },
+          {
+            "frame": 51069,
+            "reason": "JERK_0_2S",
+            "value": 5.2096851561197255
+          },
+          {
+            "frame": 51070,
+            "reason": "JERK_0_2S",
+            "value": 4.967278350914693
+          },
+          {
+            "frame": 51071,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -6.9677192423415715
+          },
+          {
+            "frame": 51071,
+            "reason": "JERK_0_2S",
+            "value": 37.64708657049311
+          },
+          {
+            "frame": 51072,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": 2.018714355754623
+          },
+          {
+            "frame": 51072,
+            "reason": "JERK_0_2S",
+            "value": 7.5205139028857
+          },
+          {
+            "frame": 51074,
+            "reason": "JERK_0_2S",
+            "value": 9.357169510229472
+          },
+          {
+            "frame": 51075,
+            "reason": "JERK_0_2S",
+            "value": 35.17811054059327
+          },
+          {
+            "frame": 51076,
+            "reason": "JERK_0_2S",
+            "value": 11.320217430542842
+          },
+          {
+            "frame": 51077,
+            "reason": "JERK_0_2S",
+            "value": 4.124647456380053
+          },
+          {
+            "frame": 51079,
+            "reason": "JERK_0_2S",
+            "value": 6.072177205197898
+          },
+          {
+            "frame": 51080,
+            "reason": "JERK_0_2S",
+            "value": 7.178697638322006
+          },
+          {
+            "frame": 51081,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -4.775876507965703
+          },
+          {
+            "frame": 51081,
+            "reason": "JERK_0_2S",
+            "value": 24.313051015299475
+          },
+          {
+            "frame": 51082,
+            "reason": "JERK_0_2S",
+            "value": 8.601281006374194
+          },
+          {
+            "frame": 51083,
+            "reason": "JERK_0_2S",
+            "value": 7.567400427953436
+          },
+          {
+            "frame": 51084,
+            "reason": "JERK_0_2S",
+            "value": 5.0950720206450635
+          },
+          {
+            "frame": 51085,
+            "reason": "JERK_0_2S",
+            "value": 22.823493247012046
+          },
+          {
+            "frame": 51086,
+            "reason": "JERK_0_2S",
+            "value": 6.586197207856432
+          },
+          {
+            "frame": 51094,
+            "reason": "JERK_0_2S",
+            "value": 10.937104292674261
+          },
+          {
+            "frame": 51095,
+            "reason": "JERK_0_2S",
+            "value": 10.321023558016886
+          },
+          {
+            "frame": 51096,
+            "reason": "JERK_0_2S",
+            "value": 3.498725885055097
+          },
+          {
+            "frame": 51098,
+            "reason": "JERK_0_2S",
+            "value": 8.240003974047179
+          },
+          {
+            "frame": 51099,
+            "reason": "JERK_0_2S",
+            "value": 9.14678556037298
+          },
+          {
+            "frame": 51100,
+            "reason": "JERK_0_2S",
+            "value": 6.278494591874138
+          },
+          {
+            "frame": 51102,
+            "reason": "JERK_0_2S",
+            "value": 4.850554785373654
+          },
+          {
+            "frame": 51103,
+            "reason": "JERK_0_2S",
+            "value": 5.938185123530184
+          },
+          {
+            "frame": 51104,
+            "reason": "JERK_0_2S",
+            "value": 8.72351737564039
+          },
+          {
+            "frame": 51105,
+            "reason": "LONGITUDINAL_ACCELERATION",
+            "value": -3.064556878104754
+          },
+          {
+            "frame": 51105,
+            "reason": "JERK_0_2S",
+            "value": 13.972868953131922
+          },
+          {
+            "frame": 51106,
+            "reason": "JERK_0_2S",
+            "value": 3.31083767770335
+          }
+        ],
+        "maximum_jerk_0_2s_mps3": 107.99223903068946,
+        "oscillations": [
+          {
+            "frame": 50625,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50627,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50634,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50636,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50653,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50655,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50662,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50664,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50670,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50672,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50678,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50680,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50687,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50689,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50706,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50708,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50769,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50771,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50781,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50783,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50794,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50796,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50800,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50806,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50817,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50819,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50829,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50831,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50838,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50840,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50879,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50881,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50891,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50893,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50902,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50904,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50916,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50918,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50923,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50930,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50936,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50938,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50940,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50942,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50968,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50975,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50977,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50986,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50988,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 50998,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51000,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51010,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51012,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51029,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51031,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51048,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51050,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51058,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51060,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51071,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51073,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51081,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51083,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51094,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          },
+          {
+            "frame": 51096,
+            "kind": "pedal",
+            "context": [
+              null,
+              "NAVIGATION"
+            ]
+          }
+        ],
+        "camera": null,
+        "missing_measurements": [],
+        "evidence_note": "Every recorded frame is included, including startup/terminal holds and frames without decisions. Stops require independent review; no logged reason automatically authorizes a stop. Browser performance is audited separately."
+      },
+      "video": {
+        "status": "READY",
+        "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+        "clock": "SIMULATION_TIME",
+        "frames": 515,
+        "first_timestamp_s": 2289.5514487326145,
+        "last_timestamp_s": 2315.2514491155744,
+        "duration_s": 25.700000382959843,
+        "video": "driving.mp4",
+        "sha256": "a963fe4e631fb890e90ff422ee125e6562ffb55ca5b328b10e963809efbe0093",
+        "frame_index": "telemetry/video-frames.jsonl",
+        "clock_zero_timestamp_s": 2289.5514487326145,
+        "alignment_source": "ADMITTED_JOURNEY_START",
+        "maximum_frame_gap_s": 0.05000000074505806,
+        "verified_sha256": "a963fe4e631fb890e90ff422ee125e6562ffb55ca5b328b10e963809efbe0093",
+        "checksum_matches": true
+      },
+      "recording_status": {
+        "incomplete": false,
+        "error": null,
+        "dropped_frames": 0,
+        "dropped_events": 0,
+        "dropped_trace_rows": 0,
+        "first_dropped_frame": null,
+        "last_dropped_frame": null,
+        "written_frames": 516,
+        "queued_bytes": 0,
+        "pending_items": 0,
+        "finalized": true
+      }
+    }
+  },
+  "accepted": false
+}

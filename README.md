@@ -4,13 +4,22 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [17 October reliable-driving repair](docs/RELIABLE_DRIVING_20261017.md)
+separates unclassified surfaces from recognized road users, simplifies the main
+screen to one task action plus Details and Emergency stop, and adds stricter
+timing, recovery and measured-quality evidence. **Native driving acceptance
+failed:** dense freshness, comfort, camera throughput and complete automatic
+playback remain unaccepted. The clear-road probe reached 49.94 km/h and arrived,
+but failed quality gates. All failed attempts remain recorded; the final
+cleanup and semantic changes have offline verification only.
+
 The [17 October ordinary route bypass repair](docs/RULE_ROUTE_BYPASS_20261017.md)
 adds a separately admitted low-speed owner for measured stationary blockages,
 including legal lane passing, return and handover to ordinary cruising. Restart
 now requests up to **40 vehicles along its route and 30 native pedestrians**, with
 actual capacity visible. Its scoped native evidence is separate from full hybrid
 acceptance and includes the failed diagnostic revisions.
-The latest dense Restart rehearsal still failed with a synchronized-scene timeout
+That report's dense Restart rehearsal failed with a synchronized-scene timeout
 after 18.10 m; its rear-corner deadlock is reproducible offline. Normal and paired
 playback were not reached in that rehearsal. See the report's remaining P0 work.
 

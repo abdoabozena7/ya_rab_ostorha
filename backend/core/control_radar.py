@@ -20,17 +20,18 @@ def measured_returns(observation,poses):
         if abs(angles[0])+abs(angles[1])>1e-5:continue
         yaw=math.radians(angles[2]);mount_r=rotation(yaw)
         sensor_velocity=r.T@((origin+r@position[:2])-(prior_origin+prior_r@position[:2]))/dt
-        for d in channel.data.get('detections',()):
-            distance=d['depth_m'];az=d['azimuth_rad'];alt=d['altitude_rad'];velocity=d['velocity_mps']
-            if not np.isfinite([distance,az,alt,velocity]).all() or distance<=0:continue
-            direction=mount_r@np.array([math.cos(alt)*math.cos(az),math.cos(alt)*math.sin(az)])
-            xyz=np.r_[position[:2]+distance*direction,position[2]+distance*math.sin(alt)]
-            if .25<xyz[2]<2.5 and abs(alt)<.2:
-                # CARLA 0.9.16 Radar.cpp reports (target - sensor) dot ray.
-                # Its sensor velocity is a finite pose difference, not the
-                # instantaneous terminal speed during a hard brake.
-                rows.append([*xyz,*direction,velocity+float(direction@sensor_velocity)])
-    return np.asarray(rows,float).reshape(-1,6)
+        detections=channel.data.get('detections',())
+        if not detections:continue
+        data=np.asarray([[d[k] for k in ('depth_m','azimuth_rad','altitude_rad','velocity_mps')] for d in detections],float)
+        data=data[np.isfinite(data).all(axis=1)&(data[:,0]>0)]
+        if not len(data):continue
+        distance,az,alt,velocity=data.T
+        direction=np.column_stack((np.cos(alt)*np.cos(az),np.cos(alt)*np.sin(az)))@mount_r.T
+        xyz=np.column_stack((position[:2]+distance[:,None]*direction,position[2]+distance*np.sin(alt)))
+        valid=(xyz[:,2]>.25)&(xyz[:,2]<2.5)&(np.abs(alt)<.2)
+        # Same Doppler sign, finite pose velocity, bounds and return order.
+        rows.append(np.column_stack((xyz,direction,velocity+direction@sensor_velocity))[valid])
+    return np.concatenate(rows) if rows else np.empty((0,6))
 
 
 def observable_velocity(directions,speeds,prior):

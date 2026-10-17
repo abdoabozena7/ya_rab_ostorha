@@ -80,6 +80,13 @@ export class PredictionView {
     finally{this.busy=false;}
   }
   draw(camera) {
+    // Route-only view needs no supplementary predictions. Critical safety
+    // decisions and their recording are independent of these display requests.
+    if(document.body.classList.contains('sequential-drive')&&!document.querySelector('#cockpitDetails[open]')&&
+      !document.querySelector('#unifiedMap.map-expanded')){
+      this.canvas.hidden=true;this.label.hidden=true;
+      this.currentPrediction=this.provider.safetySystem?.prediction||null;return;
+    }
     this.poll();this.pollFrame(camera);
     const p=this.provider, latest=p.safetySystem?.prediction||this.observed, img=document.getElementById('authoritativeCamera');
     const applied=latest?.applied_decision_prediction;

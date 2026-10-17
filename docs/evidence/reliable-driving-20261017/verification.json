@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "accepted": false,
+  "native_driving_acceptance": "FAILED",
+  "source_fingerprint": "a7f1f2bdff5db5b9b70bbdf785a432b312a0d20c71fdb0e7a6593454cfdeb51c",
+  "final_source_native_cohort": false,
+  "native_source_note": "Last recovery-source.json precedes final changed-fixture cleanup and semantic association corrections; those final corrections have offline verification only.",
+  "tests": {
+    "javascript_passed": 130,
+    "python_discovered": 574,
+    "python_passed": 573,
+    "python_optional_skipped": 1,
+    "dashboard_build": "PASSED",
+    "saved_playback_browser_checks": 11,
+    "keyboard_playback_browser_checks": 6
+  },
+  "probes": [
+    {
+      "id": "6f17b48e88fd45e1b8f2ebb5c3e22c71",
+      "evidence": "probe-6f17b48e88fd45e1b8f2ebb5c3e22c71.json"
+    },
+    {
+      "id": "a26286d6b8c247deaebfd717f6ae100b",
+      "evidence": "probe-a26286d6b8c247deaebfd717f6ae100b.json"
+    },
+    {
+      "id": "caf3e859a570426c8eb91dc6a70031d0",
+      "evidence": "probe-caf3e859a570426c8eb91dc6a70031d0.json"
+    },
+    {
+      "id": "2cc897a7b0cb42a696e57461b639bc47",
+      "evidence": "probe-2cc897a7b0cb42a696e57461b639bc47.json"
+    }
+  ],
+  "dense_seeds": [
+    320418473,
+    912833484,
+    850261841
+  ],
+  "dense_final_revision_completed_pairs": 0,
+  "complete_automatic_presentations": 0,
+  "automatic_paired_playback_verified": false,
+  "manual_saved_pair_playback_verified": true,
+  "manual_saved_pair_playback_maximum_drift_s": 0.01105699999999965,
+  "source_manifest": "final-source.json",
+  "native_budget_at_packaging": {
+    "scope": "NATIVE_RULE_REPAIR",
+    "hard_cap_s": 3600,
+    "charged_s": 3600,
+    "remaining_s": 0.0,
+    "expires_at": 1792262090.6603076,
+    "ticket": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\native-rule-validation\\repair-dd7eda35f8c642b68c6feeb687d62a03.json"
+  },
+  "old_hybrid_ledger": {
+    "cap_s": 14400.0,
+    "used_s": 14261.838707315263,
+    "remaining_s": 138.16129268473742
+  },
+  "cleanup": {
+    "native_processes_after_shutdown": [],
+    "method": "Identified backend retired and official CARLA runtime stopped with scripts.final_runtime --release-gpu",
+    "dashboard": "SDK-free stopped backend.server at 127.0.0.1:8000",
+    "native_owner": null
+  },
+  "missing_or_failed_gates": [
+    "final revision dense arrival all three seeds",
+    "zero unjustified holds",
+    "independent every-stop audit",
+    "physical comfort",
+    "stable unobstructed 20/30/50 cruise",
+    "15 fps in every 10-second window",
+    "250 ms maximum display gap",
+    "simulation/wall >= 0.9",
+    "rear-corner physical-bounds reconciliation",
+    "all maneuver and hazard regressions",
+    "complete automatic playback/results"
+  ],
+  "scope_exclusions": [
+    "Full hybrid admission",
+    "reverse admission",
+    "injected tests as driving acceptance"
+  ],
+  "raw_recordings_committed": false
+}
