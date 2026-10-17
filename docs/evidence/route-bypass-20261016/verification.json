@@ -1,0 +1,87 @@
+{
+  "source": "NATIVE_REHEARSAL_AND_OFFLINE_VERIFICATION",
+  "javascript": {
+    "passed": 126,
+    "failed": 0
+  },
+  "python": {
+    "discovered": 556,
+    "passed": 555,
+    "skipped": 1,
+    "failed": 0
+  },
+  "dashboard_rebuilt": true,
+  "native_scoped_bypass_accepted": true,
+  "full_dense_rehearsal_passed": false,
+  "dense_rehearsal": {
+    "id": "a021fce3370643a1bdab82bb4c6675d7",
+    "seed": 320418473,
+    "requested_speed_kmh": 50,
+    "initial_vehicles": 24,
+    "initial_pedestrians": 30,
+    "initial_front_vehicles": 10,
+    "initial_front_pedestrians": 27,
+    "original_runtime_fault": {
+      "stage": "hybrid_execution",
+      "exception_type": "ControlSceneTimeout",
+      "message": "Current synchronized sensor scene unavailable for one second",
+      "evaluation_frame": 96705,
+      "timestamp_s": 2746.0421167835593,
+      "observer_only": null,
+      "processing_ms": null
+    },
+    "recording_status": {
+      "incomplete": false,
+      "error": null,
+      "dropped_frames": 0,
+      "dropped_events": 0,
+      "dropped_trace_rows": 0,
+      "first_dropped_frame": null,
+      "last_dropped_frame": null,
+      "written_frames": 2924,
+      "queued_bytes": 0,
+      "pending_items": 0,
+      "finalized": true
+    },
+    "normal_recorded": false,
+    "paired_playback_verified": false,
+    "post_run_contacts_note": "Following the recorded runtime stop, surrounding native traffic continued and later contacted the held ego. These contacts are outside the closed run and do not establish safe post-stop exposure."
+  },
+  "budgets": {
+    "original_hybrid": {
+      "cap_s": 14400.0,
+      "used_s": 14261.838707315263,
+      "remaining_s": 138.16129268473742
+    },
+    "separate_rule_extension": {
+      "scope": "NATIVE_RULE_VALIDATION",
+      "allowance_s": 1200.0,
+      "started_at": 1792237241.473777,
+      "expires_at": 1792238441.473777,
+      "authorization": "Explicit user authorization for native RULE integration validation only"
+    },
+    "extension_observed_status": {
+      "charged_s": 1006.1541492938995,
+      "hard_cap_s": 1200.0,
+      "remaining_s": 193.84585070610046,
+      "recommended_run_allowance_s": 300.0,
+      "scope": "NATIVE_RULE_VALIDATION",
+      "expires_at": 1792238441.473777,
+      "ticket": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\native-rule-validation\\validation-1a6f63c71cca4140a1463404e79ca776.json"
+    }
+  },
+  "limits": [
+    "Native clear-lane probes are separate from dense-traffic acceptance.",
+    "The display-publication-only archive exception is disclosed in acceptance.json.",
+    "Stationary rear-corner conflict and dense timing remain unresolved.",
+    "Full hybrid acceptance and guaranteed alternate-street completion remain unproven."
+  ],
+  "rehearsal_end": {
+    "validation_backend_stopped": true,
+    "app_restored_connected": true,
+    "mode": "PAUSED",
+    "current_controller": "RULE",
+    "limited_bypass_admitted": true,
+    "native_validation_ticket_active": false
+  }
+}

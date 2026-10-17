@@ -4,6 +4,16 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [17 October ordinary route bypass repair](docs/RULE_ROUTE_BYPASS_20261017.md)
+adds a separately admitted low-speed owner for measured stationary blockages,
+including legal lane passing, return and handover to ordinary cruising. Restart
+now requests up to **40 vehicles along its route and 30 native pedestrians**, with
+actual capacity visible. Its scoped native evidence is separate from full hybrid
+acceptance and includes the failed diagnostic revisions.
+The latest dense Restart rehearsal still failed with a synchronized-scene timeout
+after 18.10 m; its rear-corner deadlock is reproducible offline. Normal and paired
+playback were not reached in that rehearsal. See the report's remaining P0 work.
+
 The [16 October surface-motion repair](docs/STATIC_SURFACE_MOTION_REPAIR_20261016.md)
 checks actual displacement before RULE predicts a crossing, separates sloped
 ground from object returns, and keeps unclassified obstacles distinct from
@@ -250,6 +260,6 @@ Traffic populations and pedestrians activate only by explicit dashboard applicat
 
 The [14 October congestion recovery report](docs/CONGESTION_RECOVERY_20261014.md)
 documents the bounded repositioning implementation and its failed native
-acceptance. Reverse/lateral recovery, rule exceptions and extra depth cameras
-remain gated off. Fresh sensor health can now clear a historical fault while the
+acceptance. That recovery prototype and its rule exceptions remain gated off;
+the later ordinary bypass has its own scoped evidence and surround rig. Fresh sensor health can now clear a historical fault while the
 vehicle stays held; the cockpit keeps controller names out of its main status.

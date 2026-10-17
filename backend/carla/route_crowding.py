@@ -1,4 +1,23 @@
 """Route-sized native traffic placement. Environment generation, never ego sensing."""
+def sidewalk_route_candidates(candidates,points,ego_transform):
+    """Rank existing native sidewalk/navmesh points along the route ahead.
+
+    Candidates were already verified outside driving lanes. This does not
+    fabricate pedestrians in the road or script an inevitable collision.
+    """
+    f=ego_transform.get_forward_vector();origin=ego_transform.location
+    ranked=[]
+    for candidate in candidates:
+        location=candidate[0]
+        gap=min(location.distance(p) for p in points)
+        if gap>22.:continue
+        forward=(location.x-origin.x)*f.x+(location.y-origin.y)*f.y
+        distance=location.distance(origin)
+        rank=(0 if 12.<forward<100. else 1,gap+distance*.08)
+        ranked.append((rank,candidate))
+    # A route without usable sidewalk retains the real local candidates;
+    # spawning on a driving surface is never a fallback.
+    return [c for _,c in sorted(ranked,key=lambda item:item[0])] or candidates
 def destination_key(route):
     target = (route or {}).get('destination') or {}
     return {'map': target.get('map'), 'location': target.get('location')}

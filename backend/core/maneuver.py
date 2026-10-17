@@ -139,9 +139,8 @@ class ObservedSpace:
         return float(distance[end]) if end>=0 else 0.
 
 
-def route_path(speed,acceleration,offset,road,geometry,cap):
-    v=np.clip(speed+acceleration*GRID,0.,max(speed,cap))
-    distance=np.r_[0.,np.cumsum((v[:-1]+v[1:])*.05)]
+def spatial_route(offset,road,distance):
+    distance=np.asarray(distance,float)
     line=np.asarray(road.get('centerline',[[0.,0.],[50.,0.]]),float)
     if len(line)<2 or line.shape[1]!=2 or not np.isfinite(line).all():raise ValueError('Invalid local road centerline')
     lengths=np.linalg.norm(np.diff(line,axis=0),axis=1);arc=np.r_[0.,np.cumsum(lengths)]
@@ -149,13 +148,42 @@ def route_path(speed,acceleration,offset,road,geometry,cap):
     if len(line)<2:raise ValueError('Degenerate local road centerline')
     xy=np.column_stack([np.interp(distance,arc,line[:,i]) for i in (0,1)])
     tangent=np.gradient(xy,axis=0);heading=np.unwrap(np.arctan2(tangent[:,1],tangent[:,0]))
-    u=GRID/3.5;blend=10*u**3-15*u**4+6*u**5
+    # A lane transition is a spatial curve, not a lateral animation on a timer.
+    # At creep speed a timed 3.5 m shift could rotate the body toward the curb
+    # while it had advanced only centimetres. Bound curvature by spreading the
+    # remaining lateral displacement over sufficient actual forward travel.
+    transition=max(8.,abs(offset+line[0,1])*3.)
+    u=np.clip(distance/transition,0.,1.);blend=10*u**3-15*u**4+6*u**5
     displacement=-line[0,1]+(offset+line[0,1])*blend
     xy+=displacement[:,None]*np.column_stack((-np.sin(heading),np.cos(heading)))
     xy-=xy[0]
     delta=np.gradient(xy,axis=0);yaw=np.unwrap(np.arctan2(delta[:,1],delta[:,0]))
+    return np.column_stack((distance,xy,yaw))
+
+
+def route_path(speed,acceleration,offset,road,geometry,cap):
+    v=np.clip(speed+acceleration*GRID,0.,max(speed,cap))
+    distance=np.r_[0.,np.cumsum((v[:-1]+v[1:])*.05)]
+    curve=spatial_route(offset,road,distance);xy=curve[:,1:3];yaw=curve[:,3]
     if speed<.1 and acceleration<=0:xy[:]=0.;yaw[:]=0.
     return np.column_stack((GRID,xy,yaw)),v
+
+
+def stationary_route_blocker(tracks,path,geometry,lookahead):
+    """Reject a known blocked escape corridor beyond the short control lease.
+
+    This is only a negative geometric screen. Absence of a track never certifies
+    free space; fresh body/stopping/dynamic admission is still required.
+    """
+    from .motion_geometry import path_coordinates
+    for track in tracks:
+        if not track.get('confirmed') or track.get('occlusion_s',0)>.1 or np.linalg.norm(track['velocity_mps'])>=.75:continue
+        x,y=track['position_m'];hx,hy=track['half_size_m']
+        if x+hx<0:continue
+        along,lateral=path_coordinates([x],[y],path)
+        if along[0]-hx<lookahead and lateral[0]<geometry.half_width_m+hy+.25:
+            return track['id']
+    return None
 
 
 class ManeuverValidator:

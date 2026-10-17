@@ -2,7 +2,7 @@ import math
 import unittest
 from types import SimpleNamespace as NS
 from unittest.mock import MagicMock
-from backend.carla.route_crowding import route_slots
+from backend.carla.route_crowding import route_slots,sidewalk_route_candidates
 from backend.core.service import SimulationService
 from backend.core.control import ControlMode
 from tests.core_packets import packet
@@ -40,6 +40,21 @@ def route(length, parallel=False):
 
 
 class RouteCrowdingTests(unittest.TestCase):
+    def test_requested_fleet_limit_retains_traffic_near_start_and_destination(self):
+        slots,report=route_slots(route(600,True),Location(),API,maximum=40)
+        self.assertEqual(len(slots),40)
+        self.assertLess(min(s['distance_m'] for s in slots),40.)
+        self.assertGreater(max(s['distance_m'] for s in slots),570.)
+        self.assertTrue(report['capacity_capped'])
+
+    def test_native_sidewalk_selection_prefers_route_ahead_over_nearer_rear_streets(self):
+        points=[Location(x) for x in range(0,120,4)]
+        candidates=[(Location(-30,4),1,1),(Location(40,5),1,1),(Location(45,80),2,1)]
+        ranked=sidewalk_route_candidates(candidates,points,Transform(Location()))
+        self.assertEqual(ranked[0],candidates[1])
+        self.assertNotIn(candidates[2],ranked)
+        self.assertEqual(sidewalk_route_candidates([candidates[2]],points,Transform(Location())),[candidates[2]])
+
     def test_count_scales_with_road_length_and_includes_nearby_and_distant_traffic(self):
         short,a=route_slots(route(120,True),Location(),API)
         long,b=route_slots(route(480,True),Location(),API)
@@ -85,6 +100,22 @@ class RouteCrowdingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'destination changed'):
             manager.crowd_route({'id':'new'},route(120),{'route_id':'old'})
         manager.clear_traffic.assert_not_called()
+
+    def test_automatic_native_capacity_preserves_requested_count_and_failed_attempts(self):
+        from backend.carla.population import WorldPopulationManager
+        manager=object.__new__(WorldPopulationManager)
+        manager.vehicles={1,2};manager.config={'vehicle_count':3}
+        manager.route_crowding={'target_count':3,'requested_count':40}
+        manager.spawn_report={'npc_failed':1};manager.actual={'vehicles':0}
+        manager.admit_route_capacity()
+        self.assertEqual(manager.config['vehicle_count'],2)
+        self.assertEqual(manager.route_crowding['requested_count'],40)
+        self.assertEqual(manager.route_crowding['planned_target_count'],3)
+        self.assertEqual(manager.route_crowding['initial_native_shortfall'],1)
+        self.assertEqual(manager.spawn_report['npc_failed'],1)
+        self.assertEqual(manager.actual['vehicles'],0)
+        manager.vehicles=set()
+        with self.assertRaisesRegex(ValueError,'No route traffic'):manager.admit_route_capacity()
 
     def test_dashboard_crowding_requires_stopped_ego_and_no_recording(self):
         service=SimulationService(None);service._publish(packet(speed=0))

@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "map": "Town10HD_Opt",
+  "maneuver_speed_mps": 2.0,
+  "stationary_confirmation_s": 0.4,
+  "accepted_sides": ["left", "right"],
+  "reason": "Scoped native left/right passing, ordinary resumption, occupied-lane and red-signal checks passed. Maneuvers target at most 2 m/s; full hybrid acceptance remains separate."
+}

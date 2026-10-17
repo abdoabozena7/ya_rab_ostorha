@@ -1,0 +1,11 @@
+{
+  "source": "RECORDED_NATIVE_PREDICTION_OFFLINE_COPY_BENCHMARK",
+  "recording_id": "run_b2eee38322534f819677c2ff0d2a55c8",
+  "frame_id": 74754,
+  "track_count": 37,
+  "samples": 30,
+  "old_display_copy_p50_ms": 13.496700000359851,
+  "new_display_view_p50_ms": 0.24615000029371004,
+  "native_timing_acceptance": false,
+  "control_forecasts_changed": false
+}

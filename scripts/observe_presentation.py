@@ -9,10 +9,14 @@ from scripts.final_runtime import state
 
 def compact(s):
     stop=s.get('stopDiagnostics') or {}
+    population=s.get('population') or {};maneuver=s.get('maneuver') or {}
     return {'wall_s':time.time(), 'connected':s.get('connected'), 'mode':s.get('mode'),
         'presentation':s.get('presentation'), 'journey':s.get('journey'),
         'vehicle':{k:(s.get('vehicle') or {}).get(k) for k in ('frame','timestamp','speedKmh','brake')},
-        'stop':{k:stop.get(k) for k in ('reason','decision_source','stopped_for_s','sensor_wall_age_s','control_timing_ms')},
+        'stop':{k:stop.get(k) for k in ('reason','decision_source','stopped_for_s','sensor_wall_age_s','control_timing_ms','runtime_fault','safety_fault')},
+        'control_scene':s.get('controlScene'),
+        'population':{k:population.get(k) for k in ('requested','actual','route_crowding','local_sector_counts','local_counts','walker_controllers_ready')},
+        'maneuver':{k:maneuver.get(k) for k in ('action','phase','scope','reason','target_speed_kmh','rejected')},
         'comparison':{'pair_id':(s.get('journeyComparison') or {}).get('pair_id'),
             'conditions_match':(s.get('journeyComparison') or {}).get('conditions_match'),
             'runs':{m:{k:r.get(k) for k in ('id','status','reason','recording','duration_s','distance_m','collisions',
@@ -25,7 +29,7 @@ def main():
     parser.add_argument('--output',default='output/presentation-native-observation.json')
     args=parser.parse_args();target=Path(args.output);target.parent.mkdir(parents=True,exist_ok=True)
     roots=[Path('backend'),Path('frontend')]
-    files=[Path('index.html')]+[p for root in roots for p in root.rglob('*') if p.suffix in ('.py','.js','.css')]
+    files=[Path('index.html'),Path(__file__)]+[p for root in roots for p in root.rglob('*') if p.suffix in ('.py','.js','.css')]
     hashes={p.as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     rows=[];prior=None;deadline=time.monotonic()+args.seconds
     while time.monotonic()<deadline:

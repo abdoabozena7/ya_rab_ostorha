@@ -1,0 +1,371 @@
+{
+  "source": "RETAINED_NATIVE_PRESENTATION_RECORDINGS",
+  "presentations": [
+    {
+      "id": "162b52b89ba5429fb2cddb7b6bea9ad9",
+      "status": "ERROR",
+      "reason": "Wait for confirmed route traffic before starting",
+      "seed": 850261841,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            100.63584899902344,
+            -50.60443878173828,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 264.5237088994975,
+        "origin_index": 80,
+        "population": {
+          "vehicle_count": 20,
+          "pedestrian_count": 30,
+          "speed_behavior": "FAST",
+          "seed": 850261841,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "ROUTE",
+          "vehicle_mix": "MIXED"
+        },
+        "requested_route_vehicles": 40,
+        "requested_route_pedestrians": 30,
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 6452.593,
+          "timestamp_s": 1506.8079067319632
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 6452.625,
+          "timestamp_s": 1506.8079067319632
+        },
+        {
+          "status": "READY",
+          "wall_s": 6453.75,
+          "timestamp_s": 1506.8579067327082
+        },
+        {
+          "status": "ERROR",
+          "wall_s": 6455.5,
+          "timestamp_s": 1507.3579067401588
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "ed00bcf6c5aef4a41d7acaabd4897297206c793d793c304f7b6b1a0888224511",
+      "pair_id": null,
+      "runs": {}
+    },
+    {
+      "id": "7b475626d62e4075a5a2eabb68be0c7d",
+      "status": "ERROR",
+      "reason": "runtime_failure",
+      "seed": 912833484,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            -114.2754135131836,
+            47.62446594238281,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 266.46573230486626,
+        "origin_index": 152,
+        "population": {
+          "vehicle_count": 27,
+          "pedestrian_count": 30,
+          "speed_behavior": "FAST",
+          "seed": 912833484,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "ROUTE",
+          "vehicle_mix": "MIXED"
+        },
+        "planned_vehicle_capacity": 24,
+        "requested_route_vehicles": 40,
+        "requested_route_pedestrians": 30,
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 7370.703,
+          "timestamp_s": 1985.3821892999113
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 7370.718,
+          "timestamp_s": 1985.3821892999113
+        },
+        {
+          "status": "READY",
+          "wall_s": 7371.453,
+          "timestamp_s": 1985.4321893006563
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 7377.968,
+          "timestamp_s": 1987.3821893297136
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 7379.046,
+          "timestamp_s": 1987.5821893326938
+        },
+        {
+          "status": "ERROR",
+          "wall_s": 7479.109,
+          "timestamp_s": 2007.3321896269917
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "31f5fc69bd10e8b781941c3cf0a9c87c00d1c4d43ad559d36edcd95be24fa386",
+      "pair_id": "9930f97054cc4f2cad0c652b5beae6e2",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "0f0249e82f194749805eb2e8185e0580",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "duration_s": 19.750000294297934,
+          "distance_m": 0.5417545249246809,
+          "route_completion_percent": 0.0,
+          "destination_reached": false,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 0,
+          "safety_interventions": 68,
+          "safety_intervention_s": 4.400000065565109,
+          "mean_speed_kmh": 0.11684712076354142,
+          "maximum_speed_kmh": 3.1862606162133233,
+          "samples": 386,
+          "sensor_coverage_percent": 76.94300518134715,
+          "recording_id": "run_b2eee38322534f819677c2ff0d2a55c8",
+          "maximum_stopped_s": 8.950000133365393,
+          "delay_hold_decisions": 0,
+          "sensor_age_p50_ms": 219.00000000005093,
+          "decision_reasons": [
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 297
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "STALE_CONTROL_SCENE",
+              "count": 83
+            },
+            {
+              "source": "NAVIGATION",
+              "reason": "CONTROL_PROCESSING_DEADLINE",
+              "count": 15
+            },
+            {
+              "source": "VEHICLE_HOLD",
+              "reason": "Vehicle held; explicit driving start required",
+              "count": 3
+            },
+            {
+              "source": "COMMAND_WATCHDOG",
+              "reason": "runtime_failure",
+              "count": 1
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "d5a3695e08a2d6f6e9ed5870294f059bf696fe307eb84b71fc43274c98fbc25f"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 397,
+            "first_timestamp_s": 1987.5321893319488,
+            "last_timestamp_s": 2007.3321896269917,
+            "duration_s": 19.80000029504299,
+            "video": "driving.mp4",
+            "sha256": "1a57cc42e86057e57e3196310d24d18d2136691e6368af7ee800551b45b7ae6c",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 1987.5321893319488,
+            "alignment_source": "ADMITTED_JOURNEY_START",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        }
+      }
+    },
+    {
+      "id": "a021fce3370643a1bdab82bb4c6675d7",
+      "status": "ERROR",
+      "reason": "runtime_failure",
+      "seed": 320418473,
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            -114.2754135131836,
+            47.62446594238281,
+            0.0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 266.46573230486626,
+        "origin_index": 152,
+        "population": {
+          "vehicle_count": 24,
+          "pedestrian_count": 30,
+          "speed_behavior": "FAST",
+          "seed": 320418473,
+          "fast_walk_percent": 10,
+          "driver_behavior": "BUSY",
+          "light_compliance_percent": 80,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 30,
+          "chaos_percent": 45,
+          "placement": "ROUTE",
+          "vehicle_mix": "MIXED"
+        },
+        "planned_vehicle_capacity": 24,
+        "requested_route_vehicles": 40,
+        "requested_route_pedestrians": 30,
+        "speed_kmh": 50.0
+      },
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 8587.921,
+          "timestamp_s": 2597.792114574462
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 8587.937,
+          "timestamp_s": 2597.792114574462
+        },
+        {
+          "status": "READY",
+          "wall_s": 8588.843,
+          "timestamp_s": 2597.8421145752072
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 8593.656,
+          "timestamp_s": 2599.8921146057546
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 8594.593,
+          "timestamp_s": 2600.04211460799
+        },
+        {
+          "status": "ERROR",
+          "wall_s": 9162.015,
+          "timestamp_s": 2746.0921167843044
+        }
+      ],
+      "conditions_match": null,
+      "evidence_sha256": "5a7db918b6143c8e28d3af0bd604ec3b7e00a126afba2b5f5af1c487d6e70575",
+      "pair_id": "38579d191bb046fb93654a5e09f6a203",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "2880a584c6564583a6d7a4d15b6af15a",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "duration_s": 146.0500021763146,
+          "distance_m": 18.10025133064013,
+          "route_completion_percent": 6.001563536344268,
+          "destination_reached": false,
+          "collisions": 0,
+          "near_misses": 0,
+          "harsh_braking_events": 1,
+          "safety_interventions": 270,
+          "safety_intervention_s": 15.000000223517418,
+          "mean_speed_kmh": 0.4503930625323175,
+          "maximum_speed_kmh": 6.146678443174483,
+          "samples": 2902,
+          "sensor_coverage_percent": 89.66230186078566,
+          "recording_id": "run_335ef662531a4317aa76c98b752bd302",
+          "maximum_stopped_s": 90.45000134781003,
+          "delay_hold_decisions": 1,
+          "sensor_age_p50_ms": 156.9999999992433,
+          "decision_reasons": [
+            {
+              "source": "NAVIGATION",
+              "reason": "NAVIGATION",
+              "count": 2602
+            },
+            {
+              "source": "EXECUTION_SHIELD",
+              "reason": "STALE_CONTROL_SCENE",
+              "count": 199
+            },
+            {
+              "source": "EXECUTION_SHIELD",
+              "reason": "PREDICTED_INTERSECTION",
+              "count": 65
+            },
+            {
+              "source": "EXECUTION_SHIELD",
+              "reason": "CONTROL_PROCESSING_DEADLINE",
+              "count": 54
+            },
+            {
+              "source": "VEHICLE_HOLD",
+              "reason": "Vehicle held; explicit driving start required",
+              "count": 2
+            },
+            {
+              "source": "SENSOR_FRESHNESS",
+              "reason": "Sensor delay; holding until the next fresh sensor frame",
+              "count": 1
+            },
+            {
+              "source": "COMMAND_WATCHDOG",
+              "reason": "runtime_failure",
+              "count": 1
+            }
+          ],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "condition_id": "7fd3064fdae95552b266c31fe76483b397b82ff9695402f87946d14ad45f2a73"
+          },
+          "video": {
+            "status": "READY",
+            "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+            "clock": "SIMULATION_TIME",
+            "frames": 2923,
+            "first_timestamp_s": 2599.9921146072447,
+            "last_timestamp_s": 2746.0921167843044,
+            "duration_s": 146.10000217705965,
+            "video": "driving.mp4",
+            "sha256": "0a8841eaf425bc5c2255e00fe6423bddc7ca645eb315315ef4efe8257d282c2d",
+            "frame_index": "telemetry/video-frames.jsonl",
+            "clock_zero_timestamp_s": 2599.9921146072447,
+            "alignment_source": "ADMITTED_JOURNEY_START",
+            "maximum_frame_gap_s": 0.05000000074505806,
+            "file_checksum_verified": true
+          }
+        }
+      }
+    }
+  ],
+  "limits": [
+    "Individual presentations are not the frozen hybrid behavioral acceptance cohort.",
+    "Normal retains its historical obstacle-protection-off behavior; it is not the independent BehaviorAgent baseline.",
+    "Matched initial conditions do not imply identical reactive traffic futures.",
+    "Interventions are not proven prevented collisions. Actual speeds differ from the request."
+  ]
+}

@@ -138,8 +138,14 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     # Keep real ground support and relevant real foreground for teacher V1.
     selected = (~((heights > config.minimum_foreground_height_m) & ~path))
     filtered = replace(radar, data={'detections': [d for d, keep in zip(radar.data['detections'], selected) if keep]})
-    teacher_observation = retained_radar_observation(replace(observation,
-        channels=tuple(filtered if s.sensor_id == radar.sensor_id else s for s in observation.channels)))
+    # The byte-preserved legacy teacher accepts one front radar and indexes by
+    # kind. Keep surround measurements in the real scene/recording, but do not
+    # let their different mounts replace that audited input inside its adapter.
+    # Its retention adapter validates that same front mount, so filter before
+    # retention as well as before the teacher itself.
+    teacher_observation=retained_radar_observation(replace(observation,
+        channels=tuple(filtered if s.sensor_id==radar.sensor_id else s for s in observation.channels
+            if s.kind!=SensorKind.RADAR or s.sensor_id==radar.sensor_id)))
     road_support = []; lidar_observed = False; depth_observed = False
 
     def surfaces(xyz, source):

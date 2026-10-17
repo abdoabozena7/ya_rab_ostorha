@@ -17,6 +17,39 @@ test('hybrid brake distinguishes processing delay from an uncertain maneuver cor
   assert.equal(controlReasonText('Original exception text'),'Original exception text');
 });
 
+test('stationary rear blockage is factual and never claims a person or a moving crossing',()=>{
+  const p=provider();p.stopDiagnostics={braking:true,decision_source:'NAVIGATION',reason:'NAVIGATION'};
+  const conflict={source:'STATIONARY',point_m:[-3.9,-2.5]};
+  p.maneuver={timestamp_s:1,scope:'LOW_SPEED_STATIONARY_OBSTACLE_BYPASS',phase:'WAIT',action:'HOLD',
+    rejected:[{reason:'PREDICTED_INTERSECTION',evidence:{conflicts:[conflict]}}]};
+  assert.equal(safetyNotice(p).title,'Waiting for clearance near the rear corner');
+  assert.match(safetyNotice(p).detail,/type is unconfirmed/);
+  assert.doesNotMatch(safetyNotice(p).detail,/pedestrian|crossing/);
+  for(const update of [{source:'CONSTANT_VELOCITY'},{point_m:[3.9,-2.5]}]){
+    Object.assign(conflict,{source:'STATIONARY',point_m:[-3.9,-2.5]},update);
+    assert.notEqual(safetyNotice(p).title,'Waiting for clearance near the rear corner');
+  }
+  p.stopDiagnostics.reason='STALE_CONTROL_SCENE';
+  assert.equal(safetyNotice(p).title,'Waiting for a fresh control frame');
+});
+
+test('presentation timeouts explain the retained incomplete attempt and recovery',()=>{
+  const detail=controlReasonText('presentation_phase_timeout: DRIVING');
+  assert.match(detail,/time limit/);assert.match(detail,/unfinished/);assert.match(detail,/Restart/);
+  assert.doesNotMatch(detail,/presentation_phase_timeout/);
+});
+
+test('the original synchronized-scene failure takes precedence over generic presentation cleanup',()=>{
+  const p=provider();p.controlMode='PAUSED';p.route={id:'route'};
+  p.journey={status:'ERROR',reason:'presentation_failed'};
+  p.lastDriveStop={status:'ERROR',detail:'presentation_failed'};
+  p.stopDiagnostics={runtime_fault:{exception_type:'ControlSceneTimeout'}};
+  const notice=safetyNotice(p);
+  assert.equal(notice.title,'Driving stopped: control sensors fell behind');
+  assert.match(notice.detail,/one second/);assert.match(notice.detail,/Restart/);
+  assert.doesNotMatch(notice.detail,/presentation_failed/);
+});
+
 test('held journey retains its original failure after focus loss and offers explicit resume',()=>{
   const p=provider();p.controlMode='PAUSED';p.route={id:'route'};
   p.journey={status:'PAUSED',reason:'focus_lost'};
@@ -39,6 +72,31 @@ test('a red signal keeps the journey active and explains the navigation brake',(
   const p=provider();p.stopDiagnostics={braking:true,decision_source:'NAVIGATION',reason:'Red traffic light on the planned route'};
   assert.equal(safetyNotice(p).title,'Waiting at a red light');
   assert.equal(driverCaption(p),'Self Driving');
+});
+
+test('ordinary bypass explains preparation, returning and an actual execution veto',()=>{
+  const p=provider();p.maneuver={timestamp_s:1,scope:'LOW_SPEED_STATIONARY_OBSTACLE_BYPASS',phase:'EXIT',action:'EXIT'};
+  assert.equal(safetyNotice(p).title,'Passing the stopped obstacle');
+  p.maneuver.phase='RETURN';assert.equal(safetyNotice(p).title,'Returning to the original lane');
+  p.stopDiagnostics={braking:true,decision_source:'EXECUTION_SHIELD',reason:'SWEPT_SPACE_UNKNOWN_OR_OCCUPIED'};
+  assert.equal(safetyNotice(p).title,'Passing paused for clearance');
+  assert.match(safetyNotice(p).detail,/unmeasured or occupied/);
+  p.maneuver.timestamp_s=.5;assert.equal(safetyNotice(p),null);
+});
+
+test('a known occupied passing lane explains a stationary wait without claiming a pass',()=>{
+  const p=provider();p.maneuver={timestamp_s:1,scope:'LOW_SPEED_STATIONARY_OBSTACLE_BYPASS',phase:'FOLLOW',action:'FOLLOW',
+    target_speed_kmh:0,rejected:[{action:'CHANGE_LEFT',reason:'ADJACENT_ROUTE_BLOCKED'}]};
+  assert.equal(safetyNotice(p).title,'Waiting: passing lane blocked');
+  assert.match(safetyNotice(p).detail,/stationary obstacle/);
+  assert.doesNotMatch(safetyNotice(p).detail,/pedestrian/);
+});
+
+test('an expired navigation control frame cannot be described as an active pass',()=>{
+  const p=provider();p.maneuver={timestamp_s:1,scope:'LOW_SPEED_STATIONARY_OBSTACLE_BYPASS',phase:'FOLLOW',action:'FOLLOW'};
+  p.stopDiagnostics={braking:true,decision_source:'NAVIGATION',reason:'CONTROL_PROCESSING_DEADLINE'};
+  assert.equal(safetyNotice(p).title,'Waiting for a fresh control frame');
+  assert.match(safetyNotice(p).detail,/deadline/);
 });
 
 test('surface movement and physical obstacles do not claim pedestrian recognition',()=>{

@@ -158,9 +158,17 @@ class SimulationService:
             self.arbiter.safety.receipts.pop(CommandSource.SAFETY, None)
         self.safety_command = None
 
+    def _route_bypass(self):
+        from .route_bypass import RuleRouteBypass
+        value=getattr(self.provider,'navigation_bypass',None)
+        return value if isinstance(value,RuleRouteBypass) else None
+
     def _active_safety_step(self):
         supervisor = self.active_safety
         if supervisor is None: return
+        bypass=self._route_bypass()
+        if self.arbiter.machine.mode==ControlMode.AUTOMATIC and bypass is not None and bypass.engaged:
+            return self._hybrid_execution_step(route_bypass=True)
         if self.arbiter.machine.mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') == 'HYBRID':
             return self._hybrid_execution_step()
         mode = self.arbiter.machine.mode
@@ -330,7 +338,7 @@ class SimulationService:
         return (mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') in ('NORMAL', 'BASELINE') or
                 mode == ControlMode.MANUAL and self.manual_driving_mode == 'NORMAL')
 
-    def _hybrid_execution_step(self):
+    def _hybrid_execution_step(self,*,route_bypass=False):
         """Independent per-native-frame veto after the behavior owner proposes."""
         from .maneuver_candidates import ExecutionShield, signed_path
         self._clear_safety_command()
@@ -339,7 +347,7 @@ class SimulationService:
                                    exclude_sources=(CommandSource.SAFETY,))
         scene = self.control_scene
         ok, reason, evidence = False, 'STALE_CONTROL_SCENE', {}
-        if scene is not None and scene.observation.frame_id==frame_id and scene.usable(stamp, self.now()):
+        if scene is not None and scene.observation.frame_id==frame_id and scene.usable(stamp, self.now()) and scene.prediction.get('motion_tracking_complete',True):
             path = signed_path(scene.observation.ego.speed_mps, base.steering,
                                base.throttle*2.5-base.brake*5., scene.geometry, base.reverse, bounded=base.reverse)
             road = self.provider.hybrid_road_context(self.session_id)
@@ -354,17 +362,19 @@ class SimulationService:
             held = replace(base, source=CommandSource.SAFETY, throttle=0., brake=1.,
                 reverse=actual.reverse,gear=-1 if actual.reverse else 1)
             self.safety_command = self.arbiter.submit(held, frame_id=frame_id, timestamp_s=stamp, connected=True)
-        status = {'type':'HYBRID_EXECUTION_SHIELD', 'version':1, 'controller':'HYBRID',
-                  'driver_id':'ROBOSPHERE_HYBRID_V1','learned_control_used':False,
+        status = {'type':'RULE_BYPASS_EXECUTION_SHIELD' if route_bypass else 'HYBRID_EXECUTION_SHIELD', 'version':1, 'controller':'RULE' if route_bypass else 'HYBRID',
+                  'driver_id':'ROBOSPHERE_RULE_BYPASS_V1' if route_bypass else 'ROBOSPHERE_HYBRID_V1','learned_control_used':False,
                   'enabled':True, 'active':not ok, 'status':'MONITORING' if ok else 'HOLD',
                   'risk':'CLEAR' if ok else 'UNKNOWN_SPACE', 'reason':reason,
                   'frame_id':frame_id, 'timestamp_s':stamp, 'actual_generator':'BASE_DRIVER' if ok else 'EXECUTION_SHIELD',
-                  'decision_source':'HYBRID' if ok else 'EXECUTION_SHIELD', 'evidence':evidence}
+                  'decision_source':('RULE_BYPASS' if route_bypass else 'HYBRID') if ok else 'EXECUTION_SHIELD', 'evidence':evidence,
+                  'measured_range_m':(self.maneuver_status.get('front_blocker') or {}).get('gap_m'),
+                  'ttc_s':None,'path_conflict':None,'observed_road_range_m':None}
         self.active_safety.status.update(status)
         self.provider.active_safety_status = dict(status)
         self.journey_observer = dict(status)
         if self.recorder:
-            self.recorder.record_trace({'kind':'HYBRID_EXECUTION', 'decision_id':self.maneuver_status.get('decision_id'),
+            self.recorder.record_trace({'kind':'RULE_BYPASS_EXECUTION' if route_bypass else 'HYBRID_EXECUTION', 'decision_id':self.maneuver_status.get('decision_id'),
                 'frame_id':frame_id, 'timestamp_s':stamp, 'proposal':to_dict(base),
                 'applied':to_dict(self.safety_command or base), 'reason':reason,
                 'accepted':ok, 'evidence':evidence, 'scene_build_ms':scene.build_ms if scene else None,
@@ -975,8 +985,24 @@ class SimulationService:
         frame_id, timestamp_s = self._context()
         command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
         self.base_driver_command = command
+        bypass=self._route_bypass()
+        if bypass is not None and self.journey.get('driving_mode','ROBOSPHERE')=='ROBOSPHERE':
+            traffic='traffic light' in (getattr(self.provider,'navigation_stop_reason',None) or '').lower()
+            finished=bypass.observe(self.control_scene,self.journey_observer or {},traffic_stop=traffic,wall=self.now())
+            if finished:
+                self.provider.hybrid_driver=None;self.provider.replan_after_recovery()
+                self.active_safety.reset();self._clear_safety_command()
+                self._event(EventType.ControlChanged,bypass='COMPLETE',completed_maneuvers=list(bypass.driver.completed_maneuvers))
+            elif bypass.engaged:self.provider.hybrid_driver=bypass.driver
+            if bypass.preparing and not bypass.engaged:
+                command=replace(command,throttle=0.,brake=1.)
+                self.maneuver_status={'action':'PREPARE_DRIVE','phase':'PREPARING','timestamp_s':timestamp_s,
+                    'reason':'Measuring the road before starting','selected_path':None}
+                self.arbiter.submit(command,frame_id=frame_id,timestamp_s=timestamp_s,connected=True)
+                self.command_at=self.now();return
         driver = getattr(self.provider, 'hybrid_driver', None)
-        if driver is not None and self.journey.get('driving_mode') == 'HYBRID':
+        bypass_engaged=bypass is not None and bypass.engaged
+        if driver is not None and (self.journey.get('driving_mode') == 'HYBRID' or bypass_engaged):
             if self.now() >= driver.deadline:
                 self._stop_navigation('hybrid_validation_expired'); return
             if (driver.previous_command is not None and driver.previous_stamp is not None
@@ -1002,7 +1028,11 @@ class SimulationService:
                 self.provider.find_hybrid_alternative(self.control_scene)
             road = self.provider.hybrid_road_context(self.session_id)
             cap = min(self.journey['speed_kmh']/3.6, self.provider.navigation_speed_limit_mps)
+            if bypass_engaged:
+                cap=min(cap,bypass.config['maneuver_speed_mps'])
+                for side in ('left','right'):road[side+'_allowed']=road[side+'_allowed'] and side in bypass.sides
             command, self.maneuver_status = driver.evaluate(self.control_scene, command, road, cap, wall=self.now())
+            if bypass_engaged:self.maneuver_status.update(driver_id='ROBOSPHERE_RULE_BYPASS_V1',scope='LOW_SPEED_STATIONARY_OBSTACLE_BYPASS')
             self.hybrid_decision_wall_at=self.now()
             if self.control_scene:
                 self.control_decision_prediction={k:self.control_scene.prediction.get(k) for k in
@@ -1019,6 +1049,8 @@ class SimulationService:
             if self.maneuver_status.get('request_alternative') and self.provider.apply_hybrid_alternative():
                 driver.alternative_started=self.observation.vehicle.transform.position_m[:2]
                 driver.blocked_since=None; driver.phase='FOLLOW'
+                if bypass_engaged and self.control_scene:
+                    bypass.detour_at=list(self.control_scene.prediction['odometry_origin_m'])
             self.arbiter.submit(command, frame_id=frame_id, timestamp_s=timestamp_s, connected=True)
             self.command_at = self.now()
             return
@@ -1062,6 +1094,12 @@ class SimulationService:
         elif planner is None:
             self.maneuver_status={'action':'RULE_FOLLOW','phase':'FOLLOW','reason':'Maneuver prototype did not pass native acceptance',
                 'experimental':True,'selected_path':None,'target_speed_kmh':self.journey['speed_kmh']}
+            if bypass is not None:
+                self.maneuver_status.update(reason='Following the route with measured stationary-obstacle recovery available',experimental=False)
+            if bypass is not None and bypass.arming:
+                self.maneuver_status.update(action='PREPARE_BYPASS',phase='PREPARING',
+                    reason='Measuring adjacent traffic before passing the stopped obstacle',
+                    timestamp_s=timestamp_s,target_speed_kmh=bypass.config['maneuver_speed_mps']*3.6)
         recovery=getattr(self.provider,'navigation_recovery',None)
         from .congestion_recovery import CongestionRecovery
         if not isinstance(recovery,CongestionRecovery):recovery=None
@@ -1575,6 +1613,7 @@ class SimulationService:
                 measured = sensor_observation(observation)
                 scene = self.control_scene_builder.build(measured, self.provider.get_sensor_asset,
                     track_motion=(self.journey.get('driving_mode')=='HYBRID' or
+                        bool(self._route_bypass() and self._route_bypass().motion_required) or
                         getattr(self.provider,'navigation_planner',None) is not None or
                         getattr(self.provider,'navigation_recovery',None) is not None),
                     received_wall_s=min((c.metadata.get('received_monotonic_s', self.now()) for c in observation.sensors

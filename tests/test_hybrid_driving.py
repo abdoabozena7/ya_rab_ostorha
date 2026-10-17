@@ -28,6 +28,44 @@ class HybridDrivingTests(unittest.TestCase):
         self.assertTrue(status['space']['complete_stopping_tail_verified'])
         self.assertEqual(status['driver_id'],'ROBOSPHERE_HYBRID_V1')
 
+    def test_committed_lane_curve_is_fixed_in_measured_odometry(self):
+        scene,base,road=self.measured()
+        driver=HybridDriver(scene.geometry)
+        curve=driver._make_curve(scene,road,-3.5,'EXIT')
+        original=driver._local_curve(scene,curve)
+        prediction=dict(scene.prediction);prediction['odometry_origin_m']=[5.,0.]
+        advanced=replace(scene,prediction=prediction)
+        shifted=driver._local_curve(advanced,curve)
+        # The target at original x=8 stays at x=3 after measured ego travel.
+        # Rebuilding a new lane-change curve here would postpone the turn.
+        i=np.argmin(abs(shifted[:,1]-3.));j=np.argmin(abs(original[:,1]-8.))
+        self.assertAlmostEqual(shifted[i,2],original[j,2])
+        self.assertLess(shifted[i,2],-2.)
+
+    def test_verified_passing_path_is_preferred_before_reaching_the_stopped_car(self):
+        from backend.core.kinematic_prediction import kinematic_modes
+        scene,base,road=self.measured();road['left_allowed']=True
+        tr={'id':'lead','position_m':[15.,0.],'half_size_m':[2.,1.],'velocity_mps':[0.,0.],
+            'confirmed':True,'class':'UNKNOWN','quality':1.,'uncertainty_m':.15,'occlusion_s':0.}
+        prediction=dict(scene.prediction);prediction.update(tracks=[tr],control_trajectories=kinematic_modes([tr]))
+        scene=replace(scene,prediction=prediction);driver=HybridDriver(scene.geometry)
+        # This fixture exercises ranking after independent admission. Real
+        # occupied/unknown corridor rejection is tested without this mock.
+        with patch.object(driver.shield,'check',return_value=(True,'ADMITTED_RANKING_FIXTURE',{})):
+            command,status=driver.evaluate(scene,base,road,5.,wall=100.)
+        self.assertEqual(status['action'],'CHANGE_LEFT')
+        self.assertEqual(driver.phase,'EXIT')
+        self.assertLess(status['front_blocker']['gap_m'],12.)
+
+    def test_losing_blocker_identity_while_stopped_does_not_finish_a_pass(self):
+        scene,base,road=self.measured();road.update(return_allowed=True,centerline=[[0.,3.5],[50.,3.5]])
+        driver=HybridDriver(scene.geometry);driver.phase='PASS';driver.offset=-3.5;driver.blocker='lost'
+        driver.blocker_anchor=(np.array([8.,0.]),[2.,1.]);driver.lost_blocker_since=-100.
+        # Hold all movement in this fixture; elapsed time cannot prove travel.
+        driver.evaluate(scene,base,road,2.,wall=100.)
+        self.assertEqual(driver.phase,'PASS')
+        self.assertNotIn('PASS_RETURN',driver.completed_maneuvers)
+
     def test_execution_hold_does_not_turn_a_transient_automatic_shift_into_manual_neutral(self):
         from backend.core.service import SimulationService
         from backend.core.control import ControlMode
@@ -462,6 +500,18 @@ class HybridDrivingTests(unittest.TestCase):
         ok,reason,_=ExecutionShield().check(scene,path,replace(base,throttle=0.,brake=0.),road,
                                           timestamp_s=base.timestamp_s,wall_s=100.)
         self.assertFalse(ok);self.assertEqual(reason,'PREDICTED_INTERSECTION')
+
+
+    def test_known_stationary_blockage_rejects_the_complete_escape_lane_beyond_a_short_lease(self):
+        from backend.core.maneuver import spatial_route,stationary_route_blocker
+        scene,base,road=self.measured()
+        road['centerline']=[[0.,0.],[50.,0.]]
+        path=spatial_route(-3.5,road,np.arange(0.,40.01,.5))
+        target={'id':'occupied-left','confirmed':True,'occlusion_s':0.,'position_m':[18.,-3.5],
+                'half_size_m':[2.,1.],'velocity_mps':[0.,0.]}
+        self.assertEqual(stationary_route_blocker([target],path,scene.geometry,25.),'occupied-left')
+        self.assertIsNone(stationary_route_blocker([{**target,'position_m':[18.,0.]}],path,scene.geometry,25.))
+        self.assertIsNone(stationary_route_blocker([{**target,'velocity_mps':[4.,0.]}],path,scene.geometry,25.))
 
 
 if __name__=='__main__':unittest.main()

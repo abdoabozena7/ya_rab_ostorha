@@ -1,0 +1,28 @@
+{
+  "source": "LIVE_NATIVE_CARLA_BROWSER",
+  "presentation_id": "a021fce3370643a1bdab82bb4c6675d7",
+  "pair_id": "38579d191bb046fb93654a5e09f6a203",
+  "checks": 13,
+  "labels": [
+    "Native vehicle is connected and held",
+    "Failed dense attempt remains a failure",
+    "Original native exception remains available",
+    "Unexecuted Normal arm is not fabricated",
+    "Recorded driving outcome retains the runtime failure",
+    "Failed recording finalized without dropped frames",
+    "Failed attempt has an actual native MP4",
+    "Presentation exposes the real failure in English",
+    "Failure detail gives its actual timeout and recovery",
+    "Restart recovery is available",
+    "Visible interface is English",
+    "Recovery controls fit viewport 1600",
+    "Recovery controls fit viewport 390"
+  ],
+  "full_rehearsal_passed": false,
+  "normal_recorded": false,
+  "playback_verified": false,
+  "screenshots": [
+    "route-bypass-native-failure-1600.png",
+    "route-bypass-native-failure-390.png"
+  ]
+}

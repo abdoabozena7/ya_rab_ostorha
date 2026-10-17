@@ -16,27 +16,41 @@ def prepare(provider, seed, speed):
     # Seeded choices between known urban starts; every route is planned natively.
     indices = [80, 152]
     rng.shuffle(indices)
-    origin = tools.spawns[indices[0] % len(tools.spawns)]
+    from .route_crowding import route_slots
+    candidates=[]
+    for index in indices:
+        origin=tools.spawns[index % len(tools.spawns)]
+        waypoint=tools.map.get_waypoint(origin.location)
+        for _ in range(130):
+            choices=waypoint.next(2.)
+            if not choices:break
+            prior=waypoint.transform.rotation.yaw
+            waypoint=min(choices,key=lambda w:abs((w.transform.rotation.yaw-prior+180)%360-180))
+        loc=waypoint.transform.location
+        target={'map':tools.map_name,'location':[loc.x,loc.y,loc.z],'name':'Presentation destination'}
+        route,native=tools.route_service.plan(origin.location,target)
+        if route['length_m']<100:continue
+        try:_,capacity=route_slots(native,origin.location,p.connection.api,maximum=40)
+        except ValueError:continue
+        candidates.append((capacity['target_count'],index,origin,target,route,native))
+    if not candidates:raise ValueError('No automatic route has usable native traffic spaces')
+    # Prefer a genuinely busier route rather than promising a fleet that cannot
+    # physically fit. The seed orders equal-capacity choices and actor behavior.
+    capacity,index,origin,target,tools.route,tools.native_route=max(candidates,key=lambda c:c[0])
     p.ego.actor.set_target_velocity(p.connection.api.Vector3D())
     p.ego.actor.set_target_angular_velocity(p.connection.api.Vector3D())
     p.ego.actor.set_transform(origin)
-    waypoint = tools.map.get_waypoint(origin.location)
-    for _ in range(130):
-        choices = waypoint.next(2.)
-        if not choices:
-            break
-        prior = waypoint.transform.rotation.yaw
-        waypoint = min(choices, key=lambda w: abs((w.transform.rotation.yaw-prior+180) % 360-180))
-    loc = waypoint.transform.location
-    target = {'map': tools.map_name, 'location': [loc.x, loc.y, loc.z], 'name': 'Presentation destination'}
-    tools.route, tools.native_route = tools.route_service.plan(origin.location, target)
-    if tools.route['length_m'] < 100:
-        raise ValueError('Automatic route is too short; choose Restart for a new seed')
-    config = {**p.population.config, 'vehicle_count': 20, 'pedestrian_count': 15,
-        'seed': seed, 'chaos_percent': 45, 'speed_behavior': 'FAST', 'driver_behavior': 'BUSY',
-        'light_compliance_percent': 80, 'crossing_percent': 30}
-    p.population.apply(config)
+    # Establish the route before spawning: both traffic and native sidewalk
+    # selection need the road ahead, rather than the previous trip's route.
     p.population.set_route(tools.route['points'])
+    config = {**p.population.config, 'vehicle_count': 0, 'pedestrian_count': 30,
+        'seed': seed, 'chaos_percent': 45, 'speed_behavior': 'FAST', 'driver_behavior': 'BUSY',
+        'light_compliance_percent': 80, 'crossing_percent': 30,'placement':'ROUTE','vehicle_mix':'MIXED'}
+    p.population.apply(config)
+    p.population.crowd_route(tools.route,tools.native_route,{'route_id':tools.route['id'],
+        'seed':seed,'chaos_percent':45,'vehicle_count':40})
+    p.population.admit_route_capacity()
     p.set_paused(False)
     return {'destination': target, 'route_length_m': tools.route['length_m'],
-        'origin_index': indices[0], 'population': dict(config), 'speed_kmh': speed}
+        'origin_index': index, 'population': dict(p.population.config),'planned_vehicle_capacity':capacity,
+        'requested_route_vehicles':40,'requested_route_pedestrians':30,'speed_kmh': speed}

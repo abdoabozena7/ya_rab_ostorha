@@ -146,17 +146,21 @@ class WorldPopulationManager:
 
     def crowd_route(self, route, native_route, options):
         from .route_crowding import destination_key, route_slots
-        if not isinstance(options, dict) or set(options)-{'route_id', 'seed', 'chaos_percent'}:
+        if not isinstance(options, dict) or set(options)-{'route_id', 'seed', 'chaos_percent','vehicle_count'}:
             raise ValueError('Road traffic requires a route, seed and randomness')
         if not route or route.get('arrived') or options.get('route_id') != route.get('id'):
             raise ValueError('The destination changed. Choose its road traffic again')
         config = validate_population({**self.config,
             **{key: options[key] for key in ('seed', 'chaos_percent') if key in options}})
+        requested=options.get('vehicle_count',75)
+        if type(requested) is not int or not 1<=requested<=75:
+            raise ValueError('Route traffic count must be 1–75')
         ego = self.world.get_actor(self.ego_id)
         if ego is None: raise ValueError('Ego vehicle is unavailable')
         occupied = [actor.get_location() for actor in self.world.get_actors().filter('vehicle.*')
                     if actor.id != self.ego_id and actor.id not in self.vehicles]
-        slots, report = route_slots(native_route, ego.get_location(), self.api, occupied=occupied)
+        slots, report = route_slots(native_route, ego.get_location(), self.api, maximum=requested,occupied=occupied)
+        report['requested_count']=requested
         # Validate before touching actors. Only this project's traffic is moved;
         # pedestrians, ego, destination and sensors are retained.
         self.clear_traffic()
@@ -171,6 +175,20 @@ class WorldPopulationManager:
             'destination': destination_key(route), 'status': 'APPLYING',
             'seed': config['seed'], 'chaos_percent': config['chaos_percent']}
         self.spawn_traffic(report['target_count'])
+
+    def admit_route_capacity(self):
+        """Automatic presentation accepts reported native spawn capacity.
+
+        Keep the requested/planned counts and failed attempts as evidence. An
+        actual native snapshot must still confirm every admitted actor before
+        READY. Ordinary explicit crowding retains its exact-count requirement.
+        """
+        if not self.route_crowding or not self.vehicles:
+            raise ValueError('No route traffic could be admitted; choose another route')
+        planned=self.route_crowding['target_count'];admitted=len(self.vehicles)
+        self.route_crowding.update(planned_target_count=planned,native_capacity_accepted=True,
+            initial_native_shortfall=planned-admitted,target_count=admitted)
+        self.config['vehicle_count']=admitted
 
     def _destroy(self, ids):
         ids = list(ids)
@@ -327,6 +345,9 @@ class WorldPopulationManager:
                 candidates = [c for c in candidates if 25. <= c[0].distance(position) <= 180.]
                 # Favor nearby busy streets without manufacturing destinations.
                 candidates.sort(key=lambda c: c[0].distance(position))
+                if self.route_points:
+                    from .route_crowding import sidewalk_route_candidates
+                    candidates=sidewalk_route_candidates(candidates,self.route_points,ego.get_transform())
                 candidates = candidates[:max(60, self.config['pedestrian_count']*4)]
         else:
             candidates = [(location, road, lane) for location, road, lane in self.sidewalk_locations
@@ -592,7 +613,8 @@ class WorldPopulationManager:
         if crowding:
             count = self.actual['vehicles']
             crowding.update(placed_count=count, frame_id=self.frame_id,
-                status='READY' if count == crowding['target_count'] and not self.spawn_report['npc_failed']
+                status='READY' if count == crowding['target_count'] and
+                    (not self.spawn_report['npc_failed'] or crowding.get('native_capacity_accepted'))
                     and not self.errors and not self.pending_vehicles else 'PARTIAL')
         return {'frame_id': self.frame_id, 'requested': dict(self.config), 'actual': dict(self.actual),
                 'admitted': {'vehicles':len(self.vehicles),'pedestrians':len(self.walkers)},

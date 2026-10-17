@@ -5,7 +5,7 @@ import {metricValue} from './journey-comparison.js';
 
 const $=id=>document.getElementById(id);
 const terminal=new Set(['IDLE','COMPLETE','CANCELLED','ERROR']);
-const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Preparing the next driver',
+const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Confirming route traffic',
   STARTING:'Starting the recording',DRIVING:'Driving and recording',FINALIZING:'Saving the recording',RESTORING:'Restoring the same initial conditions',
   EXPORTING:'Exporting both videos',PLAYBACK:'Playing the comparison',COMPLETE:'Presentation complete',CANCELLED:'Presentation stopped',ERROR:'Presentation needs attention'};
 export function presentationStep(status,arm=0){
@@ -21,10 +21,20 @@ export function presentationSummary(data){
   return 'Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.';
 }
 
+export function presentationTrafficText(population,setup){
+  const requested=setup?.requested_route_vehicles??40,walkers=setup?.requested_route_pedestrians??30;
+  const crowding=population?.route_crowding;
+  if(!crowding)return `Busy route · up to ${requested} vehicles · ${walkers} pedestrians`;
+  return `Route traffic · ${population.actual?.vehicles??'—'}/${requested} vehicles · ${population.actual?.pedestrians??'—'}/${walkers} pedestrians`+
+    (crowding.target_count<requested?' · limited by safe road spaces':'');
+}
+
 export function installPresentationRun(p,tools,clearControls){
   const panel=document.createElement('section');panel.id='presentationControls';panel.setAttribute('aria-label','Automatic presentation');
   panel.innerHTML='<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere → Normal · target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">↻ Restart</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Restart prepares the route, traffic and recordings automatically.</p></div>';
   const custom=document.createElement('details');custom.className='presentation-custom';
+  const populationNote=document.createElement('span');populationNote.id='presentationPopulation';
+  populationNote.textContent=presentationTrafficText(null,null);panel.querySelector('.presentation-intro').append(populationNote);
   custom.innerHTML='<summary>Custom drive</summary><div><span id="presentationDestination">Choose a destination on the map</span><label>Target speed <select id="presentationCustomSpeed"><option value="20">20 km/h</option><option value="30" selected>30 km/h</option></select></label><button id="presentationCustomStart">Start driving & recording</button></div>';
   panel.append(custom);
   $('cameraCard').before(panel);
@@ -72,6 +82,7 @@ export function installPresentationRun(p,tools,clearControls){
   $('presentationCustomStart').onclick=()=>{p.operationError=null;p.startJourney(Number($('presentationCustomSpeed').value),'ROBOSPHERE');};
   return {update(){
     const data=p.presentation,status=data?.status||'IDLE',busy=!terminal.has(status),active=['STARTING','RUNNING'].includes(p.journey?.status);
+    $('presentationPopulation').textContent=presentationTrafficText(p.fresh?p.population:null,data?.setup);
     if(['CANCELLED','ERROR'].includes(status)&&lastPhase!==status){linked=false;for(const i of items)i.video.pause();}
     if(pendingStart&&p.connected&&p.fresh&&!p.simulationStarting){
       if(p.dashboardAction('presentation',{operation:'RESTART',speed_kmh:50}))pendingStart=false;
@@ -90,6 +101,7 @@ export function installPresentationRun(p,tools,clearControls){
     let title=pendingStart?'Starting the simulator':!p.connected?'Simulator stopped or disconnected':busy?(phases[status]||status)+(status==='DRIVING'?' · '+(data.arm===0?'Robosphere':'Normal'):''):notice?.title||phases[status]||'Ready when you are';
     let detail=pendingStart?'The route and both recordings will follow automatically.':p.operationError?demoFailure(p.operationError):status==='ERROR'?demoFailure(data.reason):notice?.detail||
       (status==='DRIVING'?(data.arm===1?'Recording is active. Normal follows the route and traffic signals.':'Recording is active. Signal and protective stops resume automatically.'):busy?'The next step runs automatically. Stop and Emergency stop remain available.':'Restart prepares the route, traffic and recordings automatically.');
+    if(status==='ERROR'&&p.stopDiagnostics?.runtime_fault?.exception_type==='ControlSceneTimeout'&&notice){title=notice.title;detail=notice.detail;}
     if(active&&notice){title=notice.title;detail=notice.detail;}
     if(p.stopDiagnostics?.stopped_for_s>=1&&active)detail+=' Waiting '+p.stopDiagnostics.stopped_for_s.toFixed(0)+' s.';
     if(!p.connected&&!pendingStart)detail=p.operationError||'Use Restart to start the simulator and run both recorded drives automatically.';

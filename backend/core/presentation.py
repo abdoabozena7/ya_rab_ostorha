@@ -124,7 +124,14 @@ class Presentation:
                 self.ready_frame = s.observation.frame_id + 10
                 advance('READY', setup=setup)
             elif phase == 'READY' and stopped and closed and s.observation.frame_id >= getattr(self,'ready_frame',0):
-                self._start_arm()
+                population=getattr(s.provider,'population_state',lambda:{})()
+                crowding=population.get('route_crowding')
+                traffic_ready=not crowding or crowding.get('status')=='READY'
+                # The restored arm intentionally freezes walker controllers
+                # until its first admitted control frame. Initial setup waits
+                # for genuine native controller readiness instead.
+                walkers_ready=self.data['arm']>0 or population.get('walker_controllers_ready',True)
+                if traffic_ready and walkers_ready:self._start_arm()
             elif phase == 'STARTING':
                 if s.journey['status'] == 'RUNNING':
                     advance('DRIVING', pair_id=s.journey_comparison.data['pair_id'])

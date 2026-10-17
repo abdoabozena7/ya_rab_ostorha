@@ -24,7 +24,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
         for pattern in ('backend/core/*.py','backend/carla/*.py','backend/learning/hybrid_budget.py',
-                        'config/hybrid-driving.json','scripts/validate_hybrid_native.py') for p in ROOT.glob(pattern)}
+                        'config/hybrid-driving.json','config/route-bypass.json','scripts/validate_hybrid_native.py',
+                        'scripts/native/route_bypass_world.py') for p in ROOT.glob(pattern)}
 
 
 def archive_sources(folder,hashes,root=ROOT):
@@ -69,6 +70,7 @@ def worker(args):
                 maximum_unexplained_stop_s=maximum_stop,
                 contacts=[to_dict(c) for c in service.collision_events if c.timestamp_s>=start_sim],
                 recording=service.journey_comparison.snapshot(),wall_s=time.monotonic()-began)
+            report['original_safety_fault']=service.safety_fault
             if not any(saved is arm for saved in report['arms']):report['arms'].append(arm)
             report.update(arm)
         try:
@@ -96,13 +98,18 @@ def worker(args):
             population={**provider.population.config,'vehicle_count':0,'pedestrian_count':0,'seed':args.seed,'chaos_percent':0}
             provider.population.apply(population)
             if args.scenario!='DIAGNOSTIC':
-                from backend.carla.hybrid_world import HybridWorld
-                fixture=HybridWorld(provider)
+                if args.scenario.startswith('RULE_BYPASS_'):
+                    from scripts.native.route_bypass_world import RuleBypassWorld
+                    fixture=RuleBypassWorld(provider)
+                else:
+                    from backend.carla.hybrid_world import HybridWorld
+                    fixture=HybridWorld(provider)
                 fixture.setup(args.scenario,args.seed,spawn_index=args.spawn,route_length=args.length)
             api=provider.connection.api
             for light in provider.world.world.get_actors().filter('traffic.traffic_light*'):
                 signal_restore.append((light,light.get_state(),light.get_green_time(),light.get_yellow_time(),light.get_red_time(),light.is_frozen()))
-                light.set_state(api.TrafficLightState.Green); light.set_green_time(1000.);light.freeze(True)
+                light.set_state(api.TrafficLightState.Red if args.scenario=='RULE_BYPASS_RED_SIGNAL' else api.TrafficLightState.Green)
+                light.set_green_time(1000.);light.freeze(True)
             waypoint=provider.dashboard_tools.map.get_waypoint(provider.ego.actor.get_location())
             for _ in range(max(1,round(args.length/2.))):
                 choices=waypoint.next(2.)
@@ -160,6 +167,15 @@ def worker(args):
                         else:stopped=0.
                         maximum_stop=max(maximum_stop,stopped)
                     previous=frame
+                    bypass=getattr(provider,'navigation_bypass',None)
+                    bypass_state=None
+                    if bypass is not None:
+                        anchor=bypass.target_anchor
+                        bypass_state={'preparing':bypass.preparing,'arming':bypass.arming,'engaged':bypass.engaged,
+                            'driver_phase':bypass.driver.phase,'cooldown_until':bypass.cooldown_until,
+                            'target_anchor':None if anchor is None else [anchor[0].tolist(),list(anchor[1])],
+                            'odometry_origin_m':service.control_scene.prediction.get('odometry_origin_m') if service.control_scene else None,
+                            'odometry_yaw_rad':service.control_scene.prediction.get('odometry_yaw_rad') if service.control_scene else None}
                     arm['samples'].append({'frame_id':frame.frame_id,'timestamp_s':frame.timestamp_s,
                         'position_m':list(vehicle.transform.position_m),'speed_kmh':vehicle.speed_mps*3.6,
                         'throttle':vehicle.throttle,'brake':vehicle.brake,'gear':vehicle.gear,'reverse':vehicle.reverse,
@@ -167,6 +183,7 @@ def worker(args):
                         'longitudinal_acceleration_mps2':vehicle.longitudinal_acceleration_mps2,
                         'journey':dict(service.journey),'control_scene':service.control_scene.snapshot(frame.timestamp_s,service.now()) if service.control_scene else None,
                         'maneuver':dict(getattr(service,'maneuver_status',{})),'stop':service._public_stop_diagnostics(),
+                        'route_bypass':bypass_state,
                         'backend_step_ms':service.backend_step_ms})
                     if len(arm['samples'])%20==0:
                         with (folder/'progress.jsonl').open('a',encoding='utf8') as stream:
@@ -289,14 +306,14 @@ def run(args):
             report['platform_suspend_s']=max(0.,report['reservation_wall_s']-report['reservation_working_s'])
             report['platform_interrupted']=report['platform_suspend_s']>1.
             (folder/'report.json').write_text(json.dumps(report,indent=2,allow_nan=False),encoding='utf8')
-    print(json.dumps({k:v for k,v in report.items() if k not in ('samples','arms','source_hashes','recording','contacts','fixture')}),flush=True)
+    print(json.dumps({k:v for k,v in report.items() if k not in ('samples','arms','source_hashes','recording','contacts','fixture','original_safety_fault')}),flush=True)
     print(str(folder/'report.json'),flush=True)
     return 0 if report.get('native_worker_exit_code')==0 and report.get('restored',{}).get('connected') else 1
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--seconds',type=float,default=600)
-    parser.add_argument('--speed',type=float,default=20);parser.add_argument('--mode',choices=('HYBRID','BASELINE'),default='HYBRID')
+    parser.add_argument('--speed',type=float,default=20);parser.add_argument('--mode',choices=('HYBRID','BASELINE','ROBOSPHERE'),default='HYBRID')
     parser.add_argument('--spawn',type=int,default=152);parser.add_argument('--length',type=float,default=60)
     parser.add_argument('--sim-seconds',type=float,default=45)
     parser.add_argument('--benchmark',action='store_true')

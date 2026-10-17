@@ -1,6 +1,7 @@
 """CARLA is the rendered simulator. This provider sends controls and reads state."""
 import copy
 import math
+import time
 from .connection import CarlaConnection
 from .controls import native_control
 from .sensors import CarlaSensorManager
@@ -477,6 +478,7 @@ class CarlaProvider:
                                         stop_waypoint_creation=True, clean_queue=True)
         self.navigation_planner=None
         self.navigation_recovery=None
+        self.navigation_bypass=None
         if driving_mode == 'HYBRID':
             from ..core.hybrid_driver import HybridDriver
             from ..core.hybrid_config import admission
@@ -509,7 +511,7 @@ class CarlaProvider:
             # a live, crash-charged reservation of the new experiment ledger.
             gate=Path(__file__).resolve().parents[2]/'output/motion-reliability/lateral-validation.json'
             if gate.exists():
-                import sqlite3,time
+                import sqlite3
                 from contextlib import closing
                 ticket=json.loads(gate.read_text())
                 if time.monotonic()<ticket['expires_monotonic_s']:
@@ -534,6 +536,11 @@ class CarlaProvider:
                     # Validate the new bounded overlay around the existing route
                     # follower, rather than enabling the rejected full planner.
                     self.navigation_planner=None
+        if driving_mode=='ROBOSPHERE':
+            from ..core.route_bypass import availability,RuleRouteBypass
+            admission=availability(int(time.monotonic()))
+            if admission['available'] and self.dashboard_tools.map_name.rsplit('/',1)[-1]=='Town10HD_Opt':
+                self.navigation_bypass=RuleRouteBypass(self.vehicle_geometry,deadline=admission['deadline'],sides=admission['sides'])
         return self.route_state()
 
     def local_road_context(self,session_id):
@@ -590,8 +597,23 @@ class CarlaProvider:
         target = min(front, key=lambda t:t['position_m'][0])
         x,y = target['position_m']; location = self.connection.api.Location(
             x=pose.location.x+f.x*x+r.x*y, y=pose.location.y+f.y*x+r.y*y, z=pose.location.z)
-        self.hybrid_alternative = self.dashboard_tools.route_service.alternative(
+        alternative = self.dashboard_tools.route_service.alternative(
             pose.location, self.dashboard_tools.route['destination'], location)
+        if alternative is not None:
+            import numpy as np
+            from ..core.maneuver import spatial_route,stationary_route_blocker
+            points=[]
+            for point in alternative[0]['points']:
+                dx,dy=point[0]-pose.location.x,point[1]-pose.location.y
+                local=[dx*f.x+dy*f.y,dx*r.x+dy*r.y]
+                if local[0]>.5:points.append(local)
+                if math.hypot(dx,dy)>45.:break
+            if points:
+                path=spatial_route(0.,{'centerline':[[0.,0.]]+points},np.arange(0.,40.01,.5))
+                if stationary_route_blocker(scene.prediction['tracks'],path,self.vehicle_geometry,max(25.,blocker['gap_m']+8.)) is not None:
+                    alternative=None
+            else:alternative=None
+        self.hybrid_alternative=alternative
         return self.hybrid_alternative
 
     def apply_hybrid_alternative(self):
@@ -615,6 +637,8 @@ class CarlaProvider:
             limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         requested=min(speed_kmh,limit) if limit>0 else speed_kmh
+        bypass=getattr(self,'navigation_bypass',None)
+        if bypass and bypass.motion_required:requested=min(requested,bypass.config['maneuver_speed_mps']*3.6)
         if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False):
             from ..core.route_terminal import terminal_speed_mps
             route=self.route_state()
@@ -637,6 +661,7 @@ class CarlaProvider:
         self.navigation = None
         self.navigation_planner = None
         self.navigation_recovery = None
+        self.navigation_bypass = None
         self.hybrid_driver = None
         self.hybrid_alternative = None
 

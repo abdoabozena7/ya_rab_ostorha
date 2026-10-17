@@ -187,9 +187,11 @@ class CarlaSensorManager:
         recovery=json.loads((Path(__file__).resolve().parents[2]/'config/congestion-recovery.json').read_text())
         from ..learning.hybrid_budget import active_ticket as hybrid_ticket
         hybrid=json.loads((Path(__file__).resolve().parents[2]/'config/hybrid-driving.json').read_text())
-        hybrid_surround=bool(hybrid.get('surround_rig_accepted') or hybrid_ticket()) and not options.get('_suppress_pilot_surround',False)
+        from ..core.route_bypass import available as bypass_available
+        bypass_surround=bypass_available()
+        hybrid_surround=bool(hybrid.get('surround_rig_accepted') or hybrid_ticket() or bypass_surround) and not options.get('_suppress_pilot_surround',False)
         surround=bool(recovery.get('depth_sensors_accepted') or hybrid.get('surround_rig_accepted') or
-                      (active_ticket() or hybrid_ticket()) and not options.get('_suppress_pilot_surround',False))
+                      (active_ticket() or hybrid_ticket() or bypass_surround) and not options.get('_suppress_pilot_surround',False))
         depth_mount=camera_mount;depth_attributes={**camera,'image_size_x':320,'image_size_y':180,'fov':90}
         if surround and not hybrid_surround:
             box=self.ego.bounding_box

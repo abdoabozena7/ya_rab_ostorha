@@ -3456,6 +3456,7 @@
   var finite = (value) => Number.isFinite(value) && value >= 0;
   var metricText = (value, digits = 0) => finite(value) ? value.toFixed(digits) : "\u2014";
   function controlReasonText(reason) {
+    if (/^presentation_phase_timeout:/.test(reason || "")) return "The presentation exceeded its time limit. The unfinished attempt and its trace are saved; use Restart to prepare a new run.";
     return {
       CONTROL_PROCESSING_DEADLINE: "Control calculation missed its deadline. Waiting for a fresh frame.",
       STALE_CONTROL_SCENE: "Sensors are stale or out of sync. Waiting for a fresh frame.",
@@ -3465,6 +3466,7 @@
       REACHABLE_CORRIDOR_UNCERTAINTY: "A nearby object has uncertain motion. Waiting for a clearer measurement.",
       PREDICTED_INTERSECTION: "A predicted object path intersects the vehicle path.",
       BODY_OUTSIDE_DRIVABLE_ROAD: "This maneuver would take part of the vehicle outside the drivable road.",
+      ADJACENT_ROUTE_BLOCKED: "A measured stationary obstacle also blocks the passing route.",
       TRAFFIC_RULE_STOP: "Waiting for the traffic signal.",
       HYBRID_CONTROLLED_DECELERATION: "Slowing for the route and measured available space.",
       HYBRID_VALIDATION_EXPIRED: "Native validation time expired. Vehicle held.",
@@ -3524,6 +3526,12 @@
       detail: "The vehicle has arrived and stopped. Choose a new destination to drive again."
     };
     if (provider2.controlMode === "PAUSED" && provider2.route && ["PAUSED", "ERROR"].includes(provider2.journey?.status)) {
+      const runtime = provider2.stopDiagnostics?.runtime_fault;
+      if (runtime?.exception_type === "ControlSceneTimeout") return {
+        tone: "warning",
+        title: "Driving stopped: control sensors fell behind",
+        detail: "A synchronized control frame could not be recovered for one second. The vehicle is held and the failed recording is saved. Use Restart to prepare a fresh run."
+      };
       const stopped = provider2.lastDriveStop;
       const reason = stopped?.detail || provider2.stopDiagnostics?.reason || provider2.journey?.reason;
       const names = {
@@ -3549,6 +3557,51 @@
       title: "Hybrid slowing or holding",
       detail: controlReasonText(provider2.stopDiagnostics.reason)
     };
+    const bypass = provider2.maneuver;
+    if (provider2.controlMode === "AUTOMATIC" && observationCurrent(bypass, provider2, 0.15) && bypass.action === "PREPARE_DRIVE") return {
+      tone: "neutral",
+      title: "Checking the road before driving",
+      detail: "Measuring the route and surrounding traffic. Driving starts automatically."
+    };
+    if (provider2.controlMode === "AUTOMATIC" && observationCurrent(bypass, provider2, 0.15) && (bypass?.scope === "LOW_SPEED_STATIONARY_OBSTACLE_BYPASS" || bypass?.action === "PREPARE_BYPASS")) {
+      const held = provider2.stopDiagnostics?.braking;
+      if (held && ["CONTROL_PROCESSING_DEADLINE", "STALE_CONTROL_SCENE", "AWAITING_CURRENT_SENSOR_FRAME"].includes(provider2.stopDiagnostics?.reason)) return {
+        tone: "warning",
+        title: "Waiting for a fresh control frame",
+        detail: controlReasonText(provider2.stopDiagnostics.reason) + " The journey remains active."
+      };
+      const conflicts = (bypass.rejected || []).flatMap((r) => r.evidence?.conflicts || []);
+      if (held && bypass.action === "HOLD" && conflicts.length && conflicts.every((c) => c.source === "STATIONARY" && c.point_m?.[0] < 0)) return {
+        tone: "warning",
+        title: "Waiting for clearance near the rear corner",
+        detail: "A measured stationary object behind the vehicle limits the available maneuver. The journey remains active; the object type is unconfirmed."
+      };
+      if (held && provider2.stopDiagnostics?.decision_source === "EXECUTION_SHIELD") return {
+        tone: "warning",
+        title: "Passing paused for clearance",
+        detail: controlReasonText(provider2.stopDiagnostics.reason) + " The journey remains active."
+      };
+      if (bypass.action === "PREPARE_BYPASS") return {
+        tone: "neutral",
+        title: "Preparing to pass the stopped obstacle",
+        detail: "Slowing down and measuring adjacent traffic before choosing a passing path."
+      };
+      if (["FOLLOW", "SLOW", "DECELERATE"].includes(bypass.action) && bypass.target_speed_kmh <= 0.5 && bypass.rejected?.some((r) => r.reason === "ADJACENT_ROUTE_BLOCKED")) return {
+        tone: "warning",
+        title: "Waiting: passing lane blocked",
+        detail: "Another stationary obstacle blocks the passing route. The journey remains active and resumes when a verified route opens."
+      };
+      if (bypass.action === "HOLD") return {
+        tone: "warning",
+        title: "Waiting for a verified passing path",
+        detail: "The adjacent road or traffic does not yet permit this maneuver. " + controlReasonText(bypass.reason)
+      };
+      return {
+        tone: "neutral",
+        title: bypass.phase === "RETURN" ? "Returning to the original lane" : "Passing the stopped obstacle",
+        detail: "Following the measured passing corridor at low speed. Requested route speed resumes after the obstacle is cleared."
+      };
+    }
     if (provider2.controlMode === "AUTOMATIC" && provider2.stopDiagnostics?.braking && /vehicle footprint|blocked.*vehicle/i.test(provider2.stopDiagnostics.reason || "")) return {
       tone: "neutral",
       title: "Waiting for a vehicle on the route",
@@ -4413,7 +4466,8 @@
       $6("cockpitSpeedArc").style.strokeDasharray = `${Number.isFinite(m.speed) ? Math.min(100, Math.max(0, m.speed / 120 * 100)) : 0} 100`;
       $6("cockpitBrakeBar").style.width = (Number.isFinite(m.brake) ? m.brake : 0) + "%";
       document.querySelector(".cockpit-brake>div>span:last-child").textContent = Number.isFinite(m.brake) ? m.brake > 0 ? "Applied" : "Released" : "Unavailable";
-      set("cockpitBrakeReason", fresh ? (p.stopDiagnostics?.decision_source || "Driver") + " \xB7 " + controlReasonText(p.stopDiagnostics?.reason || "No braking requested") : "Waiting for live command");
+      const sensorFailure = p.controlMode === "PAUSED" && p.stopDiagnostics?.runtime_fault?.exception_type === "ControlSceneTimeout";
+      set("cockpitBrakeReason", fresh ? sensorFailure ? "CONTROL SENSORS \xB7 Synchronized data fell behind. Vehicle held; use Restart." : (p.stopDiagnostics?.decision_source || "Driver") + " \xB7 " + controlReasonText(p.stopDiagnostics?.reason || "No braking requested") : "Waiting for live command");
       set("cockpitGapStatus", Number.isFinite(m.gap) ? "Measured forward distance" : fresh ? "Unavailable or stale" : "Waiting for live sensors");
       set("cockpitTtcStatus", Number.isFinite(m.ttc) ? "Measured closing time" : fresh ? "No valid closing measurement" : "Waiting for live sensors");
       set("cockpitConnectionText", p.isReplay ? "Recorded replay" : fresh ? "CARLA Connected" : p.simulationStarting ? "CARLA Starting" : p.restarting ? "CARLA Restarting" : p.phase === "ERROR" ? "CARLA Error" : "CARLA Disconnected");
@@ -4452,7 +4506,7 @@
           safety.querySelector(".notice-copy p").textContent = notice.detail;
         }
       }
-      resume.hidden = !(notice && p.controlMode === "PAUSED" && p.route && !p.route.arrived && ["PAUSED", "ERROR"].includes(p.journey?.status));
+      resume.hidden = !(notice && p.controlMode === "PAUSED" && p.route && !p.route.arrived && !p.journey?.presentation_id && ["PAUSED", "ERROR"].includes(p.journey?.status));
       resume.disabled = !fresh || !p.controller || p.recording || p.recordingStatus?.finalized === false || p.restarting || !onResume || p.journey?.driving_mode === "HYBRID" && p.hybridDriving?.available !== true;
       for (const btn of document.querySelectorAll(".cockpit-dialog-emergency")) btn.disabled = $6("emergencyStopBtn").disabled;
       set("cockpitDetailsStatus", p.isReplay ? "Recorded replay \xB7 live inference is stopped." : fresh ? "Live measurements \xB7 " + (p.world?.map?.split("/").pop() || "CARLA") : "Simulator disconnected \xB7 live measurements unavailable.");
@@ -4691,7 +4745,7 @@
   var phases = {
     STOPPING: "Stopping the previous drive",
     PREPARING: "Choosing the route and preparing traffic",
-    READY: "Preparing the next driver",
+    READY: "Confirming route traffic",
     STARTING: "Starting the recording",
     DRIVING: "Driving and recording",
     FINALIZING: "Saving the recording",
@@ -4714,6 +4768,12 @@
     if (!data.conditions_match) return "Initial conditions were not verified. These are separate observations.";
     return "Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.";
   }
+  function presentationTrafficText(population, setup) {
+    const requested = setup?.requested_route_vehicles ?? 40, walkers = setup?.requested_route_pedestrians ?? 30;
+    const crowding = population?.route_crowding;
+    if (!crowding) return `Busy route \xB7 up to ${requested} vehicles \xB7 ${walkers} pedestrians`;
+    return `Route traffic \xB7 ${population.actual?.vehicles ?? "\u2014"}/${requested} vehicles \xB7 ${population.actual?.pedestrians ?? "\u2014"}/${walkers} pedestrians` + (crowding.target_count < requested ? " \xB7 limited by safe road spaces" : "");
+  }
   function installPresentationRun(p, tools2, clearControls2) {
     const panel = document.createElement("section");
     panel.id = "presentationControls";
@@ -4721,6 +4781,10 @@
     panel.innerHTML = '<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere \u2192 Normal \xB7 target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">\u21BB Restart</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Restart prepares the route, traffic and recordings automatically.</p></div>';
     const custom = document.createElement("details");
     custom.className = "presentation-custom";
+    const populationNote = document.createElement("span");
+    populationNote.id = "presentationPopulation";
+    populationNote.textContent = presentationTrafficText(null, null);
+    panel.querySelector(".presentation-intro").append(populationNote);
     custom.innerHTML = '<summary>Custom drive</summary><div><span id="presentationDestination">Choose a destination on the map</span><label>Target speed <select id="presentationCustomSpeed"><option value="20">20 km/h</option><option value="30" selected>30 km/h</option></select></label><button id="presentationCustomStart">Start driving & recording</button></div>';
     panel.append(custom);
     $8("cameraCard").before(panel);
@@ -4812,6 +4876,7 @@
     };
     return { update() {
       const data = p.presentation, status = data?.status || "IDLE", busy = !terminal.has(status), active = ["STARTING", "RUNNING"].includes(p.journey?.status);
+      $8("presentationPopulation").textContent = presentationTrafficText(p.fresh ? p.population : null, data?.setup);
       if (["CANCELLED", "ERROR"].includes(status) && lastPhase !== status) {
         linked = false;
         for (const i of items) i.video.pause();
@@ -4835,6 +4900,10 @@
       const notice = safetyNotice(p);
       let title = pendingStart ? "Starting the simulator" : !p.connected ? "Simulator stopped or disconnected" : busy ? (phases[status] || status) + (status === "DRIVING" ? " \xB7 " + (data.arm === 0 ? "Robosphere" : "Normal") : "") : notice?.title || phases[status] || "Ready when you are";
       let detail = pendingStart ? "The route and both recordings will follow automatically." : p.operationError ? demoFailure(p.operationError) : status === "ERROR" ? demoFailure(data.reason) : notice?.detail || (status === "DRIVING" ? data.arm === 1 ? "Recording is active. Normal follows the route and traffic signals." : "Recording is active. Signal and protective stops resume automatically." : busy ? "The next step runs automatically. Stop and Emergency stop remain available." : "Restart prepares the route, traffic and recordings automatically.");
+      if (status === "ERROR" && p.stopDiagnostics?.runtime_fault?.exception_type === "ControlSceneTimeout" && notice) {
+        title = notice.title;
+        detail = notice.detail;
+      }
       if (active && notice) {
         title = notice.title;
         detail = notice.detail;

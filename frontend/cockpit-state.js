@@ -3,6 +3,7 @@ const finite = value => Number.isFinite(value) && value >= 0;
 export const metricText = (value, digits = 0) => finite(value) ? value.toFixed(digits) : '—';
 
 export function controlReasonText(reason) {
+  if(/^presentation_phase_timeout:/.test(reason||''))return 'The presentation exceeded its time limit. The unfinished attempt and its trace are saved; use Restart to prepare a new run.';
   return ({
     CONTROL_PROCESSING_DEADLINE:'Control calculation missed its deadline. Waiting for a fresh frame.',
     STALE_CONTROL_SCENE:'Sensors are stale or out of sync. Waiting for a fresh frame.',
@@ -12,6 +13,7 @@ export function controlReasonText(reason) {
     REACHABLE_CORRIDOR_UNCERTAINTY:'A nearby object has uncertain motion. Waiting for a clearer measurement.',
     PREDICTED_INTERSECTION:'A predicted object path intersects the vehicle path.',
     BODY_OUTSIDE_DRIVABLE_ROAD:'This maneuver would take part of the vehicle outside the drivable road.',
+    ADJACENT_ROUTE_BLOCKED:'A measured stationary obstacle also blocks the passing route.',
     TRAFFIC_RULE_STOP:'Waiting for the traffic signal.',
     HYBRID_CONTROLLED_DECELERATION:'Slowing for the route and measured available space.',
     HYBRID_VALIDATION_EXPIRED:'Native validation time expired. Vehicle held.',
@@ -70,6 +72,10 @@ export function safetyNotice(provider) {
       (provider.journey?.status==='ARRIVED'||provider.route?.arrived))return {
     tone:'neutral',title:'Destination reached',detail:'The vehicle has arrived and stopped. Choose a new destination to drive again.'};
   if (provider.controlMode === 'PAUSED' && provider.route && ['PAUSED','ERROR'].includes(provider.journey?.status)) {
+    const runtime=provider.stopDiagnostics?.runtime_fault;
+    if(runtime?.exception_type==='ControlSceneTimeout')return {
+      tone:'warning',title:'Driving stopped: control sensors fell behind',
+      detail:'A synchronized control frame could not be recovered for one second. The vehicle is held and the failed recording is saved. Use Restart to prepare a fresh run.'};
     const stopped=provider.lastDriveStop;
     const reason=stopped?.detail || provider.stopDiagnostics?.reason || provider.journey?.reason;
     const names={focus_lost:'Driving was paused when the page lost focus',operator_stop:'Stopped by the operator',
@@ -83,6 +89,31 @@ export function safetyNotice(provider) {
     tone:'neutral',title:'Waiting at a red light',detail:'The journey is active. Driving resumes automatically when the signal permits.'};
   if(provider.controlMode==='AUTOMATIC'&&provider.journey?.driving_mode==='HYBRID'&&provider.stopDiagnostics?.braking)return {
     tone:'warning',title:'Hybrid slowing or holding',detail:controlReasonText(provider.stopDiagnostics.reason)};
+  const bypass=provider.maneuver;
+  if(provider.controlMode==='AUTOMATIC'&&observationCurrent(bypass,provider,.15)&&bypass.action==='PREPARE_DRIVE')return {
+    tone:'neutral',title:'Checking the road before driving',detail:'Measuring the route and surrounding traffic. Driving starts automatically.'};
+  if(provider.controlMode==='AUTOMATIC'&&observationCurrent(bypass,provider,.15)&&
+      (bypass?.scope==='LOW_SPEED_STATIONARY_OBSTACLE_BYPASS'||bypass?.action==='PREPARE_BYPASS')){
+    const held=provider.stopDiagnostics?.braking;
+    if(held&&['CONTROL_PROCESSING_DEADLINE','STALE_CONTROL_SCENE','AWAITING_CURRENT_SENSOR_FRAME'].includes(provider.stopDiagnostics?.reason))return {
+      tone:'warning',title:'Waiting for a fresh control frame',detail:controlReasonText(provider.stopDiagnostics.reason)+' The journey remains active.'};
+    const conflicts=(bypass.rejected||[]).flatMap(r=>r.evidence?.conflicts||[]);
+    if(held&&bypass.action==='HOLD'&&conflicts.length&&conflicts.every(c=>c.source==='STATIONARY'&&c.point_m?.[0]<0))return {
+      tone:'warning',title:'Waiting for clearance near the rear corner',
+      detail:'A measured stationary object behind the vehicle limits the available maneuver. The journey remains active; the object type is unconfirmed.'};
+    if(held&&provider.stopDiagnostics?.decision_source==='EXECUTION_SHIELD')return {
+      tone:'warning',title:'Passing paused for clearance',detail:controlReasonText(provider.stopDiagnostics.reason)+' The journey remains active.'};
+    if(bypass.action==='PREPARE_BYPASS')return {tone:'neutral',title:'Preparing to pass the stopped obstacle',
+      detail:'Slowing down and measuring adjacent traffic before choosing a passing path.'};
+    if(['FOLLOW','SLOW','DECELERATE'].includes(bypass.action)&&bypass.target_speed_kmh<=.5&&
+        bypass.rejected?.some(r=>r.reason==='ADJACENT_ROUTE_BLOCKED'))return {
+      tone:'warning',title:'Waiting: passing lane blocked',
+      detail:'Another stationary obstacle blocks the passing route. The journey remains active and resumes when a verified route opens.'};
+    if(bypass.action==='HOLD')return {tone:'warning',title:'Waiting for a verified passing path',
+      detail:'The adjacent road or traffic does not yet permit this maneuver. '+controlReasonText(bypass.reason)};
+    return {tone:'neutral',title:bypass.phase==='RETURN'?'Returning to the original lane':'Passing the stopped obstacle',
+      detail:'Following the measured passing corridor at low speed. Requested route speed resumes after the obstacle is cleared.'};
+  }
   if(provider.controlMode==='AUTOMATIC'&&provider.stopDiagnostics?.braking&&
       /vehicle footprint|blocked.*vehicle/i.test(provider.stopDiagnostics.reason||''))return {
     tone:'neutral',title:'Waiting for a vehicle on the route',detail:'A vehicle overlaps the planned path. The journey remains active and resumes when it clears.'};

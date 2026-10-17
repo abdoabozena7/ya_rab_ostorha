@@ -79,6 +79,17 @@ class PresentationTests(unittest.TestCase):
         self.assertEqual(self.service.stop_diagnostics['reason'],'emergency_stop_released')
         self.assertEqual(self.service.stop_diagnostics['decision_source'],'VEHICLE_HOLD')
 
+    def test_initial_arm_waits_for_confirmed_traffic_and_walker_controllers(self):
+        population={'route_crowding':{'status':'PARTIAL'},'walker_controllers_ready':False}
+        self.provider.population_state=lambda:population
+        self.p.start();self.tick();self.tick();self.tick()
+        self.assertEqual(self.p.data['status'],'READY')
+        self.service.start_journey.assert_not_called()
+        population['route_crowding']['status']='READY';self.tick()
+        self.service.start_journey.assert_not_called()
+        population['walker_controllers_ready']=True;self.tick()
+        self.service.start_journey.assert_called_once()
+
     def test_stop_during_native_preparation_cannot_be_overwritten_by_ready(self):
         self.p.start();self.tick()
         def prepare(*args):

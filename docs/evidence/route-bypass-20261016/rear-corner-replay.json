@@ -1,0 +1,112 @@
+{
+  "source": "RECORDED_NATIVE_STATIC_REAR_CONFLICT_OFFLINE_GEOMETRY",
+  "recording_id": "run_335ef662531a4317aa76c98b752bd302",
+  "frame_id": 94927,
+  "timestamp_s": 2657.142115458846,
+  "track": {
+    "id": "383",
+    "position_m": [
+      -3.886327341460894,
+      -2.5983837842941284
+    ],
+    "half_size_m": [
+      3.0279460104939444,
+      1.264428734779358
+    ],
+    "velocity_mps": [
+      -0.00014255533505858065,
+      -0.0002338231266127474
+    ],
+    "uncertainty_m": 0.15,
+    "class": "UNKNOWN",
+    "confirmed": true,
+    "occlusion_s": 0.0
+  },
+  "geometry": {
+    "front_m": 2.439899010118097,
+    "rear_m": 2.4524826579727232,
+    "half_width_m": 0.9183587086772604,
+    "wheelbase_m": 2.876906738281253,
+    "max_steer_rad": 1.2217303432379762,
+    "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+  },
+  "native_candidate_rejections": [
+    {
+      "action": "FOLLOW",
+      "reason": "PREDICTED_INTERSECTION",
+      "evidence": {
+        "conflicts": [
+          {
+            "track_id": "383",
+            "mode": 0,
+            "source": "STATIONARY",
+            "time_s": 0.6,
+            "point_m": [
+              -3.886327341460894,
+              -2.5983837842941284
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "action": "CHANGE_LEFT",
+      "reason": "INTENDED_MANEUVER_REACHABLE_CORRIDOR_UNCERTAINTY",
+      "evidence": {
+        "track_ids": [
+          "393"
+        ]
+      }
+    },
+    {
+      "action": "SLOW",
+      "reason": "PREDICTED_INTERSECTION",
+      "evidence": {
+        "conflicts": [
+          {
+            "track_id": "383",
+            "mode": 0,
+            "source": "STATIONARY",
+            "time_s": 0.6,
+            "point_m": [
+              -3.886327341460894,
+              -2.5983837842941284
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "action": "SLOW",
+      "reason": "PREDICTED_INTERSECTION",
+      "evidence": {
+        "conflicts": [
+          {
+            "track_id": "383",
+            "mode": 0,
+            "source": "STATIONARY",
+            "time_s": 0.6,
+            "point_m": [
+              -3.886327341460894,
+              -2.5983837842941284
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "hold_prediction_conflicts": [
+    {
+      "source": "STATIONARY",
+      "time_s": 0.6,
+      "point_m": [
+        -3.886327341460894,
+        -2.5983837842941284
+      ],
+      "separating_rear_overlap": false
+    }
+  ],
+  "measured_rectangle_clearance_m": 0.41559634083751007,
+  "interpretation": "Measured surface rectangles have positive clearance; the growing uncertainty plus padding creates a held-pose future intersection. This does not establish calibrated true actor bounds or authorize ignoring the conflict.",
+  "native_fix_verified": false
+}

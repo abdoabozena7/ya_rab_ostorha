@@ -1,7 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
-import {presentationSummary,presentationStep} from '../frontend/presentation-run.js';
+import {presentationSummary,presentationStep,presentationTrafficText} from '../frontend/presentation-run.js';
+
+test('automatic route population shows actual counts and capacity limits',()=>{
+  assert.match(presentationTrafficText(null,null),/up to 40 vehicles · 30 pedestrians/);
+  const p={actual:{vehicles:34,pedestrians:30},route_crowding:{target_count:34}};
+  assert.match(presentationTrafficText(p,null),/34\/40 vehicles · 30\/30 pedestrians/);
+  assert.match(presentationTrafficText(p,null),/limited by safe road spaces/);
+  p.actual.vehicles=40;p.route_crowding.target_count=40;
+  assert.doesNotMatch(presentationTrafficText(p,null),/limited/);
+});
 
 test('presentation results never infer superiority from a failed or mismatched pair',()=>{
   const data={conditions_match:true,runs:{ROBOSPHERE:{status:'ARRIVED'},NORMAL:{status:'ARRIVED'}}};

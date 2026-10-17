@@ -29,6 +29,18 @@ def road(**kw):
 
 
 class GeometryTests(unittest.TestCase):
+    def test_lane_shift_is_tied_to_forward_travel_and_stays_physically_steerable(self):
+        from backend.core.maneuver import route_path
+        g=VehicleGeometry();road={'centerline':[[0.,0.],[50.,0.]]}
+        path,speeds=route_path(.05,0.,-3.5,road,g,2.)
+        self.assertLess(abs(path[-1,2]),.001)
+        self.assertLess(np.max(np.abs(path[:,3])),.01)
+        path,speeds=route_path(2.,0.,-3.5,road,g,2.)
+        ds=np.linalg.norm(np.diff(path[:,1:3],axis=0),axis=1)
+        curvature=np.diff(path[:,3])/ds
+        self.assertLess(np.max(np.abs(np.arctan(curvature*g.wheelbase_m))),g.max_steer_rad)
+        self.assertLess(np.max(np.abs(curvature)*speeds[1:]**2),2.)
+
     def test_coverage_stops_at_first_body_obstacle_or_unknown_slice_without_skipping_islands(self):
         geometry=VehicleGeometry(2.,2.,1.,2.8,.6)
         path=np.column_stack((np.arange(0.,11.,.5),np.arange(0.,11.,.5),np.zeros(22),np.zeros(22)))

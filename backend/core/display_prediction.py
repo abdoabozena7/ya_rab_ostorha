@@ -32,6 +32,23 @@ def local_modes(modes, prediction, source_timestamp_s=None):
     return converted
 
 
+def measured_control_view(scene,reference):
+    """Small display view; the complete immutable control forecasts stay owned.
+
+    Do not copy/rebuild/score their full graph in a competing Python thread
+    while the synchronized control owner is proving a maneuver.
+    """
+    keys=('id','position_m','half_size_m','velocity_mps','class','confirmed','occlusion_s')
+    return {'version':3,'session_id':scene.session_id,'evaluation_frame':scene.observation.frame_id,
+        'timestamp_s':scene.observation.timestamp_s,'coordinate_frame':'EGO_AT_EVALUATION',
+        'published_wall_s':time.monotonic(),
+        'render_reference':copy.deepcopy(reference),
+        'tracks':[{key:to_dict(track[key]) for key in keys if key in track} for track in scene.prediction['tracks']],
+        'trajectories':[],'conflicts':[],'used_for_applied_decision':False,
+        'display_observer_deferred':True,'source':'MEASURED_CONTROL_SCENE',
+        'deferred_reason':'Supplementary display forecasts deferred while control owns the maneuver'}
+
+
 class DisplayPredictionService:
     def __init__(self, service, perception):
         self.service=service;self.perception=perception;self.latest=None;self.error=None
@@ -65,13 +82,28 @@ class DisplayPredictionService:
                     if not history:continue
                     observation=history[-1];key=(s.session_id,observation.frame_id)
                     planning_active=(getattr(s.provider,'navigation_planner',None) is not None or
-                                     getattr(s.provider,'navigation_recovery',None) is not None)
+                                     getattr(s.provider,'navigation_recovery',None) is not None or
+                                     bool(getattr(s.provider,'navigation_bypass',None) and s.provider.navigation_bypass.motion_required))
                     from ..learning.recovery_budget import active_ticket
                     recovery_testing=active_ticket() is not None
                     planning_active=planning_active or recovery_testing
                     due=observed_began+(.1 if planning_active else .2)
                     if key==previous:continue
                     previous=key
+                    from .route_bypass import RuleRouteBypass
+                    bypass=getattr(s.provider,'navigation_bypass',None)
+                    critical_control=(isinstance(bypass,RuleRouteBypass) and bypass.motion_required or
+                        getattr(s,'journey',{}).get('driving_mode')=='HYBRID')
+                    if critical_control:
+                        # Capture the scene under the same lock as its frame.
+                        # Previously a race could build a second complete scene
+                        # and score forecasts while the owner missed 250 ms.
+                        measured=getattr(s,'control_scene',None)
+                        self.latest=(measured_control_view(measured,s.render_pose_cache.get(observation.frame_id))
+                            if measured is not None and measured.observation.frame_id==observation.frame_id and
+                               measured.prediction.get('motion_tracking_complete') else None)
+                        self.error=None;due=observed_began+.2
+                        continue
                     lidar=next(c for c in observation.channels if c.kind==SensorKind.LIDAR)
                     data=s.provider.get_sensor_asset(lidar.asset)
                     depth_assets={c.asset.path:s.provider.get_sensor_asset(c.asset) for c in observation.channels if c.kind==SensorKind.DEPTH}

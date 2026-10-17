@@ -19,9 +19,10 @@ from .route_terminal import terminal_speed_mps
 class HybridDriver:
     DRIVER_ID = 'ROBOSPHERE_HYBRID_V1'
 
-    def __init__(self, geometry, *, deadline=float('inf'), calibration=None):
+    def __init__(self, geometry, *, deadline=float('inf'), calibration=None,allow_reverse=True):
         self.geometry = geometry
         self.deadline = deadline
+        self.allow_reverse=allow_reverse
         self.shield = ExecutionShield()
         self.calibration = dict(calibration or {})
         self.phase = 'FOLLOW'
@@ -45,6 +46,38 @@ class HybridDriver:
         self.motion_stamp = None
         self.raw_acceleration = 0.
         self.control_dt = .05
+        self.maneuver_curve = None
+        self.blocker_anchor = None
+
+    def _make_curve(self,scene,road,offset,kind):
+        from .maneuver import spatial_route
+        from .prediction import rotation
+        curve=spatial_route(offset,road,np.arange(0.,30.01,.25))
+        yaw=scene.prediction['odometry_yaw_rad'];origin=np.asarray(scene.prediction['odometry_origin_m'])
+        return {'kind':kind,'points':curve[:,1:3]@rotation(yaw).T+origin,'yaw':curve[:,3]+yaw}
+
+    def _local_curve(self,scene,curve):
+        from .prediction import rotation
+        yaw=scene.prediction['odometry_yaw_rad'];origin=np.asarray(scene.prediction['odometry_origin_m'])
+        xy=(curve['points']-origin)@rotation(yaw)
+        nearest=int(np.argmin(np.linalg.norm(xy,axis=1)))
+        xy=xy[max(0,nearest-1):];angles=curve['yaw'][max(0,nearest-1):]-yaw
+        arc=np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))]
+        return np.column_stack((arc,xy,angles))
+
+    def _curve_forecast(self,scene,curve,target):
+        local=self._local_curve(scene,curve)
+        speed=scene.observation.ego.speed_mps
+        v=np.clip(speed+np.clip((target-speed)*.8,-3.,2.)*GRID,0.,max(speed,target))
+        distance=np.r_[0.,np.cumsum((v[:-1]+v[1:])*.05)]
+        result=np.column_stack((GRID,*(np.interp(distance,local[:,0],local[:,i]) for i in (1,2,3))))
+        result[0]=[0.,0.,0.,0.]
+        return result
+
+    def _remember_blocker(self,scene,track):
+        from .prediction import rotation
+        yaw=scene.prediction['odometry_yaw_rad'];origin=np.asarray(scene.prediction['odometry_origin_m'])
+        self.blocker_anchor=(origin+rotation(yaw)@np.asarray(track['position_m']),list(track['half_size_m']))
 
     def _hold(self, scene, base, result, reason, *, forward_gear=False):
         ego = scene.observation.ego if scene else None
@@ -136,8 +169,10 @@ class HybridDriver:
         limit=math.atan(2.*self.geometry.wheelbase_m/max(.25,speed**2))/self.geometry.max_steer_rad
         return float(np.clip(steering,-min(1.,limit),min(1.,limit)))
 
-    def _proposal(self, scene, base, road, target, offset, dt, *, reverse=False, steering=None):
+    def _proposal(self, scene, base, road, target, offset, dt, *, reverse=False, steering=None,maneuver_curve=None):
         speed = scene.observation.ego.speed_mps
+        if maneuver_curve is not None:
+            steering=self._steering(self._local_curve(scene,maneuver_curve),speed,base,dt)
         if steering is None and not reverse and abs(offset)<.01 and self.phase in ('FOLLOW','WAIT'):
             steering=base.steering
         if steering is None:
@@ -186,7 +221,11 @@ class HybridDriver:
         rear_urgent = any(c['point_m'][0] < -self.geometry.rear_m and c['time_s'] <= 2. for c in conflicts)
         result['rear_urgent'] = rear_urgent
         line = np.asarray(road['centerline'], float)
-        route_probe, _ = route_path(max(ego.speed_mps, 1.), 1., self.offset, road, self.geometry, max(ego.speed_mps, cap_mps))
+        # Route membership is a geometric lookahead, not the distance a slow
+        # three-second actuator preview happens to travel. The latter hid a
+        # stopped car until it was too close to start a passing curve.
+        from .maneuver import spatial_route
+        route_probe=spatial_route(self.offset,road,np.arange(0.,40.01,.5))
         front = []
         for track in tracks:
             if not track.get('confirmed'): continue
@@ -212,6 +251,7 @@ class HybridDriver:
             if not stopped or ego.reverse:
                 return self._hold(scene, base, result, 'SETTLING_BEFORE_FORWARD_ROUTE', forward_gear=True)
             self.phase = 'FOLLOW'; self.offset = 0.; self.blocked_since = None
+            self.maneuver_curve=None
             result['request_replan'] = True
             return self._hold(scene, base, result, 'REPLAN_REQUIRED', forward_gear=True)
         if self.phase == 'REVERSE':
@@ -226,14 +266,20 @@ class HybridDriver:
         if self.phase == 'PASS':
             blocker = next((t for t in tracks if t['id'] == self.blocker), None)
             passed = blocker is not None and blocker['position_m'][0]+blocker['half_size_m'][0] < -self.geometry.rear_m-2.
-            if blocker is None:
-                if self.lost_blocker_since is None: self.lost_blocker_since = now
-                passed = now-self.lost_blocker_since >= 3.
-            else: self.lost_blocker_since = None
+            if blocker is not None:self._remember_blocker(scene,blocker)
+            elif self.blocker_anchor is not None:
+                from .prediction import rotation
+                point,half=self.blocker_anchor
+                local=rotation(scene.prediction['odometry_yaw_rad']).T@(point-np.asarray(scene.prediction['odometry_origin_m']))
+                # A lost ID and elapsed time alone do not prove passing. Require
+                # measured ego travel beyond the last observed blocker bounds.
+                # Return still needs a fresh independent space/dynamic proof.
+                passed=local[0]+max(half)<-self.geometry.rear_m-2.
             if passed and road.get('return_allowed') and not road.get('junction_ahead'):
-                self.phase = 'RETURN'
+                self.phase = 'RETURN';self.maneuver_curve=None
         if self.phase == 'RETURN' and abs(line[0, 1]) < .35:
             self.phase = 'FOLLOW'; self.offset = 0.; self.blocker = None
+            self.maneuver_curve=None;self.blocker_anchor=None
             self.completed_maneuvers.append('PASS_RETURN')
 
         target = max(0., cap_mps)
@@ -256,6 +302,7 @@ class HybridDriver:
             gap, track = nearest
             target = min(target, max(0., track['velocity_mps'][0]) + max(0., (gap-4.)/2.))
         proposals = []
+        need_pass=False
         if self.phase == 'REVERSE':
             proposals = [('REVERSE', min(1., cap_mps), 0., True, self.reverse_steering)]
         else:
@@ -271,21 +318,34 @@ class HybridDriver:
                     for side, sign in (('left', -1.), ('right', 1.)):
                         if road.get(side+'_allowed'):
                             proposals.append(('CHANGE_'+side.upper(), min(cap_mps,2.), sign*road['lane_width_m'], False, None))
-                if blocked and not rear_urgent and self.reverse_attempts<2:
+                if self.allow_reverse and blocked and not rear_urgent and self.reverse_attempts<2:
                     proposals += [('REVERSE',1.,0.,True,angle) for angle in (0.,-.15,.15)]
 
         def rank(proposal):
             name,desired,offset,reverse,_=proposal
             return desired-abs(offset)*.1-(2. if reverse else 0.)+\
-                (3. if name.startswith('CHANGE_') and blocked else 0.)+\
+                (3. if name.startswith('CHANGE_') and (need_pass or blocked) else 0.)+\
                 (.5 if name==self.phase else 0.)+(2. if reverse and blocked else 0.)
         accepted = []
+        candidate_curves={}
         for proposal in sorted(proposals,key=rank,reverse=True):
             name, desired, offset, reverse, steering=proposal
-            command, path = self._proposal(scene, base, road, desired, offset, min(dt, .1), reverse=reverse, steering=steering)
+            curve=None
+            if name.startswith('CHANGE_'):
+                from .maneuver import stationary_route_blocker
+                intended_route=spatial_route(offset,road,np.arange(0.,40.01,.5))
+                blocked_track=stationary_route_blocker(tracks,intended_route,self.geometry,
+                    max(25.,nearest[0]+8.) if nearest else 25.)
+                if blocked_track is not None:
+                    result['rejected'].append({'action':name,'reason':'ADJACENT_ROUTE_BLOCKED','track_id':blocked_track})
+                    continue
+                curve=self._make_curve(scene,road,offset,'EXIT')
+            elif self.phase in ('EXIT','PASS','RETURN'):
+                curve=self.maneuver_curve or self._make_curve(scene,road,offset,self.phase)
+            candidate_curves[name]=curve
+            command, path = self._proposal(scene, base, road, desired, offset, min(dt, .1), reverse=reverse, steering=steering,maneuver_curve=curve)
             if name.startswith('CHANGE_') or name in ('EXIT','RETURN'):
-                intended,_=route_path(ego.speed_mps,np.clip((desired-ego.speed_mps)*.8,-3.,2.),
-                                      offset,road,self.geometry,max(ego.speed_mps,desired))
+                intended=self._curve_forecast(scene,curve,desired)
                 ok,reason,evidence=self.shield.check(scene,intended,command,road,timestamp_s=base.timestamp_s,
                     wall_s=wall+time.perf_counter()-began,full_maneuver=True)
                 if not ok:
@@ -330,7 +390,9 @@ class HybridDriver:
         elif name.startswith('CHANGE_'):
             self.phase = 'EXIT'; self.offset = offset
             self.blocker = nearest[1]['id'] if nearest else None
-        elif self.phase == 'WAIT': self.phase = 'FOLLOW'
+            if nearest:self._remember_blocker(scene,nearest[1])
+        if candidate_curves.get(name) is not None:self.maneuver_curve=candidate_curves[name]
+        if self.phase == 'WAIT': self.phase = 'FOLLOW'
         result.update(action=name, phase=self.phase, reason='VERIFIED_MEASURED_MOTION',
                       selected_path=path.tolist(), space=evidence, target_speed_kmh=target*3.6,
                       reverse_distance_m=self.distance, completed_maneuvers=list(self.completed_maneuvers))

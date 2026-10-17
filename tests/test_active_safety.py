@@ -27,6 +27,19 @@ def scene(observation, *, clear=False, obstacle=False):
 
 
 class ActiveSafetyTests(unittest.TestCase):
+    def test_legacy_teacher_receives_front_radar_while_surround_stays_in_scene(self):
+        o,b=case(distance=8.,speed=3.,velocity=-8.);o,reader=scene(o,clear=True)
+        radar=next(c for c in o.channels if c.kind==SensorKind.RADAR)
+        front=replace(radar,sensor_id='radar')
+        rear=replace(radar,sensor_id='rearRightRadar',calibration={**dict(radar.calibration),
+            'mount_transform':{'position_m':[-2.5,1.,.65],'rotation_deg':{'pitch':0.,'yaw':135.,'roll':0.}}})
+        o=replace(o,channels=tuple(front if c is radar else c for c in o.channels)+(rear,))
+        assessed=assess_forward_space(o,reader,RuntimeSafetyConfig.load())
+        self.assertEqual([c.sensor_id for c in assessed['teacher_observation'].channels if c.kind==SensorKind.RADAR],['radar'])
+        self.assertIs(o.channels[-1],rear)
+        command=ActiveSafetySupervisor().evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+        self.assertEqual(command.brake,1.)
+
     def test_out_of_range_radar_return_does_not_invent_hazard_on_measured_clear_road(self):
         from unittest.mock import Mock
         supervisor=ActiveSafetySupervisor()
@@ -65,9 +78,10 @@ class ActiveSafetyTests(unittest.TestCase):
         with patch('backend.core.active_safety.retained_radar_observation',wraps=retained_radar_observation) as retained:
             assessed=assess_forward_space(observation,reader,RuntimeSafetyConfig.load())
         filtered=retained.call_args.args[0]
-        self.assertEqual(len(filtered.channels),len(observation.channels))
+        self.assertEqual(len(filtered.channels),len(observation.channels)-1)
         self.assertEqual(sum(c.sensor_id==front.sensor_id for c in filtered.channels),1)
-        self.assertIs(next(c for c in filtered.channels if c.sensor_id==surround.sensor_id),surround)
+        self.assertFalse(any(c.sensor_id==surround.sensor_id for c in filtered.channels))
+        self.assertIs(observation.channels[-1],surround)
         self.assertIsNotNone(assessed)
 
     def test_far_side_of_a_turn_uses_arc_distance_and_does_not_become_a_near_obstacle(self):

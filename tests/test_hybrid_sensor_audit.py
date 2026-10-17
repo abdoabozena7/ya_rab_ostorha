@@ -3,23 +3,26 @@ from scripts.audit_hybrid_sensor_coverage import camera_contains
 
 
 class NominalCameraAuditTests(unittest.TestCase):
-    def test_denser_lidar_is_confined_to_the_admitted_or_ticketed_hybrid_rig(self):
+    def test_denser_lidar_is_confined_to_the_admitted_or_ticketed_hybrid_or_route_bypass_rig(self):
         from types import SimpleNamespace as NS
         from unittest.mock import patch
         from backend.carla.sensors import CarlaSensorManager
         api=NS(Location=lambda **values:NS(**values),Rotation=lambda **values:NS(**values),
                Transform=lambda *values:NS(values=values))
         ego=NS(bounding_box=NS(location=NS(x=0.,y=0.),extent=NS(x=2.4,y=.9)))
-        for enabled,suppress,expected in ((False,False,(16,32000,-30)),(True,False,(32,128000,-60)),(True,True,(16,32000,-30))):
+        for enabled,bypass,suppress,expected in ((False,False,False,(16,32000,-30)),
+                (True,False,False,(32,128000,-60)),(True,False,True,(16,32000,-30)),
+                (False,True,False,(32,128000,-60)),(False,True,True,(16,32000,-30))):
             manager=CarlaSensorManager(None,ego);manager.actors['collision']=object();plans={}
             manager.spawn=lambda name,blueprint,mount,attrs,decode:plans.update({name:attrs})
             with patch('backend.learning.hybrid_budget.active_ticket',return_value={'validation':True} if enabled else None),\
-                 patch('backend.learning.recovery_budget.active_ticket',return_value=None):
+                 patch('backend.learning.recovery_budget.active_ticket',return_value=None),\
+                 patch('backend.core.route_bypass.available',return_value=bypass):
                 manager.enable_suite(api,.05,{'camera_view':'front','camera_resolution':'640x360',
                     'camera_fov':90,'_suppress_pilot_surround':suppress})
             self.assertEqual(tuple(plans['lidar'][k] for k in ('channels','points_per_second','lower_fov')),expected)
             self.assertEqual(plans['lidar']['rotation_frequency'],20.)
-            self.assertEqual('frontLeftDepth' in plans,enabled and not suppress)
+            self.assertEqual('frontLeftDepth' in plans,(enabled or bypass) and not suppress)
 
     def calibration(self,yaw=0.,position=None):
         return {'width':240,'height':135,'fov_deg':120.,'mount_transform':{
