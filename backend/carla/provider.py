@@ -187,11 +187,14 @@ class CarlaProvider:
 
     def step(self):
         if self.benchmark_fixture:self.benchmark_fixture.prepare_tick()
+        stress=getattr(self,'dense_chaos',None)
+        if stress:stress.before_tick()
         if self.scenarios: self.scenarios.before_tick()
         if self.population and self.dashboard_tools:
             route = self.dashboard_tools.route
             self.population.set_route(route['points'] if route else [])
         snapshot = self.world.advance()
+        if stress:stress.after_tick(snapshot)
         self.last_actor_ids={a.id for a in snapshot} if self.scenarios and self.scenarios.urban else set()
         # Display counts use the worker's native snapshot. Dashboard requests
         # must not issue 71 actor queries while holding the control lock.
@@ -393,7 +396,7 @@ class CarlaProvider:
             from .benchmark_fixture import BenchmarkFixture
             if not self.benchmark_prepared:
                 if self.benchmark_fixture: self.benchmark_fixture.close()
-                self.benchmark_fixture = BenchmarkFixture(self)
+                self.benchmark_fixture = BenchmarkFixture(self,reconstructable=getattr(self,'guided_presentation',False))
                 self.benchmark_fixture.capture()
             self.benchmark_prepared = False
             manifest.update(protocol='HYBRID_NATIVE_BASELINE_V1', initial_condition_id=self.benchmark_fixture.condition['id'],
@@ -403,6 +406,13 @@ class CarlaProvider:
                                    'controllers':len(self.population.walkers),'walkers_active':0})
         return manifest
 
+    def clear_presentation_context(self):
+        """An explicit ordinary/research journey cannot inherit stress controls."""
+        stress=getattr(self,'dense_chaos',None)
+        if stress:stress.running=False
+        self.dense_chaos=None
+        self.guided_presentation=False
+
     def prepare_journey_comparison(self, manifest):
         self._ensure_dashboard_tools()
         if not manifest or manifest['map'] != self.dashboard_tools.map_name:
@@ -411,10 +421,10 @@ class CarlaProvider:
             raise ValueError('Select the saved vehicle before preparing this comparison')
         self.stop_navigation()
         self.set_controls(brake=1)
-        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1'):
+        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1','GUIDED_RULE_NORMAL_V2'):
             if not self.benchmark_fixture or self.benchmark_fixture.condition['id'] != manifest['initial_condition_id']:
                 raise ValueError('The live benchmark fixture expired; start a new pair')
-            self.benchmark_fixture.restore()
+            self.benchmark_fixture.restore(**({'rebuild':True} if manifest.get('guided') else {}))
             api, origin = self.connection.api, manifest['origin']
             self.ego.actor.set_target_velocity(api.Vector3D()); self.ego.actor.set_target_angular_velocity(api.Vector3D())
             self.ego.actor.set_transform(api.Transform(api.Location(*origin['location']),
@@ -444,9 +454,9 @@ class CarlaProvider:
         self.population.set_route(tools.route['points'])
         self.set_controls(brake=1)
 
-    def prepare_presentation(self, seed, speed):
+    def prepare_presentation(self, seed, speed, **options):
         from .presentation import prepare
-        return prepare(self, seed, speed)
+        return prepare(self, seed, speed, **options)
 
     def finish_presentation_setup(self,seed,setup):
         from .presentation import finish_prepare

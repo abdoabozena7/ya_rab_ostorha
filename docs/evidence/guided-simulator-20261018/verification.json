@@ -1,0 +1,1893 @@
+{
+  "date": "2026-10-18",
+  "scope": "GUIDED_PROTOCOL_AND_UI_DELIVERY_WITH_SCOPED_NATIVE_PROBES",
+  "software": {
+    "javascript": {
+      "tests": 150,
+      "passed": 150
+    },
+    "python": {
+      "tests": 623,
+      "passed": 621,
+      "skipped": 2
+    },
+    "dashboard_build": "PASS"
+  },
+  "browser": {
+    "checks": [
+      "START_GUIDED uses explicit first mode",
+      "NEXT bound to current presentation / arm / phase",
+      "Contact and saved metrics appear before second start",
+      "Results are visible without exported video",
+      "Optional video/results review returns to the same mission",
+      "Expanded camera reserves space for the action and emergency; Escape restores it",
+      "Menu Escape restores keyboard focus",
+      "PREPARING: status without an unavailable task button",
+      "READY: status without an unavailable task button",
+      "STARTING: status without an unavailable task button",
+      "FINALIZING: status without an unavailable task button",
+      "RESTORING: status without an unavailable task button",
+      "RECOVERING: status without an unavailable task button",
+      "Restoration failure retains a contextual retry",
+      "GPU release cancels normal task actions"
+    ],
+    "measurements": [
+      {
+        "w": 1920,
+        "h": 1080,
+        "scroll": 1920,
+        "action": {
+          "top": 886.046875,
+          "bottom": 935.796875
+        },
+        "camera": {
+          "width": 1440,
+          "height": 626.390625
+        },
+        "fit": "contain"
+      },
+      {
+        "w": 1280,
+        "h": 720,
+        "scroll": 1280,
+        "action": {
+          "top": 656.328125,
+          "bottom": 706.078125
+        },
+        "camera": {
+          "width": 1224,
+          "height": 417.59375
+        },
+        "fit": "contain"
+      },
+      {
+        "w": 850,
+        "h": 600,
+        "scroll": 850,
+        "action": {
+          "top": 550.53125,
+          "bottom": 600.28125
+        },
+        "camera": {
+          "width": 794,
+          "height": 348
+        },
+        "fit": "contain"
+      },
+      {
+        "w": 390,
+        "h": 740,
+        "scroll": 390,
+        "action": {
+          "top": 637.109375,
+          "bottom": 686.859375
+        },
+        "camera": {
+          "width": 358,
+          "height": 318.1875
+        },
+        "fit": "contain"
+      }
+    ],
+    "errors": [],
+    "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS"
+  },
+  "native_normal_first": {
+    "raw_source": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\revised-pair.json",
+    "presentation_id": "518f77a10f814dc0919ced8288273045",
+    "phase": "RESULTS",
+    "reason": null,
+    "seed": 2086914493,
+    "scene": "BUSY_ROUTE",
+    "order": [
+      "NORMAL",
+      "ROBOSPHERE"
+    ],
+    "initial_population_audit": {
+      "frame_id": 857,
+      "counts": {
+        "vehicles": {
+          "total": 24,
+          "ahead": 24
+        },
+        "pedestrians": {
+          "total": 30,
+          "ahead": 30
+        }
+      },
+      "passed": true
+    },
+    "version": 4,
+    "pair_id": "2ebcf73c158f43adb3ff57a4e45e0450",
+    "conditions_match": true,
+    "runs": {
+      "NORMAL": {
+        "id": "194b9822104446fca850bdcac957c29e",
+        "status": "COLLISION",
+        "reason": "collision",
+        "distance_m": 71.86229120626533,
+        "collisions": 1,
+        "duration_s": 12.650000188499689,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_532aa27fd39c4d248e042fd77d08cee9",
+        "initial_condition_audit": {
+          "passed": true,
+          "failures": [],
+          "light_samples": [
+            {
+              "id": 9,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 10,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 11,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 12,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 13,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 14,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 15,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 16,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 17,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 18,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 19,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 20,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 21,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 22,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 23,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            }
+          ],
+          "condition_id": "894ec522cd900924c4b3a36628ce0c2e93a80aaa16ecce0edacab9f5c9d29c0b",
+          "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+        },
+        "stress_audit": null
+      },
+      "ROBOSPHERE": {
+        "id": "76c71b281e1042bfbbca2a84b18d6253",
+        "status": "SHORTENED",
+        "reason": "guided_shortened",
+        "distance_m": 19.404948737329743,
+        "collisions": 0,
+        "duration_s": 8.800000131130219,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e811a9982dab42358c4c19e81f3c194b",
+        "initial_condition_audit": {
+          "passed": true,
+          "failures": [],
+          "light_samples": [
+            {
+              "id": 9,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 10,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 11,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 12,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 13,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 14,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 15,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 16,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 17,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 18,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 19,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 20,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 21,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 22,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 23,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            }
+          ],
+          "condition_id": "894ec522cd900924c4b3a36628ce0c2e93a80aaa16ecce0edacab9f5c9d29c0b",
+          "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+        },
+        "stress_audit": null
+      }
+    }
+  },
+  "native_protected_first_dense": {
+    "raw_source": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\dense-verified2\\pair-state.json",
+    "presentation_id": "7d93d1aaa3094aa88986d47107ec066c",
+    "phase": "RESULTS",
+    "reason": null,
+    "seed": 2086914493,
+    "scene": "DENSE_CHAOS",
+    "order": [
+      "ROBOSPHERE",
+      "NORMAL"
+    ],
+    "initial_population_audit": {
+      "frame_id": 197,
+      "counts": {
+        "vehicles": {
+          "total": 40,
+          "near_120m": 31,
+          "front_frustum_100m": 5,
+          "moving_near": 30,
+          "moving_front_frustum": 5
+        },
+        "pedestrians": {
+          "total": 50,
+          "near_120m": 30,
+          "front_frustum_100m": 24,
+          "moving_near": 30,
+          "moving_front_frustum": 24
+        }
+      },
+      "requested": {
+        "vehicles": 40,
+        "pedestrians": 50
+      },
+      "passed": true,
+      "pending": false,
+      "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+      "density_passed": true,
+      "motion_passed": true,
+      "motion_measurement_ready": true,
+      "motion_window_s": 1.0000000149011612,
+      "motion_sample_age_s": 0.0,
+      "observations": {}
+    },
+    "version": 4,
+    "pair_id": "b5a0f16a239a41cb9244eb38c5497e98",
+    "conditions_match": true,
+    "runs": {
+      "ROBOSPHERE": {
+        "id": "def7a2d119e2444eb754b3dec97361b6",
+        "status": "SHORTENED",
+        "reason": "guided_shortened",
+        "distance_m": 32.332999473789336,
+        "collisions": 0,
+        "duration_s": 12.000000178813934,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_8316f3de0a2a4a74ab5b204ba32d2a98",
+        "initial_condition_audit": {
+          "passed": true,
+          "failures": [],
+          "light_samples": [
+            {
+              "id": 9,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 10,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 11,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 12,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 13,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 14,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 15,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 16,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 17,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 18,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 19,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 20,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 21,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 22,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 23,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            }
+          ],
+          "condition_id": "c4c7203808eae50da524485a371e2df6407c35d9b61c7209b1f881bd50a17e89",
+          "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+        },
+        "stress_audit": {
+          "frame_id": 440,
+          "counts": {
+            "vehicles": {
+              "total": 40,
+              "near_120m": 28,
+              "front_frustum_100m": 3,
+              "moving_near": 28,
+              "moving_front_frustum": 3
+            },
+            "pedestrians": {
+              "total": 50,
+              "near_120m": 39,
+              "front_frustum_100m": 27,
+              "moving_near": 36,
+              "moving_front_frustum": 24
+            }
+          },
+          "requested": {
+            "vehicles": 40,
+            "pedestrians": 50
+          },
+          "passed": false,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": false,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {
+            "participant_006": {
+              "kind": "BRAKE",
+              "claimed": true,
+              "status": "RELEASED",
+              "position_m": [
+                38.11439514160156,
+                -64.41251373291016,
+                -0.022412624210119247
+              ],
+              "speed_mps": 7.6507039070129395,
+              "released": true
+            },
+            "participant_034": {
+              "kind": "CUT_IN",
+              "requested": true,
+              "status": "REQUESTED",
+              "position_m": [
+                101.61344146728516,
+                -30.355064392089844,
+                0.003476104699075222
+              ],
+              "speed_mps": 7.797598361968994
+            },
+            "participant_008": {
+              "kind": "ONCOMING",
+              "claimed": true,
+              "status": "MOVING",
+              "position_m": [
+                70.54198455810547,
+                -62.37550735473633,
+                -0.017176246270537376
+              ],
+              "speed_mps": 1.5291956663131714
+            }
+          },
+          "series": {
+            "samples": 13,
+            "density_failures": 9,
+            "motion_samples": 12,
+            "motion_failures": 0
+          },
+          "sustained_passed": false
+        }
+      },
+      "NORMAL": {
+        "id": "0d95ea97653b41ec8456b330ab8e3093",
+        "status": "SHORTENED",
+        "reason": "guided_shortened",
+        "distance_m": 63.134229431335356,
+        "collisions": 0,
+        "duration_s": 12.000000178813934,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_4979f2f0166d450ea4183ace3ab713e3",
+        "initial_condition_audit": {
+          "passed": true,
+          "failures": [],
+          "light_samples": [
+            {
+              "id": 9,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 10,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 11,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 12,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 13,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 14,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 15,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 16,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 17,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 18,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 19,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 20,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 21,
+              "expected_state": "Green",
+              "actual_state": "Green",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 22,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            },
+            {
+              "id": 23,
+              "expected_state": "Red",
+              "actual_state": "Red",
+              "elapsed_s": 0.0,
+              "frozen": true
+            }
+          ],
+          "condition_id": "c4c7203808eae50da524485a371e2df6407c35d9b61c7209b1f881bd50a17e89",
+          "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+        },
+        "stress_audit": {
+          "frame_id": 705,
+          "counts": {
+            "vehicles": {
+              "total": 40,
+              "near_120m": 27,
+              "front_frustum_100m": 5,
+              "moving_near": 26,
+              "moving_front_frustum": 5
+            },
+            "pedestrians": {
+              "total": 50,
+              "near_120m": 50,
+              "front_frustum_100m": 28,
+              "moving_near": 47,
+              "moving_front_frustum": 26
+            }
+          },
+          "requested": {
+            "vehicles": 40,
+            "pedestrians": 50
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {
+            "participant_006": {
+              "kind": "BRAKE",
+              "claimed": true,
+              "status": "RELEASED",
+              "position_m": [
+                49.80366134643555,
+                -64.65040588378906,
+                -0.022267760708928108
+              ],
+              "speed_mps": 7.5954270362854,
+              "released": true
+            },
+            "participant_034": {
+              "kind": "CUT_IN",
+              "requested": true,
+              "status": "REQUESTED",
+              "position_m": [
+                101.52980041503906,
+                -30.864294052124023,
+                0.003530597547069192
+              ],
+              "speed_mps": 7.9219818115234375
+            },
+            "participant_008": {
+              "kind": "ONCOMING",
+              "claimed": true,
+              "status": "MOVING",
+              "position_m": [
+                68.55982208251953,
+                -65.08065032958984,
+                -0.032077446579933167
+              ],
+              "speed_mps": 1.1366111040115356
+            }
+          },
+          "series": {
+            "samples": 13,
+            "density_failures": 8,
+            "motion_samples": 12,
+            "motion_failures": 0
+          },
+          "sustained_passed": false
+        }
+      }
+    }
+  },
+  "retained_failed_probes": [
+    {
+      "raw_source": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\restore-failed-initial.json",
+      "presentation_id": "cc8c08b77c5b43278187139f1576a651",
+      "phase": "ERROR",
+      "reason": "Saved start occupied for participant_030",
+      "seed": 2086914493,
+      "scene": "BUSY_ROUTE",
+      "order": [
+        "NORMAL",
+        "ROBOSPHERE"
+      ],
+      "initial_population_audit": {
+        "frame_id": 9352,
+        "counts": {
+          "vehicles": {
+            "total": 24,
+            "ahead": 24
+          },
+          "pedestrians": {
+            "total": 30,
+            "ahead": 30
+          }
+        },
+        "passed": true
+      },
+      "version": 4,
+      "pair_id": "9add685615f24edba600df35ccac5c6e",
+      "conditions_match": false,
+      "runs": {
+        "NORMAL": {
+          "id": "677bfab381c049d09dd3e0c78b83b3eb",
+          "status": "COLLISION",
+          "reason": "collision",
+          "distance_m": 71.75856962756245,
+          "collisions": 1,
+          "duration_s": 12.650000188499689,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7d6aa6fdf0c3439fa7f11d1a8ebd4458",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "2b788d6c92eea4a7788fb1b281311f0f0e7a3cd2fb991260c6aaed4efb930630",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+          },
+          "stress_audit": null
+        }
+      }
+    },
+    {
+      "raw_source": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\dense-restore-failed.json",
+      "presentation_id": "70f54d2f48364259b275f4f72e9b4ba2",
+      "phase": "ERROR",
+      "reason": "Saved start occupied for participant_000",
+      "seed": 874535708,
+      "scene": "DENSE_CHAOS",
+      "order": [
+        "ROBOSPHERE",
+        "NORMAL"
+      ],
+      "initial_population_audit": {
+        "frame_id": 1043,
+        "counts": {
+          "vehicles": {
+            "total": 40,
+            "near_120m": 31,
+            "front_frustum_100m": 5,
+            "moving_near": 17,
+            "moving_front_frustum": 4
+          },
+          "pedestrians": {
+            "total": 50,
+            "near_120m": 29,
+            "front_frustum_100m": 25,
+            "moving_near": 19,
+            "moving_front_frustum": 16
+          }
+        },
+        "requested": {
+          "vehicles": 40,
+          "pedestrians": 50
+        },
+        "passed": true,
+        "pending": false,
+        "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+        "density_passed": true,
+        "motion_passed": true,
+        "observations": {}
+      },
+      "version": 4,
+      "pair_id": "f8413b63b7064617b782c1219b2a6f37",
+      "conditions_match": false,
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "890fde561fca49a8ae81356ac9177da4",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "distance_m": 40.12296316007717,
+          "collisions": 0,
+          "duration_s": 27.950000416487455,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_056564d71cb34c25ab19d430a4f9c902",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "8e84aa502012e039d2eb48d02f21c025947816f07e7e1f91e0ff6b395df186fe",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+          },
+          "stress_audit": {
+            "frame_id": 1586,
+            "counts": {
+              "vehicles": {
+                "total": 40,
+                "near_120m": 24,
+                "front_frustum_100m": 9,
+                "moving_near": 24,
+                "moving_front_frustum": 9
+              },
+              "pedestrians": {
+                "total": 50,
+                "near_120m": 38,
+                "front_frustum_100m": 19,
+                "moving_near": 38,
+                "moving_front_frustum": 19
+              }
+            },
+            "requested": {
+              "vehicles": 40,
+              "pedestrians": 50
+            },
+            "passed": true,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": true,
+            "observations": {
+              "participant_006": {
+                "kind": "CUT_IN",
+                "requested": true,
+                "status": "REQUESTED",
+                "position_m": [
+                  -20.68090057373047,
+                  -64.71018981933594,
+                  -0.0008115194505080581
+                ]
+              },
+              "participant_001": {
+                "kind": "ONCOMING",
+                "status": "UNAVAILABLE",
+                "reason": "No adjacent opposing native lane"
+              },
+              "participant_034": {
+                "kind": "BRAKE",
+                "claimed": true,
+                "status": "RELEASED",
+                "position_m": [
+                  102.89665985107422,
+                  -6.968943119049072,
+                  0.14156056940555573
+                ],
+                "released": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "raw_source": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\dense-revised-pair.json",
+      "presentation_id": "6b70065f2d004b2d96202306fd99837a",
+      "phase": "RESULTS",
+      "reason": null,
+      "seed": 1015261505,
+      "scene": "DENSE_CHAOS",
+      "order": [
+        "ROBOSPHERE",
+        "NORMAL"
+      ],
+      "initial_population_audit": {
+        "frame_id": 611,
+        "counts": {
+          "vehicles": {
+            "total": 40,
+            "near_120m": 31,
+            "front_frustum_100m": 5,
+            "moving_near": 16,
+            "moving_front_frustum": 4
+          },
+          "pedestrians": {
+            "total": 50,
+            "near_120m": 30,
+            "front_frustum_100m": 27,
+            "moving_near": 6,
+            "moving_front_frustum": 5
+          }
+        },
+        "requested": {
+          "vehicles": 40,
+          "pedestrians": 50
+        },
+        "passed": true,
+        "pending": false,
+        "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+        "density_passed": true,
+        "motion_passed": true,
+        "observations": {}
+      },
+      "version": 4,
+      "pair_id": "4f54d61712484a13854bb958c78c5232",
+      "conditions_match": true,
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "ec74e083b9974be6b79d6b32d6da3f02",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "distance_m": 22.80863148109885,
+          "collisions": 0,
+          "duration_s": 9.650000143796206,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b9151ef4243d4c1fa504b244f0d2ce3b",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "094d6f922f41c94d1a0a2c88bdedd1780d03d9e6ebd37d805c213a5dd72d1281",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+          },
+          "stress_audit": {
+            "frame_id": 794,
+            "counts": {
+              "vehicles": {
+                "total": 40,
+                "near_120m": 29,
+                "front_frustum_100m": 4,
+                "moving_near": 29,
+                "moving_front_frustum": 4
+              },
+              "pedestrians": {
+                "total": 50,
+                "near_120m": 35,
+                "front_frustum_100m": 24,
+                "moving_near": 35,
+                "moving_front_frustum": 24
+              }
+            },
+            "requested": {
+              "vehicles": 40,
+              "pedestrians": 50
+            },
+            "passed": false,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": false,
+            "motion_passed": true,
+            "observations": {
+              "participant_006": {
+                "kind": "BRAKE",
+                "claimed": true,
+                "status": "RELEASED",
+                "position_m": [
+                  68.86152648925781,
+                  -63.9151496887207,
+                  -0.0020153236109763384
+                ],
+                "speed_mps": 2.3858025074005127,
+                "released": true
+              },
+              "participant_034": {
+                "kind": "CUT_IN",
+                "requested": true,
+                "status": "REQUESTED",
+                "position_m": [
+                  82.77409362792969,
+                  -55.89114761352539,
+                  0.0036684225779026747
+                ],
+                "speed_mps": 7.372951984405518
+              },
+              "participant_001": {
+                "kind": "ONCOMING",
+                "claimed": true,
+                "status": "MOVING",
+                "position_m": [
+                  101.41360473632812,
+                  -44.986732482910156,
+                  -0.0010181426769122481
+                ],
+                "speed_mps": 2.5400772094726562,
+                "opposing_lane_observed": true
+              }
+            }
+          }
+        },
+        "NORMAL": {
+          "id": "866a41cf32cc4004a07780a1204e07be",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "distance_m": 88.88264779809818,
+          "collisions": 0,
+          "duration_s": 18.600000277161598,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_704fbcecc0f54c46833cd484f20dc5f3",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "094d6f922f41c94d1a0a2c88bdedd1780d03d9e6ebd37d805c213a5dd72d1281",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge"
+          },
+          "stress_audit": {
+            "frame_id": 1192,
+            "counts": {
+              "vehicles": {
+                "total": 40,
+                "near_120m": 26,
+                "front_frustum_100m": 10,
+                "moving_near": 0,
+                "moving_front_frustum": 0
+              },
+              "pedestrians": {
+                "total": 50,
+                "near_120m": 50,
+                "front_frustum_100m": 25,
+                "moving_near": 0,
+                "moving_front_frustum": 0
+              }
+            },
+            "requested": {
+              "vehicles": 40,
+              "pedestrians": 50
+            },
+            "passed": false,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": false,
+            "observations": {
+              "participant_006": {
+                "kind": "BRAKE",
+                "claimed": true,
+                "status": "RELEASED",
+                "position_m": [
+                  15.060383796691895,
+                  -64.41930389404297,
+                  -0.0006781005649827421
+                ],
+                "speed_mps": 7.9149651527404785,
+                "released": true
+              },
+              "participant_034": {
+                "kind": "CUT_IN",
+                "requested": true,
+                "status": "REQUESTED",
+                "position_m": [
+                  102.88978576660156,
+                  -7.0840983390808105,
+                  0.003013401059433818
+                ],
+                "speed_mps": 3.669881820678711
+              },
+              "participant_001": {
+                "kind": "ONCOMING",
+                "claimed": true,
+                "status": "MOVING",
+                "position_m": [
+                  89.58586883544922,
+                  -56.4122200012207,
+                  0.0018152999691665173
+                ],
+                "speed_mps": 2.5292246341705322,
+                "opposing_lane_observed": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "native_cancellation": {
+    "scope": "LIVE_NATIVE_CARLA_GUIDED_NEXT_RACING_GPU_RELEASE",
+    "passed": true,
+    "errors": [],
+    "elapsed_s": 37.65600000000268,
+    "native_session": "c1c070309b494c858c4cc62290f2b98d",
+    "shutdown_admitted": true,
+    "phases": [
+      {
+        "phase": [
+          "IDLE",
+          null
+        ],
+        "elapsed_s": 26.531000000002678
+      },
+      {
+        "phase": [
+          "PREPARING",
+          0
+        ],
+        "elapsed_s": 26.578000000008615
+      },
+      {
+        "phase": [
+          "READY",
+          0
+        ],
+        "elapsed_s": 27.703000000008615
+      },
+      {
+        "phase": [
+          "STARTING",
+          0
+        ],
+        "elapsed_s": 30.437000000005355
+      },
+      {
+        "phase": [
+          "DRIVING",
+          0
+        ],
+        "elapsed_s": 31.297000000005937
+      }
+    ],
+    "after": {
+      "available": true,
+      "status": "STOPPED",
+      "launch": {
+        "quality": "Epic",
+        "resolution": "1280x720",
+        "offscreen": true,
+        "renderer": "D3D12",
+        "render_profile": "HIGH",
+        "source": "VERIFIED_NATIVE_PROCESS"
+      },
+      "cleanup_warning": null,
+      "process_exited": true
+    },
+    "runs": {
+      "NORMAL": {
+        "id": "0260824f7dae47ed9056fbeffdcc6e83",
+        "status": "SHORTENED",
+        "reason": "guided_shortened",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_fe7a67406e3546d180c25a9d4d6bffe6",
+        "distance_m": 0.0007072063162922859,
+        "collisions": 0,
+        "duration_s": 0.6000000089406967
+      }
+    },
+    "remaining_native_processes": [],
+    "source_archive": {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\final-race-delivery\\source.zip",
+      "sha256": "796ff369a8c28ff1ed8764f78a405b9ffc76475dd05ab29e9c89a400fd2faa20",
+      "files": 92,
+      "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+    }
+  },
+  "retained_harness_failure": {
+    "errors": [
+      "GPU release did not confirm process exit"
+    ],
+    "raw_source": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\final-race\\report.json",
+    "cause": "The initial verifier closed its socket before the unread GPU command was admitted. It observed dashboard_disconnected; fixed verifier waits for STOPPING."
+  },
+  "final_native_backend_sources_match": true,
+  "native_dense_protocol": {
+    "source": "LIVE_NATIVE_CARLA_DENSE_GUIDED_PAIR",
+    "protocol_passed": true,
+    "motion_audits_measured": true,
+    "conditions_match": true,
+    "errors": [],
+    "shutdown": {
+      "available": true,
+      "status": "STOPPED",
+      "launch": {
+        "quality": "Epic",
+        "resolution": "1280x720",
+        "offscreen": true,
+        "renderer": "D3D12",
+        "render_profile": "HIGH",
+        "source": "VERIFIED_NATIVE_PROCESS"
+      },
+      "cleanup_warning": null,
+      "process_exited": true
+    },
+    "source_archive": {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\dense-verified2\\source.zip",
+      "sha256": "de40b4703abe0d7c83d9a535035141994ee83d30e3b650114c2ec17f74702317",
+      "files": 92,
+      "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+    }
+  },
+  "retained_velocity_probe_rejection": {
+    "errors": [
+      "Dense setup below required population: {'vehicles': {'total': 40, 'near_120m': 29, 'front_frustum_100m': 5, 'moving_near': 27, 'moving_front_frustum': 5}, 'pedestrians': {'total': 50, 'near_120m': 31, 'front_frustum_100m': 20, 'moving_near': 0, 'moving_front_frustum': 0}}"
+    ],
+    "source_archive": {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\guided-native-20261018\\dense-verified\\source.zip",
+      "sha256": "cba0a321bccf94d35ba40e76fd48b0d030409fd34a03a14c42ca84f9dfcd5ffc",
+      "files": 92,
+      "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+    },
+    "wall_s": 50.85899999999674
+  },
+  "dense_probe_source_changes_since_run": [
+    "backend\\core\\service.py",
+    "backend\\carla\\provider.py"
+  ],
+  "source_hashes": {
+    "frontend\\appearance.js": "c0e6a9cc64adebbfd5cb7f43528a122c9731bd380f5c23ed83990b810431d4e4",
+    "frontend\\bootstrap.js": "25922a59e0b2c8ed3f243af0ceb5f0ce50a07dfcce6bbff755a9fb77ef130eda",
+    "frontend\\camera-performance.js": "3a3c2a4ea1e91a3390009f9e38cf5e6ecb7759bbed10d7f35fc9d8a6381823fc",
+    "frontend\\city-setup.js": "baf649700a4091918b974d250bbd1a906ce3d09715b301cb5c1383b4952bcefc",
+    "frontend\\cockpit-premium.css": "12a3d7d22e4954cd7f82325a7b0ce04987951c646f6770602a2bd5a37d148fc7",
+    "frontend\\cockpit-state.js": "5c68d3265c8f026ddf9ff922342c3f921455ec731eb91f1caa3009df675ca70a",
+    "frontend\\comparison-v2.js": "95f6378f1bd83cb633c277cc31c0a1837bdd312d62b12fde950d269238e9b738",
+    "frontend\\controls.js": "d4721e3be97bf8e87e86fb8f83f5c17b184d50f48801accc9e884dcf6d33c544",
+    "frontend\\dashboard-theme.css": "5248ea1655ac8e1c1270880f6488c4b79f43b235b3e7e078f039d991d1e9330d",
+    "frontend\\dashboard-tools.js": "502bf1086b58c62166b6bcdb3682bed6d743c099481d1c0b65119a28cb9d8d23",
+    "frontend\\dashboard.bundle.js": "bf8e080f95f704752c629ab400465e9371fce58b55eb904c1e99a6888097fdd6",
+    "frontend\\dashboard.css": "7464f44aeceb7914566c2d128dfecf4ac67921d27bf0160608fc533b32a1e1a0",
+    "frontend\\dashboard.js": "540320ec6ff77718ac75d18d638dc359b711602825ec5c2bdfc9df3951ed2d01",
+    "frontend\\dashboard.styles.css": "510af1c3d268ccf7b6eb52d652d24eaae455ce7788b0cd6dd4a0de4627052598",
+    "frontend\\demo-drive.css": "5908bc423f1d8fc9bdfcb25efb266b6cc1936947a13dd15a4ead6871292665de",
+    "frontend\\demo-drive.js": "85b164428723d918428c5b03f58497359bc8923271af861f2d1ae266360325de",
+    "frontend\\details-state.js": "0fc87e8d2289cb7d59d95775b22945c57d5e1eb627038317a2afa7bd6fa1cb5f",
+    "frontend\\drive-state.js": "3c5f51643985b40327bae501ca0273906b0a02467447b96cc6babff76b77752a",
+    "frontend\\driving-studio.css": "b23b61eece1dcdb47a10c27dfe5685d4f6c4c38b9963e8b6d1a7294aac6f0f17",
+    "frontend\\driving-studio.js": "3c18c463acc5806602334078e9e77e0f36ec6b8cdbd5680c97e47f660d0eeeeb",
+    "frontend\\guided-details.js": "44894c24d59a3a59e2c0f48cbb21471464ff853722ada6959b8d4669a44e6064",
+    "frontend\\guided-drive.css": "4d9d0c258d0121daf648e8db6e04c15a3681ffd504d1822faa95e921bb710cb7",
+    "frontend\\guided-drive.js": "fed2c9991aeb9706d7e2ee4c9e0ee62b3e2993b0c9ec848fe71270c64e8d4119",
+    "frontend\\input-policy.js": "1843f4444baab61341fb8a50e2f2bd90c87286c0413b91afa0ae44f8a6a45064",
+    "frontend\\journey-comparison.js": "7d88c9418310e9efb803a793f44791717d69649f11919decfeb52d952bea145a",
+    "frontend\\journey-continuity.js": "ceb6267efd18acb7767470ccbd871e13c41aec966e7eda08fe800654ac9b761c",
+    "frontend\\light-cockpit.css": "0b811f18c19b3ea67c3986e26634dab6f022169d5b9b9142e1911b5578f0be99",
+    "frontend\\light-cockpit.js": "6c0e0672296eceffcd607b1b999be7ddddb33a6d5a174ce6f247f8baad55e37b",
+    "frontend\\mission-state.js": "e6891d9119404bca63a6b9e87ad3521f47ec1ba8a9cfe7649fe6872d3b9aa1a3",
+    "frontend\\mission.css": "0a0707b5bcee556fe148466e80ade4cd85e0c97bbed84d581976b93ac2693e74",
+    "frontend\\motion-readout.js": "23ef75c98afacb547aa433cf3b91798b558cac5db40b11194685e11e256bfa2e",
+    "frontend\\pastel-cockpit.css": "0a236f8e67dfd8282590c2bc37c2c5e7078063a417587a0e10e326795e06bfbd",
+    "frontend\\perception-view.js": "8acdc7fc997ad3633a361b5cd2f7aede3bd26b6a020315b6b75b069a8cef2c80",
+    "frontend\\prediction-view.js": "f945bcfeaf20af62c847774e7deded29674606deac2415e52f1945b375dd3dee",
+    "frontend\\presentation-run.js": "5a0b6648a01e81247de9e378706688cd0e8fe07f2d81b668d8f1a69ec756c2f3",
+    "frontend\\presentation-ui.js": "a5ba922318188b66ef46e5fe7ed7651e6c43e5a81130b9db1a9d0fb92b25c767",
+    "frontend\\presentation.css": "ff3198724d70ac818eb339479e782087044a5ca05a06c7a10805e13e09c00089",
+    "frontend\\provider.js": "1727aa077324359a5efdbe7acb2e17f9c45670904d3ba15a1e7b049a7650bd33",
+    "frontend\\results-view.js": "a1b2f2b3b3c204ececb0d63b0c27eef77db424c0ce90746afa8a5bfbfb74d9ab",
+    "frontend\\sensor-frame.js": "72ccdf96a013951c106ff13908f198adea7bfed00ca746b64457abc752b9cda2",
+    "frontend\\sequential-drive.css": "a70c56c7034b2a049b71868b724bfe7329243012e2b35273bcf1d8d516b0a283",
+    "frontend\\sequential-drive.js": "640c095f6a692bcea19f64ec9357ea21a79acaa58153f35edb46d8e95337806c",
+    "frontend\\simulation-client.js": "235f557f12587a9cc2cdd36cd86d658f377c236c408a82c2da459331dae870af",
+    "frontend\\styles.css": "e9c2834f156d06006bfc758fd7861308d723f5da3df18aacf1d8f9ee97dfadb3",
+    "frontend\\telemetry.js": "c6515199557a0cff4c32aa0a2211365a3b578b0ec9f175421ab72f4962a35a40",
+    "frontend\\traffic-preparation.js": "8de4a797343b4207810a5f38b101f5a2665fbe2fc9f4403daeca4d8a6fcf2867",
+    "frontend\\unified-map.js": "e7ee0ea54c51fb6cdd9da32d55ea21022c4fe5d62c1b7b7e0f384749c7df98fc",
+    "frontend\\workspace-state.js": "233cde249b89679619617ea5c1924ea426e013a0adc8e66dbfd3b69d32bc5d88",
+    "backend\\core\\active_safety.py": "e3fa149c7979fb82960ad54751df3e7e1c2e1b2acb71dcec66c6febf83192dbe",
+    "backend\\core\\agents.py": "ffe208794346410d37c52ba0b726c5f4b35632df3efe1d02037475d70d6332f6",
+    "backend\\core\\camera_geometry.py": "c8200bc92d5c921f6a7006ebb6b24bc2b9dbedde48505ed9c47de4556104fc01",
+    "backend\\core\\comfort_control.py": "2f3409ce24f554e94e898f3b4c45b1a8c85bf1edd4b776dce5ad9202f4d97806",
+    "backend\\core\\config.py": "7e239f339fedcf20a028c374dd86751a72cfaa2b14aab2097dcc83fd1ebd0693",
+    "backend\\core\\congestion_recovery.py": "772f60d18374d4ce687c7b690dceba1c5a907fea37131a3465c814a1f378052c",
+    "backend\\core\\contracts.py": "5aa7e5f21ac820069af85e71f87ceea0a83994d0c5e4b9a8c32ade5bf5d96308",
+    "backend\\core\\control.py": "8675b041666717fccf7774ad316222f733e2f6877e398d59d3238e4a87687641",
+    "backend\\core\\control_radar.py": "da10e3feaaa2db625f298812f1ecf437cee4b803a06a3217809d90f5fd48d53c",
+    "backend\\core\\control_scene.py": "63fb1f520c410076b18cc0ba74b06e974a0b91461cc0a91ff9bc7e2202b90ce0",
+    "backend\\core\\control_semantics.py": "e61a3cbb85df54b4b7dc369eb7b10b444b400fd58a1fe6c85e902acbabff5347",
+    "backend\\core\\corridor_uncertainty.py": "c25e7446eb890dbac414d6b4338ea8e756a53a3561509ef1395e05478d77bdce",
+    "backend\\core\\dashboard.py": "aea250be06b57815b225a7b6a0eb82043132c6eb9d54bbf20b520dc0f56bfabe",
+    "backend\\core\\display_prediction.py": "db87b3bc4aa952e0dca6711203a0904154f0a8650a80934f6e3ec63c61176037",
+    "backend\\core\\drivable_corridor.py": "f1f5f8ff7fc0ae00ad2ee9f52e1b7f86e8bee7398169b5141934113924926d4f",
+    "backend\\core\\driving_quality.py": "0cf9e13d02643da26e9755f8907adf326e0db7a9eb5bbb06cc00a86f4d2afe9e",
+    "backend\\core\\driving_video.py": "ba2884007527c19d82a8ba788e2789ccaad0f3337856674039989b2a420d858f",
+    "backend\\core\\ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+    "backend\\core\\evaluation.py": "e2ea328052d0404a282699806cf7a18fe4e19aadcd636c3a5af5710a04b36104",
+    "backend\\core\\events.py": "4370d63b8d44fb96f8264eeca5e44921f7deea951dd390646c40db5411f07a67",
+    "backend\\core\\ground_geometry.py": "e07d0005bf2f5bae26f576a25a4a7902a4755a59bc7c877edb73a2c8130578fb",
+    "backend\\core\\host_clock.py": "2f34466e444cfb3b08f3a18a0fc733d28d082346a7a992ce814bcb38c49ced91",
+    "backend\\core\\hybrid_acceptance.py": "ac0807310941958fec939d0b6449a593ed0f07df0f6d83b3ab4866b902f346e6",
+    "backend\\core\\hybrid_config.py": "5cab29e9efa1f4cdc90e4163ea3968b0b0a18b8520b7c0b805075a06024a17c8",
+    "backend\\core\\hybrid_driver.py": "0350ba49d6ed4066af9671ef74913198bd1b7a832e080921ce561cc71b014a9d",
+    "backend\\core\\journey_comparison.py": "c3658251d06d703fc6a203f992a417d32adc5b09cbee99358f78da58bc706fa3",
+    "backend\\core\\kinematic_prediction.py": "d8a6d3c20c6e53f7fd09bcd45befead6f926a6e10cea8f7c38d42a6e086c87a8",
+    "backend\\core\\lifecycle.py": "629160fdca0e44b0bec2cff96c258b687accaba2e1b0a4ebbf1cfdbe54ae8f1d",
+    "backend\\core\\logging.py": "a4734de93047bf2470699d4acb9cff37237ff0a84677dcc1349340bbc7b04d5d",
+    "backend\\core\\maneuver.py": "915322c425703cfc4bd9ace1f69a3bb529b10174bc5ceb54f00f9a94a092458e",
+    "backend\\core\\maneuver_candidates.py": "da2e4a7d50e76d664ec33042834eacecb168ed7bd2db654c86fb871f159f9e06",
+    "backend\\core\\measured_rows.py": "29b31182f03257db164e30bf278527c58f8ca666cc4634304e1b56bd677e07c6",
+    "backend\\core\\motion_geometry.py": "36679f4f8d36abe0e8b8e359eafeef8343e1d1836e08688bef522457a8a8c419",
+    "backend\\core\\motion_quality.py": "14c16ae36468dcfc977fde47547624a43f553b10eb95de10fdf3d347ea499239",
+    "backend\\core\\motion_scene.py": "5881a39c96f00929f4985889e36f34af9e65a4fdf96dfeaedabc08d6912090d7",
+    "backend\\core\\normal_navigation.py": "184d1c047c328d6cff7107a3896115932bb923eb3ef0abf7ce32cff1e349a6cd",
+    "backend\\core\\path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+    "backend\\core\\prediction.py": "51edd2ffeb0f725cb7ec37ef873cebf90b2e1e35e393443fc6a8b876d5c59991",
+    "backend\\core\\predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend\\core\\presentation.py": "b9c66e0c42472d3ea1991787e80b16a224995c2208b12fda24f090a57cca1e5e",
+    "backend\\core\\rear_separation.py": "64c118d963bcb67220d7bf526adecd165752a407b2de7cdd4da527e12da05b6d",
+    "backend\\core\\recording.py": "0099a6b19eb3994d452264df1f7d89fc6daf4086cafdf2934d8808ca40551384",
+    "backend\\core\\recovery_depth.py": "688bb20824ca478264cecd9bd1ca40ca9b6e0b7e36f1922c01eeb1790f4501a9",
+    "backend\\core\\replay.py": "a90d3e3216ff4c4f671d82057f51a7007cb3f9ea83adaca3ed2aadf4dfb8e3f4",
+    "backend\\core\\reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+    "backend\\core\\research.py": "d698624a37c30779c520714b8ffa2089334ef1ec153d442122b327e1914cbbc0",
+    "backend\\core\\research_safety.py": "1bf6818fb37b6ce275c9af0291999d930b4668f8179ddfb777558abfda289a57",
+    "backend\\core\\route_bypass.py": "91f3300692dcb0f6ab2c5c6fc28814c0520aaef79fc6e5f62d2bb7b41c6aa2c9",
+    "backend\\core\\route_terminal.py": "4be10620a3da84c32d6744195bf122e984d030f49346910fcf999c7d41328ccc",
+    "backend\\core\\safety_policy.py": "4c64603f924dcfb2a51b9d376a699587658b082e9cbb0117aa953f29b53123bc",
+    "backend\\core\\scenarios.py": "669a4befd5b9a848843cb49aa1373c3816671b7c9bbb1e35f1e82b99edbfcbf4",
+    "backend\\core\\service.py": "c46349b3829bbb08043fe0e02c9793cfd82b32eb80cfb0b34065c42e21cf8cc3",
+    "backend\\core\\surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+    "backend\\core\\surface_registration.py": "2d1ca8a30fd41de7613ef04c18f61e67cc41b1c495b00a1d0e17d3476830420d",
+    "backend\\core\\timing.py": "6d5d02c0f5989a1a041b03a09f250fe1a864a0e41b53d9224b5b403ec4976482",
+    "backend\\core\\video_http.py": "c0a1d7edb822730aa74654389a08849ef80ade80ee1e8f9d03f35e958b2bca3a",
+    "backend\\core\\__init__.py": "e64fb6a47bad83efe0387337fcbb8dd4b3f50d4d2e20034c01ef6d6ddb1714f6",
+    "backend\\carla\\benchmark_fixture.py": "6e906df338186692307ba20a3d751e962c387ffab5c035338c7ab8356145b991",
+    "backend\\carla\\comparison.py": "d8fa4cbf5735d58a3b578014d908da5ec9b49c04c63ff474baf607a21fe4b760",
+    "backend\\carla\\comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+    "backend\\carla\\connection.py": "632a59f7801dafcc90d625ca19b6aa1187282d146e61f50da110aaed8bc74b88",
+    "backend\\carla\\contracts.py": "179544f49a950f589f14ed215d103f36bdddcce1180641aa5559b4343d1534c1",
+    "backend\\carla\\controls.py": "1786ebb30bef1f3a5f93463ae6f287d342839884593ed9ddfae1778ddfa12743",
+    "backend\\carla\\dashboard_tools.py": "85f5605b0e7550e3b2fc986943ccabb27185ccad3ecd71cf5d4364f275bdc9e8",
+    "backend\\carla\\dense_chaos.py": "399f1c704d52e1a70152fcf20f84d5d8b2dce830f0fcce4850c0fa6e73bcb241",
+    "backend\\carla\\geometry.py": "9e71ed70eb0524780aa7798f8bcb77abdfdf6a84904cbe762afd171f54c0c1cd",
+    "backend\\carla\\graphics.py": "c37718359776004bdc717c700f15148f01fa4bfd9fad08e328d57d3cbfdc2b72",
+    "backend\\carla\\ground_truth.py": "f5ed075e00a0994fcbcc00522f790491c16567064b35c132eff438d0fd4f3b19",
+    "backend\\carla\\hybrid_navigation.py": "9754b468bb51c0dfe120b4ad2c1137f8b9d6309eec58fb18ce90bac21e92fde0",
+    "backend\\carla\\hybrid_world.py": "c4b9c8741c81592b4784ed76badd87cb22c5889151e949d0855ce3adec13185a",
+    "backend\\carla\\pilot_world.py": "3f94efdd945346c2cd2ec72eaabb7a2d46f8caa702cd6f02c3cc1025c99f091f",
+    "backend\\carla\\population.py": "5ca12f80ee414e6b0d4437c070b9d58b74eddbb11965a81818671f8c4331a3b0",
+    "backend\\carla\\preflight.py": "1698845580fbc394c9d6a4e1bd7baea0f679281be21d0acc2438ac8c3b254bd6",
+    "backend\\carla\\presentation.py": "c92031c5602a678e3d111c0968c260c150bc7807941e7438c90163560df62989",
+    "backend\\carla\\provider.py": "5406a709ccb3c9de1b3f488474e4654e51a3fa6106f6841428fd89a7d44aff52",
+    "backend\\carla\\restart_helper.py": "5aea662f9d989aa30e3574a0598e807c06ab3676f8fb4300e1a26cecae1d191d",
+    "backend\\carla\\routes.py": "7f852d1e638cae2ab72c86e8824f99bf1ef4714ff109706206c7e4e5ce4b39cf",
+    "backend\\carla\\route_agent.py": "a168a9941168e3a66b87770e05ef8eb57b5bec2fe9d7931870a54eb8dc2167e3",
+    "backend\\carla\\route_crowding.py": "5a6faf6ba2baf58fb5903d8f63b927ebbba4843dad6f75bf957abc8f26ab66a0",
+    "backend\\carla\\runtime.py": "89e6af23037fcfbf7215bcc00d4856617837ef28d406ed9a0fc16b1607f5f62a",
+    "backend\\carla\\scenarios.py": "9e039492af3bc8b842b7e05886427ddd1fde8b8ec00b2a561b346a27c3f6485c",
+    "backend\\carla\\sensors.py": "8ee3d163b7e4616b703d1afb1529427408386fd08ea96297eb32ebfd57ce0515",
+    "backend\\carla\\sensor_decoders.py": "f7bfd23f08ab81911510993035ecb4258d0eece4794f00f8cf7f496c4ee5f233",
+    "backend\\carla\\start_helper.py": "59dcabe042320e533db659daf41f0c2466f8cfcb3df3f75e9f6cd21c103de739",
+    "backend\\carla\\stop_helper.py": "85065cabff9232a1a97bcff1580f1604e0398277077eac452eb192e4bb79030c",
+    "backend\\carla\\target.py": "77f1aa4455aa843ec5b8786cea10e7127ab0c3cb7c08b0dd9e6b7f7041679b8c",
+    "backend\\carla\\telemetry.py": "474323d59a8879cc6d3665b9ae5e58f490589ef989d1534d33903412eaf4c2a4",
+    "backend\\carla\\urban.py": "f49798dbe285628ac58c2e3cb6362a0889a57540129df01d9c162877ba079229",
+    "backend\\carla\\urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend\\carla\\vehicle.py": "6f2e6522406552f651291e0792d74efa2df848c0cf83449d98995f158df9e593",
+    "backend\\carla\\world.py": "2cbc3db5cb0b9b8360bc931ce59dc598b68eb1efd2a770862aa576b1baf3ba73",
+    "backend\\carla\\__init__.py": "ce728f3803a6cd778e37986b03762a4d926ec12a7a69787391ac67e200232b60"
+  },
+  "limits": [
+    "DENSE_CHAOS initial 40/50 density and motion admission passed, but end-of-drive local density audits failed in both shortened arms.",
+    "Native probes include contact and shortened attempts; they do not establish route completion, comfort, detector accuracy or protected-driver superiority.",
+    "Camera review shows real local traffic; a front viewing cone is not an occlusion-tested visible actor count.",
+    "Oncoming lane entry was observed in the revised stress probe; a lane-change request is not proof that the maneuver completed. Signal-violation diversity remains unaccepted.",
+    "Slow startup and real GPU lifecycle were exercised. Some failure/reordering cases are offline fixtures, not injected native faults.",
+    "The small viewport checks cover a zoom-equivalent layout, not native browser zoom. A new-user comprehension study remains pending.",
+    "The earlier revised dense pair also exposed a motion-baseline bug after native IDs were rebound; its second-arm motion counts are invalid and retained. Final dense verification resets the baseline. Earlier native pair probes used intermediate working revisions. Final backend hashes are attached to the final verified cancellation probe. The dense pair has its own exact source archive; the later ordinary-journey context cleanup does not run on its guided path.",
+    "Raw runs, source archives and local settings remain ignored; compact evidence retains failed attempts."
+  ]
+}

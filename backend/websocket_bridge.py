@@ -43,7 +43,7 @@ class WebSocketBridge:
         """Ownership changes and command admission are atomic across dashboards."""
         with self.ownership_lock:
             kind = message.get('type')
-            presentation_start = kind == 'presentation' and isinstance(message.get('value'),dict) and message['value'].get('operation') == 'RESTART'
+            presentation_start = kind == 'presentation' and isinstance(message.get('value'),dict) and message['value'].get('operation') in ('RESTART','START_GUIDED')
             comparison_start = kind == 'comparison_v2' and isinstance(message.get('value'),dict) and message['value'].get('operation') == 'RUN'
             runtime = getattr(self.service, 'rl_runtime', None)
             if runtime and runtime.active and kind != 'emergency_stop':
@@ -56,6 +56,13 @@ class WebSocketBridge:
                 # dashboard too; it never grants that page vehicle control.
                 self.service.stop_simulator()
                 return True
+            if kind=='emergency_stop':
+                # An explicit emergency request must also work before this
+                # page starts its first drive. Transfer only after the stop.
+                self.service.emergency_stop()
+                self.owner=socket
+                if not self.controller_lock.locked():self.controller_lock.acquire()
+                return True
             if presentation_start or comparison_start or kind in ('start_driving', 'start_journey', 'take_control', 'reconnect'):
                 if getattr(self.service, 'is_replay', False):
                     raise ValueError('Replay has no native connection or control sink')
@@ -66,7 +73,10 @@ class WebSocketBridge:
                 else:
                     self.service.require_connected()
                     if presentation_start:
-                        self.service.presentation.start(message['value'].get('speed_kmh', 50),seed=message['value'].get('seed'))
+                        value=message['value']
+                        options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','BUSY_ROUTE')}
+                            if value.get('operation')=='START_GUIDED' else {})
+                        self.service.presentation.start(value.get('speed_kmh',50),seed=value.get('seed'),**options)
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}
@@ -131,7 +141,13 @@ class WebSocketBridge:
                 self.service.journey_heartbeat(message.get('session_id'))
             elif kind == 'presentation':
                 value = message.get('value')
-                if isinstance(value,dict) and value.get('operation')=='VALIDATION_TIMEOUT':
+                if isinstance(value,dict) and value.get('operation')=='NEXT':
+                    self.service.presentation.request_next(value.get('id'),value.get('expected_arm'),value.get('expected_phase'))
+                elif isinstance(value,dict) and value.get('operation')=='RETRY_STEP':
+                    self.service.presentation.retry_step(value.get('id'))
+                elif isinstance(value,dict) and value.get('operation')=='FINISH':
+                    self.service.presentation.finish(value.get('id'))
+                elif isinstance(value,dict) and value.get('operation')=='VALIDATION_TIMEOUT':
                     self.service.presentation.inject_validation_timeout()
                 elif not isinstance(value, dict) or value.get('operation') != 'PLAYBACK_FINISHED':
                     raise ValueError('Unknown presentation operation')

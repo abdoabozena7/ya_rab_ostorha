@@ -317,6 +317,15 @@ test('test-fixture replay is rejected by the production browser client', () => {
   assert.equal(p.fresh, false); assert.equal(p.connected, false);
 });
 
+test('guided start and emergency are explicit observer actions, ordinary controls remain owned',()=>{
+  const {p,sent,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,controller:false,mode:'PAUSED'});
+  assert.equal(p.dashboardAction('presentation',{operation:'START_GUIDED',first_mode:'NORMAL'}),true);
+  assert.equal(p.emergencyStop(),true);
+  assert.equal(p.dashboardAction('presentation',{operation:'NEXT',id:'other',expected_arm:0,expected_phase:'DRIVING'}),false);
+  assert.notEqual(p.updateControls({throttle:1}),true);
+  assert.deepEqual(sent.map(c=>c.type),['presentation','emergency_stop']);
+});
+
 test('paused and emergency-stop states block pedals; controls carry explicit frame and time', () => {
   const {p, sent, snapshot} = clientFixture();
   p.acceptSnapshot({...snapshot, mode: 'PAUSED'}); p.updateControls({throttle: 1});

@@ -49,7 +49,7 @@ class JourneyComparison:
         self.near = self.intervening = False
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
-            if saved.get('version') in (1, 2, 3) and isinstance(saved.get('runs'), dict):
+            if saved.get('version') in (1, 2, 3, 4) and isinstance(saved.get('runs'), dict):
                 self.data = saved
                 for run in saved['runs'].values():
                     if run['status'] == 'RUNNING':
@@ -77,9 +77,10 @@ class JourneyComparison:
             raise ValueError('Comparison changed; prepare its mode again')
         if pair_id is None:
             benchmark = mode in BENCHMARK_MODES
-            self.data = {'version': 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
+            self.data = {'version': 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
                          'driver_modes':list(BENCHMARK_MODES if benchmark else MODES),
                          'manifest': copy.deepcopy(manifest), 'runs': {}}
+            if manifest.get('guided'):self.data['order']=list(manifest['presentation_order'])
         elif mode not in self.data.get('driver_modes', MODES):
             raise ValueError('Legacy protection comparisons and the hybrid benchmark are separate protocols')
         old = self.data['runs'].get(mode)
@@ -176,7 +177,7 @@ class JourneyComparison:
 
     def finish(self, reason, status='INTERRUPTED'):
         if not self.active: return
-        self.active.update(status='ARRIVED' if reason == 'destination_reached' else 'COLLISION' if reason == 'collision' else status, reason=reason)
+        self.active.update(status='ARRIVED' if reason == 'destination_reached' else 'COLLISION' if reason == 'collision' else 'SHORTENED' if reason=='guided_shortened' else status, reason=reason)
         if self.active['status'] == 'ARRIVED':
             self.active['route_completion_percent'] = 100.
             self.active['destination_reached'] = True
@@ -202,7 +203,7 @@ class JourneyComparison:
         result = copy.deepcopy(data)
         modes = result.get('driver_modes', MODES)
         result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))
-        if result.get('version') in (2, 3):
+        if result.get('version') in (2, 3, 4):
             audits = [result['runs'].get(m, {}).get('setup', {}).get('initial_condition_id') for m in modes]
             verified = all(result['runs'].get(m, {}).get('initial_condition_audit', {}).get('passed') is True for m in modes)
             result['conditions_match'] = result['conditions_match'] and bool(audits[0]) and audits[0] == audits[1] and verified

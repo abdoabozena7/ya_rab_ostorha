@@ -56,8 +56,8 @@ export function installGuidedDetails(p,tools,trigger){
 
   const run=page('run','Run setup');
   const runMode=selectField(run,'detailsRunMode','Drive type',[
-    ['automatic','Automatic presentation'],['custom','Custom drive']]);
-  run.append(node('p','The main action prepares and records Robosphere → Normal at 50 km/h, then plays the comparison.','details-copy'));
+    ['automatic','Guided comparison'],['custom','Custom drive']]);
+  run.append(node('p','Choose your first drive on the main screen. Each attempt records automatically; starting the other drive is explicit.','details-copy'));
   const runSummary=node('dl',null,'details-summary');
   for(const [label,text] of [['Route','Chosen automatically'],['Traffic','Up to 40 vehicles and 30 pedestrians'],['Recording','Automatic for both runs']]){
     const row=node('div');row.append(node('dt',label),node('dd',text));runSummary.append(row);
@@ -123,6 +123,7 @@ export function installGuidedDetails(p,tools,trigger){
   const files=new Map();
   let replayRequest=0;
   const currentPair=()=>comparison.value==='current'?p.journeyComparison:selectedPair;
+  const reviewBlocked=()=>driveState(p).busy&&!['RESULTS','AWAITING_NEXT'].includes(p.presentation?.status)||['STARTING','RUNNING'].includes(p.journey?.status);
   async function loadHistory(){
     if(historyLoaded)return;historyLoaded=true;
     try{
@@ -143,12 +144,12 @@ export function installGuidedDetails(p,tools,trigger){
       const pair=await r.json();if(token!==selection)return;
       if(pair.pair_id!==comparison.value||!pair.runs)throw new Error('Saved comparison identity does not match.');
       selectedPair={...pair,conditions_match:recordedConditionsMatch(pair)};
-      resultNote.textContent=pair.version===3?'Saved presentation; each original outcome is retained.':'Saved legacy comparison; paired video playback is available for presentations.';
+      resultNote.textContent=[3,4].includes(pair.version)?'Saved presentation; each original outcome is retained.':'Saved legacy comparison; paired video playback is available for presentations.';
       mediaKey='';update();
     }catch(error){if(token===selection)resultNote.textContent=error.message;}
   };
   resultOpen.onclick=()=>{
-    const pair=currentPair();if(!pair||driveState(p).busy||['STARTING','RUNNING'].includes(p.journey?.status))return;
+    const pair=currentPair();if(!pair||reviewBlocked())return;
     const action=resultAction.value;
     if(action.startsWith('download')){
       const mode=action.slice(8),file=files.get(pair.pair_id+':'+mode);if(!file)return;
@@ -157,13 +158,13 @@ export function installGuidedDetails(p,tools,trigger){
     const request=++replayRequest;
     p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();
     p.reviewedComparison=comparison.value==='current'?null:pair;
-    document.body.classList.toggle('archive-review',pair.version!==3);
-    if(pair.version!==3)renderLegacy(pair);
+    document.body.classList.toggle('archive-review',![3,4].includes(pair.version));
+    if(![3,4].includes(pair.version))renderLegacy(pair);
     close();showWorkspace('results');
     if(action==='replay'){
       // The regular renderer owns loading and synchronizing the real media.
       let attempts=0;const replay=()=>{
-        if(request!==replayRequest||driveState(p).busy||['STARTING','RUNNING'].includes(p.journey?.status))return;
+        if(request!==replayRequest||reviewBlocked())return;
         if(++attempts>50){$('presentationPlaybackStatus').textContent='Videos are still loading. Open Details → Results to retry playback.';return;}
         const expected=availableRecordings(pair).map(v=>v.root+'driving.mp4');
         const loaded=[...document.querySelectorAll('#presentationResults video')].every(v=>expected.some(path=>v.getAttribute('src')===path));
@@ -312,9 +313,9 @@ export function installGuidedDetails(p,tools,trigger){
         if(v?.status==='READY')files.set(pair.pair_id+':'+file.mode,file.root+'driving.mp4');
       }).catch(()=>{});
     }
-    const active=state.busy||['STARTING','RUNNING'].includes(p.journey?.status);
+    const active=reviewBlocked();
     const action=resultAction.value,download=action.startsWith('download');
-    resultOpen.disabled=!pair||active||(action==='replay'&&(pair.version!==3||!['ROBOSPHERE','NORMAL'].every(m=>files.has(pair.pair_id+':'+m))))||
+    resultOpen.disabled=!pair||active||(action==='replay'&&(![3,4].includes(pair.version)||!['ROBOSPHERE','NORMAL'].every(m=>files.has(pair.pair_id+':'+m))))||
       (download&&!files.has(pair.pair_id+':'+action.slice(8)));
     if(active)resultNote.textContent='Finish or stop the current run before opening saved results.';
     else if(pair&&!resultNote.textContent)resultNote.textContent='Original outcomes and failures remain attached to each recording.';

@@ -4,6 +4,17 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [18 October guided simulator](docs/GUIDED_SIMULATOR_20261018.md) replaces the
+main dashboard with separate start, loading, choice, driving and result screens.
+Choose Normal or the protected drive first; explicitly continue to the other
+attempt. Results do not wait for video export. **Free GPU** saves and closes the
+session, verifies CARLA process exit and returns to **Start simulation**.
+The separate **Dense Chaos Stress Test** requests 40 native vehicles and 50
+pedestrians, records actual local density/motion checks and retains shortfalls.
+The guide distinguishes native lifecycle verification from unaccepted stress
+diversity and driving quality. Historical interface reports below describe
+their own versions; the guided screen has no Restart button.
+
 The [18 October live-browser follow-up verification](docs/DRIVING_VERIFICATION_20261018.md)
 tracks additional stop, uncertainty-label, camera-layout and transport repairs.
 It preserves failed native iterations and separates actual playback completion

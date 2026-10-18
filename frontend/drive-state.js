@@ -1,5 +1,10 @@
+import {missionState} from './mission-state.js';
 // One source for the next user action. A fault is never an ordinary pause.
 export function driveState(p) {
+  if(p.presentation?.guided){
+    const m=missionState(p),phase=p.presentation.status;
+    return {action:m.action,busy:!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(phase),failed:phase==='ERROR',resumable:false,presentationStatus:phase,startLabel:'Start simulation',configurationLocked:!['COMPLETE','CANCELLED','ERROR'].includes(phase)||!!p.recording,emergencyVisible:!!p.connected&&!p.isReplay&&p.controlMode!=='EMERGENCY_STOP',enabled:!!m.action};
+  }
   const savedStatus=p.presentation?.status||'IDLE';
   const ordinary=!!p.journey?.route_id&&!p.journey?.presentation_id;
   const status=ordinary&&['ERROR','COMPLETE','CANCELLED'].includes(savedStatus)?'IDLE':savedStatus;

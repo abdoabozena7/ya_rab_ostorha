@@ -1,0 +1,78 @@
+async page=>{
+  const checks=[];
+  await page.setViewportSize({width:1600,height:900});
+  await page.evaluate(()=>window.setMissionFixture({connected:true,available:true,mode:'PAUSED',simulatorStop:{available:true,status:'IDLE'},simulatorStart:{status:'READY',available:true}}));
+  await page.waitForFunction(()=>document.body.dataset.mission==='choose');
+  await page.getByRole('radio',{name:'The problem Normal · obstacle protection off',exact:true}).check();
+  await page.getByRole('button',{name:'Start the normal drive',exact:true}).click();
+  const selected=await page.evaluate(()=>window.missionEvidence());
+  if(!selected.commands.some(c=>c.value?.operation==='START_GUIDED'&&c.value.first_mode==='NORMAL'))throw Error('No guided start command');
+  checks.push('START_GUIDED uses explicit first mode');
+  const d={guided:true,id:'fixture-current',status:'DRIVING',arm:0,modes:['NORMAL','ROBOSPHERE'],pair_id:'fixture-pair',setup:{scene:'DENSE_CHAOS'}};
+  await page.evaluate(d=>window.setMissionFixture({presentation:d,mode:'AUTOMATIC',journey:{status:'RUNNING',presentation_id:d.id}}),d);
+  await page.waitForFunction(()=>document.body.dataset.mission==='driving');
+  await page.getByRole('button',{name:'See the solution now',exact:true}).click();
+  const next=await page.evaluate(()=>window.missionEvidence());
+  if(!next.commands.some(c=>c.value?.operation==='NEXT'&&c.value.id===d.id&&c.value.expected_arm===0&&c.value.expected_phase==='DRIVING'))throw Error('Transition identity missing');
+  checks.push('NEXT bound to current presentation / arm / phase');
+  await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'AWAITING_NEXT',runs:{NORMAL:{status:'COLLISION',reason:'collision',distance_m:12.5,collisions:1,duration_s:5}}},journey:{status:'PAUSED',reason:'collision'},mode:'PAUSED'}),d);
+  await page.waitForFunction(()=>document.body.dataset.mission==='outcome');
+  if(!await page.getByText('12.5 m',{exact:true}).isVisible())throw Error('Actual first outcome missing');
+  checks.push('Contact and saved metrics appear before second start');
+  const run={status:'SHORTENED',reason:'guided_shortened',distance_m:18.1,collisions:0,duration_s:6};
+  await page.evaluate(({d,run})=>window.setMissionFixture({presentation:{...d,status:'RESULTS',arm:1},journeyComparison:{version:4,pair_id:d.pair_id,conditions_match:false,runs:{NORMAL:run,ROBOSPHERE:run}}}),{d,run});
+  await page.waitForFunction(()=>document.body.dataset.mission==='comparison');
+  if(!await page.getByRole('button',{name:'Finish',exact:true}).isVisible())throw Error('Results depend on video');
+  checks.push('Results are visible without exported video');
+  await page.getByRole('button',{name:'Menu',exact:true}).click();
+  await page.locator('[data-details-group=results]').click();
+  await page.locator('#detailsResultOpen').click();
+  await page.waitForFunction(()=>document.body.dataset.workspace==='results');
+  await page.getByRole('button',{name:'Back to drive',exact:true}).click();
+  await page.waitForFunction(()=>document.body.dataset.workspace==='drive');
+  await page.getByRole('button',{name:'Finish',exact:true}).waitFor({state:'visible'});
+  checks.push('Optional video/results review returns to the same mission');
+  const measurements=[];
+  for(const [width,height] of [[1920,1080],[1280,720],[850,600],[390,740]]){
+    await page.setViewportSize({width,height});
+    await page.evaluate(d=>window.setMissionFixture({presentation:d,journey:{status:'RUNNING',presentation_id:d.id},mode:'AUTOMATIC'}),d);
+    await page.waitForFunction(()=>document.body.dataset.mission==='driving');
+    await page.getByRole('button',{name:'See the solution now',exact:true}).scrollIntoViewIfNeeded();
+    const m=await page.evaluate(()=>{const c=document.getElementById('frontCameraView').getBoundingClientRect(),a=document.getElementById('drivePrimaryAction').getBoundingClientRect();return {w:innerWidth,h:innerHeight,scroll:document.documentElement.scrollWidth,action:{top:a.top,bottom:a.bottom},camera:{width:c.width,height:c.height},fit:getComputedStyle(document.getElementById('authoritativeCamera')).objectFit};});
+    if(m.scroll>width+1||m.action.bottom>height+1||m.fit!=='contain'||m.camera.height<150)throw Error('Layout failure '+JSON.stringify(m));
+    measurements.push(m);
+    await page.screenshot({path:'output/playwright/mission-driving-'+width+'.png',fullPage:true});
+  }
+  await page.keyboard.press('f');
+  await page.waitForFunction(()=>document.getElementById('cameraCard').classList.contains('camera-expanded'));
+  await page.getByRole('button',{name:'See the solution now',exact:true}).scrollIntoViewIfNeeded();
+  const expanded=await page.evaluate(()=>{const action=document.getElementById('drivePrimaryAction').getBoundingClientRect(),emergency=document.getElementById('emergencyStopBtn').getBoundingClientRect();return {actionBottom:action.bottom,emergencyTop:emergency.top,emergencyBottom:emergency.bottom,height:innerHeight};});
+  if(expanded.actionBottom>expanded.height+1||expanded.emergencyTop<0||expanded.emergencyBottom>expanded.height)throw Error('Expanded controls clipped: '+JSON.stringify(expanded));
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(()=>!document.getElementById('cameraCard').classList.contains('camera-expanded'));
+  checks.push('Expanded camera reserves space for the action and emergency; Escape restores it');
+  await page.evaluate(()=>window.setMissionFixture({connected:false,presentation:{status:'IDLE'},journey:{status:'IDLE'},mode:'DISCONNECTED',simulatorStop:{available:true,status:'STOPPED'}}));
+  await page.waitForFunction(()=>document.body.dataset.mission==='welcome');
+  await page.getByRole('button',{name:'Menu',exact:true}).click();
+  await page.keyboard.press('Escape');
+  if(!await page.getByRole('button',{name:'Menu',exact:true}).evaluate(e=>e===document.activeElement))throw Error('Menu focus did not return');
+  checks.push('Menu Escape restores keyboard focus');
+  for(const phase of ['PREPARING','READY','STARTING','FINALIZING','RESTORING','RECOVERING']){
+    await page.evaluate(({d,phase})=>window.setMissionFixture({connected:true,available:true,simulatorStop:{available:true,status:'IDLE'},presentation:{...d,status:phase},journey:{status:'PAUSED'},mode:'PAUSED'}),{d,phase});
+    await page.waitForFunction(()=>document.body.dataset.mission==='loading');
+    if(await page.locator('#drivePrimaryAction').isVisible())throw Error('Unavailable task action shown in '+phase);
+    if(!await page.getByRole('button',{name:'Free GPU',exact:true}).isVisible())throw Error('GPU release lost in '+phase);
+    checks.push(phase+': status without an unavailable task button');
+  }
+  await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'ERROR',failed_phase:'RESTORING',reason:'Saved start occupied for participant_000'},journey:{status:'ERROR'}}),d);
+  await page.waitForFunction(()=>document.body.dataset.mission==='fault');
+  if(!await page.getByRole('button',{name:'Retry preparing the other drive',exact:true}).isVisible())throw Error('Contextual restoration recovery missing');
+  checks.push('Restoration failure retains a contextual retry');
+  await page.evaluate(()=>window.setMissionFixture({simulatorStop:{available:true,status:'STOPPING'}}));
+  await page.waitForFunction(()=>document.body.dataset.mission==='releasing');
+  if(await page.locator('#drivePrimaryAction').isVisible())throw Error('Drive action available during GPU release');
+  checks.push('GPU release cancels normal task actions');
+  const evidence=await page.evaluate(()=>window.missionEvidence());
+  if(evidence.errors.length)throw Error('Browser exceptions: '+evidence.errors.join(';'));
+  return {checks,measurements,errors:evidence.errors,scope:evidence.scope};
+}

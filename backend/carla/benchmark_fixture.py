@@ -14,8 +14,9 @@ def pose_data(pose):
 
 
 class BenchmarkFixture:
-    def __init__(self, provider):
+    def __init__(self, provider, *, reconstructable=False):
         self.provider = provider
+        self.reconstructable=reconstructable
         self.actors = []
         self.lights = []
         self.frozen = False
@@ -32,6 +33,9 @@ class BenchmarkFixture:
             if actor is None: raise ValueError('Population changed during benchmark capture')
             row = {'id': actor_id, 'blueprint': actor.type_id, 'pose': pose_data(actor.get_transform()),
                    'velocity_mps': [0., 0., 0.]}
+            if self.reconstructable:
+                row.update(role=f'participant_{len(self.actors):03d}',
+                    attributes={k:v for k,v in actor.attributes.items() if k in ('color','driver_id','is_invincible')})
             if actor_id in pop.vehicles:
                 row['profile'] = dict(pop.driver_profiles[actor_id])
                 points = row['profile'].get('route_points', [])
@@ -43,10 +47,15 @@ class BenchmarkFixture:
                 entry = pop.walkers[actor_id]
                 destination = entry.get('destination')
                 row.update(speed_mps=entry['speed'], destination=[destination.x, destination.y, destination.z] if destination else None)
+                if self.reconstructable:
+                    row.update(activity=entry.get('activity','WALKING'),crossing=entry.get('crossing',False),
+                        wait_remaining_s=max(0.,(entry.get('wait_until') or 0.)-p.last_vehicle['timestamp']))
             self.actors.append(row)
         for light in p.world.world.get_actors().filter('traffic.traffic_light*'):
             self.lights.append({'id':light.id, 'opendrive_id':light.get_opendrive_id(), 'state':str(light.get_state()),
                                 'green_s':light.get_green_time(), 'yellow_s':light.get_yellow_time(), 'red_s':light.get_red_time()})
+        stress=getattr(p,'dense_chaos',None)
+        if stress:stress.compile(self.actors)
         sensors = {key:{k:v for k,v in value.items() if k in ('blueprint','attributes','mountTransform','sensorTickSeconds','requestedRateHz')}
                    for key,value in p.sensor_manager.configurations.items()}
         self.condition = {'version':1, 'actors':self.actors, 'lights':self.lights, 'sensors':sensors,
@@ -54,14 +63,72 @@ class BenchmarkFixture:
                           'camera_settings':dict(p.camera_settings),
                           'fixed_delta_s':p.fixed_delta, 'seed':pop.config['seed'],
                           'normalization':'Both arms start stationary; traffic is released on the first admitted control frame'}
-        encoded = json.dumps(self.condition, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+        if self.reconstructable:
+            tools=p.dashboard_tools
+            from .dashboard_tools import WEATHER_PRESET_FIELDS
+            weather=p.world.world.get_weather()
+            self.condition.update(version=2,map=tools.map_name,route=tools.route['points'],
+                destination=tools.route['destination'],population=dict(pop.config),
+                weather={k:getattr(weather,k) for k in WEATHER_PRESET_FIELDS if hasattr(weather,k)},
+                stress_plan=getattr(getattr(p,'dense_chaos',None),'plans',{}))
+        identity={**self.condition,'actors':[{k:v for k,v in a.items() if k!='id'} for a in self.actors],
+            'lights':[{k:v for k,v in light.items() if k!='id'} for light in self.lights]} if self.reconstructable else self.condition
+        encoded = json.dumps(identity, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
         self.condition['id'] = hashlib.sha256(encoded).hexdigest()
         self.restore()
         return self.condition
 
-    def restore(self):
+    def rebuild(self):
+        """Recreate stable roles at saved poses; native IDs are only bindings."""
+        p=self.provider;pop=p.population;api=p.connection.api;world=p.world.world
+        pop.benchmark_frozen=True;pop.benchmark_locked=True
+        pop.clear_pedestrians();pop.clear_traffic()
+        pop.config=dict(self.condition['population'])
+        # Every road participant is retired before construction, including
+        # survivors whose current positions might occupy a saved start.
+        for row in self.actors:
+            bp=world.get_blueprint_library().find(row['blueprint'])
+            for key,value in row.get('attributes',{}).items():
+                if bp.has_attribute(key):bp.set_attribute(key,value)
+            if bp.has_attribute('role_name'):bp.set_attribute('role_name',row['role'])
+            pose=row['pose'];native=api.Transform(api.Location(*pose['location']),api.Rotation(
+                pitch=pose['rotation'][0],yaw=pose['rotation'][1],roll=pose['rotation'][2]))
+            # Native spawn collision checks reject a settled tire pose against
+            # the road. Admit above it, then restore the exact saved pose while
+            # held, before any driving image or control is released.
+            admission=api.Transform(api.Location(pose['location'][0],pose['location'][1],pose['location'][2]+.4),native.rotation)
+            actor=world.try_spawn_actor(bp,admission)
+            if actor is None:raise ValueError('Saved start occupied for '+row['role'])
+            row['id']=actor.id
+            actor.set_simulate_physics(False)
+            actor.set_transform(native)
+            if row['blueprint'].startswith('vehicle.'):
+                pop.vehicles.add(actor.id);pop.driver_profiles[actor.id]=dict(row['profile'])
+            else:
+                try:controller=world.spawn_actor(world.get_blueprint_library().find('controller.ai.walker'),api.Transform(),attach_to=actor)
+                except Exception:
+                    pop._destroy([actor.id]);raise
+                pop.walkers[actor.id]={'controller_id':controller.id,'speed':row['speed_mps'],'started':False,
+                    'ready_at':None,'destination':None,'last_retarget':0.,'seen':False,'location':native.location,
+                    'admitted_at_frame':pop.frame_id,'controller_seen':False,'activity':'IDLE','wait_until':None,'crossing':False}
+        for row in self.lights:
+            light=next((a for a in world.get_actors().filter('traffic.traffic_light*') if a.get_opendrive_id()==row['opendrive_id']),None)
+            if light is None:raise ValueError('Saved traffic signal missing')
+            row['id']=light.id
+        stress=getattr(p,'dense_chaos',None)
+        if stress:stress.bind(self.actors)
+
+    def restore(self, *, rebuild=False):
         self.held_current=False
         p = self.provider; pop = p.population; api = p.connection.api
+        if rebuild and self.reconstructable:
+            # The stopped ego may occupy a participant's saved start after its
+            # first drive. Retire that occupancy before rebuilding any role.
+            p.ego.actor.set_simulate_physics(False)
+            pose=self.condition['ego']['pose']
+            p.ego.actor.set_transform(api.Transform(api.Location(*pose['location']),api.Rotation(
+                pitch=pose['rotation'][0],yaw=pose['rotation'][1],roll=pose['rotation'][2])))
+            self.rebuild()
         if set(pop.vehicles) | set(pop.walkers) != {r['id'] for r in self.actors}:
             raise ValueError('Benchmark actors changed; start a new pair instead of claiming matched conditions')
         pop.benchmark_frozen = True; pop.benchmark_locked = True; self.frozen = True
@@ -118,6 +185,11 @@ class BenchmarkFixture:
         if sensors != self.condition['sensors'] or p.camera_settings != self.condition['camera_settings']:
             failures.append('sensor calibration or camera settings changed')
         if p.fixed_delta != self.condition['fixed_delta_s']: failures.append('simulation clock changed')
+        if self.reconstructable:
+            weather=p.world.world.get_weather()
+            if any(abs(getattr(weather,k)-v)>.001 for k,v in self.condition['weather'].items()):failures.append('weather changed')
+            if pop_config := self.condition.get('population'):
+                if p.population.config!=pop_config:failures.append('population settings changed')
         expected=self.condition['ego'];ego=p.ego.actor;actual=pose_data(ego.get_transform())
         if ego.type_id!=expected['blueprint'] or math.dist(actual['location'],expected['pose']['location'])>.03:
             failures.append('ego initial pose')
@@ -131,6 +203,7 @@ class BenchmarkFixture:
             actual = pose_data(actor.get_transform())
             if actor.type_id != row['blueprint'] or math.dist(actual['location'], row['pose']['location']) > .03:
                 failures.append(f"actor pose {row['id']}")
+            if self.reconstructable and any(actor.attributes.get(k)!=v for k,v in row['attributes'].items()):failures.append('participant attributes '+row['role'])
             if any(abs((x-y+180)%360-180) > .5 for x,y in zip(actual['rotation'],row['pose']['rotation'])):
                 failures.append(f"actor rotation {row['id']}")
             if actor.get_velocity().length()>.03 or actor.get_angular_velocity().length()>.1:
@@ -172,6 +245,8 @@ class BenchmarkFixture:
                 if strict:raise
         pop.benchmark_frozen = False; self.frozen = False
         self.held_current=False
+        stress=getattr(p,'dense_chaos',None)
+        if stress and strict:stress.start()
 
     def _release_actor(self,row,*,strict):
         from .urban import apply_driver
@@ -199,11 +274,17 @@ class BenchmarkFixture:
                     return
                 controller.start(); controller.set_max_speed(row['speed_mps'])
                 entry.update(started=True, ready_at=0.)
+                if self.reconstructable:
+                    stamp=p.last_vehicle['timestamp']
+                    entry.update(activity=row.get('activity','WALKING'),crossing=row.get('crossing',False),
+                        last_retarget=stamp,wait_until=stamp+row['wait_remaining_s'] if row.get('wait_remaining_s') else None)
                 if row['destination']:
                     target = api.Location(*row['destination']); controller.go_to_location(target); entry['destination'] = target
     def hold_current(self):
         """Stop owned traffic between recordings without teleporting it."""
         p=self.provider;pop=p.population
+        stress=getattr(p,'dense_chaos',None)
+        if stress:stress.running=False
         pop.benchmark_locked=True;pop.benchmark_frozen=True
         expected={row['id'] for row in self.actors};actual=set(pop.vehicles)|set(pop.walkers)
         failures=[] if expected==actual else ['Owned traffic changed during the recorded drive']

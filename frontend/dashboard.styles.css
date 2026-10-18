@@ -10079,4 +10079,467 @@ body.light-cockpit.sequential-drive[data-ui=guided] #cameraCard:not(.camera-expa
   }
 }
 
+/* frontend/mission.css */
+body.light-cockpit.sequential-drive.mission-experience {
+  --surface:#17201f;
+  --text:#f0f4ef;
+  --muted:#acbab3;
+  --line:#34433c;
+  --accent:#bcf7be;
+  background: #101816;
+  color: var(--text);
+  display: block !important;
+  padding: 0 28px 24px;
+  min-height: 100svh;
+}
+body.mission-experience::before {
+  display: none !important;
+}
+body.light-cockpit.mission-experience[data-ui=guided] .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  margin: 0 auto;
+  padding: 22px 0;
+  max-width: 1440px;
+  border: 0;
+  box-shadow: none;
+  background: #101816;
+  min-height: 82px;
+}
+.mission-experience #brand h1 {
+  font-size: 22px !important;
+  letter-spacing: -.6px;
+  color: var(--text);
+}
+.mission-experience #brand .eyebrow {
+  color: var(--muted);
+  font-size: 10px;
+}
+.mission-experience .studio-town,
+.mission-experience #cityStatus,
+.mission-experience .cockpit-session,
+.mission-experience .cockpit-status-chips,
+.mission-experience .workspace,
+.mission-experience #presentationControls,
+.mission-experience .cockpit-telemetry,
+.mission-experience #unifiedMap {
+  display: none !important;
+}
+.mission-experience[data-workspace=results] .workspace {
+  display: block !important;
+  max-width: 1440px;
+  margin: auto;
+}
+.mission-experience .cockpit-header-actions {
+  margin-left: auto;
+}
+.mission-experience button,
+.mission-experience select {
+  border-radius: 5px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: #1c2924;
+}
+.mission-experience button:hover {
+  background: #2c3f34;
+}
+.mission-experience button:focus-visible,
+.mission-experience input:focus-visible,
+.mission-experience select:focus-visible {
+  outline: 3px solid #bcf7be;
+  outline-offset: 4px;
+}
+.mission-experience #missionExperience {
+  max-width: 1440px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.mission-experience #missionExperience[hidden],
+.mission-experience #missionExperience [hidden] {
+  display: none !important;
+}
+#missionPreview {
+  position: relative;
+  width: 100%;
+  height: clamp(230px, 46svh, 580px);
+  overflow: hidden;
+  background: #080d0b;
+  animation: mission-enter .22s ease-out;
+}
+#missionPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 58%;
+  opacity: .85;
+}
+body[data-mission=choose] #missionPreview {
+  height: clamp(170px, 24svh, 280px);
+}
+#missionPreview > span {
+  position: absolute;
+  bottom: 16px;
+  left: 20px;
+  background: #101816dd;
+  padding: 7px 10px;
+  font-size: 10px;
+  letter-spacing: 1.3px;
+  color: #d4dfd7;
+}
+.mission-copy {
+  padding: 25px 0 0;
+  animation: mission-enter .18s ease-out;
+}
+.mission-location {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #acbab3;
+  margin-bottom: 12px;
+}
+.mission-copy h2 {
+  font-size: clamp(26px, 3.1vw, 44px);
+  line-height: 1.14;
+  font-weight: 500;
+  letter-spacing: -1px;
+  max-width: 850px;
+  margin: 0 0 12px;
+  color: #f0f4ef;
+}
+.mission-copy > p {
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 760px;
+  color: #acbab3;
+  margin: 0 0 16px;
+}
+.mission-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 22px 0 10px;
+}
+.mission-experience #drivePrimaryAction {
+  background: #bcf7be;
+  color: #112619;
+  border: 0;
+  padding: 14px 24px;
+  min-width: 185px;
+  font-size: 15px;
+  font-weight: 650;
+}
+.mission-experience #drivePrimaryAction:hover {
+  background: #d5ffd6;
+  transform: translateY(-1px);
+}
+.mission-experience #missionFreeGPU {
+  background: transparent;
+  padding: 12px 18px;
+  font-size: 13px;
+}
+.mission-copy #missionNextHint {
+  font-size: 12px;
+  margin: 0;
+  color: #91a59a;
+}
+.mission-experience #missionChoices {
+  border: 0;
+  padding: 10px 0 0;
+  margin: 0;
+  display: flex;
+  gap: 12px 28px;
+  flex-wrap: wrap;
+  max-width: 850px;
+}
+#missionChoices legend {
+  font-size: 12px;
+  color: #acbab3;
+  margin-bottom: 6px;
+}
+#missionChoices > label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 250px;
+  padding: 12px 0;
+  color: #b9c7bf;
+  font-size: 12px;
+  cursor: pointer;
+}
+#missionChoices strong {
+  display: block;
+  color: #f0f4ef;
+  font-size: 18px;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+#missionChoices input {
+  accent-color: #bcf7be;
+  width: 20px;
+  height: 20px;
+}
+#missionChoices .mission-scene-choice {
+  flex-basis: 100%;
+  display: block;
+  max-width: 600px;
+}
+#missionSceneChoice {
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+  font-size: 12px;
+}
+#missionWorking {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: #acbab3;
+}
+#missionWorking i {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  background: #bcf7be;
+  animation: mission-pulse 1.4s ease-in-out infinite;
+}
+#missionError {
+  color: #ffbfab;
+  border-left: 2px solid #ffbfab;
+  padding-left: 12px;
+}
+#missionOutcomes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 70px;
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+  margin-top: 22px;
+}
+#missionOutcomes article {
+  flex: 1;
+  min-width: 250px;
+  max-width: 560px;
+}
+#missionOutcomes h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 10px 0;
+}
+#missionOutcomes p {
+  font-size: 13px;
+  color: #acbab3;
+  line-height: 1.6;
+}
+#missionOutcomes > p {
+  flex-basis: 100%;
+}
+#missionOutcomes dl {
+  margin: 0;
+}
+#missionOutcomes dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 9px 0;
+  border-bottom: 1px solid #28382e;
+  font-size: 13px;
+}
+#missionOutcomes dt {
+  color: #acbab3;
+}
+#missionOutcomes dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+body.light-cockpit.mission-experience[data-ui=guided] #cameraCard:not(.camera-expanded) {
+  display: block !important;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #080d0b;
+  box-shadow: none;
+}
+body.light-cockpit.mission-experience[data-ui=guided] #cameraCard:not(.camera-expanded) .camera-stage {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+body.light-cockpit.mission-experience[data-ui=guided] #cameraCard:not(.camera-expanded) #frontCameraView {
+  height: min(58svh, 740px) !important;
+  min-height: 180px !important;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  background: #080d0b;
+}
+.mission-experience #authoritativeCamera {
+  object-fit: contain !important;
+  width: 100%;
+  height: 100%;
+}
+.mission-experience #cameraCard .cockpit-camera-caption {
+  display: none !important;
+}
+.mission-experience #frontCameraView {
+  color: #acbab3 !important;
+}
+.mission-experience #brand h1 {
+  max-width: none !important;
+  white-space: nowrap !important;
+}
+.mission-experience #cameraCard .studio-control-bar,
+.mission-experience #cameraCard .cockpit-livebar,
+.mission-experience #cameraCard .cockpit-stage-label,
+.mission-experience #cameraCard .studio-hud,
+.mission-experience #cameraCard .studio-mode-pill,
+.mission-experience #cameraCard .sensor-overlay-label,
+.mission-experience #cameraCard .cockpit-camera-tools,
+.mission-experience #cameraCard .cockpit-map,
+.mission-experience #cameraCard #miniMapToggle,
+.mission-experience #cameraCard #perceptionPanel {
+  display: none !important;
+}
+.mission-experience .guided-details {
+  background: #17201f;
+  color: #f0f4ef;
+}
+.mission-experience .guided-details-heading {
+  background: #17201f;
+}
+.mission-experience #missionExperience:has(.camera-expanded) {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  max-width: none;
+  margin: 0;
+  padding: calc(var(--mission-header-height,100px) + 8px) 28px 18px;
+  background: #101816;
+  display: grid;
+  grid-template-rows: minmax(160px, 1fr) auto;
+  overflow-y: auto;
+}
+.mission-experience #missionExperience:has(.camera-expanded) #missionScene {
+  min-height: 160px;
+  height: 100%;
+}
+body.light-cockpit.mission-experience[data-ui=guided] #cameraCard.camera-expanded {
+  position: static;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  display: block;
+  min-height: 160px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: #080d0b;
+  box-shadow: none;
+}
+body.light-cockpit.mission-experience[data-ui=guided] #cameraCard.camera-expanded .camera-stage,
+body.light-cockpit.mission-experience[data-ui=guided] #cameraCard.camera-expanded #frontCameraView {
+  height: 100% !important;
+  min-height: 160px !important;
+  max-height: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app-header {
+  position: sticky;
+  z-index: 210;
+  top: 0;
+  background: #101816;
+}
+.mission-experience:has(.camera-expanded) .cockpit-header-actions {
+  position: static !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+.mission-experience #missionExperience:has(.camera-expanded) .mission-copy {
+  padding-top: 14px;
+}
+.mission-experience #missionExperience:has(.camera-expanded) h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.mission-experience #missionExperience:has(.camera-expanded) .mission-actions {
+  margin-top: 14px;
+}
+@keyframes mission-enter {
+  from {
+    opacity: .6;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mission-pulse {
+  50% {
+    opacity: .35;
+  }
+}
+@media (max-width: 700px) {
+  body.light-cockpit.sequential-drive.mission-experience {
+    padding: 0 16px 24px;
+  }
+  .mission-experience #brand h1 {
+    font-size: 18px !important;
+  }
+  .mission-experience #brand {
+    width: auto !important;
+  }
+  .mission-experience .app-header {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  .mission-experience .cockpit-header-actions {
+    gap: 8px;
+  }
+  .mission-experience .cockpit-header-actions button {
+    font-size: 11px;
+    padding: 7px 10px;
+  }
+  .mission-copy h2 {
+    font-size: 29px;
+  }
+  .mission-copy > p {
+    font-size: 14px;
+  }
+  #missionPreview {
+    height: 30svh;
+    min-height: 200px;
+  }
+  #missionChoices > label {
+    min-width: 0;
+    width: 100%;
+  }
+  #missionOutcomes article {
+    min-width: 0;
+    width: 100%;
+    flex-basis: 100%;
+  }
+  body.light-cockpit.mission-experience[data-ui=guided] #cameraCard:not(.camera-expanded) #frontCameraView {
+    height: min(43svh, 350px) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mission-experience * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* frontend/dashboard-theme.css */

@@ -8,6 +8,18 @@ from tests.core_packets import packet
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
+    def test_explicit_emergency_stops_before_transferring_observer_ownership(self):
+        from unittest.mock import Mock
+        from types import SimpleNamespace
+        import threading
+        from backend.websocket_bridge import WebSocketBridge
+        bridge=WebSocketBridge.__new__(WebSocketBridge)
+        bridge.service=SimpleNamespace(emergency_stop=Mock(),restarting=False,rl_runtime=None)
+        bridge.owner=object();observer=object();bridge.ownership_lock=threading.RLock();bridge.controller_lock=threading.Lock()
+        bridge.service.emergency_stop.side_effect=lambda:self.assertIsNot(bridge.owner,observer)
+        self.assertTrue(bridge.process_message(observer,{'type':'emergency_stop'}))
+        self.assertIs(bridge.owner,observer);self.assertTrue(bridge.controller_lock.locked())
+
     def test_a_new_native_frame_invalidates_the_shared_snapshot_inside_its_ttl(self):
         from unittest.mock import Mock,patch
         from types import SimpleNamespace

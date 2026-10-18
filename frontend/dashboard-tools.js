@@ -336,7 +336,7 @@ export class DashboardTools {
     $('journeyAvailability').textContent = $('phoneJourneyAvailability').textContent = $('driveJourneyAvailability').textContent = journeyBlocked ||
       'Destination: '+p.route.destination.name+(resume ? ' — saved; resume from your current position.' : ' — Select Go to start the destination journey.');
     this.disable('pauseBtn',ownerBlocked || emergency);
-    this.disable('emergencyStopBtn',ownerBlocked);
+    this.disable('emergencyStopBtn',p.isReplay||!p.connected||!p.fresh?'Connect a current native session':'');
     this.disable('acknowledgeStopBtn',ownerBlocked);
     $('acknowledgeStopBtn').hidden = !emergency;
 

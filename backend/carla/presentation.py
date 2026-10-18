@@ -2,8 +2,10 @@
 import random
 
 
-def prepare(provider, seed, speed):
+def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
     p = provider
+    p.guided_presentation=guided
+    p.dense_chaos=None
     p._ensure_dashboard_tools()
     if p.benchmark_fixture:
         p.benchmark_fixture.close()
@@ -46,13 +48,22 @@ def prepare(provider, seed, speed):
     p.set_paused(False)
     return {'destination': target, 'route_length_m': tools.route['length_m'],
         'origin_index': index,'planned_vehicle_capacity':capacity,'population_pending':True,
-        'requested_route_vehicles':40,'requested_route_pedestrians':30,'speed_kmh': speed}
+        'requested_route_vehicles':40,'requested_route_pedestrians':50 if scene=='DENSE_CHAOS' else 30,
+        'scene':scene,'speed_kmh': speed}
 
 
 def finish_prepare(p,seed,setup):
     # The sole worker has advanced the teleport. Population geometry now sees
     # the actual new ego pose instead of CARLA's previous-frame actor cache.
     tools=p.dashboard_tools
+    if setup.get('scene')=='DENSE_CHAOS':
+        from .dense_chaos import DenseChaos
+        config={**p.population.config,'vehicle_count':40,'pedestrian_count':50,'seed':seed,
+            'chaos_percent':90,'speed_behavior':'FAST','driver_behavior':'UNREGULATED',
+            'light_compliance_percent':35,'crossing_percent':60,'placement':'EGO_SURROUNDING','vehicle_mix':'MIXED'}
+        p.population.apply(config)
+        p.dense_chaos=DenseChaos(p,seed)
+        return {**setup,'population_pending':False,'population':dict(p.population.config)}
     config = {**p.population.config, 'vehicle_count': 0, 'pedestrian_count': 30,
         'seed': seed, 'chaos_percent': 45, 'speed_behavior': 'FAST', 'driver_behavior': 'BUSY',
         'light_compliance_percent': 80, 'crossing_percent': 30,'placement':'ROUTE','vehicle_mix':'MIXED'}
@@ -64,6 +75,7 @@ def finish_prepare(p,seed,setup):
 
 
 def population_audit(p):
+    if getattr(p,'dense_chaos',None):return p.dense_chaos.audit()
     snapshot=p.world.world.get_snapshot();ego=snapshot.find(p.ego.actor.id)
     if ego is None:raise ValueError('Presentation ego is absent from the current frame')
     pose=ego.get_transform();forward=pose.get_forward_vector();origin=pose.location

@@ -3,6 +3,7 @@ import {safetyNotice} from './cockpit-state.js';
 import {driveState} from './drive-state.js';
 import {recordingVideoRoot,selectPlaybackLeader,benchmarkSpeedText,demoFailure} from './demo-drive.js';
 import {metricValue} from './journey-comparison.js';
+import {stressSummary} from './mission-state.js';
 
 const $=id=>document.getElementById(id);
 const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Confirming route traffic',
@@ -25,8 +26,8 @@ export function presentationOutcome(run, failure){
   if(!run)return 'Not started';
   const fault=failure?.fault||run.stop_diagnostics?.runtime_fault;
   const faultText=fault?.exception_type==='KeyError'?'A required record was lost: '+fault.message: fault?.message;
-  const reason=run.reason==='collision'?(faultText?demoFailure(run.reason)+' Additional runtime error: '+faultText:run.reason):faultText||run.reason;
-  return (run.status==='ARRIVED'?'Destination reached':run.status)+
+  const reason=run.reason==='collision'?(faultText?demoFailure(run.reason)+' Additional runtime error: '+faultText:run.reason):faultText||(run.reason==='guided_shortened'?'Stopped early by your choice':run.reason);
+  return (run.status==='ARRIVED'?'Destination reached':run.status==='SHORTENED'?'Shortened attempt':run.status)+
     (reason&&reason!=='destination_reached'?' · '+(fault?reason:demoFailure(reason)):'')+
     (fault?.injected_validation_fault?' · Injected validation fault; excluded from driving acceptance.':'');
 }
@@ -52,7 +53,7 @@ export function installPresentationRun(p,tools,clearControls){
   results.innerHTML='<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Robosphere & Normal</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Normal follows the route and traffic signals with obstacle protection off. An intervention is not a proven prevented collision. Requested speed and measured speed are reported separately.</p></section>';
   $('resultsPhase').querySelector('.analysis-heading').after(results);
   const items=['ROBOSPHERE','NORMAL'].map(mode=>{
-    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · RULE protection':'Normal · obstacle protection off')+'</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
+    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · RULE protection':'Normal · obstacle protection off')+'</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><p class="presentation-stress"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
     results.querySelector('.presentation-videos').append(box);
     return {mode,box,video:box.querySelector('video'),root:null,status:'PENDING'};
   });
@@ -126,7 +127,7 @@ export function installPresentationRun(p,tools,clearControls){
     const step=presentationStep(status,data?.arm);
     panel.querySelectorAll('.presentation-steps li').forEach((el,i)=>{el.dataset.active=String(busy&&i===step);el.dataset.complete=String(status==='COMPLETE'||i<step);});
     const archived=p.reviewedComparison;
-    const pair=archived||p.journeyComparison,isPresentation=pair?.version===3;
+    const pair=archived||p.journeyComparison,isPresentation=[3,4].includes(pair?.version);
     results.hidden=!isPresentation;
     if(isPresentation){
       $('ordinaryComparison').hidden=true;$('hybridResults').hidden=true;
@@ -135,6 +136,8 @@ export function installPresentationRun(p,tools,clearControls){
       for(const item of items){const run=pair.runs?.[item.mode];
         item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,!archived&&data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
+        item.box.querySelector('.presentation-stress').textContent=stressSummary(run?.stress_audit);
+        item.box.querySelector('.presentation-stress').hidden=!run?.stress_audit;
         fields.forEach(([,field,digits,suffix],i)=>{item.box.querySelectorAll('dd')[i].textContent=metricValue(run,field,digits,suffix);});
         const events=run?.events||[],key=run?.id+':'+events.length;
         if(item.eventsKey!==key){item.eventsKey=key;const list=item.box.querySelector('ol');list.replaceChildren();for(const event of events.slice(-12)){const li=document.createElement('li');li.textContent=event.title+' · '+event.detail;list.append(li);}}
@@ -146,8 +149,8 @@ export function installPresentationRun(p,tools,clearControls){
       }
       $('presentationReplay').disabled=!items.every(i=>i.status==='READY');
       if(status==='PLAYBACK'&&archived)p.reviewedComparison=null;
-      if(status==='PLAYBACK'&&!archived&&autoplayId!==data.id&&items.every(i=>i.status==='READY')){autoplayId=data.id;showWorkspace('results');results.scrollIntoView({behavior:'smooth',block:'start'});play();}
-      if(status==='COMPLETE'&&lastPhase!=='COMPLETE'){$('presentationPlaybackStatus').textContent='Playback complete. Both measured results are shown below.';showWorkspace('results');$('presentationConclusion').scrollIntoView({behavior:'smooth',block:'center'});}
+      if(!p.guidedExperience&&status==='PLAYBACK'&&!archived&&autoplayId!==data.id&&items.every(i=>i.status==='READY')){autoplayId=data.id;showWorkspace('results');results.scrollIntoView({behavior:'smooth',block:'start'});play();}
+      if(!p.guidedExperience&&status==='COMPLETE'&&lastPhase!=='COMPLETE'){$('presentationPlaybackStatus').textContent='Playback complete. Both measured results are shown below.';showWorkspace('results');$('presentationConclusion').scrollIntoView({behavior:'smooth',block:'center'});}
     }
     lastPhase=status;
   }};

@@ -1,5 +1,12 @@
 # Asset attribution
 
+## Guided simulator preview — 2026-10-18
+
+`native-preview.jpg` is a locally recorded CARLA Town10HD_Opt RGB frame, copied
+unchanged from `run_b9151ef4243d4c1fa504b244f0d2ce3b/rgb/drivingCamera-26-581.jpg`
+during the guided Dense Chaos verification. The opening screen labels it as a
+saved simulator preview. It is neither a live feed nor a generated street image.
+
 ## Dashboard fonts — 2026-10-08
 
 Locally hosted Latin subsets for the shadcn dashboard; Arabic uses the system font fallback.

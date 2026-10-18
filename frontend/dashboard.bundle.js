@@ -668,20 +668,20 @@
     const c = p.population?.route_crowding;
     return !!c?.active && c.status === "READY" && !!routeDestinationKey(p.route) && routeDestinationKey({ destination: c.destination }) === routeDestinationKey(p.route) && c.placed_count === p.population.actual?.vehicles && c.target_count === p.population.requested?.vehicle_count && c.seed === p.population.requested?.seed && c.chaos_percent === p.population.requested?.chaos_percent;
   }
-  function routeCrowdingPrepared(p, preparation) {
-    const c = p.population?.route_crowding, key = routeDestinationKey(p.route), state = preparation?.state;
+  function routeCrowdingPrepared(p, preparation2) {
+    const c = p.population?.route_crowding, key = routeDestinationKey(p.route), state = preparation2?.state;
     if (!c?.active || !key || routeDestinationKey({ destination: c.destination }) !== key || c.target_count !== p.population.requested?.vehicle_count || c.seed !== p.population.requested?.seed || c.chaos_percent !== p.population.requested?.chaos_percent || pending(state) || state?.status === "FAILED") return false;
     const result = p.dashboardResult, applied = result?.result?.population, receipt = applied?.route_crowding;
-    const confirmed = state?.kind === "route" && state.status === "READY" && state.session_id === p.sessionId && state.destination === key && state.actual_count === c.target_count && preparation.requestedPopulation?.seed === c.seed && preparation.requestedPopulation?.chaos_percent === c.chaos_percent;
+    const confirmed = state?.kind === "route" && state.status === "READY" && state.session_id === p.sessionId && state.destination === key && state.actual_count === c.target_count && preparation2.requestedPopulation?.seed === c.seed && preparation2.requestedPopulation?.chaos_percent === c.chaos_percent;
     if (confirmed && (result?.action !== "crowd_route" || result.operationId === state.operation_id)) return true;
     if (result?.action === "crowd_route" && result.operationId) {
       return result.status === "APPLIED" && receipt?.route_id === c.route_id && receipt.seed === c.seed && receipt.chaos_percent === c.chaos_percent && receipt.target_count === c.target_count && routeCrowdingReady({ ...p, population: applied }) && applied.traffic_manager_connected === true && Number.isInteger(applied.frame_id) && applied.npc_failed === 0 && Array.isArray(applied.errors) && !applied.errors.length;
     }
     return routeCrowdingReady(p) && p.population.traffic_manager_connected === true && p.population.npc_failed === 0 && Array.isArray(p.population.errors) && !p.population.errors.length;
   }
-  function trafficPrepared(p, preparation) {
-    if (p.population?.route_crowding?.active) return routeCrowdingPrepared(p, preparation);
-    const state = preparation?.state, request = preparation?.requestedPopulation;
+  function trafficPrepared(p, preparation2) {
+    if (p.population?.route_crowding?.active) return routeCrowdingPrepared(p, preparation2);
+    const state = preparation2?.state, request = preparation2?.requestedPopulation;
     return state?.status === "READY" && state.session_id === p.sessionId && !!request && Object.entries(request).every(([k, v]) => p.population?.requested?.[k] === v) && p.population?.traffic_manager_connected === true && p.population.actual?.vehicles === request.vehicle_count && p.population.actual?.pedestrians === request.pedestrian_count && p.population.actual?.controllers === request.pedestrian_count && (request.pedestrian_count === 0 || p.population.actual?.walkers_active === request.pedestrian_count);
   }
   function trafficCommandBlocked(state, type, payload = {}) {
@@ -866,7 +866,7 @@
     }
   };
   function installTrafficPreparation(provider2, stop, doc = document) {
-    const preparation = new TrafficPreparation(provider2, stop);
+    const preparation2 = new TrafficPreparation(provider2, stop);
     const area = doc.createElement("div");
     area.className = "traffic-preparation";
     const button = doc.createElement("button");
@@ -880,23 +880,23 @@
     button.setAttribute("aria-describedby", status.id);
     area.append(button, status);
     doc.getElementById("primaryDriveAction").before(area);
-    button.onclick = () => preparation.requestRouteCrowding();
+    button.onclick = () => preparation2.requestRouteCrowding();
     return {
-      preparation,
+      preparation: preparation2,
       update(vehicle) {
-        preparation.update();
+        preparation2.update();
         const reason = trafficPreparationReason(provider2, vehicle) || (!provider2.route?.destination || provider2.route.arrived ? "Choose a destination first." : "");
         button.disabled = !!reason;
         button.title = reason;
-        button.textContent = pending(preparation.state) ? "Crowding your road\u2026" : "Make your road crowded";
-        status.textContent = preparation.state?.reason || reason || `Before driving: ${provider2.population?.actual?.vehicles ?? "\u2014"} traffic vehicles currently in CARLA.`;
-        if (preparation.state?.status === "READY") status.textContent += ` Current: ${provider2.population?.actual?.vehicles ?? "\u2014"}.`;
-        const held = preparation.state && preparation.state.status !== "READY";
+        button.textContent = pending(preparation2.state) ? "Crowding your road\u2026" : "Make your road crowded";
+        status.textContent = preparation2.state?.reason || reason || `Before driving: ${provider2.population?.actual?.vehicles ?? "\u2014"} traffic vehicles currently in CARLA.`;
+        if (preparation2.state?.status === "READY") status.textContent += ` Current: ${provider2.population?.actual?.vehicles ?? "\u2014"}.`;
+        const held = preparation2.state && preparation2.state.status !== "READY";
         if (held) for (const id of ["primaryDriveAction", "startDrivingBtn", "startJourneyBtn", "phoneJourneyBtn", "driveJourneyBtn", "demoWithBtn", "demoWithoutBtn"]) {
           const control = doc.getElementById(id);
           if (control) {
             control.disabled = true;
-            control.title = preparation.state.reason;
+            control.title = preparation2.state.reason;
           }
         }
       }
@@ -917,7 +917,7 @@
     if (!["SLOW", "NORMAL", "FAST"].includes(result.speed_behavior)) throw new Error("Choose a traffic pace.");
     return result;
   }
-  function installCitySetup(p, preparation, tools2, startJourney2) {
+  function installCitySetup(p, preparation2, tools2, startJourney2) {
     const $11 = (id) => document.getElementById(id);
     const panel = document.createElement("section");
     panel.className = "city-setup";
@@ -972,7 +972,7 @@
       try {
         const values = Object.fromEntries(Object.entries(fields).map(([key, id]) => [key, key === "speed_behavior" ? $11(id).value : Number($11(id).value)]));
         const config = cityPopulation(p.population.requested, { ...values, driver_behavior: behavior });
-        if (preparation.request(config)) {
+        if (preparation2.request(config)) {
           dirty = false;
           error = "";
         } else error = p.operationError || "City request was not sent.";
@@ -1000,7 +1000,7 @@
         error = "";
       }
       const current = p.population?.requested;
-      if (!dirty && current && !["REQUESTED", "APPLYING"].includes(preparation.state?.status)) {
+      if (!dirty && current && !["REQUESTED", "APPLYING"].includes(preparation2.state?.status)) {
         for (const [key, id] of Object.entries(fields)) $11(id).value = current[key] ?? (key === "chaos_percent" ? 0 : $11(id).value);
         behavior = current.driver_behavior || "NORMAL";
         describe();
@@ -1010,7 +1010,7 @@
         el2.disabled = locked;
         el2.title = reason;
       }
-      $11("cityChooseRoute").disabled = !p.fresh || p.isReplay || !p.controller || ["REQUESTED", "APPLYING"].includes(preparation.state?.status);
+      $11("cityChooseRoute").disabled = !p.fresh || p.isReplay || !p.controller || ["REQUESTED", "APPLYING"].includes(preparation2.state?.status);
       if (modePending === p.safetySystem?.enabled || p.operationError) modePending = null;
       $11("cityNormalMode").setAttribute("aria-pressed", String(p.safetySystem?.enabled === false));
       $11("citySafetyMode").setAttribute("aria-pressed", String(p.safetySystem?.enabled === true));
@@ -1018,7 +1018,7 @@
       $11("cityGo").disabled = dirty || locked || modePending !== null || $11("driveJourneyBtn").disabled;
       $11("cityGo").title = dirty ? "Apply your city changes first." : reason || $11("driveJourneyBtn").title;
       $11("cityRouteName").textContent = p.route?.destination?.name || "Choose a destination";
-      $11("citySetupStatus").textContent = error || p.operationError || (dirty ? "Changes ready \xB7 Apply city before driving." : reason || preparation.state?.reason || `Live: ${p.population?.actual?.vehicles ?? "\u2014"} vehicles \xB7 ${p.population?.actual?.pedestrians ?? "\u2014"} pedestrians`);
+      $11("citySetupStatus").textContent = error || p.operationError || (dirty ? "Changes ready \xB7 Apply city before driving." : reason || preparation2.state?.reason || `Live: ${p.population?.actual?.vehicles ?? "\u2014"} vehicles \xB7 ${p.population?.actual?.pedestrians ?? "\u2014"} pedestrians`);
     } };
   }
 
@@ -1055,7 +1055,7 @@
   function simulatorNeedsStart(p) {
     return p.simulatorStop?.status === "STOPPED" || p.simulatorStart?.status === "FAILED" || !p.simulatorStop && p.simulatorStart?.available === true && !p.connected;
   }
-  function installGuidedDrive(p, preparation, tools2, startJourney2, stop, predictionView2) {
+  function installGuidedDrive(p, preparation2, tools2, startJourney2, stop, predictionView2) {
     const $11 = (id) => document.getElementById(id), body = document.body;
     body.dataset.ui = "guided";
     let choosing = false, review = false, submitting = false, session = null, destination = null, action = "connect";
@@ -1205,7 +1205,7 @@
         return;
       }
       if (action !== "prepare" || !validate()) return;
-      if (preparation.request({
+      if (preparation2.request({
         ...p.population.requested,
         vehicle_count: TRAFFIC_COUNT,
         pedestrian_count: PEDESTRIAN_COUNT,
@@ -1221,7 +1221,7 @@
     };
     panel.querySelectorAll("[data-mode]").forEach((button) => button.onclick = () => {
       if (action !== "drive" || button.disabled) return;
-      const blocked = modeBlockedReason(p, p.getVehicleState(), trafficPrepared(p, preparation));
+      const blocked = modeBlockedReason(p, p.getVehicleState(), trafficPrepared(p, preparation2));
       if (blocked) {
         p.operationError = blocked;
         return;
@@ -1251,7 +1251,7 @@
         selectedMode = p.journey.prepared_mode;
         $11("guidedSpeed").value = $11("journeySpeed").value = String(p.journey.speed_kmh);
       }
-      const configured = trafficPrepared(p, preparation), failed = preparation.state?.status === "FAILED";
+      const configured = trafficPrepared(p, preparation2), failed = preparation2.state?.status === "FAILED";
       if (submitting && configured) {
         choosing = review = submitting = false;
       } else if (submitting && failed) {
@@ -1269,7 +1269,7 @@
       $11("guidedBehaviour").hidden = action !== "behaviour";
       $11("guidedPreparation").hidden = !["prepare", "pending"].includes(action);
       set2("guidedPreparationTitle", failed ? "Road preparation failed" : action === "pending" ? "Preparing the road\u2026" : "Verify your road traffic");
-      set2("guidedPreparationDetail", failed ? preparation.state.reason : action === "pending" ? "Waiting for native placement confirmation. Vehicle held." : $11("guidedChaos").value + "% randomness \xB7 seed " + $11("guidedSeed").value);
+      set2("guidedPreparationDetail", failed ? preparation2.state.reason : action === "pending" ? "Waiting for native placement confirmation. Vehicle held." : $11("guidedChaos").value + "% randomness \xB7 seed " + $11("guidedSeed").value);
       const names = { connect: simulatorNeedsStart(p) ? "Start Simulation" : "Connect to Simulator", starting: "Starting simulation\u2026", "journey-starting": "Starting your drive\u2026", ownership: "Take Vehicle Control", acknowledge: "Release emergency stop", stop: "Stop vehicle", pending: "Preparing road traffic\u2026", traffic: "Configure Traffic", behaviour: "Continue to preparation", prepare: failed ? "Retry preparation" : "Apply Road Traffic", destination: "Choose on Map", drive: "Start Driving" };
       set2("guidedPrimary", p.isReplay ? "Recorded replay" : names[action]);
       const blocked = action === "drive" ? recoveryPending ? "Restore the saved comparison setup before driving." : modeBlockedReason(p, vehicle, configured) : ["behaviour", "prepare"].includes(action) ? trafficPreparationReason(p, vehicle) : "";
@@ -1664,8 +1664,8 @@
         return false;
       }
       const comparisonStart = type === "comparison_v2" && payload.value?.operation === "RUN";
-      const presentationStart = type === "presentation" && payload.value?.operation === "RESTART";
-      if (!["reconnect", "stop_simulator"].includes(type) && (!this.connected || !this.fresh || !this.controller && !comparisonStart && !presentationStart && !["start_driving", "start_journey", "take_control"].includes(type))) return false;
+      const presentationStart = type === "presentation" && ["RESTART", "START_GUIDED"].includes(payload.value?.operation);
+      if (!["reconnect", "stop_simulator"].includes(type) && (!this.connected || !this.fresh || !this.controller && !comparisonStart && !presentationStart && !["start_driving", "start_journey", "take_control", "emergency_stop"].includes(type))) return false;
       if (type === "controls" && ["PAUSED", "EMERGENCY_STOP", "DISCONNECTED"].includes(this.controlMode)) return false;
       if (type === "controls" && this.now() - this.lastControlSentAt < 30) return false;
       const sequence = ++this.sequence;
@@ -2368,7 +2368,7 @@
       $3("phoneJourneyBtn").textContent = resume ? "Resume journey to current destination" : "Go to current destination";
       $3("journeyAvailability").textContent = $3("phoneJourneyAvailability").textContent = $3("driveJourneyAvailability").textContent = journeyBlocked || "Destination: " + p.route.destination.name + (resume ? " \u2014 saved; resume from your current position." : " \u2014 Select Go to start the destination journey.");
       this.disable("pauseBtn", ownerBlocked || emergency);
-      this.disable("emergencyStopBtn", ownerBlocked);
+      this.disable("emergencyStopBtn", p.isReplay || !p.connected || !p.fresh ? "Connect a current native session" : "");
       this.disable("acknowledgeStopBtn", ownerBlocked);
       $3("acknowledgeStopBtn").hidden = !emergency;
       for (const id of ["cameraView", "chooseDestinationBtn", "savePlaceBtn", "nativeDisconnectBtn", "resetBtn"])
@@ -3171,8 +3171,74 @@
     return Number.isFinite(a[field]) && Number.isFinite(b[field]) ? a[field] - b[field] : null;
   }
 
+  // frontend/mission-state.js
+  var preparation = {
+    STOPPING: ["Holding the vehicle", "Waiting for a full stop and the previous recording to close."],
+    PREPARING: ["Preparing your drive", "Building the route and native traffic. The live view comes next."],
+    READY: ["Checking the starting scene", "Checking traffic, camera and sensors before recording."],
+    STARTING: ["Starting the recording", "The car will move when fresh sensor frames are ready."],
+    FINALIZING: ["Saving this attempt", "Stopping the car and closing its recording before continuing."],
+    RESTORING: ["Preparing the other drive", "Rebuilding and checking the same starting scene. Traffic may react differently."],
+    RECOVERING: ["Checking the sensors", "Waiting for fresh sensor frames and a verified starting scene."]
+  };
+  var modeLabel2 = (m) => m === "NORMAL" ? "Normal drive" : "Protected drive";
+  var nextLabel = (m) => m === "NORMAL" ? "See the solution now" : "See the problem now";
+  function stressSummary(audit) {
+    if (!audit) return "";
+    const vehicles2 = audit.counts?.vehicles || {}, people = audit.counts?.pedestrians || {};
+    const pending2 = audit.motion_measurement_ready === false || audit.series?.motion_samples === 0;
+    return (pending2 ? "Traffic check incomplete; motion needs another sample." : audit.sustained_passed ?? audit.passed ? "Traffic check met the local target." : "Traffic check below the local target.") + ` Forward viewing area: ${vehicles2.front_frustum_100m ?? "unmeasured"} vehicles and ${people.front_frustum_100m ?? "unmeasured"} pedestrians. ` + (pending2 ? "Motion not measured yet. " : `Moving there: ${vehicles2.moving_front_frustum ?? "unmeasured"} vehicles and ${people.moving_front_frustum ?? "unmeasured"} pedestrians. `) + (audit.series ? `Density below target in ${audit.series.density_failures} of ${audit.series.samples} checks. ` : "") + "Buildings may hide some actors.";
+  }
+  function missionState(p, local = {}) {
+    const d = p.presentation || {}, guided2 = !!d.guided, phase = guided2 ? d.status : "IDLE", arm = d.arm || 0, mode = d.modes?.[arm] || "NORMAL";
+    const base = { phase, arm, mode, action: null, label: "", camera: false, choices: false, freeGPU: !!p.simulatorStop?.available && !["STOPPED", "STOPPING"].includes(p.simulatorStop?.status) && !p.isReplay && !p.simulationStarting && !p.restarting };
+    const state = (screen, title, detail, extra = {}) => ({ ...base, screen, title, detail, ...extra });
+    if (local.shutdownPending || p.simulatorStop?.status === "STOPPING") return state("releasing", "Freeing the GPU", "Saving recorded data, closing CARLA and verifying its processes have exited.", { freeGPU: false });
+    if (p.simulatorStop?.status === "FAILED") return state("fault", "CARLA could not close", p.simulatorStop.error || "Open Menu for runtime details.", { action: "FREE_GPU", label: "Retry GPU release" });
+    if (p.simulationStarting || local.launchPending && !p.connected) return state("loading", "Starting the simulator", "Launching CARLA. The camera and session will connect next.", { freeGPU: false });
+    if (p.controlMode === "EMERGENCY_STOP") return state("emergency", "Emergency stop is active", "The vehicle is held. Release the stop to continue with available session actions.", { action: p.fresh && p.controller ? "RELEASE" : null, label: "Release emergency stop" });
+    if (p.simulatorStart?.status === "FAILED" && !p.connected) return state("fault", "The simulator could not start", p.simulatorStart.error || p.operationError || "Open Menu to inspect the runtime.", { action: "START_SIMULATION", label: "Try starting simulation", freeGPU: false });
+    if (!p.connected) return p.simulatorStop?.status !== "STOPPED" && guided2 && !["COMPLETE", "CANCELLED"].includes(phase) ? state("fault", "Connection interrupted", "The drive has been stopped. Reconnect to inspect its saved outcome.", { action: "CONNECT", label: "Reconnect camera & session" }) : state("welcome", "Take the driver\u2019s view.", "Watch the same starting scene with and without RULE protection.", { action: "START_SIMULATION", label: "Start simulation", freeGPU: false });
+    if (!p.fresh) return state("loading", "Connecting the session", "Waiting for current camera and vehicle data. Driving remains stopped.");
+    if (guided2 && p.controller === false && !["COMPLETE", "CANCELLED"].includes(phase)) return state("driving", "This drive is controlled by another page", "You can watch this session, use Emergency stop, or Free GPU to close it.", { camera: phase === "DRIVING" });
+    if (local.commandPending) return state("loading", "Applying your action", "Waiting for the current step to confirm. Recorded outcomes are kept.");
+    if (guided2 && preparation[phase]) return state("loading", ...preparation[phase]);
+    if (guided2 && phase === "DRIVING") return state(
+      "driving",
+      modeLabel2(mode),
+      mode === "NORMAL" ? "Watch how the car follows the route with obstacle protection off." : "Watch when RULE protection slows or stops the car. Contacts are still possible.",
+      { camera: true, action: "NEXT", label: arm === 0 ? nextLabel(mode) : "End drive & compare" }
+    );
+    if (guided2 && phase === "AWAITING_NEXT") {
+      const run = p.journeyComparison?.pair_id === d.pair_id ? p.journeyComparison?.runs?.[mode] : d.runs?.[mode];
+      return state(
+        "outcome",
+        run?.status === "COLLISION" ? `The ${mode === "NORMAL" ? "normal" : "protected"} drive ended after a contact.` : "First attempt saved.",
+        "Review what happened. The other drive starts only when you choose to continue.",
+        { action: "NEXT", label: nextLabel(mode), run }
+      );
+    }
+    if (guided2 && phase === "RESULTS") return state("comparison", "Your two attempts", "These are recorded observations. Matching starts do not mean identical traffic reactions.", { action: "FINISH", label: "Finish" });
+    if (guided2 && phase === "ERROR") return state("fault", "This step needs attention", d.reason || "Open Menu for diagnostics.", {
+      action: ["STOPPING", "PREPARING", "READY", "RESTORING", "RECOVERING"].includes(d.failed_phase) ? "RETRY_STEP" : null,
+      label: d.pair_id ? "Retry preparing the other drive" : "Retry preparing this drive"
+    });
+    if (!guided2 && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status || "IDLE") || ["STARTING", "RUNNING"].includes(p.journey?.status))
+      return state("driving", "A drive is in progress", "Use Menu to inspect this session, or Free GPU to close it.", { camera: true });
+    return state(
+      "choose",
+      "Would you like to see the problem or the solution first?",
+      "Normal follows the route with obstacle protection off. The protected drive uses RULE. Neither outcome is guaranteed.",
+      { choices: true, action: local.firstMode ? "START_GUIDED" : null, label: local.firstMode === "NORMAL" ? "Start the normal drive" : "Start the protected drive" }
+    );
+  }
+
   // frontend/drive-state.js
   function driveState2(p) {
+    if (p.presentation?.guided) {
+      const m = missionState(p), phase = p.presentation.status;
+      return { action: m.action, busy: !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(phase), failed: phase === "ERROR", resumable: false, presentationStatus: phase, startLabel: "Start simulation", configurationLocked: !["COMPLETE", "CANCELLED", "ERROR"].includes(phase) || !!p.recording, emergencyVisible: !!p.connected && !p.isReplay && p.controlMode !== "EMERGENCY_STOP", enabled: !!m.action };
+    }
     const savedStatus = p.presentation?.status || "IDLE";
     const ordinary = !!p.journey?.route_id && !p.journey?.presentation_id;
     const status = ordinary && ["ERROR", "COMPLETE", "CANCELLED"].includes(savedStatus) ? "IDLE" : savedStatus;
@@ -4844,8 +4910,8 @@
     if (!run) return "Not started";
     const fault = failure?.fault || run.stop_diagnostics?.runtime_fault;
     const faultText = fault?.exception_type === "KeyError" ? "A required record was lost: " + fault.message : fault?.message;
-    const reason = run.reason === "collision" ? faultText ? demoFailure(run.reason) + " Additional runtime error: " + faultText : run.reason : faultText || run.reason;
-    return (run.status === "ARRIVED" ? "Destination reached" : run.status) + (reason && reason !== "destination_reached" ? " \xB7 " + (fault ? reason : demoFailure(reason)) : "") + (fault?.injected_validation_fault ? " \xB7 Injected validation fault; excluded from driving acceptance." : "");
+    const reason = run.reason === "collision" ? faultText ? demoFailure(run.reason) + " Additional runtime error: " + faultText : run.reason : faultText || (run.reason === "guided_shortened" ? "Stopped early by your choice" : run.reason);
+    return (run.status === "ARRIVED" ? "Destination reached" : run.status === "SHORTENED" ? "Shortened attempt" : run.status) + (reason && reason !== "destination_reached" ? " \xB7 " + (fault ? reason : demoFailure(reason)) : "") + (fault?.injected_validation_fault ? " \xB7 Injected validation fault; excluded from driving acceptance." : "");
   }
   function presentationTrafficText(population, setup) {
     const requested = setup?.requested_route_vehicles ?? 40, walkers = setup?.requested_route_pedestrians ?? 30;
@@ -4874,7 +4940,7 @@
     $8("resultsPhase").querySelector(".analysis-heading").after(results);
     const items = ["ROBOSPHERE", "NORMAL"].map((mode) => {
       const box = document.createElement("article");
-      box.innerHTML = "<h3>" + (mode === "ROBOSPHERE" ? "Robosphere \xB7 RULE protection" : "Normal \xB7 obstacle protection off") + '</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
+      box.innerHTML = "<h3>" + (mode === "ROBOSPHERE" ? "Robosphere \xB7 RULE protection" : "Normal \xB7 obstacle protection off") + '</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><p class="presentation-stress"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
       results.querySelector(".presentation-videos").append(box);
       return { mode, box, video: box.querySelector("video"), root: null, status: "PENDING" };
     });
@@ -5007,7 +5073,7 @@
         el2.dataset.complete = String(status === "COMPLETE" || i < step);
       });
       const archived = p.reviewedComparison;
-      const pair = archived || p.journeyComparison, isPresentation = pair?.version === 3;
+      const pair = archived || p.journeyComparison, isPresentation = [3, 4].includes(pair?.version);
       results.hidden = !isPresentation;
       if (isPresentation) {
         $8("ordinaryComparison").hidden = true;
@@ -5018,6 +5084,8 @@
           const run = pair.runs?.[item.mode];
           item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, !archived && data?.failures?.find((f) => f.mode === item.mode));
           item.box.querySelector(".presentation-speed").textContent = benchmarkSpeedText(run);
+          item.box.querySelector(".presentation-stress").textContent = stressSummary(run?.stress_audit);
+          item.box.querySelector(".presentation-stress").hidden = !run?.stress_audit;
           fields.forEach(([, field, digits, suffix], i) => {
             item.box.querySelectorAll("dd")[i].textContent = metricValue(run, field, digits, suffix);
           });
@@ -5057,13 +5125,13 @@
         }
         $8("presentationReplay").disabled = !items.every((i) => i.status === "READY");
         if (status === "PLAYBACK" && archived) p.reviewedComparison = null;
-        if (status === "PLAYBACK" && !archived && autoplayId !== data.id && items.every((i) => i.status === "READY")) {
+        if (!p.guidedExperience && status === "PLAYBACK" && !archived && autoplayId !== data.id && items.every((i) => i.status === "READY")) {
           autoplayId = data.id;
           showWorkspace("results");
           results.scrollIntoView({ behavior: "smooth", block: "start" });
           play();
         }
-        if (status === "COMPLETE" && lastPhase !== "COMPLETE") {
+        if (!p.guidedExperience && status === "COMPLETE" && lastPhase !== "COMPLETE") {
           $8("presentationPlaybackStatus").textContent = "Playback complete. Both measured results are shown below.";
           showWorkspace("results");
           $8("presentationConclusion").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -5127,7 +5195,7 @@
     const valid = (v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
     if (![x.origin?.location, y.origin?.location, x.origin?.rotation, y.origin?.rotation].every(valid)) return false;
     if (Math.hypot(...x.origin.location.map((v, i) => v - y.origin.location[i])) > 0.5 || x.origin.rotation.some((v, i) => Math.abs(((v - y.origin.rotation[i] + 180) % 360 + 360) % 360 - 180) > 1)) return false;
-    return ![2, 3].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
+    return ![2, 3, 4].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
   }
 
   // frontend/guided-details.js
@@ -5233,10 +5301,10 @@
     }, true);
     const run = page("run", "Run setup");
     const runMode = selectField(run, "detailsRunMode", "Drive type", [
-      ["automatic", "Automatic presentation"],
+      ["automatic", "Guided comparison"],
       ["custom", "Custom drive"]
     ]);
-    run.append(node3("p", "The main action prepares and records Robosphere \u2192 Normal at 50 km/h, then plays the comparison.", "details-copy"));
+    run.append(node3("p", "Choose your first drive on the main screen. Each attempt records automatically; starting the other drive is explicit.", "details-copy"));
     const runSummary = node3("dl", null, "details-summary");
     for (const [label, text] of [["Route", "Chosen automatically"], ["Traffic", "Up to 40 vehicles and 30 pedestrians"], ["Recording", "Automatic for both runs"]]) {
       const row = node3("div");
@@ -5346,6 +5414,7 @@
     const files = /* @__PURE__ */ new Map();
     let replayRequest = 0;
     const currentPair = () => comparison.value === "current" ? p.journeyComparison : selectedPair;
+    const reviewBlocked = () => driveState2(p).busy && !["RESULTS", "AWAITING_NEXT"].includes(p.presentation?.status) || ["STARTING", "RUNNING"].includes(p.journey?.status);
     async function loadHistory() {
       if (historyLoaded) return;
       historyLoaded = true;
@@ -5376,7 +5445,7 @@
         if (token !== selection) return;
         if (pair.pair_id !== comparison.value || !pair.runs) throw new Error("Saved comparison identity does not match.");
         selectedPair = { ...pair, conditions_match: recordedConditionsMatch(pair) };
-        resultNote.textContent = pair.version === 3 ? "Saved presentation; each original outcome is retained." : "Saved legacy comparison; paired video playback is available for presentations.";
+        resultNote.textContent = [3, 4].includes(pair.version) ? "Saved presentation; each original outcome is retained." : "Saved legacy comparison; paired video playback is available for presentations.";
         mediaKey = "";
         update();
       } catch (error) {
@@ -5385,7 +5454,7 @@
     };
     resultOpen.onclick = () => {
       const pair = currentPair();
-      if (!pair || driveState2(p).busy || ["STARTING", "RUNNING"].includes(p.journey?.status)) return;
+      if (!pair || reviewBlocked()) return;
       const action = resultAction.value;
       if (action.startsWith("download")) {
         const mode = action.slice(8), file = files.get(pair.pair_id + ":" + mode);
@@ -5400,14 +5469,14 @@
       p.presentationPlayback = false;
       for (const video of document.querySelectorAll("#presentationResults video")) video.pause();
       p.reviewedComparison = comparison.value === "current" ? null : pair;
-      document.body.classList.toggle("archive-review", pair.version !== 3);
-      if (pair.version !== 3) renderLegacy(pair);
+      document.body.classList.toggle("archive-review", ![3, 4].includes(pair.version));
+      if (![3, 4].includes(pair.version)) renderLegacy(pair);
       close();
       showWorkspace("results");
       if (action === "replay") {
         let attempts = 0;
         const replay = () => {
-          if (request !== replayRequest || driveState2(p).busy || ["STARTING", "RUNNING"].includes(p.journey?.status)) return;
+          if (request !== replayRequest || reviewBlocked()) return;
           if (++attempts > 50) {
             $9("presentationPlaybackStatus").textContent = "Videos are still loading. Open Details \u2192 Results to retry playback.";
             return;
@@ -5679,9 +5748,9 @@
         }).catch(() => {
         });
       }
-      const active = state.busy || ["STARTING", "RUNNING"].includes(p.journey?.status);
+      const active = reviewBlocked();
       const action = resultAction.value, download = action.startsWith("download");
-      resultOpen.disabled = !pair || active || action === "replay" && (pair.version !== 3 || !["ROBOSPHERE", "NORMAL"].every((m) => files.has(pair.pair_id + ":" + m))) || download && !files.has(pair.pair_id + ":" + action.slice(8));
+      resultOpen.disabled = !pair || active || action === "replay" && (![3, 4].includes(pair.version) || !["ROBOSPHERE", "NORMAL"].every((m) => files.has(pair.pair_id + ":" + m))) || download && !files.has(pair.pair_id + ":" + action.slice(8));
       if (active) resultNote.textContent = "Finish or stop the current run before opening saved results.";
       else if (pair && !resultNote.textContent) resultNote.textContent = "Original outcomes and failures remain attached to each recording.";
     }
@@ -5697,49 +5766,168 @@
   // frontend/sequential-drive.js
   function installSequentialDrive(p, tools2) {
     const $11 = (id) => document.getElementById(id);
-    document.body.classList.add("sequential-drive");
+    document.body.classList.add("sequential-drive", "mission-experience");
+    p.guidedExperience = true;
     const actions = document.querySelector(".cockpit-header-actions");
-    const primary = document.createElement("button");
-    primary.id = "drivePrimaryAction";
-    primary.className = "primary";
     const details = document.createElement("button");
     details.id = "driveDetailsAction";
-    details.textContent = "Details";
+    details.textContent = "Menu";
     details.setAttribute("aria-controls", "cockpitDetails");
     details.setAttribute("aria-expanded", "false");
-    actions.prepend(primary, details);
+    actions.prepend(details);
+    const returnToMission = document.createElement("button");
+    returnToMission.textContent = "Back to drive";
+    returnToMission.hidden = true;
+    actions.prepend(returnToMission);
+    returnToMission.onclick = () => {
+      p.reviewedComparison = null;
+      p.presentationPlayback = false;
+      for (const video of document.querySelectorAll("#presentationResults video")) video.pause();
+      showWorkspace("drive");
+      update();
+    };
     const navigator = installGuidedDetails(p, tools2, details);
     details.onclick = () => navigator.open();
-    const target = { RESTART: "presentationRestart", RESUME: "presentationResume", STOP: "studioManualStop", RELEASE: "acknowledgeStopBtn" };
-    primary.onclick = () => {
-      const state = driveState2(p);
-      if (!state.enabled) return;
-      if (state.action === "PLAYBACK") {
-        const videos = [...document.querySelectorAll("#presentationResults video")];
-        if (videos.every((v) => v.paused)) {
-          for (const v of videos) if (!v.ended) v.play().catch(() => {
-          });
-        } else {
-          for (const v of videos) v.pause();
-        }
-      } else $11(target[state.action])?.click();
+    const experience = document.createElement("main");
+    experience.id = "missionExperience";
+    experience.innerHTML = '<section id="missionPreview"><img src="/public/assets/native-preview.jpg" alt="A saved CARLA view of a car on a city street"><span>PREVIEW \xB7 SAVED SIMULATOR IMAGE</span></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>The problem</strong>Normal \xB7 obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>The solution</strong>Protected \xB7 RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test \xB7 requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+    document.querySelector(".app-header").after(experience);
+    $11("missionScene").append($11("cameraCard"));
+    const header = document.querySelector(".app-header");
+    if (globalThis.ResizeObserver) new ResizeObserver(() => document.body.style.setProperty("--mission-header-height", header.offsetHeight + "px")).observe(header);
+    const skip = document.querySelector(".skip-link");
+    if (skip) skip.href = "#missionTitle";
+    const local = { firstMode: null, launchPending: false, shutdownPending: false, commandPending: false };
+    let previousScreen = "", outcomeKey = "", pending2 = null;
+    const clearMedia = () => {
+      p.reviewedComparison = null;
+      p.presentationPlayback = false;
+      document.body.classList.remove("archive-review");
+      for (const video of document.querySelectorAll("#presentationResults video")) video.pause();
+      showWorkspace("drive");
     };
-    return { update() {
-      const state = driveState2(p);
-      primary.textContent = {
-        RESTART: state.startLabel,
-        RESUME: "Resume driving",
-        STOP: "Stop",
-        RELEASE: "Release emergency stop",
-        PLAYBACK: [...document.querySelectorAll("#presentationResults video")].every((v) => v.paused) ? "Play" : "Pause"
-      }[state.action];
-      primary.disabled = !state.enabled;
-      primary.dataset.action = state.action;
-      $11("emergencyStopBtn").hidden = !state.emergencyVisible;
-      for (const id of ["presentationRestart", "presentationResume", "studioManualStop", "acknowledgeStopBtn", "cockpitResumeDrive", "replayPauseBtn"]) $11(id)?.setAttribute("hidden", "");
-      $11("connectionSetupBtn")?.setAttribute("hidden", "");
+    experience.querySelectorAll("[name=firstDrive]").forEach((input) => input.onchange = () => {
+      local.firstMode = input.value;
+      update();
+    });
+    const command = (operation) => {
+      const d = p.presentation || {}, value = { operation, id: d.id, expected_arm: d.arm, expected_phase: d.status };
+      if (operation === "START_GUIDED") Object.assign(value, { first_mode: local.firstMode, scene: $11("missionSceneChoice").value, speed_kmh: 50 });
+      if (!p.dashboardAction("presentation", value)) return;
+      pending2 = { id: d.id, phase: d.status, arm: d.arm, at: performance.now() };
+      local.commandPending = true;
+    };
+    $11("drivePrimaryAction").onclick = () => {
+      const state = missionState(p, local);
+      if (!state.action) return;
+      p.operationError = null;
+      if (state.action === "START_SIMULATION") {
+        clearMedia();
+        local.launchPending = true;
+        local.firstMode = null;
+        experience.querySelectorAll("[name=firstDrive]").forEach((i) => i.checked = false);
+        p.startSimulation().finally(() => {
+          if (!p.simulationStarting) local.launchPending = false;
+          update();
+        });
+      } else if (state.action === "CONNECT") p.reconnectNative();
+      else if (state.action === "RELEASE") p.acknowledgeStop();
+      else if (state.action === "FREE_GPU") freeGPU();
+      else {
+        clearMedia();
+        command(state.action);
+      }
+      update();
+    };
+    const freeGPU = () => {
+      if (local.shutdownPending) return;
+      clearMedia();
+      local.commandPending = false;
+      pending2 = null;
+      if (p.stopSimulator()) {
+        local.shutdownPending = true;
+        local.launchPending = false;
+      }
+      update();
+    };
+    $11("missionFreeGPU").onclick = freeGPU;
+    function renderRun(mode, run) {
+      const section = document.createElement("article"), title = document.createElement("h3"), outcome = document.createElement("p"), dl = document.createElement("dl");
+      title.textContent = modeLabel2(mode);
+      outcome.textContent = presentationOutcome(run);
+      for (const [label, key, suffix] of [["Distance", "distance_m", " m"], ["Recorded contacts", "collisions", ""], ["Recorded time", "duration_s", " s"]]) {
+        const row = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd");
+        dt.textContent = label;
+        dd.textContent = Number.isFinite(run?.[key]) ? run[key].toFixed(key === "collisions" ? 0 : 1) + suffix : "Not measured";
+        row.append(dt, dd);
+        dl.append(row);
+      }
+      section.append(title, outcome, dl);
+      if (run?.stress_audit) {
+        const note = document.createElement("p");
+        note.textContent = stressSummary(run.stress_audit);
+        section.append(note);
+      }
+      return section;
+    }
+    function update() {
+      const d = p.presentation || {};
+      if (p.connected && p.fresh) local.launchPending = false;
+      if (local.shutdownPending && (["STOPPED", "FAILED"].includes(p.simulatorStop?.status) || p.operationError)) local.shutdownPending = false;
+      if (pending2 && (p.operationError || d.id !== pending2.id || d.status !== pending2.phase || d.arm !== pending2.arm || performance.now() - pending2.at > 15e3)) {
+        if (performance.now() - pending2.at > 15e3 && !p.operationError) p.operationError = "The step did not confirm. Check the connection, then try the available action.";
+        pending2 = null;
+        local.commandPending = false;
+      }
+      const state = missionState(p, local);
+      document.body.dataset.mission = state.screen;
+      if (!state.camera && $11("cameraCard").classList.contains("camera-expanded")) tools2.expandCamera(false);
+      const history2 = document.body.dataset.workspace === "results";
+      experience.hidden = history2;
+      returnToMission.hidden = !history2;
+      $11("missionPreview").hidden = !["welcome", "choose"].includes(state.screen);
+      $11("missionScene").hidden = !state.camera;
+      $11("missionTitle").textContent = state.title;
+      $11("missionDetail").textContent = state.detail;
+      $11("missionStep").textContent = state.screen === "driving" ? `DRIVE ${state.arm + 1} OF 2 \xB7 LIVE` : state.screen === "choose" ? "CHOOSE YOUR FIRST DRIVE" : state.screen === "comparison" ? "COMPARISON" : state.screen === "outcome" ? "DRIVE 1 OF 2 \xB7 SAVED" : "YA RAB OSTORHA / SIMULATOR";
+      const actual = p.population?.actual, setup = d.setup;
+      $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested 40 / 50" : "") : "";
+      $11("missionChoices").hidden = !state.choices;
+      const primary = $11("drivePrimaryAction");
+      primary.hidden = !state.action;
+      primary.textContent = state.label;
+      primary.dataset.action = state.action || "";
+      primary.disabled = !state.action;
+      $11("missionFreeGPU").hidden = !state.freeGPU || state.action === "FREE_GPU";
+      $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen);
+      $11("missionNextHint").textContent = { START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Next: prepare the scene, then watch live.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
+      $11("missionError").hidden = !p.operationError;
+      $11("missionError").textContent = p.operationError || "";
+      $11("missionOutcomes").hidden = !["comparison", "outcome", "fault"].includes(state.screen);
+      const pair = p.journeyComparison, runs = pair?.pair_id && pair.pair_id === d.pair_id ? pair.runs : d.runs || {}, key = state.screen + JSON.stringify(runs) + String(pair?.conditions_match);
+      if (key !== outcomeKey) {
+        outcomeKey = key;
+        $11("missionOutcomes").replaceChildren();
+        if (state.screen === "outcome") $11("missionOutcomes").append(renderRun(state.mode, state.run));
+        else if (["comparison", "fault"].includes(state.screen)) {
+          for (const mode of d.modes || []) if (runs?.[mode]) $11("missionOutcomes").append(renderRun(mode, runs[mode]));
+          if (state.screen === "comparison") {
+            const note = document.createElement("p");
+            note.textContent = presentationSummary(pair);
+            $11("missionOutcomes").append(note);
+          }
+        }
+      }
+      $11("emergencyStopBtn").hidden = !p.connected || p.isReplay || p.controlMode === "EMERGENCY_STOP";
+      for (const id of ["presentationRestart", "presentationResume", "studioManualStop", "acknowledgeStopBtn", "cockpitResumeDrive", "replayPauseBtn", "connectionSetupBtn"]) $11(id)?.setAttribute("hidden", "");
       navigator.update();
-    } };
+      if (state.screen !== previousScreen) {
+        experience.dataset.screen = state.screen;
+        if (previousScreen && !history2 && experience.contains(document.activeElement) && document.activeElement !== primary) $11("missionTitle").focus({ preventScroll: true });
+        previousScreen = state.screen;
+      }
+    }
+    return { update };
   }
 
   // frontend/camera-performance.js

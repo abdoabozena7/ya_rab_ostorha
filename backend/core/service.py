@@ -889,6 +889,8 @@ class SimulationService:
         run = self.journey_comparison.data['runs'].get(pending['mode'])
         if run:
             run['stop_diagnostics'] = copy.deepcopy(self.stop_diagnostics)
+            stress=getattr(self.provider,'dense_chaos',None)
+            if stress:run['stress_audit']=copy.deepcopy(stress.latest_audit)
             self.journey_comparison.save()
         if self.recorder:
             self._change_recording({'enabled': False})
@@ -898,10 +900,10 @@ class SimulationService:
             self._require_normal_runtime()
             self.require_connected()
             if cancel_presentation:
-                if failure and self.presentation.busy:
+                if failure and self.presentation.busy and not self.presentation.data.get('guided'):
                     fault=self.runtime_fault or self.safety_fault or {}
                     self.presentation.transition('ERROR', reason=fault.get('message') or reason)
-                else: self.presentation.cancel(reason)
+                elif not failure: self.presentation.cancel(reason)
             if cancel_comparison and self.comparison_v2: self.comparison_v2.request_stop(reason)
             self._stop_navigation(reason, status='ERROR' if failure else 'PAUSED')
             if self.arbiter.machine.mode == ControlMode.MANUAL:
@@ -1837,6 +1839,8 @@ class SimulationService:
                         journey = self.journey
                         if self.journey['status'] != 'STARTING' or not self._navigation_connection_alive():
                             raise ValueError('Dashboard heartbeat expired before journey start')
+                        if journey.get('presentation_id') and (not self.presentation.busy or journey['presentation_id']!=self.presentation.data.get('id')):
+                            raise ValueError('Presentation was cancelled before journey start')
                         if self.paused:
                             self.provider.set_paused(False); self.paused = False
                     # BasicAgent route planning can outlast the browser lease.
@@ -1844,10 +1848,16 @@ class SimulationService:
                     # planning; this worker remains the only native tick owner.
                     driving_mode = journey.get('driving_mode')
                     if driving_mode:
+                        if not journey.get('presentation_id'):
+                            clear_presentation=getattr(self.provider,'clear_presentation_context',None)
+                            if callable(clear_presentation):clear_presentation()
                         manifest = (self.provider.journey_manifest(value, benchmark=True) if journey.get('benchmark')
                                     else self.provider.journey_manifest(value))
                         if journey.get('presentation_id'):
                             manifest.update(presentation_id=journey['presentation_id'], protocol='PRESENTATION_RULE_NORMAL_V1')
+                            if self.presentation.data.get('guided'):
+                                manifest.update(guided=True,protocol='GUIDED_RULE_NORMAL_V2',
+                                    presentation_order=list(self.presentation.data['modes']),scene=self.presentation.data['scene'])
                         self.active_safety.set_controller('RULE')
                         self.active_safety.enabled = True
                         self.active_safety.reset()
@@ -1882,10 +1892,17 @@ class SimulationService:
                         else:
                             self.provider.stop_navigation()
             elif action == 'prepare_journey_mode':
+                pair=self.journey_comparison.data
+                presentation_id=(pair.get('manifest') or {}).get('presentation_id')
+                if presentation_id and (not self.presentation.busy or self.presentation.data.get('id')!=presentation_id or
+                        self.presentation.data.get('status')!='RESTORING'):
+                    continue
                 self.reconfiguring = True
                 try:
                     manifest = self.journey_comparison.data['manifest']
                     self.provider.prepare_journey_comparison(manifest)
+                    if presentation_id and (not self.presentation.busy or self.presentation.data.get('id')!=presentation_id):
+                        continue
                     self.provider.set_paused(False)
                     self.paused = False
                     self.session_id = uuid.uuid4().hex
@@ -2065,7 +2082,8 @@ class SimulationService:
                 held=fixture.hold_current()
                 if held and not held['passed']:
                     self.presentation.data['fixture_fault']=held
-                    self.presentation.fail('The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.')
+                    if not self.presentation.data.get('guided'):
+                        self.presentation.fail('The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.')
         native_step_started = self.now()
         self.provider.step()
         # Native weather/population setters become observable on the following
