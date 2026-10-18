@@ -57,7 +57,7 @@ export function installGuidedDetails(p,tools,trigger){
   const run=page('run','Run setup');
   const runMode=selectField(run,'detailsRunMode','Drive type',[
     ['automatic','Automatic presentation'],['custom','Custom drive']]);
-  run.append(node('p','Restart prepares and records Robosphere → Normal at 50 km/h, then plays the comparison.','details-copy'));
+  run.append(node('p','The main action prepares and records Robosphere → Normal at 50 km/h, then plays the comparison.','details-copy'));
   const runSummary=node('dl',null,'details-summary');
   for(const [label,text] of [['Route','Chosen automatically'],['Traffic','Up to 40 vehicles and 30 pedestrians'],['Recording','Automatic for both runs']]){
     const row=node('div');row.append(node('dt',label),node('dd',text));runSummary.append(row);

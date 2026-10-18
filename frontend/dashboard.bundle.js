@@ -3180,6 +3180,7 @@
     const driving = ["STARTING", "RUNNING"].includes(p.journey?.status);
     const emergency = p.controlMode === "EMERGENCY_STOP";
     const failed = p.lastDriveStop?.status === "ERROR" || p.journey?.status === "ERROR" || status === "ERROR";
+    const attempted = !!p.presentation?.id || !!p.journey?.route_id || !!p.journey?.presentation_id || failed || driving || status !== "IDLE" || ["ARRIVED", "COMPLETE", "CANCELLED"].includes(p.journey?.status);
     const resumable = !busy && !failed && !p.journey?.presentation_id && p.controlMode === "PAUSED" && p.journey?.status === "PAUSED" && p.journey?.route_id && p.route && p.journey.route_id === p.route.id && !p.route.arrived && ["operator_stop", "focus_lost", "dashboard_disconnected", "dashboard_heartbeat_timeout", "controls_released"].includes(p.journey.reason);
     const action = emergency ? "RELEASE" : status === "PLAYBACK" || p.presentationPlayback ? "PLAYBACK" : p.connected === false && !p.simulationStarting && !p.restarting ? "RESTART" : busy || driving || p.simulationStarting ? "STOP" : resumable ? "RESUME" : "RESTART";
     return {
@@ -3188,6 +3189,7 @@
       failed,
       resumable: !!resumable,
       presentationStatus: status,
+      startLabel: attempted ? "Restart" : "Start",
       configurationLocked: busy || driving || !!p.recording || !!p.simulationStarting || !!p.restarting || emergency || p.controlMode === "TRAINING",
       emergencyVisible: !!p.connected && !p.isReplay && !emergency,
       enabled: action === "PLAYBACK" ? true : action === "RESTART" ? !p.restarting && !p.isReplay && p.controlMode !== "TRAINING" : !!p.fresh && !!p.controller && (action !== "RESUME" || !p.recording && p.recordingStatus?.finalized !== false)
@@ -4855,7 +4857,7 @@
     const panel = document.createElement("section");
     panel.id = "presentationControls";
     panel.setAttribute("aria-label", "Automatic presentation");
-    panel.innerHTML = '<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere \u2192 Normal \xB7 target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">\u21BB Restart</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Restart prepares the route, traffic and recordings automatically.</p></div>';
+    panel.innerHTML = '<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere \u2192 Normal \xB7 target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">Start</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Start prepares the route, traffic and recordings automatically.</p></div>';
     const custom = document.createElement("details");
     custom.className = "presentation-custom";
     const populationNote = document.createElement("span");
@@ -4974,7 +4976,7 @@
         if (!p.operationError) p.operationError = "Simulator startup timed out. Use Restart to retry.";
       }
       $8("presentationRestart").disabled = busy || pendingStart || p.restarting || p.isReplay || p.controlMode === "EMERGENCY_STOP";
-      $8("presentationRestart").textContent = pendingStart ? "Starting simulation\u2026" : busy ? "Presentation running" : "\u21BB Restart";
+      $8("presentationRestart").textContent = pendingStart ? "Starting simulation\u2026" : busy ? "Presentation running" : state.startLabel;
       $8("presentationChoose").disabled = busy || active || !p.fresh;
       $8("presentationDestination").textContent = p.route?.destination?.name || "Choose a destination on the map";
       $8("presentationCustomStart").disabled = busy || active || !p.fresh || !p.route || p.recording || p.controlMode === "EMERGENCY_STOP";
@@ -4984,7 +4986,7 @@
       $8("presentationResume").disabled = !p.fresh || p.recording || p.recordingStatus?.finalized === false || p.controlMode === "EMERGENCY_STOP";
       const notice = safetyNotice(p);
       let title = pendingStart ? "Starting the simulator" : !p.connected ? "Simulator stopped or disconnected" : busy ? (phases[status] || status) + (status === "DRIVING" ? " \xB7 " + (data.arm === 0 ? "Robosphere" : "Normal") : "") : notice?.title || phases[status] || "Ready when you are";
-      let detail = pendingStart ? "The route and both recordings will follow automatically." : p.operationError ? demoFailure(p.operationError) : status === "ERROR" ? demoFailure(data.reason) : notice?.detail || (status === "DRIVING" ? data.arm === 1 ? "Recording is active. Normal follows the route and traffic signals." : "Recording is active. Signal and protective stops resume automatically." : busy ? "The next step runs automatically. Stop and Emergency stop remain available." : "Restart prepares the route, traffic and recordings automatically.");
+      let detail = pendingStart ? "The route and both recordings will follow automatically." : p.operationError ? demoFailure(p.operationError) : status === "ERROR" ? demoFailure(data.reason) : notice?.detail || (status === "DRIVING" ? data.arm === 1 ? "Recording is active. Normal follows the route and traffic signals." : "Recording is active. Signal and protective stops resume automatically." : busy ? "The next step runs automatically. Stop and Emergency stop remain available." : state.startLabel + " prepares the route, traffic and recordings automatically.");
       if (status === "ERROR" && p.stopDiagnostics?.runtime_fault?.exception_type === "ControlSceneTimeout" && notice) {
         title = notice.title;
         detail = notice.detail;
@@ -4994,7 +4996,7 @@
         detail = notice.detail;
       }
       if (p.stopDiagnostics?.stopped_for_s >= 1 && active) detail += " Waiting " + p.stopDiagnostics.stopped_for_s.toFixed(0) + " s.";
-      if (!p.connected && !pendingStart) detail = p.operationError || "Use Restart to start the simulator and run both recorded drives automatically.";
+      if (!p.connected && !pendingStart) detail = p.operationError || "Use " + state.startLabel + " to start the simulator and run both recorded drives automatically.";
       if (!busy && p.operationError) title = "Action needs attention";
       $8("presentationStatus").textContent = title;
       $8("presentationDetail").textContent = detail;
@@ -5234,7 +5236,7 @@
       ["automatic", "Automatic presentation"],
       ["custom", "Custom drive"]
     ]);
-    run.append(node3("p", "Restart prepares and records Robosphere \u2192 Normal at 50 km/h, then plays the comparison.", "details-copy"));
+    run.append(node3("p", "The main action prepares and records Robosphere \u2192 Normal at 50 km/h, then plays the comparison.", "details-copy"));
     const runSummary = node3("dl", null, "details-summary");
     for (const [label, text] of [["Route", "Chosen automatically"], ["Traffic", "Up to 40 vehicles and 30 pedestrians"], ["Recording", "Automatic for both runs"]]) {
       const row = node3("div");
@@ -5725,7 +5727,7 @@
     return { update() {
       const state = driveState2(p);
       primary.textContent = {
-        RESTART: "Restart",
+        RESTART: state.startLabel,
         RESUME: "Resume driving",
         STOP: "Stop",
         RELEASE: "Release emergency stop",

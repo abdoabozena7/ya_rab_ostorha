@@ -26,7 +26,7 @@ export function installSequentialDrive(p,tools) {
   };
   return {update(){
     const state=driveState(p);
-    primary.textContent={RESTART:'Restart',RESUME:'Resume driving',STOP:'Stop',RELEASE:'Release emergency stop',
+    primary.textContent={RESTART:state.startLabel,RESUME:'Resume driving',STOP:'Stop',RELEASE:'Release emergency stop',
       PLAYBACK:[...document.querySelectorAll('#presentationResults video')].every(v=>v.paused)?'Play':'Pause'}[state.action];
     primary.disabled=!state.enabled;primary.dataset.action=state.action;
     $('emergencyStopBtn').hidden=!state.emergencyVisible;

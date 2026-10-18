@@ -1,0 +1,398 @@
+{
+  "version": 1,
+  "date": "2026-10-18",
+  "base_commit": "fff83fd",
+  "scope": "Fresh-session Start label and reachable camera page scrolling only",
+  "backend_changed": false,
+  "native_driving_acceptance_changed": false,
+  "python_suite_rerun": false,
+  "python_note": "Frontend-only repair; no Python changes and no native interruption while the user was driving.",
+  "source_hashes": {
+    "frontend/drive-state.js": "43ee3c3fba900eb3d0aa376777eb7e7378b5682d0a2d9d0c7076764247b214d5",
+    "frontend/sequential-drive.js": "b9e87881cd53d3c77f8bc882ccd6790eadc113776931ed3f5cf5f83d490a71c3",
+    "frontend/sequential-drive.css": "a70c56c7034b2a049b71868b724bfe7329243012e2b35273bcf1d8d516b0a283",
+    "frontend/presentation-run.js": "45b754024a19b472e420021f9427c215d4635505c72251ea24fb38f26ed4c983",
+    "frontend/guided-details.js": "5d5de6a611a40cb02208f57a192b3c4003d6da548355532a987775baf77deb4a",
+    "frontend/dashboard.bundle.js": "047582be324ece58303ac4b760084cd653dd878284f8451dcd24832ce0523b8e",
+    "frontend/dashboard.styles.css": "d9e7777e316974e96674096ab8b30229a864c5489449054a8e0122e82abbfc66",
+    "scripts/verify_start_scroll_ui.js": "7d1db970b0c267cbb94c2e74bb95289e8ca49573a6698799543556c85e2910ca",
+    "scripts/verify_driving_browser_layout.js": "3f61d6b9e956d8c35ee0b5d0d08cbffbf659f493470cf46218fd19a363ad4c77",
+    "tests/drive-state.test.js": "c1c9749c01db4b76297f2782f6f02d6d5733d7020793fa67366b1beb1143a7fd"
+  },
+  "dashboard_build": "PASSED",
+  "javascript_tests": {
+    "passed": 143,
+    "failed": 0
+  },
+  "browser": {
+    "fixture": "Isolated static HTTP 8016, intercepted WebSocket 8017, simulated UI state and retained chase-camera JPEG. Onscreen native status/FPS are fixture values, not a fresh native performance measurement.",
+    "actions": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "fresh connected session",
+          "label": "Start"
+        },
+        {
+          "name": "fresh stopped simulator",
+          "label": "Start"
+        },
+        {
+          "name": "connected again without an attempt",
+          "label": "Start"
+        },
+        {
+          "name": "explicit Start enters active presentation",
+          "label": "Stop"
+        },
+        {
+          "name": "stopped attempt",
+          "label": "Restart"
+        },
+        {
+          "name": "failed attempt",
+          "label": "Restart"
+        },
+        {
+          "name": "emergency lock",
+          "label": "Release emergency stop"
+        },
+        {
+          "name": "valid ordinary pause",
+          "label": "Resume driving"
+        },
+        {
+          "name": "fresh layout fixture restored",
+          "label": "Start"
+        }
+      ],
+      "commands": [
+        {
+          "type": "presentation",
+          "sequence": 1,
+          "frame_id": 105,
+          "timestamp_s": 1.25,
+          "value": {
+            "operation": "RESTART",
+            "speed_kmh": 50
+          }
+        },
+        {
+          "type": "journey_heartbeat",
+          "sequence": 2,
+          "frame_id": 107,
+          "timestamp_s": 1.35,
+          "session_id": "start-scroll-isolated-fixture"
+        },
+        {
+          "type": "stop_driving",
+          "sequence": 3,
+          "frame_id": 108,
+          "timestamp_s": 1.4,
+          "reason": "operator_stop"
+        }
+      ],
+      "errors": [],
+      "native_commands": 0,
+      "fixture": "Isolated static HTTP 8016, intercepted WebSocket 8017, simulated state and saved camera image",
+      "timer_started": true
+    },
+    "layout": {
+      "passed": true,
+      "native_mutations": 0,
+      "checks": [
+        {
+          "width": 1920,
+          "height": 911,
+          "camera": {
+            "left": 18,
+            "top": 297.078125,
+            "right": 1660,
+            "bottom": 1220.703125,
+            "width": 1642,
+            "height": 923.625
+          },
+          "map": {
+            "left": 1480,
+            "top": 375.078125,
+            "right": 1640,
+            "bottom": 535.078125,
+            "width": 160,
+            "height": 160
+          },
+          "viewport": 1920,
+          "document_width": 1920,
+          "document_height": 1257,
+          "viewport_height": 911,
+          "image_fit": "contain",
+          "image_loaded": true,
+          "scrolled": {
+            "scroll_y": 346,
+            "camera_bottom": 874.703125,
+            "primary": {
+              "x": 1544.421875,
+              "y": 46,
+              "width": 112,
+              "height": 44,
+              "top": 46,
+              "right": 1656.421875,
+              "bottom": 90,
+              "left": 1544.421875
+            }
+          }
+        },
+        {
+          "width": 1536,
+          "height": 728,
+          "camera": {
+            "left": 16,
+            "top": 277.078125,
+            "right": 1280,
+            "bottom": 988.078125,
+            "width": 1264,
+            "height": 711
+          },
+          "map": {
+            "left": 1100,
+            "top": 355.078125,
+            "right": 1260,
+            "bottom": 515.078125,
+            "width": 160,
+            "height": 160
+          },
+          "viewport": 1536,
+          "document_width": 1536,
+          "document_height": 1022,
+          "viewport_height": 728,
+          "image_fit": "contain",
+          "image_loaded": true,
+          "scrolled": {
+            "scroll_y": 294,
+            "camera_bottom": 694.078125,
+            "primary": {
+              "x": 1162.421875,
+              "y": 38,
+              "width": 112,
+              "height": 44,
+              "top": 38,
+              "right": 1274.421875,
+              "bottom": 82,
+              "left": 1162.421875
+            }
+          }
+        },
+        {
+          "width": 1280,
+          "height": 720,
+          "camera": {
+            "left": 16,
+            "top": 277.078125,
+            "right": 1040,
+            "bottom": 853.078125,
+            "width": 1024,
+            "height": 576
+          },
+          "map": {
+            "left": 888,
+            "top": 355.078125,
+            "right": 1020,
+            "bottom": 487.078125,
+            "width": 132,
+            "height": 132
+          },
+          "viewport": 1280,
+          "document_width": 1280,
+          "document_height": 887,
+          "viewport_height": 720,
+          "image_fit": "contain",
+          "image_loaded": true,
+          "scrolled": {
+            "scroll_y": 167,
+            "camera_bottom": 686.078125,
+            "primary": {
+              "x": 926.421875,
+              "y": 38,
+              "width": 112,
+              "height": 44,
+              "top": 38,
+              "right": 1038.421875,
+              "bottom": 82,
+              "left": 926.421875
+            }
+          }
+        },
+        {
+          "width": 390,
+          "height": 740,
+          "camera": {
+            "left": 10,
+            "top": 343.3125,
+            "right": 380,
+            "bottom": 593.3125,
+            "width": 370,
+            "height": 250
+          },
+          "map": {
+            "left": 278,
+            "top": 408.3125,
+            "right": 368,
+            "bottom": 498.3125,
+            "width": 90,
+            "height": 90
+          },
+          "viewport": 390,
+          "document_width": 390,
+          "document_height": 793,
+          "viewport_height": 740,
+          "image_fit": "contain",
+          "image_loaded": true,
+          "scrolled": {
+            "scroll_y": 53,
+            "camera_bottom": 540.3125,
+            "primary": {
+              "x": 22,
+              "y": 75.296875,
+              "width": 152.1875,
+              "height": 44,
+              "top": 75.296875,
+              "right": 174.1875,
+              "bottom": 119.296875,
+              "left": 22
+            }
+          }
+        }
+      ]
+    },
+    "fullscreen": {
+      "passed": true,
+      "expanded": true,
+      "card": {
+        "x": 18,
+        "y": 18,
+        "width": 1404,
+        "height": 964,
+        "top": 18,
+        "right": 1422,
+        "bottom": 982,
+        "left": 18
+      },
+      "primary": {
+        "x": 1062.421875,
+        "y": 44,
+        "width": 112,
+        "height": 44,
+        "top": 44,
+        "right": 1174.421875,
+        "bottom": 88,
+        "left": 1062.421875
+      },
+      "native_commands": 0
+    },
+    "fullscreen_restore": {
+      "passed": true,
+      "restored": true,
+      "native_commands": 0
+    },
+    "first_fixture_failure": {
+      "artifact": {
+        "path": "output/start-scroll-ui-20261018/actions.txt",
+        "sha256": "c81be53789fbbc01c8ed4b5799982e6761dd2e6495cc2612bd9e3bb0890deafe"
+      },
+      "cause": "Incomplete simulated route lacked destination.name; corrected test fixture, not a newly observed native defect."
+    },
+    "screenshots": [
+      {
+        "path": "output/playwright/start-scroll-1920-top.png",
+        "sha256": "2f6da8ec17edab44b204b9a2df18c72f3159a5a1b2ceb68e3a6e5a6fbe9e47e6"
+      },
+      {
+        "path": "output/playwright/start-scroll-1920-bottom.png",
+        "sha256": "b08274312cc5e83c0a11a644f876a69e01cae9fd0547dce2f66702a40ebe5a0d"
+      },
+      {
+        "path": "output/playwright/start-scroll-layout-1920x911.png",
+        "sha256": "ea550e877f66815e1e638dba455927a919292bbe8bcf568e7e0a4c5f7b5c65c9"
+      },
+      {
+        "path": "output/playwright/start-scroll-layout-1536x728.png",
+        "sha256": "05b8e2357dc048aabbdcbbfb9802176709e584e55d95940dbc7ebaf33c3be12d"
+      },
+      {
+        "path": "output/playwright/start-scroll-layout-1280x720.png",
+        "sha256": "eade0f0637933bb71b6a670b745e57e6cbd469b77ef0c26d7e86e7e1be4dab7b"
+      },
+      {
+        "path": "output/playwright/start-scroll-layout-390x740.png",
+        "sha256": "5065a1f6ca1d0a809b80ea8ae10d4f0b6ec79a894f741134616e351eda9c8f15"
+      }
+    ]
+  },
+  "camera_fixture": {
+    "original": {
+      "path": "runs/normal_city/run_045dc47404e5484faf9520b661e936ae/rgb/drivingCamera-539-32656.jpg",
+      "sha256": "ccc0c3295ab420e4460b4b709c6003a374a84b9993d4ab2cc70734833bbc6a4f"
+    },
+    "copy": {
+      "path": "output/start-scroll-ui-20261018/camera-fixture.jpg",
+      "sha256": "ccc0c3295ab420e4460b4b709c6003a374a84b9993d4ab2cc70734833bbc6a4f"
+    },
+    "identity_verified": true,
+    "qualification": "Retained image for UI geometry only; synthetic telemetry and UI state do not establish perception or driving correctness."
+  },
+  "native_read_only_observation": {
+    "inspection_only": true,
+    "native_commands_sent": 0,
+    "observed_at_unix": 1792326105.7669494,
+    "presentation_id_at_initial_discovery": "6b5ed345ceca4a978188ee7b9ba167d7",
+    "connected": true,
+    "mode": "PAUSED",
+    "presentation": {
+      "id": "6b5ed345ceca4a978188ee7b9ba167d7",
+      "status": "PLAYBACK",
+      "reason": null
+    },
+    "journey_status": "PAUSED"
+  },
+  "cleanup": {
+    "isolated_browser_closed": true,
+    "isolated_static_server_pid": 15980,
+    "isolated_port_8016_open": false,
+    "native_processes_stopped": false,
+    "native_controls_sent": 0,
+    "at_unix": 1792326179.18997
+  },
+  "artifacts": [
+    {
+      "path": "output/start-scroll-ui-20261018/build.txt",
+      "sha256": "8468ebc93951cfbe4b5da78207a83574e14e5cbc066f378f093353a25e573bdb"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/javascript-tests.txt",
+      "sha256": "c921ad1449c052233c356a80bc4427bb8f45b68e9369babe4bdc6f91293b5b7a"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/actions-final.txt",
+      "sha256": "e874c57743cc0471bfa68c455ad8f86fc515deaa195eeba0397ca5213964e138"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/layout-final.txt",
+      "sha256": "a3683d8bd2b948150a7c3b5d99311050276ce9d527e59a2bd1b680a76beefc8a"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/fullscreen.txt",
+      "sha256": "b7ab7c4edf829b5813aa1702b81ab1bf6a2f6ae249d4cb965cf17c128b13c3c8"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/fullscreen-restore.txt",
+      "sha256": "5de7f12ab5e0838e028c65f9ec38748a75ff5ff3bf7836106bb6616d117f2ce5"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/native-read-only-observation.json",
+      "sha256": "fcc3ec08afd51f8383119ab6ff4579187b646a60602d60df86d932d1e4a15a86"
+    },
+    {
+      "path": "output/start-scroll-ui-20261018/cleanup.json",
+      "sha256": "ac6f48d9e58a338e69a58a58c3a0d78b9169936a81a8e3cd9f45580fcb630e5b"
+    }
+  ]
+}

@@ -41,7 +41,7 @@ export function presentationTrafficText(population,setup){
 
 export function installPresentationRun(p,tools,clearControls){
   const panel=document.createElement('section');panel.id='presentationControls';panel.setAttribute('aria-label','Automatic presentation');
-  panel.innerHTML='<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere → Normal · target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">↻ Restart</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Restart prepares the route, traffic and recordings automatically.</p></div>';
+  panel.innerHTML='<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere → Normal · target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">Start</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Start prepares the route, traffic and recordings automatically.</p></div>';
   const custom=document.createElement('details');custom.className='presentation-custom';
   const populationNote=document.createElement('span');populationNote.id='presentationPopulation';
   populationNote.textContent=presentationTrafficText(null,null);panel.querySelector('.presentation-intro').append(populationNote);
@@ -104,7 +104,7 @@ export function installPresentationRun(p,tools,clearControls){
     }
     if(pendingStart&&(p.operationError||performance.now()-pendingAt>180000)){pendingStart=false;if(!p.operationError)p.operationError='Simulator startup timed out. Use Restart to retry.';}
     $('presentationRestart').disabled=busy||pendingStart||p.restarting||p.isReplay||p.controlMode==='EMERGENCY_STOP';
-    $('presentationRestart').textContent=pendingStart?'Starting simulation…':busy?'Presentation running':'↻ Restart';
+    $('presentationRestart').textContent=pendingStart?'Starting simulation…':busy?'Presentation running':state.startLabel;
     $('presentationChoose').disabled=busy||active||!p.fresh;
     $('presentationDestination').textContent=p.route?.destination?.name||'Choose a destination on the map';
     $('presentationCustomStart').disabled=busy||active||!p.fresh||!p.route||p.recording||p.controlMode==='EMERGENCY_STOP';
@@ -115,11 +115,11 @@ export function installPresentationRun(p,tools,clearControls){
     const notice=safetyNotice(p);
     let title=pendingStart?'Starting the simulator':!p.connected?'Simulator stopped or disconnected':busy?(phases[status]||status)+(status==='DRIVING'?' · '+(data.arm===0?'Robosphere':'Normal'):''):notice?.title||phases[status]||'Ready when you are';
     let detail=pendingStart?'The route and both recordings will follow automatically.':p.operationError?demoFailure(p.operationError):status==='ERROR'?demoFailure(data.reason):notice?.detail||
-      (status==='DRIVING'?(data.arm===1?'Recording is active. Normal follows the route and traffic signals.':'Recording is active. Signal and protective stops resume automatically.'):busy?'The next step runs automatically. Stop and Emergency stop remain available.':'Restart prepares the route, traffic and recordings automatically.');
+      (status==='DRIVING'?(data.arm===1?'Recording is active. Normal follows the route and traffic signals.':'Recording is active. Signal and protective stops resume automatically.'):busy?'The next step runs automatically. Stop and Emergency stop remain available.':state.startLabel+' prepares the route, traffic and recordings automatically.');
     if(status==='ERROR'&&p.stopDiagnostics?.runtime_fault?.exception_type==='ControlSceneTimeout'&&notice){title=notice.title;detail=notice.detail;}
     if(active&&notice){title=notice.title;detail=notice.detail;}
     if(p.stopDiagnostics?.stopped_for_s>=1&&active)detail+=' Waiting '+p.stopDiagnostics.stopped_for_s.toFixed(0)+' s.';
-    if(!p.connected&&!pendingStart)detail=p.operationError||'Use Restart to start the simulator and run both recorded drives automatically.';
+    if(!p.connected&&!pendingStart)detail=p.operationError||'Use '+state.startLabel+' to start the simulator and run both recorded drives automatically.';
     if(!busy&&p.operationError)title='Action needs attention';
     $('presentationStatus').textContent=title;$('presentationDetail').textContent=detail;
     $('presentationNotice').dataset.tone=p.operationError||status==='ERROR'?'warning':notice?.tone||'neutral';

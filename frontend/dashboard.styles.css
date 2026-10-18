@@ -9521,8 +9521,20 @@ body.light-cockpit:before {
 .sequential-drive .studio-shell {
   grid-template-columns: minmax(0, 1fr);
 }
+html:has(body.sequential-drive) {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-padding-top: 130px;
+}
 body.control-center.light-cockpit.sequential-drive {
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  height: auto;
+  max-height: none;
+  min-height: 100dvh;
+  overflow: visible;
   padding-bottom: 18px;
 }
 body.light-cockpit.sequential-drive:before {
@@ -9531,6 +9543,19 @@ body.light-cockpit.sequential-drive:before {
 .sequential-drive .app-header,
 .sequential-drive main {
   grid-column: 1 !important;
+}
+body.light-cockpit.sequential-drive[data-ui=guided] .app-header {
+  position: sticky;
+  top: 18px;
+  align-self: start;
+}
+body.light-cockpit.sequential-drive[data-ui=guided] .workspace,
+body.light-cockpit.sequential-drive[data-ui=guided] #drivePhase,
+body.light-cockpit.sequential-drive[data-ui=guided] .visual-workspace,
+body.light-cockpit.sequential-drive[data-ui=guided] #resultsPhase {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
 }
 .light-cockpit.sequential-drive[data-ui=guided] #cameraCard {
   grid-template-rows: minmax(0, 1fr);
