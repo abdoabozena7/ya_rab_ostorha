@@ -3182,7 +3182,7 @@
     RECOVERING: ["Checking the sensors", "Waiting for fresh sensor frames and a verified starting scene."]
   };
   var modeLabel2 = (m) => m === "NORMAL" ? "Normal drive" : "Protected drive";
-  var nextLabel = (m) => m === "NORMAL" ? "See the solution now" : "See the problem now";
+  var nextLabel = (m) => m === "NORMAL" ? "See the solution now" : "See the world before our solution";
   function stressSummary(audit) {
     if (!audit) return "";
     const vehicles2 = audit.counts?.vehicles || {}, people = audit.counts?.pedestrians || {};
@@ -3227,7 +3227,7 @@
       return state("driving", "A drive is in progress", "Use Menu to inspect this session, or Free GPU to close it.", { camera: true });
     return state(
       "choose",
-      "Would you like to see the problem or the solution first?",
+      "Which world would you like to see first?",
       "Normal follows the route with obstacle protection off. The protected drive uses RULE. Neither outcome is guaranteed.",
       { choices: true, action: local.firstMode ? "START_GUIDED" : null, label: local.firstMode === "NORMAL" ? "Start the normal drive" : "Start the protected drive" }
     );
@@ -5891,9 +5891,9 @@
 
   // frontend/illustrated-preview.js
   var illustratedPreview = `
-<svg class="illustrated-drive" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="illustratedDriveTitle" aria-describedby="illustratedDriveDescription">
-  <title id="illustratedDriveTitle">A hand-drawn drive through a pastel city</title>
-  <desc id="illustratedDriveDescription">An illustrated coral car rolls along a quiet street with sketched buildings, trees and clouds. This is an animation, not the simulator camera.</desc>
+<svg class="illustrated-drive" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" role="img" aria-labelledby="illustratedDriveTitle" aria-describedby="illustratedDriveDescription">
+  <title id="illustratedDriveTitle">Illustrated pedestrian crossing comparison</title>
+  <desc id="illustratedDriveDescription">Both cars detect the same person on the pavement. One brakes only after road entry and cannot stop in time at speed. The other predicts crossing, slows early and lets the person pass. These are scripted illustrations, not live outcomes.</desc>
   <defs>
     <pattern id="sketchHatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(24)"><path d="M0 0V9" stroke="#78716c" stroke-width=".6" opacity=".12"/></pattern>
     <g id="sketchTree" stroke="#69645c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -5931,9 +5931,21 @@
     <use href="#sketchTree" transform="translate(430 296) scale(.86)"/>
     <use href="#sketchTree" transform="translate(1105 297) scale(1.12)"/>
     <g fill="none"><path d="m744 296-1-118c-1-17 25-18 27-4M736 295h17"/><path d="M760 174h19l-2 9-15 1Z" fill="#f8d7ba"/></g>
-    <g transform="translate(856 281)"><circle cy="-35" r="6" fill="#efd1bd"/><path d="m-6-24 14-1 5 25-24 1Z" fill="#c5cdc0"/><path d="m-5 1-3 17M6 1l6 16M-7-18l-9 14M9-18l11 11" fill="none"/></g>
     <g transform="translate(155 296)" fill="none"><path d="M0-20h60v10H0Zm5 12v11M55-8V3M3-20v-12h54v12"/><path d="M10-28h41M9-24h43" opacity=".5"/></g>
   </g>
+  <g stroke="#fdfcf8" stroke-width="8" stroke-linecap="round" opacity=".85"><path d="M752 331h56m-56 18h56m-56 18h56m-56 18h56"/></g>
+  <g class="demo-foreground">
+    <g class="demo-reactive" fill="none" stroke="#b77939" stroke-width="2.5" stroke-linecap="round">
+      <path d="M795 369h110m-100-6-10 6 10 6"/>
+    </g>
+    <g class="demo-braking" stroke="#b3564c" stroke-width="4" stroke-linecap="round"><path d="M532 337h-30m171 0h-30"/></g>
+    <g class="demo-sensing" fill="none" stroke="#655b79" stroke-width="2"><rect class="demo-detection" x="762" y="241" width="36" height="64" rx="9"/></g>
+    <g class="demo-prediction" fill="none" stroke="#40664c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="demo-cone" d="M374 300 795 267 795 386Z" fill="#a9c8ae" fill-opacity=".16" stroke-dasharray="8 8"/>
+      <path d="M780 295v91m-8-10 8 10 8-10" stroke-dasharray="6 6"/>
+      <ellipse cx="780" cy="382" rx="22" ry="10" stroke-dasharray="4 5"/>
+    </g>
+    <g class="demo-car-position">
   <ellipse cx="601" cy="333" rx="113" ry="8" fill="#827970" opacity=".12"/>
   <g class="sketch-car" stroke="#615a54" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
     <path d="m492 304 10-26 37-7 29-39c8-10 67-10 80-3l39 42 26 8 11 25-5 13H494Z" fill="#ffb7b2"/>
@@ -5945,8 +5957,155 @@
     <g transform="translate(679 315)"><circle r="18" fill="#69645c"/><g class="sketch-wheel"><circle r="10" fill="#eeeae2"/><path d="M-6-6 6 6M6-6-6 6" stroke-width="1.3"/></g></g>
     <path d="m518 269 18-2 30-39c12-9 65-9 80-3M492 319l25 1m181-1 23-2" fill="none" stroke-width="1" opacity=".45"/>
   </g>
-  <g class="sketch-motion" stroke="#a69e95" stroke-width="1.5" stroke-linecap="round"><path d="M470 288h-25m18 10h-32m36 13h-17"/></g>
+    </g>
+    <g class="demo-person" transform="translate(780 281)" stroke="#615a54" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cy="-35" r="7" fill="#efd1bd"/><path d="m-7-24 15-1 5 25-25 1Z" fill="#b6c8b7"/>
+      <path class="demo-left-leg" d="m-5 1-3 17" fill="none"/><path class="demo-right-leg" d="M6 1l6 16" fill="none"/>
+      <path d="m-7-18-9 14M9-18l11 11" fill="none"/>
+    </g>
+    <g class="demo-contact" stroke="#b3564c" stroke-width="3" stroke-linecap="round" fill="none">
+      <circle cx="780" cy="305" r="24" fill="#ffb7b2" fill-opacity=".35" stroke="none"/>
+      <path d="m751 287-10-7m19-12-5-12m23 10v-14m20 20 8-12m4 30 14-5m-13 25 14 4m-28 13 8 11m-34-10-6 11"/>
+    </g>
+  </g>
 </svg>`;
+
+  // frontend/preview-story.js
+  var previewLabels = { NORMAL: "See the world before our solution", ROBOSPHERE: "See our solution" };
+  var between = (t, a, b) => Math.max(0, Math.min(1, (t - a) / (b - a)));
+  function previewFrame(mode, seconds) {
+    const t = Math.max(0, seconds) % 12, protectedMode = mode === "ROBOSPHERE";
+    let carX = -350, pedestrianY = 0, phase = "approaching", message = "Person detected on the pavement ahead. Same sensor view in both examples.";
+    if (protectedMode) {
+      carX = t < 1.2 ? -350 + 108 * between(t, 0, 1.2) : t < 3.2 ? -242 + 168 * (1 - (1 - between(t, 1.2, 3.2)) ** 2) : -74;
+      pedestrianY = t < 4 ? 36 * between(t, 2, 4) : 36 + 64 * between(t, 4, 7.5);
+      if (t >= 1.2) {
+        phase = "predicting";
+        message = "Person already detected on the pavement. Predicting they will cross; slowing early.";
+      }
+      if (t >= 3.2) {
+        phase = "stopped";
+        message = "Stopped for a predicted pedestrian crossing.";
+      }
+      if (t >= 7.5) {
+        phase = "safe";
+        message = "The person has crossed safely in this illustrated example.";
+      }
+      if (t >= 8.2) {
+        carX = -74 + 350 * between(t, 8.2, 10.5);
+        phase = "continuing";
+        message = "The crossing is clear. The car continues.";
+      }
+    } else {
+      carX = t < 2 ? -350 + 180 * between(t, 0, 2) : t < 2.8 ? -170 + 128 * between(t, 2, 2.8) : -42 + 98 * (1 - (1 - between(t, 2.8, 4)) ** 2);
+      pedestrianY = 36 * between(t, 2, 4);
+      if (t >= 2) {
+        phase = "crossing";
+        message = "The person steps onto the road as the car approaches.";
+      }
+      if (t >= 2.8) {
+        phase = "late-detection";
+        message = "The already-detected person enters the road. Reactive braking starts too late at this speed.";
+      }
+      if (t >= 4) {
+        phase = "contact";
+        message = "Detected, but too late to stop at this speed. Contact in this illustrated example.";
+      }
+    }
+    if (t >= 10.8) {
+      phase = "replaying";
+      message = "Replaying the illustrated example\u2026";
+    }
+    return {
+      time: t,
+      carX,
+      pedestrianY,
+      phase,
+      message,
+      prediction: protectedMode && t >= 1.2 && t < 7.5,
+      detected: t < 10.8,
+      reactive: !protectedMode && t >= 2.8 && t < 10.8,
+      braking: protectedMode ? t >= 1.2 && t < 3.2 : t >= 2.8 && t < 4,
+      contact: !protectedMode && t >= 4 && t < 10.8,
+      walking: protectedMode ? t > 2 && t < 7.5 : t > 2 && t < 4,
+      opacity: t >= 11.6 ? 1 - between(t, 11.6, 12) : 1
+    };
+  }
+
+  // frontend/preview-player.js
+  function installPreviewPlayer(host) {
+    host.innerHTML = '<div class="preview-canvas">' + illustratedPreview + '</div><div class="preview-caption"><strong id="previewModeTitle"></strong><p id="previewMessage" aria-live="off"></p><small>Same sensors, same visible person. Scripted example \xB7 actual outcomes can differ.</small></div>';
+    const $11 = (selector) => host.querySelector(selector), media = matchMedia("(prefers-reduced-motion: reduce)");
+    let mode = "NORMAL", playing = !media.matches, enabled = false, inView = true, elapsed = 0, last = 0, raf = 0, phase = "";
+    function render() {
+      const frame = previewFrame(mode, elapsed);
+      host.dataset.previewPhase = frame.phase;
+      host.dataset.previewMode = mode;
+      host.dataset.previewPlaying = String(playing && enabled && inView && !document.hidden);
+      $11(".demo-car-position").setAttribute("transform", `translate(${frame.carX.toFixed(2)} 0)`);
+      $11(".demo-person").setAttribute("transform", `translate(780 ${(281 + frame.pedestrianY).toFixed(2)})`);
+      $11(".demo-foreground").style.opacity = String(frame.opacity);
+      $11(".demo-prediction").style.display = frame.prediction ? "" : "none";
+      $11(".demo-contact").style.display = frame.contact ? "" : "none";
+      $11(".demo-reactive").style.display = frame.reactive ? "" : "none";
+      $11(".demo-braking").style.display = frame.braking ? "" : "none";
+      $11(".demo-detection").setAttribute("y", String(241 + frame.pedestrianY));
+      $11(".demo-sensing").style.display = frame.detected ? "" : "none";
+      $11(".demo-cone").setAttribute("d", `M${724 + frame.carX} 300 795 267 795 386Z`);
+      $11(".demo-person").classList.toggle("is-walking", frame.walking && playing && enabled);
+      const stride = frame.walking ? Math.sin(elapsed * 12) * 5 : 0;
+      $11(".demo-left-leg").setAttribute("d", `M-5 1l${-3 + stride} 17`);
+      $11(".demo-right-leg").setAttribute("d", `M6 1l${6 - stride} 16`);
+      for (const wheel of host.querySelectorAll(".sketch-wheel")) wheel.setAttribute("transform", `rotate(${(frame.carX + 350) * 3})`);
+      if (phase !== frame.phase) {
+        phase = frame.phase;
+        $11("#previewMessage").textContent = frame.message;
+      }
+    }
+    function tick(now) {
+      raf = 0;
+      if (!playing || !enabled || !inView || document.hidden) {
+        last = 0;
+        render();
+        return;
+      }
+      if (last) elapsed += (now - last) / 1e3;
+      last = now;
+      render();
+      raf = requestAnimationFrame(tick);
+    }
+    function schedule() {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      last = 0;
+      render();
+      if (playing && enabled && inView && !document.hidden) raf = requestAnimationFrame(tick);
+    }
+    function select(value) {
+      mode = value;
+      elapsed = 0.02;
+      phase = "";
+      playing = !media.matches;
+      $11("#previewModeTitle").textContent = previewLabels[mode];
+      schedule();
+    }
+    media.addEventListener("change", () => {
+      playing = !media.matches;
+      schedule();
+    });
+    document.addEventListener("visibilitychange", schedule);
+    if (globalThis.IntersectionObserver) new IntersectionObserver((entries) => {
+      inView = entries.at(-1).isIntersecting;
+      schedule();
+    }, { threshold: 0.05 }).observe(host);
+    select("NORMAL");
+    return { select, setVisible(value) {
+      if (enabled !== value) {
+        enabled = value;
+        schedule();
+      }
+    } };
+  }
 
   // frontend/sequential-drive.js
   function installSequentialDrive(p, tools2) {
@@ -5982,8 +6141,8 @@
     details.onclick = () => navigator.open();
     const experience = document.createElement("main");
     experience.id = "missionExperience";
-    experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"><span>Illustrated preview \xB7 not a live camera</span></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>The problem</strong>Normal \xB7 obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>The solution</strong>Protected \xB7 RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test \xB7 requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
-    experience.querySelector("#missionPreview").insertAdjacentHTML("afterbegin", illustratedPreview);
+    experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal \xB7 obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected \xB7 RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test \xB7 requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+    const preview = installPreviewPlayer(experience.querySelector("#missionPreview"));
     const guide = document.createElement("section");
     guide.id = "missionGuide";
     guide.setAttribute("aria-labelledby", "missionGuideTitle");
@@ -6048,9 +6207,15 @@
       for (const video of document.querySelectorAll("#presentationResults video")) video.pause();
       showWorkspace("drive");
     };
-    experience.querySelectorAll("[name=firstDrive]").forEach((input) => input.onchange = () => {
-      local.firstMode = input.value;
-      update();
+    experience.querySelectorAll("[name=firstDrive]").forEach((input) => {
+      input.onchange = () => {
+        local.firstMode = input.value;
+        preview.select(input.value);
+        update();
+      };
+      input.onclick = () => {
+        if (local.firstMode === input.value) preview.select(input.value);
+      };
     });
     const command = (operation) => {
       const d = p.presentation || {}, value = { operation, id: d.id, expected_arm: d.arm, expected_phase: d.status };
@@ -6128,8 +6293,12 @@
       const history2 = document.body.dataset.workspace === "results";
       experience.hidden = history2;
       returnToMission.hidden = !history2;
-      $11("missionPreview").hidden = !["welcome", "choose"].includes(state.screen);
+      const showPreview = ["welcome", "choose"].includes(state.screen);
+      $11("missionPreview").hidden = !showPreview;
+      preview.setVisible(showPreview && !history2);
       $11("missionScene").hidden = !state.camera;
+      const previewParent = state.choices ? experience.querySelector(".mission-copy") : experience;
+      if ($11("missionPreview").parentElement !== previewParent) previewParent.insertBefore($11("missionPreview"), state.choices ? $11("missionOutcomes") : $11("missionScene"));
       if ($11("missionTitle").textContent !== state.title) {
         $11("missionTitle").textContent = state.title;
         if (state.screen === "welcome") {

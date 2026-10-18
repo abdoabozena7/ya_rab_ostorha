@@ -1,0 +1,21 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "verification": {
+    "javascript_tests": 156,
+    "guided_checks": 15,
+    "animation_checks": 4
+  },
+  "sha256_lf": {
+    "frontend/preview-player.js": "d2471babb5e1e1300fc9fbff63773105df8ec2a10b399568eecea19bf2cdc528",
+    "frontend/preview-story.js": "39083bbaebfa4ef22e8923bc8509bd7aa3e7be8254d28196cae79a733e24f224",
+    "frontend/illustrated-preview.js": "850980a8c8309d5a2ee59349455d62e49b26016f2d643f06ea92d06841b574c1",
+    "frontend/sequential-drive.js": "b7da40122f873278ece312c6e7390eb9de2353c9afaa373a03f0266d26f5aa5d",
+    "frontend/mission-state.js": "1053126f35649ba4032afe084287ae0cb9605df5e609d9121b867bbdff5799fc",
+    "frontend/mission.css": "cb4b493d6ef3fe144b2983467ef5d80550835f437ef2c6f4b24e0acb9128881f",
+    "frontend/dashboard.bundle.js": "8bfaf3e3e31cdcee703152fdceb976a39d1d3e672ccff2e50b0eb0b10f9732af",
+    "frontend/dashboard.styles.css": "502cfd7a04c4229a8693b9f82699e249c3ee271e93f8a6175d5ab625278d6b78",
+    "tests/preview-story.test.js": "1029fb7ce24a5708052f3d44573455a257967f46062c2d4d11b985b8a4787f29",
+    "scripts/check_illustrated_preview_ui.js": "7c1850ac4a3bdebdd0d180b53cbc20e0d68c8527e8eccae6d174cbcd7b5b74c0"
+  },
+  "note": "Both illustrations share early detection and pedestrian timing. Scripted reactive braking is not the native Normal policy. No new native acceptance."
+}

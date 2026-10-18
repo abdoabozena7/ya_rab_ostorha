@@ -1,0 +1,61 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "checks": [
+    "Normal sees person from the pavement, moves, brakes reactively and contacts at speed",
+    "Early prediction stops the car, allows crossing and automatically loops without controls",
+    "Mobile preserves the drawing and full explanation",
+    "Reduced motion and live-camera handoff stop illustration movement"
+  ],
+  "samples": {
+    "normalSeen": {
+      "phase": "approaching",
+      "car": "translate(-347.57 0)",
+      "person": "translate(780 281.00)",
+      "sensing": true,
+      "prediction": false
+    },
+    "reactive": {
+      "phase": "late-detection",
+      "car": "translate(-40.13 0)",
+      "person": "translate(780 295.61)",
+      "sensing": true,
+      "prediction": false
+    },
+    "contact": {
+      "phase": "contact",
+      "car": "translate(56.00 0)",
+      "person": "translate(780 317.00)",
+      "sensing": true,
+      "prediction": false
+    },
+    "protectedSeen": {
+      "phase": "approaching",
+      "car": "translate(-344.46 0)",
+      "person": "translate(780 281.00)",
+      "sensing": true,
+      "prediction": false
+    },
+    "prediction": {
+      "phase": "predicting",
+      "car": "translate(-239.61 0)",
+      "person": "translate(780 281.00)",
+      "sensing": true,
+      "prediction": true
+    },
+    "stopped": {
+      "phase": "stopped",
+      "car": "translate(-74.00 0)",
+      "person": "translate(780 302.98)",
+      "sensing": true,
+      "prediction": true
+    },
+    "safe": {
+      "phase": "safe",
+      "car": "translate(-74.00 0)",
+      "person": "translate(780 381.00)",
+      "sensing": true,
+      "prediction": false
+    }
+  },
+  "errors": []
+}

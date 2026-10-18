@@ -7,7 +7,7 @@ const preparation={STOPPING:['Holding the vehicle','Waiting for a full stop and 
   RESTORING:['Preparing the other drive','Rebuilding and checking the same starting scene. Traffic may react differently.'],
   RECOVERING:['Checking the sensors','Waiting for fresh sensor frames and a verified starting scene.']};
 export const modeLabel=m=>m==='NORMAL'?'Normal drive':'Protected drive';
-export const nextLabel=m=>m==='NORMAL'?'See the solution now':'See the problem now';
+export const nextLabel=m=>m==='NORMAL'?'See the solution now':'See the world before our solution';
 export function stressSummary(audit){
   if(!audit)return '';
   const vehicles=audit.counts?.vehicles||{},people=audit.counts?.pedestrians||{};
@@ -47,7 +47,7 @@ export function missionState(p,local={}) {
     label:d.pair_id?'Retry preparing the other drive':'Retry preparing this drive'});
   if(!guided&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status||'IDLE')||['STARTING','RUNNING'].includes(p.journey?.status))
     return state('driving','A drive is in progress','Use Menu to inspect this session, or Free GPU to close it.',{camera:true});
-  return state('choose','Would you like to see the problem or the solution first?',
+  return state('choose','Which world would you like to see first?',
     'Normal follows the route with obstacle protection off. The protected drive uses RULE. Neither outcome is guaranteed.',
     {choices:true,action:local.firstMode?'START_GUIDED':null,label:local.firstMode==='NORMAL'?'Start the normal drive':'Start the protected drive'});
 }

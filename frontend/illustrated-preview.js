@@ -1,8 +1,8 @@
 // Original code-drawn artwork. Decorative motion never represents native state.
 export const illustratedPreview=`
-<svg class="illustrated-drive" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="illustratedDriveTitle" aria-describedby="illustratedDriveDescription">
-  <title id="illustratedDriveTitle">A hand-drawn drive through a pastel city</title>
-  <desc id="illustratedDriveDescription">An illustrated coral car rolls along a quiet street with sketched buildings, trees and clouds. This is an animation, not the simulator camera.</desc>
+<svg class="illustrated-drive" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" role="img" aria-labelledby="illustratedDriveTitle" aria-describedby="illustratedDriveDescription">
+  <title id="illustratedDriveTitle">Illustrated pedestrian crossing comparison</title>
+  <desc id="illustratedDriveDescription">Both cars detect the same person on the pavement. One brakes only after road entry and cannot stop in time at speed. The other predicts crossing, slows early and lets the person pass. These are scripted illustrations, not live outcomes.</desc>
   <defs>
     <pattern id="sketchHatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(24)"><path d="M0 0V9" stroke="#78716c" stroke-width=".6" opacity=".12"/></pattern>
     <g id="sketchTree" stroke="#69645c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -40,9 +40,21 @@ export const illustratedPreview=`
     <use href="#sketchTree" transform="translate(430 296) scale(.86)"/>
     <use href="#sketchTree" transform="translate(1105 297) scale(1.12)"/>
     <g fill="none"><path d="m744 296-1-118c-1-17 25-18 27-4M736 295h17"/><path d="M760 174h19l-2 9-15 1Z" fill="#f8d7ba"/></g>
-    <g transform="translate(856 281)"><circle cy="-35" r="6" fill="#efd1bd"/><path d="m-6-24 14-1 5 25-24 1Z" fill="#c5cdc0"/><path d="m-5 1-3 17M6 1l6 16M-7-18l-9 14M9-18l11 11" fill="none"/></g>
     <g transform="translate(155 296)" fill="none"><path d="M0-20h60v10H0Zm5 12v11M55-8V3M3-20v-12h54v12"/><path d="M10-28h41M9-24h43" opacity=".5"/></g>
   </g>
+  <g stroke="#fdfcf8" stroke-width="8" stroke-linecap="round" opacity=".85"><path d="M752 331h56m-56 18h56m-56 18h56m-56 18h56"/></g>
+  <g class="demo-foreground">
+    <g class="demo-reactive" fill="none" stroke="#b77939" stroke-width="2.5" stroke-linecap="round">
+      <path d="M795 369h110m-100-6-10 6 10 6"/>
+    </g>
+    <g class="demo-braking" stroke="#b3564c" stroke-width="4" stroke-linecap="round"><path d="M532 337h-30m171 0h-30"/></g>
+    <g class="demo-sensing" fill="none" stroke="#655b79" stroke-width="2"><rect class="demo-detection" x="762" y="241" width="36" height="64" rx="9"/></g>
+    <g class="demo-prediction" fill="none" stroke="#40664c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="demo-cone" d="M374 300 795 267 795 386Z" fill="#a9c8ae" fill-opacity=".16" stroke-dasharray="8 8"/>
+      <path d="M780 295v91m-8-10 8 10 8-10" stroke-dasharray="6 6"/>
+      <ellipse cx="780" cy="382" rx="22" ry="10" stroke-dasharray="4 5"/>
+    </g>
+    <g class="demo-car-position">
   <ellipse cx="601" cy="333" rx="113" ry="8" fill="#827970" opacity=".12"/>
   <g class="sketch-car" stroke="#615a54" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
     <path d="m492 304 10-26 37-7 29-39c8-10 67-10 80-3l39 42 26 8 11 25-5 13H494Z" fill="#ffb7b2"/>
@@ -54,5 +66,15 @@ export const illustratedPreview=`
     <g transform="translate(679 315)"><circle r="18" fill="#69645c"/><g class="sketch-wheel"><circle r="10" fill="#eeeae2"/><path d="M-6-6 6 6M6-6-6 6" stroke-width="1.3"/></g></g>
     <path d="m518 269 18-2 30-39c12-9 65-9 80-3M492 319l25 1m181-1 23-2" fill="none" stroke-width="1" opacity=".45"/>
   </g>
-  <g class="sketch-motion" stroke="#a69e95" stroke-width="1.5" stroke-linecap="round"><path d="M470 288h-25m18 10h-32m36 13h-17"/></g>
+    </g>
+    <g class="demo-person" transform="translate(780 281)" stroke="#615a54" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cy="-35" r="7" fill="#efd1bd"/><path d="m-7-24 15-1 5 25-25 1Z" fill="#b6c8b7"/>
+      <path class="demo-left-leg" d="m-5 1-3 17" fill="none"/><path class="demo-right-leg" d="M6 1l6 16" fill="none"/>
+      <path d="m-7-18-9 14M9-18l11 11" fill="none"/>
+    </g>
+    <g class="demo-contact" stroke="#b3564c" stroke-width="3" stroke-linecap="round" fill="none">
+      <circle cx="780" cy="305" r="24" fill="#ffb7b2" fill-opacity=".35" stroke="none"/>
+      <path d="m751 287-10-7m19-12-5-12m23 10v-14m20 20 8-12m4 30 14-5m-13 25 14 4m-28 13 8 11m-34-10-6 11"/>
+    </g>
+  </g>
 </svg>`;

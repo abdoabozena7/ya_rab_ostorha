@@ -25,6 +25,31 @@ browser checks passed again. This follow-up adds no native driving evidence.
 
 ## Design and behavior
 
+### Crossing comparison follow-up
+
+The preview now plays two distinct, automatically repeating scripted stories.
+Selecting **See the world before our solution** or **See our solution** in the
+drive choices selects and resets the corresponding illustration. No playback
+toolbar, Pause or Replay button remains. The preview sits below the choices so
+the selected story is visible before the explicit native Start action.
+
+Both stories detect the same person on the pavement from the outset, show the
+same detection box and use the same pedestrian movement until the illustrated
+contact. The first waits for actual road entry before reactive braking; the
+scripted fast approach leaves insufficient stopping distance. The second adds
+an early predicted crossing path, slows ahead of road entry, holds while the
+person crosses and then continues. Its message is **Stopped for a predicted
+pedestrian crossing.** No shorter sensor range is assigned to the first story.
+
+This is an explanatory animation, not a measured claim about native NORMAL
+behavior: native Normal still has obstacle protection off. Neither the animation
+nor its depicted successful crossing guarantees a native protected outcome.
+Reduced motion pauses the illustration, and hidden/offscreen/background players
+do not run their animation loop. `preview-story.js` tests verify shared sensing,
+shared pedestrian timing, reactive braking/contact and protected stopping order.
+The current delivery passes 156 JavaScript tests; browser evidence is preserved
+under [crossing-preview-20261018](evidence/crossing-preview-20261018/).
+
 The illustrated-preview follow-up replaces the opening's saved photograph with
 original hand-drawn SVG artwork: a coral car, softly sketched city, rotating wheels,
 moving road markings and slowly drifting clouds. The caption reads **Illustrated

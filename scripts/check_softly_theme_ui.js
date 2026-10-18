@@ -51,7 +51,7 @@ async page=>{
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>scrollTo(0,0));
   await fixture({connected:true,available:true,mode:'PAUSED',simulatorStop:{available:true,status:'IDLE'},simulatorStart:{status:'READY',available:true}},'choose');
-  await page.getByRole('radio',{name:'The solution Protected · RULE protection',exact:true}).check();
+  await page.getByRole('radio',{name:'See our solution Protected · RULE protection',exact:true}).check();
   if(!await page.getByRole('button',{name:'Start the protected drive',exact:true}).isVisible())throw Error('Protected choice action missing');
   await page.screenshot({path:'output/playwright/softly-choice-desktop.png',fullPage:true});
   await page.getByRole('button',{name:'Menu',exact:true}).click();

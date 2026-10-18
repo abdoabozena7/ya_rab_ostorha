@@ -3,7 +3,7 @@ import {missionState,modeLabel,stressSummary} from './mission-state.js';
 import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome,presentationSummary} from './presentation-run.js';
 import {installScenePicker} from './scene-picker.js';
-import {illustratedPreview} from './illustrated-preview.js';
+import {installPreviewPlayer} from './preview-player.js';
 
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
@@ -19,8 +19,8 @@ export function installSequentialDrive(p,tools) {
   returnToMission.onclick=()=>{p.reviewedComparison=null;p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');update();};
   const navigator=installGuidedDetails(p,tools,details);details.onclick=()=>navigator.open();
   const experience=document.createElement('main');experience.id='missionExperience';
-  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"><span>Illustrated preview · not a live camera</span></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>The problem</strong>Normal · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>The solution</strong>Protected · RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test · requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
-  experience.querySelector('#missionPreview').insertAdjacentHTML('afterbegin',illustratedPreview);
+  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected · RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test · requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+  const preview=installPreviewPlayer(experience.querySelector('#missionPreview'));
   const guide=document.createElement('section');guide.id='missionGuide';guide.setAttribute('aria-labelledby','missionGuideTitle');
   guide.innerHTML='<h2 id="missionGuideTitle">Before you drive</h2>';
   for(const [index,[question,answer]] of [
@@ -50,7 +50,10 @@ export function installSequentialDrive(p,tools) {
   let previousScreen='',outcomeKey='',pending=null;
   const clearMedia=()=>{p.reviewedComparison=null;p.presentationPlayback=false;document.body.classList.remove('archive-review');
     for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');};
-  experience.querySelectorAll('[name=firstDrive]').forEach(input=>input.onchange=()=>{local.firstMode=input.value;update();});
+  experience.querySelectorAll('[name=firstDrive]').forEach(input=>{
+    input.onchange=()=>{local.firstMode=input.value;preview.select(input.value);update();};
+    input.onclick=()=>{if(local.firstMode===input.value)preview.select(input.value);};
+  });
   const command=operation=>{
     const d=p.presentation||{},value={operation,id:d.id,expected_arm:d.arm,expected_phase:d.status};
     if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,scene:$('missionSceneChoice').value,speed_kmh:50});
@@ -93,7 +96,10 @@ export function installSequentialDrive(p,tools) {
     if(!state.choices)scenePicker.close();
     if(!state.camera&&$('cameraCard').classList.contains('camera-expanded'))tools.expandCamera(false);
     const history=document.body.dataset.workspace==='results';experience.hidden=history;returnToMission.hidden=!history;
-    $('missionPreview').hidden=!['welcome','choose'].includes(state.screen);$('missionScene').hidden=!state.camera;
+    const showPreview=['welcome','choose'].includes(state.screen);
+    $('missionPreview').hidden=!showPreview;preview.setVisible(showPreview&&!history);$('missionScene').hidden=!state.camera;
+    const previewParent=state.choices?experience.querySelector('.mission-copy'):experience;
+    if($('missionPreview').parentElement!==previewParent)previewParent.insertBefore($('missionPreview'),state.choices?$('missionOutcomes'):$('missionScene'));
     if($('missionTitle').textContent!==state.title){
       $('missionTitle').textContent=state.title;
       if(state.screen==='welcome'){

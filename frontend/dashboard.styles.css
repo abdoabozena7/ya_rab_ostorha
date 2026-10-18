@@ -10320,7 +10320,7 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
   position: relative;
   align-self: center;
   width: 100%;
-  height: clamp(240px, 38svh, 480px);
+  height: auto;
   overflow: hidden;
   border-radius: 48px;
   background: #e8efe8;
@@ -10330,53 +10330,6 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
   display: block;
   width: 100%;
   height: 100%;
-}
-.sketch-car {
-  animation: sketch-roll 3s ease-in-out infinite;
-  transform-origin: 600px 315px;
-}
-.sketch-wheel {
-  animation: sketch-wheel-turn 6s linear infinite;
-}
-.sketch-road {
-  animation: sketch-road-pass 6s linear infinite;
-}
-.sketch-clouds {
-  animation: sketch-cloud-drift 12s ease-in-out infinite alternate;
-}
-.sketch-motion {
-  animation: sketch-pencil 3s ease-in-out infinite;
-}
-#missionPreview[hidden] * {
-  animation-play-state: paused;
-}
-@keyframes sketch-roll {
-  0%, 100% {
-    transform: translateY(0) rotate(-.2deg);
-  }
-  50% {
-    transform: translateY(-2px) rotate(.2deg);
-  }
-}
-@keyframes sketch-wheel-turn {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes sketch-road-pass {
-  to {
-    transform: translateX(-110px);
-  }
-}
-@keyframes sketch-cloud-drift {
-  to {
-    transform: translateX(16px);
-  }
-}
-@keyframes sketch-pencil {
-  50% {
-    opacity: .35;
-  }
 }
 #missionPreview > span {
   position: absolute;
@@ -10523,8 +10476,8 @@ body.light-cockpit.mission-experience #drivePrimaryAction:hover {
 }
 #missionExperience[data-screen=choose] #missionPreview {
   max-width: 820px;
-  height: 180px;
-  margin-top: 4px;
+  height: auto;
+  margin-top: 18px;
   border-radius: 32px;
 }
 .mission-experience #missionChoices {
@@ -11083,8 +11036,8 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
     font-size: 34px;
   }
   #missionPreview {
-    height: 27svh;
-    min-height: 200px;
+    height: auto;
+    min-height: 0;
     border-radius: 32px;
   }
   #missionPreview > span {
@@ -11094,8 +11047,8 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
     padding: 7px 10px;
   }
   #missionExperience[data-screen=choose] #missionPreview {
-    height: 160px;
-    min-height: 160px;
+    height: auto;
+    min-height: 0;
   }
   .mission-experience #missionChoices {
     grid-template-columns: 1fr;
@@ -11185,6 +11138,64 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
   .mission-reveal {
     opacity: 1;
     transform: none;
+  }
+}
+.preview-canvas {
+  height: clamp(280px, 32svh, 380px);
+  background: #f5f3ec;
+  overflow: hidden;
+}
+.preview-caption {
+  padding: 18px 24px 20px;
+  background: #fdfcf8;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+.preview-caption strong {
+  font-size: 16px;
+  font-weight: 500;
+  display: block;
+}
+.preview-caption p {
+  margin: 7px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #655e59;
+  min-height: 23px;
+}
+.preview-caption small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+#missionExperience[data-screen=choose] #missionPreview {
+  margin-bottom: 24px;
+}
+#missionChoices strong {
+  font-size: 20px;
+  line-height: 1.25;
+}
+@media (max-width: 700px) {
+  .preview-canvas {
+    height: 230px;
+  }
+  .preview-caption {
+    padding: 16px 18px;
+  }
+  .preview-caption p {
+    min-height: 46px;
+    font-size: 14px;
+  }
+  #missionChoices strong {
+    font-size: 18px;
+  }
+}
+@media (max-width: 700px) {
+  #missionPreview .illustrated-drive {
+    width: 100%;
+  }
+  .preview-canvas svg {
+    overflow: visible;
   }
 }
 
