@@ -133,3 +133,27 @@ Raw runs, original full-state snapshots and CLI logs remain in ignored `output/`
 and `runs/`. `scripts/verify_preloaded_native.py` is an explicit native smoke that
 starts and shortens real drives; `scripts/check_preloaded_ui.js` uses the isolated
 fixture installer documented in the guided report.
+
+## Loading action follow-up
+
+The selected Start drive action now stays visible but disabled during engine
+launch, connection and shared-scene preparation. Its coral background sweeps
+indeterminately; it never displays a fabricated percentage or completes on a
+timer. `CHOOSING` ends that animation, restores the solid coral background and
+allows Start after a mode is selected. Free GPU remains hidden until that held
+world is ready. Once admitted, GPU release stays available through car selection,
+driving, transitions and connection loss. Backend cancellation and emergency-stop
+behavior are unchanged.
+
+The loading action has native `disabled`, `aria-busy` and a visible explanatory
+hint. Reduced-motion preferences keep the fill static and retain the same gates.
+The existing preview and mode choices remain visible while the city loads.
+
+The follow-up rebuild passed **159 JavaScript tests**. The isolated browser probe
+checks blocked activation, actual CSS movement, readiness gates, mobile overflow,
+reduced motion, prepared identity and GPU cancellation. Its asset host can be
+either known local host (8000 or 8016); API calls and the fake WebSocket are
+intercepted before the fixture page opens, so fixture actions never reach CARLA.
+The prior native driving and transport limitations above remain in force; this
+frontend follow-up is not another native cold-start or driving acceptance run.
+Evidence is under [start-loading-20261018](evidence/start-loading-20261018/).

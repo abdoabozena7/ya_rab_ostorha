@@ -8,7 +8,9 @@ test('preloaded world can be inspected while preparing but only starts once held
   const loading=guided('PREPARING');loading.presentation.preloaded=true;loading.presentation.awaiting_choice=true;
   const selecting=missionState(loading,{firstMode:'NORMAL'});
   assert.equal(selecting.choices,true);assert.equal(selecting.action,null);assert.match(selecting.detail,/60 vehicles and 100 pedestrians/);
+  assert.equal(selecting.loadingDrive,true);assert.equal(selecting.label,'Start the normal drive');assert.equal(selecting.freeGPU,false);
   loading.presentation.status='CHOOSING';assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).action,'START_GUIDED');
+  assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).loadingDrive,false);assert.equal(missionState(loading).freeGPU,true);
   loading.controller=false;assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).action,'START_GUIDED');
   assert.equal(missionState(loading).action,null);
 });
@@ -16,7 +18,29 @@ test('stopped and loading never expose stale camera or old results',()=>{
   const p={connected:false,presentation:{id:'old',status:'COMPLETE'},journeyComparison:{runs:{NORMAL:{status:'COLLISION'}}}};
   assert.equal(missionState(p).action,'START_SIMULATION');assert.equal(missionState(p).camera,false);
   assert.equal(missionState({...p,simulationStarting:true}).action,null);
-  assert.equal(missionState({...p,simulationStarting:true}).screen,'loading');
+  assert.equal(missionState({...p,simulationStarting:true}).loadingDrive,true);
+});
+test('startup and preload acknowledgement keep a blocked start and hide GPU release',()=>{
+  for(const [p,local] of [
+    [{...ready,connected:false,simulationStarting:true},{}],
+    [{...ready,fresh:false},{}],
+    [ready,{preloadRequested:true}],
+    [guided('READY'),{}],
+  ]){
+    if(p.presentation)Object.assign(p.presentation,{preloaded:true,awaiting_choice:true});
+    const state=missionState(p,{...local,firstMode:'ROBOSPHERE'});
+    assert.equal(state.action,null);assert.equal(state.loadingDrive,true);assert.equal(state.choices,true);
+    assert.equal(state.label,'Start the protected drive');assert.equal(state.freeGPU,false);
+  }
+  assert.equal(missionState({...ready,connected:false}).freeGPU,false);
+});
+test('GPU release remains independent once a prepared scene has been admitted',()=>{
+  for(const phase of ['CHOOSING','SELECTING','DRIVING','FINALIZING','RESTORING','RESULTS']){
+    const p=guided(phase);Object.assign(p.presentation,{preloaded:true,awaiting_choice:phase==='CHOOSING',prepared_condition_id:'held-start'});
+    assert.equal(missionState(p).freeGPU,true,phase);
+    assert.equal(missionState(p,{shutdownPending:true}).freeGPU,false,phase);
+    assert.equal(missionState({...p,connected:false,fresh:false}).freeGPU,true,phase+' after connection loss');
+  }
 });
 test('selection and native preparation are distinct screens',()=>{
   assert.equal(missionState(ready).choices,true);assert.equal(missionState(ready).action,null);

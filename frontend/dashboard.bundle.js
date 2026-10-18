@@ -3192,15 +3192,19 @@
   }
   function missionState(p, local = {}) {
     const d = p.presentation || {}, guided2 = !!d.guided, phase = guided2 ? d.status : "IDLE", arm = d.arm || 0, mode = d.modes?.[arm] || "NORMAL";
-    const base = { phase, arm, mode, action: null, label: "", camera: false, choices: false, freeGPU: !!p.simulatorStop?.available && !["STOPPED", "STOPPING"].includes(p.simulatorStop?.status) && !p.isReplay && !p.simulationStarting && !p.restarting };
+    const initialWorld = ["IDLE", "COMPLETE", "CANCELLED"].includes(phase) || d.preloaded && d.awaiting_choice;
+    const preparingWorld = p.simulationStarting || local.launchPending && !p.connected || d.preloaded && d.awaiting_choice && phase !== "CHOOSING" || local.preloadRequested && ["IDLE", "COMPLETE", "CANCELLED"].includes(phase);
+    const driveLabel = local.firstMode === "NORMAL" ? "Start the normal drive" : local.firstMode === "ROBOSPHERE" ? "Start the protected drive" : "Start the drive";
+    const base = { phase, arm, mode, action: null, label: "", camera: false, choices: false, loadingDrive: false, freeGPU: !preparingWorld && !!p.simulatorStop?.available && !["STOPPED", "STOPPING"].includes(p.simulatorStop?.status) && !p.isReplay && !p.simulationStarting && !p.restarting };
     const state = (screen, title, detail, extra = {}) => ({ ...base, screen, title, detail, ...extra });
+    const loadingWorld = (title, detail) => state("choose", title, detail, { choices: true, label: driveLabel, loadingDrive: true, freeGPU: false });
     if (local.shutdownPending || p.simulatorStop?.status === "STOPPING") return state("releasing", "Freeing the GPU", "Saving recorded data, closing CARLA and verifying its processes have exited.", { freeGPU: false });
     if (p.simulatorStop?.status === "FAILED") return state("fault", "CARLA could not close", p.simulatorStop.error || "Open Menu for runtime details.", { action: "FREE_GPU", label: "Retry GPU release" });
-    if (p.simulationStarting || local.launchPending && !p.connected) return state("loading", "Starting the simulator", "Launching CARLA. The camera and session will connect next.", { freeGPU: false });
+    if (p.simulationStarting || local.launchPending && !p.connected) return loadingWorld("Starting the simulator", "Launching CARLA. Choose your first drive while the city loads.");
     if (p.controlMode === "EMERGENCY_STOP") return state("emergency", "Emergency stop is active", "The vehicle is held. Release the stop to continue with available session actions.", { action: p.fresh && p.controller ? "RELEASE" : null, label: "Release emergency stop" });
     if (p.simulatorStart?.status === "FAILED" && !p.connected) return state("fault", "The simulator could not start", p.simulatorStart.error || p.operationError || "Open Menu to inspect the runtime.", { action: "START_SIMULATION", label: "Try starting simulation", freeGPU: false });
     if (!p.connected) return p.simulatorStop?.status !== "STOPPED" && guided2 && !["COMPLETE", "CANCELLED"].includes(phase) ? state("fault", "Connection interrupted", "The drive has been stopped. Reconnect to inspect its saved outcome.", { action: "CONNECT", label: "Reconnect camera & session" }) : state("welcome", "Take the driver\u2019s view.", "Watch the same starting scene with and without RULE protection.", { action: "START_SIMULATION", label: "Start simulation", freeGPU: false });
-    if (!p.fresh) return state("loading", "Connecting the session", "Waiting for current camera and vehicle data. Driving remains stopped.");
+    if (!p.fresh) return initialWorld ? loadingWorld("Connecting the session", "Waiting for current camera and vehicle data. Your drive will be available when the city is ready.") : state("loading", "Connecting the session", "Waiting for current camera and vehicle data. Driving remains stopped.");
     if (guided2 && p.controller === false && !d.awaiting_choice && !["COMPLETE", "CANCELLED"].includes(phase)) return state("driving", "This drive is controlled by another page", "You can watch this session, use Emergency stop, or Free GPU to close it.", { camera: phase === "DRIVING" });
     if (local.commandPending) return state("loading", "Applying your action", "Waiting for the current step to confirm. Recorded outcomes are kept.");
     if (guided2 && d.preloaded && d.awaiting_choice && phase !== "ERROR") {
@@ -3211,7 +3215,7 @@
         "choose",
         ready ? "Which world would you like to see first?" : "Your city is preparing",
         progress + (ready && actual ? ` Actual: ${actual.vehicles ?? "unmeasured"} vehicles and ${actual.pedestrians ?? "unmeasured"} pedestrians.` : " Requests 60 vehicles and 100 pedestrians; actual counts are checked.") + " Normal: Lincoln. Protected: Mercedes.",
-        { choices: true, action: ready && local.firstMode ? "START_GUIDED" : null, label: local.firstMode === "NORMAL" ? "Start the normal drive" : "Start the protected drive" }
+        { choices: true, action: ready && local.firstMode ? "START_GUIDED" : null, label: driveLabel, loadingDrive: !ready, freeGPU: ready && base.freeGPU }
       );
     }
     if (guided2 && preparation[phase]) return state("loading", ...preparation[phase]);
@@ -3239,12 +3243,12 @@
     if (!guided2 && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status || "IDLE") || ["STARTING", "RUNNING"].includes(p.journey?.status))
       return state("driving", "A drive is in progress", "Use Menu to inspect this session, or Free GPU to close it.", { camera: true });
     if (local.preloadRequested && ["IDLE", "COMPLETE", "CANCELLED"].includes(d.status || "IDLE"))
-      return state("loading", "Preparing the shared world", "The city is loading before you choose a driver. No drive has started.");
+      return loadingWorld("Preparing the shared world", "The city is loading before you choose a driver. No drive has started.");
     return state(
       "choose",
       "Which world would you like to see first?",
       "One prepared chaos scene. Normal uses a Lincoln; our protected drive uses a Mercedes coupe. Different vehicle physics can affect results.",
-      { choices: true, action: local.firstMode ? "START_GUIDED" : null, label: local.firstMode === "NORMAL" ? "Start the normal drive" : "Start the protected drive" }
+      { choices: true, action: local.firstMode ? "START_GUIDED" : null, label: driveLabel }
     );
   }
 
@@ -6220,13 +6224,16 @@
       $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested " + (setup?.requested_route_vehicles ?? 60) + " / " + (setup?.requested_route_pedestrians ?? 100) : "") : "";
       $11("missionChoices").hidden = !state.choices;
       const primary = $11("drivePrimaryAction");
-      primary.hidden = !state.action;
+      primary.hidden = !state.action && !state.choices;
       primary.textContent = state.label;
       primary.dataset.action = state.action || "";
       primary.disabled = !state.action;
+      primary.dataset.loading = String(state.loadingDrive);
+      primary.setAttribute("aria-busy", String(state.loadingDrive));
+      primary.setAttribute("aria-describedby", "missionNextHint");
       $11("missionFreeGPU").hidden = !state.freeGPU || state.action === "FREE_GPU";
-      $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen) && !(d.preloaded && d.awaiting_choice && d.status !== "CHOOSING");
-      $11("missionNextHint").textContent = { START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Next: fit the selected car, verify sensors, then drive the prepared scene.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
+      $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen);
+      $11("missionNextHint").textContent = state.loadingDrive ? "Loading simulation\u2026 You can start when the city is ready." : state.choices && !state.action ? "Simulation ready. Choose your first drive." : { START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Simulation ready. Next: fit the selected car, verify sensors, then drive the prepared scene.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
       $11("missionError").hidden = !p.operationError;
       $11("missionError").textContent = p.operationError || "";
       $11("missionOutcomes").hidden = !["comparison", "outcome", "fault"].includes(state.screen);

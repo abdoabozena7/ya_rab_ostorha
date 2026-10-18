@@ -122,9 +122,13 @@ export function installSequentialDrive(p,tools) {
     const actual=p.population?.actual,setup=d.setup;
     $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested '+(setup?.requested_route_vehicles??60)+' / '+(setup?.requested_route_pedestrians??100):''):'';
     $('missionChoices').hidden=!state.choices;
-    const primary=$('drivePrimaryAction');primary.hidden=!state.action;primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action;
-    $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen)&&!(d.preloaded&&d.awaiting_choice&&d.status!=='CHOOSING');
-    $('missionNextHint').textContent={START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Next: fit the selected car, verify sensors, then drive the prepared scene.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
+    const primary=$('drivePrimaryAction');primary.hidden=!state.action&&!state.choices;
+    primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action;
+    primary.dataset.loading=String(state.loadingDrive);primary.setAttribute('aria-busy',String(state.loadingDrive));
+    primary.setAttribute('aria-describedby','missionNextHint');
+    $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen);
+    $('missionNextHint').textContent=state.loadingDrive?'Loading simulation… You can start when the city is ready.':state.choices&&!state.action?'Simulation ready. Choose your first drive.':
+      {START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Simulation ready. Next: fit the selected car, verify sensors, then drive the prepared scene.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
     $('missionError').hidden=!p.operationError;$('missionError').textContent=p.operationError||'';
     $('missionOutcomes').hidden=!['comparison','outcome','fault'].includes(state.screen);
     const pair=p.journeyComparison,runs=pair?.pair_id&&pair.pair_id===d.pair_id?pair.runs:d.runs||{},key=state.screen+JSON.stringify(runs)+String(pair?.conditions_match);

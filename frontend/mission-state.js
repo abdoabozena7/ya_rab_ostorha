@@ -19,17 +19,23 @@ export function stressSummary(audit){
 }
 export function missionState(p,local={}) {
   const d=p.presentation||{},guided=!!d.guided,phase=guided?d.status:'IDLE',arm=d.arm||0,mode=d.modes?.[arm]||'NORMAL';
-  const base={phase,arm,mode,action:null,label:'',camera:false,choices:false,freeGPU:!!p.simulatorStop?.available&&
+  const initialWorld=['IDLE','COMPLETE','CANCELLED'].includes(phase)||d.preloaded&&d.awaiting_choice;
+  const preparingWorld=p.simulationStarting||local.launchPending&&!p.connected||
+    d.preloaded&&d.awaiting_choice&&phase!=='CHOOSING'||local.preloadRequested&&['IDLE','COMPLETE','CANCELLED'].includes(phase);
+  const driveLabel=local.firstMode==='NORMAL'?'Start the normal drive':local.firstMode==='ROBOSPHERE'?'Start the protected drive':'Start the drive';
+  const base={phase,arm,mode,action:null,label:'',camera:false,choices:false,loadingDrive:false,freeGPU:!preparingWorld&&!!p.simulatorStop?.available&&
     !['STOPPED','STOPPING'].includes(p.simulatorStop?.status)&&!p.isReplay&&!p.simulationStarting&&!p.restarting};
   const state=(screen,title,detail,extra={})=>({...base,screen,title,detail,...extra});
+  const loadingWorld=(title,detail)=>state('choose',title,detail,{choices:true,label:driveLabel,loadingDrive:true,freeGPU:false});
   if(local.shutdownPending||p.simulatorStop?.status==='STOPPING')return state('releasing','Freeing the GPU','Saving recorded data, closing CARLA and verifying its processes have exited.',{freeGPU:false});
   if(p.simulatorStop?.status==='FAILED')return state('fault','CARLA could not close',p.simulatorStop.error||'Open Menu for runtime details.',{action:'FREE_GPU',label:'Retry GPU release'});
-  if(p.simulationStarting||local.launchPending&&!p.connected)return state('loading','Starting the simulator','Launching CARLA. The camera and session will connect next.',{freeGPU:false});
+  if(p.simulationStarting||local.launchPending&&!p.connected)return loadingWorld('Starting the simulator','Launching CARLA. Choose your first drive while the city loads.');
   if(p.controlMode==='EMERGENCY_STOP')return state('emergency','Emergency stop is active','The vehicle is held. Release the stop to continue with available session actions.',{action:p.fresh&&p.controller?'RELEASE':null,label:'Release emergency stop'});
   if(p.simulatorStart?.status==='FAILED'&&!p.connected)return state('fault','The simulator could not start',p.simulatorStart.error||p.operationError||'Open Menu to inspect the runtime.',{action:'START_SIMULATION',label:'Try starting simulation',freeGPU:false});
   if(!p.connected)return p.simulatorStop?.status!=='STOPPED'&&guided&&!['COMPLETE','CANCELLED'].includes(phase)?state('fault','Connection interrupted','The drive has been stopped. Reconnect to inspect its saved outcome.',{action:'CONNECT',label:'Reconnect camera & session'}):
     state('welcome','Take the driver’s view.','Watch the same starting scene with and without RULE protection.',{action:'START_SIMULATION',label:'Start simulation',freeGPU:false});
-  if(!p.fresh)return state('loading','Connecting the session','Waiting for current camera and vehicle data. Driving remains stopped.');
+  if(!p.fresh)return initialWorld?loadingWorld('Connecting the session','Waiting for current camera and vehicle data. Your drive will be available when the city is ready.'):
+    state('loading','Connecting the session','Waiting for current camera and vehicle data. Driving remains stopped.');
   if(guided&&p.controller===false&&!d.awaiting_choice&&!['COMPLETE','CANCELLED'].includes(phase))return state('driving','This drive is controlled by another page','You can watch this session, use Emergency stop, or Free GPU to close it.',{camera:phase==='DRIVING'});
   if(local.commandPending)return state('loading','Applying your action','Waiting for the current step to confirm. Recorded outcomes are kept.');
   if(guided&&d.preloaded&&d.awaiting_choice&&phase!=='ERROR'){
@@ -38,7 +44,7 @@ export function missionState(p,local={}) {
     const actual=p.population?.actual;
     return state('choose',ready?'Which world would you like to see first?':'Your city is preparing',
       progress+(ready&&actual?` Actual: ${actual.vehicles??'unmeasured'} vehicles and ${actual.pedestrians??'unmeasured'} pedestrians.`:' Requests 60 vehicles and 100 pedestrians; actual counts are checked.')+' Normal: Lincoln. Protected: Mercedes.',
-      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:local.firstMode==='NORMAL'?'Start the normal drive':'Start the protected drive'});
+      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:driveLabel,loadingDrive:!ready,freeGPU:ready&&base.freeGPU});
   }
   if(guided&&preparation[phase])return state('loading',...preparation[phase]);
   if(guided&&d.preloaded&&phase!=='CHOOSING'&&!['DRIVING','AWAITING_NEXT','RESULTS','ERROR','COMPLETE','CANCELLED'].includes(phase))return state('loading','Preparing the shared world','Building a seeded city with a requested 60 vehicles and 100 pedestrians. Both drives use this starting scene.');
@@ -57,8 +63,8 @@ export function missionState(p,local={}) {
   if(!guided&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status||'IDLE')||['STARTING','RUNNING'].includes(p.journey?.status))
     return state('driving','A drive is in progress','Use Menu to inspect this session, or Free GPU to close it.',{camera:true});
   if(local.preloadRequested&&['IDLE','COMPLETE','CANCELLED'].includes(d.status||'IDLE'))
-    return state('loading','Preparing the shared world','The city is loading before you choose a driver. No drive has started.');
+    return loadingWorld('Preparing the shared world','The city is loading before you choose a driver. No drive has started.');
   return state('choose','Which world would you like to see first?',
     'One prepared chaos scene. Normal uses a Lincoln; our protected drive uses a Mercedes coupe. Different vehicle physics can affect results.',
-    {choices:true,action:local.firstMode?'START_GUIDED':null,label:local.firstMode==='NORMAL'?'Start the normal drive':'Start the protected drive'});
+    {choices:true,action:local.firstMode?'START_GUIDED':null,label:driveLabel});
 }

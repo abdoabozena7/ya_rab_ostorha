@@ -1,5 +1,7 @@
 async page=>{
-  const root='http://127.0.0.1:8016',commands=[],errors=[],requests=[];
+  // Reuse either known local asset host; all API calls and the fake socket stay intercepted.
+  const origin=new URL(page.url()).origin;
+  const root=['http://127.0.0.1:8000','http://127.0.0.1:8016'].includes(origin)?origin:'http://127.0.0.1:8016',commands=[],errors=[],requests=[];
   const observed=await (await page.request.get(root+'/output/guided-ui-20261018/observed-state.json')).json();
   const catalog=await (await page.request.get(root+'/output/guided-ui-20261018/observed-catalog.json')).json();
   const image=await (await page.request.get(root+'/public/assets/native-preview.jpg')).body();

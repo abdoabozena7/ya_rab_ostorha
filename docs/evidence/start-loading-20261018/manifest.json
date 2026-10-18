@@ -1,0 +1,20 @@
+{
+  "base_commit": "1191547",
+  "scope": "Frontend loading and readiness gates; isolated browser actions do not reach CARLA",
+  "javascript_tests_passed": 159,
+  "browser_loading_checks": 4,
+  "guided_regressions": 15,
+  "python": "Unchanged; previous native/preload delivery has its own 625-pass / two-skip evidence.",
+  "text_hash_encoding": "UTF-8 with LF normalized newlines",
+  "sha256": {
+    "frontend/mission-state.js": "15f3bf9d8c93a0aa2a7dd5bce308efd130be81b5b27374d1014a309b9a7606ea",
+    "frontend/sequential-drive.js": "6436b3c3a643ea1da9eaf7592e48e2be28283f0e6dc42b7db32bc988307e288c",
+    "frontend/mission.css": "ad522fbdb17f0f22bccfa88c31c766d47c0ab10ccf1347ac83805484fb1864a8",
+    "frontend/dashboard.bundle.js": "1d4778a864e77ad7f2a0b71584144a155157619843c348307d51612f72696a42",
+    "frontend/dashboard.styles.css": "194e21684089c223534585d6738625a06a2540215ffbd94c4bad9f7dc2c78977",
+    "scripts/check_preloaded_ui.js": "7b4d928b63f654a6c1671c88cdee5a0f8b23b9d29366f8a29160d3174d911832",
+    "scripts/verify_guided_mission_ui.js": "312903c9dc08703b4ed65fd00e71638557bbeef89b6cf5b66fbeefdcf0f747bc",
+    "tests/mission-state.test.js": "e120601870ba9274dc8baa0123bba40633422cf400306b4206c9401486e3d1a4"
+  },
+  "retained_limitations": "Existing native localhost transport refusals also affected initial fixture/asset loads. Final isolated checks passed after retry. This is not new driving or cold-start acceptance."
+}

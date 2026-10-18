@@ -9,6 +9,8 @@ CARLA and prepares the shared scene on opening. The only guided default requests
 60 vehicles and 100 pedestrians; actual counts are checked. Normal uses a Lincoln
 and the protected drive a Mercedes coupe. World-start matching is reported
 separately from the different vehicle physics; native stress limits remain recorded.
+The Start drive button now shows a disabled coral loading fill while the shared
+city prepares; Free GPU appears when the starting scene is ready.
 
 The [18 October Softly theme](docs/SOFTLY_THEME_20261018.md) gives the guided
 simulator a warm paper background, pastel choices, local Outfit and Reenie Beanie
