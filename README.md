@@ -4,6 +4,11 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [18 October Softly theme](docs/SOFTLY_THEME_20261018.md) gives the guided
+simulator a warm paper background, pastel choices, local Outfit and Reenie Beanie
+fonts, quiet motion and responsive camera framing. The report includes browser
+evidence and preserves the separate scope of native driving acceptance.
+
 The [18 October guided simulator](docs/GUIDED_SIMULATOR_20261018.md) replaces the
 main dashboard with separate start, loading, choice, driving and result screens.
 Choose Normal or the protected drive first; explicitly continue to the other

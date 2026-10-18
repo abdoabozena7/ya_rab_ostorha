@@ -6,6 +6,10 @@ import {presentationOutcome,presentationSummary} from './presentation-run.js';
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
   document.body.classList.add('sequential-drive','mission-experience');p.guidedExperience=true;
+  document.querySelector('#brand h1').textContent='Ya Rab Ostorha';
+  document.querySelector('#brand .eyebrow').textContent='A guided driving experience';
+  const atmosphere=document.createElement('div');atmosphere.id='missionAtmosphere';atmosphere.setAttribute('aria-hidden','true');
+  atmosphere.innerHTML='<i></i><i></i>';document.body.prepend(atmosphere);
   const actions=document.querySelector('.cockpit-header-actions');
   const details=document.createElement('button');details.id='driveDetailsAction';details.textContent='Menu';
   details.setAttribute('aria-controls','cockpitDetails');details.setAttribute('aria-expanded','false');actions.prepend(details);
@@ -13,7 +17,27 @@ export function installSequentialDrive(p,tools) {
   returnToMission.onclick=()=>{p.reviewedComparison=null;p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');update();};
   const navigator=installGuidedDetails(p,tools,details);details.onclick=()=>navigator.open();
   const experience=document.createElement('main');experience.id='missionExperience';
-  experience.innerHTML='<section id="missionPreview"><img src="/public/assets/native-preview.jpg" alt="A saved CARLA view of a car on a city street"><span>PREVIEW · SAVED SIMULATOR IMAGE</span></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>The problem</strong>Normal · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>The solution</strong>Protected · RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test · requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+  experience.innerHTML='<section id="missionPreview" aria-label="Saved simulator preview"><img src="/public/assets/native-preview.jpg" alt="A saved CARLA view of a car on a city street" width="800" height="450"><span>Preview · saved simulator image</span></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>The problem</strong>Normal · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>The solution</strong>Protected · RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test · requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+  const guide=document.createElement('section');guide.id='missionGuide';guide.setAttribute('aria-labelledby','missionGuideTitle');
+  guide.innerHTML='<h2 id="missionGuideTitle">Before you drive</h2>';
+  for(const [index,[question,answer]] of [
+    ['What will I see?','Two live drives from the same starting setup. Choose normal or protected first, then start the other drive when you are ready.'],
+    ['Does protection prevent every contact?','No. RULE protection may slow or stop the car, but contacts are still possible. The comparison shows what actually happened, including shortened or interrupted attempts.'],
+    ['What does Free GPU do?','It saves the recorded portion, closes CARLA and checks that its processes have exited. Your next start begins a new comparison. Previous recordings stay in Menu.'],
+  ].entries()){
+    const item=document.createElement('div');item.className='mission-faq';
+    const heading=document.createElement('h3'),button=document.createElement('button'),answerBox=document.createElement('div'),content=document.createElement('p'),inner=document.createElement('div');
+    button.type='button';button.textContent=question;button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls',`missionAnswer${index}`);
+    const plus=document.createElement('span');plus.textContent='+';plus.setAttribute('aria-hidden','true');button.append(plus);
+    answerBox.id=`missionAnswer${index}`;answerBox.className='mission-faq-answer';answerBox.inert=true;content.textContent=answer;inner.append(content);answerBox.append(inner);
+    button.onclick=()=>{const open=button.getAttribute('aria-expanded')!=='true';button.setAttribute('aria-expanded',String(open));answerBox.inert=!open;};
+    heading.append(button);item.append(heading,answerBox);guide.append(item);
+  }
+  experience.append(guide);
+  if(globalThis.IntersectionObserver){
+    const reveals=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('is-revealed');reveals.unobserve(entry.target);}},{threshold:.08});
+    for(const element of [experience.querySelector('#missionPreview'),guide]){element.classList.add('mission-reveal');reveals.observe(element);}
+  }
   document.querySelector('.app-header').after(experience);$('missionScene').append($('cameraCard'));
   const header=document.querySelector('.app-header');
   if(globalThis.ResizeObserver)new ResizeObserver(()=>document.body.style.setProperty('--mission-header-height',header.offsetHeight+'px')).observe(header);
@@ -65,8 +89,16 @@ export function installSequentialDrive(p,tools) {
     if(!state.camera&&$('cameraCard').classList.contains('camera-expanded'))tools.expandCamera(false);
     const history=document.body.dataset.workspace==='results';experience.hidden=history;returnToMission.hidden=!history;
     $('missionPreview').hidden=!['welcome','choose'].includes(state.screen);$('missionScene').hidden=!state.camera;
-    $('missionTitle').textContent=state.title;$('missionDetail').textContent=state.detail;
-    $('missionStep').textContent=state.screen==='driving'?`DRIVE ${state.arm+1} OF 2 · LIVE`:state.screen==='choose'?'CHOOSE YOUR FIRST DRIVE':state.screen==='comparison'?'COMPARISON':state.screen==='outcome'?'DRIVE 1 OF 2 · SAVED':'YA RAB OSTORHA / SIMULATOR';
+    if($('missionTitle').textContent!==state.title){
+      $('missionTitle').textContent=state.title;
+      if(state.screen==='welcome'){
+        const emphasis=document.createElement('span');emphasis.className='mission-handwritten';emphasis.textContent='view.';
+        $('missionTitle').replaceChildren(document.createTextNode('Take the driver’s '),emphasis);
+      }
+    }
+    $('missionDetail').textContent=state.detail;
+    $('missionStep').textContent=state.screen==='driving'?`Drive ${state.arm+1} of 2 · Live`:state.screen==='choose'?'Your starting point':state.screen==='comparison'?'Your comparison':state.screen==='outcome'?'Drive 1 of 2 · Saved':state.screen==='welcome'?'The simulator is off':'Your driving session';
+    guide.hidden=state.screen!=='welcome';
     const actual=p.population?.actual,setup=d.setup;
     $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested 40 / 50':''):'';
     $('missionChoices').hidden=!state.choices;

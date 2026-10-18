@@ -1,5 +1,19 @@
 # Asset attribution
 
+## Softly interface fonts — 2026-10-18
+
+The guided simulator uses locally hosted, unmodified Google Fonts distributions.
+Both licenses were verified before importing the files; no font service is
+contacted at runtime.
+
+| Font / installed filename | Creator | Direct source | License | Use |
+| --- | --- | --- | --- | --- |
+| Outfit / `public/fonts/outfit-variable.ttf` | The Outfit Project Authors; Smartsheet Inc, Rodrigo Fuenzalida | https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit%5Bwght%5D.ttf | SIL Open Font License 1.1; `public/fonts/OUTFIT-OFL.txt` | Guided interface, headings and controls |
+| Reenie Beanie / `public/fonts/reenie-beanie.ttf` | James Grieshaber | https://raw.githubusercontent.com/google/fonts/main/ofl/reeniebeanie/ReenieBeanie.ttf | SIL Open Font License 1.1; `public/fonts/REENIE-BEANIE-OFL.txt` | Handwritten welcome emphasis |
+
+The paper grain is a code-authored SVG turbulence filter in `frontend/mission.css`.
+The driving image below remains the original recorded simulator frame.
+
 ## Guided simulator preview — 2026-10-18
 
 `native-preview.jpg` is a locally recorded CARLA Town10HD_Opt RGB frame, copied

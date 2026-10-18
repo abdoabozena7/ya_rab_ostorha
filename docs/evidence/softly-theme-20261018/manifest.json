@@ -1,0 +1,18 @@
+{
+  "base_commit": "02cc2caa52d5ee8052dd80145cc370c7cdb2e10f",
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "sha256": {
+    "frontend/mission.css": "273e714f984c42c916b57b6ca031531021f0aca55d0b9714ef4d5f7b3cbd8122",
+    "frontend/sequential-drive.js": "a1c17d20dcac5030f26c82b48e727ffd9fd4220218ecca331bc1d199146a06c8",
+    "frontend/dashboard.bundle.js": "dd0481f86104cf2651debdb952d1d3b8e4f1fb9991e6b548ba1f9004c79e267e",
+    "frontend/dashboard.styles.css": "0b7d228c4ea35dcb5688617d05f8dcc5a7b401176c9ea4edbd6ea1fd538baa28",
+    "index.html": "cdd41567e33f7676764ffef29b21294b0e2bdcfba21fe7f5f7ddec5405a04ea3",
+    "scripts/check_softly_theme_ui.js": "fc0dfde15788568ce10cfeb9e733c3bbd1c8cb320d552bc7e90fde70acb65f72",
+    "scripts/check_guided_mission_ui.js": "2606db6a5532fbfe7bd7baea1d37af58f2765ba6e89edc36b7dcd2ddc2553ccb",
+    "scripts/verify_guided_mission_ui.js": "27cd89622672e6723159fa92746fd4fc3380ef0a38542900be05dcb99c8b113d",
+    "public/fonts/outfit-variable.ttf": "fc7287273e66929776e2ba54f144fe699080bec29f61bf649d70d871468aeade",
+    "public/fonts/reenie-beanie.ttf": "0ea608aa325bf9e11c9590cc0b63dcf7cd215e270784f1ebbe6fad4927b31ff8"
+  },
+  "screenshots": "JPEG copies of browser PNG screenshots; original PNG files remain in ignored output/playwright. No new native-drive evidence.",
+  "hash_encoding": "Text files normalized to LF; font files hashed as original binary bytes."
+}

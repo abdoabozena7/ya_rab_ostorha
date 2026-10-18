@@ -1,0 +1,87 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "checks": [
+    "Requested palette, both local fonts and noninteractive 35% SVG grain",
+    "Welcome action, coral logo and inset navigation fit desktop and 320px / 390px mobile",
+    "200% CSS zoom reflow keeps the action reachable without horizontal overflow",
+    "FAQ expands, explains actual protection limits and closes with Enter",
+    "Reduced motion removes floating / reveal animations and leaves content visible",
+    "Pale drive choices retain radio semantics and Menu restores keyboard focus",
+    "Live view removes floating blobs and contains the entire camera frame",
+    "Visible emergency action dispatches the real emergency command to the isolated transport"
+  ],
+  "theme": {
+    "font": "Outfit, \"Segoe UI\", sans-serif",
+    "background": "rgb(253, 252, 248)",
+    "text": "rgb(41, 37, 36)",
+    "fontsLoaded": true,
+    "grain": {
+      "opacity": "0.35",
+      "blend": "overlay",
+      "pointerEvents": "none",
+      "frequency": true
+    },
+    "fontRequests": [
+      "http://127.0.0.1:8016/public/fonts/outfit-variable.ttf",
+      "http://127.0.0.1:8016/public/fonts/manrope.ttf",
+      "http://127.0.0.1:8016/public/fonts/fira-code-latin.woff2",
+      "http://127.0.0.1:8016/public/fonts/geist-latin.woff2",
+      "http://127.0.0.1:8016/public/fonts/reenie-beanie.ttf"
+    ]
+  },
+  "layouts": [
+    {
+      "screen": "welcome",
+      "width": 1440,
+      "height": 1000,
+      "scrollWidth": 1440,
+      "actionBottom": 388.09375,
+      "logoWidth": 38,
+      "navWidth": 1320
+    },
+    {
+      "screen": "welcome",
+      "width": 1280,
+      "height": 720,
+      "scrollWidth": 1280,
+      "actionBottom": 384.71875,
+      "logoWidth": 38,
+      "navWidth": 1216
+    },
+    {
+      "screen": "welcome",
+      "width": 390,
+      "height": 740,
+      "scrollWidth": 390,
+      "actionBottom": 400,
+      "logoWidth": 30,
+      "navWidth": 358
+    },
+    {
+      "screen": "welcome",
+      "width": 320,
+      "height": 640,
+      "scrollWidth": 320,
+      "actionBottom": 387.375,
+      "logoWidth": 30,
+      "navWidth": 288
+    },
+    {
+      "zoom": "2",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "bottom": 899.71875,
+      "height": 900
+    }
+  ],
+  "motion": {
+    "blob": "none",
+    "reveal": "0s",
+    "opacity": "1"
+  },
+  "errors": [],
+  "notes": [
+    "Camera images and metrics in these screenshots are isolated fixtures, not a new native drive.",
+    "CSS zoom is a reflow probe; browser chrome zoom and OS scaling were not automated."
+  ]
+}
