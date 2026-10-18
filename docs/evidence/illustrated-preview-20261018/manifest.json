@@ -1,0 +1,23 @@
+{
+  "base_commit": "ee63dc9",
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "text_hash_encoding": "UTF-8, LF line endings",
+  "sha256": {
+    "frontend/illustrated-preview.js": "8c7db671db4392a6fae437363a50e1042d0415a22b971dfcff1d7d8facdea391",
+    "frontend/sequential-drive.js": "ec7ca3849c6dfa33dbe479409241930a1eeb49a9b638f4113344f40291b42dce",
+    "frontend/mission.css": "b641dd83c25d17c0392fea3ad956b7c99284cf2ac9f7de16924065d435f37ae0",
+    "frontend/dashboard.bundle.js": "5b11c14085c4985ed44e1ad929a718e0d1aca410bce6436b7629c9df7b4579ab",
+    "frontend/dashboard.styles.css": "342d7471595b96f560c16c99c4dd1c2f61ae78ee68b2bdb570fa6cbf9175501d",
+    "scripts/check_illustrated_preview_ui.js": "c046bfafd34fe55b2d48a355510c5cdbf02efcca2e785b4bcbc4d870aa1d4c34"
+  },
+  "verification": {
+    "build": "passed",
+    "javascript_tests": 150,
+    "animation_browser_checks": 5,
+    "guided_browser_checks": 15
+  },
+  "notes": [
+    "Still JPEG screenshots show the original SVG/CSS animation artwork. Animation timelines were observed advancing, not inferred from screenshots.",
+    "No new native driving acceptance is claimed."
+  ]
+}

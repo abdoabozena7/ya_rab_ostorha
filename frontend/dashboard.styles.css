@@ -10326,12 +10326,57 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
   background: #e8efe8;
   box-shadow: var(--shadow-soft);
 }
-#missionPreview img {
+#missionPreview .illustrated-drive {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 50% 58%;
+}
+.sketch-car {
+  animation: sketch-roll 3s ease-in-out infinite;
+  transform-origin: 600px 315px;
+}
+.sketch-wheel {
+  animation: sketch-wheel-turn 6s linear infinite;
+}
+.sketch-road {
+  animation: sketch-road-pass 6s linear infinite;
+}
+.sketch-clouds {
+  animation: sketch-cloud-drift 12s ease-in-out infinite alternate;
+}
+.sketch-motion {
+  animation: sketch-pencil 3s ease-in-out infinite;
+}
+#missionPreview[hidden] * {
+  animation-play-state: paused;
+}
+@keyframes sketch-roll {
+  0%, 100% {
+    transform: translateY(0) rotate(-.2deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(.2deg);
+  }
+}
+@keyframes sketch-wheel-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sketch-road-pass {
+  to {
+    transform: translateX(-110px);
+  }
+}
+@keyframes sketch-cloud-drift {
+  to {
+    transform: translateX(16px);
+  }
+}
+@keyframes sketch-pencil {
+  50% {
+    opacity: .35;
+  }
 }
 #missionPreview > span {
   position: absolute;

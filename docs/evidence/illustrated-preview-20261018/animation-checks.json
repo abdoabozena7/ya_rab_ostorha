@@ -1,0 +1,45 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "checks": [
+    "Original drawing replaces the saved photograph and explicitly identifies itself as illustration",
+    "Car, wheels, road and clouds have advancing CSS animation timelines",
+    "Mobile drawing retains the central car without horizontal overflow",
+    "Reduced motion shows the complete still illustration",
+    "Preparation hides the drawing; live viewing replaces it and stops hidden animations"
+  ],
+  "motion": [
+    {
+      "name": "sketch-cloud-drift",
+      "time": 3861.014999994076
+    },
+    {
+      "name": "sketch-road-pass",
+      "time": 3861.014999994076
+    },
+    {
+      "name": "sketch-roll",
+      "time": 3861.014999994076
+    },
+    {
+      "name": "sketch-wheel-turn",
+      "time": 3861.014999994076
+    },
+    {
+      "name": "sketch-wheel-turn",
+      "time": 3861.014999994076
+    },
+    {
+      "name": "sketch-pencil",
+      "time": 3861.014999994076
+    }
+  ],
+  "bounds": {
+    "width": 358,
+    "height": 200,
+    "scrollWidth": 390,
+    "viewport": 390
+  },
+  "reducedAnimations": 0,
+  "hiddenAnimations": 0,
+  "errors": []
+}

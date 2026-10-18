@@ -1,0 +1,43 @@
+// Run after verify_guided_mission_ui.js installs the isolated transport.
+async page=>{
+  const checks=[];
+  await page.setViewportSize({width:1440,height:1000});
+  await page.waitForFunction(()=>document.body.dataset.mission==='welcome');
+  const preview=page.locator('#missionPreview');
+  if(await preview.locator('img').count()||!await preview.getByRole('img',{name:'A hand-drawn drive through a pastel city',exact:true}).isVisible())throw Error('Illustrated preview missing');
+  if(!await preview.getByText('Illustrated preview · not a live camera',{exact:true}).isVisible())throw Error('Illustration not identified');
+  const motion=await preview.locator('svg').evaluate(e=>e.getAnimations({subtree:true}).map(a=>({name:a.animationName,time:a.currentTime})));
+  if(motion.length<5)throw Error('Drawing is static');
+  const before=motion.find(a=>a.name==='sketch-road-pass').time;
+  await page.waitForFunction(before=>document.querySelector('.sketch-road').getAnimations()[0]?.currentTime>before+250,before);
+  checks.push('Original drawing replaces the saved photograph and explicitly identifies itself as illustration');
+  checks.push('Car, wheels, road and clouds have advancing CSS animation timelines');
+  await page.screenshot({path:'output/playwright/illustrated-welcome-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:740});
+  await page.evaluate(()=>{document.activeElement?.blur();scrollTo(0,0);});
+  await page.locator('.skip-link').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
+  const bounds=await preview.evaluate(e=>{const r=e.getBoundingClientRect();return {width:r.width,height:r.height,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth};});
+  if(bounds.scrollWidth>bounds.viewport||bounds.height<180)throw Error('Mobile drawing clipped');
+  await page.screenshot({path:'output/playwright/illustrated-welcome-mobile.png',fullPage:true});
+  checks.push('Mobile drawing retains the central car without horizontal overflow');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const reduced=await preview.locator('svg').evaluate(e=>e.getAnimations({subtree:true}).length);
+  if(reduced!==0)throw Error('Reduced motion left drawing animated');
+  checks.push('Reduced motion shows the complete still illustration');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  const d={guided:true,id:'illustration-fixture',status:'PREPARING',arm:0,modes:['NORMAL','ROBOSPHERE'],pair_id:'illustration-pair'};
+  await page.evaluate(d=>window.setMissionFixture({connected:true,available:true,mode:'PAUSED',presentation:d,journey:{status:'PAUSED'},simulatorStop:{available:true,status:'IDLE'},simulatorStart:{status:'READY',available:true}}),d);
+  await page.waitForFunction(()=>document.body.dataset.mission==='loading');
+  if(await preview.isVisible())throw Error('Illustration stayed visible during preparation');
+  await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'DRIVING'},journey:{status:'RUNNING',presentation_id:d.id},mode:'AUTOMATIC'}),d);
+  await page.waitForFunction(()=>document.body.dataset.mission==='driving');
+  await page.locator('#authoritativeCamera').waitFor({state:'visible'});
+  const hiddenMotion=await preview.locator('svg').evaluate(e=>e.getAnimations({subtree:true}).length);
+  if(await preview.isVisible()||hiddenMotion!==0)throw Error('Illustrated animation continued behind the camera');
+  checks.push('Preparation hides the drawing; live viewing replaces it and stops hidden animations');
+  await page.evaluate(()=>window.setMissionFixture({connected:false,available:false,presentation:{status:'IDLE'},journey:{status:'IDLE'},mode:'DISCONNECTED',simulatorStop:{available:true,status:'STOPPED'}}));
+  await page.waitForFunction(()=>document.body.dataset.mission==='welcome');
+  const evidence=await page.evaluate(()=>window.missionEvidence());
+  if(evidence.errors.length)throw Error('Browser exceptions: '+evidence.errors.join(';'));
+  return {scope:evidence.scope,checks,motion,bounds,reducedAnimations:reduced,hiddenAnimations:hiddenMotion,errors:evidence.errors};
+}

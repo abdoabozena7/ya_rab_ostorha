@@ -39,7 +39,18 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn{border-r
 .mission-experience #missionExperience{max-width:1320px;margin:auto;display:flex;flex-direction:column;gap:0}
 .mission-experience #missionExperience[hidden],.mission-experience #missionExperience [hidden]{display:none!important}
 #missionPreview{position:relative;align-self:center;width:100%;height:clamp(240px,38svh,480px);overflow:hidden;border-radius:48px;background:#e8efe8;box-shadow:var(--shadow-soft)}
-#missionPreview img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+#missionPreview .illustrated-drive{display:block;width:100%;height:100%}
+.sketch-car{animation:sketch-roll 3s ease-in-out infinite;transform-origin:600px 315px}
+.sketch-wheel{animation:sketch-wheel-turn 6s linear infinite}
+.sketch-road{animation:sketch-road-pass 6s linear infinite}
+.sketch-clouds{animation:sketch-cloud-drift 12s ease-in-out infinite alternate}
+.sketch-motion{animation:sketch-pencil 3s ease-in-out infinite}
+#missionPreview[hidden] *{animation-play-state:paused}
+@keyframes sketch-roll{0%,100%{transform:translateY(0) rotate(-.2deg)}50%{transform:translateY(-2px) rotate(.2deg)}}
+@keyframes sketch-wheel-turn{to{transform:rotate(360deg)}}
+@keyframes sketch-road-pass{to{transform:translateX(-110px)}}
+@keyframes sketch-cloud-drift{to{transform:translateX(16px)}}
+@keyframes sketch-pencil{50%{opacity:.35}}
 #missionPreview>span{position:absolute;bottom:18px;left:22px;background:#FDFCF8ed;padding:8px 14px;border-radius:999px;font-size:11px;color:var(--ink)}
 .mission-copy{padding:26px 0 0}
 .mission-location{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;font-size:12px;color:var(--muted);margin-bottom:12px}
@@ -53,7 +64,7 @@ body.light-cockpit.mission-experience #drivePrimaryAction::after{content:'';disp
 body.light-cockpit.mission-experience #drivePrimaryAction:hover{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 6px 22px -2px #ae777624}
 .mission-experience #missionFreeGPU{background:#ffffffb3;padding:12px 22px;font-size:14px}
 .mission-copy #missionNextHint{font-size:12px;margin:0;color:var(--muted)}
-/* Welcome and choice precede the saved preview; the live camera stays first. */
+/* Welcome and choice precede the illustration; the live camera stays first. */
 #missionExperience:is([data-screen=welcome],[data-screen=choose]) .mission-copy{order:-1;align-self:center;width:100%;max-width:860px;padding:28px 0 32px;text-align:center}
 #missionExperience:is([data-screen=welcome],[data-screen=choose]) .mission-location{justify-content:center;margin-bottom:22px}
 #missionExperience:is([data-screen=welcome],[data-screen=choose]) .mission-copy h2{margin-left:auto;margin-right:auto}

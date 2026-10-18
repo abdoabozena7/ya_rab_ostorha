@@ -25,8 +25,23 @@ browser checks passed again. This follow-up adds no native driving evidence.
 
 ## Design and behavior
 
+The illustrated-preview follow-up replaces the opening's saved photograph with
+original hand-drawn SVG artwork: a coral car, softly sketched city, rotating wheels,
+moving road markings and slowly drifting clouds. The caption reads **Illustrated
+preview · not a live camera**. It appears before a drive, disappears during
+preparation and yields to the existing live camera. Hidden artwork has no active
+animation timelines; reduced motion retains the complete still illustration.
+SVG/CSS keeps the animation sharp and lightweight without a continuously decoded
+GIF or a JavaScript drawing loop. The historical screenshots below retain their
+original saved-photo preview; the updated screenshots and animation checks are in
+[the illustrated preview evidence](evidence/illustrated-preview-20261018/).
+The rebuilt frontend passed 150 JavaScript tests, five animation/browser checks
+and all 15 guided-flow browser checks. The animation check observed advancing
+timelines and zero remaining timelines when hidden or reduced motion was active.
+These checks use an isolated transport; they add no native driving acceptance.
+
 The visual thesis is a quiet, tactile paper surface around a real driving scene.
-The opening centers the current task above the saved CARLA preview. Once driving,
+The opening centers the current task above the illustrated city preview. Once driving,
 the full live camera comes first, followed by the current mode, observation prompt
 and next action. Sage and lavender distinguish the two choices and result panels.
 Menu holds settings, diagnostics and history; Free GPU and Emergency stop retain
@@ -48,7 +63,7 @@ their existing independent actions.
   drives, protection limits and GPU release. Their plus icons rotate and their
   answers expand over 500 ms; collapsed answers are inert.
 
-The saved preview remains clearly labeled. The live camera uses `object-fit:
+The illustrated preview remains clearly labeled. The live camera uses `object-fit:
 contain`, including expanded viewing. Real counts, shortened/collided attempts,
 export-independent results and contextual recovery continue to come from the
 existing guided flow. No wellness subscriptions, testimonials or waitlist were

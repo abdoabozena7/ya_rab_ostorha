@@ -1,5 +1,13 @@
 # Asset attribution
 
+## Illustrated driving preview — 2026-10-18
+
+`frontend/illustrated-preview.js` contains original, code-drawn SVG artwork for
+this project: a coral car, sketched city, trees and clouds. CSS animates the car,
+wheels, road markings and clouds. No third-party illustration or GIF was imported.
+It is explicitly labeled as an illustrated preview, never a native camera feed.
+The artwork uses the project license and honors reduced-motion preferences.
+
 ## Softly interface fonts — 2026-10-18
 
 The guided simulator uses locally hosted, unmodified Google Fonts distributions.
@@ -12,14 +20,15 @@ contacted at runtime.
 | Reenie Beanie / `public/fonts/reenie-beanie.ttf` | James Grieshaber | https://raw.githubusercontent.com/google/fonts/main/ofl/reeniebeanie/ReenieBeanie.ttf | SIL Open Font License 1.1; `public/fonts/REENIE-BEANIE-OFL.txt` | Handwritten welcome emphasis |
 
 The paper grain is a code-authored SVG turbulence filter in `frontend/mission.css`.
-The driving image below remains the original recorded simulator frame.
+The retained native-frame asset below remains the original recorded simulator frame.
 
 ## Guided simulator preview — 2026-10-18
 
 `native-preview.jpg` is a locally recorded CARLA Town10HD_Opt RGB frame, copied
 unchanged from `run_b9151ef4243d4c1fa504b244f0d2ce3b/rgb/drivingCamera-26-581.jpg`
-during the guided Dense Chaos verification. The opening screen labels it as a
-saved simulator preview. It is neither a live feed nor a generated street image.
+during the guided Dense Chaos verification. It was used as the opening's saved
+preview before the illustrated follow-up and remains available for native-frame
+UI fixtures. It is neither a live feed nor a generated street image.
 
 ## Dashboard fonts — 2026-10-08
 
