@@ -2,6 +2,20 @@
 import numpy as np
 
 
+def _masked_median(values,valid):
+    """Finite selected values along axis 2, without masked-array dispatch.
+
+    Registration inputs are finite. Invalid padding sorts after the selected
+    samples; even rows retain the same two-middle-values average as nanmedian.
+    """
+    ordered=np.sort(np.where(valid,values,np.inf),axis=2)
+    count=np.sum(valid,axis=2,keepdims=True)
+    lower=np.maximum(0,(count-1)//2);upper=count//2
+    a=np.take_along_axis(ordered,lower,axis=2).squeeze(axis=2)
+    b=np.take_along_axis(ordered,upper,axis=2).squeeze(axis=2)
+    return (a+b)*.5
+
+
 def register_surfaces(current,previous,prior,center_displacement,*,enhanced):
     n=len(current)
     if not n:return np.empty((0,2))
@@ -38,13 +52,13 @@ def register_surfaces(current,previous,prior,center_displacement,*,enhanced):
         # Inactive rows receive harmless finite work so nanmedian never needs
         # to reduce an empty array; their translation remains unchanged.
         work=selected|(~active[:,:,None]&valid[:,None,:])
-        step=np.nanmedian(np.where(work[:,:,:,None],residual,np.nan),axis=2)
+        step=_masked_median(residual,work[:,:,:,None])
         trial+=np.where(active[:,:,None],step,0.)
         running=active
     differences=cloud[:,None,:,None,:]-(old[:,None,None,:,:]+trial[:,:,None,None,:])
     distances=np.linalg.norm(differences,axis=-1)
     distances=np.where(old_valid[:,None,None,:],distances,np.inf).min(axis=3)
-    fit=np.nanmedian(np.where(valid[:,None,:],distances,np.nan),axis=2)
+    fit=_masked_median(distances,valid[:,None,:])
     score=np.where(counts>=3,fit+.01*np.linalg.norm(trial-prior[:,None,:],axis=2),np.inf)
     choice=np.argmin(score,axis=1)
     return np.where(np.isfinite(score.min(axis=1))[:,None],trial[np.arange(n),choice],prior)

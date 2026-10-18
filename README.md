@@ -4,6 +4,10 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [guided speed and resource repair report](docs/DRIVE_SPEED_RESOURCES_20261018.md)
+documents the new 80 km/h request, prompt native acceleration, lighter status
+polling, actual dense-scene results and the remaining real-time throughput limit.
+
 The [page-session follow-up](docs/PAGE_SESSION_PREPARATION_20261018.md) keeps one
 CARLA engine while each newly opened page prepares a fresh scenario. Previous
 attempts are saved before handoff; superseded pages explain how to prepare a new

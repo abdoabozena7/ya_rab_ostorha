@@ -130,6 +130,7 @@ class GuidedPresentationTests(unittest.TestCase):
         self.provider.hold_prepared_presentation=Mock(return_value='world-start')
         self.provider.benchmark_fixture=NS(verify=lambda:{'passed':True})
         self.p.preload();identity=self.p.data['id'];seed=self.p.data['seed']
+        self.assertEqual(self.p.data['speed_kmh'],80.)
         self.p.preload();self.assertEqual(self.p.data['id'],identity)
         self.tick();self.tick();self.tick()
         self.assertEqual(self.p.data['status'],'CHOOSING')

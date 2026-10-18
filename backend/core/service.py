@@ -934,7 +934,8 @@ class SimulationService:
         speed = finite(speed_kmh)
         from ..learning.native_validation_budget import active_rule_ticket
         rule_validation = active_rule_ticket() if driving_mode == 'ROBOSPHERE' else None
-        maximum = 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
+        guided = presentation and self.presentation.data.get('guided') is True
+        maximum = 80 if guided else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
         if not 5 <= speed <= maximum:
             raise ValueError(f'Journey speed must be 5–{maximum} km/h')
         if driving_mode == 'HYBRID':
@@ -1061,7 +1062,12 @@ class SimulationService:
             return
         frame_id, timestamp_s = self._context()
         command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
-        if self.journey.get('presentation_id') or self.journey.get('validation_deadline'):
+        # Guided arms share the native route controller's prompt acceleration.
+        # The experimental comfort integrator can repeatedly reset after a
+        # shield hold. Keep it in its legacy/validation scope; the guided RULE
+        # shield, signal stops and final freshness veto remain unchanged.
+        legacy_presentation=self.journey.get('presentation_id') and not self.presentation.data.get('guided')
+        if legacy_presentation or self.journey.get('validation_deadline'):
             from .comfort_control import ComfortControl
             if getattr(self,'comfort_controller',None) is None:self.comfort_controller=ComfortControl()
             stop_reason=getattr(self.provider,'navigation_stop_reason',None)
@@ -1511,6 +1517,21 @@ class SimulationService:
     def stream_snapshot(self):
         return self.snapshot(stream=True)
 
+    def status_snapshot(self):
+        """Small atomic identity for health checks and background image readers.
+
+        These readers need neither comparison fixtures nor sensor payloads.
+        Copying those large histories under the control lock can expire an
+        otherwise current command. Keep the full state/replay API unchanged.
+        """
+        with self.lock:
+            live=self._check_observation_health()
+            vehicle=self.observation.vehicle if live and self.observation else None
+            return {'connected':live,'provider':self.name,
+                'sessionId':self.session_id,'mode':self.arbiter.machine.mode.value,
+                'vehicle':{'frame':vehicle.frame_id,'timestamp':vehicle.timestamp_s} if vehicle else None,
+                'error':self.error or (self.lifecycle.error if self.lifecycle.state==ConnectionState.ERROR else None)}
+
     def _check_observation_health(self):
         live=self._live()
         if not live and self.lifecycle.state==ConnectionState.CONNECTED and not self.reconfiguring:
@@ -1567,6 +1588,7 @@ class SimulationService:
                         (len(self.recent_ticks)-1)/(self.recent_ticks[-1]-self.recent_ticks[0])
                         if len(self.recent_ticks)>1 and self.recent_ticks[-1]>self.recent_ticks[0] else None,
                         'renderFps': None, 'clock': 'WALL_TIME',
+                        'nativeStepTimingMs':dict(getattr(self.provider,'step_timing_ms',{})),
                         'observationPipelineLatencyMs': {
                             'definition':'Native step request to complete synchronized publication; excludes display latency',
                             'samples':len(self.observation_latencies_ms),
@@ -1857,7 +1879,8 @@ class SimulationService:
                             manifest.update(presentation_id=journey['presentation_id'], protocol='PRESENTATION_RULE_NORMAL_V1')
                             if self.presentation.data.get('guided'):
                                 manifest.update(guided=True,protocol='GUIDED_RULE_NORMAL_V2',
-                                    presentation_order=list(self.presentation.data['modes']),scene=self.presentation.data['scene'])
+                                    presentation_order=list(self.presentation.data['modes']),scene=self.presentation.data['scene'],
+                                    speed_policy='GUIDED_STRESS_TARGET')
                         self.active_safety.set_controller('RULE')
                         self.active_safety.enabled = True
                         self.active_safety.reset()

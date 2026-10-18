@@ -81,7 +81,7 @@ class WebSocketBridge:
                         else:
                             options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','DENSE_CHAOS')}
                                 if value.get('operation')=='START_GUIDED' else {})
-                            self.service.presentation.start(value.get('speed_kmh',50),seed=value.get('seed'),**options)
+                            self.service.presentation.start(value.get('speed_kmh',80 if options.get('guided') else 50),seed=value.get('seed'),**options)
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}

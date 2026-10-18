@@ -1,5 +1,9 @@
 """Interpretation boundaries and presentation sensor presets; no model imports."""
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock
+from backend.core.service import SimulationService
+from tests.core_packets import packet
 from backend.nlp.processor import interpret
 from backend.graphics import PRESETS, camera
 class LightweightTests(unittest.TestCase):
@@ -18,4 +22,17 @@ class LightweightTests(unittest.TestCase):
         self.assertEqual(camera('LOW')['camera_resolution'],'640x360')
         self.assertEqual(camera('ULTRA')['camera_resolution'],'1280x720')
         self.assertTrue(all(camera(p)['camera_motion_blur']==0 for p in PRESETS))
+
+    def test_background_identity_does_not_copy_comparison_or_sensor_history(self):
+        service=SimulationService(SimpleNamespace(sensor_suite=False,name='test-fixture'))
+        service._publish(packet(speed=0.))
+        service._live=lambda:True
+        service.journey_comparison.snapshot=Mock(side_effect=AssertionError('Heavy comparison copy'))
+        service.snapshot=Mock(side_effect=AssertionError('Heavy dashboard snapshot'))
+        status=service.status_snapshot()
+        self.assertTrue(status['connected'])
+        self.assertEqual(status['sessionId'],service.session_id)
+        self.assertEqual(status['vehicle'],{'frame':service.observation.frame_id,
+            'timestamp':service.observation.timestamp_s})
+        self.assertNotIn('sensors',status)
 if __name__=='__main__':unittest.main()

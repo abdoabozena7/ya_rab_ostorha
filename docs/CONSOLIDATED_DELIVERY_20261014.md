@@ -29,6 +29,7 @@ runtime versions and should not be read as current capability guarantees.
 
 | Area | Entry points | Detailed report |
 | --- | --- | --- |
+| Guided 80 km/h request, prompt native acceleration and lighter background polling | `backend/core/service.py`, `backend/carla/provider.py`, `backend/server.py`, `backend/graphics.py` | [18 October measured speed, native outcomes and remaining throughput limits](DRIVE_SPEED_RESOURCES_20261018.md) |
 | One native engine, fresh scenarios per page, explicit handoff and organic loading fill | `backend/core/presentation.py`, `backend/websocket_bridge.py`, `frontend/sequential-drive.js` | [18 October page ownership, native handoff and resource evidence](PAGE_SESSION_PREPARATION_20261018.md) |
 | Automatic engine/scene preload, dense 60/100 default and distinct native vehicles | `backend/core/presentation.py`, `backend/carla/provider.py`, `frontend/sequential-drive.js` | [18 October prepared city, native handoff and retained failures](PRELOADED_CHAOS_20261018.md) |
 | Softly palette, local typography, responsive guided screens and reduced motion | `frontend/mission.css`, `frontend/sequential-drive.js`, `scripts/check_softly_theme_ui.js` | [18 October visual theme and isolated browser evidence](SOFTLY_THEME_20261018.md) |

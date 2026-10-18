@@ -35,7 +35,18 @@ def write_render_config(source, destination, profile):
               'r.VolumetricFog':0, 'r.RenderTargetPoolMin':200,
               'r.Shadow.MaxResolution':1024, 'r.Shadow.MaxCSMResolution':1024,
               'r.Shadow.CSM.MaxCascades':2, 'r.Shadow.DistanceScale':0.7,
-              'r.Shadow.RadiusThreshold':0.04}
+              'r.Shadow.RadiusThreshold':0.04,
+              # Retain native 720p/450p camera pixels, textures and temporal AA.
+              # Cut expensive reflections/translucency rather than weakening
+              # the safety sensor rig or lowering its requested sampling rate.
+              'r.SSR.Quality':2 if profile=='ULTRA' else 0,
+              'r.SceneColorFringeQuality':0, 'r.MotionBlurQuality':0,
+              'r.LightShaftQuality':0, 'r.RefractionQuality':2 if profile=='ULTRA' else 0,
+              'r.TranslucencyVolumeBlur':0, 'r.TranslucencyLightingVolumeDim':32,
+              'r.PostProcessAAQuality':4 if profile=='ULTRA' else 3,
+              'r.ShadowQuality':3 if high else 1, 'r.BloomQuality':3 if high else 0,
+              'r.SSS.Quality':0, 'r.SSS.Scale':0,
+              'r.VSync':0, 't.MaxFPS':0}
     config = configparser.ConfigParser(interpolation=None)
     config.optionxform = str
     config['/Script/Engine.RendererSettings'] = {k:str(v) for k,v in values.items()}

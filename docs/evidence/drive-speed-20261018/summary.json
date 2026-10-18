@@ -1,0 +1,899 @@
+{
+  "scope": "NATIVE_SPEED_AND_RESOURCE_REPAIR_NOT_DRIVING_ACCEPTANCE",
+  "attempts": [
+    {
+      "label": "previous_operator_session",
+      "pair_id": "eaad7f40c14a47a1b38befaf85f1062e",
+      "requested_speed_kmh": 50.0,
+      "speed_policy": null,
+      "runs": {
+        "NORMAL": {
+          "id": "934877e53c564b1f86114e8c677063ba",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "duration_s": 16.150000240653753,
+          "distance_m": 88.21924323037975,
+          "collisions": 0,
+          "mean_speed_kmh": 19.57745526897269,
+          "maximum_speed_kmh": 49.34346174857238,
+          "safety_interventions": 0,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_9e8685ec6b804798be0cc266b6538b80",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 327,
+          "processing_deadline_brakes": 0,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 261,
+            "Red traffic light on the planned route": 63,
+            "guided_shortened": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 2.400000035762787,
+            "20": 7.1500001065433025,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 327,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": null,
+          "observation_pipeline_median_ms": null
+        },
+        "ROBOSPHERE": {
+          "id": "169f3cb34df748fd94f6ce78da546900",
+          "status": "INTERRUPTED",
+          "reason": "controls_released",
+          "duration_s": 14.850000221282244,
+          "distance_m": 0.0038595579098910093,
+          "collisions": 0,
+          "mean_speed_kmh": 0.0009602908503486032,
+          "maximum_speed_kmh": 0.046897371858566704,
+          "safety_interventions": 59,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_df84af678e634e71910245b06dbfb2a4",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 301,
+          "processing_deadline_brakes": 63,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 235,
+            "CONTROL_PROCESSING_DEADLINE": 63,
+            "controls_released": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": null,
+            "20": null,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 301,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": null,
+          "observation_pipeline_median_ms": null
+        }
+      }
+    },
+    {
+      "label": "intermediate_launch_feedback",
+      "pair_id": "c7423b53ae4d4ff1856549ed278dff77",
+      "requested_speed_kmh": 80.0,
+      "speed_policy": "GUIDED_STRESS_TARGET",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "00bce7e6ac6a4bdfb0080eb64016b1df",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "duration_s": 21.35000031813979,
+          "distance_m": 27.197162528136065,
+          "collisions": 0,
+          "mean_speed_kmh": 4.579297298917696,
+          "maximum_speed_kmh": 12.335672184794614,
+          "safety_interventions": 35,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_bc9e2447416345b4a1de36b17d63d464",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 431,
+          "processing_deadline_brakes": 41,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 370,
+            "CONTROL_PROCESSING_DEADLINE": 41,
+            "Braking toward measured coverage speed limit 0.00 m/s": 17,
+            "guided_shortened": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 1.2000000178813934,
+            "20": null,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 431,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": {
+            "samples": 248,
+            "median": 4.055548364056934,
+            "maximum": 4.463481941342493
+          },
+          "observation_pipeline_median_ms": {
+            "samples": 248,
+            "median": 163.00929999852087,
+            "maximum": 201.72815000114497
+          }
+        },
+        "NORMAL": {
+          "id": "6f05aaf1ee6443dba90f8304a586cf0b",
+          "status": "COLLISION",
+          "reason": "collision",
+          "duration_s": 12.400000184774399,
+          "distance_m": 76.42058543721107,
+          "collisions": 1,
+          "mean_speed_kmh": 22.19120154308017,
+          "maximum_speed_kmh": 45.59282634897034,
+          "safety_interventions": 0,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2cdb5141d463492fb881139b4affdff3",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 252,
+          "processing_deadline_brakes": 0,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 249,
+            "collision": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 1.0000000149011612,
+            "20": 5.950000088661909,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 252,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": {
+            "samples": 425,
+            "median": 4.9433295699462025,
+            "maximum": 5.82686196550402
+          },
+          "observation_pipeline_median_ms": {
+            "samples": 425,
+            "median": 135.80804999219254,
+            "maximum": 157.5495500001125
+          }
+        }
+      },
+      "native_setup": {
+        "seed": 8325149,
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 80.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 8325149,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        },
+        "population_audit": {
+          "frame_id": 38381,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 6,
+              "moving_near": 41,
+              "moving_front_frustum": 6
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 55,
+              "front_frustum_100m": 45,
+              "moving_near": 52,
+              "moving_front_frustum": 42
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        }
+      }
+    },
+    {
+      "label": "profiled_incomplete_attempt",
+      "pair_id": "29e0d4cbb8ba4435a29fade8f662f4be",
+      "requested_speed_kmh": 80.0,
+      "speed_policy": "GUIDED_STRESS_TARGET",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "b59480587207408db7ab6f9243243cfc",
+          "status": "ERROR",
+          "reason": "observation_receipt_timeout",
+          "duration_s": 27.650000412017107,
+          "distance_m": 59.7125958180993,
+          "collisions": 0,
+          "mean_speed_kmh": 7.783757080120911,
+          "maximum_speed_kmh": 10.377856663100301,
+          "safety_interventions": 8,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_81cd0500afbf47b79a2ac1fc5bcaa097",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 558,
+          "processing_deadline_brakes": 10,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "CONTROL_PROCESSING_DEADLINE": 10,
+            "NAVIGATION": 533,
+            "Braking toward measured coverage speed limit 0.00 m/s": 10,
+            "Risk cleared; releasing brake smoothly to base driver": 2,
+            "observation_receipt_timeout": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 1.0500000156462193,
+            "20": null,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 558,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": null,
+          "observation_pipeline_median_ms": null
+        }
+      }
+    },
+    {
+      "label": "native_route_controller",
+      "pair_id": "f6496d22b9924e6ca9ebf716b5378de3",
+      "requested_speed_kmh": 80.0,
+      "speed_policy": "GUIDED_STRESS_TARGET",
+      "runs": {
+        "NORMAL": {
+          "id": "06691b4fa6be473e80844338d9bd4681",
+          "status": "COLLISION",
+          "reason": "collision",
+          "duration_s": 6.900000102818012,
+          "distance_m": 68.88352467708624,
+          "collisions": 1,
+          "mean_speed_kmh": 35.882837770412024,
+          "maximum_speed_kmh": 70.942817826739,
+          "safety_interventions": 0,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_693dace4803f43beaf95817f37fe3914",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 142,
+          "processing_deadline_brakes": 0,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 139,
+            "collision": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 0.7500000111758709,
+            "20": 2.350000035017729,
+            "50": 4.6000000685453415,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 142,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": {
+            "samples": 138,
+            "median": 7.424523283659033,
+            "maximum": 8.970494575440956
+          },
+          "observation_pipeline_median_ms": {
+            "samples": 138,
+            "median": 95.93999999196967,
+            "maximum": 111.3735499966424
+          }
+        },
+        "ROBOSPHERE": {
+          "id": "e8a3c03d777148b6924b16027f0b96ee",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "duration_s": 35.400000527501106,
+          "distance_m": 187.48189273795626,
+          "collisions": 0,
+          "mean_speed_kmh": 19.039418819802385,
+          "maximum_speed_kmh": 47.39200555078771,
+          "safety_interventions": 25,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7d2baeff50c54c948b5f9a40475edcf5",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 712,
+          "processing_deadline_brakes": 7,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 250,
+            "Limiting acceleration to stop within 11.00 m of measured road": 25,
+            "Limiting acceleration to stop within 12.00 m of measured road": 38,
+            "Limiting acceleration to stop within 13.50 m of measured road": 49,
+            "Limiting acceleration to stop within 14.00 m of measured road": 13,
+            "Limiting acceleration to stop within 15.50 m of measured road": 5,
+            "Limiting acceleration to stop within 16.00 m of measured road": 6,
+            "Limiting acceleration to stop within 17.50 m of measured road": 4,
+            "Limiting acceleration to stop within 18.00 m of measured road": 3,
+            "Limiting acceleration to stop within 18.50 m of measured road": 3,
+            "Limiting acceleration to stop within 19.00 m of measured road": 2,
+            "Limiting acceleration to stop within 30.50 m of measured road": 2,
+            "Limiting acceleration to stop within 30.00 m of measured road": 1,
+            "Limiting acceleration to stop within 29.50 m of measured road": 1,
+            "Limiting acceleration to stop within 29.00 m of measured road": 2,
+            "Limiting acceleration to stop within 28.50 m of measured road": 1,
+            "Limiting acceleration to stop within 28.00 m of measured road": 2,
+            "Limiting acceleration to stop within 27.50 m of measured road": 1,
+            "Limiting acceleration to stop within 27.00 m of measured road": 2,
+            "Limiting acceleration to stop within 26.50 m of measured road": 1,
+            "Limiting acceleration to stop within 26.00 m of measured road": 1,
+            "Limiting acceleration to stop within 25.50 m of measured road": 1,
+            "Limiting acceleration to stop within 25.00 m of measured road": 1,
+            "Limiting acceleration to stop within 24.50 m of measured road": 1,
+            "Limiting acceleration to stop within 24.00 m of measured road": 1,
+            "Limiting acceleration to stop within 23.50 m of measured road": 1,
+            "Limiting acceleration to stop within 23.00 m of measured road": 1,
+            "Limiting acceleration to stop within 22.50 m of measured road": 1,
+            "Limiting acceleration to stop within 22.00 m of measured road": 1,
+            "Braking toward measured coverage speed limit 11.96 m/s": 1,
+            "Limiting acceleration to stop within 21.50 m of measured road": 1,
+            "Limiting acceleration to stop within 21.00 m of measured road": 1,
+            "Braking toward measured coverage speed limit 11.59 m/s": 1,
+            "Braking toward measured coverage speed limit 11.41 m/s": 1,
+            "Limiting acceleration to stop within 20.00 m of measured road": 1,
+            "Limiting acceleration to stop within 19.50 m of measured road": 2,
+            "Limiting acceleration to stop within 17.00 m of measured road": 4,
+            "Limiting acceleration to stop within 16.50 m of measured road": 2,
+            "Limiting acceleration to stop within 15.00 m of measured road": 10,
+            "CONTROL_PROCESSING_DEADLINE": 7,
+            "Limiting acceleration to stop within 14.50 m of measured road": 10,
+            "Limiting acceleration to stop within 13.00 m of measured road": 24,
+            "Limiting acceleration to stop within 12.50 m of measured road": 25,
+            "Limiting acceleration to stop within 11.50 m of measured road": 9,
+            "Limiting acceleration to stop within 10.50 m of measured road": 14,
+            "Limiting acceleration to stop within 10.00 m of measured road": 15,
+            "Limiting acceleration to stop within 9.50 m of measured road": 23,
+            "Limiting acceleration to stop within 9.00 m of measured road": 20,
+            "Limiting acceleration to stop within 8.50 m of measured road": 19,
+            "Braking toward measured coverage speed limit 6.80 m/s": 1,
+            "Measured obstacle inside braking envelope/TTC limit": 14,
+            "Complete protective stop; hold near obstacle": 10,
+            "Risk cleared; releasing brake smoothly to base driver": 44,
+            "Braking toward measured coverage speed limit 5.18 m/s": 3,
+            "Limiting acceleration to stop within 7.50 m of measured road": 8,
+            "Braking toward measured coverage speed limit 4.81 m/s": 4,
+            "Braking toward measured coverage speed limit 4.42 m/s": 3,
+            "Limiting acceleration to stop within 7.00 m of measured road": 1,
+            "Limiting acceleration to stop within 8.00 m of measured road": 1,
+            "Holding measured clearance/TTC hysteresis": 5,
+            "Braking toward measured coverage speed limit 4.00 m/s": 2,
+            "Braking toward measured coverage speed limit 3.55 m/s": 1,
+            "Limiting acceleration to stop within 5.50 m of measured road": 1,
+            "Limiting acceleration to stop within 6.50 m of measured road": 1,
+            "guided_shortened": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 0.7000000104308128,
+            "20": 2.350000035017729,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 712,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": {
+            "samples": 708,
+            "median": 7.100593703789797,
+            "maximum": 7.839843682073111
+          },
+          "observation_pipeline_median_ms": {
+            "samples": 708,
+            "median": 94.77805000642547,
+            "maximum": 109.73804999957792
+          }
+        }
+      },
+      "native_setup": {
+        "seed": 235074759,
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 80.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 235074759,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        },
+        "population_audit": {
+          "frame_id": 320,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 6,
+              "moving_near": 41,
+              "moving_front_frustum": 6
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 58,
+              "front_frustum_100m": 49,
+              "moving_near": 56,
+              "moving_front_frustum": 47
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        }
+      }
+    },
+    {
+      "label": "delivery_configuration",
+      "pair_id": "64e9847c648f4f0b8b90434a4d72e051",
+      "requested_speed_kmh": 80.0,
+      "speed_policy": "GUIDED_STRESS_TARGET",
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "c2d4152e489d478195e57b8c6f5c284e",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "duration_s": 19.05000028386712,
+          "distance_m": 138.18174600709415,
+          "collisions": 0,
+          "mean_speed_kmh": 26.075714187123406,
+          "maximum_speed_kmh": 46.2370494927842,
+          "safety_interventions": 10,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_38b416adaa0c464bb1c66a95519bbc1f",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 385,
+          "processing_deadline_brakes": 2,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 63,
+            "Limiting acceleration to stop within 12.50 m of measured road": 6,
+            "Limiting acceleration to stop within 11.00 m of measured road": 13,
+            "Limiting acceleration to stop within 12.00 m of measured road": 22,
+            "Limiting acceleration to stop within 13.50 m of measured road": 8,
+            "Limiting acceleration to stop within 14.00 m of measured road": 5,
+            "Limiting acceleration to stop within 17.50 m of measured road": 44,
+            "Limiting acceleration to stop within 16.50 m of measured road": 9,
+            "Limiting acceleration to stop within 18.00 m of measured road": 14,
+            "Limiting acceleration to stop within 18.50 m of measured road": 9,
+            "Limiting acceleration to stop within 19.00 m of measured road": 5,
+            "Limiting acceleration to stop within 20.50 m of measured road": 11,
+            "Limiting acceleration to stop within 21.00 m of measured road": 7,
+            "Limiting acceleration to stop within 21.50 m of measured road": 6,
+            "Limiting acceleration to stop within 22.50 m of measured road": 5,
+            "Limiting acceleration to stop within 23.00 m of measured road": 5,
+            "Limiting acceleration to stop within 22.00 m of measured road": 5,
+            "Limiting acceleration to stop within 20.00 m of measured road": 7,
+            "Limiting acceleration to stop within 19.50 m of measured road": 7,
+            "Limiting acceleration to stop within 17.00 m of measured road": 5,
+            "Limiting acceleration to stop within 16.00 m of measured road": 2,
+            "Limiting acceleration to stop within 15.50 m of measured road": 4,
+            "Limiting acceleration to stop within 15.00 m of measured road": 2,
+            "Limiting acceleration to stop within 14.50 m of measured road": 2,
+            "Limiting acceleration to stop within 13.00 m of measured road": 5,
+            "Limiting acceleration to stop within 11.50 m of measured road": 3,
+            "Limiting acceleration to stop within 10.50 m of measured road": 3,
+            "Limiting acceleration to stop within 10.00 m of measured road": 6,
+            "Limiting acceleration to stop within 9.50 m of measured road": 2,
+            "Limiting acceleration to stop within 9.00 m of measured road": 9,
+            "Limiting acceleration to stop within 8.50 m of measured road": 5,
+            "Limiting acceleration to stop within 8.00 m of measured road": 6,
+            "Limiting acceleration to stop within 7.50 m of measured road": 7,
+            "Limiting acceleration to stop within 7.00 m of measured road": 4,
+            "Limiting acceleration to stop within 6.50 m of measured road": 3,
+            "Limiting acceleration to stop within 6.00 m of measured road": 3,
+            "Limiting acceleration to stop within 5.50 m of measured road": 4,
+            "Limiting acceleration to stop within 5.00 m of measured road": 3,
+            "Limiting acceleration to stop within 23.50 m of measured road": 3,
+            "Limiting acceleration to stop within 25.00 m of measured road": 3,
+            "Limiting acceleration to stop within 26.00 m of measured road": 2,
+            "Limiting acceleration to stop within 27.00 m of measured road": 5,
+            "CONTROL_PROCESSING_DEADLINE": 2,
+            "Limiting acceleration to stop within 30.50 m of measured road": 1,
+            "Limiting acceleration to stop within 30.00 m of measured road": 2,
+            "Limiting acceleration to stop within 29.50 m of measured road": 2,
+            "Limiting acceleration to stop within 29.00 m of measured road": 2,
+            "Limiting acceleration to stop within 28.50 m of measured road": 2,
+            "Limiting acceleration to stop within 28.00 m of measured road": 2,
+            "Limiting acceleration to stop within 27.50 m of measured road": 2,
+            "Limiting acceleration to stop within 26.50 m of measured road": 2,
+            "Limiting acceleration to stop within 25.50 m of measured road": 2,
+            "Limiting acceleration to stop within 24.50 m of measured road": 2,
+            "Limiting acceleration to stop within 24.00 m of measured road": 3,
+            "Measured obstacle inside braking envelope/TTC limit": 1,
+            "Holding measured clearance/TTC hysteresis": 7,
+            "Risk cleared; releasing brake smoothly to base driver": 8,
+            "guided_shortened": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 0.7000000104308128,
+            "20": 1.700000025331974,
+            "50": null,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 385,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": {
+            "samples": 93,
+            "median": 6.658212843665509,
+            "maximum": 7.042031059463325
+          },
+          "observation_pipeline_median_ms": {
+            "samples": 93,
+            "median": 100.50000000046566,
+            "maximum": 106.1127499997383
+          }
+        },
+        "NORMAL": {
+          "id": "9ef23244ec00437eb8f505182a64c56f",
+          "status": "COLLISION",
+          "reason": "collision",
+          "duration_s": 4.6500000692903996,
+          "distance_m": 42.32281160816707,
+          "collisions": 1,
+          "mean_speed_kmh": 32.702782925368716,
+          "maximum_speed_kmh": 67.68474563848075,
+          "safety_interventions": 0,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cb35a86e71d149a091c572dded4ec05e",
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": []
+          },
+          "recorded_control_decisions": 97,
+          "processing_deadline_brakes": 0,
+          "stop_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 94,
+            "collision": 1
+          },
+          "simulation_seconds_to_speed_kmh": {
+            "1": 0.7500000111758709,
+            "20": 1.8000000268220901,
+            "50": 3.35000004991889,
+            "80": null
+          },
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 97,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "wall_tick_rate_hz": {
+            "samples": 381,
+            "median": 6.891299214762153,
+            "maximum": 8.284711907301894
+          },
+          "observation_pipeline_median_ms": {
+            "samples": 381,
+            "median": 97.73679999489104,
+            "maximum": 106.42490000464022
+          }
+        }
+      },
+      "native_setup": {
+        "seed": 168444784,
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 80.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 168444784,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        },
+        "population_audit": {
+          "frame_id": 3860,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 7,
+              "moving_near": 42,
+              "moving_front_frustum": 7
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 51,
+              "front_frustum_100m": 42,
+              "moving_near": 49,
+              "moving_front_frustum": 40
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Seeds differ across attempts; this is not a controlled performance comparison.",
+    "80 km/h is a requested stress target, not a measured minimum or demonstrated sustained speed.",
+    "No completed protected route or 20 Hz wall throughput acceptance is established.",
+    "The profiled attempt ended with observation_receipt_timeout; its second arm did not run.",
+    "A subsequent warm backend reload timed out connecting to CARLA; a full owned-engine restart recovered it."
+  ],
+  "software_checks": {
+    "javascript_pass": 163,
+    "python_discovered": 638,
+    "python_pass": 636,
+    "python_optional_skips": 2,
+    "dashboard_build": "PASS",
+    "execution": "Recorded delivery checks; not executed by this collector"
+  },
+  "source_sha256": {
+    "backend/core/service.py": "bb43285e217648c5be9c73c5f725ca557640155fcd9d452452b45f84ff760034",
+    "backend/carla/provider.py": "22b6853bb9e1ad0c04227fcf9176452faeebc90283e84d02503c7b6cb17b5d27",
+    "backend/carla/population.py": "30f0e446439709ee74291c8346bcb3791e1f0195276950f066c577269fcea53c",
+    "backend/server.py": "7231d864deda7c0004509c582ee8528affa9ecb448d13561e368405355e99a02",
+    "backend/graphics.py": "9cd5f0eef760e013f1756670597136d6c2bccd70f18a1f12c9c0458215628576",
+    "backend/core/surface_registration.py": "7e15e373950eb9e8f7e321b699b421a43b80b37813860fdaae180716857ad3b2"
+  },
+  "idle_http_resource_probe": {
+    "/api/simulation/state": {
+      "latency_ms": {
+        "samples": 5,
+        "median": 81.46120001038071,
+        "maximum": 148.94720001029782
+      },
+      "response_bytes": 708839
+    },
+    "/api/simulation/status": {
+      "latency_ms": {
+        "samples": 20,
+        "median": 4.614350000338163,
+        "maximum": 22.75299999746494
+      },
+      "response_bytes": 229
+    }
+  },
+  "effective_settings": {
+    "map": "Carla/Maps/Town10HD_Opt",
+    "simulation_hz": 20,
+    "camera_view": "chase",
+    "camera_resolution": "800x450",
+    "camera_fov": 90,
+    "camera_postprocess": true,
+    "camera_motion_blur": 0.0,
+    "camera_bloom": 0.15,
+    "weather": {
+      "cloudiness": 5.0,
+      "precipitation": 0.0,
+      "wetness": 0.0,
+      "fog_density": 2.0,
+      "sun_altitude_angle": 45.0,
+      "sun_azimuth_angle": -1.0
+    },
+    "next_launch": {
+      "quality": "Epic",
+      "resolution": "1280x720",
+      "render_profile": "HIGH"
+    },
+    "active_launch": {
+      "quality": "Epic",
+      "resolution": "1280x720",
+      "offscreen": true,
+      "renderer": "D3D12",
+      "render_profile": "HIGH",
+      "source": "VERIFIED_NATIVE_PROCESS"
+    },
+    "camera_effects": {
+      "supported": [
+        "camera_postprocess",
+        "camera_motion_blur",
+        "camera_bloom"
+      ],
+      "note": "Quality Low may disable image effects regardless of saved values"
+    }
+  }
+}

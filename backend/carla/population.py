@@ -315,6 +315,7 @@ class WorldPopulationManager:
             except RuntimeError as error:
                 if 'not found' not in str(error).lower(): raise
         self._destroy([entry['controller_id'], walker_id])
+        getattr(self,'_walker_controller_handles',{}).pop(entry['controller_id'],None)
         del self.walkers[walker_id]
 
     def clear_pedestrians(self):
@@ -439,6 +440,9 @@ class WorldPopulationManager:
         return False
 
     def set_route(self, points):
+        key=tuple(tuple(p) for p in (points or []))
+        if key==getattr(self,'_route_key',None):return
+        self._route_key=key
         self.route_points = [self.api.Location(*p) for p in (points or [])[::3]]
 
     def reset_population(self):
@@ -529,7 +533,14 @@ class WorldPopulationManager:
         for walker_id, entry in list(self.walkers.items()):
             if entry.get('admitted_at_frame') is None:entry['admitted_at_frame']=snapshot.frame
             actor = snapshot.find(walker_id)
-            controller = self.world.get_actor(entry['controller_id'])
+            # Handles are stable for an admitted controller. Authoritative
+            # snapshots below still detect disappearance every physics frame.
+            handles=getattr(self,'_walker_controller_handles',None)
+            if handles is None:self._walker_controller_handles=handles={}
+            controller=handles.get(entry['controller_id'])
+            if controller is None:
+                controller=self.world.get_actor(entry['controller_id'])
+                if controller is not None:handles[entry['controller_id']]=controller
             controller_snapshot=snapshot.find(entry['controller_id'])
             if controller_snapshot is not None:
                 entry['controller_seen']=True;entry['controller_missing_frames']=0
@@ -580,7 +591,11 @@ class WorldPopulationManager:
                     controller.go_to_location(target); entry['destination'] = target; entry['last_retarget'] = timestamp
                     entry['activity'] = 'WALKING'
                     entry['crossing'] = crossing_target is not None
-            if entry.get('crossing') and entry.get('wait_until') is None:
+            if (entry.get('crossing') and entry.get('wait_until') is None and
+                    timestamp-entry.get('activity_checked_at',-float('inf')) >= .25):
+                # Display classification is 4 Hz; physical movement, arrivals,
+                # losses and controller commands are still checked each tick.
+                entry['activity_checked_at']=timestamp
                 on_road=self.map.get_waypoint(entry['location'],project_to_road=False,lane_type=self.api.LaneType.Driving)
                 entry['activity']='CROSSING' if on_road is not None else 'WALKING'
         if len(self.walkers) < self.config['pedestrian_count'] and timestamp-self.last_walker_replacement_at >= 5.:

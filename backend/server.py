@@ -61,18 +61,19 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(404, {"error": "Archived preview is disabled"})
         path = {"/api/state": "/api/simulation/state", "/api/frame": "/api/simulation/camera.jpg"}.get(path, path)
         if path == "/api/health":
-            service_snapshot = provider.snapshot() if provider else {}
+            service_snapshot = getattr(provider,'status_snapshot',provider.snapshot)() if provider else {}
             return self._json(200, {"ok": True, "service": "ya-rab-ostorha-control-center",
                                     "simulationProvider": service_snapshot.get('provider', 'carla'),
                                     "mode": service_snapshot.get('mode', 'DISCONNECTED'),
                                     "simulationConnected": service_snapshot.get('connected', False)})
         if path == "/api/simulation/status":
-            snapshot = provider.snapshot() if provider else {}
+            snapshot = getattr(provider,'status_snapshot',provider.snapshot)() if provider else {}
             connected = snapshot.get('connected', False)
             replay = snapshot.get('mode') == 'REPLAY'
             return self._json(200, {"provider": 'replay' if replay else "carla", "configured": provider is not None,
                                     "connected": connected,
                                     "mode": snapshot.get('mode', 'DISCONNECTED'),
+                                    "sessionId":snapshot.get('sessionId'), "vehicle":snapshot.get('vehicle'),
                                     "status": 'REPLAY' if replay else "CONNECTED" if connected else "ERROR" if snapshot.get('error') else "DISCONNECTED",
                                     "websocketPort": getattr(self.server, "websocket_port", None),
                                     "error": snapshot.get('error') if provider else "CARLA is not connected. Start the official simulator and backend with --carla."})
@@ -86,7 +87,7 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(200, observer.snapshot(int(requested) if requested is not None else None) if observer else {'status':'UNAVAILABLE'})
                 if path == '/api/simulation/perception':
                     analysis = getattr(self.server, 'perception', None)
-                    snapshot = provider.snapshot()
+                    snapshot = getattr(provider,'status_snapshot',provider.snapshot)()
                     if not snapshot.get('connected'):
                         return self._json(200, {'status':'DISCONNECTED'})
                     return self._json(200, analysis.latest(snapshot.get('sessionId')) if analysis else {'status':'UNAVAILABLE'})

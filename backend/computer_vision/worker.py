@@ -65,7 +65,7 @@ def main():
     while parent_alive(args.parent):
         began=time.monotonic();cpu_began=time.process_time()
         try:
-            with urllib.request.urlopen(url+'state',timeout=3) as response:state=json.load(response)
+            with urllib.request.urlopen(url+'status',timeout=3) as response:state=json.load(response)
             if not state.get('connected') or state.get('mode')=='REPLAY':
                 publish({'status':'DISCONNECTED'});time.sleep(1);continue
             fid=state['vehicle']['frame'];stamp=state['vehicle']['timestamp'];session=state['sessionId']

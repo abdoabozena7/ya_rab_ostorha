@@ -51,8 +51,9 @@ class Presentation:
 
     def start(self, speed=50, *, seed=None, guided=False, first_mode='NORMAL', scene='BUSY_ROUTE'):
         s = self.service
-        if type(speed) not in (int, float) or not 5 <= speed <= 50:
-            raise ValueError('Presentation speed must be 5–50 km/h')
+        maximum = 80 if guided else 50
+        if type(speed) not in (int, float) or not 5 <= speed <= maximum:
+            raise ValueError(f'Presentation speed must be 5–{maximum} km/h')
         if seed is not None and (type(seed) is not int or not 0<=seed<2147483648):raise ValueError('Invalid presentation seed')
         if first_mode not in self.MODES or scene not in ('BUSY_ROUTE','DENSE_CHAOS'):
             raise ValueError('Choose a supported first drive and scene')
@@ -88,7 +89,7 @@ class Presentation:
             if self.service.journey.get('status') in ('STARTING','RUNNING'):
                 if page_id is None:raise ValueError('A drive is already active')
                 self.service.stop_driving('page_replaced')
-            self.start(guided=True,scene='DENSE_CHAOS')
+            self.start(80,guided=True,scene='DENSE_CHAOS')
             self.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
             if page_id:self.data['page_id']=page_id
             self.save()

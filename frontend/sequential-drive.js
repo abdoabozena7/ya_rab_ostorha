@@ -55,7 +55,7 @@ export function installSequentialDrive(p,tools) {
   });
   const command=operation=>{
     const d=p.presentation||{},value={operation,id:d.id,expected_arm:d.arm,expected_phase:d.status};
-    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,page_id:local.pageId,scene:'DENSE_CHAOS',speed_kmh:50,...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
+    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,page_id:local.pageId,scene:'DENSE_CHAOS',speed_kmh:80,...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
     if(!p.dashboardAction('presentation',value))return;
     if(operation==='FINISH')local.preloadRequested=false;
     pending={id:d.id,phase:d.status,arm:d.arm,at:performance.now()};local.commandPending=true;

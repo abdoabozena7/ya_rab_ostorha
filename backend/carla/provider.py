@@ -233,6 +233,7 @@ class CarlaProvider:
         self._set_control_field('parkingbrake', int(enabled))
 
     def step(self):
+        began=time.perf_counter()
         if self.benchmark_fixture:self.benchmark_fixture.prepare_tick()
         stress=getattr(self,'dense_chaos',None)
         if stress:stress.before_tick()
@@ -240,7 +241,9 @@ class CarlaProvider:
         if self.population and self.dashboard_tools:
             route = self.dashboard_tools.route
             self.population.set_route(route['points'] if route else [])
+        before_native=time.perf_counter()
         snapshot = self.world.advance()
+        after_native=time.perf_counter()
         if stress:stress.after_tick(snapshot)
         self.last_actor_ids={a.id for a in snapshot} if self.scenarios and self.scenarios.urban else set()
         # Display counts use the worker's native snapshot. Dashboard requests
@@ -256,13 +259,21 @@ class CarlaProvider:
             self.local_population_counts = counts
         else:
             self.local_population_counts = {}
+        before_population=time.perf_counter()
         if self.population: self.population.update(snapshot)
+        after_population=time.perf_counter()
         self.last_vehicle = vehicle_state(self.ego.actor, snapshot)
         self.last_ground_truth = self.inspector.observe(snapshot) if self.inspector else None
         self.last_world = {**self.world.state(snapshot), 'version': self.connection.server_version,
                            'pythonApiVersion': self.connection.api_version}
         if self.scenarios: self.scenarios.after_tick(snapshot)
         self._follow_ego(snapshot.find(self.ego.actor.id).get_transform())
+        finished=time.perf_counter()
+        self.step_timing_ms={'before_native':(before_native-began)*1000,
+            'native_tick':(after_native-before_native)*1000,
+            'scenario_audit':(before_population-after_native)*1000,
+            'population':(after_population-before_population)*1000,
+            'telemetry_and_spectator':(finished-after_population)*1000}
         return self.last_vehicle
 
     def _follow_ego(self, transform):
@@ -433,7 +444,9 @@ class CarlaProvider:
             'origin':{'location':[pose.location.x, pose.location.y, pose.location.z],
                       'rotation':[pose.rotation.pitch, pose.rotation.yaw, pose.rotation.roll]},
             'destination':copy.deepcopy(route['destination']), 'route_length_m':route['length_m'],
-            'speed_kmh':speed_kmh, 'population':copy.deepcopy(self.population.config),
+            'speed_kmh':speed_kmh,
+            'speed_policy':'POSTED_ROAD_LIMIT',
+            'population':copy.deepcopy(self.population.config),
             'actual_population':copy.deepcopy(self.population_state().get('actual')),
             'collision_measurement_available': 'collision' in self.sensor_manager.actors,
             'crowded':bool(self.population.route_crowding),
@@ -537,6 +550,7 @@ class CarlaProvider:
         BasicAgent = route_agent_class()
         delta = self.fixed_delta
         self.navigation_options = {'dt': delta, 'max_brake': 1.,
+                      **({'max_throttle':.9} if presentation and getattr(self,'guided_presentation',False) else {}),
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
@@ -712,6 +726,12 @@ class CarlaProvider:
         if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False):
             waypoint = self.dashboard_tools.map.get_waypoint(self.ego.actor.get_location())
             limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
+        # This explicitly requested closed-simulator stress speed is shared by
+        # both guided drivers. Research and legacy runs retain posted limits.
+        self.navigation_posted_limit_kmh = limit
+        if getattr(self,'presentation_mode',False) and getattr(self,'guided_presentation',False):
+            limit = speed_kmh
+            self.hybrid_speed_limit_source = 'GUIDED_STRESS_TARGET'
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         requested=min(speed_kmh,limit) if limit>0 else speed_kmh
         bypass=getattr(self,'navigation_bypass',None)
