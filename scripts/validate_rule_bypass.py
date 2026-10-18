@@ -34,7 +34,7 @@ def summarize(path):
     last=samples[-1] if samples else {}
     signal_held=bool(last in signal and last.get('speed_kmh',float('inf'))<.54 and last.get('brake',0)>.1)
     differences=[name for name,digest in r.get('source_hashes',{}).items()
-        if name.startswith(('backend\\core\\','backend\\carla\\')) and
+        if name.startswith(('backend\\core\\','backend\\carla\\','backend\\computer_vision\\')) and
            hashlib.sha256((ROOT/name).read_bytes()).hexdigest()!=digest]
     # This observer never proposes or applies motion. Its display-publication
     # timestamp repair is verified by the API regression and dense rehearsal;

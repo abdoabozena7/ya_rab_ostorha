@@ -25,7 +25,7 @@ async page=>{
     state.vehicle={...observed.vehicle,source:'carla',frame,timestamp,speedKmh:0,speedMps:0,speedMagnitudeMps:0};
     state.world={...observed.world,source:'carla',frame,timestamp};
     state.displayCamera={...observed.displayCamera,frame,timestamp};socket.send(JSON.stringify(state));};
-  await page.routeWebSocket('ws://127.0.0.1:8017',connection=>{socket=connection;connection.onMessage(raw=>{
+  await page.routeWebSocket(/^ws:\/\/127\.0\.0\.1:8017\/?$/,connection=>{socket=connection;connection.onMessage(raw=>{
     const c=JSON.parse(String(raw));commands.push(c);state.acknowledged=c.sequence;
     if(c.type==='presentation'&&c.value?.operation==='PRELOAD')state.presentation={id:'fixture-preloaded',status:'CHOOSING',guided:true,preloaded:true,awaiting_choice:true,
       page_id:c.value.page_id,arm:0,modes:['NORMAL','ROBOSPHERE'],seed:123,scene:'DENSE_CHAOS',prepared_condition_id:'fixture-world',setup:{scene:'DENSE_CHAOS',requested_route_vehicles:60,requested_route_pedestrians:100}};

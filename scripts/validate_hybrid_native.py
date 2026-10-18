@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
-        for pattern in ('backend/core/*.py','backend/carla/*.py','backend/learning/hybrid_budget.py',
+        for pattern in ('backend/core/*.py','backend/carla/*.py','backend/computer_vision/*.py','backend/learning/hybrid_budget.py',
                         'config/hybrid-driving.json','config/route-bypass.json','scripts/validate_hybrid_native.py',
                         'scripts/native/route_bypass_world.py') for p in ROOT.glob(pattern)}
 
@@ -57,6 +57,7 @@ def worker(args):
     if not folder.is_relative_to(DIRECTORY.resolve()):raise ValueError('Invalid native evidence directory')
     report=json.loads((folder/'initial-report.json').read_text(encoding='utf8'))
     service = None; signal_restore=[];provider=None;fixture=None;arm=None
+    semantics_server=None;semantics=None
     profiler=None;profiled_steps=0
     if args.profile_steps:
         import cProfile
@@ -99,7 +100,7 @@ def worker(args):
                 runtime.launch({'quality':'Epic','resolution':'1280x720','render_profile':'HIGH','offscreen':True},'127.0.0.1',2000,carla)
             report['graphics']=runtime.active
             stage('connect_production_provider')
-            provider=CarlaProvider(spawn_index=args.spawn,sensor_suite=True,collision_sensor=True,fresh_start=True,traffic_manager_port=8052)
+            provider=CarlaProvider(blueprint=args.blueprint,spawn_index=args.spawn,sensor_suite=True,collision_sensor=True,fresh_start=True,traffic_manager_port=8052)
             provider.connect(); provider._ensure_dashboard_tools()
             population={**provider.population.config,'vehicle_count':0,'pedestrian_count':0,'seed':args.seed,'chaos_percent':0}
             provider.population.apply(population)
@@ -110,7 +111,12 @@ def worker(args):
                 else:
                     from backend.carla.hybrid_world import HybridWorld
                     fixture=HybridWorld(provider)
-                fixture.setup(args.scenario,args.seed,spawn_index=args.spawn,route_length=args.length)
+                options={'fixture_variant':args.fixture_variant} if args.scenario.startswith('RULE_BYPASS_') else {}
+                fixture.setup(args.scenario,args.seed,spawn_index=args.spawn,route_length=args.length,**options)
+                if args.pedestrian_delay is not None:
+                    for event in fixture.events:
+                        if event['kind']=='PEDESTRIAN_CROSSING':event['at_s']=args.pedestrian_delay
+                    report['pedestrian_delay_s']=args.pedestrian_delay
             api=provider.connection.api
             for light in provider.world.world.get_actors().filter('traffic.traffic_light*'):
                 signal_restore.append((light,light.get_state(),light.get_green_time(),light.get_yellow_time(),light.get_red_time(),light.is_frozen()))
@@ -133,6 +139,16 @@ def worker(args):
                 service.recording_directory=Path(args.recording_directory).resolve()
                 report['recording_directory']=str(service.recording_directory)
             service.pause_on_first_observation=True;service.start(threaded=False)
+            if args.camera_semantics:
+                import threading
+                from backend.server import DashboardHTTPServer,Handler
+                from backend.computer_vision.service import PerceptionService,ControlPerceptionCache
+                semantics_server=DashboardHTTPServer(('127.0.0.1',8011),Handler)
+                semantics_server.simulation_service=service
+                semantics=PerceptionService(8011);semantics_server.perception=semantics
+                service.control_perception=ControlPerceptionCache()
+                threading.Thread(target=semantics_server.serve_forever,daemon=True).start()
+                report['semantic_source']='REAL_FRONT_CAMERA_YOLO_ONNX_CPU; no fixture labels supplied'
             stage('warmup')
             for _ in range(20):service.step_once()
             if fixture:fixture.configure_route()
@@ -192,6 +208,16 @@ def worker(args):
                         'route_bypass':bypass_state,
                         'independent_reference':provider.ground_truth_debug(),
                         'backend_step_ms':service.backend_step_ms})
+                    if args.camera_semantics and service.control_scene:
+                        prediction=service.control_scene.prediction
+                        people=[t for t in prediction['tracks'] if t.get('class') in ('person','pedestrian')]
+                        arm['samples'][-1]['pedestrian_forecast_audit']={
+                            'tracks':[{k:to_dict(t[k]) for k in ('id','position_m','velocity_mps','half_size_m','confirmed','occlusion_s','observed_crossing_cleared','semantic_evidence','measurement_evidence') if k in t} for t in people[:12]],
+                            'modes':[{'track_id':m['track_id'],'source':m['source']} for m in prediction['trajectories'] if any(t['id']==m['track_id'] for t in people)]}
+                    if args.audit_tracks and service.control_scene and len(arm['samples'])%20==0:
+                        arm['samples'][-1]['measured_tracks_audit']=[{k:to_dict(t[k]) for k in
+                            ('id','position_m','half_size_m','velocity_mps','confirmed','occlusion_s','support_points') if k in t}
+                            for t in service.control_scene.prediction['tracks']]
                     if len(arm['samples'])%20==0:
                         with (folder/'progress.jsonl').open('a',encoding='utf8') as stream:
                             stream.write(json.dumps(arm['samples'][-1],allow_nan=False)+'\n')
@@ -213,6 +239,8 @@ def worker(args):
             except Exception as capture_error:report['partial_capture_error']=str(capture_error)
         finally:
             stage('cleanup')
+            if semantics_server:semantics_server.shutdown();semantics_server.server_close()
+            if semantics:semantics.close()
             if profiler is not None:
                 import pstats
                 profiler.dump_stats(str(folder/'native-control.pstats'))
@@ -336,6 +364,11 @@ if __name__=='__main__':
     parser.add_argument('--seed',type=int,default=1701)
     parser.add_argument('--recording-directory',help='Optional local evidence disk for diagnostic recordings')
     parser.add_argument('--profile-steps',type=int,default=0,help='Instrument up to 100 running hybrid ticks; diagnostic timing only')
+    parser.add_argument('--camera-semantics',action='store_true',help='Use the real RGB worker through an isolated read-only HTTP host')
+    parser.add_argument('--pedestrian-delay',type=float,help='Evaluator-only crossing delay in simulation seconds; never sent to the controller')
+    parser.add_argument('--audit-tracks',action='store_true',help='Retain compact measured track geometry once per simulation second')
+    parser.add_argument('--fixture-variant',type=int,default=0,help='Evaluator-only alternative legal road fixture; all failed variants remain retained')
+    parser.add_argument('--blueprint',default='vehicle.lincoln.mkz_2020',help='Native ego model; onboard geometry is measured for this actor')
     parser.add_argument('--graphics-profile',choices=('REUSE','LOW','BALANCED','HIGH'),default='REUSE')
     parser.add_argument('--renderer',choices=('D3D11','D3D12'),default='D3D12')
     parser.add_argument('--worker',action='store_true',help=argparse.SUPPRESS)
@@ -344,5 +377,8 @@ if __name__=='__main__':
     if args.rule_ticket and (args.mode!='ROBOSPHERE' or args.paired):parser.error('RULE repair ticket cannot enable hybrid or paired hybrid diagnostics')
     if not 180<=args.seconds<=1800 or not 5<=args.speed<=50:parser.error('Use a bounded 180–1800 second probe and 5–50 km/h')
     if not 0<=args.profile_steps<=100:parser.error('Profile 0–100 control ticks')
+    if not 0<=args.fixture_variant<=100:parser.error('Fixture variant must be 0–100')
+    if args.pedestrian_delay is not None and (args.scenario!='PEDESTRIAN' or not 0<=args.pedestrian_delay<=120):
+        parser.error('Pedestrian delay requires PEDESTRIAN and a finite 0–120 second delay')
     if args.paired and args.scenario!='DIAGNOSTIC':parser.error('Matched scripted hazards require fixture-reset validation first')
     raise SystemExit(worker(args) if args.worker else run(args))

@@ -1,0 +1,125 @@
+{
+  "id": "a498a5b75a0a43a689b03b174a5032cf",
+  "scenario": "PEDESTRIAN",
+  "source": "LIVE_NATIVE_CARLA",
+  "ego_blueprint": "vehicle.mercedes.coupe_2020",
+  "ego_geometry": {
+    "front_m": 2.3342266369145364,
+    "rear_m": 2.339412183733657,
+    "half_width_m": 1.01,
+    "wheelbase_m": 2.833193359375,
+    "max_steer_rad": 1.2217303432379762,
+    "source": "NATIVE_SPECIFICATIONS_WITH_AUDITED_MIRROR_ENVELOPE"
+  },
+  "current_control_source_matches": true,
+  "raw_report": "output/hybrid-driving/probe-a498a5b75a0a43a689b03b174a5032cf/report.json",
+  "raw_sha256": "46b68640fdf4c4a5de510b1d3ba6a33fb5439520daff8b33ffb9f2d8b301105d",
+  "source_archive_sha256": "e70c51f4c5298457f1bcfd8c95cc9177d55226315a4382fe071229855cac66cc",
+  "source_unchanged": true,
+  "semantic_source": "REAL_FRONT_CAMERA_YOLO_ONNX_CPU; no fixture labels supplied",
+  "journey": {
+    "status": "ARRIVED",
+    "reason": "destination_reached",
+    "speed_kmh": 30.0,
+    "validation_deadline": 138711.60600665474,
+    "driving_mode": "ROBOSPHERE",
+    "pair_id": "6af4e1527b9e46559df2c2cad4b365ec",
+    "route_id": "ff45af440496467287e1644b5972125a"
+  },
+  "contacts": 0,
+  "contact_types": [],
+  "distance_m": 40.03507069515932,
+  "maximum_speed_kmh": 27.954164452060965,
+  "maximum_unexplained_stop_s": 9.050000134855509,
+  "first_forecast_elapsed_s": 5.050000075250864,
+  "first_forecast_source": "PEDESTRIAN_POSSIBLE_START",
+  "first_forecast_speed_kmh": 10.81349300203822,
+  "first_forecast_measured_position_m": [
+    10.248800277709961,
+    3.8445003569126124
+  ],
+  "first_forecast_independent_person": [
+    {
+      "actor_id": 10287,
+      "type": "walker.pedestrian.0001",
+      "category": "WALKER",
+      "distance_m": 10.945272445678711,
+      "relative_position_m": [
+        10.184978546494959,
+        3.895130310649302,
+        0.9450931229080104
+      ],
+      "bounding_box": {
+        "extent_m": [
+          0.18767888844013214,
+          0.18767888844013214,
+          0.9300000071525574
+        ],
+        "offset_m": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "yaw_deg": 179.9765625,
+      "velocity_mps": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "first_physical_crossing_elapsed_s": 8.200000122189522,
+  "first_stopped_elapsed_s": 5.4000000804662704,
+  "maneuvers": {
+    "UNAVAILABLE": 2,
+    "PREPARE_DRIVE": 12,
+    "RULE_FOLLOW": 706,
+    "HOLD": 1
+  },
+  "scenario_validity": {
+    "valid": true,
+    "events": [
+      {
+        "actor_id": 10287,
+        "kind": "PEDESTRIAN_CROSSING",
+        "at_s": 8.0,
+        "duration_s": 6.0,
+        "scheduled": true,
+        "eligible": true,
+        "realized": true,
+        "start_position": [
+          43.56670379638672,
+          -71.84412384033203,
+          0.9547669887542725
+        ]
+      }
+    ],
+    "errors": [],
+    "unmanaged_actor_ids": [],
+    "population_valid": true,
+    "feasibility": "UNVERIFIED: no successful behavior is inferred from fixture construction"
+  },
+  "native_cleanup_confirmed": true,
+  "restored": {
+    "connected": true,
+    "mode": "PAUSED",
+    "speed_kmh": 0.0,
+    "continued_ticking": true
+  },
+  "driving_quality_accepted": false,
+  "driving_quality_gates": {
+    "arrived": true,
+    "no_contacts": true,
+    "complete_measurements": true,
+    "fresh_fraction": true,
+    "no_control_delays": false,
+    "all_stops_independently_verified": false,
+    "comfort": false,
+    "no_oscillation": true,
+    "cruise_50_verified": false,
+    "display": false
+  },
+  "error": null,
+  "orchestration_error": null
+}

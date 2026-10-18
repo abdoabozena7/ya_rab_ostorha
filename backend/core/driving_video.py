@@ -20,6 +20,8 @@ def wait_for_exports(timeout=30.):
 
 def export_video(root, *, ffmpeg=None, allow_test_data=False):
     root = Path(root)
+    if (root/'storage-retention.json').exists():
+        raise ValueError('Raw camera frames were archived; only an already exported video can be viewed')
     metadata=json.loads((root/'metadata.json').read_text(encoding='utf8'))
     native=metadata.get('data_origin')=='REAL_SIMULATION' and metadata.get('provider')=='carla'
     if not native and not allow_test_data:raise ValueError('Video native provenance is unavailable')
@@ -97,6 +99,10 @@ def export_after_close(recorder):
             if recorder.status().get('incomplete'): raise ValueError('Recording is incomplete; inspect recording-status.json')
             _status(root,{'status':'ENCODING'})
             export_video(root)
+            from .storage_retention import retire_guided_history
+            try:retire_guided_history(Path(__file__).resolve().parents[2])
+            except (OSError,ValueError,RuntimeError) as error:
+                (root/'storage-retention-warning.json').write_text(json.dumps({'error':str(error)}),encoding='utf8')
         except Exception as error:
             _status(root,{'status':'ERROR','error':str(error)})
         finally:

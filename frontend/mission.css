@@ -156,6 +156,8 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
 
 /* Scripted crossing examples: controls remain explicit, outcomes remain illustrative. */
 .preview-canvas{height:clamp(280px,32svh,380px);background:#f5f3ec;overflow:hidden}
+.mission-experience .prediction-label{display:block!important;top:auto;bottom:14px;left:14px;max-width:calc(100% - 28px);padding:7px 12px;border-radius:999px;background:#fdfcf8e8!important;color:#292524!important;font-size:11px;box-shadow:0 4px 20px -2px #0000000d}
+.mission-experience .prediction-label[hidden]{display:none!important}
 .preview-caption{padding:18px 24px 20px;background:#fdfcf8;border-top:1px solid var(--line);text-align:left}
 .preview-caption strong{font-size:16px;font-weight:500;display:block}
 .preview-caption p{margin:7px 0;font-size:15px;line-height:1.5;color:#655e59;min-height:23px}

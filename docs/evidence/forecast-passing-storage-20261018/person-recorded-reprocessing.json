@@ -1,0 +1,104 @@
+{
+  "scope": "OFFLINE_RECORDED_NATIVE_SENSORS; no counterfactual braking is applied or guaranteed",
+  "source_report": "output\\hybrid-driving\\probe-32b11a96b3014b85a98c2ed8326486fa\\report.json",
+  "source_report_sha256": "5d6dbe0fdc0f46b7a92bcf37915f8f7fd5dbf2cec8f50c0df6385fa774d164a8",
+  "model_sha256": "c47f9eb8a04aab5f6f960035b5871ef1972238d43511965a8874c34129975ee0",
+  "source_image_hashes_sha256": "8bf4713ad01124b327f993e9552b9a4fd2bd6066917fd14e4998c649ff96a04b",
+  "detector_stride_frames": 5,
+  "semantic_delay_frames": 3,
+  "classified_frames": 32,
+  "recorded_contact_elapsed_s": 10.450000155717134,
+  "first_physical_crossing_elapsed_s": 8.200000122189522,
+  "forecast_samples": 28,
+  "first_forecast": {
+    "frame": 35517,
+    "elapsed_s": 7.900000117719173,
+    "speed_kmh": 9.804314533322188,
+    "source": "PEDESTRIAN_POSSIBLE_START",
+    "time_to_overlap_s": 1.7,
+    "position_m": [
+      10.262062072753906,
+      3.8514078140258783
+    ],
+    "velocity_mps": [
+      0.0,
+      0.0
+    ],
+    "measurement_evidence": {
+      "session_id": "recorded-person-audit",
+      "frame_id": 35517,
+      "timestamp_s": 832.1420245282352,
+      "sensor_ids": [
+        "depth"
+      ],
+      "source": "CURRENT_DEPTH_BODY_CORE",
+      "support_points": 108,
+      "mad_m": 0.030696392059326172,
+      "coordinate_frame": "EGO_AT_EVALUATION",
+      "occlusion_s": 0.0,
+      "motion_observations": 156
+    },
+    "semantic_evidence": {
+      "class": "person",
+      "confidence": 0.6614558696746826,
+      "timestamp_s": 831.992024526,
+      "source_frame": 35514,
+      "session_id": "recorded-person-audit",
+      "source_sensor": "frontCamera",
+      "depth_evidence": {
+        "source_sensor": "depth",
+        "frame_id": 35514,
+        "timestamp_s": 831.992024526,
+        "axial_m": 9.149850845336914,
+        "mad_m": 0.028609752655029297,
+        "samples": 80
+      }
+    }
+  },
+  "last_forecast": {
+    "frame": 35551,
+    "elapsed_s": 9.600000143051147,
+    "speed_kmh": 18.300336539066816,
+    "source": "CONSTANT_VELOCITY",
+    "time_to_overlap_s": 0.2,
+    "position_m": [
+      3.6143558025360107,
+      2.0951160721480844
+    ],
+    "velocity_mps": [
+      0.769541913400375,
+      -1.6445041891935641
+    ],
+    "measurement_evidence": {
+      "session_id": "recorded-person-audit",
+      "frame_id": 35551,
+      "timestamp_s": 833.8420245535672,
+      "sensor_ids": [
+        "depth"
+      ],
+      "source": "CURRENT_DEPTH_BODY_CORE",
+      "support_points": 36,
+      "mad_m": 0.011235475540161133,
+      "coordinate_frame": "EGO_AT_EVALUATION",
+      "occlusion_s": 0.0,
+      "motion_observations": 190
+    },
+    "semantic_evidence": {
+      "class": "person",
+      "confidence": 0.827163577079773,
+      "timestamp_s": 833.4920245483518,
+      "source_frame": 35544,
+      "session_id": "recorded-person-audit",
+      "source_sensor": "frontCamera",
+      "depth_evidence": {
+        "source_sensor": "depth",
+        "frame_id": 35544,
+        "timestamp_s": 833.4920245483518,
+        "axial_m": 3.593266248703003,
+        "mad_m": 0.05325675010681152,
+        "samples": 342
+      }
+    }
+  },
+  "limitation": "This holds the recorded ego trajectory fixed. A fresh native drive must verify the effect of braking."
+}

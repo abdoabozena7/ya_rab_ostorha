@@ -60,14 +60,15 @@ def main():
     from ..nlp.processor import interpret
     cv2.setNumThreads(1)
     detector=RoadDetector(ROOT/'models/yolov8n-320.onnx')
-    recognizer=None;previous=None;history=[];last_ocr=-float('inf');nlp=None
+    recognizer=None;previous=None;history=[];last_ocr=-float('inf');nlp=None;aligned_session=None
     url=f'http://127.0.0.1:{args.port}/api/simulation/'
     while parent_alive(args.parent):
-        began=time.monotonic();cpu_began=time.process_time()
+        began=time.monotonic();cpu_began=time.process_time();period=1.
         try:
             with urllib.request.urlopen(url+'status',timeout=3) as response:state=json.load(response)
             if not state.get('connected') or state.get('mode')=='REPLAY':
                 publish({'status':'DISCONNECTED'});time.sleep(1);continue
+            driving=state.get('mode')=='AUTOMATIC';period=.2 if driving else 1.
             fid=state['vehicle']['frame'];stamp=state['vehicle']['timestamp'];session=state['sessionId']
             if (session,fid)==previous:time.sleep(.1);continue
             if previous and previous[0]!=session:nlp=None
@@ -77,6 +78,25 @@ def main():
                 source=response.read()
             image=Image.open(io.BytesIO(source)).convert('RGB');rgb=np.asarray(image)
             started=time.monotonic();detections=detector.predict(rgb);detection_ms=(time.monotonic()-started)*1000
+            # A 2D box can also cover a distant wall. Associate labels only to
+            # matching measured range, using synchronized existing depth.
+            try:
+                if aligned_session!=session:
+                    metadata=[]
+                    for name in ('frontCamera','depth'):
+                        with urllib.request.urlopen(url+'sensor?name='+name,timeout=2) as response:
+                            metadata.append(json.load(response)['metadata'])
+                    keys=('width','height','fov_deg','mount_transform')
+                    if any(metadata[0].get(k)!=metadata[1].get(k) for k in keys):raise ValueError('RGB/depth calibration differs')
+                    aligned_session=session
+                with urllib.request.urlopen(url+'sensor.bin?name=depth&frame_id='+str(fid),timeout=2) as response:
+                    if int(response.headers['X-Sensor-Frame'])!=fid or abs(float(response.headers['X-Sensor-Time'])-stamp)>1e-6:
+                        raise ValueError('RGB/depth identity differs')
+                    depth=np.load(io.BytesIO(response.read()),allow_pickle=False)
+                if depth.shape!=rgb.shape[:2]:raise ValueError('RGB/depth dimensions differ')
+                from .depth_evidence import attach_depth
+                attach_depth(detections,depth,fid,stamp)
+            except (OSError,ValueError,KeyError):pass
             # Dedicated control semantics are published before OCR/annotation.
             # Geometry control never waits for either this worker or this file.
             detection_result={'status':'RUNNING','session_id':session,'frame_id':fid,'timestamp_s':stamp,
@@ -85,7 +105,7 @@ def main():
             detection_result['source_image_sha256']=hashlib.sha256(source).hexdigest()
             detection_published=publish(detection_result,'latest-detections.json')
             texts=[];ocr_ms=0.;regions=[]
-            if time.monotonic()-last_ocr>=3:
+            if not driving and time.monotonic()-last_ocr>=3:
                 regions=text_regions(rgb,detections)
                 if regions:
                     started=time.monotonic()
@@ -108,13 +128,13 @@ def main():
                 'image_token':token,'source_image_sha256':hashlib.sha256(source).hexdigest(),
                 'model':'YOLOv8n ONNX 320','ocr':'English g2 crop-only','detections':detections,'texts':texts,
                 'nlp':nlp,'inference_ms':(time.monotonic()-began)*1000,'detector_ms':detection_ms,'ocr_ms':ocr_ms,
-                'cpu_ms':(time.process_time()-cpu_began)*1000,'threads':1,'maximum_rate_hz':1,'ocr_regions':len(regions),
+                'cpu_ms':(time.process_time()-cpu_began)*1000,'threads':1,'maximum_rate_hz':1/period,'ocr_regions':len(regions),
                 'semantic_publication': 'PUBLISHED' if detection_published else 'READER_LOCK_RETAINED_PREVIOUS'})
             previous=(session,fid)
         except urllib.error.HTTPError as error:
             publish({'status':'WAITING' if error.code in (404,409,503) else 'ERROR','error':str(error)})
         except Exception as error:
             publish({'status':'ERROR','error':str(error)});print(str(error),flush=True)
-        time.sleep(max(.05,1-(time.monotonic()-began)))
+        time.sleep(max(.05,period-(time.monotonic()-began)))
 
 if __name__=='__main__':main()

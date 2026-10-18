@@ -2631,9 +2631,27 @@
     const age = timestamp - prediction?.timestamp_s;
     return !!prediction && prediction.session_id === session && Number.isFinite(age) && age >= 0 && age <= 0.75;
   }
+  function forecastCanProject(prediction, session, camera) {
+    return measuredPredictionFresh(prediction, session, camera?.timestamp) && prediction.coordinate_frame === "EGO_AT_EVALUATION" && !!prediction.render_reference?.position_m && !!camera?.worldTransform?.position_m && Number.isFinite(camera.frame) && Number.isFinite(prediction.evaluation_frame) && prediction.evaluation_frame <= camera.frame;
+  }
+  function remainingForecast(points, age) {
+    if (!points?.length || !Number.isFinite(age) || age < 0 || age > points.at(-1)[0]) return [];
+    const next = points.findIndex((row) => row[0] >= age);
+    if (next < 0) return [];
+    if (next === 0 || points[next][0] === age) return points.slice(next);
+    const a = points[next - 1], b = points[next], f = (age - a[0]) / (b[0] - a[0]);
+    return [[age, a[1] + f * (b[1] - a[1]), a[2] + f * (b[2] - a[2])], ...points.slice(next)];
+  }
   var visibleModes = (prediction) => {
     const confirmed = new Set(prediction.tracks.filter((t) => t.confirmed).map((t) => t.id)), counts = /* @__PURE__ */ new Map();
-    return (prediction.trajectories || []).filter((mode) => {
+    const tracks = new Map(prediction.tracks.map((t) => [t.id, t]));
+    return [...prediction.trajectories || []].sort((a, b) => {
+      const rank = (id) => {
+        const t = tracks.get(id);
+        return t?.class === "person" && t.semantic_evidence ? -1 : Math.hypot(...t?.position_m || [Infinity]);
+      };
+      return rank(a.track_id) - rank(b.track_id);
+    }).filter((mode) => {
       const n2 = counts.get(mode.track_id) || 0;
       if (!confirmed.has(mode.track_id) || n2 >= 3) return false;
       counts.set(mode.track_id, n2 + 1);
@@ -2711,21 +2729,24 @@
       }
     }
     draw(camera) {
-      if (document.body.classList.contains("sequential-drive") && !document.querySelector("#cockpitDetails[open]") && !document.querySelector("#unifiedMap.map-expanded")) {
+      const main = document.body.classList.contains("sequential-drive") && !document.querySelector("#cockpitDetails[open]") && !document.querySelector("#unifiedMap.map-expanded");
+      const guidedForecast = main && this.provider.journey?.driving_mode === "ROBOSPHERE" && this.provider.journey?.status === "RUNNING";
+      if (main && !guidedForecast) {
         this.canvas.hidden = true;
         this.label.hidden = true;
+        this.map.hidden = true;
         this.currentPrediction = this.provider.safetySystem?.prediction || null;
         return;
       }
       this.poll();
-      this.pollFrame(camera);
+      if (!guidedForecast) this.pollFrame(camera);
       const p = this.provider, latest = p.safetySystem?.prediction || this.observed, img = document.getElementById("authoritativeCamera");
       const applied = latest?.applied_decision_prediction;
       const appliedFresh = applied && measuredPredictionFresh(applied, p.sessionId, p.telemetry?.timestamp ?? camera?.timestamp);
       const principal = appliedFresh ? applied : latest;
       this.currentPrediction = principal;
       const measured = (p.fresh || p.isReplay) && measuredPredictionFresh(principal, p.sessionId, p.telemetry?.timestamp ?? camera?.timestamp) ? principal : null;
-      this.map.hidden = false;
+      this.map.hidden = main;
       const mapKey = [p.sessionId, measured?.timestamp_s, measured?.display_source].join(":");
       if (mapKey !== this.mapKey) {
         this.mapKey = mapKey;
@@ -2733,17 +2754,18 @@
       }
       this.label.hidden = !measured || img.hidden;
       if (measured) {
-        const age = Math.max(0, (p.telemetry?.timestamp ?? camera.timestamp) - measured.timestamp_s);
-        this.message = `${measured.display_source || measured.decision_source} \xB7 ${measured.tracks.filter((t) => t.confirmed).length} confirmed tracks \xB7 measurement age ${age.toFixed(1)} s. ${measured.model_reason || ""}`;
+        const age2 = Math.max(0, (p.telemetry?.timestamp ?? camera.timestamp) - measured.timestamp_s);
+        this.message = `${measured.display_source || measured.decision_source} \xB7 ${measured.tracks.filter((t) => t.confirmed).length} confirmed tracks \xB7 measurement age ${age2.toFixed(1)} s. ${measured.model_reason || ""}`;
         const conflict2 = measured.conflict_point;
         const context = appliedFresh ? "Applied decision forecast" : "Display forecast";
         const supplementary = latest?.supplementary_model_candidates?.length ?? 0;
-        this.label.textContent = (conflict2 ? `${context} \xB7 overlap in ${conflict2.time_s.toFixed(1)} s` : context) + (supplementary ? ` \xB7 ${supplementary} supplementary model candidates` : "");
+        this.label.textContent = guidedForecast ? "Predicted paths \xB7 may change" : (conflict2 ? `${context} \xB7 overlap in ${conflict2.time_s.toFixed(1)} s` : context) + (supplementary ? ` \xB7 ${supplementary} supplementary model candidates` : "");
         this.label.dataset.tone = conflict2 ? "amber" : "neutral";
       } else this.message = p.fresh ? "Waiting for fresh measured motion\u2026" : "Motion observations unavailable";
-      const prediction = predictionMatches(latest, p.sessionId, camera) ? latest : this.imagePrediction;
-      const ok = (p.fresh || p.isReplay) && !img.hidden && predictionMatches(prediction, p.sessionId, camera);
+      const prediction = guidedForecast ? latest : predictionMatches(latest, p.sessionId, camera) ? latest : this.imagePrediction;
+      const ok = (p.fresh || p.isReplay) && !img.hidden && (guidedForecast ? forecastCanProject(prediction, p.sessionId, camera) : predictionMatches(prediction, p.sessionId, camera));
       this.canvas.hidden = !ok;
+      if (guidedForecast) this.label.hidden = !ok;
       const diagnostic = p.stopDiagnostics;
       this.diagnostic.textContent = diagnostic?.braking ? `${diagnostic.decision_source} \xB7 ${diagnostic.reason || "Brake applied"} \xB7 sensor age ${(diagnostic.sensor_wall_age_s ?? 0).toFixed(2)} s` : "";
       if (!ok) return;
@@ -2759,14 +2781,16 @@
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       const red = ["STOPPING", "BRAKING"].includes(p.safetySystem?.status), color = red ? "#D9254F" : "#81551B";
       const project = (point) => projectPrediction(point, prediction.render_reference, camera);
-      const visible = this.visualOptions?.trajectories === false ? [] : visibleModes(prediction);
+      const visible = (!guidedForecast && this.visualOptions?.trajectories === false ? [] : visibleModes(prediction)).slice(0, 18);
+      const age = guidedForecast ? Math.max(0, camera.timestamp - prediction.timestamp_s) : 0;
+      const classes = new Map(prediction.tracks.filter((t) => t.semantic_evidence).map((t) => [t.id, t.class]));
       ctx.lineWidth = 2;
       ctx.setLineDash([6, 5]);
       for (const mode of visible) {
-        ctx.strokeStyle = mode.source.includes("TRAJECTRON") ? "#753CF7" : "#4B84FC";
+        ctx.strokeStyle = classes.get(mode.track_id) === "person" ? "#FFB7B2" : String(mode.source).includes("TRAJECTRON") ? "#b6a6d8" : "#83d9df";
         ctx.beginPath();
         let begun = false;
-        for (const row of mode.points) {
+        for (const row of remainingForecast(mode.points, age)) {
           const q = project([row[1], row[2], 0.3]);
           if (!q) {
             begun = false;
@@ -2801,7 +2825,7 @@
         ctx.setLineDash([7, 5]);
         ctx.beginPath();
         let begun = false;
-        for (const row of conflict.trajectory) {
+        for (const row of remainingForecast(conflict.trajectory, age)) {
           const q = project([row[1], row[2], 0.3]);
           if (!q) {
             begun = false;

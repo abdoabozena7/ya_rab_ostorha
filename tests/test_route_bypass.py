@@ -65,9 +65,20 @@ class RouteBypassTests(unittest.TestCase):
         bypass.observe(scene,status,wall=100.)
         self.assertFalse(bypass.engaged)
         scene,status=self.sample(13,1.5,1.5)
+        p={**scene.prediction,'odometry_origin_m':[0.,0.],'odometry_yaw_rad':0.,
+            'tracks':[{'id':'front','confirmed':True,'position_m':[18.,0.],'half_size_m':[2.,1.],
+                       'velocity_mps':[0.,0.],'occlusion_s':0.}]}
+        scene=replace(scene,prediction=p)
         bypass.observe(scene,status,wall=100.)
         self.assertTrue(bypass.engaged)
         self.assertFalse(bypass.driver.allow_reverse)
+
+    def test_side_track_and_front_range_alone_cannot_start_an_unanchored_pass(self):
+        bypass=RuleRouteBypass(self.scene.geometry)
+        for frame in range(1,30):
+            scene,status=self.sample(frame,0.,None,distance=8.)
+            bypass.observe(scene,status,wall=100.)
+        self.assertTrue(bypass.arming);self.assertFalse(bypass.engaged)
 
     def test_red_signal_and_missing_target_do_not_start_a_pass(self):
         bypass=RuleRouteBypass(self.scene.geometry)
@@ -79,6 +90,29 @@ class RouteBypassTests(unittest.TestCase):
             scene,status=self.sample(frame,0.,None,distance=None)
             bypass.observe(scene,status,wall=100.)
         self.assertFalse(bypass.engaged)
+
+    def test_crossing_person_is_a_protected_wait_not_a_passing_target(self):
+        for classified in (True,False):
+            bypass=RuleRouteBypass(self.scene.geometry)
+            for frame in range(1,30):
+                scene,status=self.sample(frame,0.,None,distance=8.)
+                if classified:
+                    person={**scene.prediction['tracks'][0],'class':'person','position_m':[8.,0.]}
+                    scene=replace(scene,prediction={**scene.prediction,'tracks':[person]})
+                else:status['pedestrian_prediction']={'source':'PEDESTRIAN_POSSIBLE_START'}
+                bypass.observe(scene,status,wall=100.)
+            self.assertFalse(bypass.arming);self.assertFalse(bypass.engaged)
+
+    def test_short_classification_gap_does_not_turn_a_crossing_into_a_passing_target(self):
+        bypass=RuleRouteBypass(self.scene.geometry)
+        scene,status=self.sample(1,0.,None,distance=8.)
+        person={**scene.prediction['tracks'][0],'class':'person','position_m':[10.,3.8]}
+        scene=replace(scene,prediction={**scene.prediction,'tracks':[person]})
+        bypass.observe(scene,status,wall=100.)
+        for frame in range(2,60):
+            scene,status=self.sample(frame,0.,None,distance=8.)
+            bypass.observe(scene,status,wall=100.)
+        self.assertFalse(bypass.arming);self.assertFalse(bypass.engaged)
 
     def test_completed_pass_releases_to_the_ordinary_route_without_reverse(self):
         bypass=RuleRouteBypass(self.scene.geometry);bypass.engaged=True

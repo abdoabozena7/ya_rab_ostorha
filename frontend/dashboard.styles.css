@@ -11191,6 +11191,22 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
   background: #f5f3ec;
   overflow: hidden;
 }
+.mission-experience .prediction-label {
+  display: block !important;
+  top: auto;
+  bottom: 14px;
+  left: 14px;
+  max-width: calc(100% - 28px);
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #fdfcf8e8 !important;
+  color: #292524 !important;
+  font-size: 11px;
+  box-shadow: 0 4px 20px -2px #0000000d;
+}
+.mission-experience .prediction-label[hidden] {
+  display: none !important;
+}
 .preview-caption {
   padding: 18px 24px 20px;
   background: #fdfcf8;

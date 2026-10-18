@@ -1,0 +1,45 @@
+{
+  "scope": "Software/browser checks; native driving results and failures are recorded separately",
+  "javascript": {
+    "command": "npm test",
+    "passed": 165,
+    "failed": 0
+  },
+  "python": {
+    "command": ".venv-carla/Scripts/python.exe -m unittest discover -s tests -p test_*.py",
+    "total": 660,
+    "passed": 658,
+    "skipped_optional": 2,
+    "failed": 0
+  },
+  "build": {
+    "command": "npm run build:dashboard",
+    "javascript_sha256": "4217cc983c83b1136d68664de604ab4daa5fdb349cfd01d2664854ed9a48a678",
+    "css_sha256": "fd5606d415deaf9122af936e189ca56f43ab54234d919eeaeb1bf344b6927f8e"
+  },
+  "browser": {
+    "scope": "ISOLATED_UI_FIXTURE_NOT_NATIVE_PREDICTION_ACCEPTANCE",
+    "pixels": 124,
+    "checks": [
+      "Protected main camera renders time-advanced paths, without opening Details",
+      "Forecast fits the contained camera on mobile",
+      "Missing/stale source removes the overlay",
+      "Normal main camera remains distinct from protected forecasts"
+    ],
+    "commands": [
+      {
+        "type": "presentation",
+        "sequence": 1,
+        "frame_id": 899,
+        "timestamp_s": 40.95,
+        "value": {
+          "operation": "PRELOAD",
+          "page_id": "76ad8851-c065-4b6d-95d8-a219d3cee667"
+        }
+      }
+    ],
+    "errors": [],
+    "requests": []
+  },
+  "native_scope": "Actual Mercedes low-speed passing admission and scoped early-pedestrian drive; full driving-quality/80-km/h acceptance remains unproven"
+}

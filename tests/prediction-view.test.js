@@ -1,8 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {projectPrediction,predictionMatches,measuredPredictionFresh} from '../frontend/prediction-view.js';
+import {projectPrediction,predictionMatches,measuredPredictionFresh,forecastCanProject,remainingForecast,visibleModes} from '../frontend/prediction-view.js';
 const pose={position_m:[0,0,0],rotation_rad:{yaw:0,pitch:0,roll:0}};
 const camera={width:800,height:450,fovDeg:90,timestamp:1,worldTransform:pose};
+
+test('classified person forecasts remain visible ahead of abundant background surfaces',()=>{
+  const tracks=Array.from({length:25},(_,i)=>({id:String(i),confirmed:true,position_m:[i+1,0],class:'UNKNOWN'}));
+  tracks.push({id:'person',confirmed:true,position_m:[20,3],class:'person',semantic_evidence:{}});
+  const trajectories=tracks.map(t=>({track_id:t.id,points:[]}));
+  assert.equal(visibleModes({tracks,trajectories}).slice(0,18)[0].track_id,'person');
+  assert.equal(trajectories[0].track_id,'0');
+});
+
+test('recent forecasts reproject into a later camera without inventing exact frame alignment',()=>{
+  const p={session_id:'s',timestamp_s:1,coordinate_frame:'EGO_AT_EVALUATION',evaluation_frame:7,render_reference:pose};
+  assert.ok(forecastCanProject(p,'s',{...camera,frame:8,timestamp:1.2}));
+  assert.ok(!forecastCanProject(p,'other',{...camera,frame:8,timestamp:1.2}));
+  for(const c of [{...camera,frame:6},{...camera,frame:8,timestamp:.9},{...camera,frame:8,timestamp:2}])assert.ok(!forecastCanProject(p,'s',c));
+  assert.ok(!forecastCanProject({...p,render_reference:null},'s',{...camera,frame:8}));
+  assert.deepEqual(remainingForecast([[0,10,3],[1,10,1],[2,10,-1]],.5),[[.5,10,2],[1,10,1],[2,10,-1]]);
+  assert.deepEqual(remainingForecast([[0,0,0],[1,1,1]],2),[]);
+});
 test('measured map freshness is independent from exact camera overlay matching',()=>{
   const p={session_id:'s',timestamp_s:1,coordinate_frame:'EGO_AT_EVALUATION',evaluation_frame:7};
   assert.ok(measuredPredictionFresh(p,'s',1.2));

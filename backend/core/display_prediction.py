@@ -39,12 +39,21 @@ def measured_control_view(scene,reference):
     while the synchronized control owner is proving a maneuver.
     """
     keys=('id','position_m','half_size_m','velocity_mps','class','confirmed','occlusion_s','semantic_evidence','measurement_evidence')
+    visible=sorted((t for t in scene.prediction['tracks'] if t.get('confirmed')),
+        key=lambda t:(0 if t.get('class')=='person' and t.get('semantic_evidence') else 1,float(np.linalg.norm(t['position_m']))))[:12]
+    ids={t['id'] for t in visible};counts={};trajectories=[]
+    for mode in scene.prediction.get('trajectories',scene.prediction.get('control_trajectories',())):
+        identity=mode['track_id'];count=counts.get(identity,0)
+        if identity not in ids or count>=2:continue
+        counts[identity]=count+1
+        trajectories.append({'track_id':identity,'source':mode.get('source','MEASURED_KINEMATIC_HYPOTHESIS'),
+            'points':to_dict(mode['points'][::2])})
     return {'version':3,'session_id':scene.session_id,'evaluation_frame':scene.observation.frame_id,
         'timestamp_s':scene.observation.timestamp_s,'coordinate_frame':'EGO_AT_EVALUATION',
         'published_wall_s':time.monotonic(),
         'render_reference':copy.deepcopy(reference),
         'tracks':[{key:to_dict(track[key]) for key in keys if key in track} for track in scene.prediction['tracks']],
-        'trajectories':[],'conflicts':[],'used_for_applied_decision':False,
+        'trajectories':trajectories,'conflicts':[],'used_for_applied_decision':False,
         'display_observer_deferred':True,'source':'MEASURED_CONTROL_SCENE',
         'deferred_reason':'Supplementary display forecasts deferred while control owns the maneuver'}
 
@@ -73,12 +82,7 @@ class DisplayPredictionService:
         self.quality=MotionQuality()
         self.frames=OrderedDict()
         root=Path(__file__).resolve().parents[2]
-        try:
-            if not (root/'.venv-trajectron/Scripts/python.exe').is_file():
-                raise OSError('Trajectron runtime is not installed')
-            from ..learning.async_worker import AsyncPredictionWorker
-            self.worker=AsyncPredictionWorker('trajectron')
-        except (OSError,ValueError) as error:self.worker_error=str(error)
+        if not (root/'.venv-trajectron/Scripts/python.exe').is_file():self.worker_error='Trajectron runtime is not installed'
         self.stop=threading.Event();self.thread=threading.Thread(target=self._run,daemon=True,name='display-motion-observer')
         self.thread.start()
 
@@ -114,7 +118,7 @@ class DisplayPredictionService:
                     previous=key
                     from .route_bypass import RuleRouteBypass
                     bypass=getattr(s.provider,'navigation_bypass',None)
-                    critical_control=(isinstance(bypass,RuleRouteBypass) and bypass.motion_required or
+                    critical_control=(getattr(s,'_guided_forecast_required',lambda:False)() or isinstance(bypass,RuleRouteBypass) and bypass.motion_required or
                         getattr(s,'journey',{}).get('driving_mode')=='HYBRID')
                     if critical_control:
                         # Capture the scene under the same lock as its frame.
@@ -202,6 +206,10 @@ class DisplayPredictionService:
                 prediction['measured_trajectories']=prediction['trajectories']
                 prediction['control_trajectories']=prediction['measured_trajectories']
                 score_display_prediction(prediction,ego,self.engine.geometry,deferred=defer_scoring)
+                if not planning_active and not defer_scoring and self.worker is None and self.worker_error is None:
+                    from ..learning.async_worker import AsyncPredictionWorker
+                    try:self.worker=AsyncPredictionWorker('trajectron')
+                    except (OSError,ValueError) as error:self.worker_error=str(error)
                 if self.worker and not planning_active and not defer_scoring:
                     self.worker_error=self.worker.error
                     learned=self.worker.current(key[0],observation.timestamp_s)

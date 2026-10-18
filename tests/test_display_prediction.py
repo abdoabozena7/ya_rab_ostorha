@@ -4,6 +4,13 @@ from backend.core.display_prediction import local_modes,measured_control_view,Di
 
 
 class DisplayPredictionTests(unittest.TestCase):
+    def test_observer_construction_does_not_load_unused_learned_runtime(self):
+        from unittest.mock import patch
+        with patch('backend.learning.async_worker.AsyncPredictionWorker',side_effect=AssertionError('Unexpected model process')):
+            observer=DisplayPredictionService(None,None)
+            try:self.assertIsNone(observer.worker)
+            finally:observer.close()
+
     def test_ordinary_driving_keeps_measured_tracks_without_hypothetical_scoring(self):
         from unittest.mock import patch
         from backend.core.display_prediction import score_display_prediction
@@ -40,7 +47,8 @@ class DisplayPredictionTests(unittest.TestCase):
         original=to_dict(prediction);reference={'frame':42}
         view=measured_control_view(scene,reference)
         self.assertEqual(view['timestamp_s'],2.);self.assertEqual(view['evaluation_frame'],42)
-        self.assertTrue(view['display_observer_deferred']);self.assertEqual(view['trajectories'],[])
+        self.assertTrue(view['display_observer_deferred']);self.assertEqual(len(view['trajectories']),1)
+        self.assertEqual(view['trajectories'][0]['track_id'],'1')
         observer=DisplayPredictionService.__new__(DisplayPredictionService)
         observer.latest=view;observer.error=None
         self.assertEqual(observer.snapshot()['status'],'RUNNING')

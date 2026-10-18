@@ -7,6 +7,7 @@ import time
 import urllib.request
 from collections import Counter
 from pathlib import Path
+from backend.core.storage_retention import open_telemetry
 
 ROOT=Path(__file__).resolve().parents[1]
 ATTEMPTS=(
@@ -47,12 +48,12 @@ def main():
             audit=run.get('initial_condition_audit') or {}
             out['initial_condition_audit']={k:audit.get(k) for k in ('passed','failures')}
             path=Path(run['recording'])
-            rows=[json.loads(line) for line in (path/'telemetry/safety-v2.jsonl').read_text().splitlines()]
+            with open_telemetry(path/'telemetry/safety-v2.jsonl') as stream:rows=[json.loads(line) for line in stream]
             reasons=Counter(r['reason'] for r in rows)
             out['recorded_control_decisions']=len(rows)
             out['processing_deadline_brakes']=reasons['CONTROL_PROCESSING_DEADLINE']
             out['stop_reasons']=dict(reasons)
-            frames=(json.loads(line) for line in (path/'telemetry/frames.jsonl').open())
+            frames=(json.loads(line) for line in open_telemetry(path/'telemetry/frames.jsonl'))
             first=None;crossings={str(k):None for k in (1,20,50,80)}
             for frame in frames:
                 if first is None:first=frame['timestamp_s']

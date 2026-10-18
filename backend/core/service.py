@@ -164,6 +164,14 @@ class SimulationService:
         value=getattr(self.provider,'navigation_bypass',None)
         return value if isinstance(value,RuleRouteBypass) else None
 
+    def _guided_forecast_required(self):
+        if self.journey.get('validation_deadline') and self.journey.get('driving_mode')=='ROBOSPHERE' and self.journey.get('status') in ('STARTING','RUNNING'):
+            return True  # The scoped RULE harness exercises the guided sensor path.
+        data=self.presentation.data
+        modes=data.get('modes',[]);arm=data.get('arm',0)
+        return bool(data.get('guided') and data.get('status') in ('SELECTING','READY','STARTING','DRIVING')
+            and arm<len(modes) and modes[arm]=='ROBOSPHERE')
+
     def _active_safety_step(self, observer_base=None):
         supervisor = self.active_safety
         if supervisor is None: return
@@ -212,9 +220,11 @@ class SimulationService:
             self.control_timing_ms['sensor_age_before_safety_ms'] = (self.now()-receipt)*1000
             if self.control_scene and self.control_scene.observation.frame_id == observation.frame_id:
                 supervisor.measured_space = self.control_scene.space
+                supervisor.control_prediction=self.control_scene.prediction
                 if hasattr(supervisor,'guard'):supervisor.guard.measured_space = self.control_scene.space
             else:
                 supervisor.measured_space = None
+                supervisor.control_prediction=None
                 if hasattr(supervisor,'guard'):supervisor.guard.measured_space = None
             base = replace(base, frame_id=observation.frame_id, timestamp_s=observation.timestamp_s)
             if hasattr(supervisor,'cap_mps'):
@@ -1736,6 +1746,7 @@ class SimulationService:
                 measured = sensor_observation(observation)
                 scene = self.control_scene_builder.build(measured, self.provider.get_sensor_asset,
                     track_motion=(self.journey.get('driving_mode')=='HYBRID' or
+                        self._guided_forecast_required() or
                         bool(self._route_bypass() and self._route_bypass().motion_required) or
                         getattr(self.provider,'navigation_planner',None) is not None or
                         getattr(self.provider,'navigation_recovery',None) is not None),

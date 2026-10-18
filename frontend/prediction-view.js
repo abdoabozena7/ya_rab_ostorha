@@ -28,9 +28,27 @@ export function measuredPredictionFresh(prediction,session,timestamp) {
   const age=timestamp-prediction?.timestamp_s;
   return !!prediction&&prediction.session_id===session&&Number.isFinite(age)&&age>=0&&age<=.75;
 }
-const visibleModes=prediction=>{
+export function forecastCanProject(prediction,session,camera) {
+  return measuredPredictionFresh(prediction,session,camera?.timestamp)&&
+    prediction.coordinate_frame==='EGO_AT_EVALUATION'&&!!prediction.render_reference?.position_m&&
+    !!camera?.worldTransform?.position_m&&Number.isFinite(camera.frame)&&
+    Number.isFinite(prediction.evaluation_frame)&&prediction.evaluation_frame<=camera.frame;
+}
+export function remainingForecast(points,age) {
+  if(!points?.length||!Number.isFinite(age)||age<0||age>points.at(-1)[0])return [];
+  const next=points.findIndex(row=>row[0]>=age);
+  if(next<0)return [];
+  if(next===0||points[next][0]===age)return points.slice(next);
+  const a=points[next-1],b=points[next],f=(age-a[0])/(b[0]-a[0]);
+  return [[age,a[1]+f*(b[1]-a[1]),a[2]+f*(b[2]-a[2])],...points.slice(next)];
+}
+export const visibleModes=prediction=>{
   const confirmed=new Set(prediction.tracks.filter(t=>t.confirmed).map(t=>t.id)),counts=new Map();
-  return (prediction.trajectories||[]).filter(mode=>{
+  const tracks=new Map(prediction.tracks.map(t=>[t.id,t]));
+  return [...(prediction.trajectories||[])].sort((a,b)=>{
+    const rank=id=>{const t=tracks.get(id);return t?.class==='person'&&t.semantic_evidence?-1:Math.hypot(...(t?.position_m||[Infinity]));};
+    return rank(a.track_id)-rank(b.track_id);
+  }).filter(mode=>{
     const n=counts.get(mode.track_id)||0;if(!confirmed.has(mode.track_id)||n>=3)return false;
     counts.set(mode.track_id,n+1);return true;
   });
@@ -80,14 +98,15 @@ export class PredictionView {
     finally{this.busy=false;}
   }
   draw(camera) {
-    // Route-only view needs no supplementary predictions. Critical safety
-    // decisions and their recording are independent of these display requests.
-    if(document.body.classList.contains('sequential-drive')&&!document.querySelector('#cockpitDetails[open]')&&
-      !document.querySelector('#unifiedMap.map-expanded')){
+    const main=document.body.classList.contains('sequential-drive')&&!document.querySelector('#cockpitDetails[open]')&&
+      !document.querySelector('#unifiedMap.map-expanded');
+    const guidedForecast=main&&this.provider.journey?.driving_mode==='ROBOSPHERE'&&this.provider.journey?.status==='RUNNING';
+    if(main&&!guidedForecast){
       this.canvas.hidden=true;this.label.hidden=true;
+      this.map.hidden=true;
       this.currentPrediction=this.provider.safetySystem?.prediction||null;return;
     }
-    this.poll();this.pollFrame(camera);
+    this.poll();if(!guidedForecast)this.pollFrame(camera);
     const p=this.provider, latest=p.safetySystem?.prediction||this.observed, img=document.getElementById('authoritativeCamera');
     const applied=latest?.applied_decision_prediction;
     const appliedFresh=applied&&measuredPredictionFresh(applied,p.sessionId,p.telemetry?.timestamp??camera?.timestamp);
@@ -96,7 +115,7 @@ export class PredictionView {
     // The measured map has its own timestamp. Its layout must not depend on
     // whether this particular RGB frame has an exactly aligned overlay.
     const measured=(p.fresh||p.isReplay)&&measuredPredictionFresh(principal,p.sessionId,p.telemetry?.timestamp??camera?.timestamp)?principal:null;
-    this.map.hidden=false;
+    this.map.hidden=main;
     const mapKey=[p.sessionId,measured?.timestamp_s,measured?.display_source].join(':');
     if(mapKey!==this.mapKey){this.mapKey=mapKey;this.drawMap(measured);}
     this.label.hidden=!measured||img.hidden;
@@ -106,13 +125,18 @@ export class PredictionView {
       const conflict=measured.conflict_point;
       const context=appliedFresh?'Applied decision forecast':'Display forecast';
       const supplementary=latest?.supplementary_model_candidates?.length??0;
-      this.label.textContent=(conflict?`${context} · overlap in ${conflict.time_s.toFixed(1)} s`:context)+
+      this.label.textContent=guidedForecast?'Predicted paths · may change':(conflict?`${context} · overlap in ${conflict.time_s.toFixed(1)} s`:context)+
         (supplementary?` · ${supplementary} supplementary model candidates`:'');
       this.label.dataset.tone=conflict?'amber':'neutral';
     } else this.message=p.fresh?'Waiting for fresh measured motion…':'Motion observations unavailable';
-    const prediction=predictionMatches(latest,p.sessionId,camera)?latest:this.imagePrediction;
-    const ok=(p.fresh||p.isReplay)&&!img.hidden&&predictionMatches(prediction,p.sessionId,camera);
+    // Reproject a recent forecast from its measured ego pose into the current
+    // camera. Crop elapsed trajectory time; never draw the old object position
+    // as though it were a detection in this image. Control age gates are separate.
+    const prediction=guidedForecast?latest:predictionMatches(latest,p.sessionId,camera)?latest:this.imagePrediction;
+    const ok=(p.fresh||p.isReplay)&&!img.hidden&&(guidedForecast?
+      forecastCanProject(prediction,p.sessionId,camera):predictionMatches(prediction,p.sessionId,camera));
     this.canvas.hidden=!ok;
+    if(guidedForecast)this.label.hidden=!ok;
     const diagnostic=p.stopDiagnostics;
     this.diagnostic.textContent=diagnostic?.braking?`${diagnostic.decision_source} · ${diagnostic.reason||'Brake applied'} · sensor age ${(diagnostic.sensor_wall_age_s??0).toFixed(2)} s`:'';
     if(!ok)return;
@@ -127,11 +151,13 @@ export class PredictionView {
     const project=point=>projectPrediction(point,prediction.render_reference,camera);
     // Show ordinary, non-conflicting hypotheses too. Keep modes separate and
     // bound visual density; never invent class boxes for unclassified LiDAR.
-    const visible=this.visualOptions?.trajectories===false?[]:visibleModes(prediction);
+    const visible=(!guidedForecast&&this.visualOptions?.trajectories===false?[]:visibleModes(prediction)).slice(0,18);
+    const age=guidedForecast?Math.max(0,camera.timestamp-prediction.timestamp_s):0;
+    const classes=new Map(prediction.tracks.filter(t=>t.semantic_evidence).map(t=>[t.id,t.class]));
     ctx.lineWidth=2;ctx.setLineDash([6,5]);
     for(const mode of visible){
-      ctx.strokeStyle=mode.source.includes('TRAJECTRON')?'#753CF7':'#4B84FC';ctx.beginPath();let begun=false;
-      for(const row of mode.points){const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
+      ctx.strokeStyle=classes.get(mode.track_id)==='person'?'#FFB7B2':String(mode.source).includes('TRAJECTRON')?'#b6a6d8':'#83d9df';ctx.beginPath();let begun=false;
+      for(const row of remainingForecast(mode.points,age)){const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
     }
     ctx.setLineDash([]);
     const maneuver=p.maneuver;
@@ -142,7 +168,7 @@ export class PredictionView {
     if(conflict&&this.visualOptions?.safety!==false) {
       // Only the selected actual hypothesis; never average incompatible modes.
       ctx.strokeStyle=color;ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.beginPath();let begun=false;
-      for(const row of conflict.trajectory) {const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}if(begun)ctx.lineTo(...q);else ctx.moveTo(...q);begun=true;}
+      for(const row of remainingForecast(conflict.trajectory,age)) {const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}if(begun)ctx.lineTo(...q);else ctx.moveTo(...q);begun=true;}
       ctx.stroke();ctx.setLineDash([]);
       // A forecast conflict point is not a detected object's 3D bounding box.
       // Mark the supplied point without inventing an object's height or corners.

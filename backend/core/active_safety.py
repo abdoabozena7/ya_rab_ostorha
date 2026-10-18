@@ -287,6 +287,10 @@ class ActiveSafetySupervisor:
         crossing=self.path_conflicts.assess(scene['lidar_surfaces'],observation,geometry=getattr(self,'geometry',None),
             forward_path=getattr(self,'forward_path',None),ground_plane=scene['lidar_ground_plane'])
         conflict=crossing['conflict']
+        from .pedestrian_anticipation import crossing_forecast
+        from .motion_geometry import VehicleGeometry
+        pedestrian=crossing_forecast(getattr(self,'control_prediction',None),observation,base,
+            getattr(self,'geometry',None) or VehicleGeometry())
         speed = observation.ego.speed_mps
         envelope = t.minimum_clearance_m + speed*t.reaction_time_s + speed*speed/(2*t.assumed_deceleration_mps2)
         distance = scene['target_range_m']
@@ -319,10 +323,11 @@ class ActiveSafetySupervisor:
         # with usable space calls for a bounded speed, not an emergency brake.
         if coverage_limited and target_speed <= t.stopped_speed_mps:
             coverage_brake = t.additional_brake
-        requested = hazard or conflict is not None
+        requested = hazard or conflict is not None or pedestrian is not None
         reason = decision.diagnostics['reason'] if decision and decision.action[0]>0 else ('Measured obstacle inside braking envelope/TTC limit' if hazard
             else 'Insufficient measured forward road coverage; missing targets are not clear space' if unknown else 'Observed forward stopping corridor is clear')
         if conflict:reason='Measured moving object approaches the driving path; object type unconfirmed'
+        if pedestrian:reason='Braking for a person who may cross the driving path'
         now = observation.timestamp_s
         dt = .05 if self.previous_s is None else min(.15, max(0., now-self.previous_s))
         if self.previous_s is not None and now <= self.previous_s: raise ValueError('Safety observation did not advance')
@@ -361,7 +366,7 @@ class ActiveSafetySupervisor:
         self.last_fault = None
         if self.active and not was_active: self.interventions += 1
         self.status.update(status='BRAKING' if self.active and requested else 'COVERAGE_LIMITED' if self.active and desired <= coverage_brake else 'RELEASING' if self.active else 'MONITORING',
-            risk='PATH_CONFLICT' if conflict else 'FORWARD_COLLISION_RISK' if hazard else 'UNKNOWN_SPACE' if unknown else 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED',
+            risk='POSSIBLE_PEDESTRIAN_CROSSING' if pedestrian else 'PATH_CONFLICT' if conflict else 'FORWARD_COLLISION_RISK' if hazard else 'UNKNOWN_SPACE' if unknown else 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED',
             active=self.active, reason=reason, frame_id=observation.frame_id, timestamp_s=now,
             stopping_envelope_m=envelope, release_envelope_m=envelope+t.release_hysteresis_m,
             forward_release_clear=release_clear, coverage_speed_limit_mps=target_speed,
@@ -371,7 +376,7 @@ class ActiveSafetySupervisor:
             feasibility_validator='YA_RAB_OSTORHA_RUNTIME_BRAKING_V1' if proposed else None,
             depth_observed=scene['depth_observed'], lidar_observed=scene['lidar_observed'],
             base_driver_brake=base.brake, base_command=to_dict(base), proposed_safety_brake=desired,
-            path_conflict=conflict,side_rear_coverage=crossing['coverage'],
+            path_conflict=conflict,pedestrian_prediction=pedestrian,side_rear_coverage=crossing['coverage'],
             side_rear_observations=crossing['observations'],
             side_rear_free_space_verified=False)
         return proposed

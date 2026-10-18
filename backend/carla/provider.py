@@ -132,13 +132,8 @@ class CarlaProvider:
             raise RuntimeError('An ego vehicle is already owned by this session')
         self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index, strict_spawn=self.strict_ego_spawn)
         actor = self.ego.spawn()
-        from ..core.motion_geometry import VehicleGeometry
-        import math
-        box=actor.bounding_box;physics=actor.get_physics_control();wheels=physics.wheels
-        front_axle=max(w.position.x for w in wheels)/100.;rear_axle=min(w.position.x for w in wheels)/100.
-        angle=max(w.max_steer_angle for w in wheels)
-        self.vehicle_geometry=VehicleGeometry(box.extent.x+box.location.x,box.extent.x-box.location.x,
-            box.extent.y+abs(box.location.y),front_axle-rear_axle,math.radians(angle),'NATIVE_ONBOARD_SPECIFICATIONS')
+        from .onboard_geometry import geometry_for
+        self.vehicle_geometry=geometry_for(actor)
         self.inspector = NearbyActorInspector(self.world.world, actor)
         self.sensor_manager = CarlaSensorManager(self.world.world, actor)
         if self.collision_sensor:
@@ -179,11 +174,8 @@ class CarlaProvider:
         actor=self.world.world.try_spawn_actor(bp,admission)
         if actor is None:raise ValueError('The prepared ego start is occupied')
         self.ego.actor=actor;actor.set_autopilot(False);actor.set_simulate_physics(False);actor.set_transform(native)
-        from ..core.motion_geometry import VehicleGeometry
-        box=actor.bounding_box;wheels=actor.get_physics_control().wheels
-        self.vehicle_geometry=VehicleGeometry(box.extent.x+box.location.x,box.extent.x-box.location.x,
-            box.extent.y+abs(box.location.y),(max(w.position.x for w in wheels)-min(w.position.x for w in wheels))/100.,
-            math.radians(max(w.max_steer_angle for w in wheels)),'NATIVE_ONBOARD_SPECIFICATIONS')
+        from .onboard_geometry import geometry_for
+        self.vehicle_geometry=geometry_for(actor)
         self.inspector=NearbyActorInspector(self.world.world,actor)
         self.sensor_manager=CarlaSensorManager(self.world.world,actor)
         if self.collision_sensor:self.sensor_manager.enable_collision(api)
@@ -930,6 +922,8 @@ class CarlaProvider:
                     'Sensor hybrid behavior with native route/signals follower' if getattr(self,'driving_mode',None)=='HYBRID' else
                     'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
                 'driving_mode':getattr(self,'driving_mode',None),
+                'storage_policy':'GUIDED_KEEP_TWO_RAW' if getattr(self,'presentation_mode',False) and
+                    getattr(self,'guided_presentation',False) else 'KEEP_RAW',
                 'driver_id':'CARLA_BEHAVIOR_NORMAL' if getattr(self,'driving_mode',None)=='BASELINE' else
                     'ROBOSPHERE_HYBRID_V1' if getattr(self,'driving_mode',None)=='HYBRID' else getattr(self,'driving_mode',None),
                 'native_obstacle_handling':getattr(self,'driving_mode',None)=='BASELINE',

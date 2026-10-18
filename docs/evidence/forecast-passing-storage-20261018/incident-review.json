@@ -1,0 +1,296 @@
+{
+  "scope": "LATEST_RETAINED_NATIVE_RUN; screenshot frame identity cannot be inferred from attachments",
+  "pair_id": "fba94503791e40c2ac916cb683241165",
+  "recording": "runs\\normal_city\\run_e9a793dc8a8b4d3a86ef020852bd4bf6",
+  "closest_person_center_distance_m": 2.1196063100924802,
+  "closest_evaluation_frame": 11979,
+  "recorded_speed_kmh": 19.617866586844958,
+  "applied_brake": 0.0,
+  "recorded_ego_contacts": 0,
+  "recording_status": {
+    "incomplete": false,
+    "error": null,
+    "dropped_frames": 0,
+    "dropped_events": 0,
+    "dropped_trace_rows": 0,
+    "first_dropped_frame": null,
+    "last_dropped_frame": null,
+    "written_frames": 1572,
+    "queued_bytes": 0,
+    "pending_items": 0,
+    "finalized": true
+  },
+  "camera_frame": 11979,
+  "camera_sha256": "8f0bbd43f545e81abcf7004dc95952db025999fbf868e4e1047520fe486969ce",
+  "prior_decisions": [
+    {
+      "frame": 11899,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11904,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11909,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11914,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11919,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11924,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11929,
+      "reason": "Risk cleared; releasing brake smoothly to base driver",
+      "brake": 0.3999999910593033,
+      "prediction": null
+    },
+    {
+      "frame": 11934,
+      "reason": "Risk cleared; releasing brake smoothly to base driver",
+      "brake": 0.5499999932944775,
+      "prediction": null
+    },
+    {
+      "frame": 11939,
+      "reason": "NAVIGATION",
+      "brake": 0,
+      "prediction": null
+    },
+    {
+      "frame": 11944,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "brake": 1.0,
+      "prediction": null
+    },
+    {
+      "frame": 11949,
+      "reason": "Risk cleared; releasing brake smoothly to base driver",
+      "brake": 0.2499999888241291,
+      "prediction": null
+    },
+    {
+      "frame": 11954,
+      "reason": "NAVIGATION",
+      "brake": 0,
+      "prediction": null
+    },
+    {
+      "frame": 11959,
+      "reason": "NAVIGATION",
+      "brake": 0,
+      "prediction": null
+    },
+    {
+      "frame": 11964,
+      "reason": "NAVIGATION",
+      "brake": 0,
+      "prediction": null
+    },
+    {
+      "frame": 11969,
+      "reason": "NAVIGATION",
+      "brake": 0,
+      "prediction": null
+    },
+    {
+      "frame": 11974,
+      "reason": "NAVIGATION",
+      "brake": 0,
+      "prediction": null
+    },
+    {
+      "frame": 11979,
+      "reason": "Limiting acceleration to stop within 12.00 m of measured road",
+      "brake": 0,
+      "prediction": null
+    }
+  ],
+  "camera_detections": [
+    {
+      "evaluation_frame": 11881,
+      "source_frame": 11880,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.6904820203781128,
+          "xyxy": [
+            269.6034851074219,
+            66.10067749023438,
+            319.6983337402344,
+            178.17300415039062
+          ],
+          "classification_status": "SUPPORTED"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11890,
+      "source_frame": 11887,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.26321250200271606,
+          "xyxy": [
+            272.7486572265625,
+            64.93402099609375,
+            319.66162109375,
+            178.13348388671875
+          ],
+          "classification_status": "UNCERTAIN"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11896,
+      "source_frame": 11895,
+      "people": []
+    },
+    {
+      "evaluation_frame": 11903,
+      "source_frame": 11902,
+      "people": []
+    },
+    {
+      "evaluation_frame": 11909,
+      "source_frame": 11908,
+      "people": []
+    },
+    {
+      "evaluation_frame": 11915,
+      "source_frame": 11913,
+      "people": []
+    },
+    {
+      "evaluation_frame": 11922,
+      "source_frame": 11921,
+      "people": []
+    },
+    {
+      "evaluation_frame": 11930,
+      "source_frame": 11929,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.649993896484375,
+          "xyxy": [
+            272.9779357910156,
+            80.94215393066406,
+            289.7268371582031,
+            121.09434509277344
+          ],
+          "classification_status": "UNCERTAIN"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11939,
+      "source_frame": 11937,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.3244035243988037,
+          "xyxy": [
+            262.9870910644531,
+            83.79264831542969,
+            281.5029602050781,
+            120.96873474121094
+          ],
+          "classification_status": "UNCERTAIN"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11946,
+      "source_frame": 11945,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.6781553030014038,
+          "xyxy": [
+            265.5013427734375,
+            80.67120361328125,
+            279.54931640625,
+            119.69952392578125
+          ],
+          "classification_status": "SUPPORTED"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11954,
+      "source_frame": 11952,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.6983693242073059,
+          "xyxy": [
+            272.4246826171875,
+            81.35658264160156,
+            289.0828857421875,
+            123.64585876464844
+          ],
+          "classification_status": "SUPPORTED"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11963,
+      "source_frame": 11961,
+      "people": [
+        {
+          "class": "person",
+          "confidence": 0.5264710187911987,
+          "xyxy": [
+            288.37640380859375,
+            78.11489868164062,
+            305.17889404296875,
+            129.46701049804688
+          ],
+          "classification_status": "UNCERTAIN"
+        },
+        {
+          "class": "person",
+          "confidence": 0.5167145133018494,
+          "xyxy": [
+            299.9678955078125,
+            56.65143585205078,
+            319.8251953125,
+            178.7718505859375
+          ],
+          "classification_status": "UNCERTAIN"
+        }
+      ]
+    },
+    {
+      "evaluation_frame": 11971,
+      "source_frame": 11969,
+      "people": []
+    },
+    {
+      "evaluation_frame": 11978,
+      "source_frame": 11976,
+      "people": []
+    }
+  ]
+}

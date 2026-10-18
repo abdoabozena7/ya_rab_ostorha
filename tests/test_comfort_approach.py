@@ -50,3 +50,12 @@ class ComfortApproachTests(unittest.TestCase):
         self.assertEqual(actual.gear,self.command.gear)
         self.assertEqual(controller.status['constraint'],'MEASURED_APPROACH')
         self.assertEqual(controller.status['source_frame'],41)
+
+    def test_previous_hold_brake_does_not_latch_after_route_requests_forward_motion(self):
+        vehicle=SimpleNamespace(speed_mps=0.,throttle=0.,brake=.028,longitudinal_acceleration_mps2=0.)
+        controller=ComfortControl()
+        actual=controller.apply(self.command,vehicle,8.)
+        self.assertEqual(actual.brake,0.)
+        # Signal/explicit hazard stops retain precedence over integrator release.
+        stop=replace(self.command,throttle=0.,brake=1.)
+        self.assertIs(controller.apply(stop,vehicle,8.,hazard=True),stop)

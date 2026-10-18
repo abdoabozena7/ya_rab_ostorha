@@ -46,6 +46,10 @@ class ComfortControl:
         # avoiding a second accumulated actuator state that can wind up.
         effort=vehicle.throttle-vehicle.brake
         effort+=max(-.18*dt,min(.18*dt,.16*(self.acceleration-measured)*dt))
-        if speed<.15 and vehicle.brake>.1:effort=0.
+        if speed<.15 and target_mps>.5 and command.throttle>.01:
+            # A previous shield/hold brake is an applied measurement, not a
+            # fresh navigation stop. Release its integrator once the native
+            # driver requests forward motion; the final shield still vetoes it.
+            effort=max(0.,effort)
         if target_mps<.05 and speed<.15:return replace(command,throttle=0.,brake=.25)
         return replace(command,throttle=max(0.,min(.6,effort)),brake=max(0.,min(.5,-effort)))

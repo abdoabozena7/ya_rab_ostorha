@@ -24,7 +24,7 @@ def configuration():return json.loads(CONFIG.read_text())
 
 
 def source_fingerprint():
-    files=sorted([*ROOT.glob('backend/core/*.py'),*ROOT.glob('backend/carla/*.py')])
+    files=sorted([*ROOT.glob('backend/core/*.py'),*ROOT.glob('backend/carla/*.py'),*ROOT.glob('backend/computer_vision/*.py')])
     hashes={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     config=configuration()
     for key in ('enabled','accepted_sides','reason'):config.pop(key,None)
@@ -64,6 +64,7 @@ class RuleRouteBypass:
         self.range_history=deque();self.travelled=0.;self.previous_stamp=None;self.previous_speed=0.
         self.reset_pending=False
         self.target_anchor=None
+        self.pedestrian_wait_until=0.
 
     @property
     def motion_required(self):return self.preparing or self.arming or self.engaged
@@ -71,6 +72,7 @@ class RuleRouteBypass:
     def _remember_target(self,scene):
         if self.target_anchor is not None:return
         front=[t for t in scene.prediction['tracks'] if t.get('confirmed') and t.get('occlusion_s',0)<=.1 and
+            t.get('class') not in ('person','pedestrian') and
             t['position_m'][0]>scene.geometry.front_m and
             abs(t['position_m'][1])<scene.geometry.half_width_m+t['half_size_m'][1]+.2 and
             math.hypot(*t['velocity_mps'])<.75]
@@ -90,6 +92,19 @@ class RuleRouteBypass:
         self.previous_stamp=now;self.previous_speed=ego.speed_mps
         if self.preparation_since is None:self.preparation_since=now
         if now-self.preparation_since>=.6:self.preparing=False
+        g=scene.geometry
+        person_near_path=any(t.get('confirmed') and t.get('class') in ('person','pedestrian') and
+            t.get('occlusion_s',1)<=.1 and 0<t['position_m'][0]<min(45.,max(15.,ego.speed_mps*3.+g.front_m)) and
+            max(t['half_size_m'])<=1.5 and
+            abs(t['position_m'][1])<g.half_width_m+t['half_size_m'][1]+3. for t in scene.prediction['tracks'])
+        if person_near_path or status.get('pedestrian_prediction'):self.pedestrian_wait_until=now+5.
+        if not self.engaged and now<self.pedestrian_wait_until:
+            # A crossing person is a protected wait, not a stationary object
+            # that should arm a passing maneuver. Brief classification gaps
+            # cannot turn the same crossing into permission to pass. This only
+            # withholds a maneuver; it never relaxes measurement/control age.
+            self.arming=self.preparing=False;self.stationary_since=None;self.last_target=None
+            return False
         if self.engaged:
             if scene.usable(now,wall):self._remember_target(scene)
             finished='PASS_RETURN' in self.driver.completed_maneuvers
@@ -149,6 +164,6 @@ class RuleRouteBypass:
         if (self.arming and not self.preparing and scene.prediction.get('motion_tracking_complete') and scene.usable(now,wall)
                 and ego.speed_mps<=self.config['maneuver_speed_mps']+.25
                 and any(t.get('confirmed') for t in scene.prediction['tracks'])):
-            self.engaged=True
             self._remember_target(scene)
+            self.engaged=self.target_anchor is not None
         return False

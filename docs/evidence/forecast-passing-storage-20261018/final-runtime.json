@@ -1,0 +1,32 @@
+{
+  "dashboard": {
+    "dashboard": "http://127.0.0.1:8000/",
+    "connected": true,
+    "mode": "PAUSED",
+    "controller": "RULE",
+    "safety_enabled": true,
+    "journey_interface_current": true
+  },
+  "route_bypass": {
+    "available": true,
+    "accepted": true,
+    "sides": [
+      "left",
+      "right"
+    ]
+  },
+  "source_fingerprint": "72d5fbf40793e685ec135e4ddd3dc69a656a8bc1db71683db99753c3d380dd25",
+  "native_processes": [
+    {
+      "ProcessId": 21192,
+      "ExecutablePath": "C:\\CARLA\\CARLA_0.9.16\\CarlaUE4.exe",
+      "CommandLine": "C:\\CARLA\\CARLA_0.9.16\\CarlaUE4.exe -quality-level=Epic -D3D12 -nosound -unattended -ostorha-render-profile=HIGH -carla-rpc-port=2000 -ResX=1280 -ResY=720 -RenderOffScreen"
+    },
+    {
+      "ProcessId": 30000,
+      "ExecutablePath": "C:\\CARLA\\CARLA_0.9.16\\CarlaUE4\\Binaries\\Win64\\CarlaUE4-Win64-Shipping.exe",
+      "CommandLine": "\"C:\\CARLA\\CARLA_0.9.16\\CarlaUE4\\Binaries\\Win64\\CarlaUE4-Win64-Shipping.exe\" CarlaUE4 -quality-level=Epic -D3D12 -nosound -unattended -ostorha-render-profile=HIGH -carla-rpc-port=2000 -ResX=1280 -ResY=720 -RenderOffScreen"
+    }
+  ],
+  "validation_ticket_in_ui": null
+}

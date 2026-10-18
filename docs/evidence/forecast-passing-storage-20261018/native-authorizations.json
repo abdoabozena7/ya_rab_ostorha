@@ -1,0 +1,60 @@
+{
+  "scope": "Preserved bounded reservations; ongoing user authorization superseded earlier requested limits; research ledger not reset",
+  "tickets": [
+    {
+      "version": 2,
+      "scope": "NATIVE_RULE_REPAIR",
+      "allowance_s": 1200,
+      "started_at": 1792356642.1961691,
+      "expires_at": 1792357842.1961691,
+      "authorization": "User request of 2026-10-18 to repair overtaking and anticipatory pedestrian forecasting; agent bounded native diagnostics to 1200 seconds, without resetting earlier ledgers.",
+      "ticket": "output\\forecast-passing-storage-20261018\\repair-4626a9d241924d309dab14cd596393bd.json",
+      "ticket_sha256": "0599ae13fced89fa4f0cc533fc7e0054338ccf1f1ccf8c5c088ae825e50d1453",
+      "journal_sha256": "13aed01943bfa282aefb598ce87998e3e7a22cc8e58a7f0c9a24698489338ec2"
+    },
+    {
+      "version": 2,
+      "scope": "NATIVE_RULE_REPAIR",
+      "allowance_s": 1200,
+      "started_at": 1792357992.9088306,
+      "expires_at": 1792359192.9088306,
+      "authorization": "User approved separate 20-minute reliable-driving validation; no hybrid admission",
+      "ticket": "output\\forecast-passing-storage-20261018\\repair-59243dd904b145c7982ec462a64f8a39.json",
+      "ticket_sha256": "20324b0a5e8ad679816f33bd9dd39b9f0d2c200ebe6af3b91f28d5755e93b6eb",
+      "journal_sha256": "8015c9a404529c5b6b5244c067c62127ee84170c3e6b57ad7eb3d0f760adb19a"
+    },
+    {
+      "version": 2,
+      "scope": "NATIVE_RULE_REPAIR",
+      "allowance_s": 3600,
+      "started_at": 1792359730.4410872,
+      "expires_at": 1792363330.4410872,
+      "authorization": "User explicitly authorized continuing native RULE repair until finished without further time-allowance questions, superseding the earlier 20-minute limit. This ticket is an internal bounded reservation; research ledgers remain unchanged.",
+      "ticket": "output\\forecast-passing-storage-20261018\\repair-774ce3df69b741fba3cf21ca04c97f13.json",
+      "ticket_sha256": "41355d497e32e658b0b22e788d71dc3b0c3e97bd970c0bfe69d1a72f60b496a0",
+      "journal_sha256": "19af7619007fd6c1085b0742486ee30b38f8b247d06864f96e4bf41b6b4c6d3e"
+    },
+    {
+      "version": 2,
+      "scope": "NATIVE_RULE_REPAIR",
+      "allowance_s": 3600,
+      "started_at": 1792363891.6332111,
+      "expires_at": 1792367491.6332111,
+      "authorization": "Internal bounded reservation for actual guided Mercedes calibration and final native checks, under the user instruction to continue until finished without further time-allowance questions. Prior tickets and research ledgers retained unchanged.",
+      "ticket": "output\\forecast-passing-storage-20261018\\repair-78d82b928f3d419d98e596bce3db7ca3.json",
+      "ticket_sha256": "65722255c5f459dcfecf5eb42fe4f5536b76dedc9295d61a75db821c2b095d6e",
+      "journal_sha256": "c461c95f0c5aa10a33219a768786daaab6d6ca2b336abf836d62d077610ba0c8"
+    },
+    {
+      "version": 2,
+      "scope": "NATIVE_RULE_REPAIR",
+      "allowance_s": 1200,
+      "started_at": 1792363199.9846246,
+      "expires_at": 1792364399.9846246,
+      "authorization": "Internal bounded reservation under the user instruction to continue until finished without further time-allowance questions; previous tickets and research ledgers retained unchanged.",
+      "ticket": "output\\forecast-passing-storage-20261018\\repair-c643e181406a4f74a9d0154b64b2566b.json",
+      "ticket_sha256": "f1c7948392dfc8592ae83d4c13c4c9720b15961eef19669cf8cc799657f89acd",
+      "journal_sha256": "e931d8b0871447be8760e90005ec8665afcdb220407eed339514072d260de3d0"
+    }
+  ]
+}

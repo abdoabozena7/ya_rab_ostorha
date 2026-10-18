@@ -1,0 +1,54 @@
+{
+  "scope": "AUDITED_EGO_MIRROR_ENVELOPE; no target actor geometry used",
+  "blueprint": "vehicle.mercedes.coupe_2020",
+  "source_report": "output\\hybrid-driving\\probe-92c26863871f40158ec2969d2810b6a3\\report.json",
+  "source_report_sha256": "545fe0a6f56e62c3521811cf72005cb68ea90dca12c357756c99927321a80913",
+  "native_bounding_half_width_m": 0.9059085520764256,
+  "observed_lidar_self_returns_bounds_m": {
+    "x": [
+      0.45733154,
+      0.47691894
+    ],
+    "absolute_y": [
+      0.97187984,
+      0.97187984
+    ],
+    "z": [
+      1.02855381,
+      1.10223892
+    ]
+  },
+  "calibrated_half_width_m": 1.01,
+  "applies_to": [
+    "entire collision/clearance footprint",
+    "existing ego-body self-return mask"
+  ],
+  "other_model_widths": "unchanged; measured native dimensions are never reduced",
+  "limit": "Model-specific audit; no broad sensor-ignore shell or clearance/freshness threshold relaxation",
+  "frame_id": 153221,
+  "timestamp_s": 2783.0721771605313,
+  "source_asset_path": "lidar/lidar-8064-153221.bin",
+  "source_asset_sha256": "8267bd80fa583732032dc7c027d4224a5b5f4bc0a8544cbea9ca836a89ea9c6e",
+  "measured_lidar_points_m": [
+    [
+      0.4573315382003784,
+      -0.9718798398971558,
+      1.0782066583633423
+    ],
+    [
+      0.47337400913238525,
+      -0.9290527105331421,
+      1.1022388935089111
+    ],
+    [
+      0.4573315382003784,
+      0.9718798398971558,
+      1.0782073736190796
+    ],
+    [
+      0.47691893577575684,
+      -0.9360058307647705,
+      1.0285537838935852
+    ]
+  ]
+}

@@ -69,7 +69,8 @@ class MotionTracker:
             from .ground_geometry import measured_ground_plane
             plane,_=measured_ground_plane(points,self.geometry or VehicleGeometry())
         r = rotation(self.yaw)
-        clusters = surfaces(np.asarray(points),bounds=(-40.,45.,15.) if self.enhanced else (-10.,30.,9.),
+        front=max(45.,min(90.,abs(longitudinal)*.35+longitudinal**2/10.+10.))
+        clusters = surfaces(np.asarray(points),bounds=(-40.,front,15.) if self.enhanced else (-10.,30.,9.),
                             geometry=self.geometry,ground_plane=plane,
                             split_large_frame=(self.origin,r) if self.enhanced else None)
         available = set(self.tracks)

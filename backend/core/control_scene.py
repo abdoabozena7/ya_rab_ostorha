@@ -121,6 +121,8 @@ class ControlSceneBuilder:
         self.engine = PredictionEngine(session_id, enhanced=True, geometry=self.geometry)
         self.last_frame = -1
         self.poses=deque(maxlen=80);self.semantics=SemanticAssociator()
+        from .depth_people import DepthPeople
+        self.depth_people=DepthPeople()
         from .control_radar import RadarVelocityFusion
         self.radar_velocity=RadarVelocityFusion()
 
@@ -168,8 +170,9 @@ class ControlSceneBuilder:
         # Sparse LiDAR alone repeatedly split parked bodies between rotations.
         # Voxel sampling bounds cost while preserving original sensor evidence.
         measured=[points]
+        front=max(45.,min(90.,abs(observation.ego.speed_mps)*.35+observation.ego.speed_mps**2/10.+10.))
         for xyz,_ in sources:
-            valid=xyz[(xyz[:,0]>-40.)&(xyz[:,0]<45.)&(np.abs(xyz[:,1])<15.)&
+            valid=xyz[(xyz[:,0]>-40.)&(xyz[:,0]<front)&(np.abs(xyz[:,1])<15.)&
                       (xyz[:,2]>-.6)&(xyz[:,2]<3.)]
             if len(valid):
                 indices=unique_row_indices(np.floor(valid/.2).astype(int))
@@ -191,11 +194,22 @@ class ControlSceneBuilder:
             'full':sum(t.get('doppler_evidence',{}).get('observable_rank')==2 for t in prediction['tracks']),
             'partial':sum(t.get('doppler_evidence',{}).get('observable_rank')==1 for t in prediction['tracks'])}
         semantics=self.semantics.apply(prediction,observation,self.poses,semantic_result)
+        people=self.depth_people.update(prediction,observation,self.poses,semantic_result,depth_images)
         for track in prediction['tracks']:
-            track['measurement_evidence']={'frame_id':observation.frame_id,'timestamp_s':observation.timestamp_s,
+            if track.get('class')=='person' and any(np.linalg.norm(np.asarray(track['position_m'])-person['position_m'])<1.5 for person in people):
+                # One physical person must not also be an independent merged
+                # curb/surface hypothesis with a different crossing history.
+                track['class']='UNKNOWN';track.pop('semantic_evidence',None)
+        prediction['tracks'].extend(people)
+        if people:
+            semantics.update(front='PARTIAL_CLASSIFIED',classified=True,
+                classified_tracks=semantics['classified_tracks']+len(people))
+        for track in prediction['tracks']:
+            prior_evidence=track.get('measurement_evidence',{})
+            track['measurement_evidence']={**prior_evidence,'frame_id':observation.frame_id,'timestamp_s':observation.timestamp_s,
                 'session_id':self.session_id,'coordinate_frame':'EGO_AT_EVALUATION',
-                'sensor_ids':[c.sensor_id for c in observation.channels if c.kind in (SensorKind.LIDAR,SensorKind.DEPTH)],
-                'support_points':track.get('support_points'), 'occlusion_s':track.get('occlusion_s'),
+                'sensor_ids':prior_evidence.get('sensor_ids',[c.sensor_id for c in observation.channels if c.kind in (SensorKind.LIDAR,SensorKind.DEPTH)]),
+                'support_points':prior_evidence.get('support_points',track.get('support_points')), 'occlusion_s':track.get('occlusion_s'),
                 'motion_observations':track.get('motion_observations')}
         from .kinematic_prediction import kinematic_modes
         # Include a complete command lease, reaction and braking tail, even at

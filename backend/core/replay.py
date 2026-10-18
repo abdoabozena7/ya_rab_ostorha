@@ -12,6 +12,8 @@ from .recording import MAX_ROW_BYTES, resolve_asset
 class ReplayReader:
     def __init__(self, run_directory, *, allow_test_data=False):
         self.root = Path(run_directory).resolve()
+        if (self.root/'storage-retention.json').exists():
+            raise ValueError('Raw replay was archived to free disk space; retained video and telemetry remain available')
         status_path=self.root/'recording-status.json'
         self.recording_status=json.loads(status_path.read_text(encoding='utf8')) if status_path.exists() else None
         if self.recording_status and self.recording_status.get('incomplete'):

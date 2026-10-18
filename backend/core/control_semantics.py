@@ -29,12 +29,18 @@ class SemanticAssociator:
                     samples=np.asarray(track['history'])
                     if not len(samples) or not samples[0,0]<=stamp<=samples[-1,0]:continue
                     position=np.array([np.interp(stamp,samples[:,0],samples[:,i]) for i in (1,2)])
-                    pixel=project(rotation(yaw).T@(position-origin),rgb.calibration)
+                    local=rotation(yaw).T@(position-origin)
+                    pixel=project(local,rgb.calibration)
                     if pixel is None:continue
                     for i,d in enumerate(result.get('detections',[])):
                         box=d.get('xyxy',[])
                         if len(box)!=4 or not np.isfinite(box).all() or box[2]<=box[0] or box[3]<=box[1]:continue
                         if d.get('confidence',0)<.65 or not (box[0]<=pixel[0]<=box[2] and box[1]<=pixel[1]<=box[3]):continue
+                        depth=d.get('depth_evidence')
+                        if depth:
+                            if depth.get('frame_id')!=frame or abs(depth.get('timestamp_s',-1)-stamp)>1e-6:continue
+                            axial=local[0]-rgb.calibration['mount_transform']['position_m'][0]
+                            if abs(axial-depth['axial_m'])>max(.75,depth['axial_m']*.08):continue
                         distance=((pixel[0]-(box[0]+box[2])/2)/(box[2]-box[0]))**2+((pixel[1]-(box[1]+box[3])/2)/(box[3]-box[1]))**2
                         candidates.append((distance,-d['confidence'],str(track['id']),i,d))
                 used_tracks=set();used_detections=set()
@@ -43,6 +49,7 @@ class SemanticAssociator:
                     used_tracks.add(track_id);used_detections.add(index)
                     self.labels[track_id]={'class':detection['class'],'confidence':-negative_confidence,'timestamp_s':stamp,
                         'session_id':prediction['session_id'],'source_sensor':'frontCamera','source_frame':result['frame_id']}
+                    if detection.get('depth_evidence'):self.labels[track_id]['depth_evidence']=detection['depth_evidence']
                 self.last_result=key
         for track in prediction['tracks']:
             track['class']='UNKNOWN';track.pop('semantic_evidence',None)

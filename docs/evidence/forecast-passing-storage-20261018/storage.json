@@ -1,0 +1,53 @@
+{
+  "scope": "Measured workspace inventory after bulk retirement; before additional native validation recordings",
+  "before": {
+    "bytes": 269434305253,
+    "files": 1573655
+  },
+  "after": {
+    "bytes": 31696071762,
+    "files": 133727
+  },
+  "freed_bytes": 237738233491,
+  "archived_recordings": 722,
+  "raw_asset_bytes_removed": 221287657430,
+  "errors": [],
+  "local_manifest": "output/maintenance/recording-retention-initial.json",
+  "local_manifest_sha256": "7860aebabdc05736f3daab119bacb23d941c44f523eabaa07c5715917ff32d6c",
+  "retained_full_incident_runs": [
+    "run_10fcaee5901248bc9a4e635e35ccd1db",
+    "run_e9a793dc8a8b4d3a86ef020852bd4bf6"
+  ],
+  "kept": [
+    "current runtimes and cross-environment dependencies",
+    "active Trajectron weights",
+    "Git history",
+    "outcomes, metadata, events, checksum-verified gzip telemetry and existing videos"
+  ],
+  "blocked_by_automatic_approval": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "Qwen3-1.7B-Q8_0.gguf",
+    "llama-b11146-vulkan.zip"
+  ],
+  "final_after_native_validation": {
+    "bytes": 37191026968,
+    "files": 163857,
+    "timestamp_utc": "2026-10-18T23:16:06Z",
+    "net_freed_bytes": 232243278285,
+    "additional_retired_recordings": 24,
+    "additional_raw_asset_bytes_removed": 17549959104,
+    "errors": [],
+    "manifest": "output/maintenance/recording-retention.json",
+    "manifest_sha256": "dc663a3f36630cc716a4cfeaa37a31b9f519953ee1484aa2381176b3da7aa0f9",
+    "raw_preserved_recordings": [
+      "runs/normal_city/run_10fcaee5901248bc9a4e635e35ccd1db",
+      "runs/normal_city/run_e9a793dc8a8b4d3a86ef020852bd4bf6",
+      "runs\\normal_city\\run_dec2f1b0502b42da8d8379ff9a7fbfb8",
+      "runs\\normal_city\\run_205d3c77aecb421495953096061f632a",
+      "runs\\normal_city\\run_b26e37f48164413fb7eea7a755a23d92",
+      "runs\\normal_city\\run_68c885e85a134144ad01dc51e165ec3a",
+      "runs\\normal_city\\run_b8d057611c2942c1a646e33175e549ca",
+      "runs\\normal_city\\run_b410a459101244ec8fc9099a91b9cd05"
+    ]
+  }
+}
