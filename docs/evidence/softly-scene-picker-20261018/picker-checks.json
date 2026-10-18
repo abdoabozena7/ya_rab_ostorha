@@ -1,0 +1,23 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "checks": [
+    "Warm popup and coral selection; Escape cancels highlighted choice",
+    "Enter, Space, arrows, Home, End and typed initial retain the protocol value",
+    "Tab and outside click close the popup",
+    "Mobile popup fits, pointer selection works and guided start sends DENSE_CHAOS"
+  ],
+  "colors": {
+    "option": "rgba(255, 183, 178, 0.28)",
+    "popup": "rgb(253, 252, 248)"
+  },
+  "bounds": {
+    "left": 16,
+    "right": 374,
+    "top": 601.75,
+    "bottom": 739.75,
+    "width": 390,
+    "height": 740,
+    "scrollWidth": 390
+  },
+  "errors": []
+}

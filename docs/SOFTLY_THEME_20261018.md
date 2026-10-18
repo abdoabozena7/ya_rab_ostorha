@@ -5,6 +5,24 @@ Reenie Beanie welcome emphasis and coral actions. The visual theme covers the
 opening, first-drive choice, preparation, live drive, saved outcomes, comparison
 and Menu. The existing simulator state machine and driving algorithms are unchanged.
 
+## Starting-scene popup follow-up
+
+The starting-scene selector now has a themed combobox popup, replacing the
+operating system's blue option menu. Its warm paper surface, coral selection,
+sage hover and wrapped traffic-request description match the rest of the screen.
+The hidden native select remains the source of the existing guided `scene` value.
+Enter/Space, arrows, Home/End, typed initials, Escape, Tab and outside clicks are
+handled explicitly. Opening retains keyboard focus and scrolls the options into
+view on small screens; leaving the choice screen closes the popup.
+
+`scripts/check_scene_picker_ui.js` verified the popup colors, keyboard selection
+and cancellation, pointer selection, outside/Tab dismissal, 390×740 layout and
+the `DENSE_CHAOS` guided-start payload in an isolated browser. Evidence and
+desktop/mobile screenshots are in
+[the popup evidence folder](evidence/softly-scene-picker-20261018/).
+The dashboard was rebuilt; all 150 JavaScript tests and the 15 guided-flow
+browser checks passed again. This follow-up adds no native driving evidence.
+
 ## Design and behavior
 
 The visual thesis is a quiet, tactile paper surface around a real driving scene.

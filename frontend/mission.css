@@ -73,6 +73,19 @@ body.light-cockpit.mission-experience #drivePrimaryAction:hover{background:var(-
 #missionChoices input{accent-color:#8a4c47;width:18px;height:18px;min-height:18px;flex:none;margin:0}
 #missionChoices .mission-scene-choice{grid-column:1/-1;display:block;background:transparent;padding:8px 0 0;border:0;border-radius:0;font-size:12px}
 #missionSceneChoice{display:block;margin-top:8px;width:100%;font-size:13px;padding:12px 18px;text-overflow:ellipsis}
+.mission-scene-choice{position:relative}
+.mission-experience #missionSceneTrigger{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;margin-top:8px;padding:13px 18px;background:#ffffffd9;text-align:left;font-size:14px;line-height:1.5;border:1px solid var(--line);border-radius:24px}
+#missionSceneTrigger::after{content:'';width:7px;height:7px;flex:none;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin:0 4px 4px;transition:transform 240ms ease}
+#missionSceneTrigger[aria-expanded=true]::after{transform:rotate(225deg);margin-bottom:0}
+#missionSceneValue{min-width:0;overflow-wrap:anywhere}
+#missionSceneOptions{position:absolute;top:100%;left:0;right:0;z-index:90;margin-top:8px;padding:8px;border:1px solid var(--line);border-radius:24px;background:var(--page);box-shadow:0 12px 32px -8px #29252426;max-height:260px;overflow-y:auto;animation:scene-options-in 180ms ease-out}
+#missionSceneOptions [role=option]{position:relative;padding:14px 40px 14px 16px;border-radius:16px;color:var(--ink);font-size:14px;cursor:pointer;transition:background 180ms ease}
+#missionSceneOptions [role=option] span{display:block;font-weight:500}
+#missionSceneOptions [role=option] small{display:block;margin-top:4px;color:#655e59;font-size:12px;line-height:1.5}
+#missionSceneOptions [role=option]:is(:hover,[data-active=true]){background:var(--pastel-mint)}
+#missionSceneOptions [role=option][aria-selected=true]{background:#ffb7b247}
+#missionSceneOptions [role=option][aria-selected=true]::after{content:'';position:absolute;right:19px;top:20px;width:6px;height:11px;border-right:1.5px solid #8a4c47;border-bottom:1.5px solid #8a4c47;transform:rotate(45deg)}
+@keyframes scene-options-in{from{opacity:0}to{opacity:1}}
 #missionWorking{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted);padding:12px 0}
 #missionWorking i{height:8px;width:8px;border-radius:50%;background:#8a4c47;animation:mission-pulse 2s ease-in-out infinite}
 #missionError{color:var(--danger);border-left:2px solid var(--danger);padding:8px 0 8px 14px;overflow-wrap:anywhere}

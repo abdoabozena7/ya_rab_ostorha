@@ -1,0 +1,79 @@
+{
+  "checks": [
+    "START_GUIDED uses explicit first mode",
+    "NEXT bound to current presentation / arm / phase",
+    "Contact and saved metrics appear before second start",
+    "Results are visible without exported video",
+    "Optional video/results review returns to the same mission",
+    "Expanded camera reserves space for the action and emergency; Escape restores it",
+    "Menu Escape restores keyboard focus",
+    "PREPARING: status without an unavailable task button",
+    "READY: status without an unavailable task button",
+    "STARTING: status without an unavailable task button",
+    "FINALIZING: status without an unavailable task button",
+    "RESTORING: status without an unavailable task button",
+    "RECOVERING: status without an unavailable task button",
+    "Restoration failure retains a contextual retry",
+    "GPU release cancels normal task actions"
+  ],
+  "measurements": [
+    {
+      "w": 1920,
+      "h": 1080,
+      "scroll": 1920,
+      "action": {
+        "top": 885.421875,
+        "bottom": 937.921875
+      },
+      "camera": {
+        "width": 1320,
+        "height": 594
+      },
+      "fit": "contain"
+    },
+    {
+      "w": 1280,
+      "h": 720,
+      "scroll": 1280,
+      "action": {
+        "top": 667.34375,
+        "bottom": 719.84375
+      },
+      "camera": {
+        "width": 1216,
+        "height": 396
+      },
+      "fit": "contain"
+    },
+    {
+      "w": 850,
+      "h": 600,
+      "scroll": 850,
+      "action": {
+        "top": 547.625,
+        "bottom": 600.125
+      },
+      "camera": {
+        "width": 786,
+        "height": 330
+      },
+      "fit": "contain"
+    },
+    {
+      "w": 390,
+      "h": 740,
+      "scroll": 390,
+      "action": {
+        "top": 628.171875,
+        "bottom": 680.671875
+      },
+      "camera": {
+        "width": 358,
+        "height": 318.1875
+      },
+      "fit": "contain"
+    }
+  ],
+  "errors": [],
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS"
+}

@@ -1,0 +1,45 @@
+// Run after verify_guided_mission_ui.js in a fresh isolated browser.
+async page=>{
+  const checks=[];
+  await page.evaluate(()=>window.setMissionFixture({connected:true,available:true,mode:'PAUSED',presentation:{status:'IDLE'},journey:{status:'IDLE'},simulatorStop:{available:true,status:'IDLE'},simulatorStart:{status:'READY',available:true}}));
+  await page.waitForFunction(()=>document.body.dataset.mission==='choose');
+  await page.setViewportSize({width:1280,height:800});
+  const picker=page.locator('#missionSceneTrigger');
+  await picker.click();
+  await page.getByRole('listbox',{name:'Starting scene',exact:true}).waitFor({state:'visible'});
+  await page.locator('#missionSceneOptions').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
+  const selected=page.locator('#missionSceneOptions [aria-selected=true]');
+  const colors=await selected.evaluate(e=>({option:getComputedStyle(e).backgroundColor,popup:getComputedStyle(e.parentElement).backgroundColor}));
+  if(!colors.option.startsWith('rgba(255, 183, 178,')||colors.popup!=='rgb(253, 252, 248)')throw Error('Popup theme missing: '+JSON.stringify(colors));
+  await page.screenshot({path:'output/playwright/softly-scene-desktop.png',fullPage:true});
+  await picker.press('ArrowDown');await picker.press('Escape');
+  if(await page.locator('#missionSceneChoice').inputValue()!=='BUSY_ROUTE'||await picker.getAttribute('aria-expanded')!=='false')throw Error('Escape changed the selection');
+  checks.push('Warm popup and coral selection; Escape cancels highlighted choice');
+  await picker.press('Enter');await picker.press('End');await picker.press('Enter');
+  if(await page.locator('#missionSceneChoice').inputValue()!=='DENSE_CHAOS')throw Error('Keyboard choice not committed');
+  await picker.press(' ');await picker.press('Home');await picker.press('Enter');
+  if(await page.locator('#missionSceneChoice').inputValue()!=='BUSY_ROUTE')throw Error('Home / Space navigation failed');
+  await picker.press('d');await picker.press('Enter');
+  if(await page.locator('#missionSceneChoice').inputValue()!=='DENSE_CHAOS')throw Error('Type navigation failed');
+  checks.push('Enter, Space, arrows, Home, End and typed initial retain the protocol value');
+  await picker.click();await picker.press('Tab');
+  if(await picker.getAttribute('aria-expanded')!=='false')throw Error('Tab left the popup open');
+  await picker.click();await page.locator('#missionTitle').click();
+  if(await picker.getAttribute('aria-expanded')!=='false')throw Error('Outside click did not close');
+  checks.push('Tab and outside click close the popup');
+  await page.setViewportSize({width:390,height:740});await picker.click();
+  await page.locator('#missionSceneOptions').evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
+  if(!await picker.evaluate(e=>e===document.activeElement))throw Error('Open combobox lost keyboard focus');
+  const bounds=await page.locator('#missionSceneOptions').evaluate(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth};});
+  if(bounds.left<0||bounds.right>bounds.width||bounds.bottom>bounds.height+1||bounds.top<0||bounds.scrollWidth>bounds.width)throw Error('Mobile popup clipped: '+JSON.stringify(bounds));
+  await page.screenshot({path:'output/playwright/softly-scene-mobile.png'});
+  await page.getByRole('option',{name:'Busy route',exact:true}).click();
+  await picker.click();await page.getByRole('option',{name:'Dense Chaos Stress Test requests 40 vehicles / 50 pedestrians',exact:true}).click();
+  await page.getByRole('radio',{name:'The problem Normal · obstacle protection off',exact:true}).check();
+  await page.getByRole('button',{name:'Start the normal drive',exact:true}).click();
+  const evidence=await page.evaluate(()=>window.missionEvidence());
+  if(!evidence.commands.some(c=>c.value?.operation==='START_GUIDED'&&c.value.scene==='DENSE_CHAOS'))throw Error('Wrong scene sent to guided protocol');
+  if(evidence.errors.length)throw Error('Browser exceptions: '+evidence.errors.join(';'));
+  checks.push('Mobile popup fits, pointer selection works and guided start sends DENSE_CHAOS');
+  return {scope:evidence.scope,checks,colors,bounds,errors:evidence.errors};
+}

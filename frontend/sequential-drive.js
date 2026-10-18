@@ -2,6 +2,7 @@ import {installGuidedDetails} from './guided-details.js';
 import {missionState,modeLabel,stressSummary} from './mission-state.js';
 import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome,presentationSummary} from './presentation-run.js';
+import {installScenePicker} from './scene-picker.js';
 
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
@@ -39,6 +40,7 @@ export function installSequentialDrive(p,tools) {
     for(const element of [experience.querySelector('#missionPreview'),guide]){element.classList.add('mission-reveal');reveals.observe(element);}
   }
   document.querySelector('.app-header').after(experience);$('missionScene').append($('cameraCard'));
+  const scenePicker=installScenePicker($('missionSceneChoice'));
   const header=document.querySelector('.app-header');
   if(globalThis.ResizeObserver)new ResizeObserver(()=>document.body.style.setProperty('--mission-header-height',header.offsetHeight+'px')).observe(header);
   const skip=document.querySelector('.skip-link');if(skip)skip.href='#missionTitle';
@@ -86,6 +88,7 @@ export function installSequentialDrive(p,tools) {
       pending=null;local.commandPending=false;
     }
     const state=missionState(p,local);document.body.dataset.mission=state.screen;
+    if(!state.choices)scenePicker.close();
     if(!state.camera&&$('cameraCard').classList.contains('camera-expanded'))tools.expandCamera(false);
     const history=document.body.dataset.workspace==='results';experience.hidden=history;returnToMission.hidden=!history;
     $('missionPreview').hidden=!['welcome','choose'].includes(state.screen);$('missionScene').hidden=!state.camera;

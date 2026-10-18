@@ -1,0 +1,20 @@
+{
+  "base_commit": "5ec446dbd09400025fd34763728e5bd54f16688e",
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "text_hash_encoding": "UTF-8, LF line endings",
+  "sha256": {
+    "frontend/scene-picker.js": "a8dee778e0ffd8af3b8e840815f2b5d70978f6724cc144691ac147893ac9eb98",
+    "frontend/sequential-drive.js": "1a5ecbd6cac2581d6c86b458197e069951d365381c2f22202d48bf74cab1a412",
+    "frontend/mission.css": "ebb0a1b5b9e1ce629973c43413cdb533f7717724ef5e6e1252ec14aea80cde5e",
+    "frontend/dashboard.bundle.js": "0332943e725bbc53f2513f7411538def39aebb767f41576a517001639c1adaa0",
+    "frontend/dashboard.styles.css": "bef310f8546bd27d72487c5c448fd4d84068d38e08287982e68f4a758d86742c",
+    "scripts/check_scene_picker_ui.js": "f2a2f2f571aed31777d491bab1802585a141652960d30ce17776f110e6dffffa"
+  },
+  "validation": {
+    "build": "npm run build:dashboard passed",
+    "javascript_tests": 150,
+    "guided_browser_checks": 15,
+    "picker_browser_checks": 4
+  },
+  "screenshots": "JPEG copies of isolated browser screenshots, not new native drives."
+}
