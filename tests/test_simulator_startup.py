@@ -9,10 +9,24 @@ from unittest.mock import Mock,patch
 from http.server import ThreadingHTTPServer
 from backend.carla.stop_helper import stopped_service
 from backend.carla.start_helper import finish_start,launch_settings,backend_command
-from backend.server import Handler
+from backend.server import Handler,DashboardHTTPServer
 
 
 class StartupTests(unittest.TestCase):
+    def test_concurrent_pages_dispatch_only_one_engine_start(self):
+        from concurrent.futures import ThreadPoolExecutor
+        start=Mock(return_value=None)
+        service=stopped_service({'result':{'status':'STOPPED'}},Mock(),start)
+        server=DashboardHTTPServer(('127.0.0.1',0),Handler);server.simulation_service=service
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        def request(_):
+            message=urllib.request.Request(f'http://127.0.0.1:{server.server_port}/api/simulation/start',data=b'{}',headers={'Content-Type':'application/json'})
+            with urllib.request.urlopen(message,timeout=5) as response:return json.load(response)['status']
+        try:
+            with ThreadPoolExecutor(max_workers=12) as pool:self.assertEqual(set(pool.map(request,range(24))),{'STARTING'})
+            start.assert_called_once()
+        finally:server.shutdown();server.server_close();thread.join(timeout=2)
+
     def test_stopped_start_is_explicit_idempotent_and_never_creates_an_sdk_sink(self):
         start=Mock(return_value=None)
         s=stopped_service({'result':{'status':'STOPPED'}},Mock(),start)

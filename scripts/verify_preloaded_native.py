@@ -7,6 +7,7 @@ import argparse
 import json
 import time
 import traceback
+import uuid
 import urllib.request
 from pathlib import Path
 from websockets.sync.client import connect
@@ -38,10 +39,11 @@ def main():
                         (out/'failure-state.json').write_text(json.dumps(s));raise RuntimeError(d.get('reason'))
                     if phase in statuses and (arm is None or d.get('arm')==arm):return s
                 raise TimeoutError('Native phase did not arrive: '+str(statuses))
-            ws.recv(timeout=10);send('PRELOAD');s=wait(['CHOOSING'])
+            page_id=uuid.uuid4().hex
+            ws.recv(timeout=10);send('PRELOAD',page_id=page_id);s=wait(['CHOOSING'])
             report['prepared']={k:s['presentation'].get(k) for k in ('id','seed','setup','prepared_condition_id','population_audit')}
             (out/'prepared-state.json').write_text(json.dumps(s))
-            identity=s['presentation']['id'];send('START_GUIDED',prepared_id=identity,first_mode=args.first)
+            identity=s['presentation']['id'];send('START_GUIDED',prepared_id=identity,first_mode=args.first,page_id=page_id)
             for arm in range(2):
                 s=wait(['DRIVING','AWAITING_NEXT','RESULTS'],arm=arm)
                 deadline=time.monotonic()+args.hold_seconds

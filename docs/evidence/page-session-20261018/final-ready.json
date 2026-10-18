@@ -1,0 +1,13 @@
+{
+  "id": "fc4389c8896d49e9be1c08e2fe216fda",
+  "page_id": "c3c60baa-964d-4d28-90b9-958ba04a4aa4",
+  "status": "CHOOSING",
+  "prepared_condition_id": "96027b6ea110f8bff442bbe344e7e874b8012860efcf5ce330326d8ebcb5da3f",
+  "seed": 1099763272,
+  "actual": {
+    "vehicles": 60,
+    "pedestrians": 100,
+    "controllers": 100,
+    "walkers_active": 100
+  }
+}

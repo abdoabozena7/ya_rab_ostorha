@@ -44,7 +44,8 @@ export function installSequentialDrive(p,tools) {
   const header=document.querySelector('.app-header');
   if(globalThis.ResizeObserver)new ResizeObserver(()=>document.body.style.setProperty('--mission-header-height',header.offsetHeight+'px')).observe(header);
   const skip=document.querySelector('.skip-link');if(skip)skip.href='#missionTitle';
-  const local={firstMode:null,launchPending:false,shutdownPending:false,commandPending:false,autoRequested:false,preloadRequested:false};
+  const local={pageId:crypto.randomUUID(),pageAdmitted:false,firstMode:'NORMAL',launchPending:false,shutdownPending:false,commandPending:false,autoRequested:false,preloadRequested:false};
+  experience.querySelector('[name=firstDrive][value=NORMAL]').checked=true;
   let previousScreen='',outcomeKey='',pending=null;
   const clearMedia=()=>{p.reviewedComparison=null;p.presentationPlayback=false;document.body.classList.remove('archive-review');
     for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');};
@@ -54,16 +55,24 @@ export function installSequentialDrive(p,tools) {
   });
   const command=operation=>{
     const d=p.presentation||{},value={operation,id:d.id,expected_arm:d.arm,expected_phase:d.status};
-    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,scene:'DENSE_CHAOS',speed_kmh:50,...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
+    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,page_id:local.pageId,scene:'DENSE_CHAOS',speed_kmh:50,...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
     if(!p.dashboardAction('presentation',value))return;
     if(operation==='FINISH')local.preloadRequested=false;
     pending={id:d.id,phase:d.status,arm:d.arm,at:performance.now()};local.commandPending=true;
   };
+  const prepareHere=()=>{
+    p.operationError=null;local.preloadError=null;local.pageAdmitted=false;
+    if(!p.dashboardAction('presentation',{operation:'PRELOAD',page_id:local.pageId})){
+      local.preloadError=p.operationError;return;
+    }
+    local.preloadRequested=true;local.preloadSequence=p.sequence;local.preloadAt=performance.now();
+  };
   $('drivePrimaryAction').onclick=()=>{
     const state=missionState(p,local);if(!state.action)return;p.operationError=null;
     if(state.action==='START_SIMULATION'){
-      clearMedia();local.launchPending=true;local.preloadRequested=false;local.firstMode=null;experience.querySelectorAll('[name=firstDrive]').forEach(i=>i.checked=false);
+      clearMedia();local.launchPending=true;local.preloadRequested=false;local.firstMode='NORMAL';experience.querySelectorAll('[name=firstDrive]').forEach(i=>i.checked=i.value==='NORMAL');
       p.startSimulation().finally(()=>{if(!p.simulationStarting)local.launchPending=false;update();});
+    } else if(state.action==='PREPARE_HERE'){clearMedia();prepareHere();
     } else if(state.action==='CONNECT')p.reconnectNative();
     else if(state.action==='RELEASE')p.acknowledgeStop();
     else if(state.action==='FREE_GPU')freeGPU();
@@ -97,10 +106,12 @@ export function installSequentialDrive(p,tools) {
         local.launchPending=true;p.startSimulation().finally(()=>{local.launchPending=false;update();});
       }
     }
-    if(p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&
-        !['STARTING','RUNNING'].includes(p.journey?.status)&&['IDLE','COMPLETE','CANCELLED'].includes(d.status||'IDLE')){
-      if(p.dashboardAction('presentation',{operation:'PRELOAD'}))local.preloadRequested=true;
+    if(p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&!local.preloadError){
+      prepareHere();
     }
+    if(d.page_id===local.pageId||Number.isInteger(local.preloadSequence)&&p.acknowledged>=local.preloadSequence)local.pageAdmitted=true;
+    if(local.preloadSequence&&p.failedSequence===local.preloadSequence)local.preloadError=p.operationError||'The fresh scene request was rejected.';
+    if(local.preloadRequested&&!local.pageAdmitted&&performance.now()-local.preloadAt>15000)local.preloadError='The page did not receive confirmation. Reconnect or prepare a fresh drive here.';
     const state=missionState(p,local);document.body.dataset.mission=state.screen;
 
     if(!state.camera&&$('cameraCard').classList.contains('camera-expanded'))tools.expandCamera(false);
@@ -125,10 +136,11 @@ export function installSequentialDrive(p,tools) {
     const primary=$('drivePrimaryAction');primary.hidden=!state.action&&!state.choices;
     primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action;
     primary.dataset.loading=String(state.loadingDrive);primary.setAttribute('aria-busy',String(state.loadingDrive));
+    primary.style.setProperty('--load-step',state.loadStep??4);
     primary.setAttribute('aria-describedby','missionNextHint');
     $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen);
     $('missionNextHint').textContent=state.loadingDrive?'Loading simulation… You can start when the city is ready.':state.choices&&!state.action?'Simulation ready. Choose your first drive.':
-      {START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Simulation ready. Next: fit the selected car, verify sensors, then drive the prepared scene.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
+      {PREPARE_HERE:'Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.',START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
     $('missionError').hidden=!p.operationError;$('missionError').textContent=p.operationError||'';
     $('missionOutcomes').hidden=!['comparison','outcome','fault'].includes(state.screen);
     const pair=p.journeyComparison,runs=pair?.pair_id&&pair.pair_id===d.pair_id?pair.runs:d.runs||{},key=state.screen+JSON.stringify(runs)+String(pair?.conditions_match);

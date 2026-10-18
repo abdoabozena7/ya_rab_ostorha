@@ -10422,36 +10422,41 @@ body.light-cockpit.mission-experience #drivePrimaryAction {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  transition: transform 240ms ease, box-shadow 240ms ease;
 }
 body.light-cockpit.mission-experience #drivePrimaryAction:disabled {
   opacity: 1;
   cursor: not-allowed;
 }
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true] {
-  background: #ffe9e6;
-  box-shadow: none;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #c9b6b0;
 }
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: -30%;
+  bottom: -30%;
+  left: -14px;
+  width: calc(26px + var(--load-step,0)*22%);
   z-index: -1;
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      var(--primary) 35%,
-      var(--primary) 65%,
-      transparent);
-  transform: translateX(-100%);
-  animation: mission-load-fill 2.8s ease-in-out infinite;
+  background: var(--primary);
+  border-radius: 0 48% 42% 0/0 52% 46% 0;
+  transform-origin: left center;
+  animation: mission-load-fill 3s ease-in-out infinite;
+  transition: width 900ms ease;
 }
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after {
   visibility: hidden;
 }
 @keyframes mission-load-fill {
-  to {
-    transform: translateX(100%);
+  0%, 100% {
+    transform: scaleX(.75);
+    border-radius: 0 44% 58% 0/0 60% 44% 0;
+  }
+  50% {
+    transform: scaleX(1);
+    border-radius: 0 60% 36% 0/0 42% 62% 0;
   }
 }
 .mission-experience #missionFreeGPU {
@@ -11178,7 +11183,7 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
 }
 @media (prefers-reduced-motion: reduce) {
   body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before {
-    transform: translateX(-35%);
+    transform: none;
   }
 }
 .preview-canvas {

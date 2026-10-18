@@ -127,8 +127,9 @@ export class SimulationClient extends SimulationProvider {
   }
 
   acceptSnapshot(message) {
-    if (message.type === 'error') { this.operationError = message.error; return; }
+    if (message.type === 'error') { this.operationError = message.error; this.failedSequence=message.sequence; return; }
     if (message.type !== 'snapshot') return;
+    this.acknowledged=message.acknowledged;
     if (message.sessionId && this.sessionId && message.sessionId !== this.sessionId) this.disconnect('New native session');
     this.sessionId = message.sessionId ?? this.sessionId;
     this.journey = message.journey ?? {};
@@ -289,7 +290,14 @@ export class SimulationClient extends SimulationProvider {
   takeControl() { return this.send('take_control'); }
   stopSimulator() { this.operationError=null;return this.send('stop_simulator'); }
   reconnectNative() { this.operationError = null; return this.send('reconnect'); }
-  dashboardAction(type, value) { this.operationError = null; return this.send(type, {value}); }
+  dashboardAction(type, value) {
+    this.operationError = null;
+    if(this.send(type,{value}))return true;
+    this.operationError=this.simulationStarting?'The simulator is still starting.':!this.connected||!this.fresh?
+      'Waiting for a live simulator connection. Reconnect to try this action.':!this.controller?
+      'This page does not control the current drive. Prepare a fresh drive here.':'The action could not be sent. Check the session connection and try again.';
+    return false;
+  }
   async catalog() {
     const response = await this.fetcher('/api/simulation/catalog', {cache:'no-store'});
     const result = await response.json();

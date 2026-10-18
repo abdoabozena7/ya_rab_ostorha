@@ -20,6 +20,28 @@ test('stopped and loading never expose stale camera or old results',()=>{
   assert.equal(missionState({...p,simulationStarting:true}).action,null);
   assert.equal(missionState({...p,simulationStarting:true}).loadingDrive,true);
 });
+test('a page never starts from another page’s scene or shows its GPU action',()=>{
+  const p=guided('CHOOSING');Object.assign(p.presentation,{preloaded:true,awaiting_choice:true,page_id:'other-page'});
+  const waiting=missionState(p,{pageId:'this-page',preloadRequested:true,firstMode:'NORMAL'});
+  assert.equal(waiting.action,null);assert.equal(waiting.loadingDrive,true);assert.equal(waiting.freeGPU,false);
+  const replaced=missionState(p,{pageId:'this-page',pageAdmitted:true,preloadRequested:true,firstMode:'NORMAL'});
+  assert.equal(replaced.action,'PREPARE_HERE');assert.equal(replaced.freeGPU,false);assert.equal(replaced.loadingDrive,false);
+  p.presentation.page_id='this-page';
+  assert.equal(missionState(p,{pageId:'this-page',firstMode:'NORMAL'}).action,'START_GUIDED');
+  p.presentation.status='DRIVING';p.presentation.awaiting_choice=false;p.presentation.page_id='other-page';
+  assert.equal(missionState(p,{pageId:'this-page',pageAdmitted:true}).action,'PREPARE_HERE');
+});
+test('native preparation stages advance the organic fill; rejected requests have a recovery action',()=>{
+  for(const [phase,step] of [['STOPPING',1],['PREPARING',2],['READY',3],['CHOOSING',4]]){
+    const p=guided(phase);Object.assign(p.presentation,{preloaded:true,awaiting_choice:true});
+    assert.equal(missionState(p,{firstMode:'NORMAL'}).loadStep,step);
+  }
+  const failure=missionState(ready,{preloadError:'Scene request rejected'});
+  assert.equal(failure.action,'PREPARE_HERE');assert.equal(failure.freeGPU,false);assert.match(failure.detail,/rejected/);
+  const cancelled=guided('CANCELLED');Object.assign(cancelled.presentation,{preloaded:true,page_id:'this-page',reason:'dashboard_disconnected'});
+  const reconnect=missionState(cancelled,{pageId:'this-page',pageAdmitted:true,preloadRequested:true});
+  assert.equal(reconnect.action,'PREPARE_HERE');assert.equal(reconnect.loadingDrive,false);
+});
 test('startup and preload acknowledgement keep a blocked start and hide GPU release',()=>{
   for(const [p,local] of [
     [{...ready,connected:false,simulationStarting:true},{}],

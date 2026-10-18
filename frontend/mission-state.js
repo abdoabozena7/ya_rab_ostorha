@@ -21,12 +21,13 @@ export function missionState(p,local={}) {
   const d=p.presentation||{},guided=!!d.guided,phase=guided?d.status:'IDLE',arm=d.arm||0,mode=d.modes?.[arm]||'NORMAL';
   const initialWorld=['IDLE','COMPLETE','CANCELLED'].includes(phase)||d.preloaded&&d.awaiting_choice;
   const preparingWorld=p.simulationStarting||local.launchPending&&!p.connected||
-    d.preloaded&&d.awaiting_choice&&phase!=='CHOOSING'||local.preloadRequested&&['IDLE','COMPLETE','CANCELLED'].includes(phase);
+    d.preloaded&&d.awaiting_choice&&phase!=='CHOOSING'||local.preloadRequested&&!local.pageAdmitted&&['IDLE','COMPLETE','CANCELLED'].includes(phase);
   const driveLabel=local.firstMode==='NORMAL'?'Start the normal drive':local.firstMode==='ROBOSPHERE'?'Start the protected drive':'Start the drive';
-  const base={phase,arm,mode,action:null,label:'',camera:false,choices:false,loadingDrive:false,freeGPU:!preparingWorld&&!!p.simulatorStop?.available&&
+  const ownPage=!local.pageId||!d.page_id||d.page_id===local.pageId;
+  const base={phase,arm,mode,action:null,label:'',camera:false,choices:false,loadingDrive:false,loadStep:4,freeGPU:ownPage&&!preparingWorld&&!!p.simulatorStop?.available&&
     !['STOPPED','STOPPING'].includes(p.simulatorStop?.status)&&!p.isReplay&&!p.simulationStarting&&!p.restarting};
   const state=(screen,title,detail,extra={})=>({...base,screen,title,detail,...extra});
-  const loadingWorld=(title,detail)=>state('choose',title,detail,{choices:true,label:driveLabel,loadingDrive:true,freeGPU:false});
+  const loadingWorld=(title,detail,loadStep=0)=>state('choose',title,detail,{choices:true,label:driveLabel,loadingDrive:true,loadStep,freeGPU:false});
   if(local.shutdownPending||p.simulatorStop?.status==='STOPPING')return state('releasing','Freeing the GPU','Saving recorded data, closing CARLA and verifying its processes have exited.',{freeGPU:false});
   if(p.simulatorStop?.status==='FAILED')return state('fault','CARLA could not close',p.simulatorStop.error||'Open Menu for runtime details.',{action:'FREE_GPU',label:'Retry GPU release'});
   if(p.simulationStarting||local.launchPending&&!p.connected)return loadingWorld('Starting the simulator','Launching CARLA. Choose your first drive while the city loads.');
@@ -36,6 +37,10 @@ export function missionState(p,local={}) {
     state('welcome','Take the driver’s view.','Watch the same starting scene with and without RULE protection.',{action:'START_SIMULATION',label:'Start simulation',freeGPU:false});
   if(!p.fresh)return initialWorld?loadingWorld('Connecting the session','Waiting for current camera and vehicle data. Your drive will be available when the city is ready.'):
     state('loading','Connecting the session','Waiting for current camera and vehicle data. Driving remains stopped.');
+  if(local.preloadError)return state('fault','Your fresh drive could not be prepared',local.preloadError,{action:'PREPARE_HERE',label:'Try preparing a fresh drive',freeGPU:false});
+  if(local.pageId&&local.preloadRequested&&!local.pageAdmitted&&d.page_id!==local.pageId)
+    return loadingWorld('Preparing your fresh drive','Saving and stopping the previous page’s attempt before rebuilding a new starting scene.',1);
+  if(!ownPage)return state('choose','Another page is using the simulator','There is one shared simulator. This page will prepare a new beginning, never resume the other page’s drive.',{action:'PREPARE_HERE',label:'Prepare a fresh drive here',freeGPU:false});
   if(guided&&p.controller===false&&!d.awaiting_choice&&!['COMPLETE','CANCELLED'].includes(phase))return state('driving','This drive is controlled by another page','You can watch this session, use Emergency stop, or Free GPU to close it.',{camera:phase==='DRIVING'});
   if(local.commandPending)return state('loading','Applying your action','Waiting for the current step to confirm. Recorded outcomes are kept.');
   if(guided&&d.preloaded&&d.awaiting_choice&&phase!=='ERROR'){
@@ -44,7 +49,7 @@ export function missionState(p,local={}) {
     const actual=p.population?.actual;
     return state('choose',ready?'Which world would you like to see first?':'Your city is preparing',
       progress+(ready&&actual?` Actual: ${actual.vehicles??'unmeasured'} vehicles and ${actual.pedestrians??'unmeasured'} pedestrians.`:' Requests 60 vehicles and 100 pedestrians; actual counts are checked.')+' Normal: Lincoln. Protected: Mercedes.',
-      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:driveLabel,loadingDrive:!ready,freeGPU:ready&&base.freeGPU});
+      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:driveLabel,loadingDrive:!ready,loadStep:ready?4:phase==='READY'?3:phase==='PREPARING'?2:1,freeGPU:ready&&base.freeGPU});
   }
   if(guided&&preparation[phase])return state('loading',...preparation[phase]);
   if(guided&&d.preloaded&&phase!=='CHOOSING'&&!['DRIVING','AWAITING_NEXT','RESULTS','ERROR','COMPLETE','CANCELLED'].includes(phase))return state('loading','Preparing the shared world','Building a seeded city with a requested 60 vehicles and 100 pedestrians. Both drives use this starting scene.');
@@ -60,9 +65,12 @@ export function missionState(p,local={}) {
   if(guided&&phase==='ERROR')return state('fault','This step needs attention',d.reason||'Open Menu for diagnostics.',{
     action:['STOPPING','PREPARING','READY','RESTORING','RECOVERING','SELECTING'].includes(d.failed_phase)?'RETRY_STEP':null,
     label:d.pair_id?'Retry preparing the other drive':'Retry preparing this drive'});
+  if(guided&&d.preloaded&&phase==='CANCELLED'&&local.pageAdmitted)return state('fault','This attempt has stopped',
+    'Its recorded portion is kept. Prepare a fresh beginning here before starting another drive.',
+    {action:'PREPARE_HERE',label:'Prepare a fresh drive here',freeGPU:!!d.prepared_condition_id&&base.freeGPU});
   if(!guided&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status||'IDLE')||['STARTING','RUNNING'].includes(p.journey?.status))
     return state('driving','A drive is in progress','Use Menu to inspect this session, or Free GPU to close it.',{camera:true});
-  if(local.preloadRequested&&['IDLE','COMPLETE','CANCELLED'].includes(d.status||'IDLE'))
+  if(local.preloadRequested&&!local.pageAdmitted&&['IDLE','COMPLETE','CANCELLED'].includes(d.status||'IDLE'))
     return loadingWorld('Preparing the shared world','The city is loading before you choose a driver. No drive has started.');
   return state('choose','Which world would you like to see first?',
     'One prepared chaos scene. Normal uses a Lincoln; our protected drive uses a Mercedes coupe. Different vehicle physics can affect results.',

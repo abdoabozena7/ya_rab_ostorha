@@ -209,7 +209,8 @@ function refresh() {
   $('replayPauseBtn').hidden = !provider.isReplay;
   $('replayPauseBtn').textContent = provider.replay?.paused ? 'Resume replay' : 'Pause replay';
   if (controllable && provider.controlMode === 'MANUAL') sendManual(state);
-  updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
+  if(!document.hidden&&$('cameraCard').getClientRects().length)updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
+  else if(cameraRequest||displayedCamera)clearCamera();
   tools.render(state,controllable);
   trafficPreparation.update(state);
   citySetup.update(state);

@@ -1,0 +1,40 @@
+{
+  "scope": "NATIVE_NEW_PAGE_SAVES_AND_REBUILDS_NOT_DRIVING_ACCEPTANCE",
+  "first": {
+    "id": "8fa4d9a159474ca5bd87670f5a9d5acb",
+    "page": "2e4d8739-23d0-4fee-b2a4-5346d1f95ada"
+  },
+  "second": {
+    "id": "486b6d67f4594b96a5e25a7b64655eee",
+    "page": "eb8c20c4-915d-493a-b791-454c69dabd40",
+    "condition": "974fe52b3003c10c193ba4c93e68633555ae822d721d4086332d7797b3878c63",
+    "seed": 1676600445,
+    "actual": {
+      "vehicles": 60,
+      "pedestrians": 100,
+      "controllers": 100,
+      "walkers_active": 100
+    }
+  },
+  "previous": {
+    "status": "INTERRUPTED",
+    "reason": "page_replaced",
+    "distance_m": 0.0007122042588889599,
+    "collisions": 0
+  },
+  "loading": {
+    "disabled": true,
+    "background": "rgb(255, 255, 255)",
+    "fill": "none",
+    "animation": "mission-load-fill",
+    "gpuHidden": true
+  },
+  "idleMediaRequests": 0,
+  "errors": [],
+  "failures": [
+    {
+      "url": "http://127.0.0.1:8000/api/simulation/camera.jpg?frame_id=28672&view=driving",
+      "reason": "net::ERR_ABORTED"
+    }
+  ]
+}

@@ -4,6 +4,12 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [page-session follow-up](docs/PAGE_SESSION_PREPARATION_20261018.md) keeps one
+CARLA engine while each newly opened page prepares a fresh scenario. Previous
+attempts are saved before handoff; superseded pages explain how to prepare a new
+beginning. The white Start button fills with a solid coral shape during real
+preparation, and the normal mode is selected initially.
+
 The [18 October prepared-city follow-up](docs/PRELOADED_CHAOS_20261018.md) starts
 CARLA and prepares the shared scene on opening. The only guided default requests
 60 vehicles and 100 pedestrians; actual counts are checked. Normal uses a Lincoln

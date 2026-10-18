@@ -12,7 +12,9 @@ async page=>{
  if(evidence.requests.filter(p=>p==='/api/simulation/start').length!==1)throw Error('Automatic engine start repeated');
  checks.push('Opening launches the engine once, then requests one scene preload');
  const preloadCount=evidence.commands.filter(c=>c.value?.operation==='PRELOAD').length;
- const d={id:'prepared-scene',guided:true,preloaded:true,awaiting_choice:true,status:'PREPARING',scene:'DENSE_CHAOS',arm:0,modes:['NORMAL','ROBOSPHERE'],seed:120};
+ const pageId=evidence.commands.find(c=>c.value?.operation==='PRELOAD').value.page_id;
+ if(!pageId)throw Error('Page preload identity missing');
+ const d={page_id:pageId,id:'prepared-scene',guided:true,preloaded:true,awaiting_choice:true,status:'PREPARING',scene:'DENSE_CHAOS',arm:0,modes:['NORMAL','ROBOSPHERE'],seed:120};
  await page.evaluate(d=>window.setMissionFixture({presentation:d}),d);
  await page.waitForFunction(()=>document.body.dataset.mission==='choose');
  await page.locator('[name=firstDrive][value=ROBOSPHERE]').check();
@@ -21,6 +23,7 @@ async page=>{
  const loadingStyle=await primary.evaluate(e=>({animation:getComputedStyle(e,'::before').animationName,transform:getComputedStyle(e,'::before').transform}));
  await page.waitForTimeout(250);
  if(loadingStyle.animation!=='mission-load-fill'||loadingStyle.transform===await primary.evaluate(e=>getComputedStyle(e,'::before').transform))throw Error('Coral loading fill does not animate');
+ if(await primary.evaluate(e=>getComputedStyle(e).backgroundColor)!=='rgb(255, 255, 255)')throw Error('Loading shell must stay white');
  await primary.evaluate(e=>e.click());
  await page.keyboard.press('Enter');
  const blocked=await page.evaluate(()=>window.missionEvidence());
@@ -51,8 +54,12 @@ async page=>{
  await page.getByRole('button',{name:'Start the protected drive',exact:true}).click();
  evidence=await page.evaluate(()=>window.missionEvidence());
  const command=evidence.commands.find(c=>c.value?.operation==='START_GUIDED');
- if(command?.value.prepared_id!==d.id||command.value.first_mode!=='ROBOSPHERE'||command.value.scene!=='DENSE_CHAOS')throw Error('Choice did not consume prepared scene');
+ if(command?.value.prepared_id!==d.id||command.value.page_id!==pageId||command.value.first_mode!=='ROBOSPHERE'||command.value.scene!=='DENSE_CHAOS')throw Error('Choice did not consume this page’s prepared scene');
  checks.push('Start carries prepared identity and selected driver; responsive action remains reachable');
+ await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'CHOOSING',page_id:'another-page',prepared_condition_id:'another-world'}}),d);
+ await page.getByRole('button',{name:'Prepare a fresh drive here',exact:true}).waitFor({state:'visible'});
+ if(await page.locator('#missionFreeGPU').isVisible())throw Error('Replaced page still offers GPU release');
+ checks.push('A superseded page explains ownership and offers a fresh beginning rather than resuming another page');
  await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'SELECTING',awaiting_choice:false}}),d);
  await page.getByRole('button',{name:'Free GPU',exact:true}).click();
  await page.evaluate(()=>window.setMissionFixture({connected:false,mode:'DISCONNECTED',simulatorStop:{available:true,status:'STOPPED'},simulatorStart:{available:true,status:'IDLE'},presentation:{status:'CANCELLED'},journey:{status:'IDLE'}}));

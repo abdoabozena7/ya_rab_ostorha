@@ -51,13 +51,13 @@ body[data-mission=driving] #missionStep::before{background:#40664c}
 body.light-cockpit.mission-experience #drivePrimaryAction{background:var(--primary);color:var(--primary-ink);border:0;padding:15px 25px;min-height:52px;min-width:185px;font-size:15px;font-weight:500;box-shadow:var(--shadow-soft)}
 body.light-cockpit.mission-experience #drivePrimaryAction::after{content:'';display:inline-block;margin-left:20px;width:16px;height:16px;vertical-align:-3px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23292524' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 15 15 5M6 5h9v9'/%3E%3C/svg%3E")}
 body.light-cockpit.mission-experience #drivePrimaryAction:hover:enabled{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 6px 22px -2px #ae777624}
-/* Indeterminate coral fill, never a timed percentage; only native readiness completes it. */
-body.light-cockpit.mission-experience #drivePrimaryAction{position:relative;isolation:isolate;overflow:hidden}
+/* White shell, solid organic coral growth. Stages advance only from native state. */
+body.light-cockpit.mission-experience #drivePrimaryAction{position:relative;isolation:isolate;overflow:hidden;transition:transform 240ms ease,box-shadow 240ms ease}
 body.light-cockpit.mission-experience #drivePrimaryAction:disabled{opacity:1;cursor:not-allowed}
-body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]{background:#ffe9e6;box-shadow:none}
-body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,transparent,var(--primary) 35%,var(--primary) 65%,transparent);transform:translateX(-100%);animation:mission-load-fill 2.8s ease-in-out infinite}
+body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]{background:#fff;box-shadow:inset 0 0 0 1px #c9b6b0}
+body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{content:'';position:absolute;top:-30%;bottom:-30%;left:-14px;width:calc(26px + var(--load-step,0)*22%);z-index:-1;background:var(--primary);border-radius:0 48% 42% 0/0 52% 46% 0;transform-origin:left center;animation:mission-load-fill 3s ease-in-out infinite;transition:width 900ms ease}
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after{visibility:hidden}
-@keyframes mission-load-fill{to{transform:translateX(100%)}}
+@keyframes mission-load-fill{0%,100%{transform:scaleX(.75);border-radius:0 44% 58% 0/0 60% 44% 0}50%{transform:scaleX(1);border-radius:0 60% 36% 0/0 42% 62% 0}}
 .mission-experience #missionFreeGPU{background:#ffffffb3;padding:12px 22px;font-size:14px}
 .mission-copy #missionNextHint{font-size:12px;margin:0;color:var(--muted)}
 /* Welcome and choice precede the illustration; the live camera stays first. */
@@ -152,7 +152,7 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
 }
 @media(max-width:370px){.mission-experience #brand h1{font-size:16px!important}.mission-experience #brand{gap:8px!important}.mission-experience #brand .eyebrow{font-size:8px!important}.mission-experience #driveDetailsAction{padding:9px 14px}#missionExperience[data-screen=welcome] .mission-copy h2{font-size:44px}}
 @media(prefers-reduced-motion:reduce){.mission-experience *,.mission-experience *::before,.mission-experience *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.mission-reveal{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{transform:translateX(-35%)}}
+@media(prefers-reduced-motion:reduce){body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{transform:none}}
 
 /* Scripted crossing examples: controls remain explicit, outcomes remain illustrative. */
 .preview-canvas{height:clamp(280px,32svh,380px);background:#f5f3ec;overflow:hidden}

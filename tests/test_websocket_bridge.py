@@ -2,12 +2,39 @@ import importlib.util
 import json
 import time
 import unittest
+from pathlib import Path
 from backend.simulation_service import SimulationService
 from tests.core_packets import packet
 
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
+    def test_page_scene_handoff_has_one_owner_and_rejects_an_old_pages_start(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from backend.websocket_bridge import WebSocketBridge
+        import tempfile
+        provider=SimpleNamespace(name='test-fixture',allow_navigation=True,prepare_presentation=Mock(),stop_navigation=Mock())
+        service=SimulationService(provider);service._publish(packet())
+        bridge=WebSocketBridge(service,'127.0.0.1',0,8000)
+        first,second=object(),object()
+        with tempfile.TemporaryDirectory() as directory:
+            service.presentation.directory=Path(directory)
+            try:
+                bridge.process_message(first,{'type':'presentation','value':{'operation':'PRELOAD','page_id':'page-first'}})
+                old_id=service.presentation.data['id']
+                bridge.process_message(second,{'type':'presentation','value':{'operation':'PRELOAD','page_id':'page-second'}})
+                self.assertIs(bridge.owner,second);self.assertNotEqual(service.presentation.data['id'],old_id)
+                service.presentation.data['status']='CHOOSING'
+                start={'operation':'START_GUIDED','prepared_id':service.presentation.data['id'],'first_mode':'NORMAL'}
+                with self.assertRaisesRegex(ValueError,'fresh start'):
+                    bridge.process_message(first,{'type':'presentation','value':{**start,'page_id':'page-first'}})
+                self.assertIs(bridge.owner,second)
+                bridge.process_message(second,{'type':'presentation','value':{**start,'page_id':'page-second'}})
+                self.assertEqual(service.presentation.data['status'],'SELECTING')
+                self.assertEqual(sum(a=='prepare_guided_vehicle' for a,v in service.actions),1)
+            finally:bridge.server.shutdown()
+
     def test_explicit_emergency_stops_before_transferring_observer_ownership(self):
         from unittest.mock import Mock
         from types import SimpleNamespace

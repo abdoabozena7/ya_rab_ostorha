@@ -4,7 +4,7 @@ import {PerceptionView} from '../frontend/perception-view.js';
 
 test('an unavailable processed JPEG cannot relabel the previously displayed frame',async()=>{
   const oldDocument=globalThis.document,oldFetch=globalThis.fetch;
-  const elements={perceptionStatus:{textContent:'Running frame 10'},
+  const elements={modelVision:{getClientRects:()=>[{}]},perceptionStatus:{textContent:'Running frame 10'},
     perceptionFrame:{textContent:'Frame 10'},perceptionCamera:{src:'blob:frame10'}};
   let requests=0;
   globalThis.document={getElementById:id=>elements[id]};
@@ -21,4 +21,12 @@ test('an unavailable processed JPEG cannot relabel the previously displayed fram
     assert.equal(view.token,'frame_live_10.jpg');
     assert.equal(view.busy,false);
   } finally {globalThis.document=oldDocument;globalThis.fetch=oldFetch;}
+});
+
+test('hidden diagnostics do not request inference images or predictions',async()=>{
+  const oldDocument=globalThis.document,oldFetch=globalThis.fetch;
+  globalThis.document={hidden:false,getElementById:()=>({getClientRects:()=>[]})};
+  let requests=0;globalThis.fetch=async()=>{requests++;};
+  try {await new PerceptionView({fresh:true,isReplay:false}).update();assert.equal(requests,0);}
+  finally {globalThis.document=oldDocument;globalThis.fetch=oldFetch;}
 });

@@ -1,4 +1,5 @@
 import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -161,3 +162,34 @@ class GuidedPresentationTests(unittest.TestCase):
         self.assertNotIn('prepared_condition_id',self.p.data)
         self.assertTrue(self.p.data['awaiting_choice'])
         self.assertEqual(self.p.data['status'],'STOPPING')
+
+    def test_new_page_replaces_attempt_and_waits_for_recording_close_without_restarting_engine(self):
+        self.first();old_id=self.p.data['id'];self.p.data['page_id']='page-first'
+        self.s.last_recording=NS(closed=False)
+        self.assertTrue(self.p.preload('page-second'))
+        self.assertNotEqual(self.p.data['id'],old_id)
+        self.assertEqual(self.p.data['page_id'],'page-second')
+        self.assertEqual(self.s.journey_comparison.data['runs']['NORMAL']['status'],'INTERRUPTED')
+        self.assertEqual(self.s.journey_comparison.data['runs']['NORMAL']['reason'],'page_replaced')
+        previous=json.loads((self.p.directory/(old_id+'.json')).read_text())
+        self.assertEqual(previous['status'],'CANCELLED');self.assertEqual(previous['replaced_by_page'],'page-second')
+        calls=self.provider.prepare_presentation.call_count
+        self.tick();self.assertEqual(self.p.data['status'],'STOPPING')
+        self.assertEqual(self.provider.prepare_presentation.call_count,calls)
+        self.s.last_recording.closed=True;self.tick();self.tick()
+        self.assertEqual(self.provider.prepare_presentation.call_count,calls+1)
+        self.assertEqual(self.s.start_journey.call_count,1)
+
+    def test_same_page_preload_is_idempotent_but_another_page_requires_a_fresh_identity(self):
+        self.p.preload('page-first');identity=self.p.data['id']
+        self.assertFalse(self.p.preload('page-first'))
+        self.assertFalse(self.p.preload())
+        self.assertEqual(self.p.data['id'],identity)
+        self.p.data['status']='CHOOSING'
+        with self.assertRaisesRegex(ValueError,'fresh start'):
+            self.p.choose_preloaded(identity,'NORMAL','page-second')
+        self.assertTrue(self.p.preload('page-second'))
+        self.assertNotEqual(self.p.data['id'],identity)
+        self.p.data['status']='CHOOSING'
+        self.p.choose_preloaded(self.p.data['id'],'NORMAL','page-second')
+        self.assertEqual(self.p.data['status'],'SELECTING')

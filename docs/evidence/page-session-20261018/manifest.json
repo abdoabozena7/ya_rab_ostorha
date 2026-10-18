@@ -1,0 +1,37 @@
+{
+  "base_commit": "afae867",
+  "scope": "One engine and new page scenario handoff, UI readiness, resource requests; not driving acceptance",
+  "tests": {
+    "javascript_pass": 163,
+    "python_discovered": 631,
+    "python_pass": 629,
+    "python_skipped": 2,
+    "isolated_browser_checks": 5,
+    "concurrent_start_requests": 24,
+    "concurrent_workers": 12,
+    "engine_launch_dispatches": 1
+  },
+  "text_hash_encoding": "UTF-8 with LF normalized newlines",
+  "sha256": {
+    "backend/core/presentation.py": "28305267378e3d3aa57755da2101ade51e5de19b04fa328a629ba515b1ef69ab",
+    "backend/websocket_bridge.py": "d094f7fa55dc23a741f07520f1fd17d9806f41dc703bf22ad163f268963adb09",
+    "backend/server.py": "656e1ccce19be0b20eb96e656c218455ae0f6bac60ddbdbaee2282aebeb4d28e",
+    "frontend/mission-state.js": "dbd7865bce647007c63bd512ba8b03ea943fa92de3f922c5d76b3983a5e5c823",
+    "frontend/sequential-drive.js": "c5ef64dae02d36a9026629e4c9d76fabf95c3652bd133126a393d543d537163f",
+    "frontend/simulation-client.js": "4c59b6bc41f918699ef7308f3631721cc5258befc168bfa05966e4953f5736b5",
+    "frontend/dashboard.js": "8a835a4d86fc93bf97fe7c99201feb03067589af3aaa7f5694002bee284140e6",
+    "frontend/perception-view.js": "fbfd2fc954023e889377ace4164aeb6ea042a3f4562dc91ec2cd88c02aa02d7f",
+    "frontend/mission.css": "04dae495ec9f5f2a5e79abba7d936d4e57ab6f6b1d64a3ea5854f95760326d2e",
+    "frontend/dashboard.bundle.js": "626d9fed0d6f7ba8a635a4a09b67f4e4a227ad06d881f388bc16b3b270989738",
+    "frontend/dashboard.styles.css": "d41a3dca86a6b60ea82c645f67a65df0cc3e0470bb7db14db6c285f43daea0a0",
+    "scripts/check_page_session_native.js": "79fbe30b170e07e80d6a4ee8408914cedc0c6d382ac98a3345b99a8dd8a7baa4",
+    "scripts/check_preloaded_ui.js": "6c939c8590e4f5e0ab318cf7ff76bb6adfcab455f606c0928018134ab58a3ff3",
+    "scripts/verify_guided_mission_ui.js": "5542e36aefe8f0f84c166b888ea6289a466e29c1bd7a44bcd3c2c7172526e1c2"
+  },
+  "native_source_scope": "Native handoff used final backend and organic loader. Final cancelled-page recovery received unit regression and final ready-page verification. Independent browser contexts, not an installed Firefox run.",
+  "failures_retained": [
+    "Two native visual probes detected color interpolation on entering loading. Background-color transitions removed; corrected native probe passed.",
+    "A transient Windows user-mapped bundle-file lock caused one build failure. Rebuild succeeded.",
+    "Successful native handoff aborted one camera request when the driving view was retired. No native page exception or connection-refused request was recorded in that probe."
+  ]
+}

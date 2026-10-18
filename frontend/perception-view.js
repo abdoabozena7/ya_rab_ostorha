@@ -53,7 +53,7 @@ export class PerceptionView {
     $('detectionSummary').textContent=reason;$('detectionSummary').dataset.tone='neutral';
   }
   async update() {
-    if(document.hidden)return;
+    if(document.hidden||!$('modelVision').getClientRects().length)return;
     const p=this.provider;
     if(!p.fresh||p.isReplay) {
       $('perceptionStatus').textContent=p.isReplay?'REPLAY · Live inference stopped':'Inference stopped';

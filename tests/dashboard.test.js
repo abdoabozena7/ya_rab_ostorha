@@ -55,6 +55,14 @@ test('explicit GPU shutdown works from an observer but cannot grant pedal contro
   p.isReplay=true;assert.equal(p.stopSimulator(),false);
 });
 
+test('a rejected page command explains how to recover instead of silently doing nothing',()=>{
+  const {p,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,controller:false});
+  assert.equal(p.dashboardAction('presentation',{operation:'NEXT'}),false);
+  assert.match(p.operationError,/Prepare a fresh drive here/);
+  p.acceptSnapshot({type:'error',sequence:42,error:'Wait for the prepared scene'});
+  assert.equal(p.failedSequence,42);assert.equal(p.operationError,'Wait for the prepared scene');
+});
+
 test('comparison RUN can explicitly claim control while STOP and pedals require ownership',()=>{
   const {p,sent,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,controller:false});
   assert.equal(p.dashboardAction('comparison_v2',{operation:'RUN',side:'MODEL'}),true);

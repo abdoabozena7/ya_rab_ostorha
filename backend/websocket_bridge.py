@@ -75,10 +75,9 @@ class WebSocketBridge:
                     if presentation_start:
                         value=message['value']
                         if value.get('operation')=='PRELOAD':
-                            if self.service.presentation.busy:return True
-                            self.service.presentation.preload()
+                            if self.service.presentation.preload(value.get('page_id')) is False:return True
                         elif value.get('operation')=='START_GUIDED' and value.get('prepared_id'):
-                            self.service.presentation.choose_preloaded(value['prepared_id'],value.get('first_mode'))
+                            self.service.presentation.choose_preloaded(value['prepared_id'],value.get('first_mode'),value.get('page_id'))
                         else:
                             options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','DENSE_CHAOS')}
                                 if value.get('operation')=='START_GUIDED' else {})
@@ -197,6 +196,7 @@ class WebSocketBridge:
                 if now-last_ping >= .2 and pending_ping is None and hasattr(self.service,'session_id'):
                     pending_ping = (socket.ping(), self.service.session_id)
                     last_ping = now
+                message=None
                 try:
                     message = json.loads(socket.recv(timeout=.01))
                     if not isinstance(message, dict):
@@ -206,7 +206,7 @@ class WebSocketBridge:
                 except TimeoutError:
                     pass
                 except (ValueError, TypeError, RuntimeError) as error:
-                    socket.send(json.dumps({'type': 'error', 'error': str(error)}))
+                    socket.send(json.dumps({'type': 'error', 'error': str(error), 'sequence':message.get('sequence') if isinstance(message,dict) else None}))
                 payload=self.snapshot_payload()
                 prefix=json.dumps({'type':'snapshot','controller':self.owner is socket,'acknowledged':acknowledged})
                 current=(payload,prefix)

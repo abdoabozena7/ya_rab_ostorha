@@ -1,0 +1,50 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "checks": [
+    "Opening launches the engine once, then requests one scene preload",
+    "Start stays visible with animated coral fill but rejects activation; Free GPU stays hidden until the shared scene is ready",
+    "Start carries prepared identity and selected driver; responsive action remains reachable",
+    "A superseded page explains ownership and offers a fresh beginning rather than resuming another page",
+    "Free GPU cancels selection and remains stopped without automatic relaunch"
+  ],
+  "preloadCountObserved": 1,
+  "requests": [
+    "/api/simulation/start"
+  ],
+  "commands": [
+    {
+      "type": "presentation",
+      "sequence": 1,
+      "frame_id": 148,
+      "timestamp_s": 3.4000000000000004,
+      "value": {
+        "operation": "PRELOAD",
+        "page_id": "d176dd0f-f181-4055-a412-4e0df7a3f1e7"
+      }
+    },
+    {
+      "type": "presentation",
+      "sequence": 2,
+      "frame_id": 178,
+      "timestamp_s": 4.9,
+      "value": {
+        "operation": "START_GUIDED",
+        "id": "prepared-scene",
+        "expected_arm": 0,
+        "expected_phase": "CHOOSING",
+        "first_mode": "ROBOSPHERE",
+        "page_id": "d176dd0f-f181-4055-a412-4e0df7a3f1e7",
+        "scene": "DENSE_CHAOS",
+        "speed_kmh": 50,
+        "prepared_id": "prepared-scene"
+      }
+    },
+    {
+      "type": "stop_simulator",
+      "sequence": 3,
+      "frame_id": 184,
+      "timestamp_s": 5.2
+    }
+  ],
+  "errors": []
+}

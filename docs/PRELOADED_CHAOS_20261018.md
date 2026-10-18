@@ -1,5 +1,9 @@
 # Prepared city and distinct native vehicles — 18 October 2026
 
+The later [page-session follow-up](PAGE_SESSION_PREPARATION_20261018.md)
+supersedes this report's cross-page/reload cache policy: new documents prepare
+fresh scenarios using the same engine. Historical evidence below is retained.
+
 Opening the guided dashboard now starts CARLA automatically, then prepares one
 Dense Chaos world before a drive is chosen. The selected Normal/protected mode
 consumes that prepared world; it does not choose a different traffic scenario.

@@ -74,18 +74,30 @@ class Presentation:
             'comparison_note': 'Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.'}
         self.transition('STOPPING')
 
-    def preload(self):
+    def preload(self, page_id=None):
         """Build one held scene before the operator chooses either driver."""
         with self.service.lock:
-            if self.busy:return
+            if page_id is not None and (not isinstance(page_id,str) or not 8<=len(page_id)<=80 or not all(c.isascii() and (c.isalnum() or c in '_-') for c in page_id)):
+                raise ValueError('Invalid page session')
+            if self.busy:
+                if page_id is None or page_id==self.data.get('page_id'):return False
+                # A new page owns a new attempt, never the previous page's
+                # halfway pose. STOPPING below waits for brake + recording seal.
+                self.data['replaced_by_page']=page_id
+                self.service.stop_driving('page_replaced')
             if self.service.journey.get('status') in ('STARTING','RUNNING'):
-                raise ValueError('A drive is already active')
+                if page_id is None:raise ValueError('A drive is already active')
+                self.service.stop_driving('page_replaced')
             self.start(guided=True,scene='DENSE_CHAOS')
             self.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
+            if page_id:self.data['page_id']=page_id
             self.save()
+            return True
 
-    def choose_preloaded(self, identity, first_mode):
+    def choose_preloaded(self, identity, first_mode, page_id=None):
         with self.service.lock:
+            if self.data.get('page_id') and page_id!=self.data['page_id']:
+                raise ValueError('This page needs its own fresh start. Prepare a new drive here.')
             if identity!=self.data.get('id') or self.data['status']!='CHOOSING' or first_mode not in self.MODES:
                 raise ValueError('Wait for the prepared scene before choosing a drive')
             self.data['modes']=[first_mode,next(m for m in self.MODES if m!=first_mode)]

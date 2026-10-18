@@ -15,6 +15,11 @@ from .core.logging import configure_logging, log, LogCategory
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_JSON = 16_384
+class DashboardHTTPServer(ThreadingHTTPServer):
+    # Several pages load fonts/bundles and status together. Keep that burst
+    # queued while native work is busy instead of using the tiny default queue.
+    request_queue_size = 64
+
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         # Per-frame image/telemetry logs can block a terminal and stall live ticks.
@@ -312,7 +317,7 @@ def main():
             parser.exit(2, (reason if reason.startswith(BLOCKER) else f'{BLOCKER}: {reason}') + '\n')
     server = None
     try:
-        server = ThreadingHTTPServer((args.host, args.port), Handler)
+        server = DashboardHTTPServer((args.host, args.port), Handler)
         if provider:
             from .simulation_service import SimulationService
             from .websocket_bridge import WebSocketBridge
