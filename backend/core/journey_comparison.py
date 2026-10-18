@@ -25,10 +25,11 @@ def validate_mode(mode):
     return mode
 
 
-def matching_setup(a, b):
+def matching_setup(a, b, *, world_only=False):
     if not a or not b: return False
     if a.get('live_speed_changed') or b.get('live_speed_changed'): return False
     keys = ('map','blueprint','destination','speed_kmh','population','weather','actual_population')
+    if world_only:keys=tuple(k for k in keys if k!='blueprint')
     if any(a.get(k) is None or b.get(k) is None for k in keys): return False
     try:
         poses = [setup['origin'][field] for setup in (a, b) for field in ('location', 'rotation')]
@@ -49,7 +50,7 @@ class JourneyComparison:
         self.near = self.intervening = False
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
-            if saved.get('version') in (1, 2, 3, 4) and isinstance(saved.get('runs'), dict):
+            if saved.get('version') in (1, 2, 3, 4, 5) and isinstance(saved.get('runs'), dict):
                 self.data = saved
                 for run in saved['runs'].values():
                     if run['status'] == 'RUNNING':
@@ -77,7 +78,7 @@ class JourneyComparison:
             raise ValueError('Comparison changed; prepare its mode again')
         if pair_id is None:
             benchmark = mode in BENCHMARK_MODES
-            self.data = {'version': 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
+            self.data = {'version': 5 if manifest.get('guided') and manifest.get('vehicle_variants') else 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
                          'driver_modes':list(BENCHMARK_MODES if benchmark else MODES),
                          'manifest': copy.deepcopy(manifest), 'runs': {}}
             if manifest.get('guided'):self.data['order']=list(manifest['presentation_order'])
@@ -203,8 +204,12 @@ class JourneyComparison:
         result = copy.deepcopy(data)
         modes = result.get('driver_modes', MODES)
         result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))
-        if result.get('version') in (2, 3, 4):
+        if result.get('version') in (2, 3, 4, 5):
             audits = [result['runs'].get(m, {}).get('setup', {}).get('initial_condition_id') for m in modes]
             verified = all(result['runs'].get(m, {}).get('initial_condition_audit', {}).get('passed') is True for m in modes)
             result['conditions_match'] = result['conditions_match'] and bool(audits[0]) and audits[0] == audits[1] and verified
+            if result.get('version')==5:
+                result['world_start_match']=matching_setup(*(result['runs'].get(m,{}).get('setup') for m in modes),world_only=True) and bool(audits[0]) and audits[0]==audits[1] and verified
+                result['vehicle_models_differ']=len({result['runs'].get(m,{}).get('setup',{}).get('blueprint') for m in modes})>1
+                result['comparison_scope']='Same world start; different native vehicle models. Vehicle physics are a comparison variable.'
         return result

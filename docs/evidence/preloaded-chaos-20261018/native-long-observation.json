@@ -1,0 +1,52 @@
+{
+  "scope": "Final delivery code, native behavior observation; not driving-quality acceptance",
+  "raw_local_report": "output/preload-native-diversity/report.json",
+  "first_mode": "ROBOSPHERE",
+  "hold_wall_seconds": 60,
+  "errors": [],
+  "comparison": {
+    "version": 5,
+    "world_start_match": true,
+    "conditions_match": false,
+    "vehicle_models_differ": true
+  },
+  "prepared_condition_id": "83183263bd37867f4838681f9168d6ffd5be3210d0a4d5c68800afc5f3bbb5bd",
+  "seed": 511810593,
+  "actual_population": {"vehicles": 60, "pedestrians": 100},
+  "runs": {
+    "ROBOSPHERE": {
+      "blueprint": "vehicle.mercedes.coupe_2020",
+      "status": "SHORTENED",
+      "reason": "guided_shortened",
+      "distance_m": 0.4244058457519433,
+      "duration_s": 17.55000026151538,
+      "collisions": 0,
+      "cut_in_requests": 5,
+      "brake_roles_released": 4,
+      "opposing_roles_moving": 3,
+      "opposing_lane_observed_roles": 2,
+      "audit_series": {"samples": 18, "density_failures": 1, "motion_samples": 17, "motion_failures": 1},
+      "sustained_passed": false
+    },
+    "NORMAL": {
+      "blueprint": "vehicle.lincoln.mkz_2020",
+      "status": "COLLISION",
+      "reason": "collision",
+      "distance_m": 71.72351678711051,
+      "duration_s": 12.650000188499689,
+      "collisions": 1,
+      "cut_in_requests": 5,
+      "brake_roles_released": 4,
+      "opposing_roles_moving": 3,
+      "opposing_lane_observed_roles": 1,
+      "audit_series": {"samples": 13, "density_failures": 0, "motion_samples": 12, "motion_failures": 1},
+      "sustained_passed": false
+    }
+  },
+  "limitations": [
+    "Cut-in requests do not establish completed lane changes.",
+    "The protected car remained nearly stationary; this does not establish useful navigation or predictive-driving quality.",
+    "Native initial world matching does not imply identical future trajectories or vehicle physics.",
+    "Sustained chaos and general driving quality are not accepted."
+  ]
+}

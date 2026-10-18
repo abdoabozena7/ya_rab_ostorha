@@ -1664,7 +1664,7 @@
         return false;
       }
       const comparisonStart = type === "comparison_v2" && payload.value?.operation === "RUN";
-      const presentationStart = type === "presentation" && ["RESTART", "START_GUIDED"].includes(payload.value?.operation);
+      const presentationStart = type === "presentation" && ["RESTART", "START_GUIDED", "PRELOAD"].includes(payload.value?.operation);
       if (!["reconnect", "stop_simulator"].includes(type) && (!this.connected || !this.fresh || !this.controller && !comparisonStart && !presentationStart && !["start_driving", "start_journey", "take_control", "emergency_stop"].includes(type))) return false;
       if (type === "controls" && ["PAUSED", "EMERGENCY_STOP", "DISCONNECTED"].includes(this.controlMode)) return false;
       if (type === "controls" && this.now() - this.lastControlSentAt < 30) return false;
@@ -3173,6 +3173,7 @@
 
   // frontend/mission-state.js
   var preparation = {
+    SELECTING: ["Preparing your selected car", "The world is already prepared. Attaching the camera and checking fresh sensors for this car."],
     STOPPING: ["Holding the vehicle", "Waiting for a full stop and the previous recording to close."],
     PREPARING: ["Preparing your drive", "Building the route and native traffic. The live view comes next."],
     READY: ["Checking the starting scene", "Checking traffic, camera and sensors before recording."],
@@ -3200,9 +3201,21 @@
     if (p.simulatorStart?.status === "FAILED" && !p.connected) return state("fault", "The simulator could not start", p.simulatorStart.error || p.operationError || "Open Menu to inspect the runtime.", { action: "START_SIMULATION", label: "Try starting simulation", freeGPU: false });
     if (!p.connected) return p.simulatorStop?.status !== "STOPPED" && guided2 && !["COMPLETE", "CANCELLED"].includes(phase) ? state("fault", "Connection interrupted", "The drive has been stopped. Reconnect to inspect its saved outcome.", { action: "CONNECT", label: "Reconnect camera & session" }) : state("welcome", "Take the driver\u2019s view.", "Watch the same starting scene with and without RULE protection.", { action: "START_SIMULATION", label: "Start simulation", freeGPU: false });
     if (!p.fresh) return state("loading", "Connecting the session", "Waiting for current camera and vehicle data. Driving remains stopped.");
-    if (guided2 && p.controller === false && !["COMPLETE", "CANCELLED"].includes(phase)) return state("driving", "This drive is controlled by another page", "You can watch this session, use Emergency stop, or Free GPU to close it.", { camera: phase === "DRIVING" });
+    if (guided2 && p.controller === false && !d.awaiting_choice && !["COMPLETE", "CANCELLED"].includes(phase)) return state("driving", "This drive is controlled by another page", "You can watch this session, use Emergency stop, or Free GPU to close it.", { camera: phase === "DRIVING" });
     if (local.commandPending) return state("loading", "Applying your action", "Waiting for the current step to confirm. Recorded outcomes are kept.");
+    if (guided2 && d.preloaded && d.awaiting_choice && phase !== "ERROR") {
+      const ready = phase === "CHOOSING";
+      const progress = ready ? "The shared city is ready and held at its saved start." : preparation[phase]?.[1] || "Preparing the same seeded city for either drive.";
+      const actual = p.population?.actual;
+      return state(
+        "choose",
+        ready ? "Which world would you like to see first?" : "Your city is preparing",
+        progress + (ready && actual ? ` Actual: ${actual.vehicles ?? "unmeasured"} vehicles and ${actual.pedestrians ?? "unmeasured"} pedestrians.` : " Requests 60 vehicles and 100 pedestrians; actual counts are checked.") + " Normal: Lincoln. Protected: Mercedes.",
+        { choices: true, action: ready && local.firstMode ? "START_GUIDED" : null, label: local.firstMode === "NORMAL" ? "Start the normal drive" : "Start the protected drive" }
+      );
+    }
     if (guided2 && preparation[phase]) return state("loading", ...preparation[phase]);
+    if (guided2 && d.preloaded && phase !== "CHOOSING" && !["DRIVING", "AWAITING_NEXT", "RESULTS", "ERROR", "COMPLETE", "CANCELLED"].includes(phase)) return state("loading", "Preparing the shared world", "Building a seeded city with a requested 60 vehicles and 100 pedestrians. Both drives use this starting scene.");
     if (guided2 && phase === "DRIVING") return state(
       "driving",
       modeLabel2(mode),
@@ -3220,15 +3233,17 @@
     }
     if (guided2 && phase === "RESULTS") return state("comparison", "Your two attempts", "These are recorded observations. Matching starts do not mean identical traffic reactions.", { action: "FINISH", label: "Finish" });
     if (guided2 && phase === "ERROR") return state("fault", "This step needs attention", d.reason || "Open Menu for diagnostics.", {
-      action: ["STOPPING", "PREPARING", "READY", "RESTORING", "RECOVERING"].includes(d.failed_phase) ? "RETRY_STEP" : null,
+      action: ["STOPPING", "PREPARING", "READY", "RESTORING", "RECOVERING", "SELECTING"].includes(d.failed_phase) ? "RETRY_STEP" : null,
       label: d.pair_id ? "Retry preparing the other drive" : "Retry preparing this drive"
     });
     if (!guided2 && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status || "IDLE") || ["STARTING", "RUNNING"].includes(p.journey?.status))
       return state("driving", "A drive is in progress", "Use Menu to inspect this session, or Free GPU to close it.", { camera: true });
+    if (local.preloadRequested && ["IDLE", "COMPLETE", "CANCELLED"].includes(d.status || "IDLE"))
+      return state("loading", "Preparing the shared world", "The city is loading before you choose a driver. No drive has started.");
     return state(
       "choose",
       "Which world would you like to see first?",
-      "Normal follows the route with obstacle protection off. The protected drive uses RULE. Neither outcome is guaranteed.",
+      "One prepared chaos scene. Normal uses a Lincoln; our protected drive uses a Mercedes coupe. Different vehicle physics can affect results.",
       { choices: true, action: local.firstMode ? "START_GUIDED" : null, label: local.firstMode === "NORMAL" ? "Start the normal drive" : "Start the protected drive" }
     );
   }
@@ -4902,6 +4917,7 @@
   function presentationSummary(data) {
     const runs = ["ROBOSPHERE", "NORMAL"].map((m) => data?.runs?.[m]);
     if (runs.some((r) => !r)) return "Both attempts must be recorded before comparing results.";
+    if (data?.version === 5) return (data.world_start_match ? "World starting conditions matched. " : "World starting conditions were not verified. ") + "The cars have different models and physical geometry; results are observations, not a brake-only comparison.";
     if (runs.some((r) => r.status !== "ARRIVED")) return "One or both attempts ended early. Review each outcome and its covered distance.";
     if (!data.conditions_match) return "Initial conditions were not verified. These are separate observations.";
     return "Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.";
@@ -5195,7 +5211,7 @@
     const valid = (v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
     if (![x.origin?.location, y.origin?.location, x.origin?.rotation, y.origin?.rotation].every(valid)) return false;
     if (Math.hypot(...x.origin.location.map((v, i) => v - y.origin.location[i])) > 0.5 || x.origin.rotation.some((v, i) => Math.abs(((v - y.origin.rotation[i] + 180) % 360 + 360) % 360 - 180) > 1)) return false;
-    return ![2, 3, 4].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
+    return ![2, 3, 4, 5].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
   }
 
   // frontend/guided-details.js
@@ -5306,7 +5322,7 @@
     ]);
     run.append(node3("p", "Choose your first drive on the main screen. Each attempt records automatically; starting the other drive is explicit.", "details-copy"));
     const runSummary = node3("dl", null, "details-summary");
-    for (const [label, text] of [["Route", "Chosen automatically"], ["Traffic", "Up to 40 vehicles and 30 pedestrians"], ["Recording", "Automatic for both runs"]]) {
+    for (const [label, text] of [["Route", "Prepared automatically"], ["Traffic", "Requests 60 vehicles and 100 pedestrians; actual counts are checked"], ["Recording", "Automatic for both runs"]]) {
       const row = node3("div");
       row.append(node3("dt", label), node3("dd", text));
       runSummary.append(row);
@@ -5763,132 +5779,6 @@
     return { open, close, update };
   }
 
-  // frontend/scene-picker.js
-  function installScenePicker(select) {
-    const container = select.parentElement;
-    const field = document.createElement("div");
-    field.className = "mission-scene-choice";
-    const label = document.createElement("span");
-    label.id = "missionSceneLabel";
-    label.textContent = "Starting scene";
-    const trigger = document.createElement("button");
-    trigger.type = "button";
-    trigger.id = "missionSceneTrigger";
-    trigger.setAttribute("role", "combobox");
-    trigger.setAttribute("aria-haspopup", "listbox");
-    trigger.setAttribute("aria-expanded", "false");
-    trigger.setAttribute("aria-controls", "missionSceneOptions");
-    trigger.setAttribute("aria-labelledby", "missionSceneLabel missionSceneValue");
-    const value = document.createElement("span");
-    value.id = "missionSceneValue";
-    trigger.append(value);
-    const popup = document.createElement("div");
-    popup.id = "missionSceneOptions";
-    popup.hidden = true;
-    popup.setAttribute("role", "listbox");
-    popup.setAttribute("aria-labelledby", label.id);
-    const options = [...select.options];
-    let active = select.selectedIndex;
-    const rows = options.map((option, index) => {
-      const row = document.createElement("div");
-      row.id = `missionSceneOption${index}`;
-      row.setAttribute("role", "option");
-      const title = document.createElement("span");
-      title.textContent = option.textContent.split(" \xB7 ")[0];
-      row.append(title);
-      const detail = option.textContent.split(" \xB7 ").slice(1).join(" \xB7 ");
-      if (detail) {
-        const note = document.createElement("small");
-        note.textContent = detail;
-        row.append(note);
-      }
-      row.addEventListener("pointerdown", (event) => event.preventDefault());
-      row.addEventListener("click", () => commit(index));
-      popup.append(row);
-      return row;
-    });
-    const sync = () => {
-      value.textContent = options[select.selectedIndex].textContent;
-      rows.forEach((row, index) => row.setAttribute("aria-selected", String(index === select.selectedIndex)));
-    };
-    const highlight = () => {
-      rows.forEach((row, index) => row.dataset.active = String(index === active));
-      trigger.setAttribute("aria-activedescendant", rows[active].id);
-    };
-    const close = () => {
-      popup.hidden = true;
-      trigger.setAttribute("aria-expanded", "false");
-      trigger.removeAttribute("aria-activedescendant");
-    };
-    const open = () => {
-      active = select.selectedIndex;
-      popup.hidden = false;
-      trigger.setAttribute("aria-expanded", "true");
-      highlight();
-      trigger.focus({ preventScroll: true });
-      popup.scrollIntoView({ block: "nearest", behavior: "instant" });
-    };
-    const commit = (index) => {
-      select.selectedIndex = index;
-      select.dispatchEvent(new Event("change", { bubbles: true }));
-      sync();
-      close();
-      trigger.focus({ preventScroll: true });
-    };
-    trigger.onclick = () => popup.hidden ? open() : close();
-    trigger.addEventListener("keydown", (event) => {
-      if (event.key === "Tab") {
-        close();
-        return;
-      }
-      if (event.key === "Escape") {
-        if (!popup.hidden) {
-          event.preventDefault();
-          event.stopPropagation();
-          close();
-        }
-        return;
-      }
-      if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
-        event.preventDefault();
-        if (popup.hidden) open();
-        else if (event.key === "ArrowDown") active = (active + 1) % rows.length;
-        else if (event.key === "ArrowUp") active = (active + rows.length - 1) % rows.length;
-        if (event.key === "Home") active = 0;
-        if (event.key === "End") active = rows.length - 1;
-        highlight();
-        return;
-      }
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        if (popup.hidden) open();
-        else commit(active);
-        return;
-      }
-      if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        const match = options.findIndex((option) => option.textContent.toLowerCase().startsWith(event.key.toLowerCase()));
-        if (match !== -1) {
-          event.preventDefault();
-          if (popup.hidden) open();
-          active = match;
-          highlight();
-        }
-      }
-    });
-    document.addEventListener("pointerdown", (event) => {
-      if (!field.contains(event.target)) close();
-    });
-    field.addEventListener("focusout", (event) => {
-      if (!field.contains(event.relatedTarget)) close();
-    });
-    select.addEventListener("change", sync);
-    select.hidden = true;
-    container.replaceWith(field);
-    field.append(label, select, trigger, popup);
-    sync();
-    return { close };
-  }
-
   // frontend/illustrated-preview.js
   var illustratedPreview = `
 <svg class="illustrated-drive" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" role="img" aria-labelledby="illustratedDriveTitle" aria-describedby="illustratedDriveDescription">
@@ -6141,7 +6031,7 @@
     details.onclick = () => navigator.open();
     const experience = document.createElement("main");
     experience.id = "missionExperience";
-    experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal \xB7 obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected \xB7 RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test \xB7 requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+    experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal \xB7 Lincoln \xB7 obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected \xB7 Mercedes \xB7 RULE protection</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
     const preview = installPreviewPlayer(experience.querySelector("#missionPreview"));
     const guide = document.createElement("section");
     guide.id = "missionGuide";
@@ -6193,12 +6083,11 @@
     }
     document.querySelector(".app-header").after(experience);
     $11("missionScene").append($11("cameraCard"));
-    const scenePicker = installScenePicker($11("missionSceneChoice"));
     const header = document.querySelector(".app-header");
     if (globalThis.ResizeObserver) new ResizeObserver(() => document.body.style.setProperty("--mission-header-height", header.offsetHeight + "px")).observe(header);
     const skip = document.querySelector(".skip-link");
     if (skip) skip.href = "#missionTitle";
-    const local = { firstMode: null, launchPending: false, shutdownPending: false, commandPending: false };
+    const local = { firstMode: null, launchPending: false, shutdownPending: false, commandPending: false, autoRequested: false, preloadRequested: false };
     let previousScreen = "", outcomeKey = "", pending2 = null;
     const clearMedia = () => {
       p.reviewedComparison = null;
@@ -6219,8 +6108,9 @@
     });
     const command = (operation) => {
       const d = p.presentation || {}, value = { operation, id: d.id, expected_arm: d.arm, expected_phase: d.status };
-      if (operation === "START_GUIDED") Object.assign(value, { first_mode: local.firstMode, scene: $11("missionSceneChoice").value, speed_kmh: 50 });
+      if (operation === "START_GUIDED") Object.assign(value, { first_mode: local.firstMode, scene: "DENSE_CHAOS", speed_kmh: 50, ...d.status === "CHOOSING" ? { prepared_id: d.id } : {} });
       if (!p.dashboardAction("presentation", value)) return;
+      if (operation === "FINISH") local.preloadRequested = false;
       pending2 = { id: d.id, phase: d.status, arm: d.arm, at: performance.now() };
       local.commandPending = true;
     };
@@ -6231,6 +6121,7 @@
       if (state.action === "START_SIMULATION") {
         clearMedia();
         local.launchPending = true;
+        local.preloadRequested = false;
         local.firstMode = null;
         experience.querySelectorAll("[name=firstDrive]").forEach((i) => i.checked = false);
         p.startSimulation().finally(() => {
@@ -6248,6 +6139,8 @@
     };
     const freeGPU = () => {
       if (local.shutdownPending) return;
+      local.autoRequested = true;
+      local.preloadRequested = true;
       clearMedia();
       local.commandPending = false;
       pending2 = null;
@@ -6286,9 +6179,21 @@
         pending2 = null;
         local.commandPending = false;
       }
+      if (!local.autoRequested && !p.isReplay && p.simulatorStart?.available) {
+        local.autoRequested = true;
+        if (!p.connected && !p.simulationStarting && p.simulatorStart.status !== "FAILED" && p.simulatorStop?.status !== "STOPPING") {
+          local.launchPending = true;
+          p.startSimulation().finally(() => {
+            local.launchPending = false;
+            update();
+          });
+        }
+      }
+      if (p.connected && p.fresh && !p.isReplay && !local.shutdownPending && !local.preloadRequested && !["STARTING", "RUNNING"].includes(p.journey?.status) && ["IDLE", "COMPLETE", "CANCELLED"].includes(d.status || "IDLE")) {
+        if (p.dashboardAction("presentation", { operation: "PRELOAD" })) local.preloadRequested = true;
+      }
       const state = missionState(p, local);
       document.body.dataset.mission = state.screen;
-      if (!state.choices) scenePicker.close();
       if (!state.camera && $11("cameraCard").classList.contains("camera-expanded")) tools2.expandCamera(false);
       const history2 = document.body.dataset.workspace === "results";
       experience.hidden = history2;
@@ -6312,7 +6217,7 @@
       $11("missionStep").textContent = state.screen === "driving" ? `Drive ${state.arm + 1} of 2 \xB7 Live` : state.screen === "choose" ? "Your starting point" : state.screen === "comparison" ? "Your comparison" : state.screen === "outcome" ? "Drive 1 of 2 \xB7 Saved" : state.screen === "welcome" ? "The simulator is off" : "Your driving session";
       guide.hidden = state.screen !== "welcome";
       const actual = p.population?.actual, setup = d.setup;
-      $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested 40 / 50" : "") : "";
+      $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested " + (setup?.requested_route_vehicles ?? 60) + " / " + (setup?.requested_route_pedestrians ?? 100) : "") : "";
       $11("missionChoices").hidden = !state.choices;
       const primary = $11("drivePrimaryAction");
       primary.hidden = !state.action;
@@ -6320,8 +6225,8 @@
       primary.dataset.action = state.action || "";
       primary.disabled = !state.action;
       $11("missionFreeGPU").hidden = !state.freeGPU || state.action === "FREE_GPU";
-      $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen);
-      $11("missionNextHint").textContent = { START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Next: prepare the scene, then watch live.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
+      $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen) && !(d.preloaded && d.awaiting_choice && d.status !== "CHOOSING");
+      $11("missionNextHint").textContent = { START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Next: fit the selected car, verify sensors, then drive the prepared scene.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
       $11("missionError").hidden = !p.operationError;
       $11("missionError").textContent = p.operationError || "";
       $11("missionOutcomes").hidden = !["comparison", "outcome", "fault"].includes(state.screen);
@@ -6823,7 +6728,9 @@
     if (document.hidden) inspectWithoutManualControl("focus_lost");
   });
   window.addEventListener("pagehide", () => {
-    clearControls("page_closed");
+    const held = provider.presentation?.status === "CHOOSING" && provider.presentation?.awaiting_choice;
+    if (held) resetKeys();
+    else clearControls("page_closed");
     clearCamera();
     provider.close();
   });

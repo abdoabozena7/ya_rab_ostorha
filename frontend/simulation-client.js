@@ -264,7 +264,7 @@ export class SimulationClient extends SimulationProvider {
       return false;
     }
     const comparisonStart=type==='comparison_v2'&&payload.value?.operation==='RUN';
-    const presentationStart=type==='presentation'&&['RESTART','START_GUIDED'].includes(payload.value?.operation);
+    const presentationStart=type==='presentation'&&['RESTART','START_GUIDED','PRELOAD'].includes(payload.value?.operation);
     if (!['reconnect','stop_simulator'].includes(type) && (!this.connected || !this.fresh || (!this.controller && !comparisonStart&&!presentationStart&&!['start_driving','start_journey','take_control','emergency_stop'].includes(type)))) return false;
     if (type === 'controls' && ['PAUSED', 'EMERGENCY_STOP', 'DISCONNECTED'].includes(this.controlMode)) return false;
     if (type === 'controls' && this.now()-this.lastControlSentAt < 30) return false;

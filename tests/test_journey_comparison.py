@@ -15,6 +15,19 @@ def manifest():
 
 
 class JourneyComparisonTests(unittest.TestCase):
+    def test_different_vehicle_protocol_matches_world_without_claiming_equal_vehicle_conditions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            comparison=JourneyComparison(directory)
+            first={**manifest(),'guided':True,'presentation_order':['NORMAL','ROBOSPHERE'],
+                'vehicle_variants':{'NORMAL':'vehicle.test','ROBOSPHERE':'vehicle.other'},'initial_condition_id':'same-world'}
+            r=comparison.begin('NORMAL',first);r['initial_condition_audit']={'passed':True};comparison.finish('guided_shortened')
+            second={**first,'blueprint':'vehicle.other'}
+            r=comparison.begin('ROBOSPHERE',second,pair_id=comparison.data['pair_id']);r['initial_condition_audit']={'passed':True};comparison.finish('guided_shortened')
+            result=comparison.snapshot()
+            self.assertEqual(result['version'],5);self.assertFalse(result['conditions_match'])
+            self.assertTrue(result['world_start_match']);self.assertTrue(result['vehicle_models_differ'])
+            r['initial_condition_audit']['passed']=False
+            self.assertFalse(comparison.snapshot()['world_start_match'])
     def test_measured_peak_does_not_become_the_requested_speed_or_count_duplicate_samples(self):
         with tempfile.TemporaryDirectory() as directory:
             comparison=JourneyComparison(directory);run=comparison.begin('HYBRID',manifest())

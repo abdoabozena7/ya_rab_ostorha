@@ -4,6 +4,12 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [18 October prepared-city follow-up](docs/PRELOADED_CHAOS_20261018.md) starts
+CARLA and prepares the shared scene on opening. The only guided default requests
+60 vehicles and 100 pedestrians; actual counts are checked. Normal uses a Lincoln
+and the protected drive a Mercedes coupe. World-start matching is reported
+separately from the different vehicle physics; native stress limits remain recorded.
+
 The [18 October Softly theme](docs/SOFTLY_THEME_20261018.md) gives the guided
 simulator a warm paper background, pastel choices, local Outfit and Reenie Beanie
 fonts, quiet motion and responsive camera framing. The report includes browser
@@ -14,8 +20,9 @@ main dashboard with separate start, loading, choice, driving and result screens.
 Choose Normal or the protected drive first; explicitly continue to the other
 attempt. Results do not wait for video export. **Free GPU** saves and closes the
 session, verifies CARLA process exit and returns to **Start simulation**.
-The separate **Dense Chaos Stress Test** requests 40 native vehicles and 50
-pedestrians, records actual local density/motion checks and retains shortfalls.
+Its original optional 40-vehicle/50-pedestrian stress preset is superseded by
+the single 60/100 guided default above. Actual local density/motion checks retain
+shortfalls.
 The guide distinguishes native lifecycle verification from unaccepted stress
 diversity and driving quality. Historical interface reports below describe
 their own versions; the guided screen has no Restart button.

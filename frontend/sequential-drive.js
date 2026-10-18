@@ -2,7 +2,6 @@ import {installGuidedDetails} from './guided-details.js';
 import {missionState,modeLabel,stressSummary} from './mission-state.js';
 import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome,presentationSummary} from './presentation-run.js';
-import {installScenePicker} from './scene-picker.js';
 import {installPreviewPlayer} from './preview-player.js';
 
 export function installSequentialDrive(p,tools) {
@@ -19,7 +18,7 @@ export function installSequentialDrive(p,tools) {
   returnToMission.onclick=()=>{p.reviewedComparison=null;p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');update();};
   const navigator=installGuidedDetails(p,tools,details);details.onclick=()=>navigator.open();
   const experience=document.createElement('main');experience.id='missionExperience';
-  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected · RULE protection</span></label><label class="mission-scene-choice">Starting scene<select id="missionSceneChoice"><option value="BUSY_ROUTE">Busy route</option><option value="DENSE_CHAOS">Dense Chaos Stress Test · requests 40 vehicles / 50 pedestrians</option></select></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal · Lincoln · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected · Mercedes · RULE protection</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
   const preview=installPreviewPlayer(experience.querySelector('#missionPreview'));
   const guide=document.createElement('section');guide.id='missionGuide';guide.setAttribute('aria-labelledby','missionGuideTitle');
   guide.innerHTML='<h2 id="missionGuideTitle">Before you drive</h2>';
@@ -42,11 +41,10 @@ export function installSequentialDrive(p,tools) {
     for(const element of [experience.querySelector('#missionPreview'),guide]){element.classList.add('mission-reveal');reveals.observe(element);}
   }
   document.querySelector('.app-header').after(experience);$('missionScene').append($('cameraCard'));
-  const scenePicker=installScenePicker($('missionSceneChoice'));
   const header=document.querySelector('.app-header');
   if(globalThis.ResizeObserver)new ResizeObserver(()=>document.body.style.setProperty('--mission-header-height',header.offsetHeight+'px')).observe(header);
   const skip=document.querySelector('.skip-link');if(skip)skip.href='#missionTitle';
-  const local={firstMode:null,launchPending:false,shutdownPending:false,commandPending:false};
+  const local={firstMode:null,launchPending:false,shutdownPending:false,commandPending:false,autoRequested:false,preloadRequested:false};
   let previousScreen='',outcomeKey='',pending=null;
   const clearMedia=()=>{p.reviewedComparison=null;p.presentationPlayback=false;document.body.classList.remove('archive-review');
     for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');};
@@ -56,14 +54,15 @@ export function installSequentialDrive(p,tools) {
   });
   const command=operation=>{
     const d=p.presentation||{},value={operation,id:d.id,expected_arm:d.arm,expected_phase:d.status};
-    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,scene:$('missionSceneChoice').value,speed_kmh:50});
+    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,scene:'DENSE_CHAOS',speed_kmh:50,...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
     if(!p.dashboardAction('presentation',value))return;
+    if(operation==='FINISH')local.preloadRequested=false;
     pending={id:d.id,phase:d.status,arm:d.arm,at:performance.now()};local.commandPending=true;
   };
   $('drivePrimaryAction').onclick=()=>{
     const state=missionState(p,local);if(!state.action)return;p.operationError=null;
     if(state.action==='START_SIMULATION'){
-      clearMedia();local.launchPending=true;local.firstMode=null;experience.querySelectorAll('[name=firstDrive]').forEach(i=>i.checked=false);
+      clearMedia();local.launchPending=true;local.preloadRequested=false;local.firstMode=null;experience.querySelectorAll('[name=firstDrive]').forEach(i=>i.checked=false);
       p.startSimulation().finally(()=>{if(!p.simulationStarting)local.launchPending=false;update();});
     } else if(state.action==='CONNECT')p.reconnectNative();
     else if(state.action==='RELEASE')p.acknowledgeStop();
@@ -71,7 +70,7 @@ export function installSequentialDrive(p,tools) {
     else {clearMedia();command(state.action);}update();
   };
   const freeGPU=()=>{
-    if(local.shutdownPending)return;clearMedia();local.commandPending=false;pending=null;
+    if(local.shutdownPending)return;local.autoRequested=true;local.preloadRequested=true;clearMedia();local.commandPending=false;pending=null;
     if(p.stopSimulator()){local.shutdownPending=true;local.launchPending=false;}update();
   };
   $('missionFreeGPU').onclick=freeGPU;
@@ -92,8 +91,18 @@ export function installSequentialDrive(p,tools) {
       if(performance.now()-pending.at>15000&&!p.operationError)p.operationError='The step did not confirm. Check the connection, then try the available action.';
       pending=null;local.commandPending=false;
     }
+    if(!local.autoRequested&&!p.isReplay&&p.simulatorStart?.available){
+      local.autoRequested=true;
+      if(!p.connected&&!p.simulationStarting&&p.simulatorStart.status!=='FAILED'&&p.simulatorStop?.status!=='STOPPING'){
+        local.launchPending=true;p.startSimulation().finally(()=>{local.launchPending=false;update();});
+      }
+    }
+    if(p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&
+        !['STARTING','RUNNING'].includes(p.journey?.status)&&['IDLE','COMPLETE','CANCELLED'].includes(d.status||'IDLE')){
+      if(p.dashboardAction('presentation',{operation:'PRELOAD'}))local.preloadRequested=true;
+    }
     const state=missionState(p,local);document.body.dataset.mission=state.screen;
-    if(!state.choices)scenePicker.close();
+
     if(!state.camera&&$('cameraCard').classList.contains('camera-expanded'))tools.expandCamera(false);
     const history=document.body.dataset.workspace==='results';experience.hidden=history;returnToMission.hidden=!history;
     const showPreview=['welcome','choose'].includes(state.screen);
@@ -111,11 +120,11 @@ export function installSequentialDrive(p,tools) {
     $('missionStep').textContent=state.screen==='driving'?`Drive ${state.arm+1} of 2 · Live`:state.screen==='choose'?'Your starting point':state.screen==='comparison'?'Your comparison':state.screen==='outcome'?'Drive 1 of 2 · Saved':state.screen==='welcome'?'The simulator is off':'Your driving session';
     guide.hidden=state.screen!=='welcome';
     const actual=p.population?.actual,setup=d.setup;
-    $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested 40 / 50':''):'';
+    $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested '+(setup?.requested_route_vehicles??60)+' / '+(setup?.requested_route_pedestrians??100):''):'';
     $('missionChoices').hidden=!state.choices;
     const primary=$('drivePrimaryAction');primary.hidden=!state.action;primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action;
-    $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen);
-    $('missionNextHint').textContent={START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Next: prepare the scene, then watch live.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
+    $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen)&&!(d.preloaded&&d.awaiting_choice&&d.status!=='CHOOSING');
+    $('missionNextHint').textContent={START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Next: fit the selected car, verify sensors, then drive the prepared scene.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
     $('missionError').hidden=!p.operationError;$('missionError').textContent=p.operationError||'';
     $('missionOutcomes').hidden=!['comparison','outcome','fault'].includes(state.screen);
     const pair=p.journeyComparison,runs=pair?.pair_id&&pair.pair_id===d.pair_id?pair.runs:d.runs||{},key=state.screen+JSON.stringify(runs)+String(pair?.conditions_match);

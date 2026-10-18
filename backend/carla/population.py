@@ -21,7 +21,7 @@ def validate_population(value):
     if not isinstance(value, dict) or set(value)-set(DEFAULT_POPULATION) or not legacy <= set(value):
         raise ValueError('Population requires counts, speed behavior, seed and fast walk percent')
     value = {**DEFAULT_POPULATION, **value}
-    for key, maximum in (('vehicle_count', 75), ('pedestrian_count', 50),
+    for key, maximum in (('vehicle_count', 75), ('pedestrian_count', 100),
                          ('seed', 2147483647), ('fast_walk_percent', 20),
                          ('light_compliance_percent', 100), ('crossing_percent', 60), ('chaos_percent', 100)):
         if type(value[key]) is not int or not 0 <= value[key] <= maximum:
@@ -254,8 +254,8 @@ class WorldPopulationManager:
         self.crowd_paths = {}
 
     def spawn_pedestrians(self, count, _attempt=0, replacement=False, _blocked=()):
-        if type(count) is not int or not 0 <= count <= 50:
-            raise ValueError('Pedestrian count must be 0–50')
+        if type(count) is not int or not 0 <= count <= 100:
+            raise ValueError('Pedestrian count must be 0–100')
         self.config['pedestrian_count'] = count
         for walker_id in sorted(self.walkers, reverse=True)[:max(0, len(self.walkers)-count)]:
             self._remove_walker(walker_id)

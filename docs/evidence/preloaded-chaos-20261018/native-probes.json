@@ -1,0 +1,2008 @@
+{
+  "scope": "Native lifecycle and setup evidence; deliberately shortened attempts, not driving-quality acceptance",
+  "probes": [
+    {
+      "label": "initial-normal-first-immediate-shortening",
+      "source_scope": "NATIVE_PRELOAD_AND_VEHICLE_HANDOFF",
+      "events": [
+        {
+          "status": "STOPPING",
+          "elapsed": 0.0,
+          "reason": null
+        },
+        {
+          "status": "PREPARING",
+          "elapsed": 0.1,
+          "reason": null
+        },
+        {
+          "status": "READY",
+          "elapsed": 1.3,
+          "reason": null
+        },
+        {
+          "status": "CHOOSING",
+          "elapsed": 6.7,
+          "reason": null
+        },
+        {
+          "status": "CHOOSING",
+          "elapsed": 6.7,
+          "reason": null
+        },
+        {
+          "status": "SELECTING",
+          "elapsed": 6.7,
+          "reason": null
+        },
+        {
+          "status": "READY",
+          "elapsed": 6.8,
+          "reason": null
+        },
+        {
+          "status": "STARTING",
+          "elapsed": 7.5,
+          "reason": null
+        },
+        {
+          "status": "DRIVING",
+          "elapsed": 8.0,
+          "reason": null
+        },
+        {
+          "status": "FINALIZING",
+          "elapsed": 8.0,
+          "reason": null
+        },
+        {
+          "status": "RESTORING",
+          "elapsed": 8.3,
+          "reason": null
+        },
+        {
+          "status": "READY",
+          "elapsed": 10.1,
+          "reason": null
+        },
+        {
+          "status": "STARTING",
+          "elapsed": 11.0,
+          "reason": null
+        },
+        {
+          "status": "DRIVING",
+          "elapsed": 11.5,
+          "reason": null
+        },
+        {
+          "status": "FINALIZING",
+          "elapsed": 11.6,
+          "reason": null
+        },
+        {
+          "status": "RESULTS",
+          "elapsed": 11.9,
+          "reason": null
+        },
+        {
+          "status": "RESULTS",
+          "elapsed": 11.9,
+          "reason": null
+        },
+        {
+          "status": "COMPLETE",
+          "elapsed": 12.0,
+          "reason": null
+        }
+      ],
+      "errors": [],
+      "prepared": {
+        "id": "627af89225884f52964dc4f4c31717fe",
+        "condition": "97e441a97173fc7f820432a77d7c30358560df66196cc1b1819b1163ab1e89c7",
+        "audit": {
+          "frame_id": 127611,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 6,
+              "moving_near": 39,
+              "moving_front_frustum": 6
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 51,
+              "front_frustum_100m": 41,
+              "moving_near": 48,
+              "moving_front_frustum": 39
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        },
+        "actual": {
+          "vehicles": 60,
+          "pedestrians": 100,
+          "controllers": 100,
+          "walkers_active": 100
+        },
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 50.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 1830307911,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        }
+      },
+      "comparison": {
+        "version": 5,
+        "pair_id": "d6be8c7a9a4b46c9b16e2343d5f5d626",
+        "conditions_match": false,
+        "world_start_match": true,
+        "vehicle_models_differ": true,
+        "comparison_scope": "Same world start; different native vehicle models. Vehicle physics are a comparison variable."
+      },
+      "runs": {
+        "NORMAL": {
+          "id": "14af14fb215b413ebfed040929431628",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c40ab19647ec40799e6697d729b11769",
+          "distance_m": 0.0001394655555486679,
+          "collisions": 0,
+          "duration_s": 0.05000000074505806,
+          "maximum_speed_kmh": 0.005402389308627709,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "97e441a97173fc7f820432a77d7c30358560df66196cc1b1819b1163ab1e89c7",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.lincoln.mkz_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "stress_audit": {
+            "frame_id": 127626,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 6,
+                "moving_near": 0,
+                "moving_front_frustum": 0
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 52,
+                "front_frustum_100m": 41,
+                "moving_near": 0,
+                "moving_front_frustum": 0
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": false,
+            "pending": true,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": false,
+            "motion_measurement_ready": false,
+            "motion_window_s": null,
+            "motion_sample_age_s": 0.0,
+            "observations": {},
+            "series": {
+              "samples": 1,
+              "density_failures": 0,
+              "motion_samples": 0,
+              "motion_failures": 0
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.lincoln.mkz_2020",
+          "condition_id": "97e441a97173fc7f820432a77d7c30358560df66196cc1b1819b1163ab1e89c7",
+          "geometry": {
+            "front_m": 2.4398968871682882,
+            "rear_m": 2.452484780922532,
+            "half_width_m": 0.9183589655724518,
+            "wheelbase_m": 2.861123046875001,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        },
+        "ROBOSPHERE": {
+          "id": "f9bf15b171f34cd5881a53cb9c23805e",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e653e5ba90d841d689cfad7e2a1663f2",
+          "distance_m": 0.00015800446271896362,
+          "collisions": 0,
+          "duration_s": 0.05000000074505806,
+          "maximum_speed_kmh": 0.02901049777964426,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "97e441a97173fc7f820432a77d7c30358560df66196cc1b1819b1163ab1e89c7",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "stress_audit": {
+            "frame_id": 127642,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 6,
+                "moving_near": 0,
+                "moving_front_frustum": 0
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 52,
+                "front_frustum_100m": 41,
+                "moving_near": 0,
+                "moving_front_frustum": 0
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": false,
+            "pending": true,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": false,
+            "motion_measurement_ready": false,
+            "motion_window_s": null,
+            "motion_sample_age_s": 0.0,
+            "observations": {},
+            "series": {
+              "samples": 1,
+              "density_failures": 0,
+              "motion_samples": 0,
+              "motion_failures": 0
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.mercedes.coupe_2020",
+          "condition_id": "97e441a97173fc7f820432a77d7c30358560df66196cc1b1819b1163ab1e89c7",
+          "geometry": {
+            "front_m": 2.3342266369145364,
+            "rear_m": 2.339412183733657,
+            "half_width_m": 0.9059073204762171,
+            "wheelbase_m": 2.833193359375,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        }
+      },
+      "planned_behaviors": {
+        "CUT_IN": 5,
+        "TRAFFIC_MANAGER": 48,
+        "BRAKE": 4,
+        "ONCOMING": 3
+      }
+    },
+    {
+      "label": "protected-first-failed-reconstruction",
+      "source_scope": "NATIVE_PRELOAD_VEHICLE_HANDOFF_NOT_DRIVING_ACCEPTANCE",
+      "events": [
+        {
+          "phase": "COMPLETE",
+          "arm": 1,
+          "elapsed_s": 0.11,
+          "reason": null
+        },
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "elapsed_s": 0.19,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "elapsed_s": 2.0,
+          "reason": null
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "elapsed_s": 8.39,
+          "reason": null
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "elapsed_s": 8.39,
+          "reason": null
+        },
+        {
+          "phase": "SELECTING",
+          "arm": 0,
+          "elapsed_s": 8.45,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "elapsed_s": 8.59,
+          "reason": null
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "elapsed_s": 9.45,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "elapsed_s": 10.0,
+          "reason": null
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "elapsed_s": 20.16,
+          "reason": null
+        },
+        {
+          "phase": "RESTORING",
+          "arm": 0,
+          "elapsed_s": 20.76,
+          "reason": null
+        },
+        {
+          "phase": "ERROR",
+          "arm": 0,
+          "elapsed_s": 21.86,
+          "reason": "Saved start occupied for participant_105"
+        }
+      ],
+      "errors": [
+        {
+          "type": "RuntimeError",
+          "message": "Saved start occupied for participant_105",
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\scripts\\verify_preloaded_native.py\", line 46, in main\n    s=wait(['DRIVING','AWAITING_NEXT','RESULTS'],arm=arm)\n      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\scripts\\verify_preloaded_native.py\", line 38, in wait\n    (out/'failure-state.json').write_text(json.dumps(s));raise RuntimeError(d.get('reason'))\n                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Saved start occupied for participant_105\n"
+        }
+      ],
+      "prepared": {
+        "id": "4f8f0049617a4a8ca3e7c64256372c42",
+        "seed": 461444283,
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 50.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 461444283,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        },
+        "prepared_condition_id": "f04dc56da84d9447287bf56b173df58f648651812ae81a3a20d33a7ac5c47357",
+        "population_audit": {
+          "frame_id": 134386,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 6,
+              "moving_near": 43,
+              "moving_front_frustum": 6
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 51,
+              "front_frustum_100m": 41,
+              "moving_near": 48,
+              "moving_front_frustum": 39
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        }
+      },
+      "comparison": {
+        "version": 5,
+        "pair_id": "40e1949101e8493781fb147230f38b41",
+        "conditions_match": false,
+        "world_start_match": false,
+        "vehicle_models_differ": true,
+        "comparison_scope": "Same world start; different native vehicle models. Vehicle physics are a comparison variable."
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "98591f15bc694be1ad602066c67634d9",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e075d52606fe439194f242c157c2ddd6",
+          "distance_m": 3.299484530066037,
+          "collisions": 0,
+          "duration_s": 4.400000065565109,
+          "maximum_speed_kmh": 8.735033080484554,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "f04dc56da84d9447287bf56b173df58f648651812ae81a3a20d33a7ac5c47357",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "stress_audit": {
+            "frame_id": 134481,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 6,
+                "moving_near": 42,
+                "moving_front_frustum": 6
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 54,
+                "front_frustum_100m": 39,
+                "moving_near": 51,
+                "moving_front_frustum": 37
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": true,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": true,
+            "motion_measurement_ready": true,
+            "motion_window_s": 1.0000000149011612,
+            "motion_sample_age_s": 0.0,
+            "observations": {},
+            "series": {
+              "samples": 5,
+              "density_failures": 0,
+              "motion_samples": 4,
+              "motion_failures": 1
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.mercedes.coupe_2020",
+          "condition_id": "f04dc56da84d9447287bf56b173df58f648651812ae81a3a20d33a7ac5c47357",
+          "geometry": {
+            "front_m": 2.3342266369145364,
+            "rear_m": 2.339412183733657,
+            "half_width_m": 0.9059073204762171,
+            "wheelbase_m": 2.833193359375,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        }
+      },
+      "planned_behaviors": {
+        "CUT_IN": 5,
+        "TRAFFIC_MANAGER": 48,
+        "BRAKE": 4,
+        "ONCOMING": 3
+      }
+    },
+    {
+      "label": "protected-first-staging-repair",
+      "source_scope": "NATIVE_PRELOAD_VEHICLE_HANDOFF_NOT_DRIVING_ACCEPTANCE",
+      "events": [
+        {
+          "phase": "IDLE",
+          "arm": null,
+          "elapsed_s": 0.06,
+          "reason": null
+        },
+        {
+          "phase": "STOPPING",
+          "arm": 0,
+          "elapsed_s": 0.11,
+          "reason": null
+        },
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "elapsed_s": 0.17,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "elapsed_s": 2.39,
+          "reason": null
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "elapsed_s": 9.0,
+          "reason": null
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "elapsed_s": 9.01,
+          "reason": null
+        },
+        {
+          "phase": "SELECTING",
+          "arm": 0,
+          "elapsed_s": 9.06,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "elapsed_s": 9.47,
+          "reason": null
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "elapsed_s": 10.7,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "elapsed_s": 11.48,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "elapsed_s": 23.58,
+          "reason": null
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "elapsed_s": 23.64,
+          "reason": null
+        },
+        {
+          "phase": "RESTORING",
+          "arm": 0,
+          "elapsed_s": 24.56,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 1,
+          "elapsed_s": 26.61,
+          "reason": null
+        },
+        {
+          "phase": "STARTING",
+          "arm": 1,
+          "elapsed_s": 27.72,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 1,
+          "elapsed_s": 28.31,
+          "reason": null
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 1,
+          "elapsed_s": 40.42,
+          "reason": null
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 1,
+          "elapsed_s": 41.3,
+          "reason": null
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 1,
+          "elapsed_s": 41.3,
+          "reason": null
+        },
+        {
+          "phase": "COMPLETE",
+          "arm": 1,
+          "elapsed_s": 41.39,
+          "reason": null
+        }
+      ],
+      "errors": [],
+      "prepared": {
+        "id": "b8dd2695f8a04a4cb352a2113fce2d40",
+        "seed": 982833185,
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 50.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 982833185,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        },
+        "prepared_condition_id": "83a7872778e850b244e9c9deafc64bff916830a57703a5ca942fdef3aaae2d76",
+        "population_audit": {
+          "frame_id": 147411,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 6,
+              "moving_near": 41,
+              "moving_front_frustum": 6
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 49,
+              "front_frustum_100m": 37,
+              "moving_near": 49,
+              "moving_front_frustum": 37
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        }
+      },
+      "comparison": {
+        "version": 5,
+        "pair_id": "47362dfde6f94ee49452b6d647979284",
+        "conditions_match": false,
+        "world_start_match": true,
+        "vehicle_models_differ": true,
+        "comparison_scope": "Same world start; different native vehicle models. Vehicle physics are a comparison variable."
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "10ead13d3b7b46ee8dbf8fd34d5df724",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_766cb411035b4342b287cb05194df9d3",
+          "distance_m": 3.536853173143635,
+          "collisions": 0,
+          "duration_s": 4.500000067055225,
+          "maximum_speed_kmh": 10.292432110158927,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "83a7872778e850b244e9c9deafc64bff916830a57703a5ca942fdef3aaae2d76",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "stress_audit": {
+            "frame_id": 147506,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 5,
+                "moving_near": 43,
+                "moving_front_frustum": 5
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 51,
+                "front_frustum_100m": 37,
+                "moving_near": 45,
+                "moving_front_frustum": 34
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": true,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": true,
+            "motion_measurement_ready": true,
+            "motion_window_s": 1.0000000149011612,
+            "motion_sample_age_s": 0.0,
+            "observations": {
+              "participant_037": {
+                "kind": "CUT_IN",
+                "requested": true,
+                "status": "REQUESTED",
+                "position_m": [
+                  101.49773406982422,
+                  -41.26194763183594,
+                  -0.019492167979478836
+                ],
+                "speed_mps": 4.0605621337890625
+              }
+            },
+            "series": {
+              "samples": 5,
+              "density_failures": 0,
+              "motion_samples": 4,
+              "motion_failures": 1
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.mercedes.coupe_2020",
+          "condition_id": "83a7872778e850b244e9c9deafc64bff916830a57703a5ca942fdef3aaae2d76",
+          "geometry": {
+            "front_m": 2.3342266369145364,
+            "rear_m": 2.339412183733657,
+            "half_width_m": 0.9059073204762171,
+            "wheelbase_m": 2.833193359375,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        },
+        "NORMAL": {
+          "id": "6b14af3b6ace40719b3e38a30c09e8d3",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_d5062de54de74fbd817611e5078a705c",
+          "distance_m": 3.5590902079496294,
+          "collisions": 0,
+          "duration_s": 4.700000070035458,
+          "maximum_speed_kmh": 10.327386738729123,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "83a7872778e850b244e9c9deafc64bff916830a57703a5ca942fdef3aaae2d76",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.lincoln.mkz_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "stress_audit": {
+            "frame_id": 147617,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 5,
+                "moving_near": 43,
+                "moving_front_frustum": 5
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 51,
+                "front_frustum_100m": 37,
+                "moving_near": 45,
+                "moving_front_frustum": 33
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": true,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": true,
+            "motion_measurement_ready": true,
+            "motion_window_s": 1.0000000149011612,
+            "motion_sample_age_s": 0.0,
+            "observations": {
+              "participant_037": {
+                "kind": "CUT_IN",
+                "requested": true,
+                "status": "REQUESTED",
+                "position_m": [
+                  101.20418548583984,
+                  -41.82196807861328,
+                  -0.019638728350400925
+                ],
+                "speed_mps": 4.3488945960998535
+              }
+            },
+            "series": {
+              "samples": 5,
+              "density_failures": 0,
+              "motion_samples": 4,
+              "motion_failures": 1
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.lincoln.mkz_2020",
+          "condition_id": "83a7872778e850b244e9c9deafc64bff916830a57703a5ca942fdef3aaae2d76",
+          "geometry": {
+            "front_m": 2.4398968871682882,
+            "rear_m": 2.452484780922532,
+            "half_width_m": 0.9183589655724518,
+            "wheelbase_m": 2.861123046875,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        }
+      },
+      "planned_behaviors": {
+        "CUT_IN": 5,
+        "TRAFFIC_MANAGER": 48,
+        "BRAKE": 4,
+        "ONCOMING": 3
+      }
+    },
+    {
+      "label": "normal-first-final-smoke",
+      "source_scope": "NATIVE_PRELOAD_VEHICLE_HANDOFF_NOT_DRIVING_ACCEPTANCE",
+      "events": [
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "elapsed_s": 0.45,
+          "reason": null
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "elapsed_s": 0.47,
+          "reason": null
+        },
+        {
+          "phase": "SELECTING",
+          "arm": 0,
+          "elapsed_s": 0.52,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "elapsed_s": 0.99,
+          "reason": null
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "elapsed_s": 2.0,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "elapsed_s": 3.16,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "elapsed_s": 15.31,
+          "reason": null
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "elapsed_s": 15.42,
+          "reason": null
+        },
+        {
+          "phase": "RESTORING",
+          "arm": 0,
+          "elapsed_s": 15.91,
+          "reason": null
+        },
+        {
+          "phase": "READY",
+          "arm": 1,
+          "elapsed_s": 18.11,
+          "reason": null
+        },
+        {
+          "phase": "STARTING",
+          "arm": 1,
+          "elapsed_s": 19.42,
+          "reason": null
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 1,
+          "elapsed_s": 20.22,
+          "reason": null
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 1,
+          "elapsed_s": 32.36,
+          "reason": null
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 1,
+          "elapsed_s": 32.92,
+          "reason": null
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 1,
+          "elapsed_s": 32.94,
+          "reason": null
+        },
+        {
+          "phase": "COMPLETE",
+          "arm": 1,
+          "elapsed_s": 32.99,
+          "reason": null
+        }
+      ],
+      "errors": [],
+      "prepared": {
+        "id": "99d4747e2a7740bc897b0f5f65a23fb1",
+        "seed": 64527028,
+        "setup": {
+          "destination": {
+            "map": "Carla/Maps/Town10HD_Opt",
+            "location": [
+              -114.2754135131836,
+              47.62446594238281,
+              0.0
+            ],
+            "name": "Presentation destination"
+          },
+          "route_length_m": 266.46573230486626,
+          "origin_index": 152,
+          "planned_vehicle_capacity": 24,
+          "population_pending": false,
+          "requested_route_vehicles": 60,
+          "requested_route_pedestrians": 100,
+          "scene": "DENSE_CHAOS",
+          "speed_kmh": 50.0,
+          "population": {
+            "vehicle_count": 60,
+            "pedestrian_count": 100,
+            "speed_behavior": "FAST",
+            "seed": 64527028,
+            "fast_walk_percent": 20,
+            "driver_behavior": "UNREGULATED",
+            "light_compliance_percent": 20,
+            "world_profile": "TRAINING_DEVELOPMENT",
+            "crossing_percent": 60,
+            "chaos_percent": 100,
+            "placement": "EGO_SURROUNDING",
+            "vehicle_mix": "MIXED"
+          }
+        },
+        "prepared_condition_id": "9f21a5033f6348300cf220d06d5b36ca7ecd140667aea44ef16e1c4f4f6bd13c",
+        "population_audit": {
+          "frame_id": 157,
+          "counts": {
+            "vehicles": {
+              "total": 60,
+              "near_120m": 44,
+              "front_frustum_100m": 7,
+              "moving_near": 43,
+              "moving_front_frustum": 7
+            },
+            "pedestrians": {
+              "total": 100,
+              "near_120m": 49,
+              "front_frustum_100m": 37,
+              "moving_near": 49,
+              "moving_front_frustum": 37
+            }
+          },
+          "requested": {
+            "vehicles": 60,
+            "pedestrians": 100
+          },
+          "passed": true,
+          "pending": false,
+          "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+          "density_passed": true,
+          "motion_passed": true,
+          "motion_measurement_ready": true,
+          "motion_window_s": 1.0000000149011612,
+          "motion_sample_age_s": 0.0,
+          "observations": {}
+        }
+      },
+      "comparison": {
+        "version": 5,
+        "pair_id": "2118758539f94f489af12934c13d1274",
+        "conditions_match": false,
+        "world_start_match": true,
+        "vehicle_models_differ": true,
+        "comparison_scope": "Same world start; different native vehicle models. Vehicle physics are a comparison variable."
+      },
+      "runs": {
+        "NORMAL": {
+          "id": "017301d73fa945ed917170dc59269bff",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_dd92fb6c400f4136977d28755ea40127",
+          "distance_m": 0.2956718792704061,
+          "collisions": 0,
+          "duration_s": 2.7500000409781933,
+          "maximum_speed_kmh": 3.0125133067509386,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "9f21a5033f6348300cf220d06d5b36ca7ecd140667aea44ef16e1c4f4f6bd13c",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.lincoln.mkz_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "stress_audit": {
+            "frame_id": 768,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 7,
+                "moving_near": 27,
+                "moving_front_frustum": 4
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 50,
+                "front_frustum_100m": 37,
+                "moving_near": 48,
+                "moving_front_frustum": 36
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": true,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": true,
+            "motion_measurement_ready": true,
+            "motion_window_s": 1.0000000149011612,
+            "motion_sample_age_s": 0.0,
+            "observations": {},
+            "series": {
+              "samples": 3,
+              "density_failures": 0,
+              "motion_samples": 2,
+              "motion_failures": 1
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.lincoln.mkz_2020",
+          "condition_id": "9f21a5033f6348300cf220d06d5b36ca7ecd140667aea44ef16e1c4f4f6bd13c",
+          "geometry": {
+            "front_m": 2.4398968871682882,
+            "rear_m": 2.452484780922532,
+            "half_width_m": 0.9183589655724518,
+            "wheelbase_m": 2.861123046875001,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        },
+        "ROBOSPHERE": {
+          "id": "e8fdb8abe2d64ace8533d5cead2b5f48",
+          "status": "SHORTENED",
+          "reason": "guided_shortened",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3aeebbf1fd6d480497a7d102cba3ba4a",
+          "distance_m": 0.15970126481674252,
+          "collisions": 0,
+          "duration_s": 3.6500000543892384,
+          "maximum_speed_kmh": 3.2810500875151165,
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "9f21a5033f6348300cf220d06d5b36ca7ecd140667aea44ef16e1c4f4f6bd13c",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "stress_audit": {
+            "frame_id": 859,
+            "counts": {
+              "vehicles": {
+                "total": 60,
+                "near_120m": 44,
+                "front_frustum_100m": 7,
+                "moving_near": 41,
+                "moving_front_frustum": 7
+              },
+              "pedestrians": {
+                "total": 100,
+                "near_120m": 50,
+                "front_frustum_100m": 36,
+                "moving_near": 45,
+                "moving_front_frustum": 34
+              }
+            },
+            "requested": {
+              "vehicles": 60,
+              "pedestrians": 100
+            },
+            "passed": true,
+            "pending": false,
+            "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+            "density_passed": true,
+            "motion_passed": true,
+            "motion_measurement_ready": true,
+            "motion_window_s": 1.0000000149011612,
+            "motion_sample_age_s": 0.0,
+            "observations": {},
+            "series": {
+              "samples": 4,
+              "density_failures": 0,
+              "motion_samples": 3,
+              "motion_failures": 1
+            },
+            "sustained_passed": false
+          },
+          "blueprint": "vehicle.mercedes.coupe_2020",
+          "condition_id": "9f21a5033f6348300cf220d06d5b36ca7ecd140667aea44ef16e1c4f4f6bd13c",
+          "geometry": {
+            "front_m": 2.3342266369145364,
+            "rear_m": 2.339412183733657,
+            "half_width_m": 0.9059073204762171,
+            "wheelbase_m": 2.833193359375,
+            "max_steer_rad": 1.2217303432379762,
+            "source": "NATIVE_ONBOARD_SPECIFICATIONS"
+          }
+        }
+      },
+      "planned_behaviors": {
+        "CUT_IN": 5,
+        "TRAFFIC_MANAGER": 48,
+        "BRAKE": 4,
+        "ONCOMING": 3
+      }
+    }
+  ]
+}

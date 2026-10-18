@@ -1,5 +1,5 @@
 // Native phases determine actions. Button labels never determine commands.
-const preparation={STOPPING:['Holding the vehicle','Waiting for a full stop and the previous recording to close.'],
+const preparation={SELECTING:['Preparing your selected car','The world is already prepared. Attaching the camera and checking fresh sensors for this car.'],STOPPING:['Holding the vehicle','Waiting for a full stop and the previous recording to close.'],
   PREPARING:['Preparing your drive','Building the route and native traffic. The live view comes next.'],
   READY:['Checking the starting scene','Checking traffic, camera and sensors before recording.'],
   STARTING:['Starting the recording','The car will move when fresh sensor frames are ready.'],
@@ -30,9 +30,18 @@ export function missionState(p,local={}) {
   if(!p.connected)return p.simulatorStop?.status!=='STOPPED'&&guided&&!['COMPLETE','CANCELLED'].includes(phase)?state('fault','Connection interrupted','The drive has been stopped. Reconnect to inspect its saved outcome.',{action:'CONNECT',label:'Reconnect camera & session'}):
     state('welcome','Take the driver’s view.','Watch the same starting scene with and without RULE protection.',{action:'START_SIMULATION',label:'Start simulation',freeGPU:false});
   if(!p.fresh)return state('loading','Connecting the session','Waiting for current camera and vehicle data. Driving remains stopped.');
-  if(guided&&p.controller===false&&!['COMPLETE','CANCELLED'].includes(phase))return state('driving','This drive is controlled by another page','You can watch this session, use Emergency stop, or Free GPU to close it.',{camera:phase==='DRIVING'});
+  if(guided&&p.controller===false&&!d.awaiting_choice&&!['COMPLETE','CANCELLED'].includes(phase))return state('driving','This drive is controlled by another page','You can watch this session, use Emergency stop, or Free GPU to close it.',{camera:phase==='DRIVING'});
   if(local.commandPending)return state('loading','Applying your action','Waiting for the current step to confirm. Recorded outcomes are kept.');
+  if(guided&&d.preloaded&&d.awaiting_choice&&phase!=='ERROR'){
+    const ready=phase==='CHOOSING';
+    const progress=ready?'The shared city is ready and held at its saved start.':preparation[phase]?.[1]||'Preparing the same seeded city for either drive.';
+    const actual=p.population?.actual;
+    return state('choose',ready?'Which world would you like to see first?':'Your city is preparing',
+      progress+(ready&&actual?` Actual: ${actual.vehicles??'unmeasured'} vehicles and ${actual.pedestrians??'unmeasured'} pedestrians.`:' Requests 60 vehicles and 100 pedestrians; actual counts are checked.')+' Normal: Lincoln. Protected: Mercedes.',
+      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:local.firstMode==='NORMAL'?'Start the normal drive':'Start the protected drive'});
+  }
   if(guided&&preparation[phase])return state('loading',...preparation[phase]);
+  if(guided&&d.preloaded&&phase!=='CHOOSING'&&!['DRIVING','AWAITING_NEXT','RESULTS','ERROR','COMPLETE','CANCELLED'].includes(phase))return state('loading','Preparing the shared world','Building a seeded city with a requested 60 vehicles and 100 pedestrians. Both drives use this starting scene.');
   if(guided&&phase==='DRIVING')return state('driving',modeLabel(mode),mode==='NORMAL'?
     'Watch how the car follows the route with obstacle protection off.':'Watch when RULE protection slows or stops the car. Contacts are still possible.',
     {camera:true,action:'NEXT',label:arm===0?nextLabel(mode):'End drive & compare'});
@@ -43,11 +52,13 @@ export function missionState(p,local={}) {
   }
   if(guided&&phase==='RESULTS')return state('comparison','Your two attempts','These are recorded observations. Matching starts do not mean identical traffic reactions.',{action:'FINISH',label:'Finish'});
   if(guided&&phase==='ERROR')return state('fault','This step needs attention',d.reason||'Open Menu for diagnostics.',{
-    action:['STOPPING','PREPARING','READY','RESTORING','RECOVERING'].includes(d.failed_phase)?'RETRY_STEP':null,
+    action:['STOPPING','PREPARING','READY','RESTORING','RECOVERING','SELECTING'].includes(d.failed_phase)?'RETRY_STEP':null,
     label:d.pair_id?'Retry preparing the other drive':'Retry preparing this drive'});
   if(!guided&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status||'IDLE')||['STARTING','RUNNING'].includes(p.journey?.status))
     return state('driving','A drive is in progress','Use Menu to inspect this session, or Free GPU to close it.',{camera:true});
+  if(local.preloadRequested&&['IDLE','COMPLETE','CANCELLED'].includes(d.status||'IDLE'))
+    return state('loading','Preparing the shared world','The city is loading before you choose a driver. No drive has started.');
   return state('choose','Which world would you like to see first?',
-    'Normal follows the route with obstacle protection off. The protected drive uses RULE. Neither outcome is guaranteed.',
+    'One prepared chaos scene. Normal uses a Lincoln; our protected drive uses a Mercedes coupe. Different vehicle physics can affect results.',
     {choices:true,action:local.firstMode?'START_GUIDED':null,label:local.firstMode==='NORMAL'?'Start the normal drive':'Start the protected drive'});
 }

@@ -1,0 +1,17 @@
+{
+  "scope": "Native held scene left ready after final observation",
+  "phase": "CHOOSING",
+  "id": "13181be65a934015841a8396d9b0a8e0",
+  "condition_id": "dc41993dde9afa66516a505c1845b163dfdcaacf3f8ac00227e2a41304109ad4",
+  "seed": 883730515,
+  "actual": {"vehicles": 60, "pedestrians": 100, "controllers": 100},
+  "setup_audit": {
+    "passed": true,
+    "near_vehicles": 44,
+    "near_pedestrians": 52,
+    "front_vehicles": 7,
+    "front_pedestrians": 42,
+    "moving_front_vehicles": 7,
+    "moving_front_pedestrians": 42
+  }
+}

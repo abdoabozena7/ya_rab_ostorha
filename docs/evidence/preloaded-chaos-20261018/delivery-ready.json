@@ -1,0 +1,44 @@
+{
+  "phase": "CHOOSING",
+  "id": "3637b0e2056b418e9aed361fd31074ce",
+  "condition": "83183263bd37867f4838681f9168d6ffd5be3210d0a4d5c68800afc5f3bbb5bd",
+  "seed": 511810593,
+  "setupAudit": {
+    "frame_id": 198,
+    "counts": {
+      "vehicles": {
+        "total": 60,
+        "near_120m": 44,
+        "front_frustum_100m": 6,
+        "moving_near": 40,
+        "moving_front_frustum": 6
+      },
+      "pedestrians": {
+        "total": 100,
+        "near_120m": 49,
+        "front_frustum_100m": 38,
+        "moving_near": 49,
+        "moving_front_frustum": 38
+      }
+    },
+    "requested": {
+      "vehicles": 60,
+      "pedestrians": 100
+    },
+    "passed": true,
+    "pending": false,
+    "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+    "density_passed": true,
+    "motion_passed": true,
+    "motion_measurement_ready": true,
+    "motion_window_s": 1.0000000149011612,
+    "motion_sample_age_s": 0,
+    "observations": {}
+  },
+  "actual": {
+    "vehicles": 60,
+    "pedestrians": 100,
+    "controllers": 100,
+    "walkers_active": 100
+  }
+}

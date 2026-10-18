@@ -71,6 +71,8 @@ class BenchmarkFixture:
                 destination=tools.route['destination'],population=dict(pop.config),
                 weather={k:getattr(weather,k) for k in WEATHER_PRESET_FIELDS if hasattr(weather,k)},
                 stress_plan=getattr(getattr(p,'dense_chaos',None),'plans',{}))
+            variants=getattr(p,'presentation_vehicle_variants',None)
+            if variants:self.condition.update(version=3,vehicle_variants=dict(variants))
         identity={**self.condition,'actors':[{k:v for k,v in a.items() if k!='id'} for a in self.actors],
             'lights':[{k:v for k,v in light.items() if k!='id'} for light in self.lights]} if self.reconstructable else self.condition
         encoded = json.dumps(identity, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
@@ -90,13 +92,14 @@ class BenchmarkFixture:
             bp=world.get_blueprint_library().find(row['blueprint'])
             for key,value in row.get('attributes',{}).items():
                 if bp.has_attribute(key):bp.set_attribute(key,value)
-            if bp.has_attribute('role_name'):bp.set_attribute('role_name',row['role'])
+            if bp.has_attribute('role_name'):bp.set_attribute('role_name','ostorha_'+row['role'])
             pose=row['pose'];native=api.Transform(api.Location(*pose['location']),api.Rotation(
                 pitch=pose['rotation'][0],yaw=pose['rotation'][1],roll=pose['rotation'][2]))
-            # Native spawn collision checks reject a settled tire pose against
-            # the road. Admit above it, then restore the exact saved pose while
-            # held, before any driving image or control is released.
-            admission=api.Transform(api.Location(pose['location'][0],pose['location'][1],pose['location'][2]+.4),native.rotation)
+            # Dense saved starts may contain touching native capsules (including
+            # pedestrians beside a vehicle). Spawn in a staging volume, disable
+            # physics, then restore the measured pose before the next native
+            # tick. No driving camera or controls are released during rebuilding.
+            admission=api.Transform(api.Location(pose['location'][0],pose['location'][1],pose['location'][2]+100.),native.rotation)
             actor=world.try_spawn_actor(bp,admission)
             if actor is None:raise ValueError('Saved start occupied for '+row['role'])
             row['id']=actor.id
@@ -191,7 +194,9 @@ class BenchmarkFixture:
             if pop_config := self.condition.get('population'):
                 if p.population.config!=pop_config:failures.append('population settings changed')
         expected=self.condition['ego'];ego=p.ego.actor;actual=pose_data(ego.get_transform())
-        if ego.type_id!=expected['blueprint'] or math.dist(actual['location'],expected['pose']['location'])>.03:
+        variants=self.condition.get('vehicle_variants')
+        expected_blueprint=variants.get(getattr(p,'presentation_vehicle_mode',None),expected['blueprint']) if variants else expected['blueprint']
+        if ego.type_id!=expected_blueprint or math.dist(actual['location'],expected['pose']['location'])>.03:
             failures.append('ego initial pose')
         if any(abs((x-y+180)%360-180)>.5 for x,y in zip(actual['rotation'],expected['pose']['rotation'])):
             failures.append('ego initial rotation')
@@ -223,7 +228,8 @@ class BenchmarkFixture:
                     light.get_yellow_time()!=row['yellow_s'] or light.get_red_time()!=row['red_s']):
                 failures.append(f"light durations {row['id']}")
         return {'passed':not failures, 'failures':failures, 'light_samples':light_samples, 'condition_id':self.condition['id'],
-                'matching_scope':'Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge'}
+                'matching_scope':'Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge',
+                'ego_blueprint':ego.type_id,'vehicle_variant':getattr(p,'presentation_vehicle_mode',None)}
 
     def release(self, *, strict=True):
         if not self.frozen: return

@@ -34,7 +34,7 @@ class GuidedFixtureTests(unittest.TestCase):
         self.assertEqual([r['role'] for r in fixture.actors],['vehicle_0','walker_0'])
         self.assertEqual([r['id'] for r in fixture.actors],[100,101])
         self.assertEqual(pop.vehicles,{100});self.assertEqual(pop.walkers[101]['controller_id'],199)
-        self.assertAlmostEqual(spawned[0][1].location.z,.41)
+        self.assertAlmostEqual(spawned[0][1].location.z,100.01)
         restored=spawned[0][0].set_transform.call_args.args[0]
         self.assertEqual(restored.location.z,.01);self.assertEqual(restored.rotation.yaw,90.)
         self.assertEqual(fixture.condition['id'],'saved-description')
@@ -49,7 +49,7 @@ class GuidedFixtureTests(unittest.TestCase):
                 loc=Location(25+shift+i*.1 if near else 500+i,1.)
                 rows[i]=NS(id=i,get_transform=lambda loc=loc:NS(location=loc),get_velocity=lambda:NS(x=1. if shift else 0.,y=0.))
             return NS(frame=frame,timestamp=NS(elapsed_seconds=frame*.05),find=rows.get)
-        p=NS(ego=NS(actor=NS(id=0)),population=NS(vehicles=ids,walkers=walkers),world=NS(world=NS()))
+        p=NS(ego=NS(actor=NS(id=0)),population=NS(vehicles=ids,walkers=walkers,config={'vehicle_count':40,'pedestrian_count':50}),world=NS(world=NS()))
         return p,make
 
     def test_dense_audit_requires_near_front_motion_not_global_totals(self):

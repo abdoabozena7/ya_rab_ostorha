@@ -1,0 +1,38 @@
+{
+  "base_commit": "b987cd1",
+  "text_hash_encoding": "UTF-8 with LF normalized newlines",
+  "sha256": {
+    "backend/core/presentation.py": "8c60e26a09217750a024be3f2d0f1a59f54db7d4e4364c5756b2684d6ee22599",
+    "backend/core/service.py": "c51e5911cdcc00b8c22030db64fe1b54d0e484005b6f32c0a3039cde403bccb8",
+    "backend/core/journey_comparison.py": "6224298089b86f5b1d06dd12a20771c634a4f5020e07e61ecf7d2ca7ba862f25",
+    "backend/websocket_bridge.py": "e4cdb22328043456dc0d7d47e96159ccf195d643858b581c6afeaeb7cb6a8047",
+    "backend/carla/presentation.py": "df8ecd40774c6ab793d629836f73a0e51c8043a950edb04d97f7bf29521cc7fe",
+    "backend/carla/provider.py": "fd45fc3082f627d676d3eb7fef1e87f3030a053085bab0d28de1992899892b9c",
+    "backend/carla/population.py": "aef605477651906de761758b493f052e66e4283a09b7eabc051efb1bc77ff523",
+    "backend/carla/dense_chaos.py": "95505ec1ca58d3c0cdd094aaad49d1824292cbc2463f213c316f1f2172e4cf25",
+    "backend/carla/benchmark_fixture.py": "97a3d2bcda933d4ad3bf14c2bc62677dffb4fdee6bdff6a8f53d42953ff0f80a",
+    "frontend/sequential-drive.js": "65c61349f0552aa3e8e67e0e23c8c190711ed992d2d404233f28a816c6821b1a",
+    "frontend/mission-state.js": "db9a6a0646f20d869a5803a8c142ada20518d13f0b0b4cf8bc8029dba5ccbc6e",
+    "frontend/dashboard.bundle.js": "e9d76ecd1cdccc94f2dfcb9f7e83b82ff969eaf7a4fda25a6720f205dd2dafd0",
+    "frontend/dashboard.styles.css": "502cfd7a04c4229a8693b9f82699e249c3ee271e93f8a6175d5ab625278d6b78",
+    "scripts/check_preloaded_ui.js": "12410a2a8e2359eecce08fbafbfa473f4dc0bd4b6ee27dd6e6e602534d47aae4",
+    "scripts/verify_preloaded_native.py": "951253f5d328c4510495cef8d9d75d9ebfdd676c942d8a1ed6218e5f25ab3109",
+    "scripts/verify_guided_mission_ui.js": "d28bf82355705cb7c9e369c5d3808796d03a60451bcf2726ec4fefe7b99f1125",
+    "frontend/dashboard.js": "584635fb59e081de3c35e33c354fa083ebd3b7812090fdeab24214c4b856aa89"
+  },
+  "offline": {
+    "javascript_pass": 157,
+    "python_discovered": 627,
+    "python_pass": 625,
+    "python_optional_skips": 2
+  },
+  "browser": {
+    "isolated_preload_checks": 4,
+    "isolated_guided_regressions": 15,
+    "page_errors": 0
+  },
+  "native_scope": "Both orders, actual population, vehicle swaps, start audits, GPU release/reopen, held owner handoff and longer native behavior observations. The contact and nearly stationary protected attempt remain recorded; full driving and sustained chaos acceptance are not established.",
+  "native_source_scope": "Both orders verified in shorter probes. The final longer protected-first probe, both vehicle handoffs and comparison used delivery code, including final retry/pagehide cleanup. Cold preload and browser cache retention were verified separately.",
+  "screenshots": "Native camera JPEGs are retained unmodified. UI JPEGs are compressed copies of browser screenshots; isolated and native screenshots are named separately.",
+  "native_transport": "Final reload: zero page exceptions, one failed local font request. Earlier asset/frame request refusals retained in native-lifecycle.json."
+}

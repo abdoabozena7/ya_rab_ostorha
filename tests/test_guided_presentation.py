@@ -124,3 +124,40 @@ class GuidedPresentationTests(unittest.TestCase):
         self.provider.prepare_presentation.side_effect=prepare;self.tick()
         self.assertEqual(self.p.data['seed'],456);self.assertEqual(self.p.data['status'],'STOPPING')
         self.assertNotIn('failure',self.p.data)
+
+    def test_preload_is_idempotent_holds_one_scene_and_waits_for_choice(self):
+        self.provider.hold_prepared_presentation=Mock(return_value='world-start')
+        self.provider.benchmark_fixture=NS(verify=lambda:{'passed':True})
+        self.p.preload();identity=self.p.data['id'];seed=self.p.data['seed']
+        self.p.preload();self.assertEqual(self.p.data['id'],identity)
+        self.tick();self.tick();self.tick()
+        self.assertEqual(self.p.data['status'],'CHOOSING')
+        self.s.start_journey.assert_not_called()
+        self.time=999.;self.tick();self.assertEqual(self.p.data['status'],'CHOOSING')
+        self.s._navigation_connection_alive=Mock(return_value=False)
+        self.tick();self.assertEqual(self.p.data['status'],'CHOOSING')
+        self.s._navigation_connection_alive.return_value=True
+        for mode in ('ROBOSPHERE',):
+            self.p.choose_preloaded(identity,mode)
+            self.assertEqual(self.p.data['seed'],seed)
+            self.assertEqual(self.p.data['setup']['route_length_m'],250)
+            self.assertEqual(self.p.data['status'],'SELECTING')
+            self.assertEqual(list(self.s.actions)[-1],('prepare_guided_vehicle',{'id':identity,'mode':mode}))
+        self.s.dashboard_result={'action':'prepare_guided_vehicle','status':'APPLIED'}
+        self.tick();self.tick()
+        self.assertEqual(self.s.start_journey.call_args.kwargs['driving_mode'],'ROBOSPHERE')
+        self.assertEqual(self.provider.prepare_presentation.call_count,1)
+
+    def test_shutdown_cancels_preloaded_selection_and_stale_choice(self):
+        self.p.preload();identity=self.p.data['id'];self.p.cancel('simulator_shutdown')
+        with self.assertRaises(ValueError):self.p.choose_preloaded(identity,'NORMAL')
+        self.s.dashboard_result={'action':'prepare_guided_vehicle','status':'APPLIED'}
+        self.tick();self.s.start_journey.assert_not_called()
+
+    def test_retry_before_recording_discards_failed_warm_identity_and_waits_for_choice(self):
+        self.p.preload();identity=self.p.data['id']
+        self.p.data.update(status='ERROR',failed_phase='SELECTING',prepared_condition_id='failed-fixture',awaiting_choice=False)
+        self.p.retry_step(identity)
+        self.assertNotIn('prepared_condition_id',self.p.data)
+        self.assertTrue(self.p.data['awaiting_choice'])
+        self.assertEqual(self.p.data['status'],'STOPPING')

@@ -43,7 +43,7 @@ class WebSocketBridge:
         """Ownership changes and command admission are atomic across dashboards."""
         with self.ownership_lock:
             kind = message.get('type')
-            presentation_start = kind == 'presentation' and isinstance(message.get('value'),dict) and message['value'].get('operation') in ('RESTART','START_GUIDED')
+            presentation_start = kind == 'presentation' and isinstance(message.get('value'),dict) and message['value'].get('operation') in ('RESTART','START_GUIDED','PRELOAD')
             comparison_start = kind == 'comparison_v2' and isinstance(message.get('value'),dict) and message['value'].get('operation') == 'RUN'
             runtime = getattr(self.service, 'rl_runtime', None)
             if runtime and runtime.active and kind != 'emergency_stop':
@@ -74,9 +74,15 @@ class WebSocketBridge:
                     self.service.require_connected()
                     if presentation_start:
                         value=message['value']
-                        options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','BUSY_ROUTE')}
-                            if value.get('operation')=='START_GUIDED' else {})
-                        self.service.presentation.start(value.get('speed_kmh',50),seed=value.get('seed'),**options)
+                        if value.get('operation')=='PRELOAD':
+                            if self.service.presentation.busy:return True
+                            self.service.presentation.preload()
+                        elif value.get('operation')=='START_GUIDED' and value.get('prepared_id'):
+                            self.service.presentation.choose_preloaded(value['prepared_id'],value.get('first_mode'))
+                        else:
+                            options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','DENSE_CHAOS')}
+                                if value.get('operation')=='START_GUIDED' else {})
+                            self.service.presentation.start(value.get('speed_kmh',50),seed=value.get('seed'),**options)
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}
@@ -214,8 +220,11 @@ class WebSocketBridge:
             with self.ownership_lock:
                 self.sockets.discard(socket)
                 if self.owner is socket:
+                    presentation=getattr(self.service,'presentation',None)
+                    held_choice=bool(presentation and presentation.data.get('status')=='CHOOSING' and
+                        presentation.data.get('awaiting_choice'))
                     if hasattr(self.service, 'journey') and (self.service.journey.get('status') in ('RUNNING', 'STARTING') or
-                            getattr(self.service, 'presentation', None) and self.service.presentation.busy):
+                            presentation and presentation.busy and not held_choice):
                         try: self.service.stop_driving('dashboard_disconnected')
                         except (ValueError, RuntimeError): pass
                     self.service.release_controls()

@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import {missionState,stressSummary} from '../frontend/mission-state.js';
 const ready={connected:true,fresh:true,controller:true,simulatorStop:{available:true}};
 const guided=(status,arm=0,first='NORMAL')=>({...ready,presentation:{guided:true,id:'current',status,arm,modes:[first,first==='NORMAL'?'ROBOSPHERE':'NORMAL']}});
+
+test('preloaded world can be inspected while preparing but only starts once held and ready',()=>{
+  const loading=guided('PREPARING');loading.presentation.preloaded=true;loading.presentation.awaiting_choice=true;
+  const selecting=missionState(loading,{firstMode:'NORMAL'});
+  assert.equal(selecting.choices,true);assert.equal(selecting.action,null);assert.match(selecting.detail,/60 vehicles and 100 pedestrians/);
+  loading.presentation.status='CHOOSING';assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).action,'START_GUIDED');
+  loading.controller=false;assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).action,'START_GUIDED');
+  assert.equal(missionState(loading).action,null);
+});
 test('stopped and loading never expose stale camera or old results',()=>{
   const p={connected:false,presentation:{id:'old',status:'COMPLETE'},journeyComparison:{runs:{NORMAL:{status:'COLLISION'}}}};
   assert.equal(missionState(p).action,'START_SIMULATION');assert.equal(missionState(p).camera,false);

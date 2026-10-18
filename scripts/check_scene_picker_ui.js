@@ -35,7 +35,7 @@ async page=>{
   await page.screenshot({path:'output/playwright/softly-scene-mobile.png'});
   await page.getByRole('option',{name:'Busy route',exact:true}).click();
   await picker.click();await page.getByRole('option',{name:'Dense Chaos Stress Test requests 40 vehicles / 50 pedestrians',exact:true}).click();
-  await page.getByRole('radio',{name:'See the world before our solution Normal · obstacle protection off',exact:true}).check();
+  await page.getByRole('radio',{name:'See the world before our solution Normal · Lincoln · obstacle protection off',exact:true}).check();
   await page.getByRole('button',{name:'Start the normal drive',exact:true}).click();
   const evidence=await page.evaluate(()=>window.missionEvidence());
   if(!evidence.commands.some(c=>c.value?.operation==='START_GUIDED'&&c.value.scene==='DENSE_CHAOS'))throw Error('Wrong scene sent to guided protocol');

@@ -6,6 +6,9 @@ def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
     p = provider
     p.guided_presentation=guided
     p.dense_chaos=None
+    p.benchmark_prepared=False
+    p.presentation_vehicle_variants=None
+    p.presentation_vehicle_mode=None
     p._ensure_dashboard_tools()
     if p.benchmark_fixture:
         p.benchmark_fixture.close()
@@ -48,7 +51,7 @@ def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
     p.set_paused(False)
     return {'destination': target, 'route_length_m': tools.route['length_m'],
         'origin_index': index,'planned_vehicle_capacity':capacity,'population_pending':True,
-        'requested_route_vehicles':40,'requested_route_pedestrians':50 if scene=='DENSE_CHAOS' else 30,
+        'requested_route_vehicles':60 if scene=='DENSE_CHAOS' else 40,'requested_route_pedestrians':100 if scene=='DENSE_CHAOS' else 30,
         'scene':scene,'speed_kmh': speed}
 
 
@@ -58,9 +61,9 @@ def finish_prepare(p,seed,setup):
     tools=p.dashboard_tools
     if setup.get('scene')=='DENSE_CHAOS':
         from .dense_chaos import DenseChaos
-        config={**p.population.config,'vehicle_count':40,'pedestrian_count':50,'seed':seed,
-            'chaos_percent':90,'speed_behavior':'FAST','driver_behavior':'UNREGULATED',
-            'light_compliance_percent':35,'crossing_percent':60,'placement':'EGO_SURROUNDING','vehicle_mix':'MIXED'}
+        config={**p.population.config,'vehicle_count':60,'pedestrian_count':100,'seed':seed,
+            'chaos_percent':100,'speed_behavior':'FAST','driver_behavior':'UNREGULATED',
+            'light_compliance_percent':20,'crossing_percent':60,'placement':'EGO_SURROUNDING','vehicle_mix':'MIXED','fast_walk_percent':20}
         p.population.apply(config)
         p.dense_chaos=DenseChaos(p,seed)
         return {**setup,'population_pending':False,'population':dict(p.population.config)}

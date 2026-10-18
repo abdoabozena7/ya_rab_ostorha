@@ -59,7 +59,7 @@ export function installGuidedDetails(p,tools,trigger){
     ['automatic','Guided comparison'],['custom','Custom drive']]);
   run.append(node('p','Choose your first drive on the main screen. Each attempt records automatically; starting the other drive is explicit.','details-copy'));
   const runSummary=node('dl',null,'details-summary');
-  for(const [label,text] of [['Route','Chosen automatically'],['Traffic','Up to 40 vehicles and 30 pedestrians'],['Recording','Automatic for both runs']]){
+  for(const [label,text] of [['Route','Prepared automatically'],['Traffic','Requests 60 vehicles and 100 pedestrians; actual counts are checked'],['Recording','Automatic for both runs']]){
     const row=node('div');row.append(node('dt',label),node('dd',text));runSummary.append(row);
   }
   run.append(runSummary);

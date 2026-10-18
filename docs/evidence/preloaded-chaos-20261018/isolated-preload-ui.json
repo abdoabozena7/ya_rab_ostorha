@@ -1,0 +1,47 @@
+{
+  "scope": "ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS",
+  "checks": [
+    "Opening launches the engine once, then requests one scene preload",
+    "Choices and illustration remain usable while one dense scene prepares; no premature Start",
+    "Start carries prepared identity and selected driver; responsive action remains reachable",
+    "Free GPU cancels selection and remains stopped without automatic relaunch"
+  ],
+  "preloadCountObserved": 1,
+  "requests": [
+    "/api/simulation/start"
+  ],
+  "commands": [
+    {
+      "type": "presentation",
+      "sequence": 1,
+      "frame_id": 149,
+      "timestamp_s": 3.45,
+      "value": {
+        "operation": "PRELOAD"
+      }
+    },
+    {
+      "type": "presentation",
+      "sequence": 2,
+      "frame_id": 169,
+      "timestamp_s": 4.45,
+      "value": {
+        "operation": "START_GUIDED",
+        "id": "prepared-scene",
+        "expected_arm": 0,
+        "expected_phase": "CHOOSING",
+        "first_mode": "ROBOSPHERE",
+        "scene": "DENSE_CHAOS",
+        "speed_kmh": 50,
+        "prepared_id": "prepared-scene"
+      }
+    },
+    {
+      "type": "stop_simulator",
+      "sequence": 3,
+      "frame_id": 173,
+      "timestamp_s": 4.65
+    }
+  ],
+  "errors": []
+}

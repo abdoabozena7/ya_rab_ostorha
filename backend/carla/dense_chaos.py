@@ -48,9 +48,9 @@ class DenseChaos:
                     next_frontier.extend((candidate.get_left_lane(),candidate.get_right_lane()))
                 if row['role'] in opposing:break
                 frontier=next_frontier
-        oncoming=next((r['role'] for r in vehicles[2:] if r['role'] in opposing),None)
+        oncoming=[r['role'] for r in vehicles[2:] if r['role'] in opposing][:3]
         for index,row in enumerate(vehicles):
-            role=row['role'];kind='BRAKE' if index==0 else 'CUT_IN' if index==1 else 'ONCOMING' if role==oncoming or oncoming is None and index==2 else 'TRAFFIC_MANAGER'
+            role=row['role'];kind='ONCOMING' if role in oncoming or not oncoming and index==2 else 'BRAKE' if index in (0,5,10,15) else 'CUT_IN' if index in (1,6,11,16,21) else 'TRAFFIC_MANAGER'
             plan={'kind':kind,'start_s':round(rng.uniform(4.,10.),2),'duration_s':round(rng.uniform(2.,4.),2)}
             if kind=='ONCOMING':
                 if role in opposing:
@@ -137,9 +137,10 @@ class DenseChaos:
         if self.audit_started is None:self.audit_started=stamp
         elapsed=stamp-self.audit_started
         v=counts['vehicles'];w=counts['pedestrians']
-        density=v['total']>=40 and w['total']>=50 and v['near_120m']>=15 and w['near_120m']>=20 and v['front_frustum_100m']>=5 and w['front_frustum_100m']>=4
+        requested={'vehicles':p.population.config.get('vehicle_count',60),'pedestrians':p.population.config.get('pedestrian_count',100)}
+        density=v['total']>=requested['vehicles'] and w['total']>=requested['pedestrians'] and v['near_120m']>=15 and w['near_120m']>=20 and v['front_frustum_100m']>=5 and w['front_frustum_100m']>=4
         motion=v['moving_front_frustum']>=3 and w['moving_front_frustum']>=2
-        return {'frame_id':snapshot.frame,'counts':counts,'requested':{'vehicles':40,'pedestrians':50},
+        return {'frame_id':snapshot.frame,'counts':counts,'requested':requested,
             'passed':density and motion,'pending':elapsed<8 and not (density and motion),
             'scope':'Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review',
             'density_passed':density,'motion_passed':motion,'motion_measurement_ready':self.motion_ready,

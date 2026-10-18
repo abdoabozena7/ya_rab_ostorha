@@ -29,6 +29,7 @@ runtime versions and should not be read as current capability guarantees.
 
 | Area | Entry points | Detailed report |
 | --- | --- | --- |
+| Automatic engine/scene preload, dense 60/100 default and distinct native vehicles | `backend/core/presentation.py`, `backend/carla/provider.py`, `frontend/sequential-drive.js` | [18 October prepared city, native handoff and retained failures](PRELOADED_CHAOS_20261018.md) |
 | Softly palette, local typography, responsive guided screens and reduced motion | `frontend/mission.css`, `frontend/sequential-drive.js`, `scripts/check_softly_theme_ui.js` | [18 October visual theme and isolated browser evidence](SOFTLY_THEME_20261018.md) |
 | Guided simulation phases, ordered explicit transitions, reconstructable roles and Dense Chaos audit | `frontend/mission-state.js`, `frontend/sequential-drive.js`, `backend/core/presentation.py`, `backend/carla/dense_chaos.py` | [18 October guided delivery, retained native failures and acceptance limits](GUIDED_SIMULATOR_20261018.md) |
 | Browser-owned verification, independent stop evidence, approach slowing and display/transport repairs | `backend/core/comfort_control.py`, `scripts/audit_driving_stops.py`, `scripts/verify_driving_browser_ui.js` | [18 October follow-up verification and remaining acceptance gates](DRIVING_VERIFICATION_20261018.md) |

@@ -1891,6 +1891,21 @@ class SimulationService:
                             self._stop_navigation(str(error), status='ERROR')
                         else:
                             self.provider.stop_navigation()
+            elif action == 'prepare_guided_vehicle':
+                if self.presentation.data.get('id')!=value['id'] or self.presentation.data['status']!='SELECTING':continue
+                self.reconfiguring=True
+                try:
+                    self.provider.select_presentation_vehicle(value['mode'])
+                    self.provider.benchmark_fixture.restore()
+                    self.provider.benchmark_prepared=True
+                    self.synchronizer=SensorSynchronizer(self._required_after_sensor_rebuild(),self.synchronizer.optional,
+                        timeout_s=self.synchronizer.timeout_s,now=self.now)
+                    self.camera_cache.clear();self.sensor_frame_cache.clear();self.render_pose_cache.clear()
+                    self.policy_history.clear();self.motion_snapshot=None
+                    self.dashboard_result={'action':action,'status':'APPLIED'}
+                except (ValueError,RuntimeError) as error:
+                    self.dashboard_result={'action':action,'status':'REJECTED','error':str(error)}
+                finally:self.reconfiguring=False
             elif action == 'prepare_journey_mode':
                 pair=self.journey_comparison.data
                 presentation_id=(pair.get('manifest') or {}).get('presentation_id')
@@ -1900,7 +1915,7 @@ class SimulationService:
                 self.reconfiguring = True
                 try:
                     manifest = self.journey_comparison.data['manifest']
-                    self.provider.prepare_journey_comparison(manifest)
+                    self.provider.prepare_journey_comparison(manifest,**({'mode':value['mode']} if manifest.get('vehicle_variants') else {}))
                     if presentation_id and (not self.presentation.busy or self.presentation.data.get('id')!=presentation_id):
                         continue
                     self.provider.set_paused(False)

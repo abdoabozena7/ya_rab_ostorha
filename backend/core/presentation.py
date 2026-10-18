@@ -74,6 +74,26 @@ class Presentation:
             'comparison_note': 'Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.'}
         self.transition('STOPPING')
 
+    def preload(self):
+        """Build one held scene before the operator chooses either driver."""
+        with self.service.lock:
+            if self.busy:return
+            if self.service.journey.get('status') in ('STARTING','RUNNING'):
+                raise ValueError('A drive is already active')
+            self.start(guided=True,scene='DENSE_CHAOS')
+            self.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
+            self.save()
+
+    def choose_preloaded(self, identity, first_mode):
+        with self.service.lock:
+            if identity!=self.data.get('id') or self.data['status']!='CHOOSING' or first_mode not in self.MODES:
+                raise ValueError('Wait for the prepared scene before choosing a drive')
+            self.data['modes']=[first_mode,next(m for m in self.MODES if m!=first_mode)]
+            self.data['awaiting_choice']=False
+            self.service.dashboard_result=None
+            self.transition('SELECTING')
+            self.service.actions.append(('prepare_guided_vehicle',{'id':identity,'mode':first_mode}))
+
     def request_next(self, presentation_id, expected_arm, expected_phase):
         """Consume a user's intent once, including a contact racing that intent."""
         with self.service.lock:
@@ -112,7 +132,7 @@ class Presentation:
             self.service.require_connected()
             if self.service.arbiter.safety.emergency:raise ValueError('Release emergency stop first')
             failed=self.data.get('failed_phase')
-            if failed not in ('STOPPING','PREPARING','READY','RESTORING','RECOVERING'):
+            if failed not in ('STOPPING','PREPARING','READY','RESTORING','RECOVERING','SELECTING'):
                 raise ValueError('This drive is saved. Free GPU to close this session')
             self.data.setdefault('step_failures',[]).append({'phase':failed,'reason':self.data.get('reason')})
             self.data.pop('reason',None)
@@ -122,6 +142,8 @@ class Presentation:
                 self._queue_other_arm()
             else:
                 self.data.pop('setup',None)
+                self.data.pop('prepared_condition_id',None)
+                if self.data.get('preloaded'):self.data['awaiting_choice']=True
                 self.transition('STOPPING')
 
     def finish(self, presentation_id):
@@ -186,10 +208,10 @@ class Presentation:
             def advance(status, **values):
                 return self.transition(status, expected=phase, expected_id=identity, **values)
             # A lost dashboard must never leave a self-running experiment.
-            if not s._navigation_connection_alive() and s.now()-self.phase_at > 2:
+            if phase!='CHOOSING' and not s._navigation_connection_alive() and s.now()-self.phase_at > 2:
                 self.fail('dashboard_disconnected')
                 return
-            if phase not in ('AWAITING_NEXT','RESULTS') and s.now()-self.phase_at > (600 if phase in ('DRIVING', 'STARTING', 'PLAYBACK') else 180):
+            if phase not in ('CHOOSING','AWAITING_NEXT','RESULTS') and s.now()-self.phase_at > (600 if phase in ('DRIVING', 'STARTING', 'PLAYBACK') else 180):
                 self.fail('presentation_phase_timeout: ' + phase)
                 return
             closed = not s.recorder and (not s.last_recording or s.last_recording.closed)
@@ -224,14 +246,30 @@ class Presentation:
                 walkers_ready=self.data['arm']>0 or population.get('walker_controllers_ready',True)
                 if traffic_ready and walkers_ready:
                     audit=getattr(s.provider,'presentation_population_audit',None)
-                    if callable(audit) and self.data['arm']==0:
+                    if callable(audit) and self.data['arm']==0 and not self.data.get('prepared_condition_id'):
                         measured=audit()
                         if identity!=self.data.get('id') or self.data['status']!=phase:return
                         self.data['population_audit']=measured
                         if self.data['population_audit'].get('pending'):return
                         if not self.data['population_audit']['passed']:
                             self.fail('Dense setup below required population: '+str(self.data['population_audit']['counts']));return
-                    self._start_arm(expected_id=identity)
+                    if self.data.get('awaiting_choice'):
+                        freeze=getattr(s.provider,'hold_prepared_presentation',None)
+                        if not callable(freeze):raise ValueError('Native scene preloading is unavailable')
+                        self.data['prepared_condition_id']=freeze()
+                        advance('CHOOSING')
+                    else:self._start_arm(expected_id=identity)
+            elif phase=='CHOOSING':
+                # Keep the frozen start trustworthy even while the user waits.
+                fixture=getattr(s.provider,'benchmark_fixture',None)
+                if not fixture:raise ValueError('Prepared scene is no longer available')
+            elif phase=='SELECTING':
+                result=s.dashboard_result or {}
+                if result.get('action')=='prepare_guided_vehicle':
+                    if result.get('status')=='REJECTED':self.fail(result.get('error','Vehicle preparation failed'))
+                    elif result.get('status')=='APPLIED':
+                        self.ready_frame=s.observation.frame_id+10
+                        advance('READY')
             elif phase == 'STARTING':
                 if s.journey['status'] == 'RUNNING':
                     advance('DRIVING', pair_id=s.journey_comparison.data['pair_id'])

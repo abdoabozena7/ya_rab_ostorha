@@ -1,0 +1,41 @@
+// Run after verify_guided_mission_ui.js in a fresh browser; transport is isolated.
+async page=>{
+ const checks=[];
+ await page.evaluate(()=>window.setMissionFixture({simulatorStart:{available:true,status:'IDLE'}}));
+ const waitEvidence=async predicate=>{for(let i=0;i<120;i++){const value=await page.evaluate(()=>window.missionEvidence());if(predicate(value))return value;await page.waitForTimeout(50);}throw Error('Expected transport command did not arrive');};
+ await waitEvidence(e=>e.requests.includes('/api/simulation/start'));
+ await page.evaluate(()=>window.setMissionFixture({connected:true,available:true,mode:'PAUSED',simulatorStart:{available:true,status:'READY'},simulatorStop:{available:true,status:'IDLE'}}));
+ let evidence=await waitEvidence(e=>e.commands.some(c=>c.value?.operation==='PRELOAD'));
+ if(evidence.requests.filter(p=>p==='/api/simulation/start').length!==1)throw Error('Automatic engine start repeated');
+ checks.push('Opening launches the engine once, then requests one scene preload');
+ const preloadCount=evidence.commands.filter(c=>c.value?.operation==='PRELOAD').length;
+ const d={id:'prepared-scene',guided:true,preloaded:true,awaiting_choice:true,status:'PREPARING',scene:'DENSE_CHAOS',arm:0,modes:['NORMAL','ROBOSPHERE'],seed:120};
+ await page.evaluate(d=>window.setMissionFixture({presentation:d}),d);
+ await page.waitForFunction(()=>document.body.dataset.mission==='choose');
+ await page.locator('[name=firstDrive][value=ROBOSPHERE]').check();
+ if(await page.locator('#drivePrimaryAction').isVisible())throw Error('Drive offered before world ready');
+ if(await page.locator('#missionSceneChoice').count())throw Error('Alternate scenario selection remains');
+ checks.push('Choices and illustration remain usable while one dense scene prepares; no premature Start');
+ await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'CHOOSING',prepared_condition_id:'same-world'}}),d);
+ await page.getByRole('button',{name:'Start the protected drive',exact:true}).waitFor({state:'visible'});
+ await page.setViewportSize({width:1440,height:1100});
+ await page.screenshot({path:'output/playwright/preloaded-ready-desktop.png',fullPage:true});
+ await page.setViewportSize({width:390,height:740});
+ await page.getByRole('button',{name:'Start the protected drive',exact:true}).scrollIntoViewIfNeeded();
+ if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow');
+ await page.screenshot({path:'output/playwright/preloaded-ready-mobile.png'});
+ await page.getByRole('button',{name:'Start the protected drive',exact:true}).click();
+ evidence=await page.evaluate(()=>window.missionEvidence());
+ const command=evidence.commands.find(c=>c.value?.operation==='START_GUIDED');
+ if(command?.value.prepared_id!==d.id||command.value.first_mode!=='ROBOSPHERE'||command.value.scene!=='DENSE_CHAOS')throw Error('Choice did not consume prepared scene');
+ checks.push('Start carries prepared identity and selected driver; responsive action remains reachable');
+ await page.evaluate(d=>window.setMissionFixture({presentation:{...d,status:'SELECTING',awaiting_choice:false}}),d);
+ await page.getByRole('button',{name:'Free GPU',exact:true}).click();
+ await page.evaluate(()=>window.setMissionFixture({connected:false,mode:'DISCONNECTED',simulatorStop:{available:true,status:'STOPPED'},simulatorStart:{available:true,status:'IDLE'},presentation:{status:'CANCELLED'},journey:{status:'IDLE'}}));
+ await page.waitForFunction(()=>document.body.dataset.mission==='welcome');
+ const after=await page.evaluate(()=>window.missionEvidence());
+ if(after.requests.filter(p=>p==='/api/simulation/start').length!==1||after.commands.filter(c=>c.value?.operation==='PRELOAD').length>1)throw Error('GPU release caused an automatic restart');
+ if(after.errors.length)throw Error(after.errors.join(';'));
+ checks.push('Free GPU cancels selection and remains stopped without automatic relaunch');
+ return {scope:after.scope,checks,preloadCountObserved:preloadCount,requests:after.requests,commands:after.commands.filter(c=>c.type!=='journey_heartbeat'),errors:after.errors};
+}

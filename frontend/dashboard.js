@@ -335,7 +335,11 @@ function inspectWithoutManualControl(reason) {
 document.addEventListener('workspacechange',event => { if(event.detail.phase !== 'drive') inspectWithoutManualControl('workspace_changed'); });
 window.addEventListener('blur',()=>inspectWithoutManualControl('focus_lost'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)inspectWithoutManualControl('focus_lost');});
-window.addEventListener('pagehide',()=>{clearControls('page_closed');clearCamera();provider.close();});
+window.addEventListener('pagehide',()=>{
+  const held=provider.presentation?.status==='CHOOSING'&&provider.presentation?.awaiting_choice;
+  if(held)resetKeys();else clearControls('page_closed');
+  clearCamera();provider.close();
+});
 provider.connect(); refresh(); setInterval(refresh,50);
 // Separate the short control lease from camera/layout work. No automatic resume
 // of a paused, disconnected, collided or emergency-stopped journey.

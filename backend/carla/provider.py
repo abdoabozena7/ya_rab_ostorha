@@ -87,7 +87,8 @@ class CarlaProvider:
             raw_world.wait_for_tick(self.connection.timeout)
             actors = raw_world.get_actors()
             project_ids = {a.id for a in actors if a.attributes.get('role_name') in
-                           ('ostorha_ego', 'ostorha_npc', 'ostorha_walker', 'ostorha_sensor', 'ostorha_scenario')}
+                           ('ostorha_ego', 'ostorha_npc', 'ostorha_walker', 'ostorha_sensor', 'ostorha_scenario') or
+                           a.attributes.get('role_name','').startswith('ostorha_participant_')}
             children = [a for a in actors if a.type_id.startswith(('sensor.', 'controller.')) and
                         a.parent is not None and a.parent.id in project_ids]
             for actor in children:
@@ -145,6 +146,52 @@ class CarlaProvider:
         if self.sensor_suite:
             self.sensor_manager.enable_suite(self.connection.api, self.fixed_delta, self.camera_settings)
         return actor.id
+
+    def hold_prepared_presentation(self):
+        from .benchmark_fixture import BenchmarkFixture
+        self.presentation_vehicle_variants={'NORMAL':'vehicle.lincoln.mkz_2020',
+            'ROBOSPHERE':'vehicle.mercedes.coupe_2020'}
+        # Verify installed assets before discarding any live ego.
+        library=self.world.world.get_blueprint_library()
+        for blueprint in self.presentation_vehicle_variants.values():library.find(blueprint)
+        self.benchmark_fixture=BenchmarkFixture(self,reconstructable=True)
+        condition=self.benchmark_fixture.capture()
+        self.benchmark_prepared=True
+        return condition['id']
+
+    def select_presentation_vehicle(self, mode):
+        variants=getattr(self,'presentation_vehicle_variants',None)
+        if not variants or mode not in variants:raise ValueError('Prepared vehicle choices unavailable')
+        target=variants[mode];self.presentation_vehicle_mode=mode
+        if self.ego.actor.type_id==target:return False
+        fixture=self.benchmark_fixture
+        if not fixture or not fixture.frozen:raise ValueError('Hold the prepared world before switching cars')
+        api=self.connection.api;pose=fixture.condition['ego']['pose']
+        native=api.Transform(api.Location(*pose['location']),api.Rotation(
+            pitch=pose['rotation'][0],yaw=pose['rotation'][1],roll=pose['rotation'][2]))
+        self.destroy_ego_vehicle()
+        self.blueprint=target
+        # Spawn at the saved start, never at an unrelated free map spawn.
+        self.ego=EgoVehicle(self.world.world,target,self.spawn_index,strict_spawn=True)
+        bp=self.world.world.get_blueprint_library().find(target);bp.set_attribute('role_name','ostorha_ego')
+        if bp.has_attribute('color'):bp.set_attribute('color','35,45,55' if mode=='ROBOSPHERE' else '160,165,170')
+        admission=api.Transform(api.Location(native.location.x,native.location.y,native.location.z+.4),native.rotation)
+        actor=self.world.world.try_spawn_actor(bp,admission)
+        if actor is None:raise ValueError('The prepared ego start is occupied')
+        self.ego.actor=actor;actor.set_autopilot(False);actor.set_simulate_physics(False);actor.set_transform(native)
+        from ..core.motion_geometry import VehicleGeometry
+        box=actor.bounding_box;wheels=actor.get_physics_control().wheels
+        self.vehicle_geometry=VehicleGeometry(box.extent.x+box.location.x,box.extent.x-box.location.x,
+            box.extent.y+abs(box.location.y),(max(w.position.x for w in wheels)-min(w.position.x for w in wheels))/100.,
+            math.radians(max(w.max_steer_angle for w in wheels)),'NATIVE_ONBOARD_SPECIFICATIONS')
+        self.inspector=NearbyActorInspector(self.world.world,actor)
+        self.sensor_manager=CarlaSensorManager(self.world.world,actor)
+        if self.collision_sensor:self.sensor_manager.enable_collision(api)
+        if self.sensor_suite:self.sensor_manager.enable_suite(api,self.fixed_delta,self.camera_settings)
+        self.population.ego_id=actor.id
+        self.set_controls(brake=1)
+        self.benchmark_prepared=True
+        return True
 
     def destroy_ego_vehicle(self):
         self.stop_navigation()
@@ -404,6 +451,10 @@ class CarlaProvider:
                 initial_conditions=copy.deepcopy(self.benchmark_fixture.condition),
                 actual_population={'vehicles':len(self.population.vehicles),'pedestrians':len(self.population.walkers),
                                    'controllers':len(self.population.walkers),'walkers_active':0})
+            variants=getattr(self,'presentation_vehicle_variants',None)
+            if variants:
+                manifest.update(vehicle_variants=dict(variants),vehicle_geometry=copy.deepcopy(self.vehicle_geometry.__dict__),
+                    comparison_scope='Same world start; different vehicle models and physical geometry. Not a brake-only causal comparison.')
         return manifest
 
     def clear_presentation_context(self):
@@ -412,12 +463,13 @@ class CarlaProvider:
         if stress:stress.running=False
         self.dense_chaos=None
         self.guided_presentation=False
+        self.presentation_vehicle_variants=None
 
-    def prepare_journey_comparison(self, manifest):
+    def prepare_journey_comparison(self, manifest, *, mode=None):
         self._ensure_dashboard_tools()
         if not manifest or manifest['map'] != self.dashboard_tools.map_name:
             raise ValueError('Start the saved CARLA map before preparing this comparison')
-        if manifest['blueprint'] != self.ego.actor.type_id:
+        if not manifest.get('vehicle_variants') and manifest['blueprint'] != self.ego.actor.type_id:
             raise ValueError('Select the saved vehicle before preparing this comparison')
         self.stop_navigation()
         self.set_controls(brake=1)
@@ -425,6 +477,7 @@ class CarlaProvider:
             if not self.benchmark_fixture or self.benchmark_fixture.condition['id'] != manifest['initial_condition_id']:
                 raise ValueError('The live benchmark fixture expired; start a new pair')
             self.benchmark_fixture.restore(**({'rebuild':True} if manifest.get('guided') else {}))
+            if manifest.get('vehicle_variants'):self.select_presentation_vehicle(mode)
             api, origin = self.connection.api, manifest['origin']
             self.ego.actor.set_target_velocity(api.Vector3D()); self.ego.actor.set_target_angular_velocity(api.Vector3D())
             self.ego.actor.set_transform(api.Transform(api.Location(*origin['location']),

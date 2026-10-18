@@ -1,0 +1,100 @@
+{
+  "gpu_release": {
+    "connected": false,
+    "stop": {
+      "available": true,
+      "status": "STOPPED",
+      "launch": {
+        "quality": "Epic",
+        "resolution": "1280x720",
+        "offscreen": true,
+        "renderer": "D3D12",
+        "render_profile": "HIGH",
+        "source": "VERIFIED_NATIVE_PROCESS"
+      },
+      "cleanup_warning": null,
+      "process_exited": true
+    },
+    "carla_process_inventory_after_exit": []
+  },
+  "held_owner_release": {
+    "id": "c3167d1fad4249a8b258a60b3181dcd4",
+    "prepared_condition_id": "a42dc643983762c21b5dba03a824b5c871e5a88510795df448d08436e5d92787",
+    "seed": 762994961,
+    "population_audit": {
+      "frame_id": 6036,
+      "counts": {
+        "vehicles": {
+          "total": 60,
+          "near_120m": 44,
+          "front_frustum_100m": 6,
+          "moving_near": 42,
+          "moving_front_frustum": 6
+        },
+        "pedestrians": {
+          "total": 100,
+          "near_120m": 44,
+          "front_frustum_100m": 35,
+          "moving_near": 44,
+          "moving_front_frustum": 35
+        }
+      },
+      "requested": {
+        "vehicles": 60,
+        "pedestrians": 100
+      },
+      "passed": true,
+      "pending": false,
+      "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+      "density_passed": true,
+      "motion_passed": true,
+      "motion_measurement_ready": true,
+      "motion_window_s": 1.0000000149011612,
+      "motion_sample_age_s": 0.0,
+      "observations": {}
+    },
+    "status_after_owner_closed": "CHOOSING",
+    "same_identity": true,
+    "actual": {
+      "vehicles": 60,
+      "pedestrians": 100,
+      "controllers": 100,
+      "walkers_active": 100
+    }
+  },
+  "recovery_failures": [
+    "A backend reload timed out waiting for disconnect acknowledgement.",
+    "The next startup refused an orphan synchronous world; no backend listener remained. The world was restored to asynchronous operation before relaunch."
+  ],
+  "browser_reload_cache": {
+    "before": "3637b0e2056b418e9aed361fd31074ce",
+    "after": "3637b0e2056b418e9aed361fd31074ce",
+    "status": "CHOOSING",
+    "conditionBefore": "83183263bd37867f4838681f9168d6ffd5be3210d0a4d5c68800afc5f3bbb5bd",
+    "conditionAfter": "83183263bd37867f4838681f9168d6ffd5be3210d0a4d5c68800afc5f3bbb5bd",
+    "actual": {
+      "vehicles": {
+        "total": 60,
+        "near_120m": 44,
+        "front_frustum_100m": 6,
+        "moving_near": 40,
+        "moving_front_frustum": 6
+      },
+      "pedestrians": {
+        "total": 100,
+        "near_120m": 49,
+        "front_frustum_100m": 38,
+        "moving_near": 49,
+        "moving_front_frustum": 38
+      }
+    },
+    "errors": [],
+    "failures": [
+      {
+        "url": "http://127.0.0.1:8000/public/fonts/geist-latin.woff2",
+        "error": "net::ERR_CONNECTION_REFUSED"
+      }
+    ]
+  },
+  "transport_limitation": "Intermittent localhost ERR_CONNECTION_REFUSED affected assets/frames in native browser sessions. The final reload retained the same held world with zero page exceptions and one font request failure; complete transport reliability is not accepted."
+}

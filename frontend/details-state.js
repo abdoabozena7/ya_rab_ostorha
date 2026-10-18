@@ -46,6 +46,6 @@ export function recordedConditionsMatch(pair){
   const valid=v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
   if(![x.origin?.location,y.origin?.location,x.origin?.rotation,y.origin?.rotation].every(valid))return false;
   if(Math.hypot(...x.origin.location.map((v,i)=>v-y.origin.location[i]))>.5||x.origin.rotation.some((v,i)=>Math.abs(((v-y.origin.rotation[i]+180)%360+360)%360-180)>1))return false;
-  return ![2,3,4].includes(pair.version)||!!x.initial_condition_id&&x.initial_condition_id===y.initial_condition_id&&
+  return ![2,3,4,5].includes(pair.version)||!!x.initial_condition_id&&x.initial_condition_id===y.initial_condition_id&&
     a.initial_condition_audit?.passed===true&&b.initial_condition_audit?.passed===true;
 }

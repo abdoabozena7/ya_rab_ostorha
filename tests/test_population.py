@@ -22,7 +22,7 @@ class PopulationTests(unittest.TestCase):
     def test_population_values_and_speed_units_are_explicit(self):
         self.assertEqual(validate_population(DEFAULT_POPULATION), DEFAULT_POPULATION)
         self.assertEqual(SPEED_DIFFERENCE, {'SLOW':30., 'NORMAL':15., 'FAST':0.})
-        for changes in ({'vehicle_count':True},{'vehicle_count':76},{'pedestrian_count':51},
+        for changes in ({'vehicle_count':True},{'vehicle_count':76},{'pedestrian_count':101},
                         {'seed':-1},{'speed_behavior':'120 kmh'},{'fast_walk_percent':100}):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 validate_population({**DEFAULT_POPULATION, **changes})

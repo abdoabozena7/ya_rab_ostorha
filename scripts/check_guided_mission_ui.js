@@ -3,7 +3,7 @@ async page=>{
   await page.setViewportSize({width:1600,height:900});
   await page.evaluate(()=>window.setMissionFixture({connected:true,available:true,mode:'PAUSED',simulatorStop:{available:true,status:'IDLE'},simulatorStart:{status:'READY',available:true}}));
   await page.waitForFunction(()=>document.body.dataset.mission==='choose');
-  await page.getByRole('radio',{name:'See the world before our solution Normal · obstacle protection off',exact:true}).check();
+  await page.getByRole('radio',{name:'See the world before our solution Normal · Lincoln · obstacle protection off',exact:true}).check();
   await page.getByRole('button',{name:'Start the normal drive',exact:true}).click();
   const selected=await page.evaluate(()=>window.missionEvidence());
   if(!selected.commands.some(c=>c.value?.operation==='START_GUIDED'&&c.value.first_mode==='NORMAL'))throw Error('No guided start command');

@@ -17,6 +17,7 @@ export function presentationStep(status,arm=0){
 export function presentationSummary(data){
   const runs=['ROBOSPHERE','NORMAL'].map(m=>data?.runs?.[m]);
   if(runs.some(r=>!r))return 'Both attempts must be recorded before comparing results.';
+  if(data?.version===5)return (data.world_start_match?'World starting conditions matched. ':'World starting conditions were not verified. ')+'The cars have different models and physical geometry; results are observations, not a brake-only comparison.';
   if(runs.some(r=>r.status!=='ARRIVED'))return 'One or both attempts ended early. Review each outcome and its covered distance.';
   if(!data.conditions_match)return 'Initial conditions were not verified. These are separate observations.';
   return 'Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.';
