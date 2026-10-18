@@ -32,7 +32,7 @@ export function mapForecastStatus(prediction,p) {
   const age=(p.telemetry.timestamp-prediction.timestamp_s).toFixed(1),tracks=prediction.tracks||[];
   const source=prediction.display_source||prediction.decision_source||'Measured';
   const horizon=prediction.horizon_s??prediction.trajectories?.[0]?.points?.at(-1)?.[0];
-  return `${source} · ${age} s old${Number.isFinite(horizon)?' · '+horizon+' s horizon':''} · ${tracks.length?tracks.length+' measured objects':'No tracked actors'}${prediction.model_reason?' · '+prediction.model_reason:''}`;
+  return `${source} · ${age} s old${Number.isFinite(horizon)?' · '+horizon+' s horizon':''} · ${tracks.length?tracks.length+' measured objects':'No tracked actors'}${prediction.diagnostic_scoring_deferred?' · intersection scoring deferred':''}${prediction.model_reason?' · '+prediction.model_reason:''}`;
 }
 
 export function installUnifiedMap(p,view,tools) {

@@ -20,3 +20,11 @@ test('unknown road coverage cannot be displayed as a clear prediction',()=>{
   const p={sessionId:'s',safetySystem:{risk:'UNKNOWN_SPACE'},maneuver:{action:'RULE_FOLLOW'}};
   assert.equal(motionReadout(p,{session_id:'s',timestamp_s:1},{timestamp:1}).state,'Insufficient data');
 });
+
+test('deferred diagnostic scoring never becomes a no-intersection claim',()=>{
+  const p={sessionId:'s',maneuver:{action:'RULE_FOLLOW'}};
+  for(const flag of ['diagnostic_scoring_deferred','display_observer_deferred']){
+    const value=motionReadout(p,{session_id:'s',timestamp_s:1,[flag]:true},{timestamp:1});
+    assert.equal(value.state,'Intersection scoring deferred');
+  }
+});

@@ -604,10 +604,12 @@ class WorldPopulationManager:
                        'walkers_active': active}
         self.state_cache = self._build_population_state()
 
-    def get_population_state(self):
+    def get_population_state(self,*,compact=False):
         # Readers never iterate the ownership dictionaries during worker mutation.
         # Each cache publication describes one native snapshot, including its ID.
-        return copy.deepcopy(self.state_cache)
+        state=self.state_cache
+        if compact:state={key:value for key,value in state.items() if key not in ('driver_profiles','walker_profiles')}
+        return copy.deepcopy(state)
 
     def _build_population_state(self):
         crowding = copy.deepcopy(getattr(self, 'route_crowding', None))

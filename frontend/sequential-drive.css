@@ -7,6 +7,9 @@ body.control-center.light-cockpit.sequential-drive {grid-template-columns:minmax
 body.light-cockpit.sequential-drive:before {inset:18px}
 .sequential-drive .app-header,.sequential-drive main {grid-column:1!important}
 .light-cockpit.sequential-drive[data-ui=guided] #cameraCard {grid-template-rows:minmax(0,1fr)}
+body.light-cockpit.sequential-drive[data-ui=guided] #cameraCard:not(.camera-expanded) {height:auto;min-height:0;flex:none;grid-template-rows:auto auto}
+body.light-cockpit.sequential-drive[data-ui=guided] #cameraCard:not(.camera-expanded) .camera-stage {height:auto;flex:none;min-height:0!important}
+body.light-cockpit.sequential-drive[data-ui=guided] #cameraCard:not(.camera-expanded) #frontCameraView {height:auto;min-height:250px;aspect-ratio:16/9;flex:none}
 @media(max-width:1000px){.light-cockpit.sequential-drive[data-ui=guided] #cameraCard {grid-template-rows:clamp(250px,60vw,500px) auto}.sequential-drive .cockpit-telemetry {display:block}}
 .sequential-drive .cockpit-header-actions>[hidden] {display:none!important}
 .sequential-drive .cockpit-header-actions {gap:10px;flex-wrap:wrap}

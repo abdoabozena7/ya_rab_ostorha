@@ -49,6 +49,22 @@ def measured_control_view(scene,reference):
         'deferred_reason':'Supplementary display forecasts deferred while control owns the maneuver'}
 
 
+def score_display_prediction(prediction,ego,geometry,*,deferred=False):
+    if deferred:
+        prediction.update(ego_trajectories=[],object_assessments=[],conflicts=[],conflict_point=None,
+            diagnostic_scoring_deferred=True,
+            diagnostic_scoring_reason='Hypothetical ego paths and retrospective quality scoring deferred during driving')
+        return
+    if not prediction['ego_trajectories']:
+        paths=ego_paths(ego.speed_mps,ego.steering,ego.throttle,geometry=geometry)
+        prediction['ego_trajectories']=[{'intent':path['intent'],'points':path['points'].tolist()} for path in paths]
+        prediction['conflicts']=assess_conflicts(prediction['tracks'],prediction['control_trajectories'],paths)
+    prediction['object_assessments']=object_assessments(prediction['tracks'],prediction['control_trajectories'],
+        prediction['ego_trajectories'][0]['points'],geometry,prediction['conflicts'],centered=True)
+    prediction['conflict_point']=intended_conflict([conflict for conflict in prediction['conflicts']
+        if conflict['point_m'][0]>0],ego.speed_mps,ego.throttle)
+
+
 class DisplayPredictionService:
     def __init__(self, service, perception):
         self.service=service;self.perception=perception;self.latest=None;self.error=None
@@ -69,7 +85,7 @@ class DisplayPredictionService:
     def _run(self):
         previous=None;last_submission=0.;due=time.monotonic()
         # The admitted test planner gets ten-Hz starts. Ordinary display-only
-        # geometry runs at five Hz so a rejected planner does not consume the
+        # geometry runs at three Hz so a rejected planner does not consume the
         # normal driver's CPU budget. RGB and detector rates are independent.
         while not self.stop.wait(max(0.,due-time.monotonic())):
             observed_began=time.monotonic();due=observed_began+.1
@@ -92,7 +108,8 @@ class DisplayPredictionService:
                     from ..learning.recovery_budget import active_ticket
                     recovery_testing=active_ticket() is not None
                     planning_active=planning_active or recovery_testing
-                    due=observed_began+(.1 if planning_active else .2)
+                    defer_scoring=s.arbiter.machine.mode.value=='AUTOMATIC' and not planning_active
+                    due=observed_began+(.1 if planning_active else 1/3)
                     if key==previous:continue
                     previous=key
                     from .route_bypass import RuleRouteBypass
@@ -184,18 +201,8 @@ class DisplayPredictionService:
                     'front_ttc_s':min((v[1] for v in front if v[1] is not None),default=None),'rear_ttc_s':min((v[1] for v in rear if v[1] is not None),default=None)}
                 prediction['measured_trajectories']=prediction['trajectories']
                 prediction['control_trajectories']=prediction['measured_trajectories']
-                if not prediction['ego_trajectories']:
-                    # The shared control scene deliberately omits display-only
-                    # default forecasts. Build those here, outside control.
-                    paths=ego_paths(ego.speed_mps,ego.steering,ego.throttle,geometry=self.engine.geometry)
-                    prediction['ego_trajectories']=[{'intent':p['intent'],'points':p['points'].tolist()} for p in paths]
-                    prediction['conflicts']=assess_conflicts(prediction['tracks'],prediction['control_trajectories'],paths)
-                prediction['object_assessments']=object_assessments(prediction['tracks'],prediction['control_trajectories'],
-                    prediction['ego_trajectories'][0]['points'],self.engine.geometry,prediction['conflicts'],centered=True)
-                # Rear-only padded overlaps remain in the diagnostic list, but
-                # are not presented as a forward crossing or a brake request.
-                prediction['conflict_point']=intended_conflict([c for c in prediction['conflicts'] if c['point_m'][0]>0],ego.speed_mps,ego.throttle)
-                if self.worker and not planning_active:
+                score_display_prediction(prediction,ego,self.engine.geometry,deferred=defer_scoring)
+                if self.worker and not planning_active and not defer_scoring:
                     self.worker_error=self.worker.error
                     learned=self.worker.current(key[0],observation.timestamp_s)
                     if learned and learned.get('modes'):
@@ -217,7 +224,7 @@ class DisplayPredictionService:
                                 timestamp_s=observation.timestamp_s,tracks=tracks[:16]))
                             last_submission=wall
                 if self.worker_error:prediction.update(model_status='UNAVAILABLE',model_reason=self.worker_error)
-                prediction['motionQuality']=(self.quality.snapshot() if planning_active else
+                prediction['motionQuality']=(self.quality.snapshot() if planning_active or defer_scoring else
                     self.quality.update(observation.timestamp_s,prediction['tracks'],prediction['trajectories'],
                         np.asarray(prediction['odometry_origin_m']),prediction['odometry_yaw_rad']))
                 if planning_active:prediction.update(model_status='MEASURED_RECOVERY',
@@ -238,7 +245,7 @@ class DisplayPredictionService:
                     tracking_ms=(tracked-captured)*1000,space_ms=(space_ready-tracked)*1000,
                     display_scoring_ms=(time.monotonic()-space_ready)*1000)
                 if planning_active:prediction['quality_metrics'].update(depth_ms=(depth_ready-tracked)*1000,map_ms=(mapped-depth_ready)*1000,copy_ms=(space_ready-mapped)*1000)
-                prediction['quality_metrics']['observer_target_hz']=10 if planning_active else 5
+                prediction['quality_metrics']['observer_target_hz']=10 if planning_active else 3
                 s.motion_snapshot=prediction
                 self.latest=prediction;self.error=None
                 pending_trace=(getattr(s,'recorder',None),prediction)

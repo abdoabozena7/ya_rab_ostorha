@@ -3049,9 +3049,10 @@
     const valid = !!prediction && prediction.session_id === p.sessionId && age >= 0 && age <= 0.25;
     const conflict = m?.predicted_conflicts?.[0] || prediction?.conflict_point;
     const insufficient = ["UNKNOWN_SPACE", "STALE_OBSERVATION", "SENSOR_UNAVAILABLE", "INVALID_OBSERVATION"].includes(p.safetySystem?.risk);
+    const deferred = prediction?.diagnostic_scoring_deferred || prediction?.display_observer_deferred;
     return {
       valid,
-      state: !valid || insufficient || m?.action === "HOLD" ? "Insufficient data" : conflict ? "Possible intersection" : "No predicted intersection",
+      state: !valid || insufficient || m?.action === "HOLD" ? "Insufficient data" : conflict ? "Possible intersection" : deferred ? "Intersection scoring deferred" : "No predicted intersection",
       action: p.stopDiagnostics?.braking ? (p.stopDiagnostics.decision_source || "RULE") + " BRAKE" : m?.action?.replaceAll("_", " ") || "HOLD",
       reason: p.stopDiagnostics?.braking ? p.stopDiagnostics.reason || "Protective brake" : m?.reason?.replaceAll("_", " ") || "Waiting for measured motion",
       values: [
@@ -3228,7 +3229,7 @@
     const age = (p.telemetry.timestamp - prediction.timestamp_s).toFixed(1), tracks = prediction.tracks || [];
     const source = prediction.display_source || prediction.decision_source || "Measured";
     const horizon = prediction.horizon_s ?? prediction.trajectories?.[0]?.points?.at(-1)?.[0];
-    return `${source} \xB7 ${age} s old${Number.isFinite(horizon) ? " \xB7 " + horizon + " s horizon" : ""} \xB7 ${tracks.length ? tracks.length + " measured objects" : "No tracked actors"}${prediction.model_reason ? " \xB7 " + prediction.model_reason : ""}`;
+    return `${source} \xB7 ${age} s old${Number.isFinite(horizon) ? " \xB7 " + horizon + " s horizon" : ""} \xB7 ${tracks.length ? tracks.length + " measured objects" : "No tracked actors"}${prediction.diagnostic_scoring_deferred ? " \xB7 intersection scoring deferred" : ""}${prediction.model_reason ? " \xB7 " + prediction.model_reason : ""}`;
   }
   function installUnifiedMap(p, view, tools2) {
     const panel = document.createElement("section");
@@ -3529,6 +3530,7 @@
       route_ended_before_destination: "The route follower ended before the destination. This failed attempt is saved.",
       dashboard_disconnected: "Dashboard connection lost. Reconnect, then resume driving.",
       dashboard_heartbeat_timeout: "Dashboard connection lease expired. Reconnect, then resume driving.",
+      observation_receipt_timeout: "Synchronized sensor observations stopped arriving. The journey ended; fresh telemetry does not resume driving. Use Restart.",
       destination_reached: "Destination reached. The vehicle has stopped.",
       operator_stop: "Stopped by the operator.",
       simulator_shutdown: "The simulator was stopped. Use Restart to start the presentation.",
@@ -3731,6 +3733,13 @@
     }
     return provider2.controlMode === "AUTOMATIC" ? "Self Driving" : provider2.controlMode === "MANUAL" ? "Manual \xB7 WASD" : "Vehicle held";
   }
+  function detectionSupported(detection) {
+    return detection?.classification_status !== "UNCERTAIN" && Number.isFinite(detection?.confidence) && detection.confidence >= 0.65 && detection.confidence <= 1;
+  }
+  function detectionLabel(detection) {
+    const confidence = Number.isFinite(detection?.confidence) && detection.confidence >= 0 && detection.confidence <= 1 ? Math.round(detection.confidence * 100) + "%" : "confidence unavailable";
+    return (detectionSupported(detection) ? "" : "Possible ") + String(detection?.class || "object") + " \xB7 " + confidence + " \xB7 2D";
+  }
   function perceptionCounts(result, provider2) {
     const age = provider2.telemetry?.timestamp - result?.timestamp_s;
     const compatible = provider2.fresh && !provider2.isReplay && result?.session_id === provider2.sessionId && Number.isFinite(age) && age >= 0 && Number.isInteger(result.frame_id) && result.frame_id <= provider2.telemetry?.frame;
@@ -3740,10 +3749,11 @@
       label: compatible ? "Front detections delayed \xB7 " + age.toFixed(1) + " s" : "Front detections unavailable"
     };
     const vehicleClasses = /* @__PURE__ */ new Set(["car", "truck", "bus", "motorcycle", "bicycle", "train"]);
+    const supported = result.detections.filter(detectionSupported), uncertain = result.detections.length - supported.length;
     return {
-      vehicles: result.detections.filter((d) => vehicleClasses.has(d.class)).length,
-      people: result.detections.filter((d) => d.class === "person" || d.class === "pedestrian").length,
-      label: "Front camera \xB7 2D detections \xB7 " + age.toFixed(1) + " s old"
+      vehicles: supported.filter((d) => vehicleClasses.has(d.class)).length,
+      people: supported.filter((d) => d.class === "person" || d.class === "pedestrian").length,
+      label: "Front camera \xB7 supported candidates \xB7 " + uncertain + " uncertain \xB7 " + age.toFixed(1) + " s old"
     };
   }
   function detectionFrameMatches(result, provider2, displayed, front) {
@@ -4501,16 +4511,19 @@
       for (const detection of result.detections || []) {
         const b = validDetectionBox(detection, result.width, result.height);
         if (!b) continue;
-        c.strokeStyle = detection.class === "person" ? "#753CF7" : "#4B84FC";
+        const supported = detectionSupported(detection);
+        c.setLineDash(supported ? [] : [5, 4]);
+        c.strokeStyle = !supported ? "#94a3b8" : detection.class === "person" ? "#753CF7" : "#4B84FC";
         c.strokeRect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
         if (preferences.labels) {
-          const text = String(detection.class || "Object") + " \xB7 2D", width = c.measureText(text).width + 10, y = Math.max(0, b[1] - 20);
+          const text = detectionLabel(detection), width = c.measureText(text).width + 10, y = Math.max(0, b[1] - 20);
           c.fillStyle = "#111827";
           c.fillRect(b[0], y, width, 20);
           c.fillStyle = "#FFFFFF";
           c.fillText(text, b[0] + 5, y + 14);
         }
       }
+      c.setLineDash([]);
     }
     return { update(vehicle, displayed) {
       const m = cockpitMeasurements(p, vehicle), fresh = p.fresh && !p.isReplay;
@@ -4594,11 +4607,12 @@
     const control = controlReasonText(reason);
     if (control !== reason) return control;
     if (/benchmark.*mismatch|initial.conditions/i.test(reason)) return "The initial conditions did not match. Use Restart to begin a new comparison.";
+    if (/comparison traffic changed/i.test(reason)) return "The comparison traffic changed. Saved recordings are retained, but a matched comparison cannot continue. Use Restart.";
     if (reason === "collision") return "Contact ended this attempt. Its recording and result are saved.";
     if (/acceptance|unfinished/i.test(reason)) return "Hybrid native validation is unfinished. Review the recorded evidence in Results.";
     if (/no space left|not enough.*space|insufficient.*space|storage|disk|ENOSPC/i.test(reason)) return "Recording needs free disk space. Archive saved runs, then try again.";
     if (/recording.*queue|queue.*exhaust/i.test(reason)) return "The recording queue is falling behind. Reduce extra displays, then try again.";
-    if (/recording/i.test(reason)) return "Recording did not finish. This failed attempt remains saved; restart the simulation.";
+    if (/recording_failure|video_export_failed|recording\b.*(?:fail|error|incomplete|did not|timed out)|(?:failed|incomplete).*recording\b/i.test(reason)) return "Recording did not finish. This failed attempt remains saved; restart the simulation.";
     if (/sensor|scene|freshness/i.test(reason)) return "Motion sensors are unavailable. Restart the simulation before driving.";
     if (/heartbeat|connection|disconnected/i.test(reason)) return "The connection was lost. Reconnect, then resume driving.";
     if (reason === "focus_lost") return "This earlier drive was paused when the page was hidden. Use Resume driving.";
@@ -4828,7 +4842,7 @@
     if (!run) return "Not started";
     const fault = failure?.fault || run.stop_diagnostics?.runtime_fault;
     const faultText = fault?.exception_type === "KeyError" ? "A required record was lost: " + fault.message : fault?.message;
-    const reason = run.reason === "collision" ? demoFailure(run.reason) + (faultText ? " Additional runtime error: " + faultText : "") : faultText || run.reason;
+    const reason = run.reason === "collision" ? faultText ? demoFailure(run.reason) + " Additional runtime error: " + faultText : run.reason : faultText || run.reason;
     return (run.status === "ARRIVED" ? "Destination reached" : run.status) + (reason && reason !== "destination_reached" ? " \xB7 " + (fault ? reason : demoFailure(reason)) : "") + (fault?.injected_validation_fault ? " \xB7 Injected validation fault; excluded from driving acceptance." : "");
   }
   function presentationTrafficText(population, setup) {

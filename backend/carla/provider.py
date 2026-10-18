@@ -231,7 +231,7 @@ class CarlaProvider:
             raise RuntimeError('No native observation is available')
         frame = simulation_frame(self.last_vehicle, self.last_world)
         if self.population:
-            population = self.population_state()
+            population = self.population_state(compact=True)
             a, r = population['actual'], population['requested']
             frame = replace(frame, population=PopulationState(frame.frame_id, frame.timestamp_s,
                 a['vehicles'], a['pedestrians'], a['controllers'], a['walkers_active'],
@@ -312,8 +312,9 @@ class CarlaProvider:
             return self.dashboard_tools.apply(self.dashboard_tools.scenes()[value])
         raise ValueError('Unknown dashboard operation')
 
-    def population_state(self):
-        state=self.population.get_population_state() if self.population else None
+    def population_state(self,*,compact=False):
+        state=(self.population.get_population_state(compact=True) if compact else
+            self.population.get_population_state()) if self.population else None
         if state and self.scenarios and self.scenarios.urban:
             import copy
             state=copy.deepcopy(state)
@@ -335,6 +336,9 @@ class CarlaProvider:
                 behavior='UNREGULATED')
             state['local_counts']=dict(self.local_population_counts)
         return state
+
+    def operator_population_state(self):
+        return self.population_state(compact=True)
 
     def environment_state(self, compact=False):
         return self.scenarios.status(compact=compact) if self.scenarios else None

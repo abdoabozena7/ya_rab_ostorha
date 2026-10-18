@@ -25,7 +25,7 @@ export function presentationOutcome(run, failure){
   if(!run)return 'Not started';
   const fault=failure?.fault||run.stop_diagnostics?.runtime_fault;
   const faultText=fault?.exception_type==='KeyError'?'A required record was lost: '+fault.message: fault?.message;
-  const reason=run.reason==='collision'?demoFailure(run.reason)+(faultText?' Additional runtime error: '+faultText:''):faultText||run.reason;
+  const reason=run.reason==='collision'?(faultText?demoFailure(run.reason)+' Additional runtime error: '+faultText:run.reason):faultText||run.reason;
   return (run.status==='ARRIVED'?'Destination reached':run.status)+
     (reason&&reason!=='destination_reached'?' · '+(fault?reason:demoFailure(reason)):'')+
     (fault?.injected_validation_fault?' · Injected validation fault; excluded from driving acceptance.':'');

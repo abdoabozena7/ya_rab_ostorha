@@ -23,6 +23,13 @@ test('automatic route population shows actual counts and capacity limits',()=>{
   assert.doesNotMatch(presentationTrafficText(p,null),/limited/);
 });
 
+test('a finalized collision is not relabeled as a recording failure',()=>{
+  const text=presentationOutcome({status:'COLLISION',reason:'collision'});
+  assert.match(text,/Contact ended this attempt/);
+  assert.match(text,/recording and result are saved/);
+  assert.doesNotMatch(text,/Recording did not finish/);
+});
+
 test('presentation results never infer superiority from a failed or mismatched pair',()=>{
   const data={conditions_match:true,runs:{ROBOSPHERE:{status:'ARRIVED'},NORMAL:{status:'ARRIVED'}}};
   assert.match(presentationSummary(data),/Both drivers reached/);

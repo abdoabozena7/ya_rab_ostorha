@@ -21,6 +21,7 @@ export function controlReasonText(reason) {
     route_ended_before_destination:'The route follower ended before the destination. This failed attempt is saved.',
     dashboard_disconnected:'Dashboard connection lost. Reconnect, then resume driving.',
     dashboard_heartbeat_timeout:'Dashboard connection lease expired. Reconnect, then resume driving.',
+    observation_receipt_timeout:'Synchronized sensor observations stopped arriving. The journey ended; fresh telemetry does not resume driving. Use Restart.',
     destination_reached:'Destination reached. The vehicle has stopped.',
     operator_stop:'Stopped by the operator.',
     simulator_shutdown:'The simulator was stopped. Use Restart to start the presentation.',
@@ -179,6 +180,17 @@ export function driverCaption(provider) {
   return provider.controlMode==='AUTOMATIC'?'Self Driving':provider.controlMode==='MANUAL'?'Manual · WASD':'Vehicle held';
 }
 
+export function detectionSupported(detection) {
+  return detection?.classification_status!=='UNCERTAIN'&&Number.isFinite(detection?.confidence)&&
+    detection.confidence>=.65&&detection.confidence<=1;
+}
+
+export function detectionLabel(detection) {
+  const confidence=Number.isFinite(detection?.confidence)&&detection.confidence>=0&&detection.confidence<=1?
+    Math.round(detection.confidence*100)+'%':'confidence unavailable';
+  return (detectionSupported(detection)?'':'Possible ')+String(detection?.class||'object')+' · '+confidence+' · 2D';
+}
+
 export function perceptionCounts(result, provider) {
   const age = provider.telemetry?.timestamp - result?.timestamp_s;
   const compatible = provider.fresh && !provider.isReplay && result?.session_id === provider.sessionId &&
@@ -187,10 +199,11 @@ export function perceptionCounts(result, provider) {
     vehicles:null, people:null, label:compatible ? 'Front detections delayed · ' + age.toFixed(1) + ' s' : 'Front detections unavailable',
   };
   const vehicleClasses = new Set(['car','truck','bus','motorcycle','bicycle','train']);
+  const supported=result.detections.filter(detectionSupported),uncertain=result.detections.length-supported.length;
   return {
-    vehicles:result.detections.filter(d => vehicleClasses.has(d.class)).length,
-    people:result.detections.filter(d => d.class === 'person' || d.class === 'pedestrian').length,
-    label:'Front camera · 2D detections · ' + age.toFixed(1) + ' s old',
+    vehicles:supported.filter(d => vehicleClasses.has(d.class)).length,
+    people:supported.filter(d => d.class === 'person' || d.class === 'pedestrian').length,
+    label:'Front camera · supported candidates · '+uncertain+' uncertain · ' + age.toFixed(1) + ' s old',
   };
 }
 

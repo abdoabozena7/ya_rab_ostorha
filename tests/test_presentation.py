@@ -159,6 +159,28 @@ class PresentationTests(unittest.TestCase):
         self.service._stop_navigation('presentation_route_timeout')
         fixture.close.assert_not_called()
 
+    def test_terminal_fixture_failure_does_not_rearm_the_consumed_traffic_hold(self):
+        self.provider.benchmark_fixture=Mock()
+        self.service.journey.update(status='RUNNING',benchmark=True,driving_mode='ROBOSPHERE',presentation_id='old')
+        self.service._stop_navigation('destination_reached',status='ARRIVED')
+        self.assertTrue(self.service.presentation_traffic_hold_pending)
+        self.service.presentation_traffic_hold_pending=False
+        self.p.data={'id':'old','status':'FINALIZING'}
+        self.p.fail('The comparison traffic changed')
+        self.assertFalse(self.service.presentation_traffic_hold_pending)
+        self.assertEqual(self.p.data['status'],'ERROR')
+        self.assertEqual(self.service.journey['status'],'ERROR')
+
+    def test_restart_after_a_failed_fixture_can_reach_fresh_setup(self):
+        self.provider.benchmark_fixture=Mock()
+        self.service.journey.update(status='ERROR',benchmark=True,driving_mode='ROBOSPHERE',presentation_id='old')
+        self.p.data={'id':'old','status':'ERROR','reason':'The comparison traffic changed'}
+        self.p.start(seed=2086914493)
+        self.assertFalse(getattr(self.service,'presentation_traffic_hold_pending',False))
+        self.tick();self.tick()
+        self.provider.prepare_presentation.assert_called_once_with(2086914493,50.)
+        self.assertEqual(self.p.data['status'],'READY')
+
     def test_lost_connection_and_failed_setup_do_not_retry(self):
         self.p.start(); self.time=3.
         self.p.tick()

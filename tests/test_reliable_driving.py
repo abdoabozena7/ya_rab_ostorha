@@ -15,6 +15,23 @@ from backend.learning.native_validation_budget import NativeValidationBudget
 
 
 class ReliableDrivingTests(unittest.TestCase):
+    def test_validation_oracle_records_only_exact_frame_cache_and_never_reaches_control(self):
+        from backend.core.service import SimulationService
+        from tests.core_packets import packet
+        from unittest.mock import Mock
+        service=SimulationService(None);service.native_validation_budget=object();service.recorder=Mock()
+        oracle={'frame_id':1,'timestamp_s':.05,'actors':[{'actor_id':2,'bounding_box':{'extent_m':[2.,1.,1.]}}]}
+        service.provider=SimpleNamespace(ground_truth_debug=lambda:oracle)
+        service._record_validation_oracle(packet())
+        row=service.recorder.record_trace.call_args.args[0]
+        self.assertEqual(row['kind'],'NATIVE_VALIDATION_ORACLE')
+        self.assertFalse(row['used_for_applied_decision'])
+        self.assertIsNone(service.safety_command)
+        service.recorder.reset_mock();oracle['frame_id']=2
+        service._record_validation_oracle(packet());service.recorder.record_trace.assert_not_called()
+        oracle['frame_id']=1;oracle['timestamp_s']=.1
+        service._record_validation_oracle(packet());service.recorder.record_trace.assert_not_called()
+
     def test_critical_owner_display_view_retains_exact_frame_evidence(self):
         from backend.core.display_prediction import measured_control_view,DisplayPredictionService
         from unittest.mock import Mock

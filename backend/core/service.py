@@ -501,6 +501,7 @@ class SimulationService:
                 if self.journey.get('driving_mode')=='HYBRID' else None,
             'sensor_wall_age_s': self.now()-(self.state_at if self.safety_observed_at is None else self.safety_observed_at),
             'control_timing_ms': dict(getattr(self,'control_timing_ms',{})),
+            'comfort_control':dict(getattr(getattr(self,'comfort_controller',None),'status',{})),
             'scene_timing_ms':to_dict(scene.timings_ms) if scene else None,
             'space_build_ms':scene.space.build_ms if scene else None,
             'application_timing':dict(getattr(self,'application_timing',{})),
@@ -714,6 +715,7 @@ class SimulationService:
                     'message':recording_status.get('error') or 'Recording queue exhausted; saved prefix is incomplete',
                     'evaluation_frame':frame.frame_id,'timestamp_s':frame.timestamp_s}
                 self._stop_navigation('recording_failure',status='ERROR')
+        self._record_validation_oracle(frame)
         if hasattr(self.recorder, 'submit'):
             manager=getattr(self.provider,'sensor_manager',None)
             if manager and hasattr(self.recorder,'record_video'):
@@ -737,6 +739,15 @@ class SimulationService:
         self.recorder.record(frame)
         if self.comparison:
             self.comparison.record(frame)
+
+    def _record_validation_oracle(self,frame):
+        if not getattr(self,'native_validation_budget',None) or not hasattr(self.recorder,'record_trace'):return
+        oracle=getattr(self.provider,'ground_truth_debug',lambda:None)()
+        if (not oracle or oracle.get('frame_id')!=frame.frame_id or
+                abs(oracle.get('timestamp_s',-1)-frame.timestamp_s)>1e-6):return
+        self.recorder.record_trace({'kind':'NATIVE_VALIDATION_ORACLE','session_id':self.session_id,
+            'evaluation_frame':frame.frame_id,'timestamp_s':frame.timestamp_s,
+            'used_for_applied_decision':False,'oracle':oracle})
 
     def submit_control(self, command):
         with self.lock:
@@ -845,7 +856,8 @@ class SimulationService:
                 'mode': self.journey.get('driving_mode') or 'UNPAIRED', 'applied': False}
         fixture=getattr(self.provider,'benchmark_fixture',None)
         presentation_fixture=bool(fixture and self.journey.get('presentation_id'))
-        if presentation_fixture:self.presentation_traffic_hold_pending=True
+        if presentation_fixture and self.journey.get('status') in ('STARTING','RUNNING'):
+            self.presentation_traffic_hold_pending=True
         if fixture and not presentation_fixture and self.journey.get('benchmark') and (
                 self.journey.get('driving_mode')=='HYBRID' or self.journey.get('presentation_id') and
                 self.journey.get('driving_mode')=='NORMAL' or not (benchmark_terminal_supported({'status':status,'reason':reason}) or
@@ -962,6 +974,7 @@ class SimulationService:
             self.last_drive_stop = None
             self.safety_processing_wait_at = None
             self.hybrid_fault_since = None
+            self.comfort_controller = None
             if driving_mode is not None:
                 self.journey.update(driving_mode=driving_mode, pair_id=pair_id)
                 if driving_mode in ('ROBOSPHERE','NORMAL'):self.manual_driving_mode = driving_mode
@@ -1052,7 +1065,9 @@ class SimulationService:
             stop_reason=getattr(self.provider,'navigation_stop_reason',None)
             command=self.comfort_controller.apply(command,self.observation.vehicle,
                 getattr(self.provider,'navigation_target_mps',self.journey['speed_kmh']/3.6),
-                hazard=bool(stop_reason and stop_reason!='Navigation speed/route controller'))
+                hazard=bool(stop_reason and stop_reason!='Navigation speed/route controller'),
+                forward_status=self.active_safety.snapshot() if self.active_safety and
+                    self.journey.get('driving_mode')=='ROBOSPHERE' else None)
         self.base_driver_command = command
         bypass=self._route_bypass()
         if bypass is not None and self.journey.get('driving_mode','ROBOSPHERE')=='ROBOSPHERE':
@@ -1565,7 +1580,7 @@ class SimulationService:
                     'collisionEvents': [to_dict(e) for e in self.collision_events] if live else [],
                     'dashboardResult': copy.deepcopy(self.dashboard_result),
                     'route': getattr(self.provider, 'route_state', lambda: None)() if live else None,
-                    'population': getattr(self.provider, 'population_state', lambda: None)() if live else None,
+                    'population': self._population_snapshot(stream) if live else None,
                     'environment': self._environment_snapshot() if live else None,
                     'nearbyActors': getattr(self.provider, 'ground_truth_debug', lambda: None)() if live else None,
                     'synchronization': {'completeFrames': self.synchronized_frames,
@@ -1608,6 +1623,10 @@ class SimulationService:
         result['simulatorStart']={'available':self.can_start_simulation(),**copy.deepcopy(self.simulator_start)}
         result['simulatorReset']={'available':self.can_reset_simulation()}
         return result
+
+    def _population_snapshot(self,compact):
+        observer=getattr(self.provider,'operator_population_state',None) if compact else None
+        return observer() if observer else getattr(self.provider,'population_state',lambda:None)()
 
     def _environment_snapshot(self):
         compact=getattr(self.provider,'operator_environment_state',None)

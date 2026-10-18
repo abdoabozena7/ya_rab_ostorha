@@ -29,6 +29,7 @@ runtime versions and should not be read as current capability guarantees.
 
 | Area | Entry points | Detailed report |
 | --- | --- | --- |
+| Browser-owned verification, independent stop evidence, approach slowing and display/transport repairs | `backend/core/comfort_control.py`, `scripts/audit_driving_stops.py`, `scripts/verify_driving_browser_ui.js` | [18 October follow-up verification and remaining acceptance gates](DRIVING_VERIFICATION_20261018.md) |
 | Sequential interface and grouped Details navigation | `frontend/guided-details.js`, `frontend/details-state.js`, `frontend/drive-state.js` | [18 October UI behavior and isolated browser verification](SIMPLER_UI_20261018.md) |
 | Observation watchdog, actor cleanup, precise control timing and visual evidence | `backend/core/service.py`, `backend/core/host_clock.py`, `scripts/audit_driving_repair.py` | [18 October iterative driving repair and native evidence](DRIVING_REPAIR_CHECKLIST_20261018.md) |
 | Launch and simulator lifecycle | `Start-YA-RAB-OSTORHA.ps1`, `backend/server.py`, `backend/carla/start_helper.py`, `backend/carla/stop_helper.py` | [Simulation start](SIMULATION_START_20261013.md), [GPU release and UI stability](UI_STABILITY_GPU_RELEASE_20261013.md) |

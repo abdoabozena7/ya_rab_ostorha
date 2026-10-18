@@ -4,7 +4,8 @@ export function motionReadout(p,prediction,vehicle) {
   const valid=!!prediction&&prediction.session_id===p.sessionId&&age>=0&&age<=.25;
   const conflict=m?.predicted_conflicts?.[0]||prediction?.conflict_point;
   const insufficient=['UNKNOWN_SPACE','STALE_OBSERVATION','SENSOR_UNAVAILABLE','INVALID_OBSERVATION'].includes(p.safetySystem?.risk);
-  return {valid,state:!valid||insufficient||m?.action==='HOLD'?'Insufficient data':conflict?'Possible intersection':'No predicted intersection',
+  const deferred=prediction?.diagnostic_scoring_deferred||prediction?.display_observer_deferred;
+  return {valid,state:!valid||insufficient||m?.action==='HOLD'?'Insufficient data':conflict?'Possible intersection':deferred?'Intersection scoring deferred':'No predicted intersection',
     action:p.stopDiagnostics?.braking?(p.stopDiagnostics.decision_source||'RULE')+' BRAKE':m?.action?.replaceAll('_',' ')||'HOLD',
     reason:p.stopDiagnostics?.braking?(p.stopDiagnostics.reason||'Protective brake'):m?.reason?.replaceAll('_',' ')||'Waiting for measured motion',
     values:[['Actual / target',num(vehicle.speedKmh)+' / '+num(m?.target_speed_kmh??p.journey?.speed_kmh)+' km/h'],

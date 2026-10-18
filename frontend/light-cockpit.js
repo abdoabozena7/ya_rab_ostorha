@@ -1,6 +1,6 @@
 import {showWorkspace} from './presentation-ui.js';
 import {measuredPredictionFresh} from './prediction-view.js';
-import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox,controlReasonText} from './cockpit-state.js';
+import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox,controlReasonText,detectionSupported,detectionLabel} from './cockpit-state.js';
 
 const $ = id => document.getElementById(id);
 const el = (tag,cls,text) => {const n=document.createElement(tag); if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
@@ -143,9 +143,11 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
     canvas.width=result.width;canvas.height=result.height;const c=canvas.getContext('2d');c.clearRect(0,0,canvas.width,canvas.height);c.lineWidth=Math.max(1,result.width/500);
     c.font=`600 ${Math.max(11,result.width/65)}px Manrope, sans-serif`;
     for(const detection of result.detections||[]){const b=validDetectionBox(detection,result.width,result.height);if(!b)continue;
-      c.strokeStyle=detection.class==='person'?'#753CF7':'#4B84FC';c.strokeRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-      if(preferences.labels){const text=String(detection.class||'Object')+' · 2D',width=c.measureText(text).width+10,y=Math.max(0,b[1]-20);c.fillStyle='#111827';c.fillRect(b[0],y,width,20);c.fillStyle='#FFFFFF';c.fillText(text,b[0]+5,y+14);}
+      const supported=detectionSupported(detection);c.setLineDash(supported?[]:[5,4]);
+      c.strokeStyle=!supported?'#94a3b8':detection.class==='person'?'#753CF7':'#4B84FC';c.strokeRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+      if(preferences.labels){const text=detectionLabel(detection),width=c.measureText(text).width+10,y=Math.max(0,b[1]-20);c.fillStyle='#111827';c.fillRect(b[0],y,width,20);c.fillStyle='#FFFFFF';c.fillText(text,b[0]+5,y+14);}
     }
+    c.setLineDash([]);
   }
 
   return {update(vehicle,displayed){

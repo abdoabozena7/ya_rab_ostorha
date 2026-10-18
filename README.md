@@ -4,6 +4,11 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [18 October live-browser follow-up verification](docs/DRIVING_VERIFICATION_20261018.md)
+tracks additional stop, uncertainty-label, camera-layout and transport repairs.
+It preserves failed native iterations and separates actual playback completion
+from still-unaccepted comfort, live-rendering and general perception gates.
+
 The [18 October iterative driving checklist](docs/DRIVING_REPAIR_CHECKLIST_20261018.md)
 tracks observation-loss recovery, vanished-actor cleanup, control timing,
 uncertain camera detections and recorded map evidence. The original failing seed

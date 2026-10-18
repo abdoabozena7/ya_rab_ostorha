@@ -4,6 +4,21 @@ from backend.core.display_prediction import local_modes,measured_control_view,Di
 
 
 class DisplayPredictionTests(unittest.TestCase):
+    def test_ordinary_driving_keeps_measured_tracks_without_hypothetical_scoring(self):
+        from unittest.mock import patch
+        from backend.core.display_prediction import score_display_prediction
+        tracks=[{'id':'1','class':'UNKNOWN','position_m':[8.,2.]}]
+        measured=[{'track_id':'1','points':[[0.,8.,2.],[1.,8.,2.]]}]
+        prediction={'tracks':tracks,'control_trajectories':measured,'trajectories':measured}
+        with patch('backend.core.display_prediction.ego_paths',side_effect=AssertionError('Expensive scoring')):
+            score_display_prediction(prediction,None,None,deferred=True)
+        self.assertIs(prediction['tracks'],tracks)
+        self.assertIs(prediction['trajectories'],measured)
+        self.assertTrue(prediction['diagnostic_scoring_deferred'])
+        self.assertEqual(prediction['object_assessments'],[])
+        self.assertEqual(prediction['conflicts'],[])
+        self.assertIsNone(prediction['conflict_point'])
+
     def test_odometry_hypotheses_transform_and_advance_to_display_time(self):
         mode={'track_id':'1','points':[[0.,10.,20.],[1.,12.,20.],[3.,16.,20.]]}
         p={'odometry_origin_m':[10.,20.],'odometry_yaw_rad':np.pi/2,'timestamp_s':10.5}

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox,controlReasonText} from '../frontend/cockpit-state.js';
+import {cockpitMeasurements,metricText,safetyNotice,safetyChip,driverCaption,perceptionCounts,detectionFrameMatches,containedImageRect,validDetectionBox,controlReasonText,detectionLabel,detectionSupported} from '../frontend/cockpit-state.js';
 
 const provider=()=>({fresh:true,isReplay:false,sessionId:'a',controlMode:'AUTOMATIC',telemetry:{frame:20,timestamp:1},journey:{speed_kmh:30},safetySystem:{enabled:true,controller:'RULE',status:'MONITORING',active:false,timestamp_s:1,frame_id:20,measured_range_m:12,ttc_s:null}});
-const result=()=>({session_id:'a',frame_id:20,timestamp_s:1,width:800,height:450,detections:[{class:'car'},{class:'person'},{class:'truck'}]});
+const result=()=>({session_id:'a',frame_id:20,timestamp_s:1,width:800,height:450,detections:[{class:'car',confidence:.8},{class:'person',confidence:.8},{class:'truck',confidence:.8}]});
 const front=()=>({sensorId:'frontCamera',frame:20,timestamp:1,width:800,height:450,fovDeg:90,mountTransform:{position_m:[1.5,0,1.6],rotation_deg:{}}});
 
 test('hybrid brake distinguishes processing delay from an uncertain maneuver corridor',()=>{
@@ -37,6 +37,11 @@ test('presentation timeouts explain the retained incomplete attempt and recovery
   const detail=controlReasonText('presentation_phase_timeout: DRIVING');
   assert.match(detail,/time limit/);assert.match(detail,/unfinished/);assert.match(detail,/Restart/);
   assert.doesNotMatch(detail,/presentation_phase_timeout/);
+});
+
+test('observation receipt loss explains terminal failure without promising auto resume',()=>{
+  assert.match(controlReasonText('observation_receipt_timeout'),/journey ended/);
+  assert.match(controlReasonText('observation_receipt_timeout'),/does not resume/);
 });
 
 test('the original synchronized-scene failure takes precedence over generic presentation cleanup',()=>{
@@ -164,9 +169,20 @@ test('recovery caption needs current maneuver data and never overrides a held or
 });
 test('camera counts use current inference, never population or unrelated measured tracks',()=>{
   const p=provider();p.population={actual:{vehicles:99,pedestrians:88}};
-  assert.deepEqual(perceptionCounts(result(),p),{vehicles:2,people:1,label:'Front camera · 2D detections · 0.0 s old'});
+  assert.deepEqual(perceptionCounts(result(),p),{vehicles:2,people:1,label:'Front camera · supported candidates · 0 uncertain · 0.0 s old'});
   assert.equal(perceptionCounts({...result(),detections:[]},p).vehicles,0);
   for(const update of [{timestamp_s:0},{timestamp_s:2},{session_id:'b'},{frame_id:21}])assert.equal(perceptionCounts({...result(),...update},p).vehicles,null);
+});
+
+test('uncertain boxes never count as supported vehicles or people',()=>{
+  const detections=[{class:'car',confidence:.28,classification_status:'UNCERTAIN'},
+    {class:'person',confidence:.5},{class:'car',confidence:.9,classification_status:'UNCERTAIN'},
+    {class:'truck',confidence:.8,classification_status:'SUPPORTED'},{class:'person'}];
+  const counts=perceptionCounts({...result(),detections},provider());
+  assert.equal(counts.vehicles,1);assert.equal(counts.people,0);assert.match(counts.label,/4 uncertain/);
+  assert.equal(detectionLabel(detections[0]),'Possible car · 28% · 2D');
+  assert.equal(detectionLabel(detections[3]),'truck · 80% · 2D');
+  for(const confidence of [undefined,NaN,Infinity,1.2,-.1])assert.equal(detectionSupported({confidence}),false);
 });
 test('2D overlay requires exact displayed frame, timestamp and sensor viewpoint',()=>{
   const p=provider(),r=result(),f=front();assert.equal(detectionFrameMatches(r,p,f,f),true);

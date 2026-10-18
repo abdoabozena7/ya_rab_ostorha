@@ -40,3 +40,18 @@ test('unaccepted driving and missing disk space offer factual recovery messages'
   assert.doesNotMatch(demoFailure('SWEPT_SPACE_UNKNOWN_OR_OCCUPIED'),/recording/);
   assert.match(demoFailure('sensor freshness fault'),/Motion sensors/);
 });
+
+test('changed native traffic retains its actual failure instead of blaming recording',()=>{
+  const reason='The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.';
+  assert.match(demoFailure(reason),/comparison traffic changed/);
+  assert.match(demoFailure(reason),/matched comparison cannot continue/);
+  assert.doesNotMatch(demoFailure(reason),/Recording did not finish/);
+  assert.equal(demoFailure(demoFailure(reason)),demoFailure(reason));
+});
+
+test('saved recording text is not itself an export or recording fault',()=>{
+  for(const reason of ['Contact ended this attempt. Its recording and result are saved.',
+      'Both recordings are retained.'])assert.equal(demoFailure(reason),reason);
+  for(const reason of ['recording_failure','video_export_failed: encoder failure',
+      'Recording write failed'])assert.match(demoFailure(reason),/Recording did not finish/);
+});

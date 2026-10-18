@@ -23,11 +23,12 @@ export function demoFailure(reason) {
   const control=controlReasonText(reason);
   if(control!==reason)return control;
   if(/benchmark.*mismatch|initial.conditions/i.test(reason))return 'The initial conditions did not match. Use Restart to begin a new comparison.';
+  if(/comparison traffic changed/i.test(reason))return 'The comparison traffic changed. Saved recordings are retained, but a matched comparison cannot continue. Use Restart.';
   if(reason==='collision')return 'Contact ended this attempt. Its recording and result are saved.';
   if(/acceptance|unfinished/i.test(reason))return 'Hybrid native validation is unfinished. Review the recorded evidence in Results.';
   if(/no space left|not enough.*space|insufficient.*space|storage|disk|ENOSPC/i.test(reason))return 'Recording needs free disk space. Archive saved runs, then try again.';
   if(/recording.*queue|queue.*exhaust/i.test(reason))return 'The recording queue is falling behind. Reduce extra displays, then try again.';
-  if(/recording/i.test(reason))return 'Recording did not finish. This failed attempt remains saved; restart the simulation.';
+  if(/recording_failure|video_export_failed|recording\b.*(?:fail|error|incomplete|did not|timed out)|(?:failed|incomplete).*recording\b/i.test(reason))return 'Recording did not finish. This failed attempt remains saved; restart the simulation.';
   if(/sensor|scene|freshness/i.test(reason))return 'Motion sensors are unavailable. Restart the simulation before driving.';
   if(/heartbeat|connection|disconnected/i.test(reason))return 'The connection was lost. Reconnect, then resume driving.';
   if(reason==='focus_lost')return 'This earlier drive was paused when the page was hidden. Use Resume driving.';

@@ -13,9 +13,10 @@ class WebSocketBridge:
         self.ownership_lock = threading.RLock()
         self.snapshot_lock = threading.Lock()
         self.snapshot_cache = None
+        self.snapshot_key = None
         self.owner = None
         self.sockets = set()
-        self.server = serve(self.handle, host, port, max_size=16_384,
+        self.server = serve(self.handle, host, port, max_size=16_384,compression=None,
                             origins=[None, f"http://127.0.0.1:{http_port}",
                                      f"http://localhost:{http_port}", f"http://{host}:{http_port}"])
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True,
@@ -29,11 +30,13 @@ class WebSocketBridge:
         # pong liveness and acknowledgements remain per connection.
         with self.snapshot_lock:
             now=time.monotonic()
-            if self.snapshot_cache and now-self.snapshot_cache[0]<.05:
+            key=(getattr(self.service,'session_id',None),getattr(self.service,'sequence',None))
+            if self.snapshot_cache and self.snapshot_key==key and now-self.snapshot_cache[0]<.05:
                 return self.snapshot_cache[1]
             snapshot=getattr(self.service,'stream_snapshot',self.service.snapshot)()
             payload=json.dumps(snapshot,allow_nan=False)
             self.snapshot_cache=(time.monotonic(),payload)
+            self.snapshot_key=key
             return payload
 
     def process_message(self, socket, message):
@@ -156,6 +159,7 @@ class WebSocketBridge:
             if not getattr(self.service, 'is_replay', False) and self.controller_lock.acquire(blocking=False):
                 self.owner = socket
         acknowledged = None
+        last_sent=None;last_sent_at=-float('inf')
         pending_ping = None
         last_ping = -float('inf')
         try:
@@ -172,7 +176,7 @@ class WebSocketBridge:
                     pending_ping = (socket.ping(), self.service.session_id)
                     last_ping = now
                 try:
-                    message = json.loads(socket.recv(timeout=.05))
+                    message = json.loads(socket.recv(timeout=.01))
                     if not isinstance(message, dict):
                         raise ValueError('Expected an object')
                     if self.process_message(socket, message):
@@ -183,8 +187,11 @@ class WebSocketBridge:
                     socket.send(json.dumps({'type': 'error', 'error': str(error)}))
                 payload=self.snapshot_payload()
                 prefix=json.dumps({'type':'snapshot','controller':self.owner is socket,'acknowledged':acknowledged})
-                socket.send(prefix[:-1]+(','+payload[1:] if len(payload)>2 else '}'))
-                time.sleep(.01)
+                current=(payload,prefix)
+                if current!=last_sent or time.monotonic()-last_sent_at>=.1:
+                    socket.send(prefix[:-1]+(','+payload[1:] if len(payload)>2 else '}'))
+                    last_sent=current;last_sent_at=time.monotonic()
+                time.sleep(.005)
         except ConnectionClosed:
             pass
         finally:

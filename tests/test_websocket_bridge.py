@@ -8,6 +8,21 @@ from tests.core_packets import packet
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
+    def test_a_new_native_frame_invalidates_the_shared_snapshot_inside_its_ttl(self):
+        from unittest.mock import Mock,patch
+        from types import SimpleNamespace
+        import threading
+        from backend.websocket_bridge import WebSocketBridge
+        service=SimpleNamespace(session_id='s',sequence=1,snapshot=Mock(),
+            stream_snapshot=Mock(side_effect=[{'sequence':1},{'sequence':2}]))
+        bridge=WebSocketBridge.__new__(WebSocketBridge);bridge.service=service
+        bridge.snapshot_cache=None;bridge.snapshot_key=None;bridge.snapshot_lock=threading.Lock()
+        with patch('backend.websocket_bridge.time.monotonic',return_value=1.):
+            first=bridge.snapshot_payload();self.assertEqual(bridge.snapshot_payload(),first)
+            service.sequence=2;second=bridge.snapshot_payload()
+        self.assertEqual(json.loads(second)['sequence'],2)
+        self.assertEqual(service.stream_snapshot.call_count,2)
+
     def test_native_pong_keeps_autonomous_intent_without_browser_js_and_close_stops_it(self):
         from websockets.sync.client import connect
         from backend.websocket_bridge import WebSocketBridge
