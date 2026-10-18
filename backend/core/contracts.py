@@ -126,7 +126,10 @@ def freeze_json(value, _memo=None):
         return frozen
     _memo[identity]=None
     if sequence:
-        frozen=tuple.__new__(_FrozenJSONSequence,(freeze_json(item,_memo) for item in value))
+        if all(type(item) is float for item in value):
+            if not all(map(math.isfinite,value)):raise ValueError('value must be a finite number')
+            frozen=tuple.__new__(_FrozenJSONSequence,value)
+        else:frozen=tuple.__new__(_FrozenJSONSequence,(freeze_json(item,_memo) for item in value))
     else:
         if any(not isinstance(key, str) for key in value):
             raise ValueError('JSON object keys must be strings')

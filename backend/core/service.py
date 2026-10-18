@@ -17,12 +17,13 @@ from .logging import LogCategory, log
 from .timing import FrameIssue, SimulationClock, SensorSynchronizer
 from .hybrid_config import status as hybrid_capability_status
 from .journey_comparison import benchmark_terminal_supported
+from .host_clock import monotonic
 
 
 class SimulationService:
     CONTROL_TTL = .35
 
-    def __init__(self, provider, recorder=None, *, required_sensors=(), optional_sensors=(), sensor_timeout_s=.25, now=time.monotonic, validation_budget=None):
+    def __init__(self, provider, recorder=None, *, required_sensors=(), optional_sensors=(), sensor_timeout_s=.25, now=monotonic, validation_budget=None):
         self.native_validation_budget = validation_budget
         from .safety_policy import ObservationHistory
         from .recording import RunRecorder,BufferedRunRecorder
@@ -463,9 +464,9 @@ class SimulationService:
             elif self.active_safety and self.active_safety.last_fault and self.journey.get('reason') in (
                     None, 'ya_rab_ostorha_sensor_fault', 'ya_rab_ostorha_model_failure'):
                 reason = self.active_safety.last_fault
-            elif self.arbiter.reason in ('disconnected','command_timeout') or self.journey.get('reason') == 'dashboard_heartbeat_timeout':
+            elif self.arbiter.reason in ('disconnected','command_timeout') or self.journey.get('reason') in ('dashboard_heartbeat_timeout','observation_receipt_timeout'):
                 source = 'COMMUNICATION_FAILURE'
-                reason = self.journey.get('reason') if self.journey.get('reason') == 'dashboard_heartbeat_timeout' else self.arbiter.reason
+                reason = self.journey.get('reason') if self.journey.get('reason') in ('dashboard_heartbeat_timeout','observation_receipt_timeout') else self.arbiter.reason
             elif command.source in (CommandSource.SYSTEM, CommandSource.SAFETY) and self.journey.get('reason'):
                 reason = self.journey['reason']
                 if reason in ('operator_stop','operator_pause','controls_released','comparison_v2_stop'): source = 'DRIVER'
@@ -485,6 +486,7 @@ class SimulationService:
                 source = braking_sources[0]
         frame_id, stamp = self._context()
         geometry = getattr(getattr(self, 'provider', None), 'vehicle_geometry', None)
+        scene=getattr(self,'control_scene',None)
         self.stop_diagnostics = {'version': 2, 'session_id': self.session_id, 'evaluation_frame': frame_id,
             'timestamp_s': stamp, 'braking': command.brake > .01 or command.handbrake, 'decision_source': source,
             'braking_sources': braking_sources,
@@ -499,6 +501,8 @@ class SimulationService:
                 if self.journey.get('driving_mode')=='HYBRID' else None,
             'sensor_wall_age_s': self.now()-(self.state_at if self.safety_observed_at is None else self.safety_observed_at),
             'control_timing_ms': dict(getattr(self,'control_timing_ms',{})),
+            'scene_timing_ms':to_dict(scene.timings_ms) if scene else None,
+            'space_build_ms':scene.space.build_ms if scene else None,
             'application_timing':dict(getattr(self,'application_timing',{})),
             'sensor_ages_s': {s.sensor_id: stamp-s.sensor_timestamp_s for s in self.observation.sensors} if self.observation else {},
             'ego_render_pose': to_dict(self.observation.vehicle.transform) if self.observation else None}
@@ -521,6 +525,14 @@ class SimulationService:
             else: prediction.pop('render_reference',None)
         if self.recorder and hasattr(self.recorder,'record_safety'):
             self.recorder.record_safety(self.stop_diagnostics)
+            perception=getattr(self,'control_perception',None)
+            result=perception.latest(self.session_id) if perception else None
+            if result:
+                key=(id(self.recorder),result.get('session_id'),result.get('frame_id'))
+                if key!=getattr(self,'recorded_perception_key',None):
+                    accepted=self.recorder.record_trace({'kind':'CAMERA_DETECTIONS','session_id':self.session_id,
+                        'evaluation_frame':frame_id,'timestamp_s':stamp,'result':result})
+                    if accepted is not False:self.recorded_perception_key=key
         if getattr(self, 'journey_recording_stop_pending', None):
             self.journey_recording_stop_pending['applied'] = True
 
@@ -773,7 +785,7 @@ class SimulationService:
 
     def _choose(self):
         frame_id, timestamp_s = self._context()
-        chosen = self.arbiter.choose(frame_id=frame_id, timestamp_s=timestamp_s, connected=self._live())
+        chosen = self.arbiter.choose(frame_id=frame_id, timestamp_s=timestamp_s, connected=self._check_observation_health())
         if self.arbiter.reason == 'command_timeout' and self.journey.get('status') == 'RUNNING':
             self.runtime_fault={'stage':'command_arbitration','exception_type':'CommandLeaseTimeout',
                 'message':'The driving command expired before application',
@@ -818,7 +830,7 @@ class SimulationService:
     def _stop_navigation(self, reason, *, status='PAUSED', manual=False):
         if self.journey.get('status') in ('STARTING','RUNNING') or status == 'ERROR':
             frame_id, stamp = self._context()
-            fault = self.runtime_fault if reason in ('runtime_failure','recording_failure') else self.safety_fault
+            fault = self.runtime_fault if reason in ('runtime_failure','recording_failure','observation_receipt_timeout') else self.safety_fault
             self.last_drive_stop = {'reason':reason,'status':status,'frame_id':frame_id,'timestamp_s':stamp,
                 'detail':fault.get('message') if fault and status == 'ERROR' else reason}
         if self.journey_comparison.active:
@@ -1482,6 +1494,21 @@ class SimulationService:
     def stream_snapshot(self):
         return self.snapshot(stream=True)
 
+    def _check_observation_health(self):
+        live=self._live()
+        if not live and self.lifecycle.state==ConnectionState.CONNECTED and not self.reconfiguring:
+            if self.journey.get('status') in ('STARTING','RUNNING'):
+                frame_id,stamp=self._context()
+                self.runtime_fault={'stage':'observation_watchdog','exception_type':'ObservationReceiptTimeout',
+                    'message':self.error or 'Observation receipt timeout',
+                    'evaluation_frame':frame_id,'timestamp_s':stamp,
+                    'observation_wall_age_s':self.now()-self.state_at}
+                self._stop_navigation('observation_receipt_timeout',status='ERROR')
+            self.arbiter.disconnect()
+            self.lifecycle.fail(self.error or 'Observation receipt timeout')
+            self._event(EventType.ConnectionLost,reason=self.lifecycle.error,runtime_fault=copy.deepcopy(self.runtime_fault))
+        return live
+
     def snapshot(self, *, stream=False):
         with self.lock:
             status = getattr(self.provider, 'restart_status', lambda: None)()
@@ -1494,11 +1521,7 @@ class SimulationService:
                                                        'native_reset':{'status':'NATIVE_PROCESS_RESTART','reason':'Windows libcarla requires retirement of the old SDK process'}},
                                              'operationId':self.session_id}
                     self.native_reset_reported = True
-            live = self._live()
-            if not live and self.lifecycle.state == ConnectionState.CONNECTED and not self.reconfiguring:
-                self.arbiter.disconnect()
-                self.lifecycle.fail(self.error or 'Observation receipt timeout')
-                self._event(EventType.ConnectionLost, reason=self.lifecycle.error)
+            live = self._check_observation_health()
             view = self.dashboard_view if live else {'vehicle': None, 'world': None, 'sensors': {}, 'canonical': None}
             display_observation=self.observation if live else None
             result = {'sequence': self.sequence, 'connected': live, 'available': live,

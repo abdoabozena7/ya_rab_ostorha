@@ -2852,11 +2852,12 @@
       }
       m.setLineDash([]);
       for (const tr of prediction.tracks) {
-        const q = mapPoint(tr.position_m);
-        m.fillStyle = tr.id === conflict?.track_id ? color : tr.confirmed ? "#67e8f9" : "#94a3b8";
+        const q = mapPoint(tr.position_m), classified = tr.confirmed && !!tr.semantic_evidence && tr.class !== "UNKNOWN";
+        m.fillStyle = tr.id === conflict?.track_id ? color : classified ? "#67e8f9" : "#94a3b8";
+        m.strokeStyle = m.fillStyle;
         m.beginPath();
-        m.arc(...q, tr.class === "person" ? 3 : 4, 0, Math.PI * 2);
-        m.fill();
+        m.arc(...q, classified && tr.class === "person" ? 3 : 4, 0, Math.PI * 2);
+        classified ? m.fill() : m.stroke();
       }
       if (conflict) {
         m.strokeStyle = color;
@@ -2870,6 +2871,7 @@
       m.fillStyle = "#f8fafc";
       m.font = "10px sans-serif";
       m.fillText("Measured \xB7 30 m", 8, 16);
+      m.fillText("Hollow = unclassified surface", 8, 173);
     }
   };
 
@@ -2930,10 +2932,12 @@
     metadata(result) {
       this.result = result;
       const age = detectionFreshness(result, this.provider.telemetry, this.provider.world.fixedDeltaSeconds);
-      $4("perceptionStatus").textContent = result.detections.length + " objects detected \xB7 " + Math.round(result.inference_ms) + " ms inference";
+      const uncertain = result.detections.filter((d) => d.classification_status === "UNCERTAIN").length;
+      const counts = result.detections.length - uncertain + " supported \xB7 " + uncertain + " uncertain";
+      $4("perceptionStatus").textContent = counts + " \xB7 " + Math.round(result.inference_ms) + " ms inference";
       $4("perceptionFreshness").textContent = age.label + (age.seconds === null ? "" : " \xB7 " + age.seconds.toFixed(2) + " s \xB7 " + age.frames + " frames behind");
       $4("perceptionFreshness").dataset.tone = age.tone;
-      $4("detectionSummary").textContent = age.tone === "warning" ? age.label + (age.seconds === null ? "" : " \xB7 " + age.seconds.toFixed(2) + " s") : result.detections.length + " objects \xB7 " + age.seconds.toFixed(2) + " s behind";
+      $4("detectionSummary").textContent = age.tone === "warning" ? age.label + (age.seconds === null ? "" : " \xB7 " + age.seconds.toFixed(2) + " s") : counts + " \xB7 " + age.seconds.toFixed(2) + " s behind";
       $4("perceptionFreshness").title = "Display delay notice starts at 0.5 simulation seconds. Inference is display only.";
       $4("detectionSummary").dataset.tone = age.tone;
       $4("perceptionFrame").textContent = "Analyzed frame " + result.frame_id + " \xB7 t " + result.timestamp_s.toFixed(3) + " s \xB7 Nano ONNX 320 + English OCR \xB7 " + result.device;
@@ -3251,9 +3255,9 @@
       zoomTools.append(b);
     }
     panel.querySelector(".unified-expanded-tools").prepend(zoomTools);
-    const filters = { vehicles: true, people: true, surfaces: false, paths: true, conflicts: true };
+    const filters = { vehicles: true, people: true, surfaces: true, paths: true, conflicts: true };
     const surfaces = document.createElement("label");
-    surfaces.innerHTML = '<input type="checkbox" data-filter="surfaces">Unclassified surfaces';
+    surfaces.innerHTML = '<input type="checkbox" data-filter="surfaces" checked>Unclassified surfaces (hollow)';
     panel.querySelector(".unified-filters").append(surfaces);
     panel.querySelectorAll("[data-layer]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.layer === layer)));
     const text = (el2, value) => {

@@ -20,6 +20,19 @@ from tests.test_active_safety import scene
 
 
 class ControlSceneTests(unittest.TestCase):
+    def test_forward_assessment_reuses_same_frame_depth_decode(self):
+        from backend.core.active_safety import assess_forward_space,RuntimeSafetyConfig
+        measured,base,reader=self.measured()
+        calls=[]
+        def lidar_only(asset):
+            calls.append(asset.path)
+            if asset.path in measured.space.depth_images:raise AssertionError('Duplicate depth read')
+            return reader(asset)
+        assess_forward_space(measured.observation,lidar_only,RuntimeSafetyConfig.load(),
+            geometry=measured.geometry,measured_space=measured.space)
+        self.assertTrue(calls)
+        self.assertTrue(all(not image.flags.writeable for image in measured.space.depth_images.values()))
+
     def test_same_frame_forward_brake_does_not_become_a_reverse_sensor_fault(self):
         from backend.core.service import SimulationService
         from backend.core.active_safety import ActiveSafetySupervisor

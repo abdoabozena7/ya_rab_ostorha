@@ -17,14 +17,16 @@ from collections import deque
 from collections import OrderedDict
 from .control_semantics import SemanticAssociator
 from .measured_rows import unique_row_indices
+from .host_clock import monotonic
 
 
 class MeasuredSpace:
     """Lazy map from immutable calibrated measurements, with their original age."""
-    def __init__(self, points, geometry, observation, depth_assets, *, measured_surfaces=None):
+    def __init__(self, points, geometry, observation, depth_assets, *, measured_surfaces=None, depth_images=None):
         self.points, self.geometry, self.observation = points, geometry, observation
         self.depth_assets = depth_assets
         self.measured_surfaces=measured_surfaces
+        self.depth_images=depth_images or {}
         self._map = None
         self._lock = threading.Lock()
         self.build_ms = None
@@ -124,7 +126,7 @@ class ControlSceneBuilder:
 
     def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None, track_motion=True):
         began = time.perf_counter()
-        began_wall=time.monotonic()
+        began_wall=monotonic()
         if not isinstance(observation, SensorObservation):
             raise ValueError('ControlScene accepts sensor observations only')
         if observation.frame_id <= self.last_frame:
@@ -145,12 +147,13 @@ class ControlSceneBuilder:
         assets = {c.asset.path: asset_reader(c.asset) for c in observation.channels
                   if c.kind == SensorKind.DEPTH and c.asset}
         from .recovery_depth import depth_surfaces
-        sources=depth_surfaces(observation,lambda a:assets[a.path])
+        depth_images={}
+        sources=depth_surfaces(observation,lambda a:assets[a.path],decoded=depth_images)
         if not track_motion:
             # RULE consumes current calibrated geometry, not the hybrid motion
             # forecasts. Display tracking runs in its own observer thread.
             self.last_frame=observation.frame_id
-            published=time.monotonic();finished=time.perf_counter()
+            published=monotonic();finished=time.perf_counter()
             prediction=freeze_json({'tracks':[],'trajectories':[], 'motion_tracking_complete':False,
                 'timestamp_s':observation.timestamp_s, 'frame_id':observation.frame_id,
                 'source':'RULE_GEOMETRY_ONLY'})
@@ -158,7 +161,7 @@ class ControlSceneBuilder:
                 'lidar_decode':(lidar_ready-began)*1000,
                 'depth_decode_and_fusion':(finished-lidar_ready)*1000, 'tracking_and_forecasts':0.})
             return ControlScene(1,self.session_id,observation,self.geometry,points,prediction,
-                MeasuredSpace(points,self.geometry,observation,assets,measured_surfaces=sources),
+                MeasuredSpace(points,self.geometry,observation,assets,measured_surfaces=sources,depth_images=depth_images),
                 received_wall_s,published,(finished-began)*1000,
                 freeze_json({'motion_tracking':'DISPLAY_OBSERVER_ONLY','classified':False}),timing)
         # Tracking and space use the same synchronized surround measurements.
@@ -202,7 +205,7 @@ class ControlSceneBuilder:
         grid=np.round(np.arange(int(np.ceil(horizon/.1))+1)*.1,6)
         prediction['trajectories']=kinematic_modes(prediction['tracks'],grid=grid)
         prediction['horizon_s']=float(grid[-1])
-        prediction.update(published_wall_s=received_wall_s, publication_wall_s=time.monotonic(),
+        prediction.update(published_wall_s=received_wall_s, publication_wall_s=monotonic(),
                           motion_tracking_complete=True,
                           control_trajectories=prediction['trajectories'],
                           scene_version=1, source='CONTROL_SENSOR_PIPELINE')
@@ -213,11 +216,11 @@ class ControlSceneBuilder:
         coverage.update(semantics)
         self.last_frame = observation.frame_id
         frozen_prediction=freeze_json(prediction);frozen_coverage=freeze_json(coverage)
-        published=time.monotonic();finished=time.perf_counter()
+        published=monotonic();finished=time.perf_counter()
         timing={'input_wait_before_build':(began_wall-received_wall_s)*1000,
                 'lidar_decode':(lidar_ready-began)*1000,'depth_decode_and_fusion':(depth_ready-lidar_ready)*1000,
                 'tracking_and_forecasts':(tracked-depth_ready)*1000,'semantics_and_freezing':(finished-tracked)*1000}
         return ControlScene(1, self.session_id, observation, self.geometry, points,
-                            frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources),
+                            frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources,depth_images=depth_images),
                             received_wall_s, published, (finished-began)*1000,
                             frozen_coverage,freeze_json(timing))

@@ -32,10 +32,12 @@ export class PerceptionView {
   metadata(result) {
     this.result=result;
     const age=detectionFreshness(result,this.provider.telemetry,this.provider.world.fixedDeltaSeconds);
-    $('perceptionStatus').textContent=result.detections.length+' objects detected · '+Math.round(result.inference_ms)+' ms inference';
+    const uncertain=result.detections.filter(d=>d.classification_status==='UNCERTAIN').length;
+    const counts=(result.detections.length-uncertain)+' supported · '+uncertain+' uncertain';
+    $('perceptionStatus').textContent=counts+' · '+Math.round(result.inference_ms)+' ms inference';
     $('perceptionFreshness').textContent=age.label+(age.seconds===null ? '' : ' · '+age.seconds.toFixed(2)+' s · '+age.frames+' frames behind');
     $('perceptionFreshness').dataset.tone=age.tone;
-    $('detectionSummary').textContent=age.tone==='warning' ? age.label+(age.seconds===null ? '' : ' · '+age.seconds.toFixed(2)+' s') : result.detections.length+' objects · '+age.seconds.toFixed(2)+' s behind';
+    $('detectionSummary').textContent=age.tone==='warning' ? age.label+(age.seconds===null ? '' : ' · '+age.seconds.toFixed(2)+' s') : counts+' · '+age.seconds.toFixed(2)+' s behind';
     $('perceptionFreshness').title='Display delay notice starts at 0.5 simulation seconds. Inference is display only.';
     $('detectionSummary').dataset.tone=age.tone;
     $('perceptionFrame').textContent='Analyzed frame '+result.frame_id+' · t '+result.timestamp_s.toFixed(3)+' s · Nano ONNX 320 + English OCR · '+result.device;

@@ -15,6 +15,69 @@ from backend.learning.native_validation_budget import NativeValidationBudget
 
 
 class ReliableDrivingTests(unittest.TestCase):
+    def test_critical_owner_display_view_retains_exact_frame_evidence(self):
+        from backend.core.display_prediction import measured_control_view,DisplayPredictionService
+        from unittest.mock import Mock
+        scene=SimpleNamespace(session_id='s',observation=SimpleNamespace(frame_id=42,timestamp_s=2.1),
+            prediction={'tracks':[{'id':'9','class':'UNKNOWN','confirmed':True,'position_m':[5,3]}]})
+        prediction=measured_control_view(scene,{'position_m':[0,0,0]})
+        recorder=Mock();DisplayPredictionService.record_prediction(recorder,prediction)
+        row=recorder.record_trace.call_args.args[0]
+        self.assertEqual(row['evaluation_frame'],42)
+        self.assertEqual(row['prediction']['tracks'][0]['class'],'UNKNOWN')
+        self.assertFalse(row['used_for_applied_decision'])
+
+    def test_camera_evidence_records_source_frame_once_without_entering_control(self):
+        from backend.core.service import SimulationService
+        from tests.core_packets import packet
+        from backend.core.control import safe_command
+        from unittest.mock import Mock
+        service=SimulationService(None);service._publish(packet())
+        result={'session_id':service.session_id,'frame_id':1,'timestamp_s':.05,
+            'detections':[{'class':'car','confidence':.28,'classification_status':'UNCERTAIN'}]}
+        service.control_perception=SimpleNamespace(latest=lambda session:result)
+        service.recorder=Mock();service._audit_command(safe_command(1,.05));service._audit_command(safe_command(1,.05))
+        self.assertEqual(service.recorder.record_trace.call_count,1)
+        trace=service.recorder.record_trace.call_args.args[0]
+        self.assertEqual(trace['kind'],'CAMERA_DETECTIONS')
+        self.assertEqual(trace['result']['frame_id'],1)
+        self.assertIsNone(service.safety_command)
+
+    def test_release_survivors_continues_after_a_vanished_native_proxy(self):
+        from backend.carla.benchmark_fixture import BenchmarkFixture
+        from unittest.mock import Mock
+        vanished=Mock(type_id='vehicle.test')
+        vanished.set_simulate_physics.side_effect=RuntimeError('Actor disappeared')
+        survivor=Mock(type_id='vehicle.test');actors={206:vanished,207:survivor}
+        pop=SimpleNamespace(vehicles={206:None,207:None},walkers={},traffic_manager=SimpleNamespace(port=8050,manager=Mock()))
+        provider=SimpleNamespace(population=pop,connection=SimpleNamespace(api=Mock()),
+            ego=SimpleNamespace(actor=Mock()),world=SimpleNamespace(world=SimpleNamespace(get_actor=actors.get)))
+        fixture=BenchmarkFixture(provider);fixture.frozen=True
+        fixture.actors=[{'id':206,'blueprint':'vehicle.test','profile':{}},
+            {'id':207,'blueprint':'vehicle.test','profile':{}}]
+        with patch('backend.carla.urban.apply_driver') as apply_driver:
+            fixture.release(strict=False)
+        apply_driver.assert_called_once_with(pop.traffic_manager.manager,survivor,{})
+        survivor.set_autopilot.assert_called_once_with(True,8050)
+        self.assertFalse(fixture.frozen);self.assertTrue(fixture.cleanup_failures)
+
+    def test_vanished_actor_proxy_cannot_abort_holding_survivors(self):
+        from backend.carla.benchmark_fixture import BenchmarkFixture
+        from unittest.mock import Mock
+        vanished=Mock(type_id='walker.pedestrian.test')
+        vanished.set_simulate_physics.side_effect=RuntimeError('Actor not in registry: 206')
+        survivor=Mock(type_id='vehicle.test')
+        actors={206:vanished,207:survivor}
+        pop=SimpleNamespace(vehicles={207:None},walkers={206:{'controller_id':236,'started':False}},
+            traffic_manager=SimpleNamespace(port=8050))
+        fixture=BenchmarkFixture(SimpleNamespace(population=pop,world=SimpleNamespace(world=SimpleNamespace(get_actor=actors.get))))
+        fixture.actors=[{'id':206},{'id':207}]
+        report=fixture.hold_current()
+        self.assertFalse(report['passed'])
+        self.assertTrue(any('206' in failure and 'registry' in failure for failure in report['failures']))
+        survivor.set_simulate_physics.assert_called_once_with(False)
+        self.assertTrue(fixture.held_current)
+
     def test_recorded_audit_keeps_missing_decisions_and_driver_holds(self):
         from scripts.audit_reliable_driving import recorded_samples
         from backend.core.driving_quality import evaluate_quality
@@ -45,6 +108,32 @@ class ReliableDrivingTests(unittest.TestCase):
         for actor in (vehicle,replacement):
             actor.set_simulate_physics.assert_called_once_with(False)
             actor.set_autopilot.assert_called_once_with(False,8000)
+
+    def test_driving_audit_does_not_hide_unpaired_recording_frames_behind_fresh_commands(self):
+        import hashlib
+        from scripts.audit_driving_repair import audit
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);telemetry=root/'telemetry';telemetry.mkdir()
+            vehicle={'speed_mps':0.,'angular_velocity_radps':[0.,0.,0.],
+                'longitudinal_acceleration_mps2':0.,'throttle':0.,'brake':1.,'steering':0.}
+            frames=[{'frame_id':frame,'timestamp_s':frame*.05,'vehicle':vehicle,'sensors':[]}
+                for frame in (1,2)]
+            (telemetry/'frames.jsonl').write_text('\n'.join(map(json.dumps,frames)))
+            (telemetry/'safety-v2.jsonl').write_text(json.dumps({'evaluation_frame':1,'reason':'NAVIGATION',
+                'braking':True,'application_timing':{'fresh_aligned':True}}))
+            (root/'recording-status.json').write_text(json.dumps({'incomplete':False}))
+            video=b'recorded-video';(root/'driving.mp4').write_bytes(video)
+            (root/'video-status.json').write_text(json.dumps({'sha256':hashlib.sha256(video).hexdigest()}))
+            pair=root/'pair.json';pair.write_text(json.dumps({'pair_id':'pair','manifest':{'population':{'seed':1}},
+                'runs':{'ROBOSPHERE':{'recording':str(root),'status':'ARRIVED','collisions':0}}}))
+            arm=audit(pair)['arms']['ROBOSPHERE']
+            self.assertEqual(arm['applied_decisions'],1)
+            self.assertEqual(arm['fresh_applied_decisions'],1)
+            self.assertEqual(arm['recorded_frames_without_fresh_decisions'],[2])
+            self.assertEqual(arm['fresh_fraction'],.5)
+            self.assertFalse(arm['strict_quality_gates']['no_control_delays'])
+            self.assertFalse(arm['accepted'])
+            self.assertTrue(arm['video_checksum_matches'])
 
     def test_changed_fixture_cleanup_can_finish_without_readmitting_missing_traffic(self):
         from backend.carla.benchmark_fixture import BenchmarkFixture

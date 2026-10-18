@@ -11,16 +11,23 @@ def measured_ground_plane(points,geometry):
     if len(selected)<12:return np.array([0.,0.,0.]),0
     selected=selected[::max(1,len(selected)//512)]
     design=np.column_stack((selected[:,:2],np.ones(len(selected))))
-    rng=np.random.default_rng(0);options=[]
-    for _ in range(32):
-        indices=rng.choice(len(selected),3,replace=False)
-        try:plane=np.linalg.solve(design[indices],selected[indices,2])
-        except np.linalg.LinAlgError:continue
-        if np.linalg.norm(plane[:2])>.12 or abs(plane[2])>.4:continue
-        residual=np.abs(design@plane-selected[:,2]);inliers=residual<.04
-        options.append((int(inliers.sum()),float(np.median(residual)),plane,inliers))
-    if not options:return np.array([0.,0.,0.]),0
-    count,_,plane,inliers=max(options,key=lambda x:(x[0],-x[1]))
+    rng=np.random.default_rng(0)
+    indices=np.array([rng.choice(len(selected),3,replace=False) for attempt in range(32)])
+    systems=design[indices];targets=selected[indices,2]
+    try:planes=np.linalg.solve(systems,targets[:,:,None])[:,:,0]
+    except np.linalg.LinAlgError:
+        candidates=[]
+        for system,target in zip(systems,targets):
+            try:candidates.append(np.linalg.solve(system,target))
+            except np.linalg.LinAlgError:continue
+        if not candidates:return np.array([0.,0.,0.]),0
+        planes=np.asarray(candidates)
+    planes=planes[(np.linalg.norm(planes[:,:2],axis=1)<=.12)&(np.abs(planes[:,2])<=.4)]
+    if not len(planes):return np.array([0.,0.,0.]),0
+    residual=np.abs(np.einsum('ij,kj->ki',design,planes)-selected[None,:,2])
+    masks=residual<.04;counts=masks.sum(axis=1);medians=np.median(residual,axis=1)
+    chosen=max(range(len(planes)),key=lambda index:(counts[index],-medians[index]))
+    count=int(counts[chosen]);inliers=masks[chosen]
     if count<12 or count<len(selected)*.4:return np.array([0.,0.,0.]),0
     plane=np.linalg.lstsq(design[inliers],selected[inliers,2],rcond=None)[0]
     return plane,count

@@ -293,7 +293,7 @@ class RunRecorder:
             if self.closed:raise RuntimeError('Recorder is closed')
             if self.trace_file is None:self.trace_file=(self.root/'telemetry/comparison-controls.jsonl').open('xb')
             wire=dict(row)
-            if wire.get('kind')=='HYBRID_DECISION' and 'prediction' in wire:
+            if 'prediction' in wire:
                 data=_json_text(wire['prediction']).encode('utf8')
                 if len(data)>MAX_ROW_BYTES//2:
                     if len(data)>32*MAX_ROW_BYTES:raise ValueError('Control prediction asset exceeds its size bound')

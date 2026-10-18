@@ -158,8 +158,13 @@ export class PredictionView {
     m.strokeStyle='#ffffff24';m.beginPath();m.moveTo(90,0);m.lineTo(90,180);m.moveTo(0,120);m.lineTo(180,120);m.stroke();
     m.fillStyle='#e2e8f0';m.fillRect(86.5,112.5,7,15);
     for(const mode of visible){m.strokeStyle=mode.source.includes('TRAJECTRON')?'#a78bfa99':'#67e8f999';m.setLineDash([3,3]);m.beginPath();mode.points.forEach((row,i)=>{const q=mapPoint([row[1],row[2]]);i?m.lineTo(...q):m.moveTo(...q);});m.stroke();}m.setLineDash([]);
-    for(const tr of prediction.tracks) {const q=mapPoint(tr.position_m);m.fillStyle=tr.id===conflict?.track_id?color:tr.confirmed?'#67e8f9':'#94a3b8';m.beginPath();m.arc(...q,tr.class==='person'?3:4,0,Math.PI*2);m.fill();}
+    for(const tr of prediction.tracks) {
+      const q=mapPoint(tr.position_m),classified=tr.confirmed&&!!tr.semantic_evidence&&tr.class!=='UNKNOWN';
+      m.fillStyle=tr.id===conflict?.track_id?color:classified?'#67e8f9':'#94a3b8';m.strokeStyle=m.fillStyle;
+      m.beginPath();m.arc(...q,classified&&tr.class==='person'?3:4,0,Math.PI*2);classified?m.fill():m.stroke();
+    }
     if(conflict){m.strokeStyle=color;m.beginPath();conflict.trajectory.forEach((row,i)=>{const q=mapPoint([row[1],row[2]]);i?m.lineTo(...q):m.moveTo(...q);});m.stroke();}
     m.fillStyle='#f8fafc';m.font='10px sans-serif';m.fillText('Measured · 30 m',8,16);
+    m.fillText('Hollow = unclassified surface',8,173);
   }
 }

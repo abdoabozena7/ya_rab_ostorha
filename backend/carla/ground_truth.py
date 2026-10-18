@@ -11,6 +11,7 @@ class NearbyActorInspector:
         self.actor_types = {}
         self.actor_bounds = {}
         self.refreshed_at = -float('inf')
+        self.snapshot_actor_ids=None
         self.latest = {'radius_m': self.radius, 'actors': [], 'traffic_light': None}
 
     def configure(self, radius):
@@ -20,13 +21,18 @@ class NearbyActorInspector:
 
     def observe(self, snapshot):
         timestamp = snapshot.timestamp.elapsed_seconds
-        if timestamp-self.refreshed_at >= 1.:
+        actor_ids=frozenset(actor.id for actor in snapshot)
+        if actor_ids!=self.snapshot_actor_ids:
             actors=[a for a in self.world.get_actors() if not a.type_id.startswith(('sensor.','controller.','spectator'))]
             self.actor_types={a.id:a.type_id for a in actors}
-            self.actor_bounds={a.id:{'extent_m':[a.bounding_box.extent.x,a.bounding_box.extent.y,a.bounding_box.extent.z],
-                'offset_m':[a.bounding_box.location.x,a.bounding_box.location.y,a.bounding_box.location.z]}
-                for a in actors if hasattr(a,'bounding_box')}
+            self.actor_bounds={}
+            for actor in actors:
+                bounds=getattr(actor,'bounding_box',None)
+                if bounds is not None:self.actor_bounds[actor.id]={
+                    'extent_m':[bounds.extent.x,bounds.extent.y,bounds.extent.z],
+                    'offset_m':[bounds.location.x,bounds.location.y,bounds.location.z]}
             self.refreshed_at = timestamp
+            self.snapshot_actor_ids=actor_ids
         ego = snapshot.find(self.ego.id)
         ego_transform = ego.get_transform()
         position = ego_transform.location

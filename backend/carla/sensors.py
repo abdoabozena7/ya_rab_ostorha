@@ -3,6 +3,7 @@ import threading
 import time
 from collections import deque, OrderedDict
 from .telemetry import vector, rotation
+from ..core.host_clock import monotonic
 
 
 class CarlaSensorManager:
@@ -47,13 +48,13 @@ class CarlaSensorManager:
                     if self.actors.get(sensor_id) is not actor:
                         return
                 try:
-                    received=time.monotonic()
+                    received=monotonic()
                     decoded = decode(data)
                     from ..core.contracts import SensorFrame
                     if isinstance(decoded, SensorFrame):
                         from dataclasses import replace
                         decoded=replace(decoded,metadata={**decoded.metadata,
-                            'received_monotonic_s':received,'decode_duration_ms':(time.monotonic()-received)*1000})
+                            'received_monotonic_s':received,'decode_duration_ms':(monotonic()-received)*1000})
                     elif not isinstance(decoded, dict):
                         raise TypeError('Unexpected decoded sensor payload: '+sensor_id)
                 except Exception as error:

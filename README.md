@@ -4,6 +4,15 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [18 October iterative driving checklist](docs/DRIVING_REPAIR_CHECKLIST_20261018.md)
+tracks observation-loss recovery, vanished-actor cleanup, control timing,
+uncertain camera detections and recorded map evidence. The original failing seed
+has reached its destination with zero ego contacts in scoped native repeats.
+The final ordinary-rig repeat travels 267.34 m with zero deadline brakes;
+all 2,639 applied decisions meet the unchanged freshness limits.
+General smooth-driving and detector acceptance remain separate from those results;
+the checklist retains failed iterations and remaining gates.
+
 The [18 October sequential interface](docs/SIMPLER_UI_20261018.md) keeps one main
 task action beside Details, with Emergency stop during connected operation.
 Details now reveals Run setup, View, Results and System one page at a time.

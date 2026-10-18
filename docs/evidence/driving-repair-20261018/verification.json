@@ -1,0 +1,1114 @@
+{
+  "version": 1,
+  "date": "2026-10-18",
+  "seed": 2086914493,
+  "qualification": "Scoped software repair and native regression, not strict smooth-driving, general perception, gated bypass or hybrid acceptance.",
+  "baseline": {
+    "presentation_id": "dd41fef68b434d98a4581627c8ef42d1",
+    "recording": "runs/normal_city/run_0a3914216ed84085b0db1902a3098bc2",
+    "distance_m": 9.783,
+    "deadline_brake_commands": 33,
+    "observation_timeout_journey_was_left_running": true,
+    "cleanup_missing_actor_id": 206
+  },
+  "native_window": {
+    "parent": {
+      "version": 2,
+      "scope": "NATIVE_RULE_REPAIR",
+      "allowance_s": 2400,
+      "started_at": 1792307630.1044085,
+      "expires_at": 1792310030.1044085,
+      "authorization": "User approved separate 40-minute reliable-driving validation; no hybrid admission"
+    },
+    "ordinary_rig_suballocation": {
+      "scope": "NATIVE_RULE_VALIDATION",
+      "allowance_s": 592,
+      "started_at": 1792309402.5724175,
+      "expires_at": 1792309994.5724175,
+      "authorization": "Suballocation of the user-authorized 40-minute window; ordinary RULE rig, no pilot bypass admission",
+      "parent_ticket": "output/driving-repair-20261018/repair-94867ef65c9844e9baad45d4b516a9fd.json"
+    },
+    "child_expires_within_parent": true,
+    "cleanup": {
+      "native_processes": [],
+      "dashboard_pid": 27812,
+      "connected": false,
+      "mode": "DISCONNECTED",
+      "cleanup_at_unix": 1792309732.4750414
+    },
+    "elapsed_through_cleanup_s": 2102.3706328868866,
+    "cleanup_before_expiry": true,
+    "remaining_s_at_cleanup": 297.6293671131134
+  },
+  "iterations": [
+    {
+      "name": "iteration-1",
+      "rig": "GATED_SURROUND_AND_BYPASS_DIAGNOSTIC",
+      "pair_id": "0dec814691c64aaea8e29a208088b5ac",
+      "observer_terminal_status": "ERROR",
+      "observer_terminal_reason": "name 'apply_driver' is not defined",
+      "elapsed_wall_s": 5.265999999988708,
+      "source_unchanged_during_observation": null,
+      "raw_report": "output/driving-repair-20261018/iteration-1/2086914493-report.json",
+      "raw_report_sha256": "f6b9263c650c23efd0c45d49ddd83ccd026ee6c610464308cd5b22f5fdc8efb1",
+      "source_archive": null
+    },
+    {
+      "name": "iteration-2",
+      "rig": "GATED_SURROUND_AND_BYPASS_DIAGNOSTIC",
+      "pair_id": "f7f9e91d00ff480b918638bfc4f21292",
+      "observer_terminal_status": "PLAYBACK",
+      "observer_terminal_reason": null,
+      "elapsed_wall_s": 415.375,
+      "source_unchanged_during_observation": null,
+      "raw_report": "output/driving-repair-20261018/iteration-2/2086914493-report.json",
+      "raw_report_sha256": "c55169a2151d447ff70c9d37c3b6a8e7eeecdaf313cedbece73c488d216ca09e",
+      "source_archive": null,
+      "audit_sha256": "f8334a70b588cdf86769099f8f643d55065f8ffe2040322dc54e3c0dd9e77fa4",
+      "arms": {
+        "ROBOSPHERE": {
+          "run": {
+            "status": "ARRIVED",
+            "reason": "destination_reached",
+            "recording": "runs/normal_city/run_5a299c7e00834f4690edc7879454f7da",
+            "distance_m": 268.86297678426615,
+            "duration_s": 126.15000187978148,
+            "maximum_speed_kmh": 29.76810213411087,
+            "collisions": 0,
+            "harsh_braking_events": 2
+          },
+          "frames": 2526,
+          "applied_decisions": 2526,
+          "fresh_applied_decisions": 2522,
+          "recorded_frames_without_fresh_decisions": [
+            1589,
+            3089,
+            3973,
+            3983
+          ],
+          "deadline_brake_frames": [
+            1589,
+            3089,
+            3973
+          ],
+          "braking_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 613,
+            "CONTROL_PROCESSING_DEADLINE": 3,
+            "Navigation speed/route controller": 9,
+            "PREDICTED_INTERSECTION": 6,
+            "SWEPT_SPACE_UNKNOWN_OR_OCCUPIED": 1,
+            "destination_reached": 1
+          },
+          "fresh_fraction": 0.9984164687252574,
+          "strict_quality_gates": {
+            "arrived": true,
+            "no_contacts": true,
+            "complete_measurements": true,
+            "fresh_fraction": true,
+            "no_control_delays": false,
+            "all_stops_independently_verified": false,
+            "comfort": false,
+            "no_oscillation": false,
+            "cruise_50_verified": false,
+            "display": false
+          },
+          "accepted": false,
+          "comfort_violations": 384,
+          "unresolved_stop_frames": 712,
+          "all_stop_segments": [
+            {
+              "start_frame": 1458,
+              "end_frame": 1491,
+              "duration_s": 1.650000024586916,
+              "reason_counts": {
+                "Vehicle held; explicit driving start required": 1,
+                "NAVIGATION": 33
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 1653,
+              "end_frame": 1672,
+              "duration_s": 0.9500000141561031,
+              "reason_counts": {
+                "PREDICTED_INTERSECTION": 2,
+                "NAVIGATION": 20
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 2196,
+              "end_frame": 2421,
+              "duration_s": 11.250000167638063,
+              "reason_counts": {
+                "NAVIGATION": 227,
+                "SWEPT_SPACE_UNKNOWN_OR_OCCUPIED": 1
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 3179,
+              "end_frame": 3592,
+              "duration_s": 20.65000030770898,
+              "reason_counts": {
+                "NAVIGATION": 415,
+                "PREDICTED_INTERSECTION": 1
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 3595,
+              "end_frame": 3606,
+              "duration_s": 0.5500000081956387,
+              "reason_counts": {
+                "NAVIGATION": 13,
+                "PREDICTED_INTERSECTION": 1
+              },
+              "independently_verified": false
+            }
+          ],
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 2526,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "video_checksum_matches": true,
+          "video_sha256": "2bdab082b0469b3de33cfd420f1fd269de460631da1ffcf3c7fd926c43bba5a4",
+          "trace_counts": {
+            "CAMERA_DETECTIONS": 366,
+            "HYBRID_DECISION": 905,
+            "RULE_BYPASS_EXECUTION": 1808,
+            "HYBRID_REUSE": 903
+          },
+          "visual_identity": {
+            "matched_camera_sources": 365,
+            "sources_outside_recording": 1,
+            "invalid_identities": 0
+          }
+        },
+        "NORMAL": {
+          "run": {
+            "status": "COLLISION",
+            "reason": "collision",
+            "recording": "runs/normal_city/run_7e6237c5051b4cd980ac7c45bb4b8095",
+            "distance_m": 71.85796168950199,
+            "duration_s": 14.150000210851431,
+            "maximum_speed_kmh": 48.06666956309946,
+            "collisions": 1,
+            "harsh_braking_events": 1
+          },
+          "frames": 287,
+          "applied_decisions": 287,
+          "fresh_applied_decisions": 287,
+          "recorded_frames_without_fresh_decisions": [
+            4282
+          ],
+          "deadline_brake_frames": [],
+          "braking_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 27,
+            "Red traffic light on the planned route": 12,
+            "collision": 1
+          },
+          "fresh_fraction": 0.9965156794425087,
+          "strict_quality_gates": {
+            "arrived": false,
+            "no_contacts": false,
+            "complete_measurements": true,
+            "fresh_fraction": true,
+            "no_control_delays": false,
+            "all_stops_independently_verified": false,
+            "comfort": false,
+            "no_oscillation": true,
+            "cruise_50_verified": false,
+            "display": false
+          },
+          "accepted": false,
+          "comfort_violations": 85,
+          "unresolved_stop_frames": 77,
+          "all_stop_segments": [
+            {
+              "start_frame": 3996,
+              "end_frame": 4071,
+              "duration_s": 3.7500000558793545,
+              "reason_counts": {
+                "Vehicle held; explicit driving start required": 1,
+                "NAVIGATION": 75
+              },
+              "independently_verified": false
+            }
+          ],
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 287,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "video_checksum_matches": true,
+          "video_sha256": "9380893e3af9005559bb9002c6cfea6f2ebb1ad4c1b6a8f6fb759ed81564c656",
+          "trace_counts": {
+            "CAMERA_DETECTIONS": 39
+          },
+          "visual_identity": {
+            "matched_camera_sources": 39,
+            "sources_outside_recording": 0,
+            "invalid_identities": 0
+          }
+        }
+      },
+      "http_load_sample": {
+        "samples": 95,
+        "elapsed_s": 29.64100000000326,
+        "distinct_camera_frames": 95,
+        "prediction_running_responses": 91,
+        "error_responses": 0,
+        "source_sha256": "04d6b78906ac0fae0a8563fb6dbd7b1a6eefad8aadc9cbcea29c93464ff0d557",
+        "is_browser_performance_acceptance": false
+      }
+    },
+    {
+      "name": "iteration-3",
+      "rig": "GATED_SURROUND_AND_BYPASS_DIAGNOSTIC",
+      "pair_id": "0d91baf0689e4f238adc23f690749fbc",
+      "observer_terminal_status": "ERROR",
+      "observer_terminal_reason": "The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.",
+      "elapsed_wall_s": 365.9679999999935,
+      "source_unchanged_during_observation": true,
+      "raw_report": "output/driving-repair-20261018/iteration-3/2086914493-report.json",
+      "raw_report_sha256": "d6890bf5ec404d577358448b6acfacb4d487c9e0ceece642a9c6c23d7af58caf",
+      "source_archive": {
+        "path": "output/driving-repair-20261018/iteration-3/source.zip",
+        "sha256": "c817de1a2b010ecf36d876b6d6eab25ce153e6014847da59286b9f9306e551ef",
+        "files": 95,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "audit_sha256": "e253124d1baa6323a8823f56feab782a8f34722fd96d597932729b140d0454d3",
+      "arms": {
+        "ROBOSPHERE": {
+          "run": {
+            "status": "ARRIVED",
+            "reason": "destination_reached",
+            "recording": "runs/normal_city/run_e649f78df08a4e349d38f3e79ed08115",
+            "distance_m": 268.9437992823444,
+            "duration_s": 125.20000186562538,
+            "maximum_speed_kmh": 29.68145651121321,
+            "collisions": 0,
+            "harsh_braking_events": 3
+          },
+          "frames": 2507,
+          "applied_decisions": 2507,
+          "fresh_applied_decisions": 2505,
+          "recorded_frames_without_fresh_decisions": [
+            7790,
+            9598
+          ],
+          "deadline_brake_frames": [
+            7790
+          ],
+          "braking_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 247,
+            "PREDICTED_INTERSECTION": 2,
+            "CONTROL_PROCESSING_DEADLINE": 1,
+            "Braking toward measured coverage speed limit 6.50 m/s": 1,
+            "Measured obstacle inside braking envelope/TTC limit": 1,
+            "Holding measured clearance/TTC hysteresis": 2,
+            "Risk cleared; releasing brake smoothly to base driver": 3,
+            "Navigation speed/route controller": 16,
+            "TRAFFIC_RULE_STOP": 4,
+            "Red traffic light on the planned route": 270,
+            "destination_reached": 1
+          },
+          "fresh_fraction": 0.9992022337455125,
+          "strict_quality_gates": {
+            "arrived": true,
+            "no_contacts": true,
+            "complete_measurements": true,
+            "fresh_fraction": true,
+            "no_control_delays": false,
+            "all_stops_independently_verified": false,
+            "comfort": false,
+            "no_oscillation": false,
+            "cruise_50_verified": false,
+            "display": false
+          },
+          "accepted": false,
+          "comfort_violations": 376,
+          "unresolved_stop_frames": 623,
+          "all_stop_segments": [
+            {
+              "start_frame": 7092,
+              "end_frame": 7125,
+              "duration_s": 1.650000024586916,
+              "reason_counts": {
+                "Vehicle held; explicit driving start required": 1,
+                "NAVIGATION": 33
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 7768,
+              "end_frame": 8063,
+              "duration_s": 14.750000219792128,
+              "reason_counts": {
+                "NAVIGATION": 297,
+                "CONTROL_PROCESSING_DEADLINE": 1
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 8937,
+              "end_frame": 9221,
+              "duration_s": 14.200000211596489,
+              "reason_counts": {
+                "TRAFFIC_RULE_STOP": 2,
+                "Red traffic light on the planned route": 270,
+                "NAVIGATION": 15
+              },
+              "independently_verified": false
+            }
+          ],
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 2507,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "video_checksum_matches": true,
+          "video_sha256": "b7fc8d684089e9158d461f223ed36ed83fff124feda6646dfcb8101b0e467040",
+          "trace_counts": {
+            "CAMERA_DETECTIONS": 363,
+            "HYBRID_DECISION": 921,
+            "RULE_BYPASS_EXECUTION": 1839,
+            "HYBRID_REUSE": 918
+          },
+          "visual_identity": {
+            "matched_camera_sources": 362,
+            "sources_outside_recording": 1,
+            "invalid_identities": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "iteration-4",
+      "rig": "GATED_SURROUND_AND_BYPASS_DIAGNOSTIC",
+      "pair_id": "d398c18dd6864a698a99d9fe0a20164d",
+      "observer_terminal_status": "ERROR",
+      "observer_terminal_reason": "Native route does not reach the selected road waypoint",
+      "elapsed_wall_s": 333.57799999999406,
+      "source_unchanged_during_observation": true,
+      "raw_report": "output/driving-repair-20261018/iteration-4/2086914493-report.json",
+      "raw_report_sha256": "23671476d3f848c684711ba46447973493a0875497f6acab6ab1af0496a83ab7",
+      "source_archive": {
+        "path": "output/driving-repair-20261018/iteration-4/source.zip",
+        "sha256": "d8209e212e21665a197e413a980fac0c82fabb723b10bdcc00c41ee10adfe3a0",
+        "files": 96,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "audit_sha256": "1ec4efd92debd9c4ef6c8329af14316f478bc0e05a112114a767d458b9ee81b1",
+      "arms": {
+        "ROBOSPHERE": {
+          "run": {
+            "status": "ERROR",
+            "reason": "runtime_failure",
+            "recording": "runs/normal_city/run_58eb1c06fb9a4ff19fe6c329da9ecab2",
+            "distance_m": 186.57025590259815,
+            "duration_s": 105.60000157356262,
+            "maximum_speed_kmh": 27.75181098344965,
+            "collisions": 0,
+            "harsh_braking_events": 3
+          },
+          "frames": 2114,
+          "applied_decisions": 2115,
+          "fresh_applied_decisions": 2099,
+          "recorded_frames_without_fresh_decisions": [
+            13981,
+            14130,
+            14203,
+            14207,
+            14246,
+            14281,
+            14290,
+            14342,
+            14362,
+            14383,
+            14397,
+            14512,
+            14552,
+            14570,
+            14597
+          ],
+          "deadline_brake_frames": [
+            13981,
+            14130,
+            14203,
+            14207,
+            14246,
+            14281,
+            14290,
+            14342,
+            14362,
+            14383,
+            14397,
+            14512,
+            14552,
+            14570,
+            14597
+          ],
+          "braking_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 290,
+            "REACHABLE_CORRIDOR_UNCERTAINTY": 2,
+            "Navigation speed/route controller": 2,
+            "CONTROL_PROCESSING_DEADLINE": 15,
+            "Native route does not reach the selected road waypoint": 1
+          },
+          "fresh_fraction": 0.9929044465468306,
+          "strict_quality_gates": {
+            "arrived": false,
+            "no_contacts": true,
+            "complete_measurements": true,
+            "fresh_fraction": true,
+            "no_control_delays": false,
+            "all_stops_independently_verified": false,
+            "comfort": false,
+            "no_oscillation": false,
+            "cruise_50_verified": false,
+            "display": false
+          },
+          "accepted": false,
+          "comfort_violations": 383,
+          "unresolved_stop_frames": 391,
+          "all_stop_segments": [
+            {
+              "start_frame": 12490,
+              "end_frame": 12523,
+              "duration_s": 1.650000024586916,
+              "reason_counts": {
+                "Vehicle held; explicit driving start required": 1,
+                "NAVIGATION": 33
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 13170,
+              "end_frame": 13456,
+              "duration_s": 14.300000213086605,
+              "reason_counts": {
+                "NAVIGATION": 289
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 14137,
+              "end_frame": 14178,
+              "duration_s": 2.0500000305473804,
+              "reason_counts": {
+                "NAVIGATION": 44
+              },
+              "independently_verified": false
+            }
+          ],
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 2114,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "video_checksum_matches": true,
+          "video_sha256": "db6d9d7d5bdef0dc8749213c3d347bd85dde188e465a03c0816fe9ab0fc06a23",
+          "trace_counts": {
+            "CAMERA_DETECTIONS": 331,
+            "HYBRID_DECISION": 847,
+            "RULE_BYPASS_EXECUTION": 1681,
+            "HYBRID_REUSE": 834,
+            "DISPLAY_PREDICTION": 120
+          },
+          "visual_identity": {
+            "matched_camera_sources": 330,
+            "sources_outside_recording": 1,
+            "invalid_identities": 0
+          }
+        }
+      },
+      "http_load_sample": {
+        "samples": 83,
+        "elapsed_s": 29.735000000000582,
+        "distinct_camera_frames": 83,
+        "prediction_running_responses": 78,
+        "error_responses": 0,
+        "source_sha256": "d6717b44579689f4d88894f89e8ed8ee130dee43fb82459c3924f566a7f936d3",
+        "is_browser_performance_acceptance": false
+      }
+    },
+    {
+      "name": "iteration-5-default",
+      "rig": "ORDINARY_SIX_CHANNEL_RULE",
+      "pair_id": "40d8c77a3f3a4c5a9883e44144a83b5c",
+      "observer_terminal_status": "PLAYBACK",
+      "observer_terminal_reason": null,
+      "elapsed_wall_s": 212.5460000000021,
+      "source_unchanged_during_observation": true,
+      "raw_report": "output/driving-repair-20261018/iteration-5-default/2086914493-report.json",
+      "raw_report_sha256": "5e5d0e9524db9ef5caca8a2960d1e0291422d6d75778b86c35e61ba15c1f3575",
+      "source_archive": {
+        "path": "output/driving-repair-20261018/iteration-5-default/source.zip",
+        "sha256": "b4ad65f48f2db8b9bb4d8ed95156e127b2cd0b1aaafd84410179225cdd1659a0",
+        "files": 96,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "audit_sha256": "75ccbdabaa9bd45c920dc6f16fb6e9744646ce4d27b066c6ca045de8ebe77097",
+      "arms": {
+        "ROBOSPHERE": {
+          "run": {
+            "status": "ARRIVED",
+            "reason": "destination_reached",
+            "recording": "runs/normal_city/run_b1f433a306ba4b10b47e523763594023",
+            "distance_m": 267.3438211125609,
+            "duration_s": 131.80000196397305,
+            "maximum_speed_kmh": 38.60848470861055,
+            "collisions": 0,
+            "harsh_braking_events": 4
+          },
+          "frames": 2639,
+          "applied_decisions": 2639,
+          "fresh_applied_decisions": 2639,
+          "recorded_frames_without_fresh_decisions": [
+            35806
+          ],
+          "deadline_brake_frames": [],
+          "braking_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "Measured obstacle inside braking envelope/TTC limit": 10,
+            "Holding measured clearance/TTC hysteresis": 478,
+            "Risk cleared; releasing brake smoothly to base driver": 37,
+            "NAVIGATION": 56,
+            "Braking toward measured coverage speed limit 0.00 m/s": 425,
+            "Braking toward measured coverage speed limit 6.80 m/s": 1,
+            "Braking toward measured coverage speed limit 1.09 m/s": 1,
+            "Complete protective stop; hold near obstacle": 27,
+            "Navigation speed/route controller": 7,
+            "destination_reached": 1
+          },
+          "fresh_fraction": 0.9996210685865858,
+          "strict_quality_gates": {
+            "arrived": true,
+            "no_contacts": true,
+            "complete_measurements": true,
+            "fresh_fraction": true,
+            "no_control_delays": false,
+            "all_stops_independently_verified": false,
+            "comfort": false,
+            "no_oscillation": true,
+            "cruise_50_verified": false,
+            "display": false
+          },
+          "accepted": false,
+          "comfort_violations": 464,
+          "unresolved_stop_frames": 1425,
+          "all_stop_segments": [
+            {
+              "start_frame": 33168,
+              "end_frame": 33215,
+              "duration_s": 2.350000035017729,
+              "reason_counts": {
+                "Vehicle held; explicit driving start required": 1,
+                "NAVIGATION": 47
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 33429,
+              "end_frame": 33513,
+              "duration_s": 4.200000062584877,
+              "reason_counts": {
+                "Risk cleared; releasing brake smoothly to base driver": 6,
+                "NAVIGATION": 81
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 33576,
+              "end_frame": 33662,
+              "duration_s": 4.300000064074993,
+              "reason_counts": {
+                "Holding measured clearance/TTC hysteresis": 1,
+                "Risk cleared; releasing brake smoothly to base driver": 6,
+                "NAVIGATION": 82
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 33689,
+              "end_frame": 34215,
+              "duration_s": 26.30000039190054,
+              "reason_counts": {
+                "Limiting acceleration to stop within 3.50 m of measured road": 1,
+                "Braking toward measured coverage speed limit 0.00 m/s": 425,
+                "Holding measured clearance/TTC hysteresis": 12,
+                "Risk cleared; releasing brake smoothly to base driver": 6,
+                "NAVIGATION": 85
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 34536,
+              "end_frame": 34612,
+              "duration_s": 3.8000000566244125,
+              "reason_counts": {
+                "Risk cleared; releasing brake smoothly to base driver": 3,
+                "NAVIGATION": 76
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 34736,
+              "end_frame": 34801,
+              "duration_s": 3.250000048428774,
+              "reason_counts": {
+                "Risk cleared; releasing brake smoothly to base driver": 6,
+                "NAVIGATION": 62
+              },
+              "independently_verified": false
+            },
+            {
+              "start_frame": 34863,
+              "end_frame": 35398,
+              "duration_s": 26.750000398606062,
+              "reason_counts": {
+                "Braking toward measured coverage speed limit 1.09 m/s": 1,
+                "Holding measured clearance/TTC hysteresis": 456,
+                "Complete protective stop; hold near obstacle": 27,
+                "Risk cleared; releasing brake smoothly to base driver": 6,
+                "NAVIGATION": 48
+              },
+              "independently_verified": false
+            }
+          ],
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 2639,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "video_checksum_matches": true,
+          "video_sha256": "f9102eb811a7e09fb6dfaf43d20b29630ed5be415d3f66c274657a4f1f225ef1",
+          "trace_counts": {
+            "CAMERA_DETECTIONS": 172,
+            "DISPLAY_PREDICTION": 105
+          },
+          "visual_identity": {
+            "matched_camera_sources": 170,
+            "sources_outside_recording": 2,
+            "invalid_identities": 0
+          }
+        },
+        "NORMAL": {
+          "run": {
+            "status": "COLLISION",
+            "reason": "collision",
+            "recording": "runs/normal_city/run_1bb3deafd86b4edd935b1969fc314b8c",
+            "distance_m": 74.92950216150962,
+            "duration_s": 14.500000216066837,
+            "maximum_speed_kmh": 48.06285907686979,
+            "collisions": 1,
+            "harsh_braking_events": 1
+          },
+          "frames": 294,
+          "applied_decisions": 294,
+          "fresh_applied_decisions": 294,
+          "recorded_frames_without_fresh_decisions": [
+            36113
+          ],
+          "deadline_brake_frames": [],
+          "braking_reasons": {
+            "Vehicle held; explicit driving start required": 2,
+            "NAVIGATION": 28,
+            "Red traffic light on the planned route": 19,
+            "collision": 1
+          },
+          "fresh_fraction": 0.9965986394557823,
+          "strict_quality_gates": {
+            "arrived": false,
+            "no_contacts": false,
+            "complete_measurements": true,
+            "fresh_fraction": true,
+            "no_control_delays": false,
+            "all_stops_independently_verified": false,
+            "comfort": false,
+            "no_oscillation": true,
+            "cruise_50_verified": false,
+            "display": false
+          },
+          "accepted": false,
+          "comfort_violations": 105,
+          "unresolved_stop_frames": 76,
+          "all_stop_segments": [
+            {
+              "start_frame": 35820,
+              "end_frame": 35894,
+              "duration_s": 3.7000000551342964,
+              "reason_counts": {
+                "Vehicle held; explicit driving start required": 1,
+                "NAVIGATION": 74
+              },
+              "independently_verified": false
+            }
+          ],
+          "recording_status": {
+            "incomplete": false,
+            "error": null,
+            "dropped_frames": 0,
+            "dropped_events": 0,
+            "dropped_trace_rows": 0,
+            "first_dropped_frame": null,
+            "last_dropped_frame": null,
+            "written_frames": 294,
+            "queued_bytes": 0,
+            "pending_items": 0,
+            "finalized": true
+          },
+          "video_checksum_matches": true,
+          "video_sha256": "a0a55fcfea2408e40933c95e5d1970efd0f1866827124319f9fd931aaa42896b",
+          "trace_counts": {
+            "CAMERA_DETECTIONS": 22
+          },
+          "visual_identity": {
+            "matched_camera_sources": 22,
+            "sources_outside_recording": 0,
+            "invalid_identities": 0
+          }
+        }
+      },
+      "http_load_sample": {
+        "samples": 65,
+        "elapsed_s": 19.985000000000582,
+        "distinct_camera_frames": 65,
+        "prediction_running_responses": 64,
+        "error_responses": 0,
+        "source_sha256": "3091502d555105415a276760f532e20855eafad5e12165de69469f15c92117ad",
+        "is_browser_performance_acceptance": false
+      }
+    }
+  ],
+  "final_native_backend_sources": {
+    "backend/core/active_safety.py": "e3fa149c7979fb82960ad54751df3e7e1c2e1b2acb71dcec66c6febf83192dbe",
+    "backend/core/agents.py": "ffe208794346410d37c52ba0b726c5f4b35632df3efe1d02037475d70d6332f6",
+    "backend/core/camera_geometry.py": "c8200bc92d5c921f6a7006ebb6b24bc2b9dbedde48505ed9c47de4556104fc01",
+    "backend/core/comfort_control.py": "3ffd35d76d08468a8e48b82d2c3ba774b29cd11c5c4527a140ba8f7961090c2b",
+    "backend/core/config.py": "7e239f339fedcf20a028c374dd86751a72cfaa2b14aab2097dcc83fd1ebd0693",
+    "backend/core/congestion_recovery.py": "772f60d18374d4ce687c7b690dceba1c5a907fea37131a3465c814a1f378052c",
+    "backend/core/contracts.py": "5aa7e5f21ac820069af85e71f87ceea0a83994d0c5e4b9a8c32ade5bf5d96308",
+    "backend/core/control.py": "8675b041666717fccf7774ad316222f733e2f6877e398d59d3238e4a87687641",
+    "backend/core/control_radar.py": "da10e3feaaa2db625f298812f1ecf437cee4b803a06a3217809d90f5fd48d53c",
+    "backend/core/control_scene.py": "63fb1f520c410076b18cc0ba74b06e974a0b91461cc0a91ff9bc7e2202b90ce0",
+    "backend/core/control_semantics.py": "e61a3cbb85df54b4b7dc369eb7b10b444b400fd58a1fe6c85e902acbabff5347",
+    "backend/core/corridor_uncertainty.py": "c25e7446eb890dbac414d6b4338ea8e756a53a3561509ef1395e05478d77bdce",
+    "backend/core/dashboard.py": "aea250be06b57815b225a7b6a0eb82043132c6eb9d54bbf20b520dc0f56bfabe",
+    "backend/core/display_prediction.py": "4a2fb913e0500f977dc6e423e61f35c3a19aee6176f30997aa809b0dbe89d3c3",
+    "backend/core/drivable_corridor.py": "f1f5f8ff7fc0ae00ad2ee9f52e1b7f86e8bee7398169b5141934113924926d4f",
+    "backend/core/driving_quality.py": "0cf9e13d02643da26e9755f8907adf326e0db7a9eb5bbb06cc00a86f4d2afe9e",
+    "backend/core/driving_video.py": "ba2884007527c19d82a8ba788e2789ccaad0f3337856674039989b2a420d858f",
+    "backend/core/ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+    "backend/core/evaluation.py": "e2ea328052d0404a282699806cf7a18fe4e19aadcd636c3a5af5710a04b36104",
+    "backend/core/events.py": "4370d63b8d44fb96f8264eeca5e44921f7deea951dd390646c40db5411f07a67",
+    "backend/core/ground_geometry.py": "e07d0005bf2f5bae26f576a25a4a7902a4755a59bc7c877edb73a2c8130578fb",
+    "backend/core/host_clock.py": "2f34466e444cfb3b08f3a18a0fc733d28d082346a7a992ce814bcb38c49ced91",
+    "backend/core/hybrid_acceptance.py": "ac0807310941958fec939d0b6449a593ed0f07df0f6d83b3ab4866b902f346e6",
+    "backend/core/hybrid_config.py": "5cab29e9efa1f4cdc90e4163ea3968b0b0a18b8520b7c0b805075a06024a17c8",
+    "backend/core/hybrid_driver.py": "0350ba49d6ed4066af9671ef74913198bd1b7a832e080921ce561cc71b014a9d",
+    "backend/core/journey_comparison.py": "7402e07b470276a1cb15e23a613fafe752e077b4494783612620df17c4cbc1a4",
+    "backend/core/kinematic_prediction.py": "d8a6d3c20c6e53f7fd09bcd45befead6f926a6e10cea8f7c38d42a6e086c87a8",
+    "backend/core/lifecycle.py": "629160fdca0e44b0bec2cff96c258b687accaba2e1b0a4ebbf1cfdbe54ae8f1d",
+    "backend/core/logging.py": "a4734de93047bf2470699d4acb9cff37237ff0a84677dcc1349340bbc7b04d5d",
+    "backend/core/maneuver.py": "915322c425703cfc4bd9ace1f69a3bb529b10174bc5ceb54f00f9a94a092458e",
+    "backend/core/maneuver_candidates.py": "da2e4a7d50e76d664ec33042834eacecb168ed7bd2db654c86fb871f159f9e06",
+    "backend/core/measured_rows.py": "29b31182f03257db164e30bf278527c58f8ca666cc4634304e1b56bd677e07c6",
+    "backend/core/motion_geometry.py": "36679f4f8d36abe0e8b8e359eafeef8343e1d1836e08688bef522457a8a8c419",
+    "backend/core/motion_quality.py": "14c16ae36468dcfc977fde47547624a43f553b10eb95de10fdf3d347ea499239",
+    "backend/core/motion_scene.py": "5881a39c96f00929f4985889e36f34af9e65a4fdf96dfeaedabc08d6912090d7",
+    "backend/core/normal_navigation.py": "184d1c047c328d6cff7107a3896115932bb923eb3ef0abf7ce32cff1e349a6cd",
+    "backend/core/path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+    "backend/core/prediction.py": "51edd2ffeb0f725cb7ec37ef873cebf90b2e1e35e393443fc6a8b876d5c59991",
+    "backend/core/predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend/core/presentation.py": "bd9198a1c9f595c8e55e586b2c0155d9bd3f5816711f4a4dbfa6cd6e6fb741c3",
+    "backend/core/rear_separation.py": "64c118d963bcb67220d7bf526adecd165752a407b2de7cdd4da527e12da05b6d",
+    "backend/core/recording.py": "0099a6b19eb3994d452264df1f7d89fc6daf4086cafdf2934d8808ca40551384",
+    "backend/core/recovery_depth.py": "688bb20824ca478264cecd9bd1ca40ca9b6e0b7e36f1922c01eeb1790f4501a9",
+    "backend/core/replay.py": "a90d3e3216ff4c4f671d82057f51a7007cb3f9ea83adaca3ed2aadf4dfb8e3f4",
+    "backend/core/reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+    "backend/core/research.py": "d698624a37c30779c520714b8ffa2089334ef1ec153d442122b327e1914cbbc0",
+    "backend/core/research_safety.py": "1bf6818fb37b6ce275c9af0291999d930b4668f8179ddfb777558abfda289a57",
+    "backend/core/route_bypass.py": "91f3300692dcb0f6ab2c5c6fc28814c0520aaef79fc6e5f62d2bb7b41c6aa2c9",
+    "backend/core/route_terminal.py": "4be10620a3da84c32d6744195bf122e984d030f49346910fcf999c7d41328ccc",
+    "backend/core/safety_policy.py": "4c64603f924dcfb2a51b9d376a699587658b082e9cbb0117aa953f29b53123bc",
+    "backend/core/scenarios.py": "669a4befd5b9a848843cb49aa1373c3816671b7c9bbb1e35f1e82b99edbfcbf4",
+    "backend/core/service.py": "42cec6b72b7d9fb4d8f63d59ed8b1bdf96ae70d1f7f6ac913508ea4273599ae8",
+    "backend/core/surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+    "backend/core/surface_registration.py": "2d1ca8a30fd41de7613ef04c18f61e67cc41b1c495b00a1d0e17d3476830420d",
+    "backend/core/timing.py": "6d5d02c0f5989a1a041b03a09f250fe1a864a0e41b53d9224b5b403ec4976482",
+    "backend/core/video_http.py": "c0a1d7edb822730aa74654389a08849ef80ade80ee1e8f9d03f35e958b2bca3a",
+    "backend/core/__init__.py": "e64fb6a47bad83efe0387337fcbb8dd4b3f50d4d2e20034c01ef6d6ddb1714f6",
+    "backend/carla/benchmark_fixture.py": "c008f64dcbbf4667de2c71630f013ecb36521c3d56f67e9436050e394fa3807f",
+    "backend/carla/comparison.py": "d8fa4cbf5735d58a3b578014d908da5ec9b49c04c63ff474baf607a21fe4b760",
+    "backend/carla/comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+    "backend/carla/connection.py": "632a59f7801dafcc90d625ca19b6aa1187282d146e61f50da110aaed8bc74b88",
+    "backend/carla/contracts.py": "179544f49a950f589f14ed215d103f36bdddcce1180641aa5559b4343d1534c1",
+    "backend/carla/controls.py": "1786ebb30bef1f3a5f93463ae6f287d342839884593ed9ddfae1778ddfa12743",
+    "backend/carla/dashboard_tools.py": "85f5605b0e7550e3b2fc986943ccabb27185ccad3ecd71cf5d4364f275bdc9e8",
+    "backend/carla/geometry.py": "9e71ed70eb0524780aa7798f8bcb77abdfdf6a84904cbe762afd171f54c0c1cd",
+    "backend/carla/graphics.py": "c37718359776004bdc717c700f15148f01fa4bfd9fad08e328d57d3cbfdc2b72",
+    "backend/carla/ground_truth.py": "f5ed075e00a0994fcbcc00522f790491c16567064b35c132eff438d0fd4f3b19",
+    "backend/carla/hybrid_navigation.py": "9754b468bb51c0dfe120b4ad2c1137f8b9d6309eec58fb18ce90bac21e92fde0",
+    "backend/carla/hybrid_world.py": "c4b9c8741c81592b4784ed76badd87cb22c5889151e949d0855ce3adec13185a",
+    "backend/carla/pilot_world.py": "3f94efdd945346c2cd2ec72eaabb7a2d46f8caa702cd6f02c3cc1025c99f091f",
+    "backend/carla/population.py": "98be1352b39a11b9d22581abc31a10cfa0bfd3e32871ba760c21790873ba0ca2",
+    "backend/carla/preflight.py": "1698845580fbc394c9d6a4e1bd7baea0f679281be21d0acc2438ac8c3b254bd6",
+    "backend/carla/presentation.py": "c72ae8f9afd91f108393e139dd660782990a35f609412e423eb927221852bd7c",
+    "backend/carla/provider.py": "38e80a0deeb6a0e1fe7f4be6757e9e73d4c43a6cea4a1df8c61701a5b6385ed1",
+    "backend/carla/restart_helper.py": "5aea662f9d989aa30e3574a0598e807c06ab3676f8fb4300e1a26cecae1d191d",
+    "backend/carla/routes.py": "7f852d1e638cae2ab72c86e8824f99bf1ef4714ff109706206c7e4e5ce4b39cf",
+    "backend/carla/route_agent.py": "a168a9941168e3a66b87770e05ef8eb57b5bec2fe9d7931870a54eb8dc2167e3",
+    "backend/carla/route_crowding.py": "5a6faf6ba2baf58fb5903d8f63b927ebbba4843dad6f75bf957abc8f26ab66a0",
+    "backend/carla/runtime.py": "89e6af23037fcfbf7215bcc00d4856617837ef28d406ed9a0fc16b1607f5f62a",
+    "backend/carla/scenarios.py": "9e039492af3bc8b842b7e05886427ddd1fde8b8ec00b2a561b346a27c3f6485c",
+    "backend/carla/sensors.py": "8ee3d163b7e4616b703d1afb1529427408386fd08ea96297eb32ebfd57ce0515",
+    "backend/carla/sensor_decoders.py": "f7bfd23f08ab81911510993035ecb4258d0eece4794f00f8cf7f496c4ee5f233",
+    "backend/carla/start_helper.py": "59dcabe042320e533db659daf41f0c2466f8cfcb3df3f75e9f6cd21c103de739",
+    "backend/carla/stop_helper.py": "85065cabff9232a1a97bcff1580f1604e0398277077eac452eb192e4bb79030c",
+    "backend/carla/target.py": "77f1aa4455aa843ec5b8786cea10e7127ab0c3cb7c08b0dd9e6b7f7041679b8c",
+    "backend/carla/telemetry.py": "474323d59a8879cc6d3665b9ae5e58f490589ef989d1534d33903412eaf4c2a4",
+    "backend/carla/urban.py": "f49798dbe285628ac58c2e3cb6362a0889a57540129df01d9c162877ba079229",
+    "backend/carla/urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend/carla/vehicle.py": "6f2e6522406552f651291e0792d74efa2df848c0cf83449d98995f158df9e593",
+    "backend/carla/world.py": "2cbc3db5cb0b9b8360bc931ce59dc598b68eb1efd2a770862aa576b1baf3ba73",
+    "backend/carla/__init__.py": "ce728f3803a6cd778e37986b03762a4d926ec12a7a69787391ac67e200232b60",
+    "backend/computer_vision/detector.py": "69b7f1e0ad23f1453aebd21e8e028d6de5b043ffe291386a171b571ff94dc4cf",
+    "backend/computer_vision/ocr.py": "2dbe59cba998a4419677c5801be6005b5dbe6a07f78580ead2ca63f79819e7a7",
+    "backend/computer_vision/service.py": "f1d0302bf986b9cfc88eb2395faf41bd3b3e08e0cce7a7858572dcaa0837626e",
+    "backend/computer_vision/worker.py": "6d23c16a078eaaf8f7e36e2eaff33af831d9243f51d61ef3c783bf764211186f",
+    "backend/computer_vision/__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97"
+  },
+  "final_backend_still_matches_native_hashes": true,
+  "ordinary_rig_startup": {
+    "source": "LIVE_NATIVE_CARLA_DEFAULT_RULE_RIG",
+    "connected": true,
+    "mode": "PAUSED",
+    "sensors": [
+      "depth",
+      "frontCamera",
+      "gnss",
+      "imu",
+      "lidar",
+      "radar"
+    ],
+    "budget": {
+      "charged_s": 50.163121700286865,
+      "hard_cap_s": 592,
+      "remaining_s": 541.8368782997131,
+      "recommended_run_allowance_s": 300,
+      "scope": "NATIVE_RULE_VALIDATION",
+      "expires_at": 1792309994.5724175,
+      "ticket": "output/driving-repair-20261018/default-rig/validation-68ef7753a0d444c2a692b7a286f29639.json"
+    }
+  },
+  "offline": {
+    "ground_plane_replay": {
+      "source": "OFFLINE_RECORDED_SENSOR_GEOMETRY",
+      "frames": 20,
+      "evaluations": 100,
+      "max_plane_difference": 0,
+      "support_counts_identical": true,
+      "baseline_ms": {
+        "p50": 3.420850000111386,
+        "p95": 4.953539997222833,
+        "max": 96.28899999370333
+      },
+      "repaired_ms": {
+        "p50": 1.1593500021263026,
+        "p95": 1.6629150013613978,
+        "max": 2.0266000065021217
+      }
+    },
+    "numeric_freeze_replay": {
+      "before": {
+        "median_ms": 10.077649996674154,
+        "maximum_ms": 10.826899990206584
+      },
+      "candidate": {
+        "median_ms": 6.692449998809025,
+        "maximum_ms": 10.417500001494773
+      }
+    },
+    "camera_saved_frame_replay": [
+      {
+        "recording": "run_6b1c11911158434a9c890785bcc573ca",
+        "frame": 1084,
+        "detections": [
+          {
+            "class": "car",
+            "confidence": 0.8713791370391846,
+            "xyxy": [
+              210.95968627929688,
+              92.31646728515625,
+              319.6946716308594,
+              162.93661499023438
+            ],
+            "classification_status": "SUPPORTED"
+          },
+          {
+            "class": "car",
+            "confidence": 0.2753806710243225,
+            "xyxy": [
+              149.60250854492188,
+              82.91012573242188,
+              170.64459228515625,
+              104.28265380859375
+            ],
+            "classification_status": "UNCERTAIN"
+          }
+        ]
+      },
+      {
+        "recording": "run_0a3914216ed84085b0db1902a3098bc2",
+        "frame": 4200,
+        "detections": [
+          {
+            "class": "car",
+            "confidence": 0.2732572555541992,
+            "xyxy": [
+              2.0917301177978516,
+              94.09939575195312,
+              25.72658920288086,
+              105.66372680664062
+            ],
+            "classification_status": "UNCERTAIN"
+          }
+        ]
+      },
+      {
+        "recording": "run_0a3914216ed84085b0db1902a3098bc2",
+        "frame": 7508,
+        "detections": [
+          {
+            "class": "car",
+            "confidence": 0.7041797637939453,
+            "xyxy": [
+              205.62506103515625,
+              91.29486083984375,
+              319.77117919921875,
+              146.07867431640625
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        ]
+      }
+    ],
+    "verification": {
+      "build.txt": {
+        "command": "npm run build:dashboard",
+        "passed": true,
+        "local_log": "output/driving-repair-20261018/build.txt",
+        "sha256": "a44f28a657049817d9e2ccb3490b4f40ba80cb3eab3af757ea027c36ab71ca74"
+      },
+      "javascript-tests.txt": {
+        "command": "npm test",
+        "discovered": 135,
+        "passed": 135,
+        "skipped": 0,
+        "local_log": "output/driving-repair-20261018/javascript-tests.txt",
+        "sha256": "561362893e2bda975788a29c5530b584dbb4cab1e1fdc39bf6dc1cec2b0b9891"
+      },
+      "python-tests-final.txt": {
+        "command": ".\\.venv-carla\\Scripts\\python.exe -m unittest discover -s tests -p test_*.py",
+        "discovered": 591,
+        "passed": 589,
+        "skipped": 2,
+        "local_log": "output/driving-repair-20261018/python-tests-final.txt",
+        "sha256": "afbf92af2b1f662ee365260a204b2b6dfd2e88628b750527178671dd063f3438"
+      },
+      "vision-tests.txt": {
+        "command": ".\\.venv-perception\\Scripts\\python.exe -m unittest tests.test_detection_quality",
+        "discovered": 1,
+        "passed": 1,
+        "skipped": 0,
+        "local_log": "output/driving-repair-20261018/vision-tests.txt",
+        "sha256": "6fba1e9ad550c2153f492f87d5d9bbb2564c0463d16e683e22a99abf3b863198"
+      }
+    }
+  },
+  "representative_long_stop_samples": [
+    {
+      "frame": 33900,
+      "timestamp_s": 838.4931894615293,
+      "image": "runs/normal_city/run_b1f433a306ba4b10b47e523763594023/rgb/frontCamera-694-33900.jpg",
+      "image_sha256": "e4d53b8f7d371bcd222138866b877d261f2b2a0268055500a1dc118dd72db08e",
+      "file_checksum_matches": true,
+      "visual_review": "A real lead car is visible in the ego lane; this sample is not evidence of an empty-road phantom stop.",
+      "independent_recorded_native_actor_id": 848,
+      "actor_class": "vehicle.ford.mustang",
+      "lead_center_forward_m": 9.058922379511822,
+      "lead_center_lateral_m": 0.0030963265611428648,
+      "whole_stop_independently_verified": false
+    },
+    {
+      "frame": 35000,
+      "timestamp_s": 893.4931902810931,
+      "image": "runs/normal_city/run_b1f433a306ba4b10b47e523763594023/rgb/frontCamera-694-35000.jpg",
+      "image_sha256": "2466c050222ddcf308031af9c746a6754e6f22582e937e60c096455470c2b5e0",
+      "file_checksum_matches": true,
+      "visual_review": "A real lead car is visible in the ego lane; this sample is not evidence of an empty-road phantom stop.",
+      "independent_recorded_native_actor_id": 848,
+      "actor_class": "vehicle.ford.mustang",
+      "lead_center_forward_m": 9.609905984884712,
+      "lead_center_lateral_m": -1.1688136199673318,
+      "whole_stop_independently_verified": false
+    }
+  ],
+  "limitations": [
+    "Strict quality remains unaccepted; final protected arm has four harsh-braking events, 464 comfort violations and 1425 unresolved stop frames.",
+    "Recorded-frame conservative freshness is distinct from applied-command freshness; an unpaired terminal recording frame is not waived.",
+    "Video checksum/export and backend PLAYBACK do not establish actual browser playback or rendering performance.",
+    "Identity integrity checks do not establish general semantic/physical detection accuracy. Two final camera source frames lie outside recording coverage.",
+    "Gated surround iteration 4 retains fifteen deadline brake commands and a runtime failure; the later optional-detour fix has offline regression coverage only.",
+    "Raw native evidence is retained locally and not included in a normal Git clone."
+  ]
+}

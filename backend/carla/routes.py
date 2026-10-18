@@ -45,7 +45,13 @@ class RouteService:
         A missing detour is an explicit result, never permission to cross space.
         """
         import networkx as nx
-        self.plan(origin, target)  # Ensure the ordinary graph has been built.
+        prior=self.planner
+        prior_turn=(prior._previous_decision,prior._intersection_end_node) if prior else None
+        try:self.plan(origin,target)
+        except (nx.NetworkXNoPath,nx.NodeNotFound,KeyError,ValueError,IndexError):return None
+        finally:
+            if prior_turn is not None:
+                prior._previous_decision,prior._intersection_end_node=prior_turn
         planner = self.planner
         edge = planner._localize(blocked_location)
         if edge is None or not planner._graph.has_edge(*edge): return None

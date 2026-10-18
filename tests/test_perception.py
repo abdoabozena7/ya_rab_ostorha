@@ -8,6 +8,19 @@ from backend import perception, perception_worker
 
 
 class PerceptionIsolationTests(unittest.TestCase):
+    def test_semantic_publication_uses_the_same_windows_lock_retries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);real_replace=perception_worker.os.replace;calls=[]
+            def replace(source,destination):
+                calls.append(destination)
+                if len(calls)<3:raise PermissionError('Windows reader lock')
+                return real_replace(source,destination)
+            with patch.object(perception_worker,'OUTPUT',root),patch.object(perception_worker.os,'replace',side_effect=replace),patch.object(perception_worker.time,'sleep'):
+                self.assertTrue(perception_worker.publish({'frame_id':1084},'latest-detections.json'))
+            self.assertEqual(json.loads((root/'latest-detections.json').read_text())['frame_id'],1084)
+            self.assertFalse((root/'latest.json').exists())
+            self.assertEqual(len(calls),3)
+
     def test_windows_atomic_publish_retries_transient_reader_lock(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

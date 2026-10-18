@@ -45,8 +45,8 @@ export function installUnifiedMap(p,view,tools) {
   const zoomTools=document.createElement('div');zoomTools.className='unified-zoom';
   for(const [label,factor] of [['−',.8],['+',1.25],['Recenter',0]]){const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-label',label==='+'?'Zoom map in':label==='−'?'Zoom map out':'Recenter map on vehicle');b.onclick=()=>{zoom=factor?Math.max(.25,Math.min(4,zoom*factor)):1;redraw();};zoomTools.append(b);}
   panel.querySelector('.unified-expanded-tools').prepend(zoomTools);
-  const filters={vehicles:true,people:true,surfaces:false,paths:true,conflicts:true};
-  const surfaces=document.createElement('label');surfaces.innerHTML='<input type="checkbox" data-filter="surfaces">Unclassified surfaces';
+  const filters={vehicles:true,people:true,surfaces:true,paths:true,conflicts:true};
+  const surfaces=document.createElement('label');surfaces.innerHTML='<input type="checkbox" data-filter="surfaces" checked>Unclassified surfaces (hollow)';
   panel.querySelector('.unified-filters').append(surfaces);
   panel.querySelectorAll('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layer===layer)));
   const text=(el,value)=>{if(el.textContent!==value)el.textContent=value;};

@@ -154,15 +154,33 @@ class BenchmarkFixture:
 
     def release(self, *, strict=True):
         if not self.frozen: return
-        from .urban import apply_driver
         p = self.provider; pop = p.population; api = p.connection.api
         p.ego.actor.set_simulate_physics(True)
         p.ego.actor.set_target_velocity(api.Vector3D());p.ego.actor.set_target_angular_velocity(api.Vector3D())
         for row in self.actors:
+            try:self._release_actor(row,strict=strict)
+            except RuntimeError as error:
+                if strict:raise
+                if not hasattr(self,'cleanup_failures'):self.cleanup_failures=[]
+                self.cleanup_failures.append(f'Traffic actor {row["id"]}: {error}')
+        for row in self.lights:
+            try:
+                light=p.world.world.get_actor(row['id'])
+                if light is not None:light.freeze(False)
+                elif strict:raise RuntimeError('Benchmark traffic light is missing')
+            except RuntimeError:
+                if strict:raise
+        pop.benchmark_frozen = False; self.frozen = False
+        self.held_current=False
+
+    def _release_actor(self,row,*,strict):
+        from .urban import apply_driver
+        p=self.provider;pop=p.population;api=p.connection.api
+        if row:
             actor = p.world.world.get_actor(row['id'])
             if actor is None:
                 if strict:raise RuntimeError('Cannot release a missing benchmark actor')
-                continue
+                return
             actor.set_simulate_physics(True)
             if row['blueprint'].startswith('vehicle.'):
                 actor.set_target_velocity(api.Vector3D()); actor.set_target_angular_velocity(api.Vector3D())
@@ -174,22 +192,15 @@ class BenchmarkFixture:
                 entry = pop.walkers.get(row['id'])
                 if entry is None:
                     if strict:raise RuntimeError('Benchmark pedestrian registry changed')
-                    continue
+                    return
                 controller = p.world.world.get_actor(entry['controller_id'])
                 if controller is None:
                     if strict:raise RuntimeError('Benchmark pedestrian controller is missing')
-                    continue
+                    return
                 controller.start(); controller.set_max_speed(row['speed_mps'])
                 entry.update(started=True, ready_at=0.)
                 if row['destination']:
                     target = api.Location(*row['destination']); controller.go_to_location(target); entry['destination'] = target
-        for row in self.lights:
-            light=p.world.world.get_actor(row['id'])
-            if light is not None:light.freeze(False)
-            elif strict:raise RuntimeError('Benchmark traffic light is missing')
-        pop.benchmark_frozen = False; self.frozen = False
-        self.held_current=False
-
     def hold_current(self):
         """Stop owned traffic between recordings without teleporting it."""
         p=self.provider;pop=p.population
@@ -199,31 +210,42 @@ class BenchmarkFixture:
         # Freeze every remaining owned actor, including unexpected replacements,
         # before reporting a changed fixture. Never infer type from absent IDs.
         for actor_id in expected|actual:
-            actor=p.world.world.get_actor(actor_id)
-            if actor is None:
-                failures.append(f'Missing traffic actor {actor_id}');continue
-            if actor.type_id.startswith('vehicle.'):actor.set_autopilot(False,pop.traffic_manager.port)
-            else:
-                entry=pop.walkers.get(actor_id)
-                if entry:
-                    controller=p.world.world.get_actor(entry['controller_id'])
-                    if controller and entry['started']:controller.stop()
-                    entry.update(started=False,ready_at=None)
-                else:failures.append(f'Missing pedestrian controller record {actor_id}')
-            actor.set_simulate_physics(False)
+            try:
+                actor=p.world.world.get_actor(actor_id)
+                if actor is None:
+                    failures.append(f'Missing traffic actor {actor_id}');continue
+                if actor.type_id.startswith('vehicle.'):actor.set_autopilot(False,pop.traffic_manager.port)
+                else:
+                    entry=pop.walkers.get(actor_id)
+                    if entry:
+                        controller=p.world.world.get_actor(entry['controller_id'])
+                        if controller and entry['started']:controller.stop()
+                        entry.update(started=False,ready_at=None)
+                    else:failures.append(f'Missing pedestrian controller record {actor_id}')
+                actor.set_simulate_physics(False)
+            except RuntimeError as error:
+                failures.append(f'Traffic actor {actor_id}: {error}')
         for row in self.lights:
-            light=p.world.world.get_actor(row['id'])
-            if light is not None:light.freeze(True)
+            try:
+                light=p.world.world.get_actor(row['id'])
+                if light is not None:light.freeze(True)
+                else:failures.append(f'Missing traffic light {row["id"]}')
+            except RuntimeError as error:
+                failures.append(f'Traffic light {row["id"]}: {error}')
         self.frozen=True;self.held_current=True
         return {'passed':not failures,'failures':failures}
 
     def close(self):
         # Teardown must continue when traffic changed; admission uses strict
         # release only after a successful matching-condition audit.
-        try:self.release(strict=False)
+        try:
+            try:self.release(strict=False)
+            except RuntimeError:pass
         finally:
             for row in self.lights:
-                light=self.provider.world.world.get_actor(row['id'])
-                if light is not None:light.freeze(False)
+                try:
+                    light=self.provider.world.world.get_actor(row['id'])
+                    if light is not None:light.freeze(False)
+                except RuntimeError:pass
             self.provider.population.benchmark_locked = False
             self.provider.population.benchmark_frozen = False

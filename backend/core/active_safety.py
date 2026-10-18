@@ -175,7 +175,8 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     depth = next((s for s in observation.channels if s.sensor_id=='depth'), channels[SensorKind.DEPTH])
     position, angles = _mount(depth)
     if np.all(np.abs(angles) < 1e-4) and position[0] > 0:
-        values = np.load(io.BytesIO(asset_reader(depth.asset)), allow_pickle=False)
+        cached=getattr(measured_space,'depth_images',{}).get(depth.asset.path)
+        values = cached if cached is not None else np.load(io.BytesIO(asset_reader(depth.asset)), allow_pickle=False)
         if values.ndim != 2 or not np.isfinite(values).all() or np.any(values < 0): raise ValueError('Invalid real depth asset')
         h, w = values.shape
         if depth.calibration.get('width') != w or depth.calibration.get('height') != h:

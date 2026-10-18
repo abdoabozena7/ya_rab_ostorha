@@ -10,15 +10,16 @@ import urllib.request
 import urllib.error
 ROOT=Path(__file__).resolve().parents[2]
 OUTPUT=ROOT/'output/perception'
-def publish(value):
+def publish(value, name='latest.json'):
     value['published_at'] = time.time()
-    temporary = OUTPUT / 'latest.tmp'
+    destination=OUTPUT/name
+    temporary = destination.with_suffix('.tmp')
     temporary.write_text(json.dumps(value,ensure_ascii=False),encoding='utf8')
     # Windows readers may briefly hold the destination without delete sharing.
     # Retain the last complete result rather than expose partial JSON or crash.
     for attempt in range(12):
         try:
-            os.replace(temporary, OUTPUT / 'latest.json')
+            os.replace(temporary, destination)
             return True
         except PermissionError:
             time.sleep(.01 * (attempt + 1))
@@ -81,9 +82,8 @@ def main():
             detection_result={'status':'RUNNING','session_id':session,'frame_id':fid,'timestamp_s':stamp,
                 'detections':detections,'detector_ms':detection_ms,'published_at':time.time(),
                 'source_sensor':'frontCamera','semantic_coverage':'FRONT_CAMERA_ONLY'}
-            detection_temp=OUTPUT/'latest-detections.tmp'
-            detection_temp.write_text(json.dumps(detection_result),encoding='utf8')
-            detection_temp.replace(OUTPUT/'latest-detections.json')
+            detection_result['source_image_sha256']=hashlib.sha256(source).hexdigest()
+            detection_published=publish(detection_result,'latest-detections.json')
             texts=[];ocr_ms=0.;regions=[]
             if time.monotonic()-last_ocr>=3:
                 regions=text_regions(rgb,detections)
@@ -97,7 +97,8 @@ def main():
             draw=ImageDraw.Draw(image)
             for d in detections:
                 draw.rectangle(d['xyxy'],outline='#2764c5',width=2)
-                draw.text((d['xyxy'][0],max(0,d['xyxy'][1]-13)),d['class'],fill='white',stroke_width=1,stroke_fill='black')
+                label=('Possible ' if d.get('classification_status')=='UNCERTAIN' else '')+d['class']+' '+str(round(d['confidence']*100))+'%'
+                draw.text((d['xyxy'][0],max(0,d['xyxy'][1]-13)),label,fill='white',stroke_width=1,stroke_fill='black')
             for t in texts:draw.line([tuple(p) for p in t['polygon']]+[tuple(t['polygon'][0])],fill='#e7a12c',width=2)
             token=f'frame_{session}_{fid}.jpg';image.save(OUTPUT/token,format='JPEG',quality=85)
             history.append(token)
@@ -107,7 +108,8 @@ def main():
                 'image_token':token,'source_image_sha256':hashlib.sha256(source).hexdigest(),
                 'model':'YOLOv8n ONNX 320','ocr':'English g2 crop-only','detections':detections,'texts':texts,
                 'nlp':nlp,'inference_ms':(time.monotonic()-began)*1000,'detector_ms':detection_ms,'ocr_ms':ocr_ms,
-                'cpu_ms':(time.process_time()-cpu_began)*1000,'threads':1,'maximum_rate_hz':1,'ocr_regions':len(regions)})
+                'cpu_ms':(time.process_time()-cpu_began)*1000,'threads':1,'maximum_rate_hz':1,'ocr_regions':len(regions),
+                'semantic_publication': 'PUBLISHED' if detection_published else 'READER_LOCK_RETAINED_PREVIOUS'})
             previous=(session,fid)
         except urllib.error.HTTPError as error:
             publish({'status':'WAITING' if error.code in (404,409,503) else 'ERROR','error':str(error)})

@@ -73,6 +73,7 @@ class DisplayPredictionService:
         # normal driver's CPU budget. RGB and detector rates are independent.
         while not self.stop.wait(max(0.,due-time.monotonic())):
             observed_began=time.monotonic();due=observed_began+.1
+            pending_trace=None
             try:
                 # This observer has no control consumer. Build optional visual
                 # forecasts only while a Details client actually requests them.
@@ -106,7 +107,15 @@ class DisplayPredictionService:
                         self.latest=(measured_control_view(measured,s.render_pose_cache.get(observation.frame_id))
                             if measured is not None and measured.observation.frame_id==observation.frame_id and
                                measured.prediction.get('motion_tracking_complete') else None)
+                        self.frames[observation.frame_id]=self.latest
+                        while len(self.frames)>128:self.frames.popitem(last=False)
+                        pending_trace=(getattr(s,'recorder',None),self.latest)
                         self.error=None;due=observed_began+.2
+                        continue
+                    application=getattr(s,'application_timing',{})
+                    if (not planning_active and s.arbiter.machine.mode.value=='AUTOMATIC'
+                            and (application.get('wall_age_s') or 0.)>=.15):
+                        due=observed_began+.3
                         continue
                     lidar=next(c for c in observation.channels if c.kind==SensorKind.LIDAR)
                     data=s.provider.get_sensor_asset(lidar.asset)
@@ -232,10 +241,21 @@ class DisplayPredictionService:
                 prediction['quality_metrics']['observer_target_hz']=10 if planning_active else 5
                 s.motion_snapshot=prediction
                 self.latest=prediction;self.error=None
+                pending_trace=(getattr(s,'recorder',None),prediction)
                 self.frames[observation.frame_id]=prediction
                 while len(self.frames)>128:self.frames.popitem(last=False)
             except (ValueError,KeyError,OSError,TypeError,ArithmeticError,StopIteration) as error:
                 self.error=str(error);self.latest=None
+            finally:
+                if pending_trace:self.record_prediction(*pending_trace)
+
+    @staticmethod
+    def record_prediction(recorder,prediction):
+        if recorder and prediction and hasattr(recorder,'record_trace'):
+            try:recorder.record_trace({'kind':'DISPLAY_PREDICTION','session_id':prediction['session_id'],
+                'evaluation_frame':prediction['evaluation_frame'],'timestamp_s':prediction['timestamp_s'],
+                'prediction':prediction,'used_for_applied_decision':False})
+            except RuntimeError:pass
 
     def snapshot(self,frame_id=None):
         self.requested_until=time.monotonic()+2.

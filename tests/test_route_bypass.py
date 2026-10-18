@@ -6,6 +6,20 @@ from tests.test_safety_teacher import case
 
 
 class RouteBypassTests(unittest.TestCase):
+    def test_unreachable_optional_detour_is_rejected_without_losing_turn_state(self):
+        from backend.carla.routes import RouteService
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        routes=RouteService(None,None)
+        routes.planner=SimpleNamespace(_previous_decision='KEEP',_intersection_end_node=7)
+        def unreachable(origin,target):
+            routes.planner._previous_decision='TRANSIENT'
+            raise ValueError('Native route does not reach the selected road waypoint')
+        routes.plan=Mock(side_effect=unreachable)
+        self.assertIsNone(routes.alternative('origin','destination','blocked'))
+        self.assertEqual(routes.planner._previous_decision,'KEEP')
+        self.assertEqual(routes.planner._intersection_end_node,7)
+
     def setUp(self):
         self.scene,_,_=ControlSceneTests().measured()
 

@@ -30,7 +30,7 @@ class RoadDetector:
         boxes, scores, labels = [], [], []
         for row in output:
             label = int(row[4:].argmax()); confidence = float(row[4+label])
-            if label not in ROAD_CLASSES or confidence < .35: continue
+            if label not in ROAD_CLASSES or confidence < (.65 if label in (9,11) else .25): continue
             x,y,w,h = row[:4]
             x1,y1 = max(0.,float((x-w/2-left)/ratio)),max(0.,float((y-h/2-top)/ratio))
             x2,y2 = min(width,float((x+w/2-left)/ratio)),min(height,float((y+h/2-top)/ratio))
@@ -40,8 +40,9 @@ class RoadDetector:
         # Class-wise NMS must not suppress a person overlapping a vehicle.
         for label in ROAD_CLASSES:
             indices = [i for i,l in enumerate(labels) if l==label]
-            chosen = cv2.dnn.NMSBoxes([boxes[i] for i in indices], [scores[i] for i in indices], .35,.45)
+            chosen = cv2.dnn.NMSBoxes([boxes[i] for i in indices], [scores[i] for i in indices], .25,.45)
             for local in np.asarray(chosen).reshape(-1):
                 i=indices[int(local)];x,y,w,h=boxes[i]
-                results.append({'class':ROAD_CLASSES[label],'confidence':scores[i],'xyxy':[x,y,x+w,y+h]})
+                results.append({'class':ROAD_CLASSES[label],'confidence':scores[i],'xyxy':[x,y,x+w,y+h],
+                    'classification_status':'SUPPORTED' if scores[i]>=.65 else 'UNCERTAIN'})
         return sorted(results,key=lambda d:d['confidence'],reverse=True)[:20]

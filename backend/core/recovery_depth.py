@@ -6,13 +6,16 @@ from .active_safety import _mount
 from .contracts import SensorKind
 
 
-def depth_surfaces(observation, asset_reader):
+def depth_surfaces(observation, asset_reader, *, decoded=None):
     sources=[]
     for channel in observation.channels:
         if channel.kind!=SensorKind.DEPTH:continue
         if channel.frame_id!=observation.frame_id or abs(channel.timestamp_s-observation.timestamp_s)>1e-6:
             raise ValueError('Recovery depth frame differs from synchronized observation')
         values=np.load(io.BytesIO(asset_reader(channel.asset)),allow_pickle=False)
+        if decoded is not None:
+            values.flags.writeable=False
+            decoded[channel.asset.path]=values
         h,w=values.shape
         if (channel.calibration.get('width'),channel.calibration.get('height'))!=(w,h) or not np.isfinite(values).all() or np.any(values<0):
             raise ValueError('Invalid calibrated recovery depth')

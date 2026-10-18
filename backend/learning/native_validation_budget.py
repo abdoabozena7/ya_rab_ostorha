@@ -46,7 +46,7 @@ class NativeValidationBudget:
         started=time.time();path=directory/('repair-'+uuid.uuid4().hex+'.json')
         path.write_text(json.dumps({'version':2,'scope':'NATIVE_RULE_REPAIR','allowance_s':seconds,
             'started_at':started,'expires_at':started+seconds,
-            'authorization':'User approved separate 60-minute reliable-driving validation; no hybrid admission'},indent=2),encoding='utf8')
+            'authorization':f'User approved separate {seconds/60:g}-minute reliable-driving validation; no hybrid admission'},indent=2),encoding='utf8')
         return cls(path)
 
     def activate_rule(self):
