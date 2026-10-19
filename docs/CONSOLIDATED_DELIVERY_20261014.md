@@ -29,6 +29,7 @@ runtime versions and should not be read as current capability guarantees.
 
 | Area | Entry points | Detailed report |
 | --- | --- | --- |
+| Continuous native loading, 120 km/h guided target, selected forecasts and retained Finish results | `backend/core/presentation.py`, `backend/core/service.py`, `frontend/sequential-drive.js`, `frontend/prediction-view.js` | [19 October guided repair, both native orders, crossing/release evidence and throughput limits](GUIDED_FLOW_REPAIR_20261019.md) |
 | Fair reactive Normal, identical Mercedes and annotated forecast MP4s | `backend/core/active_safety.py`, `backend/core/driver_profiles.py`, `backend/core/video_prediction.py` | [19 October sensor comparison, historical compatibility and scoped native evidence](SENSOR_COMPARISON_20261019.md) |
 | Main-camera measured paths, body-core person tracking and bounded recording storage | `backend/core/depth_people.py`, `backend/core/pedestrian_anticipation.py`, `backend/core/storage_retention.py`, `frontend/prediction-view.js` | [19 October actual Mercedes checks, 216.29 GiB net freed and retained native failures](FORECAST_PASSING_STORAGE_20261019.md) |
 | Guided 80 km/h request, prompt native acceleration and lighter background polling | `backend/core/service.py`, `backend/carla/provider.py`, `backend/server.py`, `backend/graphics.py` | [18 October measured speed, native outcomes and remaining throughput limits](DRIVE_SPEED_RESOURCES_20261018.md) |

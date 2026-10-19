@@ -1,0 +1,666 @@
+{
+  "scope": "SCOPED_NATIVE_FIXTURES_NOT_HIGH_SPEED_ACCEPTANCE",
+  "matrices": [
+    {
+      "source": "LIVE_NATIVE_CARLA",
+      "requested_speed_kmh": 30.0,
+      "pairs": [
+        {
+          "scenario": "PEDESTRIAN",
+          "seed": 1701,
+          "conditions_match": true,
+          "normal_passed": true,
+          "predictive_passed": false
+        }
+      ],
+      "accepted": false,
+      "pedestrian_delay_s": 0.75,
+      "ordinary_sensors": true,
+      "runtime_returned_to_stopped": true,
+      "id": "1c48c9578234498b9cbee6daa2df9f70",
+      "qualification": "Incomplete sidewalk motion accepted by the historical partial-movement gate; diagnostic ticket admitted experimental bypass. Not accepted for production crossing.",
+      "cases": [
+        {
+          "mode": "NORMAL",
+          "passed": true,
+          "scenario_valid": true,
+          "arrived": true,
+          "contacts": 0,
+          "distance_m": 43.79949583703359,
+          "maximum_speed_kmh": 30.377556167736046,
+          "first_sensor_brake_s": null,
+          "sensor_brake_samples": 0,
+          "source_unchanged": true,
+          "error": null,
+          "native_report": "output\\hybrid-driving\\probe-5110fe24523940eca05cb62ffaf5aff2\\report.json",
+          "native_report_sha256": "a701f45bfc2522e336e620a3a7fe571ef57db1fad0aed7576d6b38813952410b",
+          "source_archive": {
+            "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-5110fe24523940eca05cb62ffaf5aff2\\source.zip",
+            "sha256": "5abc00e1e76f2bec98e88b191795cad00c8b766871bb6f68c37d86646bf18d50",
+            "files": 111,
+            "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+          },
+          "events": [
+            {
+              "actor_id": 42,
+              "kind": "PEDESTRIAN_CROSSING",
+              "at_s": 0.75,
+              "duration_s": 6.0,
+              "scheduled": true,
+              "eligible": true,
+              "realized": true,
+              "start_position": [
+                43.56670379638672,
+                -71.84412384033203,
+                0.9547669887542725
+              ]
+            }
+          ],
+          "driver_admission_scope": "DIAGNOSTIC_RULE_ADMISSION",
+          "sensor_ids": [
+            "collision",
+            "frontCamera",
+            "drivingCamera",
+            "depth",
+            "radar",
+            "lidar",
+            "imu",
+            "gnss"
+          ],
+          "maximum_stopped_interval_s": 2.350000035017729,
+          "native_cleanup_confirmed": true,
+          "video_exports_finished": true,
+          "predictive_crossing_frames": 0,
+          "videos": [
+            {
+              "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\1c48c9578234498b9cbee6daa2df9f70\\native-recordings\\normal_city\\run_2b54008eb6394b69b099bd27cbc242ea",
+              "status": {
+                "status": "READY",
+                "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+                "clock": "SIMULATION_TIME",
+                "frames": 273,
+                "first_timestamp_s": 5.497676607221365,
+                "last_timestamp_s": 19.097676809877157,
+                "duration_s": 13.600000202655792,
+                "video": "driving.mp4",
+                "sha256": "31c65284eb36f5ae627f5193271b9359ab9c90a924f4c8316340c5557972300e",
+                "frame_index": "telemetry/video-frames.jsonl",
+                "clock_zero_timestamp_s": 5.497676607221365,
+                "alignment_source": "ADMITTED_JOURNEY_START",
+                "maximum_frame_gap_s": 0.05000000074505806,
+                "variants": {
+                  "raw": {
+                    "status": "READY",
+                    "video": "driving.mp4",
+                    "sha256": "31c65284eb36f5ae627f5193271b9359ab9c90a924f4c8316340c5557972300e",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+                  },
+                  "annotated": {
+                    "status": "READY",
+                    "video": "driving-annotated.mp4",
+                    "sha256": "ca4c70dd14dd60e256b55a4bb382ce7e56dd42141c31259bdcd1b39a575c0135",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+                    "overlay": {
+                      "status": "READY",
+                      "predictive": false,
+                      "forecast_frames": 0,
+                      "rendered_paths": 0,
+                      "maximum_forecast_age_s": 0.75,
+                      "available_forecast_frames": 0,
+                      "no_selected_risk_frames": 0,
+                      "missing_forecast_frames": 0
+                    }
+                  }
+                },
+                "annotation_required": true,
+                "preferred_video": "driving-annotated.mp4"
+              }
+            }
+          ]
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "passed": false,
+          "scenario_valid": true,
+          "arrived": false,
+          "contacts": 0,
+          "distance_m": 11.312889617877584,
+          "maximum_speed_kmh": 6.858620515791894,
+          "first_sensor_brake_s": null,
+          "sensor_brake_samples": 0,
+          "source_unchanged": true,
+          "error": null,
+          "native_report": "output\\hybrid-driving\\probe-afdeb418fa694ec29ebad8b78cff2f84\\report.json",
+          "native_report_sha256": "97ac238c26e0c52b877a2c0e283cabac89e8ad48386b16a946cd0edf6f154327",
+          "source_archive": {
+            "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-afdeb418fa694ec29ebad8b78cff2f84\\source.zip",
+            "sha256": "542252a149335f77661f82b6befa22bebc7be9ce27d995c58c2cac92c3e3f902",
+            "files": 111,
+            "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+          },
+          "events": [
+            {
+              "actor_id": 61,
+              "kind": "PEDESTRIAN_CROSSING",
+              "at_s": 0.75,
+              "duration_s": 6.0,
+              "scheduled": true,
+              "eligible": true,
+              "realized": true,
+              "start_position": [
+                43.56670379638672,
+                -71.84412384033203,
+                0.9547669887542725
+              ]
+            }
+          ],
+          "driver_admission_scope": "DIAGNOSTIC_RULE_ADMISSION",
+          "sensor_ids": [
+            "collision",
+            "frontCamera",
+            "drivingCamera",
+            "depth",
+            "radar",
+            "lidar",
+            "imu",
+            "gnss"
+          ],
+          "maximum_stopped_interval_s": 6.650000099092722,
+          "native_cleanup_confirmed": true,
+          "video_exports_finished": true,
+          "predictive_crossing_frames": 0,
+          "videos": [
+            {
+              "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\1c48c9578234498b9cbee6daa2df9f70\\native-recordings\\normal_city\\run_44d99e4bfda64e45a0c02e403eb14051",
+              "status": {
+                "status": "READY",
+                "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+                "clock": "SIMULATION_TIME",
+                "frames": 500,
+                "first_timestamp_s": 35.41596473008394,
+                "last_timestamp_s": 60.365965101867914,
+                "duration_s": 24.950000371783972,
+                "video": "driving.mp4",
+                "sha256": "22f42d80cf2e1064e75bae6bd6b841d3979eefbc8eb6706c3fffa0c8e2421ce3",
+                "frame_index": "telemetry/video-frames.jsonl",
+                "clock_zero_timestamp_s": 35.41596473008394,
+                "alignment_source": "ADMITTED_JOURNEY_START",
+                "maximum_frame_gap_s": 0.05000000074505806,
+                "variants": {
+                  "raw": {
+                    "status": "READY",
+                    "video": "driving.mp4",
+                    "sha256": "22f42d80cf2e1064e75bae6bd6b841d3979eefbc8eb6706c3fffa0c8e2421ce3",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+                  },
+                  "annotated": {
+                    "status": "READY",
+                    "video": "driving-annotated.mp4",
+                    "sha256": "d3d1bdb35badd42995eca135a25be05779a7e35dd27c141d091dcf80524886bb",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+                    "overlay": {
+                      "status": "READY",
+                      "predictive": true,
+                      "forecast_frames": 0,
+                      "rendered_paths": 0,
+                      "maximum_forecast_age_s": 0.75,
+                      "available_forecast_frames": 500,
+                      "no_selected_risk_frames": 500,
+                      "missing_forecast_frames": 0
+                    }
+                  }
+                },
+                "annotation_required": true,
+                "preferred_video": "driving-annotated.mp4"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "LIVE_NATIVE_CARLA",
+      "requested_speed_kmh": 30.0,
+      "pairs": [
+        {
+          "scenario": "PEDESTRIAN",
+          "seed": 1701,
+          "conditions_match": true,
+          "normal_passed": true,
+          "predictive_passed": true
+        }
+      ],
+      "accepted": true,
+      "pedestrian_delay_s": 4.0,
+      "ordinary_sensors": true,
+      "pedestrian_lateral_m": 1.8,
+      "production_drivers": true,
+      "runtime_returned_to_stopped": true,
+      "id": "09635ccc0e3746d4b0c1192e376ff465",
+      "qualification": "Complete crossing and subsequent arrivals in both ordinary production drivers. This case did not distinguish predictive braking onset.",
+      "cases": [
+        {
+          "mode": "NORMAL",
+          "passed": true,
+          "scenario_valid": true,
+          "arrived": true,
+          "contacts": 0,
+          "distance_m": 43.50894817987322,
+          "maximum_speed_kmh": 30.541361616834934,
+          "first_sensor_brake_s": 2.400000035762787,
+          "sensor_brake_samples": 80,
+          "source_unchanged": true,
+          "error": null,
+          "native_report": "output\\hybrid-driving\\probe-5e4edec52cbb4b26b93af59d73eed187\\report.json",
+          "native_report_sha256": "ab9ae9c06a47785bc58b301c65c6397958163511333f4e8675d7d8ba20b09dc6",
+          "source_archive": {
+            "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-5e4edec52cbb4b26b93af59d73eed187\\source.zip",
+            "sha256": "97bbac75e8106e41c4a121673dc45bc0d6f052c56f2fd32ac96745447cbd54cf",
+            "files": 111,
+            "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+          },
+          "events": [
+            {
+              "actor_id": 42,
+              "kind": "PEDESTRIAN_CROSSING",
+              "at_s": 4.0,
+              "duration_s": 6.0,
+              "scheduled": true,
+              "eligible": true,
+              "realized": true,
+              "start_position": [
+                43.56760025024414,
+                -69.64412689208984,
+                0.9541073441505432
+              ],
+              "completion_policy": "CROSS_TO_OPPOSITE_CLEARANCE"
+            }
+          ],
+          "driver_admission_scope": "PRODUCTION_DRIVERS",
+          "sensor_ids": [
+            "collision",
+            "frontCamera",
+            "drivingCamera",
+            "depth",
+            "radar",
+            "lidar",
+            "imu",
+            "gnss"
+          ],
+          "maximum_stopped_interval_s": 3.8000000566244125,
+          "native_cleanup_confirmed": true,
+          "video_exports_finished": true,
+          "predictive_crossing_frames": 0,
+          "videos": [
+            {
+              "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\09635ccc0e3746d4b0c1192e376ff465\\native-recordings\\normal_city\\run_18fa08b5a6864cc3afde490cd332e295",
+              "status": {
+                "status": "READY",
+                "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+                "clock": "SIMULATION_TIME",
+                "frames": 269,
+                "first_timestamp_s": 6.404474791139364,
+                "last_timestamp_s": 19.804474990814924,
+                "duration_s": 13.40000019967556,
+                "video": "driving.mp4",
+                "sha256": "f3241e80675653f1c3a4ab88a7fce67b7dbfe42a50951f5945805baa1bf13019",
+                "frame_index": "telemetry/video-frames.jsonl",
+                "clock_zero_timestamp_s": 6.404474791139364,
+                "alignment_source": "ADMITTED_JOURNEY_START",
+                "maximum_frame_gap_s": 0.05000000074505806,
+                "variants": {
+                  "raw": {
+                    "status": "READY",
+                    "video": "driving.mp4",
+                    "sha256": "f3241e80675653f1c3a4ab88a7fce67b7dbfe42a50951f5945805baa1bf13019",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+                  },
+                  "annotated": {
+                    "status": "READY",
+                    "video": "driving-annotated.mp4",
+                    "sha256": "724bb7f75898857c6bfb9fe40a8a56152a580f44c824b67aa7ab64407f9800de",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+                    "overlay": {
+                      "status": "READY",
+                      "predictive": false,
+                      "forecast_frames": 0,
+                      "rendered_paths": 0,
+                      "maximum_forecast_age_s": 0.75,
+                      "available_forecast_frames": 0,
+                      "no_selected_risk_frames": 0,
+                      "missing_forecast_frames": 0
+                    }
+                  }
+                },
+                "annotation_required": true,
+                "preferred_video": "driving-annotated.mp4"
+              }
+            }
+          ]
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "passed": true,
+          "scenario_valid": true,
+          "arrived": true,
+          "contacts": 0,
+          "distance_m": 43.50894817987322,
+          "maximum_speed_kmh": 30.541361616834934,
+          "first_sensor_brake_s": 2.400000035762787,
+          "sensor_brake_samples": 80,
+          "source_unchanged": true,
+          "error": null,
+          "native_report": "output\\hybrid-driving\\probe-4b844d642323418a8b5ead11b63cc2bb\\report.json",
+          "native_report_sha256": "dd82b631e3ea787234cc0c4381f4cab3377a18e6244457483c6982d85fdd0786",
+          "source_archive": {
+            "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-4b844d642323418a8b5ead11b63cc2bb\\source.zip",
+            "sha256": "1d28fc425f459391b791a763cdf7c2e56bf378917fa2032bf65091182a3ce675",
+            "files": 111,
+            "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+          },
+          "events": [
+            {
+              "actor_id": 61,
+              "kind": "PEDESTRIAN_CROSSING",
+              "at_s": 4.0,
+              "duration_s": 6.0,
+              "scheduled": true,
+              "eligible": true,
+              "realized": true,
+              "start_position": [
+                43.56760025024414,
+                -69.64412689208984,
+                0.9541073441505432
+              ],
+              "completion_policy": "CROSS_TO_OPPOSITE_CLEARANCE"
+            }
+          ],
+          "driver_admission_scope": "PRODUCTION_DRIVERS",
+          "sensor_ids": [
+            "collision",
+            "frontCamera",
+            "drivingCamera",
+            "depth",
+            "radar",
+            "lidar",
+            "imu",
+            "gnss"
+          ],
+          "maximum_stopped_interval_s": 3.8000000566244125,
+          "native_cleanup_confirmed": true,
+          "video_exports_finished": true,
+          "predictive_crossing_frames": 0,
+          "videos": [
+            {
+              "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\09635ccc0e3746d4b0c1192e376ff465\\native-recordings\\normal_city\\run_df08cf6dfdf046548f115e2ca6ef65ce",
+              "status": {
+                "status": "READY",
+                "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+                "clock": "SIMULATION_TIME",
+                "frames": 269,
+                "first_timestamp_s": 36.65253971144557,
+                "last_timestamp_s": 50.05253991112113,
+                "duration_s": 13.40000019967556,
+                "video": "driving.mp4",
+                "sha256": "3a0df4d38e6346c69df339360c75d3d5de77a4c657b33e6171481f03b33e939a",
+                "frame_index": "telemetry/video-frames.jsonl",
+                "clock_zero_timestamp_s": 36.65253971144557,
+                "alignment_source": "ADMITTED_JOURNEY_START",
+                "maximum_frame_gap_s": 0.05000000074505806,
+                "variants": {
+                  "raw": {
+                    "status": "READY",
+                    "video": "driving.mp4",
+                    "sha256": "3a0df4d38e6346c69df339360c75d3d5de77a4c657b33e6171481f03b33e939a",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+                  },
+                  "annotated": {
+                    "status": "READY",
+                    "video": "driving-annotated.mp4",
+                    "sha256": "976143707e3dd6b7e964f13b88d86365abbcd72189ff427e032c89e7f3552768",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+                    "overlay": {
+                      "status": "READY",
+                      "predictive": true,
+                      "forecast_frames": 0,
+                      "rendered_paths": 0,
+                      "maximum_forecast_age_s": 0.75,
+                      "available_forecast_frames": 268,
+                      "no_selected_risk_frames": 268,
+                      "missing_forecast_frames": 1
+                    }
+                  }
+                },
+                "annotation_required": true,
+                "preferred_video": "driving-annotated.mp4"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "LIVE_NATIVE_CARLA",
+      "requested_speed_kmh": 30.0,
+      "pairs": [
+        {
+          "scenario": "PEDESTRIAN",
+          "seed": 1701,
+          "conditions_match": true,
+          "normal_passed": false,
+          "predictive_passed": false
+        }
+      ],
+      "accepted": false,
+      "pedestrian_delay_s": 4.0,
+      "ordinary_sensors": true,
+      "pedestrian_lateral_m": -3.5,
+      "production_drivers": true,
+      "runtime_returned_to_stopped": true,
+      "id": "3e48b5e88563460a826a4d45e68fbb07",
+      "qualification": "Opposite-side actor was blocked by native road geometry. Complete-crossing gate correctly rejected both cases.",
+      "cases": [
+        {
+          "mode": "NORMAL",
+          "passed": false,
+          "scenario_valid": false,
+          "arrived": true,
+          "contacts": 0,
+          "distance_m": 43.47075715904985,
+          "maximum_speed_kmh": 30.474926938561914,
+          "first_sensor_brake_s": null,
+          "sensor_brake_samples": 0,
+          "source_unchanged": true,
+          "error": null,
+          "native_report": "output\\hybrid-driving\\probe-702fef9bacf546f2a698f113f57702f0\\report.json",
+          "native_report_sha256": "479f1df23f0ed1625ed1ef9ea10905691d10807950900f77707a8d9d2b9b1d3d",
+          "source_archive": {
+            "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-702fef9bacf546f2a698f113f57702f0\\source.zip",
+            "sha256": "d10338aaffd51a450d8ed866c94b28dfe557365b69141846b6107bd9d3b5e0fe",
+            "files": 111,
+            "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+          },
+          "events": [
+            {
+              "actor_id": 42,
+              "kind": "PEDESTRIAN_CROSSING",
+              "at_s": 4.0,
+              "duration_s": 6.0,
+              "scheduled": true,
+              "eligible": true,
+              "realized": false,
+              "start_position": [
+                43.56977462768555,
+                -64.34412384033203,
+                0.9516999125480652
+              ],
+              "completion_policy": "CROSS_TO_OPPOSITE_CLEARANCE",
+              "crossing_direction": 1
+            }
+          ],
+          "driver_admission_scope": "PRODUCTION_DRIVERS",
+          "sensor_ids": [
+            "collision",
+            "frontCamera",
+            "drivingCamera",
+            "depth",
+            "radar",
+            "lidar",
+            "imu",
+            "gnss"
+          ],
+          "maximum_stopped_interval_s": 0.6000000089406967,
+          "native_cleanup_confirmed": true,
+          "video_exports_finished": true,
+          "predictive_crossing_frames": 0,
+          "videos": [
+            {
+              "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\3e48b5e88563460a826a4d45e68fbb07\\native-recordings\\normal_city\\run_c0b9e1966f8e47dbaa6972bf6515872c",
+              "status": {
+                "status": "READY",
+                "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+                "clock": "SIMULATION_TIME",
+                "frames": 145,
+                "first_timestamp_s": 6.216982305049896,
+                "last_timestamp_s": 13.416982412338257,
+                "duration_s": 7.200000107288361,
+                "video": "driving.mp4",
+                "sha256": "00fbdafccc2e95a09c8d2bb53379a281bd1f33bea7360849b7161348fb3bc0ab",
+                "frame_index": "telemetry/video-frames.jsonl",
+                "clock_zero_timestamp_s": 6.216982305049896,
+                "alignment_source": "ADMITTED_JOURNEY_START",
+                "maximum_frame_gap_s": 0.05000000074505806,
+                "variants": {
+                  "raw": {
+                    "status": "READY",
+                    "video": "driving.mp4",
+                    "sha256": "00fbdafccc2e95a09c8d2bb53379a281bd1f33bea7360849b7161348fb3bc0ab",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+                  },
+                  "annotated": {
+                    "status": "READY",
+                    "video": "driving-annotated.mp4",
+                    "sha256": "d999e40d8ffd1debc32ab216259dafafc9bc697d13e181b881529b55a797eef0",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+                    "overlay": {
+                      "status": "READY",
+                      "predictive": false,
+                      "forecast_frames": 0,
+                      "rendered_paths": 0,
+                      "maximum_forecast_age_s": 0.75,
+                      "available_forecast_frames": 0,
+                      "no_selected_risk_frames": 0,
+                      "missing_forecast_frames": 0
+                    }
+                  }
+                },
+                "annotation_required": true,
+                "preferred_video": "driving-annotated.mp4"
+              }
+            }
+          ]
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "passed": false,
+          "scenario_valid": false,
+          "arrived": true,
+          "contacts": 0,
+          "distance_m": 43.47075715904985,
+          "maximum_speed_kmh": 30.474926938561914,
+          "first_sensor_brake_s": null,
+          "sensor_brake_samples": 0,
+          "source_unchanged": true,
+          "error": null,
+          "native_report": "output\\hybrid-driving\\probe-087c25089eab4271932a4e358ac88f7e\\report.json",
+          "native_report_sha256": "3196e19a580b43e147e6bfa93f550b1fe0268f896b10fb42978ea928a2ce02db",
+          "source_archive": {
+            "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\probe-087c25089eab4271932a4e358ac88f7e\\source.zip",
+            "sha256": "ccfa627d8923c7dc7e70eef1d8574086abf9d38080f9894886ec46a41287ba26",
+            "files": 111,
+            "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+          },
+          "events": [
+            {
+              "actor_id": 61,
+              "kind": "PEDESTRIAN_CROSSING",
+              "at_s": 4.0,
+              "duration_s": 6.0,
+              "scheduled": true,
+              "eligible": true,
+              "realized": false,
+              "start_position": [
+                43.56977462768555,
+                -64.34412384033203,
+                0.9516999125480652
+              ],
+              "completion_policy": "CROSS_TO_OPPOSITE_CLEARANCE",
+              "crossing_direction": 1
+            }
+          ],
+          "driver_admission_scope": "PRODUCTION_DRIVERS",
+          "sensor_ids": [
+            "collision",
+            "frontCamera",
+            "drivingCamera",
+            "depth",
+            "radar",
+            "lidar",
+            "imu",
+            "gnss"
+          ],
+          "maximum_stopped_interval_s": 0.6000000089406967,
+          "native_cleanup_confirmed": true,
+          "video_exports_finished": true,
+          "predictive_crossing_frames": 0,
+          "videos": [
+            {
+              "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\3e48b5e88563460a826a4d45e68fbb07\\native-recordings\\normal_city\\run_bea885208f664f5cb9945b297203e77e",
+              "status": {
+                "status": "READY",
+                "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+                "clock": "SIMULATION_TIME",
+                "frames": 145,
+                "first_timestamp_s": 26.92608303576708,
+                "last_timestamp_s": 34.12608314305544,
+                "duration_s": 7.200000107288361,
+                "video": "driving.mp4",
+                "sha256": "b65291a2042c386435f87a3d02b8f5592459eb09e7d588423ca7db0bc870370a",
+                "frame_index": "telemetry/video-frames.jsonl",
+                "clock_zero_timestamp_s": 26.92608303576708,
+                "alignment_source": "ADMITTED_JOURNEY_START",
+                "maximum_frame_gap_s": 0.05000000074505806,
+                "variants": {
+                  "raw": {
+                    "status": "READY",
+                    "video": "driving.mp4",
+                    "sha256": "b65291a2042c386435f87a3d02b8f5592459eb09e7d588423ca7db0bc870370a",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+                  },
+                  "annotated": {
+                    "status": "READY",
+                    "video": "driving-annotated.mp4",
+                    "sha256": "ee76f1a39a3fb2189af385a9fd0ab54ab58f9a92a06939f093f099215d5fe91b",
+                    "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+                    "overlay": {
+                      "status": "READY",
+                      "predictive": true,
+                      "forecast_frames": 0,
+                      "rendered_paths": 0,
+                      "maximum_forecast_age_s": 0.75,
+                      "available_forecast_frames": 144,
+                      "no_selected_risk_frames": 144,
+                      "missing_forecast_frames": 1
+                    }
+                  }
+                },
+                "annotation_required": true,
+                "preferred_video": "driving-annotated.mp4"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -110,8 +110,8 @@ export class PredictionView {
       this.map.hidden=true;
       this.currentPrediction=this.provider.safetySystem?.prediction||null;return;
     }
-    this.poll();if(!guidedForecast)this.pollFrame(camera);
-    const p=this.provider, latest=p.safetySystem?.prediction||this.observed, img=document.getElementById('authoritativeCamera');
+    if(!guidedForecast){this.poll();this.pollFrame(camera);}
+    const p=this.provider, latest=guidedForecast?p.drivingForecast:p.safetySystem?.prediction||this.observed, img=document.getElementById('authoritativeCamera');
     const applied=latest?.applied_decision_prediction;
     const appliedFresh=applied&&measuredPredictionFresh(applied,p.sessionId,p.telemetry?.timestamp??camera?.timestamp);
     const principal=appliedFresh?applied:latest;
@@ -129,7 +129,7 @@ export class PredictionView {
       const conflict=measured.conflict_point;
       const context=appliedFresh?'Applied decision forecast':'Display forecast';
       const supplementary=latest?.supplementary_model_candidates?.length??0;
-      this.label.textContent=guidedForecast?'Predicted paths · may change':(conflict?`${context} · overlap in ${conflict.time_s.toFixed(1)} s`:context)+
+      this.label.textContent=guidedForecast?(latest.trajectories?.length?'Selected risk forecast · may change':'No risk forecast selected'):(conflict?`${context} · overlap in ${conflict.time_s.toFixed(1)} s`:context)+
         (supplementary?` · ${supplementary} supplementary model candidates`:'');
       this.label.dataset.tone=conflict?'amber':'neutral';
     } else this.message=p.fresh?'Waiting for fresh measured motion…':'Motion observations unavailable';
@@ -155,7 +155,8 @@ export class PredictionView {
     const project=point=>projectPrediction(point,prediction.render_reference,camera);
     // Show ordinary, non-conflicting hypotheses too. Keep modes separate and
     // bound visual density; never invent class boxes for unclassified LiDAR.
-    const visible=(!guidedForecast&&this.visualOptions?.trajectories===false?[]:visibleModes(prediction)).slice(0,18);
+    const visible=guidedForecast?(prediction.trajectories||[]).slice(0,1):
+      (this.visualOptions?.trajectories===false?[]:visibleModes(prediction)).slice(0,18);
     const age=guidedForecast?Math.max(0,camera.timestamp-prediction.timestamp_s):0;
     const classes=new Map(prediction.tracks.filter(t=>t.semantic_evidence).map(t=>[t.id,t.class]));
     ctx.lineWidth=2;ctx.setLineDash([6,5]);
@@ -164,12 +165,13 @@ export class PredictionView {
       for(const row of remainingForecast(mode.points,age)){const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
     }
     ctx.setLineDash([]);
-    const maneuver=p.maneuver;
-    if(this.visualOptions?.trajectories!==false&&maneuver?.selected_path&&Math.abs(maneuver.timestamp_s-camera.timestamp)<=.1&&maneuver.render_reference){
+    const maneuver=guidedForecast?{selected_path:prediction.selected_path,render_reference:prediction.selected_path_reference,timestamp_s:prediction.selected_path_timestamp_s??prediction.timestamp_s}:p.maneuver;
+    const pathAge=camera.timestamp-maneuver?.timestamp_s;
+    if(this.visualOptions?.trajectories!==false&&maneuver?.selected_path&&pathAge>=0&&pathAge<=.1+1e-6&&maneuver.render_reference){
       ctx.strokeStyle='#00BA69';ctx.lineWidth=3;ctx.beginPath();let begun=false;
-      for(const row of maneuver.selected_path){const q=projectPrediction([row[1],row[2],.15],maneuver.render_reference,camera);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
+      for(const row of remainingForecast(maneuver.selected_path,pathAge)){const q=projectPrediction([row[1],row[2],.15],maneuver.render_reference,camera);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
     }
-    if(conflict&&this.visualOptions?.safety!==false) {
+    if(conflict&&!guidedForecast&&this.visualOptions?.safety!==false) {
       // Only the selected actual hypothesis; never average incompatible modes.
       ctx.strokeStyle=color;ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.beginPath();let begun=false;
       for(const row of remainingForecast(conflict.trajectory,age)) {const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}if(begun)ctx.lineTo(...q);else ctx.moveTo(...q);begun=true;}

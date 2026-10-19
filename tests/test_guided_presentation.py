@@ -56,7 +56,11 @@ class GuidedPresentationTests(unittest.TestCase):
                 self.p.video_states=Mock(side_effect=RuntimeError('encoder failed'))
                 self.assertEqual(self.p.data['status'],'RESULTS');self.tick();self.p.video_states.assert_not_called()
                 self.assertEqual(self.s.journey_comparison.data['runs'][other]['status'],'SHORTENED')
-                self.p.finish(self.p.data['id']);self.assertEqual(self.p.data['status'],'COMPLETE')
+                self.s.stop_simulator=Mock()
+                self.p.finish(self.p.data['id']);self.assertEqual(self.p.data['status'],'FINISHING')
+                self.p.video_states=Mock(return_value={m:{'status':'READY'} for m in self.p.MODES})
+                self.tick();self.assertEqual(self.p.data['status'],'COMPLETE')
+                self.s.stop_simulator.assert_called_once()
                 self.s.queue_dashboard_action.reset_mock()
 
     def test_contact_racing_next_keeps_collision_and_single_restore(self):
@@ -130,7 +134,7 @@ class GuidedPresentationTests(unittest.TestCase):
         self.provider.hold_prepared_presentation=Mock(return_value='world-start')
         self.provider.benchmark_fixture=NS(verify=lambda:{'passed':True})
         self.p.preload();identity=self.p.data['id'];seed=self.p.data['seed']
-        self.assertEqual(self.p.data['speed_kmh'],80.)
+        self.assertEqual(self.p.data['speed_kmh'],120.)
         self.p.preload();self.assertEqual(self.p.data['id'],identity)
         self.tick();self.tick();self.tick()
         self.assertEqual(self.p.data['status'],'CHOOSING')
@@ -167,7 +171,10 @@ class GuidedPresentationTests(unittest.TestCase):
     def test_new_page_replaces_attempt_and_waits_for_recording_close_without_restarting_engine(self):
         self.first();old_id=self.p.data['id'];self.p.data['page_id']='page-first'
         self.s.last_recording=NS(closed=False)
-        self.assertTrue(self.p.preload('page-second'))
+        self.assertFalse(self.p.preload('page-second'))
+        self.assertEqual(self.p.data['id'],old_id)
+        self.assertEqual(self.s.journey['status'],'RUNNING')
+        self.assertTrue(self.p.preload('page-second',replace=True))
         self.assertNotEqual(self.p.data['id'],old_id)
         self.assertEqual(self.p.data['page_id'],'page-second')
         self.assertEqual(self.s.journey_comparison.data['runs']['NORMAL']['status'],'INTERRUPTED')
@@ -189,7 +196,8 @@ class GuidedPresentationTests(unittest.TestCase):
         self.p.data['status']='CHOOSING'
         with self.assertRaisesRegex(ValueError,'fresh start'):
             self.p.choose_preloaded(identity,'NORMAL','page-second')
-        self.assertTrue(self.p.preload('page-second'))
+        self.assertFalse(self.p.preload('page-second'))
+        self.assertTrue(self.p.preload('page-second',replace=True))
         self.assertNotEqual(self.p.data['id'],identity)
         self.p.data['status']='CHOOSING'
         self.p.choose_preloaded(self.p.data['id'],'NORMAL','page-second')

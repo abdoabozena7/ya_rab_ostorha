@@ -129,6 +129,7 @@ export class SimulationClient extends SimulationProvider {
   acceptSnapshot(message) {
     if (message.type === 'error') { this.operationError = message.error; this.failedSequence=message.sequence; return; }
     if (message.type !== 'snapshot') return;
+    this.lastMessageAt=this.now();
     this.acknowledged=message.acknowledged;
     if (message.sessionId && this.sessionId && message.sessionId !== this.sessionId) this.disconnect('New native session');
     this.sessionId = message.sessionId ?? this.sessionId;
@@ -139,6 +140,7 @@ export class SimulationClient extends SimulationProvider {
     this.restarting = message.restarting ?? false;
     this.restartResult = message.restartResult ?? null;
     this.presentation = message.presentation ?? null;
+    this.drivingForecast = message.drivingForecast ?? null;
     this.simulatorStop = message.simulatorStop ?? null;
     this.simulatorStart = message.simulatorStart ?? this.simulatorStart;
     this.simulatorReset = message.simulatorReset ?? null;
@@ -235,6 +237,7 @@ export class SimulationClient extends SimulationProvider {
     this.population = this.nearbyActors = null;
     this.environment = null;
     this.safetySystem = null;
+    this.drivingForecast = null;
     this.comparisonDemo = null;
     this.comparisonV2 = null;
     this.stopDiagnostics = null;
@@ -251,6 +254,7 @@ export class SimulationClient extends SimulationProvider {
   }
 
   get fresh() { return (this.connected || this.isReplay) && this.now() - this.receivedAt < 750; }
+  get transportAlive() { return this.socket?.readyState===1&&this.now()-(this.lastMessageAt??-Infinity)<2000; }
   getVehicleState() { return this.fresh ? this.telemetry : unavailableState(); }
   async getSensorFrame(name) {
     const response = await this.fetcher(`/api/simulation/sensor?name=${encodeURIComponent(name)}`, {cache: 'no-store'});

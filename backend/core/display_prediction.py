@@ -32,7 +32,7 @@ def local_modes(modes, prediction, source_timestamp_s=None):
     return converted
 
 
-def measured_control_view(scene,reference):
+def measured_control_view(scene,reference, *, decision=None, focused=False, maneuver=None):
     """Small display view; the complete immutable control forecasts stay owned.
 
     Do not copy/rebuild/score their full graph in a competing Python thread
@@ -42,20 +42,42 @@ def measured_control_view(scene,reference):
     visible=sorted((t for t in scene.prediction['tracks'] if t.get('confirmed')),
         key=lambda t:(0 if t.get('class')=='person' and t.get('semantic_evidence') else 1,float(np.linalg.norm(t['position_m']))))[:12]
     ids={t['id'] for t in visible};counts={};trajectories=[]
-    for mode in scene.prediction.get('trajectories',scene.prediction.get('control_trajectories',())):
+    for mode in (() if focused else scene.prediction.get('trajectories',scene.prediction.get('control_trajectories',()))):
         identity=mode['track_id'];count=counts.get(identity,0)
         if identity not in ids or count>=2:continue
         counts[identity]=count+1
         trajectories.append({'track_id':identity,'source':mode.get('source','MEASURED_KINEMATIC_HYPOTHESIS'),
             'points':to_dict(mode['points'][::2])})
-    return {'version':3,'session_id':scene.session_id,'evaluation_frame':scene.observation.frame_id,
+    conflict=None
+    if focused:
+        decision=decision or {}
+        conflict=decision.get('pedestrian_prediction') if decision.get('frame_id')==scene.observation.frame_id else None
+        trajectories=[]
+        if conflict:
+            trajectories=[{'track_id':conflict['track_id'],'source':conflict.get('source','MEASURED_KINEMATIC_HYPOTHESIS'),
+                'points':to_dict(conflict['trajectory'])}]
+        else:
+            surface=decision.get('path_conflict') if decision.get('frame_id')==scene.observation.frame_id else None
+            if surface and surface.get('forecast_motion_mps'):
+                center=np.asarray(surface['center_m']);velocity=np.asarray(surface['forecast_motion_mps'])
+                grid=np.arange(26)*.1
+                trajectories=[{'track_id':'surface-conflict','source':'LIDAR_SURFACE_TRACK',
+                    'points':np.column_stack((grid,center[None,:]+grid[:,None]*velocity)).tolist()}]
+                visible=[{'id':'surface-conflict','position_m':center.tolist(),'class':'UNKNOWN','confirmed':True}]
+        ids={mode['track_id'] for mode in trajectories}
+        visible=[t for t in scene.prediction['tracks'] if t['id'] in ids] if conflict else visible if trajectories else []
+    result={'version':3,'session_id':scene.session_id,'evaluation_frame':scene.observation.frame_id,
         'timestamp_s':scene.observation.timestamp_s,'coordinate_frame':'EGO_AT_EVALUATION',
         'published_wall_s':time.monotonic(),
         'render_reference':copy.deepcopy(reference),
-        'tracks':[{key:to_dict(track[key]) for key in keys if key in track} for track in scene.prediction['tracks']],
-        'trajectories':trajectories,'conflicts':[],'used_for_applied_decision':False,
+        'tracks':[{key:to_dict(track[key]) for key in keys if key in track} for track in (visible if focused else scene.prediction['tracks'])],
+        'trajectories':trajectories,'conflicts':[],'conflict_point':to_dict(conflict),'focused':focused,'used_for_applied_decision':False,
         'display_observer_deferred':True,'source':'MEASURED_CONTROL_SCENE',
         'deferred_reason':'Supplementary display forecasts deferred while control owns the maneuver'}
+    if focused and maneuver and maneuver.get('selected_path') and maneuver.get('render_reference') and abs(maneuver.get('timestamp_s',-10)-scene.observation.timestamp_s)<=.1:
+        result.update(selected_path=to_dict(maneuver['selected_path']),selected_path_reference=to_dict(maneuver['render_reference']),
+            selected_path_timestamp_s=maneuver['timestamp_s'])
+    return result
 
 
 def score_display_prediction(prediction,ego,geometry,*,deferred=False):

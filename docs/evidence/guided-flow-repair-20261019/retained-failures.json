@@ -1,0 +1,49 @@
+{
+  "attempts": [
+    {
+      "local_log": "output\\guided-repair-native-reverse-ui-startup-race.txt",
+      "sha256": "d246c9c390059994ce231c094e0ecc1e00ea10dffd611001b67afb4af841e17e",
+      "error": "Error: apiRequestContext.get: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "local_log": "output\\guided-repair-native-reverse-refresh-failure.txt",
+      "sha256": "ca974aa2e347857f6e7aac8aba07bfdfd8d3fa12196e61d4f8b77a05b77607bf",
+      "error": "TimeoutError: locator.waitFor: Timeout 30000ms exceeded."
+    },
+    {
+      "local_log": "output\\guided-repair-ui-final.txt",
+      "sha256": "fb88d35df710648dd37c82a623f3ce77b436637e65389244f2e6e567b16f738c",
+      "error": "Error: Repeated Finish dispatches once"
+    }
+  ],
+  "resolutions": [
+    "Native browser harness tolerates expected HTTP host handoff while starting/stopping.",
+    "pagehide no longer sends stop_driving from held results; native refresh-before-Finish and refresh-after-Finish both passed in the final project-first run.",
+    "Button acknowledgement remains pending until the matching native phase or attempt advances; isolated repeated Finish test then passed."
+  ],
+  "refresh_failure_saved_pair": {
+    "pair_id": "2c2451c7643547e1864085a7caa23a05",
+    "raw_pair_sha256": "2cace3a8829d5740834f11624b37c66c62b655541f529730f9a4c47ccee67756",
+    "conditions_match": null,
+    "runs": {
+      "ROBOSPHERE": {
+        "status": "SHORTENED",
+        "reason": "guided_shortened",
+        "distance_m": 48.19656661447344,
+        "duration_s": 13.500000201165676,
+        "collisions": 0,
+        "maximum_speed_kmh": 39.69649173893105,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_100bd32f7d2942c3b9c6abe9b90d6258"
+      },
+      "NORMAL": {
+        "status": "SHORTENED",
+        "reason": "guided_shortened",
+        "distance_m": 66.22818035938978,
+        "duration_s": 18.05000026896596,
+        "collisions": 0,
+        "maximum_speed_kmh": 39.44356983518999,
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_df26ad8ebb7c4da3be65e40e54d3e582"
+      }
+    }
+  }
+}

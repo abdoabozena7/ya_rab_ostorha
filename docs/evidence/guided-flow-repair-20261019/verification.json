@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-19",
+  "base_commit": "16cca514b069b8ccb439de16283baf47fb72fa5b",
+  "software": {
+    "dashboard_build": "PASS",
+    "javascript": {
+      "passed": 172,
+      "failed": 0
+    },
+    "python": {
+      "discovered": 692,
+      "passed": 690,
+      "skipped": 2,
+      "failed": 0
+    }
+  },
+  "browser": {
+    "checks": 28,
+    "scope": "ISOLATED_UI_TRANSITIONS_WITH_RETAINED_NATIVE_MP4S",
+    "errors": []
+  },
+  "native": {
+    "normal_first_checks": 9,
+    "project_first_checks": 12,
+    "both_requested_kmh": 120,
+    "production_crossing_pairs_passed": 1,
+    "other_crossing_pairs_retained": 2,
+    "ordinary_stopped_host": {
+      "status": "STOPPED",
+      "process_exited": true,
+      "presentation_status": "COMPLETE",
+      "completed_pair_id": "a9b856ca31d4433ab783b0cb3973cd43"
+    },
+    "scope_note": "Native diagnostic source ZIPs bind each trial checkpoint. Final acknowledgement, observer/reconnected Finish and maneuver clock hardening have browser/offline verification; the native selected-risk example has no avoidance maneuver."
+  },
+  "acceptance": {
+    "lifecycle_and_saved_playback": true,
+    "scoped_crossing_and_release": true,
+    "general_driving": false,
+    "actual_120_kmh": false,
+    "real_time_20_hz": false,
+    "qualified_early_prediction_advantage_in_repeatable_crossing": false
+  },
+  "source_sha256": {
+    "backend/carla/pilot_world.py": "b4abd2b5d34e4e61bc5a170bbe140bfc5be2b7f3d21f0d894636faca246b61e5",
+    "backend/carla/stop_helper.py": "322baa8c400cdf9990615c8ba8143ec20b4fc67e62dfbcf489b735c676028376",
+    "backend/core/active_safety.py": "fdb36437e7f5b08071303a54026ad221b0ac3cad00532a4c74d52cc8b184a9d8",
+    "backend/core/control_scene.py": "eabb3824216e7d93cd9d6009348b4931358b400acc24421dae803bf8909f2af4",
+    "backend/core/display_prediction.py": "4da83c37c32e6deb16fddbf14d6e310eaa803b44508a7ef3dec06a289dc1882d",
+    "backend/core/driving_video.py": "65a11abe3e02ff02db390903cb004ae9cf6210ba39778407a7e5d359974f6002",
+    "backend/core/maneuver.py": "84900e1b916a64598b37cec53aec0c721ded1566ef10530ef0ddfd86aaea64c8",
+    "backend/core/motion_geometry.py": "434c64a6979f73576243cd3900d5058c0b5205394153122b8e457b84096e72ec",
+    "backend/core/pedestrian_anticipation.py": "e8cb4b059ac164267c08400b844856d5f13188c18ac0f96be014a03fa9a328ef",
+    "backend/core/prediction.py": "13120851cae21a364e4e65c0c1db2311bbe42518efb6b786d874dca1880083be",
+    "backend/core/presentation.py": "71ebb222390ed3bc3aea86e073ab9f86aaf4eac3fcd8d11dad5da8b6c5988ad3",
+    "backend/core/service.py": "74adac7cd309a12ce9ef5aaf3a730e55e4e075ce1ac0184544cc0abcd8ca9522",
+    "backend/core/video_prediction.py": "54249c02e6d63238af679f30217abd811210a214dd9f8c852bf1cfd7f0d10184",
+    "backend/websocket_bridge.py": "1568357a364e47b6fcb4a6577534578047f361eeee87c03298cc5ac2d4a945e1",
+    "frontend/dashboard.bundle.js": "9a5d240b428a66c0232d5f33803b3bccffc6f288891b4198c71bce91fda77d57",
+    "frontend/dashboard.js": "b53b6f1f4abb496899a896af38cad3a374514f22a2ddf07118bccb7f89ed3f7f",
+    "frontend/dashboard.styles.css": "7d521d66dc8db6e61fed8758f64be20aa8a48f038b4f7e44350784272dfbb161",
+    "frontend/mission-state.js": "41664ab25aaf4f74773f63eae8549f132bdd957139ae29df958c6c82797a388c",
+    "frontend/mission.css": "a669caf259333d9afc910acce74f51bae8899fc59d8eea9afc4bb5fe43ee1d7f",
+    "frontend/prediction-view.js": "c8a66c0eb2786b9d14b93c4ca1bef1a439af8e469c70fbf0b85ef11559bf6879",
+    "frontend/presentation-run.js": "5c62cd7302c952c1126725d73c02b8fec6d6bb31f6b07df5656b0b7efae4a599",
+    "frontend/preview-story.js": "6846e9c658c8df238741fc2004e06b652d51ca07a07d702448ba3a48a1c5e454",
+    "frontend/sequential-drive.js": "f9d10c02621590662b4a516a4cafffecaa67710c242ab4e5caddf92e0332bbb1",
+    "frontend/simulation-client.js": "44a92547d2915019e1c6f4edf7aed35db8fbc93f88d68c4576afb549483ae773",
+    "scripts/check_guided_repair_native_ui.js": "aa180b93c883317c5c99bcc1cce0c548ca81cba2ee6b13e49da06f1d7331ce35",
+    "scripts/check_guided_repair_ui.js": "27fa01b707c045535588f8783970182130f4c1f9ce52405e9239bfc8118c9291",
+    "scripts/native/validate_sensor_comparison.py": "345a4586c50766c85b5a4a5099ddaa6b6aafa25a8baf22a5bedee81190f32d61",
+    "scripts/validate_hybrid_native.py": "497a75d41fea1e4fc0f3844ad7f1d8da34d84a33a145a5ff5e8c1e5704c0103b",
+    "tests/mission-state.test.js": "b7bd105ba27fc376539fe1a051c90150c46d04a853a7538c286883c9f9543ca1",
+    "tests/prediction-view.test.js": "f73a216c1116bfd975082b9ce34491c9a6365e9f4944072ea0db3bb60bd941a4",
+    "tests/presentation-run.test.js": "e06d74ba578da192f77a2c3d9ee17fa86385dc056d86a9cced384c4d60300b01",
+    "tests/preview-story.test.js": "75b0ae7a72519d6be3a93b237abca93f5486b99fb01d88b9c2817f69f4f0bee5",
+    "tests/test_guided_flow_repair.py": "49aa22aa22dc1cf11f3a7f821be16097b43766d7ebe90718ee13545576b4d64c",
+    "tests/test_guided_presentation.py": "920ae5be5f93c580642f811aed322e69de619248432b434d470aeb48381168d8",
+    "tests/test_guided_speed.py": "0c2cdb6d677d09db51640cf1d9a3e4408217d60eb62388118a73656b2b94a693",
+    "tests/test_websocket_bridge.py": "541444e95ba6896bf1c71abf2373372665bda3986123843551e38bb5d388ebd5"
+  }
+}

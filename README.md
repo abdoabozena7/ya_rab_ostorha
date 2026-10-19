@@ -4,11 +4,22 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [19 October guided flow repair](docs/GUIDED_FLOW_REPAIR_20261019.md) keeps a
+continuous loader tied to native stages, requests 120 km/h in both drivers, and
+shows only the selected risk forecast in the main camera and exported video.
+Normal retains reactive sensor braking; **يا رب تسترها** adds predictive RULE.
+Finish waits for both videos, closes CARLA and verifies process exit while the
+comparison and playback remain available, including after refresh. A new page
+observes the current drive; a new comparison requires an explicit action. The
+report includes both native run orders, a complete physical crossing, actual
+speeds, retained failures and the remaining 5–8 Hz native throughput limit.
+
 The [19 October fair sensor comparison](docs/SENSOR_COMPARISON_20261019.md)
 restores real reactive sensor braking to autonomous Normal. Both guided arms use
 the same Mercedes and sensor rig; Robosphere adds predictive RULE. New MP4s keep
 the raw camera export and add a downloadable annotated version with measured
-forecast paths only for Robosphere. The illustration lets both cars stop safely.
+forecast paths only for Robosphere. Its original illustration let both cars stop;
+the guided flow repair above restores the requested illustrative Normal contact.
 RL is not enabled, and historical protection-off recordings keep that identity.
 
 The [19 October forecast, pedestrian tracking and storage repair](docs/FORECAST_PASSING_STORAGE_20261019.md)

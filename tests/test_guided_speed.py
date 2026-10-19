@@ -22,10 +22,10 @@ class GuidedSpeedTests(TestCase):
         p.route_state=lambda:{'remaining_m':remaining}
         return p
 
-    def test_guided_80_reaches_native_controller_and_retains_posted_limit_as_metadata(self):
+    def test_guided_120_reaches_native_controller_and_retains_posted_limit_as_metadata(self):
         p=self.provider(guided=True)
-        p.navigation_command(1,.05,80.)
-        p.navigation.set_target_speed.assert_called_once_with(80.)
+        p.navigation_command(1,.05,120.)
+        p.navigation.set_target_speed.assert_called_once_with(120.)
         self.assertEqual(p.navigation_posted_limit_kmh,30.)
         self.assertEqual(p.hybrid_speed_limit_source,'GUIDED_STRESS_TARGET')
 

@@ -80,7 +80,7 @@ def draw_forecast(image, prediction, camera, session, *, predictive):
         counts={}
         for mode in modes:
             identity=mode['track_id'];track=tracks.get(identity)
-            if not track or counts.get(identity,0)>=3 or count>=18:continue
+            if not track or counts.get(identity,0)>=1 or count>=1:continue
             counts[identity]=counts.get(identity,0)+1
             color='#FFB7B2' if track.get('class')=='person' and track.get('semantic_evidence') else '#83d9df'
             previous=None;segments=0
@@ -90,9 +90,19 @@ def draw_forecast(image, prediction, camera, session, *, predictive):
                     drawing.line([previous,projected],fill=color,width=max(2,image.width//400));segments+=1
                 previous=projected
             if segments:count+=1
+        path_age=camera['timestamp_s']-prediction.get('selected_path_timestamp_s',prediction['timestamp_s'])
+        if prediction.get('selected_path') and prediction.get('selected_path_reference') and 0<=path_age<=.1+1e-6:
+            previous=None;segments=0
+            for point in remaining_forecast(prediction['selected_path'],path_age):
+                projected=project_prediction((point[1],point[2],.15),prediction['selected_path_reference'],camera)
+                if previous is not None and projected is not None:
+                    drawing.line([previous,projected],fill='#00BA69',width=max(2,image.width//300));segments+=1
+                previous=projected
+            if segments:count+=1
     font=ImageFont.load_default(size=max(10,min(22,image.width//45)))
-    title='Robosphere | RULE + predicted paths' if predictive else 'Normal | sensors + reactive braking'
-    subtitle=('Predicted paths - may change | coral: people | cyan: other paths' if count
+    title='Ya Rab Ostorha | predictive driving' if predictive else 'Normal | sensors + reactive braking'
+    subtitle=('Selected risk forecast - may change' if count
+              else 'No risk forecast selected' if predictive and forecast_matches(prediction,camera,session) and prediction.get('focused')
               else 'Forecast unavailable for this frame' if predictive else 'Project motion prediction: off')
     drawing.rectangle((0,0,image.width,max(38,image.height//9)),fill='#172932')
     drawing.text((8,4),title,font=font,fill='white')
@@ -104,7 +114,7 @@ def export_annotated(root, frames, metadata, encode):
     profile=metadata['config']['driver_profile'];predictive=profile['motion_prediction_used']
     session=metadata['config'].get('session_id')
     predictions=iter(video_predictions(root));upcoming=next(predictions,None);current=None
-    drawn_frames=0;total_paths=0
+    drawn_frames=0;total_paths=0;available_frames=0
     with tempfile.TemporaryDirectory(prefix='video-overlay-',dir=root) as temporary:
         derived=[]
         for index,camera in enumerate(frames):
@@ -113,6 +123,7 @@ def export_annotated(root, frames, metadata, encode):
             with Image.open(root/camera['asset']['path']) as original:
                 image=original.convert('RGB')
             count=draw_forecast(image,current,camera,session,predictive=predictive)
+            available_frames+=int(forecast_matches(current,camera,session))
             drawn_frames+=int(count>0);total_paths+=count
             target=Path(temporary)/f'{index:08d}.jpg';image.save(target,quality=95)
             derived.append({**camera,'asset':{'path':str(target.relative_to(root))}})
@@ -122,4 +133,6 @@ def export_annotated(root, frames, metadata, encode):
             'source':'RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY',
             'overlay':{'status':'READY','predictive':predictive,'forecast_frames':drawn_frames,
                        'rendered_paths':total_paths,'maximum_forecast_age_s':.75,
-                       'missing_forecast_frames':len(frames)-drawn_frames if predictive else 0}}
+                       'available_forecast_frames':available_frames if predictive else 0,
+                       'no_selected_risk_frames':available_frames-drawn_frames if predictive else 0,
+                       'missing_forecast_frames':len(frames)-available_frames if predictive else 0}}

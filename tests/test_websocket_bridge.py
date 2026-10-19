@@ -9,6 +9,24 @@ from tests.core_packets import packet
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
+    def test_finish_from_an_observer_and_stopped_reconnect_is_idempotent_without_taking_control(self):
+        import tempfile,threading
+        from unittest.mock import Mock
+        from backend.websocket_bridge import WebSocketBridge
+        service=SimulationService(None);service.require_connected=Mock(side_effect=ValueError('Native connection is closed'))
+        bridge=WebSocketBridge.__new__(WebSocketBridge);bridge.service=service;bridge.ownership_lock=threading.RLock()
+        owner,observer=object(),object();bridge.owner=owner
+        with tempfile.TemporaryDirectory() as directory:
+            service.presentation.directory=Path(directory)
+            service.presentation.data.update(id='saved',status='RESULTS',guided=True,pair_id='pair')
+            command={'type':'presentation','value':{'operation':'FINISH','id':'saved'}}
+            self.assertTrue(bridge.process_message(observer,command));self.assertTrue(bridge.process_message(observer,command))
+            self.assertEqual(service.presentation.data['status'],'FINISHING');self.assertIs(bridge.owner,owner)
+            service.presentation.data['status']='COMPLETE'
+            self.assertTrue(bridge.process_message(observer,command));service.require_connected.assert_not_called()
+            with self.assertRaisesRegex(ValueError,'another session'):
+                bridge.process_message(observer,{'type':'presentation','value':{'operation':'FINISH','id':'old'}})
+
     def test_page_scene_handoff_has_one_owner_and_rejects_an_old_pages_start(self):
         from types import SimpleNamespace
         from unittest.mock import Mock
@@ -24,6 +42,8 @@ class WebSocketTests(unittest.TestCase):
                 bridge.process_message(first,{'type':'presentation','value':{'operation':'PRELOAD','page_id':'page-first'}})
                 old_id=service.presentation.data['id']
                 bridge.process_message(second,{'type':'presentation','value':{'operation':'PRELOAD','page_id':'page-second'}})
+                self.assertIs(bridge.owner,first);self.assertEqual(service.presentation.data['id'],old_id)
+                bridge.process_message(second,{'type':'presentation','value':{'operation':'PRELOAD','page_id':'page-second','replace':True}})
                 self.assertIs(bridge.owner,second);self.assertNotEqual(service.presentation.data['id'],old_id)
                 service.presentation.data['status']='CHOOSING'
                 start={'operation':'START_GUIDED','prepared_id':service.presentation.data['id'],'first_mode':'NORMAL'}

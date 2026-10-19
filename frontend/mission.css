@@ -55,8 +55,9 @@ body.light-cockpit.mission-experience #drivePrimaryAction:hover:enabled{backgrou
 body.light-cockpit.mission-experience #drivePrimaryAction{position:relative;isolation:isolate;overflow:hidden;transition:transform 240ms ease,box-shadow 240ms ease}
 body.light-cockpit.mission-experience #drivePrimaryAction:disabled{opacity:1;cursor:not-allowed}
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]{background:#fff;box-shadow:inset 0 0 0 1px #c9b6b0}
-body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{content:'';position:absolute;top:-30%;bottom:-30%;left:-14px;width:calc(26px + var(--load-step,0)*22%);z-index:-1;background:var(--primary);border-radius:0 48% 42% 0/0 52% 46% 0;transform-origin:left center;animation:mission-load-fill 3s ease-in-out infinite;transition:width 900ms ease}
-body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after{visibility:hidden}
+body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--primary)}
+body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after{content:'';visibility:visible;background:none;border:2px solid #e7d6d1;border-top-color:#8a4c47;border-radius:50%;width:16px;height:16px;margin-left:14px;animation:mission-spinner 850ms linear infinite}
+@keyframes mission-spinner{to{transform:rotate(360deg)}}
 @keyframes mission-load-fill{0%,100%{transform:scaleX(.75);border-radius:0 44% 58% 0/0 60% 44% 0}50%{transform:scaleX(1);border-radius:0 60% 36% 0/0 42% 62% 0}}
 .mission-experience #missionFreeGPU{background:#ffffffb3;padding:12px 22px;font-size:14px}
 .mission-copy #missionNextHint{font-size:12px;margin:0;color:var(--muted)}
@@ -101,6 +102,16 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
 #missionOutcomes h3{font-size:26px;font-weight:450;letter-spacing:-.025em;margin:0 0 12px}
 #missionOutcomes p{font-size:14px;color:#655e59;line-height:1.6}#missionOutcomes>p{flex:0 0 100%;margin:0}
 #missionOutcomes dl{margin:0}#missionOutcomes dl>div{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid #29252414;font-size:14px}#missionOutcomes dt{color:#655e59}#missionOutcomes dd{margin:0;font-variant-numeric:tabular-nums}
+#missionOutcomes #presentationResults{width:100%;min-width:0;margin:0;padding:0;background:transparent;border:0}
+#missionOutcomes .presentation-videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#missionOutcomes .presentation-videos article{min-width:0;padding:20px;border-radius:24px}
+.recorded-video{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:16px;background:#222321;display:grid;place-items:center;margin-bottom:18px}
+.recorded-video video{display:block;width:100%;height:100%;object-fit:contain;position:absolute;inset:0}
+.sequential-drive #presentationResults video{pointer-events:auto}
+.recorded-video .video-preparing{position:relative;margin:0;padding:20px;text-align:center;color:#f6f5f1!important;background:#222321;z-index:1}
+.mission-experience #missionDetail{min-height:3.2em}
+@media(max-width:700px){#missionOutcomes .presentation-videos{grid-template-columns:minmax(0,1fr)}#missionOutcomes .presentation-videos article{min-width:0;padding:16px}}
+@media(prefers-reduced-motion:reduce){body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after{animation:none}}
 #missionExperience:is([data-screen=loading],[data-screen=releasing],[data-screen=fault],[data-screen=emergency]) .mission-copy{margin:clamp(40px,12svh,150px) auto;max-width:780px;width:100%;padding:0}
 /* Keep the complete native image visible; no decorative layer is a sensor feed. */
 body.light-cockpit.mission-experience[data-ui=guided] #cameraCard:not(.camera-expanded){display:block!important;min-height:0;padding:0;border:0;border-radius:32px;background:var(--camera-bg);box-shadow:var(--shadow-soft)}

@@ -3,7 +3,7 @@ import {safetyNotice} from './cockpit-state.js';
 import {driveState} from './drive-state.js';
 import {recordingVideoRoot,selectPlaybackLeader,benchmarkSpeedText,demoFailure} from './demo-drive.js';
 import {metricValue} from './journey-comparison.js';
-import {stressSummary} from './mission-state.js';
+import {stressSummary,modeLabel} from './mission-state.js';
 import {recordedDriverDescription,preferredVideo} from './driver-profile.js';
 
 const $=id=>document.getElementById(id);
@@ -29,7 +29,7 @@ export function presentationOutcome(run, failure){
   const fault=failure?.fault||run.stop_diagnostics?.runtime_fault;
   const faultText=fault?.exception_type==='KeyError'?'A required record was lost: '+fault.message: fault?.message;
   const reason=run.reason==='collision'?(faultText?demoFailure(run.reason)+' Additional runtime error: '+faultText:run.reason):faultText||(run.reason==='guided_shortened'?'Stopped early by your choice':run.reason);
-  return (run.status==='ARRIVED'?'Destination reached':run.status==='SHORTENED'?'Shortened attempt':run.status)+
+  return ({ARRIVED:'Destination reached',SHORTENED:'Stopped by your choice',INTERRUPTED:'Attempt stopped',ERROR:'Drive needs attention',COLLISION:'Contact recorded',RUNNING:'Recording',TIMEOUT:'Time limit reached'}[run.status]||'Saved attempt')+
     (reason&&reason!=='destination_reached'?' · '+(fault?reason:demoFailure(reason)):'')+
     (fault?.injected_validation_fault?' · Injected validation fault; excluded from driving acceptance.':'');
 }
@@ -52,10 +52,10 @@ export function installPresentationRun(p,tools,clearControls){
   panel.append(custom);
   $('cameraCard').before(panel);
   const results=document.createElement('section');results.id='presentationResults';results.hidden=true;
-  results.innerHTML='<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Robosphere & Normal</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Each recording identifies its actual controller and sensor protection. An intervention is not a proven prevented collision. Requested speed and measured speed are reported separately.</p></section>';
+  results.innerHTML='<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Normal &amp; يا رب تسترها</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Requested speed and measured speed are reported separately. Outcomes come from each recording.</p></section>';
   $('resultsPhase').querySelector('.analysis-heading').after(results);
-  const items=['ROBOSPHERE','NORMAL'].map(mode=>{
-    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · predictive RULE':'Normal · reactive sensor braking')+'</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><p class="presentation-stress"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
+  const items=['NORMAL','ROBOSPHERE'].map(mode=>{
+    const box=document.createElement('article');box.dataset.mode=mode;box.innerHTML='<div class="recorded-video"><video muted controls playsinline preload="metadata"></video><p class="video-preparing" role="status">Preparing this video…</p></div><h3>'+modeLabel(mode)+'</h3><p class="presentation-driver"></p><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><a class="video-download" hidden download>Download video</a><p class="presentation-stress"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
     results.querySelector('.presentation-videos').append(box);
     return {mode,box,video:box.querySelector('video'),root:null,status:'PENDING'};
   });
@@ -65,9 +65,9 @@ export function installPresentationRun(p,tools,clearControls){
   let pendingStart=false,pendingAt=0,lastPoll=0,polling=false,lastPhase='',autoplayId=null,leader=null,linked=false,acknowledged=null;
   const play=async()=>{
     if(!items.every(i=>i.status==='READY'))return;
-    p.presentationPlayback=true;showWorkspace('results');
+    p.presentationPlayback=true;if(!p.guidedExperience||p.reviewedComparison)showWorkspace('results');
     linked=true;leader=selectPlaybackLeader(items);
-    for(const i of items)i.video.currentTime=0;
+    for(const i of items){if(i.video.error)i.video.load();i.video.currentTime=0;}
     const attempts=await Promise.allSettled(items.map(i=>i.video.play()));
     const blocked=attempts.some(r=>r.status==='rejected');
     $('presentationPlaybackStatus').textContent=blocked?'Playback was blocked. Select Replay both to continue.':'Playing both recordings on the same simulation clock.';
@@ -136,7 +136,8 @@ export function installPresentationRun(p,tools,clearControls){
       $('presentationMatch').textContent=pair.conditions_match?'Verified matching initial conditions · reactive traffic can diverge':'Initial conditions pending or unverified';
       $('presentationSummary').textContent=presentationSummary(pair);
       for(const item of items){const run=pair.runs?.[item.mode];
-        item.box.querySelector('h3').textContent=(item.mode==='NORMAL'?'Normal · ':'Robosphere · ')+recordedDriverDescription(run);
+        item.box.querySelector('h3').textContent=modeLabel(item.mode);
+        item.box.querySelector('.presentation-driver').textContent=recordedDriverDescription(run);
         item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,!archived&&data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
         item.box.querySelector('.presentation-stress').textContent=stressSummary(run?.stress_audit);
@@ -145,10 +146,13 @@ export function installPresentationRun(p,tools,clearControls){
         const events=run?.events||[],key=run?.id+':'+events.length;
         if(item.eventsKey!==key){item.eventsKey=key;const list=item.box.querySelector('ol');list.replaceChildren();for(const event of events.slice(-12)){const li=document.createElement('li');li.textContent=event.title+' · '+event.detail;list.append(li);}}
         const root=recordingVideoRoot(run?.recording);
-        if(item.root!==root){item.video.pause();item.root=root;item.status='PENDING';item.video.removeAttribute('src');}
+        if(item.root!==root){item.video.pause();item.root=root;item.status='PENDING';item.video.removeAttribute('src');
+          const download=item.box.querySelector('.video-download');download.hidden=true;download.removeAttribute('href');}
+        const placeholder=item.box.querySelector('.video-preparing');placeholder.hidden=item.status==='READY';
+        placeholder.textContent=item.status==='ERROR'?'Video export needs attention. The recorded outcome is saved.':item.status==='ENCODING_ANNOTATION'?'Adding the selected forecast…':'Preparing this video…';
       }
       if(!polling&&performance.now()-lastPoll>1500){lastPoll=performance.now();polling=true;
-        Promise.allSettled(items.filter(i=>i.root&&i.status!=='READY').map(async i=>{const root=i.root,response=await fetch(root+'video-status.json',{cache:'no-store'});if(!response.ok)return;const v=await response.json();if(i.root!==root)return;const filename=preferredVideo(v);i.status=filename?'READY':v.status==='READY'?'WAITING_FOR_ANNOTATION':v.status;i.duration_s=v.duration_s;if(filename)i.video.src=root+filename;if(v.status==='ERROR')$('presentationPlaybackStatus').textContent=v.error||'Video export failed; the saved outcome remains available.';})).finally(()=>{polling=false;});
+        Promise.allSettled(items.filter(i=>i.root&&i.status!=='READY').map(async i=>{const root=i.root,response=await fetch(root+'video-status.json',{cache:'no-store',signal:AbortSignal.timeout(5000)});if(!response.ok)return;const v=await response.json();if(i.root!==root)return;const filename=preferredVideo(v);i.status=filename?'READY':v.status==='READY'?'WAITING_FOR_ANNOTATION':v.status;i.duration_s=v.duration_s;if(filename){i.video.src=root+filename;const download=i.box.querySelector('.video-download');download.href=root+filename;download.hidden=false;}if(v.status==='ERROR')$('presentationPlaybackStatus').textContent=v.error||'Video export failed; the saved outcome remains available.';})).finally(()=>{polling=false;});
       }
       $('presentationReplay').disabled=!items.every(i=>i.status==='READY');
       if(status==='PLAYBACK'&&archived)p.reviewedComparison=null;

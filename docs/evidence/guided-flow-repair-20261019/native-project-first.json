@@ -1,0 +1,47 @@
+{
+  "checks": [
+    "Opening another native page preserves the active drive",
+    "Both native drives complete their requested recording interval without a technical interruption",
+    "Both native arms recorded a requested 120 km/h",
+    "Both arms retain sensor braking",
+    "Only the project arm uses motion prediction",
+    "Refreshing results before Finish preserves the comparison",
+    "Native result videos stay mounted after Finish",
+    "Finish verifies CARLA process exit",
+    "Stopped backend retains the completed comparison reference",
+    "Both native recordings play after CARLA exits",
+    "Refresh restores both playable recordings with CARLA stopped",
+    "Native browser has no JavaScript exceptions"
+  ],
+  "pair_id": "a9b856ca31d4433ab783b0cb3973cd43",
+  "conditions_match": true,
+  "finish_export_statuses": {
+    "ROBOSPHERE": "READY",
+    "NORMAL": "ENCODING"
+  },
+  "errors": [],
+  "runs": {
+    "ROBOSPHERE": {
+      "status": "SHORTENED",
+      "reason": "guided_shortened",
+      "distance_m": 65.28213565156918,
+      "duration_s": 9.750000145286322,
+      "collisions": 0,
+      "maximum_speed_kmh": 47.015774945625914,
+      "mean_speed_kmh": 24.023651763313758,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3872a8f1502c4fc6a3afee867aea2d2c",
+      "median_native_hz": 5.715387540359256
+    },
+    "NORMAL": {
+      "status": "SHORTENED",
+      "reason": "guided_shortened",
+      "distance_m": 67.41274001717518,
+      "duration_s": 11.150000166147947,
+      "collisions": 0,
+      "maximum_speed_kmh": 46.422815331417205,
+      "mean_speed_kmh": 21.691403066503174,
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_283ceca434d14b3b975a20d054d3a9ed",
+      "median_native_hz": 6.298850757084926
+    }
+  }
+}

@@ -19,6 +19,9 @@ def stopped_service(ticket,dispatch,start_dispatch=None,reset_dispatch=None):
         def __init__(self):
             super().__init__(None);self.simulator_stop=ticket['result']
             self.simulator_start=ticket.get('startup',{'status':'IDLE'})
+            saved=ticket['result'].get('presentation')
+            if saved and saved.get('finish_requested') and saved.get('completed_pair_id'):
+                self.presentation.data=saved
         def can_stop_simulator(self):return True
         def can_start_simulation(self):return callable(start_dispatch)
         def can_reset_simulation(self):return callable(reset_dispatch)

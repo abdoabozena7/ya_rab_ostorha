@@ -56,6 +56,13 @@ class WebSocketBridge:
                 # dashboard too; it never grants that page vehicle control.
                 self.service.stop_simulator()
                 return True
+            if kind=='presentation' and isinstance(message.get('value'),dict) and message['value'].get('operation')=='FINISH':
+                if getattr(self.service,'is_replay',False):raise ValueError('Replay cannot finish a native simulator')
+                # Finish is an explicit global close of this saved comparison.
+                # Identity/phase checks reject active or unrelated attempts;
+                # a reconnect may safely repeat it after native shutdown.
+                self.service.presentation.finish(message['value'].get('id'))
+                return True
             if kind=='emergency_stop':
                 # An explicit emergency request must also work before this
                 # page starts its first drive. Transfer only after the stop.
@@ -75,13 +82,13 @@ class WebSocketBridge:
                     if presentation_start:
                         value=message['value']
                         if value.get('operation')=='PRELOAD':
-                            if self.service.presentation.preload(value.get('page_id')) is False:return True
+                            if self.service.presentation.preload(value.get('page_id'),replace=value.get('replace') is True) is False:return True
                         elif value.get('operation')=='START_GUIDED' and value.get('prepared_id'):
                             self.service.presentation.choose_preloaded(value['prepared_id'],value.get('first_mode'),value.get('page_id'))
                         else:
                             options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','DENSE_CHAOS')}
                                 if value.get('operation')=='START_GUIDED' else {})
-                            self.service.presentation.start(value.get('speed_kmh',80 if options.get('guided') else 50),seed=value.get('seed'),**options)
+                            self.service.presentation.start(value.get('speed_kmh',120 if options.get('guided') else 50),seed=value.get('seed'),**options)
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}
@@ -221,8 +228,8 @@ class WebSocketBridge:
                 self.sockets.discard(socket)
                 if self.owner is socket:
                     presentation=getattr(self.service,'presentation',None)
-                    held_choice=bool(presentation and presentation.data.get('status')=='CHOOSING' and
-                        presentation.data.get('awaiting_choice'))
+                    held_choice=bool(presentation and (presentation.data.get('status') in ('AWAITING_NEXT','RESULTS','FINISHING') or
+                        presentation.data.get('status')=='CHOOSING' and presentation.data.get('awaiting_choice')))
                     if hasattr(self.service, 'journey') and (self.service.journey.get('status') in ('RUNNING', 'STARTING') or
                             presentation and presentation.busy and not held_choice):
                         try: self.service.stop_driving('dashboard_disconnected')

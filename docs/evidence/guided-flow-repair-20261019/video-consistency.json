@@ -1,0 +1,221 @@
+{
+  "run_2a15eea5b71d448c824cca3e4723e212": {
+    "mode": "NORMAL",
+    "video": {
+      "status": "READY",
+      "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+      "clock": "SIMULATION_TIME",
+      "frames": 368,
+      "first_timestamp_s": 2806.5128040909767,
+      "last_timestamp_s": 2824.862804364413,
+      "duration_s": 18.350000273436308,
+      "video": "driving.mp4",
+      "sha256": "97b7192ca526bb65f4d17ac6e8d0d21d0932b7ee9d15b55658705c743024f7e7",
+      "frame_index": "telemetry/video-frames.jsonl",
+      "clock_zero_timestamp_s": 2806.5128040909767,
+      "alignment_source": "ADMITTED_JOURNEY_START",
+      "maximum_frame_gap_s": 0.05000000074505806,
+      "variants": {
+        "raw": {
+          "status": "READY",
+          "video": "driving.mp4",
+          "sha256": "97b7192ca526bb65f4d17ac6e8d0d21d0932b7ee9d15b55658705c743024f7e7",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+        },
+        "annotated": {
+          "status": "READY",
+          "video": "driving-annotated.mp4",
+          "sha256": "00edeacab8af1e824199285a29123f5c7224bbe9a1ddafaf8bf8ba64b32036bd",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+          "overlay": {
+            "status": "READY",
+            "predictive": false,
+            "forecast_frames": 0,
+            "rendered_paths": 0,
+            "maximum_forecast_age_s": 0.75,
+            "missing_forecast_frames": 0
+          }
+        }
+      },
+      "annotation_required": true,
+      "preferred_video": "driving-annotated.mp4"
+    },
+    "risk_trajectory_checks": [],
+    "telemetry_losslessly_archived": true,
+    "raw_checksum_verified": true,
+    "annotated_checksum_verified": true
+  },
+  "run_34081731c9684f1897aebd4e616c123a": {
+    "mode": "ROBOSPHERE",
+    "video": {
+      "status": "READY",
+      "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+      "clock": "SIMULATION_TIME",
+      "frames": 247,
+      "first_timestamp_s": 2826.0128043815494,
+      "last_timestamp_s": 2838.3128045648336,
+      "duration_s": 12.300000183284283,
+      "video": "driving.mp4",
+      "sha256": "50420ba35d89aaa53349e3b473c6895b953484986e685318ba2945e2918cb463",
+      "frame_index": "telemetry/video-frames.jsonl",
+      "clock_zero_timestamp_s": 2826.0128043815494,
+      "alignment_source": "ADMITTED_JOURNEY_START",
+      "maximum_frame_gap_s": 0.05000000074505806,
+      "variants": {
+        "raw": {
+          "status": "READY",
+          "video": "driving.mp4",
+          "sha256": "50420ba35d89aaa53349e3b473c6895b953484986e685318ba2945e2918cb463",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+        },
+        "annotated": {
+          "status": "READY",
+          "video": "driving-annotated.mp4",
+          "sha256": "4d21d167242324fb7e612879043862441118cd5c4d008185d54e64e973faa837",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+          "overlay": {
+            "status": "READY",
+            "predictive": true,
+            "forecast_frames": 0,
+            "rendered_paths": 0,
+            "maximum_forecast_age_s": 0.75,
+            "missing_forecast_frames": 247
+          }
+        }
+      },
+      "annotation_required": true,
+      "preferred_video": "driving-annotated.mp4"
+    },
+    "risk_trajectory_checks": [],
+    "telemetry_losslessly_archived": true,
+    "raw_checksum_verified": true,
+    "annotated_checksum_verified": true
+  },
+  "run_3872a8f1502c4fc6a3afee867aea2d2c": {
+    "mode": "ROBOSPHERE",
+    "video": {
+      "status": "READY",
+      "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+      "clock": "SIMULATION_TIME",
+      "frames": 198,
+      "first_timestamp_s": 106.8147889636457,
+      "last_timestamp_s": 116.66478911042213,
+      "duration_s": 9.850000146776438,
+      "video": "driving.mp4",
+      "sha256": "afb6b576f287a291b0c76a779581870f9c099def00908caf16eb13cf8794a762",
+      "frame_index": "telemetry/video-frames.jsonl",
+      "clock_zero_timestamp_s": 106.8147889636457,
+      "alignment_source": "ADMITTED_JOURNEY_START",
+      "maximum_frame_gap_s": 0.05000000074505806,
+      "variants": {
+        "raw": {
+          "status": "READY",
+          "video": "driving.mp4",
+          "sha256": "afb6b576f287a291b0c76a779581870f9c099def00908caf16eb13cf8794a762",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+        },
+        "annotated": {
+          "status": "READY",
+          "video": "driving-annotated.mp4",
+          "sha256": "6a1f810606a8b7c11eac3098b0dc01c39091737f77be7ddcb199bcfc35e5e88f",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+          "overlay": {
+            "status": "READY",
+            "predictive": true,
+            "forecast_frames": 6,
+            "rendered_paths": 6,
+            "maximum_forecast_age_s": 0.75,
+            "available_forecast_frames": 198,
+            "no_selected_risk_frames": 192,
+            "missing_forecast_frames": 0
+          }
+        }
+      },
+      "annotation_required": true,
+      "preferred_video": "driving-annotated.mp4"
+    },
+    "risk_trajectory_checks": [
+      {
+        "frame": 2225,
+        "matches_applied_risk_trajectory": true,
+        "risk_paths": 1
+      },
+      {
+        "frame": 2226,
+        "matches_applied_risk_trajectory": true,
+        "risk_paths": 1
+      },
+      {
+        "frame": 2227,
+        "matches_applied_risk_trajectory": true,
+        "risk_paths": 1
+      },
+      {
+        "frame": 2228,
+        "matches_applied_risk_trajectory": true,
+        "risk_paths": 1
+      },
+      {
+        "frame": 2229,
+        "matches_applied_risk_trajectory": true,
+        "risk_paths": 1
+      },
+      {
+        "frame": 2230,
+        "matches_applied_risk_trajectory": true,
+        "risk_paths": 1
+      }
+    ],
+    "telemetry_losslessly_archived": false,
+    "raw_checksum_verified": true,
+    "annotated_checksum_verified": true
+  },
+  "run_283ceca434d14b3b975a20d054d3a9ed": {
+    "mode": "NORMAL",
+    "video": {
+      "status": "READY",
+      "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+      "clock": "SIMULATION_TIME",
+      "frames": 226,
+      "first_timestamp_s": 117.61478912457824,
+      "last_timestamp_s": 128.8647892922163,
+      "duration_s": 11.250000167638063,
+      "video": "driving.mp4",
+      "sha256": "d1a128a65e325745791ec07872ac089e77157504723f717e1eb473c8b98cd28b",
+      "frame_index": "telemetry/video-frames.jsonl",
+      "clock_zero_timestamp_s": 117.61478912457824,
+      "alignment_source": "ADMITTED_JOURNEY_START",
+      "maximum_frame_gap_s": 0.05000000074505806,
+      "variants": {
+        "raw": {
+          "status": "READY",
+          "video": "driving.mp4",
+          "sha256": "d1a128a65e325745791ec07872ac089e77157504723f717e1eb473c8b98cd28b",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+        },
+        "annotated": {
+          "status": "READY",
+          "video": "driving-annotated.mp4",
+          "sha256": "cef3f988717ffb06305e55b05d715ec4dfee0175d5f4c06222faa3f0d12ed104",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+          "overlay": {
+            "status": "READY",
+            "predictive": false,
+            "forecast_frames": 0,
+            "rendered_paths": 0,
+            "maximum_forecast_age_s": 0.75,
+            "available_forecast_frames": 0,
+            "no_selected_risk_frames": 0,
+            "missing_forecast_frames": 0
+          }
+        }
+      },
+      "annotation_required": true,
+      "preferred_video": "driving-annotated.mp4"
+    },
+    "risk_trajectory_checks": [],
+    "telemetry_losslessly_archived": false,
+    "raw_checksum_verified": true,
+    "annotated_checksum_verified": true
+  }
+}

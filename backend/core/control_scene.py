@@ -32,6 +32,7 @@ class MeasuredSpace:
         self.build_ms = None
         self.queries = 0
         self.execution_proofs=OrderedDict();self.proof_lock=threading.Lock();self.proof_cache_hits=0
+        self.forward_assessments={}
 
     def get_execution_proof(self,key):
         with self.proof_lock:
@@ -53,7 +54,8 @@ class MeasuredSpace:
                 sources = self.measured_surfaces if self.measured_surfaces is not None else depth_surfaces(self.observation, lambda a: self.depth_assets[a.path])
                 speed=self.observation.ego.speed_mps
                 scope=max(6.,self.geometry.front_m+speed*.45+speed**2/6.+3.)
-                self._map = ObservedSpace(self.points, self.geometry, measured_surfaces=sources,scope_m=scope)
+                self._map = ObservedSpace(self.points, self.geometry, measured_surfaces=sources,scope_m=scope,
+                    limit_m=min(100.,scope+self.geometry.front_m+2.))
                 self.build_ms = (time.perf_counter()-began)*1000
         self.queries += 1
         return {**self._map.certificate(path), 'measurement_frame': self.observation.frame_id,

@@ -6,7 +6,7 @@ import {presentationSummary,presentationStep,presentationTrafficText,presentatio
 test('a recovered presentation retains failure and injection identity under its video',()=>{
   const result=presentationOutcome({status:'ERROR',reason:'runtime_failure'},
     {fault:{message:'Current synchronized sensor scene unavailable for one second',injected_validation_fault:true}});
-  assert.match(result,/ERROR/);
+  assert.match(result,/needs attention/);
   assert.match(result,/synchronized sensor scene unavailable/);
   assert.match(result,/Injected validation fault; excluded/);
   const collision=presentationOutcome({status:'COLLISION',reason:'collision',stop_diagnostics:{runtime_fault:{exception_type:'KeyError',message:'1226'}}});
@@ -42,7 +42,12 @@ test('presentation results never infer superiority from a failed or mismatched p
   assert.equal(presentationStep('COMPLETE'),4);
 });
 
-test('shipped dashboard interface contains no Arabic UI strings',()=>{
+test('the project display name is Arabic while surrounding interface remains English',()=>{
   const files=['index.html',...readdirSync('frontend').filter(n=>n.endsWith('.js')).map(n=>'frontend/'+n)];
-  for(const file of files)assert.doesNotMatch(readFileSync(file,'utf8'),/[\u0600-\u06ff]/,file);
+  for(const file of files)assert.doesNotMatch(readFileSync(file,'utf8').replaceAll('يا رب تسترها',''),/[\u0600-\u06ff]/,file);
+});
+
+test('internal interruption codes are translated while real failure reasons remain visible',()=>{
+  const result=presentationOutcome({status:'INTERRUPTED',reason:'dashboard_disconnected'});
+  assert.doesNotMatch(result,/INTERRUPTED/);assert.match(result,/Attempt stopped/);assert.match(result,/connection lost/);
 });

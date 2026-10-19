@@ -82,6 +82,9 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     The recorded native ground plane verifies this projection. Only level forward cameras
     certify road support; other camera views retain fixed forward LiDAR.
     """
+    cache=getattr(measured_space,'forward_assessments',None)
+    key=(id(config),id(geometry),steering,np.asarray(forward_path).tobytes() if forward_path is not None else None)
+    if cache is not None and key in cache:return cache[key]
     channels = {s.kind: s for s in observation.channels}
     radar = next((s for s in observation.channels if s.kind==SensorKind.RADAR and s.sensor_id=='radar'),channels[SensorKind.RADAR])
     validate_radar_calibration(radar.calibration)
@@ -201,7 +204,9 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     if measured_space is None:
         measured_space=ObservedSpace(lidar_points[:,:3]+_mount(lidar)[0],g,
             measured_surfaces=depth_surfaces(observation,asset_reader) if depth_observed else ())
-    distance=np.arange(0.,min(45.,config.maximum_observed_range_m)+.25,.5)
+    speed=abs(observation.ego.speed_mps);teacher=config.teacher
+    required=teacher.minimum_clearance_m+speed*teacher.reaction_time_s+speed**2/(2*teacher.assumed_deceleration_mps2)
+    distance=np.arange(0.,min(max(45.,required+teacher.release_hysteresis_m+front+5.),config.maximum_observed_range_m)+.25,.5)
     if forward_path is not None:
         p=np.asarray(forward_path)
         arc=np.r_[0.,np.cumsum(np.linalg.norm(np.diff(p[:,1:3],axis=0),axis=1))]
@@ -216,7 +221,7 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
         yy=(1-np.cos(yaw))/curvature if abs(curvature)>1e-5 else np.zeros_like(distance)
         probe=np.column_stack((distance,xx,yy,yaw))
     clear_range=measured_space.continuous_coverage(probe)
-    return {'target_range_m': target[0] if target else None, 'target_source': target[1] if target else None,
+    result={'target_range_m': target[0] if target else None, 'target_source': target[1] if target else None,
         'target_support_points': target[3] if target else 0,
         'closing_speed_mps': target[2] if target else None, 'radar_range_m': float(points[radar_index, 0]) if radar_index is not None else None,
         'radar_closing_speed_mps': max(0., -float(points[radar_index, 3])) if radar_index is not None else None,
@@ -224,6 +229,10 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
         'lidar_observed': lidar_observed, 'depth_observed': depth_observed,
         'teacher_observation': teacher_observation,'lidar_surfaces':lidar_points[:,:3]+_mount(lidar)[0],
         'lidar_ground_plane':measured_space.ground_plane}
+    if cache is not None:
+        if len(cache)>=8:cache.clear()
+        cache[key]=result
+    return result
 
 
 class RuntimeSafetyFeasibilityValidator:

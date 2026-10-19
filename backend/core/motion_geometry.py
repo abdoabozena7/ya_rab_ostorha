@@ -33,16 +33,17 @@ class VehicleGeometry:
     def snapshot(self): return asdict(self)
 
 
-def integrate(speed, steering, acceleration=0., geometry=None, *, cap_mps=None):
+def integrate(speed, steering, acceleration=0., geometry=None, *, cap_mps=None,grid=GRID):
     g = geometry or VehicleGeometry()
-    v = np.maximum(0., float(speed)+float(acceleration)*GRID)
+    grid=np.asarray(grid,float)
+    v = np.maximum(0., float(speed)+float(acceleration)*grid)
     if cap_mps is not None: v = np.minimum(v, max(float(speed), float(cap_mps)))
-    ds = (v[:-1]+v[1:])*.05
+    ds = (v[:-1]+v[1:])*.5*np.diff(grid)
     arc = np.r_[0., np.cumsum(ds)]
     yaw = arc*math.tan(float(steering)*g.max_steer_rad)/g.wheelbase_m
     mid = (yaw[:-1]+yaw[1:])*.5
     xy = np.vstack((np.zeros(2), np.cumsum(ds[:,None]*np.column_stack((np.cos(mid),np.sin(mid))),axis=0)))
-    return np.column_stack((GRID,xy,yaw))
+    return np.column_stack((grid,xy,yaw))
 
 
 def path_coordinates(x, y, path):

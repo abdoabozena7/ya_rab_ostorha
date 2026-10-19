@@ -538,6 +538,12 @@ class SimulationService:
             elif getattr(self,'previous_stop_event',None): self.journey_comparison.event('Driving resumed', stamp, 'Automatic continuation')
         self.previous_stop_event = event_reason
         prediction = safety.get('prediction')
+        if (self.journey.get('driving_mode')=='ROBOSPHERE' and self.journey.get('status')=='RUNNING'
+                and scene is not None and scene.session_id==self.session_id and scene.prediction.get('motion_tracking_complete')):
+            from .display_prediction import measured_control_view
+            self.driving_forecast=measured_control_view(scene,self.render_pose_cache.get(scene.observation.frame_id),
+                decision=safety,focused=True,maneuver=getattr(self,'maneuver_status',None))
+        else:self.driving_forecast=None
         if prediction and self.observation:
             reference = getattr(self,'render_pose_cache',{}).get(prediction['evaluation_frame'])
             if reference is None and prediction['evaluation_frame'] == self.observation.frame_id:
@@ -550,8 +556,7 @@ class SimulationService:
                     and scene is not None and scene.session_id==self.session_id
                     and scene.prediction.get('motion_tracking_complete')
                     and getattr(self,'recorded_video_prediction_key',None)!=(id(self.recorder),scene.observation.frame_id)):
-                from .display_prediction import measured_control_view
-                forecast=measured_control_view(scene,self.render_pose_cache.get(scene.observation.frame_id))
+                forecast=self.driving_forecast
                 self.recorder.record_trace({'kind':'VIDEO_PREDICTION','session_id':self.session_id,
                     'evaluation_frame':scene.observation.frame_id,'timestamp_s':scene.observation.timestamp_s,
                     'prediction':forecast})
@@ -969,7 +974,7 @@ class SimulationService:
         from ..learning.native_validation_budget import active_rule_ticket
         rule_validation = active_rule_ticket() if driving_mode in ('ROBOSPHERE','NORMAL') else None
         guided = presentation and self.presentation.data.get('guided') is True
-        maximum = 80 if guided else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
+        maximum = 120 if guided else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
         if not 5 <= speed <= maximum:
             raise ValueError(f'Journey speed must be 5–{maximum} km/h')
         if driving_mode == 'HYBRID':
@@ -1462,6 +1467,8 @@ class SimulationService:
             if self.simulator_stop['status'] in ('STOPPING','STOPPED'):return
             self.presentation.cancel('simulator_shutdown')
             self.simulator_stop={'status':'STOPPING','launch':copy.deepcopy(getattr(self.provider.runtime,'active',None))}
+            if self.presentation.data.get('finish_requested'):
+                self.simulator_stop['presentation']=self.presentation.snapshot()
             self._stop_navigation('simulator_shutdown')
             self.release_controls()
             threading.Thread(target=self._stop_simulator_native,name='native-gpu-release',daemon=True).start()
@@ -1474,7 +1481,7 @@ class SimulationService:
             # Windows libcarla can abort its host if UE exits while retained
             # streaming handles still exist. An SDK-free helper retires this
             # host first, kills the verified engine, then serves the stopped UI.
-            self.provider.shutdown_handler({'status':'STOPPING','launch':launch,'cleanup_warning':warning or self.error})
+            self.provider.shutdown_handler({**self.simulator_stop,'status':'STOPPING','launch':launch,'cleanup_warning':warning or self.error})
         except Exception as error:
             with self.lock:self.simulator_stop={'status':'FAILED','error':str(error),'cleanup_warning':warning,'launch':launch}
 
@@ -1650,6 +1657,7 @@ class SimulationService:
                     'manualDrivingMode': self.manual_driving_mode,
                     'controlExpired': self.now()-self.command_at > self.CONTROL_TTL}
         result['presentation'] = self.presentation.snapshot()
+        result['drivingForecast']=getattr(self,'driving_forecast',None)
         if display_observation is not None:
             rich_view=dashboard_frame(display_observation,rich=not stream)
             for key in ('vehicle','world','sensors','canonical','frameComplete','missingRequiredSensors'):

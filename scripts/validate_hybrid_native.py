@@ -48,7 +48,10 @@ def worker(args):
     from backend.learning.hybrid_budget import active_ticket
     if args.rule_ticket:
         from backend.learning.native_validation_budget import NativeValidationBudget
-        NativeValidationBudget(args.rule_ticket).activate_rule()
+        budget=NativeValidationBudget(args.rule_ticket)
+        if budget.status()['remaining_s']<=0:raise TimeoutError('Native validation allowance expired')
+        if not args.production_drivers:budget.activate_rule()
+        report_scope='PRODUCTION_DRIVERS' if args.production_drivers else 'DIAGNOSTIC_RULE_ADMISSION'
     elif active_ticket() is None:raise RuntimeError('A live parent-owned hybrid reservation is required')
     from backend.carla.provider import CarlaProvider
     from backend.core.service import SimulationService
@@ -101,6 +104,8 @@ def worker(args):
             report['graphics']=runtime.active
             stage('connect_production_provider')
             provider=CarlaProvider(blueprint=args.blueprint,spawn_index=args.spawn,sensor_suite=True,collision_sensor=True,fresh_start=True,traffic_manager_port=8052)
+            if args.ordinary_sensors:provider.camera_settings['_suppress_pilot_surround']=True
+            if args.rule_ticket:report['driver_admission_scope']=report_scope
             provider.connect(); provider._ensure_dashboard_tools()
             population={**provider.population.config,'vehicle_count':0,'pedestrian_count':0,'seed':args.seed,'chaos_percent':0}
             provider.population.apply(population)
@@ -112,6 +117,8 @@ def worker(args):
                     from backend.carla.hybrid_world import HybridWorld
                     fixture=HybridWorld(provider)
                 options={'fixture_variant':args.fixture_variant} if args.scenario.startswith('RULE_BYPASS_') else {}
+                if args.scenario=='PEDESTRIAN' and args.pedestrian_lateral is not None:
+                    options.update(pedestrian_lateral=args.pedestrian_lateral,require_complete_crossing=True)
                 fixture.setup(args.scenario,args.seed,spawn_index=args.spawn,route_length=args.length,**options)
                 if args.pedestrian_delay is not None:
                     for event in fixture.events:
@@ -365,6 +372,9 @@ if __name__=='__main__':
     parser.add_argument('--recording-directory',help='Optional local evidence disk for diagnostic recordings')
     parser.add_argument('--profile-steps',type=int,default=0,help='Instrument up to 100 running hybrid ticks; diagnostic timing only')
     parser.add_argument('--camera-semantics',action='store_true',help='Use the real RGB worker through an isolated read-only HTTP host')
+    parser.add_argument('--ordinary-sensors',action='store_true',help='Keep the ordinary sensor rig instead of ticket-only surround sensors')
+    parser.add_argument('--production-drivers',action='store_true',help='Use the resource bound without admitting experimental RULE bypass')
+    parser.add_argument('--pedestrian-lateral',type=float,help='Evaluator-only starting lateral position; require complete physical crossing')
     parser.add_argument('--pedestrian-delay',type=float,help='Evaluator-only crossing delay in simulation seconds; never sent to the controller')
     parser.add_argument('--audit-tracks',action='store_true',help='Retain compact measured track geometry once per simulation second')
     parser.add_argument('--fixture-variant',type=int,default=0,help='Evaluator-only alternative legal road fixture; all failed variants remain retained')
@@ -380,5 +390,7 @@ if __name__=='__main__':
     if not 0<=args.fixture_variant<=100:parser.error('Fixture variant must be 0–100')
     if args.pedestrian_delay is not None and (args.scenario!='PEDESTRIAN' or not 0<=args.pedestrian_delay<=120):
         parser.error('Pedestrian delay requires PEDESTRIAN and a finite 0–120 second delay')
+    if args.pedestrian_lateral is not None and (args.scenario!='PEDESTRIAN' or not 1.5<=abs(args.pedestrian_lateral)<=5.):
+        parser.error('Pedestrian lateral requires PEDESTRIAN and a finite 1.5–5 metre offset on either side')
     if args.paired and args.scenario!='DIAGNOSTIC':parser.error('Matched scripted hazards require fixture-reset validation first')
     raise SystemExit(worker(args) if args.worker else run(args))

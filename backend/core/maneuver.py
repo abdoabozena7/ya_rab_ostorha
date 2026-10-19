@@ -18,10 +18,12 @@ class ObservedSpace:
     RESOLUTION=.5
     LIMIT=50.
 
-    def __init__(self,points,geometry,*,measured_surfaces=(),scope_m=None):
+    def __init__(self,points,geometry,*,measured_surfaces=(),scope_m=None,limit_m=50.):
+        self.LIMIT=min(100.,max(50.,float(limit_m)))
+        self.size=int(round(2*self.LIMIT/self.RESOLUTION))+1
         self.geometry=geometry
         self.scope_m=self.LIMIT if scope_m is None else min(self.LIMIT,max(geometry.front_m,geometry.rear_m,geometry.half_width_m,float(scope_m)))
-        self.free=np.zeros((201,201),bool);self.occupied=np.zeros_like(self.free)
+        self.free=np.zeros((self.size,self.size),bool);self.occupied=np.zeros_like(self.free)
         sources=[(points,np.array([0.,0.,1.9]))]+list(measured_surfaces)
         from .ground_geometry import measured_ground_plane
         self.ground_plane,self.ground_support=measured_ground_plane(np.vstack([p for p,_ in sources]),geometry)
@@ -29,7 +31,7 @@ class ObservedSpace:
         # Only sub-cell discretization tolerance; never bridge an occupied cell.
         def dilate(array, offsets):
             padded=np.pad(array,1);out=np.zeros_like(array)
-            for dx,dy in offsets:out|=padded[1+dx:202+dx,1+dy:202+dy]
+            for dx,dy in offsets:out|=padded[1+dx:self.size+1+dx,1+dy:self.size+1+dy]
             return out
         self.free=dilate(self.free,[(0,0),(-1,0),(0,-1),(-1,-1)])&~dilate(self.occupied,[(x,y) for x in (-1,0,1) for y in (-1,0,1)])
         self.measured_free=self.free.copy()
@@ -91,7 +93,7 @@ class ObservedSpace:
         idx=self.indices(sample[(height>=.25)&(height<=1.5)])
         self.free[idx[:,0],idx[:,1]]=True
 
-    def indices(self,xy):return np.clip(np.rint((np.asarray(xy)+self.LIMIT)/self.RESOLUTION).astype(int),0,200)
+    def indices(self,xy):return np.clip(np.rint((np.asarray(xy)+self.LIMIT)/self.RESOLUTION).astype(int),0,self.size-1)
 
     def _footprint_status(self,sample):
         g=self.geometry

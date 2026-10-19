@@ -1,0 +1,249 @@
+{
+  "run_2a15eea5b71d448c824cca3e4723e212": {
+    "mode": "NORMAL",
+    "pair_id": "68dc9d2340484f8abb3438635ab90a70",
+    "sample_count": 369,
+    "reason_counts": {
+      "Vehicle held; explicit driving start required": 1,
+      "PROCESSING_DELAY": 1,
+      "NAVIGATION": 45,
+      "MEASURED_ROAD_COVERAGE": 317,
+      "Braking toward measured coverage speed limit 11.59 m/s": 2,
+      "Braking toward measured coverage speed limit 11.41 m/s": 1,
+      "guided_shortened": 1,
+      "MISSING": 1
+    },
+    "freshness": {
+      "True": 367,
+      "False": 1,
+      "None": 1
+    },
+    "stopped_segments_over_half_second": [
+      {
+        "first_frame": 56607,
+        "last_frame": 56620,
+        "duration_s": 0.6500000096857548,
+        "reason_counts": {
+          "Vehicle held; explicit driving start required": 1,
+          "CONTROL_PROCESSING_DEADLINE": 1,
+          "NAVIGATION": 12
+        }
+      }
+    ],
+    "oracle_frames": 0,
+    "predictive_events": [],
+    "qualification": "Includes startup and terminal holds. Reasons separate delay holds from measured/predicted risk. No independent ordinary-drive oracle was recorded; logged reasons alone do not qualify stop necessity, release timing, comfort or general driving acceptance."
+  },
+  "run_34081731c9684f1897aebd4e616c123a": {
+    "mode": "ROBOSPHERE",
+    "pair_id": "68dc9d2340484f8abb3438635ab90a70",
+    "sample_count": 248,
+    "reason_counts": {
+      "Vehicle held; explicit driving start required": 1,
+      "PROCESSING_DELAY": 5,
+      "NAVIGATION": 44,
+      "MEASURED_ROAD_COVERAGE": 192,
+      "Braking toward measured coverage speed limit 11.78 m/s": 1,
+      "Braking toward measured coverage speed limit 11.59 m/s": 2,
+      "Braking toward measured coverage speed limit 11.41 m/s": 1,
+      "guided_shortened": 1,
+      "MISSING": 1
+    },
+    "freshness": {
+      "True": 242,
+      "False": 5,
+      "None": 1
+    },
+    "stopped_segments_over_half_second": [
+      {
+        "first_frame": 56997,
+        "last_frame": 57010,
+        "duration_s": 0.6500000096857548,
+        "reason_counts": {
+          "Vehicle held; explicit driving start required": 1,
+          "CONTROL_PROCESSING_DEADLINE": 1,
+          "NAVIGATION": 12
+        }
+      }
+    ],
+    "oracle_frames": 0,
+    "predictive_events": [],
+    "qualification": "Includes startup and terminal holds. Reasons separate delay holds from measured/predicted risk. No independent ordinary-drive oracle was recorded; logged reasons alone do not qualify stop necessity, release timing, comfort or general driving acceptance."
+  },
+  "run_3872a8f1502c4fc6a3afee867aea2d2c": {
+    "mode": "ROBOSPHERE",
+    "pair_id": "a9b856ca31d4433ab783b0cb3973cd43",
+    "sample_count": 199,
+    "reason_counts": {
+      "Vehicle held; explicit driving start required": 1,
+      "NAVIGATION": 54,
+      "MEASURED_ROAD_COVERAGE": 130,
+      "PREDICTED_CROSSING": 6,
+      "Risk cleared; releasing brake smoothly to base driver": 6,
+      "guided_shortened": 1,
+      "MISSING": 1
+    },
+    "freshness": {
+      "True": 198,
+      "None": 1
+    },
+    "stopped_segments_over_half_second": [
+      {
+        "first_frame": 2065,
+        "last_frame": 2078,
+        "duration_s": 0.6500000096857548,
+        "reason_counts": {
+          "Vehicle held; explicit driving start required": 1,
+          "NAVIGATION": 13
+        }
+      }
+    ],
+    "oracle_frames": 0,
+    "predictive_events": [
+      {
+        "frame": 2225,
+        "timestamp_s": 114.76478908210993,
+        "speed_kmh": 21.000924532606536,
+        "physical_brake": 0.0,
+        "submitted_brake": 1.0,
+        "measured_forward_range_m": 11.171400995226577,
+        "reactive_envelope_m": 8.444833953202757,
+        "base_brake": 0,
+        "track_id": "depth-person-8",
+        "hypothesis": "PEDESTRIAN_POSSIBLE_START",
+        "person_measured_position_m": [
+          5.984355926513672,
+          -3.2968152076005928
+        ],
+        "predicted_conflict_time_s": 1.4,
+        "certainty": "POSSIBLE_CROSSING_NOT_KNOWN_INTENT"
+      },
+      {
+        "frame": 2226,
+        "timestamp_s": 114.81478908285499,
+        "speed_kmh": 21.08657256335147,
+        "physical_brake": 1.0,
+        "submitted_brake": 1.0,
+        "measured_forward_range_m": 11.07668969151564,
+        "reactive_envelope_m": 8.480974975059533,
+        "base_brake": 0,
+        "track_id": "depth-person-8",
+        "hypothesis": "PEDESTRIAN_POSSIBLE_START",
+        "person_measured_position_m": [
+          5.665590286254883,
+          -3.3030206412076946
+        ],
+        "predicted_conflict_time_s": 1.4,
+        "certainty": "POSSIBLE_CROSSING_NOT_KNOWN_INTENT"
+      },
+      {
+        "frame": 2227,
+        "timestamp_s": 114.86478908360004,
+        "speed_kmh": 20.226869182103936,
+        "physical_brake": 1.0,
+        "submitted_brake": 1.0,
+        "measured_forward_range_m": 10.988295526476577,
+        "reactive_envelope_m": 8.123339418244255,
+        "base_brake": 0,
+        "track_id": "depth-person-8",
+        "hypothesis": "PEDESTRIAN_POSSIBLE_START",
+        "person_measured_position_m": [
+          5.398531436920166,
+          -3.3035753525793545
+        ],
+        "predicted_conflict_time_s": 1.4,
+        "certainty": "POSSIBLE_CROSSING_NOT_KNOWN_INTENT"
+      },
+      {
+        "frame": 2228,
+        "timestamp_s": 114.9147890843451,
+        "speed_kmh": 18.77317165409409,
+        "physical_brake": 1.0,
+        "submitted_brake": 1.0,
+        "measured_forward_range_m": 10.91700837132521,
+        "reactive_envelope_m": 7.54455198144805,
+        "base_brake": 0,
+        "track_id": "depth-person-8",
+        "hypothesis": "PEDESTRIAN_POSSIBLE_START",
+        "person_measured_position_m": [
+          5.133350372314453,
+          -3.3035869106650346
+        ],
+        "predicted_conflict_time_s": 1.4,
+        "certainty": "POSSIBLE_CROSSING_NOT_KNOWN_INTENT"
+      },
+      {
+        "frame": 2229,
+        "timestamp_s": 114.96478908509016,
+        "speed_kmh": 13.80618663425326,
+        "physical_brake": 1.0,
+        "submitted_brake": 1.0,
+        "measured_forward_range_m": 10.919721603393555,
+        "reactive_envelope_m": 5.8130304087301266,
+        "base_brake": 0,
+        "track_id": "depth-person-8",
+        "hypothesis": "PEDESTRIAN_POSSIBLE_START",
+        "person_measured_position_m": [
+          4.970033645629883,
+          -3.298562805354594
+        ],
+        "predicted_conflict_time_s": 1.4,
+        "certainty": "POSSIBLE_CROSSING_NOT_KNOWN_INTENT"
+      },
+      {
+        "frame": 2230,
+        "timestamp_s": 115.01478908583522,
+        "speed_kmh": 8.805573118624617,
+        "physical_brake": 1.0,
+        "submitted_brake": 1.0,
+        "measured_forward_range_m": 10.988436698913574,
+        "reactive_envelope_m": 4.4543853336582915,
+        "base_brake": 0,
+        "track_id": "depth-person-8",
+        "hypothesis": "PEDESTRIAN_POSSIBLE_START",
+        "person_measured_position_m": [
+          4.9013988971710205,
+          -3.295612851530313
+        ],
+        "predicted_conflict_time_s": 1.4,
+        "certainty": "POSSIBLE_CROSSING_NOT_KNOWN_INTENT"
+      }
+    ],
+    "qualification": "Includes startup and terminal holds. Reasons separate delay holds from measured/predicted risk. No independent ordinary-drive oracle was recorded; logged reasons alone do not qualify stop necessity, release timing, comfort or general driving acceptance."
+  },
+  "run_283ceca434d14b3b975a20d054d3a9ed": {
+    "mode": "NORMAL",
+    "pair_id": "a9b856ca31d4433ab783b0cb3973cd43",
+    "sample_count": 227,
+    "reason_counts": {
+      "Vehicle held; explicit driving start required": 1,
+      "NAVIGATION": 46,
+      "MEASURED_ROAD_COVERAGE": 164,
+      "PROCESSING_DELAY": 1,
+      "Measured obstacle inside braking envelope/TTC limit": 5,
+      "Holding measured clearance/TTC hysteresis": 2,
+      "Risk cleared; releasing brake smoothly to base driver": 6,
+      "guided_shortened": 1,
+      "MISSING": 1
+    },
+    "freshness": {
+      "True": 225,
+      "False": 1,
+      "None": 1
+    },
+    "stopped_segments_over_half_second": [
+      {
+        "first_frame": 2281,
+        "last_frame": 2294,
+        "duration_s": 0.6500000096857548,
+        "reason_counts": {
+          "Vehicle held; explicit driving start required": 1,
+          "NAVIGATION": 13
+        }
+      }
+    ],
+    "oracle_frames": 0,
+    "predictive_events": [],
+    "qualification": "Includes startup and terminal holds. Reasons separate delay holds from measured/predicted risk. No independent ordinary-drive oracle was recorded; logged reasons alone do not qualify stop necessity, release timing, comfort or general driving acceptance."
+  }
+}

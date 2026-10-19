@@ -337,7 +337,8 @@ document.addEventListener('workspacechange',event => { if(event.detail.phase !==
 window.addEventListener('blur',()=>inspectWithoutManualControl('focus_lost'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)inspectWithoutManualControl('focus_lost');});
 window.addEventListener('pagehide',()=>{
-  const held=provider.presentation?.status==='CHOOSING'&&provider.presentation?.awaiting_choice;
+  const held=['AWAITING_NEXT','RESULTS','FINISHING','COMPLETE'].includes(provider.presentation?.status)||
+    provider.presentation?.status==='CHOOSING'&&provider.presentation?.awaiting_choice;
   if(held)resetKeys();else clearControls('page_closed');
   clearCamera();provider.close();
 });

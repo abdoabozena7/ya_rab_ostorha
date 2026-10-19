@@ -1,0 +1,54 @@
+{
+  "scope": "ISOLATED_UI_TRANSITIONS_WITH_RETAINED_NATIVE_MP4S",
+  "checks": [
+    "Project name appears in the mode choice",
+    "Illustration distinguishes late reactive braking from early prediction",
+    "Repeated Start dispatches exactly one selected drive",
+    "Guided Start requests 120 km/h",
+    "Start remains visible and disabled in SELECTING",
+    "Continuous loader and actual stage text in SELECTING",
+    "Start remains visible and disabled in READY",
+    "Continuous loader and actual stage text in READY",
+    "Start remains visible and disabled in STARTING",
+    "Continuous loader and actual stage text in STARTING",
+    "Reduced motion keeps a static loading indicator",
+    "Opening and closing Menu keeps the driving surface",
+    "An observing page does not automatically replace an active presentation",
+    "Retained native recordings available for media QA",
+    "Both result video elements are on the primary result screen",
+    "Each pending export has its own preparation placeholder",
+    "Pending exports do not expose download links from an older comparison",
+    "Refreshing held results sends no stop or cancellation command",
+    "Repeated Finish dispatches once",
+    "Both videos remain during Finish while exports are pending",
+    "Results remain on screen with the simulator stopped",
+    "Mode names appear underneath their videos",
+    "Results fit 1440px without horizontal overflow",
+    "Results fit 390px without horizontal overflow",
+    "Results fit 320px without horizontal overflow",
+    "Saved native MP4s actually play on the primary result surface",
+    "Refreshing the stopped page restores the saved comparison",
+    "No browser exceptions across loading, driving, Finish, playback and refresh"
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "left": 52.400001525878906,
+      "right": 1372.400001525879,
+      "scroll": 1425
+    },
+    {
+      "width": 390,
+      "left": 16,
+      "right": 359.20001220703125,
+      "scroll": 375
+    },
+    {
+      "width": 320,
+      "left": 16,
+      "right": 288.8000183105469,
+      "scroll": 305
+    }
+  ],
+  "errors": []
+}

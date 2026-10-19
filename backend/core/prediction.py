@@ -20,19 +20,20 @@ def rotation(yaw):
     return np.array([[c, -s], [s, c]])
 
 
-def ego_paths(speed, steering, throttle, half=(2.5, 1.15), geometry=None):
+def ego_paths(speed, steering, throttle, half=(2.5, 1.15), geometry=None, *, grid=GRID):
+    grid=np.asarray(grid,float)
     paths = []
     for name, acceleration in [('CONTINUE', 0.), ('BRAKE', -5.)] + ([('LAUNCH', 2.)] if throttle > .01 else []):
         if geometry is not None:
-            paths.append({'intent':name,'points':footprint_centers(integrate(speed,steering,acceleration,geometry),geometry),'half':geometry.half})
+            paths.append({'intent':name,'points':footprint_centers(integrate(speed,steering,acceleration,geometry,grid=grid),geometry),'half':geometry.half})
             continue
-        velocity=np.maximum(0.,speed+acceleration*GRID)
-        distance=(velocity[:-1]+velocity[1:])*.05
+        velocity=np.maximum(0.,speed+acceleration*grid)
+        distance=(velocity[:-1]+velocity[1:])*.5*np.diff(grid)
         arc=np.r_[0.,np.cumsum(distance)]
         yaw=arc*math.tan(float(steering)*.6)/2.8
         mid=(yaw[:-1]+yaw[1:])*.5
         xy=np.vstack((np.zeros(2),np.cumsum(distance[:,None]*np.column_stack((np.cos(mid),np.sin(mid))),axis=0)))
-        paths.append({'intent': name, 'points': np.column_stack((GRID,xy,yaw)), 'half': np.asarray(half)})
+        paths.append({'intent': name, 'points': np.column_stack((grid,xy,yaw)), 'half': np.asarray(half)})
     return paths
 
 

@@ -24,12 +24,13 @@ def normalized_condition(report):
         return {key:copy.deepcopy(actor.get(key)) for key in ('blueprint','position','yaw_deg','velocity_mps','control')}
     return {'ego':actor_state(ego),'actors':[actor_state(actor) for actor in fixture.get('actors',[])],
             'sensors':fixture['sensor_configuration'],'geometry':fixture.get('ego_geometry'),
+            'events':(fixture.get('condition_spec') or {}).get('events'),
             'weather':fixture.get('weather'),'route':fixture.get('native_route')}
 
 
 def conditions_match(first,second):
     if first is None or second is None:return False
-    for key in ('sensors','geometry','weather','route'):
+    for key in ('sensors','geometry','weather','route','events'):
         if first[key]!=second[key]:return False
     if len(first['actors'])!=len(second['actors']):return False
     for left,right in zip([first['ego'],*first['actors']],[second['ego'],*second['actors']]):
@@ -73,19 +74,29 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--seeds',default=','.join(map(str,SEEDS)))
     parser.add_argument('--scenarios',default=','.join(SCENARIOS));parser.add_argument('--seconds',type=float,default=3600.)
     parser.add_argument('--sim-seconds',type=float,default=25.);parser.add_argument('--speed',type=float,default=30.)
+    parser.add_argument('--pedestrian-delay',type=float,default=8.,help='Fixed evaluator-only crossing delay in simulation seconds')
+    parser.add_argument('--ordinary-sensors',action='store_true',help='Use the production ordinary sensor rig in both arms')
+    parser.add_argument('--production-drivers',action='store_true',help='Do not enable ticket-only experimental bypass')
+    parser.add_argument('--pedestrian-lateral',type=float,help='Fixed physical starting offset; require complete road crossing')
     args=parser.parse_args();seeds=[int(value) for value in args.seeds.split(',')];scenarios=args.scenarios.split(',')
     if not seeds or any(scenario not in SCENARIOS for scenario in scenarios):parser.error('Choose fixed seeds and supported native scenarios')
     if not 180<=args.seconds<=3600 or not 10<=args.sim_seconds<=60 or not 5<=args.speed<=30:parser.error('Invalid bounded matrix parameters')
+    if not 0<=args.pedestrian_delay<=120:parser.error('Pedestrian delay must be 0–120 simulation seconds')
+    if args.pedestrian_lateral is not None and not 1.5<=abs(args.pedestrian_lateral)<=5.:parser.error('Pedestrian lateral must be 1.5–5 metres on either side')
     from scripts import final_runtime
-    if final_runtime.state():raise RuntimeError('Run the isolated matrix only with the ordinary dashboard stopped')
+    current=final_runtime.state()
+    if current and (current.get('connected') or current.get('simulatorStop',{}).get('status')!='STOPPED'):
+        raise RuntimeError('Run the isolated matrix only with the ordinary dashboard stopped')
     from backend.carla.runtime import NativeRuntime
     runtime=NativeRuntime();was_running=runtime.active is not None
     directory=ROOT/'output/sensor-comparison-20261019'/uuid.uuid4().hex;directory.mkdir(parents=True)
     budget=NativeValidationBudget.create_repair(directory,args.seconds)
-    budget.ticket['authorization']='User requested the fixed three-seed Normal/predictive comparison; allowance is an internal resource bound, not a research-ledger reset'
+    budget.ticket['authorization']='User requested repeatable native Normal/predictive verification; allowance is an internal resource bound, not a research-ledger reset'
     budget.path.write_text(json.dumps(budget.ticket,indent=2),encoding='utf8')
     summary={'source':'LIVE_NATIVE_CARLA','blueprint':'vehicle.mercedes.coupe_2020','seeds':seeds,
              'requested_speed_kmh':args.speed,'cases':[],'pairs':[],'accepted':False,
+             'pedestrian_delay_s':args.pedestrian_delay,'ordinary_sensors':args.ordinary_sensors,
+             'pedestrian_lateral_m':args.pedestrian_lateral,'production_drivers':args.production_drivers,
              'scope':'Scoped native sensor-driver fixtures; no RL or high-speed acceptance'}
     try:
         for seed in seeds:
@@ -105,7 +116,10 @@ def main():
                         '--mode',mode,'--scenario',scenario,'--seed',str(seed),'--speed',str(args.speed),
                         '--length','40','--sim-seconds',str(args.sim_seconds),'--blueprint',summary['blueprint'],
                         '--recording-directory',str(directory/'native-recordings/normal_city'),'--camera-semantics']
-                    if scenario=='PEDESTRIAN':command+=['--pedestrian-delay','8']
+                    if scenario=='PEDESTRIAN':command+=['--pedestrian-delay',str(args.pedestrian_delay)]
+                    if args.ordinary_sensors:command+=['--ordinary-sensors']
+                    if args.production_drivers:command+=['--production-drivers']
+                    if scenario=='PEDESTRIAN' and args.pedestrian_lateral is not None:command+=['--pedestrian-lateral',str(args.pedestrian_lateral)]
                     print(json.dumps({'stage':'RUNNING','scenario':scenario,'seed':seed,'mode':mode,'folder':str(folder)}),flush=True)
                     with budget.experiment('physical-diagnostic',seconds),(folder/'native-worker.log').open('w',encoding='utf8') as output:
                         child=subprocess.Popen(command,cwd=ROOT,stdout=output,stderr=subprocess.STDOUT,

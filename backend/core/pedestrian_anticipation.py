@@ -1,5 +1,6 @@
 """Conservative crossing hypotheses for sensor-associated people, never intent certainty."""
 from .prediction import assess_conflicts,ego_paths
+import numpy as np
 
 
 def crossing_forecast(prediction,observation,base,geometry):
@@ -26,9 +27,11 @@ def crossing_forecast(prediction,observation,base,geometry):
     cleared={t['id'] for t in people if t.get('observed_crossing_cleared')}
     modes=[m for m in prediction.get('trajectories',()) if m['track_id'] in ids and
         not (m['track_id'] in cleared and m['source'] in ('PEDESTRIAN_POSSIBLE_START','PEDESTRIAN_POSSIBLE_RETREAT'))]
-    paths=[p for p in ego_paths(observation.ego.speed_mps,base.steering,base.throttle,geometry=geometry)
+    horizon=max(3.,.6+abs(observation.ego.speed_mps)/5.)
+    grid=np.round(np.arange(int(np.ceil(horizon/.1))+1)*.1,6)
+    paths=[p for p in ego_paths(observation.ego.speed_mps,base.steering,base.throttle,geometry=geometry,grid=grid)
         if p['intent']!='BRAKE']
-    for conflict in assess_conflicts(people,modes,paths):
+    for conflict in assess_conflicts(people,modes,paths,grid=grid):
         if not conflict['separating_rear_overlap'] and not conflict['braking_worsens_rear_conflict']:
             return {**conflict,'certainty':'POSSIBLE_CROSSING_NOT_KNOWN_INTENT',
                 'measurement_frame':observation.frame_id,'timestamp_s':observation.timestamp_s}

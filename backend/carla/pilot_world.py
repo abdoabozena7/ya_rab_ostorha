@@ -48,7 +48,8 @@ class PilotWorld:
         self.actors=[]
         if self.errors:raise RuntimeError('; '.join(self.errors))
 
-    def setup(self,kind,seed,*,spawn_index=152,route_length=40.,vehicles=25,pedestrians=20):
+    def setup(self,kind,seed,*,spawn_index=152,route_length=40.,vehicles=25,pedestrians=20,
+              pedestrian_lateral=4.,require_complete_crossing=False):
         if kind not in SUPPORTED:raise ValueError('Scenario has no validated native constructor: '+kind)
         p=self.p;w=p.world.world;api=p.connection.api;native_map=w.get_map()
         spawns=native_map.get_spawn_points()
@@ -89,10 +90,13 @@ class PilotWorld:
                                 'duration_s':4.,'scheduled':True,'eligible':False,'realized':False,
                                 'initial_speed_mps':5.,'pre_event_speed_mps':0.,'start_position':None})
         if kind in ('PEDESTRIAN_CROSSING','HESITATION_RETREAT'):
-            actor=self._spawn(14.,4.,person=True)
+            actor=self._spawn(14.,pedestrian_lateral,person=True)
             self.events.append({'actor_id':actor.id,'kind':kind,'at_s':1.5+self.rng.random(),
                                 'duration_s':6.,'scheduled':True,'eligible':False,'realized':False,
                                 'start_position':None})
+            if require_complete_crossing:
+                self.events[-1]['completion_policy']='CROSS_TO_OPPOSITE_CLEARANCE'
+                self.events[-1]['crossing_direction']=1 if pedestrian_lateral<0 else -1
         if kind=='MIXED_TRAFFIC':
             self.mixed_request={'seed':seed,'vehicle_count':vehicles,'pedestrian_count':pedestrians,
                                 'placement':'EGO_SURROUNDING','vehicle_mix':'MIXED'}
@@ -191,7 +195,7 @@ class PilotWorld:
                 event['realized']|=event['pre_event_speed_mps']>=3. and actor.get_velocity().length()<.3
                 continue
             if kind in ('PEDESTRIAN_CROSSING','HESITATION_RETREAT'):
-                vy=-1.4 if active else 0.
+                vy=1.4*event.get('crossing_direction',-1) if active else 0.
                 if kind=='HESITATION_RETREAT' and active:
                     progress=elapsed-event['at_s']
                     vy=0. if progress<1. else -1.2 if progress<3. else 1.2
@@ -210,7 +214,9 @@ class PilotWorld:
                     road_lateral=(current[0]-self.origin.x)*self.right.x+(current[1]-self.origin.y)*self.right.y
                     event['realized']|=active and abs(road_lateral)<=1.15+actor.bounding_box.extent.y
                 elif kind in ('PEDESTRIAN_CROSSING','HESITATION_RETREAT'):
-                    event['realized']|=active and abs(lateral)>.5
+                    road_lateral=(current[0]-self.origin.x)*self.right.x+(current[1]-self.origin.y)*self.right.y
+                    crossed=road_lateral*event.get('crossing_direction',-1)>=2. if event.get('completion_policy')=='CROSS_TO_OPPOSITE_CLEARANCE' else abs(lateral)>.5
+                    event['realized']|=active and crossed
                 else:event['realized']|=active and moved>.5
 
     def validity(self):

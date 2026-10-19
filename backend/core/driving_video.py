@@ -7,6 +7,7 @@ import threading
 import time
 
 _workers=set()
+_roots={}
 _lock=threading.Lock()
 
 
@@ -127,8 +128,25 @@ def export_after_close(recorder):
             except (OSError,ValueError):status={}
             _status(root,{**status,'status':'ERROR','error':str(error)})
         finally:
-            with _lock:_workers.discard(threading.current_thread())
+            with _lock:
+                _workers.discard(threading.current_thread());_roots.pop(str(recorder.root.resolve()),None)
     worker=threading.Thread(target=run,daemon=True,name='native-video-export')
-    with _lock:_workers.add(worker)
+    with _lock:
+        key=str(recorder.root.resolve())
+        if key in _roots:return _roots[key]
+        _workers.add(worker);_roots[key]=worker
     worker.start()
     return worker
+
+
+def retry_export(root):
+    from types import SimpleNamespace
+    root=Path(root)
+    state=json.loads((root/'recording-status.json').read_text(encoding='utf8'))
+    if not state.get('finalized') or state.get('incomplete'):
+        raise ValueError('The recording could not be finalized; its saved outcome remains available')
+    with _lock:
+        existing=_roots.get(str(root.resolve()))
+        if existing:return existing
+    _status(root,{'status':'WAITING_FOR_RECORDING'})
+    return export_after_close(SimpleNamespace(root=root,closed=True,status=lambda:state))

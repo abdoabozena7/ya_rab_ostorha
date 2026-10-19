@@ -1,8 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {missionState,stressSummary} from '../frontend/mission-state.js';
+import {missionState,stressSummary,missionFailure} from '../frontend/mission-state.js';
 const ready={connected:true,fresh:true,controller:true,simulatorStop:{available:true}};
 const guided=(status,arm=0,first='NORMAL')=>({...ready,presentation:{guided:true,id:'current',status,arm,modes:[first,first==='NORMAL'?'ROBOSPHERE':'NORMAL']}});
+
+test('real faults explain their cause and recovery without raw interruption codes',()=>{
+  for(const [reason,detail] of [['ya_rab_ostorha_sensor_fault',/sensor measurements/],['dashboard_heartbeat_timeout',/connection was lost/],['recording_failure',/saving/],['presentation_phase_timeout:RESTORING',/Retry the step/]]){
+    const p=guided('ERROR');p.presentation.reason=reason;
+    assert.match(missionState(p).detail,detail);assert.doesNotMatch(missionState(p).detail,/Interrupted|_/);
+  }
+  assert.match(missionFailure('Interrupted'),/recorded portion is saved/);
+});
 
 test('preloaded world can be inspected while preparing but only starts once held and ready',()=>{
   const loading=guided('PREPARING');loading.presentation.preloaded=true;loading.presentation.awaiting_choice=true;
@@ -96,4 +104,23 @@ test('stress shortfalls remain visible with actual measured counts',()=>{
   assert.match(text,/Buildings may hide/);assert.equal(stressSummary(null),'');
   assert.match(stressSummary({passed:true,sustained_passed:false}),/below the local target/);
   assert.match(stressSummary({motion_measurement_ready:false,series:{motion_samples:0,samples:1,density_failures:0}}),/Motion not measured yet/);
+});
+
+test('results survive Finish, native disconnection, shutdown and a refreshed page',()=>{
+  for(const phase of ['RESULTS','FINISHING','COMPLETE'])for(const connected of [true,false]){
+    const p=guided(phase,1);p.presentation.pair_id='saved';p.connected=connected;p.fresh=connected;
+    p.simulatorStop={available:true,status:phase==='COMPLETE'?'STOPPED':'IDLE'};
+    const state=missionState(p);
+    assert.equal(state.screen,'comparison');assert.equal(state.freeGPU,false);
+    assert.equal(state.action,phase==='RESULTS'?'FINISH':phase==='COMPLETE'?'NEW_DRIVE':null);
+    assert.equal(state.loadingDrive,phase==='FINISHING');
+  }
+});
+
+test('the selected Start button stays busy throughout native car and recording preparation',()=>{
+  for(const phase of ['SELECTING','READY','STARTING']){
+    const p=guided(phase);Object.assign(p.presentation,{preloaded:true,awaiting_choice:false});
+    const state=missionState(p,{firstMode:'NORMAL'});
+    assert.equal(state.screen,'choose');assert.equal(state.choices,true);assert.equal(state.loadingDrive,true);assert.equal(state.action,null);
+  }
 });
