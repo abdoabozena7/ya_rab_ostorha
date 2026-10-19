@@ -9,6 +9,7 @@ import math
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from .driver_profiles import SENSOR_COMPARISON_PROTOCOL
 
 MODES = ('ROBOSPHERE', 'NORMAL')
 BENCHMARK_MODES = ('HYBRID', 'BASELINE')
@@ -29,6 +30,9 @@ def matching_setup(a, b, *, world_only=False):
     if not a or not b: return False
     if a.get('live_speed_changed') or b.get('live_speed_changed'): return False
     keys = ('map','blueprint','destination','speed_kmh','population','weather','actual_population')
+    if a.get('protocol')==SENSOR_COMPARISON_PROTOCOL or b.get('protocol')==SENSOR_COMPARISON_PROTOCOL:
+        if a.get('protocol')!=b.get('protocol'):return False
+        keys+=('vehicle_geometry','vehicle_physics','sensor_configuration')
     if world_only:keys=tuple(k for k in keys if k!='blueprint')
     if any(a.get(k) is None or b.get(k) is None for k in keys): return False
     try:
@@ -50,7 +54,7 @@ class JourneyComparison:
         self.near = self.intervening = False
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
-            if saved.get('version') in (1, 2, 3, 4, 5) and isinstance(saved.get('runs'), dict):
+            if saved.get('version') in (1, 2, 3, 4, 5, 6) and isinstance(saved.get('runs'), dict):
                 self.data = saved
                 for run in saved['runs'].values():
                     if run['status'] == 'RUNNING':
@@ -78,17 +82,20 @@ class JourneyComparison:
             raise ValueError('Comparison changed; prepare its mode again')
         if pair_id is None:
             benchmark = mode in BENCHMARK_MODES
-            self.data = {'version': 5 if manifest.get('guided') and manifest.get('vehicle_variants') else 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
+            self.data = {'version': 6 if manifest.get('protocol')==SENSOR_COMPARISON_PROTOCOL else 5 if manifest.get('guided') and manifest.get('vehicle_variants') else 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
                          'driver_modes':list(BENCHMARK_MODES if benchmark else MODES),
                          'manifest': copy.deepcopy(manifest), 'runs': {}}
             if manifest.get('guided'):self.data['order']=list(manifest['presentation_order'])
         elif mode not in self.data.get('driver_modes', MODES):
             raise ValueError('Legacy protection comparisons and the hybrid benchmark are separate protocols')
+        if (self.data['manifest'].get('protocol')==SENSOR_COMPARISON_PROTOCOL) != (manifest.get('protocol')==SENSOR_COMPARISON_PROTOCOL):
+            raise ValueError('Historical and sensor-reactive comparisons use different protocols')
         old = self.data['runs'].get(mode)
         if old:
             self.data.setdefault('previous_attempts', []).append(copy.deepcopy(old))
         run = {'id': uuid.uuid4().hex, 'mode': mode, 'status': 'RUNNING', 'reason': None, 'setup':copy.deepcopy(manifest),
-               'driver_id': 'CARLA_BEHAVIOR_NORMAL' if mode == 'BASELINE' else 'ROBOSPHERE_HYBRID_V1' if mode == 'HYBRID' else mode,
+               'driver_id': (manifest.get('driver_profile') or {}).get('id') or ('CARLA_BEHAVIOR_NORMAL' if mode == 'BASELINE' else 'ROBOSPHERE_HYBRID_V1' if mode == 'HYBRID' else mode),
+               'driver_profile':copy.deepcopy(manifest.get('driver_profile')),
                'created_at_utc': datetime.now(timezone.utc).isoformat(), 'recording': recording,
                'duration_s': 0., 'distance_m': 0., 'route_completion_percent': 0.,
                'collisions': 0, 'maximum_impulse_ns': 0., 'near_misses': 0,
@@ -138,11 +145,12 @@ class JourneyComparison:
         if route and length > 0:
             run['route_completion_percent'] = max(run['route_completion_percent'], min(100., max(0., 100*(1-route.get('remaining_m', length)/length))))
         # No stale observer value is counted as a clear frame.
-        observed = frame.complete and safety.get('frame_id') == frame.frame_id and safety.get('risk') not in (None, 'UNKNOWN', 'UNKNOWN_SPACE')
+        measured_risk=safety.get('reactive_risk',safety.get('risk')) if self.data.get('version')==6 else safety.get('risk')
+        observed = frame.complete and safety.get('frame_id') == frame.frame_id and measured_risk not in (None, 'UNKNOWN', 'UNKNOWN_SPACE')
         run['observed_samples'] += int(observed)
         run['sensor_coverage_percent'] = 100*run['observed_samples']/run['samples']
         distance, ttc = safety.get('measured_range_m'), safety.get('ttc_s')
-        high = observed and safety.get('risk') in ('PATH_CONFLICT', 'FORWARD_COLLISION_RISK')
+        high = observed and measured_risk in ('PATH_CONFLICT', 'FORWARD_COLLISION_RISK')
         if high: run['high_risk_s'] += dt
         if observed and isinstance(distance, (int, float)):
             run['minimum_forward_range_m'] = min(distance, run['minimum_forward_range_m'] if run['minimum_forward_range_m'] is not None else math.inf)
@@ -155,11 +163,11 @@ class JourneyComparison:
         self.near = bool(near or self.near and frame.timestamp_s-getattr(self, 'last_near', 0) < 1)
         observer_current = frame.complete and safety.get('frame_id') == frame.frame_id and isinstance(safety.get('active'), bool)
         run['intervention_samples'] += int(observer_current)
-        active = observer_current and run['mode'] in ('ROBOSPHERE','HYBRID') and safety['active']
+        active = bool(observer_current and (run['mode'] in ('ROBOSPHERE','HYBRID') or (run.get('driver_profile') or {}).get('sensor_obstacle_braking')) and safety['active'])
         if observer_current and self.intervening: run['safety_intervention_s'] += dt
         if active and not self.intervening:
             run['safety_interventions'] += 1
-            self.event('RULE intervention', frame.timestamp_s, safety.get('reason', ''))
+            self.event('Reactive sensor braking' if run['mode']=='NORMAL' else 'RULE intervention', frame.timestamp_s, safety.get('reason', ''))
         self.intervening = active
         # Measured deceleration, not requested brake pressure alone. Episode
         # release is one second; no control or protection thresholds are changed.
@@ -204,7 +212,7 @@ class JourneyComparison:
         result = copy.deepcopy(data)
         modes = result.get('driver_modes', MODES)
         result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))
-        if result.get('version') in (2, 3, 4, 5):
+        if result.get('version') in (2, 3, 4, 5, 6):
             audits = [result['runs'].get(m, {}).get('setup', {}).get('initial_condition_id') for m in modes]
             verified = all(result['runs'].get(m, {}).get('initial_condition_audit', {}).get('passed') is True for m in modes)
             result['conditions_match'] = result['conditions_match'] and bool(audits[0]) and audits[0] == audits[1] and verified

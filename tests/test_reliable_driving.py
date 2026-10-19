@@ -191,7 +191,7 @@ class ReliableDrivingTests(unittest.TestCase):
         self.assertEqual(service.runtime_fault['exception_type'],'CommandLeaseTimeout')
         self.assertEqual(service.runtime_fault['applied_command']['brake'],1.)
 
-    def test_normal_observer_runs_after_native_application_without_reselecting(self):
+    def test_normal_sensor_safety_runs_before_native_application(self):
         from backend.core.service import SimulationService
         from backend.core.control import ControlMode
         from tests.core_packets import packet
@@ -211,7 +211,7 @@ class ReliableDrivingTests(unittest.TestCase):
         with patch.object(service,'_navigation_step'),patch.object(service,'_choose',return_value=selected),\
                 patch.object(service,'_active_safety_step',side_effect=observer),patch.object(service,'_record'):
             service._iteration()
-        self.assertEqual(calls,[('apply',selected),('observe',selected)])
+        self.assertEqual(calls,[('observe',None),('apply',selected)])
 
     def test_rear_certificate_requires_history_clearance_and_strict_forward_separation(self):
         case=json.loads(Path('docs/evidence/route-bypass-20261016/rear-corner-replay.json').read_text())

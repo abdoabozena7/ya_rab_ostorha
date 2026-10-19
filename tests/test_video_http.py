@@ -57,5 +57,19 @@ class VideoHTTPTests(unittest.TestCase):
         self.status['status']='READY';self.write_status();(self.run/'driving.mp4').write_bytes(b'changed')
         with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(self.url+'driving.mp4')
 
+    def test_annotated_variant_has_independent_checksum_ranges_and_head(self):
+        payload=b'annotated native video'
+        target=self.run/'driving-annotated.mp4';target.write_bytes(payload)
+        self.status['variants']={'annotated':{'status':'READY','source':'RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY',
+            'sha256':hashlib.sha256(payload).hexdigest()}}
+        self.write_status()
+        request=urllib.request.Request(self.url+target.name,headers={'Range':'bytes=2-6'})
+        with urllib.request.urlopen(request) as response:
+            self.assertEqual(response.status,206);self.assertEqual(response.read(),payload[2:7])
+        with urllib.request.urlopen(urllib.request.Request(self.url+target.name,method='HEAD')) as response:
+            self.assertEqual(int(response.headers['Content-Length']),len(payload))
+        target.write_bytes(b'corrupted overlay')
+        with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(self.url+target.name)
+
 
 if __name__=='__main__':unittest.main()

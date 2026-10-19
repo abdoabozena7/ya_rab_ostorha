@@ -98,6 +98,10 @@ export class PredictionView {
     finally{this.busy=false;}
   }
   draw(camera) {
+    if(this.provider.journey?.driving_mode==='NORMAL'&&this.provider.journey?.status==='RUNNING'){
+      this.canvas.hidden=true;this.label.hidden=true;this.map.hidden=true;this.diagnostic.textContent='';
+      this.observed=null;this.imagePrediction=null;this.currentPrediction=null;return;
+    }
     const main=document.body.classList.contains('sequential-drive')&&!document.querySelector('#cockpitDetails[open]')&&
       !document.querySelector('#unifiedMap.map-expanded');
     const guidedForecast=main&&this.provider.journey?.driving_mode==='ROBOSPHERE'&&this.provider.journey?.status==='RUNNING';

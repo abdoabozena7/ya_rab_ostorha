@@ -53,7 +53,7 @@ class ResearchSafetySupervisor(ActiveSafetySupervisor):
 
     def snapshot(self):
         result=super().snapshot()
-        return {**result,'controller':self.controller,'model_health':'DEGRADED' if self.model_error and self.model else 'READY' if self.model else 'UNAVAILABLE',
+        return {**result,'controller':self.controller if self.anticipation_enabled else 'REACTIVE_SENSORS','model_health':'DEGRADED' if self.model_error and self.model else 'READY' if self.model else 'UNAVAILABLE',
             'model_identity':self.learned_config['version'],'model_error':self.model_error,
             'model_weights_sha256':self.model.metadata['weights_sha256'] if self.model else None,
             'model_validation':self.learned_config['native_validation_status'],
@@ -66,9 +66,9 @@ class ResearchSafetySupervisor(ActiveSafetySupervisor):
     def evaluate(self, observation, base, asset_reader, *, as_of_timestamp_s):
         if self.controller=='RULE':
             candidate=super().evaluate(observation,base,asset_reader,as_of_timestamp_s=as_of_timestamp_s)
-            generator='RULE' if candidate else 'BASE_DRIVER'
+            generator=('RULE' if self.anticipation_enabled else 'REACTIVE_SENSORS') if candidate else 'BASE_DRIVER'
             self.status.update(actual_generator=generator,inference_ms=0.)
-            self.source_counts[generator]+=1
+            self.source_counts[generator]=self.source_counts.get(generator,0)+1
             return candidate
         # The independent existing guard also enforces freshness, physical sensor
         # validity and nonforward exclusions before learned proposals are used.

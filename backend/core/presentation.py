@@ -72,7 +72,7 @@ class Presentation:
             'seed': secrets.randbelow(2147483648) if seed is None else seed,
             'modes': [first_mode, next(m for m in self.MODES if m!=first_mode)] if guided else list(self.MODES), 'arm': 0,
             'pair_id': None, 'events': [], 'source': 'LIVE_NATIVE_CARLA',
-            'comparison_note': 'Normal follows the route and signals with obstacle protection off. Traffic can react differently after release.'}
+            'comparison_note': 'Both drivers use sensor obstacle braking. Robosphere adds predictive RULE. The same Mercedes and sensor rig are used; traffic can react differently after release.'}
         self.transition('STOPPING')
 
     def preload(self, page_id=None):

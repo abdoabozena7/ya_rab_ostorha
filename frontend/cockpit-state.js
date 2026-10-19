@@ -157,6 +157,7 @@ export function safetyChip(provider) {
   if (s.status === 'STANDARD_DRIVER') return {label:'Normal · protection off', tone:'neutral'};
   if (!s.enabled) return {label:'Protection off', tone:'danger'};
   if (/SUSPENDED/.test(s.status || '')) return {label:'Protection suspended', tone:'warning'};
+  if(s.type==='REACTIVE_SENSOR_SAFETY')return {label:s.active?'Reactive sensor braking':'Reactive sensors active',tone:s.active?'warning':'protection'};
   if (s.active) return {label:'Safety override', tone:'warning'};
   return {label:s.experimental || s.controller==='MODEL' ? 'Experimental protection' : s.status==='STANDBY' ? 'Protection standby' : 'Protection active', tone:'protection'};
 }

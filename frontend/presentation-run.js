@@ -4,6 +4,7 @@ import {driveState} from './drive-state.js';
 import {recordingVideoRoot,selectPlaybackLeader,benchmarkSpeedText,demoFailure} from './demo-drive.js';
 import {metricValue} from './journey-comparison.js';
 import {stressSummary} from './mission-state.js';
+import {recordedDriverDescription,preferredVideo} from './driver-profile.js';
 
 const $=id=>document.getElementById(id);
 const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Confirming route traffic',
@@ -51,10 +52,10 @@ export function installPresentationRun(p,tools,clearControls){
   panel.append(custom);
   $('cameraCard').before(panel);
   const results=document.createElement('section');results.id='presentationResults';results.hidden=true;
-  results.innerHTML='<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Robosphere & Normal</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Normal follows the route and traffic signals with obstacle protection off. An intervention is not a proven prevented collision. Requested speed and measured speed are reported separately.</p></section>';
+  results.innerHTML='<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Robosphere & Normal</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Each recording identifies its actual controller and sensor protection. An intervention is not a proven prevented collision. Requested speed and measured speed are reported separately.</p></section>';
   $('resultsPhase').querySelector('.analysis-heading').after(results);
   const items=['ROBOSPHERE','NORMAL'].map(mode=>{
-    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · RULE protection':'Normal · obstacle protection off')+'</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><p class="presentation-stress"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
+    const box=document.createElement('article');box.innerHTML='<h3>'+(mode==='ROBOSPHERE'?'Robosphere · predictive RULE':'Normal · reactive sensor braking')+'</h3><video muted playsinline preload="metadata"></video><p class="presentation-outcome">Not started</p><p class="presentation-speed"></p><p class="presentation-stress"></p><dl class="presentation-metrics"></dl><details><summary>Recorded events</summary><ol></ol></details>';
     results.querySelector('.presentation-videos').append(box);
     return {mode,box,video:box.querySelector('video'),root:null,status:'PENDING'};
   });
@@ -128,13 +129,14 @@ export function installPresentationRun(p,tools,clearControls){
     const step=presentationStep(status,data?.arm);
     panel.querySelectorAll('.presentation-steps li').forEach((el,i)=>{el.dataset.active=String(busy&&i===step);el.dataset.complete=String(status==='COMPLETE'||i<step);});
     const archived=p.reviewedComparison;
-    const pair=archived||p.journeyComparison,isPresentation=[3,4].includes(pair?.version);
+    const pair=archived||p.journeyComparison,isPresentation=[3,4,6].includes(pair?.version);
     results.hidden=!isPresentation;
     if(isPresentation){
       $('ordinaryComparison').hidden=true;$('hybridResults').hidden=true;
       $('presentationMatch').textContent=pair.conditions_match?'Verified matching initial conditions · reactive traffic can diverge':'Initial conditions pending or unverified';
       $('presentationSummary').textContent=presentationSummary(pair);
       for(const item of items){const run=pair.runs?.[item.mode];
+        item.box.querySelector('h3').textContent=(item.mode==='NORMAL'?'Normal · ':'Robosphere · ')+recordedDriverDescription(run);
         item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,!archived&&data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
         item.box.querySelector('.presentation-stress').textContent=stressSummary(run?.stress_audit);
@@ -146,7 +148,7 @@ export function installPresentationRun(p,tools,clearControls){
         if(item.root!==root){item.video.pause();item.root=root;item.status='PENDING';item.video.removeAttribute('src');}
       }
       if(!polling&&performance.now()-lastPoll>1500){lastPoll=performance.now();polling=true;
-        Promise.allSettled(items.filter(i=>i.root&&i.status!=='READY').map(async i=>{const root=i.root,response=await fetch(root+'video-status.json',{cache:'no-store'});if(!response.ok)return;const v=await response.json();if(i.root!==root)return;i.status=v.status;i.duration_s=v.duration_s;if(v.status==='READY')i.video.src=root+'driving.mp4';})).finally(()=>{polling=false;});
+        Promise.allSettled(items.filter(i=>i.root&&i.status!=='READY').map(async i=>{const root=i.root,response=await fetch(root+'video-status.json',{cache:'no-store'});if(!response.ok)return;const v=await response.json();if(i.root!==root)return;const filename=preferredVideo(v);i.status=filename?'READY':v.status==='READY'?'WAITING_FOR_ANNOTATION':v.status;i.duration_s=v.duration_s;if(filename)i.video.src=root+filename;if(v.status==='ERROR')$('presentationPlaybackStatus').textContent=v.error||'Video export failed; the saved outcome remains available.';})).finally(()=>{polling=false;});
       }
       $('presentationReplay').disabled=!items.every(i=>i.status==='READY');
       if(status==='PLAYBACK'&&archived)p.reviewedComparison=null;

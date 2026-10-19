@@ -248,8 +248,9 @@ class RuntimeSafetyFeasibilityValidator:
 
 
 class ActiveSafetySupervisor:
-    def __init__(self, config=None):
+    def __init__(self, config=None, *, anticipation_enabled=True):
         self.config = config or RuntimeSafetyConfig.load()
+        self.anticipation_enabled = anticipation_enabled
         self.enabled = self.config.enabled_by_default
         self.teacher = YaRabOstorhaSafetyTeacher(self.config.teacher)
         self.validator = RuntimeSafetyFeasibilityValidator()
@@ -284,13 +285,14 @@ class ActiveSafetySupervisor:
             steering=base.steering if abs(base.steering)>=.05 else None,
             geometry=getattr(self,'geometry',None),forward_path=getattr(self,'forward_path',None),
             measured_space=getattr(self,'measured_space',None))
-        crossing=self.path_conflicts.assess(scene['lidar_surfaces'],observation,geometry=getattr(self,'geometry',None),
+        crossing=(self.path_conflicts.assess(scene['lidar_surfaces'],observation,geometry=getattr(self,'geometry',None),
             forward_path=getattr(self,'forward_path',None),ground_plane=scene['lidar_ground_plane'])
+            if self.anticipation_enabled else {'conflict':None,'coverage':{},'observations':[]})
         conflict=crossing['conflict']
         from .pedestrian_anticipation import crossing_forecast
         from .motion_geometry import VehicleGeometry
-        pedestrian=crossing_forecast(getattr(self,'control_prediction',None),observation,base,
-            getattr(self,'geometry',None) or VehicleGeometry())
+        pedestrian=(crossing_forecast(getattr(self,'control_prediction',None),observation,base,
+            getattr(self,'geometry',None) or VehicleGeometry()) if self.anticipation_enabled else None)
         speed = observation.ego.speed_mps
         envelope = t.minimum_clearance_m + speed*t.reaction_time_s + speed*speed/(2*t.assumed_deceleration_mps2)
         distance = scene['target_range_m']
@@ -366,6 +368,10 @@ class ActiveSafetySupervisor:
         self.last_fault = None
         if self.active and not was_active: self.interventions += 1
         self.status.update(status='BRAKING' if self.active and requested else 'COVERAGE_LIMITED' if self.active and desired <= coverage_brake else 'RELEASING' if self.active else 'MONITORING',
+            type='RULE_BASED_SAFETY' if self.anticipation_enabled else 'REACTIVE_SENSOR_SAFETY',
+            actual_generator=('RULE' if self.anticipation_enabled else 'REACTIVE_SENSORS') if self.active else 'BASE_DRIVER',
+            motion_prediction_used=self.anticipation_enabled, learned_control_used=False,
+            reactive_risk='FORWARD_COLLISION_RISK' if hazard else 'UNKNOWN_SPACE' if unknown else 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED',
             risk='POSSIBLE_PEDESTRIAN_CROSSING' if pedestrian else 'PATH_CONFLICT' if conflict else 'FORWARD_COLLISION_RISK' if hazard else 'UNKNOWN_SPACE' if unknown else 'FORWARD_CLEAR_SIDE_REAR_UNVERIFIED',
             active=self.active, reason=reason, frame_id=observation.frame_id, timestamp_s=now,
             stopping_envelope_m=envelope, release_envelope_m=envelope+t.release_hysteresis_m,

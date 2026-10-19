@@ -1,4 +1,5 @@
 import gzip
+import hashlib
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -50,3 +51,19 @@ class StorageRetentionTests(TestCase):
             (failed/'driving.mp4').unlink()
             self.assertEqual(retire_guided_history(workspace),[])
             self.assertTrue((failed/'rgb/frame.jpg').exists())
+
+    def test_required_annotation_must_be_ready_and_checksum_verified_before_retirement(self):
+        with TemporaryDirectory() as directory:
+            workspace=Path(directory);old=self.fixture(workspace,'1')
+            self.fixture(workspace,'2');self.fixture(workspace,'3')
+            status={'status':'READY','annotation_required':True}
+            (old/'video-status.json').write_text(json.dumps(status))
+            self.assertEqual(retire_guided_history(workspace),[])
+            path=old/'driving-annotated.mp4';path.write_bytes(b'overlay')
+            status['variants']={'annotated':{'status':'READY','sha256':'incorrect'}}
+            (old/'video-status.json').write_text(json.dumps(status))
+            self.assertEqual(retire_guided_history(workspace),[])
+            status['variants']['annotated']['sha256']=hashlib.sha256(path.read_bytes()).hexdigest()
+            (old/'video-status.json').write_text(json.dumps(status))
+            self.assertEqual(len(retire_guided_history(workspace)),1)
+            self.assertTrue(path.exists())

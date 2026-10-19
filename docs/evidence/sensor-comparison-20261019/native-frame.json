@@ -1,0 +1,20 @@
+{
+  "scope": "FRAME_DECODED_FROM_RETAINED_NATIVE_ANNOTATED_MP4",
+  "native_report_id": "00a30e0e70184610adea8593e5711268",
+  "source_archive_sha256": "e0fda15b211feafb9c700fd130ff6c81fcb6e62ceb072f6ddc5a1c2601aa470c",
+  "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\sensor-comparison-20261019\\37b8ddbd46f5423097b3199b96f42950\\native-recordings\\normal_city\\run_92340d2bbfdd424e8da522fe57a10e62",
+  "video": "driving-annotated.mp4",
+  "video_sha256": "c31cdcc342dccd796598c2cfd142eb0532f907a38abf3ba2a2cd4871c1d21695",
+  "video_time_s": 5.1,
+  "image": "docs\\evidence\\sensor-comparison-20261019\\native-pedestrian-forecast.png",
+  "image_sha256": "af1a9c4050ac2dcf47d2c30ac4ebb121f4a6bb852365a84db0d2eea40d7205d3",
+  "overlay": {
+    "status": "READY",
+    "predictive": true,
+    "forecast_frames": 499,
+    "rendered_paths": 4267,
+    "maximum_forecast_age_s": 0.75,
+    "missing_forecast_frames": 1
+  },
+  "qualification": "Real recorded camera plus measured forecast overlay; not an RL result or general driving acceptance"
+}

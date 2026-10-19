@@ -25,7 +25,7 @@ def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
         for pattern in ('backend/core/*.py','backend/carla/*.py','backend/computer_vision/*.py','backend/learning/hybrid_budget.py',
                         'config/hybrid-driving.json','config/route-bypass.json','scripts/validate_hybrid_native.py',
-                        'scripts/native/route_bypass_world.py') for p in ROOT.glob(pattern)}
+                        'scripts/native/route_bypass_world.py','scripts/native/validate_sensor_comparison.py') for p in ROOT.glob(pattern)}
 
 
 def archive_sources(folder,hashes,root=ROOT):
@@ -355,7 +355,7 @@ def run(args):
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--seconds',type=float,default=600)
     parser.add_argument('--rule-ticket',help='Separate expiring RULE repair authorization; never admits hybrid')
-    parser.add_argument('--speed',type=float,default=20);parser.add_argument('--mode',choices=('HYBRID','BASELINE','ROBOSPHERE'),default='HYBRID')
+    parser.add_argument('--speed',type=float,default=20);parser.add_argument('--mode',choices=('HYBRID','BASELINE','ROBOSPHERE','NORMAL'),default='HYBRID')
     parser.add_argument('--spawn',type=int,default=152);parser.add_argument('--length',type=float,default=60)
     parser.add_argument('--sim-seconds',type=float,default=45)
     parser.add_argument('--benchmark',action='store_true')
@@ -374,7 +374,7 @@ if __name__=='__main__':
     parser.add_argument('--worker',action='store_true',help=argparse.SUPPRESS)
     parser.add_argument('--folder',help=argparse.SUPPRESS);parser.add_argument('--began',type=float,help=argparse.SUPPRESS)
     args=parser.parse_args()
-    if args.rule_ticket and (args.mode!='ROBOSPHERE' or args.paired):parser.error('RULE repair ticket cannot enable hybrid or paired hybrid diagnostics')
+    if args.rule_ticket and (args.mode not in ('ROBOSPHERE','NORMAL') or args.paired):parser.error('Sensor repair ticket cannot enable hybrid or paired hybrid diagnostics')
     if not 180<=args.seconds<=1800 or not 5<=args.speed<=50:parser.error('Use a bounded 180–1800 second probe and 5–50 km/h')
     if not 0<=args.profile_steps<=100:parser.error('Profile 0–100 control ticks')
     if not 0<=args.fixture_variant<=100:parser.error('Fixture variant must be 0–100')

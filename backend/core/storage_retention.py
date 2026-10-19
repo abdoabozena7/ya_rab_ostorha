@@ -102,5 +102,10 @@ def _retire_guided_history(workspace,keep):
         status=json.loads((root/'recording-status.json').read_text(encoding='utf8'))
         video=json.loads((root/'video-status.json').read_text(encoding='utf8')) if (root/'video-status.json').exists() else {}
         if status.get('finalized') is not True or video.get('status')!='READY' or not (root/'driving.mp4').is_file():continue
+        if video.get('annotation_required'):
+            annotated=video.get('variants',{}).get('annotated',{})
+            path=root/'driving-annotated.mp4'
+            if annotated.get('status')!='READY' or not path.is_file():continue
+            if hashlib.sha256(path.read_bytes()).hexdigest()!=annotated.get('sha256'):continue
         retired.append(archive_recording(root,workspace,apply=True))
     return retired

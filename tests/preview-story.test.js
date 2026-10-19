@@ -5,17 +5,18 @@ import {previewFrame} from '../frontend/preview-story.js';
 test('both illustrations start from the same car and pedestrian setup',()=>{
   for(const mode of ['NORMAL','ROBOSPHERE']){const f=previewFrame(mode,0);assert.equal(f.carX,-350);assert.equal(f.pedestrianY,0);assert.equal(f.contact,false);}
 });
-test('unprotected illustration meets the crossing pedestrian and retains contact',()=>{
-  const crossing=previewFrame('NORMAL',3),contact=previewFrame('NORMAL',4);
+test('reactive illustration stops before the crossing pedestrian and resumes after clearance',()=>{
+  const crossing=previewFrame('NORMAL',3),stopped=previewFrame('NORMAL',4);
   assert.ok(crossing.pedestrianY>0);assert.equal(crossing.prediction,false);
-  assert.equal(contact.carX+724,780);assert.equal(contact.pedestrianY,36);assert.equal(contact.contact,true);
-  assert.equal(previewFrame('NORMAL',8).carX,contact.carX);
+  assert.ok(stopped.carX+724<780);assert.equal(stopped.pedestrianY,36);assert.equal(stopped.contact,false);
+  assert.equal(previewFrame('NORMAL',8).carX,stopped.carX);
+  assert.ok(previewFrame('NORMAL',9).carX>stopped.carX);
 });
-test('reactive sensing detects and brakes but has insufficient stopping distance',()=>{
-  const before=previewFrame('NORMAL',2.5),detected=previewFrame('NORMAL',2.8),later=previewFrame('NORMAL',3.8);
+test('reactive sensing brakes on road entry without a scripted crash',()=>{
+  const before=previewFrame('NORMAL',1.9),detected=previewFrame('NORMAL',2.1),later=previewFrame('NORMAL',3.2);
   assert.equal(before.reactive,false);assert.equal(detected.reactive,true);assert.equal(detected.braking,true);
-  assert.ok(detected.pedestrianY>0);assert.ok(detected.carX+724>650);
-  assert.ok(later.carX>detected.carX);assert.equal(later.reactive,true);assert.equal(previewFrame('NORMAL',4).contact,true);
+  assert.ok(detected.pedestrianY>0);assert.ok(detected.carX+724<780);
+  assert.ok(later.carX>detected.carX);assert.equal(later.reactive,true);assert.equal(previewFrame('NORMAL',4).contact,false);
 });
 test('prediction precedes crossing, car remains stopped until pedestrian clears',()=>{
   const prediction=previewFrame('ROBOSPHERE',1.5),stopped=previewFrame('ROBOSPHERE',3.2);
@@ -31,4 +32,10 @@ test('both sensors see the same person on the pavement before either response',(
   assert.equal(previewFrame('NORMAL',1.5).braking,false);assert.equal(previewFrame('ROBOSPHERE',1.5).braking,true);
 });
 
-test('the person follows the same crossing timeline until the reactive collision',()=>{for(const t of [0,1,2,2.5,3,4])assert.equal(previewFrame('NORMAL',t).pedestrianY,previewFrame('ROBOSPHERE',t).pedestrianY);});
+test('both drivers observe the same complete crossing timeline and neither has a forced contact',()=>{
+  for(const t of [0,1,2,2.5,3,4,5,7.5,9]){
+    assert.equal(previewFrame('NORMAL',t).pedestrianY,previewFrame('ROBOSPHERE',t).pedestrianY);
+    assert.equal(previewFrame('NORMAL',t).contact,false);
+    assert.equal(previewFrame('ROBOSPHERE',t).contact,false);
+  }
+});

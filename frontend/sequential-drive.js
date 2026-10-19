@@ -3,6 +3,7 @@ import {missionState,modeLabel,stressSummary} from './mission-state.js';
 import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome,presentationSummary} from './presentation-run.js';
 import {installPreviewPlayer} from './preview-player.js';
+import {recordedDriverDescription} from './driver-profile.js';
 
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
@@ -18,12 +19,14 @@ export function installSequentialDrive(p,tools) {
   returnToMission.onclick=()=>{p.reviewedComparison=null;p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');update();};
   const navigator=installGuidedDetails(p,tools,details);details.onclick=()=>navigator.open();
   const experience=document.createElement('main');experience.id='missionExperience';
-  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See the world before our solution</strong>Normal · Lincoln · obstacle protection off</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See our solution</strong>Protected · Mercedes · RULE protection</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>See reactive sensor driving</strong>Normal · Mercedes · sensor braking · no project motion prediction</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong>See predictive driving</strong>Robosphere · same Mercedes · sensor braking + predictive RULE</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
   const preview=installPreviewPlayer(experience.querySelector('#missionPreview'));
+  const telemetry=document.createElement('p');telemetry.id='missionTelemetry';telemetry.setAttribute('role','status');
+  experience.querySelector('#missionDetail').after(telemetry);
   const guide=document.createElement('section');guide.id='missionGuide';guide.setAttribute('aria-labelledby','missionGuideTitle');
   guide.innerHTML='<h2 id="missionGuideTitle">Before you drive</h2>';
   for(const [index,[question,answer]] of [
-    ['What will I see?','Two live drives from the same starting setup. Choose normal or protected first, then start the other drive when you are ready.'],
+    ['What will I see?','The same Mercedes, sensor rig and starting setup. Normal uses reactive sensor braking; Robosphere adds predictive RULE and visible forecast paths. RL is not active in this comparison. Choose either drive first.'],
     ['Does protection prevent every contact?','No. RULE protection may slow or stop the car, but contacts are still possible. The comparison shows what actually happened, including shortened or interrupted attempts.'],
     ['What does Free GPU do?','It saves the recorded portion, closes CARLA and checks that its processes have exited. Your next start begins a new comparison. Previous recordings stay in Menu.'],
   ].entries()){
@@ -85,7 +88,7 @@ export function installSequentialDrive(p,tools) {
   $('missionFreeGPU').onclick=freeGPU;
   function renderRun(mode,run){
     const section=document.createElement('article'),title=document.createElement('h3'),outcome=document.createElement('p'),dl=document.createElement('dl');
-    title.textContent=modeLabel(mode);outcome.textContent=presentationOutcome(run);
+    title.textContent=modeLabel(mode);outcome.textContent=presentationOutcome(run)+' · '+recordedDriverDescription(run);
     for(const [label,key,suffix] of [['Distance','distance_m',' m'],['Recorded contacts','collisions',''],['Recorded time','duration_s',' s']]){
       const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;
       dd.textContent=Number.isFinite(run?.[key])?run[key].toFixed(key==='collisions'?0:1)+suffix:'Not measured';row.append(dt,dd);dl.append(row);
@@ -95,6 +98,11 @@ export function installSequentialDrive(p,tools) {
   }
   function update(){
     const d=p.presentation||{};if(p.connected&&p.fresh)local.launchPending=false;
+    const driving=p.journey?.status==='RUNNING',speed=Number.isFinite(p.telemetry?.speedMps)?p.telemetry.speedMps*3.6:null,target=p.journey?.speed_kmh;
+    const brakeReason=p.stopDiagnostics?.comfort_control?.constraint==='MEASURED_APPROACH'?
+      'Slowing for measured forward clearance':p.stopDiagnostics?.reason||p.safetySystem?.reason||'Following route';
+    telemetry.hidden=!driving;
+    telemetry.textContent=driving?`Speed ${Number.isFinite(speed)?speed.toFixed(1):'—'} / requested ${Number.isFinite(target)?target:'—'} km/h · ${p.stopDiagnostics?.decision_source||p.safetySystem?.actual_generator||'Driver'} · ${brakeReason}`:'';
     if(local.shutdownPending&&(['STOPPED','FAILED'].includes(p.simulatorStop?.status)||p.operationError))local.shutdownPending=false;
     if(pending&&(p.operationError||d.id!==pending.id||d.status!==pending.phase||d.arm!==pending.arm||performance.now()-pending.at>15000)){
       if(performance.now()-pending.at>15000&&!p.operationError)p.operationError='The step did not confirm. Check the connection, then try the available action.';

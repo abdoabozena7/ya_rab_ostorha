@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-19",
+  "software": {
+    "dashboard_build": "PASS",
+    "python": {
+      "discovered": 680,
+      "passed": 678,
+      "skipped": 2
+    },
+    "javascript": {
+      "passed": 167
+    }
+  },
+  "browser": [
+    {
+      "scope": "ISOLATED_UI_FIXTURE_NOT_NATIVE_PREDICTION_ACCEPTANCE",
+      "pixels": 120,
+      "checks": [
+        "Protected main camera renders time-advanced paths, without opening Details",
+        "Forecast fits the contained camera on mobile",
+        "Missing/stale source removes the overlay",
+        "Normal main camera remains distinct from protected forecasts"
+      ],
+      "commands": [
+        {
+          "type": "presentation",
+          "sequence": 1,
+          "frame_id": 125,
+          "timestamp_s": 2.25,
+          "value": {
+            "operation": "PRELOAD",
+            "page_id": "817dbf2f-5261-4b01-93b0-27f993130057"
+          }
+        }
+      ],
+      "errors": [],
+      "requests": []
+    },
+    {
+      "scope": "ISOLATED_UI_FIXTURE_NOT_NATIVE_DRIVING",
+      "checks": [
+        "Both choices identify the same Mercedes, reactive braking and additional predictive RULE",
+        "Both illustrated drivers stop without a forced collision",
+        "Normal explains sensor braking and shows the real brake source without a forecast"
+      ],
+      "examples": [
+        {
+          "mode": "NORMAL",
+          "contact": false,
+          "stopped": "stopped",
+          "position": -42
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "contact": false,
+          "stopped": "stopped",
+          "position": -74
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scope": "NATIVE_CAMERA_VIDEOS_WITH_ISOLATED_UI_STATE_NOT_ANOTHER_DRIVE",
+      "download_url": "http://127.0.0.1:8016/runs/normal_city/run_dacde837934d4530ac0d8aa5e1e7c2ba/driving-annotated.mp4",
+      "checks": [
+        "Both new native annotated exports play through the production HTTP range handler",
+        "Normal MP4 download selects its annotated native export",
+        "Recorded capabilities identify reactive Normal and predictive RULE without claiming RL",
+        "Independent starts remain labelled unverified in this isolated playback fixture"
+      ],
+      "headings": [
+        "Robosphere · Sensors + reactive braking + predictive RULE · RL not active",
+        "Normal · Sensors + reactive braking · project motion prediction off"
+      ],
+      "playback": [
+        {
+          "source": "/runs/normal_city/run_001a8e1effb44f31ba7e55c50db0f111/driving-annotated.mp4",
+          "time_s": 0.156015,
+          "duration_s": 11.201
+        },
+        {
+          "source": "/runs/normal_city/run_dacde837934d4530ac0d8aa5e1e7c2ba/driving-annotated.mp4",
+          "time_s": 0.155785,
+          "duration_s": 11.251
+        }
+      ],
+      "requests": [
+        {
+          "path": "/runs/normal_city/run_001a8e1effb44f31ba7e55c50db0f111/video-status.json",
+          "range": null,
+          "status": 200
+        },
+        {
+          "path": "/runs/normal_city/run_dacde837934d4530ac0d8aa5e1e7c2ba/video-status.json",
+          "range": null,
+          "status": 200
+        },
+        {
+          "path": "/runs/normal_city/run_dacde837934d4530ac0d8aa5e1e7c2ba/driving-annotated.mp4",
+          "range": "bytes=0-",
+          "status": 206
+        },
+        {
+          "path": "/runs/normal_city/run_001a8e1effb44f31ba7e55c50db0f111/driving-annotated.mp4",
+          "range": "bytes=0-",
+          "status": 206
+        },
+        {
+          "path": "/runs/normal_city/run_001a8e1effb44f31ba7e55c50db0f111/video-status.json",
+          "range": null,
+          "status": 200
+        },
+        {
+          "path": "/runs/normal_city/run_dacde837934d4530ac0d8aa5e1e7c2ba/video-status.json",
+          "range": null,
+          "status": 200
+        },
+        {
+          "path": "/runs/normal_city/run_001a8e1effb44f31ba7e55c50db0f111/driving-annotated.mp4",
+          "range": "bytes=1048576-",
+          "status": 206
+        },
+        {
+          "path": "/runs/normal_city/run_dacde837934d4530ac0d8aa5e1e7c2ba/driving-annotated.mp4",
+          "range": "bytes=1048576-",
+          "status": 206
+        },
+        {
+          "path": "/runs/normal_city/run_001a8e1effb44f31ba7e55c50db0f111/driving-annotated.mp4",
+          "range": "bytes=0-127",
+          "status": 206,
+          "kind": "EXPLICIT_HTTP_RANGE_CHECK"
+        }
+      ]
+    }
+  ],
+  "native": {
+    "driving_trials": 24,
+    "registered_contacts": 0,
+    "arrivals": 16,
+    "normal_front_stop_cases": 3,
+    "annotated_and_raw_exports_ready": 24,
+    "matched_initial_configuration_pairs": 12,
+    "general_driving_accepted": false,
+    "held_same_vehicle_reset": "PASS; separate lifecycle check, not another driving trial"
+  },
+  "qualification": "Original native failures and source archives are retained. UI fixtures and native video playback are distinct from driving acceptance."
+}

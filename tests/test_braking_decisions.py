@@ -190,17 +190,23 @@ class BrakingDecisionTests(unittest.TestCase):
                     self.assertIsNone(service.journey_observer['measured_range_m'])
                     self.assertIsNone(service.journey_observer['path_conflict'])
 
-    def test_normal_manual_and_automatic_preserve_driver_under_a_real_observed_hazard(self):
+    def test_normal_automatic_brakes_for_hazards_while_manual_retains_driver_control(self):
         for automatic in (False, True):
             with self.subTest(automatic=automatic):
                 service, _, base = fixture(automatic=automatic, obstacle=True)
                 service._iteration()
-                applied = service.provider.apply_control.call_args.args[0]
-                self.assertEqual(applied, base)
-                self.assertIsNone(service.safety_command)
+                applied = (service.provider.apply_control_confirmed if automatic else service.provider.apply_control).call_args.args[0]
+                if automatic:
+                    self.assertEqual((applied.throttle,applied.brake),(0.,1.))
+                    self.assertIsNotNone(service.safety_command)
+                    self.assertFalse(service.active_safety.anticipation_enabled)
+                    self.assertEqual(service.stop_diagnostics['decision_source'],'REACTIVE_SENSORS')
+                else:
+                    self.assertEqual(applied,base)
+                    self.assertIsNone(service.safety_command)
                 self.assertTrue(service.journey_observer['active'])
                 self.assertEqual(service.stop_diagnostics['base_command'], to_dict(base))
-                self.assertEqual(service.stop_diagnostics['applied_command'], to_dict(base))
+                self.assertEqual(service.stop_diagnostics['applied_command'], to_dict(applied))
 
     def test_normal_skips_maneuver_and_rear_acceleration_overlays(self):
         service, _, base = fixture(automatic=True)
@@ -214,20 +220,20 @@ class BrakingDecisionTests(unittest.TestCase):
         service.provider.navigation_planner.evaluate.assert_not_called()
         self.assertFalse(service.rear_assist)
 
-    def test_normal_sensor_fault_records_the_error_without_stopping_either_driver(self):
+    def test_normal_automatic_sensor_fault_stops_and_manual_observer_fault_retains_control(self):
         for automatic in (False, True):
             with self.subTest(automatic=automatic):
                 service, _, base = fixture(automatic=automatic)
                 with patch.object(service.active_safety, 'evaluate', side_effect=ValueError('corrupt depth asset')):
                     service._iteration()
-                self.assertEqual(service.provider.apply_control.call_args.args[0], base)
-                self.assertEqual(service.arbiter.machine.mode, ControlMode.AUTOMATIC if automatic else ControlMode.MANUAL)
+                applied=service.provider.apply_control.call_args.args[0]
+                self.assertEqual(applied.brake,1.) if automatic else self.assertEqual(applied,base)
+                self.assertEqual(service.arbiter.machine.mode, ControlMode.PAUSED if automatic else ControlMode.MANUAL)
                 self.assertEqual(service.safety_fault['stage'], 'supervisor_evaluation')
                 self.assertEqual(service.safety_fault['message'], 'corrupt depth asset')
-                self.assertTrue(service.safety_fault['observer_only'])
-                self.assertEqual(service.active_safety.status['status'], 'OBSERVER_FAULT')
-                self.assertIsNone(service.active_safety.last_fault)
-                self.assertNotEqual(service.stop_diagnostics['decision_source'], 'SENSOR_FAILURE')
+                self.assertEqual(service.safety_fault['observer_only'],not automatic)
+                self.assertEqual(service.active_safety.status['status'], 'SENSOR_FAULT_STOP' if automatic else 'OBSERVER_FAULT')
+                if not automatic:self.assertIsNone(service.active_safety.last_fault)
 
     def test_operator_stop_emergency_lock_and_communication_timeout_still_apply_in_normal(self):
         for automatic in (False, True):

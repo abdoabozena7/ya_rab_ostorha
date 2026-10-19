@@ -35,7 +35,7 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
         with events.open(encoding='utf8') as stream:
             for line in stream:
                 event=json.loads(line);journey=event.get('payload',{}).get('journey',{})
-                if journey.get('status')=='RUNNING' and (journey.get('driving_mode') in ('HYBRID','BASELINE') or journey.get('presentation_id')):
+                if journey.get('status')=='RUNNING' and (journey.get('driving_mode') in ('HYBRID','BASELINE') or journey.get('presentation_id') or metadata.get('config',{}).get('driver_profile')):
                     anchor=event['timestamp_s'];break
     if anchor is not None:
         frames=[row for row in frames if row['timestamp_s']>=anchor-1e-6]
@@ -52,7 +52,35 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
     if ffmpeg is None:
         from imageio_ffmpeg import get_ffmpeg_exe
         ffmpeg = get_ffmpeg_exe()
-    concat = root/'video.ffconcat'
+    def encode(rows,filename):
+        return _encode_video(root,rows,ffmpeg,filename)
+    encode(frames,'driving.mp4')
+    output=root/'driving.mp4'
+    status={'status':'READY','source':'RECORDED_NATIVE_DRIVING_CAMERA' if native else 'TEST_FIXTURE','clock':'SIMULATION_TIME',
+            'frames':len(frames),'first_timestamp_s':frames[0]['timestamp_s'],
+            'last_timestamp_s':frames[-1]['timestamp_s'],'duration_s':frames[-1]['timestamp_s']-frames[0]['timestamp_s'],
+            'video':'driving.mp4','sha256':hashlib.sha256(output.read_bytes()).hexdigest(),
+            'frame_index':'telemetry/video-frames.jsonl',
+            'clock_zero_timestamp_s':anchor if anchor is not None else frames[0]['timestamp_s'],
+            'alignment_source':'ADMITTED_JOURNEY_START' if anchor is not None else 'FIRST_RECORDED_CAMERA_FRAME',
+            'maximum_frame_gap_s':max((b['timestamp_s']-a['timestamp_s'] for a,b in zip(frames,frames[1:])),default=0.)}
+    status['variants']={'raw':{'status':'READY','video':'driving.mp4','sha256':status['sha256'],'source':status['source']}}
+    from .driver_profiles import SENSOR_COMPARISON_PROTOCOL
+    profile=metadata.get('config',{}).get('driver_profile') or {}
+    status['annotation_required']=profile.get('protocol')==SENSOR_COMPARISON_PROTOCOL
+    if status['annotation_required']:
+        status['status']='ENCODING_ANNOTATION';_status(root,status)
+        from .video_prediction import export_annotated
+        status['variants']['annotated']=export_annotated(root,frames,metadata,encode)
+        if not native:status['variants']['annotated']['source']='TEST_FIXTURE_WITH_OVERLAY'
+        status['preferred_video']='driving-annotated.mp4';status['status']='READY'
+    else:status['preferred_video']='driving.mp4'
+    _status(root,status)
+    return status
+
+
+def _encode_video(root,frames,ffmpeg,filename):
+    concat = root/(filename+'.ffconcat')
     lines = ['ffconcat version 1.0']
     for i,row in enumerate(frames):
         path = (root/row['asset']['path']).resolve().as_posix().replace("'", "'\\''")
@@ -63,7 +91,7 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
     lines.append(lines[-3])
     lines.append('option framerate 1000')
     concat.write_text('\n'.join(lines)+'\n',encoding='utf8')
-    output=root/'driving.mp4'; temporary=root/'driving.encoding.mp4'
+    output=root/filename; temporary=root/(filename+'.encoding.mp4')
     command=[str(ffmpeg),'-hide_banner','-loglevel','error','-y','-safe','0','-f','concat','-i',str(concat),
              '-fps_mode','vfr','-vf','pad=ceil(iw/2)*2:ceil(ih/2)*2','-c:v','libx264','-threads','1',
              '-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-movflags','+faststart',str(temporary)]
@@ -71,16 +99,7 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
                           creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     if result.returncode: raise RuntimeError('Native video export failed: '+result.stderr[-1000:])
     temporary.replace(output)
-    status={'status':'READY','source':'RECORDED_NATIVE_DRIVING_CAMERA' if native else 'TEST_FIXTURE','clock':'SIMULATION_TIME',
-            'frames':len(frames),'first_timestamp_s':frames[0]['timestamp_s'],
-            'last_timestamp_s':frames[-1]['timestamp_s'],'duration_s':frames[-1]['timestamp_s']-frames[0]['timestamp_s'],
-            'video':'driving.mp4','sha256':hashlib.sha256(output.read_bytes()).hexdigest(),
-            'frame_index':'telemetry/video-frames.jsonl',
-            'clock_zero_timestamp_s':anchor if anchor is not None else frames[0]['timestamp_s'],
-            'alignment_source':'ADMITTED_JOURNEY_START' if anchor is not None else 'FIRST_RECORDED_CAMERA_FRAME',
-            'maximum_frame_gap_s':max((b['timestamp_s']-a['timestamp_s'] for a,b in zip(frames,frames[1:])),default=0.)}
-    _status(root,status)
-    return status
+    return output
 
 
 def _status(root, value):
@@ -104,7 +123,9 @@ def export_after_close(recorder):
             except (OSError,ValueError,RuntimeError) as error:
                 (root/'storage-retention-warning.json').write_text(json.dumps({'error':str(error)}),encoding='utf8')
         except Exception as error:
-            _status(root,{'status':'ERROR','error':str(error)})
+            try:status=json.loads((root/'video-status.json').read_text(encoding='utf8'))
+            except (OSError,ValueError):status={}
+            _status(root,{**status,'status':'ERROR','error':str(error)})
         finally:
             with _lock:_workers.discard(threading.current_thread())
     worker=threading.Thread(target=run,daemon=True,name='native-video-export')

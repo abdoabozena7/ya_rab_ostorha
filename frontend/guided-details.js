@@ -1,6 +1,7 @@
 import {showWorkspace} from './presentation-ui.js';
 import {driveState} from './drive-state.js';
 import {DetailsNavigation,detailGroups,configurationReason,availableRecordings,recordedConditionsMatch} from './details-state.js';
+import {preferredVideo,recordedDriverDescription} from './driver-profile.js';
 
 const $=id=>document.getElementById(id);
 const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
@@ -144,7 +145,7 @@ export function installGuidedDetails(p,tools,trigger){
       const pair=await r.json();if(token!==selection)return;
       if(pair.pair_id!==comparison.value||!pair.runs)throw new Error('Saved comparison identity does not match.');
       selectedPair={...pair,conditions_match:recordedConditionsMatch(pair)};
-      resultNote.textContent=[3,4].includes(pair.version)?'Saved presentation; each original outcome is retained.':'Saved legacy comparison; paired video playback is available for presentations.';
+      resultNote.textContent=[3,4,6].includes(pair.version)?'Saved presentation; each original outcome is retained.':'Saved legacy comparison; paired video playback is available for presentations.';
       mediaKey='';update();
     }catch(error){if(token===selection)resultNote.textContent=error.message;}
   };
@@ -158,15 +159,15 @@ export function installGuidedDetails(p,tools,trigger){
     const request=++replayRequest;
     p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();
     p.reviewedComparison=comparison.value==='current'?null:pair;
-    document.body.classList.toggle('archive-review',![3,4].includes(pair.version));
-    if(![3,4].includes(pair.version))renderLegacy(pair);
+    document.body.classList.toggle('archive-review',![3,4,6].includes(pair.version));
+    if(![3,4,6].includes(pair.version))renderLegacy(pair);
     close();showWorkspace('results');
     if(action==='replay'){
       // The regular renderer owns loading and synchronizing the real media.
       let attempts=0;const replay=()=>{
         if(request!==replayRequest||reviewBlocked())return;
         if(++attempts>50){$('presentationPlaybackStatus').textContent='Videos are still loading. Open Details → Results to retry playback.';return;}
-        const expected=availableRecordings(pair).map(v=>v.root+'driving.mp4');
+        const expected=availableRecordings(pair).map(file=>files.get(pair.pair_id+':'+file.mode));
         const loaded=[...document.querySelectorAll('#presentationResults video')].every(v=>expected.some(path=>v.getAttribute('src')===path));
         if(loaded&&!$('presentationReplay').disabled)$('presentationReplay').click();else setTimeout(replay,200);
       };setTimeout(replay,150);
@@ -178,7 +179,7 @@ export function installGuidedDetails(p,tools,trigger){
     legacyResults.hidden=false;legacyResults.replaceChildren(node('h2','Saved comparison · '+pair.pair_id.slice(0,8)),
       node('p',pair.conditions_match?'Matching initial conditions verified. Reactive traffic can diverge.':'Matching initial conditions were not verified.','muted'));
     for(const [mode,run] of Object.entries(pair.runs)){
-      const section=node('article');section.append(node('h3',mode),node('p',run.status+' · '+String(run.reason||'').replaceAll('_',' ')));
+      const section=node('article');section.append(node('h3',mode),node('p',recordedDriverDescription(run)),node('p',run.status+' · '+String(run.reason||'').replaceAll('_',' ')));
       const fault=run.stop_diagnostics?.runtime_fault;if(fault)section.append(node('p',fault.exception_type+': '+fault.message));
       const metrics=node('dl',null,'details-summary');
       for(const [label,key,suffix] of [['Contacts','collisions',''],['Distance','distance_m',' m'],['Duration','duration_s',' s']]){
@@ -310,12 +311,12 @@ export function installGuidedDetails(p,tools,trigger){
     const pair=currentPair(),pairKey=pair?.pair_id+':'+JSON.stringify(availableRecordings(pair).map(r=>r.run.recording));
     if(pairKey!==mediaKey){mediaKey=pairKey;
       for(const file of availableRecordings(pair))fetch(file.root+'video-status.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{
-        if(v?.status==='READY')files.set(pair.pair_id+':'+file.mode,file.root+'driving.mp4');
+        const filename=preferredVideo(v);if(filename)files.set(pair.pair_id+':'+file.mode,file.root+filename);
       }).catch(()=>{});
     }
     const active=reviewBlocked();
     const action=resultAction.value,download=action.startsWith('download');
-    resultOpen.disabled=!pair||active||(action==='replay'&&(![3,4].includes(pair.version)||!['ROBOSPHERE','NORMAL'].every(m=>files.has(pair.pair_id+':'+m))))||
+    resultOpen.disabled=!pair||active||(action==='replay'&&(![3,4,6].includes(pair.version)||!['ROBOSPHERE','NORMAL'].every(m=>files.has(pair.pair_id+':'+m))))||
       (download&&!files.has(pair.pair_id+':'+action.slice(8)));
     if(active)resultNote.textContent='Finish or stop the current run before opening saved results.';
     else if(pair&&!resultNote.textContent)resultNote.textContent='Original outcomes and failures remain attached to each recording.';

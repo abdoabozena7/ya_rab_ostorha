@@ -2,7 +2,7 @@
 export const illustratedPreview=`
 <svg class="illustrated-drive" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" role="img" aria-labelledby="illustratedDriveTitle" aria-describedby="illustratedDriveDescription">
   <title id="illustratedDriveTitle">Illustrated pedestrian crossing comparison</title>
-  <desc id="illustratedDriveDescription">Both cars detect the same person on the pavement. One brakes only after road entry and cannot stop in time at speed. The other predicts crossing, slows early and lets the person pass. These are scripted illustrations, not live outcomes.</desc>
+  <desc id="illustratedDriveDescription">Both cars detect the same person and stop before contact. Normal brakes reactively when the person enters the road. Predictive RULE slows earlier for a possible crossing. These are scripted illustrations, not live outcomes or proof of superiority.</desc>
   <defs>
     <pattern id="sketchHatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(24)"><path d="M0 0V9" stroke="#78716c" stroke-width=".6" opacity=".12"/></pattern>
     <g id="sketchTree" stroke="#69645c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

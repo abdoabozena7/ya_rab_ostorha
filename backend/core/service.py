@@ -133,6 +133,8 @@ class SimulationService:
 
     def set_safety_enabled(self, value):
         with self.lock:
+            if self.journey.get('driver_profile') and self.journey.get('status') in ('STARTING','RUNNING'):
+                raise ValueError('Stop the current drive before changing its recorded safety capabilities')
             if self._comparison_busy():
                 raise ValueError('Restart with a comparison button to change demo safety')
             self._require_normal_runtime()
@@ -165,6 +167,9 @@ class SimulationService:
         return value if isinstance(value,RuleRouteBypass) else None
 
     def _guided_forecast_required(self):
+        if (self.arbiter.machine.mode==ControlMode.AUTOMATIC and self.journey.get('driving_mode')=='ROBOSPHERE'
+                and self.journey.get('status') in ('STARTING','RUNNING')):
+            return True
         if self.journey.get('validation_deadline') and self.journey.get('driving_mode')=='ROBOSPHERE' and self.journey.get('status') in ('STARTING','RUNNING'):
             return True  # The scoped RULE harness exercises the guided sensor path.
         data=self.presentation.data
@@ -175,6 +180,11 @@ class SimulationService:
     def _active_safety_step(self, observer_base=None):
         supervisor = self.active_safety
         if supervisor is None: return
+        anticipation = not (self.arbiter.machine.mode==ControlMode.AUTOMATIC and self.journey.get('driving_mode')=='NORMAL')
+        if getattr(supervisor,'anticipation_enabled',True) != anticipation:
+            supervisor.anticipation_enabled=anticipation
+            supervisor.reset()
+            self.safety_decision_key=self.safety_decision_command=None
         bypass=self._route_bypass()
         if self.arbiter.machine.mode==ControlMode.AUTOMATIC and bypass is not None and bypass.engaged:
             return self._hybrid_execution_step(route_bypass=True)
@@ -347,7 +357,7 @@ class SimulationService:
 
     def _normal_driving(self):
         mode = self.arbiter.machine.mode
-        return (mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') in ('NORMAL', 'BASELINE') or
+        return (mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') == 'BASELINE' or
                 mode == ControlMode.MANUAL and self.manual_driving_mode == 'NORMAL')
 
     def _hybrid_execution_step(self,*,route_bypass=False):
@@ -536,6 +546,16 @@ class SimulationService:
             else: prediction.pop('render_reference',None)
         if self.recorder and hasattr(self.recorder,'record_safety'):
             self.recorder.record_safety(self.stop_diagnostics)
+            if (self.journey.get('driving_mode')=='ROBOSPHERE' and self.journey.get('status')=='RUNNING'
+                    and scene is not None and scene.session_id==self.session_id
+                    and scene.prediction.get('motion_tracking_complete')
+                    and getattr(self,'recorded_video_prediction_key',None)!=(id(self.recorder),scene.observation.frame_id)):
+                from .display_prediction import measured_control_view
+                forecast=measured_control_view(scene,self.render_pose_cache.get(scene.observation.frame_id))
+                self.recorder.record_trace({'kind':'VIDEO_PREDICTION','session_id':self.session_id,
+                    'evaluation_frame':scene.observation.frame_id,'timestamp_s':scene.observation.timestamp_s,
+                    'prediction':forecast})
+                self.recorded_video_prediction_key=(id(self.recorder),scene.observation.frame_id)
             perception=getattr(self,'control_perception',None)
             result=perception.latest(self.session_id) if perception else None
             if result:
@@ -630,10 +650,14 @@ class SimulationService:
                 raise ValueError('Recording needs at least 1 GiB free disk space; preserve/archive existing runs before starting')
             environment=self.provider.environment_state()
             label='Controlled scenario native run' if environment and environment.get('mode')=='TRAINING' else 'Living city native run'
+            recording_config=dict(self.provider.recording_metadata())
+            if self.journey.get('driver_profile') and self.journey.get('status') in ('STARTING','RUNNING'):
+                recording_config.update(driver_profile=copy.deepcopy(self.journey['driver_profile']),session_id=self.session_id)
+                recording_config['driver_id']=self.journey['driver_profile']['id']
             self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
                 label, self.name, DataOrigin.REAL_SIMULATION,
                 seed=(environment.get('scenario') or {}).get('random_seed') if environment else None,
-                created_at_utc=datetime.now(timezone.utc).isoformat(), config=self.provider.recording_metadata()))
+                created_at_utc=datetime.now(timezone.utc).isoformat(), config=recording_config))
             from .recording import BufferedRunRecorder
             self.recorder = BufferedRunRecorder(self.recorder)
             self.last_recording=self.recorder
@@ -646,7 +670,7 @@ class SimulationService:
         from .recording import BufferedRunRecorder
         if isinstance(recorder, BufferedRunRecorder):
             recorder.finish()
-            if self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id'):
+            if self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id') or self.journey.get('driver_profile'):
                 from .driving_video import export_after_close
                 export_after_close(recorder)
         else:recorder.close()
@@ -943,7 +967,7 @@ class SimulationService:
             raise ValueError('Destination journeys are unavailable in this mode')
         speed = finite(speed_kmh)
         from ..learning.native_validation_budget import active_rule_ticket
-        rule_validation = active_rule_ticket() if driving_mode == 'ROBOSPHERE' else None
+        rule_validation = active_rule_ticket() if driving_mode in ('ROBOSPHERE','NORMAL') else None
         guided = presentation and self.presentation.data.get('guided') is True
         maximum = 80 if guided else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
         if not 5 <= speed <= maximum:
@@ -1085,7 +1109,7 @@ class SimulationService:
                 getattr(self.provider,'navigation_target_mps',self.journey['speed_kmh']/3.6),
                 hazard=bool(stop_reason and stop_reason!='Navigation speed/route controller'),
                 forward_status=self.active_safety.snapshot() if self.active_safety and
-                    self.journey.get('driving_mode')=='ROBOSPHERE' else None)
+                    self.journey.get('driving_mode') in ('ROBOSPHERE','NORMAL') else None)
         self.base_driver_command = command
         bypass=self._route_bypass()
         if bypass is not None and self.journey.get('driving_mode','ROBOSPHERE')=='ROBOSPHERE':
@@ -1638,13 +1662,11 @@ class SimulationService:
         result['displayCamera'] = self.provider.driving_camera()[1] if live and hasattr(self.provider,'driving_camera') else None
         motion=getattr(self,'motion_snapshot',None)
         result['motionQuality']=motion.get('motionQuality') if motion and motion.get('session_id')==self.session_id else None
-        normal_automatic = self.journey.get('driving_mode') == 'NORMAL' and self.journey.get('status') in ('STARTING','RUNNING')
         normal_manual = self.arbiter.machine.mode == ControlMode.MANUAL and self.manual_driving_mode == 'NORMAL'
-        if normal_automatic or normal_manual:
+        if normal_manual:
             result['safetySystem'].update(enabled=False, active=False, status='STANDARD_DRIVER',
                 actual_generator='BASE_DRIVER', intervention_count=0,
-                reason=('Manual pedals and steering; sensors observe only; obstacle protection off'
-                        if normal_manual else 'Native route and signal follower; sensors observe only; obstacle protection off'))
+                reason='Manual pedals and steering; sensors observe only; obstacle protection off')
         result['maneuver']=copy.deepcopy(getattr(self,'maneuver_status',None))
         result['simulatorStop']={'available':self.can_stop_simulator(),**copy.deepcopy(self.simulator_stop)}
         if self.startup_ticket and self.simulator_start['status']=='STARTING':
@@ -1886,10 +1908,14 @@ class SimulationService:
                             if callable(clear_presentation):clear_presentation()
                         manifest = (self.provider.journey_manifest(value, benchmark=True) if journey.get('benchmark')
                                     else self.provider.journey_manifest(value))
+                        if driving_mode in ('NORMAL','ROBOSPHERE'):
+                            from .driver_profiles import driver_profile,SENSOR_COMPARISON_PROTOCOL
+                            manifest.update(protocol=SENSOR_COMPARISON_PROTOCOL,driver_profile=driver_profile(driving_mode))
+                            journey['driver_profile']=driver_profile(driving_mode)
                         if journey.get('presentation_id'):
-                            manifest.update(presentation_id=journey['presentation_id'], protocol='PRESENTATION_RULE_NORMAL_V1')
+                            manifest.update(presentation_id=journey['presentation_id'])
                             if self.presentation.data.get('guided'):
-                                manifest.update(guided=True,protocol='GUIDED_RULE_NORMAL_V2',
+                                manifest.update(guided=True,
                                     presentation_order=list(self.presentation.data['modes']),scene=self.presentation.data['scene'],
                                     speed_policy='GUIDED_STRESS_TARGET')
                         self.active_safety.set_controller('RULE')

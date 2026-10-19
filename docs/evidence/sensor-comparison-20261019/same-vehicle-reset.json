@@ -1,0 +1,789 @@
+{
+  "source": "LIVE_NATIVE_CARLA",
+  "scope": "Held same-vehicle lifecycle and initial-condition audit; not a driving trial",
+  "arms": [
+    {
+      "mode": "NORMAL",
+      "actor_id": 33,
+      "previous_actor_id": 24,
+      "fresh_actor": true,
+      "blueprint": "vehicle.mercedes.coupe_2020",
+      "color": "35,45,55",
+      "initial_condition_audit": {
+        "passed": true,
+        "failures": [],
+        "light_samples": [
+          {
+            "id": 9,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 10,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 11,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 12,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 13,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 14,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 15,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 16,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 17,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 18,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 19,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 20,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 21,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 22,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 23,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          }
+        ],
+        "condition_id": "02db37053f92acf8f62c0fd6df335cf2b23e69611774484fd31df07337ac3dc9",
+        "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+        "ego_blueprint": "vehicle.mercedes.coupe_2020",
+        "vehicle_variant": "NORMAL"
+      },
+      "physical_configuration": {
+        "mass": 1630.0,
+        "drag_coefficient": 0.30000001192092896,
+        "max_rpm": 7500.0,
+        "moi": 1.0,
+        "damping_rate_full_throttle": 0.05000000074505806,
+        "damping_rate_zero_throttle_clutch_engaged": 2.0,
+        "damping_rate_zero_throttle_clutch_disengaged": 0.3499999940395355,
+        "use_gear_autobox": true,
+        "gear_switch_time": 0.10000000149011612,
+        "clutch_strength": 10.0,
+        "final_ratio": 2.4730000495910645,
+        "use_sweep_wheel_collision": false,
+        "wheels": [
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 69.99999237060547,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 0.0
+          },
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 69.99999237060547,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 0.0
+          },
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 0.0,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 1600.0
+          },
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 0.0,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 1600.0
+          }
+        ],
+        "torque_curve": [
+          [
+            1000.0,
+            374.0
+          ],
+          [
+            1500.0,
+            630.0
+          ],
+          [
+            3000.0,
+            630.0
+          ],
+          [
+            5000.0,
+            374.0
+          ]
+        ],
+        "center_of_mass": [
+          0.09999999403953552,
+          0.0,
+          -0.19999998807907104
+        ]
+      },
+      "sensors": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 320,
+            "image_size_y": 180,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 320,
+            "image_size_y": 180,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 16,
+            "points_per_second": 32000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -30
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      }
+    },
+    {
+      "mode": "ROBOSPHERE",
+      "actor_id": 42,
+      "previous_actor_id": 33,
+      "fresh_actor": true,
+      "blueprint": "vehicle.mercedes.coupe_2020",
+      "color": "35,45,55",
+      "initial_condition_audit": {
+        "passed": true,
+        "failures": [],
+        "light_samples": [
+          {
+            "id": 9,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 10,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 11,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 12,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 13,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 14,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 15,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 16,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 17,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 18,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 19,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 20,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 21,
+            "expected_state": "Green",
+            "actual_state": "Green",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 22,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          },
+          {
+            "id": 23,
+            "expected_state": "Red",
+            "actual_state": "Red",
+            "elapsed_s": 0.0,
+            "frozen": true
+          }
+        ],
+        "condition_id": "02db37053f92acf8f62c0fd6df335cf2b23e69611774484fd31df07337ac3dc9",
+        "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+        "ego_blueprint": "vehicle.mercedes.coupe_2020",
+        "vehicle_variant": "ROBOSPHERE"
+      },
+      "physical_configuration": {
+        "mass": 1630.0,
+        "drag_coefficient": 0.30000001192092896,
+        "max_rpm": 7500.0,
+        "moi": 1.0,
+        "damping_rate_full_throttle": 0.05000000074505806,
+        "damping_rate_zero_throttle_clutch_engaged": 2.0,
+        "damping_rate_zero_throttle_clutch_disengaged": 0.3499999940395355,
+        "use_gear_autobox": true,
+        "gear_switch_time": 0.10000000149011612,
+        "clutch_strength": 10.0,
+        "final_ratio": 2.4730000495910645,
+        "use_sweep_wheel_collision": false,
+        "wheels": [
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 69.99999237060547,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 0.0
+          },
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 69.99999237060547,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 0.0
+          },
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 0.0,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 1600.0
+          },
+          {
+            "tire_friction": 3.5,
+            "damping_rate": 0.25,
+            "max_steer_angle": 0.0,
+            "radius": 34.25,
+            "max_brake_torque": 800.0,
+            "max_handbrake_torque": 1600.0
+          }
+        ],
+        "torque_curve": [
+          [
+            1000.0,
+            374.0
+          ],
+          [
+            1500.0,
+            630.0
+          ],
+          [
+            3000.0,
+            630.0
+          ],
+          [
+            5000.0,
+            374.0
+          ]
+        ],
+        "center_of_mass": [
+          0.09999999403953552,
+          0.0,
+          -0.19999998807907104
+        ]
+      },
+      "sensors": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 320,
+            "image_size_y": 180,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "false",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 320,
+            "image_size_y": 180,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 16,
+            "points_per_second": 32000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -30
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      }
+    }
+  ],
+  "passed": true,
+  "native_cleanup_confirmed": true,
+  "runtime_returned_to_stopped": true,
+  "wall_s": 25.73399999999674,
+  "source_sha256": {
+    "scripts\\native\\verify_same_vehicle_reset.py": "531b4570c8c8b03c6301c92fa412256f9dcb6e330a39751f62fc5ba2ba64fe99",
+    "backend\\carla\\provider.py": "88999140d5324621e520a99bc39fc219c6ac82ad9fe092cf457992dfd327edd4",
+    "backend\\carla\\comparison_vehicle.py": "f59f92a0ee5a48bf1ddba5db06bba5d313b1b7afd696119d241954845cf8c989"
+  }
+}

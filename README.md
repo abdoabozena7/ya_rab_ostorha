@@ -4,6 +4,13 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [19 October fair sensor comparison](docs/SENSOR_COMPARISON_20261019.md)
+restores real reactive sensor braking to autonomous Normal. Both guided arms use
+the same Mercedes and sensor rig; Robosphere adds predictive RULE. New MP4s keep
+the raw camera export and add a downloadable annotated version with measured
+forecast paths only for Robosphere. The illustration lets both cars stop safely.
+RL is not enabled, and historical protection-off recordings keep that identity.
+
 The [19 October forecast, pedestrian tracking and storage repair](docs/FORECAST_PASSING_STORAGE_20261019.md)
 adds measured paths to the main protected camera, checks RGB/depth person
 association and retires old raw recordings with outcomes and lossless logs kept.
@@ -23,9 +30,10 @@ preparation, and the normal mode is selected initially.
 
 The [18 October prepared-city follow-up](docs/PRELOADED_CHAOS_20261018.md) starts
 CARLA and prepares the shared scene on opening. The only guided default requests
-60 vehicles and 100 pedestrians; actual counts are checked. Normal uses a Lincoln
-and the protected drive a Mercedes coupe. World-start matching is reported
-separately from the different vehicle physics; native stress limits remain recorded.
+60 vehicles and 100 pedestrians; actual counts are checked. That revision used
+a Lincoln for Normal and a Mercedes coupe for the protected drive; the same-car
+comparison above supersedes that distinction. Its historical world-start audit
+and native stress limits remain recorded.
 The Start drive button now shows a disabled coral loading fill while the shared
 city prepares; Free GPU appears when the starting scene is ready.
 
@@ -119,14 +127,15 @@ is needed only when the dashboard itself is not running.
 
 The [13 October measured-motion implementation and acceptance report](docs/MOTION_RELIABILITY_20261013.md)
 documents fixed policy cameras, physical forecasts, numerical diagnostics and
-the gated maneuver prototype. Ordinary journeys default to 30 km/h. ROBOSPHERE applies RULE protection; NORMAL follows the route and signals with obstacle protection off.
+the gated maneuver prototype. Ordinary journeys default to 30 km/h. Its historical
+protection-off NORMAL protocol is superseded by the sensor comparison above.
 Rear/lateral avoidance, learned control and the performance gate remain unaccepted;
 the report includes failed native attempts and the successful ordinary RULE smoke.
 
 Sensor-derived **RULE** safety protects ROBOSPHERE manual and route driving
-through the existing feasibility validator and command arbiter. NORMAL preserves
-manual pedals and steering, or autonomous route and signal commands; sensors only
-observe and record. User stops, emergency latches and connection watchdogs remain
+through the existing feasibility validator and command arbiter. Autonomous NORMAL
+uses the shared reactive sensor braking, route and signal commands; manual NORMAL
+preserves pedals and steering. User stops, emergency latches and connection watchdogs remain
 active in both modes. See the [14 October brake correction](docs/BRAKING_DECISION_REPAIR_20261014.md). A compact
 recurrent **behavior-cloned** safety model is supplied as an explicit research
 comparison, with visible rule fallback and an optional hybrid guard. This is

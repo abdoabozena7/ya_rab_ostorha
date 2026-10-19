@@ -144,7 +144,7 @@ class CarlaProvider:
 
     def hold_prepared_presentation(self):
         from .benchmark_fixture import BenchmarkFixture
-        self.presentation_vehicle_variants={'NORMAL':'vehicle.lincoln.mkz_2020',
+        self.presentation_vehicle_variants={'NORMAL':'vehicle.mercedes.coupe_2020',
             'ROBOSPHERE':'vehicle.mercedes.coupe_2020'}
         # Verify installed assets before discarding any live ego.
         library=self.world.world.get_blueprint_library()
@@ -158,7 +158,6 @@ class CarlaProvider:
         variants=getattr(self,'presentation_vehicle_variants',None)
         if not variants or mode not in variants:raise ValueError('Prepared vehicle choices unavailable')
         target=variants[mode];self.presentation_vehicle_mode=mode
-        if self.ego.actor.type_id==target:return False
         fixture=self.benchmark_fixture
         if not fixture or not fixture.frozen:raise ValueError('Hold the prepared world before switching cars')
         api=self.connection.api;pose=fixture.condition['ego']['pose']
@@ -169,7 +168,7 @@ class CarlaProvider:
         # Spawn at the saved start, never at an unrelated free map spawn.
         self.ego=EgoVehicle(self.world.world,target,self.spawn_index,strict_spawn=True)
         bp=self.world.world.get_blueprint_library().find(target);bp.set_attribute('role_name','ostorha_ego')
-        if bp.has_attribute('color'):bp.set_attribute('color','35,45,55' if mode=='ROBOSPHERE' else '160,165,170')
+        if bp.has_attribute('color'):bp.set_attribute('color','35,45,55')
         admission=api.Transform(api.Location(native.location.x,native.location.y,native.location.z+.4),native.rotation)
         actor=self.world.world.try_spawn_actor(bp,admission)
         if actor is None:raise ValueError('The prepared ego start is occupied')
@@ -444,6 +443,12 @@ class CarlaProvider:
             'crowded':bool(self.population.route_crowding),
             'weather':{key:getattr(weather,key) for key in WEATHER_PRESET_FIELDS if hasattr(weather,key)},
             'setup_note':'Same origin, destination, weather, speed and seeded traffic settings. Live actor trajectories are not identical.'}
+        from .comparison_vehicle import physical_configuration
+        manifest.update(vehicle_geometry=copy.deepcopy(self.vehicle_geometry.__dict__),
+            vehicle_physics=physical_configuration(self.ego.actor),
+            sensor_configuration={key:{field:value for field,value in config.items()
+                if field in ('blueprint','attributes','mountTransform','sensorTickSeconds','requestedRateHz')}
+                for key,config in self.sensor_manager.configurations.items()})
         if benchmark:
             from .benchmark_fixture import BenchmarkFixture
             if not self.benchmark_prepared:
@@ -459,7 +464,7 @@ class CarlaProvider:
             variants=getattr(self,'presentation_vehicle_variants',None)
             if variants:
                 manifest.update(vehicle_variants=dict(variants),vehicle_geometry=copy.deepcopy(self.vehicle_geometry.__dict__),
-                    comparison_scope='Same world start; different vehicle models and physical geometry. Not a brake-only causal comparison.')
+                    comparison_scope='Same vehicle, sensors and world start; reactive sensors versus predictive RULE. Traffic can diverge.')
         return manifest
 
     def clear_presentation_context(self):
@@ -478,7 +483,7 @@ class CarlaProvider:
             raise ValueError('Select the saved vehicle before preparing this comparison')
         self.stop_navigation()
         self.set_controls(brake=1)
-        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1','GUIDED_RULE_NORMAL_V2'):
+        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1','GUIDED_RULE_NORMAL_V2','SENSOR_REACTIVE_PREDICTIVE_V1') and manifest.get('initial_condition_id'):
             if not self.benchmark_fixture or self.benchmark_fixture.condition['id'] != manifest['initial_condition_id']:
                 raise ValueError('The live benchmark fixture expired; start a new pair')
             self.benchmark_fixture.restore(**({'rebuild':True} if manifest.get('guided') else {}))

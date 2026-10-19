@@ -47,7 +47,7 @@ class SensorNavigationTests(unittest.TestCase):
         self.assertFalse(self.apply(base, following(rear_updates={'matched_frames': 2}))[2])
         self.assertFalse(self.apply(replace(base, steering=.4), following())[2])
 
-    def test_normal_preserves_pedals_even_with_front_and_rear_observations(self):
+    def test_rear_helper_leaves_normal_forward_braking_to_the_main_supervisor(self):
         base = command(.75)
         selected, reason, assisted = self.apply(command(.75),
             following(measured_range_m=.8, target_source='LIDAR'), normal=True)
@@ -99,7 +99,7 @@ class SensorNavigationTests(unittest.TestCase):
             service.recorder = object()
             service.queue_dashboard_action('settings', {'camera_resolution': '800x450'})
 
-    def test_normal_never_gates_commands_on_freshness_or_coverage(self):
+    def test_rear_helper_does_not_duplicate_sensor_freshness_or_coverage_gates(self):
         for status in (None, measured(frame_id=38), measured(timestamp_s=1.8), measured(risk='UNKNOWN_SPACE'),
                        measured(observed_road_range_m=2.), following()):
             base = command(.7)
@@ -108,7 +108,7 @@ class SensorNavigationTests(unittest.TestCase):
             self.assertIsNone(reason)
             self.assertFalse(assisted)
 
-    def test_normal_at_eighty_kmh_keeps_the_driver_command(self):
+    def test_rear_helper_preserves_the_base_command_at_eighty_kmh(self):
         speed = 80/3.6
         self.assertGreaterEqual(RuntimeSafetyConfig.load().maximum_observed_range_m,
                                 stopping_distance(speed)+1.)
@@ -134,7 +134,7 @@ class SensorNavigationTests(unittest.TestCase):
         self.assertTrue(assisted)
         self.assertEqual(selected.throttle, .55)
 
-    def test_normal_route_agent_disables_privileged_vehicle_queries(self):
+    def test_normal_route_agent_uses_sensor_protection_instead_of_privileged_vehicle_queries(self):
         provider = CarlaProvider(sensor_suite=True)
         agent = Mock()
         provider.ego = SimpleNamespace(actor=Mock())

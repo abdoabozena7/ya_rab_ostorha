@@ -72,8 +72,8 @@ test('selection and native preparation are distinct screens',()=>{
   }
 });
 test('both orders have the correct next action; second stops to compare',()=>{
-  assert.equal(missionState(guided('DRIVING')).label,'See the solution now');
-  assert.equal(missionState(guided('DRIVING',0,'ROBOSPHERE')).label,'See the world before our solution');
+  assert.equal(missionState(guided('DRIVING')).label,'See predictive driving now');
+  assert.equal(missionState(guided('DRIVING',0,'ROBOSPHERE')).label,'See reactive sensor driving now');
   assert.equal(missionState(guided('DRIVING',1)).label,'End drive & compare');
   assert.equal(missionState(guided('RESULTS')).action,'FINISH');
 });

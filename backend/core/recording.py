@@ -324,7 +324,8 @@ class RunRecorder:
         with self.lock:
             if self.video_file is None:self.video_file=(self.root/'telemetry/video-frames.jsonl').open('xb')
             self.video_file.write(encode_row({'sensor_id':sensor.sensor_id,'frame_id':sensor.frame_id,
-                'timestamp_s':sensor.timestamp_s,'asset':to_dict(sensor.asset),'calibration':to_dict(sensor.metadata)}))
+                'timestamp_s':sensor.timestamp_s,'asset':to_dict(sensor.asset),'calibration':to_dict(sensor.metadata),
+                'world_transform':to_dict(sensor.transform)}))
             if self.autoflush:self.video_file.flush()
 
     def close(self):

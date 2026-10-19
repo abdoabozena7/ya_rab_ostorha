@@ -5,7 +5,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-VIDEO_ROUTE=re.compile(r'/runs/normal_city/(run_[a-f0-9]{32})/(video-status\.json|driving\.mp4)')
+VIDEO_ROUTE=re.compile(r'/runs/normal_city/(run_[a-f0-9]{32})/(video-status\.json|driving(?:-annotated)?\.mp4)')
 
 
 @lru_cache(maxsize=32)
@@ -51,12 +51,13 @@ def serve_video(handler,path,root):
                 handler.send_response(200);handler.send_header('Content-Type','application/json');handler.end_headers()
             else:handler._json(200,status)
             return True
-        if status.get('status')!='READY' or status.get('source')!='RECORDED_NATIVE_DRIVING_CAMERA':
+        variant=status.get('variants',{}).get('annotated' if match[2]=='driving-annotated.mp4' else 'raw',status if match[2]=='driving.mp4' else {})
+        if variant.get('status')!='READY' or variant.get('source') not in ('RECORDED_NATIVE_DRIVING_CAMERA','RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY'):
             raise ValueError('Native video export is not ready')
-        video=(folder/'driving.mp4').resolve()
+        video=(folder/match[2]).resolve()
         if video.parent!=folder:raise ValueError('Video escaped its recording')
         info=video.stat()
-        if not _verified(str(video),info.st_size,info.st_mtime_ns,status.get('sha256')):
+        if not _verified(str(video),info.st_size,info.st_mtime_ns,variant.get('sha256')):
             raise ValueError('Exported video checksum mismatch')
         try:start,end,response=_bounds(handler.headers.get('Range'),info.st_size)
         except ValueError:
