@@ -4,6 +4,23 @@ This revision keeps the existing Town10HD city and Softly interface. The display
 project name is **Ya Rab Ostorha**. Internal `NORMAL` / `ROBOSPHERE` identifiers and
 historical recordings retain their original identity.
 
+## Results sizing follow-up — 20 October
+
+The shared starting video is now centered with a 400 px maximum width. The two
+trip videos use a wider results area and smaller card insets; at a 1920 px
+viewport each grows from 608 to 864 px wide, while the shared video shrinks from
+900 to 400 px. Mobile keeps full-width stacked trip videos and a smaller shared
+view. Names, media files and comparison behavior are unchanged.
+
+The [layout measurements](evidence/results-video-sizing-20261020.json) verify
+desktop, mobile and the column breakpoint against the retained completed pair
+`9f0f98dc5d744d9eb4e8c2060a1ae28b`. Refresh retains the same three source URLs,
+durations and stopped simulator state. No new drive was started. Screenshots:
+[desktop](evidence/results-video-sizing-desktop-20261020.png) and
+[mobile](evidence/results-video-sizing-mobile-20261020.png). The dashboard build
+and all 178 JavaScript tests pass; this is a layout check using existing native
+recordings, not a new native driving acceptance run.
+
 ## Accepted native matrix — 20 October
 
 The [independent six-pair review](evidence/crossing-six-pairs-20261020.json)

@@ -37,6 +37,7 @@ body.light-cockpit.mission-experience[data-ui=guided] .brand-mark{display:grid!i
 .mission-experience #driveDetailsAction{padding:10px 24px;background:var(--ink);color:#fff;border-color:var(--ink);font-size:14px}.mission-experience #driveDetailsAction:hover{background:#49413e}
 body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn{border-radius:999px;background:var(--danger-surface);color:var(--danger);font-weight:550;max-width:none;white-space:nowrap}
 .mission-experience #missionExperience{max-width:1320px;margin:auto;display:flex;flex-direction:column;gap:0}
+.mission-experience #missionExperience[data-screen=comparison]{max-width:1800px}
 .mission-experience #missionExperience[hidden],.mission-experience #missionExperience [hidden]{display:none!important}
 #missionPreview{position:relative;align-self:center;width:100%;height:auto;overflow:hidden;border-radius:48px;background:#e8efe8;box-shadow:var(--shadow-soft)}
 #missionPreview .illustrated-drive{display:block;width:100%;height:100%}
@@ -104,18 +105,18 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
 #missionOutcomes dl{margin:0}#missionOutcomes dl>div{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid #29252414;font-size:14px}#missionOutcomes dt{color:#655e59}#missionOutcomes dd{margin:0;font-variant-numeric:tabular-nums}
 #missionOutcomes #presentationResults{width:100%;min-width:0;margin:0;padding:0;background:transparent;border:0}
 #missionOutcomes .presentation-videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
-#sharedPerception{margin:20px 0 32px;padding:0 0 28px;border-bottom:1px solid #29252414}
-#sharedPerception .recorded-video{max-width:900px;margin:18px auto 12px}
-#sharedPerception .shared-perception-heading,#sharedPerception .shared-perception-status{max-width:900px;margin-left:auto;margin-right:auto}
+#sharedPerception{width:min(40%,400px);margin:20px auto 32px;padding:0 0 28px;border-bottom:1px solid #29252414}
+#sharedPerception .recorded-video{margin:18px auto 12px}
+#sharedPerception .shared-perception-heading,#sharedPerception .shared-perception-status{margin-left:auto;margin-right:auto}
 #sharedPerception h3{margin-bottom:8px}#sharedPerception p{margin-top:0}
-#sharedPerception .shared-perception-download{display:block;max-width:900px;margin:0 auto}
-#missionOutcomes .presentation-videos article{min-width:0;padding:20px;border-radius:24px}
+#sharedPerception .shared-perception-download{display:block;margin:0 auto}
+#missionOutcomes .presentation-videos article{min-width:0;padding:12px;border-radius:24px}
 .recorded-video{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:16px;background:#222321;display:grid;place-items:center;margin-bottom:18px}
 .recorded-video video{display:block;width:100%;height:100%;object-fit:contain;position:absolute;inset:0}
 .sequential-drive #presentationResults video{pointer-events:auto}
 .recorded-video .video-preparing{position:relative;margin:0;padding:20px;text-align:center;color:#f6f5f1!important;background:#222321;z-index:1}
 .mission-experience #missionDetail{min-height:3.2em}
-@media(max-width:700px){#missionOutcomes .presentation-videos{grid-template-columns:minmax(0,1fr)}#missionOutcomes .presentation-videos article{min-width:0;padding:16px}}
+@media(max-width:700px){#sharedPerception{width:min(80%,400px)}#missionOutcomes .presentation-videos{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after{animation:none}}
 #missionExperience:is([data-screen=loading],[data-screen=releasing],[data-screen=fault],[data-screen=emergency]) .mission-copy{margin:clamp(40px,12svh,150px) auto;max-width:780px;width:100%;padding:0}
 /* Keep the complete native image visible; no decorative layer is a sensor feed. */

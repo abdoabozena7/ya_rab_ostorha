@@ -1,0 +1,387 @@
+{
+  "scope": "RESULTS_LAYOUT_ONLY_WITH_ORIGINAL_SAVED_COMPARISON",
+  "date": "2026-10-20",
+  "before": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "document_width": 1425,
+      "client_width": 1425,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 900,
+          "height": 506.25,
+          "x": 262.3999938964844,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 608,
+          "height": 342,
+          "x": 72.4000015258789,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 608,
+          "height": 342,
+          "x": 744.4000244140625,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1000
+      },
+      "document_width": 1905,
+      "client_width": 1905,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 900,
+          "height": 506.25,
+          "x": 502.3999938964844,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 608,
+          "height": 342,
+          "x": 312.3999938964844,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 608,
+          "height": 342,
+          "x": 984.4000244140625,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 1000
+      },
+      "document_width": 375,
+      "client_width": 375,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 343.20001220703125,
+          "height": 193.0500030517578,
+          "x": 16,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 311.20001220703125,
+          "height": 175.0500030517578,
+          "x": 32,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 311.20001220703125,
+          "height": 175.0500030517578,
+          "x": 32,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "after": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "document_width": 1425,
+      "client_width": 1425,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 400,
+          "height": 225,
+          "x": 512.4000244140625,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 644.4000244140625,
+          "height": 362.4750061035156,
+          "x": 44,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 644.4000244140625,
+          "height": 362.4750061035156,
+          "x": 736.4000244140625,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1000
+      },
+      "document_width": 1905,
+      "client_width": 1905,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 400,
+          "height": 225,
+          "x": 752.4000244140625,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 864,
+          "height": 486,
+          "x": 64.4000015258789,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 864,
+          "height": 486,
+          "x": 976.4000244140625,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 760,
+        "height": 1000
+      },
+      "document_width": 745,
+      "client_width": 745,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 272.3125,
+          "height": 153.1750030517578,
+          "x": 236.2375030517578,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 304.3999938964844,
+          "height": 171.22500610351562,
+          "x": 44,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 304.3999938964844,
+          "height": 171.22500610351562,
+          "x": 396.3999938964844,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 702,
+        "height": 1000
+      },
+      "document_width": 686,
+      "client_width": 686,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 248.9499969482422,
+          "height": 140.02500915527344,
+          "x": 218.72500610351562,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 275.20001220703125,
+          "height": 154.8000030517578,
+          "x": 44,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 275.20001220703125,
+          "height": 154.8000030517578,
+          "x": 367.20001220703125,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 700,
+        "height": 1000
+      },
+      "document_width": 685,
+      "client_width": 685,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 400,
+          "height": 225,
+          "x": 142.40000915527344,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 628.7999877929688,
+          "height": 353.70001220703125,
+          "x": 28,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 628.7999877929688,
+          "height": 353.70001220703125,
+          "x": 28,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 1000
+      },
+      "document_width": 375,
+      "client_width": 375,
+      "screen": "comparison",
+      "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+      "phase": "COMPLETE",
+      "simulator_stop": "STOPPED",
+      "videos": [
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+          "width": 274.5500183105469,
+          "height": 154.4250030517578,
+          "x": 50.32500076293945,
+          "duration_s": 1.501,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+          "width": 319.20001220703125,
+          "height": 179.5500030517578,
+          "x": 28,
+          "duration_s": 6.051,
+          "ready_state": 4,
+          "error": null
+        },
+        {
+          "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+          "width": 319.20001220703125,
+          "height": 179.5500030517578,
+          "x": 28,
+          "duration_s": 34.901,
+          "ready_state": 4,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "dashboard_build": "PASS",
+    "javascript_tests_passed": 178,
+    "original_pair_and_all_three_media_preserved": true,
+    "refresh_retains_complete_results": true,
+    "shared_centered_and_smaller_than_both_trips": true,
+    "no_horizontal_overflow": true,
+    "new_drive_started": false,
+    "native_acceptance_rerun": false
+  }
+}

@@ -10312,6 +10312,9 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
   flex-direction: column;
   gap: 0;
 }
+.mission-experience #missionExperience[data-screen=comparison] {
+  max-width: 1800px;
+}
 .mission-experience #missionExperience[hidden],
 .mission-experience #missionExperience [hidden] {
   display: none !important;
@@ -10786,17 +10789,16 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
   gap: 24px;
 }
 #sharedPerception {
-  margin: 20px 0 32px;
+  width: min(40%, 400px);
+  margin: 20px auto 32px;
   padding: 0 0 28px;
   border-bottom: 1px solid #29252414;
 }
 #sharedPerception .recorded-video {
-  max-width: 900px;
   margin: 18px auto 12px;
 }
 #sharedPerception .shared-perception-heading,
 #sharedPerception .shared-perception-status {
-  max-width: 900px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -10808,12 +10810,11 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
 }
 #sharedPerception .shared-perception-download {
   display: block;
-  max-width: 900px;
   margin: 0 auto;
 }
 #missionOutcomes .presentation-videos article {
   min-width: 0;
-  padding: 20px;
+  padding: 12px;
   border-radius: 24px;
 }
 .recorded-video {
@@ -10850,12 +10851,11 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
   min-height: 3.2em;
 }
 @media (max-width: 700px) {
+  #sharedPerception {
+    width: min(80%, 400px);
+  }
   #missionOutcomes .presentation-videos {
     grid-template-columns: minmax(0, 1fr);
-  }
-  #missionOutcomes .presentation-videos article {
-    min-width: 0;
-    padding: 16px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
