@@ -1,0 +1,43 @@
+{
+  "scope": "ISOLATED_UI_STATES_AND_EXPLICIT_MEDIA_FIXTURE_NOT_NATIVE_ACCEPTANCE",
+  "checks": [
+    "Mode name matches the English project title",
+    "Duplicate Start dispatches once",
+    "Slow loading and reconnect keep the Start label stable",
+    "No shortening action during NORMAL",
+    "No shortening action during ROBOSPHERE",
+    "Reload during automatic driving does not start another comparison",
+    "Focus loss and page reload preserve automatic driving",
+    "Three result videos exist",
+    "All exports have independent placeholders",
+    "Finish is idempotent during export",
+    "Shared video remains while saving and closing",
+    "Names sit underneath the correct videos",
+    "Shared intro above the pair, without overflow at 1440px",
+    "Shared intro above the pair, without overflow at 390px",
+    "Shared intro above the pair, without overflow at 320px",
+    "All three media elements play with CARLA stopped",
+    "Refresh retains the complete three-video result",
+    "No browser exceptions"
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "scroll": 1440,
+      "topBottom": 1164.765625,
+      "lowerTop": 1196.765625
+    },
+    {
+      "width": 390,
+      "scroll": 390,
+      "topBottom": 876.71875,
+      "lowerTop": 908.71875
+    },
+    {
+      "width": 320,
+      "scroll": 320,
+      "topBottom": 924.515625,
+      "lowerTop": 956.515625
+    }
+  ]
+}

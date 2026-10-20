@@ -4,15 +4,31 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
-The [19 October guided flow repair](docs/GUIDED_FLOW_REPAIR_20261019.md) keeps a
+The [full crossing comparison](docs/CROSSING_COMPARISON_20261019.md) runs both
+drivers automatically, retains complete recordings to actual contact or arrival,
+and uses **Ya Rab Ostorha** consistently in the interface. Three versioned native
+fixtures reconstruct the same critical pedestrian and crossing events. Current
+sensor-derived 3D volumes and relevant risk arrows share recorded rendering data.
+Results add a verified common front-camera prefix above the two trip videos;
+Finish waits for all three exports and keeps results after CARLA exits. The report
+distinguishes software verification, failed calibrations and native acceptance.
+The completed 20 October acceptance covers all three fixtures in both orders,
+plus real browser focus/reload, Finish during three exports and playback after
+engine exit and refresh. Both drivers request 120 km/h. Local live native
+throughput remains about 5–7 observations/s; exported recordings use the 20 Hz
+simulation clock. See the report for measured speeds, stops and source hashes.
+
+The earlier [19 October guided flow repair](docs/GUIDED_FLOW_REPAIR_20261019.md) keeps a
 continuous loader tied to native stages, requests 120 km/h in both drivers, and
 shows only the selected risk forecast in the main camera and exported video.
-Normal retains reactive sensor braking; **يا رب تسترها** adds predictive RULE.
+Normal retains reactive sensor braking; **Ya Rab Ostorha** adds predictive RULE.
 Finish waits for both videos, closes CARLA and verifies process exit while the
 comparison and playback remain available, including after refresh. A new page
 observes the current drive; a new comparison requires an explicit action. The
 report includes both native run orders, a complete physical crossing, actual
 speeds, retained failures and the remaining 5–8 Hz native throughput limit.
+Its original two-video Finish and single-risk display are superseded by the
+full comparison above; its recorded evidence remains historical.
 
 The [19 October fair sensor comparison](docs/SENSOR_COMPARISON_20261019.md)
 restores real reactive sensor braking to autonomous Normal. Both guided arms use
@@ -271,9 +287,12 @@ WASD intervention stops automatic control while retaining the destination. Expli
 **Resume journey to destination** replans from the live current position. Only
 **Clear route** clears that goal. A floating minimap opens the full native road map.
 
-A separate read-only CPU worker runs real YOLOv8n detection and EasyOCR Arabic/English
-on native RGB images. Each processed image, boxes and text share one frame/session
-identity; their age is visible. These results never issue vehicle commands. Setup:
+A separate CPU worker processes native RGB images. Guided comparisons use pinned
+YOLOv8s CPU ONNX with frame-matched front and focus views. Reliable classifications
+are associated with current measured depth/LiDAR geometry by the safety pipeline;
+the detector itself cannot issue commands. Every image and detection retains its
+frame/session identity and measured age. EasyOCR runs only when its Details view
+requests it outside guided driving. Historical Nano profiles remain readable. Setup:
 
 ```powershell
 .\scripts\setup_perception.ps1
@@ -281,7 +300,10 @@ identity; their age is visible. These results never issue vehicle commands. Setu
 
 Model assets live in ignored `models/`; dependencies in isolated `.venv-perception`.
 Missing models produce an explicit unavailable state. Live analysis is off in Replay.
-See [extension validation](docs/JOURNEY_PERCEPTION_VALIDATION.md) for measured limits.
+The setup exports the small CPU model through `scripts.prepare_lightweight_perception`.
+See [current crossing comparison](docs/CROSSING_COMPARISON_20261019.md) for the
+current profile, native outcomes and limits. [Extension validation](docs/JOURNEY_PERCEPTION_VALIDATION.md)
+describes the historical Nano/OCR extension.
 
 The English LTR dashboard has a native 800x450 RGB feed, five camera views, live
 telemetry, automatic current-position origin and persisted favorites. Settings

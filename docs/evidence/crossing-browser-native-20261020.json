@@ -1,0 +1,300 @@
+{
+  "scope": "FULL_REAL_BROWSER_NATIVE_PAIR_FOCUS_PEER_RELOAD_FINISH_EXPORT_AND_POST_EXIT_PLAYBACK",
+  "source_archive": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-browser-verified-20261020\\source.zip",
+    "sha256": "4e60c569012e341278e0baa56443a9967a6b331812545afa2d8bc6da4ef83582",
+    "files": 253,
+    "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+  },
+  "source_unchanged": true,
+  "native_exit_independently_observed": true,
+  "comparison": {
+    "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+    "validation": {
+      "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+      "scenario_id": "crossing-b",
+      "passed": true,
+      "gates": {
+        "both_recorded": true,
+        "normal_pedestrian_collision": true,
+        "project_arrived_without_contact": true,
+        "initial_conditions_verified": true,
+        "same_requested_speed": true,
+        "same_detector": true,
+        "same_scenario": true,
+        "scheduled_crossing_origins_verified": true,
+        "critical_crossing_realized": true
+      },
+      "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+    },
+    "runs": {
+      "NORMAL": {
+        "id": "a77cd8fd50af4ada9c242af157372b66",
+        "status": "COLLISION",
+        "reason": "collision",
+        "collisions": 1,
+        "distance_m": 63.77612231223536,
+        "duration_s": 5.900000087916851
+      },
+      "ROBOSPHERE": {
+        "id": "fe50bade8c34495489a98aa8f6b2f47c",
+        "status": "ARRIVED",
+        "reason": "destination_reached",
+        "collisions": 0,
+        "distance_m": 263.0462136431028,
+        "duration_s": 34.80000051856041
+      }
+    }
+  },
+  "checks": [
+    "one_start_both_natural_endings",
+    "no_shortening",
+    "blur_and_reload_continue_same_pair",
+    "native_actor_rebuilt_to_comparison_mercedes",
+    "opening_another_dashboard_does_not_cancel_the_drive",
+    "real_focus_loss_beyond_transport_lease",
+    "finish_during_export_once",
+    "three_exports_before_verified_engine_exit",
+    "no_browser_or_server_exceptions"
+  ],
+  "focus_probe": {
+    "visibility": "visible",
+    "focused": false
+  },
+  "observational_peer_title": "This session is open in another page",
+  "pending_exports_when_finish_clicked": 3,
+  "application_errors": [],
+  "commands": [
+    {
+      "type": "presentation",
+      "value": {
+        "operation": "PRELOAD",
+        "page_id": "aef1bbc5-8f86-4cd3-adbc-f3a0a496e525",
+        "replace": false
+      },
+      "sequence": 1,
+      "phase": "IDLE"
+    },
+    {
+      "type": "presentation",
+      "value": {
+        "operation": "START_GUIDED",
+        "id": "139c5043692241c5b7540b3b35d803af",
+        "expected_arm": 0,
+        "expected_phase": "CHOOSING",
+        "first_mode": "NORMAL",
+        "page_id": "aef1bbc5-8f86-4cd3-adbc-f3a0a496e525",
+        "scene": "DENSE_CHAOS",
+        "speed_kmh": 120,
+        "prepared_id": "139c5043692241c5b7540b3b35d803af"
+      },
+      "sequence": 2,
+      "phase": "CHOOSING"
+    },
+    {
+      "type": "presentation",
+      "value": {
+        "operation": "FINISH",
+        "id": "139c5043692241c5b7540b3b35d803af",
+        "expected_arm": 1,
+        "expected_phase": "RESULTS"
+      },
+      "sequence": 1763,
+      "phase": "RESULTS"
+    }
+  ],
+  "vehicles": [
+    {
+      "actor_id": 24,
+      "frame": 155,
+      "phase": "IDLE"
+    },
+    {
+      "actor_id": 293,
+      "frame": 158,
+      "phase": "READY"
+    },
+    {
+      "actor_id": 571,
+      "frame": 223,
+      "phase": "READY"
+    },
+    {
+      "actor_id": 831,
+      "frame": 418,
+      "phase": "READY"
+    }
+  ],
+  "dom_text_changes": [
+    {
+      "phase": "COMPLETE",
+      "arm": 1,
+      "title": "Your two recorded drives",
+      "detail": "Your recordings are saved. Playback remains available with CARLA closed."
+    },
+    {
+      "phase": "COMPLETE",
+      "arm": 1,
+      "title": "Starting the simulator",
+      "detail": "Launching CARLA. Choose your first drive while the city loads."
+    },
+    {
+      "phase": "IDLE",
+      "title": "Preparing your fresh drive",
+      "detail": "Saving and stopping the previous page\u00e2\u20ac\u2122s attempt before rebuilding a new starting scene."
+    },
+    {
+      "phase": "PREPARING",
+      "arm": 0,
+      "title": "Your city is preparing",
+      "detail": "Building the route and native traffic. The live view comes next. Requests 60 vehicles and 100 pedestrians; actual counts are checked. Both drives: the same Mercedes and sensor rig."
+    },
+    {
+      "phase": "READY",
+      "arm": 0,
+      "title": "Your city is preparing",
+      "detail": "Checking traffic, camera and sensors before recording. Requests 60 vehicles and 100 pedestrians; actual counts are checked. Both drives: the same Mercedes and sensor rig."
+    },
+    {
+      "phase": "CHOOSING",
+      "arm": 0,
+      "title": "Which world would you like to see first?",
+      "detail": "The shared city is ready and held at its saved start. Actual: 60 vehicles and 100 pedestrians. Both drives: the same Mercedes and sensor rig."
+    },
+    {
+      "phase": "CHOOSING",
+      "arm": 0,
+      "title": "Starting your selected drive",
+      "detail": "Checking the selected car, sensors and recording before moving."
+    },
+    {
+      "phase": "SELECTING",
+      "arm": 0,
+      "title": "Starting your drive",
+      "detail": "The world is already prepared. Attaching the camera and checking fresh sensors for this car."
+    },
+    {
+      "phase": "READY",
+      "arm": 0,
+      "title": "Starting your drive",
+      "detail": "Checking traffic, camera and sensors before recording."
+    },
+    {
+      "phase": "STARTING",
+      "arm": 0,
+      "title": "Starting your drive",
+      "detail": "The car will move when fresh sensor frames are ready."
+    },
+    {
+      "phase": "DRIVING",
+      "arm": 0,
+      "title": "Normal",
+      "detail": "Recording until the destination or a contact. Both drives run automatically from the same crossing scenario."
+    },
+    {
+      "phase": "DRIVING",
+      "arm": 0,
+      "title": "Normal",
+      "detail": "Recording until the destination or a contact. Both drives run automatically from the same crossing scenario."
+    },
+    {
+      "phase": "FINALIZING",
+      "arm": 0,
+      "title": "Saving this attempt",
+      "detail": "Stopping the car and closing its recording before continuing."
+    },
+    {
+      "phase": "RESTORING",
+      "arm": 0,
+      "title": "Preparing the other drive",
+      "detail": "Rebuilding and checking the same starting scene. Traffic may react differently."
+    },
+    {
+      "phase": "READY",
+      "arm": 1,
+      "title": "Starting your drive",
+      "detail": "Checking traffic, camera and sensors before recording."
+    },
+    {
+      "phase": "STARTING",
+      "arm": 1,
+      "title": "Starting your drive",
+      "detail": "The car will move when fresh sensor frames are ready."
+    },
+    {
+      "phase": "DRIVING",
+      "arm": 1,
+      "title": "Ya Rab Ostorha",
+      "detail": "Recording until the destination or a contact. Both drives run automatically from the same crossing scenario."
+    },
+    {
+      "phase": "FINALIZING",
+      "arm": 1,
+      "title": "Saving this attempt",
+      "detail": "Stopping the car and closing its recording before continuing."
+    },
+    {
+      "phase": "RESULTS",
+      "arm": 1,
+      "title": "Your two recorded drives",
+      "detail": "Review both recordings, then Finish to close CARLA and free the GPU."
+    },
+    {
+      "phase": "FINISHING",
+      "arm": 1,
+      "title": "Your two recorded drives",
+      "detail": "Preparing the three videos before closing the simulator. Your results stay here."
+    },
+    {
+      "phase": "COMPLETE",
+      "arm": 1,
+      "title": "Your two recorded drives",
+      "detail": "Your recordings are saved. Playback remains available with CARLA closed."
+    }
+  ],
+  "playback": {
+    "scope": "REAL_EXPORTED_MEDIA_BROWSER_PLAYBACK_AFTER_ENGINE_EXIT_AND_REFRESH",
+    "pair_id": "9f0f98dc5d744d9eb4e8c2060a1ae28b",
+    "presentation_id": "139c5043692241c5b7540b3b35d803af",
+    "media": [
+      {
+        "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/shared-perception.mp4",
+        "duration_s": 1.501
+      },
+      {
+        "src": "http://127.0.0.1:8000/runs/normal_city/run_0388562c88264cd79c6c684d8c7f5c0a/driving-annotated.mp4",
+        "duration_s": 6.051
+      },
+      {
+        "src": "http://127.0.0.1:8000/runs/normal_city/run_57c0aceb80604461a9608725b47c5683/driving-annotated.mp4",
+        "duration_s": 34.901
+      }
+    ],
+    "names": [
+      "Normal",
+      "Ya Rab Ostorha"
+    ],
+    "checks": [
+      "all_three_start_and_final_frames_play",
+      "same_result_after_refresh",
+      "all_three_play_again_after_refresh"
+    ]
+  },
+  "network_retry_scope": "Console connection-refused status polls during intentional backend startup/shutdown handoff are transport retries; no browser exception, server command error or visible drive failure was recorded.",
+  "final_render": {
+    "scope": "ACTUAL_RETAINED_READY_MEDIA_DESKTOP_AND_MOBILE_AFTER_EXIT_AND_REFRESH",
+    "fit": {
+      "width": 390,
+      "scroll": 375,
+      "videos": 3
+    }
+  },
+  "gpu_after_stop": {
+    "source": "NVIDIA_SMI_AFTER_INDEPENDENTLY_VERIFIED_ENGINE_EXIT",
+    "utc": "2026-10-20T17:33:24.170788+00:00",
+    "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "used_mib": 0,
+    "total_mib": 6144,
+    "utilization_percent": 0
+  }
+}

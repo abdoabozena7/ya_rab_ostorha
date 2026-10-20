@@ -3,7 +3,7 @@ from dataclasses import replace
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock,patch
 import numpy as np
 import io
 from backend.core.control_scene import ControlSceneBuilder
@@ -20,6 +20,21 @@ from tests.test_active_safety import scene
 
 
 class ControlSceneTests(unittest.TestCase):
+    def test_volume_presentation_runs_after_control_scene_publication_using_immutable_sensor_support(self):
+        from backend.core.display_prediction import measured_control_view
+        with patch('backend.core.visual_geometry.measured_boxes',return_value=[]) as boxes:
+            measured,_,_=self.measured()
+            boxes.assert_not_called()
+            self.assertNotIn('boxes_3d',measured.prediction)
+            self.assertFalse(measured.space.visual_points.flags.writeable)
+            view=measured_control_view(measured,{'position_m':[0.,0.,0.]},focused=True)
+            boxes.assert_called_once()
+            self.assertIs(boxes.call_args.args[0],measured.prediction)
+            self.assertIs(boxes.call_args.args[1],measured.space.visual_points)
+            self.assertIs(boxes.call_args.kwargs['lidar_points'],measured.points)
+            self.assertEqual(view['evaluation_frame'],measured.observation.frame_id)
+            self.assertEqual(view['visual_version'],1)
+
     def test_forward_assessment_reuses_same_frame_depth_decode(self):
         from backend.core.active_safety import assess_forward_space,RuntimeSafetyConfig
         measured,base,reader=self.measured()

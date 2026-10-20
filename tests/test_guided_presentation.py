@@ -11,6 +11,35 @@ from tests.core_packets import packet
 
 
 class GuidedPresentationTests(unittest.TestCase):
+    def test_stopped_vision_warmup_holds_real_world_clock_and_releases_before_start(self):
+        self.provider.name='carla';self.provider.world=NS(paused=False)
+        self.p.data.update(id='vision',status='READY',guided=True,automatic_pair=True,arm=1,
+            modes=['NORMAL','ROBOSPHERE'],pair_id='pair',prepared_condition_id='held')
+        self.p.ready_frame=self.s.observation.frame_id
+        result=[None];self.s.control_perception=NS(latest=lambda _:result[0])
+        self.p._start_arm=Mock()
+        self.tick()
+        self.assertTrue(self.provider.world.paused);self.assertTrue(self.s.paused)
+        self.p._start_arm.assert_not_called()
+        result[0]={'status':'RUNNING','timestamp_s':self.s.observation.timestamp_s,
+            'detector_profile':{'id':'YOLOV8S_640_FRONT_AND_FOCUS_V3'}}
+        self.tick()
+        self.assertFalse(self.provider.world.paused);self.assertFalse(self.s.paused)
+        self.p._start_arm.assert_called_once()
+        self.p._set_vision_hold(True);self.p.transition('CANCELLED')
+        self.assertFalse(self.provider.world.paused);self.assertFalse(self.s.paused)
+
+    def test_prepare_rebuild_clears_old_actor_frames_and_requires_the_new_sensor_rig(self):
+        self.provider.ego=NS(actor=NS(id=1))
+        self.s._required_after_sensor_rebuild=Mock(return_value=('frontCamera','depth'))
+        old=self.s.synchronizer
+        self.s.camera_cache['old']='old';self.s.sensor_frame_cache['old']='old';self.s.render_pose_cache['old']='old'
+        def rebuild():self.provider.ego.actor=NS(id=2);return 'prepared'
+        self.assertEqual(self.p._prepare_native(rebuild),'prepared')
+        self.assertIsNot(old,self.s.synchronizer)
+        self.assertFalse(self.s.camera_cache);self.assertFalse(self.s.sensor_frame_cache);self.assertFalse(self.s.render_pose_cache)
+        self.assertFalse(self.s.reconfiguring)
+
     def setUp(self):
         self.time=0.
         self.provider=NS(name='test-fixture',allow_navigation=True,stop_navigation=Mock(),
@@ -27,6 +56,7 @@ class GuidedPresentationTests(unittest.TestCase):
 
     def first(self,mode='NORMAL'):
         self.p.start(seed=123,guided=True,first_mode=mode);self.tick();self.tick();self.tick()
+        self.p.data['automatic_pair']=False # Retain coverage of historical explicit handoffs.
         self.assertEqual(self.s.start_journey.call_args.kwargs['driving_mode'],mode)
         self.s.journey_comparison.begin(mode,{'presentation_id':self.p.data['id'],'guided':True,'presentation_order':self.p.data['modes']})
         self.s.journey.update(status='RUNNING',driving_mode=mode);self.tick()

@@ -1,7 +1,8 @@
 class EgoVehicle:
-    def __init__(self, world, blueprint_id='vehicle.lincoln.mkz_2020', spawn_index=0, *, strict_spawn=False):
+    def __init__(self, world, blueprint_id='vehicle.lincoln.mkz_2020', spawn_index=0, *, strict_spawn=False,traffic_manager_port=8050):
         self.world, self.blueprint_id, self.spawn_index = world, blueprint_id, spawn_index
         self.strict_spawn = strict_spawn
+        self.traffic_manager_port=traffic_manager_port
         self.actor = None
         self.selected_spawn_index = None
         self.spawn_transform = None
@@ -22,7 +23,7 @@ class EgoVehicle:
                 break
         if self.actor is None:
             raise RuntimeError(f'All {len(points)} CARLA spawn points are occupied')
-        self.actor.set_autopilot(False)
+        self.actor.set_autopilot(False,self.traffic_manager_port)
         return self.actor
 
     def destroy(self):

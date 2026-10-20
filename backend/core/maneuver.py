@@ -85,13 +85,21 @@ class ObservedSpace:
         xyz=xyz[valid];delta=delta[valid];near=near[valid];far=far[valid]
         if not len(xyz):return
         count=max(2,int(np.ceil(2*self.scope_m/self.RESOLUTION))+1)
-        fractions=near[:,None]+(far-near)[:,None]*np.linspace(0.,.999,count)[None,:]
-        sample=origin[:2]+delta[:,None,:]*fractions[:,:,None]
-        # Vectorized calibrated rays avoid hundreds of Python calls per frame.
-        height=origin[2]+(xyz[:,2,None]-origin[2])*fractions
-        height-=sample[:,:,0]*self.ground_plane[0]+sample[:,:,1]*self.ground_plane[1]+self.ground_plane[2]
-        idx=self.indices(sample[(height>=.25)&(height<=1.5)])
-        self.free[idx[:,0],idx[:,1]]=True
+        self._mark_free_rays(xyz,delta,near,far,origin,count)
+
+    def _mark_free_rays(self,xyz,delta,near,far,origin,count):
+        # Preserve every original calibrated ray and sample. Bounded batches
+        # keep high-resolution depth from allocating many cache-sized arrays
+        # at once; sampling density, occupied cells and unknown space are exact.
+        steps=np.linspace(0.,.999,count)[None,:]
+        for start in range(0,len(xyz),128):
+            stop=start+128;lo=near[start:stop];hi=far[start:stop]
+            fractions=lo[:,None]+(hi-lo)[:,None]*steps
+            sample=origin[:2]+delta[start:stop,None,:]*fractions[:,:,None]
+            height=origin[2]+(xyz[start:stop,2,None]-origin[2])*fractions
+            height-=sample[:,:,0]*self.ground_plane[0]+sample[:,:,1]*self.ground_plane[1]+self.ground_plane[2]
+            idx=self.indices(sample[(height>=.25)&(height<=1.5)])
+            self.free[idx[:,0],idx[:,1]]=True
 
     def indices(self,xy):return np.clip(np.rint((np.asarray(xy)+self.LIMIT)/self.RESOLUTION).astype(int),0,self.size-1)
 

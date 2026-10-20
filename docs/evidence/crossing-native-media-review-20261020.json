@@ -1,0 +1,108 @@
+{
+  "scope": "VISUAL_REVIEW_OF_ACTUAL_ACCEPTED_NATIVE_EXPORTS_NOT_BROWSER_FIXTURES",
+  "attempt": "165b27f7e25a4cd08ec5b7bd50333db0",
+  "report_sha256": "a4e81d25b275b7b8a8ae6966969280a47a6dca707ca8fce674884f9cea9e8fc6",
+  "actual_outcomes": {
+    "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+    "scenario_id": "crossing-a",
+    "passed": true,
+    "gates": {
+      "both_recorded": true,
+      "normal_pedestrian_collision": true,
+      "project_arrived_without_contact": true,
+      "initial_conditions_verified": true,
+      "same_requested_speed": true,
+      "same_detector": true,
+      "same_scenario": true,
+      "critical_crossing_realized": true
+    },
+    "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+  },
+  "video_verification_after_exit": {
+    "passed": true,
+    "checks": {
+      "NORMAL": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 6.100000090897083
+      },
+      "ROBOSPHERE": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 98.65000146999955
+      },
+      "shared": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 1.5000000216066838
+      }
+    },
+    "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+  },
+  "shared_prefix": {
+    "status": "READY",
+    "pair_id": "f3df7b762ace4149b417dc8a2e9bc5ee",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_9bc1502c509f4f9b9120ff0ff4365a16",
+    "video": "shared-perception.mp4",
+    "sha256": "6b4192910dc0cb9b0dd64a11b6049fdaa2594bbcd64715e4fa5899dee5a68652",
+    "frames": 30,
+    "detection_boxes": 332,
+    "start_elapsed_s": -1.4500000216066837,
+    "end_elapsed_s": 0.0,
+    "duration_s": 1.5000000216066838,
+    "last_frame_hold_s": 0.05,
+    "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+    "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+    "tolerances": {
+      "position_m": 0.15,
+      "heading_deg": 0.5,
+      "speed_mps": 0.15,
+      "participant_position_m": 0.25,
+      "participant_heading_deg": 2.0
+    },
+    "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+    "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+  },
+  "frames": [
+    {
+      "file": "crossing-native-normal-end-collision-20261020.png",
+      "sha256": "ad31ba3b28dc3d098296f1ef24625d2e15bd2c5454fd0b2101264fc268d664d8",
+      "scope": "ACTUAL_EXPORTED_VIDEO_FRAME",
+      "timestamp_s": 5.980000090897083
+    },
+    {
+      "file": "crossing-native-project-forecast-20261020.png",
+      "sha256": "5ea9254bcda0690c4dd36afa961cad21b3e858401c87434be8d105aa3f1ee23b",
+      "scope": "ACTUAL_EXPORTED_VIDEO_FRAME",
+      "timestamp_s": 4.9
+    },
+    {
+      "file": "crossing-native-project-crossing-20261020.png",
+      "sha256": "adbc178c89c85a12345bfec8f6d8beaf7b0e79564eac2201b1a702cc4f8de640",
+      "scope": "ACTUAL_EXPORTED_VIDEO_FRAME",
+      "timestamp_s": 6.0
+    },
+    {
+      "file": "crossing-native-project-end-arrived-20261020.png",
+      "sha256": "4b158c37fcaaf6c7bc803186d3b7c6d29b4f73cbdcdb8feeea32688d43be8b28",
+      "scope": "ACTUAL_EXPORTED_VIDEO_FRAME",
+      "timestamp_s": 98.53000146999955
+    },
+    {
+      "file": "crossing-native-shared-front-detections-20261020.png",
+      "sha256": "b72863f03d66fff109ca01ad14bff16099a6494758861237038da76499228fd3",
+      "scope": "ACTUAL_EXPORTED_VIDEO_FRAME",
+      "timestamp_s": 0.5
+    }
+  ],
+  "review": "The Normal endpoint shows physical pedestrian contact. The project forecast and crossing frames show measured geometry and forecast arrows, and its endpoint reaches the destination. The front-camera prefix shows exact-frame 2D detections. Measured visible volumes are partial extents; classifications can contain ordinary detector errors and are not native actor truth."
+}

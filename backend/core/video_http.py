@@ -5,7 +5,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-VIDEO_ROUTE=re.compile(r'/runs/normal_city/(run_[a-f0-9]{32})/(video-status\.json|driving(?:-annotated)?\.mp4)')
+VIDEO_ROUTE=re.compile(r'/runs/normal_city/(run_[a-f0-9]{32})/(video-status\.json|shared-perception-status\.json|driving(?:-annotated)?\.mp4|shared-perception\.mp4)')
 
 
 @lru_cache(maxsize=32)
@@ -42,17 +42,19 @@ def serve_video(handler,path,root):
         metadata=json.loads(metadata_path.read_text(encoding='utf8'))
         if metadata.get('provider')!='carla' or metadata.get('data_origin')!='REAL_SIMULATION':
             raise ValueError('Native recording provenance unavailable')
-        status_path=(folder/'video-status.json').resolve()
+        shared=match[2].startswith('shared-perception')
+        status_path=(folder/('shared-perception-status.json' if shared else 'video-status.json')).resolve()
         if status_path.parent!=folder:raise ValueError('Video status escaped its recording')
         status=json.loads(status_path.read_text(encoding='utf8')) if status_path.exists() else {'status':'PENDING'}
-        if match[2]=='video-status.json':
+        if match[2].endswith('-status.json'):
             started=True
             if handler.command=='HEAD':
                 handler.send_response(200);handler.send_header('Content-Type','application/json');handler.end_headers()
             else:handler._json(200,status)
             return True
-        variant=status.get('variants',{}).get('annotated' if match[2]=='driving-annotated.mp4' else 'raw',status if match[2]=='driving.mp4' else {})
-        if variant.get('status')!='READY' or variant.get('source') not in ('RECORDED_NATIVE_DRIVING_CAMERA','RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY'):
+        variant=status if shared else status.get('variants',{}).get('annotated' if match[2]=='driving-annotated.mp4' else 'raw',status if match[2]=='driving.mp4' else {})
+        allowed=('VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA',) if shared else ('RECORDED_NATIVE_DRIVING_CAMERA','RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY')
+        if variant.get('status')!='READY' or variant.get('source') not in allowed:
             raise ValueError('Native video export is not ready')
         video=(folder/match[2]).resolve()
         if video.parent!=folder:raise ValueError('Video escaped its recording')

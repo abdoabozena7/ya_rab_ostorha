@@ -22,11 +22,14 @@ from .host_clock import monotonic
 
 class MeasuredSpace:
     """Lazy map from immutable calibrated measurements, with their original age."""
-    def __init__(self, points, geometry, observation, depth_assets, *, measured_surfaces=None, depth_images=None):
+    def __init__(self, points, geometry, observation, depth_assets, *, measured_surfaces=None, depth_images=None, visual_points=None):
         self.points, self.geometry, self.observation = points, geometry, observation
         self.depth_assets = depth_assets
         self.measured_surfaces=measured_surfaces
         self.depth_images=depth_images or {}
+        # Read-only measured support for presentation after command application.
+        # Constructing display boxes cannot consume the control freshness lease.
+        self.visual_points=points if visual_points is None else visual_points
         self._map = None
         self._lock = threading.Lock()
         self.build_ms = None
@@ -180,6 +183,7 @@ class ControlSceneBuilder:
                 indices=unique_row_indices(np.floor(valid/.2).astype(int))
                 measured.append(valid[indices])
         tracking_points=np.concatenate(measured)
+        tracking_points.flags.writeable=False
         depth_ready=time.perf_counter()
         ego = observation.ego
         base = ControlCommand(observation.frame_id, observation.timestamp_s,
@@ -196,16 +200,16 @@ class ControlSceneBuilder:
             'full':sum(t.get('doppler_evidence',{}).get('observable_rank')==2 for t in prediction['tracks']),
             'partial':sum(t.get('doppler_evidence',{}).get('observable_rank')==1 for t in prediction['tracks'])}
         semantics=self.semantics.apply(prediction,observation,self.poses,semantic_result)
-        people=self.depth_people.update(prediction,observation,self.poses,semantic_result,depth_images)
+        people=self.depth_people.update(prediction,observation,self.poses,semantic_result,depth_images,geometry=self.geometry)
         for track in prediction['tracks']:
             if track.get('class')=='person' and any(np.linalg.norm(np.asarray(track['position_m'])-person['position_m'])<1.5 for person in people):
                 # One physical person must not also be an independent merged
                 # curb/surface hypothesis with a different crossing history.
                 track['class']='UNKNOWN';track.pop('semantic_evidence',None)
         prediction['tracks'].extend(people)
-        if people:
-            semantics.update(front='PARTIAL_CLASSIFIED',classified=True,
-                classified_tracks=semantics['classified_tracks']+len(people))
+        classified=sum(t.get('class','UNKNOWN')!='UNKNOWN' for t in prediction['tracks'])
+        semantics.update(front='PARTIAL_CLASSIFIED' if classified else 'GEOMETRY_ONLY',
+            classified=bool(classified),classified_tracks=classified)
         for track in prediction['tracks']:
             prior_evidence=track.get('measurement_evidence',{})
             track['measurement_evidence']={**prior_evidence,'frame_id':observation.frame_id,'timestamp_s':observation.timestamp_s,
@@ -237,6 +241,6 @@ class ControlSceneBuilder:
                 'lidar_decode':(lidar_ready-began)*1000,'depth_decode_and_fusion':(depth_ready-lidar_ready)*1000,
                 'tracking_and_forecasts':(tracked-depth_ready)*1000,'semantics_and_freezing':(finished-tracked)*1000}
         return ControlScene(1, self.session_id, observation, self.geometry, points,
-                            frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources,depth_images=depth_images),
+                            frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources,depth_images=depth_images,visual_points=tracking_points),
                             received_wall_s, published, (finished-began)*1000,
                             frozen_coverage,freeze_json(timing))

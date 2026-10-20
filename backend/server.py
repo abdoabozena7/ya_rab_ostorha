@@ -74,6 +74,7 @@ class Handler(SimpleHTTPRequestHandler):
                                     "connected": connected,
                                     "mode": snapshot.get('mode', 'DISCONNECTED'),
                                     "sessionId":snapshot.get('sessionId'), "vehicle":snapshot.get('vehicle'),
+                                    "vision_warmup":snapshot.get('vision_warmup',False),
                                     "status": 'REPLAY' if replay else "CONNECTED" if connected else "ERROR" if snapshot.get('error') else "DISCONNECTED",
                                     "websocketPort": getattr(self.server, "websocket_port", None),
                                     "error": snapshot.get('error') if provider else "CARLA is not connected. Start the official simulator and backend with --carla."})
@@ -87,6 +88,7 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(200, observer.snapshot(int(requested) if requested is not None else None) if observer else {'status':'UNAVAILABLE'})
                 if path == '/api/simulation/perception':
                     analysis = getattr(self.server, 'perception', None)
+                    if parse_qs(urlsplit(self.path).query).get('ocr')==['1'] and analysis and callable(getattr(analysis,'request_ocr',None)):analysis.request_ocr()
                     snapshot = getattr(provider,'status_snapshot',provider.snapshot)()
                     if not snapshot.get('connected'):
                         return self._json(200, {'status':'DISCONNECTED'})

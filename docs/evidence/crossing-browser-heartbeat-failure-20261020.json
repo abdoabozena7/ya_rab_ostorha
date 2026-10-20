@@ -1,0 +1,124 @@
+{
+  "scope": "ACTUAL_BROWSER_TRIAL_REJECTED_FOR_TRANSITION_HEARTBEAT_ERROR",
+  "source_archive": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-browser-20261020\\source.zip",
+    "sha256": "6a8bd4bf6603ab12b30fd4c3d70687fee2c5b9a6f8445d555b8a6dd2c4727cdb",
+    "files": 192,
+    "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+  },
+  "source_unchanged": true,
+  "native_exit_independently_observed": true,
+  "ui_acceptance": false,
+  "errors": [
+    {
+      "source": "SERVER",
+      "message": "Simulator telemetry unavailable; commands suspended",
+      "sequence": 3
+    }
+  ],
+  "comparison": {
+    "pair_id": "91ec66eab92540bf9e1382cbd82da492",
+    "validation": {
+      "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+      "scenario_id": "crossing-a",
+      "passed": true,
+      "gates": {
+        "both_recorded": true,
+        "normal_pedestrian_collision": true,
+        "project_arrived_without_contact": true,
+        "initial_conditions_verified": true,
+        "same_requested_speed": true,
+        "same_detector": true,
+        "same_scenario": true,
+        "critical_crossing_realized": true
+      },
+      "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+    },
+    "runs": {
+      "NORMAL": {
+        "id": "df1f05197d9b4fb4a00da21e22953648",
+        "status": "COLLISION",
+        "reason": "collision",
+        "collisions": 1,
+        "distance_m": 64.68442406610157,
+        "duration_s": 5.950000088661909
+      },
+      "ROBOSPHERE": {
+        "id": "dc316dd009294ea99148dc6dd7f73218",
+        "status": "ARRIVED",
+        "reason": "destination_reached",
+        "collisions": 0,
+        "distance_m": 262.5101853017055,
+        "duration_s": 46.90000069886446
+      }
+    }
+  },
+  "commands": [
+    {
+      "type": "presentation",
+      "value": {
+        "operation": "PRELOAD",
+        "page_id": "81f32bb3-ae00-4727-b37b-af3dc34296e0",
+        "replace": false
+      },
+      "sequence": 1,
+      "phase": "IDLE"
+    },
+    {
+      "type": "presentation",
+      "value": {
+        "operation": "START_GUIDED",
+        "id": "fc51c5037b1a498388e95f8ebc7c8cc1",
+        "expected_arm": 0,
+        "expected_phase": "CHOOSING",
+        "first_mode": "NORMAL",
+        "page_id": "81f32bb3-ae00-4727-b37b-af3dc34296e0",
+        "scene": "DENSE_CHAOS",
+        "speed_kmh": 120,
+        "prepared_id": "fc51c5037b1a498388e95f8ebc7c8cc1"
+      },
+      "sequence": 2,
+      "phase": "CHOOSING"
+    },
+    {
+      "type": "presentation",
+      "value": {
+        "operation": "FINISH",
+        "id": "fc51c5037b1a498388e95f8ebc7c8cc1",
+        "expected_arm": 1,
+        "expected_phase": "RESULTS"
+      },
+      "sequence": 1996,
+      "phase": "RESULTS"
+    }
+  ],
+  "playback_after_exit_and_refresh": {
+    "scope": "REAL_EXPORTED_MEDIA_BROWSER_PLAYBACK_AFTER_ENGINE_EXIT_AND_REFRESH",
+    "pair_id": "91ec66eab92540bf9e1382cbd82da492",
+    "presentation_id": "fc51c5037b1a498388e95f8ebc7c8cc1",
+    "media": [
+      {
+        "src": "http://127.0.0.1:8000/runs/normal_city/run_24f758b94a0b4ac0b6c6a2cdbbd468e1/shared-perception.mp4",
+        "duration_s": 1.501
+      },
+      {
+        "src": "http://127.0.0.1:8000/runs/normal_city/run_24f758b94a0b4ac0b6c6a2cdbbd468e1/driving-annotated.mp4",
+        "duration_s": 6.101
+      },
+      {
+        "src": "http://127.0.0.1:8000/runs/normal_city/run_294c6d696a4a46f99e2c892ca3175e3e/driving-annotated.mp4",
+        "duration_s": 47.001
+      }
+    ],
+    "names": [
+      "Normal",
+      "Ya Rab Ostorha"
+    ],
+    "checks": [
+      "all_three_start_and_final_frames_play",
+      "same_result_after_refresh",
+      "all_three_play_again_after_refresh"
+    ]
+  },
+  "regression": "Owner/session-bound heartbeat no longer requires current sensor measurements; stale-session beats cannot renew a lease. Full browser verification must be repeated."
+}

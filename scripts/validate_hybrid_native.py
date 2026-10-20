@@ -23,8 +23,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
-        for pattern in ('backend/core/*.py','backend/carla/*.py','backend/computer_vision/*.py','backend/learning/hybrid_budget.py',
-                        'config/hybrid-driving.json','config/route-bypass.json','scripts/validate_hybrid_native.py',
+        for pattern in ('backend/**/*.py',
+                        'config/hybrid-driving.json','config/route-bypass.json','config/crossing-comparison.json','scripts/validate_hybrid_native.py',
+                        'scripts/native/validate_crossing_pair.py',
+                        'scripts/native/crossing_causality.py',
                         'scripts/native/route_bypass_world.py','scripts/native/validate_sensor_comparison.py') for p in ROOT.glob(pattern)}
 
 

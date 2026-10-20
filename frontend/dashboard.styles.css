@@ -10785,6 +10785,32 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
 }
+#sharedPerception {
+  margin: 20px 0 32px;
+  padding: 0 0 28px;
+  border-bottom: 1px solid #29252414;
+}
+#sharedPerception .recorded-video {
+  max-width: 900px;
+  margin: 18px auto 12px;
+}
+#sharedPerception .shared-perception-heading,
+#sharedPerception .shared-perception-status {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#sharedPerception h3 {
+  margin-bottom: 8px;
+}
+#sharedPerception p {
+  margin-top: 0;
+}
+#sharedPerception .shared-perception-download {
+  display: block;
+  max-width: 900px;
+  margin: 0 auto;
+}
 #missionOutcomes .presentation-videos article {
   min-width: 0;
   padding: 20px;

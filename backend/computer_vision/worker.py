@@ -10,6 +10,12 @@ import urllib.request
 import urllib.error
 ROOT=Path(__file__).resolve().parents[2]
 OUTPUT=ROOT/'output/perception'
+
+def ocr_requested(parent):
+    try:
+        value=json.loads((OUTPUT/'ocr-request.json').read_text(encoding='utf8'))
+        return value.get('parent')==parent and 0<=time.time()-value['requested_at']<3.
+    except (OSError,ValueError,KeyError,TypeError):return False
 def publish(value, name='latest.json'):
     value['published_at'] = time.time()
     destination=OUTPUT/name
@@ -55,11 +61,11 @@ def main():
     import cv2
     import numpy as np
     from PIL import Image,ImageDraw
-    from .detector import RoadDetector
+    from .detector import RoadDetector,default_model_path
     from .ocr import EnglishRecognizer,text_regions
     from ..nlp.processor import interpret
     cv2.setNumThreads(1)
-    detector=RoadDetector(ROOT/'models/yolov8n-320.onnx')
+    detector=RoadDetector(default_model_path())
     recognizer=None;previous=None;history=[];last_ocr=-float('inf');nlp=None;aligned_session=None
     url=f'http://127.0.0.1:{args.port}/api/simulation/'
     while parent_alive(args.parent):
@@ -68,7 +74,7 @@ def main():
             with urllib.request.urlopen(url+'status',timeout=3) as response:state=json.load(response)
             if not state.get('connected') or state.get('mode')=='REPLAY':
                 publish({'status':'DISCONNECTED'});time.sleep(1);continue
-            driving=state.get('mode')=='AUTOMATIC';period=.2 if driving else 1.
+            driving=state.get('mode')=='AUTOMATIC';warming=state.get('vision_warmup',False);period=.2 if driving or warming else 1.
             fid=state['vehicle']['frame'];stamp=state['vehicle']['timestamp'];session=state['sessionId']
             if (session,fid)==previous:time.sleep(.1);continue
             if previous and previous[0]!=session:nlp=None
@@ -77,7 +83,7 @@ def main():
                     raise ValueError('Native camera/telemetry identity mismatch')
                 source=response.read()
             image=Image.open(io.BytesIO(source)).convert('RGB');rgb=np.asarray(image)
-            started=time.monotonic();detections=detector.predict(rgb);detection_ms=(time.monotonic()-started)*1000
+            started=time.monotonic();detections=detector.predict(rgb,frame_id=fid);detection_ms=(time.monotonic()-started)*1000
             # A 2D box can also cover a distant wall. Associate labels only to
             # matching measured range, using synchronized existing depth.
             try:
@@ -86,26 +92,27 @@ def main():
                     for name in ('frontCamera','depth'):
                         with urllib.request.urlopen(url+'sensor?name='+name,timeout=2) as response:
                             metadata.append(json.load(response)['metadata'])
-                    keys=('width','height','fov_deg','mount_transform')
+                    keys=('fov_deg','mount_transform')
                     if any(metadata[0].get(k)!=metadata[1].get(k) for k in keys):raise ValueError('RGB/depth calibration differs')
+                    if abs(metadata[0]['width']/metadata[0]['height']-metadata[1]['width']/metadata[1]['height'])>1e-6:raise ValueError('RGB/depth aspect differs')
                     aligned_session=session
                 with urllib.request.urlopen(url+'sensor.bin?name=depth&frame_id='+str(fid),timeout=2) as response:
                     if int(response.headers['X-Sensor-Frame'])!=fid or abs(float(response.headers['X-Sensor-Time'])-stamp)>1e-6:
                         raise ValueError('RGB/depth identity differs')
                     depth=np.load(io.BytesIO(response.read()),allow_pickle=False)
-                if depth.shape!=rgb.shape[:2]:raise ValueError('RGB/depth dimensions differ')
                 from .depth_evidence import attach_depth
-                attach_depth(detections,depth,fid,stamp)
+                attach_depth(detections,depth,fid,stamp,rgb_size=(image.width,image.height))
             except (OSError,ValueError,KeyError):pass
             # Dedicated control semantics are published before OCR/annotation.
             # Geometry control never waits for either this worker or this file.
             detection_result={'status':'RUNNING','session_id':session,'frame_id':fid,'timestamp_s':stamp,
+                'detector_profile':detector.profile,'width':image.width,'height':image.height,
                 'detections':detections,'detector_ms':detection_ms,'published_at':time.time(),
                 'source_sensor':'frontCamera','semantic_coverage':'FRONT_CAMERA_ONLY'}
             detection_result['source_image_sha256']=hashlib.sha256(source).hexdigest()
             detection_published=publish(detection_result,'latest-detections.json')
             texts=[];ocr_ms=0.;regions=[]
-            if not driving and time.monotonic()-last_ocr>=3:
+            if not driving and not warming and ocr_requested(args.parent) and time.monotonic()-last_ocr>=3:
                 regions=text_regions(rgb,detections)
                 if regions:
                     started=time.monotonic()
@@ -126,7 +133,7 @@ def main():
             publish({'status':'RUNNING','source':'REAL_CARLA_RGB_MODEL_INFERENCE','device':'CPU',
                 'session_id':session,'frame_id':fid,'timestamp_s':stamp,'width':image.width,'height':image.height,
                 'image_token':token,'source_image_sha256':hashlib.sha256(source).hexdigest(),
-                'model':'YOLOv8n ONNX 320','ocr':'English g2 crop-only','detections':detections,'texts':texts,
+                'model':'YOLOv8s ONNX 640 + central and roadside focus','detector_profile':detector.profile,'ocr':'English g2 crop-only (on request)','detections':detections,'texts':texts,
                 'nlp':nlp,'inference_ms':(time.monotonic()-began)*1000,'detector_ms':detection_ms,'ocr_ms':ocr_ms,
                 'cpu_ms':(time.process_time()-cpu_began)*1000,'threads':1,'maximum_rate_hz':1/period,'ocr_regions':len(regions),
                 'semantic_publication': 'PUBLISHED' if detection_published else 'READER_LOCK_RETAINED_PREVIOUS'})

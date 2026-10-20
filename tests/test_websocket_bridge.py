@@ -9,6 +9,41 @@ from tests.core_packets import packet
 
 @unittest.skipUnless(importlib.util.find_spec('websockets'), 'WebSocket dependency not installed')
 class WebSocketTests(unittest.TestCase):
+    def test_heartbeat_is_owner_and_session_bound_without_sensor_admission(self):
+        import threading
+        from unittest.mock import Mock
+        from backend.websocket_bridge import WebSocketBridge
+        service=SimulationService(None);service.require_connected=Mock(side_effect=ValueError('Sensors rebuilding'))
+        service.journey_heartbeat=Mock();bridge=WebSocketBridge.__new__(WebSocketBridge)
+        bridge.service=service;bridge.ownership_lock=threading.RLock();owner=object();bridge.owner=owner
+        self.assertTrue(bridge.process_message(owner,{'type':'journey_heartbeat','session_id':service.session_id}))
+        service.journey_heartbeat.assert_called_once_with(service.session_id)
+        self.assertTrue(bridge.process_message(owner,{'type':'journey_heartbeat','session_id':'previous'}))
+        service.journey_heartbeat.assert_called_once();service.require_connected.assert_not_called()
+        with self.assertRaisesRegex(ValueError,'Another dashboard'):
+            bridge.process_message(object(),{'type':'journey_heartbeat','session_id':service.session_id})
+        with self.assertRaisesRegex(ValueError,'Sensors rebuilding'):
+            bridge.process_message(owner,{'type':'controls','frame_id':42})
+
+    def test_duplicate_choice_and_observing_preload_are_safe_during_sensor_rebuild(self):
+        import threading,tempfile
+        from unittest.mock import Mock
+        from backend.websocket_bridge import WebSocketBridge
+        service=SimulationService(None);service.require_connected=Mock(side_effect=ValueError('Sensors rebuilding'))
+        bridge=WebSocketBridge.__new__(WebSocketBridge);bridge.service=service;bridge.ownership_lock=threading.RLock()
+        owner,observer=object(),object();bridge.owner=owner
+        with tempfile.TemporaryDirectory() as directory:
+            service.presentation.directory=Path(directory)
+            service.presentation.data.update(id='admitted',status='SELECTING',guided=True,automatic_pair=True,
+                modes=['NORMAL','ROBOSPHERE'],awaiting_choice=False,page_id='same-page')
+            start={'operation':'START_GUIDED','prepared_id':'admitted','first_mode':'NORMAL','page_id':'same-page'}
+            self.assertTrue(bridge.process_message(owner,{'type':'presentation','value':start}))
+            self.assertTrue(bridge.process_message(observer,{'type':'presentation','value':{'operation':'PRELOAD','page_id':'other-page'}}))
+            self.assertIs(bridge.owner,owner);self.assertFalse(service.actions)
+            service.require_connected.assert_not_called()
+            with self.assertRaisesRegex(ValueError,'fresh start'):
+                bridge.process_message(observer,{'type':'presentation','value':{**start,'page_id':'other-page'}})
+
     def test_finish_from_an_observer_and_stopped_reconnect_is_idempotent_without_taking_control(self):
         import tempfile,threading
         from unittest.mock import Mock
@@ -81,6 +116,29 @@ class WebSocketTests(unittest.TestCase):
             service.sequence=2;second=bridge.snapshot_payload()
         self.assertEqual(json.loads(second)['sequence'],2)
         self.assertEqual(service.stream_snapshot.call_count,2)
+
+    def test_automatic_pair_reload_uses_the_existing_transport_lease_without_manual_release(self):
+        from unittest.mock import Mock
+        from websockets.sync.client import connect
+        from backend.websocket_bridge import WebSocketBridge
+        service=SimulationService(None);service._publish(packet())
+        service.journey.update(status='RUNNING')
+        service.presentation.data.update(id='automatic',status='DRIVING',guided=True,automatic_pair=True)
+        service.release_controls=Mock(wraps=service.release_controls)
+        bridge=WebSocketBridge(service,'127.0.0.1',0,8000);bridge.start()
+        uri=f'ws://127.0.0.1:{bridge.server.socket.getsockname()[1]}'
+        try:
+            with connect(uri) as first:
+                first.recv(timeout=2);time.sleep(.25)
+            until=time.monotonic()+.5
+            while bridge.owner is not None and time.monotonic()<until:time.sleep(.005)
+            self.assertEqual(service.journey['status'],'RUNNING');service.release_controls.assert_not_called()
+            with connect(uri) as second:
+                self.assertTrue(json.loads(second.recv(timeout=2))['controller']);time.sleep(.25)
+                self.assertTrue(service._navigation_connection_alive())
+            time.sleep(1.05)
+            self.assertFalse(service._navigation_connection_alive())
+        finally:bridge.close()
 
     def test_native_pong_keeps_autonomous_intent_without_browser_js_and_close_stops_it(self):
         from websockets.sync.client import connect

@@ -117,7 +117,7 @@ export function installGuidedDetails(p,tools,trigger){
   const results=page('results','Results');
   const comparison=selectField(results,'detailsComparison','Saved comparison',[['current','Latest received comparison']]);
   const resultAction=selectField(results,'detailsResultAction','Action',[
-    ['view','View results'],['replay','Replay both videos'],['downloadROBOSPHERE','Download Robosphere MP4'],['downloadNORMAL','Download Normal MP4']]);
+    ['view','View results'],['replay','Replay both videos'],['downloadROBOSPHERE','Download Ya Rab Ostorha MP4'],['downloadNORMAL','Download Normal MP4']]);
   const resultNote=node('p',null,'muted');resultNote.setAttribute('role','status');
   const resultOpen=node('button','Open','primary');resultOpen.type='button';resultOpen.id='detailsResultOpen';
   results.append(resultNote,resultOpen);

@@ -1,6 +1,7 @@
 import {installGuidedDetails} from './guided-details.js';
 import {missionState,modeLabel,stressSummary,missionFailure} from './mission-state.js';
 import {controlReasonText} from './cockpit-state.js';
+import {PROJECT_NAME} from './project-name.js';
 import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome} from './presentation-run.js';
 import {installPreviewPlayer} from './preview-player.js';
@@ -9,7 +10,7 @@ import {recordedDriverDescription} from './driver-profile.js';
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
   document.body.classList.add('sequential-drive','mission-experience');p.guidedExperience=true;
-  document.querySelector('#brand h1').textContent='Ya Rab Ostorha';
+  document.querySelector('#brand h1').textContent=PROJECT_NAME;
   document.querySelector('#brand .eyebrow').textContent='A guided driving experience';
   const atmosphere=document.createElement('div');atmosphere.id='missionAtmosphere';atmosphere.setAttribute('aria-hidden','true');
   atmosphere.innerHTML='<i></i><i></i>';document.body.prepend(atmosphere);
@@ -20,14 +21,14 @@ export function installSequentialDrive(p,tools) {
   returnToMission.onclick=()=>{p.reviewedComparison=null;p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();showWorkspace('drive');update();};
   const navigator=installGuidedDetails(p,tools,details);details.onclick=()=>navigator.open();
   const experience=document.createElement('main');experience.id='missionExperience';
-  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes · reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="ar" dir="rtl">يا رب تسترها</strong>Same Mercedes · sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+  experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes · reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="en" dir="ltr">Ya Rab Ostorha</strong>Same Mercedes · sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
   const preview=installPreviewPlayer(experience.querySelector('#missionPreview'));
   const telemetry=document.createElement('p');telemetry.id='missionTelemetry';telemetry.setAttribute('role','status');
   experience.querySelector('#missionDetail').after(telemetry);
   const guide=document.createElement('section');guide.id='missionGuide';guide.setAttribute('aria-labelledby','missionGuideTitle');
   guide.innerHTML='<h2 id="missionGuideTitle">Before you drive</h2>';
   for(const [index,[question,answer]] of [
-    ['What will I see?','The same Mercedes, sensor rig and starting setup. Normal uses reactive sensor braking; يا رب تسترها adds predictive RULE and visible forecast paths. RL is not active in this comparison. Choose either drive first.'],
+    ['What will I see?','The same Mercedes, sensors and crossing scenario. Normal uses reactive braking; Ya Rab Ostorha adds early crossing prediction and visible forecast paths. Choose either drive first; the other starts automatically.'],
     ['Does protection prevent every contact?','No. RULE protection may slow or stop the car, but contacts are still possible. The comparison shows what actually happened, including attempts ended early.'],
     ['What does Free GPU do?','It saves the recorded portion, closes CARLA and checks that its processes have exited. Your next start begins a new comparison. Previous recordings stay in Menu.'],
   ].entries()){

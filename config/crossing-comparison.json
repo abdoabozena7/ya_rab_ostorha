@@ -1,0 +1,41 @@
+{
+  "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+  "map": "Town10HD_Opt",
+  "spawn_index": 152,
+  "variants": [
+    {
+      "id": "crossing-a",
+      "crossing_m": 65.0,
+      "start_s": 4.7,
+      "speed_mps": 3.4,
+      "lateral_m": 4.6,
+      "validated": true,
+      "fixture_seed": 1701,
+      "critical_blueprint": "walker.pedestrian.0001"
+    },
+    {
+      "id": "crossing-b",
+      "waiting_yaw_offset_deg": 180,
+      "crossing_m": 64.5,
+      "start_s": 4.65,
+      "speed_mps": 3.5,
+      "lateral_m": 4.6,
+      "validated": true,
+      "fixture_seed": 1702,
+      "critical_blueprint": "walker.pedestrian.0001"
+    },
+    {
+      "id": "crossing-c",
+      "waiting_yaw_offset_deg": 180,
+      "crossing_m": 65.0,
+      "start_s": 4.7,
+      "speed_mps": 3.5,
+      "lateral_m": 4.6,
+      "validated": true,
+      "fixture_seed": 1703,
+      "critical_blueprint": "walker.pedestrian.0001"
+    }
+  ],
+  "revision": 17,
+  "route_search_distance_m": 260
+}

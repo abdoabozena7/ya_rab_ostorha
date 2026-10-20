@@ -136,7 +136,7 @@ class NativeScenarioManager:
                 actor=p.world.world.try_spawn_actor(bp,native_transform(p.connection.api,definition.transform))
                 if actor is None:raise ValueError(f'Scenario spawn is occupied: {definition.name}')
                 self.actors[definition.name]=actor.id
-                actor.set_autopilot(False)
+                actor.set_autopilot(False,p.traffic_manager_port)
                 actor.apply_control(p.connection.api.VehicleControl(brake=1.))
             if self.spec.metadata.get('urban_chaos'):
                 from .urban_chaos import UrbanPhysics
@@ -289,7 +289,7 @@ class NativeScenarioManager:
             self.phase='FINISHED'
             if self.urban:
                 for name,plan in self.spec.metadata['vehicle_plans'].items():
-                    if plan['kind']=='TRAFFIC_MANAGER':self.urban.handles[name].set_autopilot(False)
+                    if plan['kind']=='TRAFFIC_MANAGER':self.urban.handles[name].set_autopilot(False,self.provider.traffic_manager_port)
                 for entry in self.urban.controllers.values():
                     if entry['started'] and entry['prepared']:entry['handle'].set_max_speed(0.)
             self.outcome={'run_id':self.run['run_id'],'condition_id':self.spec.condition_id,'reason':reason,

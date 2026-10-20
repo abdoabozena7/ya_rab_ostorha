@@ -83,7 +83,7 @@ class FocusedForecastTests(unittest.TestCase):
         prediction['tracks'][0]['position_m']=[85.,5.]
         prediction['trajectories']=kinematic_modes(prediction['tracks'],grid=np.arange(81)*.1)
         observation.ego.speed_mps=20.
-        result=crossing_forecast(prediction,observation,replace(command(.75),steering=0.),VehicleGeometry())
+        result=crossing_forecast(prediction,observation,replace(command(0.),steering=0.),VehicleGeometry())
         self.assertIsNotNone(result);self.assertGreater(result['time_s'],3.)
 
     def test_only_the_actual_person_conflict_is_shared_with_live_and_exported_video(self):

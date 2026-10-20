@@ -78,6 +78,18 @@ class WebSocketBridge:
                 if kind == 'reconnect':
                     self.service.reconnect()
                 else:
+                    presentation=getattr(self.service,'presentation',None)
+                    if presentation_start and presentation:
+                        value=message['value'];data=presentation.data
+                        # Observing an active attempt and acknowledging an
+                        # already admitted choice do not need new sensor data.
+                        if value.get('operation')=='PRELOAD' and presentation.busy and not value.get('replace'):
+                            if presentation.preload(value.get('page_id'),replace=False) is False:return True
+                        if (value.get('operation')=='START_GUIDED' and value.get('prepared_id')==data.get('id')
+                                and value.get('first_mode')==data.get('modes',[None])[0]
+                                and not data.get('awaiting_choice') and data.get('status') not in presentation.TERMINAL):
+                            presentation.choose_preloaded(value['prepared_id'],value['first_mode'],value.get('page_id'))
+                            return True
                     self.service.require_connected()
                     if presentation_start:
                         value=message['value']
@@ -116,6 +128,14 @@ class WebSocketBridge:
                 return False
             if self.owner is not socket:
                 raise ValueError('Another dashboard controls this vehicle; select Start driving')
+            if kind=='journey_heartbeat':
+                # Liveness is not sensor/control admission. An in-flight beat
+                # from the previous car/session is acknowledged without renewing
+                # any lease; the current owner's matching beat remains valid
+                # while native construction temporarily holds sensor updates.
+                if message.get('session_id')==self.service.session_id:
+                    self.service.journey_heartbeat(message['session_id'])
+                return True
             self.service.require_connected()
             presentation = getattr(self.service, 'presentation', None)
             if presentation and presentation.busy and kind in ('destination', 'population', 'crowd_route',
@@ -149,8 +169,6 @@ class WebSocketBridge:
                 self.service.stop_driving(message.get('reason', 'operator_stop'))
             elif kind == 'safety_mode':
                 self.service.set_safety_enabled(message.get('value'))
-            elif kind == 'journey_heartbeat':
-                self.service.journey_heartbeat(message.get('session_id'))
             elif kind == 'presentation':
                 value = message.get('value')
                 if isinstance(value,dict) and value.get('operation')=='NEXT':
@@ -228,13 +246,19 @@ class WebSocketBridge:
                 self.sockets.discard(socket)
                 if self.owner is socket:
                     presentation=getattr(self.service,'presentation',None)
+                    automatic_pair=bool(presentation and presentation.data.get('automatic_pair') and
+                        presentation.data.get('status') not in ('IDLE','COMPLETE','CANCELLED','ERROR'))
                     held_choice=bool(presentation and (presentation.data.get('status') in ('AWAITING_NEXT','RESULTS','FINISHING') or
                         presentation.data.get('status')=='CHOOSING' and presentation.data.get('awaiting_choice')))
-                    if hasattr(self.service, 'journey') and (self.service.journey.get('status') in ('RUNNING', 'STARTING') or
+                    if not automatic_pair and hasattr(self.service, 'journey') and (self.service.journey.get('status') in ('RUNNING', 'STARTING') or
                             presentation and presentation.busy and not held_choice):
                         try: self.service.stop_driving('dashboard_disconnected')
                         except (ValueError, RuntimeError): pass
-                    self.service.release_controls()
+                    # A reload may reconnect within the existing transport
+                    # lease. The tick owner's unchanged one-second watchdog
+                    # stops a genuinely lost automatic session. Manual release
+                    # remains immediate; disconnect never grants new intent.
+                    if not automatic_pair:self.service.release_controls()
                     self.owner = None
                     self.controller_lock.release()
 

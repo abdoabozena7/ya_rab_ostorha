@@ -6,6 +6,16 @@ from backend.core.control_semantics import SemanticAssociator
 
 
 class SemanticDepthTests(TestCase):
+    def test_walking_leg_background_gaps_do_not_discard_the_measured_torso(self):
+        image=np.full((180,320),80.)
+        image[70:95,107:114]=20. # torso; the lower centre contains the gap between legs
+        row={'class':'person','xyxy':[100.,50.,120.,130.]}
+        attach_depth([row],image,42,2.1)
+        proof=row['depth_evidence']
+        self.assertEqual(proof['axial_m'],20.);self.assertEqual(proof['region'],'TORSO')
+        self.assertLess(proof['pixel_center_depth'][1],95.)
+        self.assertEqual(proof['depth_resolution'],[320,180])
+
     def test_depth_comes_from_the_detected_body_and_keeps_frame_identity(self):
         depth=np.full((100,100),40.,dtype=float);depth[30:71,44:57]=8.
         detection={'class':'person','xyxy':[30,10,70,90]}

@@ -13,14 +13,15 @@ from .prediction import rotation
 class DepthPeople:
     def __init__(self):self.tracks={};self.next_id=0;self.last_result=None
 
-    def update(self,prediction,observation,poses,result,depth_images):
+    def update(self,prediction,observation,poses,result,depth_images,*,geometry=None):
         now=observation.timestamp_s;session=prediction['session_id']
         rgb=next((c for c in observation.channels if c.sensor_id=='frontCamera'),None)
         depth=next((c for c in observation.channels if c.sensor_id=='depth'),None)
         if rgb is None or depth is None or depth.asset.path not in depth_images:return []
-        calibration=rgb.calibration
-        keys=('width','height','fov_deg','mount_transform')
-        if any(calibration.get(k)!=depth.calibration.get(k) for k in keys):return []
+        calibration=depth.calibration
+        keys=('fov_deg','mount_transform')
+        if any(rgb.calibration.get(k)!=calibration.get(k) for k in keys):return []
+        if abs(rgb.calibration['width']/rgb.calibration['height']-calibration['width']/calibration['height'])>1e-6:return []
         mount=calibration['mount_transform'];mount_position=np.array(mount['position_m'])
         sensor_rotation=mount_rotation(mount['rotation_deg'])
         focal=calibration['width']/(2*math.tan(math.radians(calibration['fov_deg'])/2))
@@ -43,7 +44,13 @@ class DepthPeople:
                     if (detection.get('class')!='person' or detection.get('confidence',0)<.25 or len(box)!=4
                         or proof.get('source_sensor')!='depth' or proof.get('frame_id')!=frame
                         or abs(proof.get('timestamp_s',-10)-stamp)>1e-6 or not .5<proof.get('axial_m',0)<90.):continue
-                    u=(box[0]+box[2])/2;v=(box[1]+box[3])/2
+                    u=((box[0]+box[2])/2+.5)*w/rgb.calibration['width']-.5
+                    v=((box[1]+box[3])/2+.5)*h/rgb.calibration['height']-.5
+                    if 'pixel_center_depth' in proof:
+                        pixel=proof['pixel_center_depth']
+                        if (tuple(proof.get('depth_resolution') or ())!=(w,h) or len(pixel)!=2 or not np.isfinite(pixel).all()
+                                or not 0<=pixel[0]<w or not 0<=pixel[1]<h):continue
+                        u,v=pixel
                     ray=np.array([1.,(u-(w-1)/2)/focal,-(v-(h-1)/2)/focal])
                     point=mount_position+sensor_rotation@(ray*proof['axial_m'])
                     world=prior_origin+rotation(prior_yaw)@point[:2]
@@ -57,16 +64,16 @@ class DepthPeople:
                             'initial_side':1 if point[1]>=0 else -1,'observed_inside':False,'crossing_cleared':False}
                     track=self.tracks[key];used.add(key)
                     track.update(seed_world=world,seed_height=point[2],seed_s=stamp)
-                    # Uncertain RGB can retain a measured identity/history but
-                    # cannot supply a person class or a braking hypothesis.
+                    # Uncertain RGB retains identity, never a person class or
+                    # speculative intent. Current measured motion stays usable.
                     if detection['confidence']>=.65:
                         track['semantic']={'class':'person','confidence':detection['confidence'],'timestamp_s':stamp,
                             'source_frame':frame,'session_id':session,'source_sensor':'frontCamera','depth_evidence':proof}
             self.last_result=identity
         published=[]
-        # Preserve only association/history across a short RGB gap. No person
-        # observation or motion permission is emitted past the same .75 s limit.
-        self.tracks={key:t for key,t in self.tracks.items() if now-t.get('seed_s',-10)<=4.}
+        # Classification expires at .75 s. Current measured geometry remains an
+        # unclassified surface; losing its name is not evidence it disappeared.
+        self.tracks={key:t for key,t in self.tracks.items() if now-t.get('seed_s',-10)<=4. or 0<=now-t['last_seen']<=.15}
         for key,track in self.tracks.items():
             age=now-track['last_seen'];semantic_age=now-track.get('semantic',{}).get('timestamp_s',-10)
             if age<0 or semantic_age<0:continue
@@ -92,28 +99,35 @@ class DepthPeople:
             rays=np.column_stack((np.ones(valid.sum()),(uu[valid]-(w-1)/2)/focal,-(vv[valid]-(h-1)/2)/focal))
             xyz=(rays*values[valid,None])@sensor_rotation.T+mount_position
             center=np.median(xyz,axis=0);world=origin+r@center[:2]
-            if np.linalg.norm(world-track['seed_world'])>1.5+(now-track['seed_s'])*2.:continue
+            if np.linalg.norm(world-track['seed_world'])>1.5+(now-track['seed_s'])*5.:continue
             recent=[row for row in track['history'] if 0<now-row[0]<=.3]
             if recent and now-recent[0][0]>=.15:
                 displacement=world-np.asarray(recent[0][1:3]);duration=now-recent[0][0]
                 velocity=displacement/duration
-                if np.linalg.norm(velocity)>3.:continue
+                if np.linalg.norm(velocity)>5.:continue
                 if np.linalg.norm(displacement)<max(.08,axial/focal*.5):velocity=np.zeros(2)
                 track['velocity']=track['velocity']*.6+velocity*.4
             track['position']=world;track['last_seen']=now;track['hits']+=1
             if abs(center[1])<1.5:track['observed_inside']=True
             local_velocity=r.T@track['velocity']
-            if (track['observed_inside'] and center[1]*track['initial_side']<-2.8
+            # Native release follows the audited car width, body half-width,
+            # maximum current depth uncertainty and a 0.5 m extra clearance.
+            # Retain the historical threshold when replay lacks geometry.
+            cleared_distance=geometry.half_width_m+.35+.4+.5 if geometry is not None else 2.8
+            if (track['observed_inside'] and center[1]*track['initial_side']<-cleared_distance
                 and center[1]*local_velocity[1]>=-.2):track['crossing_cleared']=True
             if center[1]*local_velocity[1]<-.5:track['crossing_cleared']=False
             track['history'].append([now,*world,*track['velocity']]);track['history']=track['history'][-60:]
-            if semantic_age>.75:continue  # Current geometry may retain identity, never an expired class/proposal.
-            published.append({'id':key,'class':'person','confirmed':track['hits']>=3,'occlusion_s':0.,
+            classified=semantic_age<=.75 and bool(track.get('semantic'))
+            entry={'id':key,'class':'person' if classified else 'UNKNOWN','confirmed':track['hits']>=3,'occlusion_s':0.,
                 'position_m':center[:2].tolist(),'velocity_mps':local_velocity.tolist(),
                 'observed_crossing_cleared':track['crossing_cleared'],
-                'half_size_m':[.35,.35],'uncertainty_m':.25+semantic_age*.2,'quality':.8,
-                'motion_observations':track['hits'],'history':list(track['history']),
-                'semantic_evidence':track['semantic'],'measurement_evidence':{'session_id':session,
+                'half_size_m':[.35,.35],'uncertainty_m':.25+min(semantic_age,.75)*.2,'quality':.8,
+                'motion_observations':len(recent)+1,'history':list(track['history']),
+                'measurement_evidence':{'session_id':session,
                     'frame_id':observation.frame_id,'timestamp_s':now,'sensor_ids':['depth'],
-                    'source':'CURRENT_DEPTH_BODY_CORE','support_points':int(valid.sum()),'mad_m':mad}})
+                    'source':'CURRENT_DEPTH_BODY_CORE','support_points':int(valid.sum()),'mad_m':mad,
+                    'motion_span_s':now-recent[0][0] if recent else 0.}}
+            if classified:entry['semantic_evidence']=track['semantic']
+            published.append(entry)
         return published

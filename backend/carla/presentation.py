@@ -16,17 +16,24 @@ def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
     p.stop_navigation()
     p.population.reset_population()
     p.set_controls(brake=1)
+    if guided:p.prepare_guided_vehicle()
     rng = random.Random(seed)
     tools = p.dashboard_tools
+    selection_seed=seed;search_m=260.
+    if guided:
+        from .crossing_comparison import catalogue
+        library=catalogue();spec=library['variants'][seed%len(library['variants'])]
+        if tools.map_name.rsplit('/',1)[-1]!=library['map']:raise ValueError('The crossing library requires '+library['map']+'. Select that city before starting.')
+        seed=spec['fixture_seed'];rng=random.Random(seed);search_m=library['route_search_distance_m']
     # Seeded choices between known urban starts; every route is planned natively.
-    indices = [80, 152]
+    indices = [152] if guided else [80, 152]
     rng.shuffle(indices)
     from .route_crowding import route_slots
     candidates=[]
     for index in indices:
         origin=tools.spawns[index % len(tools.spawns)]
         waypoint=tools.map.get_waypoint(origin.location)
-        for _ in range(130):
+        for _ in range(round(search_m/2)):
             choices=waypoint.next(2.)
             if not choices:break
             prior=waypoint.transform.rotation.yaw
@@ -52,20 +59,33 @@ def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
     return {'destination': target, 'route_length_m': tools.route['length_m'],
         'origin_index': index,'planned_vehicle_capacity':capacity,'population_pending':True,
         'requested_route_vehicles':60 if scene=='DENSE_CHAOS' else 40,'requested_route_pedestrians':100 if scene=='DENSE_CHAOS' else 30,
-        'scene':scene,'speed_kmh': speed}
+        'scene':scene,'speed_kmh': speed,'scenario_seed':seed,'selection_seed':selection_seed}
 
 
 def finish_prepare(p,seed,setup):
     # The sole worker has advanced the teleport. Population geometry now sees
     # the actual new ego pose instead of CARLA's previous-frame actor cache.
     tools=p.dashboard_tools
+    if p.guided_presentation:seed=setup['scenario_seed']
     if setup.get('scene')=='DENSE_CHAOS':
         from .dense_chaos import DenseChaos
+        from .crossing_comparison import CrossingComparison
         config={**p.population.config,'vehicle_count':60,'pedestrian_count':100,'seed':seed,
             'chaos_percent':100,'speed_behavior':'FAST','driver_behavior':'UNREGULATED',
             'light_compliance_percent':20,'crossing_percent':60,'placement':'EGO_SURROUNDING','vehicle_mix':'MIXED','fast_walk_percent':20}
+        if p.guided_presentation:
+            # This controlled comparison varies the ego predictor, not NPC
+            # violations or random lane changes into a stopped test vehicle.
+            # Keep all 60 physical vehicles and 100 pedestrians. The explicit
+            # crossing schedule owns pedestrian ingress in both arms.
+            config.update(chaos_percent=0,speed_behavior='NORMAL',driver_behavior='NORMAL',
+                light_compliance_percent=100,crossing_percent=0)
         p.population.apply(config)
-        p.dense_chaos=DenseChaos(p,seed)
+        p.dense_chaos=CrossingComparison(p,seed) if p.guided_presentation else DenseChaos(p,seed)
+        if p.guided_presentation:
+            api=p.connection.api
+            for light in p.world.world.get_actors().filter('traffic.traffic_light*'):
+                light.set_state(api.TrafficLightState.Green);light.set_green_time(60.);light.set_yellow_time(3.);light.set_red_time(15.)
         return {**setup,'population_pending':False,'population':dict(p.population.config)}
     config = {**p.population.config, 'vehicle_count': 0, 'pedestrian_count': 30,
         'seed': seed, 'chaos_percent': 45, 'speed_behavior': 'FAST', 'driver_behavior': 'BUSY',

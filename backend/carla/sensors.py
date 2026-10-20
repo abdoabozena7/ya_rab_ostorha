@@ -170,6 +170,9 @@ class CarlaSensorManager:
         from .sensor_decoders import decode_sensor
         from .dashboard_tools import CAMERA_VIEWS
         options = options or {'camera_view':'front', 'camera_resolution':'640x360', 'camera_fov':90}
+        if options.get('_comparison_rig'):
+            options={**options,'camera_view':'chase','camera_resolution':'800x450','camera_fov':90,
+                'camera_postprocess':True,'camera_motion_blur':0.,'camera_bloom':0.}
         x,y,z,pitch,yaw = CAMERA_VIEWS[options['camera_view']]
         driving_mount = api.Transform(api.Location(x=x,y=y,z=z), api.Rotation(pitch=pitch,yaw=yaw))
         fx,fy,fz,fp,fw = CAMERA_VIEWS['front']
@@ -182,6 +185,7 @@ class CarlaSensorManager:
                'motion_blur_intensity': options.get('camera_motion_blur', 0),
                'motion_blur_max_distortion': 0 if not options.get('camera_motion_blur', 0) else .35,
                'bloom_intensity': options.get('camera_bloom', 0)}
+        if options.get('_comparison_rig'):rgb['gamma']=2.2
         import json
         from pathlib import Path
         from ..learning.recovery_budget import active_ticket
@@ -193,6 +197,7 @@ class CarlaSensorManager:
         hybrid_surround=bool(hybrid.get('surround_rig_accepted') or hybrid_ticket() or bypass_surround) and not options.get('_suppress_pilot_surround',False)
         surround=bool(recovery.get('depth_sensors_accepted') or hybrid.get('surround_rig_accepted') or
                       (active_ticket() or hybrid_ticket() or bypass_surround) and not options.get('_suppress_pilot_surround',False))
+        if options.get('_comparison_rig'):hybrid_surround=surround=False
         depth_mount=camera_mount;depth_attributes={**camera,'image_size_x':320,'image_size_y':180,'fov':90}
         if surround and not hybrid_surround:
             box=self.ego.bounding_box
@@ -203,6 +208,12 @@ class CarlaSensorManager:
             depth_attributes={**depth_attributes,'fov':170}
         lidar_attributes={'sensor_tick':fixed_delta,'range':100,'channels':16,'points_per_second':32000,
                           'rotation_frequency':1/fixed_delta,'upper_fov':10,'lower_fov':-30}
+        if options.get('_comparison_rig'):
+            depth_attributes.update(image_size_x=640,image_size_y=360)
+            # Downward native returns measure the near-body ground strip.
+            # The former -30 degree view left the swept rear corner unknown
+            # after a low-speed heading correction. Both drivers use this rig.
+            lidar_attributes.update(channels=32,points_per_second=128000,lower_fov=-75)
         if hybrid_surround:
             # Diagnostic rig only: denser measured side returns and downward
             # beams address short-lived surface fragments without declaring
@@ -211,7 +222,8 @@ class CarlaSensorManager:
             lidar_attributes.update(channels=32,points_per_second=128000,lower_fov=-60)
         plans = (
             ('frontCamera', SensorKind.RGB, 'sensor.camera.rgb', camera_mount,
-             {**rgb,'image_size_x':320,'image_size_y':180,'fov':90,'enable_postprocess_effects':'false'}),
+             {**rgb,'image_size_x':1280,'image_size_y':720,'fov':90,'enable_postprocess_effects':'true',
+              'gamma':2.2,'motion_blur_intensity':0.,'motion_blur_max_distortion':0.,'bloom_intensity':0.}),
             ('drivingCamera', SensorKind.RGB, 'sensor.camera.rgb', driving_mount, rgb),
             ('depth', SensorKind.DEPTH, 'sensor.camera.depth', depth_mount, depth_attributes),
             ('radar', SensorKind.RADAR, 'sensor.other.radar', api.Transform(api.Location(x=2.5, z=.65)),

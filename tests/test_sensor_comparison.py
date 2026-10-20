@@ -65,7 +65,7 @@ class SensorComparisonTests(unittest.TestCase):
         world=Mock();world.get_blueprint_library.return_value.find.return_value=blueprint
         world.try_spawn_actor.return_value=actor
         provider.world=SimpleNamespace(world=world);provider.population=SimpleNamespace(ego_id=1)
-        provider.sensor_suite=False;provider.collision_sensor=False
+        provider.sensor_suite=False;provider.collision_sensor=False;provider.traffic_manager_port=8052
         provider.destroy_ego_vehicle=Mock();provider.set_controls=Mock();provider.spawn_index=0
         with patch('backend.carla.provider.EgoVehicle',side_effect=lambda *args,**kwargs:SimpleNamespace(actor=None)),patch(
                 'backend.carla.provider.CarlaSensorManager'),patch('backend.carla.provider.NearbyActorInspector'),patch(
@@ -74,6 +74,7 @@ class SensorComparisonTests(unittest.TestCase):
                 self.assertTrue(provider.select_presentation_vehicle(mode))
         self.assertEqual(provider.destroy_ego_vehicle.call_count,2)
         self.assertEqual(world.try_spawn_actor.call_count,2)
+        self.assertEqual([call.args for call in actor.set_autopilot.call_args_list],[(False,8052),(False,8052)])
         self.assertEqual([entry.args[1] for entry in blueprint.set_attribute.call_args_list if entry.args[0]=='color'],
                          ['35,45,55','35,45,55'])
 

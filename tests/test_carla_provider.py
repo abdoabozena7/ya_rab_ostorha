@@ -155,9 +155,9 @@ class WorldVehicleTests(unittest.TestCase):
 
     def test_spawn_collision_invalid_index_and_cleanup(self):
         world, actor, _, _ = fixture()
-        ego = EgoVehicle(world)
+        ego = EgoVehicle(world,traffic_manager_port=8052)
         self.assertIs(ego.spawn(), actor)
-        actor.set_autopilot.assert_called_once_with(False)
+        actor.set_autopilot.assert_called_once_with(False,8052)
         ego.destroy()
         actor.destroy.assert_called_once()
         self.assertIsNone(ego.actor)

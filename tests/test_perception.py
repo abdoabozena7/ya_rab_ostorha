@@ -8,6 +8,14 @@ from backend import perception, perception_worker
 
 
 class PerceptionIsolationTests(unittest.TestCase):
+    def test_text_model_is_requested_only_by_its_current_parent_with_a_recent_panel_request(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(perception_worker,'OUTPUT',Path(directory)),patch.object(perception_worker.time,'time',return_value=10.):
+                self.assertFalse(perception_worker.ocr_requested(7))
+                path=Path(directory)/'ocr-request.json'
+                for value,expected in [({'parent':7,'requested_at':9.},True),({'parent':8,'requested_at':9.},False),({'parent':7,'requested_at':5.},False),({'parent':7,'requested_at':11.},False)]:
+                    path.write_text(json.dumps(value));self.assertEqual(perception_worker.ocr_requested(7),expected)
+
     def test_semantic_publication_uses_the_same_windows_lock_retries(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);real_replace=perception_worker.os.replace;calls=[]

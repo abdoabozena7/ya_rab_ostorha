@@ -102,6 +102,15 @@ def _retire_guided_history(workspace,keep):
         status=json.loads((root/'recording-status.json').read_text(encoding='utf8'))
         video=json.loads((root/'video-status.json').read_text(encoding='utf8')) if (root/'video-status.json').exists() else {}
         if status.get('finalized') is not True or video.get('status')!='READY' or not (root/'driving.mp4').is_file():continue
+        metadata=json.loads((root/'metadata.json').read_text(encoding='utf8'))
+        # The third export needs both raw front-camera prefixes. Do not retire
+        # either arm while their comparison has not produced that artifact.
+        presentation_id=metadata.get('config',{}).get('presentation_id')
+        if presentation_id and metadata.get('config',{}).get('automatic_pair'):
+            saved=workspace/'output/presentations'/(presentation_id+'.json')
+            if not saved.exists():continue
+            presentation=json.loads(saved.read_text(encoding='utf8'))
+            if presentation.get('shared_perception',{}).get('status')!='READY':continue
         if video.get('annotation_required'):
             annotated=video.get('variants',{}).get('annotated',{})
             path=root/'driving-annotated.mp4'

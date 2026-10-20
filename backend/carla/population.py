@@ -309,12 +309,12 @@ class WorldPopulationManager:
 
     def _remove_walker(self, walker_id):
         entry = self.walkers[walker_id]
-        controller = self.world.get_actor(entry['controller_id'])
+        controller = self.world.get_actor(entry['controller_id']) if entry['controller_id'] is not None else None
         if controller is not None and controller.is_alive and entry['started']:
             try: controller.stop()
             except RuntimeError as error:
                 if 'not found' not in str(error).lower(): raise
-        self._destroy([entry['controller_id'], walker_id])
+        self._destroy([identity for identity in (entry['controller_id'],walker_id) if identity is not None])
         getattr(self,'_walker_controller_handles',{}).pop(entry['controller_id'],None)
         del self.walkers[walker_id]
 
@@ -533,6 +533,11 @@ class WorldPopulationManager:
         for walker_id, entry in list(self.walkers.items()):
             if entry.get('admitted_at_frame') is None:entry['admitted_at_frame']=snapshot.frame
             actor = snapshot.find(walker_id)
+            if entry.get('manual'):
+                if actor is not None:
+                    entry.update(seen=True,location=actor.get_transform().location)
+                    active+=1
+                continue
             # Handles are stable for an admitted controller. Authoritative
             # snapshots below still detect disappearance every physics frame.
             handles=getattr(self,'_walker_controller_handles',None)
@@ -563,6 +568,11 @@ class WorldPopulationManager:
                 entry['motion_location'] = entry['location']
                 entry['last_moved_at'] = timestamp
             if controller is None or not controller.is_alive: continue
+            if entry.get('scripted_crossing'):
+                # The comparison's physical WalkerControl owner is exclusive.
+                # This registry still measures the real actor/controller.
+                active+=1
+                continue
             if entry['ready_at'] is None: entry['ready_at'] = timestamp+self.random.uniform(0., 2.)
             if timestamp < entry['ready_at']: continue
             if not entry['started']:
@@ -578,13 +588,13 @@ class WorldPopulationManager:
             stationary = timestamp-entry['last_moved_at'] > 20. and timestamp-entry['last_retarget'] > 20.
             if destination is None or reached or stationary:
                 chaos = self.config.get('chaos_percent', 0)/100.
-                if reached and self.random.random() < .35-.25*chaos:
+                if reached and not entry.get('no_wait') and self.random.random() < .35-.25*chaos:
                     entry.update(activity='WAITING', wait_until=timestamp+self.random.uniform(2.-chaos,6.-3.*chaos))
                     controller.set_max_speed(0.)
                     continue
                 entry['activity'] = 'RESELECTING_DESTINATION'
                 target = self._sidewalk_destination(actor.get_transform().location)
-                crossing = self.random.random()*100 < self.config['crossing_percent']
+                crossing = not entry.get('sidewalk_only') and self.random.random()*100 < self.config['crossing_percent']
                 crossing_target = self._crossing_destination(entry['location']) if crossing else None
                 if crossing_target is not None: target = crossing_target
                 if target is not None:
@@ -615,7 +625,7 @@ class WorldPopulationManager:
                         self.sector_counts[name][sector(item.get_transform().location,ego_pose)]+=1
         self.actual = {'vehicles': sum(snapshot.find(i) is not None for i in self.vehicles),
                        'pedestrians': sum(snapshot.find(i) is not None for i in self.walkers),
-                       'controllers': sum(snapshot.find(e['controller_id']) is not None for e in self.walkers.values()),
+                       'controllers': sum(e['controller_id'] is not None and snapshot.find(e['controller_id']) is not None for e in self.walkers.values()),
                        'walkers_active': active}
         self.state_cache = self._build_population_state()
 
@@ -638,7 +648,7 @@ class WorldPopulationManager:
                 'admitted': {'vehicles':len(self.vehicles),'pedestrians':len(self.walkers)},
                 'active': {'vehicles':self.actual['vehicles'],'walkers':self.actual['walkers_active']},
                 'walker_controllers_ready': self.actual['walkers_active']==self.config['pedestrian_count'] and
-                    self.actual['controllers']==self.config['pedestrian_count'],
+                    self.actual['controllers']==sum(not e.get('manual',False) for e in self.walkers.values()),
                 'sector_capacity':getattr(self,'available_sectors',{}),
                 'unavailable_sectors':[k for k,v in getattr(self,'available_sectors',{}).items() if not v],
                 'local_sector_counts':getattr(self,'sector_counts',{}),
@@ -651,7 +661,8 @@ class WorldPopulationManager:
                 'desired_speed_difference_percent': SPEED_DIFFERENCE[self.config['speed_behavior']],
                 'vehicle_ids': sorted(self.vehicles),
                 'walker_ids': sorted(self.walkers),
-                'controller_ids': sorted(e['controller_id'] for e in self.walkers.values()),
+                'controller_ids': sorted(e['controller_id'] for e in self.walkers.values() if e['controller_id'] is not None),
+                'scripted_walkers':sum(e.get('manual',False) for e in self.walkers.values()),
                 'errors': list(self.errors), 'walkers_lost': self.walkers_lost,
                 'walker_spawn_failure_attempts':getattr(self,'walker_spawn_failures',0),
                 'controller_spawn_failure_attempts':getattr(self,'controller_spawn_failures',0),

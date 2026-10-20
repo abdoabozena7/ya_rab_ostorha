@@ -4,6 +4,26 @@ import {missionState,stressSummary,missionFailure} from '../frontend/mission-sta
 const ready={connected:true,fresh:true,controller:true,simulatorStop:{available:true}};
 const guided=(status,arm=0,first='NORMAL')=>({...ready,presentation:{guided:true,id:'current',status,arm,modes:[first,first==='NORMAL'?'ROBOSPHERE':'NORMAL']}});
 
+test('automatic crossing runs expose no shortening action in either order',()=>{
+  for(const first of ['NORMAL','ROBOSPHERE'])for(const arm of [0,1]){
+    const p=guided('DRIVING',arm,first);p.presentation.automatic_pair=true;
+    const state=missionState(p);assert.equal(state.action,null);assert.equal(state.camera,true);
+    assert.match(state.detail,/until the destination or a contact/);
+  }
+});
+
+test('sensor handoff keeps the preparation title, layout and loader until its native phase changes',()=>{
+  for(const phase of ['STOPPING','PREPARING','READY','SELECTING','STARTING','RESTORING','FINALIZING']){
+    for(const awaiting of [false,true]){
+      const p=guided(phase);Object.assign(p.presentation,{preloaded:true,awaiting_choice:awaiting});
+      const local={firstMode:'NORMAL'},expected=missionState(p,local);
+      const stable=s=>Object.fromEntries(['screen','title','detail','label','choices','loadingDrive'].map(k=>[k,s[k]]));
+      assert.deepEqual(stable(missionState({...p,fresh:false},local)),stable(expected));
+      assert.deepEqual(stable(missionState({...p,fresh:false,connected:false,transportAlive:true},local)),stable(expected));
+    }
+  }
+});
+
 test('real faults explain their cause and recovery without raw interruption codes',()=>{
   for(const [reason,detail] of [['ya_rab_ostorha_sensor_fault',/sensor measurements/],['dashboard_heartbeat_timeout',/connection was lost/],['recording_failure',/saving/],['presentation_phase_timeout:RESTORING',/Retry the step/]]){
     const p=guided('ERROR');p.presentation.reason=reason;

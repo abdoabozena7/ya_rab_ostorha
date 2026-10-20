@@ -1,5 +1,6 @@
+import {PROJECT_NAME} from './project-name.js';
 // A scripted illustration, never a prediction or result from CARLA.
-export const previewLabels={NORMAL:'Normal · reactive sensor driving',ROBOSPHERE:'يا رب تسترها · predictive driving'};
+export const previewLabels={NORMAL:'Normal · reactive sensor driving',ROBOSPHERE:PROJECT_NAME+' · predictive driving'};
 const between=(t,a,b)=>Math.max(0,Math.min(1,(t-a)/(b-a)));
 export function previewFrame(mode,seconds){
   const t=Math.max(0,seconds)%12,protectedMode=mode==='ROBOSPHERE';

@@ -342,7 +342,8 @@ export class SimulationClient extends SimulationProvider {
     return true;
   }
   close() {
-    this.releaseControls(); this.closed = true;
+    if(this.controlMode!=='AUTOMATIC'&&this.journey?.status!=='STARTING')this.releaseControls();
+    this.closed = true;
     this.cancel(this.retryTimer); this.retryTimer = null;
     this.cancel(this.connectTimer); this.connectTimer = null;
     this.cancel(this.releaseTimer); this.releaseTimer = null;

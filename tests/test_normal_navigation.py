@@ -148,6 +148,24 @@ class SensorNavigationTests(unittest.TestCase):
         agent.ignore_stop_signs.assert_called_once_with(False)
         agent.set_global_plan.assert_called_once()
 
+    def test_guided_route_steering_bound_is_shared_by_both_drivers_and_preserves_signal_checks(self):
+        options=[]
+        for mode in ('NORMAL','ROBOSPHERE'):
+            provider=CarlaProvider(sensor_suite=True);provider.guided_presentation=True
+            provider.ego=SimpleNamespace(actor=Mock());agent=Mock()
+            provider.dashboard_tools=SimpleNamespace(route={'id':'route'},native_route=[],map=Mock(),
+                route_service=SimpleNamespace(planner=Mock()),replan_route=Mock(),route_state=Mock(return_value={'id':'route'}))
+            factory=Mock(return_value=agent)
+            with patch('backend.carla.route_agent.route_agent_class',return_value=factory), \
+                    patch('backend.carla.hybrid_navigation.RoadSpeedPolicy'):
+                provider.start_navigation(120.,driving_mode=mode,presentation=True)
+            options.append(factory.call_args.kwargs['opt_dict'])
+            for call in agent.ignore_traffic_lights.call_args_list+agent.ignore_stop_signs.call_args_list:
+                self.assertEqual(call.args,(False,))
+        self.assertEqual(options[0],options[1])
+        self.assertEqual(options[0]['max_steering'],.35)
+        self.assertEqual(options[0]['max_brake'],1.)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
 import {presentationSummary,presentationStep,presentationTrafficText,presentationOutcome} from '../frontend/presentation-run.js';
+import {PROJECT_NAME} from '../frontend/project-name.js';
+import {modeLabel} from '../frontend/mission-state.js';
 
 test('a recovered presentation retains failure and injection identity under its video',()=>{
   const result=presentationOutcome({status:'ERROR',reason:'runtime_failure'},
@@ -42,9 +44,19 @@ test('presentation results never infer superiority from a failed or mismatched p
   assert.equal(presentationStep('COMPLETE'),4);
 });
 
-test('the project display name is Arabic while surrounding interface remains English',()=>{
+test('the project mode uses the exact English project title',()=>{
+  assert.equal(PROJECT_NAME,'Ya Rab Ostorha');assert.equal(modeLabel('ROBOSPHERE'),PROJECT_NAME);
   const files=['index.html',...readdirSync('frontend').filter(n=>n.endsWith('.js')).map(n=>'frontend/'+n)];
-  for(const file of files)assert.doesNotMatch(readFileSync(file,'utf8').replaceAll('يا رب تسترها',''),/[\u0600-\u06ff]/,file);
+  for(const file of files)assert.doesNotMatch(readFileSync(file,'utf8'),/[\u0600-\u06ff]/,file);
+});
+
+test('crossing results describe actual events and preserve failed comparisons',()=>{
+  const data={conditions_match:true,scenario_validation:{passed:true},runs:{NORMAL:{status:'COLLISION'},ROBOSPHERE:{status:'ARRIVED'}}};
+  assert.match(presentationSummary(data),/Normal recorded a pedestrian collision/);
+  assert.match(presentationSummary(data),/Ya Rab Ostorha reached/);
+  assert.match(presentationSummary({...data,conditions_match:false}),/did not meet/);
+  assert.match(presentationSummary({...data,scenario_validation:{passed:false}}),/did not meet/);
+  assert.match(presentationOutcome({status:'COLLISION',reason:'collision',collision_events:[{type:'walker.pedestrian.0001'}]}),/Collision with a pedestrian/);
 });
 
 test('internal interruption codes are translated while real failure reasons remain visible',()=>{

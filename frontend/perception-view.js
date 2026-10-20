@@ -40,7 +40,7 @@ export class PerceptionView {
     $('detectionSummary').textContent=age.tone==='warning' ? age.label+(age.seconds===null ? '' : ' · '+age.seconds.toFixed(2)+' s') : counts+' · '+age.seconds.toFixed(2)+' s behind';
     $('perceptionFreshness').title='Display delay notice starts at 0.5 simulation seconds. Inference is display only.';
     $('detectionSummary').dataset.tone=age.tone;
-    $('perceptionFrame').textContent='Analyzed frame '+result.frame_id+' · t '+result.timestamp_s.toFixed(3)+' s · Nano ONNX 320 + English OCR · '+result.device;
+    $('perceptionFrame').textContent='Analyzed frame '+result.frame_id+' · t '+result.timestamp_s.toFixed(3)+' s · '+result.model+' · '+result.device;
   }
   clear(reason) {
     this.result=null;
@@ -63,7 +63,7 @@ export class PerceptionView {
     this.busy=true;this.nextAt=performance.now()+500;
     const session=p.sessionId;
     try {
-      const response=await fetch('/api/simulation/perception',{cache:'no-store',signal:AbortSignal.timeout(3000)});
+      const response=await fetch('/api/simulation/perception?ocr=1',{cache:'no-store',signal:AbortSignal.timeout(3000)});
       if(!response.ok)throw new Error('Could not read inference worker');
       const result=await response.json();
       if(result.status!=='RUNNING') {

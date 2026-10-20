@@ -1,0 +1,3959 @@
+{
+  "scope": "SIX_REAL_NATIVE_PAIRS_EXACT_ARCHIVES_SELECTED_FIXTURES_AND_DELIVERY_ANNOTATIONS",
+  "matrix_sha256": "f433815a54e29c6fe1a5dcfd6ebb1e4a31957682ed956c4e44e0dcbb9b82740a",
+  "matrix_source_hashes": {
+    "backend\\graphics.py": "9cd5f0eef760e013f1756670597136d6c2bccd70f18a1f12c9c0458215628576",
+    "backend\\perception.py": "6ac3f714b37562b31acb69abf812aac65c6ab2ca877adf8bbb1fcfc434b45a3f",
+    "backend\\perception_worker.py": "d6b54995e03f58d423c068ac1d172cc4d5cd26cbfa8398b90c5459c3feaabd1f",
+    "backend\\provider.py": "36188bdbf50106dd073c3ff81bfdb5b6b407453166abc0d907ac5162a984b776",
+    "backend\\providers.py": "380ad3b487f137b57a065794476bcc188ec9e6a170d030e12558536d2f2dc4e5",
+    "backend\\recording.py": "654b788528d7e3e1d3e6902d2267f32344cf06bda579da4c8ec5dd5abb9d8383",
+    "backend\\replay_service.py": "9bef4328ee90980fbd62d760f62538046afbe5dc12f3ed88444b72a40be4b2d3",
+    "backend\\server.py": "b391728af83890c88ce9673685109022472316296fbb8bf502cf0e70c84a44de",
+    "backend\\simulation_service.py": "fa0b731618e5dc73b777b4a94a1e44710b18b0e6fc85d206626f2510970ff25a",
+    "backend\\websocket_bridge.py": "ba211bd0777041111808a77d1f58f376e00e7de26d4c0ec2290a75df4c046066",
+    "backend\\__init__.py": "6b64dd6bf8bbb5087c60097a21968d2bbb15dfcff86394521a726fa41ee16451",
+    "backend\\carla\\benchmark_fixture.py": "0793f9411d6eeb1345846fd7f8121878f6347a95bfc9e83a5f037c749ac7c14d",
+    "backend\\carla\\comparison.py": "d8fa4cbf5735d58a3b578014d908da5ec9b49c04c63ff474baf607a21fe4b760",
+    "backend\\carla\\comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+    "backend\\carla\\comparison_vehicle.py": "f59f92a0ee5a48bf1ddba5db06bba5d313b1b7afd696119d241954845cf8c989",
+    "backend\\carla\\connection.py": "632a59f7801dafcc90d625ca19b6aa1187282d146e61f50da110aaed8bc74b88",
+    "backend\\carla\\contracts.py": "179544f49a950f589f14ed215d103f36bdddcce1180641aa5559b4343d1534c1",
+    "backend\\carla\\controls.py": "1786ebb30bef1f3a5f93463ae6f287d342839884593ed9ddfae1778ddfa12743",
+    "backend\\carla\\crossing_comparison.py": "44e7b9f9d303de0c1d9af24f4161edb80df1a659b7c8f7d3791af8a8ddf376fb",
+    "backend\\carla\\dashboard_tools.py": "85f5605b0e7550e3b2fc986943ccabb27185ccad3ecd71cf5d4364f275bdc9e8",
+    "backend\\carla\\dense_chaos.py": "95505ec1ca58d3c0cdd094aaad49d1824292cbc2463f213c316f1f2172e4cf25",
+    "backend\\carla\\geometry.py": "9e71ed70eb0524780aa7798f8bcb77abdfdf6a84904cbe762afd171f54c0c1cd",
+    "backend\\carla\\graphics.py": "c37718359776004bdc717c700f15148f01fa4bfd9fad08e328d57d3cbfdc2b72",
+    "backend\\carla\\ground_truth.py": "f5ed075e00a0994fcbcc00522f790491c16567064b35c132eff438d0fd4f3b19",
+    "backend\\carla\\hybrid_navigation.py": "9754b468bb51c0dfe120b4ad2c1137f8b9d6309eec58fb18ce90bac21e92fde0",
+    "backend\\carla\\hybrid_world.py": "c4b9c8741c81592b4784ed76badd87cb22c5889151e949d0855ce3adec13185a",
+    "backend\\carla\\onboard_geometry.py": "5811fbf832b14cad820db4059a0f3395783391017807e36e4161515f97451d7e",
+    "backend\\carla\\pilot_world.py": "b4abd2b5d34e4e61bc5a170bbe140bfc5be2b7f3d21f0d894636faca246b61e5",
+    "backend\\carla\\population.py": "bf6ed74480b517d1b27895a825393c9f6b7ce354211cea2cf62e3d55cc62e859",
+    "backend\\carla\\preflight.py": "1698845580fbc394c9d6a4e1bd7baea0f679281be21d0acc2438ac8c3b254bd6",
+    "backend\\carla\\presentation.py": "980985dedcbd3c90bbce03205c9328d5a9b6fea60b14e13c87c4c4b1ab46f054",
+    "backend\\carla\\provider.py": "dd5e1388a70908a7b3f97917272bd3e995c3c9da189f4b4f8274e7fb41b7e3ec",
+    "backend\\carla\\restart_helper.py": "5aea662f9d989aa30e3574a0598e807c06ab3676f8fb4300e1a26cecae1d191d",
+    "backend\\carla\\routes.py": "7f852d1e638cae2ab72c86e8824f99bf1ef4714ff109706206c7e4e5ce4b39cf",
+    "backend\\carla\\route_agent.py": "a168a9941168e3a66b87770e05ef8eb57b5bec2fe9d7931870a54eb8dc2167e3",
+    "backend\\carla\\route_crowding.py": "5a6faf6ba2baf58fb5903d8f63b927ebbba4843dad6f75bf957abc8f26ab66a0",
+    "backend\\carla\\runtime.py": "89e6af23037fcfbf7215bcc00d4856617837ef28d406ed9a0fc16b1607f5f62a",
+    "backend\\carla\\scenarios.py": "f2b9844e3e95152391530d467120f614a02f0fea958c74804a597cb2eb39c0d9",
+    "backend\\carla\\scene_overlays.py": "0dbb4126b9fc026302b324188f9f3338e5987cf57ae494a98619d733338f7a9c",
+    "backend\\carla\\sensors.py": "f5d6a8f7d387b5c4b283655a961b09ac7495593e5c37f0fe66869b4db007b77c",
+    "backend\\carla\\sensor_decoders.py": "f7bfd23f08ab81911510993035ecb4258d0eece4794f00f8cf7f496c4ee5f233",
+    "backend\\carla\\start_helper.py": "59dcabe042320e533db659daf41f0c2466f8cfcb3df3f75e9f6cd21c103de739",
+    "backend\\carla\\stop_helper.py": "322baa8c400cdf9990615c8ba8143ec20b4fc67e62dfbcf489b735c676028376",
+    "backend\\carla\\target.py": "77f1aa4455aa843ec5b8786cea10e7127ab0c3cb7c08b0dd9e6b7f7041679b8c",
+    "backend\\carla\\telemetry.py": "474323d59a8879cc6d3665b9ae5e58f490589ef989d1534d33903412eaf4c2a4",
+    "backend\\carla\\urban.py": "f49798dbe285628ac58c2e3cb6362a0889a57540129df01d9c162877ba079229",
+    "backend\\carla\\urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend\\carla\\vehicle.py": "5c60d96494ebb769ac76b2c3d6c38e61896158fa306d54a23e686bf081df9c92",
+    "backend\\carla\\world.py": "2cbc3db5cb0b9b8360bc931ce59dc598b68eb1efd2a770862aa576b1baf3ba73",
+    "backend\\carla\\__init__.py": "ce728f3803a6cd778e37986b03762a4d926ec12a7a69787391ac67e200232b60",
+    "backend\\computer_vision\\depth_evidence.py": "8a0946784fbbc276ef7bfacca6834e6b4c18789139a12fa72c4a6b3be88e14e9",
+    "backend\\computer_vision\\detector.py": "6c8e4de1e1a7c21d740e63c4d621a4e90f71f6bb2eeceb937529b9a7c9a78d6f",
+    "backend\\computer_vision\\ocr.py": "2dbe59cba998a4419677c5801be6005b5dbe6a07f78580ead2ca63f79819e7a7",
+    "backend\\computer_vision\\service.py": "73606fc6091c469a037a6a84ea1992c6bad0bce0755a4bc42f9931da068c4f2a",
+    "backend\\computer_vision\\shared_export.py": "050ec0866736911bb92583b3886902ea3e2b3680bdf73fd43c81d3e80bad529b",
+    "backend\\computer_vision\\worker.py": "901342bb867ca3c711a157575ee7332d3565c9a6e1b2ec43d09e756aedef5b32",
+    "backend\\computer_vision\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\core\\active_safety.py": "96f1519b89e2ec2af0a228b8c44f6eb55efe4a13142ee141e1c1fc423dc72018",
+    "backend\\core\\agents.py": "ffe208794346410d37c52ba0b726c5f4b35632df3efe1d02037475d70d6332f6",
+    "backend\\core\\camera_geometry.py": "c8200bc92d5c921f6a7006ebb6b24bc2b9dbedde48505ed9c47de4556104fc01",
+    "backend\\core\\comfort_control.py": "db0f0f4b2efe7934110e24cc125913cb64576c43e3777a760e3793931296648b",
+    "backend\\core\\config.py": "7e239f339fedcf20a028c374dd86751a72cfaa2b14aab2097dcc83fd1ebd0693",
+    "backend\\core\\congestion_recovery.py": "772f60d18374d4ce687c7b690dceba1c5a907fea37131a3465c814a1f378052c",
+    "backend\\core\\contracts.py": "5aa7e5f21ac820069af85e71f87ceea0a83994d0c5e4b9a8c32ade5bf5d96308",
+    "backend\\core\\control.py": "8675b041666717fccf7774ad316222f733e2f6877e398d59d3238e4a87687641",
+    "backend\\core\\control_radar.py": "da10e3feaaa2db625f298812f1ecf437cee4b803a06a3217809d90f5fd48d53c",
+    "backend\\core\\control_scene.py": "65e09073bfd69ce4f489d6a86d03805985840d62b95594dfb0b34dd2e198c18d",
+    "backend\\core\\control_semantics.py": "efa0395852712d9b69f21f25caf29be10f1fa6a210671adf4f42b43364780580",
+    "backend\\core\\corridor_uncertainty.py": "c25e7446eb890dbac414d6b4338ea8e756a53a3561509ef1395e05478d77bdce",
+    "backend\\core\\crossing_result.py": "0c33c27ed96cf4061e32086b2d9ac7d5f76eb6cfe40e57ee5927951596661be8",
+    "backend\\core\\dashboard.py": "aea250be06b57815b225a7b6a0eb82043132c6eb9d54bbf20b520dc0f56bfabe",
+    "backend\\core\\depth_people.py": "26d8abdabc7e559a9c3462c23ed332de218a104a10108518b6957d8b984d9337",
+    "backend\\core\\display_prediction.py": "eb77968d547f3e58e210c111f95177ff0bac253ab75f7f1925379f2ad3dba826",
+    "backend\\core\\drivable_corridor.py": "f1f5f8ff7fc0ae00ad2ee9f52e1b7f86e8bee7398169b5141934113924926d4f",
+    "backend\\core\\driver_profiles.py": "a552a41012df3465546186f379a81d43003b9bf0ba2eaa0bd65b7321c2a4b7a0",
+    "backend\\core\\driving_quality.py": "0cf9e13d02643da26e9755f8907adf326e0db7a9eb5bbb06cc00a86f4d2afe9e",
+    "backend\\core\\driving_video.py": "e10978030201b462751b99d77c1fb3f9501212b1761a35274a95dce50482f034",
+    "backend\\core\\ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+    "backend\\core\\evaluation.py": "e2ea328052d0404a282699806cf7a18fe4e19aadcd636c3a5af5710a04b36104",
+    "backend\\core\\events.py": "4370d63b8d44fb96f8264eeca5e44921f7deea951dd390646c40db5411f07a67",
+    "backend\\core\\ground_geometry.py": "e07d0005bf2f5bae26f576a25a4a7902a4755a59bc7c877edb73a2c8130578fb",
+    "backend\\core\\host_clock.py": "2f34466e444cfb3b08f3a18a0fc733d28d082346a7a992ce814bcb38c49ced91",
+    "backend\\core\\hybrid_acceptance.py": "ac0807310941958fec939d0b6449a593ed0f07df0f6d83b3ab4866b902f346e6",
+    "backend\\core\\hybrid_config.py": "5cab29e9efa1f4cdc90e4163ea3968b0b0a18b8520b7c0b805075a06024a17c8",
+    "backend\\core\\hybrid_driver.py": "0350ba49d6ed4066af9671ef74913198bd1b7a832e080921ce561cc71b014a9d",
+    "backend\\core\\journey_comparison.py": "45de4d90c188260e24c737748488c79cc1af6fb831da193127e38b6c828de774",
+    "backend\\core\\kinematic_prediction.py": "01d96185e96070126193d3a7378edaa5dde763b2154ffef3ca96a77a4da280f0",
+    "backend\\core\\lifecycle.py": "629160fdca0e44b0bec2cff96c258b687accaba2e1b0a4ebbf1cfdbe54ae8f1d",
+    "backend\\core\\logging.py": "a4734de93047bf2470699d4acb9cff37237ff0a84677dcc1349340bbc7b04d5d",
+    "backend\\core\\maneuver.py": "3f1f2dfb6dd907707384504f0010f5a8df69daadf5e53fd281b5773d698bd44c",
+    "backend\\core\\maneuver_candidates.py": "da2e4a7d50e76d664ec33042834eacecb168ed7bd2db654c86fb871f159f9e06",
+    "backend\\core\\measured_rows.py": "29b31182f03257db164e30bf278527c58f8ca666cc4634304e1b56bd677e07c6",
+    "backend\\core\\motion_geometry.py": "434c64a6979f73576243cd3900d5058c0b5205394153122b8e457b84096e72ec",
+    "backend\\core\\motion_quality.py": "14c16ae36468dcfc977fde47547624a43f553b10eb95de10fdf3d347ea499239",
+    "backend\\core\\motion_scene.py": "5881a39c96f00929f4985889e36f34af9e65a4fdf96dfeaedabc08d6912090d7",
+    "backend\\core\\normal_navigation.py": "184d1c047c328d6cff7107a3896115932bb923eb3ef0abf7ce32cff1e349a6cd",
+    "backend\\core\\path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+    "backend\\core\\pedestrian_anticipation.py": "beeb4f57360190cd02be312022213808ebf6e5d1e6e765a1868981936d3e62d9",
+    "backend\\core\\prediction.py": "f09e9f8f17a40c91454929b02346c3b02cc235c9c9883b78b5a4eb6161ca1d83",
+    "backend\\core\\predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend\\core\\presentation.py": "82fb5c5c242f7bc3aed986cc43b3030a65e2ee85a76497ef440ae4e1d3566918",
+    "backend\\core\\rear_separation.py": "64c118d963bcb67220d7bf526adecd165752a407b2de7cdd4da527e12da05b6d",
+    "backend\\core\\recording.py": "d6e76283c7fb3a8f92911f775bbf98dbd3c6510e5a693f2a96d541067e5fe98b",
+    "backend\\core\\recovery_depth.py": "688bb20824ca478264cecd9bd1ca40ca9b6e0b7e36f1922c01eeb1790f4501a9",
+    "backend\\core\\replay.py": "94f5d2d1c96167b2562cd7d6d1deeb3e13a2b639398c52ac55b151cea16a7712",
+    "backend\\core\\reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+    "backend\\core\\research.py": "d698624a37c30779c520714b8ffa2089334ef1ec153d442122b327e1914cbbc0",
+    "backend\\core\\research_safety.py": "78bd8dd8e5e35e60c6d96b4a8d218f111b62d6cba358b8dbf017f57302f67a5b",
+    "backend\\core\\route_bypass.py": "c6512ff6756e117a04d1a5ea69687403e81465c240f25af5927c2d26255c6c0d",
+    "backend\\core\\route_terminal.py": "4be10620a3da84c32d6744195bf122e984d030f49346910fcf999c7d41328ccc",
+    "backend\\core\\safety_policy.py": "4c64603f924dcfb2a51b9d376a699587658b082e9cbb0117aa953f29b53123bc",
+    "backend\\core\\scenarios.py": "669a4befd5b9a848843cb49aa1373c3816671b7c9bbb1e35f1e82b99edbfcbf4",
+    "backend\\core\\scene_overlays.py": "2ac644f094a922f9c523ef3e7bb5b8cecfdb33d35b50e21bbe564cf74d673ad1",
+    "backend\\core\\service.py": "63ea6275e40ece2ccfedc8a24ea15a68ace239ad3c3f58c29a034307ae1e9f08",
+    "backend\\core\\shared_perception.py": "b8518727c4156b9f23ec9223b59b0d28fb1dce1221d5958968c8a94ca24b5458",
+    "backend\\core\\storage_retention.py": "ea8ebb0e6a0d427967c465f885af2412bb29148b49e85bd55909e9bbb024e9fc",
+    "backend\\core\\surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+    "backend\\core\\surface_registration.py": "7e15e373950eb9e8f7e321b699b421a43b80b37813860fdaae180716857ad3b2",
+    "backend\\core\\timing.py": "6d5d02c0f5989a1a041b03a09f250fe1a864a0e41b53d9224b5b403ec4976482",
+    "backend\\core\\video_http.py": "db950f48707a72bee596e989f45e6c7135b21f8970a512468248f4646f73a67f",
+    "backend\\core\\video_prediction.py": "34d998241254d46d94358da94294ab79b5ab33164873a43e5a9e961dd91f65c8",
+    "backend\\core\\visual_geometry.py": "9829e6ab8c6a7eab77f7dfbce47f237976974597a563faf9e5e854d08a48dabe",
+    "backend\\core\\__init__.py": "e64fb6a47bad83efe0387337fcbb8dd4b3f50d4d2e20034c01ef6d6ddb1714f6",
+    "backend\\learned\\features.py": "98cbf462edea0146217b9b636ab2e10c22c943d53ec2b7e078b3ef37dc1f6dc7",
+    "backend\\learned\\inference.py": "6040ac82d79bc51879b518692604492fae1e77abce57a9701307cd4152785288",
+    "backend\\learned\\__init__.py": "45f3132efb9fad031c826e2374272cf67afd911913d2129b188f6a9bc95dffb1",
+    "backend\\learning\\async_worker.py": "f61aa7ce6e7ef87abc2a9afad92866b44ab11153ba7ac27fe0d49660c4f006b0",
+    "backend\\learning\\cpu_worker.py": "f72adf3aa86f024d5d6c7ab1e2ad38a9c9c58ebf9359d24bc9df6d2d49753bb4",
+    "backend\\learning\\experiment_budget.py": "ba6276a64759d62787f1847421deefd8cd74dbce647b9ca089676a175bcbf10c",
+    "backend\\learning\\hybrid_budget.py": "f81f36eed0b67ffcf285f36fdb607ba6bbd4625979c1c1a69e180eb75b72b8bc",
+    "backend\\learning\\independent_prediction.py": "6741bdc09c1366b824a49c34089e736b4c2e99f036c635c5b686b63e171cb148",
+    "backend\\learning\\motion_budget.py": "09fdf11ca17431178d444b6b30713b6b03bab1048402527536fb2c5263504389",
+    "backend\\learning\\motion_selector.py": "59e0c617c83088583f5ae2d96469b538ae5827ae427bdd2545d4f14665b053a7",
+    "backend\\learning\\native_validation_budget.py": "fc3403300738d3789b34d7673b54d5e18452b0177212d23f53695b74c1426499",
+    "backend\\learning\\pilot_acceptance.py": "f308e3b659f11e33f4ce47ee5ec544cb748713463bdcf38a8a8a4a085aab2a90",
+    "backend\\learning\\pilot_budget.py": "9a3e07b0e718114b7b0473c8e6c3fa154f62607682f23f0c9b69e8d98b96bba6",
+    "backend\\learning\\pilot_provenance.py": "05000053499cdfc7f4324ebd25402c98547b1abe59cba4ebd0a3cc798b22a72b",
+    "backend\\learning\\recovery_budget.py": "3baa2c55a905aa4cf52f7cfb8f8f5344f8716a0152b07f80b75ee9ab73d57c3f",
+    "backend\\learning\\trajectron_adapter.py": "a8b09808509bcc175d2355bff03c4f768e0cad5505f64e46579452873269994c",
+    "backend\\learning\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\nlp\\processor.py": "eef9755066c83164b844249b61a102e6b09eafda20df04f302fd7601b8bb2896",
+    "backend\\nlp\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\rl\\actions.py": "b7a46995ec4385f2aadf81ebe0626f673a17e0d68fcd2a89ce1820258279b78f",
+    "backend\\rl\\baselines.py": "43b1ef61d2c04b8ad45f1d2249e77170b7f6485f093507eb69b8fc56c29043f3",
+    "backend\\rl\\demonstrations.py": "d040805f505491030b2e5185b408663130e3ca8b40da9c801380771ec9b0dda4",
+    "backend\\rl\\env.py": "171d39e9776575c666c084214f43adbc0c5732e5de71305db961722a3491fedc",
+    "backend\\rl\\evaluation.py": "75afad3242a03c8029bd76b46d1dd32873c57c8dca1bfd1be79d2c8fd1a0dab8",
+    "backend\\rl\\observations.py": "fc84daa64fa707110386b69fb4900130704f6d01c5ce94104170de439bc2d296",
+    "backend\\rl\\radar.py": "15f0440d38a33aab7654f44c6e7af2551c1d51d213d2789ce53c6f763e9aa6dd",
+    "backend\\rl\\radar_retention.py": "f8351472b2836c7a6a3c29e025ca4fdf23f8bde7a9e05baf83d739fdeb40f0c2",
+    "backend\\rl\\reward.py": "2714e0848130c3c53ddf4c30a23ff16b0a461c789479a45bd31c69691b43a9a1",
+    "backend\\rl\\runtime.py": "808a2896ffa84fc8e01100211467176c0ca75f92c0182e21ab26fad237b574ff",
+    "backend\\rl\\scenarios.py": "05c3673d963f45c02d56dc364a94ae0c07985e5a6f7432add6ce82931b848d44",
+    "backend\\rl\\supervisor.py": "e85826e2c2ccedb0c383a3f11203255ca47ba2cbec6ef4bc6ab57ef314edd259",
+    "backend\\rl\\teacher.py": "863edde0344ba3090bb6f396bc3bdb8d3f12ffaf56492c6e32058ceef6d43ce6",
+    "backend\\rl\\__init__.py": "2d0a567926549787fe96b3856e462c4d63c4984d73e4cc916d6fdf66bcb4a4f0",
+    "backend\\signals\\decoders.py": "9b6d8462bee82ae52a0c49ef50d5e1ad709e4cc7376ce2331347d124075f19c4",
+    "backend\\signals\\radar.py": "eda6905e3f7a48f73764aaf30b822cd989fc6814b39f4527e04eaeda4f172cd0",
+    "backend\\signals\\radar_retention.py": "bd74938925153bcc0abec2ff04e96cff0993266c3306427de06be2fe99b099fc",
+    "backend\\signals\\timing.py": "7dc0648833b6092d0db0f278bf031dc88cb9f168e76a753ceb531065c7114551",
+    "backend\\signals\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\learning\\rl\\actions.py": "5932427bbba82a5771cf8c830a532025afedf859cc74d66ea5310d645d30ea4f",
+    "backend\\learning\\rl\\baselines.py": "54451c32a7be9951c823e2b765d0983d6a6bf6f598b2bfbb6727777e12c7ef8a",
+    "backend\\learning\\rl\\demonstrations.py": "0e7fe094a96e5ad2f3d2189ee472ca808bf32262fd475465b6b96792ac52a8bc",
+    "backend\\learning\\rl\\env.py": "3746cfc0f9eee3c0622afe7d81f3307918374d0074159a1e0a72902ae6317677",
+    "backend\\learning\\rl\\evaluation.py": "c6f57b53eecf012836df57ed340ec4f887796920dab9d79715505c546bdf12b2",
+    "backend\\learning\\rl\\maneuver_env.py": "ed15c133a6c4b5053eabc191bffc13a51bfa45bd142167208efb9a2b653c4e27",
+    "backend\\learning\\rl\\maneuver_observations.py": "13292ffcf34610ae967590d6a5a83b3c52b32226d058a9585a1660c0e2de75fc",
+    "backend\\learning\\rl\\maneuver_reward.py": "f686c11a96f1c8ed2027ef1bd97a117667983f018254a42151d5ddbbe69d326b",
+    "backend\\learning\\rl\\maneuver_runtime.py": "dc591b570b7bfaca554e0e1093284ceeb991805fc8f674a7b2d49b1d6529657f",
+    "backend\\learning\\rl\\observations.py": "2ef02934128557873ec1dac86b09dbdeb51e2cc3d299014ffafa595c628cc346",
+    "backend\\learning\\rl\\radar.py": "38ffee7098c9228a0ac850dd5ad984f342199b9d6eb5f083a0a21ad14eff5f5f",
+    "backend\\learning\\rl\\radar_retention.py": "93eff7e32db9584585a55474391a079102bc8ba2b5236d0bd3b0cada38e3bbf5",
+    "backend\\learning\\rl\\reward.py": "4a946a17f60e8b6814b22c0e765e5891249b7abb3b3073610cfcca08a441e605",
+    "backend\\learning\\rl\\route_progress.py": "80240e8c01a5282fea15ce9cce9f8b89d71cc78594fbbbf399e0cc56479e5473",
+    "backend\\learning\\rl\\runtime.py": "d6b1c86d6a77940a546ebd1ffd68f736fa17c61676dc75d9e8ab71e5e11deca0",
+    "backend\\learning\\rl\\scenarios.py": "8e6f0ce9dc9522269cc4024b725fe3d102b9f3592099e8ecf7e45ad2ba5f8ee4",
+    "backend\\learning\\rl\\supervisor.py": "6e2f4d4913abb9da2b05332682b92f4fe72836b448d354aaae48e2ed980cbc7e",
+    "backend\\learning\\rl\\teacher.py": "973503d101e4e4ad3ca69d90aa491e53f9f8960f9b00a50f0587a5a5c3a6ea10",
+    "backend\\learning\\rl\\__init__.py": "3e5db5decde1661989fb95ed4ecd05be3e5b158e200c1f8e3cfc91d16251df63",
+    "backend\\learning\\supervised\\features.py": "33cb0c5d51965c6e94b151584e8a70ae0d7c66d699c6bf59bc17867ed49344bf",
+    "backend\\learning\\supervised\\inference.py": "0a2564265aaa9b301380cb812bb9b36b2ccadc2f25690711dbb102bd4f316431",
+    "backend\\learning\\supervised\\motion.py": "a2352a161ef72f81f180cd5811b40292875226e167543f7712cd8a2fbe0b4e9d",
+    "backend\\learning\\supervised\\__init__.py": "2ef3924a78c1ef61d9b2abbff09d0ca8e6ae051b24d083e858e3e68317d5d863",
+    "config\\hybrid-driving.json": "e2b254a4da315b381f2a78c96149ad6904482f2ffdcfd5ead8318d9f6195bf05",
+    "config\\route-bypass.json": "3694cc54e293ddb1315fe70594d0653e991d34ffd7590e02225f8ee187676d58",
+    "config\\crossing-comparison.json": "8a0b1e1b17a2afbf3cdd6288b53c26a56163f4961a8728235e695a3dc2643692",
+    "scripts\\validate_hybrid_native.py": "3cf7e0923ec78afe676fc9050621edbc851ec953b5ee0688bd480fe0a1d1c556",
+    "scripts\\native\\validate_crossing_pair.py": "b991b0cecd738761ab80c7881a13db3c2ee68f0975339bb2505fac59c7944ee9",
+    "scripts\\native\\crossing_causality.py": "f1af98314e085c412517369f3587f0508fc9dab31ad0f5dfd31166a6d69866fd",
+    "scripts\\native\\route_bypass_world.py": "839106dbd65b177f8f745049f9a42c1b799ff2d3bed65621819c85236068be88",
+    "scripts\\native\\validate_sensor_comparison.py": "345a4586c50766c85b5a4a5099ddaa6b6aafa25a8baf22a5bedee81190f32d61"
+  },
+  "delivery_source_hashes": {
+    "backend\\graphics.py": "9cd5f0eef760e013f1756670597136d6c2bccd70f18a1f12c9c0458215628576",
+    "backend\\perception.py": "6ac3f714b37562b31acb69abf812aac65c6ab2ca877adf8bbb1fcfc434b45a3f",
+    "backend\\perception_worker.py": "d6b54995e03f58d423c068ac1d172cc4d5cd26cbfa8398b90c5459c3feaabd1f",
+    "backend\\provider.py": "36188bdbf50106dd073c3ff81bfdb5b6b407453166abc0d907ac5162a984b776",
+    "backend\\providers.py": "380ad3b487f137b57a065794476bcc188ec9e6a170d030e12558536d2f2dc4e5",
+    "backend\\recording.py": "654b788528d7e3e1d3e6902d2267f32344cf06bda579da4c8ec5dd5abb9d8383",
+    "backend\\replay_service.py": "9bef4328ee90980fbd62d760f62538046afbe5dc12f3ed88444b72a40be4b2d3",
+    "backend\\server.py": "b391728af83890c88ce9673685109022472316296fbb8bf502cf0e70c84a44de",
+    "backend\\simulation_service.py": "fa0b731618e5dc73b777b4a94a1e44710b18b0e6fc85d206626f2510970ff25a",
+    "backend\\websocket_bridge.py": "ba211bd0777041111808a77d1f58f376e00e7de26d4c0ec2290a75df4c046066",
+    "backend\\__init__.py": "6b64dd6bf8bbb5087c60097a21968d2bbb15dfcff86394521a726fa41ee16451",
+    "backend\\carla\\benchmark_fixture.py": "0793f9411d6eeb1345846fd7f8121878f6347a95bfc9e83a5f037c749ac7c14d",
+    "backend\\carla\\comparison.py": "d8fa4cbf5735d58a3b578014d908da5ec9b49c04c63ff474baf607a21fe4b760",
+    "backend\\carla\\comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+    "backend\\carla\\comparison_vehicle.py": "f59f92a0ee5a48bf1ddba5db06bba5d313b1b7afd696119d241954845cf8c989",
+    "backend\\carla\\connection.py": "632a59f7801dafcc90d625ca19b6aa1187282d146e61f50da110aaed8bc74b88",
+    "backend\\carla\\contracts.py": "179544f49a950f589f14ed215d103f36bdddcce1180641aa5559b4343d1534c1",
+    "backend\\carla\\controls.py": "1786ebb30bef1f3a5f93463ae6f287d342839884593ed9ddfae1778ddfa12743",
+    "backend\\carla\\crossing_comparison.py": "44e7b9f9d303de0c1d9af24f4161edb80df1a659b7c8f7d3791af8a8ddf376fb",
+    "backend\\carla\\dashboard_tools.py": "85f5605b0e7550e3b2fc986943ccabb27185ccad3ecd71cf5d4364f275bdc9e8",
+    "backend\\carla\\dense_chaos.py": "95505ec1ca58d3c0cdd094aaad49d1824292cbc2463f213c316f1f2172e4cf25",
+    "backend\\carla\\geometry.py": "9e71ed70eb0524780aa7798f8bcb77abdfdf6a84904cbe762afd171f54c0c1cd",
+    "backend\\carla\\graphics.py": "c37718359776004bdc717c700f15148f01fa4bfd9fad08e328d57d3cbfdc2b72",
+    "backend\\carla\\ground_truth.py": "f5ed075e00a0994fcbcc00522f790491c16567064b35c132eff438d0fd4f3b19",
+    "backend\\carla\\hybrid_navigation.py": "9754b468bb51c0dfe120b4ad2c1137f8b9d6309eec58fb18ce90bac21e92fde0",
+    "backend\\carla\\hybrid_world.py": "c4b9c8741c81592b4784ed76badd87cb22c5889151e949d0855ce3adec13185a",
+    "backend\\carla\\onboard_geometry.py": "5811fbf832b14cad820db4059a0f3395783391017807e36e4161515f97451d7e",
+    "backend\\carla\\pilot_world.py": "b4abd2b5d34e4e61bc5a170bbe140bfc5be2b7f3d21f0d894636faca246b61e5",
+    "backend\\carla\\population.py": "bf6ed74480b517d1b27895a825393c9f6b7ce354211cea2cf62e3d55cc62e859",
+    "backend\\carla\\preflight.py": "1698845580fbc394c9d6a4e1bd7baea0f679281be21d0acc2438ac8c3b254bd6",
+    "backend\\carla\\presentation.py": "980985dedcbd3c90bbce03205c9328d5a9b6fea60b14e13c87c4c4b1ab46f054",
+    "backend\\carla\\provider.py": "dd5e1388a70908a7b3f97917272bd3e995c3c9da189f4b4f8274e7fb41b7e3ec",
+    "backend\\carla\\restart_helper.py": "5aea662f9d989aa30e3574a0598e807c06ab3676f8fb4300e1a26cecae1d191d",
+    "backend\\carla\\routes.py": "7f852d1e638cae2ab72c86e8824f99bf1ef4714ff109706206c7e4e5ce4b39cf",
+    "backend\\carla\\route_agent.py": "a168a9941168e3a66b87770e05ef8eb57b5bec2fe9d7931870a54eb8dc2167e3",
+    "backend\\carla\\route_crowding.py": "5a6faf6ba2baf58fb5903d8f63b927ebbba4843dad6f75bf957abc8f26ab66a0",
+    "backend\\carla\\runtime.py": "89e6af23037fcfbf7215bcc00d4856617837ef28d406ed9a0fc16b1607f5f62a",
+    "backend\\carla\\scenarios.py": "f2b9844e3e95152391530d467120f614a02f0fea958c74804a597cb2eb39c0d9",
+    "backend\\carla\\scene_overlays.py": "0dbb4126b9fc026302b324188f9f3338e5987cf57ae494a98619d733338f7a9c",
+    "backend\\carla\\sensors.py": "f5d6a8f7d387b5c4b283655a961b09ac7495593e5c37f0fe66869b4db007b77c",
+    "backend\\carla\\sensor_decoders.py": "f7bfd23f08ab81911510993035ecb4258d0eece4794f00f8cf7f496c4ee5f233",
+    "backend\\carla\\start_helper.py": "59dcabe042320e533db659daf41f0c2466f8cfcb3df3f75e9f6cd21c103de739",
+    "backend\\carla\\stop_helper.py": "322baa8c400cdf9990615c8ba8143ec20b4fc67e62dfbcf489b735c676028376",
+    "backend\\carla\\target.py": "77f1aa4455aa843ec5b8786cea10e7127ab0c3cb7c08b0dd9e6b7f7041679b8c",
+    "backend\\carla\\telemetry.py": "474323d59a8879cc6d3665b9ae5e58f490589ef989d1534d33903412eaf4c2a4",
+    "backend\\carla\\urban.py": "f49798dbe285628ac58c2e3cb6362a0889a57540129df01d9c162877ba079229",
+    "backend\\carla\\urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+    "backend\\carla\\vehicle.py": "5c60d96494ebb769ac76b2c3d6c38e61896158fa306d54a23e686bf081df9c92",
+    "backend\\carla\\world.py": "2cbc3db5cb0b9b8360bc931ce59dc598b68eb1efd2a770862aa576b1baf3ba73",
+    "backend\\carla\\__init__.py": "ce728f3803a6cd778e37986b03762a4d926ec12a7a69787391ac67e200232b60",
+    "backend\\computer_vision\\depth_evidence.py": "8a0946784fbbc276ef7bfacca6834e6b4c18789139a12fa72c4a6b3be88e14e9",
+    "backend\\computer_vision\\detector.py": "6c8e4de1e1a7c21d740e63c4d621a4e90f71f6bb2eeceb937529b9a7c9a78d6f",
+    "backend\\computer_vision\\ocr.py": "2dbe59cba998a4419677c5801be6005b5dbe6a07f78580ead2ca63f79819e7a7",
+    "backend\\computer_vision\\service.py": "73606fc6091c469a037a6a84ea1992c6bad0bce0755a4bc42f9931da068c4f2a",
+    "backend\\computer_vision\\shared_export.py": "050ec0866736911bb92583b3886902ea3e2b3680bdf73fd43c81d3e80bad529b",
+    "backend\\computer_vision\\worker.py": "901342bb867ca3c711a157575ee7332d3565c9a6e1b2ec43d09e756aedef5b32",
+    "backend\\computer_vision\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\core\\active_safety.py": "96f1519b89e2ec2af0a228b8c44f6eb55efe4a13142ee141e1c1fc423dc72018",
+    "backend\\core\\agents.py": "ffe208794346410d37c52ba0b726c5f4b35632df3efe1d02037475d70d6332f6",
+    "backend\\core\\camera_geometry.py": "c8200bc92d5c921f6a7006ebb6b24bc2b9dbedde48505ed9c47de4556104fc01",
+    "backend\\core\\comfort_control.py": "db0f0f4b2efe7934110e24cc125913cb64576c43e3777a760e3793931296648b",
+    "backend\\core\\config.py": "7e239f339fedcf20a028c374dd86751a72cfaa2b14aab2097dcc83fd1ebd0693",
+    "backend\\core\\congestion_recovery.py": "772f60d18374d4ce687c7b690dceba1c5a907fea37131a3465c814a1f378052c",
+    "backend\\core\\contracts.py": "5aa7e5f21ac820069af85e71f87ceea0a83994d0c5e4b9a8c32ade5bf5d96308",
+    "backend\\core\\control.py": "8675b041666717fccf7774ad316222f733e2f6877e398d59d3238e4a87687641",
+    "backend\\core\\control_radar.py": "da10e3feaaa2db625f298812f1ecf437cee4b803a06a3217809d90f5fd48d53c",
+    "backend\\core\\control_scene.py": "65e09073bfd69ce4f489d6a86d03805985840d62b95594dfb0b34dd2e198c18d",
+    "backend\\core\\control_semantics.py": "efa0395852712d9b69f21f25caf29be10f1fa6a210671adf4f42b43364780580",
+    "backend\\core\\corridor_uncertainty.py": "c25e7446eb890dbac414d6b4338ea8e756a53a3561509ef1395e05478d77bdce",
+    "backend\\core\\crossing_result.py": "0c33c27ed96cf4061e32086b2d9ac7d5f76eb6cfe40e57ee5927951596661be8",
+    "backend\\core\\dashboard.py": "aea250be06b57815b225a7b6a0eb82043132c6eb9d54bbf20b520dc0f56bfabe",
+    "backend\\core\\depth_people.py": "26d8abdabc7e559a9c3462c23ed332de218a104a10108518b6957d8b984d9337",
+    "backend\\core\\display_prediction.py": "eb77968d547f3e58e210c111f95177ff0bac253ab75f7f1925379f2ad3dba826",
+    "backend\\core\\drivable_corridor.py": "f1f5f8ff7fc0ae00ad2ee9f52e1b7f86e8bee7398169b5141934113924926d4f",
+    "backend\\core\\driver_profiles.py": "a552a41012df3465546186f379a81d43003b9bf0ba2eaa0bd65b7321c2a4b7a0",
+    "backend\\core\\driving_quality.py": "0cf9e13d02643da26e9755f8907adf326e0db7a9eb5bbb06cc00a86f4d2afe9e",
+    "backend\\core\\driving_video.py": "e10978030201b462751b99d77c1fb3f9501212b1761a35274a95dce50482f034",
+    "backend\\core\\ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+    "backend\\core\\evaluation.py": "e2ea328052d0404a282699806cf7a18fe4e19aadcd636c3a5af5710a04b36104",
+    "backend\\core\\events.py": "4370d63b8d44fb96f8264eeca5e44921f7deea951dd390646c40db5411f07a67",
+    "backend\\core\\ground_geometry.py": "e07d0005bf2f5bae26f576a25a4a7902a4755a59bc7c877edb73a2c8130578fb",
+    "backend\\core\\host_clock.py": "2f34466e444cfb3b08f3a18a0fc733d28d082346a7a992ce814bcb38c49ced91",
+    "backend\\core\\hybrid_acceptance.py": "ac0807310941958fec939d0b6449a593ed0f07df0f6d83b3ab4866b902f346e6",
+    "backend\\core\\hybrid_config.py": "5cab29e9efa1f4cdc90e4163ea3968b0b0a18b8520b7c0b805075a06024a17c8",
+    "backend\\core\\hybrid_driver.py": "0350ba49d6ed4066af9671ef74913198bd1b7a832e080921ce561cc71b014a9d",
+    "backend\\core\\journey_comparison.py": "45de4d90c188260e24c737748488c79cc1af6fb831da193127e38b6c828de774",
+    "backend\\core\\kinematic_prediction.py": "01d96185e96070126193d3a7378edaa5dde763b2154ffef3ca96a77a4da280f0",
+    "backend\\core\\lifecycle.py": "629160fdca0e44b0bec2cff96c258b687accaba2e1b0a4ebbf1cfdbe54ae8f1d",
+    "backend\\core\\logging.py": "a4734de93047bf2470699d4acb9cff37237ff0a84677dcc1349340bbc7b04d5d",
+    "backend\\core\\maneuver.py": "3f1f2dfb6dd907707384504f0010f5a8df69daadf5e53fd281b5773d698bd44c",
+    "backend\\core\\maneuver_candidates.py": "da2e4a7d50e76d664ec33042834eacecb168ed7bd2db654c86fb871f159f9e06",
+    "backend\\core\\measured_rows.py": "29b31182f03257db164e30bf278527c58f8ca666cc4634304e1b56bd677e07c6",
+    "backend\\core\\motion_geometry.py": "434c64a6979f73576243cd3900d5058c0b5205394153122b8e457b84096e72ec",
+    "backend\\core\\motion_quality.py": "14c16ae36468dcfc977fde47547624a43f553b10eb95de10fdf3d347ea499239",
+    "backend\\core\\motion_scene.py": "5881a39c96f00929f4985889e36f34af9e65a4fdf96dfeaedabc08d6912090d7",
+    "backend\\core\\normal_navigation.py": "184d1c047c328d6cff7107a3896115932bb923eb3ef0abf7ce32cff1e349a6cd",
+    "backend\\core\\path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+    "backend\\core\\pedestrian_anticipation.py": "beeb4f57360190cd02be312022213808ebf6e5d1e6e765a1868981936d3e62d9",
+    "backend\\core\\prediction.py": "f09e9f8f17a40c91454929b02346c3b02cc235c9c9883b78b5a4eb6161ca1d83",
+    "backend\\core\\predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+    "backend\\core\\presentation.py": "82fb5c5c242f7bc3aed986cc43b3030a65e2ee85a76497ef440ae4e1d3566918",
+    "backend\\core\\rear_separation.py": "64c118d963bcb67220d7bf526adecd165752a407b2de7cdd4da527e12da05b6d",
+    "backend\\core\\recording.py": "d6e76283c7fb3a8f92911f775bbf98dbd3c6510e5a693f2a96d541067e5fe98b",
+    "backend\\core\\recovery_depth.py": "688bb20824ca478264cecd9bd1ca40ca9b6e0b7e36f1922c01eeb1790f4501a9",
+    "backend\\core\\replay.py": "94f5d2d1c96167b2562cd7d6d1deeb3e13a2b639398c52ac55b151cea16a7712",
+    "backend\\core\\reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+    "backend\\core\\research.py": "d698624a37c30779c520714b8ffa2089334ef1ec153d442122b327e1914cbbc0",
+    "backend\\core\\research_safety.py": "78bd8dd8e5e35e60c6d96b4a8d218f111b62d6cba358b8dbf017f57302f67a5b",
+    "backend\\core\\route_bypass.py": "c6512ff6756e117a04d1a5ea69687403e81465c240f25af5927c2d26255c6c0d",
+    "backend\\core\\route_terminal.py": "4be10620a3da84c32d6744195bf122e984d030f49346910fcf999c7d41328ccc",
+    "backend\\core\\safety_policy.py": "4c64603f924dcfb2a51b9d376a699587658b082e9cbb0117aa953f29b53123bc",
+    "backend\\core\\scenarios.py": "669a4befd5b9a848843cb49aa1373c3816671b7c9bbb1e35f1e82b99edbfcbf4",
+    "backend\\core\\scene_overlays.py": "2ac644f094a922f9c523ef3e7bb5b8cecfdb33d35b50e21bbe564cf74d673ad1",
+    "backend\\core\\service.py": "63ea6275e40ece2ccfedc8a24ea15a68ace239ad3c3f58c29a034307ae1e9f08",
+    "backend\\core\\shared_perception.py": "b8518727c4156b9f23ec9223b59b0d28fb1dce1221d5958968c8a94ca24b5458",
+    "backend\\core\\storage_retention.py": "ea8ebb0e6a0d427967c465f885af2412bb29148b49e85bd55909e9bbb024e9fc",
+    "backend\\core\\surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+    "backend\\core\\surface_registration.py": "7e15e373950eb9e8f7e321b699b421a43b80b37813860fdaae180716857ad3b2",
+    "backend\\core\\timing.py": "6d5d02c0f5989a1a041b03a09f250fe1a864a0e41b53d9224b5b403ec4976482",
+    "backend\\core\\video_http.py": "db950f48707a72bee596e989f45e6c7135b21f8970a512468248f4646f73a67f",
+    "backend\\core\\video_prediction.py": "34d998241254d46d94358da94294ab79b5ab33164873a43e5a9e961dd91f65c8",
+    "backend\\core\\visual_geometry.py": "9829e6ab8c6a7eab77f7dfbce47f237976974597a563faf9e5e854d08a48dabe",
+    "backend\\core\\__init__.py": "e64fb6a47bad83efe0387337fcbb8dd4b3f50d4d2e20034c01ef6d6ddb1714f6",
+    "backend\\learned\\features.py": "98cbf462edea0146217b9b636ab2e10c22c943d53ec2b7e078b3ef37dc1f6dc7",
+    "backend\\learned\\inference.py": "6040ac82d79bc51879b518692604492fae1e77abce57a9701307cd4152785288",
+    "backend\\learned\\__init__.py": "45f3132efb9fad031c826e2374272cf67afd911913d2129b188f6a9bc95dffb1",
+    "backend\\learning\\async_worker.py": "f61aa7ce6e7ef87abc2a9afad92866b44ab11153ba7ac27fe0d49660c4f006b0",
+    "backend\\learning\\cpu_worker.py": "f72adf3aa86f024d5d6c7ab1e2ad38a9c9c58ebf9359d24bc9df6d2d49753bb4",
+    "backend\\learning\\experiment_budget.py": "ba6276a64759d62787f1847421deefd8cd74dbce647b9ca089676a175bcbf10c",
+    "backend\\learning\\hybrid_budget.py": "f81f36eed0b67ffcf285f36fdb607ba6bbd4625979c1c1a69e180eb75b72b8bc",
+    "backend\\learning\\independent_prediction.py": "6741bdc09c1366b824a49c34089e736b4c2e99f036c635c5b686b63e171cb148",
+    "backend\\learning\\motion_budget.py": "09fdf11ca17431178d444b6b30713b6b03bab1048402527536fb2c5263504389",
+    "backend\\learning\\motion_selector.py": "59e0c617c83088583f5ae2d96469b538ae5827ae427bdd2545d4f14665b053a7",
+    "backend\\learning\\native_validation_budget.py": "fc3403300738d3789b34d7673b54d5e18452b0177212d23f53695b74c1426499",
+    "backend\\learning\\pilot_acceptance.py": "f308e3b659f11e33f4ce47ee5ec544cb748713463bdcf38a8a8a4a085aab2a90",
+    "backend\\learning\\pilot_budget.py": "9a3e07b0e718114b7b0473c8e6c3fa154f62607682f23f0c9b69e8d98b96bba6",
+    "backend\\learning\\pilot_provenance.py": "05000053499cdfc7f4324ebd25402c98547b1abe59cba4ebd0a3cc798b22a72b",
+    "backend\\learning\\recovery_budget.py": "3baa2c55a905aa4cf52f7cfb8f8f5344f8716a0152b07f80b75ee9ab73d57c3f",
+    "backend\\learning\\trajectron_adapter.py": "a8b09808509bcc175d2355bff03c4f768e0cad5505f64e46579452873269994c",
+    "backend\\learning\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\nlp\\processor.py": "eef9755066c83164b844249b61a102e6b09eafda20df04f302fd7601b8bb2896",
+    "backend\\nlp\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\rl\\actions.py": "b7a46995ec4385f2aadf81ebe0626f673a17e0d68fcd2a89ce1820258279b78f",
+    "backend\\rl\\baselines.py": "43b1ef61d2c04b8ad45f1d2249e77170b7f6485f093507eb69b8fc56c29043f3",
+    "backend\\rl\\demonstrations.py": "d040805f505491030b2e5185b408663130e3ca8b40da9c801380771ec9b0dda4",
+    "backend\\rl\\env.py": "171d39e9776575c666c084214f43adbc0c5732e5de71305db961722a3491fedc",
+    "backend\\rl\\evaluation.py": "75afad3242a03c8029bd76b46d1dd32873c57c8dca1bfd1be79d2c8fd1a0dab8",
+    "backend\\rl\\observations.py": "fc84daa64fa707110386b69fb4900130704f6d01c5ce94104170de439bc2d296",
+    "backend\\rl\\radar.py": "15f0440d38a33aab7654f44c6e7af2551c1d51d213d2789ce53c6f763e9aa6dd",
+    "backend\\rl\\radar_retention.py": "f8351472b2836c7a6a3c29e025ca4fdf23f8bde7a9e05baf83d739fdeb40f0c2",
+    "backend\\rl\\reward.py": "2714e0848130c3c53ddf4c30a23ff16b0a461c789479a45bd31c69691b43a9a1",
+    "backend\\rl\\runtime.py": "808a2896ffa84fc8e01100211467176c0ca75f92c0182e21ab26fad237b574ff",
+    "backend\\rl\\scenarios.py": "05c3673d963f45c02d56dc364a94ae0c07985e5a6f7432add6ce82931b848d44",
+    "backend\\rl\\supervisor.py": "e85826e2c2ccedb0c383a3f11203255ca47ba2cbec6ef4bc6ab57ef314edd259",
+    "backend\\rl\\teacher.py": "863edde0344ba3090bb6f396bc3bdb8d3f12ffaf56492c6e32058ceef6d43ce6",
+    "backend\\rl\\__init__.py": "2d0a567926549787fe96b3856e462c4d63c4984d73e4cc916d6fdf66bcb4a4f0",
+    "backend\\signals\\decoders.py": "9b6d8462bee82ae52a0c49ef50d5e1ad709e4cc7376ce2331347d124075f19c4",
+    "backend\\signals\\radar.py": "eda6905e3f7a48f73764aaf30b822cd989fc6814b39f4527e04eaeda4f172cd0",
+    "backend\\signals\\radar_retention.py": "bd74938925153bcc0abec2ff04e96cff0993266c3306427de06be2fe99b099fc",
+    "backend\\signals\\timing.py": "7dc0648833b6092d0db0f278bf031dc88cb9f168e76a753ceb531065c7114551",
+    "backend\\signals\\__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+    "backend\\learning\\rl\\actions.py": "5932427bbba82a5771cf8c830a532025afedf859cc74d66ea5310d645d30ea4f",
+    "backend\\learning\\rl\\baselines.py": "54451c32a7be9951c823e2b765d0983d6a6bf6f598b2bfbb6727777e12c7ef8a",
+    "backend\\learning\\rl\\demonstrations.py": "0e7fe094a96e5ad2f3d2189ee472ca808bf32262fd475465b6b96792ac52a8bc",
+    "backend\\learning\\rl\\env.py": "3746cfc0f9eee3c0622afe7d81f3307918374d0074159a1e0a72902ae6317677",
+    "backend\\learning\\rl\\evaluation.py": "c6f57b53eecf012836df57ed340ec4f887796920dab9d79715505c546bdf12b2",
+    "backend\\learning\\rl\\maneuver_env.py": "ed15c133a6c4b5053eabc191bffc13a51bfa45bd142167208efb9a2b653c4e27",
+    "backend\\learning\\rl\\maneuver_observations.py": "13292ffcf34610ae967590d6a5a83b3c52b32226d058a9585a1660c0e2de75fc",
+    "backend\\learning\\rl\\maneuver_reward.py": "f686c11a96f1c8ed2027ef1bd97a117667983f018254a42151d5ddbbe69d326b",
+    "backend\\learning\\rl\\maneuver_runtime.py": "dc591b570b7bfaca554e0e1093284ceeb991805fc8f674a7b2d49b1d6529657f",
+    "backend\\learning\\rl\\observations.py": "2ef02934128557873ec1dac86b09dbdeb51e2cc3d299014ffafa595c628cc346",
+    "backend\\learning\\rl\\radar.py": "38ffee7098c9228a0ac850dd5ad984f342199b9d6eb5f083a0a21ad14eff5f5f",
+    "backend\\learning\\rl\\radar_retention.py": "93eff7e32db9584585a55474391a079102bc8ba2b5236d0bd3b0cada38e3bbf5",
+    "backend\\learning\\rl\\reward.py": "4a946a17f60e8b6814b22c0e765e5891249b7abb3b3073610cfcca08a441e605",
+    "backend\\learning\\rl\\route_progress.py": "80240e8c01a5282fea15ce9cce9f8b89d71cc78594fbbbf399e0cc56479e5473",
+    "backend\\learning\\rl\\runtime.py": "d6b1c86d6a77940a546ebd1ffd68f736fa17c61676dc75d9e8ab71e5e11deca0",
+    "backend\\learning\\rl\\scenarios.py": "8e6f0ce9dc9522269cc4024b725fe3d102b9f3592099e8ecf7e45ad2ba5f8ee4",
+    "backend\\learning\\rl\\supervisor.py": "6e2f4d4913abb9da2b05332682b92f4fe72836b448d354aaae48e2ed980cbc7e",
+    "backend\\learning\\rl\\teacher.py": "973503d101e4e4ad3ca69d90aa491e53f9f8960f9b00a50f0587a5a5c3a6ea10",
+    "backend\\learning\\rl\\__init__.py": "3e5db5decde1661989fb95ed4ecd05be3e5b158e200c1f8e3cfc91d16251df63",
+    "backend\\learning\\supervised\\features.py": "33cb0c5d51965c6e94b151584e8a70ae0d7c66d699c6bf59bc17867ed49344bf",
+    "backend\\learning\\supervised\\inference.py": "0a2564265aaa9b301380cb812bb9b36b2ccadc2f25690711dbb102bd4f316431",
+    "backend\\learning\\supervised\\motion.py": "a2352a161ef72f81f180cd5811b40292875226e167543f7712cd8a2fbe0b4e9d",
+    "backend\\learning\\supervised\\__init__.py": "2ef3924a78c1ef61d9b2abbff09d0ca8e6ae051b24d083e858e3e68317d5d863",
+    "config\\hybrid-driving.json": "e2b254a4da315b381f2a78c96149ad6904482f2ffdcfd5ead8318d9f6195bf05",
+    "config\\route-bypass.json": "3694cc54e293ddb1315fe70594d0653e991d34ffd7590e02225f8ee187676d58",
+    "config\\crossing-comparison.json": "ef3b8a8330acb22ec668c88f79fca0a1968d2b9014b4a17c2b346544ba3b06bc",
+    "scripts\\validate_hybrid_native.py": "3cf7e0923ec78afe676fc9050621edbc851ec953b5ee0688bd480fe0a1d1c556",
+    "scripts\\native\\validate_crossing_pair.py": "b991b0cecd738761ab80c7881a13db3c2ee68f0975339bb2505fac59c7944ee9",
+    "scripts\\native\\crossing_causality.py": "f1af98314e085c412517369f3587f0508fc9dab31ad0f5dfd31166a6d69866fd",
+    "scripts\\native\\route_bypass_world.py": "839106dbd65b177f8f745049f9a42c1b799ff2d3bed65621819c85236068be88",
+    "scripts\\native\\validate_sensor_comparison.py": "345a4586c50766c85b5a4a5099ddaa6b6aafa25a8baf22a5bedee81190f32d61"
+  },
+  "delivery_config_sha256": "ef3b8a8330acb22ec668c88f79fca0a1968d2b9014b4a17c2b346544ba3b06bc",
+  "annotation_only_after_acceptance": "Three validated booleans enabled; selected scenario definitions exclude these metadata fields.",
+  "source_compatible_all_cases": true,
+  "cases": [
+    {
+      "attempt": "2ea6c7fbfd194f7c9882b49bfcfb558b",
+      "seed": 1701,
+      "first_mode": "NORMAL",
+      "reused": true,
+      "report_sha256": "af2dd64930b3ad222795176fb920d42f68b0faadfb9cc86425b481cfa9a25bde",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\2ea6c7fbfd194f7c9882b49bfcfb558b\\source.zip",
+        "sha256": "e1412f4f56e7926708d8579e6433bfa607e52b1bf617c96b10bb8fc715d64162",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "delivery_selected_sources_compatible": true,
+      "scenario": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "id": "crossing-a",
+        "seed": 1701,
+        "parameters": {
+          "id": "crossing-a",
+          "crossing_m": 65.0,
+          "start_s": 4.7,
+          "speed_mps": 3.4,
+          "lateral_m": 4.6,
+          "fixture_seed": 1701,
+          "critical_blueprint": "walker.pedestrian.0001"
+        },
+        "definition_sha256": "603cc5c8a662abcec0a7fbff6c70acc6a067b76d3f34ced8ef0e52adc9097e8f",
+        "validated": false,
+        "library_revision": 17,
+        "critical_role": "critical_pedestrian",
+        "events": {
+          "critical_pedestrian": {
+            "kind": "CROSSING",
+            "critical": true,
+            "origin": [
+              -7.433537402912043,
+              -72.42326571594458,
+              0.95
+            ],
+            "target": [
+              -7.425111202523112,
+              -51.82326694380026,
+              0.95
+            ],
+            "start_s": 4.7,
+            "speed_mps": 3.4,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              4.57488808222115,
+              -51.82817541004624,
+              0.95
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_01": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -19.059654235839844,
+              -51.81160354614258,
+              0.15861999988555908
+            ],
+            "target": [
+              -20.240049362182617,
+              -75.2829818725586,
+              0.15861999988555908
+            ],
+            "start_s": 10.899999999999999,
+            "speed_mps": 1.8903249267617386,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -8.240050077438354,
+              -75.28789033880457,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_02": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -36.98450469970703,
+              -75.8255386352539,
+              0.15861999988555908
+            ],
+            "target": [
+              -35.617305755615234,
+              -47.40190505981445,
+              0.15861999988555908
+            ],
+            "start_s": 11.6,
+            "speed_mps": 1.858588887543874,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -23.61730647087097,
+              -47.40681352606043,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_03": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -58.07050704956055,
+              -46.15815353393555,
+              0.15861999988555908
+            ],
+            "target": [
+              -57.792930603027344,
+              -76.1518783569336,
+              0.15861999988555908
+            ],
+            "start_s": 12.299999999999999,
+            "speed_mps": 2.0111000845334397,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -45.79293131828308,
+              -76.15678682317957,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_04": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -57.792930603027344,
+              -76.1518783569336,
+              0.15861999988555908
+            ],
+            "target": [
+              -58.07050704956055,
+              -46.15815353393555,
+              0.15861999988555908
+            ],
+            "start_s": 13.0,
+            "speed_mps": 1.5959554269342624,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -46.070507764816284,
+              -46.163062000181526,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_05": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -61.676795959472656,
+              -51.6134033203125,
+              0.15861999988555908
+            ],
+            "target": [
+              -60.982364654541016,
+              -76.36217498779297,
+              0.15861999988555908
+            ],
+            "start_s": 13.7,
+            "speed_mps": 1.369709344904073,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -48.98236536979675,
+              -76.36708345403895,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_06": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -69.1248779296875,
+              -76.70003509521484,
+              0.15861999988555908
+            ],
+            "target": [
+              -69.4561538696289,
+              -52.23696517944336,
+              0.15861999988555908
+            ],
+            "start_s": 14.399999999999999,
+            "speed_mps": 2.404709853334766,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -57.456154584884644,
+              -52.24187364568934,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_07": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -77.7240982055664,
+              -48.82367706298828,
+              0.15861999988555908
+            ],
+            "target": [
+              -78.4056396484375,
+              -75.56255340576172,
+              0.15861999988555908
+            ],
+            "start_s": 15.099999999999998,
+            "speed_mps": 1.4944374080960885,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -66.40564036369324,
+              -75.5674618720077,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_08": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -83.4766845703125,
+              -74.96783447265625,
+              0.15861999988555908
+            ],
+            "target": [
+              -83.61004638671875,
+              -48.936279296875,
+              0.15861999988555908
+            ],
+            "start_s": 15.799999999999999,
+            "speed_mps": 2.329353117422291,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -71.61004710197449,
+              -48.94118776312098,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          }
+        },
+        "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+      },
+      "actual_gates": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-a",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "ego_blueprint": "vehicle.mercedes.coupe_2020",
+      "sensor_configuration": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 1280,
+            "image_size_y": 720,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0.0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 800,
+            "image_size_y": 450,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              -6.0,
+              0.0,
+              3.0
+            ],
+            "rotationDeg": {
+              "pitch": -15.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 32,
+            "points_per_second": 128000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -75
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      },
+      "scheduled_crossings": [
+        {
+          "role": "critical_pedestrian",
+          "origin_error_m": 2.1676278867322925e-06,
+          "clock_error_s": 7.00354574334483e-08,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_01",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.6242265843402492e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_02",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.7285347020390418e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_03",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.8328428375014028e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_04",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.9371509552001953e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_05",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.0414590906625563e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_06",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.1457672261249172e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_07",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.2500753615872782e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_08",
+          "origin_error_m": 1.0789593218788873e-05,
+          "clock_error_s": 2.3543834792860707e-07,
+          "crossed_path": true,
+          "direction": -1
+        }
+      ],
+      "native_throughput": [
+        {
+          "mode": "NORMAL",
+          "native_observations_per_wall_second": 6.867497793939225
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "native_observations_per_wall_second": 4.951675647858163
+        }
+      ],
+      "media": {
+        "passed": true,
+        "checks": {
+          "NORMAL": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 6.050000090152025
+          },
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 35.35000052675605
+          },
+          "shared": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 1.5000000216066838
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "shared_prefix": {
+        "status": "READY",
+        "pair_id": "b7b3b4a5339340f3b9115514b5574a62",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a9b83c645d71484981d087a553a30bac",
+        "video": "shared-perception.mp4",
+        "sha256": "9606aa5b7fd9bed82069cc263d9058ad7eddd716014d5c6f2f6b6c1c48b99735",
+        "frames": 30,
+        "detection_boxes": 338,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      }
+    },
+    {
+      "attempt": "9aad76f577e947fda1996165c0cc9a71",
+      "seed": 1701,
+      "first_mode": "ROBOSPHERE",
+      "reused": true,
+      "report_sha256": "772a1a92d21de52efbbe9ac8201d044bc4b7411069d1da953c2b8f4ef000ede0",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\9aad76f577e947fda1996165c0cc9a71\\source.zip",
+        "sha256": "78c7cacebc06c122d8dc2ada252e28affedf2959291d4f35fc000fabd0003862",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "delivery_selected_sources_compatible": true,
+      "scenario": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "id": "crossing-a",
+        "seed": 1701,
+        "parameters": {
+          "id": "crossing-a",
+          "crossing_m": 65.0,
+          "start_s": 4.7,
+          "speed_mps": 3.4,
+          "lateral_m": 4.6,
+          "fixture_seed": 1701,
+          "critical_blueprint": "walker.pedestrian.0001"
+        },
+        "definition_sha256": "603cc5c8a662abcec0a7fbff6c70acc6a067b76d3f34ced8ef0e52adc9097e8f",
+        "validated": false,
+        "library_revision": 17,
+        "critical_role": "critical_pedestrian",
+        "events": {
+          "critical_pedestrian": {
+            "kind": "CROSSING",
+            "critical": true,
+            "origin": [
+              -7.433537402912043,
+              -72.42326571594458,
+              0.95
+            ],
+            "target": [
+              -7.425111202523112,
+              -51.82326694380026,
+              0.95
+            ],
+            "start_s": 4.7,
+            "speed_mps": 3.4,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              4.57488808222115,
+              -51.82817541004624,
+              0.95
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_01": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -19.059654235839844,
+              -51.81160354614258,
+              0.15861999988555908
+            ],
+            "target": [
+              -20.240049362182617,
+              -75.2829818725586,
+              0.15861999988555908
+            ],
+            "start_s": 10.899999999999999,
+            "speed_mps": 1.8903249267617386,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -8.240050077438354,
+              -75.28789033880457,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_02": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -36.98450469970703,
+              -75.8255386352539,
+              0.15861999988555908
+            ],
+            "target": [
+              -35.617305755615234,
+              -47.40190505981445,
+              0.15861999988555908
+            ],
+            "start_s": 11.6,
+            "speed_mps": 1.858588887543874,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -23.61730647087097,
+              -47.40681352606043,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_03": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -58.07050704956055,
+              -46.15815353393555,
+              0.15861999988555908
+            ],
+            "target": [
+              -57.792930603027344,
+              -76.1518783569336,
+              0.15861999988555908
+            ],
+            "start_s": 12.299999999999999,
+            "speed_mps": 2.0111000845334397,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -45.79293131828308,
+              -76.15678682317957,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_04": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -57.792930603027344,
+              -76.1518783569336,
+              0.15861999988555908
+            ],
+            "target": [
+              -58.07050704956055,
+              -46.15815353393555,
+              0.15861999988555908
+            ],
+            "start_s": 13.0,
+            "speed_mps": 1.5959554269342624,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -46.070507764816284,
+              -46.163062000181526,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_05": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -61.676795959472656,
+              -51.6134033203125,
+              0.15861999988555908
+            ],
+            "target": [
+              -60.982364654541016,
+              -76.36217498779297,
+              0.15861999988555908
+            ],
+            "start_s": 13.7,
+            "speed_mps": 1.369709344904073,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -48.98236536979675,
+              -76.36708345403895,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_06": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -69.1248779296875,
+              -76.70003509521484,
+              0.15861999988555908
+            ],
+            "target": [
+              -69.4561538696289,
+              -52.23696517944336,
+              0.15861999988555908
+            ],
+            "start_s": 14.399999999999999,
+            "speed_mps": 2.404709853334766,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -57.456154584884644,
+              -52.24187364568934,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_07": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -77.7240982055664,
+              -48.82367706298828,
+              0.15861999988555908
+            ],
+            "target": [
+              -78.4056396484375,
+              -75.56255340576172,
+              0.15861999988555908
+            ],
+            "start_s": 15.099999999999998,
+            "speed_mps": 1.4944374080960885,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -66.40564036369324,
+              -75.5674618720077,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_08": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -83.4766845703125,
+              -74.96783447265625,
+              0.15861999988555908
+            ],
+            "target": [
+              -83.61004638671875,
+              -48.936279296875,
+              0.15861999988555908
+            ],
+            "start_s": 15.799999999999999,
+            "speed_mps": 2.329353117422291,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -71.61004710197449,
+              -48.94118776312098,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          }
+        },
+        "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+      },
+      "actual_gates": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-a",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "ego_blueprint": "vehicle.mercedes.coupe_2020",
+      "sensor_configuration": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 1280,
+            "image_size_y": 720,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0.0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 800,
+            "image_size_y": 450,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              -6.0,
+              0.0,
+              3.0
+            ],
+            "rotationDeg": {
+              "pitch": -15.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 32,
+            "points_per_second": 128000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -75
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      },
+      "scheduled_crossings": [
+        {
+          "role": "critical_pedestrian",
+          "origin_error_m": 2.1676278867322925e-06,
+          "clock_error_s": 7.00354574334483e-08,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_01",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.6242265843402492e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_02",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.7285347020390418e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_03",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.8328428375014028e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_04",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.9371509552001953e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_05",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.0414590906625563e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_06",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.1457672261249172e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_07",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.2500753615872782e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_08",
+          "origin_error_m": 1.0789593218788873e-05,
+          "clock_error_s": 2.3543834792860707e-07,
+          "crossed_path": true,
+          "direction": -1
+        }
+      ],
+      "native_throughput": [
+        {
+          "mode": "ROBOSPHERE",
+          "native_observations_per_wall_second": 5.223691380669767
+        },
+        {
+          "mode": "NORMAL",
+          "native_observations_per_wall_second": 6.4596678847631
+        }
+      ],
+      "media": {
+        "passed": true,
+        "checks": {
+          "NORMAL": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 6.050000090152025
+          },
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 33.00000049173832
+          },
+          "shared": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 1.5000000216066838
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "shared_prefix": {
+        "status": "READY",
+        "pair_id": "a4f1f1cc349f44179775aca327b7bc01",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_13fe077d60ff4cb88f7bee378a4e3c0b",
+        "video": "shared-perception.mp4",
+        "sha256": "c26d8cc89e5532416712a32ee1f4827c9b951b495c0d337c81621af9b0d0d45b",
+        "frames": 30,
+        "detection_boxes": 372,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      }
+    },
+    {
+      "attempt": "4ec732179c1c44649d6ef8f3f686ae67",
+      "seed": 1702,
+      "first_mode": "NORMAL",
+      "reused": false,
+      "report_sha256": "a7f6ed73f32463bb65bbdff627bf905c3565126654c7f63471d5585dae64c93e",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\4ec732179c1c44649d6ef8f3f686ae67\\source.zip",
+        "sha256": "280e2ac24c61bbae8009ede8462eeb3510a046b9e407e89ec2187ac16a742cc5",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "delivery_selected_sources_compatible": true,
+      "scenario": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "id": "crossing-b",
+        "seed": 1702,
+        "parameters": {
+          "id": "crossing-b",
+          "waiting_yaw_offset_deg": 180,
+          "crossing_m": 64.5,
+          "start_s": 4.65,
+          "speed_mps": 3.5,
+          "lateral_m": 4.6,
+          "fixture_seed": 1702,
+          "critical_blueprint": "walker.pedestrian.0001"
+        },
+        "definition_sha256": "a8221376884d6f3971c1b9a48603088579c7a102ca02b10df0c51de698e37d17",
+        "validated": false,
+        "library_revision": 17,
+        "critical_role": "critical_pedestrian",
+        "events": {
+          "critical_pedestrian": {
+            "kind": "CROSSING",
+            "critical": true,
+            "origin": [
+              -6.933537432714365,
+              -72.4234702353715,
+              0.95
+            ],
+            "target": [
+              -6.925111232325435,
+              -51.82347146322718,
+              0.95
+            ],
+            "start_s": 4.65,
+            "speed_mps": 3.5,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              5.074888052418828,
+              -51.82837992947316,
+              0.95
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_01": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -16.054386138916016,
+              -51.42433166503906,
+              0.15861999988555908
+            ],
+            "target": [
+              -15.619089126586914,
+              -76.88032531738281,
+              0.15861999988555908
+            ],
+            "start_s": 10.85,
+            "speed_mps": 1.8033972221014423,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -3.6190898418426514,
+              -76.88523378362879,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_02": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -34.06788635253906,
+              -75.73222351074219,
+              0.15861999988555908
+            ],
+            "target": [
+              -34.0897331237793,
+              -46.868404388427734,
+              0.15861999988555908
+            ],
+            "start_s": 11.55,
+            "speed_mps": 1.6402143613139213,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -22.089733839035034,
+              -46.87331285467371,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_03": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -58.2379035949707,
+              -45.15869903564453,
+              0.15861999988555908
+            ],
+            "target": [
+              -57.78593826293945,
+              -76.82512664794922,
+              0.15861999988555908
+            ],
+            "start_s": 12.25,
+            "speed_mps": 2.4381808501072335,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -45.78593897819519,
+              -76.8300351141952,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_04": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -57.78593826293945,
+              -76.82512664794922,
+              0.15861999988555908
+            ],
+            "target": [
+              -58.21168518066406,
+              -43.313499450683594,
+              0.15861999988555908
+            ],
+            "start_s": 12.95,
+            "speed_mps": 1.3737586861857896,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -46.2116858959198,
+              -43.31840791692957,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_05": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -62.65076446533203,
+              -50.08611297607422,
+              0.15861999988555908
+            ],
+            "target": [
+              -63.01516342163086,
+              -75.63731384277344,
+              0.15861999988555908
+            ],
+            "start_s": 13.65,
+            "speed_mps": 1.7268924923255518,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -51.0151641368866,
+              -75.64222230901942,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_06": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -70.44014739990234,
+              -76.51131439208984,
+              0.15861999988555908
+            ],
+            "target": [
+              -70.04774475097656,
+              -52.320220947265625,
+              0.15861999988555908
+            ],
+            "start_s": 14.35,
+            "speed_mps": 2.254261558374534,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -58.0477454662323,
+              -52.325129413511604,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_07": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -77.21150207519531,
+              -51.56229782104492,
+              0.15861999988555908
+            ],
+            "target": [
+              -77.28546905517578,
+              -77.09162902832031,
+              0.15861999988555908
+            ],
+            "start_s": 15.05,
+            "speed_mps": 2.447721106056359,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -65.28546977043152,
+              -77.09653749456629,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_08": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -84.6894302368164,
+              -75.3052978515625,
+              0.15861999988555908
+            ],
+            "target": [
+              -84.49925231933594,
+              -44.76914978027344,
+              0.15861999988555908
+            ],
+            "start_s": 15.75,
+            "speed_mps": 2.0253696881470002,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -72.49925303459167,
+              -44.77405824651942,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          }
+        },
+        "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+      },
+      "actual_gates": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-b",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "ego_blueprint": "vehicle.mercedes.coupe_2020",
+      "sensor_configuration": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 1280,
+            "image_size_y": 720,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0.0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 800,
+            "image_size_y": 450,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              -6.0,
+              0.0,
+              3.0
+            ],
+            "rotationDeg": {
+              "pitch": -15.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 32,
+            "points_per_second": 128000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -75
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      },
+      "scheduled_crossings": [
+        {
+          "role": "critical_pedestrian",
+          "origin_error_m": 6.93754981910584e-07,
+          "clock_error_s": 6.929039919612023e-08,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_01",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.6167759930851844e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_02",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.721084110783977e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_03",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.825392246246338e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_04",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.9297003817086988e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_05",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.0340084994074914e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_06",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.1383166348698524e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_07",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.242624752568645e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_08",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.3469328880310059e-07,
+          "crossed_path": true,
+          "direction": -1
+        }
+      ],
+      "native_throughput": [
+        {
+          "mode": "NORMAL",
+          "native_observations_per_wall_second": 6.890511051581724
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "native_observations_per_wall_second": 5.096832655134244
+        }
+      ],
+      "media": {
+        "passed": true,
+        "checks": {
+          "NORMAL": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 6.000000089406967
+          },
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 35.25000052526593
+          },
+          "shared": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 1.5000000216066838
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "shared_prefix": {
+        "status": "READY",
+        "pair_id": "c4caef979ae84f6c9bb4396e294bc35f",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_757b88755e634fa49d6bc4c0f3786cac",
+        "video": "shared-perception.mp4",
+        "sha256": "72b670447810793ba4fa218e70a8a92b959064484d8c6436b46ddb7cc5c76a8e",
+        "frames": 30,
+        "detection_boxes": 219,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      }
+    },
+    {
+      "attempt": "2b7c8a164b39483289fc5b393feebad2",
+      "seed": 1702,
+      "first_mode": "ROBOSPHERE",
+      "reused": false,
+      "report_sha256": "1a4bb187a68bea2162d7b7d7378cded0fc82092803d947062db0c46902fd878a",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\2b7c8a164b39483289fc5b393feebad2\\source.zip",
+        "sha256": "c4024a467af0ff59bc2435dc7a228143dbbf320e0ebf8a97df21534363a1f673",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "delivery_selected_sources_compatible": true,
+      "scenario": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "id": "crossing-b",
+        "seed": 1702,
+        "parameters": {
+          "id": "crossing-b",
+          "waiting_yaw_offset_deg": 180,
+          "crossing_m": 64.5,
+          "start_s": 4.65,
+          "speed_mps": 3.5,
+          "lateral_m": 4.6,
+          "fixture_seed": 1702,
+          "critical_blueprint": "walker.pedestrian.0001"
+        },
+        "definition_sha256": "a8221376884d6f3971c1b9a48603088579c7a102ca02b10df0c51de698e37d17",
+        "validated": false,
+        "library_revision": 17,
+        "critical_role": "critical_pedestrian",
+        "events": {
+          "critical_pedestrian": {
+            "kind": "CROSSING",
+            "critical": true,
+            "origin": [
+              -6.933537432714365,
+              -72.4234702353715,
+              0.95
+            ],
+            "target": [
+              -6.925111232325435,
+              -51.82347146322718,
+              0.95
+            ],
+            "start_s": 4.65,
+            "speed_mps": 3.5,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              5.074888052418828,
+              -51.82837992947316,
+              0.95
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_01": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -16.054386138916016,
+              -51.42433166503906,
+              0.15861999988555908
+            ],
+            "target": [
+              -15.619089126586914,
+              -76.88032531738281,
+              0.15861999988555908
+            ],
+            "start_s": 10.85,
+            "speed_mps": 1.8033972221014423,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -3.6190898418426514,
+              -76.88523378362879,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_02": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -34.06788635253906,
+              -75.73222351074219,
+              0.15861999988555908
+            ],
+            "target": [
+              -34.0897331237793,
+              -46.868404388427734,
+              0.15861999988555908
+            ],
+            "start_s": 11.55,
+            "speed_mps": 1.6402143613139213,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -22.089733839035034,
+              -46.87331285467371,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_03": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -58.2379035949707,
+              -45.15869903564453,
+              0.15861999988555908
+            ],
+            "target": [
+              -57.78593826293945,
+              -76.82512664794922,
+              0.15861999988555908
+            ],
+            "start_s": 12.25,
+            "speed_mps": 2.4381808501072335,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -45.78593897819519,
+              -76.8300351141952,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_04": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -57.78593826293945,
+              -76.82512664794922,
+              0.15861999988555908
+            ],
+            "target": [
+              -58.21168518066406,
+              -43.313499450683594,
+              0.15861999988555908
+            ],
+            "start_s": 12.95,
+            "speed_mps": 1.3737586861857896,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -46.2116858959198,
+              -43.31840791692957,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_05": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -62.65076446533203,
+              -50.08611297607422,
+              0.15861999988555908
+            ],
+            "target": [
+              -63.01516342163086,
+              -75.63731384277344,
+              0.15861999988555908
+            ],
+            "start_s": 13.65,
+            "speed_mps": 1.7268924923255518,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -51.0151641368866,
+              -75.64222230901942,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_06": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -70.44014739990234,
+              -76.51131439208984,
+              0.15861999988555908
+            ],
+            "target": [
+              -70.04774475097656,
+              -52.320220947265625,
+              0.15861999988555908
+            ],
+            "start_s": 14.35,
+            "speed_mps": 2.254261558374534,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -58.0477454662323,
+              -52.325129413511604,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_07": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -77.21150207519531,
+              -51.56229782104492,
+              0.15861999988555908
+            ],
+            "target": [
+              -77.28546905517578,
+              -77.09162902832031,
+              0.15861999988555908
+            ],
+            "start_s": 15.05,
+            "speed_mps": 2.447721106056359,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -65.28546977043152,
+              -77.09653749456629,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_08": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -84.6894302368164,
+              -75.3052978515625,
+              0.15861999988555908
+            ],
+            "target": [
+              -84.49925231933594,
+              -44.76914978027344,
+              0.15861999988555908
+            ],
+            "start_s": 15.75,
+            "speed_mps": 2.0253696881470002,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -72.49925303459167,
+              -44.77405824651942,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          }
+        },
+        "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+      },
+      "actual_gates": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-b",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "ego_blueprint": "vehicle.mercedes.coupe_2020",
+      "sensor_configuration": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 1280,
+            "image_size_y": 720,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0.0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 800,
+            "image_size_y": 450,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              -6.0,
+              0.0,
+              3.0
+            ],
+            "rotationDeg": {
+              "pitch": -15.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 32,
+            "points_per_second": 128000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -75
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      },
+      "scheduled_crossings": [
+        {
+          "role": "critical_pedestrian",
+          "origin_error_m": 6.93754981910584e-07,
+          "clock_error_s": 6.929039919612023e-08,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_01",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.6167759930851844e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_02",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.721084110783977e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_03",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.825392246246338e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_04",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.9297003817086988e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_05",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.0340084994074914e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_06",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.1383166348698524e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_07",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.242624752568645e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_08",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.3469328880310059e-07,
+          "crossed_path": true,
+          "direction": -1
+        }
+      ],
+      "native_throughput": [
+        {
+          "mode": "ROBOSPHERE",
+          "native_observations_per_wall_second": 5.212353922844143
+        },
+        {
+          "mode": "NORMAL",
+          "native_observations_per_wall_second": 6.761015398984447
+        }
+      ],
+      "media": {
+        "passed": true,
+        "checks": {
+          "NORMAL": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 6.000000089406967
+          },
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 36.85000054910779
+          },
+          "shared": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 1.5000000216066838
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "shared_prefix": {
+        "status": "READY",
+        "pair_id": "f7eb46c3caa3421a9acd2eff8dfe437f",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_46fbb3b0e0504f459f4e2ef60d183581",
+        "video": "shared-perception.mp4",
+        "sha256": "5d8451cc0ae0d74d7b95d85b230fbee574542ae67ed33ea54510ae2eb4476c03",
+        "frames": 30,
+        "detection_boxes": 216,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      }
+    },
+    {
+      "attempt": "9e20e62fdec04930ab73434b2222dabc",
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "reused": true,
+      "report_sha256": "a45435306da503ba763b5d95f0ff7d63ce2f50eda97c97ac64a30cee5d813927",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\9e20e62fdec04930ab73434b2222dabc\\source.zip",
+        "sha256": "b85e3dbaed163ce829dd3816a1260dcb264704422bb599c9d86c1f1dd38b5452",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "delivery_selected_sources_compatible": true,
+      "scenario": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "id": "crossing-c",
+        "seed": 1703,
+        "parameters": {
+          "id": "crossing-c",
+          "waiting_yaw_offset_deg": 180,
+          "crossing_m": 65.0,
+          "start_s": 4.7,
+          "speed_mps": 3.5,
+          "lateral_m": 4.6,
+          "fixture_seed": 1703,
+          "critical_blueprint": "walker.pedestrian.0001"
+        },
+        "definition_sha256": "b25132517bd7b0358a8484f3a1b88c3a11128565a2a4b647d3dc40de565be206",
+        "validated": false,
+        "library_revision": 17,
+        "critical_role": "critical_pedestrian",
+        "events": {
+          "critical_pedestrian": {
+            "kind": "CROSSING",
+            "critical": true,
+            "origin": [
+              -7.433537402912043,
+              -72.42326571594458,
+              0.95
+            ],
+            "target": [
+              -7.425111202523112,
+              -51.82326694380026,
+              0.95
+            ],
+            "start_s": 4.7,
+            "speed_mps": 3.5,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              4.57488808222115,
+              -51.82817541004624,
+              0.95
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_01": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -17.595727920532227,
+              -51.71236038208008,
+              0.15861999988555908
+            ],
+            "target": [
+              -17.84056282043457,
+              -76.41106414794922,
+              0.15861999988555908
+            ],
+            "start_s": 10.899999999999999,
+            "speed_mps": 1.9256399726820561,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -5.840563535690308,
+              -76.4159726141952,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_02": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -35.697574615478516,
+              -75.93266296386719,
+              0.15861999988555908
+            ],
+            "target": [
+              -35.68097686767578,
+              -42.855384826660156,
+              0.15861999988555908
+            ],
+            "start_s": 11.6,
+            "speed_mps": 2.3189433132592674,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -23.68097758293152,
+              -42.860293292906135,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_03": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -35.68097686767578,
+              -42.855384826660156,
+              0.15861999988555908
+            ],
+            "target": [
+              -35.697574615478516,
+              -75.93266296386719,
+              0.15861999988555908
+            ],
+            "start_s": 12.299999999999999,
+            "speed_mps": 2.312418896647377,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -23.697575330734253,
+              -75.93757143011317,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_04": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -59.961822509765625,
+              -75.46004486083984,
+              0.15861999988555908
+            ],
+            "target": [
+              -59.48258972167969,
+              -44.018409729003906,
+              0.15861999988555908
+            ],
+            "start_s": 13.0,
+            "speed_mps": 1.5382512947750744,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -47.482590436935425,
+              -44.023318195249885,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_05": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -61.143489837646484,
+              -51.83966064453125,
+              0.15861999988555908
+            ],
+            "target": [
+              -61.2547721862793,
+              -76.05484008789062,
+              0.15861999988555908
+            ],
+            "start_s": 13.7,
+            "speed_mps": 1.3149421961232683,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -49.254772901535034,
+              -76.0597485541366,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_06": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -68.8918228149414,
+              -76.47254943847656,
+              0.15861999988555908
+            ],
+            "target": [
+              -68.3742446899414,
+              -50.33150100708008,
+              0.15861999988555908
+            ],
+            "start_s": 14.399999999999999,
+            "speed_mps": 1.586326374374582,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -56.374245405197144,
+              -50.33640947332606,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_07": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -80.91648864746094,
+              -49.5041389465332,
+              0.15861999988555908
+            ],
+            "target": [
+              -81.0882568359375,
+              -76.68450927734375,
+              0.15861999988555908
+            ],
+            "start_s": 15.099999999999998,
+            "speed_mps": 2.2724130610781987,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -69.08825755119324,
+              -76.68941774358973,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_08": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -81.0882568359375,
+              -76.68450927734375,
+              0.15861999988555908
+            ],
+            "target": [
+              -80.91648864746094,
+              -49.5041389465332,
+              0.15861999988555908
+            ],
+            "start_s": 15.799999999999999,
+            "speed_mps": 1.6093841288044577,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -68.91648936271667,
+              -49.50904741277918,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          }
+        },
+        "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+      },
+      "actual_gates": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-c",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "ego_blueprint": "vehicle.mercedes.coupe_2020",
+      "sensor_configuration": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 1280,
+            "image_size_y": 720,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0.0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 800,
+            "image_size_y": 450,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              -6.0,
+              0.0,
+              3.0
+            ],
+            "rotationDeg": {
+              "pitch": -15.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 32,
+            "points_per_second": 128000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -75
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      },
+      "scheduled_crossings": [
+        {
+          "role": "critical_pedestrian",
+          "origin_error_m": 2.1676278867322925e-06,
+          "clock_error_s": 7.00354574334483e-08,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_01",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.6242265843402492e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_02",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.7285347020390418e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_03",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.8328428375014028e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_04",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.9371509552001953e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_05",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 2.0414590906625563e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_06",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.1457672261249172e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_07",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.2500753615872782e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_08",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.3543834792860707e-07,
+          "crossed_path": true,
+          "direction": -1
+        }
+      ],
+      "native_throughput": [
+        {
+          "mode": "NORMAL",
+          "native_observations_per_wall_second": 6.751773150254649
+        },
+        {
+          "mode": "ROBOSPHERE",
+          "native_observations_per_wall_second": 4.947839919260772
+        }
+      ],
+      "media": {
+        "passed": true,
+        "checks": {
+          "NORMAL": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 6.050000090152025
+          },
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 36.950000550597906
+          },
+          "shared": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 1.5000000216066838
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "shared_prefix": {
+        "status": "READY",
+        "pair_id": "102f21d4ea7148b99ae1cd8d2b0493dd",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2bf5e8cf4c4a4caba709cf335bd50866",
+        "video": "shared-perception.mp4",
+        "sha256": "f5c25646dfcdc2e8f6b81d48084da1ae634840ea99c0a27b04b18f85fbc6a96b",
+        "frames": 30,
+        "detection_boxes": 214,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      }
+    },
+    {
+      "attempt": "847c4eb8a7114b4581e7c764f63a1fbd",
+      "seed": 1703,
+      "first_mode": "ROBOSPHERE",
+      "reused": true,
+      "report_sha256": "e557c1d61434362d45e155072a950a06c3fdf42cf95b9fe67e2c5501c1618414",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\847c4eb8a7114b4581e7c764f63a1fbd\\source.zip",
+        "sha256": "6c48145fe72f5491b9e731f6c74b2882a7c4becb1f94b947743f5ff2683b13ff",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "delivery_selected_sources_compatible": true,
+      "scenario": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "id": "crossing-c",
+        "seed": 1703,
+        "parameters": {
+          "id": "crossing-c",
+          "waiting_yaw_offset_deg": 180,
+          "crossing_m": 65.0,
+          "start_s": 4.7,
+          "speed_mps": 3.5,
+          "lateral_m": 4.6,
+          "fixture_seed": 1703,
+          "critical_blueprint": "walker.pedestrian.0001"
+        },
+        "definition_sha256": "b25132517bd7b0358a8484f3a1b88c3a11128565a2a4b647d3dc40de565be206",
+        "validated": false,
+        "library_revision": 17,
+        "critical_role": "critical_pedestrian",
+        "events": {
+          "critical_pedestrian": {
+            "kind": "CROSSING",
+            "critical": true,
+            "origin": [
+              -7.433537402912043,
+              -72.42326571594458,
+              0.95
+            ],
+            "target": [
+              -7.425111202523112,
+              -51.82326694380026,
+              0.95
+            ],
+            "start_s": 4.7,
+            "speed_mps": 3.5,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              4.57488808222115,
+              -51.82817541004624,
+              0.95
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_01": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -17.595727920532227,
+              -51.71236038208008,
+              0.15861999988555908
+            ],
+            "target": [
+              -17.84056282043457,
+              -76.41106414794922,
+              0.15861999988555908
+            ],
+            "start_s": 10.899999999999999,
+            "speed_mps": 1.9256399726820561,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -5.840563535690308,
+              -76.4159726141952,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_02": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -35.697574615478516,
+              -75.93266296386719,
+              0.15861999988555908
+            ],
+            "target": [
+              -35.68097686767578,
+              -42.855384826660156,
+              0.15861999988555908
+            ],
+            "start_s": 11.6,
+            "speed_mps": 2.3189433132592674,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -23.68097758293152,
+              -42.860293292906135,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_03": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -35.68097686767578,
+              -42.855384826660156,
+              0.15861999988555908
+            ],
+            "target": [
+              -35.697574615478516,
+              -75.93266296386719,
+              0.15861999988555908
+            ],
+            "start_s": 12.299999999999999,
+            "speed_mps": 2.312418896647377,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -23.697575330734253,
+              -75.93757143011317,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_04": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -59.961822509765625,
+              -75.46004486083984,
+              0.15861999988555908
+            ],
+            "target": [
+              -59.48258972167969,
+              -44.018409729003906,
+              0.15861999988555908
+            ],
+            "start_s": 13.0,
+            "speed_mps": 1.5382512947750744,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -47.482590436935425,
+              -44.023318195249885,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_05": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -61.143489837646484,
+              -51.83966064453125,
+              0.15861999988555908
+            ],
+            "target": [
+              -61.2547721862793,
+              -76.05484008789062,
+              0.15861999988555908
+            ],
+            "start_s": 13.7,
+            "speed_mps": 1.3149421961232683,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -49.254772901535034,
+              -76.0597485541366,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_06": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -68.8918228149414,
+              -76.47254943847656,
+              0.15861999988555908
+            ],
+            "target": [
+              -68.3742446899414,
+              -50.33150100708008,
+              0.15861999988555908
+            ],
+            "start_s": 14.399999999999999,
+            "speed_mps": 1.586326374374582,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -56.374245405197144,
+              -50.33640947332606,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_07": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -80.91648864746094,
+              -49.5041389465332,
+              0.15861999988555908
+            ],
+            "target": [
+              -81.0882568359375,
+              -76.68450927734375,
+              0.15861999988555908
+            ],
+            "start_s": 15.099999999999998,
+            "speed_mps": 2.2724130610781987,
+            "direction": 1,
+            "repeat": false,
+            "exit_target": [
+              -69.08825755119324,
+              -76.68941774358973,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          },
+          "crossing_08": {
+            "kind": "CROSSING",
+            "critical": false,
+            "origin": [
+              -81.0882568359375,
+              -76.68450927734375,
+              0.15861999988555908
+            ],
+            "target": [
+              -80.91648864746094,
+              -49.5041389465332,
+              0.15861999988555908
+            ],
+            "start_s": 15.799999999999999,
+            "speed_mps": 1.6093841288044577,
+            "direction": -1,
+            "repeat": false,
+            "exit_target": [
+              -68.91648936271667,
+              -49.50904741277918,
+              0.15861999988555908
+            ],
+            "sidewalk_speed_mps": 1.3
+          }
+        },
+        "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+      },
+      "actual_gates": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-c",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "ego_blueprint": "vehicle.mercedes.coupe_2020",
+      "sensor_configuration": {
+        "collision": {
+          "blueprint": "sensor.other.collision",
+          "attributes": {},
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.0,
+          "requestedRateHz": null
+        },
+        "frontCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 1280,
+            "image_size_y": 720,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0.0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "drivingCamera": {
+          "blueprint": "sensor.camera.rgb",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 800,
+            "image_size_y": 450,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0,
+            "enable_postprocess_effects": "true",
+            "motion_blur_intensity": 0.0,
+            "motion_blur_max_distortion": 0,
+            "bloom_intensity": 0.0,
+            "gamma": 2.2
+          },
+          "mountTransform": {
+            "positionM": [
+              -6.0,
+              0.0,
+              3.0
+            ],
+            "rotationDeg": {
+              "pitch": -15.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "depth": {
+          "blueprint": "sensor.camera.depth",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "image_size_x": 640,
+            "image_size_y": 360,
+            "fov": 90,
+            "lens_k": 0,
+            "lens_kcube": 0
+          },
+          "mountTransform": {
+            "positionM": [
+              1.5,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "radar": {
+          "blueprint": "sensor.other.radar",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "horizontal_fov": 30,
+            "vertical_fov": 20,
+            "points_per_second": 1500
+          },
+          "mountTransform": {
+            "positionM": [
+              2.5,
+              0.0,
+              0.6499999761581421
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "lidar": {
+          "blueprint": "sensor.lidar.ray_cast",
+          "attributes": {
+            "sensor_tick": 0.05,
+            "range": 100,
+            "channels": 32,
+            "points_per_second": 128000,
+            "rotation_frequency": 20.0,
+            "upper_fov": 10,
+            "lower_fov": -75
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.899999976158142
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "imu": {
+          "blueprint": "sensor.other.imu",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        },
+        "gnss": {
+          "blueprint": "sensor.other.gnss",
+          "attributes": {
+            "sensor_tick": 0.05
+          },
+          "mountTransform": {
+            "positionM": [
+              0.0,
+              0.0,
+              1.600000023841858
+            ],
+            "rotationDeg": {
+              "pitch": 0.0,
+              "yaw": 0.0,
+              "roll": 0.0
+            }
+          },
+          "sensorTickSeconds": 0.05,
+          "requestedRateHz": 20.0
+        }
+      },
+      "scheduled_crossings": [
+        {
+          "role": "critical_pedestrian",
+          "origin_error_m": 2.1676278867322925e-06,
+          "clock_error_s": 7.00354574334483e-08,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_01",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.6242265843402492e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_02",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.7285347020390418e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_03",
+          "origin_error_m": 0.0,
+          "clock_error_s": 1.8328428375014028e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_04",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 1.9371509552001953e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_05",
+          "origin_error_m": 3.814697265625e-06,
+          "clock_error_s": 2.0414590906625563e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_06",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.1457672261249172e-07,
+          "crossed_path": true,
+          "direction": -1
+        },
+        {
+          "role": "crossing_07",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.2500753615872782e-07,
+          "crossed_path": true,
+          "direction": 1
+        },
+        {
+          "role": "crossing_08",
+          "origin_error_m": 0.0,
+          "clock_error_s": 2.3543834792860707e-07,
+          "crossed_path": true,
+          "direction": -1
+        }
+      ],
+      "native_throughput": [
+        {
+          "mode": "ROBOSPHERE",
+          "native_observations_per_wall_second": 5.200515149028749
+        },
+        {
+          "mode": "NORMAL",
+          "native_observations_per_wall_second": 6.6052398852806755
+        }
+      ],
+      "media": {
+        "passed": true,
+        "checks": {
+          "NORMAL": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 6.050000090152025
+          },
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 36.6000005453825
+          },
+          "shared": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 1.5000000216066838
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "shared_prefix": {
+        "status": "READY",
+        "pair_id": "134321eaf72f49f8bb5cb79c87026a97",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7756b00d0da246c78671e9054ee060c0",
+        "video": "shared-perception.mp4",
+        "sha256": "f45e88ac17ed9b7b73ff30cfca6556ec15c2221053a7c53e32e794d4338d168e",
+        "frames": 30,
+        "detection_boxes": 185,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      }
+    }
+  ]
+}

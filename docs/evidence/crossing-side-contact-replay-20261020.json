@@ -1,0 +1,233 @@
+{
+  "scope": "OFFLINE_SENSOR_REPLAY_NOT_CLOSED_LOOP_AVOIDANCE",
+  "failed_recording": "run_f403f881243345f3b8f9cc522bd1747c",
+  "failure": "CROSSING_01_CONTACTED_STATIONARY_EGO_WHILE_EGO_HELD_FOR_ANOTHER_FORWARD_CROSSING",
+  "uses_native_actor_poses_for_control": false,
+  "pedestrian_schedule_changed": false,
+  "sampled_frames": 23,
+  "frames_with_verified_capped_progress": 10,
+  "rows": [
+    {
+      "elapsed_s": 13.5,
+      "original_reason": "Measured moving object approaches the driving path; object type unconfirmed",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-51",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.4
+      }
+    },
+    {
+      "elapsed_s": 13.75,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-51",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.4
+      }
+    },
+    {
+      "elapsed_s": 14.0,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-51",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.4
+      }
+    },
+    {
+      "elapsed_s": 14.25,
+      "original_reason": "NAVIGATION",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 14.5,
+      "original_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 14.75,
+      "original_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 15.0,
+      "original_reason": "NAVIGATION",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 15.25,
+      "original_reason": "NAVIGATION",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 15.5,
+      "original_reason": "NAVIGATION",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 15.75,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-89",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 4.0,
+        "time_s": 2.5
+      }
+    },
+    {
+      "elapsed_s": 16.0,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-89",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 4.0,
+        "time_s": 2.8
+      }
+    },
+    {
+      "elapsed_s": 16.25,
+      "original_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 16.5,
+      "original_reason": "NAVIGATION",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 16.75,
+      "original_reason": "NAVIGATION",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": null
+    },
+    {
+      "elapsed_s": 17.0,
+      "original_reason": "CONTROL_PROCESSING_DEADLINE",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": {
+        "track_id": "depth-person-72",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.6
+      }
+    },
+    {
+      "elapsed_s": 17.25,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "person",
+        "source": "PEDESTRIAN_POSSIBLE_START",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.4
+      }
+    },
+    {
+      "elapsed_s": 17.5,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.7
+      }
+    },
+    {
+      "elapsed_s": 17.75,
+      "original_reason": "Measured moving object approaches the driving path; object type unconfirmed",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.8
+      }
+    },
+    {
+      "elapsed_s": 18.0,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.8
+      }
+    },
+    {
+      "elapsed_s": 18.25,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.8
+      }
+    },
+    {
+      "elapsed_s": 18.5,
+      "original_reason": "CONTROL_PROCESSING_DEADLINE",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.3
+      }
+    },
+    {
+      "elapsed_s": 18.75,
+      "original_reason": "CONTROL_PROCESSING_DEADLINE",
+      "verified_speed_cap_mps": null,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.3
+      }
+    },
+    {
+      "elapsed_s": 19.0,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "verified_speed_cap_mps": 4.0,
+      "recomputed_conflict": {
+        "track_id": "depth-person-106",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.9
+      }
+    }
+  ]
+}

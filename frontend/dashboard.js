@@ -339,7 +339,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)inspectWith
 window.addEventListener('pagehide',()=>{
   const held=['AWAITING_NEXT','RESULTS','FINISHING','COMPLETE'].includes(provider.presentation?.status)||
     provider.presentation?.status==='CHOOSING'&&provider.presentation?.awaiting_choice;
-  if(held)resetKeys();else clearControls('page_closed');
+  if(held||keepJourneyOnInspection(provider,document.hidden)&&!manualOverridePending)resetKeys();else clearControls('page_closed');
   clearCamera();provider.close();
 });
 provider.connect(); refresh(); setInterval(refresh,50);

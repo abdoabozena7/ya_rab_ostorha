@@ -100,7 +100,7 @@ export function installDemoDrive(p,tools,clearControls) {
     $('simpleSpeed').disabled=$('simpleTraffic').disabled=locked;
     $('simpleDestination').textContent=p.route?.destination?.name||'Choose a destination on the map';
     const actions={FOLLOW:'Following the route',SLOW:'Slowing down',DECELERATE:'Slowing down',EXIT:'Changing lanes',PASS:'Passing an obstacle',RETURN:'Returning to the route',REVERSE:'Repositioning in reverse',HOLD:'Waiting for measured space'};
-    let message=p.recordingStatus?.error?demoFailure(p.recordingStatus.error):p.operationError?demoFailure(p.operationError):!available&&p.connected?'Hybrid driving is awaiting native acceptance. Restart uses the existing Robosphere and Normal drivers.':active?'Driving · '+(actions[p.maneuver?.action]||'Following the route'):p.journey?.status==='ARRIVED'?'Destination reached.':p.lastDriveStop?.detail?demoFailure(p.lastDriveStop.detail):'Choose a destination, speed and traffic, then start driving.';
+    let message=p.recordingStatus?.error?demoFailure(p.recordingStatus.error):p.operationError?demoFailure(p.operationError):!available&&p.connected?'Hybrid driving is awaiting native acceptance. Restart uses the existing Ya Rab Ostorha and Normal drivers.':active?'Driving · '+(actions[p.maneuver?.action]||'Following the route'):p.journey?.status==='ARRIVED'?'Destination reached.':p.lastDriveStop?.detail?demoFailure(p.lastDriveStop.detail):'Choose a destination, speed and traffic, then start driving.';
     if(active&&p.stopDiagnostics?.braking&&p.journey?.driving_mode==='HYBRID')message=controlReasonText(p.stopDiagnostics.reason);
     if(p.hybridDriving?.validation_active&&!p.hybridDriving?.accepted)message='Bounded native diagnostic · '+message;
     const result=p.dashboardResult;
@@ -127,7 +127,7 @@ export function installDemoDrive(p,tools,clearControls) {
     results.hidden=!benchmark;$('ordinaryComparison').hidden=benchmark;
     const heading=$('resultsPhase').querySelector('.analysis-heading');
     heading.querySelector('h2').textContent=benchmark?'Comparison results':'Comparison results';
-    heading.querySelector('p').textContent=benchmark?'CARLA normal driver and hybrid system':'Your driving, with and without Robosphere.';
+    heading.querySelector('p').textContent=benchmark?'CARLA normal driver and hybrid system':'Your driving, with and without Ya Rab Ostorha.';
     if(benchmark){
       if(renderPair!==data.pair_id){linkedPlayback=false;playbackLeader=null;renderPair=data.pair_id;for(const v of Object.values(videos)){v.video.pause();v.key=null;v.status='MISSING';v.error=null;v.duration_s=null;v.video.removeAttribute('src');}}
       $('hybridPairStatus').textContent=data.conditions_match?'Matching initial conditions verified. Reactive traffic can diverge during the runs.':'The comparison is incomplete or its initial conditions are unverified.';

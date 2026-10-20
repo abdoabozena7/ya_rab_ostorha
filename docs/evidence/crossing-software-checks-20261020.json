@@ -1,0 +1,42 @@
+{
+  "scope": "FINAL_SOFTWARE_CHECKS_WITH_NATIVE_ACCEPTANCE_RECORDED_SEPARATELY",
+  "utc": "2026-10-20T17:46:30.399559+00:00",
+  "dashboard_build": "PASS",
+  "javascript": {
+    "passed": 178,
+    "failed": 0
+  },
+  "python": {
+    "discovered": 759,
+    "passed": 757,
+    "skipped": 2,
+    "failed": 0
+  },
+  "separate_production_perception_environment": {
+    "passed": 1
+  },
+  "skips": [
+    "Optional OpenCV detector check in the control environment; separately passed in .venv-perception.",
+    "API-absence check is inapplicable because the CARLA wheel is installed."
+  ],
+  "logs": {
+    "crossing-build-tests.txt": {
+      "local_path": "output/crossing-build-tests.txt",
+      "sha256": "6e7d82767a455865fcbfcf070a685dbbcd04191b5b5ace82e390825ff59c4a63"
+    },
+    "crossing-js-tests.txt": {
+      "local_path": "output/crossing-js-tests.txt",
+      "sha256": "414022c4f41820de7b036b351e1ca96db3b9e84cb6b37f6660bc38993fca9628"
+    },
+    "crossing-python-tests.txt": {
+      "local_path": "output/crossing-python-tests.txt",
+      "sha256": "af2818ee331a649018809cf7f176b1282df771302f7493156832c003d8fbc85c"
+    },
+    "crossing-perception-quality-tests.txt": {
+      "local_path": "output/crossing-perception-quality-tests.txt",
+      "sha256": "9474632ac40e04e7b74090be5144ee925e780cfe1e2214d51763ba2155bb2519"
+    }
+  },
+  "native_matrix": "crossing-six-pairs-20261020.json",
+  "native_browser": "crossing-browser-native-20261020.json"
+}

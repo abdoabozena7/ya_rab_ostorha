@@ -1,0 +1,380 @@
+{
+  "scope": "RETAINED_NATIVE_UI_TRIAL_WITH_A_VERIFICATION_PROBE_FAILURE",
+  "source_archive": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-browser-delivery-20261020\\source.zip",
+    "sha256": "0d5b1ae5f8ac682152566196dcb4b3c3ba8d67c0202061886769cb69e48e308e",
+    "files": 253,
+    "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+  },
+  "source_unchanged": true,
+  "application_errors": [],
+  "comparison": {
+    "pair_id": "e95c059833d44ea0baf78d6c95f493aa",
+    "validation": {
+      "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+      "scenario_id": "crossing-b",
+      "passed": true,
+      "gates": {
+        "both_recorded": true,
+        "normal_pedestrian_collision": true,
+        "project_arrived_without_contact": true,
+        "initial_conditions_verified": true,
+        "same_requested_speed": true,
+        "same_detector": true,
+        "same_scenario": true,
+        "scheduled_crossing_origins_verified": true,
+        "critical_crossing_realized": true
+      },
+      "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+    },
+    "runs": {
+      "NORMAL": {
+        "id": "e6054bf5eb644a12ab72b98450ef7941",
+        "status": "COLLISION",
+        "reason": "collision",
+        "collisions": 1,
+        "distance_m": 63.77612231223536,
+        "duration_s": 5.900000087916851
+      },
+      "ROBOSPHERE": {
+        "id": "889cf654c1934cf28015ffd6db876ce5",
+        "status": "ARRIVED",
+        "reason": "destination_reached",
+        "collisions": 0,
+        "distance_m": 262.6705414356237,
+        "duration_s": 32.9000004902482
+      }
+    }
+  },
+  "shutdown": {
+    "available": true,
+    "status": "STOPPED",
+    "launch": {
+      "quality": "Low",
+      "resolution": "1280x720",
+      "offscreen": true,
+      "renderer": "D3D12",
+      "render_profile": "LOW",
+      "source": "VERIFIED_NATIVE_PROCESS"
+    },
+    "presentation": {
+      "id": "b0781790214b464183923972ee02ad07",
+      "status": "COMPLETE",
+      "speed_kmh": 120,
+      "outcome": "VERIFIED_COMPARISON",
+      "failures": [],
+      "recovery": null,
+      "guided": true,
+      "automatic_pair": true,
+      "scene": "DENSE_CHAOS",
+      "next_requests": {},
+      "seed": 1778822524,
+      "modes": [
+        "NORMAL",
+        "ROBOSPHERE"
+      ],
+      "arm": 1,
+      "pair_id": "e95c059833d44ea0baf78d6c95f493aa",
+      "events": [
+        {
+          "status": "STOPPING",
+          "wall_s": 286921.4054052,
+          "timestamp_s": 7.754552878439426
+        },
+        {
+          "status": "PREPARING",
+          "wall_s": 286921.478733,
+          "timestamp_s": 7.8045528791844845
+        },
+        {
+          "status": "READY",
+          "wall_s": 286923.7208523,
+          "timestamp_s": 7.904552880674601
+        },
+        {
+          "status": "CHOOSING",
+          "wall_s": 286932.9375792,
+          "timestamp_s": 11.0045529268682
+        },
+        {
+          "status": "SELECTING",
+          "wall_s": 286933.0948909,
+          "timestamp_s": 11.104552928358316
+        },
+        {
+          "status": "READY",
+          "wall_s": 286933.3721785,
+          "timestamp_s": 11.154552929103374
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 286934.67819310003,
+          "timestamp_s": 11.654552936553955
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 286938.1172152,
+          "timestamp_s": 13.204552959650755
+        },
+        {
+          "status": "FINALIZING",
+          "wall_s": 286959.0522744,
+          "timestamp_s": 19.104553047567606
+        },
+        {
+          "status": "RESTORING",
+          "wall_s": 286962.01435990003,
+          "timestamp_s": 20.854553073644638
+        },
+        {
+          "status": "READY",
+          "wall_s": 286963.4825239,
+          "timestamp_s": 20.904553074389696
+        },
+        {
+          "status": "STARTING",
+          "wall_s": 286965.0434816,
+          "timestamp_s": 21.404553081840277
+        },
+        {
+          "status": "DRIVING",
+          "wall_s": 286970.2758745,
+          "timestamp_s": 22.954553104937077
+        },
+        {
+          "status": "FINALIZING",
+          "wall_s": 287125.1232426,
+          "timestamp_s": 55.85455359518528
+        },
+        {
+          "status": "RESULTS",
+          "wall_s": 287125.3389848,
+          "timestamp_s": 55.90455359593034
+        },
+        {
+          "status": "FINISHING",
+          "wall_s": 287764.2732543,
+          "timestamp_s": 524.9045605845749
+        },
+        {
+          "status": "COMPLETE",
+          "wall_s": 287764.30721410003,
+          "timestamp_s": 524.9045605845749
+        }
+      ],
+      "source": "LIVE_NATIVE_CARLA",
+      "comparison_note": "Both drivers use sensor obstacle braking. Ya Rab Ostorha adds predictive RULE. The same Mercedes and sensor rig are used; traffic can react differently after release.",
+      "preloaded": true,
+      "awaiting_choice": false,
+      "vehicle_variants": true,
+      "page_id": "4bd56afb-0cdb-4886-97d0-0d52a0ec3160",
+      "setup": {
+        "destination": {
+          "map": "Carla/Maps/Town10HD_Opt",
+          "location": [
+            -114.2754135131836,
+            47.62446594238281,
+            0
+          ],
+          "name": "Presentation destination"
+        },
+        "route_length_m": 266.46573230486626,
+        "origin_index": 152,
+        "planned_vehicle_capacity": 24,
+        "population_pending": false,
+        "requested_route_vehicles": 60,
+        "requested_route_pedestrians": 100,
+        "scene": "DENSE_CHAOS",
+        "speed_kmh": 120,
+        "scenario_seed": 1702,
+        "selection_seed": 1778822524,
+        "population": {
+          "vehicle_count": 60,
+          "pedestrian_count": 100,
+          "speed_behavior": "NORMAL",
+          "seed": 1702,
+          "fast_walk_percent": 20,
+          "driver_behavior": "NORMAL",
+          "light_compliance_percent": 100,
+          "world_profile": "TRAINING_DEVELOPMENT",
+          "crossing_percent": 0,
+          "chaos_percent": 0,
+          "placement": "EGO_SURROUNDING",
+          "vehicle_mix": "MIXED"
+        }
+      },
+      "population_audit": {
+        "frame_id": 229,
+        "counts": {
+          "vehicles": {
+            "total": 60,
+            "near_120m": 44,
+            "front_frustum_100m": 7,
+            "moving_near": 41,
+            "moving_front_frustum": 7
+          },
+          "pedestrians": {
+            "total": 100,
+            "near_120m": 50,
+            "front_frustum_100m": 40,
+            "moving_near": 45,
+            "moving_front_frustum": 35
+          }
+        },
+        "requested": {
+          "vehicles": 60,
+          "pedestrians": 100
+        },
+        "passed": true,
+        "pending": false,
+        "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+        "density_passed": true,
+        "motion_passed": true,
+        "motion_measurement_ready": true,
+        "motion_window_s": 1.0000000149011612,
+        "motion_sample_age_s": 0,
+        "observations": {}
+      },
+      "prepared_condition_id": "28daf9b58c0274767a3d706c468c5ab1494895722d753bdfea76c6d0df694e22",
+      "runs": {
+        "NORMAL": {
+          "id": "e6054bf5eb644a12ab72b98450ef7941",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_bc78281922704b43a8c9bdd67eaf9e42",
+          "distance_m": 63.77612231223536,
+          "collisions": 1,
+          "duration_s": 5.900000087916851
+        },
+        "ROBOSPHERE": {
+          "id": "889cf654c1934cf28015ffd6db876ce5",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cfe8400afc9b40ee89fcd8f9978d922a",
+          "distance_m": 262.6705414356237,
+          "collisions": 0,
+          "duration_s": 32.9000004902482
+        }
+      },
+      "conditions_match": true,
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "e95c059833d44ea0baf78d6c95f493aa",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_bc78281922704b43a8c9bdd67eaf9e42",
+        "video": "shared-perception.mp4",
+        "sha256": "077160c6cedf7045ad9902ae09dc6887a93ad37060a527be5ce22e79f5bbde91",
+        "frames": 30,
+        "detection_boxes": 197,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "finish_requested": true,
+      "completed_pair_id": "e95c059833d44ea0baf78d6c95f493aa",
+      "videos": {
+        "NORMAL": {
+          "status": "READY",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+          "clock": "SIMULATION_TIME",
+          "frames": 121,
+          "first_timestamp_s": 13.154552958905697,
+          "last_timestamp_s": 19.154553048312664,
+          "duration_s": 6.000000089406967,
+          "video": "driving.mp4",
+          "sha256": "e700279d9b6051bb13f29942e8aecca6f960c7ff497bc570b1b40a8fe4273ed7",
+          "frame_index": "telemetry/video-frames.jsonl",
+          "clock_zero_timestamp_s": 13.154552958905697,
+          "alignment_source": "ADMITTED_JOURNEY_START",
+          "maximum_frame_gap_s": 0.05000000074505806,
+          "variants": {
+            "raw": {
+              "status": "READY",
+              "video": "driving.mp4",
+              "sha256": "e700279d9b6051bb13f29942e8aecca6f960c7ff497bc570b1b40a8fe4273ed7",
+              "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+            },
+            "annotated": {
+              "status": "READY",
+              "video": "driving-annotated.mp4",
+              "sha256": "d7a363f06e17a1428797af5ed1cb32b3826db654bb4281d3d48ebc32c48fa393",
+              "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+              "overlay": {
+                "status": "READY",
+                "predictive": false,
+                "forecast_frames": 0,
+                "rendered_paths": 0,
+                "maximum_forecast_age_s": 0.75,
+                "available_forecast_frames": 0,
+                "no_selected_risk_frames": 0,
+                "missing_forecast_frames": 0
+              }
+            }
+          },
+          "annotation_required": true,
+          "preferred_video": "driving-annotated.mp4"
+        },
+        "ROBOSPHERE": {
+          "status": "READY",
+          "source": "RECORDED_NATIVE_DRIVING_CAMERA",
+          "clock": "SIMULATION_TIME",
+          "frames": 660,
+          "first_timestamp_s": 22.90455310419202,
+          "last_timestamp_s": 55.85455359518528,
+          "duration_s": 32.95000049099326,
+          "video": "driving.mp4",
+          "sha256": "3a02ab16bd8c501bfa3d1dbdd197c34bac7f2ec20876dbb76309decada7f62c3",
+          "frame_index": "telemetry/video-frames.jsonl",
+          "clock_zero_timestamp_s": 22.90455310419202,
+          "alignment_source": "ADMITTED_JOURNEY_START",
+          "maximum_frame_gap_s": 0.05000000074505806,
+          "variants": {
+            "raw": {
+              "status": "READY",
+              "video": "driving.mp4",
+              "sha256": "3a02ab16bd8c501bfa3d1dbdd197c34bac7f2ec20876dbb76309decada7f62c3",
+              "source": "RECORDED_NATIVE_DRIVING_CAMERA"
+            },
+            "annotated": {
+              "status": "READY",
+              "video": "driving-annotated.mp4",
+              "sha256": "36c9d3af472ffa5589a0a1f431479d127ed7aae3002331269011db10c84f6160",
+              "source": "RECORDED_NATIVE_DRIVING_CAMERA_WITH_MEASURED_OVERLAY",
+              "overlay": {
+                "status": "READY",
+                "predictive": true,
+                "forecast_frames": 87,
+                "rendered_paths": 109,
+                "maximum_forecast_age_s": 0.75,
+                "available_forecast_frames": 660,
+                "no_selected_risk_frames": 573,
+                "missing_forecast_frames": 0
+              }
+            }
+          },
+          "annotation_required": true,
+          "preferred_video": "driving-annotated.mp4"
+        }
+      },
+      "progress": {
+        "stage": "COMPLETE",
+        "busy": false
+      }
+    },
+    "cleanup_warning": null,
+    "process_exited": true
+  },
+  "rejection": "VERIFICATION_FOCUS_EMULATION_ASSUMPTION_NOT_AN_APPLICATION_FAULT",
+  "note": "Playwright defaults to focus emulation. Both pages reported visible/focused, so the hidden-page assertion was not exercised. Full physical runs and manual Finish were retained; this trial is not full UI acceptance."
+}

@@ -20,6 +20,23 @@ class Presentation:
         self.data = {'status': 'IDLE', 'id': None}
         self.directory = Path(__file__).resolve().parents[2] / 'output/presentations'
         self.phase_at = 0.
+        self._vision_clock_hold=None
+
+    def _set_vision_hold(self,hold):
+        """Stop actual held-world ticks while CPU vision catches this frame.
+
+        No recording or movement has been admitted in READY. Old packet wall
+        ages remain unchanged: STARTING still requires new fresh sensor frames
+        after the real simulation clock resumes.
+        """
+        s=self.service;world=getattr(s.provider,'world',None)
+        if world is None or type(getattr(world,'paused',None))is not bool:return
+        if hold and self._vision_clock_hold is None:
+            self._vision_clock_hold=(s.paused,world.paused)
+            s.paused=True;world.paused=True
+        elif not hold and self._vision_clock_hold is not None:
+            s.paused,world.paused=self._vision_clock_hold
+            self._vision_clock_hold=None
 
     @property
     def busy(self):
@@ -30,6 +47,7 @@ class Presentation:
             if expected_id is not None and self.data.get('id')!=expected_id:return False
             if expected is not None and self.data['status'] != expected:
                 return False
+            if status!='READY':self._set_vision_hold(False)
             self.data.update(status=status, **values)
             self.phase_at = self.service.now()
             self.data.setdefault('events', []).append({'status': status, 'wall_s': self.phase_at,
@@ -68,11 +86,11 @@ class Presentation:
         s.stop_driving('presentation_restart')
         self.data = {'id': uuid.uuid4().hex, 'status': 'IDLE', 'speed_kmh': float(speed),
             'outcome':'PENDING','failures':[],'recovery':None,
-            'guided':bool(guided), 'scene':scene, 'next_requests':{},
+            'guided':bool(guided), 'automatic_pair':bool(guided), 'scene':scene, 'next_requests':{},
             'seed': secrets.randbelow(2147483648) if seed is None else seed,
             'modes': [first_mode, next(m for m in self.MODES if m!=first_mode)] if guided else list(self.MODES), 'arm': 0,
             'pair_id': None, 'events': [], 'source': 'LIVE_NATIVE_CARLA',
-            'comparison_note': 'Both drivers use sensor obstacle braking. Robosphere adds predictive RULE. The same Mercedes and sensor rig are used; traffic can react differently after release.'}
+            'comparison_note': 'Both drivers use sensor obstacle braking. Ya Rab Ostorha adds predictive RULE. The same Mercedes and sensor rig are used; traffic can react differently after release.'}
         self.transition('STOPPING')
 
     def preload(self, page_id=None, *, replace=False):
@@ -119,6 +137,8 @@ class Presentation:
             d=self.data
             if not d.get('guided') or presentation_id!=d.get('id') or type(expected_arm) is not int:
                 raise ValueError('This action belongs to another drive')
+            if d.get('automatic_pair'):
+                raise ValueError('This comparison records to arrival or contact; use Emergency stop to stop it explicitly')
             if d['status'] in ('CANCELLED','ERROR'):raise ValueError('This session no longer accepts a transition')
             if d.setdefault('next_requests',{}).get(str(expected_arm)):return
             if expected_arm!=d.get('arm'):raise ValueError('This action belongs to another drive')
@@ -178,6 +198,8 @@ class Presentation:
                 for mode,video in self.video_states().items():
                     if video.get('status')=='ERROR':
                         retry_export(Path(self.service.journey_comparison.data['runs'][mode]['recording']))
+                from .shared_perception import ensure_shared
+                ensure_shared(self.service.journey_comparison.data,retry=True)
                 self.data.pop('finish_error',None)
             self.transition('FINISHING',finish_requested=True,completed_pair_id=self.data.get('pair_id'))
 
@@ -224,7 +246,38 @@ class Presentation:
                 states[mode] = {'status': 'PENDING'}
         return states
 
+    def _prepare_native(self,operation,*args,**kwargs):
+        """A stopped construction RPC is not a missing driving observation.
+
+        The ordinary bounded preparation deadline still applies. READY requires
+        subsequent real frames before controls or recording can be admitted.
+        """
+        s=self.service;s.reconfiguring=True
+        previous=getattr(getattr(getattr(s.provider,'ego',None),'actor',None),'id',None)
+        try:
+            result=operation(*args,**kwargs)
+            current=getattr(getattr(getattr(s.provider,'ego',None),'actor',None),'id',None)
+            if previous is not None and current!=previous:
+                from .timing import SensorSynchronizer
+                s.synchronizer=SensorSynchronizer(s._required_after_sensor_rebuild(),s.synchronizer.optional,
+                    timeout_s=s.synchronizer.timeout_s,now=s.now)
+                s.camera_cache.clear();s.sensor_frame_cache.clear();s.render_pose_cache.clear()
+                s.policy_history.clear();s.motion_snapshot=None
+            return result
+        finally:s.state_at=s.now();s.reconfiguring=False
+
     def tick(self):
+        if self.data['status'] in ('RESULTS','FINISHING','COMPLETE') and self.data.get('automatic_pair'):
+            from .shared_perception import ensure_shared
+            current_id=self.data.get('id')
+            common=ensure_shared(self.service.journey_comparison.data)
+            if current_id!=self.data.get('id'):return
+            if common and common.get('status')=='WAITING_FOR_RECORDINGS' and len(self.service.journey_comparison.data.get('runs',{}))<2:
+                common={'status':'UNAVAILABLE','reason':'The comparison ended before both recordings could be made.'}
+            if common!=self.data.get('shared_perception'):
+                self.data['shared_perception']=common
+                self.service.journey_comparison.data['shared_perception']=common
+                self.service.journey_comparison.save();self.save()
         if not self.busy:
             return
         s = self.service
@@ -247,19 +300,26 @@ class Presentation:
                 if any(video.get('status')=='ERROR' for video in states.values()):
                     advance('RESULTS',finish_requested=False,finish_error='Video export needs attention. The original recordings and results are saved; retry Finish to export again.')
                     return
+                common=self.data.get('shared_perception')
+                if self.data.get('automatic_pair') and common and common.get('status')=='ERROR':
+                    advance('RESULTS',finish_requested=False,finish_error='The shared camera export needs attention: '+common.get('error','Unknown export fault'))
+                    return
                 if not s.recorder and (not s.last_recording or s.last_recording.closed):
                     def ready(mode):
                         video=states.get(mode,{})
                         return video.get('status')=='READY' and (not video.get('annotation_required') or
                             video.get('variants',{}).get('annotated',{}).get('status')=='READY')
-                    if all(ready(mode) for mode in self.MODES):
+                    shared_ready=not self.data.get('automatic_pair') or common and common.get('status') in ('READY','UNAVAILABLE')
+                    required=[m for m in self.MODES if m in s.journey_comparison.data.get('runs',{})] if self.data.get('automatic_pair') else self.MODES
+                    if required and all(ready(mode) for mode in required) and shared_ready:
                         with s.lock:
                             if advance('COMPLETE'):s.stop_simulator()
                 return
             if phase not in ('CHOOSING','AWAITING_NEXT','RESULTS') and not s._navigation_connection_alive() and s.now()-self.phase_at > 2:
                 self.fail('dashboard_disconnected')
                 return
-            if phase not in ('CHOOSING','AWAITING_NEXT','RESULTS') and s.now()-self.phase_at > (600 if phase in ('DRIVING', 'STARTING', 'PLAYBACK') else 180):
+            if (phase not in ('CHOOSING','AWAITING_NEXT','RESULTS') and not (phase=='DRIVING' and self.data.get('automatic_pair'))
+                    and s.now()-self.phase_at > (600 if phase in ('DRIVING', 'STARTING', 'PLAYBACK') else 180)):
                 self.fail('presentation_phase_timeout: ' + phase)
                 return
             closed = not s.recorder and (not s.last_recording or s.last_recording.closed)
@@ -267,24 +327,34 @@ class Presentation:
             if phase == 'STOPPING' and stopped and closed:
                 advance('PREPARING')
             elif phase == 'PREPARING':
-                # This changes a held ego/route/population, not the sensor rig.
+                # A guided start normalizes the held car/rig before capture.
                 # Keep the owner socket and its stop controls live while the
                 # sole tick worker prepares it. A stop must survive completion.
                 setup=self.data.get('setup')
                 if setup and setup.get('population_pending'):
                     if s.observation.frame_id<self.ready_frame:return
-                    setup=s.provider.finish_presentation_setup(self.data['seed'],setup)
+                    setup=self._prepare_native(s.provider.finish_presentation_setup,self.data['seed'],setup)
                     if identity!=self.data.get('id') or self.data['status']!=phase:return
                 else:
                     if self.data.get('guided'):
-                        setup=s.provider.prepare_presentation(self.data['seed'],self.data['speed_kmh'],scene=self.data['scene'],guided=True)
-                    else:setup = s.provider.prepare_presentation(self.data['seed'], self.data['speed_kmh'])
+                        setup=self._prepare_native(s.provider.prepare_presentation,self.data['seed'],self.data['speed_kmh'],scene=self.data['scene'],guided=True)
+                    else:setup = self._prepare_native(s.provider.prepare_presentation,self.data['seed'], self.data['speed_kmh'])
                     if identity!=self.data.get('id') or self.data['status']!=phase:return
                     if setup.get('population_pending'):
                         self.data['setup']=setup;self.ready_frame=s.observation.frame_id+1;self.save();return
                 self.ready_frame = s.observation.frame_id + 10
                 advance('READY', setup=setup)
             elif phase == 'READY' and stopped and closed and s.observation.frame_id >= getattr(self,'ready_frame',0):
+                if self.data.get('automatic_pair') and s.name=='carla':
+                    cache=getattr(s,'control_perception',None)
+                    if cache is None:raise ValueError('The comparison detector is unavailable. Run scripts/setup_perception.ps1 and restart the camera service.')
+                    detected=cache.latest(s.session_id)
+                    if (not detected or detected.get('status')!='RUNNING' or
+                            detected.get('detector_profile',{}).get('id')!='YOLOV8S_640_FRONT_AND_FOCUS_V3' or
+                            not 0<=s.observation.timestamp_s-detected.get('timestamp_s',-10)<=.75):
+                        self._set_vision_hold(True)
+                        return
+                    self._set_vision_hold(False)
                 population=getattr(s.provider,'population_state',lambda:{})()
                 crowding=population.get('route_crowding')
                 traffic_ready=not crowding or crowding.get('status')=='READY'
@@ -295,7 +365,7 @@ class Presentation:
                 if traffic_ready and walkers_ready:
                     audit=getattr(s.provider,'presentation_population_audit',None)
                     if callable(audit) and self.data['arm']==0 and not self.data.get('prepared_condition_id'):
-                        measured=audit()
+                        measured=self._prepare_native(audit)
                         if identity!=self.data.get('id') or self.data['status']!=phase:return
                         self.data['population_audit']=measured
                         if self.data['population_audit'].get('pending'):return
@@ -304,7 +374,7 @@ class Presentation:
                     if self.data.get('awaiting_choice'):
                         freeze=getattr(s.provider,'hold_prepared_presentation',None)
                         if not callable(freeze):raise ValueError('Native scene preloading is unavailable')
-                        self.data['prepared_condition_id']=freeze()
+                        self.data['prepared_condition_id']=self._prepare_native(freeze)
                         advance('CHOOSING')
                     else:self._start_arm(expected_id=identity)
             elif phase=='CHOOSING':
@@ -323,11 +393,14 @@ class Presentation:
                     advance('DRIVING', pair_id=s.journey_comparison.data['pair_id'])
                 elif s.journey['status'] in ('PAUSED', 'ERROR'):
                     if self.data.get('guided'):
+                        self.data.setdefault('failures',[]).append({'mode':self.data['modes'][self.data['arm']],
+                            'reason':s.journey.get('reason'),'fault':copy.deepcopy(getattr(s,'runtime_fault',None)),
+                            'phase':'STARTING','frame_id':s.observation.frame_id})
                         advance('FINALIZING')
                     else:self.fail(s.journey.get('reason') or 'Journey start failed')
             elif phase == 'DRIVING':
                 run = s.journey_comparison.active
-                if run and run['duration_s'] > 180:
+                if run and run['duration_s'] > 180 and not self.data.get('automatic_pair'):
                     s.stop_driving('presentation_route_timeout', cancel_presentation=False)
                 if s.journey['status'] in ('ARRIVED', 'ERROR', 'PAUSED'):
                     fault=getattr(s,'runtime_fault',None)
@@ -354,10 +427,17 @@ class Presentation:
                 if self.data.get('guided'):
                     if not self.data.get('pair_id'):self.fail('Drive could not start; no recording was created. Free GPU to close this session.');return
                     if self.data['arm']==0:
-                        if self.data['next_requests'].get('0'):self._queue_other_arm()
+                        if self.data.get('automatic_pair'):
+                            if s.journey.get('reason') in ('destination_reached','collision'):self._queue_other_arm()
+                            else:advance('RESULTS',outcome='FAILED',reason='The first recording ended before arrival or contact; its evidence is saved.')
+                        elif self.data['next_requests'].get('0'):self._queue_other_arm()
                         else:advance('AWAITING_NEXT')
-                    else:advance('RESULTS',conditions_match=s.journey_comparison.snapshot().get('conditions_match',False),
-                        outcome='BOTH_ARRIVED' if all(r.get('status')=='ARRIVED' for r in self.data['runs'].values()) and len(self.data['runs'])==2 else 'RECORDED_OUTCOMES')
+                    else:
+                        result=s.journey_comparison.snapshot()
+                        assessment=result.get('scenario_validation')
+                        if assessment:s.journey_comparison.data['scenario_validation']=assessment;s.journey_comparison.save()
+                        advance('RESULTS',conditions_match=result.get('conditions_match',False),
+                            outcome='VERIFIED_COMPARISON' if assessment and assessment['passed'] and result.get('conditions_match') else 'FAILED_COMPARISON' if assessment else 'RECORDED_OUTCOMES')
                     return
                 if self.data['arm'] == 0:
                     s.queue_dashboard_action('prepare_journey_mode', {

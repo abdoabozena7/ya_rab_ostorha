@@ -11,13 +11,22 @@ OUTPUT = ROOT / 'output' / 'perception'
 
 
 class PerceptionService:
+    def request_ocr(self):
+        """Only an open sign-reading panel requests the optional text model."""
+        if time.time()-getattr(self,'ocr_requested_at',0.)<1.:return
+        self.ocr_requested_at=time.time();OUTPUT.mkdir(parents=True,exist_ok=True)
+        temporary=OUTPUT/'ocr-request.tmp'
+        temporary.write_text(json.dumps({'parent':os.getpid(),'requested_at':self.ocr_requested_at}),encoding='utf8')
+        temporary.replace(OUTPUT/'ocr-request.json')
+
     def __init__(self, http_port):
         self.process = None
         self.error = None
         python = ROOT / '.venv-perception' / 'Scripts' / 'python.exe'
-        assets = [ROOT/'models/yolov8n-320.onnx', ROOT/'models/ocr/english_g2.pth']
+        from .detector import default_model_path
+        assets = [default_model_path()]
         if not python.is_file() or not all(asset.is_file() for asset in assets):
-            self.error = 'Models YOLO/OCR not installed; run scripts/setup_perception.ps1'
+            self.error = 'The comparison detector is not installed; run scripts/setup_perception.ps1'
             return
         OUTPUT.mkdir(parents=True, exist_ok=True)
         (ROOT/'models'/'ultralytics-config'/'Ultralytics').mkdir(parents=True, exist_ok=True)

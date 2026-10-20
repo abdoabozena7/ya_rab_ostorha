@@ -1,0 +1,1538 @@
+{
+  "scope": "SIX_REAL_PAIRS_BEFORE_B_WAITING_ORIENTATION_CALIBRATION",
+  "passed": false,
+  "accepted": 4,
+  "cases": [
+    {
+      "attempt": "2ea6c7fbfd194f7c9882b49bfcfb558b",
+      "seed": 1701,
+      "first_mode": "NORMAL",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\2ea6c7fbfd194f7c9882b49bfcfb558b\\source.zip",
+        "sha256": "e1412f4f56e7926708d8579e6433bfa607e52b1bf617c96b10bb8fc715d64162",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "source_unchanged": true,
+      "source_set_sha256": "af60767094e9348c1906c200308addf12a38af6f159a853020e3a4aced7d5fa0",
+      "scenario_validation": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-a",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "conditions_match": true,
+      "completed_without_shortening": true,
+      "finish_completed": true,
+      "cleanup_confirmed": true,
+      "simulator_exit_confirmed": true,
+      "native_acceptance": false,
+      "wall_s": 248.78100000001723,
+      "critical_prediction_evidence": {
+        "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+        "first_critical_braking_forecast": {
+          "elapsed_s": 4.950000073760748,
+          "speed_kmh": 57.66984037488711,
+          "source": "PEDESTRIAN_POSSIBLE_RUN",
+          "applied_brake": 1.0,
+          "native_association_error_m": 0.659890171346039
+        },
+        "native_first_motion_elapsed_s": 4.850000072270632,
+        "normal_critical_contact_elapsed_s": 6.000000089406967,
+        "predicted_before_actual_motion": false,
+        "braked_from_at_least_20_kmh": true,
+        "passed": false
+      },
+      "current_acceptance": false,
+      "error": null,
+      "calibration_aborted": null,
+      "exports_at_finish_request": {
+        "NORMAL": {
+          "status": "ENCODING"
+        },
+        "ROBOSPHERE": {
+          "status": "ENCODING"
+        }
+      },
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "b7b3b4a5339340f3b9115514b5574a62",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a9b83c645d71484981d087a553a30bac",
+        "video": "shared-perception.mp4",
+        "sha256": "9606aa5b7fd9bed82069cc263d9058ad7eddd716014d5c6f2f6b6c1c48b99735",
+        "frames": 30,
+        "detection_boxes": 338,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\2ea6c7fbfd194f7c9882b49bfcfb558b\\report.json",
+      "reused": false,
+      "reuse_scope": null,
+      "user_plan_review": {
+        "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+        "passed": true,
+        "gates": {
+          "actual_scenario_outcomes": true,
+          "predictive_braking_before_ingress": true,
+          "complete_recordings": true,
+          "finish_waited_for_exports": true,
+          "cleanup_confirmed": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "three_videos_after_exit": true,
+          "source_unchanged": true
+        },
+        "prediction": {
+          "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+          "corridor_half_width_m": 2.0,
+          "minimum_lead_s": 0.5,
+          "first_native_motion_elapsed_s": 4.850000072270632,
+          "first_path_ingress_elapsed_s": 5.850000087171793,
+          "first_forecast": {
+            "elapsed_s": 4.950000073760748,
+            "speed_kmh": 57.66984037488711,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "native_association_error_m": 0.659890171346039,
+            "native_lateral_m": 4.474511127436624,
+            "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+          },
+          "passed": true,
+          "path_ingress_lead_s": 0.9000000134110451,
+          "normal_contact_lead_s": 1.0500000156462193
+        },
+        "original_strict_first_motion_acceptance": false,
+        "original_strict_first_motion_evidence": {
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+          "first_critical_braking_forecast": {
+            "elapsed_s": 4.950000073760748,
+            "speed_kmh": 57.66984037488711,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "applied_brake": 1.0,
+            "native_association_error_m": 0.659890171346039
+          },
+          "native_first_motion_elapsed_s": 4.850000072270632,
+          "normal_critical_contact_elapsed_s": 6.000000089406967,
+          "predicted_before_actual_motion": false,
+          "braked_from_at_least_20_kmh": true,
+          "passed": false
+        }
+      },
+      "accepted_by_selected_policy": true,
+      "cleanup_probe_passed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "runs": {
+        "NORMAL": {
+          "id": "63b004fb28bf4220847f79d0077306b2",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a9b83c645d71484981d087a553a30bac",
+          "duration_s": 5.950000088661909,
+          "distance_m": 64.68442406610157,
+          "collisions": 1,
+          "collision_events": [
+            {
+              "frame_id": 345,
+              "timestamp_s": 16.30644078180194,
+              "actor_id": 293,
+              "type": "walker.pedestrian.0001",
+              "role": "critical_pedestrian"
+            }
+          ],
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 64.05025414774323,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 12
+          },
+          "first_applied_pedestrian_forecast": null,
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": false,
+            "cleared_ego_path": false,
+            "completed": false,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -7.432236194610596,
+              -69.24131774902344,
+              0.9502114057540894
+            ],
+            "speed_mps": 3.4000000953674316,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        },
+        "ROBOSPHERE": {
+          "id": "9b1ae99bafdc4a9f95c651a9cbb24be3",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a34f7c16fac549c0adb5fa87add61f76",
+          "duration_s": 35.30000052601099,
+          "distance_m": 262.808106549238,
+          "collisions": 0,
+          "collision_events": null,
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 58.339567310176115,
+          "longest_observed_standstill_s": 1.0000000149011612,
+          "standstill_reason_samples": {
+            "CONTROL_PROCESSING_DEADLINE": 2,
+            "NAVIGATION": 20,
+            "Complete protective stop; hold near obstacle": 1,
+            "Measured obstacle inside braking envelope/TTC limit": 7,
+            "Braking toward measured coverage speed limit 0.00 m/s": 3,
+            "Risk cleared; releasing brake smoothly to base driver": 16,
+            "Advancing below verified 1.0 m/s crossing limit": 5,
+            "Advancing below verified 3.0 m/s crossing limit": 6,
+            "Advancing below verified 2.0 m/s crossing limit": 1,
+            "Measured moving object approaches the driving path; object type unconfirmed": 2
+          },
+          "first_applied_pedestrian_forecast": {
+            "timestamp_s": 25.0564409121871,
+            "position_m": [
+              12.57688045501709,
+              -67.91448211669922,
+              -0.0010300063295289874
+            ],
+            "speed_kmh": 57.66984037488711,
+            "forecast": "PEDESTRIAN_POSSIBLE_RUN"
+          },
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": true,
+            "cleared_ego_path": true,
+            "completed": true,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -3.7507381439208984,
+              -51.96531295776367,
+              1.1039000749588013
+            ],
+            "speed_mps": 0.00244216900318861,
+            "phase": "LEAVING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        }
+      }
+    },
+    {
+      "attempt": "9aad76f577e947fda1996165c0cc9a71",
+      "seed": 1701,
+      "first_mode": "ROBOSPHERE",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\9aad76f577e947fda1996165c0cc9a71\\source.zip",
+        "sha256": "78c7cacebc06c122d8dc2ada252e28affedf2959291d4f35fc000fabd0003862",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "source_unchanged": true,
+      "source_set_sha256": "af60767094e9348c1906c200308addf12a38af6f159a853020e3a4aced7d5fa0",
+      "scenario_validation": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-a",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "conditions_match": true,
+      "completed_without_shortening": true,
+      "finish_completed": true,
+      "cleanup_confirmed": true,
+      "simulator_exit_confirmed": true,
+      "native_acceptance": true,
+      "wall_s": 233.78099999995902,
+      "critical_prediction_evidence": {
+        "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+        "first_critical_braking_forecast": {
+          "elapsed_s": 4.450000066310167,
+          "speed_kmh": 59.483437254146196,
+          "source": "PEDESTRIAN_POSSIBLE_RUN",
+          "applied_brake": 1.0,
+          "native_association_error_m": 0.6724189233033178
+        },
+        "native_first_motion_elapsed_s": 4.850000072270632,
+        "normal_critical_contact_elapsed_s": 6.000000089406967,
+        "predicted_before_actual_motion": true,
+        "braked_from_at_least_20_kmh": true,
+        "passed": true
+      },
+      "current_acceptance": true,
+      "error": null,
+      "calibration_aborted": null,
+      "exports_at_finish_request": {
+        "ROBOSPHERE": {
+          "status": "ENCODING"
+        },
+        "NORMAL": {
+          "status": "ENCODING"
+        }
+      },
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "a4f1f1cc349f44179775aca327b7bc01",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_13fe077d60ff4cb88f7bee378a4e3c0b",
+        "video": "shared-perception.mp4",
+        "sha256": "c26d8cc89e5532416712a32ee1f4827c9b951b495c0d337c81621af9b0d0d45b",
+        "frames": 30,
+        "detection_boxes": 372,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\9aad76f577e947fda1996165c0cc9a71\\report.json",
+      "reused": true,
+      "reuse_scope": "IDENTICAL_CONTROL_BYTES_AND_VERIFIED_SELECTED_SCENARIO",
+      "user_plan_review": {
+        "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+        "passed": true,
+        "gates": {
+          "actual_scenario_outcomes": true,
+          "predictive_braking_before_ingress": true,
+          "complete_recordings": true,
+          "finish_waited_for_exports": true,
+          "cleanup_confirmed": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "three_videos_after_exit": true,
+          "source_unchanged": true
+        },
+        "prediction": {
+          "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+          "corridor_half_width_m": 2.0,
+          "minimum_lead_s": 0.5,
+          "first_native_motion_elapsed_s": 4.850000072270632,
+          "first_path_ingress_elapsed_s": 5.850000087171793,
+          "first_forecast": {
+            "elapsed_s": 4.450000066310167,
+            "speed_kmh": 59.483437254146196,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "native_association_error_m": 0.6724189233033178,
+            "native_lateral_m": 4.599999419253581,
+            "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+          },
+          "passed": true,
+          "path_ingress_lead_s": 1.4000000208616257,
+          "normal_contact_lead_s": 1.5500000230967999
+        },
+        "original_strict_first_motion_acceptance": true,
+        "original_strict_first_motion_evidence": {
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+          "first_critical_braking_forecast": {
+            "elapsed_s": 4.450000066310167,
+            "speed_kmh": 59.483437254146196,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "applied_brake": 1.0,
+            "native_association_error_m": 0.6724189233033178
+          },
+          "native_first_motion_elapsed_s": 4.850000072270632,
+          "normal_critical_contact_elapsed_s": 6.000000089406967,
+          "predicted_before_actual_motion": true,
+          "braked_from_at_least_20_kmh": true,
+          "passed": true
+        }
+      },
+      "accepted_by_selected_policy": true,
+      "cleanup_probe_passed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "5073622f16a54322a9a4ac4a3eaa3e1b",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a34c9538469645649a2bff2a2cea2c13",
+          "duration_s": 32.95000049099326,
+          "distance_m": 263.20312641392,
+          "collisions": 0,
+          "collision_events": null,
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 60.054457879736844,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 17,
+            "Risk cleared; releasing brake smoothly to base driver": 10,
+            "Navigation speed/route controller": 1
+          },
+          "first_applied_pedestrian_forecast": {
+            "timestamp_s": 14.675963308662176,
+            "position_m": [
+              18.454191207885742,
+              -67.90370178222656,
+              -0.0009565734653733671
+            ],
+            "speed_kmh": 59.483437254146196,
+            "forecast": "PEDESTRIAN_POSSIBLE_RUN"
+          },
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": true,
+            "cleared_ego_path": true,
+            "completed": true,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -3.75089168548584,
+              -51.959388732910156,
+              1.1039000749588013
+            ],
+            "speed_mps": 0.002637573517858982,
+            "phase": "LEAVING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        },
+        "NORMAL": {
+          "id": "6bb9f6dfcb134c4491bbad08d03a8b44",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_13fe077d60ff4cb88f7bee378a4e3c0b",
+          "duration_s": 5.950000088661909,
+          "distance_m": 64.68442406610157,
+          "collisions": 1,
+          "collision_events": [
+            {
+              "frame_id": 1046,
+              "timestamp_s": 51.325963854789734,
+              "actor_id": 371,
+              "type": "walker.pedestrian.0001",
+              "role": "critical_pedestrian"
+            }
+          ],
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 64.05025414774323,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 12
+          },
+          "first_applied_pedestrian_forecast": null,
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": false,
+            "cleared_ego_path": false,
+            "completed": false,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -7.432236194610596,
+              -69.24131774902344,
+              0.9502114057540894
+            ],
+            "speed_mps": 3.4000000953674316,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        }
+      }
+    },
+    {
+      "attempt": "53be8da444da4a6b9ba261a3fe62323e",
+      "seed": 1702,
+      "first_mode": "NORMAL",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\53be8da444da4a6b9ba261a3fe62323e\\source.zip",
+        "sha256": "55bdade13231bda36ae814d34f13b7f495075ab5d6450be69f69769e90f0325f",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "source_unchanged": true,
+      "source_set_sha256": "af60767094e9348c1906c200308addf12a38af6f159a853020e3a4aced7d5fa0",
+      "scenario_validation": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-b",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "conditions_match": true,
+      "completed_without_shortening": true,
+      "finish_completed": true,
+      "cleanup_confirmed": true,
+      "simulator_exit_confirmed": true,
+      "native_acceptance": false,
+      "wall_s": 259.3429999999935,
+      "critical_prediction_evidence": {
+        "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+        "first_critical_braking_forecast": null,
+        "native_first_motion_elapsed_s": 4.800000071525574,
+        "normal_critical_contact_elapsed_s": 6.000000089406967,
+        "predicted_before_actual_motion": false,
+        "braked_from_at_least_20_kmh": false,
+        "passed": false
+      },
+      "current_acceptance": false,
+      "error": null,
+      "calibration_aborted": null,
+      "exports_at_finish_request": {
+        "NORMAL": {
+          "status": "WAITING_FOR_COMPARISON"
+        },
+        "ROBOSPHERE": {
+          "status": "ENCODING"
+        }
+      },
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "3a3414ee1f034d70a87301cce7634863",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_92822099f20a417bb0702b444821ccb3",
+        "video": "shared-perception.mp4",
+        "sha256": "62df822f56c9735b4f8b95e0773eee9b31301c0afc645375de3ae3ff36871d6d",
+        "frames": 30,
+        "detection_boxes": 221,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\53be8da444da4a6b9ba261a3fe62323e\\report.json",
+      "reused": false,
+      "reuse_scope": null,
+      "user_plan_review": {
+        "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+        "passed": false,
+        "gates": {
+          "actual_scenario_outcomes": true,
+          "predictive_braking_before_ingress": false,
+          "complete_recordings": true,
+          "finish_waited_for_exports": true,
+          "cleanup_confirmed": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "three_videos_after_exit": true,
+          "source_unchanged": true
+        },
+        "prediction": {
+          "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+          "corridor_half_width_m": 2.0,
+          "minimum_lead_s": 0.5,
+          "first_native_motion_elapsed_s": 4.800000071525574,
+          "first_path_ingress_elapsed_s": 5.800000086426735,
+          "first_forecast": null,
+          "passed": false,
+          "path_ingress_lead_s": null,
+          "normal_contact_lead_s": null
+        },
+        "original_strict_first_motion_acceptance": false,
+        "original_strict_first_motion_evidence": {
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+          "first_critical_braking_forecast": null,
+          "native_first_motion_elapsed_s": 4.800000071525574,
+          "normal_critical_contact_elapsed_s": 6.000000089406967,
+          "predicted_before_actual_motion": false,
+          "braked_from_at_least_20_kmh": false,
+          "passed": false
+        }
+      },
+      "accepted_by_selected_policy": false,
+      "cleanup_probe_passed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "runs": {
+        "NORMAL": {
+          "id": "8243f52a7ed0436b82cb3cc5ed967e63",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_92822099f20a417bb0702b444821ccb3",
+          "duration_s": 5.950000088661909,
+          "distance_m": 62.88506118371213,
+          "collisions": 1,
+          "collision_events": [
+            {
+              "frame_id": 341,
+              "timestamp_s": 16.318743228912354,
+              "actor_id": 293,
+              "type": "walker.pedestrian.0001",
+              "role": "critical_pedestrian"
+            }
+          ],
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 62.97638485979835,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "CONTROL_PROCESSING_DEADLINE": 1,
+            "NAVIGATION": 11
+          },
+          "first_applied_pedestrian_forecast": null,
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.65,
+            "realized": true,
+            "crossed_path": false,
+            "cleared_ego_path": false,
+            "completed": false,
+            "start_position": [
+              -6.933537483215332,
+              -72.42346954345703,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -6.9321184158325195,
+              -68.9727554321289,
+              0.9499573111534119
+            ],
+            "speed_mps": 3.500000238418579,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.6500000692903996,
+            "first_motion_elapsed_s": 4.800000071525574
+          },
+          "initial_condition_audit_passed": true
+        },
+        "ROBOSPHERE": {
+          "id": "ff681daca5ee4c479c898bf3be36e94f",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_4fc2e1f3ef9844d7b3b19df5d48a0801",
+          "duration_s": 37.200000554323196,
+          "distance_m": 262.6056690721852,
+          "collisions": 0,
+          "collision_events": null,
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 59.60176712211786,
+          "longest_observed_standstill_s": 0.7500000111758709,
+          "standstill_reason_samples": {
+            "NAVIGATION": 22,
+            "Braking toward measured coverage speed limit 0.00 m/s": 6,
+            "Risk cleared; releasing brake smoothly to base driver": 12,
+            "Measured moving object approaches the driving path; object type unconfirmed": 2,
+            "Advancing below verified 1.0 m/s crossing limit": 2,
+            "Advancing below verified 2.0 m/s crossing limit": 10,
+            "Advancing below verified 4.0 m/s crossing limit": 4
+          },
+          "first_applied_pedestrian_forecast": {
+            "timestamp_s": 26.118743374943733,
+            "position_m": [
+              2.5153825283050537,
+              -67.98280334472656,
+              -0.001607932965271175
+            ],
+            "speed_kmh": 31.76269670970888,
+            "forecast": "CONSTANT_VELOCITY"
+          },
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.65,
+            "realized": true,
+            "crossed_path": true,
+            "cleared_ego_path": true,
+            "completed": false,
+            "start_position": [
+              -6.933537483215332,
+              -72.42346954345703,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -6.925247669219971,
+              -53.07136154174805,
+              1.1038998365402222
+            ],
+            "speed_mps": 0.0,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.6500000692903996,
+            "first_motion_elapsed_s": 4.800000071525574
+          },
+          "initial_condition_audit_passed": true
+        }
+      }
+    },
+    {
+      "attempt": "5d1bf5ed47624e5b80528f49cc69cf68",
+      "seed": 1702,
+      "first_mode": "ROBOSPHERE",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\5d1bf5ed47624e5b80528f49cc69cf68\\source.zip",
+        "sha256": "e7f6cf9c4468d7bbf7e77dd110173f51844f529693e00edad5d916c94588da69",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "source_unchanged": true,
+      "source_set_sha256": "af60767094e9348c1906c200308addf12a38af6f159a853020e3a4aced7d5fa0",
+      "scenario_validation": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-b",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "conditions_match": true,
+      "completed_without_shortening": true,
+      "finish_completed": true,
+      "cleanup_confirmed": true,
+      "simulator_exit_confirmed": true,
+      "native_acceptance": false,
+      "wall_s": 230.34399999998277,
+      "critical_prediction_evidence": {
+        "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+        "first_critical_braking_forecast": null,
+        "native_first_motion_elapsed_s": 4.800000071525574,
+        "normal_critical_contact_elapsed_s": 6.000000089406967,
+        "predicted_before_actual_motion": false,
+        "braked_from_at_least_20_kmh": false,
+        "passed": false
+      },
+      "current_acceptance": false,
+      "error": null,
+      "calibration_aborted": null,
+      "exports_at_finish_request": {
+        "ROBOSPHERE": {
+          "status": "WAITING_FOR_COMPARISON"
+        },
+        "NORMAL": {
+          "status": "ENCODING"
+        }
+      },
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "1dd4a587e06a41d8b6ed0da717a24ae8",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e8ed7750f1c948f68893257d841fc25a",
+        "video": "shared-perception.mp4",
+        "sha256": "ab0db3a793ea7c6ebfdd0829aae608e15eee2a47e2b5962295f346f62b4aff7f",
+        "frames": 30,
+        "detection_boxes": 216,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\5d1bf5ed47624e5b80528f49cc69cf68\\report.json",
+      "reused": false,
+      "reuse_scope": null,
+      "user_plan_review": {
+        "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+        "passed": false,
+        "gates": {
+          "actual_scenario_outcomes": true,
+          "predictive_braking_before_ingress": false,
+          "complete_recordings": true,
+          "finish_waited_for_exports": true,
+          "cleanup_confirmed": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "three_videos_after_exit": true,
+          "source_unchanged": true
+        },
+        "prediction": {
+          "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+          "corridor_half_width_m": 2.0,
+          "minimum_lead_s": 0.5,
+          "first_native_motion_elapsed_s": 4.800000071525574,
+          "first_path_ingress_elapsed_s": 5.800000086426735,
+          "first_forecast": null,
+          "passed": false,
+          "path_ingress_lead_s": null,
+          "normal_contact_lead_s": null
+        },
+        "original_strict_first_motion_acceptance": false,
+        "original_strict_first_motion_evidence": {
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+          "first_critical_braking_forecast": null,
+          "native_first_motion_elapsed_s": 4.800000071525574,
+          "normal_critical_contact_elapsed_s": 6.000000089406967,
+          "predicted_before_actual_motion": false,
+          "braked_from_at_least_20_kmh": false,
+          "passed": false
+        }
+      },
+      "accepted_by_selected_policy": false,
+      "cleanup_probe_passed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "ba5974e6d0a94690aef17a749b3ba1e8",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f972b75b900740c784ceeefcb80fd0a5",
+          "duration_s": 31.70000047236681,
+          "distance_m": 262.61884965098477,
+          "collisions": 0,
+          "collision_events": null,
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 61.39642764900295,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 15,
+            "Risk cleared; releasing brake smoothly to base driver": 5
+          },
+          "first_applied_pedestrian_forecast": {
+            "timestamp_s": 24.572812482714653,
+            "position_m": [
+              -71.92254638671875,
+              -68.37710571289062,
+              -0.0010098647326231003
+            ],
+            "speed_kmh": 13.785071742598925,
+            "forecast": "CONSTANT_VELOCITY"
+          },
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.65,
+            "realized": true,
+            "crossed_path": true,
+            "cleared_ego_path": true,
+            "completed": false,
+            "start_position": [
+              -6.933537483215332,
+              -72.42346954345703,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -6.925247669219971,
+              -53.07136154174805,
+              1.1038998365402222
+            ],
+            "speed_mps": 0.0,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.6500000692903996,
+            "first_motion_elapsed_s": 4.800000071525574
+          },
+          "initial_condition_audit_passed": true
+        },
+        "NORMAL": {
+          "id": "88bb7a00f9a84374957ca9dabbbfbbb1",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e8ed7750f1c948f68893257d841fc25a",
+          "duration_s": 5.950000088661909,
+          "distance_m": 62.88506118371213,
+          "collisions": 1,
+          "collision_events": [
+            {
+              "frame_id": 1061,
+              "timestamp_s": 50.22281286492944,
+              "actor_id": 371,
+              "type": "walker.pedestrian.0001",
+              "role": "critical_pedestrian"
+            }
+          ],
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 62.97638485979835,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "CONTROL_PROCESSING_DEADLINE": 1,
+            "NAVIGATION": 11
+          },
+          "first_applied_pedestrian_forecast": null,
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.65,
+            "realized": true,
+            "crossed_path": false,
+            "cleared_ego_path": false,
+            "completed": false,
+            "start_position": [
+              -6.933537483215332,
+              -72.42346954345703,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -6.9321184158325195,
+              -68.9727554321289,
+              0.9499573111534119
+            ],
+            "speed_mps": 3.500000238418579,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.6500000692903996,
+            "first_motion_elapsed_s": 4.800000071525574
+          },
+          "initial_condition_audit_passed": true
+        }
+      }
+    },
+    {
+      "attempt": "9e20e62fdec04930ab73434b2222dabc",
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\9e20e62fdec04930ab73434b2222dabc\\source.zip",
+        "sha256": "b85e3dbaed163ce829dd3816a1260dcb264704422bb599c9d86c1f1dd38b5452",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "source_unchanged": true,
+      "source_set_sha256": "af60767094e9348c1906c200308addf12a38af6f159a853020e3a4aced7d5fa0",
+      "scenario_validation": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-c",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "conditions_match": true,
+      "completed_without_shortening": true,
+      "finish_completed": true,
+      "cleanup_confirmed": true,
+      "simulator_exit_confirmed": true,
+      "native_acceptance": true,
+      "wall_s": 262.4070000000065,
+      "critical_prediction_evidence": {
+        "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+        "first_critical_braking_forecast": {
+          "elapsed_s": 4.450000066310167,
+          "speed_kmh": 58.48317288817334,
+          "source": "PEDESTRIAN_POSSIBLE_RUN",
+          "applied_brake": 1.0,
+          "native_association_error_m": 0.7569920552274035
+        },
+        "native_first_motion_elapsed_s": 4.850000072270632,
+        "normal_critical_contact_elapsed_s": 6.000000089406967,
+        "predicted_before_actual_motion": true,
+        "braked_from_at_least_20_kmh": true,
+        "passed": true
+      },
+      "current_acceptance": true,
+      "error": null,
+      "calibration_aborted": null,
+      "exports_at_finish_request": {
+        "NORMAL": {
+          "status": "ENCODING"
+        },
+        "ROBOSPHERE": {
+          "status": "ENCODING"
+        }
+      },
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "102f21d4ea7148b99ae1cd8d2b0493dd",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2bf5e8cf4c4a4caba709cf335bd50866",
+        "video": "shared-perception.mp4",
+        "sha256": "f5c25646dfcdc2e8f6b81d48084da1ae634840ea99c0a27b04b18f85fbc6a96b",
+        "frames": 30,
+        "detection_boxes": 214,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\9e20e62fdec04930ab73434b2222dabc\\report.json",
+      "reused": false,
+      "reuse_scope": null,
+      "user_plan_review": {
+        "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+        "passed": true,
+        "gates": {
+          "actual_scenario_outcomes": true,
+          "predictive_braking_before_ingress": true,
+          "complete_recordings": true,
+          "finish_waited_for_exports": true,
+          "cleanup_confirmed": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "three_videos_after_exit": true,
+          "source_unchanged": true
+        },
+        "prediction": {
+          "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+          "corridor_half_width_m": 2.0,
+          "minimum_lead_s": 0.5,
+          "first_native_motion_elapsed_s": 4.850000072270632,
+          "first_path_ingress_elapsed_s": 5.850000087171793,
+          "first_forecast": {
+            "elapsed_s": 4.450000066310167,
+            "speed_kmh": 58.48317288817334,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "native_association_error_m": 0.7569920552274035,
+            "native_lateral_m": 4.599999419253581,
+            "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+          },
+          "passed": true,
+          "path_ingress_lead_s": 1.4000000208616257,
+          "normal_contact_lead_s": 1.5500000230967999
+        },
+        "original_strict_first_motion_acceptance": true,
+        "original_strict_first_motion_evidence": {
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+          "first_critical_braking_forecast": {
+            "elapsed_s": 4.450000066310167,
+            "speed_kmh": 58.48317288817334,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "applied_brake": 1.0,
+            "native_association_error_m": 0.7569920552274035
+          },
+          "native_first_motion_elapsed_s": 4.850000072270632,
+          "normal_critical_contact_elapsed_s": 6.000000089406967,
+          "predicted_before_actual_motion": true,
+          "braked_from_at_least_20_kmh": true,
+          "passed": true
+        }
+      },
+      "accepted_by_selected_policy": true,
+      "cleanup_probe_passed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "runs": {
+        "NORMAL": {
+          "id": "b2d720418c384db2b8bf2942cdb731eb",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2bf5e8cf4c4a4caba709cf335bd50866",
+          "duration_s": 5.950000088661909,
+          "distance_m": 64.68382749683629,
+          "collisions": 1,
+          "collision_events": [
+            {
+              "frame_id": 336,
+              "timestamp_s": 16.299215503036976,
+              "actor_id": 293,
+              "type": "walker.pedestrian.0001",
+              "role": "critical_pedestrian"
+            }
+          ],
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 64.05025414774323,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 12
+          },
+          "first_applied_pedestrian_forecast": null,
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": false,
+            "cleared_ego_path": false,
+            "completed": false,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -7.432190418243408,
+              -69.14754486083984,
+              0.9498655200004578
+            ],
+            "speed_mps": 3.500000238418579,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        },
+        "ROBOSPHERE": {
+          "id": "928eb014ecff402f9944e442c735c534",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_72d27cbd83824fec8df1fa87445fd829",
+          "duration_s": 36.90000054985285,
+          "distance_m": 262.63013649042614,
+          "collisions": 0,
+          "collision_events": null,
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 60.777655585610276,
+          "longest_observed_standstill_s": 0.7500000111758709,
+          "standstill_reason_samples": {
+            "CONTROL_PROCESSING_DEADLINE": 3,
+            "NAVIGATION": 28,
+            "Risk cleared; releasing brake smoothly to base driver": 30,
+            "Braking for a person who may cross the driving path": 4,
+            "Holding measured clearance/TTC hysteresis": 2,
+            "Advancing below verified 4.0 m/s crossing limit": 5
+          },
+          "first_applied_pedestrian_forecast": {
+            "timestamp_s": 24.549215625971556,
+            "position_m": [
+              20.01258087158203,
+              -67.90413665771484,
+              -0.000939979508984834
+            ],
+            "speed_kmh": 58.48317288817334,
+            "forecast": "PEDESTRIAN_POSSIBLE_RUN"
+          },
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": true,
+            "cleared_ego_path": true,
+            "completed": true,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -3.750166654586792,
+              -52.00299835205078,
+              1.1038998365402222
+            ],
+            "speed_mps": 0.0013676778180524707,
+            "phase": "LEAVING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        }
+      }
+    },
+    {
+      "attempt": "847c4eb8a7114b4581e7c764f63a1fbd",
+      "seed": 1703,
+      "first_mode": "ROBOSPHERE",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\847c4eb8a7114b4581e7c764f63a1fbd\\source.zip",
+        "sha256": "6c48145fe72f5491b9e731f6c74b2882a7c4becb1f94b947743f5ff2683b13ff",
+        "files": 192,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "source_unchanged": true,
+      "source_set_sha256": "af60767094e9348c1906c200308addf12a38af6f159a853020e3a4aced7d5fa0",
+      "scenario_validation": {
+        "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+        "scenario_id": "crossing-c",
+        "passed": true,
+        "gates": {
+          "both_recorded": true,
+          "normal_pedestrian_collision": true,
+          "project_arrived_without_contact": true,
+          "initial_conditions_verified": true,
+          "same_requested_speed": true,
+          "same_detector": true,
+          "same_scenario": true,
+          "scheduled_crossing_origins_verified": true,
+          "critical_crossing_realized": true
+        },
+        "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+      },
+      "conditions_match": true,
+      "completed_without_shortening": true,
+      "finish_completed": true,
+      "cleanup_confirmed": true,
+      "simulator_exit_confirmed": true,
+      "native_acceptance": true,
+      "wall_s": 255.09299999999348,
+      "critical_prediction_evidence": {
+        "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+        "first_critical_braking_forecast": {
+          "elapsed_s": 4.350000064820051,
+          "speed_kmh": 58.515191235253006,
+          "source": "PEDESTRIAN_POSSIBLE_RUN",
+          "applied_brake": 1.0,
+          "native_association_error_m": 0.7498810923477781
+        },
+        "native_first_motion_elapsed_s": 4.850000072270632,
+        "normal_critical_contact_elapsed_s": 6.000000089406967,
+        "predicted_before_actual_motion": true,
+        "braked_from_at_least_20_kmh": true,
+        "passed": true
+      },
+      "current_acceptance": true,
+      "error": null,
+      "calibration_aborted": null,
+      "exports_at_finish_request": {
+        "ROBOSPHERE": {
+          "status": "ENCODING"
+        },
+        "NORMAL": {
+          "status": "ENCODING"
+        }
+      },
+      "shared_perception": {
+        "status": "READY",
+        "pair_id": "134321eaf72f49f8bb5cb79c87026a97",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7756b00d0da246c78671e9054ee060c0",
+        "video": "shared-perception.mp4",
+        "sha256": "f45e88ac17ed9b7b73ff30cfca6556ec15c2221053a7c53e32e794d4338d168e",
+        "frames": 30,
+        "detection_boxes": 185,
+        "start_elapsed_s": -1.4500000216066837,
+        "end_elapsed_s": 0.0,
+        "duration_s": 1.5000000216066838,
+        "last_frame_hold_s": 0.05,
+        "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+        "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+        "tolerances": {
+          "position_m": 0.15,
+          "heading_deg": 0.5,
+          "speed_mps": 0.15,
+          "participant_position_m": 0.25,
+          "participant_heading_deg": 2.0
+        },
+        "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+        "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+      },
+      "report_path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\847c4eb8a7114b4581e7c764f63a1fbd\\report.json",
+      "reused": false,
+      "reuse_scope": null,
+      "user_plan_review": {
+        "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+        "passed": true,
+        "gates": {
+          "actual_scenario_outcomes": true,
+          "predictive_braking_before_ingress": true,
+          "complete_recordings": true,
+          "finish_waited_for_exports": true,
+          "cleanup_confirmed": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "three_videos_after_exit": true,
+          "source_unchanged": true
+        },
+        "prediction": {
+          "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+          "corridor_half_width_m": 2.0,
+          "minimum_lead_s": 0.5,
+          "first_native_motion_elapsed_s": 4.850000072270632,
+          "first_path_ingress_elapsed_s": 5.850000087171793,
+          "first_forecast": {
+            "elapsed_s": 4.350000064820051,
+            "speed_kmh": 58.515191235253006,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "native_association_error_m": 0.7498810923477781,
+            "native_lateral_m": 4.599999419253581,
+            "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+          },
+          "passed": true,
+          "path_ingress_lead_s": 1.5000000223517418,
+          "normal_contact_lead_s": 1.650000024586916
+        },
+        "original_strict_first_motion_acceptance": true,
+        "original_strict_first_motion_evidence": {
+          "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+          "first_critical_braking_forecast": {
+            "elapsed_s": 4.350000064820051,
+            "speed_kmh": 58.515191235253006,
+            "source": "PEDESTRIAN_POSSIBLE_RUN",
+            "applied_brake": 1.0,
+            "native_association_error_m": 0.7498810923477781
+          },
+          "native_first_motion_elapsed_s": 4.850000072270632,
+          "normal_critical_contact_elapsed_s": 6.000000089406967,
+          "predicted_before_actual_motion": true,
+          "braked_from_at_least_20_kmh": true,
+          "passed": true
+        }
+      },
+      "accepted_by_selected_policy": true,
+      "cleanup_probe_passed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "id": "e8b740d65e4347e48195bfbdba171154",
+          "status": "ARRIVED",
+          "reason": "destination_reached",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f53021f82e644fc2a0aaed41b52b49a8",
+          "duration_s": 36.55000054463744,
+          "distance_m": 262.74774599737253,
+          "collisions": 0,
+          "collision_events": null,
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 59.46430057282992,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 17,
+            "Advancing below verified 3.0 m/s crossing limit": 7,
+            "Risk cleared; releasing brake smoothly to base driver": 11
+          },
+          "first_applied_pedestrian_forecast": {
+            "timestamp_s": 14.82843703404069,
+            "position_m": [
+              20.206480026245117,
+              -67.90421295166016,
+              -0.0009341430268250406
+            ],
+            "speed_kmh": 58.515191235253006,
+            "forecast": "PEDESTRIAN_POSSIBLE_RUN"
+          },
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": true,
+            "cleared_ego_path": true,
+            "completed": true,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -3.7501792907714844,
+              -52.00251770019531,
+              1.1038998365402222
+            ],
+            "speed_mps": 0.0013676778180524707,
+            "phase": "LEAVING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        },
+        "NORMAL": {
+          "id": "1baa1987bc3a42a6a098935daddaf452",
+          "status": "COLLISION",
+          "reason": "collision",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7756b00d0da246c78671e9054ee060c0",
+          "duration_s": 5.950000088661909,
+          "distance_m": 64.68382749683629,
+          "collisions": 1,
+          "collision_events": [
+            {
+              "frame_id": 1143,
+              "timestamp_s": 55.128437634557486,
+              "actor_id": 371,
+              "type": "walker.pedestrian.0001",
+              "role": "critical_pedestrian"
+            }
+          ],
+          "requested_speed_kmh": 120.0,
+          "perception_profile": {
+            "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+            "input_size": 640,
+            "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+          },
+          "actual_max_speed_kmh": 64.05025414774323,
+          "longest_observed_standstill_s": 0.5500000081956387,
+          "standstill_reason_samples": {
+            "NAVIGATION": 12
+          },
+          "first_applied_pedestrian_forecast": null,
+          "critical_event": {
+            "kind": "CROSSING",
+            "critical": true,
+            "start_s": 4.7,
+            "realized": true,
+            "crossed_path": false,
+            "cleared_ego_path": false,
+            "completed": false,
+            "start_position": [
+              -7.433537483215332,
+              -72.42326354980469,
+              1.1038999557495117
+            ],
+            "position_m": [
+              -7.432190418243408,
+              -69.14754486083984,
+              0.9498655200004578
+            ],
+            "speed_mps": 3.500000238418579,
+            "phase": "CROSSING",
+            "first_crossing_command_s": 4.700000070035458,
+            "first_motion_elapsed_s": 4.850000072270632
+          },
+          "initial_condition_audit_passed": true
+        }
+      }
+    }
+  ]
+}

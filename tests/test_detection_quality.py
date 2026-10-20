@@ -9,6 +9,8 @@ from backend.computer_vision.detector import RoadDetector
 class DetectionQualityTests(unittest.TestCase):
     def test_uncertain_lead_candidate_is_retained_without_supporting_a_false_signal(self):
         detector=RoadDetector.__new__(RoadDetector);detector.input='images';detector.model=Mock()
+        detector.size=320;detector.profile={'id':'LEGACY_320'}
+        self.addCleanup(detector.close)
         output=np.zeros((1,84,4),np.float32)
         output[0,:4,:]=np.array([[160,265,232,40],[164,190,116,110],
             [21,90,17,10],[21,60,36,20]])

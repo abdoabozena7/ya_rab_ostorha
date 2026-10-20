@@ -240,6 +240,10 @@ class SimulationService:
             if hasattr(supervisor,'cap_mps'):
                 supervisor.cap_mps = min(self.journey.get('speed_kmh',30)/3.6,
                     getattr(self.provider,'navigation_speed_limit_mps',30/3.6))
+            supervisor.prediction_speed_cap_mps=(min(self.journey.get('speed_kmh',30)/3.6,
+                getattr(self.provider,'navigation_speed_limit_mps',30/3.6))
+                if mode==ControlMode.AUTOMATIC and base.source==CommandSource.NAVIGATION else None)
+            if hasattr(supervisor,'guard'):supervisor.guard.prediction_speed_cap_mps=supervisor.prediction_speed_cap_mps
             was_active = supervisor.active
             # A sensor frame does not identify a driving intent. In particular,
             # a cached forward brake cannot be admitted as a reverse proposal.
@@ -544,6 +548,7 @@ class SimulationService:
             self.driving_forecast=measured_control_view(scene,self.render_pose_cache.get(scene.observation.frame_id),
                 decision=safety,focused=True,maneuver=getattr(self,'maneuver_status',None))
         else:self.driving_forecast=None
+        if getattr(self,'provider',None) is not None:self.provider.measured_overlay=self.driving_forecast
         if prediction and self.observation:
             reference = getattr(self,'render_pose_cache',{}).get(prediction['evaluation_frame'])
             if reference is None and prediction['evaluation_frame'] == self.observation.frame_id:
@@ -659,6 +664,10 @@ class SimulationService:
             if self.journey.get('driver_profile') and self.journey.get('status') in ('STARTING','RUNNING'):
                 recording_config.update(driver_profile=copy.deepcopy(self.journey['driver_profile']),session_id=self.session_id)
                 recording_config['driver_id']=self.journey['driver_profile']['id']
+            if self.journey.get('presentation_id'):
+                recording_config.update(presentation_id=self.journey['presentation_id'],automatic_pair=self.presentation.data.get('automatic_pair',False))
+                cache=getattr(self,'control_perception',None);detected=cache.latest(self.session_id) if cache else None
+                recording_config['perception_profile']=copy.deepcopy((detected or {}).get('detector_profile'))
             self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
                 label, self.name, DataOrigin.REAL_SIMULATION,
                 seed=(environment.get('scenario') or {}).get('random_seed') if environment else None,
@@ -677,7 +686,12 @@ class SimulationService:
             recorder.finish()
             if self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id') or self.journey.get('driver_profile'):
                 from .driving_video import export_after_close
-                export_after_close(recorder)
+                attempt=self.presentation.data.get('id')
+                deferred=bool(self.presentation.data.get('automatic_pair'))
+                def export_ready():
+                    return (self.closed or self.presentation.data.get('id')!=attempt or
+                        self.presentation.data.get('status') in ('RESULTS','FINISHING','COMPLETE','ERROR','CANCELLED','IDLE'))
+                export_after_close(recorder,ready=export_ready if deferred else None)
         else:recorder.close()
         return {'enabled': False, 'path': str(recorder.root),
                 'status':recorder.status() if hasattr(recorder,'status') else None}
@@ -720,6 +734,12 @@ class SimulationService:
                 with self.lock:
                     self.collision_events.append(collision)
                     self.journey_comparison.collision(collision)
+                    run=self.journey_comparison.active
+                    if run and run.get('setup',{}).get('comparison_scenario'):
+                        stress=getattr(self.provider,'dense_chaos',None)
+                        role=next((k for k,v in getattr(stress,'bindings',{}).items() if v==collision.other_actor_id),None)
+                        run.setdefault('collision_events',[]).append({'frame_id':collision.frame_id,'timestamp_s':collision.timestamp_s,
+                            'actor_id':collision.other_actor_id,'type':collision.other_actor_type,'role':role})
                     if self.journey_auto_recording and self.recorder:
                         self.recorder.record_event(SimulationEvent(EventType.CollisionDetected,
                             collision.frame_id, collision.timestamp_s, {'collision': to_dict(collision)}))
@@ -747,6 +767,9 @@ class SimulationService:
     def _record(self, frame):
         if not self.recorder:
             return
+        native=getattr(self.provider,'comparison_evidence',None)
+        if native and native.get('frame_id')==frame.frame_id:
+            self.recorder.record_trace({'kind':'SCENARIO_FRAME','session_id':self.session_id,**native})
         if self.journey_auto_recording and hasattr(self.recorder,'status'):
             recording_status=self.recorder.status()
             if recording_status.get('incomplete'):
@@ -884,6 +907,9 @@ class SimulationService:
             self.last_drive_stop = {'reason':reason,'status':status,'frame_id':frame_id,'timestamp_s':stamp,
                 'detail':fault.get('message') if fault and status == 'ERROR' else reason}
         if self.journey_comparison.active:
+            stress=getattr(self.provider,'dense_chaos',None)
+            if callable(getattr(stress,'run_evidence',None)):
+                self.journey_comparison.active['scenario_evidence']=stress.run_evidence()
             if self.observation:
                 self.journey_comparison.sample(self.observation, getattr(self.provider, 'route_state', lambda: None)(), self.journey_observer)
             self.journey_comparison.finish(reason, 'ERROR' if status == 'ERROR' else 'INTERRUPTED')
@@ -937,7 +963,8 @@ class SimulationService:
     def stop_driving(self, reason='operator_stop', *, cancel_comparison=True, failure=False, cancel_presentation=True):
         with self.lock:
             self._require_normal_runtime()
-            self.require_connected()
+            # Cancelling a stopped preparation or failing journey must remain
+            # possible when construction temporarily suspends telemetry.
             if cancel_presentation:
                 if failure and self.presentation.busy and not self.presentation.data.get('guided'):
                     fault=self.runtime_fault or self.safety_fault or {}
@@ -1570,11 +1597,20 @@ class SimulationService:
             vehicle=self.observation.vehicle if live and self.observation else None
             return {'connected':live,'provider':self.name,
                 'sessionId':self.session_id,'mode':self.arbiter.machine.mode.value,
+                'vision_warmup':self.journey.get('status')=='STARTING' or bool(
+                    self.presentation.data.get('automatic_pair') and self.presentation.data.get('status')=='READY'),
                 'vehicle':{'frame':vehicle.frame_id,'timestamp':vehicle.timestamp_s} if vehicle else None,
                 'error':self.error or (self.lifecycle.error if self.lifecycle.state==ConnectionState.ERROR else None)}
 
     def _check_observation_health(self):
         live=self._live()
+        # Native controller/sensor construction can leave old callbacks queued.
+        # While the car is still held, wait for genuine aligned fresh frames;
+        # don't turn that expected warm-up into a failed driving episode. This
+        # does not extend any control/sensor lease or admit a moving command.
+        warming=(self.journey.get('status')=='STARTING' and self.navigation_ready_frame is not None
+                 and self.now()-getattr(self,'navigation_prepared_at',-float('inf'))<30.)
+        if not live and warming:return False
         if not live and self.lifecycle.state==ConnectionState.CONNECTED and not self.reconfiguring:
             if self.journey.get('status') in ('STARTING','RUNNING'):
                 frame_id,stamp=self._context()
@@ -1709,7 +1745,10 @@ class SimulationService:
         # dashboard serialization (which used to run inside their outer lock).
         with self.lock:
             if not self._live():
-                self.release_controls()
+                # Read endpoints also use this predicate. A camera request
+                # during native reconstruction must not cancel STARTING or
+                # release autonomous commands. Control and observation leases
+                # enforce their own stop conditions on the tick owner.
                 raise RuntimeError('Simulator telemetry unavailable; commands suspended')
 
     def get_vehicle_state(self):
@@ -1897,6 +1936,7 @@ class SimulationService:
                     self.dashboard_result = {'action': action, 'status': 'REJECTED', 'error': str(error), 'operationId': uuid.uuid4().hex}
             elif action == 'start_journey':
                 journey = None
+                self.reconfiguring=True
                 try:
                     with self.lock:
                         journey = self.journey
@@ -1922,6 +1962,8 @@ class SimulationService:
                             journey['driver_profile']=driver_profile(driving_mode)
                         if journey.get('presentation_id'):
                             manifest.update(presentation_id=journey['presentation_id'])
+                            cache=getattr(self,'control_perception',None);detected=cache.latest(self.session_id) if cache else None
+                            manifest['perception_profile']=copy.deepcopy((detected or {}).get('detector_profile'))
                             if self.presentation.data.get('guided'):
                                 manifest.update(guided=True,
                                     presentation_order=list(self.presentation.data['modes']),scene=self.presentation.data['scene'],
@@ -1946,11 +1988,20 @@ class SimulationService:
                                 self.journey_comparison.begin(driving_mode, manifest,
                                     pair_id=journey.get('pair_id'), recording=recording['path'])
                                 journey['pair_id'] = self.journey_comparison.data['pair_id']
+                                if journey.get('presentation_id')==self.presentation.data.get('id'):
+                                    self.presentation.data['pair_id']=journey['pair_id'];self.presentation.save()
                                 self.prepared_journey_pair = None
                             self.arbiter.safety.clear()
                             # Keep ego held until two new synchronized, actually
                             # fresh frames arrive after controller construction.
                             self.navigation_ready_frame=self.observation.frame_id+2
+                            if self.presentation.data.get('automatic_pair') and journey.get('presentation_id'):
+                                # Record a real, held 1.5 s camera prelude in
+                                # both arms. Traffic can diverge on its first
+                                # released tick, so a shared view needs this
+                                # measured starting scene, not an extended replay.
+                                self.navigation_ready_frame=self.observation.frame_id+max(2,round(1.5/getattr(self.provider,'fixed_delta',.05)))
+                            self.navigation_prepared_at=self.now()
                             self.journey.update(status='STARTING', reason=None, route_id=result['id'])
                             self._event(EventType.ControlChanged, journey=copy.deepcopy(self.journey))
                 except (ValueError, ImportError, RuntimeError, OSError) as error:
@@ -1959,6 +2010,7 @@ class SimulationService:
                             self._stop_navigation(str(error), status='ERROR')
                         else:
                             self.provider.stop_navigation()
+                finally:self.state_at=self.now();self.reconfiguring=False
             elif action == 'prepare_guided_vehicle':
                 if self.presentation.data.get('id')!=value['id'] or self.presentation.data['status']!='SELECTING':continue
                 self.reconfiguring=True
@@ -2102,7 +2154,7 @@ class SimulationService:
                           and self.now()-self.safety_observed_at<=self.active_safety.config.maximum_sensor_wall_age_s))):
                         self.navigation_ready_frame=None
                         fixture = getattr(self.provider,'benchmark_fixture',None)
-                        audit = fixture.verify() if self.journey.get('benchmark') and fixture else None
+                        audit = self.presentation._prepare_native(fixture.verify) if self.journey.get('benchmark') and fixture else None
                         if audit is not None:
                             self.journey_comparison.active['initial_condition_audit']=audit
                             self._event(EventType.ControlChanged,benchmark_initial_conditions=audit)
@@ -2112,7 +2164,7 @@ class SimulationService:
                             if audit is not None:
                                 self.journey_comparison.active['initial_condition_audit']=audit
                                 self.journey_comparison.save()
-                                fixture.release()
+                                self.presentation._prepare_native(fixture.release)
                             self.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
                             self.journey.update(status='RUNNING')
                             self._event(EventType.ControlChanged,journey=copy.deepcopy(self.journey))

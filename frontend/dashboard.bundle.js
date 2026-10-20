@@ -1079,7 +1079,7 @@
     <div id="guidedBehaviour" hidden><label for="guidedChaos">Traffic randomness <output id="guidedChaosValue">0%</output></label><div class="behaviour-presets"><button data-chaos="0">Calm</button><button data-chaos="45">Mixed</button><button data-chaos="85">Chaotic</button></div><input id="guidedChaos" type="range" min="0" max="100" step="5" value="0"><details><summary>Advanced traffic settings</summary><label for="guidedSeed">Random seed</label><div class="guided-seed"><input id="guidedSeed" type="number" min="0" max="2147483647"><button id="guidedShuffle" aria-label="Choose another random seed">Shuffle</button></div><p class="muted">Road density follows native route capacity. Population and driver behavior are available in Settings.</p></details></div>
     <div id="guidedPreparation" hidden><strong id="guidedPreparationTitle">Ready to prepare</strong><p id="guidedPreparationDetail"></p></div>
     <button id="guidedPrimary" class="primary">Start Simulation</button><p id="guidedStatus" role="status" aria-live="polite"></p>
-    <div id="guidedModeChoices" hidden aria-label="Choose your driving experience"><button id="robosphereModeBtn" data-mode="ROBOSPHERE"><span class="mode-symbol" aria-hidden="true">\u25CE</span><strong>Ya Rab Ostorha Mode</strong><span>Drive with Robosphere protection</span><em>Drive with Ya Rab Ostorha \u2197</em></button><button id="normalModeBtn" data-mode="NORMAL"><span class="mode-symbol" aria-hidden="true">\u25C7</span><strong>Normal Mode</strong><span>Self-driving route, no Robosphere overlay</span><em>Drive in Normal Mode \u2197</em></button></div>
+    <div id="guidedModeChoices" hidden aria-label="Choose your driving experience"><button id="robosphereModeBtn" data-mode="ROBOSPHERE"><span class="mode-symbol" aria-hidden="true">\u25CE</span><strong>Ya Rab Ostorha Mode</strong><span>Drive with Ya Rab Ostorha protection</span><em>Drive with Ya Rab Ostorha \u2197</em></button><button id="normalModeBtn" data-mode="NORMAL"><span class="mode-symbol" aria-hidden="true">\u25C7</span><strong>Normal Mode</strong><span>Self-driving route, no Ya Rab Ostorha overlay</span><em>Drive in Normal Mode \u2197</em></button></div>
     <div id="guidedJourneyOptions" hidden><label for="guidedSpeed">Target speed</label><input id="guidedSpeed" type="number" min="5" max="30" step="1" value="30"><span>km/h</span></div>
     <button id="guidedViewResults" class="primary" hidden>View Results \u2197</button><button id="guidedOtherMode" hidden>Run the other mode \u2197</button>
     <button id="guidedRoute" hidden>Edit destination</button><button id="guidedEditTraffic" hidden>Edit traffic</button><p id="guidedLiveCounts" class="muted"></p>`;
@@ -1769,7 +1769,7 @@
       return true;
     }
     close() {
-      this.releaseControls();
+      if (this.controlMode !== "AUTOMATIC" && this.journey?.status !== "STARTING") this.releaseControls();
       this.closed = true;
       this.cancel(this.retryTimer);
       this.retryTimer = null;
@@ -2606,6 +2606,62 @@
     return fresh && !replay && owner && focused && !modal && mode === "MANUAL" && armed;
   }
 
+  // frontend/scene-overlays.js
+  var edges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+  function boxCorners(box, age = 0) {
+    const c = box.center_m, h = box.half_size_m, v = box.velocity_mps || [0, 0], yaw = box.yaw_rad || 0;
+    if (!Array.isArray(c) || c.length !== 3 || !Array.isArray(h) || h.length !== 3 || ![...c, ...h, yaw, ...v].every(Number.isFinite) || h.some((x) => x <= 0)) return [];
+    const co = Math.cos(yaw), si = Math.sin(yaw);
+    return [-1, 1].flatMap((z) => [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => [c[0] + v[0] * age + x * h[0] * co - y * h[1] * si, c[1] + v[1] * age + x * h[0] * si + y * h[1] * co, c[2] + z * h[2]]));
+  }
+  function drawSceneOverlays(ctx, prediction, camera) {
+    const age = camera.timestamp - prediction.timestamp_s;
+    if (!Number.isFinite(age) || age < 0 || age > 0.75) return { boxes: 0, arrows: 0 };
+    let boxes = 0, arrows = 0;
+    const risks = new Map((prediction.trajectories || []).map((m) => [m.track_id, m]));
+    if (age <= 0.15 + 1e-6) for (const box of prediction.boxes_3d || []) {
+      if (box.source !== "CURRENT_SENSOR_GEOMETRY" || box.measurement_frame !== prediction.evaluation_frame) continue;
+      const corners = boxCorners(box, age).map((p) => projectPrediction(p, prediction.render_reference, camera));
+      if (corners.length !== 8) continue;
+      const risk = risks.get(box.track_id);
+      ctx.strokeStyle = risk?.used_for_actuation ? "#FF6B57" : risk ? "#F5B95F" : box.class === "person" ? "#FFB7B2" : "#83d9df";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      let count = 0;
+      for (const [a, b] of edges) if (corners[a] && corners[b]) {
+        ctx.moveTo(...corners[a]);
+        ctx.lineTo(...corners[b]);
+        count++;
+      }
+      if (count) {
+        ctx.stroke();
+        boxes++;
+      }
+    }
+    for (const mode of prediction.trajectories || []) {
+      if (!mode.points?.length || Math.hypot(mode.points.at(-1)[1] - mode.points[0][1], mode.points.at(-1)[2] - mode.points[0][2]) < 0.1) continue;
+      const points = remainingForecast(mode.points, age).map((row) => projectPrediction([row[1], row[2], 0.25], prediction.render_reference, camera)).filter(Boolean);
+      if (points.length < 2) continue;
+      ctx.strokeStyle = mode.used_for_actuation ? "#FF6B57" : mode.class === "person" ? "#FFB7B2" : "#83d9df";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      points.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      const tipIndex = Math.min(points.length - 1, Math.max(1, Math.round((0.35 + camera.timestamp % 1 * 0.65) * points.length)));
+      const a = points[tipIndex - 1], b = points[tipIndex], angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
+      ctx.beginPath();
+      ctx.moveTo(b[0] - 8 * Math.cos(angle - 0.5), b[1] - 8 * Math.sin(angle - 0.5));
+      ctx.lineTo(...b);
+      ctx.lineTo(b[0] - 8 * Math.cos(angle + 0.5), b[1] - 8 * Math.sin(angle + 0.5));
+      ctx.stroke();
+      arrows++;
+    }
+    return { boxes, arrows };
+  }
+
   // frontend/prediction-view.js
   function matrix(pose) {
     const { roll: r = 0, pitch: p = 0, yaw: y = 0 } = pose.rotation_rad || {};
@@ -2779,6 +2835,7 @@
         const supplementary = latest?.supplementary_model_candidates?.length ?? 0;
         this.label.textContent = guidedForecast ? latest.trajectories?.length ? "Selected risk forecast \xB7 may change" : "No risk forecast selected" : (conflict2 ? `${context} \xB7 overlap in ${conflict2.time_s.toFixed(1)} s` : context) + (supplementary ? ` \xB7 ${supplementary} supplementary model candidates` : "");
         this.label.dataset.tone = conflict2 ? "amber" : "neutral";
+        if (guidedForecast && latest.visual_version === 1) this.label.textContent = `Measured 3D view \xB7 ${latest.trajectories?.length || 0} possible conflicts`;
       } else this.message = p.fresh ? "Waiting for fresh measured motion\u2026" : "Motion observations unavailable";
       const prediction = guidedForecast ? latest : predictionMatches(latest, p.sessionId, camera) ? latest : this.imagePrediction;
       const ok = (p.fresh || p.isReplay) && !img.hidden && (guidedForecast ? forecastCanProject(prediction, p.sessionId, camera) : predictionMatches(prediction, p.sessionId, camera));
@@ -2802,9 +2859,11 @@
       const visible = guidedForecast ? (prediction.trajectories || []).slice(0, 1) : (this.visualOptions?.trajectories === false ? [] : visibleModes(prediction)).slice(0, 18);
       const age = guidedForecast ? Math.max(0, camera.timestamp - prediction.timestamp_s) : 0;
       const classes = new Map(prediction.tracks.filter((t) => t.semantic_evidence).map((t) => [t.id, t.class]));
+      const sceneGeometry = guidedForecast && prediction.visual_version === 1;
+      if (sceneGeometry) drawSceneOverlays(ctx, prediction, camera);
       ctx.lineWidth = 2;
       ctx.setLineDash([6, 5]);
-      for (const mode of visible) {
+      for (const mode of sceneGeometry ? [] : visible) {
         ctx.strokeStyle = classes.get(mode.track_id) === "person" ? "#FFB7B2" : String(mode.source).includes("TRAJECTRON") ? "#b6a6d8" : "#83d9df";
         ctx.beginPath();
         let begun = false;
@@ -2987,7 +3046,7 @@
       $4("detectionSummary").textContent = age.tone === "warning" ? age.label + (age.seconds === null ? "" : " \xB7 " + age.seconds.toFixed(2) + " s") : counts + " \xB7 " + age.seconds.toFixed(2) + " s behind";
       $4("perceptionFreshness").title = "Display delay notice starts at 0.5 simulation seconds. Inference is display only.";
       $4("detectionSummary").dataset.tone = age.tone;
-      $4("perceptionFrame").textContent = "Analyzed frame " + result.frame_id + " \xB7 t " + result.timestamp_s.toFixed(3) + " s \xB7 Nano ONNX 320 + English OCR \xB7 " + result.device;
+      $4("perceptionFrame").textContent = "Analyzed frame " + result.frame_id + " \xB7 t " + result.timestamp_s.toFixed(3) + " s \xB7 " + result.model + " \xB7 " + result.device;
     }
     clear(reason) {
       this.result = null;
@@ -3018,7 +3077,7 @@
       this.nextAt = performance.now() + 500;
       const session = p.sessionId;
       try {
-        const response = await fetch("/api/simulation/perception", { cache: "no-store", signal: AbortSignal.timeout(3e3) });
+        const response = await fetch("/api/simulation/perception?ocr=1", { cache: "no-store", signal: AbortSignal.timeout(3e3) });
         if (!response.ok) throw new Error("Could not read inference worker");
         const result = await response.json();
         if (result.status !== "RUNNING") {
@@ -3184,6 +3243,9 @@
     } };
   }
 
+  // frontend/project-name.js
+  var PROJECT_NAME = "Ya Rab Ostorha";
+
   // frontend/journey-comparison.js
   var JOURNEY_MODES = ["ROBOSPHERE", "NORMAL"];
   var benchmarkTerminalSupported = (journey) => journey?.status === "ARRIVED" || ["PAUSED", "ERROR"].includes(journey?.status) && ["collision", "route_ended_before_destination"].includes(journey?.reason);
@@ -3229,7 +3291,7 @@
     RESTORING: ["Preparing the other drive", "Rebuilding and checking the same starting scene. Traffic may react differently."],
     RECOVERING: ["Checking the sensors", "Waiting for fresh sensor frames and a verified starting scene."]
   };
-  var modeLabel2 = (m) => m === "NORMAL" ? "Normal" : "\u064A\u0627 \u0631\u0628 \u062A\u0633\u062A\u0631\u0647\u0627";
+  var modeLabel2 = (m) => m === "NORMAL" ? "Normal" : PROJECT_NAME;
   var nextLabel = (m) => m === "NORMAL" ? "See predictive driving now" : "See reactive sensor driving now";
   function missionFailure(reason) {
     if (!reason) return "Open Menu for diagnostics.";
@@ -3255,41 +3317,17 @@
     const base = { phase, arm, mode, action: null, label: "", camera: false, choices: false, loadingDrive: false, loadStep: 4, freeGPU: ownPage && !preparingWorld && !!p.simulatorStop?.available && !["STOPPED", "STOPPING"].includes(p.simulatorStop?.status) && !p.isReplay && !p.simulationStarting && !p.restarting };
     const state = (screen, title, detail, extra = {}) => ({ ...base, screen, title, detail, ...extra });
     const loadingWorld = (title, detail, loadStep = 0) => state("choose", title, detail, { choices: true, label: driveLabel, loadingDrive: true, loadStep, freeGPU: false });
-    if (guided2 && !local.newDrive && ["RESULTS", "FINISHING", "COMPLETE"].includes(phase) && d.pair_id) {
-      const finishing = !!(phase === "FINISHING" || p.simulatorStop?.status === "STOPPING" || local.commandPending || local.shutdownPending);
-      return state(
-        "comparison",
-        "Your two recorded drives",
-        phase === "FINISHING" ? "Preparing both videos before closing the simulator. Your results stay here." : phase === "COMPLETE" ? "Your recordings are saved. Playback remains available with CARLA closed." : d.finish_error || "Review both recordings, then Finish to close CARLA and free the GPU.",
-        { action: finishing ? null : p.simulatorStop?.status === "FAILED" ? "FREE_GPU" : phase === "COMPLETE" ? "NEW_DRIVE" : "FINISH", label: finishing ? "Saving & closing\u2026" : p.simulatorStop?.status === "FAILED" ? "Retry GPU release" : phase === "COMPLETE" ? "Start a new drive" : d.finish_error ? "Retry saving & closing" : "Finish", loadingDrive: finishing, freeGPU: false }
-      );
-    }
-    if (local.shutdownPending || p.simulatorStop?.status === "STOPPING") return state("releasing", "Freeing the GPU", "Saving recorded data, closing CARLA and verifying its processes have exited.", { freeGPU: false });
-    if (p.simulatorStop?.status === "FAILED") return state("fault", "CARLA could not close", p.simulatorStop.error || "Open Menu for runtime details.", { action: "FREE_GPU", label: "Retry GPU release" });
-    if (p.simulationStarting || local.launchPending && !p.connected) return loadingWorld("Starting the simulator", "Launching CARLA. Choose your first drive while the city loads.");
-    if (p.controlMode === "EMERGENCY_STOP") return state("emergency", "Emergency stop is active", "The vehicle is held. Release the stop to continue with available session actions.", { action: p.fresh && p.controller ? "RELEASE" : null, label: "Release emergency stop" });
-    if (p.simulatorStart?.status === "FAILED" && !p.connected) return state("fault", "The simulator could not start", p.simulatorStart.error || p.operationError || "Open Menu to inspect the runtime.", { action: "START_SIMULATION", label: "Try starting simulation", freeGPU: false });
-    if (!p.connected && p.transportAlive && guided2 && preparation[phase]) return state("loading", "Preparing your drive", preparation[phase][1], { loadingDrive: true, label: driveLabel });
-    if (!p.connected) return p.simulatorStop?.status !== "STOPPED" && guided2 && !["COMPLETE", "CANCELLED"].includes(phase) ? state("fault", "Connection lost", "The drive has been stopped. Reconnect to inspect its saved outcome.", { action: "CONNECT", label: "Reconnect camera & session" }) : state("welcome", "Take the driver\u2019s view.", "Compare reactive sensor driving and predictive RULE in the same Mercedes.", { action: "START_SIMULATION", label: "Start simulation", freeGPU: false });
-    if (!p.fresh) return phase === "DRIVING" ? state("driving", modeLabel2(mode), "Waiting for fresh camera and vehicle data.", { camera: true }) : initialWorld ? loadingWorld("Connecting the session", "Waiting for current camera and vehicle data. Your drive will be available when the city is ready.") : state("loading", "Connecting the session", "Waiting for current camera and vehicle data. Driving remains stopped.");
-    if (local.preloadError) return state("fault", "Your fresh drive could not be prepared", local.preloadError, { action: "PREPARE_HERE", label: "Try preparing a fresh drive", freeGPU: false });
-    if (local.pageId && local.preloadRequested && !local.pageAdmitted && d.page_id !== local.pageId)
-      return loadingWorld("Preparing your fresh drive", "Saving and stopping the previous page\u2019s attempt before rebuilding a new starting scene.", 1);
-    if (!ownPage) return state(phase === "DRIVING" ? "driving" : "choose", "This session is open in another page", "The current attempt continues. Preparing a new drive here explicitly saves and stops it.", { camera: phase === "DRIVING", action: "PREPARE_HERE", label: "Prepare a fresh drive here", freeGPU: false });
-    if (guided2 && p.controller === false && !d.awaiting_choice && !["COMPLETE", "CANCELLED"].includes(phase)) return state("driving", "This drive is controlled by another page", "You can watch this session, use Emergency stop, or Free GPU to close it.", { camera: phase === "DRIVING" });
-    if (local.commandPending && phase === "CHOOSING") return loadingWorld("Starting your selected drive", "Checking the selected car, sensors and recording before moving.", 3);
-    if (guided2 && d.preloaded && d.awaiting_choice && phase !== "ERROR") {
-      const ready = phase === "CHOOSING";
+    const preparedWorldView = () => {
+      const ready = phase === "CHOOSING", actual = p.population?.actual;
       const progress = ready ? "The shared city is ready and held at its saved start." : preparation[phase]?.[1] || "Preparing the same seeded city for either drive.";
-      const actual = p.population?.actual;
       return state(
         "choose",
         ready ? "Which world would you like to see first?" : "Your city is preparing",
         progress + (ready && actual ? ` Actual: ${actual.vehicles ?? "unmeasured"} vehicles and ${actual.pedestrians ?? "unmeasured"} pedestrians.` : " Requests 60 vehicles and 100 pedestrians; actual counts are checked.") + " Both drives: the same Mercedes and sensor rig.",
         { choices: true, action: ready && local.firstMode ? "START_GUIDED" : null, label: driveLabel, loadingDrive: !ready, loadStep: ready ? 4 : phase === "READY" ? 3 : phase === "PREPARING" ? 2 : 1, freeGPU: ready && base.freeGPU }
       );
-    }
-    if (guided2 && preparation[phase]) return state(
+    };
+    const preparationView = () => d.preloaded && d.awaiting_choice ? preparedWorldView() : state(
       d.preloaded && arm === 0 && ["SELECTING", "READY", "STARTING"].includes(phase) ? "choose" : "loading",
       ["SELECTING", "READY", "STARTING"].includes(phase) ? "Starting your drive" : preparation[phase][0],
       preparation[phase][1],
@@ -3299,7 +3337,39 @@
         label: phase === "FINALIZING" ? "Saving this drive\u2026" : arm === 1 || phase === "RESTORING" ? "Preparing the other drive\u2026" : driveLabel
       }
     );
+    if (guided2 && !local.newDrive && ["RESULTS", "FINISHING", "COMPLETE"].includes(phase) && d.pair_id) {
+      const finishing = !!(phase === "FINISHING" || p.simulatorStop?.status === "STOPPING" || local.commandPending || local.shutdownPending);
+      return state(
+        "comparison",
+        "Your two recorded drives",
+        phase === "FINISHING" ? "Preparing the three videos before closing the simulator. Your results stay here." : phase === "COMPLETE" ? "Your recordings are saved. Playback remains available with CARLA closed." : d.finish_error || "Review both recordings, then Finish to close CARLA and free the GPU.",
+        { action: finishing ? null : p.simulatorStop?.status === "FAILED" ? "FREE_GPU" : phase === "COMPLETE" ? "NEW_DRIVE" : "FINISH", label: finishing ? "Saving & closing\u2026" : p.simulatorStop?.status === "FAILED" ? "Retry GPU release" : phase === "COMPLETE" ? "Start a new drive" : d.finish_error ? "Retry saving & closing" : "Finish", loadingDrive: finishing, freeGPU: false }
+      );
+    }
+    if (local.shutdownPending || p.simulatorStop?.status === "STOPPING") return state("releasing", "Freeing the GPU", "Saving recorded data, closing CARLA and verifying its processes have exited.", { freeGPU: false });
+    if (p.simulatorStop?.status === "FAILED") return state("fault", "CARLA could not close", p.simulatorStop.error || "Open Menu for runtime details.", { action: "FREE_GPU", label: "Retry GPU release" });
+    if (p.simulationStarting || local.launchPending && !p.connected) return loadingWorld("Starting the simulator", "Launching CARLA. Choose your first drive while the city loads.");
+    if (p.controlMode === "EMERGENCY_STOP") return state("emergency", "Emergency stop is active", "The vehicle is held. Release the stop to continue with available session actions.", { action: p.fresh && p.controller ? "RELEASE" : null, label: "Release emergency stop" });
+    if (p.simulatorStart?.status === "FAILED" && !p.connected) return state("fault", "The simulator could not start", p.simulatorStart.error || p.operationError || "Open Menu to inspect the runtime.", { action: "START_SIMULATION", label: "Try starting simulation", freeGPU: false });
+    if (!p.connected && p.transportAlive && guided2 && preparation[phase]) return preparationView();
+    if (!p.connected) return p.simulatorStop?.status !== "STOPPED" && guided2 && !["COMPLETE", "CANCELLED"].includes(phase) ? state("fault", "Connection lost", "The drive has been stopped. Reconnect to inspect its saved outcome.", { action: "CONNECT", label: "Reconnect camera & session" }) : state("welcome", "Take the driver\u2019s view.", "Compare reactive braking and early crossing prediction in the same Mercedes.", { action: "START_SIMULATION", label: "Start simulation", freeGPU: false });
+    if (!p.fresh && guided2 && preparation[phase]) return preparationView();
+    if (!p.fresh) return phase === "DRIVING" ? state("driving", modeLabel2(mode), "Waiting for fresh camera and vehicle data.", { camera: true }) : initialWorld ? loadingWorld("Connecting the session", "Waiting for current camera and vehicle data. Your drive will be available when the city is ready.") : state("loading", "Connecting the session", "Waiting for current camera and vehicle data. Driving remains stopped.");
+    if (local.preloadError) return state("fault", "Your fresh drive could not be prepared", local.preloadError, { action: "PREPARE_HERE", label: "Try preparing a fresh drive", freeGPU: false });
+    if (local.pageId && local.preloadRequested && !local.pageAdmitted && d.page_id !== local.pageId)
+      return loadingWorld("Preparing your fresh drive", "Saving and stopping the previous page\u2019s attempt before rebuilding a new starting scene.", 1);
+    if (!ownPage) return state(phase === "DRIVING" ? "driving" : "choose", "This session is open in another page", "The current attempt continues. Preparing a new drive here explicitly saves and stops it.", { camera: phase === "DRIVING", action: "PREPARE_HERE", label: "Prepare a fresh drive here", freeGPU: false });
+    if (guided2 && p.controller === false && !d.awaiting_choice && !["COMPLETE", "CANCELLED"].includes(phase)) return state("driving", "This drive is controlled by another page", "You can watch this session, use Emergency stop, or Free GPU to close it.", { camera: phase === "DRIVING" });
+    if (local.commandPending && phase === "CHOOSING") return loadingWorld("Starting your selected drive", "Checking the selected car, sensors and recording before moving.", 3);
+    if (guided2 && d.preloaded && d.awaiting_choice && phase !== "ERROR") return preparedWorldView();
+    if (guided2 && preparation[phase]) return preparationView();
     if (guided2 && d.preloaded && phase !== "CHOOSING" && !["DRIVING", "AWAITING_NEXT", "RESULTS", "ERROR", "COMPLETE", "CANCELLED"].includes(phase)) return state("loading", "Preparing the shared world", "Building a seeded city with a requested 60 vehicles and 100 pedestrians. Both drives use this starting scene.");
+    if (guided2 && phase === "DRIVING" && d.automatic_pair) return state(
+      "driving",
+      modeLabel2(mode),
+      "Recording until the destination or a contact. Both drives run automatically from the same crossing scenario.",
+      { camera: true }
+    );
     if (guided2 && phase === "DRIVING") return state(
       "driving",
       modeLabel2(mode),
@@ -3333,7 +3403,7 @@
     return state(
       "choose",
       "Which world would you like to see first?",
-      "One prepared chaos scene and the same Mercedes. Both use sensor braking; \u064A\u0627 \u0631\u0628 \u062A\u0633\u062A\u0631\u0647\u0627 adds predictive RULE. RL is not active.",
+      `One prepared crossing scenario and the same Mercedes. Both use sensor braking; ${PROJECT_NAME} adds prediction. Both drives run to their actual end.`,
       { choices: true, action: local.firstMode ? "START_GUIDED" : null, label: driveLabel }
     );
   }
@@ -3686,6 +3756,7 @@
   var finite = (value) => Number.isFinite(value) && value >= 0;
   var metricText = (value, digits = 0) => finite(value) ? value.toFixed(digits) : "\u2014";
   function controlReasonText(reason) {
+    if (/^Advancing below verified [\d.]+ m\/s crossing limit$/.test(reason || "")) return "Proceeding cautiously while monitoring a possible crossing.";
     if (/^presentation_phase_timeout:/.test(reason || "")) return "The presentation exceeded its time limit. The unfinished attempt and its trace are saved; use Restart to prepare a new run.";
     return {
       CONTROL_PROCESSING_DEADLINE: "Control calculation missed its deadline. Waiting for a fresh frame.",
@@ -4050,14 +4121,14 @@
     const town = node2("div", "studio-town");
     town.innerHTML = icons.map + '<div><strong id="studioTown">CARLA</strong><span id="studioOwnership">Driving simulator</span></div>';
     $5("brand").after(town);
-    document.querySelector("#brand h1").textContent = "Ya Rab Ostorha";
+    document.querySelector("#brand h1").textContent = PROJECT_NAME;
     document.querySelector("#brand .eyebrow").textContent = "CARLA Driving Simulator";
     document.querySelector(".guided-heading .eyebrow").textContent = "YOUR NEXT JOURNEY";
     const camera = $5("frontCameraView");
     const stage = camera.parentElement;
     const controlBar = node2("section", "studio-control-bar");
     controlBar.setAttribute("aria-label", "Driving controls");
-    controlBar.innerHTML = '<div class="studio-drive-context"><span>LIVE DRIVE / CONTROL</span><strong id="studioRouteContext">No destination selected</strong><small id="studioControlStage">Vehicle held</small></div><div class="studio-manual-cluster"><div id="studioManualMode" class="studio-manual-modes" data-mode="ROBOSPHERE" role="group" aria-label="Keyboard driving protection"><button type="button" data-manual-mode="ROBOSPHERE" aria-pressed="true">Protected</button><button type="button" data-manual-mode="NORMAL" aria-pressed="false">Normal</button></div><span id="studioManualContext">Robosphere protection</span></div><div class="studio-drive-buttons"><button id="studioManualStop" type="button">Stop</button><button id="studioResultsLink" type="button">Results \u2197</button></div>';
+    controlBar.innerHTML = '<div class="studio-drive-context"><span>LIVE DRIVE / CONTROL</span><strong id="studioRouteContext">No destination selected</strong><small id="studioControlStage">Vehicle held</small></div><div class="studio-manual-cluster"><div id="studioManualMode" class="studio-manual-modes" data-mode="ROBOSPHERE" role="group" aria-label="Keyboard driving protection"><button type="button" data-manual-mode="ROBOSPHERE" aria-pressed="true">Protected</button><button type="button" data-manual-mode="NORMAL" aria-pressed="false">Normal</button></div><span id="studioManualContext">Ya Rab Ostorha protection</span></div><div class="studio-drive-buttons"><button id="studioManualStop" type="button">Stop</button><button id="studioResultsLink" type="button">Results \u2197</button></div>';
     $5("cameraCard").insertBefore(controlBar, stage);
     controlBar.querySelector(".studio-drive-buttons").prepend($5("startDrivingBtn"));
     $5("studioManualStop").onclick = () => tools2.clearControls("operator_stop");
@@ -4137,13 +4208,13 @@
     $5("sensorPanel").append(health);
     const results = $5("resultsPhase");
     results.querySelector(".analysis-heading h2").textContent = "Comparison results";
-    const sub = node2("p", "studio-result-subtitle", "Your driving, with and without Robosphere.");
+    const sub = node2("p", "studio-result-subtitle", "Your driving, with and without Ya Rab Ostorha.");
     results.querySelector(".analysis-heading h2").after(sub);
     const ordinary = node2("section", "journey-comparison");
     ordinary.id = "ordinaryComparison";
     ordinary.dataset.view = "journey";
     ordinary.dataset.focusMode = "ROBOSPHERE";
-    ordinary.innerHTML = '<div class="studio-comparison-banner"><div><strong id="ordinaryComparisonTitle">Comparison incomplete</strong><p id="ordinaryComparisonHint">Run both modes to complete your comparison.</p><p id="ordinaryRecoveryStatus" role="status"></p></div><div><span id="ordinaryComparisonCount">0 of 2 attempts recorded</span><progress id="ordinaryComparisonProgress" max="2" value="0" aria-label="Recorded modes"></progress></div></div><div class="studio-result-controls"><div class="studio-result-view" role="group" aria-label="Comparison measurements"><button data-result-view="journey" aria-pressed="true">Journey</button><button data-result-view="safety" aria-pressed="false">Safety & sensing</button></div><div class="studio-run-switch" role="group" aria-label="Comparison mode"><button data-focus-mode="ROBOSPHERE" aria-pressed="true">With Robosphere</button><button data-focus-mode="NORMAL" aria-pressed="false">Without</button></div><button id="studioResultDetailsBtn">More details \u2197</button></div><div id="ordinaryComparisonPanels" class="studio-result-pair"></div>';
+    ordinary.innerHTML = '<div class="studio-comparison-banner"><div><strong id="ordinaryComparisonTitle">Comparison incomplete</strong><p id="ordinaryComparisonHint">Run both modes to complete your comparison.</p><p id="ordinaryRecoveryStatus" role="status"></p></div><div><span id="ordinaryComparisonCount">0 of 2 attempts recorded</span><progress id="ordinaryComparisonProgress" max="2" value="0" aria-label="Recorded modes"></progress></div></div><div class="studio-result-controls"><div class="studio-result-view" role="group" aria-label="Comparison measurements"><button data-result-view="journey" aria-pressed="true">Journey</button><button data-result-view="safety" aria-pressed="false">Safety & sensing</button></div><div class="studio-run-switch" role="group" aria-label="Comparison mode"><button data-focus-mode="ROBOSPHERE" aria-pressed="true">With Ya Rab Ostorha</button><button data-focus-mode="NORMAL" aria-pressed="false">Without</button></div><button id="studioResultDetailsBtn">More details \u2197</button></div><div id="ordinaryComparisonPanels" class="studio-result-pair"></div>';
     ordinary.querySelectorAll("[data-result-view]").forEach((button) => button.onclick = () => {
       ordinary.dataset.view = button.dataset.resultView;
       ordinary.querySelectorAll("[data-result-view]").forEach((other) => other.setAttribute("aria-pressed", String(other === button)));
@@ -4162,7 +4233,7 @@
     $5("sensorPanel").append($5("motionReadout"));
     for (const el2 of [document.querySelector(".safety-monitor"), document.querySelector(".session-timeline"), $5("liveOperationStatus"), $5("resultContent"), document.querySelector(".recording-archive")]) if (el2) $5("studioDiagnosticContent").append(el2);
     const definitions = node2("details", "studio-definitions");
-    definitions.innerHTML = '<summary>How the comparison is measured</summary><p>Collisions are native contact episodes per actor, separated by more than 1 second. Impulse is the maximum native contact impulse (N\xB7s). A forward near miss requires measured TTC below 1.5 s and range below 5 m, with a 1-second release gap.</p><p>High-risk time comes from the same forward sensor observer in both modes. Coverage shows how much of the run had fresh, usable observations. Unknown space is not counted as clear. Normal follows the native route and traffic signals. Normal manual control preserves the driver pedals and steering. Current Normal autonomous control uses reactive sensor obstacle braking. Robosphere adds predictive RULE. Manual Normal preserves pedals and steering. Historical recordings retain their original capabilities; operator stops, emergency stops and connection watchdogs remain active.</p><p>Each run records automatically. Arrived, stopped, collision and failed attempts stay distinct. The paired setup restores origin, destination, weather, requested speed and seeded traffic settings. Live actor trajectories can diverge; these are measured differences, not a causal count of prevented accidents. Historical research and its budgets remain separate.</p><p id="ordinaryRecordingReferences"></p>';
+    definitions.innerHTML = '<summary>How the comparison is measured</summary><p>Collisions are native contact episodes per actor, separated by more than 1 second. Impulse is the maximum native contact impulse (N\xB7s). A forward near miss requires measured TTC below 1.5 s and range below 5 m, with a 1-second release gap.</p><p>High-risk time comes from the same forward sensor observer in both modes. Coverage shows how much of the run had fresh, usable observations. Unknown space is not counted as clear. Normal follows the native route and traffic signals. Normal manual control preserves the driver pedals and steering. Current Normal autonomous control uses reactive sensor obstacle braking. Ya Rab Ostorha adds predictive RULE. Manual Normal preserves pedals and steering. Historical recordings retain their original capabilities; operator stops, emergency stops and connection watchdogs remain active.</p><p>Each run records automatically. Arrived, stopped, collision and failed attempts stay distinct. The paired setup restores origin, destination, weather, requested speed and seeded traffic settings. Live actor trajectories can diverge; these are measured differences, not a causal count of prevented accidents. Historical research and its budgets remain separate.</p><p id="ordinaryRecordingReferences"></p>';
     ordinary.append(definitions);
     const provenance = node2("details", "studio-provenance");
     provenance.innerHTML = '<summary>Comparison Details \xB7 setup & recordings</summary><div id="ordinaryProvenance"></div>';
@@ -4193,7 +4264,7 @@
       const panel = node2("article", "studio-run-panel");
       panel.dataset.mode = mode2;
       const header = node2("header");
-      header.innerHTML = `<span class="mode-symbol" aria-hidden="true">${mode2 === "NORMAL" ? "\u25C7" : "\u25CE"}</span><div><h3>${mode2 === "NORMAL" ? "Without Robosphere" : "With Robosphere"}</h3><p>${mode2 === "NORMAL" ? "Normal Mode \xB7 native route driver" : "Ya Rab Ostorha Mode \xB7 RULE protection"}</p></div><span class="run-status">Not Run</span>`;
+      header.innerHTML = `<span class="mode-symbol" aria-hidden="true">${mode2 === "NORMAL" ? "\u25C7" : "\u25CE"}</span><div><h3>${mode2 === "NORMAL" ? "Without Ya Rab Ostorha" : "With Ya Rab Ostorha"}</h3><p>${mode2 === "NORMAL" ? "Normal Mode \xB7 native route driver" : "Ya Rab Ostorha Mode \xB7 RULE protection"}</p></div><span class="run-status">Not Run</span>`;
       panel.append(header);
       const grid = node2("dl", "studio-run-metrics");
       const values = fields.map(([label, key], i) => {
@@ -4267,7 +4338,7 @@
       });
       txt($5("studioRouteContext"), p.route?.destination?.name || "No destination \xB7 keyboard available");
       txt($5("studioControlStage"), automatic ? "Self-driving \xB7 " + modeName(manualMode) : p.controlMode === "MANUAL" ? "Keyboard driving \xB7 " + modeName(manualMode) : "Vehicle held");
-      txt($5("studioManualContext"), manualMode === "NORMAL" ? "Normal \xB7 obstacle protection off" : "Robosphere \xB7 " + (p.safetySystem?.controller || "RULE") + " protection");
+      txt($5("studioManualContext"), manualMode === "NORMAL" ? "Normal \xB7 obstacle protection off" : "Ya Rab Ostorha \xB7 " + (p.safetySystem?.controller || "RULE") + " protection");
       txt($5("startDrivingBtn"), automatic ? "Take manual control" : p.controlMode === "MANUAL" ? "Keyboard active" : "Start keyboard control");
       $5("startDrivingBtn").disabled ||= p.controlMode === "MANUAL";
       const presenting = p.presentation?.id && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(p.presentation.status);
@@ -4401,7 +4472,7 @@
       }
       const rows = [["Run ID", (r) => r.id], ["Status", (r) => r.status], ["Town", (r) => r.setup?.map], ["Vehicle", (r) => r.setup?.blueprint], ["Destination", (r) => r.setup?.destination?.name], ["Origin", (r) => r.setup?.origin?.location?.map((x) => x.toFixed(2)).join(", ")], ["Target speed", (r) => Number.isFinite(r.setup?.speed_kmh) ? r.setup.speed_kmh + " km/h" : null], ["Traffic seed", (r) => r.setup?.population?.seed], ["Requested population", (r) => r.setup?.population && `${r.setup.population.vehicle_count} vehicles \xB7 ${r.setup.population.pedestrian_count} pedestrians \xB7 ${r.setup.population.chaos_percent}% randomness`], ["Applied population", (r) => r.setup?.actual_population && JSON.stringify(r.setup.actual_population)], ["Weather", (r) => r.setup?.weather && JSON.stringify(r.setup.weather)], ["Protection", (r) => recordedDriverDescription(r)], ["Recording", (r) => r.recording || "No recording reference"], ["Recorded at UTC", (r) => r.created_at_utc]];
       const table = node2("table");
-      table.innerHTML = '<thead><tr><th scope="col">Conditions</th><th scope="col">With Robosphere</th><th scope="col">Without Robosphere</th></tr></thead>';
+      table.innerHTML = '<thead><tr><th scope="col">Conditions</th><th scope="col">With Ya Rab Ostorha</th><th scope="col">Without Ya Rab Ostorha</th></tr></thead>';
       const tbody = node2("tbody");
       for (const [label, get] of rows) {
         const tr = node2("tr");
@@ -4907,7 +4978,7 @@
       $7("simpleSpeed").disabled = $7("simpleTraffic").disabled = locked;
       $7("simpleDestination").textContent = p.route?.destination?.name || "Choose a destination on the map";
       const actions = { FOLLOW: "Following the route", SLOW: "Slowing down", DECELERATE: "Slowing down", EXIT: "Changing lanes", PASS: "Passing an obstacle", RETURN: "Returning to the route", REVERSE: "Repositioning in reverse", HOLD: "Waiting for measured space" };
-      let message = p.recordingStatus?.error ? demoFailure(p.recordingStatus.error) : p.operationError ? demoFailure(p.operationError) : !available && p.connected ? "Hybrid driving is awaiting native acceptance. Restart uses the existing Robosphere and Normal drivers." : active ? "Driving \xB7 " + (actions[p.maneuver?.action] || "Following the route") : p.journey?.status === "ARRIVED" ? "Destination reached." : p.lastDriveStop?.detail ? demoFailure(p.lastDriveStop.detail) : "Choose a destination, speed and traffic, then start driving.";
+      let message = p.recordingStatus?.error ? demoFailure(p.recordingStatus.error) : p.operationError ? demoFailure(p.operationError) : !available && p.connected ? "Hybrid driving is awaiting native acceptance. Restart uses the existing Ya Rab Ostorha and Normal drivers." : active ? "Driving \xB7 " + (actions[p.maneuver?.action] || "Following the route") : p.journey?.status === "ARRIVED" ? "Destination reached." : p.lastDriveStop?.detail ? demoFailure(p.lastDriveStop.detail) : "Choose a destination, speed and traffic, then start driving.";
       if (active && p.stopDiagnostics?.braking && p.journey?.driving_mode === "HYBRID") message = controlReasonText(p.stopDiagnostics.reason);
       if (p.hybridDriving?.validation_active && !p.hybridDriving?.accepted) message = "Bounded native diagnostic \xB7 " + message;
       const result = p.dashboardResult;
@@ -4955,7 +5026,7 @@
       $7("ordinaryComparison").hidden = benchmark;
       const heading = $7("resultsPhase").querySelector(".analysis-heading");
       heading.querySelector("h2").textContent = benchmark ? "Comparison results" : "Comparison results";
-      heading.querySelector("p").textContent = benchmark ? "CARLA normal driver and hybrid system" : "Your driving, with and without Robosphere.";
+      heading.querySelector("p").textContent = benchmark ? "CARLA normal driver and hybrid system" : "Your driving, with and without Ya Rab Ostorha.";
       if (benchmark) {
         if (renderPair !== data.pair_id) {
           linkedPlayback = false;
@@ -5024,17 +5095,19 @@
   function presentationSummary(data) {
     const runs = ["ROBOSPHERE", "NORMAL"].map((m) => data?.runs?.[m]);
     if (runs.some((r) => !r)) return "Both attempts must be recorded before comparing results.";
+    if (data.scenario_validation) return data.scenario_validation.passed && data.conditions_match ? `Normal recorded a pedestrian collision. ${PROJECT_NAME} reached the destination without contact.` : "This attempt did not meet the crossing comparison checks. Review the actual recorded outcomes.";
     if (data?.version === 5) return (data.world_start_match ? "World starting conditions matched. " : "World starting conditions were not verified. ") + "The cars have different models and physical geometry; results are observations, not a brake-only comparison.";
     if (runs.some((r) => r.status !== "ARRIVED")) return "One or both attempts ended early. Review each outcome and its covered distance.";
     if (!data.conditions_match) return "Initial conditions were not verified. These are separate observations.";
     return "Both drivers reached the destination from verified matching initial conditions. Traffic can react differently during each run.";
   }
   function presentationOutcome(run, failure) {
-    if (!run) return "Not started";
+    if (!run) return failure ? "Drive could not start \xB7 " + demoFailure(failure.reason || failure.fault?.message || "Unknown preparation fault") : "Not started";
     const fault = failure?.fault || run.stop_diagnostics?.runtime_fault;
     const faultText = fault?.exception_type === "KeyError" ? "A required record was lost: " + fault.message : fault?.message;
     const reason = run.reason === "collision" ? faultText ? demoFailure(run.reason) + " Additional runtime error: " + faultText : run.reason : faultText || (run.reason === "guided_shortened" ? "Stopped early by your choice" : run.reason);
-    return ({ ARRIVED: "Destination reached", SHORTENED: "Stopped by your choice", INTERRUPTED: "Attempt stopped", ERROR: "Drive needs attention", COLLISION: "Contact recorded", RUNNING: "Recording", TIMEOUT: "Time limit reached" }[run.status] || "Saved attempt") + (reason && reason !== "destination_reached" ? " \xB7 " + (fault ? reason : demoFailure(reason)) : "") + (fault?.injected_validation_fault ? " \xB7 Injected validation fault; excluded from driving acceptance." : "");
+    const pedestrian = run.status === "COLLISION" && run.collision_events?.some((c) => String(c.type).startsWith("walker."));
+    return (pedestrian ? "Collision with a pedestrian" : { ARRIVED: "Destination reached", SHORTENED: "Stopped by your choice", INTERRUPTED: "Attempt stopped", ERROR: "Drive needs attention", COLLISION: "Contact recorded", RUNNING: "Recording", TIMEOUT: "Time limit reached" }[run.status] || "Saved attempt") + (reason && reason !== "destination_reached" ? " \xB7 " + (fault ? reason : demoFailure(reason)) : "") + (fault?.injected_validation_fault ? " \xB7 Injected validation fault; excluded from driving acceptance." : "");
   }
   function presentationTrafficText(population, setup) {
     const requested = setup?.requested_route_vehicles ?? 40, walkers = setup?.requested_route_pedestrians ?? 30;
@@ -5046,7 +5119,7 @@
     const panel = document.createElement("section");
     panel.id = "presentationControls";
     panel.setAttribute("aria-label", "Automatic presentation");
-    panel.innerHTML = '<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Robosphere \u2192 Normal \xB7 target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">Start</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Robosphere</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Start prepares the route, traffic and recordings automatically.</p></div>';
+    panel.innerHTML = '<div class="presentation-intro"><span class="eyebrow">AUTOMATIC PRESENTATION</span><strong>One route. Two recorded drives.</strong><span>Ya Rab Ostorha \u2192 Normal \xB7 target 50 km/h</span></div><div class="presentation-actions"><button id="presentationRestart" class="primary" title="Choose a route and seeded traffic, record both drivers, then play the comparison">Start</button><button id="presentationResume" hidden>Resume driving</button><button id="presentationChoose">Choose destination</button></div><ol class="presentation-steps" aria-label="Presentation progress"><li>01 <span>Ya Rab Ostorha</span></li><li>02 <span>Normal</span></li><li>03 <span>Export</span></li><li>04 <span>Playback</span></li><li>05 <span>Results</span></li></ol><div id="presentationNotice" role="status"><strong id="presentationStatus">Ready when you are</strong><p id="presentationDetail">Start prepares the route, traffic and recordings automatically.</p></div>';
     const custom = document.createElement("details");
     custom.className = "presentation-custom";
     const populationNote = document.createElement("span");
@@ -5059,8 +5132,16 @@
     const results = document.createElement("section");
     results.id = "presentationResults";
     results.hidden = true;
-    results.innerHTML = '<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Normal &amp; \u064A\u0627 \u0631\u0628 \u062A\u0633\u062A\u0631\u0647\u0627</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Requested speed and measured speed are reported separately. Outcomes come from each recording.</p></section>';
+    results.innerHTML = '<header class="presentation-results-heading"><div><span class="eyebrow">RECORDED COMPARISON</span><h2>Normal &amp; Ya Rab Ostorha</h2><p id="presentationMatch"></p></div><button id="presentationReplay">Replay both</button></header><div class="presentation-videos"></div><p id="presentationPlaybackStatus" role="status"></p><section id="presentationConclusion"><h3>Measured results</h3><p id="presentationSummary"></p><p class="muted">Requested speed and measured speed are reported separately. Outcomes come from each recording.</p></section>';
     $8("resultsPhase").querySelector(".analysis-heading").after(results);
+    results.querySelector("h2").textContent = "Normal & " + PROJECT_NAME;
+    const shared = document.createElement("section");
+    shared.id = "sharedPerception";
+    shared.hidden = true;
+    shared.innerHTML = '<div class="shared-perception-heading"><h3>The shared starting view</h3><p>Front camera \xB7 2D detections \xB7 before the drives diverge</p></div><div class="recorded-video"><video muted controls playsinline preload="metadata"></video><p class="video-preparing" role="status">Preparing the shared starting view\u2026</p></div><p class="shared-perception-status" role="status"></p><a class="shared-perception-download" download hidden>Download shared view</a>';
+    results.querySelector(".presentation-videos").before(shared);
+    const sharedVideo = shared.querySelector("video");
+    let sharedURL = null;
     const items = ["NORMAL", "ROBOSPHERE"].map((mode) => {
       const box = document.createElement("article");
       box.dataset.mode = mode;
@@ -5178,7 +5259,7 @@
       $8("presentationResume").hidden = !resumable;
       $8("presentationResume").disabled = !p.fresh || p.recording || p.recordingStatus?.finalized === false || p.controlMode === "EMERGENCY_STOP";
       const notice = safetyNotice(p);
-      let title = pendingStart ? "Starting the simulator" : !p.connected ? "Simulator stopped or disconnected" : busy ? (phases[status] || status) + (status === "DRIVING" ? " \xB7 " + (data.arm === 0 ? "Robosphere" : "Normal") : "") : notice?.title || phases[status] || "Ready when you are";
+      let title = pendingStart ? "Starting the simulator" : !p.connected ? "Simulator stopped or disconnected" : busy ? (phases[status] || status) + (status === "DRIVING" ? " \xB7 " + (data.arm === 0 ? "Ya Rab Ostorha" : "Normal") : "") : notice?.title || phases[status] || "Ready when you are";
       let detail = pendingStart ? "The route and both recordings will follow automatically." : p.operationError ? demoFailure(p.operationError) : status === "ERROR" ? demoFailure(data.reason) : notice?.detail || (status === "DRIVING" ? data.arm === 1 ? "Recording is active. Normal follows the route and traffic signals." : "Recording is active. Signal and protective stops resume automatically." : busy ? "The next step runs automatically. Stop and Emergency stop remain available." : state.startLabel + " prepares the route, traffic and recordings automatically.");
       if (status === "ERROR" && p.stopDiagnostics?.runtime_fault?.exception_type === "ControlSceneTimeout" && notice) {
         title = notice.title;
@@ -5200,17 +5281,49 @@
         el2.dataset.complete = String(status === "COMPLETE" || i < step);
       });
       const archived = p.reviewedComparison;
-      const pair = archived || p.journeyComparison, isPresentation = [3, 4, 6].includes(pair?.version);
+      const pair = archived || p.journeyComparison, newAttempt = !archived && data?.guided && !["RESULTS", "FINISHING", "COMPLETE"].includes(status) && pair?.manifest?.presentation_id !== data.id;
+      const isPresentation = [3, 4, 6].includes(pair?.version) && !newAttempt;
       results.hidden = !isPresentation;
+      if (!isPresentation && items.some((i) => i.root)) {
+        linked = false;
+        p.presentationPlayback = false;
+        sharedVideo.pause();
+        sharedVideo.removeAttribute("src");
+        sharedVideo.load();
+        sharedURL = null;
+        for (const item of items) {
+          item.video.pause();
+          item.video.removeAttribute("src");
+          item.video.load();
+          item.root = null;
+          item.status = "PENDING";
+        }
+      }
       if (isPresentation) {
         $8("ordinaryComparison").hidden = true;
         $8("hybridResults").hidden = true;
+        const common = pair.shared_perception || !archived && data?.shared_perception;
+        shared.hidden = !pair.manifest?.comparison_scenario && !common;
+        const root = recordingVideoRoot(common?.recording), url = common?.status === "READY" && root && common.video === "shared-perception.mp4" ? root + common.video : null;
+        if (url !== sharedURL) {
+          sharedVideo.pause();
+          sharedURL = url;
+          if (url) sharedVideo.src = url;
+          else sharedVideo.removeAttribute("src");
+        }
+        shared.querySelector(".video-preparing").hidden = !!url;
+        shared.querySelector(".video-preparing").textContent = common?.status === "UNAVAILABLE" ? common.reason : common?.status === "ERROR" ? "Shared-view export needs attention. The original recordings remain saved." : "Preparing the shared starting view\u2026";
+        shared.querySelector(".shared-perception-status").textContent = url ? `Shared beginning only \xB7 ${(common.duration_s || 0).toFixed(1)} s. The view ends when the recorded drives first diverge.` : common?.error || "Checking the common camera prefix of both recordings.";
+        const download = shared.querySelector(".shared-perception-download");
+        download.hidden = !url;
+        if (url) download.href = url;
+        else download.removeAttribute("href");
         $8("presentationMatch").textContent = pair.conditions_match ? "Verified matching initial conditions \xB7 reactive traffic can diverge" : "Initial conditions pending or unverified";
         $8("presentationSummary").textContent = presentationSummary(pair);
         for (const item of items) {
           const run = pair.runs?.[item.mode];
           item.box.querySelector("h3").textContent = modeLabel2(item.mode);
-          item.box.querySelector(".presentation-driver").textContent = recordedDriverDescription(run);
+          item.box.querySelector(".presentation-driver").textContent = run?.setup?.comparison_scenario ? item.mode === "NORMAL" ? "Reactive sensor braking" : "Early crossing prediction and sensor braking" : recordedDriverDescription(run);
           item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, !archived && data?.failures?.find((f) => f.mode === item.mode));
           item.box.querySelector(".presentation-speed").textContent = benchmarkSpeedText(run);
           item.box.querySelector(".presentation-stress").textContent = stressSummary(run?.stress_audit);
@@ -5229,15 +5342,15 @@
               list.append(li);
             }
           }
-          const root = recordingVideoRoot(run?.recording);
-          if (item.root !== root) {
+          const root2 = recordingVideoRoot(run?.recording);
+          if (item.root !== root2) {
             item.video.pause();
-            item.root = root;
+            item.root = root2;
             item.status = "PENDING";
             item.video.removeAttribute("src");
-            const download = item.box.querySelector(".video-download");
-            download.hidden = true;
-            download.removeAttribute("href");
+            const download2 = item.box.querySelector(".video-download");
+            download2.hidden = true;
+            download2.removeAttribute("href");
           }
           const placeholder = item.box.querySelector(".video-preparing");
           placeholder.hidden = item.status === "READY";
@@ -5247,18 +5360,18 @@
           lastPoll = performance.now();
           polling = true;
           Promise.allSettled(items.filter((i) => i.root && i.status !== "READY").map(async (i) => {
-            const root = i.root, response = await fetch(root + "video-status.json", { cache: "no-store", signal: AbortSignal.timeout(5e3) });
+            const root2 = i.root, response = await fetch(root2 + "video-status.json", { cache: "no-store", signal: AbortSignal.timeout(5e3) });
             if (!response.ok) return;
             const v = await response.json();
-            if (i.root !== root) return;
+            if (i.root !== root2) return;
             const filename = preferredVideo(v);
             i.status = filename ? "READY" : v.status === "READY" ? "WAITING_FOR_ANNOTATION" : v.status;
             i.duration_s = v.duration_s;
             if (filename) {
-              i.video.src = root + filename;
-              const download = i.box.querySelector(".video-download");
-              download.href = root + filename;
-              download.hidden = false;
+              i.video.src = root2 + filename;
+              const download2 = i.box.querySelector(".video-download");
+              download2.href = root2 + filename;
+              download2.hidden = false;
             }
             if (v.status === "ERROR") $8("presentationPlaybackStatus").textContent = v.error || "Video export failed; the saved outcome remains available.";
           })).finally(() => {
@@ -5547,7 +5660,7 @@
     const resultAction = selectField(results, "detailsResultAction", "Action", [
       ["view", "View results"],
       ["replay", "Replay both videos"],
-      ["downloadROBOSPHERE", "Download Robosphere MP4"],
+      ["downloadROBOSPHERE", "Download Ya Rab Ostorha MP4"],
       ["downloadNORMAL", "Download Normal MP4"]
     ]);
     const resultNote = node3("p", null, "muted");
@@ -5991,7 +6104,7 @@
 </svg>`;
 
   // frontend/preview-story.js
-  var previewLabels = { NORMAL: "Normal \xB7 reactive sensor driving", ROBOSPHERE: "\u064A\u0627 \u0631\u0628 \u062A\u0633\u062A\u0631\u0647\u0627 \xB7 predictive driving" };
+  var previewLabels = { NORMAL: "Normal \xB7 reactive sensor driving", ROBOSPHERE: PROJECT_NAME + " \xB7 predictive driving" };
   var between = (t, a, b) => Math.max(0, Math.min(1, (t - a) / (b - a)));
   function previewFrame(mode, seconds) {
     const t = Math.max(0, seconds) % 12, protectedMode = mode === "ROBOSPHERE";
@@ -6128,7 +6241,7 @@
     const $11 = (id) => document.getElementById(id);
     document.body.classList.add("sequential-drive", "mission-experience");
     p.guidedExperience = true;
-    document.querySelector("#brand h1").textContent = "Ya Rab Ostorha";
+    document.querySelector("#brand h1").textContent = PROJECT_NAME;
     document.querySelector("#brand .eyebrow").textContent = "A guided driving experience";
     const atmosphere = document.createElement("div");
     atmosphere.id = "missionAtmosphere";
@@ -6157,7 +6270,7 @@
     details.onclick = () => navigator.open();
     const experience = document.createElement("main");
     experience.id = "missionExperience";
-    experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes \xB7 reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="ar" dir="rtl">\u064A\u0627 \u0631\u0628 \u062A\u0633\u062A\u0631\u0647\u0627</strong>Same Mercedes \xB7 sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
+    experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes \xB7 reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="en" dir="ltr">Ya Rab Ostorha</strong>Same Mercedes \xB7 sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
     const preview = installPreviewPlayer(experience.querySelector("#missionPreview"));
     const telemetry = document.createElement("p");
     telemetry.id = "missionTelemetry";
@@ -6168,7 +6281,7 @@
     guide.setAttribute("aria-labelledby", "missionGuideTitle");
     guide.innerHTML = '<h2 id="missionGuideTitle">Before you drive</h2>';
     for (const [index, [question, answer]] of [
-      ["What will I see?", "The same Mercedes, sensor rig and starting setup. Normal uses reactive sensor braking; \u064A\u0627 \u0631\u0628 \u062A\u0633\u062A\u0631\u0647\u0627 adds predictive RULE and visible forecast paths. RL is not active in this comparison. Choose either drive first."],
+      ["What will I see?", "The same Mercedes, sensors and crossing scenario. Normal uses reactive braking; Ya Rab Ostorha adds early crossing prediction and visible forecast paths. Choose either drive first; the other starts automatically."],
       ["Does protection prevent every contact?", "No. RULE protection may slow or stop the car, but contacts are still possible. The comparison shows what actually happened, including attempts ended early."],
       ["What does Free GPU do?", "It saves the recorded portion, closes CARLA and checks that its processes have exited. Your next start begins a new comparison. Previous recordings stay in Menu."]
     ].entries()) {
@@ -6922,7 +7035,7 @@
   });
   window.addEventListener("pagehide", () => {
     const held = ["AWAITING_NEXT", "RESULTS", "FINISHING", "COMPLETE"].includes(provider.presentation?.status) || provider.presentation?.status === "CHOOSING" && provider.presentation?.awaiting_choice;
-    if (held) resetKeys();
+    if (held || keepJourneyOnInspection(provider, document.hidden) && !manualOverridePending) resetKeys();
     else clearControls("page_closed");
     clearCamera();
     provider.close();

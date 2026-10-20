@@ -7,6 +7,36 @@ from backend.core.driving_video import export_video
 
 
 class DrivingVideoTests(unittest.TestCase):
+    def test_video_status_retries_a_transient_windows_reader_lock(self):
+        from unittest.mock import patch
+        from backend.core.driving_video import _status
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);original=Path.replace;attempts=[]
+            def replace(path,target):
+                attempts.append(path)
+                if len(attempts)<3:raise PermissionError('Windows reader still has the status open')
+                return original(path,target)
+            with patch.object(Path,'replace',replace),patch('backend.core.driving_video.time.sleep'):
+                _status(root,{'status':'READY','video':'original.mp4'})
+            self.assertEqual(len(attempts),3)
+            self.assertEqual(json.loads((root/'video-status.json').read_text())['status'],'READY')
+
+    def test_automatic_pair_export_waits_for_driving_to_release_cpu(self):
+        import threading
+        from types import SimpleNamespace
+        from unittest.mock import Mock,patch
+        from backend.core.driving_video import export_after_close
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);release=threading.Event();encoded=threading.Event()
+            recorder=SimpleNamespace(root=root,closed=True,status=lambda:{'incomplete':False})
+            with patch('backend.core.driving_video.export_video',side_effect=lambda _:encoded.set()),patch('backend.core.storage_retention.retire_guided_history'):
+                worker=export_after_close(recorder,ready=release.is_set)
+                try:
+                    self.assertFalse(encoded.wait(.15))
+                    self.assertEqual(json.loads((root/'video-status.json').read_text())['status'],'WAITING_FOR_COMPARISON')
+                finally:release.set();worker.join(3.)
+                self.assertFalse(worker.is_alive());self.assertTrue(encoded.is_set())
+
     def test_presentation_video_starts_at_admitted_drive_instead_of_setup_frames(self):
         try:import imageio_ffmpeg
         except ImportError:self.skipTest('Optional MP4 encoder is not installed')

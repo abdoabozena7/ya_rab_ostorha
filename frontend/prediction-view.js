@@ -1,3 +1,4 @@
+import {drawSceneOverlays} from './scene-overlays.js';
 // Pure geometry helpers also used by frame/session/camera regression tests.
 function matrix(pose) {
   const {roll:r=0,pitch:p=0,yaw:y=0}=pose.rotation_rad||{};
@@ -132,6 +133,7 @@ export class PredictionView {
       this.label.textContent=guidedForecast?(latest.trajectories?.length?'Selected risk forecast · may change':'No risk forecast selected'):(conflict?`${context} · overlap in ${conflict.time_s.toFixed(1)} s`:context)+
         (supplementary?` · ${supplementary} supplementary model candidates`:'');
       this.label.dataset.tone=conflict?'amber':'neutral';
+      if(guidedForecast&&latest.visual_version===1)this.label.textContent=`Measured 3D view · ${latest.trajectories?.length||0} possible conflicts`;
     } else this.message=p.fresh?'Waiting for fresh measured motion…':'Motion observations unavailable';
     // Reproject a recent forecast from its measured ego pose into the current
     // camera. Crop elapsed trajectory time; never draw the old object position
@@ -159,8 +161,10 @@ export class PredictionView {
       (this.visualOptions?.trajectories===false?[]:visibleModes(prediction)).slice(0,18);
     const age=guidedForecast?Math.max(0,camera.timestamp-prediction.timestamp_s):0;
     const classes=new Map(prediction.tracks.filter(t=>t.semantic_evidence).map(t=>[t.id,t.class]));
+    const sceneGeometry=guidedForecast&&prediction.visual_version===1;
+    if(sceneGeometry)drawSceneOverlays(ctx,prediction,camera);
     ctx.lineWidth=2;ctx.setLineDash([6,5]);
-    for(const mode of visible){
+    for(const mode of sceneGeometry?[]:visible){
       ctx.strokeStyle=classes.get(mode.track_id)==='person'?'#FFB7B2':String(mode.source).includes('TRAJECTRON')?'#b6a6d8':'#83d9df';ctx.beginPath();let begun=false;
       for(const row of remainingForecast(mode.points,age)){const q=project([row[1],row[2],.3]);if(!q){begun=false;continue;}begun?ctx.lineTo(...q):ctx.moveTo(...q);begun=true;}ctx.stroke();
     }

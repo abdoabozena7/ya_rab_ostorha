@@ -7,6 +7,14 @@ import {telemetryText} from '../frontend/telemetry.js';
 import {sensorFrameKey, matchesSensorResponse} from '../frontend/sensor-frame.js';
 import {DRIVING_KEYS, isEditableTarget, drivingInputAllowed} from '../frontend/input-policy.js';
 
+test('closing an autonomous dashboard never sends manual release pedals',()=>{
+  for(const [mode,status] of [['AUTOMATIC','RUNNING'],['PAUSED','STARTING']]){
+    const {p,sent,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,mode,journey:{status}});
+    p.socket.close=()=>{};p.close();assert.equal(p.closed,true);
+    assert.equal(sent.filter(c=>c.type==='controls'||c.type==='stop_driving').length,0);
+  }
+});
+
 test('one explicit start launches the simulation while automatic connection never launches it',async()=>{
   const calls=[],timers=[];
   const p=new SimulationClient({fetcher:async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({status:'STARTING'})};},

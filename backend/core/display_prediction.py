@@ -77,6 +77,13 @@ def measured_control_view(scene,reference, *, decision=None, focused=False, mane
     if focused and maneuver and maneuver.get('selected_path') and maneuver.get('render_reference') and abs(maneuver.get('timestamp_s',-10)-scene.observation.timestamp_s)<=.1:
         result.update(selected_path=to_dict(maneuver['selected_path']),selected_path_reference=to_dict(maneuver['render_reference']),
             selected_path_timestamp_s=maneuver['timestamp_s'])
+    if focused and (getattr(scene,'space',None) is not None or 'boxes_3d' in scene.prediction):
+        from .visual_geometry import corridor_forecasts,measured_boxes
+        boxes=(measured_boxes(scene.prediction,scene.space.visual_points,scene.observation,lidar_points=scene.points)
+            if getattr(scene,'space',None) is not None else scene.prediction['boxes_3d'])
+        result.update(visual_version=1,boxes_3d=to_dict(boxes),
+            trajectories=corridor_forecasts(scene.prediction,scene.observation,scene.geometry,decision or {}),
+            tracks=[{key:to_dict(track[key]) for key in keys if key in track} for track in scene.prediction['tracks'] if track.get('confirmed')])
     return result
 
 

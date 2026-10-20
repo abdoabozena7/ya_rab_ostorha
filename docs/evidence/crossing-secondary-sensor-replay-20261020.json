@@ -1,0 +1,474 @@
+{
+  "scope": "OFFLINE_REPLAY_OF_REAL_NATIVE_SENSOR_BYTES_AND_RECORDED_CAMERA_RESULTS_NOT_CLOSED_LOOP_ACCEPTANCE",
+  "original_attempt": "a5310cda768741f5b0ba83fbe02c5cff",
+  "original_outcome": "PROJECT_COLLISION_WITH_ADDITIONAL_CROSSING_03_AT_20_3_SECONDS_NOT_ACCEPTED",
+  "replay_sha256": "109ef7458a8d2eac6f11bfb96e9aff522b841164ded49c448b0132dbf1fa19e6",
+  "sampled_frames": 14,
+  "frames_with_recomputed_conflict": 13,
+  "closed_loop_avoidance_verified_by_this_replay": false,
+  "inputs": "RECORDED_REAL_SENSOR_BYTES_AND_RECORDED_CPU_CAMERA_DETECTIONS_NO_NATIVE_ACTOR_INPUTS",
+  "rows": [
+    {
+      "elapsed_s": 16.8,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "recomputed_conflict": {
+        "track_id": "depth-person-66",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 2.3
+      },
+      "current_measurement": null
+    },
+    {
+      "elapsed_s": 17.0,
+      "original_reason": "Braking for a person who may cross the driving path",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "person",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 2.0,
+        "time_s": 2.8
+      },
+      "current_measurement": {
+        "class": "person",
+        "position_m": [
+          17.291536331176758,
+          -7.460220609605311
+        ],
+        "velocity_mps": [
+          0.18313836946094714,
+          2.030922407561361
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 785,
+          "timestamp_s": 37.20766883343458,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 119,
+          "mad_m": 0.04971027374267578,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 17.25,
+      "original_reason": "Risk cleared; releasing brake smoothly to base driver",
+      "recomputed_conflict": null,
+      "current_measurement": null
+    },
+    {
+      "elapsed_s": 17.5,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.9
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          16.992440223693848,
+          -6.501194304227828
+        ],
+        "velocity_mps": [
+          0.18726651952808906,
+          2.3780793676136995
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 795,
+          "timestamp_s": 37.70766884088516,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 121,
+          "mad_m": 0.049233436584472656,
+          "motion_span_s": 0.20000000298023224,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 5
+        }
+      }
+    },
+    {
+      "elapsed_s": 17.75,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.8
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          16.969820022583008,
+          -5.9363469891250125
+        ],
+        "velocity_mps": [
+          0.06055435034882649,
+          2.1737661488033404
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 800,
+          "timestamp_s": 37.95766884461045,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 110,
+          "mad_m": 0.06839609146118164,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 18.0,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.8
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          16.74218988418579,
+          -5.452438466995954
+        ],
+        "velocity_mps": [
+          0.05058658704356752,
+          1.8615192417963038
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 805,
+          "timestamp_s": 38.20766884833574,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 134,
+          "mad_m": 0.055283546447753906,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 18.25,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.5
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          16.19028091430664,
+          -4.9818980276584615
+        ],
+        "velocity_mps": [
+          -0.1312834165040206,
+          1.9836867161897465
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 810,
+          "timestamp_s": 38.45766885206103,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 123,
+          "mad_m": 0.053345680236816406,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 18.5,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.3
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          15.381207466125488,
+          -4.448042556643485
+        ],
+        "velocity_mps": [
+          0.022462814922097982,
+          2.0378299219571017
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 815,
+          "timestamp_s": 38.70766885578632,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 133,
+          "mad_m": 0.05745887756347656,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 18.75,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.2
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          14.198532104492188,
+          -3.9806634753942487
+        ],
+        "velocity_mps": [
+          0.1576240920752846,
+          1.901179540897244
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 820,
+          "timestamp_s": 38.957668859511614,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 181,
+          "mad_m": 0.049948692321777344,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 19.0,
+      "original_reason": "NAVIGATION",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 8.0,
+        "time_s": 1.0
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          12.793828964233398,
+          -3.411547145247459
+        ],
+        "velocity_mps": [
+          -0.027557865575834242,
+          2.173189490224616
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 825,
+          "timestamp_s": 39.207668863236904,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 207,
+          "mad_m": 0.0635385513305664,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 19.25,
+      "original_reason": "Limiting acceleration to stop within 18.50 m of measured road",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 4.0,
+        "time_s": 0.8
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          10.995736122131348,
+          -2.947582916915416
+        ],
+        "velocity_mps": [
+          0.010811674232538645,
+          1.8646562178777393
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 830,
+          "timestamp_s": 39.457668866962194,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 277,
+          "mad_m": 0.05519390106201172,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 19.5,
+      "original_reason": "Limiting acceleration to stop within 21.50 m of measured road",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 2.0,
+        "time_s": 0.6
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          8.920063495635986,
+          -2.46492733284831
+        ],
+        "velocity_mps": [
+          0.10674758203117914,
+          2.0207597910247763
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 835,
+          "timestamp_s": 39.707668870687485,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 497,
+          "mad_m": 0.03355741500854492,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 19.75,
+      "original_reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 6.0,
+        "time_s": 0.3
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          6.537278413772583,
+          -1.8871454928070304
+        ],
+        "velocity_mps": [
+          -0.044100309163308204,
+          2.108018246403293
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 840,
+          "timestamp_s": 39.957668874412775,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 968,
+          "mad_m": 0.08061504364013672,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    },
+    {
+      "elapsed_s": 20.0,
+      "original_reason": "Measured obstacle inside braking envelope/TTC limit",
+      "recomputed_conflict": {
+        "track_id": "depth-person-33",
+        "object_class": "UNKNOWN",
+        "source": "CONSTANT_VELOCITY",
+        "ego_acceleration_mps2": 0.0,
+        "time_s": 0.1
+      },
+      "current_measurement": {
+        "class": "UNKNOWN",
+        "position_m": [
+          4.034955978393555,
+          -1.4254598800092935
+        ],
+        "velocity_mps": [
+          -0.06239116078269154,
+          1.9879570225613046
+        ],
+        "proof": {
+          "session_id": "47706635e3624eaab51c5bd4706be2a8",
+          "frame_id": 845,
+          "timestamp_s": 40.207668878138065,
+          "sensor_ids": [
+            "depth"
+          ],
+          "source": "CURRENT_DEPTH_BODY_CORE",
+          "support_points": 3820,
+          "mad_m": 0.05453824996948242,
+          "motion_span_s": 0.2500000037252903,
+          "coordinate_frame": "EGO_AT_EVALUATION",
+          "occlusion_s": 0.0,
+          "motion_observations": 6
+        }
+      }
+    }
+  ]
+}

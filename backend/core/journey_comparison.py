@@ -30,6 +30,7 @@ def matching_setup(a, b, *, world_only=False):
     if not a or not b: return False
     if a.get('live_speed_changed') or b.get('live_speed_changed'): return False
     keys = ('map','blueprint','destination','speed_kmh','population','weather','actual_population')
+    if a.get('comparison_scenario') or b.get('comparison_scenario'):keys+=('perception_profile',)
     if a.get('protocol')==SENSOR_COMPARISON_PROTOCOL or b.get('protocol')==SENSOR_COMPARISON_PROTOCOL:
         if a.get('protocol')!=b.get('protocol'):return False
         keys+=('vehicle_geometry','vehicle_physics','sensor_configuration')
@@ -64,6 +65,9 @@ class JourneyComparison:
 
     def save(self):
         try:
+            from .crossing_result import evaluate_pair
+            assessment=evaluate_pair(self.data)
+            if assessment:self.data['scenario_validation']=assessment
             self.directory.mkdir(parents=True, exist_ok=True)
             self.data.pop('storage_error', None)
             payload = json.dumps(self.data, ensure_ascii=False, allow_nan=False, indent=2)
@@ -196,6 +200,9 @@ class JourneyComparison:
 
     def snapshot(self, *, compact=False):
         data=self.data
+        from .crossing_result import evaluate_pair
+        assessment=evaluate_pair(data)
+        if assessment:data={**data,'scenario_validation':assessment}
         if compact:
             def setup(value):
                 return {k:v for k,v in (value or {}).items() if k!='initial_conditions'}

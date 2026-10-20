@@ -105,11 +105,18 @@ def _encode_video(root,frames,ffmpeg,filename):
 
 def _status(root, value):
     temporary=Path(root)/'video-status.tmp'
-    temporary.write_text(json.dumps(value,indent=2),encoding='utf8')
-    temporary.replace(Path(root)/'video-status.json')
+    payload=json.dumps(value,indent=2)
+    for attempt in range(12):
+        try:
+            temporary.write_text(payload,encoding='utf8')
+            temporary.replace(Path(root)/'video-status.json')
+            return
+        except PermissionError:
+            if attempt==11:raise
+            time.sleep(.01*(attempt+1))
 
 
-def export_after_close(recorder):
+def export_after_close(recorder, *, ready=None):
     """Wait outside control, then encode with a single CPU worker."""
     def run():
         root=recorder.root
@@ -117,6 +124,9 @@ def export_after_close(recorder):
             _status(root,{'status':'WAITING_FOR_RECORDING'})
             while not recorder.closed: time.sleep(.05)
             if recorder.status().get('incomplete'): raise ValueError('Recording is incomplete; inspect recording-status.json')
+            if ready is not None:
+                _status(root,{'status':'WAITING_FOR_COMPARISON'})
+                while not ready():time.sleep(.1)
             _status(root,{'status':'ENCODING'})
             export_video(root)
             from .storage_retention import retire_guided_history

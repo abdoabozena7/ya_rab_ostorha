@@ -20,12 +20,12 @@ def rotation(yaw):
     return np.array([[c, -s], [s, c]])
 
 
-def ego_paths(speed, steering, throttle, half=(2.5, 1.15), geometry=None, *, grid=GRID):
+def ego_paths(speed, steering, throttle, half=(2.5, 1.15), geometry=None, *, grid=GRID,drive_accelerations=(2.,),cap_mps=None):
     grid=np.asarray(grid,float)
     paths = []
-    for name, acceleration in [('CONTINUE', 0.), ('BRAKE', -5.)] + ([('LAUNCH', 2.)] if throttle > .01 else []):
+    for name, acceleration in [('CONTINUE', 0.), ('BRAKE', -5.)] + ([('LAUNCH', a) for a in drive_accelerations] if throttle > .01 else []):
         if geometry is not None:
-            paths.append({'intent':name,'points':footprint_centers(integrate(speed,steering,acceleration,geometry,grid=grid),geometry),'half':geometry.half})
+            paths.append({'intent':name,'acceleration_mps2':acceleration,'points':footprint_centers(integrate(speed,steering,acceleration,geometry,grid=grid,cap_mps=cap_mps),geometry),'half':geometry.half})
             continue
         velocity=np.maximum(0.,speed+acceleration*grid)
         distance=(velocity[:-1]+velocity[1:])*.5*np.diff(grid)
@@ -248,7 +248,8 @@ def assess_conflicts(tracks, modes, paths, *, grid=GRID):
             and not mask[mi,pi,-1] and not np.any(mask[mi,pi] & ~mask[mi,brake_index])
             and np.sum(mask[mi,pi]) < np.sum(mask[mi,brake_index]))
         conflicts.append({'track_id':tr['id'],'mode':mode['mode'],'source':mode['source'],
-            'ego_intent':paths[pi]['intent'],'time_s':float(grid[i]),'point_m':centers[mi,i].tolist(),
+            'ego_intent':paths[pi]['intent'],'ego_acceleration_mps2':paths[pi].get('acceleration_mps2',0.),
+            'time_s':float(grid[i]),'point_m':centers[mi,i].tolist(),
             'half_size_m':tr['half_size_m'],'trajectory':mode['points'],'probability':mode['probability'],
             'separating_rear_overlap':rear_separating,'braking_worsens_rear_conflict':brake_worse})
     return sorted(conflicts, key=lambda c: c['time_s'])

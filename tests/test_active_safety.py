@@ -27,6 +27,85 @@ def scene(observation, *, clear=False, obstacle=False):
 
 
 class ActiveSafetyTests(unittest.TestCase):
+    def test_forecast_uses_the_applied_coverage_speed_limit_for_a_distant_stationary_person(self):
+        from tests.test_pedestrian_anticipation import PedestrianAnticipationTests
+        from backend.core.pedestrian_anticipation import crossing_forecast
+        from backend.core.kinematic_prediction import kinematic_modes
+        from backend.core.motion_geometry import VehicleGeometry
+        supervisor=ActiveSafetySupervisor();supervisor.geometry=VehicleGeometry()
+        supervisor.prediction_speed_cap_mps=120/3.6
+        o,b=case(distance=None,speed=0.);o,reader=scene(o,clear=True)
+        b=replace(b,throttle=.9,steering=.01045)
+        assessed=assess_forward_space(o,reader,supervisor.config)
+        assessed.update(target_range_m=49.6,radar_range_m=None,observed_road_range_m=15.)
+        p,_=PedestrianAnticipationTests().case();track=p['tracks'][0]
+        p.update(evaluation_frame=o.frame_id,timestamp_s=o.timestamp_s)
+        track.update(position_m=[36.54,3.666],velocity_mps=[0.,0.])
+        track['measurement_evidence']['frame_id']=o.frame_id
+        track['semantic_evidence']['timestamp_s']=o.timestamp_s
+        p['trajectories']=kinematic_modes([track]);supervisor.control_prediction=p
+        # The rejected native case predicted an unreachable 8 m/s² launch.
+        self.assertIsNotNone(crossing_forecast(p,o,b,supervisor.geometry,cap_mps=120/3.6))
+        with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+            selected=supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+        self.assertIsNone(selected)
+        self.assertIsNone(supervisor.status['pedestrian_prediction'])
+        self.assertAlmostEqual(supervisor.status['prediction_speed_cap_mps'],coverage_speed_limit(15.,supervisor.config.teacher))
+        self.assertEqual(supervisor.status['requested_prediction_speed_cap_mps'],120/3.6)
+
+    def test_current_unclassified_depth_motion_limits_launch_without_extending_the_person_label(self):
+        from tests.test_pedestrian_anticipation import PedestrianAnticipationTests
+        from backend.core.kinematic_prediction import kinematic_modes
+        from backend.core.motion_geometry import VehicleGeometry
+        for predictive in (True,False):
+            supervisor=ActiveSafetySupervisor(anticipation_enabled=predictive);supervisor.geometry=VehicleGeometry()
+            o,b=case(distance=None,speed=0.);o,reader=scene(o,clear=True)
+            assessed=assess_forward_space(o,reader,supervisor.config)
+            assessed.update(target_range_m=None,radar_range_m=None,observed_road_range_m=40.)
+            p,_=PedestrianAnticipationTests().case();track=p['tracks'][0]
+            p.update(evaluation_frame=o.frame_id,timestamp_s=o.timestamp_s)
+            track.update(**{'class':'UNKNOWN','position_m':[17.,-6.9],'velocity_mps':[0.,2.],'motion_observations':5,
+                'measurement_evidence':{'session_id':'s','frame_id':o.frame_id,'timestamp_s':o.timestamp_s,
+                    'source':'CURRENT_DEPTH_BODY_CORE','support_points':20,'mad_m':.02,'motion_span_s':.25}})
+            track.pop('semantic_evidence');p['trajectories']=kinematic_modes([track]);supervisor.control_prediction=p
+            with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+                selected=supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+            if predictive:
+                self.assertEqual(selected.brake,0.);self.assertLess(selected.throttle,b.throttle)
+                self.assertLessEqual(selected.throttle,.5);self.assertIsNone(supervisor.status['pedestrian_prediction'])
+                self.assertEqual(supervisor.status['path_conflict']['source'],'CURRENT_DEPTH_SURFACE_TRACK')
+                from backend.core.pedestrian_anticipation import crossing_forecast
+                cap=supervisor.status['cautious_roadside_speed_mps'];self.assertIsNotNone(cap)
+                self.assertIsNone(crossing_forecast(p,o,b,supervisor.geometry,allow_measured_unknown=True,cap_mps=cap))
+                assessed.update(target_range_m=2.)
+                blocking=ActiveSafetySupervisor();blocking.geometry=supervisor.geometry;blocking.control_prediction=p
+                with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+                    unsafe=blocking.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
+                self.assertEqual(unsafe.brake,1.);self.assertIsNone(blocking.status['cautious_roadside_speed_mps'])
+            else:self.assertIsNone(selected)
+
+    def test_stationary_and_moving_crossings_verify_a_bounded_approach(self):
+        from tests.test_pedestrian_anticipation import PedestrianAnticipationTests
+        from backend.core.kinematic_prediction import kinematic_modes
+        for moving in (False,True):
+            supervisor=ActiveSafetySupervisor();o,b=case(distance=None,speed=0.);o,reader=scene(o,clear=True)
+            assessed=assess_forward_space(o,reader,supervisor.config)
+            assessed.update(target_range_m=None,radar_range_m=None,observed_road_range_m=12.)
+            p,_=PedestrianAnticipationTests().case();track=p['tracks'][0];now=o.timestamp_s
+            track.update(position_m=[7.3,3.25],velocity_mps=[0.,-.5] if moving else [0.,0.],
+                history=[[now-.8,7.3,3.25,0.,0.],[now-.4,7.3,3.25,0.,0.],[now,7.3,3.25,0.,0.]])
+            p.update(evaluation_frame=o.frame_id,timestamp_s=now)
+            track['measurement_evidence']['frame_id']=o.frame_id
+            track['semantic_evidence']['timestamp_s']=now
+            p['trajectories']=kinematic_modes([track])
+            supervisor.control_prediction=p
+            with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+                result=supervisor.evaluate(o,b,reader,as_of_timestamp_s=now)
+            self.assertEqual(result.brake,0.);self.assertLessEqual(result.throttle,.5)
+            self.assertEqual(supervisor.status['cautious_roadside_speed_mps'],1. if moving else 4.)
+            self.assertEqual(supervisor.status['status'],'CAUTIOUS_APPROACH')
+            self.assertTrue(supervisor.status['cautious_roadside_approach'])
+
     def test_legacy_teacher_receives_front_radar_while_surround_stays_in_scene(self):
         o,b=case(distance=8.,speed=3.,velocity=-8.);o,reader=scene(o,clear=True)
         radar=next(c for c in o.channels if c.kind==SensorKind.RADAR)
@@ -51,6 +130,35 @@ class ActiveSafetyTests(unittest.TestCase):
             command=supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s)
         self.assertEqual(command.brake if command else 0.,0.)
         self.assertNotEqual(supervisor.status['risk'],'FORWARD_COLLISION_RISK')
+
+    def test_cleared_target_does_not_transfer_a_teacher_stop_latch_to_a_distant_object(self):
+        from backend.learning.rl.teacher import TeacherState
+        supervisor=ActiveSafetySupervisor()
+        o,b=case(distance=45.,speed=4.);o,reader=scene(o,clear=True)
+        assessed=assess_forward_space(o,reader,supervisor.config)
+        assessed.update(radar_range_m=45.,target_range_m=42.,observed_road_range_m=50.)
+        supervisor.teacher.state=TeacherState.PROTECTIVE_BRAKING
+        with patch('backend.core.active_safety.assess_forward_space',return_value=assessed):
+            self.assertIsNone(supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s))
+        self.assertEqual(supervisor.teacher.state,TeacherState.MONITORING)
+        # Missing stopping coverage cannot release that same held vehicle.
+        supervisor=ActiveSafetySupervisor();supervisor.teacher.state=TeacherState.PROTECTIVE_BRAKING
+        with patch('backend.core.active_safety.assess_forward_space',return_value={**assessed,'observed_road_range_m':0.}):
+            self.assertEqual(supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s).brake,1.)
+
+    def test_retained_near_ground_is_not_admitted_as_a_different_current_radar_foreground(self):
+        from backend.learning.rl.teacher import TeacherDecision
+        supervisor=ActiveSafetySupervisor();o,b=case(distance=45.,speed=4.);o,reader=scene(o,clear=True)
+        assessed=assess_forward_space(o,reader,supervisor.config)
+        assessed.update(radar_range_m=45.,target_range_m=42.,observed_road_range_m=50.)
+        wrong=TeacherDecision('BRAKE_INTERVENTION','FINAL_APPROACH',(1.,1.,0.),None,
+            {'foreground_valid':True,'forward_range_m':1.,'reason':'Wrong retained ground layer'})
+        with patch('backend.core.active_safety.assess_forward_space',return_value=assessed),patch.object(supervisor.teacher,'propose',return_value=wrong):
+            self.assertIsNone(supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s))
+        # The independent actual depth/LiDAR hazard still commands full braking.
+        supervisor=ActiveSafetySupervisor()
+        with patch('backend.core.active_safety.assess_forward_space',return_value={**assessed,'target_range_m':2.}),patch.object(supervisor.teacher,'propose',return_value=wrong):
+            self.assertEqual(supervisor.evaluate(o,b,reader,as_of_timestamp_s=o.timestamp_s).brake,1.)
 
     def test_legacy_missing_foreground_is_not_a_measured_obstacle(self):
         from backend.learning.rl.teacher import TeacherDecision

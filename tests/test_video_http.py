@@ -71,5 +71,15 @@ class VideoHTTPTests(unittest.TestCase):
         target.write_bytes(b'corrupted overlay')
         with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(self.url+target.name)
 
+    def test_shared_front_video_has_its_own_verified_status_and_ranges(self):
+        target=self.run/'shared-perception.mp4';target.write_bytes(self.payload)
+        status={**self.status,'source':'VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA','video':target.name,'duration_s':.5}
+        (self.run/'shared-perception-status.json').write_text(json.dumps(status))
+        with urllib.request.urlopen(self.url+'shared-perception-status.json') as response:self.assertEqual(json.load(response),status)
+        with urllib.request.urlopen(urllib.request.Request(self.url+target.name,headers={'Range':'bytes=3-8'})) as response:
+            self.assertEqual(response.status,206);self.assertEqual(response.read(),self.payload[3:9])
+        target.write_bytes(b'changed')
+        with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(self.url+target.name)
+
 
 if __name__=='__main__':unittest.main()

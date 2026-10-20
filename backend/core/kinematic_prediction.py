@@ -22,6 +22,12 @@ def kinematic_modes(tracks, *, grid=GRID):
                 distance=np.minimum(1.5*grid, .75*grid**2)
                 modes.append(_mode(tr,1,'PEDESTRIAN_POSSIBLE_START',p+distance[:,None]*toward,1,grid))
                 modes.append(_mode(tr,2,'PEDESTRIAN_POSSIBLE_RETREAT',p-distance[:,None]*toward,2,grid))
+                # Preserve walking alternatives and include a sudden run.
+                # Bound speed to 3.5 m/s and initial acceleration to 6 m/s².
+                # This is an unranked possibility, never known future intent.
+                accelerating=np.minimum(grid,3.5/6.)
+                running=3.*accelerating**2+3.5*np.maximum(0.,grid-3.5/6.)
+                modes.append(_mode(tr,3,'PEDESTRIAN_POSSIBLE_RUN',p+running[:,None]*toward,3,grid))
             continue
         cv=p+grid[:,None]*v
         modes.append(_mode(tr,0,'CONSTANT_VELOCITY',cv,0,grid))

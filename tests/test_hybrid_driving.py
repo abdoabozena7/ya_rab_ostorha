@@ -478,7 +478,7 @@ class HybridDrivingTests(unittest.TestCase):
              patch('backend.core.control_semantics.SemanticAssociator.apply',side_effect=classify):
             scene,_,_=self.measured()
         sources={m['source'] for m in scene.prediction['control_trajectories']}
-        self.assertEqual(sources,{'STATIONARY','PEDESTRIAN_POSSIBLE_START','PEDESTRIAN_POSSIBLE_RETREAT'})
+        self.assertEqual(sources,{'STATIONARY','PEDESTRIAN_POSSIBLE_START','PEDESTRIAN_POSSIBLE_RETREAT','PEDESTRIAN_POSSIBLE_RUN'})
 
     def test_short_occlusion_keeps_existing_forecasts_but_crossings_and_unresolved_motion_still_veto(self):
         from backend.core.corridor_uncertainty import uncertain_corridor_tracks

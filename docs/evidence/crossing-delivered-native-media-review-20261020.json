@@ -1,0 +1,160 @@
+{
+  "scope": "HISTORICAL_REVISION16_CRITICAL_CROSSING_AND_MEDIA_REVIEW",
+  "attempt": "6e5b5abd0a5444eb9910cbaaa1a75284",
+  "source_archive": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\6e5b5abd0a5444eb9910cbaaa1a75284\\source.zip",
+    "sha256": "022eba034211144df35e670574be3384ad5580600c32697ebc28dbdb196a7958",
+    "files": 192,
+    "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+  },
+  "report_sha256": "b01076634a4d7f306de7adfcbb615e7f5e24f3f5b08b7a1ce4a2f052e10de729",
+  "review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": true,
+    "gates": {
+      "actual_scenario_outcomes": true,
+      "predictive_braking_before_ingress": true,
+      "complete_recordings": true,
+      "finish_waited_for_exports": true,
+      "cleanup_confirmed": true,
+      "independent_cleanup": true,
+      "engine_exited": true,
+      "three_videos_after_exit": true,
+      "source_unchanged": true
+    },
+    "prediction": {
+      "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+      "source": "POST_DRIVE_NATIVE_ASSOCIATION_ONLY",
+      "corridor_half_width_m": 2.0,
+      "minimum_lead_s": 0.5,
+      "first_native_motion_elapsed_s": 4.850000072270632,
+      "first_path_ingress_elapsed_s": 5.850000087171793,
+      "first_forecast": {
+        "elapsed_s": 4.450000066310167,
+        "speed_kmh": 45.323319490750144,
+        "source": "PEDESTRIAN_POSSIBLE_RUN",
+        "native_association_error_m": 0.5555453373502146,
+        "native_lateral_m": 4.599999419253581,
+        "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+      },
+      "passed": true,
+      "path_ingress_lead_s": 1.4000000208616257,
+      "normal_contact_lead_s": 1.600000023841858
+    },
+    "original_strict_first_motion_acceptance": true,
+    "original_strict_first_motion_evidence": {
+      "source": "POST_DRIVE_NATIVE_ASSOCIATION_NOT_A_POLICY_INPUT",
+      "first_critical_braking_forecast": {
+        "elapsed_s": 4.450000066310167,
+        "speed_kmh": 45.323319490750144,
+        "source": "PEDESTRIAN_POSSIBLE_RUN",
+        "applied_brake": 1.0,
+        "native_association_error_m": 0.5555453373502146
+      },
+      "native_first_motion_elapsed_s": 4.850000072270632,
+      "normal_critical_contact_elapsed_s": 6.050000090152025,
+      "predicted_before_actual_motion": true,
+      "braked_from_at_least_20_kmh": true,
+      "passed": true
+    }
+  },
+  "actual_outcomes": {
+    "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+    "scenario_id": "crossing-c",
+    "passed": true,
+    "gates": {
+      "both_recorded": true,
+      "normal_pedestrian_collision": true,
+      "project_arrived_without_contact": true,
+      "initial_conditions_verified": true,
+      "same_requested_speed": true,
+      "same_detector": true,
+      "same_scenario": true,
+      "critical_crossing_realized": true
+    },
+    "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+  },
+  "playback_after_engine_exit": {
+    "passed": true,
+    "checks": {
+      "NORMAL": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 6.100000090897083
+      },
+      "ROBOSPHERE": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 52.75000078603625
+      },
+      "shared": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 1.5000000216066838
+      }
+    },
+    "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+  },
+  "shared_prefix": {
+    "status": "READY",
+    "pair_id": "01ab98ba666d4176b16921e6d2c3398c",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b10a43da9f8c43d891453da5d055a23f",
+    "video": "shared-perception.mp4",
+    "sha256": "b72ead75e707715459ece064f3890d50312d90a0ac002918a3dec580b76103e8",
+    "frames": 30,
+    "detection_boxes": 182,
+    "start_elapsed_s": -1.4500000216066837,
+    "end_elapsed_s": 0.0,
+    "duration_s": 1.5000000216066838,
+    "last_frame_hold_s": 0.05,
+    "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+    "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+    "tolerances": {
+      "position_m": 0.15,
+      "heading_deg": 0.5,
+      "speed_mps": 0.15,
+      "participant_position_m": 0.25,
+      "participant_heading_deg": 2.0
+    },
+    "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+    "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+  },
+  "frames": [
+    {
+      "file": "docs\\evidence\\crossing-delivered-native-normal-end-collision-20261020.png",
+      "sha256": "a0cf8037c55d924b23e4a40f560c43c55d5ce317b064c32255a7d1152f07cbd0",
+      "source": "ACTUAL_PREFERRED_EXPORTED_VIDEO_FRAME"
+    },
+    {
+      "file": "docs\\evidence\\crossing-delivered-native-project-crossing-20261020.png",
+      "sha256": "43b5fd945a161d047723ac9986d41d3642fb3206fad31ce41b24697ce9795306",
+      "source": "ACTUAL_PREFERRED_EXPORTED_VIDEO_FRAME"
+    },
+    {
+      "file": "docs\\evidence\\crossing-delivered-native-project-end-arrived-20261020.png",
+      "sha256": "0da710884520944e40cfd64b9aa1ef48173ab1921b29e1e463308ea142cee580",
+      "source": "ACTUAL_PREFERRED_EXPORTED_VIDEO_FRAME"
+    },
+    {
+      "file": "docs\\evidence\\crossing-delivered-native-project-forecast-20261020.png",
+      "sha256": "5d290e288d37a565fee5bd84a6283cfdad1452bc64398825587b26c7e186ddc2",
+      "source": "ACTUAL_PREFERRED_EXPORTED_VIDEO_FRAME"
+    },
+    {
+      "file": "docs\\evidence\\crossing-delivered-native-shared-front-detections-20261020.png",
+      "sha256": "c69ba46531c0706d9473c883d87ba850ac2d3750900567345ce5d276756ae566",
+      "source": "ACTUAL_PREFERRED_EXPORTED_VIDEO_FRAME"
+    }
+  ],
+  "visual_review": "Inspected actual Normal contact endpoint, forecast and crossing frame, full project arrival endpoint, and 2D shared front-camera prefix. Measured partial volumes are not complete occluded bodies.",
+  "later_fixture_audit": "Revision 17 adds scheduled-origin admission for every staged crosser. This revision-16 report proved the critical crossing and media lifecycle under its original gates, but cannot substitute for the later complete fixture acceptance."
+}

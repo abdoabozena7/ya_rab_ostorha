@@ -5,6 +5,25 @@ from tests.core_packets import packet
 
 
 class ObservationRecoveryTests(unittest.TestCase):
+    def test_camera_poll_during_construction_cannot_cancel_an_automatic_start(self):
+        service=SimulationService(None);service._publish(packet())
+        service.journey.update(status='STARTING',driving_mode='ROBOSPHERE')
+        service.reconfiguring=True
+        with self.assertRaises(RuntimeError):service.get_camera_frame()
+        with self.assertRaises(RuntimeError):service.get_sensor_frame('depth')
+        self.assertEqual(service.journey['status'],'STARTING')
+        self.assertIsNone(service.last_drive_stop)
+
+    def test_stopped_startup_waits_for_fresh_frames_without_extending_sensor_limits(self):
+        now=[0.];service=SimulationService(None,now=lambda:now[0]);service._publish(packet())
+        service.journey.update(status='STARTING',driving_mode='NORMAL')
+        service.navigation_ready_frame=3;service.navigation_prepared_at=0.
+        now[0]=2.;self.assertFalse(service._check_observation_health())
+        self.assertEqual(service.journey['status'],'STARTING')
+        self.assertFalse(service._live()) # Old data still cannot admit a control.
+        now[0]=30.1;service._check_observation_health()
+        self.assertEqual(service.journey['status'],'ERROR')
+
     def test_worker_watchdog_ends_journey_without_dashboard_polling(self):
         from backend.core.control import ControlMode
         now=[0.];service=SimulationService(None,now=lambda:now[0]);service._publish(packet())

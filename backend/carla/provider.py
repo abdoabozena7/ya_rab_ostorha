@@ -130,7 +130,8 @@ class CarlaProvider:
     def spawn_ego_vehicle(self):
         if self.ego is not None:
             raise RuntimeError('An ego vehicle is already owned by this session')
-        self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index, strict_spawn=self.strict_ego_spawn)
+        self.ego = EgoVehicle(self.world.world, self.blueprint, self.spawn_index, strict_spawn=self.strict_ego_spawn,
+            traffic_manager_port=self.traffic_manager_port)
         actor = self.ego.spawn()
         from .onboard_geometry import geometry_for
         self.vehicle_geometry=geometry_for(actor)
@@ -154,6 +155,32 @@ class CarlaProvider:
         self.benchmark_prepared=True
         return condition['id']
 
+    def prepare_guided_vehicle(self):
+        """Normalize the live app before capturing a matched comparison start."""
+        if not self.sensor_suite:raise ValueError('The crossing comparison requires the native camera, depth and LiDAR sensor suite')
+        target='vehicle.mercedes.coupe_2020'
+        self.world.world.get_blueprint_library().find(target)
+        self.camera_settings['_comparison_rig']=True
+        self.camera_settings.update(camera_view='chase',camera_resolution='800x450',camera_fov=90,
+            camera_postprocess=True,camera_motion_blur=0.,camera_bloom=0.)
+        expected={'collision','frontCamera','drivingCamera','depth','radar','lidar','imu','gnss'}
+        configuration=getattr(self.sensor_manager,'configurations',{})
+        attributes=lambda name:configuration.get(name,{}).get('attributes',{})
+        calibrated=(int(attributes('frontCamera').get('image_size_x',0))==1280
+            and int(attributes('drivingCamera').get('image_size_x',0))==800
+            and int(attributes('drivingCamera').get('image_size_y',0))==450
+            and str(attributes('drivingCamera').get('enable_postprocess_effects','')).lower()=='true'
+            and abs(float(attributes('drivingCamera').get('gamma',0))-2.2)<1e-3
+            and self.sensor_manager.configurations.get('drivingCamera',{}).get('mountTransform',{}).get('positionM')==[-6.,0.,3.]
+            and int(attributes('depth').get('image_size_x',0))==640
+            and int(attributes('lidar').get('channels',0))==32
+            and abs(float(attributes('lidar').get('lower_fov',0))+75)<1e-3
+            and int(attributes('lidar').get('points_per_second',0))==128000)
+        rebuild=self.ego.actor.type_id!=target or set(self.sensor_manager.actors)!=expected or not calibrated
+        self.blueprint=target
+        if rebuild:self.reset_vehicle()
+        return rebuild
+
     def select_presentation_vehicle(self, mode):
         variants=getattr(self,'presentation_vehicle_variants',None)
         if not variants or mode not in variants:raise ValueError('Prepared vehicle choices unavailable')
@@ -172,7 +199,7 @@ class CarlaProvider:
         admission=api.Transform(api.Location(native.location.x,native.location.y,native.location.z+.4),native.rotation)
         actor=self.world.world.try_spawn_actor(bp,admission)
         if actor is None:raise ValueError('The prepared ego start is occupied')
-        self.ego.actor=actor;actor.set_autopilot(False);actor.set_simulate_physics(False);actor.set_transform(native)
+        self.ego.actor=actor;actor.set_autopilot(False,self.traffic_manager_port);actor.set_simulate_physics(False);actor.set_transform(native)
         from .onboard_geometry import geometry_for
         self.vehicle_geometry=geometry_for(actor)
         self.inspector=NearbyActorInspector(self.world.world,actor)
@@ -229,9 +256,22 @@ class CarlaProvider:
         stress=getattr(self,'dense_chaos',None)
         if stress:stress.before_tick()
         if self.scenarios: self.scenarios.before_tick()
+        overlay=getattr(self,'measured_overlay',None)
+        if overlay:
+            from .scene_overlays import draw
+            try:draw(self,overlay)
+            except (RuntimeError,ValueError,TypeError) as error:self.overlay_error=str(error)
         if self.population and self.dashboard_tools:
             route = self.dashboard_tools.route
             self.population.set_route(route['points'] if route else [])
+        before_population=time.perf_counter()
+        if self.population:
+            # NPC housekeeping consumes the last authoritative snapshot before
+            # advancing physics. It must not age the next synchronized sensor
+            # packet while the ego controller waits for publication. Commands
+            # still affect the following native tick, under this same owner.
+            self.population.update(self.world.world.get_snapshot())
+        after_population=time.perf_counter()
         before_native=time.perf_counter()
         snapshot = self.world.advance()
         after_native=time.perf_counter()
@@ -250,9 +290,7 @@ class CarlaProvider:
             self.local_population_counts = counts
         else:
             self.local_population_counts = {}
-        before_population=time.perf_counter()
-        if self.population: self.population.update(snapshot)
-        after_population=time.perf_counter()
+        before_telemetry=time.perf_counter()
         self.last_vehicle = vehicle_state(self.ego.actor, snapshot)
         self.last_ground_truth = self.inspector.observe(snapshot) if self.inspector else None
         self.last_world = {**self.world.state(snapshot), 'version': self.connection.server_version,
@@ -262,9 +300,9 @@ class CarlaProvider:
         finished=time.perf_counter()
         self.step_timing_ms={'before_native':(before_native-began)*1000,
             'native_tick':(after_native-before_native)*1000,
-            'scenario_audit':(before_population-after_native)*1000,
+            'scenario_audit':(before_telemetry-after_native)*1000,
             'population':(after_population-before_population)*1000,
-            'telemetry_and_spectator':(finished-after_population)*1000}
+            'telemetry_and_spectator':(finished-before_telemetry)*1000}
         return self.last_vehicle
 
     def _follow_ego(self, transform):
@@ -460,7 +498,9 @@ class CarlaProvider:
                 destination_stop_policy='SHARED_2S_APPROACH_2_5M_SHORT_WITHIN_EXISTING_5M_ARRIVAL',
                 initial_conditions=copy.deepcopy(self.benchmark_fixture.condition),
                 actual_population={'vehicles':len(self.population.vehicles),'pedestrians':len(self.population.walkers),
-                                   'controllers':len(self.population.walkers),'walkers_active':0})
+                                   'controllers':sum(e.get('controller_id') is not None for e in self.population.walkers.values()),'walkers_active':0})
+            if self.benchmark_fixture.condition.get('comparison_scenario'):
+                manifest['comparison_scenario']=copy.deepcopy(self.benchmark_fixture.condition['comparison_scenario'])
             variants=getattr(self,'presentation_vehicle_variants',None)
             if variants:
                 manifest.update(vehicle_variants=dict(variants),vehicle_geometry=copy.deepcopy(self.vehicle_geometry.__dict__),
@@ -547,7 +587,10 @@ class CarlaProvider:
         BasicAgent = route_agent_class()
         delta = self.fixed_delta
         self.navigation_options = {'dt': delta, 'max_brake': 1.,
-                      **({'max_throttle':.9} if presentation and getattr(self,'guided_presentation',False) else {}),
+                      # One shared native route controller for both guided arms.
+                      # Saturated low-speed steering made the Mercedes point at
+                      # parked curb geometry while recovering from a stop.
+                      **({'max_throttle':.9,'max_steering':.35} if presentation and getattr(self,'guided_presentation',False) else {}),
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
@@ -581,8 +624,8 @@ class CarlaProvider:
             self.navigation.ignore_traffic_lights(False)
             self.navigation.ignore_stop_signs(False)
         elif driving_mode == 'NORMAL':
-            # NORMAL follows the route and signals without obstacle protection.
-            # Sensor observations remain available for display and recording.
+            # Native navigation owns route/signals; the shared sensor pipeline
+            # owns Normal's reactive obstacle braking without actor queries.
             self.navigation.ignore_vehicles(True)
             self.navigation.ignore_traffic_lights(False)
             self.navigation.ignore_stop_signs(False)

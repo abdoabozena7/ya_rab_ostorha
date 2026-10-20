@@ -74,11 +74,16 @@ def draw_forecast(image, prediction, camera, session, *, predictive):
     drawing=ImageDraw.Draw(image)
     count=0
     if predictive and forecast_matches(prediction,camera,session):
+        if prediction.get('visual_version')==1:
+            from .scene_overlays import draw_scene
+            box_count,count=draw_scene(image,prediction,camera)
+        else:
+            box_count=0
         tracks={track['id']:track for track in prediction.get('tracks',[]) if track.get('confirmed')}
         modes=sorted(prediction.get('trajectories',[]),key=lambda mode:
             0 if tracks.get(mode['track_id'],{}).get('class')=='person' else 1)
         counts={}
-        for mode in modes:
+        for mode in (() if prediction.get('visual_version')==1 else modes):
             identity=mode['track_id'];track=tracks.get(identity)
             if not track or counts.get(identity,0)>=1 or count>=1:continue
             counts[identity]=counts.get(identity,0)+1
@@ -101,7 +106,8 @@ def draw_forecast(image, prediction, camera, session, *, predictive):
             if segments:count+=1
     font=ImageFont.load_default(size=max(10,min(22,image.width//45)))
     title='Ya Rab Ostorha | predictive driving' if predictive else 'Normal | sensors + reactive braking'
-    subtitle=('Selected risk forecast - may change' if count
+    subtitle=('Measured 3D detections and corridor risk forecasts' if predictive and prediction and prediction.get('visual_version')==1 and forecast_matches(prediction,camera,session)
+              else 'Selected risk forecast - may change' if count
               else 'No risk forecast selected' if predictive and forecast_matches(prediction,camera,session) and prediction.get('focused')
               else 'Forecast unavailable for this frame' if predictive else 'Project motion prediction: off')
     drawing.rectangle((0,0,image.width,max(38,image.height//9)),fill='#172932')

@@ -1,0 +1,312 @@
+{
+  "scope": "FAILED_NATIVE_CROSSING_C_CRITICAL_WALKER_DID_NOT_REALIZE_SCHEDULE",
+  "normal_status": "ARRIVED",
+  "scenario": {
+    "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+    "id": "crossing-c",
+    "seed": 1703,
+    "parameters": {
+      "id": "crossing-c",
+      "crossing_m": 67.0,
+      "start_s": 4.9,
+      "speed_mps": 3.5,
+      "lateral_m": 4.6,
+      "fixture_seed": 1703,
+      "critical_blueprint": "walker.pedestrian.0001"
+    },
+    "definition_sha256": "79087ef6e05ca711b44001caadcecfd9d262983a0952ecf62f2bed871e1c8f3d",
+    "validated": false,
+    "library_revision": 13,
+    "critical_role": "critical_pedestrian",
+    "events": {
+      "critical_pedestrian": {
+        "kind": "CROSSING",
+        "critical": true,
+        "origin": [
+          -9.433537283702753,
+          -72.42244763823692,
+          0.95
+        ],
+        "target": [
+          -9.425111083313823,
+          -51.8224488660926,
+          0.95
+        ],
+        "start_s": 4.9,
+        "speed_mps": 3.5,
+        "direction": -1,
+        "repeat": false,
+        "exit_target": [
+          2.57488820143044,
+          -51.82735733233858,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3
+      },
+      "crossing_01": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -16.42511066608131,
+          -51.81958559411578,
+          0.95
+        ],
+        "target": [
+          -16.434518559719436,
+          -74.81958422320895,
+          0.95
+        ],
+        "start_s": 11.1,
+        "speed_mps": 1.9256399726820561,
+        "direction": 1,
+        "repeat": false,
+        "exit_target": [
+          -4.434519274975173,
+          -74.82449268945493,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -1.9951115261763306,
+          -51.825488024776575,
+          0.95
+        ]
+      },
+      "crossing_02": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -40.43451712920796,
+          -74.80976729071699,
+          0.95
+        ],
+        "target": [
+          -40.425109235569835,
+          -51.80976866162382,
+          0.95
+        ],
+        "start_s": 11.8,
+        "speed_mps": 2.3189433132592674,
+        "direction": -1,
+        "repeat": false,
+        "exit_target": [
+          -28.425109950825572,
+          -51.8146771278698,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -25.094518043543204,
+          -74.81604194673477,
+          0.95
+        ]
+      },
+      "crossing_03": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -47.42510881833732,
+          -51.806905389647,
+          0.95
+        ],
+        "target": [
+          -47.43451671197545,
+          -74.80690401874017,
+          0.95
+        ],
+        "start_s": 12.5,
+        "speed_mps": 2.312418896647377,
+        "direction": 1,
+        "repeat": false,
+        "exit_target": [
+          -35.434517427231185,
+          -74.81181248498615,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -31.1751097869128,
+          -51.81355227102176,
+          0.95
+        ]
+      },
+      "crossing_04": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -54.434516294742934,
+          -74.80404074676335,
+          0.95
+        ],
+        "target": [
+          -54.42510840110481,
+          -51.80404211767018,
+          0.95
+        ],
+        "start_s": 13.2,
+        "speed_mps": 1.5382512947750744,
+        "direction": -1,
+        "repeat": false,
+        "exit_target": [
+          -42.425109116360545,
+          -51.80895058391616,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -37.27451731755865,
+          -74.8110598534951,
+          0.95
+        ]
+      },
+      "crossing_05": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -61.97510795108974,
+          -51.80095387432375,
+          0.95
+        ],
+        "target": [
+          -61.984515844727866,
+          -74.80095250341692,
+          0.95
+        ],
+        "start_s": 13.9,
+        "speed_mps": 1.3149421961232683,
+        "direction": 1,
+        "repeat": false,
+        "exit_target": [
+          -49.984516559983604,
+          -74.8058609696629,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -43.90510902814566,
+          -51.80834520641248,
+          0.95
+        ]
+      },
+      "crossing_06": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -69.43451540067326,
+          -74.79790516395587,
+          0.95
+        ],
+        "target": [
+          -69.42510750703514,
+          -51.797906534862705,
+          0.95
+        ],
+        "start_s": 14.6,
+        "speed_mps": 1.586326374374582,
+        "direction": -1,
+        "repeat": false,
+        "exit_target": [
+          -57.42510822229087,
+          -51.802815001108684,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -50.45451653196942,
+          -74.8056687214016,
+          0.95
+        ]
+      },
+      "crossing_07": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -77.42510703019798,
+          -51.79463422403205,
+          0.95
+        ],
+        "target": [
+          -77.4345149238361,
+          -74.79463285312522,
+          0.95
+        ],
+        "start_s": 15.3,
+        "speed_mps": 2.2724130610781987,
+        "direction": 1,
+        "repeat": false,
+        "exit_target": [
+          -65.43451563909184,
+          -74.7995413193712,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -57.53510821573437,
+          -51.80277000683476,
+          0.95
+        ]
+      },
+      "crossing_08": {
+        "kind": "CROSSING",
+        "critical": false,
+        "origin": [
+          -86.4345143873943,
+          -74.79095150344074,
+          0.95
+        ],
+        "target": [
+          -86.42510649375618,
+          -51.79095287434757,
+          0.95
+        ],
+        "start_s": 16.0,
+        "speed_mps": 1.6093841288044577,
+        "direction": -1,
+        "repeat": false,
+        "exit_target": [
+          -74.42510720901191,
+          -51.79586134059355,
+          0.95
+        ],
+        "sidewalk_speed_mps": 1.3,
+        "approach_origin": [
+          -65.63451562717091,
+          -74.79945951160043,
+          0.95
+        ]
+      }
+    },
+    "outcome_source": "NATIVE_COLLISION_SENSOR_AND_ROUTE_ARRIVAL"
+  },
+  "critical_event": {
+    "kind": "CROSSING",
+    "critical": true,
+    "start_s": 4.9,
+    "realized": false,
+    "crossed_path": false,
+    "cleared_ego_path": false,
+    "completed": false,
+    "start_position": [
+      -9.434354782104492,
+      -72.5716552734375,
+      1.1038999557495117
+    ],
+    "position_m": [
+      -9.429187774658203,
+      -72.5716552734375,
+      1.1039000749588013
+    ],
+    "speed_mps": 0.00013427734666038305,
+    "phase": "CROSSING",
+    "first_motion_elapsed_s": 0.05000000074505806,
+    "first_crossing_command_s": 4.90000007301569
+  },
+  "source_recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a7cd93dae2644535a63664b975356a19",
+  "frame_id": 797,
+  "elapsed_s": 5.200000077486038,
+  "source_asset_sha256": "07ce5a55a8f2fd802608251fc637873dee4474dbc2d48da0b5d62558a767b10e",
+  "image_sha256": "07ce5a55a8f2fd802608251fc637873dee4474dbc2d48da0b5d62558a767b10e",
+  "accepted": false,
+  "actual_front_image": "crossing-c-blocked-critical-20261020.jpg",
+  "visual_review": "The waiting walker is adjacent to the static parked car and fails to traverse despite the scheduled movement command."
+}

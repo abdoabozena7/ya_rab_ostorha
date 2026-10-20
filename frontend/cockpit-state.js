@@ -4,6 +4,7 @@ const finite = value => Number.isFinite(value) && value >= 0;
 export const metricText = (value, digits = 0) => finite(value) ? value.toFixed(digits) : '—';
 
 export function controlReasonText(reason) {
+  if(/^Advancing below verified [\d.]+ m\/s crossing limit$/.test(reason||''))return 'Proceeding cautiously while monitoring a possible crossing.';
   if(/^presentation_phase_timeout:/.test(reason||''))return 'The presentation exceeded its time limit. The unfinished attempt and its trace are saved; use Restart to prepare a new run.';
   return ({
     CONTROL_PROCESSING_DEADLINE:'Control calculation missed its deadline. Waiting for a fresh frame.',

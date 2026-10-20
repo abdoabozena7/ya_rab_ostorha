@@ -1,0 +1,110 @@
+{
+  "scope": "HISTORICAL_ACCEPTED_REVISION14_NATIVE_VIDEO_REVIEW",
+  "attempt": "218aeb1289064eb99fc2518c9f3837a4",
+  "source_archive": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\crossing-pairs\\218aeb1289064eb99fc2518c9f3837a4\\source.zip",
+    "sha256": "a0acce230f4bf5be851ebe2741d788681f12c36c7831c11dfa593570d9fbbe50",
+    "files": 192,
+    "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+  },
+  "report_sha256": "1d7dd457cc707516c9972d8fd9441af45f62b598dd49c970ab53560eb8e701f7",
+  "actual_outcomes": {
+    "protocol": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+    "scenario_id": "crossing-a",
+    "passed": true,
+    "gates": {
+      "both_recorded": true,
+      "normal_pedestrian_collision": true,
+      "project_arrived_without_contact": true,
+      "initial_conditions_verified": true,
+      "same_requested_speed": true,
+      "same_detector": true,
+      "same_scenario": true,
+      "critical_crossing_realized": true
+    },
+    "source": "ACTUAL_COLLISION_EVENTS_AND_DESTINATION_STATUS"
+  },
+  "playback_after_engine_exit": {
+    "passed": true,
+    "checks": {
+      "NORMAL": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 6.050000090152025
+      },
+      "ROBOSPHERE": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 51.00000075995922
+      },
+      "shared": {
+        "sha256_verified": true,
+        "first_and_last_decode": [
+          true,
+          true
+        ],
+        "duration_s": 1.5000000216066838
+      }
+    },
+    "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+  },
+  "shared_prefix": {
+    "status": "READY",
+    "pair_id": "29792afadf314bb3ba452dac95a8f4ae",
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_8863487ee8f747fdaa21baaa8cd4af53",
+    "video": "shared-perception.mp4",
+    "sha256": "e091bacd5b83e6c3301db5f882f102cb52e7200f1e1a625e3658dc53cbcc0691",
+    "frames": 30,
+    "detection_boxes": 334,
+    "start_elapsed_s": -1.4500000216066837,
+    "end_elapsed_s": 0.0,
+    "duration_s": 1.5000000216066838,
+    "last_frame_hold_s": 0.05,
+    "boundary_reason": "VISIBLE_PARTICIPANT_MOTION_DIVERGED",
+    "source": "VERIFIED_COMMON_PREFIX_NATIVE_FRONT_CAMERA",
+    "tolerances": {
+      "position_m": 0.15,
+      "heading_deg": 0.5,
+      "speed_mps": 0.15,
+      "participant_position_m": 0.25,
+      "participant_heading_deg": 2.0
+    },
+    "detection_alignment": "EXACT_SESSION_FRAME_TIMESTAMP_IMAGE_CHECKSUM_ONLY",
+    "derived_detection_index": "telemetry/shared-camera-detections.jsonl"
+  },
+  "frames": [
+    {
+      "file": "crossing-final-native-normal-end-collision-20261020.png",
+      "timestamp_s": 5.930000090152025,
+      "sha256": "01ed83455e175807672c4164090e17868cec52664579168a4fa1974fa3545364"
+    },
+    {
+      "file": "crossing-final-native-project-forecast-20261020.png",
+      "timestamp_s": 4.9,
+      "sha256": "fd9f5d002413647f591bae4f2c6bdd07f1588a165e1a626e28397be0ba232e85"
+    },
+    {
+      "file": "crossing-final-native-project-crossing-20261020.png",
+      "timestamp_s": 6.0,
+      "sha256": "c6a42db9886c396565b226fd3aa9c0788645256c024e249577f33ffc87991838"
+    },
+    {
+      "file": "crossing-final-native-project-end-arrived-20261020.png",
+      "timestamp_s": 50.88000075995922,
+      "sha256": "11e7f62e6536c7805d096088d3a3ae8b25de882255b143727305a6011ee81b2c"
+    },
+    {
+      "file": "crossing-final-native-shared-front-detections-20261020.png",
+      "timestamp_s": 0.5,
+      "sha256": "7d7b2faf50b861ad22846ed14537e7a8ede820e2b4b9885b4a2443649211c7b0"
+    }
+  ],
+  "review": "Actual Normal contact, sensor-derived visible 3D measurements and forecast arrows, full project arrival, and an exact-frame 2D front-camera prefix. Partial visible geometry and detector classifications are estimates, not native actor boxes.",
+  "source_scope_note": "These images retain the exact archived revision-14 controller; later revisions require their own native acceptance and media review."
+}

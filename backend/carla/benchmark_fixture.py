@@ -71,6 +71,8 @@ class BenchmarkFixture:
                 destination=tools.route['destination'],population=dict(pop.config),
                 weather={k:getattr(weather,k) for k in WEATHER_PRESET_FIELDS if hasattr(weather,k)},
                 stress_plan=getattr(getattr(p,'dense_chaos',None),'plans',{}))
+            if stress and callable(getattr(stress,'descriptor',None)):
+                self.condition['comparison_scenario']=stress.descriptor()
             variants=getattr(p,'presentation_vehicle_variants',None)
             if variants:self.condition.update(version=3,vehicle_variants=dict(variants))
         identity={**self.condition,'actors':[{k:v for k,v in a.items() if k!='id'} for a in self.actors],
@@ -92,7 +94,7 @@ class BenchmarkFixture:
             bp=world.get_blueprint_library().find(row['blueprint'])
             for key,value in row.get('attributes',{}).items():
                 if bp.has_attribute(key):bp.set_attribute(key,value)
-            if bp.has_attribute('role_name'):bp.set_attribute('role_name','ostorha_'+row['role'])
+            if bp.has_attribute('role_name'):bp.set_attribute('role_name','ostorha_participant_'+row['role'])
             pose=row['pose'];native=api.Transform(api.Location(*pose['location']),api.Rotation(
                 pitch=pose['rotation'][0],yaw=pose['rotation'][1],roll=pose['rotation'][2]))
             # Dense saved starts may contain touching native capsules (including
@@ -108,10 +110,12 @@ class BenchmarkFixture:
             if row['blueprint'].startswith('vehicle.'):
                 pop.vehicles.add(actor.id);pop.driver_profiles[actor.id]=dict(row['profile'])
             else:
-                try:controller=world.spawn_actor(world.get_blueprint_library().find('controller.ai.walker'),api.Transform(),attach_to=actor)
+                manual=row.get('control_owner')=='SCRIPTED_WALKER'
+                try:controller=None if manual else world.spawn_actor(world.get_blueprint_library().find('controller.ai.walker'),api.Transform(),attach_to=actor)
                 except Exception:
                     pop._destroy([actor.id]);raise
-                pop.walkers[actor.id]={'controller_id':controller.id,'speed':row['speed_mps'],'started':False,
+                pop.walkers[actor.id]={'controller_id':controller.id if controller else None,'speed':row['speed_mps'],'started':False,
+                    'manual':manual,'scripted_crossing':manual,
                     'ready_at':None,'destination':None,'last_retarget':0.,'seen':False,'location':native.location,
                     'admitted_at_frame':pop.frame_id,'controller_seen':False,'activity':'IDLE','wait_until':None,'crossing':False}
         for row in self.lights:
@@ -155,7 +159,7 @@ class BenchmarkFixture:
                 actor.set_autopilot(False, pop.traffic_manager.port)
             else:
                 entry = pop.walkers[row['id']]
-                controller = p.world.world.get_actor(entry['controller_id'])
+                controller = p.world.world.get_actor(entry['controller_id']) if entry['controller_id'] is not None else None
                 if entry['started'] and controller: controller.stop()
                 entry.update(started=False, destination=None, ready_at=None, wait_until=None)
             actor.set_simulate_physics(False)
@@ -214,7 +218,7 @@ class BenchmarkFixture:
             if actor.get_velocity().length()>.03 or actor.get_angular_velocity().length()>.1:
                 failures.append(f"actor initial velocity {row['id']}")
             if row['id'] in p.population.walkers:
-                if p.world.world.get_actor(p.population.walkers[row['id']]['controller_id']) is None:
+                if row.get('control_owner')!='SCRIPTED_WALKER' and p.world.world.get_actor(p.population.walkers[row['id']]['controller_id']) is None:
                     failures.append(f"walker controller {row['id']}")
         for row in self.lights:
             light = p.world.world.get_actor(row['id'])
@@ -262,6 +266,8 @@ class BenchmarkFixture:
             if actor is None:
                 if strict:raise RuntimeError('Cannot release a missing benchmark actor')
                 return
+            # CARLA disables CharacterMovement when physics is disabled.
+            # Restore the movement mode of fresh, unpossessed walkers too.
             actor.set_simulate_physics(True)
             if row['blueprint'].startswith('vehicle.'):
                 actor.set_target_velocity(api.Vector3D()); actor.set_target_angular_velocity(api.Vector3D())
@@ -274,17 +280,24 @@ class BenchmarkFixture:
                 if entry is None:
                     if strict:raise RuntimeError('Benchmark pedestrian registry changed')
                     return
+                if entry.get('manual'):
+                    actor.apply_control(api.WalkerControl(speed=0.));entry.update(started=True,ready_at=0.,scripted_owner=True)
+                    return
                 controller = p.world.world.get_actor(entry['controller_id'])
                 if controller is None:
                     if strict:raise RuntimeError('Benchmark pedestrian controller is missing')
                     return
-                controller.start(); controller.set_max_speed(row['speed_mps'])
+                if entry.get('scripted_crossing'):
+                    controller.stop();actor.set_simulate_physics(False)
+                    actor.apply_control(api.WalkerControl(speed=0.));entry['scripted_owner']=True
+                else:
+                    controller.start(); controller.set_max_speed(row['speed_mps'])
                 entry.update(started=True, ready_at=0.)
                 if self.reconstructable:
                     stamp=p.last_vehicle['timestamp']
                     entry.update(activity=row.get('activity','WALKING'),crossing=row.get('crossing',False),
                         last_retarget=stamp,wait_until=stamp+row['wait_remaining_s'] if row.get('wait_remaining_s') else None)
-                if row['destination']:
+                if row['destination'] and not entry.get('scripted_crossing'):
                     target = api.Location(*row['destination']); controller.go_to_location(target); entry['destination'] = target
     def hold_current(self):
         """Stop owned traffic between recordings without teleporting it."""
@@ -305,7 +318,8 @@ class BenchmarkFixture:
                 else:
                     entry=pop.walkers.get(actor_id)
                     if entry:
-                        controller=p.world.world.get_actor(entry['controller_id'])
+                        controller=p.world.world.get_actor(entry['controller_id']) if entry['controller_id'] is not None else None
+                        if entry.get('manual'):actor.apply_control(p.connection.api.WalkerControl(speed=0.))
                         if controller and entry['started']:controller.stop()
                         entry.update(started=False,ready_at=None)
                     else:failures.append(f'Missing pedestrian controller record {actor_id}')

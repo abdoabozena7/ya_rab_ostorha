@@ -298,43 +298,78 @@ class ActiveSafetySupervisor:
             forward_path=getattr(self,'forward_path',None),ground_plane=scene['lidar_ground_plane'])
             if self.anticipation_enabled else {'conflict':None,'coverage':{},'observations':[]})
         conflict=crossing['conflict']
+        road_range=scene['observed_road_range_m']
+        distance=scene['target_range_m']
+        target_speed=coverage_speed_limit(road_range,t)
+        coverage_limited=distance is None or distance>road_range
+        requested_prediction_cap=getattr(self,'prediction_speed_cap_mps',None)
+        forecast_cap=(min(target_speed,requested_prediction_cap) if requested_prediction_cap is not None else target_speed
+            ) if coverage_limited else requested_prediction_cap
         from .pedestrian_anticipation import crossing_forecast
         from .motion_geometry import VehicleGeometry
         pedestrian=(crossing_forecast(getattr(self,'control_prediction',None),observation,base,
-            getattr(self,'geometry',None) or VehicleGeometry()) if self.anticipation_enabled else None)
+            getattr(self,'geometry',None) or VehicleGeometry(),allow_measured_unknown=True,
+            cap_mps=forecast_cap) if self.anticipation_enabled else None)
+        crossing_prediction=pedestrian
+        if pedestrian and pedestrian.get('object_class')=='UNKNOWN':
+            tracked=next(t for t in self.control_prediction['tracks'] if t['id']==pedestrian['track_id'])
+            if conflict is None:
+                conflict={'source':'CURRENT_DEPTH_SURFACE_TRACK','track_id':tracked['id'],
+                    'center_m':list(tracked['position_m']),'forecast_motion_mps':list(tracked['velocity_mps']),
+                    'time_s':pedestrian['time_s'],'trajectory':pedestrian['trajectory'],
+                    'measurement_frame':observation.frame_id,'timestamp_s':observation.timestamp_s,
+                    'certainty':'MEASURED_MOVING_GEOMETRY_WITHOUT_CURRENT_SEMANTIC_CLASS'}
+            pedestrian=None
         speed = observation.ego.speed_mps
         envelope = t.minimum_clearance_m + speed*t.reaction_time_s + speed*speed/(2*t.assumed_deceleration_mps2)
-        distance = scene['target_range_m']
         # Only matched measured radar Doppler supplies relative motion/TTC.
         # LiDAR/depth motion is unknown, handled by the stationary-target envelope.
         closing = (scene['radar_closing_speed_mps'] if scene['radar_range_m'] is not None and distance is not None
                    and abs(scene['radar_range_m']-distance) <= 1. else None)
         ttc = distance/closing if distance is not None and closing is not None and closing >= c.minimum_closing_speed_mps else None
-        road_range = scene['observed_road_range_m']
         clear = distance is None and road_range >= envelope
         release_clear = distance is None and road_range >= envelope+t.release_hysteresis_m
         hazard = distance is not None and (distance <= envelope or ttc is not None and ttc <= c.ttc_trigger_s)
         decision = None
         if scene['radar_range_m'] is not None and distance is not None:
+            # The legacy teacher deliberately completes a stop once latched.
+            # A previous target leaving this corridor must not transfer that
+            # latch to an unrelated distant return. Use the runtime's existing
+            # measured stopping-space and release margins before clearing it.
+            if (distance>envelope+t.release_hysteresis_m and
+                    scene['radar_range_m']>envelope+t.release_hysteresis_m and
+                    road_range>=envelope+t.release_hysteresis_m):
+                self.teacher.reset()
             candidate = self.teacher.propose(scene['teacher_observation'], base, as_of_timestamp_s=as_of_timestamp_s)
             # The legacy nearest-32 filter can disagree with the full calibrated
             # scene (or retain a return beyond its usable range). Its missing-
             # target fallback is not a measured obstacle. Current fused space
             # already handles unknown coverage with a stopping speed/hold.
-            if candidate.diagnostics['foreground_valid']:
+            retained_range=candidate.diagnostics.get('forward_range_m')
+            same_current_foreground=(retained_range is not None and
+                abs(retained_range-scene['radar_range_m'])<=max(.75,.03*scene['radar_range_m']))
+            if candidate.diagnostics['foreground_valid'] and same_current_foreground:
                 decision=candidate
                 hazard = hazard or decision.action[0] > 0
             else:self.teacher.reset()
-        coverage_limited = distance is None or distance > road_range
         unknown = coverage_limited and road_range < envelope
-        target_speed = coverage_speed_limit(road_range, t)
         coverage_brake = (min(1., max(0., speed-target_speed)/t.assumed_deceleration_mps2)
                           if coverage_limited else 0.)
         # No usable stopping space calls for a hold. A shorter visible horizon
         # with usable space calls for a bounded speed, not an emergency brake.
         if coverage_limited and target_speed <= t.stopped_speed_mps:
             coverage_brake = t.additional_brake
-        requested = hazard or conflict is not None or pedestrian is not None
+        from .pedestrian_anticipation import cautious_roadside_speed
+        cautious_speed=cautious_roadside_speed(getattr(self,'control_prediction',None),crossing_prediction,observation,base,
+            getattr(self,'geometry',None) or VehicleGeometry(),road_range=road_range,distance=distance,
+            envelope=envelope,hazard=hazard,conflict=conflict,
+            reaction_time_s=t.reaction_time_s,deceleration_mps2=t.assumed_deceleration_mps2,
+            maximum_cap_mps=min(target_speed,forecast_cap) if forecast_cap is not None else target_speed)
+        cautious=cautious_speed is not None
+        if cautious:
+            target_speed=min(target_speed,cautious_speed)
+            coverage_brake=max(coverage_brake,min(1.,max(0.,speed-cautious_speed)*.5))
+        requested = hazard or (conflict is not None or pedestrian is not None) and not cautious
         reason = decision.diagnostics['reason'] if decision and decision.action[0]>0 else ('Measured obstacle inside braking envelope/TTC limit' if hazard
             else 'Insufficient measured forward road coverage; missing targets are not clear space' if unknown else 'Observed forward stopping corridor is clear')
         if conflict:reason='Measured moving object approaches the driving path; object type unconfirmed'
@@ -359,11 +394,13 @@ class ActiveSafetySupervisor:
         proposed = None
         throttle = (min(base.throttle, max(0., (target_speed-speed)*.28))
                     if coverage_limited else base.throttle)
+        if cautious:throttle=min(base.throttle,.5,max(0.,cautious_speed-speed)*.5)
         if not requested and not (desired > coverage_brake):
             if coverage_brake:
                 reason = f'Braking toward measured coverage speed limit {target_speed:.2f} m/s'
             elif throttle < base.throttle:
                 reason = f'Limiting acceleration to stop within {road_range:.2f} m of measured road'
+        if cautious:reason=f'Advancing below verified {cautious_speed:.1f} m/s crossing limit'
         if desired > base.brake or desired > 0 and base.throttle > 0 or throttle < base.throttle:
             command = replace(base, source=CommandSource.SAFETY,
                               throttle=0. if max(base.brake, desired) > 0 else throttle,
@@ -376,7 +413,7 @@ class ActiveSafetySupervisor:
         self.active = proposed is not None
         self.last_fault = None
         if self.active and not was_active: self.interventions += 1
-        self.status.update(status='BRAKING' if self.active and requested else 'COVERAGE_LIMITED' if self.active and desired <= coverage_brake else 'RELEASING' if self.active else 'MONITORING',
+        self.status.update(status='BRAKING' if self.active and requested else 'CAUTIOUS_APPROACH' if cautious else 'COVERAGE_LIMITED' if self.active and desired <= coverage_brake else 'RELEASING' if self.active else 'MONITORING',
             type='RULE_BASED_SAFETY' if self.anticipation_enabled else 'REACTIVE_SENSOR_SAFETY',
             actual_generator=('RULE' if self.anticipation_enabled else 'REACTIVE_SENSORS') if self.active else 'BASE_DRIVER',
             motion_prediction_used=self.anticipation_enabled, learned_control_used=False,
@@ -391,7 +428,9 @@ class ActiveSafetySupervisor:
             feasibility_validator='YA_RAB_OSTORHA_RUNTIME_BRAKING_V1' if proposed else None,
             depth_observed=scene['depth_observed'], lidar_observed=scene['lidar_observed'],
             base_driver_brake=base.brake, base_command=to_dict(base), proposed_safety_brake=desired,
-            path_conflict=conflict,pedestrian_prediction=pedestrian,side_rear_coverage=crossing['coverage'],
+            prediction_speed_cap_mps=forecast_cap,requested_prediction_speed_cap_mps=requested_prediction_cap,
+            path_conflict=conflict,pedestrian_prediction=pedestrian,cautious_roadside_approach=cautious,
+            cautious_roadside_speed_mps=cautious_speed,side_rear_coverage=crossing['coverage'],
             side_rear_observations=crossing['observations'],
             side_rear_free_space_verified=False)
         return proposed

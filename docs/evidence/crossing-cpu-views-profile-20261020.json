@@ -1,0 +1,14 @@
+{
+  "scope": "EXACT_RECORDED_IMAGE_CPU_SCHEDULING_PROFILE_NOT_DRIVING_ACCEPTANCE",
+  "image": "runs\\normal_city\\run_32fcbcf21fcf476dbc22e34e31f9781d\\rgb\\frontCamera-304-316.jpg",
+  "sha256": "d101a96ac80c1378c2127437a54cd28b965e1a54cd215eb8446dc2946151f68f",
+  "detector_profile": {
+    "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+    "input_size": 640,
+    "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+  },
+  "serial_ms": 851.1335999937728,
+  "parallel_ms": 343.77279999898747,
+  "identical_detections": true,
+  "boxes": 30
+}
