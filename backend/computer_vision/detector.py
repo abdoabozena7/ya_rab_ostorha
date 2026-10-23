@@ -46,15 +46,25 @@ def decode_output(output, *, width, height, ratio, left, top):
 
 
 class RoadDetector:
-    def __init__(self, path, *, profile_id=None):
+    def __init__(self, path, *, profile_id=None, execution_provider=None):
         import cv2
         cv2.setNumThreads(1);cv2.ocl.setUseOpenCL(False)
         import onnxruntime as ort
         options = ort.SessionOptions()
         options.intra_op_num_threads = options.inter_op_num_threads = 1
         options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
-        self.model = ort.InferenceSession(str(path), sess_options=options,
-                                         providers=['CPUExecutionProvider'])
+        self._serial = None
+        provider = 'CPUExecutionProvider'
+        if execution_provider == 'DML' and 'DmlExecutionProvider' in ort.get_available_providers():
+            # Opt-in GPU inference (DirectML). Output equivalence and wall-clock
+            # gain are measured before use; DirectML runs views one at a time.
+            import threading
+            options.enable_mem_pattern = False
+            self.model = ort.InferenceSession(str(path), sess_options=options, providers=['DmlExecutionProvider', 'CPUExecutionProvider'])
+            provider = self.model.get_providers()[0];self._serial = threading.Lock()
+        else:
+            self.model = ort.InferenceSession(str(path), sess_options=options,
+                                             providers=['CPUExecutionProvider'])
         self.input = self.model.get_inputs()[0].name
         shape=self.model.get_inputs()[0].shape
         if len(shape)!=4 or shape[2]!=shape[3] or shape[2] not in (320,640):raise ValueError('Unsupported detector input shape')
@@ -65,6 +75,7 @@ class RoadDetector:
         self.focus_divisor=2 if selected.endswith('_V1') else 4
         self.profile={'id':selected,
             'input_size':self.size,'model_sha256':hashlib.sha256(Path(path).read_bytes()).hexdigest()}
+        if provider != 'CPUExecutionProvider':self.profile['execution_provider'] = provider
 
     def predict(self, rgb, *, frame_id=None):
         import cv2
@@ -115,5 +126,8 @@ class RoadDetector:
         padded = np.full((size,size,3), 114, np.uint8)
         padded[top:top+resized.shape[0],left:left+resized.shape[1]] = resized
         tensor = padded.transpose(2,0,1)[None].astype(np.float32)/255.
-        output = self.model.run(None, {self.input:tensor})[0][0].T
+        serial = getattr(self, '_serial', None)
+        if serial is not None:
+            with serial:output = self.model.run(None, {self.input:tensor})[0][0].T
+        else:output = self.model.run(None, {self.input:tensor})[0][0].T
         return decode_output(output, width=width, height=height, ratio=ratio, left=left, top=top)

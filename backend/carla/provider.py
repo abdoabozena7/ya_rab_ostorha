@@ -580,6 +580,9 @@ class CarlaProvider:
         # Harness evaluation shares the guided arms' route controller and
         # requested-target semantics; posted limits remain logged separately.
         self.evaluation_navigation = bool(evaluation) and not presentation
+        self.evaluation_route_probe = None
+        self.route_tracker_steering = None
+        self._dense_route_key = None
         from ..learning.native_validation_budget import active_rule_ticket
         self.rule_validation_mode = driving_mode == 'ROBOSPHERE' and active_rule_ticket() is not None and not self.evaluation_navigation
         if driving_mode not in ('HYBRID','BASELINE') and not presentation and self.benchmark_fixture:
@@ -806,14 +809,33 @@ class CarlaProvider:
         self.navigation_stop_reason = getattr(self.navigation,'stop_reason',None)
         steering = float(value.steer)
         self.launch_alignment = None
+        self.evaluation_route_probe = None
         if evaluation:
             from ..core.launch_alignment import LAUNCH_SPEED_MPS, lane_alignment, launch_steering, pursuit_steering
+            from ..core.route_tracking import track
             pose = self.ego.actor.get_transform()
             speed = self.last_vehicle['speedMps'] if self.last_vehicle and 'speedMps' in self.last_vehicle else self.ego.actor.get_velocity().length()
-            if abs(speed) < LAUNCH_SPEED_MPS:
-                planner = self.navigation.get_local_planner() if hasattr(self.navigation, 'get_local_planner') else None
-                plan = [(wp.transform.location.x, wp.transform.location.y) for wp, _ in list(planner.get_plan())[:60]] if planner else []
-                pursuit = pursuit_steering((pose.location.x, pose.location.y), pose.rotation.yaw, plan)
+            planner = self.navigation.get_local_planner() if hasattr(self.navigation, 'get_local_planner') else None
+            plan = [(wp.transform.location.x, wp.transform.location.y) for wp, _ in list(planner.get_plan())[:80]] if planner else []
+            tracked = None
+            route_window = self._evaluation_route_window(pose.location.x, pose.location.y)
+            if route_window is not None and getattr(self, 'vehicle_geometry', None) is not None and getattr(self, 'route_tracker_enabled', True):
+                try:
+                    # One route-following tracker owns steering at every speed;
+                    # the supervisor probes the path this tracker will drive.
+                    tracked, path, info = track((pose.location.x, pose.location.y), math.radians(pose.rotation.yaw), route_window,
+                        speed_mps=speed, target_speed_mps=self.navigation_target_mps, geometry=self.vehicle_geometry,
+                        limit=float(self.navigation_options.get('max_steering', .35)),
+                        previous_steering=getattr(self, 'route_tracker_steering', None), control_period_s=self.fixed_delta)
+                except ValueError:
+                    tracked = None
+            if tracked is not None:
+                import numpy as np
+                steering, self.launch_alignment = tracked, 'ROUTE_TRACKER'
+                self.evaluation_route_probe = {'frame_id': frame_id, 'timestamp_s': timestamp_s, 'steering': steering,
+                                               'path_array': np.asarray(path, float), **info}
+            elif abs(speed) < LAUNCH_SPEED_MPS:
+                pursuit = pursuit_steering((pose.location.x, pose.location.y), pose.rotation.yaw, plan[:60])
                 if pursuit is not None:
                     steering, self.launch_alignment = pursuit, 'LOW_SPEED_LANE_PURSUIT'
                 else:
@@ -821,6 +843,7 @@ class CarlaProvider:
                     if lane is not None:
                         offset, error = lane_alignment(pose, lane.transform)
                         steering, self.launch_alignment = launch_steering(steering, speed_mps=speed, lateral_offset_m=offset, heading_error_deg=error)
+            self.route_tracker_steering = steering
         # Canonical steering, like native telemetry, is right-positive. The
         # left-positive legacy dashboard adapter is used only in set_controls.
         # This command still goes through ControlSafetyLayer and CommandArbiter.
@@ -831,9 +854,29 @@ class CarlaProvider:
     def navigation_done(self):
         return self.navigation is not None and self.navigation.done()
 
+    def _evaluation_route_window(self, x, y, *, behind=24, ahead=140):
+        """Dense planned-route points around the car (0.5 m lane geometry, cached per plan)."""
+        import numpy as np
+        native = getattr(self.dashboard_tools, 'native_route', None) or []
+        key = (id(native), len(native))
+        if getattr(self, '_dense_route_key', None) != key:
+            from ..core.route_tracking import dense_route
+            self._dense_route = np.asarray(dense_route([w for w, _ in native]), float) if len(native) >= 2 else None
+            self._dense_route_key = key;self._dense_route_index = None
+        route = getattr(self, '_dense_route', None)
+        if route is None or len(route) < 2:return None
+        previous = getattr(self, '_dense_route_index', None)
+        lo, hi = (0, len(route)) if previous is None else (max(0, previous-10), min(len(route), previous+60))
+        index = lo+int(np.argmin(np.hypot(route[lo:hi, 0]-x, route[lo:hi, 1]-y)))
+        self._dense_route_index = index
+        window = route[max(0, index-behind):index+ahead]
+        return [tuple(p) for p in window] if len(window) >= 2 else None
+
     def stop_navigation(self):
         self.navigation = None
         self.evaluation_navigation = False
+        self.evaluation_route_probe = None
+        self.route_tracker_steering = None
         self.navigation_planner = None
         self.navigation_recovery = None
         self.navigation_bypass = None

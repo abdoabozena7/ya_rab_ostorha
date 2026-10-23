@@ -1,0 +1,932 @@
+{
+ "task": "UNNECESSARY_PEDESTRIAN_BRAKING",
+ "v2_initial_cpu_detector": {
+  "folder": "output/pedestrian-suite/task2-validation-20261023",
+  "note": "Time-indexed layer before the hysteresis fixes; CPU detector (processing-deadline holds present)",
+  "summary": {
+   "B_PHYSICAL_PREDICTIVE": {
+    "episodes": 13,
+    "failed_or_missing_logs": 1,
+    "arrivals": 12,
+    "timeouts": 0,
+    "false_arrivals": 0,
+    "collision_episodes": 0,
+    "walker_collisions": 0,
+    "missed_hazards": 0,
+    "minimum_separation_m": {
+     "min": 2.446,
+     "median": 4.944
+    },
+    "unnecessary_braking_events": 68,
+    "unnecessary_full_stops": 24,
+    "unnecessary_stationary_s": 22.45,
+    "brake_release_oscillations": 298,
+    "journey_time_s_median_arrived": 20.4,
+    "route_progress_mean": 0.978,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 28,
+     "MEASURED_OBSTACLE": 15,
+     "COVERAGE": 1,
+     "TIMING_DEADLINE": 125,
+     "OTHER": 25
+    },
+    "freshness": {
+     "usable_frames": 5566,
+     "frames": 5581,
+     "fraction": 0.997,
+     "gate_99_percent": true
+    },
+    "ordinary_route_completion": {
+     "journeys": 2,
+     "arrived": 2,
+     "gate_all_arrive": true
+    },
+    "performance": {
+     "median_step_ms": 155.29,
+     "p95_step_ms_median": 206.046,
+     "real_time_factor_median": 0.321,
+     "safety_ms_median": 39.805,
+     "safety_ms_p95_median": 59.394,
+     "layer_ms_median": null,
+     "layer_ms_p95_median": null,
+     "deadline_hold_frames": 197,
+     "risk_status_frames": {}
+    },
+    "decision_responses": {
+     "CONTINUE": 0,
+     "CAUTIOUS_APPROACH": 0,
+     "PROTECTIVE_BRAKING": 0
+    },
+    "maximum_deceleration_mps2": {
+     "median": 25.172,
+     "max": 27.69,
+     "position_derived_median": 23.976
+    },
+    "deceleration_p95_mps2_median": 7.802,
+    "hard_braking_s": 37.0,
+    "maximum_abs_jerk_mps3_median": 132.487,
+    "maximum_lateral_acceleration_mps2_max": 5.238,
+    "maximum_speed_mps_max": 14.109,
+    "prediction_lead_s_median": 5.55,
+    "braking_lead_s_median": 5.675,
+    "ingress_events": 4
+   },
+   "D_EVIDENCE_BUDGETED": {
+    "episodes": 13,
+    "failed_or_missing_logs": 1,
+    "arrivals": 11,
+    "timeouts": 1,
+    "false_arrivals": 0,
+    "collision_episodes": 0,
+    "walker_collisions": 0,
+    "missed_hazards": 0,
+    "minimum_separation_m": {
+     "min": 2.896,
+     "median": 4.956
+    },
+    "unnecessary_braking_events": 62,
+    "unnecessary_full_stops": 39,
+    "unnecessary_stationary_s": 50.75,
+    "brake_release_oscillations": 405,
+    "journey_time_s_median_arrived": 20.2,
+    "route_progress_mean": 0.945,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 28,
+     "MEASURED_OBSTACLE": 11,
+     "COVERAGE": 2,
+     "TIMING_DEADLINE": 247,
+     "OTHER": 23
+    },
+    "freshness": {
+     "usable_frames": 5803,
+     "frames": 5823,
+     "fraction": 0.997,
+     "gate_99_percent": true
+    },
+    "ordinary_route_completion": {
+     "journeys": 2,
+     "arrived": 1,
+     "gate_all_arrive": false
+    },
+    "performance": {
+     "median_step_ms": 160.84,
+     "p95_step_ms_median": 205.704,
+     "real_time_factor_median": 0.31,
+     "safety_ms_median": 45.46,
+     "safety_ms_p95_median": 66.264,
+     "layer_ms_median": null,
+     "layer_ms_p95_median": null,
+     "deadline_hold_frames": 399,
+     "risk_status_frames": {
+      "NO_CURRENT_CONTROL_PREDICTION": 12,
+      "OVER_TIME_BUDGET": 2,
+      "READY": 5390
+     }
+    },
+    "decision_responses": {
+     "CONTINUE": 4002,
+     "CAUTIOUS_APPROACH": 709,
+     "PROTECTIVE_BRAKING": 693
+    },
+    "maximum_deceleration_mps2": {
+     "median": 24.037,
+     "max": 27.66,
+     "position_derived_median": 22.155
+    },
+    "deceleration_p95_mps2_median": 7.578,
+    "hard_braking_s": 33.5,
+    "maximum_abs_jerk_mps3_median": 122.675,
+    "maximum_lateral_acceleration_mps2_max": 6.228,
+    "maximum_speed_mps_max": 14.119,
+    "prediction_lead_s_median": 3.475,
+    "braking_lead_s_median": 5.35,
+    "ingress_events": 4
+   }
+  },
+  "paired": {
+   "D_EVIDENCE_BUDGETED_vs_B_PHYSICAL_PREDICTIVE": {
+    "pairs": 12,
+    "both_arrived": 11,
+    "journey_time_delta_s_median": 0.45,
+    "unnecessary_braking_delta": -6,
+    "unnecessary_stationary_delta_s": 28.3,
+    "collision_episode_delta": 0,
+    "arrival_delta": -1,
+    "oscillation_delta": 107
+   },
+   "E_PHYSICAL_ABLATION_vs_B_PHYSICAL_PREDICTIVE": {
+    "pairs": 0
+   },
+   "D_EVIDENCE_BUDGETED_vs_E_PHYSICAL_ABLATION": {
+    "pairs": 0
+   },
+   "C_LEARNED_RISK_vs_B_PHYSICAL_PREDICTIVE": {
+    "pairs": 0
+   },
+   "B_PHYSICAL_PREDICTIVE_vs_A_REACTIVE": {
+    "pairs": 0
+   }
+  }
+ },
+ "superseded_runs": [
+  "output/pedestrian-suite/task2b-validation-dml-20261023-failed-async-snapshot (async risk snapshot raised on native mappingproxy fields -> SENSOR_FAULT at 0.25 s; fixed, fail-closed)",
+  "output/pedestrian-suite/task2c-superseded-D-hysteresis-20261023 (2 D episodes before the hazard/no-conflict hysteresis fix)"
+ ],
+ "final_dml_detector": {
+  "folder": "output/pedestrian-suite/task2c-validation-dml-20261023",
+  "summary": {
+   "B_PHYSICAL_PREDICTIVE": {
+    "episodes": 13,
+    "failed_or_missing_logs": 1,
+    "arrivals": 12,
+    "timeouts": 0,
+    "false_arrivals": 0,
+    "collision_episodes": 0,
+    "walker_collisions": 0,
+    "missed_hazards": 0,
+    "minimum_separation_m": {
+     "min": 2.367,
+     "median": 4.915
+    },
+    "unnecessary_braking_events": 76,
+    "unnecessary_full_stops": 24,
+    "unnecessary_stationary_s": 29.75,
+    "brake_release_oscillations": 173,
+    "journey_time_s_median_arrived": 18.575,
+    "route_progress_mean": 0.975,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 32,
+     "MEASURED_OBSTACLE": 19,
+     "COVERAGE": 1,
+     "TIMING_DEADLINE": 1,
+     "OTHER": 25
+    },
+    "freshness": {
+     "usable_frames": 5198,
+     "frames": 5198,
+     "fraction": 1.0,
+     "gate_99_percent": true
+    },
+    "ordinary_route_completion": {
+     "journeys": 2,
+     "arrived": 2,
+     "gate_all_arrive": true
+    },
+    "performance": {
+     "median_step_ms": 123.928,
+     "p95_step_ms_median": 161.159,
+     "real_time_factor_median": 0.4,
+     "safety_ms_median": 34.486,
+     "safety_ms_p95_median": 46.997,
+     "layer_ms_median": null,
+     "layer_ms_p95_median": null,
+     "deadline_hold_frames": 1,
+     "risk_status_frames": {}
+    },
+    "decision_responses": {
+     "CONTINUE": 0,
+     "CAUTIOUS_APPROACH": 0,
+     "PROTECTIVE_BRAKING": 0
+    },
+    "maximum_deceleration_mps2": {
+     "median": 24.107,
+     "max": 27.69,
+     "position_derived_median": 21.998
+    },
+    "deceleration_p95_mps2_median": 7.263,
+    "hard_braking_s": 32.3,
+    "maximum_abs_jerk_mps3_median": 136.45,
+    "maximum_lateral_acceleration_mps2_max": 5.509,
+    "maximum_speed_mps_max": 14.109,
+    "prediction_lead_s_median": 5.85,
+    "braking_lead_s_median": 5.225,
+    "ingress_events": 4
+   },
+   "D_EVIDENCE_BUDGETED": {
+    "episodes": 13,
+    "failed_or_missing_logs": 1,
+    "arrivals": 11,
+    "timeouts": 1,
+    "false_arrivals": 0,
+    "collision_episodes": 0,
+    "walker_collisions": 0,
+    "missed_hazards": 0,
+    "minimum_separation_m": {
+     "min": 2.515,
+     "median": 4.926
+    },
+    "unnecessary_braking_events": 55,
+    "unnecessary_full_stops": 16,
+    "unnecessary_stationary_s": 13.2,
+    "brake_release_oscillations": 153,
+    "journey_time_s_median_arrived": 16.3,
+    "route_progress_mean": 0.971,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 11,
+     "MEASURED_OBSTACLE": 20,
+     "COVERAGE": 4,
+     "TIMING_DEADLINE": 2,
+     "OTHER": 24
+    },
+    "freshness": {
+     "usable_frames": 5021,
+     "frames": 5021,
+     "fraction": 1.0,
+     "gate_99_percent": true
+    },
+    "ordinary_route_completion": {
+     "journeys": 2,
+     "arrived": 2,
+     "gate_all_arrive": true
+    },
+    "performance": {
+     "median_step_ms": 123.772,
+     "p95_step_ms_median": 167.12,
+     "real_time_factor_median": 0.4,
+     "safety_ms_median": 42.007,
+     "safety_ms_p95_median": 54.52,
+     "layer_ms_median": 0.128,
+     "layer_ms_p95_median": 1.729,
+     "deadline_hold_frames": 3,
+     "risk_status_frames": {
+      "NO_CURRENT_CONTROL_PREDICTION": 12,
+      "OVER_TIME_BUDGET": 6,
+      "READY": 4977
+     }
+    },
+    "decision_responses": {
+     "CONTINUE": 4383,
+     "CAUTIOUS_APPROACH": 230,
+     "PROTECTIVE_BRAKING": 382
+    },
+    "maximum_deceleration_mps2": {
+     "median": 24.102,
+     "max": 27.195,
+     "position_derived_median": 23.9
+    },
+    "deceleration_p95_mps2_median": 7.254,
+    "hard_braking_s": 30.4,
+    "maximum_abs_jerk_mps3_median": 132.0,
+    "maximum_lateral_acceleration_mps2_max": 6.354,
+    "maximum_speed_mps_max": 14.123,
+    "prediction_lead_s_median": 3.0,
+    "braking_lead_s_median": 5.25,
+    "ingress_events": 3
+   }
+  },
+  "paired": {
+   "D_EVIDENCE_BUDGETED_vs_B_PHYSICAL_PREDICTIVE": {
+    "pairs": 12,
+    "both_arrived": 11,
+    "journey_time_delta_s_median": 0.0,
+    "unnecessary_braking_delta": -21,
+    "unnecessary_stationary_delta_s": -16.55,
+    "collision_episode_delta": 0,
+    "arrival_delta": -1,
+    "oscillation_delta": -20
+   },
+   "E_PHYSICAL_ABLATION_vs_B_PHYSICAL_PREDICTIVE": {
+    "pairs": 0
+   },
+   "D_EVIDENCE_BUDGETED_vs_E_PHYSICAL_ABLATION": {
+    "pairs": 0
+   },
+   "C_LEARNED_RISK_vs_B_PHYSICAL_PREDICTIVE": {
+    "pairs": 0
+   },
+   "B_PHYSICAL_PREDICTIVE_vs_A_REACTIVE": {
+    "pairs": 0
+   }
+  },
+  "episodes": [
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "CROSS_NORMAL",
+    "scenario_id": "4f4e0b275ba5e8c7",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 19.4,
+    "final_destination_distance_m": 2.295,
+    "collisions": 0,
+    "minimum_separation_m": 2.921,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.7,
+    "brake_release_oscillations": 17,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.586,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "CROSS_NORMAL",
+    "scenario_id": "4f4e0b275ba5e8c7",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 19.4,
+    "final_destination_distance_m": 2.193,
+    "collisions": 0,
+    "minimum_separation_m": 2.935,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.65,
+    "brake_release_oscillations": 12,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 1,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.573,
+    "deadline_hold_frames": 1
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "log_error": "[Errno 2] No such file or directory: 'output\\\\pedestrian-suite\\\\task2c-validation-dml-20261023\\\\VALIDATION\\\\B_PHYSICAL_PREDICTIVE\\\\b1300fd050b5e925\\\\manifest.js"
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "log_error": "[Errno 2] No such file or directory: 'output\\\\pedestrian-suite\\\\task2c-validation-dml-20261023\\\\VALIDATION\\\\D_EVIDENCE_BUDGETED\\\\b1300fd050b5e925\\\\manifest.json"
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "HESITATE_THEN_CROSS",
+    "scenario_id": "946274dba4e04069",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 25.85,
+    "final_destination_distance_m": 4.509,
+    "collisions": 0,
+    "minimum_separation_m": 2.367,
+    "unnecessary_braking_events": 6,
+    "unnecessary_full_stops": 2,
+    "unnecessary_stationary_s": 2.25,
+    "brake_release_oscillations": 23,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 3,
+     "MEASURED_OBSTACLE": 1,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.573,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "HESITATE_THEN_CROSS",
+    "scenario_id": "946274dba4e04069",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 25.95,
+    "final_destination_distance_m": 4.409,
+    "collisions": 0,
+    "minimum_separation_m": 2.515,
+    "unnecessary_braking_events": 4,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 1.1,
+    "brake_release_oscillations": 21,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 1,
+     "MEASURED_OBSTACLE": 1,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.71,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "HESITATE_THEN_RETREAT",
+    "scenario_id": "8f85ef5fb9ea91d1",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 16.9,
+    "final_destination_distance_m": 4.915,
+    "collisions": 0,
+    "minimum_separation_m": 3.741,
+    "unnecessary_braking_events": 7,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 16,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 4,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 3
+    },
+    "maximum_speed_mps": 11.594,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "HESITATE_THEN_RETREAT",
+    "scenario_id": "8f85ef5fb9ea91d1",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 16.0,
+    "final_destination_distance_m": 4.712,
+    "collisions": 0,
+    "minimum_separation_m": 4.189,
+    "unnecessary_braking_events": 4,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 13,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 2,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.635,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "MIXED_TRAFFIC",
+    "scenario_id": "77603da82a93bfa2",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 17.2,
+    "final_destination_distance_m": 1.769,
+    "collisions": 0,
+    "minimum_separation_m": 7.394,
+    "unnecessary_braking_events": 5,
+    "unnecessary_full_stops": 2,
+    "unnecessary_stationary_s": 1.6,
+    "brake_release_oscillations": 11,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 2,
+     "MEASURED_OBSTACLE": 1,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.607,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "MIXED_TRAFFIC",
+    "scenario_id": "77603da82a93bfa2",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 16.3,
+    "final_destination_distance_m": 2.11,
+    "collisions": 0,
+    "minimum_separation_m": 7.343,
+    "unnecessary_braking_events": 5,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.95,
+    "brake_release_oscillations": 8,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 3,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.62,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "MULTI_PEDESTRIAN",
+    "scenario_id": "a1ff8213066f43ef",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 14.15,
+    "final_destination_distance_m": 1.668,
+    "collisions": 0,
+    "minimum_separation_m": 4.551,
+    "unnecessary_braking_events": 6,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.65,
+    "brake_release_oscillations": 7,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 4,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 14.109,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "MULTI_PEDESTRIAN",
+    "scenario_id": "a1ff8213066f43ef",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 14.45,
+    "final_destination_distance_m": 1.222,
+    "collisions": 0,
+    "minimum_separation_m": 4.544,
+    "unnecessary_braking_events": 5,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.65,
+    "brake_release_oscillations": 11,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 3,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 14.123,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "scenario_id": "497297a772a74afa",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 27.9,
+    "final_destination_distance_m": 4.896,
+    "collisions": 0,
+    "minimum_separation_m": 3.485,
+    "unnecessary_braking_events": 11,
+    "unnecessary_full_stops": 2,
+    "unnecessary_stationary_s": 1.7,
+    "brake_release_oscillations": 15,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 4,
+     "MEASURED_OBSTACLE": 5,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 1,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 13.17,
+    "deadline_hold_frames": 1
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "scenario_id": "497297a772a74afa",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 25.75,
+    "final_destination_distance_m": 4.42,
+    "collisions": 0,
+    "minimum_separation_m": 3.484,
+    "unnecessary_braking_events": 12,
+    "unnecessary_full_stops": 2,
+    "unnecessary_stationary_s": 2.5,
+    "brake_release_oscillations": 14,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 4,
+     "MEASURED_OBSTACLE": 6,
+     "COVERAGE": 2,
+     "TIMING_DEADLINE": 1,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 13.17,
+    "deadline_hold_frames": 2
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "scenario_id": "e40944b07f63e80f",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 16.6,
+    "final_destination_distance_m": 1.79,
+    "collisions": 0,
+    "minimum_separation_m": 7.608,
+    "unnecessary_braking_events": 5,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 9,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 3,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.544,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "scenario_id": "e40944b07f63e80f",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 16.25,
+    "final_destination_distance_m": 1.689,
+    "collisions": 0,
+    "minimum_separation_m": 7.693,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 5,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.579,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "START_AND_RETURN",
+    "scenario_id": "62c5a74444b06a04",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 44.95,
+    "final_destination_distance_m": 1.824,
+    "collisions": 0,
+    "minimum_separation_m": 3.022,
+    "unnecessary_braking_events": 16,
+    "unnecessary_full_stops": 8,
+    "unnecessary_stationary_s": 17.45,
+    "brake_release_oscillations": 14,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 14,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.542,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "START_AND_RETURN",
+    "scenario_id": "62c5a74444b06a04",
+    "counterfactual_arm": null,
+    "outcome": "TIMEOUT",
+    "journey_time_s": null,
+    "final_destination_distance_m": 10.238,
+    "collisions": 0,
+    "minimum_separation_m": 3.016,
+    "unnecessary_braking_events": 4,
+    "unnecessary_full_stops": 3,
+    "unnecessary_stationary_s": 2.15,
+    "brake_release_oscillations": 8,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 1,
+     "MEASURED_OBSTACLE": 2,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 1
+    },
+    "maximum_speed_mps": 11.607,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "SUDDEN_RUN",
+    "scenario_id": "3394e48f709a17db",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 20.1,
+    "final_destination_distance_m": 4.423,
+    "collisions": 0,
+    "minimum_separation_m": 5.28,
+    "unnecessary_braking_events": 5,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.7,
+    "brake_release_oscillations": 19,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 3,
+     "COVERAGE": 1,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.613,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "SUDDEN_RUN",
+    "scenario_id": "3394e48f709a17db",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 25.0,
+    "final_destination_distance_m": 4.427,
+    "collisions": 0,
+    "minimum_separation_m": 5.308,
+    "unnecessary_braking_events": 8,
+    "unnecessary_full_stops": 2,
+    "unnecessary_stationary_s": 2.2,
+    "brake_release_oscillations": 20,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 2,
+     "MEASURED_OBSTACLE": 4,
+     "COVERAGE": 2,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.589,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "SUDDEN_RUN",
+    "scenario_id": "9e28d0d5e2a37e66",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 15.55,
+    "final_destination_distance_m": 2.162,
+    "collisions": 0,
+    "minimum_separation_m": 6.513,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.65,
+    "brake_release_oscillations": 8,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.548,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "SUDDEN_RUN",
+    "scenario_id": "9e28d0d5e2a37e66",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 15.55,
+    "final_destination_distance_m": 2.283,
+    "collisions": 0,
+    "minimum_separation_m": 6.513,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 9,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 11.548,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "WAIT_AT_CURB",
+    "scenario_id": "f363addceca9101c",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 23.55,
+    "final_destination_distance_m": 4.573,
+    "collisions": 0,
+    "minimum_separation_m": 8.481,
+    "unnecessary_braking_events": 9,
+    "unnecessary_full_stops": 3,
+    "unnecessary_stationary_s": 2.25,
+    "brake_release_oscillations": 13,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 6,
+     "MEASURED_OBSTACLE": 1,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 14.026,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "WAIT_AT_CURB",
+    "scenario_id": "f363addceca9101c",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 13.65,
+    "final_destination_distance_m": 4.579,
+    "collisions": 0,
+    "minimum_separation_m": 8.474,
+    "unnecessary_braking_events": 5,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 11,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 2,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 3
+    },
+    "maximum_speed_mps": 14.118,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "WALK_PARALLEL",
+    "scenario_id": "0e7369cd0a5d8127",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 17.75,
+    "final_destination_distance_m": 1.993,
+    "collisions": 0,
+    "minimum_separation_m": 11.942,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 21,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.518,
+    "deadline_hold_frames": 0
+   },
+   {
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "WALK_PARALLEL",
+    "scenario_id": "0e7369cd0a5d8127",
+    "counterfactual_arm": null,
+    "outcome": "ARRIVED",
+    "journey_time_s": 17.75,
+    "final_destination_distance_m": 1.993,
+    "collisions": 0,
+    "minimum_separation_m": 11.942,
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.6,
+    "brake_release_oscillations": 21,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 0,
+     "MEASURED_OBSTACLE": 0,
+     "COVERAGE": 0,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 2
+    },
+    "maximum_speed_mps": 8.518,
+    "deadline_hold_frames": 0
+   }
+  ]
+ }
+}

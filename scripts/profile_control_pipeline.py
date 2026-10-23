@@ -17,13 +17,21 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-if '--contracts-file' in sys.argv:
-    # Before/after benchmarking: load an alternative contracts module (for
-    # example the previous revision) before any backend module imports it.
+
+
+def _override(name, path):
+    """Before/after benchmarking: load an alternative module file before anything imports it."""
     import importlib.util
     import backend.core  # noqa: F401
-    _spec = importlib.util.spec_from_file_location('backend.core.contracts', sys.argv[sys.argv.index('--contracts-file')+1])
-    _module = importlib.util.module_from_spec(_spec);sys.modules['backend.core.contracts'] = _module;_spec.loader.exec_module(_module)
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec);sys.modules[name] = module;spec.loader.exec_module(module)
+
+
+if '--contracts-file' in sys.argv:
+    _override('backend.core.contracts', sys.argv[sys.argv.index('--contracts-file')+1])
+for _index, _arg in enumerate(sys.argv):
+    if _arg == '--override':
+        _name, _path = sys.argv[_index+1].split('=', 1);_override(_name, _path)
 from backend.core.active_safety import ActiveSafetySupervisor  # noqa: E402
 from backend.core.contracts import CommandSource, ControlCommand, to_dict  # noqa: E402
 from backend.core.control_scene import ControlSceneBuilder  # noqa: E402
@@ -38,7 +46,9 @@ def digest(value):
 
 def run(root, frames, geometry):
     reader = ReplayReader(root);builder = ControlSceneBuilder('profile-session', geometry)
-    supervisor = ActiveSafetySupervisor();supervisor.geometry = geometry
+    from backend.core import active_safety
+    config = active_safety.RuntimeSafetyConfig.load(ROOT/'config/ya_rab_ostorha_safety.json')
+    supervisor = ActiveSafetySupervisor(config);supervisor.geometry = geometry
     timings = {'scene_build_ms': [], 'safety_ms': [], 'total_ms': []};outputs = hashlib.sha256();count = 0
     def read(asset):return (Path(root)/asset.path).read_bytes()
     for frame in reader.frames():
@@ -71,6 +81,7 @@ def main():
     parser.add_argument('--frames', type=int, default=150);parser.add_argument('--out', required=True)
     parser.add_argument('--label', default='baseline');parser.add_argument('--profile', action='store_true')
     parser.add_argument('--contracts-file', default=None, help='Alternative backend/core/contracts.py for before/after runs')
+    parser.add_argument('--override', action='append', default=[], help='module=path alternative module file (before/after runs)')
     args = parser.parse_args()
     metadata = json.loads((Path(args.run)/'metadata.json').read_text(encoding='utf8'))
     geometry_data = (metadata.get('config') or {}).get('vehicle_geometry') or metadata.get('vehicle_geometry')

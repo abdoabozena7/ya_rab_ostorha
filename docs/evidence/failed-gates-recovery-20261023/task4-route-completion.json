@@ -1,0 +1,315 @@
+{
+ "task": "MIXED_TRAFFIC_AND_ROUTE_COMPLETION",
+ "source": "phase7 TEST logs (evaluator truth used offline only)",
+ "failures": [
+  {
+   "configuration": "A_REACTIVE",
+   "behavior": "MIXED_TRAFFIC",
+   "route": "Town10HD_Opt:143",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 19.35,
+    "longest_stop_s": 24.0,
+    "remaining_m": 9.171,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [
+     [
+      7.976,
+      0.0
+     ],
+     [
+      7.976,
+      0.0
+     ],
+     [
+      7.976,
+      0.0
+     ]
+    ],
+    "lead_vehicle_stationary_fraction": 0.959,
+    "safety_reason_at_stop": "Braking toward measured coverage speed limit 0.00 m/s",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 43.4
+   }
+  },
+  {
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "behavior": "MIXED_TRAFFIC",
+   "route": "Town10HD_Opt:143",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 30.35,
+    "longest_stop_s": 13.1,
+    "remaining_m": 8.812,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [
+     [
+      7.976,
+      0.0
+     ],
+     [
+      7.976,
+      0.0
+     ],
+     [
+      7.976,
+      0.0
+     ]
+    ],
+    "lead_vehicle_stationary_fraction": 0.926,
+    "safety_reason_at_stop": "Holding measured clearance/TTC hysteresis",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 43.5
+   }
+  },
+  {
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town02_Opt:31",
+   "outcome": "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT",
+   "simulated_s": 5.8,
+   "detail": "Fresh complete safety observations unavailable"
+  },
+  {
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town10HD_Opt:63",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 23.8,
+    "longest_stop_s": 20.9,
+    "remaining_m": 8.02,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [],
+    "lead_vehicle_stationary_fraction": 0.0,
+    "safety_reason_at_stop": "Braking for a person who may cross the driving path",
+    "predicted_person_check": {
+     "track_id": "depth-person-33",
+     "source": "STATIONARY",
+     "track_vehicle_frame_m": [
+      21.477,
+      0.155
+     ],
+     "track_class": "person",
+     "nearest_true_walker_m": 40.4,
+     "nearest_true_vehicle_m": 0.344
+    },
+    "ego_resumed_at_s": 44.75
+   }
+  },
+  {
+   "configuration": "C_LEARNED_RISK",
+   "behavior": "MIXED_TRAFFIC",
+   "route": "Town10HD_Opt:143",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 27.2,
+    "longest_stop_s": 16.6,
+    "remaining_m": 9.161,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [
+     [
+      7.976,
+      0.0
+     ],
+     [
+      7.976,
+      0.0
+     ],
+     [
+      7.976,
+      0.0
+     ]
+    ],
+    "lead_vehicle_stationary_fraction": 0.912,
+    "safety_reason_at_stop": "Braking toward measured coverage speed limit 0.00 m/s",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 43.85
+   }
+  },
+  {
+   "configuration": "C_LEARNED_RISK",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town10HD_Opt:63",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 23.85,
+    "longest_stop_s": 20.8,
+    "remaining_m": 13.801,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [],
+    "lead_vehicle_stationary_fraction": 0.0,
+    "safety_reason_at_stop": "Braking for a person who may cross the driving path",
+    "predicted_person_check": {
+     "track_id": "depth-person-33",
+     "source": "STATIONARY",
+     "track_vehicle_frame_m": [
+      23.54,
+      0.103
+     ],
+     "track_class": "person",
+     "nearest_true_walker_m": 40.496,
+     "nearest_true_vehicle_m": 0.305
+    },
+    "ego_resumed_at_s": 44.7
+   }
+  },
+  {
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "behavior": "MIXED_TRAFFIC",
+   "route": "Town10HD_Opt:143",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 32.25,
+    "longest_stop_s": 2.85,
+    "remaining_m": 27.928,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [
+     [
+      25.985,
+      0.0
+     ],
+     [
+      25.985,
+      0.0
+     ],
+     [
+      25.985,
+      0.0
+     ]
+    ],
+    "lead_vehicle_stationary_fraction": 1.0,
+    "safety_reason_at_stop": "Evidence budget: bounded approach below verified 0.0 m/s",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 35.15
+   }
+  },
+  {
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town02_Opt:21",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 2.65,
+    "longest_stop_s": 3.85,
+    "remaining_m": 113.972,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [],
+    "lead_vehicle_stationary_fraction": 0.0,
+    "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 6.55
+   }
+  },
+  {
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town10HD_Opt:63",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 36.85,
+    "longest_stop_s": 2.0,
+    "remaining_m": 16.404,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [],
+    "lead_vehicle_stationary_fraction": 0.0,
+    "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 38.9
+   }
+  },
+  {
+   "configuration": "E_PHYSICAL_ABLATION",
+   "behavior": "MIXED_TRAFFIC",
+   "route": "Town10HD_Opt:143",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 35.8,
+    "longest_stop_s": 7.75,
+    "remaining_m": 28.021,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [
+     [
+      25.985,
+      0.0
+     ],
+     [
+      25.985,
+      0.0
+     ],
+     [
+      25.985,
+      0.0
+     ]
+    ],
+    "lead_vehicle_stationary_fraction": 0.875,
+    "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 43.6
+   }
+  },
+  {
+   "configuration": "E_PHYSICAL_ABLATION",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town02_Opt:31",
+   "outcome": "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT",
+   "simulated_s": 12.1,
+   "detail": "Safety processing exceeded sensor wall freshness limit"
+  },
+  {
+   "configuration": "E_PHYSICAL_ABLATION",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town02_Opt:21",
+   "outcome": "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT",
+   "simulated_s": 8.05,
+   "detail": "Fresh complete safety observations unavailable"
+  },
+  {
+   "configuration": "E_PHYSICAL_ABLATION",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "route": "Town10HD_Opt:63",
+   "outcome": "TIMEOUT",
+   "simulated_s": 45.0,
+   "detail": "evaluation_time_limit",
+   "final_stop": {
+    "longest_stop_start_s": 12.75,
+    "longest_stop_s": 2.0,
+    "remaining_m": 87.398,
+    "nearest_vehicle_ahead_in_lane_gap_speed": [],
+    "lead_vehicle_stationary_fraction": 0.0,
+    "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "predicted_person_check": null,
+    "ego_resumed_at_s": 14.8
+   }
+  }
+ ],
+ "stall_classifier_phase7_test": {
+  "stops_by_cause": {
+   "UNCLASSIFIED": 25,
+   "ARRIVAL_STOP": 42,
+   "LEGITIMATE_TRAFFIC_BLOCKAGE": 10,
+   "EXCESSIVE_PEDESTRIAN_CAUTION": 10,
+   "PHYSICAL_OBSTACLE_IN_CORRIDOR": 2,
+   "PEDESTRIAN_HAZARD": 2,
+   "SENSOR_OR_PROCESSING": 2
+  },
+  "stationary_s_by_cause": {
+   "UNCLASSIFIED": 705.05,
+   "ARRIVAL_STOP": 2.1,
+   "LEGITIMATE_TRAFFIC_BLOCKAGE": 92.25,
+   "EXCESSIVE_PEDESTRIAN_CAUTION": 121.7,
+   "PHYSICAL_OBSTACLE_IN_CORRIDOR": 9.3,
+   "PEDESTRIAN_HAZARD": 4.95,
+   "SENSOR_OR_PROCESSING": 0.45
+  }
+ }
+}

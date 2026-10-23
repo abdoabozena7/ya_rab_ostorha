@@ -136,7 +136,18 @@ def episode_metrics(manifest, rows, outcome, *, corridor_length_m=60.):
     stopped = speed < .15
     remaining = _series(rows, lambda r: (r.get('route') or {}).get('remaining_m'))
     terminal = np.nan_to_num(remaining, nan=99.) < 8.
-    unnecessary_stop = stopped & ~hazardous & ~terminal
+    # Legitimate waits are not unnecessary stops: the route controller's own
+    # red-light/stop-sign stop, or a vehicle (evaluator truth) in the planned
+    # corridor within 15 m ahead of the front bumper.
+    navigation = [str((r.get('speed') or {}).get('navigation_stop_reason') or '').lower() for r in rows]
+    signal = np.array(['traffic light' in n or 'stop sign' in n for n in navigation])
+    queue = np.zeros(len(rows), bool)
+    for i, row in enumerate(rows):
+        vehicles = [a['position_m'][:2] for a in row.get('evaluator_truth') or () if a.get('kind') == 'vehicle' and a.get('role') != 'occluder']
+        if vehicles:
+            s, d = project_polyline(np.asarray(vehicles, float), route);gap = s-(ego_s[i]+front)
+            queue[i] = bool(np.any((np.abs(d) <= corridor+1.) & (gap >= 0.) & (gap <= 15.)))
+    unnecessary_stop = stopped & ~hazardous & ~terminal & ~signal & ~queue
     full_stops = 0;run = 0.
     for i in range(len(rows)):
         if unnecessary_stop[i]:
@@ -160,6 +171,13 @@ def episode_metrics(manifest, rows, outcome, *, corridor_length_m=60.):
     active = np.array([(r.get('journey') or {}).get('status') in ('STARTING', 'RUNNING', None) for r in rows])
     accel, jerk, lateral = comfort_series(t[active], speed[active], yaw[active])
     smooth = accel
+    # Cross-check from positions (independent of the reported speed signal).
+    tp = t[active];xp = xy[active]
+    if len(tp) > 6:
+        grid = np.arange(tp[0], tp[-1]+1e-9, .05);px = np.interp(grid, tp, xp[:, 0]);py = np.interp(grid, tp, xp[:, 1])
+        vpos = np.hypot(px[2:]-px[:-2], py[2:]-py[:-2])/.1;apos = (vpos[4:]-vpos[:-4])/.2
+    else:apos = np.zeros(1)
+    decel = np.maximum(0., -smooth)
     oscillations = 0;last_brake_on = None;state = False
     for i in range(len(rows)):
         on = brake[i] >= .2
@@ -183,6 +201,11 @@ def episode_metrics(manifest, rows, outcome, *, corridor_length_m=60.):
             'configuration': (manifest.get('admission') or {}).get('configuration'),
             'counterfactual': (manifest['spec'].get('counterfactual') or {}).get('arm'), 'outcome': outcome.get('outcome'),
             'arrived': outcome.get('outcome') == 'ARRIVED', 'timeout': outcome.get('outcome') == 'TIMEOUT',
+            # An arrival must also be physically at the destination (independent of the journey status):
+            # within the 5 m arrival radius plus one frame of motion.
+            'final_remaining_m': None if not np.isfinite(remaining[-1]) else float(remaining[-1]),
+            'final_destination_distance_m': float(np.linalg.norm(xy[-1]-route[-1])),
+            'false_arrival': outcome.get('outcome') == 'ARRIVED' and not float(np.linalg.norm(xy[-1]-route[-1])) <= 6.,
             'collisions': len(contacts), 'walker_collisions': sum(c['other_actor_id'] in walker_ids for c in contacts),
             'minimum_separation_m': None if math.isinf(min_separation) else float(min_separation),
             'ingress_events': leads, 'missed_hazards': sum(1 for x in leads if x['contact'] or x['braking_lead_s'] is None and x['prediction_lead_s'] is None),
@@ -191,14 +214,39 @@ def episode_metrics(manifest, rows, outcome, *, corridor_length_m=60.):
             'journey_time_s': simulated if outcome.get('outcome') == 'ARRIVED' else None, 'simulated_s': simulated,
             'braking_events': len(events), 'braking_by_reason': {k: sum(e['reason'] == k for e in events) for k in
                                                                  ('PEDESTRIAN_FORECAST', 'MEASURED_OBSTACLE', 'COVERAGE', 'TIMING_DEADLINE', 'OTHER')},
+            'nonhazardous_braking_by_reason': {k: sum(e['reason'] == k and not e['hazardous'] for e in events) for k in
+                                               ('PEDESTRIAN_FORECAST', 'MEASURED_OBSTACLE', 'COVERAGE', 'TIMING_DEADLINE', 'OTHER')},
             'unnecessary_braking_events': len(unnecessary), 'unnecessary_full_stops': full_stops,
             'unnecessary_stationary_s': float(np.sum(dt[unnecessary_stop])),
+            'legitimate_wait_s': {'signal': float(np.sum(dt[stopped & signal])), 'vehicle_queue': float(np.sum(dt[stopped & queue & ~signal]))},
             'stationary_s': float(np.sum(dt[stopped])), 'maximum_speed_mps': float(np.nanmax(speed)),
             'maximum_deceleration_mps2': float(max(0., -np.nanmin(smooth))), 'maximum_abs_jerk_mps3': float(np.nanmax(np.abs(jerk))),
+            'deceleration_p95_mps2': float(np.nanpercentile(decel, 95)) if len(decel) else 0.,
+            'hard_braking_s': float(np.sum(decel > 4.)*.1),
+            'maximum_deceleration_position_derived_mps2': float(max(0., -np.nanmin(apos))),
             'rms_jerk_mps3': float(np.sqrt(np.nanmean(jerk**2))), 'maximum_lateral_acceleration_mps2': float(np.nanmax(np.abs(lateral))),
             'brake_release_oscillations': oscillations,
             'decision_responses': responses, 'risk_used_frames': sum(bool(x) for x in risk_frames),
             'speed_handling': speed_handling,
             'freshness': {'usable_frames': sum(usable), 'frames': len(usable), 'fraction': sum(usable)/len(usable) if usable else None},
             'performance': {'median_step_ms': float(np.nanmedian(step_ms)), 'p95_step_ms': float(np.nanpercentile(step_ms, 95)),
-                            'real_time_factor': simulated/wall if wall > 0 else None, 'wall_s': wall}}
+                            'real_time_factor': simulated/wall if wall > 0 else None, 'wall_s': wall,
+                            **pipeline_latency(rows)}}
+
+
+def pipeline_latency(rows):
+    """Measured safety-step and decision-layer wall times, deadline holds and risk inference outcomes."""
+    safety = [(r.get('control_timing_ms') or {}).get('safety') for r in rows]
+    safety = np.array([v for v in safety if v is not None], float)
+    decisions = [((r.get('safety') or {}).get('evidence_decision') or {}) for r in rows]
+    layer = np.array([d['layer_ms'] for d in decisions if d.get('layer_ms') is not None], float)
+    statuses = {}
+    for d in decisions:
+        status = (d.get('risk_status') or {}).get('status')
+        if status:statuses[status] = statuses.get(status, 0)+1
+    holds = sum((r.get('safety') or {}).get('reason') == 'CONTROL_PROCESSING_DEADLINE' for r in rows)
+    def stats(values):
+        return (float(np.median(values)), float(np.percentile(values, 95))) if len(values) else (None, None)
+    (safety_median, safety_p95), (layer_median, layer_p95) = stats(safety), stats(layer)
+    return {'safety_ms_median': safety_median, 'safety_ms_p95': safety_p95, 'layer_ms_median': layer_median,
+            'layer_ms_p95': layer_p95, 'deadline_hold_frames': int(holds), 'risk_status_frames': statuses}

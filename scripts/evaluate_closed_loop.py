@@ -37,6 +37,10 @@ def collect(roots, split):
                                                         'occluder': {k: v for k, v in (manifest.get('occluder') or {}).items() if k != 'id'}},
                                                        sort_keys=True),
                                initial_walkers=[(w['role'], w['position_m'][:2]) for w in manifest.get('initial_truth') or () if w.get('kind') == 'walker'],
+                               initial_background_vehicles=[w['position_m'][:2] for w in manifest.get('initial_truth') or ()
+                                                            if w.get('kind') == 'vehicle' and w.get('role') == 'background'],
+                               perception_timing=(manifest.get('perception_timing') or {}).get('mode', 'ASYNC'),
+                               traffic_lights=manifest.get('traffic_lights', 'NOT_RESET'),
                                walkers_realized=all(w.get('realized') for w in walkers.values()) if walkers else None,
                                unrealized_walkers=sorted(k for k, w in walkers.items() if not w.get('realized')))
             except (OSError, ValueError, KeyError) as error:
@@ -59,6 +63,7 @@ def aggregate(items):
     return {'episodes': len(items), 'failed_or_missing_logs': len(items)-len(valid),
             'walker_script_not_realized_episodes': sum(m.get('walkers_realized') is False for m in valid),
             'arrivals': sum(bool(m.get('arrived')) for m in items), 'arrival_rate': sum(bool(m.get('arrived')) for m in items)/len(items) if items else None,
+            'false_arrivals': sum(bool(m.get('false_arrival')) for m in valid),
             'timeouts': sum(m.get('outcome') == 'TIMEOUT' for m in items),
             'collision_episodes': sum(bool(m.get('collisions')) for m in valid), 'walker_collisions': sum(m.get('walker_collisions', 0) for m in valid),
             'collision_rate': sum(bool(m.get('collisions')) for m in valid)/len(valid) if valid else None,
@@ -68,12 +73,20 @@ def aggregate(items):
             'prediction_lead_s_median': _median([e['prediction_lead_s'] for e in leads]),
             'braking_lead_s_median': _median([e['braking_lead_s'] for e in leads]),
             'unnecessary_braking_events': sum(m['unnecessary_braking_events'] for m in valid),
+            'nonhazardous_braking_by_reason': {k: sum((m.get('nonhazardous_braking_by_reason') or {}).get(k, 0) for m in valid)
+                                               for k in ('PEDESTRIAN_FORECAST', 'MEASURED_OBSTACLE', 'COVERAGE', 'TIMING_DEADLINE', 'OTHER')},
+            'braking_by_reason': {k: sum((m.get('braking_by_reason') or {}).get(k, 0) for m in valid)
+                                  for k in ('PEDESTRIAN_FORECAST', 'MEASURED_OBSTACLE', 'COVERAGE', 'TIMING_DEADLINE', 'OTHER')},
             'unnecessary_full_stops': sum(m['unnecessary_full_stops'] for m in valid),
             'unnecessary_stationary_s': sum(m['unnecessary_stationary_s'] for m in valid),
+            'legitimate_wait_s': {k: sum((m.get('legitimate_wait_s') or {}).get(k, 0.) for m in valid) for k in ('signal', 'vehicle_queue')},
             'journey_time_s_median_arrived': _median([m['journey_time_s'] for m in valid]),
             'route_progress_mean': float(np.mean([m['route_progress'] for m in valid])) if valid else None,
             'maximum_deceleration_mps2': {'median': _median([m['maximum_deceleration_mps2'] for m in valid]),
-                                          'max': max((m['maximum_deceleration_mps2'] for m in valid), default=None)},
+                                          'max': max((m['maximum_deceleration_mps2'] for m in valid), default=None),
+                                          'position_derived_median': _median([m.get('maximum_deceleration_position_derived_mps2') for m in valid])},
+            'deceleration_p95_mps2_median': _median([m.get('deceleration_p95_mps2') for m in valid]),
+            'hard_braking_s': sum(m.get('hard_braking_s', 0.) for m in valid),
             'maximum_abs_jerk_mps3_median': _median([m['maximum_abs_jerk_mps3'] for m in valid]),
             'maximum_lateral_acceleration_mps2_max': max((m['maximum_lateral_acceleration_mps2'] for m in valid), default=None),
             'brake_release_oscillations': sum(m['brake_release_oscillations'] for m in valid),
@@ -89,7 +102,14 @@ def aggregate(items):
                                           'gate_all_arrive': bool(ordinary) and all(m.get('arrived') for m in ordinary)},
             'performance': {'median_step_ms': _median([m['performance']['median_step_ms'] for m in valid]),
                             'p95_step_ms_median': _median([m['performance']['p95_step_ms'] for m in valid]),
-                            'real_time_factor_median': _median([m['performance']['real_time_factor'] for m in valid])},
+                            'real_time_factor_median': _median([m['performance']['real_time_factor'] for m in valid]),
+                            'safety_ms_median': _median([m['performance'].get('safety_ms_median') for m in valid]),
+                            'safety_ms_p95_median': _median([m['performance'].get('safety_ms_p95') for m in valid]),
+                            'layer_ms_median': _median([m['performance'].get('layer_ms_median') for m in valid]),
+                            'layer_ms_p95_median': _median([m['performance'].get('layer_ms_p95') for m in valid]),
+                            'deadline_hold_frames': sum(m['performance'].get('deadline_hold_frames', 0) for m in valid),
+                            'risk_status_frames': {k: sum((m['performance'].get('risk_status_frames') or {}).get(k, 0) for m in valid)
+                                                   for k in sorted({k for m in valid for k in (m['performance'].get('risk_status_frames') or {})})}},
             'decision_responses': {k: sum(m['decision_responses'].get(k, 0) for m in valid) for k in ('CONTINUE', 'CAUTIOUS_APPROACH', 'PROTECTIVE_BRAKING')},
             'risk_used_frames': sum(m['risk_used_frames'] for m in valid)}
 
@@ -142,6 +162,9 @@ def initial_conditions(episodes):
         # Background walkers are an unordered population; compare as sets.
         sets = {configuration: tuple(sorted(points)) for configuration, points in background.items()}
         majority = max(set(sets.values()), key=list(sets.values()).count) if sets else None
+        vehicles = {m['configuration']: tuple(sorted(tuple(round(c, 1) for c in p) for p in m.get('initial_background_vehicles') or ()))
+                    for m in items}
+        vehicle_majority = max(set(vehicles.values()), key=list(vehicles.values()).count) if vehicles else ()
         report.append({'scenario_id': scenario, 'behavior': items[0].get('behavior'), 'configurations': sorted(m['configuration'] for m in items),
                        'identical_condition_hash': len({m.get('condition_hash') for m in items}) == 1,
                        # The hash includes native actor IDs; physical construction excludes them.
@@ -150,6 +173,10 @@ def initial_conditions(episodes):
                        'scripted_walker_initial_spread_m': walker_spread,
                        'background_walkers': len(majority) if majority else 0,
                        'background_population_differs': sorted(c for c, s in sets.items() if s != majority),
+                       'background_vehicles': len(vehicle_majority),
+                       'background_vehicles_differ': sorted(c for c, s in vehicles.items() if s != vehicle_majority),
+                       'perception_timing': sorted({m.get('perception_timing', 'ASYNC') for m in items}),
+                       'traffic_lights': sorted({m.get('traffic_lights', 'NOT_RESET') for m in items}),
                        'walkers_realized': {m['configuration']: m.get('walkers_realized') for m in items},
                        'unrealized_walkers': {m['configuration']: m['unrealized_walkers'] for m in items if m.get('unrealized_walkers')}})
     return report

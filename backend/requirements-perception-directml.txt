@@ -1,0 +1,8 @@
+# Optional DirectML runtime for the camera detector (Windows GPU). Same ONNX
+# model and decoding; only the onnxruntime execution provider differs. OCR is
+# not available in this environment. Enable per run with
+# YRO_DETECTOR_EXECUTION_PROVIDER=DML and YRO_PERCEPTION_PYTHON pointing here.
+onnxruntime-directml==1.24.4
+numpy==2.5.2
+opencv-python-headless==5.0.0.93
+pillow==12.3.0

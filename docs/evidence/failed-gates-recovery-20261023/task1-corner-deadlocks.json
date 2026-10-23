@@ -1,0 +1,207 @@
+{
+ "task": "CORNER_AND_TURN_DEADLOCKS",
+ "before_reproduction": {
+  "harness": "route tracker off (previous evaluation steering and steering-arc probe)",
+  "folder": "output/pedestrian-suite/task1-before-20261023",
+  "source": "LIVE_NATIVE_CARLA_HARNESS_LOGS_AND_STOP_DUMPS",
+  "stops_by_cause": {
+   "OFF_ROUTE_ALIGNMENT": 2,
+   "ARTIFICIAL_PROBE_DEADLOCK": 1,
+   "EXCESSIVE_PEDESTRIAN_CAUTION": 2,
+   "ARRIVAL_STOP": 1
+  },
+  "episodes": [
+   {
+    "route": "Town02_Opt:25",
+    "behavior": "HESITATE_THEN_CROSS",
+    "outcome": "TIMEOUT",
+    "simulated_s": 45.0,
+    "stall_causes": [
+     "OFF_ROUTE_ALIGNMENT"
+    ],
+    "stops": [
+     {
+      "cause": "OFF_ROUTE_ALIGNMENT",
+      "start_s": 11.25,
+      "duration_s": 33.75,
+      "remaining_m": 22.288,
+      "reason": "Measured obstacle inside braking envelope/TTC limit",
+      "supervised_coverage_m": 0.0,
+      "route_path_coverage_m": 0.0,
+      "steering_arc_coverage_m": 0.0,
+      "rear_axle_cross_track_m": 3.181
+     }
+    ]
+   },
+   {
+    "route": "Town01_Opt:51",
+    "behavior": "SUDDEN_RUN",
+    "outcome": "TIMEOUT",
+    "simulated_s": 45.0,
+    "stall_causes": [
+     "OFF_ROUTE_ALIGNMENT",
+     "ARTIFICIAL_PROBE_DEADLOCK"
+    ],
+    "stops": [
+     {
+      "cause": "OFF_ROUTE_ALIGNMENT",
+      "start_s": 10.8,
+      "duration_s": 2.05,
+      "remaining_m": 71.743,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "supervised_coverage_m": 11.499,
+      "route_path_coverage_m": 12.999,
+      "steering_arc_coverage_m": 11.499,
+      "rear_axle_cross_track_m": 3.015
+     },
+     {
+      "cause": "ARTIFICIAL_PROBE_DEADLOCK",
+      "start_s": 13.05,
+      "duration_s": 31.95,
+      "remaining_m": 71.775,
+      "reason": "Braking toward measured coverage speed limit 0.00 m/s",
+      "supervised_coverage_m": 0.0,
+      "route_path_coverage_m": 12.999,
+      "steering_arc_coverage_m": 0.0,
+      "rear_axle_cross_track_m": 3.023
+     }
+    ]
+   },
+   {
+    "route": "Town10HD_Opt:63",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "outcome": "ARRIVED",
+    "simulated_s": 44.0,
+    "stall_causes": [
+     "EXCESSIVE_PEDESTRIAN_CAUTION",
+     "EXCESSIVE_PEDESTRIAN_CAUTION"
+    ],
+    "stops": [
+     {
+      "cause": "EXCESSIVE_PEDESTRIAN_CAUTION",
+      "start_s": 26.6,
+      "duration_s": 2.0,
+      "remaining_m": 9.876,
+      "reason": "Braking for a person who may cross the driving path",
+      "supervised_coverage_m": 15.0,
+      "route_path_coverage_m": null,
+      "steering_arc_coverage_m": 15.0,
+      "rear_axle_cross_track_m": null
+     },
+     {
+      "cause": "EXCESSIVE_PEDESTRIAN_CAUTION",
+      "start_s": 30.1,
+      "duration_s": 12.6,
+      "remaining_m": 9.947,
+      "reason": "Braking for a person who may cross the driving path",
+      "supervised_coverage_m": 15.0,
+      "route_path_coverage_m": null,
+      "steering_arc_coverage_m": 15.0,
+      "rear_axle_cross_track_m": null
+     }
+    ]
+   }
+  ]
+ },
+ "failed_attempt": {
+  "folder": "output/pedestrian-suite/task1-after-20261023-failed-processing-deadline",
+  "outcome": "All 9 episodes SENSOR_FAULT at 0.2 s: route-path corridor projection cost 690-845 ms; fixed with PathCorridorIndex (exactness-tested) before the verification run"
+ },
+ "after_verification": {
+  "folder": "output/pedestrian-suite/task1-after-20261023c",
+  "source": "LIVE_NATIVE_CARLA_HARNESS_LOGS_AND_STOP_DUMPS",
+  "stops_by_cause": {
+   "ARRIVAL_STOP": 8,
+   "LEGITIMATE_TRAFFIC_BLOCKAGE": 1
+  },
+  "episodes": [
+   {
+    "route": "Town02_Opt:25",
+    "behavior": "WALK_PARALLEL",
+    "outcome": "ARRIVED",
+    "simulated_s": 18.15,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town02_Opt:25",
+    "behavior": "SUDDEN_RUN",
+    "outcome": "ARRIVED",
+    "simulated_s": 18.1,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town10HD_Opt:63",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "outcome": "TIMEOUT",
+    "simulated_s": 45.0,
+    "stall_causes": [
+     "LEGITIMATE_TRAFFIC_BLOCKAGE"
+    ],
+    "stops": [
+     {
+      "cause": "LEGITIMATE_TRAFFIC_BLOCKAGE",
+      "start_s": 31.25,
+      "duration_s": 13.75,
+      "remaining_m": 24.425,
+      "reason": "Braking for a person who may cross the driving path",
+      "supervised_coverage_m": 4.5,
+      "route_path_coverage_m": 4.5,
+      "steering_arc_coverage_m": 4.5,
+      "rear_axle_cross_track_m": 0.004
+     }
+    ]
+   },
+   {
+    "route": "Town10HD_Opt:63",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "outcome": "ARRIVED",
+    "simulated_s": 20.4,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town01_Opt:51",
+    "behavior": "HESITATE_THEN_RETREAT",
+    "outcome": "ARRIVED",
+    "simulated_s": 18.15,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town02_Opt:25",
+    "behavior": "HESITATE_THEN_CROSS",
+    "outcome": "ARRIVED",
+    "simulated_s": 15.35,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town01_Opt:51",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "outcome": "ARRIVED",
+    "simulated_s": 28.45,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town01_Opt:51",
+    "behavior": "SUDDEN_RUN",
+    "outcome": "ARRIVED",
+    "simulated_s": 22.3,
+    "stall_causes": [],
+    "stops": []
+   },
+   {
+    "route": "Town10HD_Opt:63",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "outcome": "ARRIVED",
+    "simulated_s": 23.05,
+    "stall_causes": [],
+    "stops": []
+   }
+  ]
+ },
+ "phase7_test_baseline": "All five configurations stopped ~18 m short on the four Town02 spawn-25 routes (route-end turn)"
+}

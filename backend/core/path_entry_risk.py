@@ -5,9 +5,11 @@ measured track history and scene context). It ranks physical possibilities;
 it never certifies free space or overrides a measured hazard. Unadmitted or
 unavailable models leave the physical-only controller unchanged.
 """
+from collections.abc import Mapping
 import hashlib
 import json
 from pathlib import Path
+import threading
 import time
 import numpy as np
 from .path_entry_features import FEATURE_VERSION, INPUT_SIZE, STEPS, eligible_track, track_features
@@ -139,3 +141,100 @@ class RiskEstimator:
         """Reject stale outputs rather than applying them to newer frames."""
         if not result or result.get('status') != 'READY' or result.get('frame_id') != frame_id:return {}
         return result['tracks']
+
+
+TRACK_FIELDS = ('id', 'position_m', 'velocity_mps', 'history', 'half_size_m', 'semantic_evidence', 'class', 'quality',
+                'uncertainty_m', 'occlusion_s', 'confirmed', 'observed_crossing_cleared', 'motion_observations')
+
+
+def _plain(value):
+    """Detached plain copy (mappings, sequences, arrays) of a published value."""
+    if isinstance(value, np.ndarray):return value.tolist()
+    if isinstance(value, np.generic):return value.item()
+    if isinstance(value, Mapping):return {k: _plain(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):return [_plain(v) for v in value]
+    return value
+
+
+class AsyncRiskEstimator:
+    """Learned risk off the safety path, bound to the submitting frame.
+
+    The safety step submits frame k's measured prediction when it starts; one
+    background thread runs the unchanged ``RiskEstimator``. The pedestrian layer
+    later takes the result only if it belongs to frame k and finished within the
+    bounded budget measured from submission; otherwise that frame runs
+    physics-only. A newer submission replaces a pending older one, and results
+    are never applied to another frame. Risk can only add caution, so a missing
+    result never relaxes a physical decision."""
+    inference = 'ASYNC_FRAME_BOUND'
+
+    def __init__(self, estimator, *, wait_budget_ms=15.):
+        self.estimator = estimator;self.wait_budget_ms = float(wait_budget_ms)
+        self._condition = threading.Condition();self._job = None;self._result = None;self._submitted = {}
+        self._closed = False
+        self._thread = threading.Thread(target=self._run, name='path-entry-risk', daemon=True);self._thread.start()
+
+    @property
+    def model(self):return self.estimator.model
+
+    def submit(self, prediction, *, frame_id, timestamp_s, ego_speed_mps, steering, observation_age_s=0.):
+        front = self.estimator.front_m
+        snapshot = None
+        try:
+            if prediction:
+                # The worker must not read structures the next frame may modify;
+                # copy only what the feature contract reads, as plain values.
+                snapshot = {k: _plain(prediction[k]) for k in ('source', 'evaluation_frame', 'frame_id', 'odometry_origin_m',
+                                                                'odometry_yaw_rad') if k in prediction}
+                snapshot['tracks'] = [{k: _plain(t[k]) for k in TRACK_FIELDS if k in t}
+                                      for t in prediction.get('tracks', ()) if eligible_track(t, front_m=front)]
+        except (TypeError, ValueError, KeyError, AttributeError) as error:
+            # Learned risk never interrupts the safety step: this frame runs physics-only.
+            with self._condition:
+                self._submitted = {'frame_id': frame_id, 'at': time.perf_counter()}
+                self._result = {'frame_id': frame_id, 'status': 'FAILED', 'error': 'snapshot: '+str(error), 'tracks': {},
+                                'inference': self.inference, 'model_id': MODEL_ID, 'experimental': self.estimator.experimental}
+                self._condition.notify_all()
+            return
+        submitted = time.perf_counter()
+        with self._condition:
+            self._job = (snapshot, {'frame_id': frame_id, 'timestamp_s': timestamp_s, 'ego_speed_mps': ego_speed_mps,
+                                    'steering': steering, 'observation_age_s': observation_age_s}, submitted)
+            self._submitted = {'frame_id': frame_id, 'at': submitted}
+            self._condition.notify_all()
+
+    def _run(self):
+        while True:
+            with self._condition:
+                while self._job is None and not self._closed:self._condition.wait()
+                if self._closed:return
+                prediction, arguments, submitted = self._job;self._job = None
+            started = time.perf_counter()
+            try:result = self.estimator.estimate(prediction, **arguments)
+            except Exception as error:  # noqa: BLE001 - the worker must survive and fail closed
+                result = {'frame_id': arguments['frame_id'], 'status': 'FAILED', 'error': str(error), 'tracks': {},
+                          'model_id': MODEL_ID, 'experimental': self.estimator.experimental}
+            result = {**result, 'inference': self.inference, 'queue_ms': (started-submitted)*1000}
+            with self._condition:
+                self._result = result;self._condition.notify_all()
+
+    def result_for(self, frame_id):
+        with self._condition:
+            submitted = self._submitted.get('at') if self._submitted.get('frame_id') == frame_id else None
+            if submitted is None:
+                return {'frame_id': frame_id, 'status': 'NOT_SUBMITTED', 'inference': self.inference, 'tracks': {}}
+            deadline = submitted+self.wait_budget_ms/1000.
+            while not (self._result and self._result.get('frame_id') == frame_id):
+                remaining = deadline-time.perf_counter()
+                if remaining <= 0.:break
+                self._condition.wait(remaining)
+            result = self._result if self._result and self._result.get('frame_id') == frame_id else None
+            waited = max(0., (time.perf_counter()-submitted)*1000)
+        if result is None:
+            return {'frame_id': frame_id, 'status': 'NOT_READY_WITHIN_BUDGET', 'inference': self.inference, 'tracks': {},
+                    'since_submit_ms': waited, 'model_id': MODEL_ID, 'experimental': self.estimator.experimental}
+        return {**result, 'since_submit_ms': waited}
+
+    def close(self):
+        with self._condition:
+            self._closed = True;self._condition.notify_all()

@@ -20,6 +20,7 @@ CONFIGURATIONS = {
                             'description': 'Evidence-budgeted decisions without learned risk'},
 }
 MAXIMUM_EVALUATION_SPEED_KMH = 60.
+RISK_INFERENCE_MODES = ('ASYNC_FRAME_BOUND', 'SYNCHRONOUS')
 
 
 @dataclass(frozen=True)
@@ -29,12 +30,16 @@ class EvaluationAdmission:
     experimental_risk_model: bool = False
     evaluation_id: str = field(default_factory=lambda: 'eval_'+uuid.uuid4().hex)
     max_speed_kmh: float = MAXIMUM_EVALUATION_SPEED_KMH
+    # Learned risk runs off the safety path, bound to its frame; SYNCHRONOUS
+    # is the earlier in-step inference, kept for comparison.
+    risk_inference: str = 'ASYNC_FRAME_BOUND'
 
     def __post_init__(self):
         if self.configuration not in CONFIGURATIONS:raise ValueError('Unknown evaluation configuration')
         if not 5 <= self.requested_speed_kmh <= self.max_speed_kmh <= MAXIMUM_EVALUATION_SPEED_KMH:
             raise ValueError('Evaluation speed must be 5-60 km/h')
         if type(self.experimental_risk_model) is not bool:raise ValueError('Explicit experimental-risk flag required')
+        if self.risk_inference not in RISK_INFERENCE_MODES:raise ValueError('Unknown learned-risk inference mode')
 
     @property
     def spec(self):return CONFIGURATIONS[self.configuration]
@@ -43,4 +48,5 @@ class EvaluationAdmission:
         return {'evaluation_id': self.evaluation_id, 'configuration': self.configuration,
                 'requested_speed_kmh': self.requested_speed_kmh, 'max_speed_kmh': self.max_speed_kmh,
                 'experimental_risk_model': self.experimental_risk_model, **self.spec,
+                'risk_inference': self.risk_inference if self.spec['learned_risk'] else None,
                 'raw_sensor_recording': False, 'record': 'HARNESS_COMPACT_EPISODE_LOG'}

@@ -1,0 +1,649 @@
+{
+ "task": "SENSOR_TIMING_AND_PROCESSING_STALLS",
+ "detector_equivalence_idle_engine": {
+  "label": "idle-engine",
+  "frames": 40,
+  "gpu_providers": [
+   "DmlExecutionProvider",
+   "CPUExecutionProvider"
+  ],
+  "onnxruntime": "1.24.4",
+  "detector_profile": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+  "predict_three_views": {
+   "cpu": {
+    "n": 40,
+    "median_ms": 498.0470000009518,
+    "p95_ms": 526.1003999621607
+   },
+   "gpu": {
+    "n": 40,
+    "median_ms": 73.47894998383708,
+    "p95_ms": 78.55239999480546
+   }
+  },
+  "equivalence": {
+   "frames_identical_sets": 40,
+   "cpu_detections": 646,
+   "gpu_detections": 646,
+   "unmatched_cpu": 0,
+   "unmatched_gpu": 0,
+   "max_confidence_delta": 2.086162567138672e-06,
+   "max_box_delta_px": 0.0001220703125
+  }
+ },
+ "observation_to_control": {
+  "definition": "scripts/summarize_native_performance.py (Phase 6): sensor_age_before_safety_ms + safety + actuator_submit",
+  "phase7_test_before": {
+   "A_REACTIVE": {
+    "episodes": 17,
+    "frames": 8293,
+    "real_time_factor_median": 0.53,
+    "observation_to_control_ms": {
+     "n": 8263,
+     "median": 86.22,
+     "p95": 116.12
+    },
+    "harness_step_ms": {
+     "n": 8293,
+     "median": 90.48,
+     "p95": 121.02
+    },
+    "yolo_detector_ms": {
+     "n": 1405,
+     "median": 437.0,
+     "p95": 500.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 7,
+    "stale_or_fault_frames": 0
+   },
+   "B_PHYSICAL_PREDICTIVE": {
+    "episodes": 17,
+    "frames": 10661,
+    "real_time_factor_median": 0.35,
+    "observation_to_control_ms": {
+     "n": 10616,
+     "median": 139.91,
+     "p95": 202.67
+    },
+    "harness_step_ms": {
+     "n": 10661,
+     "median": 140.73,
+     "p95": 200.07
+    },
+    "yolo_detector_ms": {
+     "n": 3005,
+     "median": 421.0,
+     "p95": 469.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 77,
+    "stale_or_fault_frames": 1
+   },
+   "C_LEARNED_RISK": {
+    "episodes": 17,
+    "frames": 10390,
+    "real_time_factor_median": 0.33,
+    "observation_to_control_ms": {
+     "n": 10334,
+     "median": 146.07,
+     "p95": 224.09
+    },
+    "harness_step_ms": {
+     "n": 10390,
+     "median": 147.25,
+     "p95": 222.69
+    },
+    "yolo_detector_ms": {
+     "n": 3112,
+     "median": 407.0,
+     "p95": 453.0
+    },
+    "learned_risk_ms": {
+     "n": 10140,
+     "median": 4.41,
+     "p95": 8.8
+    },
+    "processing_deadline_holds": 197,
+    "stale_or_fault_frames": 1
+   },
+   "D_EVIDENCE_BUDGETED": {
+    "episodes": 17,
+    "frames": 10951,
+    "real_time_factor_median": 0.34,
+    "observation_to_control_ms": {
+     "n": 10896,
+     "median": 145.5,
+     "p95": 225.33
+    },
+    "harness_step_ms": {
+     "n": 10951,
+     "median": 146.04,
+     "p95": 221.2
+    },
+    "yolo_detector_ms": {
+     "n": 3262,
+     "median": 407.0,
+     "p95": 453.0
+    },
+    "learned_risk_ms": {
+     "n": 10668,
+     "median": 4.47,
+     "p95": 8.82
+    },
+    "processing_deadline_holds": 235,
+    "stale_or_fault_frames": 0
+   },
+   "E_PHYSICAL_ABLATION": {
+    "episodes": 17,
+    "frames": 10491,
+    "real_time_factor_median": 0.35,
+    "observation_to_control_ms": {
+     "n": 10447,
+     "median": 138.31,
+     "p95": 206.61
+    },
+    "harness_step_ms": {
+     "n": 10491,
+     "median": 139.24,
+     "p95": 202.78
+    },
+    "yolo_detector_ms": {
+     "n": 2922,
+     "median": 422.0,
+     "p95": 468.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 94,
+    "stale_or_fault_frames": 2
+   }
+  },
+  "b_validation_cpu": {
+   "B_PHYSICAL_PREDICTIVE": {
+    "episodes": 12,
+    "frames": 5581,
+    "real_time_factor_median": 0.32,
+    "observation_to_control_ms": {
+     "n": 5532,
+     "median": 160.16,
+     "p95": 239.93
+    },
+    "harness_step_ms": {
+     "n": 5581,
+     "median": 162.02,
+     "p95": 237.91
+    },
+    "yolo_detector_ms": {
+     "n": 1721,
+     "median": 422.0,
+     "p95": 485.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 197,
+    "stale_or_fault_frames": 0
+   },
+   "D_EVIDENCE_BUDGETED": {
+    "episodes": 12,
+    "frames": 5823,
+    "real_time_factor_median": 0.31,
+    "observation_to_control_ms": {
+     "n": 5766,
+     "median": 169.46,
+     "p95": 258.74
+    },
+    "harness_step_ms": {
+     "n": 5823,
+     "median": 170.9,
+     "p95": 252.66
+    },
+    "yolo_detector_ms": {
+     "n": 1916,
+     "median": 422.0,
+     "p95": 469.0
+    },
+    "learned_risk_ms": {
+     "n": 5390,
+     "median": 4.6,
+     "p95": 8.9
+    },
+    "processing_deadline_holds": 399,
+    "stale_or_fault_frames": 0
+   }
+  },
+  "b_validation_dml": {
+   "B_PHYSICAL_PREDICTIVE": {
+    "episodes": 12,
+    "frames": 5634,
+    "real_time_factor_median": 0.39,
+    "observation_to_control_ms": {
+     "n": 5609,
+     "median": 128.55,
+     "p95": 176.24
+    },
+    "harness_step_ms": {
+     "n": 5634,
+     "median": 128.77,
+     "p95": 175.1
+    },
+    "yolo_detector_ms": {
+     "n": 3354,
+     "median": 63.0,
+     "p95": 93.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 1,
+    "stale_or_fault_frames": 0
+   }
+  },
+  "holdout_dml": {
+   "A_REACTIVE": {
+    "episodes": 23,
+    "frames": 11343,
+    "real_time_factor_median": 0.62,
+    "observation_to_control_ms": {
+     "n": 11298,
+     "median": 75.17,
+     "p95": 95.19
+    },
+    "harness_step_ms": {
+     "n": 11343,
+     "median": 76.69,
+     "p95": 105.45
+    },
+    "yolo_detector_ms": {
+     "n": 4486,
+     "median": 62.0,
+     "p95": 78.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 3,
+    "stale_or_fault_frames": 0
+   },
+   "B_PHYSICAL_PREDICTIVE": {
+    "episodes": 23,
+    "frames": 13016,
+    "real_time_factor_median": 0.39,
+    "observation_to_control_ms": {
+     "n": 12971,
+     "median": 128.14,
+     "p95": 177.55
+    },
+    "harness_step_ms": {
+     "n": 13016,
+     "median": 130.26,
+     "p95": 195.58
+    },
+    "yolo_detector_ms": {
+     "n": 7932,
+     "median": 63.0,
+     "p95": 94.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 3,
+    "stale_or_fault_frames": 0
+   },
+   "C_LEARNED_RISK": {
+    "episodes": 23,
+    "frames": 14090,
+    "real_time_factor_median": 0.37,
+    "observation_to_control_ms": {
+     "n": 14042,
+     "median": 131.53,
+     "p95": 181.93
+    },
+    "harness_step_ms": {
+     "n": 14090,
+     "median": 133.81,
+     "p95": 197.02
+    },
+    "yolo_detector_ms": {
+     "n": 8615,
+     "median": 62.0,
+     "p95": 94.0
+    },
+    "learned_risk_ms": {
+     "n": 14002,
+     "median": 6.03,
+     "p95": 9.77
+    },
+    "processing_deadline_holds": 12,
+    "stale_or_fault_frames": 0
+   },
+   "D_EVIDENCE_BUDGETED": {
+    "episodes": 23,
+    "frames": 15895,
+    "real_time_factor_median": 0.38,
+    "observation_to_control_ms": {
+     "n": 15835,
+     "median": 136.58,
+     "p95": 209.95
+    },
+    "harness_step_ms": {
+     "n": 15895,
+     "median": 138.9,
+     "p95": 221.02
+    },
+    "yolo_detector_ms": {
+     "n": 10371,
+     "median": 62.0,
+     "p95": 94.0
+    },
+    "learned_risk_ms": {
+     "n": 15697,
+     "median": 5.98,
+     "p95": 10.84
+    },
+    "processing_deadline_holds": 115,
+    "stale_or_fault_frames": 0
+   },
+   "E_PHYSICAL_ABLATION": {
+    "episodes": 23,
+    "frames": 11855,
+    "real_time_factor_median": 0.39,
+    "observation_to_control_ms": {
+     "n": 11811,
+     "median": 126.87,
+     "p95": 174.28
+    },
+    "harness_step_ms": {
+     "n": 11855,
+     "median": 128.95,
+     "p95": 188.39
+    },
+    "yolo_detector_ms": {
+     "n": 7107,
+     "median": 62.0,
+     "p95": 94.0
+    },
+    "learned_risk_ms": null,
+    "processing_deadline_holds": 2,
+    "stale_or_fault_frames": 0
+   }
+  }
+ },
+ "b_cpu_vs_dml_validation": {
+  "specs": "VALIDATION indices 0-9,13 + ordinary 0-1, configuration B, identical code path",
+  "cpu": {
+   "folder": "output/pedestrian-suite/task2-validation-20261023",
+   "frames": 5581,
+   "distinct_detection_results": 1721,
+   "detector_ms": {
+    "median": 422.0,
+    "p95": 485.0
+   },
+   "detection_age_frames_at_control": {
+    "median": 5.0,
+    "p95": 9.0
+   },
+   "scene_build_ms": {
+    "median": 48.0,
+    "p95": 107.6
+   },
+   "sensor_arrival_spread_ms": {
+    "median": 44.6,
+    "p95": 63.1
+   },
+   "safety_ms": {
+    "median": 39.0,
+    "p95": 60.2
+   },
+   "harness_step_ms": {
+    "median": 162.0,
+    "p95": 237.9
+   },
+   "summary": {
+    "episodes": 13,
+    "failed_or_missing_logs": 1,
+    "arrivals": 12,
+    "timeouts": 0,
+    "false_arrivals": 0,
+    "collision_episodes": 0,
+    "walker_collisions": 0,
+    "missed_hazards": 0,
+    "minimum_separation_m": {
+     "min": 2.446,
+     "median": 4.944
+    },
+    "unnecessary_braking_events": 68,
+    "unnecessary_full_stops": 24,
+    "unnecessary_stationary_s": 22.45,
+    "brake_release_oscillations": 298,
+    "journey_time_s_median_arrived": 20.4,
+    "route_progress_mean": 0.978,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 28,
+     "MEASURED_OBSTACLE": 15,
+     "COVERAGE": 1,
+     "TIMING_DEADLINE": 125,
+     "OTHER": 25
+    },
+    "freshness": {
+     "usable_frames": 5566,
+     "frames": 5581,
+     "fraction": 0.997,
+     "gate_99_percent": true
+    },
+    "ordinary_route_completion": {
+     "journeys": 2,
+     "arrived": 2,
+     "gate_all_arrive": true
+    },
+    "performance": {
+     "median_step_ms": 155.29,
+     "p95_step_ms_median": 206.046,
+     "real_time_factor_median": 0.321,
+     "safety_ms_median": 39.805,
+     "safety_ms_p95_median": 59.394,
+     "layer_ms_median": null,
+     "layer_ms_p95_median": null,
+     "deadline_hold_frames": 197,
+     "risk_status_frames": {}
+    },
+    "decision_responses": {
+     "CONTINUE": 0,
+     "CAUTIOUS_APPROACH": 0,
+     "PROTECTIVE_BRAKING": 0
+    },
+    "maximum_deceleration_mps2": {
+     "median": 25.172,
+     "max": 27.69,
+     "position_derived_median": 23.976
+    },
+    "deceleration_p95_mps2_median": 7.802,
+    "hard_braking_s": 37.0,
+    "maximum_abs_jerk_mps3_median": 132.487,
+    "maximum_lateral_acceleration_mps2_max": 5.238,
+    "maximum_speed_mps_max": 14.109,
+    "prediction_lead_s_median": 5.55,
+    "braking_lead_s_median": 5.675,
+    "ingress_events": 4
+   }
+  },
+  "dml": {
+   "folder": "output/pedestrian-suite/task3-dml-validation-20261023",
+   "frames": 5634,
+   "distinct_detection_results": 3354,
+   "detector_ms": {
+    "median": 63.0,
+    "p95": 93.0
+   },
+   "detection_age_frames_at_control": {
+    "median": 3.0,
+    "p95": 4.0
+   },
+   "scene_build_ms": {
+    "median": 39.9,
+    "p95": 80.8
+   },
+   "sensor_arrival_spread_ms": {
+    "median": 21.2,
+    "p95": 40.5
+   },
+   "safety_ms": {
+    "median": 32.8,
+    "p95": 47.4
+   },
+   "harness_step_ms": {
+    "median": 128.8,
+    "p95": 175.1
+   },
+   "summary": {
+    "episodes": 13,
+    "failed_or_missing_logs": 1,
+    "arrivals": 12,
+    "timeouts": 0,
+    "false_arrivals": 0,
+    "collision_episodes": 0,
+    "walker_collisions": 0,
+    "missed_hazards": 0,
+    "minimum_separation_m": {
+     "min": 2.617,
+     "median": 4.915
+    },
+    "unnecessary_braking_events": 76,
+    "unnecessary_full_stops": 28,
+    "unnecessary_stationary_s": 26.7,
+    "brake_release_oscillations": 165,
+    "journey_time_s_median_arrived": 21.15,
+    "route_progress_mean": 0.976,
+    "nonhazardous_braking_by_reason": {
+     "PEDESTRIAN_FORECAST": 33,
+     "MEASURED_OBSTACLE": 17,
+     "COVERAGE": 3,
+     "TIMING_DEADLINE": 0,
+     "OTHER": 26
+    },
+    "freshness": {
+     "usable_frames": 5634,
+     "frames": 5634,
+     "fraction": 1.0,
+     "gate_99_percent": true
+    },
+    "ordinary_route_completion": {
+     "journeys": 2,
+     "arrived": 2,
+     "gate_all_arrive": true
+    },
+    "performance": {
+     "median_step_ms": 128.435,
+     "p95_step_ms_median": 166.992,
+     "real_time_factor_median": 0.392,
+     "safety_ms_median": 33.08,
+     "safety_ms_p95_median": 44.285,
+     "layer_ms_median": null,
+     "layer_ms_p95_median": null,
+     "deadline_hold_frames": 1,
+     "risk_status_frames": {}
+    },
+    "decision_responses": {
+     "CONTINUE": 0,
+     "CAUTIOUS_APPROACH": 0,
+     "PROTECTIVE_BRAKING": 0
+    },
+    "maximum_deceleration_mps2": {
+     "median": 24.687,
+     "max": 26.7,
+     "position_derived_median": 23.0
+    },
+    "deceleration_p95_mps2_median": 6.75,
+    "hard_braking_s": 36.1,
+    "maximum_abs_jerk_mps3_median": 141.1,
+    "maximum_lateral_acceleration_mps2_max": 5.247,
+    "maximum_speed_mps_max": 14.109,
+    "prediction_lead_s_median": 5.9,
+    "braking_lead_s_median": 4.775,
+    "ingress_events": 4
+   }
+  }
+ },
+ "learned_risk_off_safety_path": {
+  "specs": "VALIDATION, configuration D, DML detector",
+  "synchronous": {
+   "folder": "output/pedestrian-suite/task3b-risk-sync-dml-20261023",
+   "frames": 5051,
+   "distinct_detection_results": 2926,
+   "detector_ms": {
+    "median": 63.0,
+    "p95": 79.0
+   },
+   "detection_age_frames_at_control": {
+    "median": 3.0,
+    "p95": 4.0
+   },
+   "scene_build_ms": {
+    "median": 36.3,
+    "p95": 81.9
+   },
+   "sensor_arrival_spread_ms": {
+    "median": 20.2,
+    "p95": 36.4
+   },
+   "safety_ms": {
+    "median": 37.8,
+    "p95": 52.8
+   },
+   "harness_step_ms": {
+    "median": 127.0,
+    "p95": 178.8
+   },
+   "performance": {
+    "median_step_ms": 121.06,
+    "p95_step_ms_median": 165.658,
+    "real_time_factor_median": 0.406,
+    "safety_ms_median": 38.684,
+    "safety_ms_p95_median": 50.747,
+    "layer_ms_median": 3.963,
+    "layer_ms_p95_median": 7.507,
+    "deadline_hold_frames": 4,
+    "risk_status_frames": {
+     "NO_CURRENT_CONTROL_PREDICTION": 12,
+     "READY": 5012
+    }
+   }
+  },
+  "async_frame_bound": {
+   "folder": "output/pedestrian-suite/task2c-validation-dml-20261023",
+   "frames": 5021,
+   "distinct_detection_results": 2951,
+   "detector_ms": {
+    "median": 63.0,
+    "p95": 94.0
+   },
+   "detection_age_frames_at_control": {
+    "median": 3.0,
+    "p95": 4.0
+   },
+   "scene_build_ms": {
+    "median": 37.3,
+    "p95": 83.8
+   },
+   "sensor_arrival_spread_ms": {
+    "median": 20.1,
+    "p95": 37.2
+   },
+   "safety_ms": {
+    "median": 39.4,
+    "p95": 55.1
+   },
+   "harness_step_ms": {
+    "median": 129.9,
+    "p95": 185.8
+   },
+   "performance": {
+    "median_step_ms": 123.772,
+    "p95_step_ms_median": 167.12,
+    "real_time_factor_median": 0.4,
+    "safety_ms_median": 42.007,
+    "safety_ms_p95_median": 54.52,
+    "layer_ms_median": 0.128,
+    "layer_ms_p95_median": 1.729,
+    "deadline_hold_frames": 3,
+    "risk_status_frames": {
+     "NO_CURRENT_CONTROL_PREDICTION": 12,
+     "OVER_TIME_BUDGET": 6,
+     "READY": 4977
+    }
+   }
+  }
+ }
+}

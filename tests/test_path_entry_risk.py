@@ -78,3 +78,70 @@ class PathEntryRiskTests(TestCase):
         broken = estimator.estimate({k: v for k, v in prediction.items() if k != 'odometry_origin_m'}, frame_id=9, timestamp_s=1.,
                                     ego_speed_mps=5., steering=0.)
         self.assertEqual((broken['status'], broken['tracks']), ('FAILED', {}))
+
+    def _prediction(self, frame):
+        return {'source': 'CONTROL_SENSOR_PIPELINE', 'evaluation_frame': frame, 'odometry_origin_m': [0., 0.], 'odometry_yaw_rad': 0.,
+                'tracks': [{'id': 'p', 'position_m': [20., 4.], 'velocity_mps': [0., 0.], 'confirmed': True, 'half_size_m': [.35, .35]}]}
+
+    def test_async_results_are_frame_bound_and_bounded_in_time(self):
+        import threading
+        from backend.core.path_entry_risk import AsyncRiskEstimator
+        gate = threading.Event()
+        class Slow:
+            def probabilities(self, x):
+                gate.wait(2.);return np.full((len(x), 3), .4)
+        estimator = AsyncRiskEstimator(RiskEstimator(Slow(), corridor_half_width_m=1.4, front_m=2.4, time_budget_ms=5000.),
+                                       wait_budget_ms=30.)
+        try:
+            self.assertEqual(estimator.result_for(9)['status'], 'NOT_SUBMITTED')
+            estimator.submit(self._prediction(9), frame_id=9, timestamp_s=1., ego_speed_mps=5., steering=0.)
+            late = estimator.result_for(9)
+            self.assertEqual(late['status'], 'NOT_READY_WITHIN_BUDGET');self.assertEqual(RiskEstimator.for_frame(late, 9), {})
+            self.assertLess(late['since_submit_ms'], 500.)
+            gate.set()
+            estimator.submit(self._prediction(10), frame_id=10, timestamp_s=1.05, ego_speed_mps=5., steering=0.)
+            estimator.wait_budget_ms = 2000.
+            ready = estimator.result_for(10)
+            self.assertEqual((ready['status'], ready['frame_id'], ready['inference']), ('READY', 10, 'ASYNC_FRAME_BOUND'))
+            self.assertEqual(RiskEstimator.for_frame(ready, 10)['p']['3s'], .4)
+            # A result is never transferred to another frame.
+            self.assertEqual(RiskEstimator.for_frame(ready, 11), {})
+            self.assertEqual(estimator.result_for(11)['status'], 'NOT_SUBMITTED')
+        finally:
+            gate.set();estimator.close()
+
+    def test_async_and_synchronous_inference_agree(self):
+        from backend.core.path_entry_risk import AsyncRiskEstimator
+        model = PathEntryRiskModel(weights(), {'feature_version': FEATURE_VERSION, 'steps': STEPS,
+                                               'calibration': {f'{h}s': {'a': 1.2, 'b': -.3} for h in (1, 2, 3)}})
+        synchronous = RiskEstimator(model, corridor_half_width_m=1.4, front_m=2.4, time_budget_ms=5000.)
+        background = AsyncRiskEstimator(RiskEstimator(model, corridor_half_width_m=1.4, front_m=2.4, time_budget_ms=5000.),
+                                        wait_budget_ms=5000.)
+        try:
+            prediction = self._prediction(4)
+            expected = synchronous.estimate(prediction, frame_id=4, timestamp_s=2., ego_speed_mps=6., steering=.1)
+            # Native tracks can carry read-only mapping views (not deep-copyable).
+            import types
+            prediction['tracks'][0]['semantic_evidence'] = types.MappingProxyType({'confidence': .9})
+            prediction['tracks'][0]['history'] = [[1.8, 20., 4., 0., 0.], [1.9, 20., 4., 0., 0.]]
+            expected = synchronous.estimate(prediction, frame_id=4, timestamp_s=2., ego_speed_mps=6., steering=.1)
+            background.submit(prediction, frame_id=4, timestamp_s=2., ego_speed_mps=6., steering=.1)
+            # The submitted snapshot is independent of later in-place changes.
+            prediction['tracks'][0]['position_m'] = [1., 0.];prediction['tracks'].clear()
+            self.assertEqual(background.result_for(4)['tracks'], expected['tracks'])
+            self.assertTrue(expected['tracks'])
+        finally:background.close()
+
+    def test_async_snapshot_failures_fail_closed_without_raising(self):
+        from backend.core.path_entry_risk import AsyncRiskEstimator
+        model = type('Stub', (), {'probabilities': lambda self, x: np.full((len(x), 3), .4)})()
+        background = AsyncRiskEstimator(RiskEstimator(model, corridor_half_width_m=1.4, front_m=2.4), wait_budget_ms=500.)
+        try:
+            class Broken(dict):
+                def get(self, key, default=None):
+                    if key == 'tracks':raise TypeError('unreadable tracks')
+                    return super().get(key, default)
+            background.submit(Broken(self._prediction(7)), frame_id=7, timestamp_s=1., ego_speed_mps=5., steering=0.)
+            result = background.result_for(7)
+            self.assertEqual(result['status'], 'FAILED');self.assertEqual(RiskEstimator.for_frame(result, 7), {})
+        finally:background.close()

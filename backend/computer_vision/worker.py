@@ -16,6 +16,12 @@ def ocr_requested(parent):
         value=json.loads((OUTPUT/'ocr-request.json').read_text(encoding='utf8'))
         return value.get('parent')==parent and 0<=time.time()-value['requested_at']<3.
     except (OSError,ValueError,KeyError,TypeError):return False
+
+
+def lockstep_requested(parent):
+    """Evaluation harness only: poll every new frame while a lockstep episode runs."""
+    try:return json.loads((OUTPUT/'lockstep-request.json').read_text(encoding='utf8')).get('parent')==parent
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):return False
 def publish(value, name='latest.json'):
     value['published_at'] = time.time()
     destination=OUTPUT/name
@@ -65,7 +71,9 @@ def main():
     from .ocr import EnglishRecognizer,text_regions
     from ..nlp.processor import interpret
     cv2.setNumThreads(1)
-    detector=RoadDetector(default_model_path())
+    # CPU by default. YRO_DETECTOR_EXECUTION_PROVIDER=DML opts into DirectML
+    # inference when that runtime is installed; otherwise CPU is used.
+    detector=RoadDetector(default_model_path(),execution_provider=os.environ.get('YRO_DETECTOR_EXECUTION_PROVIDER'))
     recognizer=None;previous=None;history=[];last_ocr=-float('inf');nlp=None;aligned_session=None
     url=f'http://127.0.0.1:{args.port}/api/simulation/'
     while parent_alive(args.parent):
@@ -75,6 +83,7 @@ def main():
             if not state.get('connected') or state.get('mode')=='REPLAY':
                 publish({'status':'DISCONNECTED'});time.sleep(1);continue
             driving=state.get('mode')=='AUTOMATIC';warming=state.get('vision_warmup',False);period=.2 if driving or warming else 1.
+            if lockstep_requested(args.parent):period=.02
             fid=state['vehicle']['frame'];stamp=state['vehicle']['timestamp'];session=state['sessionId']
             if (session,fid)==previous:time.sleep(.1);continue
             if previous and previous[0]!=session:nlp=None

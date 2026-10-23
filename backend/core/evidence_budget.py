@@ -1,18 +1,28 @@
-"""Evidence-budgeted pedestrian decisions layered on the RULE supervisor.
+"""Evidence-budgeted pedestrian decisions layered on the RULE supervisor (time-indexed, V2).
 
 Physical protection is never relaxed. Measured hazards, LiDAR path conflicts,
 moving-track conflicts, unconfirmed or in-lane people, insufficient coverage and
-stale sensors keep RULE's braking. Only a verified-stationary person's
-speculative alternatives (possible start, retreat or run) may defer braking,
-and only while the vehicle can obtain another observation and still stop
-before that person's reachable conflict zone:
+stale sensors keep RULE's braking. Only a verified-stationary person whose
+every RULE conflict comes from a speculative alternative (possible start,
+retreat or run) is handled here. Stationarity is never proof of future
+stillness: every physically reachable alternative is checked in space and time.
 
-    D_stop = v * T_delay + v**2 / (2 * a) + margin
+For candidate speed plans (current/requested speed down to a crawl) the ego
+footprint along its planned trajectory is compared with each reachable
+alternative of each person, starting now:
 
-T_delay adds observation age, measured processing latency, the control
-reaction delay, motion confirmation and one observation interval. Waiting is
-never assumed to reveal intent. Calibrated learned risk may only lower the
-selected speed among physically verified options; it never raises it.
+* continue: no overlap within RULE's own forecast horizon -> the car passes
+  before the person can reach the corridor (PASS_BEFORE_REACH);
+* brake after detection: the same plan, then braking at the validated
+  5 m/s^2 after the detection delay (observation age + measured processing
+  latency + 0.35 s reaction + 0.3 s motion confirmation + one interval) never
+  overlaps -> another observation is affordable (OBSERVATION_AFFORDABLE).
+
+A plan is verified when, for every person, one response avoids all of that
+person's alternatives. Re-verifying on every frame while the person stays
+stationary covers any later start. The highest verified plan is selected;
+otherwise RULE's validated crawl, otherwise protective braking. Calibrated
+learned risk only lengthens the detection delay (lower verified speed).
 """
 from dataclasses import dataclass
 import math
@@ -20,7 +30,9 @@ import numpy as np
 
 SPECULATIVE = ('PEDESTRIAN_POSSIBLE_START', 'PEDESTRIAN_POSSIBLE_RETREAT', 'PEDESTRIAN_POSSIBLE_RUN')
 RESPONSES = ('CONTINUE', 'CAUTIOUS_APPROACH', 'PROTECTIVE_BRAKING')
-LAYER_ID = 'EVIDENCE_BUDGETED_PEDESTRIAN_V1'
+LAYER_ID = 'EVIDENCE_BUDGETED_PEDESTRIAN_V2'
+CANDIDATE_FRACTIONS = (.85, .7, .55, .4, .25)
+CRAWL_SPEEDS_MPS = (6., 5., 4., 3., 2., 1.5, 1., .5)
 
 
 @dataclass(frozen=True)
@@ -38,6 +50,10 @@ class BudgetConfig:
     risk_high: float = .5
     risk_extra_budget_s: float = 1.5
     stationary_window_s: float = .6
+    # Native Mercedes launches reached about 4.2 m/s^2; plans above the
+    # current speed assume this faster bound.
+    launch_acceleration_mps2: float = 4.5
+    risk_floor_mps: float = 2.
 
     def __post_init__(self):
         if not (0 < self.cautious_deceleration_mps2 < self.safe_deceleration_mps2 and self.reaction_time_s > 0
@@ -73,6 +89,97 @@ def verified_stationary(track, timestamp_s, *, window_s=.6):
     return bool(spread <= max(.15, float(track.get('uncertainty_m', .15) or .15)))
 
 
+def plan_profile(speed_mps, candidate_mps, grid, *, deceleration_mps2, acceleration_mps2, brake_after_s=None,
+                 brake_deceleration_mps2=5.):
+    """Speed and distance of a plan that approaches ``candidate_mps`` and then holds it.
+
+    With ``brake_after_s`` the same plan brakes to a stop from that time.
+    """
+    grid = np.asarray(grid, float);v0 = max(0., float(speed_mps))
+    if candidate_mps >= v0:v = np.minimum(candidate_mps, v0+acceleration_mps2*grid)
+    else:v = np.maximum(candidate_mps, v0-deceleration_mps2*grid)
+    if brake_after_s is not None:
+        start = float(np.interp(brake_after_s, grid, v))
+        v = np.where(grid <= brake_after_s, v, np.maximum(0., start-brake_deceleration_mps2*(grid-brake_after_s)))
+    return v, np.r_[0., np.cumsum((v[1:]+v[:-1])*.5*np.diff(grid))]
+
+
+def plan_poses(grid, distance, geometry, *, steering=0., path=None):
+    """Body-centre poses (t, x, y, yaw) along the supervised path or the steering arc."""
+    from .motion_geometry import footprint_centers
+    distance = np.asarray(distance, float)
+    if path is not None:
+        p = np.asarray(path, float);arc = np.r_[0., np.cumsum(np.linalg.norm(np.diff(p[:, 1:3], axis=0), axis=1))]
+        keep = np.r_[True, np.diff(arc) > 1e-9];arc = arc[keep];p = p[keep]
+        x = np.interp(distance, arc, p[:, 1]);y = np.interp(distance, arc, p[:, 2]);yaw = np.interp(distance, arc, p[:, 3])
+        beyond = distance > arc[-1]
+        if beyond.any():
+            extra = distance[beyond]-arc[-1]
+            x[beyond] = p[-1, 1]+extra*math.cos(p[-1, 3]);y[beyond] = p[-1, 2]+extra*math.sin(p[-1, 3]);yaw[beyond] = p[-1, 3]
+    else:
+        kappa = math.tan(float(steering)*geometry.max_steer_rad)/geometry.wheelbase_m;yaw = distance*kappa
+        if abs(kappa) > 1e-9:x, y = np.sin(yaw)/kappa, (1-np.cos(yaw))/kappa
+        else:x, y = distance.copy(), np.zeros_like(distance)
+    return footprint_centers(np.column_stack((np.asarray(grid, float), x, y, yaw)), geometry)
+
+
+def candidate_speeds(speed_mps, target_mps):
+    """Descending candidate plan speeds from the requested target down to a crawl."""
+    target = max(0., float(target_mps));values = {round(target, 3)}
+    if 0. < speed_mps < target:values.add(round(float(speed_mps), 3))
+    values.update(round(target*f, 3) for f in CANDIDATE_FRACTIONS)
+    values.update(c for c in CRAWL_SPEEDS_MPS if c < target)
+    return sorted((v for v in values if v > 0.), reverse=True)
+
+
+class TemporalVerifier:
+    """Time-indexed physical check of candidate speed plans against every reachable alternative.
+
+    ``tracks``/``modes`` are the published measured tracks and their physical
+    alternatives (vehicle frame at the measurement); the ego footprint uses
+    onboard geometry along the supervised path or steering arc.
+    """
+    def __init__(self, tracks, modes, *, geometry, speed_mps, steering, config, path=None, continue_horizon_s=None):
+        self.tracks = [t for t in tracks if t.get('confirmed')];self.modes = list(modes);self.geometry = geometry
+        self.speed = max(0., float(speed_mps));self.steering = float(steering);self.path = path;self.config = config
+        self.continue_horizon_s = continue_horizon_s if continue_horizon_s is not None else max(3., .6+self.speed/5.)
+
+    def evaluate(self, candidates, delays):
+        """Return (per-candidate results, per-person 'braking now avoids every alternative')."""
+        from .prediction import assess_conflicts
+        c = self.config;delays = {str(k): float(v) for k, v in delays.items()}
+        fastest = max([self.speed, *candidates]) if candidates else self.speed
+        horizon = max(self.continue_horizon_s, max(delays.values(), default=0.)+fastest/c.safe_deceleration_mps2+.5)
+        grid = np.round(np.arange(int(math.ceil(horizon/.1))+1)*.1, 6);distinct = sorted(set(delays.values()))
+        paths = []
+        def add(intent, distance):
+            paths.append({'intent': intent, 'points': plan_poses(grid, distance, self.geometry, steering=self.steering, path=self.path),
+                          'half': self.geometry.half})
+        for i, candidate in enumerate(candidates):
+            add(f'CONTINUE:{i}', plan_profile(self.speed, candidate, grid, deceleration_mps2=c.cautious_deceleration_mps2,
+                                              acceleration_mps2=c.launch_acceleration_mps2)[1])
+            for j, delay in enumerate(distinct):
+                add(f'BRAKE:{i}:{j}', plan_profile(self.speed, candidate, grid, deceleration_mps2=c.cautious_deceleration_mps2,
+                                                   acceleration_mps2=c.launch_acceleration_mps2, brake_after_s=delay,
+                                                   brake_deceleration_mps2=c.safe_deceleration_mps2)[1])
+        add('BRAKE_NOW', plan_profile(self.speed, 0., grid, deceleration_mps2=c.safe_deceleration_mps2, acceleration_mps2=0.)[1])
+        hits = set()
+        for conflict in assess_conflicts(self.tracks, self.modes, paths, grid=grid):
+            if conflict.get('separating_rear_overlap'):continue
+            if conflict['ego_intent'].startswith('CONTINUE') and conflict['time_s'] > self.continue_horizon_s+1e-9:continue
+            hits.add((str(conflict['track_id']), conflict['ego_intent']))
+        results = []
+        for i, candidate in enumerate(candidates):
+            people = {}
+            for track_id, delay in delays.items():
+                j = distinct.index(delay)
+                if (track_id, f'CONTINUE:{i}') not in hits:people[track_id] = 'PASS_BEFORE_REACH'
+                elif (track_id, f'BRAKE:{i}:{j}') not in hits:people[track_id] = 'OBSERVATION_AFFORDABLE'
+                else:people[track_id] = 'UNVERIFIED'
+            results.append({'speed_mps': candidate, 'people': people})
+        return results, {track_id: (track_id, 'BRAKE_NOW') not in hits for track_id in delays}
+
+
 class EvidenceBudget:
     """Stateful decision layer; hysteresis only delays *release*, never protection."""
     def __init__(self, config):
@@ -90,62 +197,83 @@ class EvidenceBudget:
         return {'track_id': str(track['id']), 'along_m': float(along[0]), 'offset_m': float(offset[0]),
                 'lateral_gap_m': gap, 'zone_m': zone, 'uncertainty_m': uncertainty}
 
-    def decide(self, *, timestamp_s, speed_mps, target_speed_mps, physical_brake, speculative, rule_crawl_cap_mps,
-               observation_age_s, processing_latency_s, risk=None, use_risk=False, risk_people=()):
-        """Return the response for speculative-only pedestrian conflicts.
+    def decide(self, *, timestamp_s, speed_mps, target_speed_mps, physical_brake, people, verifier, rule_crawl_cap_mps,
+               observation_age_s, processing_latency_s, risk=None, use_risk=False, pedestrian_physical=True):
+        """Return the response for speculative-only pedestrian conflicts (time-indexed).
 
-        ``speculative`` lists person zones whose every conflict is a speculative
-        alternative of a verified-stationary person. Anything else must be in
-        ``physical_brake`` and is answered with PROTECTIVE_BRAKING.
-        ``risk_people`` are other person-like zones without a conflict; their
-        calibrated risk can only add a lower cautious cap.
+        ``people`` lists person zones; ``risk_only`` marks people without a RULE
+        conflict whose calibrated risk may add caution. Every other entry is a
+        verified-stationary person whose conflicts are all speculative.
+        ``verifier`` is a :class:`TemporalVerifier` over their tracks and
+        alternatives. Anything physical must be in ``physical_brake``;
+        ``pedestrian_physical`` is false when that physical risk involves no
+        person (a measured obstacle or unclassified moving object), which RULE
+        handles with its own hysteresis.
         """
         c = self.config;v = max(0., speed_mps)
         delay = max(0., observation_age_s)+max(0., processing_latency_s)+c.reaction_time_s+c.motion_confirmation_s+c.observation_interval_s
         result = {'layer': LAYER_ID, 'timestamp_s': timestamp_s, 'delay_s': delay, 'speed_mps': v, 'people': [],
-                  'risk_used': False, 'hysteresis': None}
+                  'risk_used': False, 'hysteresis': None, 'kind': None}
         if physical_brake:
+            result['kind'] = 'PHYSICAL_PROTECTIVE'
+            if not pedestrian_physical:
+                # RULE brakes for this frame; the pedestrian layer's own state is untouched.
+                result.update(response='PROTECTIVE_BRAKING', target_speed_mps=0., brake=None,
+                              reason='Measured physical risk without a person: RULE decides')
+                self.last = result;return result
             return self._protective(result, timestamp_s, 'Measured physical risk, stale or unverified scene')
-        cautious_risk = []
-        if use_risk:
-            for person in risk_people:
-                probability = (risk or {}).get(person['track_id'], {}).get('3s')
-                if probability is None or probability < c.risk_high:continue
-                cap = max_speed_for_distance(person['zone_m'], delay+c.risk_extra_budget_s, c.cautious_deceleration_mps2, c.margin_m)
-                cautious_risk.append(cap);result['people'].append({**person, 'risk_3s': probability, 'risk_cap_mps': cap, 'risk_only': True})
-        if not speculative and not cautious_risk:
-            return self._release(result, timestamp_s, None, 'No speculative pedestrian alternative conflicts')
-        caps = list(cautious_risk);hard = []
-        result['risk_used'] = bool(cautious_risk)
-        for person in speculative:
-            zone = person['zone_m']
-            budget_cap = max_speed_for_distance(zone, delay, c.cautious_deceleration_mps2, c.margin_m)
-            hard_cap = max_speed_for_distance(zone, delay, c.safe_deceleration_mps2, c.margin_m)
-            entry = {**person, 'cautious_cap_mps': budget_cap, 'hard_cap_mps': hard_cap,
-                     'stopping_distance_m': stopping_distance(v, delay, c.safe_deceleration_mps2, c.margin_m),
-                     'budget_s': (zone-stopping_distance(v, delay, c.safe_deceleration_mps2, c.margin_m))/max(v, .1)}
-            probability = (risk or {}).get(person['track_id'], {}).get('3s') if use_risk else None
-            entry['risk_3s'] = probability
-            if probability is not None and probability >= c.risk_high:
-                # Higher calibrated risk buys extra observation margin: an
-                # earlier, gentler slowdown among physically verified speeds.
-                budget_cap = min(budget_cap, max_speed_for_distance(zone, delay+c.risk_extra_budget_s,
-                                                                    c.cautious_deceleration_mps2, c.margin_m))
-                entry['risk_cap_mps'] = budget_cap;result['risk_used'] = True
-            caps.append(budget_cap);hard.append(hard_cap);result['people'].append(entry)
-        budget = min(caps);hard_cap = min(hard) if hard else math.inf
-        # RULE's verified crawl (reaction + full stop horizon) covers passing
-        # alongside a stationary person; both are physical verifications.
-        cap = max(budget, rule_crawl_cap_mps or 0.) if hard else budget
-        hard_limit = max(hard_cap, rule_crawl_cap_mps or 0.)
-        result.update(budget_cap_mps=budget, hard_cap_mps=None if math.isinf(hard_cap) else hard_cap, rule_crawl_cap_mps=rule_crawl_cap_mps)
-        if v > hard_limit+.25:
-            return self._protective(result, timestamp_s, 'Speed exceeds the verified stop-before-zone limit')
-        if hard and cap <= .05 and v <= .2:
-            return self._protective(result, timestamp_s, 'No verified approach speed; holding before the conflict zone')
+        # RULE's own verified crawl for this frame bounds hysteresis holds from below.
+        crawl_floor = None if rule_crawl_cap_mps is None else min(float(rule_crawl_cap_mps), float(target_speed_mps))
+        delays = {};risk_only = set()
+        for person in people:
+            track_id = str(person['track_id'])
+            probability = (risk or {}).get(track_id, {}).get('3s') if use_risk else None
+            extra = c.risk_extra_budget_s if probability is not None and probability >= c.risk_high else 0.
+            if person.get('risk_only'):
+                # Without a RULE conflict a person matters here only through
+                # calibrated risk, which can only lengthen the delay.
+                if not extra:continue
+                risk_only.add(track_id)
+            delays[track_id] = delay+extra;result['risk_used'] |= bool(extra)
+            result['people'].append({**person, 'track_id': track_id, 'risk_3s': probability, 'detection_delay_s': delay+extra})
+        if not delays:
+            result['kind'] = 'NO_SPECULATIVE_CONFLICT'
+            # Nothing left for this layer to stabilize and RULE has no pedestrian
+            # conflict either: holding here would only add stops RULE does not make.
+            self.protective_since = self.clear_since = self.raise_since = None;self.applied_cap = None
+            result.update(response='CONTINUE', target_speed_mps=None, brake=0., reason='No speculative pedestrian alternative conflicts')
+            self.last = result;return result
+        candidates = candidate_speeds(v, target_speed_mps)
+        evaluations, stop_now = verifier.evaluate(candidates, delays)
+        physical_ids = [k for k in delays if k not in risk_only]
+        def best(ids):
+            return next((e for e in evaluations if all(e['people'][k] != 'UNVERIFIED' for k in ids)), None)
+        chosen = best(physical_ids) if physical_ids else None
+        cap = chosen['speed_mps'] if chosen else None;source = 'TIME_INDEXED_VERIFICATION' if chosen else None
+        if physical_ids and rule_crawl_cap_mps is not None and (cap is None or rule_crawl_cap_mps > cap):
+            # RULE's validated crawl stays available beside a stationary person.
+            cap, source = rule_crawl_cap_mps, 'RULE_VERIFIED_CRAWL'
+        risk_cap = None
+        if risk_only:
+            verified = best(risk_only)
+            risk_cap = verified['speed_mps'] if verified else min(c.risk_floor_mps, target_speed_mps)
+        result.update(candidates_mps=candidates, verified_cap_mps=chosen['speed_mps'] if chosen else None,
+                      responses=chosen['people'] if chosen else None, rule_crawl_cap_mps=rule_crawl_cap_mps,
+                      risk_cap_mps=risk_cap, cap_source=source, braking_now_avoids=stop_now)
+        if physical_ids and cap is None:
+            if all(stop_now[k] for k in physical_ids):
+                result['kind'] = 'STOP_BEFORE_POSSIBLE_CONFLICT'
+                return self._protective(result, timestamp_s, 'No verified motion plan; stopping before a possible conflict')
+            result['kind'] = 'AMBIGUOUS_PROTECTIVE'
+            return self._protective(result, timestamp_s, 'Ambiguous: no response is verified against every reachable alternative')
+        if risk_cap is not None:cap = risk_cap if cap is None else min(cap, risk_cap)
         if cap >= target_speed_mps-1e-6:
-            return self._release(result, timestamp_s, None, 'Another observation is affordable at the planned speed')
-        return self._release(result, timestamp_s, cap, 'Bounded approach at the highest verified speed')
+            passing = chosen is not None and all(r == 'PASS_BEFORE_REACH' for r in chosen['people'].values())
+            result['kind'] = 'PASS_BEFORE_REACH' if passing else 'OBSERVATION_AFFORDABLE'
+            return self._release(result, timestamp_s, None, 'Passing before any reachable alternative can enter the path'
+                                 if passing else 'Another observation is affordable at the planned speed', floor_mps=crawl_floor)
+        result['kind'] = 'RULE_VERIFIED_CRAWL' if source == 'RULE_VERIFIED_CRAWL' else 'SLOWING_FOR_OBSERVATION'
+        return self._release(result, timestamp_s, cap, 'Slowing to the highest physically verified speed', floor_mps=crawl_floor)
 
     def _protective(self, result, timestamp_s, reason):
         if self.protective_since is None:self.protective_since = timestamp_s
@@ -153,22 +281,35 @@ class EvidenceBudget:
         result.update(response='PROTECTIVE_BRAKING', target_speed_mps=0., brake=None, reason=reason)
         self.last = result;return result
 
-    def _release(self, result, timestamp_s, cap, reason):
+    def _release(self, result, timestamp_s, cap, reason, floor_mps=None):
+        """Apply hysteresis to a non-protective decision.
+
+        Holds delay *raising* the speed after protection, but never below RULE's
+        own verified crawl for this frame (``floor_mps``): the layer must not be
+        more restrictive than the validated RULE baseline it refines.
+        """
         c = self.config
+        requested = math.inf if cap is None else cap
+        floor = None if floor_mps is None else min(float(floor_mps), requested)
         if self.protective_since is not None:
             if self.clear_since is None:self.clear_since = timestamp_s
             if timestamp_s-self.clear_since < c.release_hold_s-1e-9:
-                result.update(response='PROTECTIVE_BRAKING', target_speed_mps=0., brake=None,
-                              reason='Release hysteresis: verifying the clear decision', hysteresis='RELEASE_HOLD')
-                self.last = result;return result
+                if floor is None or floor <= 0.:
+                    result.update(response='PROTECTIVE_BRAKING', target_speed_mps=0., brake=None,
+                                  reason='Release hysteresis: verifying the clear decision', hysteresis='RELEASE_HOLD')
+                    self.last = result;return result
+                v = result['speed_mps']
+                result.update(response='CAUTIOUS_APPROACH', target_speed_mps=floor, hysteresis='RELEASE_HOLD_AT_RULE_CRAWL',
+                              brake=0. if v <= floor+.1 else min(c.cautious_max_brake, (v-floor)*.25),
+                              reason='Release hysteresis: holding at the RULE-verified crawl')
+                self.applied_cap = floor;self.last = result;return result
             self.protective_since = None;self.clear_since = None
-        requested = math.inf if cap is None else cap
         previous = math.inf if self.applied_cap is None else self.applied_cap
         if requested > previous+1e-6:
             # Raising the cap waits for stable evidence; lowering is immediate.
             if self.raise_since is None:self.raise_since = timestamp_s
             if timestamp_s-self.raise_since < c.raise_hold_s-1e-9:
-                requested = previous;result['hysteresis'] = 'RAISE_HOLD'
+                requested = previous if floor is None else max(previous, floor);result['hysteresis'] = 'RAISE_HOLD'
             else:self.raise_since = None
         else:self.raise_since = None
         self.applied_cap = requested

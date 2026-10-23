@@ -20,6 +20,8 @@ def verify_pair(directory_a, directory_b, *, position_tolerance_m=.25, command_t
     if not cf_a or not cf_b or cf_a['pair_id'] != cf_b['pair_id']:raise ValueError('Episodes are not one counterfactual pair')
     if (manifest_a.get('admission') or {}).get('configuration') != (manifest_b.get('admission') or {}).get('configuration'):
         raise ValueError('Counterfactual arms must use the same controller configuration')
+    timing_a = manifest_a.get('perception_timing') or {'mode': 'ASYNC'};timing_b = manifest_b.get('perception_timing') or {'mode': 'ASYNC'}
+    if timing_a != timing_b:raise ValueError('Counterfactual arms must use the same perception timing')
     decision = cf_a['decision_s']
     start_a = rows_a[0]['timestamp_s']-rows_a[0]['elapsed_s'];start_b = rows_b[0]['timestamp_s']-rows_b[0]['elapsed_s']
     pa = _prefix(rows_a, start_a, decision);pb = _prefix(rows_b, start_b, decision)
@@ -42,7 +44,14 @@ def verify_pair(directory_a, directory_b, *, position_tolerance_m=.25, command_t
                   if nearest_track(pa[i]) is not None and nearest_track(pb[i]) is not None]
     identical = (ego is not None and ego <= position_tolerance_m and commands is not None and commands <= command_tolerance
                  and walker_gap is not None and walker_gap <= .05)
-    return {'pair_id': cf_a['pair_id'], 'decision_s': decision, 'compared_frames': n,
+    def prefix_complete(outcome, start):
+        timing = outcome.get('perception_timing') or {}
+        if timing.get('mode') != 'LOCKSTEP':return None
+        if 'missed_at_s' not in timing:return timing.get('complete')
+        return all(t-start >= decision-1e-6 for t in timing['missed_at_s'])
+    return {'pair_id': cf_a['pair_id'], 'decision_s': decision, 'compared_frames': n, 'perception_timing': timing_a.get('mode'),
+            'lockstep_complete': [(outcome.get('perception_timing') or {}).get('complete') for outcome in (outcome_a, outcome_b)],
+            'lockstep_complete_before_decision': [prefix_complete(outcome_a, start_a), prefix_complete(outcome_b, start_b)],
             'prefix_frames': [len(pa), len(pb)], 'max_ego_position_gap_m': ego, 'max_applied_command_gap': commands,
             'max_walker_position_gap_m': walker_gap, 'max_measured_track_gap_m': max(track_gaps) if track_gaps else None,
             'observable_prefix_identical_within_tolerance': bool(identical),

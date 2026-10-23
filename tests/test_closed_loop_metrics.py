@@ -49,6 +49,32 @@ class ClosedLoopMetricTests(TestCase):
         manifest, rows, outcome = episode(crossing=False, oscillate=True)
         self.assertGreaterEqual(episode_metrics(manifest, rows, outcome)['brake_release_oscillations'], 2)
 
+    def test_red_light_and_vehicle_queue_waits_are_legitimate_not_unnecessary(self):
+        baseline = episode_metrics(*episode(crossing=False, stop_without_hazard=True))
+        manifest, rows, outcome = episode(crossing=False, stop_without_hazard=True)
+        for row in rows:
+            if 8. <= row['elapsed_s'] < 11.2:row['speed'] = {'navigation_stop_reason': 'Red traffic light on the planned route'}
+        signal = episode_metrics(manifest, rows, outcome)
+        self.assertGreater(baseline['unnecessary_stationary_s'], .5)
+        self.assertEqual((signal['unnecessary_stationary_s'], signal['unnecessary_full_stops']), (0., 0))
+        self.assertGreater(signal['legitimate_wait_s']['signal'], .5)
+        manifest, rows, outcome = episode(crossing=False, stop_without_hazard=True)
+        for row in rows:
+            ahead = row['ego']['position_m'][0]+2.3+(8. if 8. <= row['elapsed_s'] < 11.2 else 40.)
+            row['evaluator_truth'].append({'id': 7, 'role': 'background', 'kind': 'vehicle', 'position_m': [ahead, .3, 0.]})
+        queued = episode_metrics(manifest, rows, outcome)
+        self.assertEqual(queued['unnecessary_stationary_s'], 0.);self.assertGreater(queued['legitimate_wait_s']['vehicle_queue'], .5)
+        # A vehicle beside the corridor is not a queue.
+        for row in rows:row['evaluator_truth'][-1]['position_m'][1] = 4.
+        self.assertGreater(episode_metrics(manifest, rows, outcome)['unnecessary_stationary_s'], .5)
+
+    def test_arrivals_must_be_at_the_destination(self):
+        manifest, rows, outcome = episode(crossing=False)
+        final = rows[-1]['ego']['position_m'][0]
+        manifest['route'] = [[float(x), 0.] for x in np.arange(0., final, 2.)]+[[final+1., 0.]]
+        self.assertFalse(episode_metrics(manifest, rows, outcome)['false_arrival'])
+        self.assertTrue(episode_metrics(manifest, rows[:len(rows)//2], outcome)['false_arrival'])
+
     def test_timeouts_are_not_arrivals_and_reasons_are_classified(self):
         manifest, rows, _ = episode(crossing=False)
         m = episode_metrics(manifest, rows, {'outcome': 'TIMEOUT', 'contacts': []})

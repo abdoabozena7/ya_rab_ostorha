@@ -23,6 +23,14 @@ class PerceptionService:
         self.process = None
         self.error = None
         python = ROOT / '.venv-perception' / 'Scripts' / 'python.exe'
+        override = os.environ.get('YRO_PERCEPTION_PYTHON')
+        directml = ROOT / '.venv-perception-dml' / 'Scripts' / 'python.exe'
+        if not override and os.environ.get('YRO_DETECTOR_EXECUTION_PROVIDER') == 'DML' and directml.is_file():
+            override = str(directml)  # scripts/setup_perception_directml.ps1
+        if override and Path(override).is_file():
+            # Experimental interpreter (for example with a GPU runtime); the
+            # worker code and model are the same. Unset keeps the default.
+            python = Path(override)
         from .detector import default_model_path
         assets = [default_model_path()]
         if not python.is_file() or not all(asset.is_file() for asset in assets):

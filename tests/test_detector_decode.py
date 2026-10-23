@@ -53,5 +53,27 @@ class DetectorDecodeTest(unittest.TestCase):
                 self.assertTrue(expected, 'fixture must exercise accepted detections')
 
 
+@unittest.skipUnless(importlib.util.find_spec('onnxruntime') and importlib.util.find_spec('cv2'), 'Detector runtime is optional')
+class DetectorExecutionProviderTest(unittest.TestCase):
+    def test_directml_request_falls_back_to_cpu_with_identical_detections(self):
+        import onnxruntime as ort
+        from backend.computer_vision.detector import RoadDetector, default_model_path
+        if not default_model_path().is_file():self.skipTest('Detector model is not installed')
+        cpu = RoadDetector(default_model_path())
+        requested = RoadDetector(default_model_path(), execution_provider='DML')
+        self.assertNotIn('execution_provider', cpu.profile)
+        if 'DmlExecutionProvider' not in ort.get_available_providers():
+            # Unavailable GPU runtime: explicit CPU fallback, unchanged profile.
+            self.assertEqual(requested.profile, cpu.profile)
+        else:
+            self.assertEqual(requested.profile.get('execution_provider'), 'DmlExecutionProvider')
+        image = np.random.default_rng(4).integers(0, 255, (450, 800, 3), dtype=np.uint8)
+        a = cpu.predict(image, frame_id=1);b = requested.predict(image, frame_id=1)
+        self.assertEqual([d['class'] for d in a], [d['class'] for d in b])
+        for x, y in zip(a, b):
+            self.assertAlmostEqual(x['confidence'], y['confidence'], places=4)
+            np.testing.assert_allclose(x['xyxy'], y['xyxy'], atol=.01)
+
+
 if __name__ == '__main__':
     unittest.main()

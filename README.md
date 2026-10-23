@@ -16,6 +16,16 @@ predictive RULE. Ordinary-route completion and real time (RTF ≈ 0.35) remain
 unmet. The Normal / Ya Rab Ostorha comparison is unchanged and was re-verified
 natively.
 
+The [23 October failed-gates recovery](docs/FAILED_GATES_RECOVERY_20261023.md)
+is on branch `repair/failed-gates-20261023` and is not merged into `main`. It
+repairs evaluation route tracking at corners and replaces the evidence-budgeted
+pedestrian rule with a time-indexed verifier. It adds an opt-in DirectML
+detector (63 instead of 422 ms per image), deterministic background traffic and
+lockstep counterfactual perception. It then evaluates A–E once on a new
+location-disjoint HOLDOUT partition. On HOLDOUT the evidence-budgeted layer
+failed: it braked more than the predictive RULE. No superiority claim holds,
+and real time remains unmet (RTF ≈ 0.39). Production behavior is unchanged.
+
 The [full crossing comparison](docs/CROSSING_COMPARISON_20261019.md) runs both
 drivers automatically, retains complete recordings to actual contact or arrival,
 and uses **Ya Rab Ostorha** consistently in the interface. Three versioned native

@@ -28,7 +28,7 @@ def episodes(roots, split, configuration):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--roots', required=True, help='Comma-separated harness output folders')
-    parser.add_argument('--split', choices=('TRAIN', 'VALIDATION', 'TEST'), required=True)
+    parser.add_argument('--split', choices=('TRAIN', 'VALIDATION', 'TEST', 'HOLDOUT'), required=True)
     parser.add_argument('--configuration', default='B_PHYSICAL_PREDICTIVE')
     parser.add_argument('--out', required=True)
     args = parser.parse_args()

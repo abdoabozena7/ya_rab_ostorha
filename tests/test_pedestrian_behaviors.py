@@ -44,6 +44,34 @@ class PedestrianSuiteTests(TestCase):
             self.assertEqual({s['behavior'] for s in specs}, set(BEHAVIORS))
         self.assertFalse(ids['TRAIN'] & ids['VALIDATION'] or ids['TRAIN'] & ids['TEST'] or ids['VALIDATION'] & ids['TEST'])
 
+    def test_holdout_partition_is_independent_of_every_split(self):
+        from backend.core.pedestrian_behaviors import HOLDOUT_SEED_RANGE, holdout_episode, holdout_ordinary
+        from scripts.build_holdout_partition import build
+        towns = {}
+        def row(town, spawn, road, width=10.5, accepted=True):
+            towns.setdefault(town, []).append({'town': town, 'spawn_index': spawn, 'accepted': accepted, 'road_id': road,
+                                               'lane_id': -1, 'road_width_m': [width, width]})
+        for split_rows in self.suite['locations'].values():
+            for r in split_rows:row(r['town'], r['spawn_index'], road=f"used-{r['town']}-{r['spawn_index']}", width=r['road_width_m'])
+        used = next(r for r in self.suite['locations']['TEST'])
+        row(used['town'], 9001, road=f"used-{used['town']}-{used['spawn_index']}")   # new spawn on a used road
+        row('Town09_Opt', 1, road=1);row('Town09_Opt', 2, road=1)                    # same road and lane: one kept
+        row('Town09_Opt', 3, road=2, width=22.);row('Town09_Opt', 4, road=3, accepted=False)
+        locations, _, specs = build(self.suite, {'towns': towns}, seeds_per_behavior=2, counterfactual_pairs=1, ordinary=2,
+                                    time_limit_s=90.)
+        self.assertEqual(sorted((l['town'], l['spawn_index']) for l in locations), [('Town09_Opt', 1), ('Town09_Opt', 3)])
+        lo, hi = HOLDOUT_SEED_RANGE
+        self.assertTrue(all(s['split'] == 'HOLDOUT' and lo <= s['seed'] <= hi and s['location']['town'] == 'Town09_Opt' for s in specs))
+        self.assertEqual(len({s['scenario_id'] for s in specs}), len(specs))
+        self.assertTrue(all(s['time_limit_s'] == 90. for s in specs))
+        arms = [s for s in specs if s['behavior'] == 'COUNTERFACTUAL_PAIR']
+        self.assertEqual(len(arms), 2);self.assertEqual(arms[0]['counterfactual']['pair_id'], arms[1]['counterfactual']['pair_id'])
+        spec = holdout_ordinary(self.suite, locations, 200, time_limit_s=90.)
+        self.assertEqual(spec, holdout_ordinary(self.suite, locations, 200, time_limit_s=90.))
+        self.assertNotEqual(spec['scenario_id'], holdout_ordinary(self.suite, locations, 200)['scenario_id'])
+        with self.assertRaises(ValueError):holdout_episode(self.suite, [], 0)
+        with self.assertRaises(ValueError):holdout_episode(self.suite, locations, hi-lo+1)
+
     def test_sampling_is_deterministic_and_unsupported_behavior_fails_explicitly(self):
         self.assertEqual(sample_episode(self.suite, 'TRAIN', 11), sample_episode(self.suite, 'TRAIN', 11))
         with self.assertRaises(ValueError):sample_episode(self.suite, 'TRAIN', 0, behavior='JAYWALK_BACKWARDS')

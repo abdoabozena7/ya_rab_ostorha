@@ -145,12 +145,34 @@ class PedestrianBehaviorWorld:
         if route is None or route['length_m'] > expected+12.:
             raise RuntimeError('Native routing took an unintended detour; scenario invalid')
         self.manifest['native_route_length_m'] = route['length_m']
+        # Signal phases restart here, a fixed number of ticks before the journey,
+        # so every configuration and counterfactual arm meets the same phases.
+        world = p.world.world
+        if hasattr(world, 'reset_all_traffic_lights'):
+            world.reset_all_traffic_lights();self.manifest['traffic_lights'] = 'RESET_AT_ROUTE_CONFIGURATION'
+        else:self.manifest['traffic_lights'] = 'NOT_RESET_API_UNAVAILABLE'
         traffic = self.spec['traffic']
         if traffic['vehicles'] or traffic['pedestrians']:
+            self.prepare_background(p.population, p.dashboard_tools.route['points'],
+                                    p.world.world.get_snapshot().timestamp.elapsed_seconds)
             p.population.apply({**p.population.config, 'seed': self.spec['seed'], 'vehicle_count': traffic['vehicles'],
                                 'pedestrian_count': traffic['pedestrians'], 'placement': 'EGO_SURROUNDING',
                                 'vehicle_mix': 'MIXED'})
         return route
+
+    @staticmethod
+    def prepare_background(population, route_points, now_s):
+        """Make background construction depend only on this episode's spec.
+
+        The provider publishes the route to the population on the next tick, so
+        without this the placement scoring used the previous episode's route
+        (the first configuration of every scenario differed from the rest). The
+        navmesh sidewalk cache is rebuilt after this episode's pedestrian seed,
+        and housekeeping timers restart at construction rather than inheriting
+        the previous episode's phase."""
+        population.set_route(route_points)
+        population.sidewalk_locations = None
+        population.last_recycle_at = population.last_replacement_at = population.last_walker_replacement_at = float(now_s)
 
     def begin(self, timestamp_s):
         self.started = timestamp_s

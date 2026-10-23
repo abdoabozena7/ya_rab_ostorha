@@ -291,6 +291,30 @@ class ReliableDrivingTests(unittest.TestCase):
         self.assertFalse(service.application_timing['fresh_aligned'])
         self.assertAlmostEqual(service.application_timing['wall_age_s'],.3)
 
+    def test_stale_hold_recovery_window_is_bounded_and_only_longer_for_evaluation(self):
+        from backend.core.service import SimulationService
+        from backend.core.control import ControlMode
+        from tests.test_safety_teacher import case
+        observation,command=case()
+        for evaluation,window in ((None,1.),({'configuration':'B_PHYSICAL_PREDICTIVE'},3.)):
+            clock={'t':100.3}
+            service=SimulationService(SimpleNamespace(sensor_suite=True),now=lambda:clock['t'])
+            service._context=lambda:(command.frame_id,command.timestamp_s)
+            service.control_scene=SimpleNamespace(session_id=service.session_id,observation=observation,
+                received_wall_s=100.,usable=lambda t,w:False)
+            service.arbiter.machine.mode=ControlMode.AUTOMATIC
+            service.journey.update(driving_mode='ROBOSPHERE',status='RUNNING',evaluation=evaluation)
+            stopped=[]
+            service._stop_navigation=lambda reason,status=None:stopped.append((reason,status))
+            self.assertEqual(service._stale_recovery_window_s(),window)
+            for t in (100.3,100.3+window-.05):
+                clock['t']=t;held=service._application_guard(command)
+                # Every stale frame is a full-brake hold; stale data never authorizes motion.
+                self.assertEqual((held.brake,held.throttle),(1.,0.))
+            self.assertEqual(stopped,[])
+            clock['t']=100.3+window;service._application_guard(command)
+            self.assertEqual(stopped,[('runtime_failure','ERROR')])
+
     def test_invalid_quality_measurements_fail_without_crashing_or_invalid_json(self):
         from backend.core.driving_quality import evaluate_quality
         sample={'frame_id':1,'timestamp_s':.1,'journey':{'status':'RUNNING'},'speed_kmh':50.,

@@ -1,0 +1,1224 @@
+{
+ "id": "PEDESTRIAN_SUITE_HOLDOUT_20261023",
+ "split": "HOLDOUT",
+ "source": "STATIC_OPENDRIVE_MAP_PROBE",
+ "probe_sha256": "45135a5f6aad1be9858c54c176159767a641ec167d212b2db9f2c62231846aaa",
+ "suite_sha256": "097e436b9fc08b182212062c734beacb7d9204b542eb1e9887745d00433c9947",
+ "independence": {
+  "excluded_splits": [
+   "TEST",
+   "TRAIN",
+   "VALIDATION"
+  ],
+  "excluded_roads": [
+   [
+    "Town01_Opt",
+    4
+   ],
+   [
+    "Town01_Opt",
+    5
+   ],
+   [
+    "Town01_Opt",
+    6
+   ],
+   [
+    "Town01_Opt",
+    7
+   ],
+   [
+    "Town01_Opt",
+    8
+   ],
+   [
+    "Town01_Opt",
+    10
+   ],
+   [
+    "Town01_Opt",
+    12
+   ],
+   [
+    "Town01_Opt",
+    15
+   ],
+   [
+    "Town01_Opt",
+    20
+   ],
+   [
+    "Town02_Opt",
+    0
+   ],
+   [
+    "Town02_Opt",
+    12
+   ],
+   [
+    "Town02_Opt",
+    16
+   ],
+   [
+    "Town02_Opt",
+    19
+   ],
+   [
+    "Town10HD_Opt",
+    0
+   ],
+   [
+    "Town10HD_Opt",
+    1
+   ],
+   [
+    "Town10HD_Opt",
+    3
+   ],
+   [
+    "Town10HD_Opt",
+    4
+   ],
+   [
+    "Town10HD_Opt",
+    5
+   ],
+   [
+    "Town10HD_Opt",
+    7
+   ],
+   [
+    "Town10HD_Opt",
+    10
+   ]
+  ],
+  "rule": "NEW_SPAWN_ON_A_ROAD_WITH_NO_TRAIN_VALIDATION_TEST_SPAWN; ONE_SPAWN_PER_ROAD_AND_LANE",
+  "seed_range": [
+   3000,
+   3999
+  ]
+ },
+ "time_limit_s": 90.0,
+ "locations": [
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 70,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 73,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 81,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 82,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 90,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 91,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 93,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 118,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 122,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town01_Opt",
+   "spawn_index": 182,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town02_Opt",
+   "spawn_index": 4,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town02_Opt",
+   "spawn_index": 7,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town02_Opt",
+   "spawn_index": 12,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town02_Opt",
+   "spawn_index": 41,
+   "road_width_m": 10.5
+  },
+  {
+   "town": "Town03_Opt",
+   "spawn_index": 216,
+   "road_width_m": 24.5
+  },
+  {
+   "town": "Town05_Opt",
+   "spawn_index": 289,
+   "road_width_m": 17.0
+  },
+  {
+   "town": "Town05_Opt",
+   "spawn_index": 300,
+   "road_width_m": 17.0
+  }
+ ],
+ "specs": [
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3000,
+   "index": 0,
+   "behavior": "WAIT_AT_CURB",
+   "location": {
+    "town": "Town05_Opt",
+    "spawn_index": 289,
+    "road_width_m": 17.0
+   },
+   "route_length_m": 114.355,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "WAIT",
+     "side": "LEFT",
+     "along_m": 55.971,
+     "curb_offset_m": 0.417,
+     "walk_speed_mps": 1.52,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 41.37
+     },
+     "blueprint_index": 39062
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "c56b31722c7a81e798c59b1add429f44b42f850574704cdd1a679ffdd7327142"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3001,
+   "index": 1,
+   "behavior": "WALK_PARALLEL",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 81,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 107.689,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "PARALLEL",
+     "side": "RIGHT",
+     "along_m": 58.271,
+     "curb_offset_m": 0.734,
+     "walk_speed_mps": 1.467,
+     "trigger": {
+      "kind": "EPISODE_START"
+     },
+     "blueprint_index": 12630,
+     "direction": -1
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "7517cd94097a104a4b0e0db3d89a259f5fb6381799d9763c64119d746c3e61e6"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3002,
+   "index": 2,
+   "behavior": "CROSS_NORMAL",
+   "location": {
+    "town": "Town02_Opt",
+    "spawn_index": 7,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 117.271,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "CROSS",
+     "side": "LEFT",
+     "along_m": 40.127,
+     "curb_offset_m": 1.18,
+     "walk_speed_mps": 1.407,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 30.411
+     },
+     "blueprint_index": 9193,
+     "far_offset_m": 1.35
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "faf343351a5948e9fdfdf2767a539365e709536c314b23261ecdddc39b44dff4"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3003,
+   "index": 3,
+   "behavior": "SUDDEN_RUN",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 182,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 121.078,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "RUN",
+     "side": "LEFT",
+     "along_m": 45.264,
+     "curb_offset_m": 0.926,
+     "walk_speed_mps": 1.088,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 21.125
+     },
+     "blueprint_index": 36201,
+     "run_speed_mps": 2.607,
+     "far_offset_m": 0.977
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "7eefee90a201f1a48f90e05f6e11baf11bd09314623dfba04a440975ece5d7d3"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3004,
+   "index": 4,
+   "behavior": "HESITATE_THEN_CROSS",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 70,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 129.021,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "HESITATE_CROSS",
+     "side": "RIGHT",
+     "along_m": 50.44,
+     "curb_offset_m": 0.326,
+     "walk_speed_mps": 1.524,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 18.212
+     },
+     "blueprint_index": 3515,
+     "hesitation_s": 1.701,
+     "approach_offset_m": 0.399,
+     "far_offset_m": 1.205
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "bdc442b06ac75f73747360d4b3b8a45b4f184ac8c53544531f9f52401291d819"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3005,
+   "index": 5,
+   "behavior": "HESITATE_THEN_RETREAT",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 93,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 129.398,
+   "ego": {
+    "target_speed_kmh": 50
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "HESITATE_RETREAT",
+     "side": "LEFT",
+     "along_m": 56.011,
+     "curb_offset_m": 0.42,
+     "walk_speed_mps": 1.535,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 37.7
+     },
+     "blueprint_index": 27594,
+     "hesitation_s": 1.113,
+     "approach_offset_m": 0.494,
+     "retreat_m": 1.054
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "1213e5e46268c97fee9c1dfce5972926955b2484196cd3f69a28f92859b3c9ab"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3006,
+   "index": 6,
+   "behavior": "START_AND_RETURN",
+   "location": {
+    "town": "Town02_Opt",
+    "spawn_index": 41,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 122.357,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "START_RETURN",
+     "side": "RIGHT",
+     "along_m": 44.881,
+     "curb_offset_m": 0.388,
+     "walk_speed_mps": 1.403,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 32.493
+     },
+     "blueprint_index": 63292,
+     "incursion_m": 1.613,
+     "pause_s": 0.694
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "8cdb3bd336b45a0dc92f281c33263edebb6f55404cc20408bf26e923d9c22812"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3007,
+   "index": 7,
+   "behavior": "EMERGE_FROM_PARKED",
+   "location": {
+    "town": "Town05_Opt",
+    "spawn_index": 300,
+    "road_width_m": 17.0
+   },
+   "route_length_m": 121.717,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "RUN",
+     "side": "RIGHT",
+     "along_m": 39.976,
+     "curb_offset_m": 0.521,
+     "walk_speed_mps": 1.282,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 28.827
+     },
+     "blueprint_index": 45849,
+     "run_speed_mps": 2.952,
+     "far_offset_m": 0.996
+    }
+   ],
+   "occluder": {
+    "blueprint": "vehicle.volkswagen.t2",
+    "side": "RIGHT",
+    "along_m": 36.31,
+    "curb_inset_m": 1.297
+   },
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "b6ad2bd5097528d9c0aff55c94745f9256948a1814dc2fbbdfad795699683483"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3008,
+   "index": 8,
+   "behavior": "MULTI_PEDESTRIAN",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 93,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 129.681,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "CROSS",
+     "side": "RIGHT",
+     "along_m": 36.748,
+     "curb_offset_m": 0.539,
+     "walk_speed_mps": 1.479,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 37.322
+     },
+     "blueprint_index": 543,
+     "far_offset_m": 0.808
+    },
+    {
+     "role": "ped_1",
+     "script": "HESITATE_CROSS",
+     "side": "RIGHT",
+     "along_m": 44.464,
+     "curb_offset_m": 0.587,
+     "walk_speed_mps": 1.248,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 38.053
+     },
+     "blueprint_index": 63101,
+     "hesitation_s": 1.393,
+     "approach_offset_m": 0.268,
+     "far_offset_m": 1.163
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "4cf0ba509f9c1e7a6e211de3856ddb2b2451bbb55169e76492d2f54ebfe17779"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3009,
+   "index": 9,
+   "behavior": "MIXED_TRAFFIC",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 118,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 114.839,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "CROSS",
+     "side": "RIGHT",
+     "along_m": 51.058,
+     "curb_offset_m": 0.788,
+     "walk_speed_mps": 1.475,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 36.597
+     },
+     "blueprint_index": 48125,
+     "far_offset_m": 0.862
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 9,
+    "pedestrians": 10
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "bd7b5ef4d52efbd037f90d764e8bd6e12ec9c2e24c55b7867a97ff410051dc0c"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3010,
+   "index": 10,
+   "behavior": "WAIT_AT_CURB",
+   "location": {
+    "town": "Town05_Opt",
+    "spawn_index": 300,
+    "road_width_m": 17.0
+   },
+   "route_length_m": 109.26,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "WAIT",
+     "side": "LEFT",
+     "along_m": 62.458,
+     "curb_offset_m": 0.571,
+     "walk_speed_mps": 1.617,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 35.718
+     },
+     "blueprint_index": 40916
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "248bb26135e5199c96c03e0de1b6ef2b670fc0293c2d8b365b4b259a093f0a96"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3011,
+   "index": 11,
+   "behavior": "WALK_PARALLEL",
+   "location": {
+    "town": "Town02_Opt",
+    "spawn_index": 41,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 109.649,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "PARALLEL",
+     "side": "RIGHT",
+     "along_m": 46.413,
+     "curb_offset_m": 0.392,
+     "walk_speed_mps": 1.67,
+     "trigger": {
+      "kind": "EPISODE_START"
+     },
+     "blueprint_index": 2948,
+     "direction": -1
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "443590fe4803e110cf896a113af10fbe7091ee5a37daa810cc6c01a87459086b"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3012,
+   "index": 12,
+   "behavior": "CROSS_NORMAL",
+   "location": {
+    "town": "Town05_Opt",
+    "spawn_index": 300,
+    "road_width_m": 17.0
+   },
+   "route_length_m": 125.319,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "CROSS",
+     "side": "LEFT",
+     "along_m": 35.492,
+     "curb_offset_m": 0.965,
+     "walk_speed_mps": 1.013,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 19.538
+     },
+     "blueprint_index": 57501,
+     "far_offset_m": 1.064
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "60c60456bf46688fdb7d3aacec699a6e96bf2313a287ebbad582fb8a4912aec4"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3013,
+   "index": 13,
+   "behavior": "SUDDEN_RUN",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 70,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 119.244,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "RUN",
+     "side": "RIGHT",
+     "along_m": 41.921,
+     "curb_offset_m": 0.567,
+     "walk_speed_mps": 1.237,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 18.481
+     },
+     "blueprint_index": 14657,
+     "run_speed_mps": 3.533,
+     "far_offset_m": 1.012
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "50324c28737193c739568dfee742dabcbdc75537f015a831b2cf3e7b25a607a6"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3014,
+   "index": 14,
+   "behavior": "HESITATE_THEN_CROSS",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 73,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 109.912,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "HESITATE_CROSS",
+     "side": "LEFT",
+     "along_m": 50.869,
+     "curb_offset_m": 0.826,
+     "walk_speed_mps": 1.052,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 32.401
+     },
+     "blueprint_index": 5070,
+     "hesitation_s": 1.463,
+     "approach_offset_m": 0.312,
+     "far_offset_m": 1.021
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "c73f13db37088bac5d3bade3e3f210336518700e7bf3901bfc0259c93ad67ead"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3015,
+   "index": 15,
+   "behavior": "HESITATE_THEN_RETREAT",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 93,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 108.677,
+   "ego": {
+    "target_speed_kmh": 50
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "HESITATE_RETREAT",
+     "side": "LEFT",
+     "along_m": 55.812,
+     "curb_offset_m": 0.879,
+     "walk_speed_mps": 1.652,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 24.812
+     },
+     "blueprint_index": 27517,
+     "hesitation_s": 1.094,
+     "approach_offset_m": 0.466,
+     "retreat_m": 0.931
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "af594ed1694f840ea2381a1101e5c13418e806ed16f1cc9426d251eb9da6ba5b"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3016,
+   "index": 16,
+   "behavior": "START_AND_RETURN",
+   "location": {
+    "town": "Town03_Opt",
+    "spawn_index": 216,
+    "road_width_m": 24.5
+   },
+   "route_length_m": 106.748,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "START_RETURN",
+     "side": "RIGHT",
+     "along_m": 64.712,
+     "curb_offset_m": 0.531,
+     "walk_speed_mps": 1.124,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 25.31
+     },
+     "blueprint_index": 55605,
+     "incursion_m": 0.825,
+     "pause_s": 0.764
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "019693c531323e96acc44e8572f587cbe965d6c93d17f9175c539d201511a395"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3017,
+   "index": 17,
+   "behavior": "EMERGE_FROM_PARKED",
+   "location": {
+    "town": "Town03_Opt",
+    "spawn_index": 216,
+    "road_width_m": 24.5
+   },
+   "route_length_m": 114.225,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "RUN",
+     "side": "RIGHT",
+     "along_m": 66.77,
+     "curb_offset_m": 0.407,
+     "walk_speed_mps": 1.208,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 19.532
+     },
+     "blueprint_index": 52344,
+     "run_speed_mps": 2.795,
+     "far_offset_m": 0.928
+    }
+   ],
+   "occluder": {
+    "blueprint": "vehicle.volkswagen.t2",
+    "side": "RIGHT",
+    "along_m": 62.965,
+    "curb_inset_m": 1.339
+   },
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "fec3854e5a284cdd22390a22c60cbb65203d38e967a5629b58cf156da5d74300"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3018,
+   "index": 18,
+   "behavior": "MULTI_PEDESTRIAN",
+   "location": {
+    "town": "Town02_Opt",
+    "spawn_index": 4,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 128.174,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "CROSS",
+     "side": "RIGHT",
+     "along_m": 49.521,
+     "curb_offset_m": 0.398,
+     "walk_speed_mps": 1.499,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 36.461
+     },
+     "blueprint_index": 53317,
+     "far_offset_m": 1.249
+    },
+    {
+     "role": "ped_1",
+     "script": "WAIT",
+     "side": "LEFT",
+     "along_m": 56.166,
+     "curb_offset_m": 1.03,
+     "walk_speed_mps": 1.178,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 44.258
+     },
+     "blueprint_index": 47582
+    },
+    {
+     "role": "ped_2",
+     "script": "HESITATE_CROSS",
+     "side": "RIGHT",
+     "along_m": 61.527,
+     "curb_offset_m": 1.109,
+     "walk_speed_mps": 1.662,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 38.598
+     },
+     "blueprint_index": 33686,
+     "hesitation_s": 0.888,
+     "approach_offset_m": 0.29,
+     "far_offset_m": 1.317
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "8f8ae5a21484ba90e16bc1cf93b972edae77adfc772f2c9dc80c89068a8df507"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3019,
+   "index": 19,
+   "behavior": "MIXED_TRAFFIC",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 73,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 105.88,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "HESITATE_RETREAT",
+     "side": "RIGHT",
+     "along_m": 67.267,
+     "curb_offset_m": 0.771,
+     "walk_speed_mps": 1.583,
+     "trigger": {
+      "kind": "EGO_DISTANCE",
+      "distance_m": 40.203
+     },
+     "blueprint_index": 5558,
+     "hesitation_s": 1.042,
+     "approach_offset_m": 0.278,
+     "retreat_m": 1.07
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 14,
+    "pedestrians": 6
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "2d9cade813bec3d244816756a0d539c846947ace53689ce95eeb4bd4df9b2786"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3100,
+   "index": 100,
+   "behavior": "COUNTERFACTUAL_PAIR",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 91,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 106.699,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "WAIT",
+     "side": "LEFT",
+     "along_m": 57.99,
+     "curb_offset_m": 0.404,
+     "walk_speed_mps": 1.687,
+     "trigger": {
+      "kind": "SIMULATION_TIME",
+      "at_s": 4.193
+     },
+     "blueprint_index": 40744,
+     "far_offset_m": 1.2,
+     "run_speed_mps": 3.26
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": {
+    "pair_id": "d7c882028491b5e1f3cadb141a045acb29924c42b40e9ac4c8a22799dc582c89",
+    "arm": "A_REMAINS_STATIONARY",
+    "decision_s": 4.193,
+    "shared_prefix": "IDENTICAL_CONSTRUCTION_AND_WAITING_POSE"
+   },
+   "scenario_id": "d9c601507094097e0159727750544c56c9f2b5cd1a14b6415d76750f8f5c903c"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3100,
+   "index": 100,
+   "behavior": "COUNTERFACTUAL_PAIR",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 91,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 106.699,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [
+    {
+     "role": "ped_0",
+     "script": "RUN",
+     "side": "LEFT",
+     "along_m": 57.99,
+     "curb_offset_m": 0.404,
+     "walk_speed_mps": 1.687,
+     "trigger": {
+      "kind": "SIMULATION_TIME",
+      "at_s": 4.193
+     },
+     "blueprint_index": 40744,
+     "far_offset_m": 1.2,
+     "run_speed_mps": 3.26
+    }
+   ],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 0,
+    "pedestrians": 0
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": {
+    "pair_id": "d7c882028491b5e1f3cadb141a045acb29924c42b40e9ac4c8a22799dc582c89",
+    "arm": "B_SUDDEN_CROSSING",
+    "decision_s": 4.193,
+    "shared_prefix": "IDENTICAL_CONSTRUCTION_AND_WAITING_POSE"
+   },
+   "scenario_id": "6ee7e59a02ec19ef68bc37b5628aa09d1eaa5e6425a4197542e999fccef974cc"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3200,
+   "index": 200,
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "location": {
+    "town": "Town01_Opt",
+    "spawn_index": 70,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 123.09,
+   "ego": {
+    "target_speed_kmh": 40
+   },
+   "pedestrians": [],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 18,
+    "pedestrians": 12
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "fbcafdc23d66f06798ded2e01fd6a6b56161911536ec22bd2e06a2fb4a920270"
+  },
+  {
+   "version": 1,
+   "catalogue": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+   "split": "HOLDOUT",
+   "seed": 3201,
+   "index": 201,
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "location": {
+    "town": "Town02_Opt",
+    "spawn_index": 41,
+    "road_width_m": 10.5
+   },
+   "route_length_m": 114.0,
+   "ego": {
+    "target_speed_kmh": 30
+   },
+   "pedestrians": [],
+   "occluder": null,
+   "traffic": {
+    "vehicles": 12,
+    "pedestrians": 13
+   },
+   "time_limit_s": 90.0,
+   "counterfactual": null,
+   "scenario_id": "df3170716588614bab9c97e991c957bbc5a1b23930ca482be54486b7bc7b63ab"
+  }
+ ]
+}

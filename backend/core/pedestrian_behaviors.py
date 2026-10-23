@@ -92,11 +92,14 @@ def sample_episode(suite, split, index, *, behavior=None):
     split = DatasetSplit(split)
     lo, hi = SEED_RANGES[split]
     if type(index) is not int or not 0 <= index <= hi-lo:raise ValueError('Episode index outside split seed range')
-    seed = lo+index
-    rng = random.Random(f'{CATALOGUE_ID}:{split.value}:{seed}')
+    return _episode(suite, split.value, lo+index, index, suite['locations'][split.value], behavior=behavior)
+
+
+def _episode(suite, split_label, seed, index, locations, *, behavior=None):
+    rng = random.Random(f'{CATALOGUE_ID}:{split_label}:{seed}')
     behavior = behavior or BEHAVIORS[index % len(BEHAVIORS)]
     if behavior not in BEHAVIORS:raise ValueError('Unsupported pedestrian behavior: '+str(behavior))
-    ranges = suite['ranges'];locations = suite['locations'][split.value]
+    ranges = suite['ranges']
     location = copy.deepcopy(locations[rng.randrange(len(locations))])
     along = _uniform(rng, ranges['pedestrian_along_m'])
     pedestrians = []
@@ -130,7 +133,7 @@ def sample_episode(suite, split, index, *, behavior=None):
         pedestrians.append(_pedestrian(rng, ranges, script, role='ped_0', along_m=along))
         traffic = {'vehicles': rng.randint(*ranges['traffic_vehicles']),
                    'pedestrians': rng.randint(*ranges['traffic_pedestrians'])}
-    spec = {'version': 1, 'catalogue': CATALOGUE_ID, 'split': split.value, 'seed': seed, 'index': index,
+    spec = {'version': 1, 'catalogue': CATALOGUE_ID, 'split': split_label, 'seed': seed, 'index': index,
             'behavior': behavior, 'location': location,
             'route_length_m': _uniform(rng, ranges['route_length_m']),
             'ego': {'target_speed_kmh': rng.choice(ranges['ego_target_speed_kmh'])},
@@ -148,9 +151,13 @@ def ordinary_journey(suite, split, index):
     """Route-completion journey with native background traffic and no scripted walker."""
     split = DatasetSplit(split);lo, hi = SEED_RANGES[split]
     if type(index) is not int or not 0 <= index <= hi-lo:raise ValueError('Episode index outside split seed range')
-    seed = lo+index;rng = random.Random(f'{CATALOGUE_ID}:{ORDINARY}:{split.value}:{seed}')
-    ranges = suite['ranges'];locations = suite['locations'][split.value]
-    spec = {'version': 1, 'catalogue': CATALOGUE_ID, 'split': split.value, 'seed': seed, 'index': index, 'behavior': ORDINARY,
+    return _ordinary(suite, split.value, lo+index, index, suite['locations'][split.value])
+
+
+def _ordinary(suite, split_label, seed, index, locations):
+    rng = random.Random(f'{CATALOGUE_ID}:{ORDINARY}:{split_label}:{seed}')
+    ranges = suite['ranges']
+    spec = {'version': 1, 'catalogue': CATALOGUE_ID, 'split': split_label, 'seed': seed, 'index': index, 'behavior': ORDINARY,
             'location': copy.deepcopy(locations[rng.randrange(len(locations))]),
             'route_length_m': _uniform(rng, ranges['route_length_m']),
             'ego': {'target_speed_kmh': rng.choice(ranges['ego_target_speed_kmh'])}, 'pedestrians': [], 'occluder': None,
@@ -168,6 +175,10 @@ def counterfactual_pair(suite, split, index):
     future is a runtime input; the shared prefix is verified offline.
     """
     base = sample_episode(suite, split, index, behavior='WAIT_AT_CURB')
+    return _counterfactual_arms(suite, base)
+
+
+def _counterfactual_arms(suite, base):
     rng = random.Random(f'{CATALOGUE_ID}:COUNTERFACTUAL:{base["split"]}:{base["seed"]}')
     decision = _uniform(rng, suite['ranges']['counterfactual_decision_s'])
     run_speed = _uniform(rng, suite['ranges']['run_speed_mps'])
@@ -213,6 +224,43 @@ def validate_spec(spec, *, allow_counterfactual=False, allow_ordinary=False):
 
 def split_episodes(suite, split, count, *, start=0):
     return [sample_episode(suite, split, start+i) for i in range(count)]
+
+
+HOLDOUT = 'HOLDOUT'
+HOLDOUT_SEED_RANGE = (3000, 3999)
+
+
+def _holdout_seed(index):
+    lo, hi = HOLDOUT_SEED_RANGE
+    if type(index) is not int or not 0 <= index <= hi-lo:raise ValueError('Episode index outside the HOLDOUT seed range')
+    return lo+index
+
+
+def _time_limit(spec, limit_s):
+    """Routes can end behind a red light or signal queue; allow one full signal cycle."""
+    if limit_s is None:return spec
+    if not spec['time_limit_s'] <= limit_s <= 600.:raise ValueError('Time limit must extend the suite limit')
+    spec = copy.deepcopy(spec);spec.pop('scenario_id');spec['time_limit_s'] = float(limit_s)
+    validate_spec(spec, allow_counterfactual=True, allow_ordinary=True)
+    spec['scenario_id'] = identity(spec)
+    return spec
+
+
+def holdout_episode(suite, locations, index, *, behavior=None, time_limit_s=None):
+    """Post-hoc independent partition: caller-validated new locations, new seed namespace."""
+    if not locations:raise ValueError('HOLDOUT requires its own locations')
+    spec = _episode(suite, HOLDOUT, _holdout_seed(index), index, locations, behavior=behavior)
+    return _time_limit(spec, time_limit_s)
+
+
+def holdout_ordinary(suite, locations, index, *, time_limit_s=None):
+    if not locations:raise ValueError('HOLDOUT requires its own locations')
+    return _time_limit(_ordinary(suite, HOLDOUT, _holdout_seed(index), index, locations), time_limit_s)
+
+
+def holdout_counterfactual(suite, locations, index, *, time_limit_s=None):
+    return [_time_limit(arm, time_limit_s) for arm in
+            _counterfactual_arms(suite, holdout_episode(suite, locations, index, behavior='WAIT_AT_CURB'))]
 
 
 class WalkerScript:

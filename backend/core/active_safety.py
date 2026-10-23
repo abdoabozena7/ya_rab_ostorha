@@ -74,16 +74,50 @@ def _mount(channel):
     return position, angles
 
 
-def assess_forward_space(observation, asset_reader, config, *, steering=None, geometry=None, forward_path=None, measured_space=None):
+def extend_forward_path(forward_path, speed_mps, front_m, config):
+    """A supplied ego path, extended straight to the minimum probe length."""
+    forward_path=np.asarray(forward_path,float)
+    length=np.linalg.norm(np.diff(forward_path[:,1:3],axis=0),axis=1).sum()
+    required=max(10.,front_m+config.teacher.minimum_clearance_m+speed_mps*.35+speed_mps**2/10+config.teacher.release_hysteresis_m)
+    if length<required:
+        end=forward_path[-1].copy();end[0]+=.1
+        end[1:3]+=(required-length)*np.array([math.cos(end[3]),math.sin(end[3])])
+        forward_path=np.vstack((forward_path,end))
+    return forward_path
+
+
+def coverage_probe(speed_mps, config, front_m, geometry, *, steering=None, forward_path=None):
+    """Body poses (distance, x, y, yaw) every 0.5 m along the supervised path or steering arc."""
+    speed=abs(speed_mps);teacher=config.teacher
+    required=teacher.minimum_clearance_m+speed*teacher.reaction_time_s+speed**2/(2*teacher.assumed_deceleration_mps2)
+    distance=np.arange(0.,min(max(45.,required+teacher.release_hysteresis_m+front_m+5.),config.maximum_observed_range_m)+.25,.5)
+    if forward_path is not None:
+        p=np.asarray(forward_path)
+        arc=np.r_[0.,np.cumsum(np.linalg.norm(np.diff(p[:,1:3],axis=0),axis=1))]
+        keep=np.r_[True,np.diff(arc)>1e-6]
+        arc=arc[keep];p=p[keep]
+        covered=distance[distance<=arc[-1]]
+        return np.column_stack((covered,*(np.interp(covered,arc,p[:,i]) for i in (1,2,3))))
+    curvature=math.tan((steering or 0.)*geometry.max_steer_rad)/geometry.wheelbase_m
+    yaw=distance*curvature
+    xx=np.sin(yaw)/curvature if abs(curvature)>1e-5 else distance
+    yy=(1-np.cos(yaw))/curvature if abs(curvature)>1e-5 else np.zeros_like(distance)
+    return np.column_stack((distance,xx,yy,yaw))
+
+
+def assess_forward_space(observation, asset_reader, config, *, steering=None, geometry=None, forward_path=None, measured_space=None,
+                         indexed_path=False):
     """Fuse measured local radar/LiDAR/depth surfaces, never actor identities.
 
     Ground slope comes from the existing bounded radar consensus. CARLA depth
     is an axial z-buffer: K^-1*[u,v,1]*depth, without unit-ray normalization.
     The recorded native ground plane verifies this projection. Only level forward cameras
     certify road support; other camera views retain fixed forward LiDAR.
+    ``indexed_path`` projects only points near a long supervised path (same
+    exact corridor membership and arc ranges, without an all-points cost).
     """
     cache=getattr(measured_space,'forward_assessments',None)
-    key=(id(config),id(geometry),steering,np.asarray(forward_path).tobytes() if forward_path is not None else None)
+    key=(id(config),id(geometry),steering,np.asarray(forward_path).tobytes() if forward_path is not None else None,bool(indexed_path))
     if cache is not None and key in cache:return cache[key]
     channels = {s.kind: s for s in observation.channels}
     radar = next((s for s in observation.channels if s.kind==SensorKind.RADAR and s.sensor_id=='radar'),channels[SensorKind.RADAR])
@@ -97,16 +131,17 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     front=geometry.front_m if geometry else config.ego_front_m
     width=geometry.half_width_m+.2 if geometry else config.path_half_width_m
     if forward_path is not None:
-        forward_path=np.asarray(forward_path,float)
-        length=np.linalg.norm(np.diff(forward_path[:,1:3],axis=0),axis=1).sum()
-        required=max(10.,front+config.teacher.minimum_clearance_m+observation.ego.speed_mps*.35+observation.ego.speed_mps**2/10+config.teacher.release_hysteresis_m)
-        if length<required:
-            end=forward_path[-1].copy();end[0]+=.1
-            end[1:3]+=(required-length)*np.array([math.cos(end[3]),math.sin(end[3])])
-            forward_path=np.vstack((forward_path,end))
+        forward_path=extend_forward_path(forward_path,observation.ego.speed_mps,front,config)
+    index=None
+    if forward_path is not None and indexed_path:
+        from .motion_geometry import PathCorridorIndex
+        index=PathCorridorIndex(forward_path,width)
     x, y, z = local_points(points)
     heights = (z - a*x - b*y) / math.sqrt(1+a*a+b*b)
     def corridor(xx, yy):
+        if index is not None:
+            along,lateral=index.coordinates(xx,yy)
+            return (along>front)&(lateral<=width)
         if forward_path is not None:
             from .motion_geometry import path_coordinates
             along,lateral=path_coordinates(xx,yy,forward_path)
@@ -120,6 +155,7 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
         return (xx > front) & (lateral <= width)
     path = corridor(x, y)
     def ranges(xx,yy):
+        if index is not None:return index.coordinates(xx,yy)[0]
         if forward_path is not None:
             from .motion_geometry import path_coordinates
             return path_coordinates(xx,yy,forward_path)[0]
@@ -149,20 +185,22 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     teacher_observation=retained_radar_observation(replace(observation,
         channels=tuple(filtered if s.sensor_id==radar.sensor_id else s for s in observation.channels
             if s.kind!=SensorKind.RADAR or s.sensor_id==radar.sensor_id)))
-    road_support = []; lidar_observed = False; depth_observed = False
+    lidar_observed = False; depth_observed = False
 
     def surfaces(xyz, source):
         xx, yy, zz = xyz.T
         hh = (zz-a*xx-b*yy)/math.sqrt(1+a*a+b*b)
-        within = corridor(xx, yy)
-        fg = within & (hh > config.minimum_foreground_height_m) & (hh < config.maximum_foreground_height_m)
+        # Corridor membership is pointwise; only foreground-height returns can
+        # be targets, so the path projection is limited to them. (Ground
+        # support along the path was unused since continuous coverage.)
+        band = np.flatnonzero((hh > config.minimum_foreground_height_m) & (hh < config.maximum_foreground_height_m))
+        if not len(band): return
+        bx, by = xx[band], yy[band]
+        fg = corridor(bx, by)
         # Unknown target motion: stationary-target envelope, no invented radar velocity.
         if fg.any():
-            along=ranges(xx,yy);near=float(np.min(along[fg]))
+            along=ranges(bx,by);near=float(np.min(along[fg]))
             candidates.append((near-front, source, None, int(np.sum(fg & (along<=near+.5)))))
-        ground = within & (np.abs(hh) <= .15)
-        if ground.sum() >= 2 and np.ptp(yy[ground]) >= .25:
-            road_support.append(float(np.max(ranges(xx[ground],yy[ground]))-front))
 
     lidar = channels[SensorKind.LIDAR]
     position, angles = _mount(lidar)
@@ -204,22 +242,7 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     if measured_space is None:
         measured_space=ObservedSpace(lidar_points[:,:3]+_mount(lidar)[0],g,
             measured_surfaces=depth_surfaces(observation,asset_reader) if depth_observed else ())
-    speed=abs(observation.ego.speed_mps);teacher=config.teacher
-    required=teacher.minimum_clearance_m+speed*teacher.reaction_time_s+speed**2/(2*teacher.assumed_deceleration_mps2)
-    distance=np.arange(0.,min(max(45.,required+teacher.release_hysteresis_m+front+5.),config.maximum_observed_range_m)+.25,.5)
-    if forward_path is not None:
-        p=np.asarray(forward_path)
-        arc=np.r_[0.,np.cumsum(np.linalg.norm(np.diff(p[:,1:3],axis=0),axis=1))]
-        keep=np.r_[True,np.diff(arc)>1e-6]
-        arc=arc[keep];p=p[keep]
-        covered=distance[distance<=arc[-1]]
-        probe=np.column_stack((covered,*(np.interp(covered,arc,p[:,i]) for i in (1,2,3))))
-    else:
-        curvature=math.tan((steering or 0.)*g.max_steer_rad)/g.wheelbase_m
-        yaw=distance*curvature
-        xx=np.sin(yaw)/curvature if abs(curvature)>1e-5 else distance
-        yy=(1-np.cos(yaw))/curvature if abs(curvature)>1e-5 else np.zeros_like(distance)
-        probe=np.column_stack((distance,xx,yy,yaw))
+    probe=coverage_probe(observation.ego.speed_mps,config,front,g,steering=steering,forward_path=forward_path)
     clear_range=measured_space.continuous_coverage(probe)
     result={'target_range_m': target[0] if target else None, 'target_source': target[1] if target else None,
         'target_support_points': target[3] if target else 0,
@@ -281,6 +304,27 @@ class ActiveSafetySupervisor:
     def snapshot(self):
         return {**self.status, 'enabled': self.enabled, 'intervention_count': self.interventions}
 
+    def supervised_path(self, observation, base):
+        """Return (path or None, source) for the coverage/corridor probe.
+
+        A maneuver-owned forward path keeps priority. An evaluation route-tracker
+        path is used only when it was computed from this sensor frame's pose and
+        its first steering command is exactly the supervised base command;
+        otherwise the original steering arc applies.
+        """
+        forward=getattr(self,'forward_path',None)
+        if forward is not None:return forward,'SELECTED_MANEUVER_PATH'
+        arc='STEERING_ARC' if abs(base.steering)>=.05 else 'STRAIGHT'
+        probe=getattr(self,'route_probe',None)
+        if probe is None:return None,arc
+        if probe.get('frame_id')!=observation.frame_id or abs(float(probe.get('timestamp_s',-1.))-observation.timestamp_s)>1e-6:
+            return None,arc+'_ROUTE_PROBE_STALE'
+        if abs(float(probe.get('steering',math.inf))-base.steering)>1e-6:return None,arc+'_ROUTE_PROBE_STEERING_MISMATCH'
+        path=np.asarray(probe['path_array'],float)
+        if path.ndim!=2 or path.shape[1]!=4 or len(path)<2 or not np.isfinite(path).all() or np.any(np.abs(path[0])>1e-9):
+            return None,arc+'_ROUTE_PROBE_INVALID'
+        return path,'ROUTE_TRACKER_PATH'
+
     def evaluate(self, observation, base, asset_reader, *, as_of_timestamp_s):
         if not isinstance(observation, SensorObservation): raise ValueError('Runtime safety accepts sensor-only observations')
         c = self.config; t = c.teacher
@@ -293,10 +337,15 @@ class ActiveSafetySupervisor:
         if base.reverse or base.gear != 1 or base.handbrake or observation.ego.reverse or observation.ego.handbrake:
             self.reset(); self.status.update(status='FORWARD_ONLY', reason='Reverse, neutral or handbrake: forward supervisor unavailable')
             return None
+        if self.decision_layer and self.anticipation_enabled:
+            from .decision_layers import submit_risk
+            submit_risk(self,observation,base,as_of_timestamp_s)
+        supervised,probe_source=self.supervised_path(observation,base)
+        self.supervised_rows=supervised if probe_source=='ROUTE_TRACKER_PATH' else None
         scene = assess_forward_space(observation, asset_reader, c,
             steering=base.steering if abs(base.steering)>=.05 else None,
-            geometry=getattr(self,'geometry',None),forward_path=getattr(self,'forward_path',None),
-            measured_space=getattr(self,'measured_space',None))
+            geometry=getattr(self,'geometry',None),forward_path=supervised,
+            measured_space=getattr(self,'measured_space',None),indexed_path=probe_source=='ROUTE_TRACKER_PATH')
         crossing=(self.path_conflicts.assess(scene['lidar_surfaces'],observation,geometry=getattr(self,'geometry',None),
             forward_path=getattr(self,'forward_path',None),ground_plane=scene['lidar_ground_plane'])
             if self.anticipation_enabled else {'conflict':None,'coverage':{},'observations':[]})
@@ -310,9 +359,18 @@ class ActiveSafetySupervisor:
             ) if coverage_limited else requested_prediction_cap
         from .pedestrian_anticipation import crossing_forecast
         from .motion_geometry import VehicleGeometry
-        pedestrian=(crossing_forecast(getattr(self,'control_prediction',None),observation,base,
-            getattr(self,'geometry',None) or VehicleGeometry(),allow_measured_unknown=True,
-            cap_mps=forecast_cap) if self.anticipation_enabled else None)
+        all_conflicts=None
+        if self.decision_layer and self.anticipation_enabled:
+            # Evaluation layers need every qualifying conflict; RULE's own
+            # forecast is the first of that same time-ordered list.
+            all_conflicts=crossing_forecast(getattr(self,'control_prediction',None),observation,base,
+                getattr(self,'geometry',None) or VehicleGeometry(),allow_measured_unknown=True,
+                cap_mps=forecast_cap,all_conflicts=True)
+            pedestrian=all_conflicts[0] if all_conflicts else None
+        else:
+            pedestrian=(crossing_forecast(getattr(self,'control_prediction',None),observation,base,
+                getattr(self,'geometry',None) or VehicleGeometry(),allow_measured_unknown=True,
+                cap_mps=forecast_cap) if self.anticipation_enabled else None)
         crossing_prediction=pedestrian
         if pedestrian and pedestrian.get('object_class')=='UNKNOWN':
             tracked=next(t for t in self.control_prediction['tracks'] if t['id']==pedestrian['track_id'])
@@ -374,8 +432,7 @@ class ActiveSafetySupervisor:
             from .decision_layers import pedestrian_layer
             layer_geometry=getattr(self,'geometry',None) or VehicleGeometry()
             layer_prediction=getattr(self,'control_prediction',None)
-            conflicts=crossing_forecast(layer_prediction,observation,base,layer_geometry,allow_measured_unknown=True,
-                cap_mps=forecast_cap,all_conflicts=True)
+            conflicts=all_conflicts if all_conflicts is not None else []
             crawl=cautious_speed
             if crawl is None and self.decision_layer=='EVIDENCE_BUDGETED' and crossing_prediction is not None:
                 # The same RULE verification (reaction + full stop horizon) at a
@@ -470,5 +527,5 @@ class ActiveSafetySupervisor:
             cautious_roadside_speed_mps=cautious_speed,side_rear_coverage=crossing['coverage'],
             side_rear_observations=crossing['observations'],
             side_rear_free_space_verified=False,decision_layer=self.decision_layer,
-            evidence_decision=layer['decision'] if layer else None)
+            evidence_decision=layer['decision'] if layer else None,coverage_probe=probe_source)
         return proposed

@@ -165,16 +165,19 @@ class SimulationService:
         """Select the evaluation decision layer; ordinary journeys keep original RULE."""
         supervisor=self.active_safety
         layer=estimator=status=None
+        previous=getattr(supervisor,'risk_estimator',None)
+        if hasattr(previous,'close'):previous.close()
         if evaluation:
             layer=evaluation.get('decision_layer')
             if evaluation.get('learned_risk'):
-                from .path_entry_risk import admitted_model,RiskEstimator
+                from .path_entry_risk import admitted_model,AsyncRiskEstimator,RiskEstimator
                 model,status=admitted_model()
                 experimental=bool(evaluation.get('experimental_risk_model') and model is not None and status.get('calibrated'))
                 if status['admitted'] or experimental:
                     geometry=getattr(self.provider,'vehicle_geometry',None)
                     estimator=RiskEstimator(model,corridor_half_width_m=(geometry.half_width_m if geometry else 1.)+.25,
                         front_m=geometry.front_m if geometry else 2.3,experimental=not status['admitted'])
+                    if evaluation.get('risk_inference')=='ASYNC_FRAME_BOUND':estimator=AsyncRiskEstimator(estimator)
         supervisor.decision_layer=layer;supervisor.risk_estimator=estimator;supervisor.risk_model_status=status
 
     def _route_bypass(self):
@@ -266,9 +269,11 @@ class SimulationService:
             # A sensor frame does not identify a driving intent. In particular,
             # a cached forward brake cannot be admitted as a reverse proposal.
             path = getattr(supervisor, 'forward_path', None)
+            probe = getattr(supervisor, 'route_probe', None)
             intent = (base.throttle, base.brake, base.steering, base.reverse,
                       base.gear, base.handbrake, base.source,
-                      repr(path) if path is not None else None)
+                      repr(path) if path is not None else None,
+                      (probe.get('frame_id'), probe.get('steering'), len(probe.get('path_array', ()))) if probe else None)
             decision_key = (self.session_id, observation.frame_id, observer_only, intent)
             if supervisor.previous_s == observation.timestamp_s and self.safety_decision_key != decision_key:
                 supervisor.reset()
@@ -348,7 +353,7 @@ class SimulationService:
             model_failure = str(error).startswith('MODEL_FAILURE:')
             if sensor_delay and self.safety_processing_wait_at is None:
                 self.safety_processing_wait_at = self.now()
-            recovering = sensor_delay and self.now()-self.safety_processing_wait_at < 1.
+            recovering = sensor_delay and self.now()-self.safety_processing_wait_at < self._stale_recovery_window_s()
             supervisor.status.update(status='OBSERVER_FAULT' if observer_only else
                 'SENSOR_DELAY_HOLD' if recovering else 'MODEL_FAILURE_STOP' if model_failure else 'SENSOR_FAULT_STOP', risk='UNKNOWN',
                 reason=str(error), observer_error=str(error) if observer_only else None,
@@ -600,6 +605,15 @@ class SimulationService:
         if pending is None:self.recorder.record_trace(row)
         else:pending.append((self.recorder,row))
 
+    def _stale_recovery_window_s(self):
+        """Wall time a still-owned journey may hold on stale data before it ends.
+
+        Every stale frame is answered with the fixed full-brake hold; stale data
+        never authorizes motion. Evaluation journeys tolerate isolated host-load
+        stalls for a bounded 3 s, production keeps its validated 1 s.
+        """
+        return 3. if getattr(self,'journey',{}).get('evaluation') else 1.
+
     def _application_guard(self,chosen):
         """Final freshness observation immediately before the native RPC."""
         now=self.now();scene=self.control_scene;frame,stamp=self._context()
@@ -621,9 +635,11 @@ class SimulationService:
             if self.active_safety:self.active_safety.status.update(reason='CONTROL_PROCESSING_DEADLINE',
                 decision_source='EXECUTION_SHIELD',active=True,status='HOLD')
             if getattr(self,'application_stale_since',None) is None:self.application_stale_since=now
-            if now-self.application_stale_since>=1.:
+            window=self._stale_recovery_window_s()
+            if now-self.application_stale_since>=window:
                 self.runtime_fault={'stage':'command_application','exception_type':'ControlSceneTimeout',
-                    'message':'Current synchronized sensor scene unavailable for one second',
+                    'message':'Current synchronized sensor scene unavailable for one second' if window<=1. else
+                        f'Current synchronized sensor scene unavailable for {window:.0f} seconds',
                     'evaluation_frame':frame,'timestamp_s':stamp,'applied_command':to_dict(chosen),
                     'injected_validation_fault':injected}
                 self._stop_navigation('runtime_failure',status='ERROR')
@@ -957,6 +973,7 @@ class SimulationService:
         self.maneuver_status={'action':'HOLD','phase':status,'reason':reason,'selected_path':None}
         if self.active_safety:
             self.active_safety.forward_path=None
+            self.active_safety.route_probe=None
             if hasattr(self.active_safety,'guard'):self.active_safety.guard.forward_path=None
         self.arbiter.safety.latest.pop(CommandSource.NAVIGATION, None)
         self.arbiter.safety.receipts.pop(CommandSource.NAVIGATION, None)
@@ -1139,6 +1156,7 @@ class SimulationService:
                 driver.completed_maneuvers.append('ALTERNATE_ROUTE')
             self._stop_navigation('destination_reached',status='ARRIVED'); return
         if self.provider.navigation_done():
+            if self.active_safety is not None:self.active_safety.route_probe=None
             frame_id, timestamp_s = self._context()
             self.base_driver_command = safe_command(frame_id, timestamp_s, source=CommandSource.NAVIGATION)
             if self.observation.vehicle.speed_mps < .15:
@@ -1154,6 +1172,11 @@ class SimulationService:
             return
         frame_id, timestamp_s = self._context()
         command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
+        if self.active_safety is not None:
+            # Evaluation journeys only: the frame-bound route-tracker path. The
+            # supervisor re-checks frame, timestamp and steering before use.
+            self.active_safety.route_probe = (getattr(self.provider, 'evaluation_route_probe', None)
+                                              if self.journey.get('evaluation') else None)
         # Guided arms share the native route controller's prompt acceleration.
         # The experimental comfort integrator can repeatedly reset after a
         # shield hold. Keep it in its legacy/validation scope; the guided RULE
