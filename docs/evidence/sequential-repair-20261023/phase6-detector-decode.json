@@ -1,0 +1,34 @@
+{
+ "frames": 40,
+ "source_run": "runs/normal_city/run_57c0aceb80604461a9608725b47c5683",
+ "detector_profile": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+ "outputs_identical": true,
+ "decode_one_view": {
+  "before": {
+   "n": 40,
+   "median_ms": 7.394749991362914,
+   "mean_ms": 7.568344996252563,
+   "p95_ms": 9.064899990335107
+  },
+  "after": {
+   "n": 40,
+   "median_ms": 1.7459499940741807,
+   "mean_ms": 1.8225700041512027,
+   "p95_ms": 2.3689999943599105
+  }
+ },
+ "predict_three_views": {
+  "before": {
+   "n": 40,
+   "median_ms": 525.6576999963727,
+   "mean_ms": 529.4892399935634,
+   "p95_ms": 575.2628999762237
+  },
+  "after": {
+   "n": 40,
+   "median_ms": 489.5256000163499,
+   "mean_ms": 493.4708575005061,
+   "p95_ms": 541.3279000204057
+  }
+ }
+}

@@ -161,6 +161,22 @@ class SimulationService:
             self.arbiter.safety.receipts.pop(CommandSource.SAFETY, None)
         self.safety_command = None
 
+    def _configure_decision_layer(self, evaluation):
+        """Select the evaluation decision layer; ordinary journeys keep original RULE."""
+        supervisor=self.active_safety
+        layer=estimator=status=None
+        if evaluation:
+            layer=evaluation.get('decision_layer')
+            if evaluation.get('learned_risk'):
+                from .path_entry_risk import admitted_model,RiskEstimator
+                model,status=admitted_model()
+                experimental=bool(evaluation.get('experimental_risk_model') and model is not None and status.get('calibrated'))
+                if status['admitted'] or experimental:
+                    geometry=getattr(self.provider,'vehicle_geometry',None)
+                    estimator=RiskEstimator(model,corridor_half_width_m=(geometry.half_width_m if geometry else 1.)+.25,
+                        front_m=geometry.front_m if geometry else 2.3,experimental=not status['admitted'])
+        supervisor.decision_layer=layer;supervisor.risk_estimator=estimator;supervisor.risk_model_status=status
+
     def _route_bypass(self):
         from .route_bypass import RuleRouteBypass
         value=getattr(self.provider,'navigation_bypass',None)
@@ -228,6 +244,8 @@ class SimulationService:
         try:
             observation, receipt = self._current_safety_observation(supervisor)
             self.control_timing_ms['sensor_age_before_safety_ms'] = (self.now()-receipt)*1000
+            # Measured wall latency from sensor receipt to this decision.
+            supervisor.processing_latency_s = max(0., self.now()-receipt)
             if self.control_scene and self.control_scene.observation.frame_id == observation.frame_id:
                 supervisor.measured_space = self.control_scene.space
                 supervisor.control_prediction=self.control_scene.prediction
@@ -982,8 +1000,15 @@ class SimulationService:
     def _comparison_busy(self):
         return bool(self.comparison and self.comparison.busy or self.comparison_v2 and self.comparison_v2.busy)
 
-    def start_journey(self, speed_kmh=30, *, driving_mode=None, pair_id=None, benchmark=False, presentation_id=None):
+    def start_journey(self, speed_kmh=30, *, driving_mode=None, pair_id=None, benchmark=False, presentation_id=None, evaluation=None):
         if type(benchmark) is not bool: raise ValueError('Benchmark must be an explicit boolean')
+        if evaluation is not None:
+            from .closed_loop_evaluation import EvaluationAdmission
+            # Harness-only admission object; WebSocket JSON cannot construct it.
+            if not isinstance(evaluation, EvaluationAdmission) or presentation_id is not None or pair_id is not None:
+                raise ValueError('Closed-loop evaluation requires its own explicit admission')
+            if driving_mode != evaluation.spec['driving_mode']:
+                raise ValueError('Evaluation configuration and driving mode differ')
         if self.presentation.busy and presentation_id is None:
             raise ValueError('Stop the presentation before starting a separate journey')
         presentation = (presentation_id is not None and self.presentation.busy and
@@ -1001,7 +1026,7 @@ class SimulationService:
         from ..learning.native_validation_budget import active_rule_ticket
         rule_validation = active_rule_ticket() if driving_mode in ('ROBOSPHERE','NORMAL') else None
         guided = presentation and self.presentation.data.get('guided') is True
-        maximum = 120 if guided else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
+        maximum = 120 if guided else evaluation.max_speed_kmh if evaluation is not None else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
         if not 5 <= speed <= maximum:
             raise ValueError(f'Journey speed must be 5–{maximum} km/h')
         if driving_mode == 'HYBRID':
@@ -1037,7 +1062,8 @@ class SimulationService:
             self.release_controls()
             self.navigation_heartbeat_at = self.now()
             self.journey = {'status': 'STARTING', 'reason': None, 'speed_kmh': speed}
-            if rule_validation:self.journey['validation_deadline']=rule_validation['expires_monotonic_s']
+            if evaluation is not None:self.journey['evaluation']=evaluation.snapshot()
+            if rule_validation and evaluation is None:self.journey['validation_deadline']=rule_validation['expires_monotonic_s']
             if presentation: self.journey.update(presentation_id=presentation_id, benchmark=True)
             if driving_mode in ('HYBRID','BASELINE'):self.journey['benchmark']=benchmark or pair_id is not None
             self.last_drive_stop = None
@@ -1105,7 +1131,7 @@ class SimulationService:
             # Keep the still-valid selected command; never bypass the rate guard.
             return
         route = self.provider.route_state()
-        if ((self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id') or self.journey.get('validation_deadline')) and route.get('arrived')
+        if ((self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id') or self.journey.get('validation_deadline') or self.journey.get('evaluation')) and route.get('arrived')
                 and route.get('remaining_m',float('inf'))<6. and self.observation.vehicle.speed_mps<.15):
             driver=getattr(self.provider,'hybrid_driver',None)
             if driver and driver.alternative_started is not None and math.dist(
@@ -1971,9 +1997,11 @@ class SimulationService:
                         self.active_safety.set_controller('RULE')
                         self.active_safety.enabled = True
                         self.active_safety.reset()
+                        self._configure_decision_layer(journey.get('evaluation'))
                         self.journey_observer = {}
                         result = self.provider.start_navigation(value, driving_mode=driving_mode,
-                            **({'presentation': True} if journey.get('presentation_id') else {}))
+                            **({'presentation': True} if journey.get('presentation_id') else {}),
+                            **({'evaluation': True} if journey.get('evaluation') else {}))
                     else:
                         result = self.provider.start_navigation(value)
                     with self.lock:
@@ -1982,7 +2010,7 @@ class SimulationService:
                         elif not self._navigation_connection_alive():
                             self._stop_navigation('dashboard_heartbeat_timeout')
                         else:
-                            if driving_mode:
+                            if driving_mode and not journey.get('evaluation'):
                                 recording = self._change_recording({'enabled': True})
                                 self.journey_auto_recording = True
                                 self.journey_comparison.begin(driving_mode, manifest,

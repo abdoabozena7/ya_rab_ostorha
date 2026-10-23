@@ -29,7 +29,7 @@ def cautious_roadside_approach(prediction,forecast,observation,geometry,*,road_r
 
 
 def cautious_roadside_speed(prediction,forecast,observation,base,geometry,*,maximum_cap_mps=None,
-        reaction_time_s=.35,deceleration_mps2=5.,**conditions):
+        reaction_time_s=.35,deceleration_mps2=5.,candidates=(4.,3.,2.,1.),**conditions):
     """Choose a bounded response verified against all current crossing modes.
 
     A 1 m/s override was excessively slow beside distant stationary people.
@@ -56,7 +56,7 @@ def cautious_roadside_speed(prediction,forecast,observation,base,geometry,*,maxi
         and (conditions.get('distance') is None or conditions['distance']>conditions['envelope']+2.))
     if not stationary and not moving:return None
     tested=set()
-    for candidate in (4.,3.,2.,1.):
+    for candidate in candidates:
         cap=min(candidate,maximum_cap_mps) if maximum_cap_mps is not None else candidate
         if cap<=0 or cap in tested:continue
         tested.add(cap)
@@ -73,11 +73,13 @@ def cautious_roadside_speed(prediction,forecast,observation,base,geometry,*,maxi
     return None
 
 
-def crossing_forecast(prediction,observation,base,geometry,*,allow_measured_unknown=False,cap_mps=None,stationary_response=None):
+def crossing_forecast(prediction,observation,base,geometry,*,allow_measured_unknown=False,cap_mps=None,stationary_response=None,all_conflicts=False):
+    """First qualifying conflict (RULE), or every qualifying conflict when all_conflicts."""
+    none=[] if all_conflicts else None
     if not prediction or prediction.get('source')!='CONTROL_SENSOR_PIPELINE' or not prediction.get('motion_tracking_complete'):
-        return None
+        return none
     if prediction.get('evaluation_frame')!=observation.frame_id or abs(prediction.get('timestamp_s',-1)-observation.timestamp_s)>1e-6:
-        return None
+        return none
     people=[];unknown=set()
     for track in prediction.get('tracks',()):
         semantic=track.get('semantic_evidence') or {};evidence=track.get('measurement_evidence') or {}
@@ -99,7 +101,7 @@ def crossing_forecast(prediction,observation,base,geometry,*,allow_measured_unkn
         if track['position_m'][0]<=geometry.front_m or max(track['half_size_m'])>1.5:continue
         people.append(track)
         if measured_unknown:unknown.add(track['id'])
-    if not people:return None
+    if not people:return none
     ids={t['id'] for t in people}
     cleared={t['id'] for t in people if t.get('observed_crossing_cleared')}
     modes=[m for m in prediction.get('trajectories',()) if m['track_id'] in ids and
@@ -110,12 +112,15 @@ def crossing_forecast(prediction,observation,base,geometry,*,allow_measured_unkn
     paths=[p for p in ego_paths(observation.ego.speed_mps,base.steering,base.throttle,geometry=geometry,grid=grid,
             drive_accelerations=DRIVE_ACCELERATIONS,cap_mps=cap_mps)
         if p['intent']!='BRAKE']
+    found=[]
     for conflict in assess_conflicts(people,modes,paths,grid=grid):
         if (stationary_response and conflict['track_id']==stationary_response[0]
                 and conflict['source'] in ('PEDESTRIAN_POSSIBLE_START','PEDESTRIAN_POSSIBLE_RETREAT','PEDESTRIAN_POSSIBLE_RUN')
                 and conflict['time_s']>stationary_response[1]):continue
         if not conflict['separating_rear_overlap'] and not conflict['braking_worsens_rear_conflict']:
-            return {**conflict,'certainty':'MEASURED_MOVING_DEPTH_SURFACE_UNKNOWN_CLASS' if conflict['track_id'] in unknown else 'POSSIBLE_CROSSING_NOT_KNOWN_INTENT',
+            result={**conflict,'certainty':'MEASURED_MOVING_DEPTH_SURFACE_UNKNOWN_CLASS' if conflict['track_id'] in unknown else 'POSSIBLE_CROSSING_NOT_KNOWN_INTENT',
                 'object_class':'UNKNOWN' if conflict['track_id'] in unknown else 'person',
                 'measurement_frame':observation.frame_id,'timestamp_s':observation.timestamp_s}
-    return None
+            if not all_conflicts:return result
+            found.append(result)
+    return found if all_conflicts else None

@@ -4,6 +4,18 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [23 October sequential repair](docs/SEQUENTIAL_REPAIR_20261023.md) adds a
+native pedestrian behavior suite (ten behaviors, counterfactual pairs,
+location-disjoint TRAIN/VALIDATION/TEST datasets) and a calibrated GRU
+path-entry risk predictor. The predictor passed its one-time TEST admission
+but stays disabled in production. The release also adds an evaluation-only
+evidence-budgeted layer, per-stage latency logs and a five-configuration native
+TEST evaluation. Predictive configurations avoided both sudden crossings that
+hit Normal, but the new layer is not more efficient than the existing
+predictive RULE. Ordinary-route completion and real time (RTF ≈ 0.35) remain
+unmet. The Normal / Ya Rab Ostorha comparison is unchanged and was re-verified
+natively.
+
 The [full crossing comparison](docs/CROSSING_COMPARISON_20261019.md) runs both
 drivers automatically, retains complete recordings to actual contact or arrival,
 and uses **Ya Rab Ostorha** consistently in the interface. Three versioned native

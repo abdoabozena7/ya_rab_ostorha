@@ -129,6 +129,18 @@ def freeze_json(value, _memo=None):
         if all(type(item) is float for item in value):
             if not all(map(math.isfinite,value)):raise ValueError('value must be a finite number')
             frozen=tuple.__new__(_FrozenJSONSequence,value)
+        elif value and all(type(item) is list and item and all(type(x) is float for x in item) for item in value):
+            # Rows of finite floats (trajectory points, track histories):
+            # the same frozen structure without one recursive call per row.
+            # Shared rows stay shared through the same memo.
+            rows=[]
+            for item in value:
+                row=_memo.get(id(item))
+                if row is None:
+                    if not all(map(math.isfinite,item)):raise ValueError('value must be a finite number')
+                    row=_memo[id(item)]=tuple.__new__(_FrozenJSONSequence,item)
+                rows.append(row)
+            frozen=tuple.__new__(_FrozenJSONSequence,rows)
         else:frozen=tuple.__new__(_FrozenJSONSequence,(freeze_json(item,_memo) for item in value))
     else:
         if any(not isinstance(key, str) for key in value):

@@ -1,5 +1,17 @@
-"""Pilot reward hypotheses. Physical truth stays on the reward/evaluation side."""
+"""Pilot reward hypotheses. Physical truth stays on the reward/evaluation side.
+
+Version 3 repairs the stationary HOLD optimum observed in both Maneuver-v1
+checkpoints: launching from rest was penalized as discomfort more than its
+progress earned, and holding with a verified forward candidate cost almost
+nothing. Comfortable acceleration is no longer penalized, verified-but-unused
+forward motion is, and progress lost by reversing cannot be re-credited.
+Unsafe motion is never rewarded: collisions and near misses keep their
+penalties and the independent shield still decides what is applied.
+"""
 import math
+
+REWARD_VERSION = 3
+COMFORTABLE_ACCELERATION_MPS2 = 2.
 
 
 def driver_controls_changed(desired,applied):
@@ -9,22 +21,30 @@ def driver_controls_changed(desired,applied):
 
 
 class ManeuverReward:
+    version = REWARD_VERSION
+
     def __init__(self,route_length):
         if not math.isfinite(route_length) or route_length<=0:raise ValueError('Route length required')
-        self.route_length=route_length;self.previous_progress=0.;self.positive=0.;self.completed=False
+        self.route_length=route_length;self.previous_progress=0.;self.best_progress=0.;self.positive=0.;self.completed=False
 
     def evaluate(self,*,progress_m,dt,collision=None,completed=False,risk=0.,
-                 discomfort=0.,unnecessary_manual_intervention=False):
+                 discomfort=None,acceleration_mps2=None,unnecessary_manual_intervention=False,
+                 stationary_with_verified_forward=False):
+        if discomfort is None:
+            # Measured acceleration beyond a comfortable launch/stop only.
+            discomfort=0. if acceleration_mps2 is None else max(0.,abs(acceleration_mps2)-COMFORTABLE_ACCELERATION_MPS2)/3.
         if not all(math.isfinite(v) for v in (progress_m,dt,risk,discomfort)) or dt<=0:
             raise ValueError('Finite independent reward measurements required')
         progress=max(-self.route_length,min(self.route_length,progress_m))
-        components={'progress':10.*(progress-self.previous_progress)/self.route_length,
+        gained=max(0.,progress-self.best_progress);lost=min(0.,progress-self.previous_progress)
+        components={'progress':10.*(gained+lost)/self.route_length,
                     'completion':20. if completed and not self.completed else 0.,
                     'near_miss':-10.*max(0.,min(1.,risk))*dt,'time':-.02*dt,
                     'discomfort':-.1*max(0.,min(1.,discomfort))*dt,
                     'manual_intervention':-.5*dt if unnecessary_manual_intervention else 0.,
+                    'unnecessary_stationary':-.3*dt if stationary_with_verified_forward else 0.,
                     'collision':-200. if collision=='VULNERABLE' else -100. if collision else 0.}
-        self.previous_progress=progress;self.completed|=completed
+        self.previous_progress=progress;self.best_progress=max(self.best_progress,progress);self.completed|=completed
         for key in ('progress','completion'):
             if components[key]>0:
                 credited=min(components[key],max(0.,30.-self.positive))

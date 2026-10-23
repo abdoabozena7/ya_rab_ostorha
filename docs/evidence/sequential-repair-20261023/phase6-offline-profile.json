@@ -1,0 +1,105 @@
+{
+ "source": "OFFLINE_REPLAY_OF_RECORDED_NATIVE_SENSOR_BYTES",
+ "recording": "runs/normal_city/run_57c0aceb80604461a9608725b47c5683",
+ "method": "Same 120 frames through ControlSceneBuilder + RULE supervisor; before/after alternated twice on the same machine while CARLA idled; before-1 includes cold-cache warm-up.",
+ "outputs_identical": true,
+ "runs": [
+  {
+   "label": "before-1",
+   "contracts": "HEAD (previous freeze_json)",
+   "contracts_sha256": "278cae5ac331abbef19027f7c6755de9299820640401063dec6cf3e38f2ec223",
+   "frames": 120,
+   "output_sha256": "83388172dbf5704e6fb546983a0836ce3266f41ccaf1434b688d6f50849feb95",
+   "stages_ms": {
+    "scene_build_ms": {
+     "median_ms": 38.69,
+     "mean_ms": 39.71,
+     "p95_ms": 52.21
+    },
+    "safety_ms": {
+     "median_ms": 40.17,
+     "mean_ms": 45.77,
+     "p95_ms": 72.43
+    },
+    "total_ms": {
+     "median_ms": 78.77,
+     "mean_ms": 85.48,
+     "p95_ms": 117.86
+    }
+   }
+  },
+  {
+   "label": "after-1",
+   "contracts": "working tree (numeric-row fast path)",
+   "contracts_sha256": "eab7b86ff42e1d15869f7d756d323641929e12a280c5a0df884195dd83697682",
+   "frames": 120,
+   "output_sha256": "83388172dbf5704e6fb546983a0836ce3266f41ccaf1434b688d6f50849feb95",
+   "stages_ms": {
+    "scene_build_ms": {
+     "median_ms": 33.48,
+     "mean_ms": 34.2,
+     "p95_ms": 42.43
+    },
+    "safety_ms": {
+     "median_ms": 39.06,
+     "mean_ms": 45.17,
+     "p95_ms": 70.99
+    },
+    "total_ms": {
+     "median_ms": 73.54,
+     "mean_ms": 79.37,
+     "p95_ms": 108.42
+    }
+   }
+  },
+  {
+   "label": "before-2",
+   "contracts": "HEAD (previous freeze_json)",
+   "contracts_sha256": "278cae5ac331abbef19027f7c6755de9299820640401063dec6cf3e38f2ec223",
+   "frames": 120,
+   "output_sha256": "83388172dbf5704e6fb546983a0836ce3266f41ccaf1434b688d6f50849feb95",
+   "stages_ms": {
+    "scene_build_ms": {
+     "median_ms": 33.89,
+     "mean_ms": 33.93,
+     "p95_ms": 45.71
+    },
+    "safety_ms": {
+     "median_ms": 37.69,
+     "mean_ms": 44.7,
+     "p95_ms": 73.1
+    },
+    "total_ms": {
+     "median_ms": 72.67,
+     "mean_ms": 78.64,
+     "p95_ms": 113.02
+    }
+   }
+  },
+  {
+   "label": "after-2",
+   "contracts": "working tree (numeric-row fast path)",
+   "contracts_sha256": "eab7b86ff42e1d15869f7d756d323641929e12a280c5a0df884195dd83697682",
+   "frames": 120,
+   "output_sha256": "83388172dbf5704e6fb546983a0836ce3266f41ccaf1434b688d6f50849feb95",
+   "stages_ms": {
+    "scene_build_ms": {
+     "median_ms": 32.81,
+     "mean_ms": 33.21,
+     "p95_ms": 43.21
+    },
+    "safety_ms": {
+     "median_ms": 39.07,
+     "mean_ms": 44.22,
+     "p95_ms": 70.13
+    },
+    "total_ms": {
+     "median_ms": 73.23,
+     "mean_ms": 77.42,
+     "p95_ms": 105.33
+    }
+   }
+  }
+ ],
+ "conclusion": "Output-identical. Steady-state scene build median 33.9 -> 32.8-33.5 ms and p95 45.7 -> 42.4-43.2 ms; end-to-end replay frame time unchanged within noise (72.7 vs 73.2-73.5 ms median)."
+}

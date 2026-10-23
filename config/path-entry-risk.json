@@ -1,0 +1,6 @@
+{
+  "model_id": "PEDESTRIAN_PATH_ENTRY_RISK_GRU_V1",
+  "enabled": false,
+  "artifact": "artifacts/learned_safety/path_entry_risk_v1/714c4b860ec24f51bd85bc6e52582063",
+  "policy": "Production use requires enabled=true AND a calibrated artifact whose manifest admission passed on independent TEST data. Evaluation configurations may load an unadmitted calibrated artifact only with an explicit experimental flag, recorded in every episode."
+}

@@ -2696,6 +2696,23 @@
   function forecastCanProject(prediction, session, camera) {
     return measuredPredictionFresh(prediction, session, camera?.timestamp) && prediction.coordinate_frame === "EGO_AT_EVALUATION" && !!prediction.render_reference?.position_m && !!camera?.worldTransform?.position_m && Number.isFinite(camera.frame) && Number.isFinite(prediction.evaluation_frame) && prediction.evaluation_frame <= camera.frame;
   }
+  function decisionSummary(safety) {
+    const decision = safety?.evidence_decision;
+    if (!safety?.decision_layer || !decision) return "";
+    const parts = [
+      decision.layer === "LEARNED_RISK_CAUTION_V1" ? "Learned-risk caution" : "Evidence budget",
+      String(decision.response || "unknown").replaceAll("_", " ").toLowerCase()
+    ];
+    if (Number.isFinite(decision.target_speed_mps)) parts.push(`limit ${(decision.target_speed_mps * 3.6).toFixed(0)} km/h`);
+    const people = decision.people || [];
+    const risk = people.map((person) => person.risk_3s).filter(Number.isFinite);
+    if (risk.length && decision.risk_status?.status === "READY")
+      parts.push(`crossing risk within 3 s ${Math.round(Math.max(...risk) * 100)}%${decision.risk_status.experimental ? " (experimental model)" : ""}`);
+    const uncertainty = people.map((person) => person.uncertainty_m).filter(Number.isFinite);
+    if (uncertainty.length) parts.push(`tracking \xB1${Math.max(...uncertainty).toFixed(2)} m`);
+    if (decision.reason) parts.push(decision.reason);
+    return parts.join(" \xB7 ");
+  }
   function remainingForecast(points, age) {
     if (!points?.length || !Number.isFinite(age) || age < 0 || age > points.at(-1)[0]) return [];
     const next = points.findIndex((row) => row[0] >= age);
@@ -2842,7 +2859,10 @@
       this.canvas.hidden = !ok;
       if (guidedForecast) this.label.hidden = !ok;
       const diagnostic = p.stopDiagnostics;
-      this.diagnostic.textContent = diagnostic?.braking ? `${diagnostic.decision_source} \xB7 ${diagnostic.reason || "Brake applied"} \xB7 sensor age ${(diagnostic.sensor_wall_age_s ?? 0).toFixed(2)} s` : "";
+      this.diagnostic.textContent = [
+        diagnostic?.braking ? `${diagnostic.decision_source} \xB7 ${diagnostic.reason || "Brake applied"} \xB7 sensor age ${(diagnostic.sensor_wall_age_s ?? 0).toFixed(2)} s` : "",
+        decisionSummary(p.safetySystem)
+      ].filter(Boolean).join(" \xB7 ");
       if (!ok) return;
       const bounds = img.getBoundingClientRect(), host = img.parentElement.getBoundingClientRect();
       const scale = Math.min(bounds.width / camera.width, bounds.height / camera.height);

@@ -1,0 +1,2564 @@
+{
+ "model_id": "PEDESTRIAN_PATH_ENTRY_RISK_GRU_V1",
+ "run_id": "714c4b860ec24f51bd85bc6e52582063",
+ "feature_version": "PATH_ENTRY_FEATURES_V1",
+ "steps": 10,
+ "input_size": 23,
+ "architecture": {
+  "encoder": "Linear(23,32)+ReLU",
+  "gru_hidden": 32,
+  "head": "Linear(hidden,3)"
+ },
+ "target": "P(pedestrian enters the planned ego corridor within H s | measured history and scene context)",
+ "horizons_s": [
+  1,
+  2,
+  3
+ ],
+ "weights_file": "weights.npz",
+ "weights_sha256": "d33474aeb2920b6813d6ff738a441142d8639a06547b8500a72fb958277bcf79",
+ "calibration": {
+  "1s": {
+   "a": 0.4452379572496648,
+   "b": -2.2628725303214803,
+   "method": "PLATT_ON_VALIDATION",
+   "n": 6498
+  },
+  "2s": {
+   "a": 0.3981139583657876,
+   "b": -1.752698079063343,
+   "method": "PLATT_ON_VALIDATION",
+   "n": 6316
+  },
+  "3s": {
+   "a": 0.42956810283413877,
+   "b": -1.5845543709955734,
+   "method": "PLATT_ON_VALIDATION",
+   "n": 5901
+  }
+ },
+ "training": {
+  "seed": 7,
+  "epochs_run": 50,
+  "selected_epoch": 37,
+  "pos_weight": [
+   33.380245208740234,
+   15.529411315917969,
+   9.847729682922363
+  ],
+  "loss": "BCEWithLogits with pos_weight=negatives/positives (max 50), masked unlabeled",
+  "selection": "max mean VALIDATION AUPRC (uncalibrated logits)",
+  "history": [
+   {
+    "epoch": 0,
+    "train_loss": 1.0971154075386025,
+    "validation_mean_auprc": 0.3910907919009956
+   },
+   {
+    "epoch": 1,
+    "train_loss": 0.7082372874589967,
+    "validation_mean_auprc": 0.4933467258186197
+   },
+   {
+    "epoch": 2,
+    "train_loss": 0.6477866844258816,
+    "validation_mean_auprc": 0.5078428271972404
+   },
+   {
+    "epoch": 3,
+    "train_loss": 0.5804793015582906,
+    "validation_mean_auprc": 0.5359333443587678
+   },
+   {
+    "epoch": 4,
+    "train_loss": 0.5709142453798687,
+    "validation_mean_auprc": 0.5064914200957906
+   },
+   {
+    "epoch": 5,
+    "train_loss": 0.5130621809741386,
+    "validation_mean_auprc": 0.5256917974353712
+   },
+   {
+    "epoch": 6,
+    "train_loss": 0.4955232536791963,
+    "validation_mean_auprc": 0.5547240938417776
+   },
+   {
+    "epoch": 7,
+    "train_loss": 0.481951717594545,
+    "validation_mean_auprc": 0.5522673937487497
+   },
+   {
+    "epoch": 8,
+    "train_loss": 0.4419370558168069,
+    "validation_mean_auprc": 0.5661740537814569
+   },
+   {
+    "epoch": 9,
+    "train_loss": 0.42343530327234186,
+    "validation_mean_auprc": 0.5462485891529704
+   },
+   {
+    "epoch": 10,
+    "train_loss": 0.40677265188991407,
+    "validation_mean_auprc": 0.57022560448153
+   },
+   {
+    "epoch": 11,
+    "train_loss": 0.408180327039387,
+    "validation_mean_auprc": 0.5710074416230614
+   },
+   {
+    "epoch": 12,
+    "train_loss": 0.3757721450749985,
+    "validation_mean_auprc": 0.5711949016396797
+   },
+   {
+    "epoch": 13,
+    "train_loss": 0.3778701900322746,
+    "validation_mean_auprc": 0.5810850129892963
+   },
+   {
+    "epoch": 14,
+    "train_loss": 0.3503706925448654,
+    "validation_mean_auprc": 0.5872197396405242
+   },
+   {
+    "epoch": 15,
+    "train_loss": 0.3340724420807342,
+    "validation_mean_auprc": 0.6026660604775117
+   },
+   {
+    "epoch": 16,
+    "train_loss": 0.33969250696516834,
+    "validation_mean_auprc": 0.6167320797094465
+   },
+   {
+    "epoch": 17,
+    "train_loss": 0.31655217258844803,
+    "validation_mean_auprc": 0.6131550481662776
+   },
+   {
+    "epoch": 18,
+    "train_loss": 0.32796025918101585,
+    "validation_mean_auprc": 0.5978620351054883
+   },
+   {
+    "epoch": 19,
+    "train_loss": 0.31169477858170724,
+    "validation_mean_auprc": 0.6259296135927527
+   },
+   {
+    "epoch": 20,
+    "train_loss": 0.30237011878151526,
+    "validation_mean_auprc": 0.6040181989694352
+   },
+   {
+    "epoch": 21,
+    "train_loss": 0.2856554362756783,
+    "validation_mean_auprc": 0.6268542970604544
+   },
+   {
+    "epoch": 22,
+    "train_loss": 0.2777212106219762,
+    "validation_mean_auprc": 0.6278119144444867
+   },
+   {
+    "epoch": 23,
+    "train_loss": 0.2986775487948551,
+    "validation_mean_auprc": 0.6372386037790286
+   },
+   {
+    "epoch": 24,
+    "train_loss": 0.27648567332416196,
+    "validation_mean_auprc": 0.6272380294318926
+   },
+   {
+    "epoch": 25,
+    "train_loss": 0.2682863242823697,
+    "validation_mean_auprc": 0.6460156339896695
+   },
+   {
+    "epoch": 26,
+    "train_loss": 0.2736627631700973,
+    "validation_mean_auprc": 0.6272984007578754
+   },
+   {
+    "epoch": 27,
+    "train_loss": 0.29482633865156105,
+    "validation_mean_auprc": 0.6188584438500753
+   },
+   {
+    "epoch": 28,
+    "train_loss": 0.25736289991249933,
+    "validation_mean_auprc": 0.6545829748562055
+   },
+   {
+    "epoch": 29,
+    "train_loss": 0.24728956250540085,
+    "validation_mean_auprc": 0.646137821745822
+   },
+   {
+    "epoch": 30,
+    "train_loss": 0.2392496418071964,
+    "validation_mean_auprc": 0.6452683469028043
+   },
+   {
+    "epoch": 31,
+    "train_loss": 0.23558156956820311,
+    "validation_mean_auprc": 0.6511328471307477
+   },
+   {
+    "epoch": 32,
+    "train_loss": 0.2297587435000076,
+    "validation_mean_auprc": 0.6425637996102744
+   },
+   {
+    "epoch": 33,
+    "train_loss": 0.23566747943079652,
+    "validation_mean_auprc": 0.6364061733549248
+   },
+   {
+    "epoch": 34,
+    "train_loss": 0.22610803934722404,
+    "validation_mean_auprc": 0.6518903778815293
+   },
+   {
+    "epoch": 35,
+    "train_loss": 0.22530276507620495,
+    "validation_mean_auprc": 0.640781505266627
+   },
+   {
+    "epoch": 36,
+    "train_loss": 0.22271656542531182,
+    "validation_mean_auprc": 0.6151549304581376
+   },
+   {
+    "epoch": 37,
+    "train_loss": 0.2187021609930261,
+    "validation_mean_auprc": 0.6593248568009954
+   },
+   {
+    "epoch": 38,
+    "train_loss": 0.209645706838632,
+    "validation_mean_auprc": 0.6296214812536519
+   },
+   {
+    "epoch": 39,
+    "train_loss": 0.20834096609920238,
+    "validation_mean_auprc": 0.6396832408504868
+   },
+   {
+    "epoch": 40,
+    "train_loss": 0.20837204807353843,
+    "validation_mean_auprc": 0.6403413922425266
+   },
+   {
+    "epoch": 41,
+    "train_loss": 0.21897292373532465,
+    "validation_mean_auprc": 0.647048854876097
+   },
+   {
+    "epoch": 42,
+    "train_loss": 0.20715164951967735,
+    "validation_mean_auprc": 0.6171535044447323
+   },
+   {
+    "epoch": 43,
+    "train_loss": 0.18913775383772513,
+    "validation_mean_auprc": 0.6362583124293152
+   },
+   {
+    "epoch": 44,
+    "train_loss": 0.2066414978739161,
+    "validation_mean_auprc": 0.5864850559396727
+   },
+   {
+    "epoch": 45,
+    "train_loss": 0.1932577655524473,
+    "validation_mean_auprc": 0.6225376381424672
+   },
+   {
+    "epoch": 46,
+    "train_loss": 0.2264566630443925,
+    "validation_mean_auprc": 0.6442508150805669
+   },
+   {
+    "epoch": 47,
+    "train_loss": 0.21517799886079328,
+    "validation_mean_auprc": 0.6374677759639106
+   },
+   {
+    "epoch": 48,
+    "train_loss": 0.1978911712132887,
+    "validation_mean_auprc": 0.6288134442665781
+   },
+   {
+    "epoch": 49,
+    "train_loss": 0.18620401522824398,
+    "validation_mean_auprc": 0.6505716445334336
+   }
+  ],
+  "train_dataset_sha256": "a395917b3f8de5115f54847449eec17b0118d7f0e53f13192ea56d0f27aaf92a",
+  "validation_dataset_sha256": "fc844fedbc97a6339a3479f10ca86e182973b33867883f48ff11c8a8226db785",
+  "train_samples": 15047,
+  "validation_samples": 6924,
+  "torch": "2.11.0+cu128",
+  "trained_at_unix": 1792713332.2914708
+ },
+ "admission": {
+  "passed": true,
+  "status": "ADMITTED",
+  "criteria": {
+   "auroc_min": 0.85,
+   "ece_max": 0.06,
+   "auprc_margin_over_best_baseline": 0.05,
+   "brier_ratio_to_constant_max": 0.8,
+   "missed_entry_rate_max": 0.15,
+   "evaluated_on": "TEST only, after VALIDATION selection; every horizon must pass"
+  }
+ },
+ "thresholds": {
+  "1s": 0.35725980394224305,
+  "2s": 0.34488399542094006,
+  "3s": 0.38849471931598567
+ },
+ "train_prevalence": [
+  0.029086469405343294,
+  0.060498220640569395,
+  0.092185191265802
+ ],
+ "numpy_torch_parity_max_abs": 2.3171920832121273e-07,
+ "validation": {
+  "model": {
+   "1s": {
+    "n": 6498,
+    "positives": 204,
+    "auroc": 0.8832042031938292,
+    "auprc": 0.6226152064152701,
+    "brier": 0.01818640323546648,
+    "ece": 0.008555259722879086,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 6071,
+      "mean_probability": 0.011412894152728208,
+      "observed_frequency": 0.00774172294514907
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 167,
+      "mean_probability": 0.13911852539110456,
+      "observed_frequency": 0.11377245508982035
+     },
+     {
+      "bin": [
+       0.2,
+       0.30000000000000004
+      ],
+      "count": 75,
+      "mean_probability": 0.24376557534390605,
+      "observed_frequency": 0.22666666666666666
+     },
+     {
+      "bin": [
+       0.30000000000000004,
+       0.4
+      ],
+      "count": 45,
+      "mean_probability": 0.35259821849412354,
+      "observed_frequency": 0.37777777777777777
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 61,
+      "mean_probability": 0.44710811429442715,
+      "observed_frequency": 0.639344262295082
+     },
+     {
+      "bin": [
+       0.5,
+       0.6000000000000001
+      ],
+      "count": 40,
+      "mean_probability": 0.5481693076490648,
+      "observed_frequency": 0.7
+     },
+     {
+      "bin": [
+       0.6000000000000001,
+       0.7000000000000001
+      ],
+      "count": 20,
+      "mean_probability": 0.6578061535023431,
+      "observed_frequency": 0.9
+     },
+     {
+      "bin": [
+       0.7000000000000001,
+       0.8
+      ],
+      "count": 11,
+      "mean_probability": 0.7533746983732297,
+      "observed_frequency": 1.0
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 8,
+      "mean_probability": 0.8375353438426847,
+      "observed_frequency": 1.0
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.35725980394224305,
+     "tp": 115,
+     "fp": 48,
+     "fn": 89,
+     "tn": 6246,
+     "precision": 0.7055214723926381,
+     "recall": 0.5637254901960784,
+     "f1": 0.6267029972752043,
+     "false_positive_rate": 0.0076263107721639654,
+     "false_negative_rate": 0.4362745098039216
+    },
+    "events": {
+     "horizon_s": 1,
+     "entering_walkers": 10,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.2,
+     "non_entering_walkers": 26,
+     "false_crossing_alarms": 2,
+     "false_alarm_rate": 0.07692307692307693
+    }
+   },
+   "2s": {
+    "n": 6316,
+    "positives": 417,
+    "auroc": 0.8670038371743697,
+    "auprc": 0.6581825722551867,
+    "brier": 0.03639256803496333,
+    "ece": 0.020671369795925487,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 5169,
+      "mean_probability": 0.017861230314607103,
+      "observed_frequency": 0.01992648481331012
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 585,
+      "mean_probability": 0.13104604819416685,
+      "observed_frequency": 0.046153846153846156
+     },
+     {
+      "bin": [
+       0.2,
+       0.30000000000000004
+      ],
+      "count": 175,
+      "mean_probability": 0.2482981028104276,
+      "observed_frequency": 0.16
+     },
+     {
+      "bin": [
+       0.30000000000000004,
+       0.4
+      ],
+      "count": 107,
+      "mean_probability": 0.34904920169841225,
+      "observed_frequency": 0.34579439252336447
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 75,
+      "mean_probability": 0.4483287944348295,
+      "observed_frequency": 0.56
+     },
+     {
+      "bin": [
+       0.5,
+       0.6000000000000001
+      ],
+      "count": 75,
+      "mean_probability": 0.5544077073618393,
+      "observed_frequency": 0.8
+     },
+     {
+      "bin": [
+       0.6000000000000001,
+       0.7000000000000001
+      ],
+      "count": 67,
+      "mean_probability": 0.6414926617879148,
+      "observed_frequency": 0.8805970149253731
+     },
+     {
+      "bin": [
+       0.7000000000000001,
+       0.8
+      ],
+      "count": 42,
+      "mean_probability": 0.7560154678381302,
+      "observed_frequency": 0.9761904761904762
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 21,
+      "mean_probability": 0.8399716198157676,
+      "observed_frequency": 0.9523809523809523
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.34488399542094006,
+     "tp": 243,
+     "fp": 89,
+     "fn": 174,
+     "tn": 5810,
+     "precision": 0.7319277108433735,
+     "recall": 0.5827338129496403,
+     "f1": 0.6488651535380507,
+     "false_positive_rate": 0.015087302932700457,
+     "false_negative_rate": 0.4172661870503597
+    },
+    "events": {
+     "horizon_s": 2,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 4,
+     "false_alarm_rate": 0.18181818181818182
+    }
+   },
+   "3s": {
+    "n": 5901,
+    "positives": 620,
+    "auroc": 0.8524888370359963,
+    "auprc": 0.6962232715257874,
+    "brier": 0.05438415567810715,
+    "ece": 0.03577772522258082,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 4235,
+      "mean_probability": 0.02449660279048086,
+      "observed_frequency": 0.03282172373081464
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 791,
+      "mean_probability": 0.1384087658125588,
+      "observed_frequency": 0.05309734513274336
+     },
+     {
+      "bin": [
+       0.2,
+       0.30000000000000004
+      ],
+      "count": 249,
+      "mean_probability": 0.24510879708046174,
+      "observed_frequency": 0.14457831325301204
+     },
+     {
+      "bin": [
+       0.30000000000000004,
+       0.4
+      ],
+      "count": 187,
+      "mean_probability": 0.3503588019131499,
+      "observed_frequency": 0.2887700534759358
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 98,
+      "mean_probability": 0.44661422062205147,
+      "observed_frequency": 0.42857142857142855
+     },
+     {
+      "bin": [
+       0.5,
+       0.6000000000000001
+      ],
+      "count": 80,
+      "mean_probability": 0.5521371674496965,
+      "observed_frequency": 0.7125
+     },
+     {
+      "bin": [
+       0.6000000000000001,
+       0.7000000000000001
+      ],
+      "count": 100,
+      "mean_probability": 0.654348184142463,
+      "observed_frequency": 0.92
+     },
+     {
+      "bin": [
+       0.7000000000000001,
+       0.8
+      ],
+      "count": 93,
+      "mean_probability": 0.7444934914513541,
+      "observed_frequency": 0.989247311827957
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 68,
+      "mean_probability": 0.8542287932081657,
+      "observed_frequency": 0.9705882352941176
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.38849471931598567,
+     "tp": 357,
+     "fp": 101,
+     "fn": 263,
+     "tn": 5180,
+     "precision": 0.7794759825327511,
+     "recall": 0.5758064516129032,
+     "f1": 0.6623376623376622,
+     "false_positive_rate": 0.019125165688316608,
+     "false_negative_rate": 0.4241935483870968
+    },
+    "events": {
+     "horizon_s": 3,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 6,
+     "false_alarm_rate": 0.2727272727272727
+    }
+   }
+  },
+  "constant_prevalence": {
+   "1s": {
+    "n": 6498,
+    "positives": 204,
+    "auroc": 0.5,
+    "auprc": 0.03139427516158818,
+    "brier": 0.030414000616075222,
+    "ece": 0.002307805756244879,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 6498,
+      "mean_probability": 0.0290864694053433,
+      "observed_frequency": 0.03139427516158818
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.029086469405343294,
+     "tp": 204,
+     "fp": 6294,
+     "fn": 0,
+     "tn": 0,
+     "precision": 0.03139427516158818,
+     "recall": 1.0,
+     "f1": 0.06087735004476276,
+     "false_positive_rate": 1.0,
+     "false_negative_rate": 0.0
+    },
+    "events": {
+     "horizon_s": 1,
+     "entering_walkers": 10,
+     "missed_entries": 0,
+     "missed_entry_rate": 0.0,
+     "non_entering_walkers": 26,
+     "false_crossing_alarms": 26,
+     "false_alarm_rate": 1.0
+    }
+   },
+   "2s": {
+    "n": 6316,
+    "positives": 417,
+    "auroc": 0.5,
+    "auprc": 0.06602279924002533,
+    "brier": 0.06169431018923821,
+    "ece": 0.005524578599455904,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 6316,
+      "mean_probability": 0.06049822064056942,
+      "observed_frequency": 0.06602279924002533
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.060498220640569395,
+     "tp": 417,
+     "fp": 5899,
+     "fn": 0,
+     "tn": 0,
+     "precision": 0.06602279924002533,
+     "recall": 1.0,
+     "f1": 0.12386751819396999,
+     "false_positive_rate": 1.0,
+     "false_negative_rate": 0.0
+    },
+    "events": {
+     "horizon_s": 2,
+     "entering_walkers": 11,
+     "missed_entries": 0,
+     "missed_entry_rate": 0.0,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 22,
+     "false_alarm_rate": 1.0
+    }
+   },
+   "3s": {
+    "n": 5901,
+    "positives": 620,
+    "auroc": 0.5,
+    "auprc": 0.10506693780715133,
+    "brier": 0.0941938157809351,
+    "ece": 0.012881746541349298,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 5901,
+      "mean_probability": 0.09218519126580203,
+      "observed_frequency": 0.10506693780715133
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.092185191265802,
+     "tp": 620,
+     "fp": 5281,
+     "fn": 0,
+     "tn": 0,
+     "precision": 0.10506693780715133,
+     "recall": 1.0,
+     "f1": 0.19015488422021162,
+     "false_positive_rate": 1.0,
+     "false_negative_rate": 0.0
+    },
+    "events": {
+     "horizon_s": 3,
+     "entering_walkers": 11,
+     "missed_entries": 0,
+     "missed_entry_rate": 0.0,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 22,
+     "false_alarm_rate": 1.0
+    }
+   }
+  },
+  "kinematic_constant_velocity": {
+   "1s": {
+    "n": 6498,
+    "positives": 204,
+    "auroc": 0.7447685938054917,
+    "auprc": 0.38353413373931405,
+    "brier": 0.02123730378578024,
+    "ece": 0.02123730378578024,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 6362,
+      "mean_probability": 0.0,
+      "observed_frequency": 0.016189877397044954
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 136,
+      "mean_probability": 1.0,
+      "observed_frequency": 0.7426470588235294
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 101,
+     "fp": 35,
+     "fn": 103,
+     "tn": 6259,
+     "precision": 0.7426470588235294,
+     "recall": 0.4950980392156863,
+     "f1": 0.5941176470588236,
+     "false_positive_rate": 0.005560851604702891,
+     "false_negative_rate": 0.5049019607843137
+    },
+    "events": {
+     "horizon_s": 1,
+     "entering_walkers": 10,
+     "missed_entries": 3,
+     "missed_entry_rate": 0.3,
+     "non_entering_walkers": 26,
+     "false_crossing_alarms": 3,
+     "false_alarm_rate": 0.11538461538461539
+    }
+   },
+   "2s": {
+    "n": 6316,
+    "positives": 417,
+    "auroc": 0.7350863841898172,
+    "auprc": 0.37617801081039354,
+    "brier": 0.047340088663711206,
+    "ece": 0.04734008866371121,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 6030,
+      "mean_probability": 0.0,
+      "observed_frequency": 0.03565505804311774
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 286,
+      "mean_probability": 1.0,
+      "observed_frequency": 0.7062937062937062
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 202,
+     "fp": 84,
+     "fn": 215,
+     "tn": 5815,
+     "precision": 0.7062937062937062,
+     "recall": 0.4844124700239808,
+     "f1": 0.5746799431009957,
+     "false_positive_rate": 0.0142397016443465,
+     "false_negative_rate": 0.5155875299760192
+    },
+    "events": {
+     "horizon_s": 2,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 4,
+     "false_alarm_rate": 0.18181818181818182
+    }
+   },
+   "3s": {
+    "n": 5901,
+    "positives": 620,
+    "auroc": 0.7359384830585605,
+    "auprc": 0.3956909337181292,
+    "brier": 0.07642772411455685,
+    "ece": 0.07642772411455687,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 5452,
+      "mean_probability": 0.0,
+      "observed_frequency": 0.057043286867204696
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 449,
+      "mean_probability": 1.0,
+      "observed_frequency": 0.688195991091314
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 309,
+     "fp": 140,
+     "fn": 311,
+     "tn": 5141,
+     "precision": 0.688195991091314,
+     "recall": 0.49838709677419357,
+     "f1": 0.578110383536015,
+     "false_positive_rate": 0.026510130657072525,
+     "false_negative_rate": 0.5016129032258064
+    },
+    "events": {
+     "horizon_s": 3,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 7,
+     "false_alarm_rate": 0.3181818181818182
+    }
+   }
+  },
+  "kinematic_constant_velocity_soft": {
+   "1s": {
+    "n": 6498,
+    "positives": 204,
+    "auroc": 0.8050855311937295,
+    "auprc": 0.501375077266937,
+    "brier": 0.019669997518368745,
+    "ece": 0.01658420287624171,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 6208,
+      "mean_probability": 0.0012560609032606419,
+      "observed_frequency": 0.01369201030927835
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 52,
+      "mean_probability": 0.16118133770158657,
+      "observed_frequency": 0.15384615384615385
+     },
+     {
+      "bin": [
+       0.2,
+       0.30000000000000004
+      ],
+      "count": 43,
+      "mean_probability": 0.24628743113473403,
+      "observed_frequency": 0.06976744186046512
+     },
+     {
+      "bin": [
+       0.30000000000000004,
+       0.4
+      ],
+      "count": 34,
+      "mean_probability": 0.33088113630519195,
+      "observed_frequency": 0.08823529411764706
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 25,
+      "mean_probability": 0.42280795097351076,
+      "observed_frequency": 0.16
+     },
+     {
+      "bin": [
+       0.5,
+       0.6000000000000001
+      ],
+      "count": 47,
+      "mean_probability": 0.5442404949918707,
+      "observed_frequency": 0.5531914893617021
+     },
+     {
+      "bin": [
+       0.6000000000000001,
+       0.7000000000000001
+      ],
+      "count": 24,
+      "mean_probability": 0.6678153574466705,
+      "observed_frequency": 0.6666666666666666
+     },
+     {
+      "bin": [
+       0.7000000000000001,
+       0.8
+      ],
+      "count": 28,
+      "mean_probability": 0.7497917115688324,
+      "observed_frequency": 0.9642857142857143
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 37,
+      "mean_probability": 0.8293045275920147,
+      "observed_frequency": 0.8648648648648649
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 101,
+     "fp": 35,
+     "fn": 103,
+     "tn": 6259,
+     "precision": 0.7426470588235294,
+     "recall": 0.4950980392156863,
+     "f1": 0.5941176470588236,
+     "false_positive_rate": 0.005560851604702891,
+     "false_negative_rate": 0.5049019607843137
+    },
+    "events": {
+     "horizon_s": 1,
+     "entering_walkers": 10,
+     "missed_entries": 3,
+     "missed_entry_rate": 0.3,
+     "non_entering_walkers": 26,
+     "false_crossing_alarms": 3,
+     "false_alarm_rate": 0.11538461538461539
+    }
+   },
+   "2s": {
+    "n": 6316,
+    "positives": 417,
+    "auroc": 0.7677751340206018,
+    "auprc": 0.4805867339898364,
+    "brier": 0.041616342475126064,
+    "ece": 0.03553074507362447,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 5867,
+      "mean_probability": 4.248354544728966e-18,
+      "observed_frequency": 0.031361854440088634
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 70,
+      "mean_probability": 0.15232182198337146,
+      "observed_frequency": 0.11428571428571428
+     },
+     {
+      "bin": [
+       0.2,
+       0.30000000000000004
+      ],
+      "count": 42,
+      "mean_probability": 0.24842423129649388,
+      "observed_frequency": 0.11904761904761904
+     },
+     {
+      "bin": [
+       0.30000000000000004,
+       0.4
+      ],
+      "count": 25,
+      "mean_probability": 0.32952550411224363,
+      "observed_frequency": 0.32
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 26,
+      "mean_probability": 0.4294971582981256,
+      "observed_frequency": 0.38461538461538464
+     },
+     {
+      "bin": [
+       0.5,
+       0.6000000000000001
+      ],
+      "count": 36,
+      "mean_probability": 0.5536600550015768,
+      "observed_frequency": 0.3611111111111111
+     },
+     {
+      "bin": [
+       0.6000000000000001,
+       0.7000000000000001
+      ],
+      "count": 40,
+      "mean_probability": 0.6722471714019775,
+      "observed_frequency": 0.55
+     },
+     {
+      "bin": [
+       0.7000000000000001,
+       0.8
+      ],
+      "count": 34,
+      "mean_probability": 0.7508936594514286,
+      "observed_frequency": 0.6176470588235294
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 59,
+      "mean_probability": 0.8450135134034238,
+      "observed_frequency": 0.7966101694915254
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 117,
+      "mean_probability": 0.9461790287596548,
+      "observed_frequency": 0.8461538461538461
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 202,
+     "fp": 84,
+     "fn": 215,
+     "tn": 5815,
+     "precision": 0.7062937062937062,
+     "recall": 0.4844124700239808,
+     "f1": 0.5746799431009957,
+     "false_positive_rate": 0.0142397016443465,
+     "false_negative_rate": 0.5155875299760192
+    },
+    "events": {
+     "horizon_s": 2,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 4,
+     "false_alarm_rate": 0.18181818181818182
+    }
+   },
+   "3s": {
+    "n": 5901,
+    "positives": 620,
+    "auroc": 0.7389711137309039,
+    "auprc": 0.4774202601217937,
+    "brier": 0.06938232124411632,
+    "ece": 0.06593359997466022,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 5452,
+      "mean_probability": 4.248354544728966e-18,
+      "observed_frequency": 0.057043286867204696
+     },
+     {
+      "bin": [
+       0.5,
+       0.6000000000000001
+      ],
+      "count": 56,
+      "mean_probability": 0.5450694103326116,
+      "observed_frequency": 0.2857142857142857
+     },
+     {
+      "bin": [
+       0.6000000000000001,
+       0.7000000000000001
+      ],
+      "count": 37,
+      "mean_probability": 0.6732054384979042,
+      "observed_frequency": 0.5945945945945946
+     },
+     {
+      "bin": [
+       0.7000000000000001,
+       0.8
+      ],
+      "count": 33,
+      "mean_probability": 0.7469533103885073,
+      "observed_frequency": 0.6666666666666666
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 46,
+      "mean_probability": 0.8429485533548438,
+      "observed_frequency": 0.782608695652174
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 277,
+      "mean_probability": 0.9682909478349376,
+      "observed_frequency": 0.7689530685920578
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 309,
+     "fp": 140,
+     "fn": 311,
+     "tn": 5141,
+     "precision": 0.688195991091314,
+     "recall": 0.49838709677419357,
+     "f1": 0.578110383536015,
+     "false_positive_rate": 0.026510130657072525,
+     "false_negative_rate": 0.5016129032258064
+    },
+    "events": {
+     "horizon_s": 3,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 7,
+     "false_alarm_rate": 0.3181818181818182
+    }
+   }
+  },
+  "existing_physical_alternatives": {
+   "1s": {
+    "n": 6498,
+    "positives": 204,
+    "auroc": 0.654579992149386,
+    "auprc": 0.05449822681726056,
+    "brier": 0.2051400430901816,
+    "ece": 0.20514004309018158,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 5163,
+      "mean_probability": 0.0,
+      "observed_frequency": 0.019562269998063143
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 1335,
+      "mean_probability": 1.0,
+      "observed_frequency": 0.07715355805243446
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 103,
+     "fp": 1232,
+     "fn": 101,
+     "tn": 5062,
+     "precision": 0.07715355805243446,
+     "recall": 0.5049019607843137,
+     "f1": 0.13385315139701104,
+     "false_positive_rate": 0.19574197648554179,
+     "false_negative_rate": 0.4950980392156863
+    },
+    "events": {
+     "horizon_s": 1,
+     "entering_walkers": 10,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.2,
+     "non_entering_walkers": 26,
+     "false_crossing_alarms": 6,
+     "false_alarm_rate": 0.23076923076923078
+    }
+   },
+   "2s": {
+    "n": 6316,
+    "positives": 417,
+    "auroc": 0.6444259747313186,
+    "auprc": 0.10060248065705113,
+    "brier": 0.27913236225459154,
+    "ece": 0.2791323622545915,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 4506,
+      "mean_probability": 0.0,
+      "observed_frequency": 0.04105636928539725
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 1810,
+      "mean_probability": 1.0,
+      "observed_frequency": 0.1281767955801105
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 232,
+     "fp": 1578,
+     "fn": 185,
+     "tn": 4321,
+     "precision": 0.1281767955801105,
+     "recall": 0.5563549160671463,
+     "f1": 0.20835204310731928,
+     "false_positive_rate": 0.26750296660450923,
+     "false_negative_rate": 0.44364508393285373
+    },
+    "events": {
+     "horizon_s": 2,
+     "entering_walkers": 11,
+     "missed_entries": 2,
+     "missed_entry_rate": 0.18181818181818182,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 10,
+     "false_alarm_rate": 0.45454545454545453
+    }
+   },
+   "3s": {
+    "n": 5901,
+    "positives": 620,
+    "auroc": 0.6102954291403754,
+    "auprc": 0.1363600823409232,
+    "brier": 0.3701067615658363,
+    "ece": 0.37010676156583633,
+    "reliability": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 3611,
+      "mean_probability": 0.0,
+      "observed_frequency": 0.0711714206590972
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 2290,
+      "mean_probability": 1.0,
+      "observed_frequency": 0.15851528384279476
+     }
+    ],
+    "at_threshold": {
+     "threshold": 0.5,
+     "tp": 363,
+     "fp": 1927,
+     "fn": 257,
+     "tn": 3354,
+     "precision": 0.15851528384279476,
+     "recall": 0.5854838709677419,
+     "f1": 0.2494845360824742,
+     "false_positive_rate": 0.3648930126869911,
+     "false_negative_rate": 0.41451612903225804
+    },
+    "events": {
+     "horizon_s": 3,
+     "entering_walkers": 11,
+     "missed_entries": 1,
+     "missed_entry_rate": 0.09090909090909091,
+     "non_entering_walkers": 22,
+     "false_crossing_alarms": 14,
+     "false_alarm_rate": 0.6363636363636364
+    }
+   }
+  }
+ },
+ "test_evaluation": {
+  "evaluated_at_unix": 1792714682.881463,
+  "test_dataset_sha256": "5de8fda21e4a217683c195c425ad73969785cb1cfce7ad1243280cdade1081be",
+  "samples": 7799,
+  "prediction_coverage": 0.7410714285714286,
+  "coverage": {
+   "relevant": 5376,
+   "associated": 3984,
+   "unobserved": 1160,
+   "ambiguous": 200,
+   "scene_mismatch": 32,
+   "duplicate_tracks": 3815
+  },
+  "label_counts": {
+   "1s": {
+    "LABELED": 7208,
+    "IN_PATH_AT_DECISION": 401,
+    "MISSING_FUTURE": 190,
+    "POST_CONTACT": 0
+   },
+   "2s": {
+    "LABELED": 6796,
+    "IN_PATH_AT_DECISION": 401,
+    "MISSING_FUTURE": 602,
+    "POST_CONTACT": 0
+   },
+   "3s": {
+    "LABELED": 6181,
+    "IN_PATH_AT_DECISION": 401,
+    "MISSING_FUTURE": 1217,
+    "POST_CONTACT": 0
+   }
+  },
+  "result": {
+   "model": {
+    "1s": {
+     "n": 7208,
+     "positives": 256,
+     "auroc": 0.9727186196418297,
+     "auprc": 0.7384594748835823,
+     "brier": 0.0176167719660729,
+     "ece": 0.010589694061086652,
+     "reliability": [
+      {
+       "bin": [
+        0.0,
+        0.1
+       ],
+       "count": 6737,
+       "mean_probability": 0.007216122445838005,
+       "observed_frequency": 0.005343624758794715
+      },
+      {
+       "bin": [
+        0.1,
+        0.2
+       ],
+       "count": 160,
+       "mean_probability": 0.1424587766878953,
+       "observed_frequency": 0.1375
+      },
+      {
+       "bin": [
+        0.2,
+        0.30000000000000004
+       ],
+       "count": 78,
+       "mean_probability": 0.2504750879266714,
+       "observed_frequency": 0.34615384615384615
+      },
+      {
+       "bin": [
+        0.30000000000000004,
+        0.4
+       ],
+       "count": 80,
+       "mean_probability": 0.3508476787234217,
+       "observed_frequency": 0.6
+      },
+      {
+       "bin": [
+        0.4,
+        0.5
+       ],
+       "count": 56,
+       "mean_probability": 0.4485831607498091,
+       "observed_frequency": 0.6607142857142857
+      },
+      {
+       "bin": [
+        0.5,
+        0.6000000000000001
+       ],
+       "count": 39,
+       "mean_probability": 0.5428105407669889,
+       "observed_frequency": 0.8717948717948718
+      },
+      {
+       "bin": [
+        0.6000000000000001,
+        0.7000000000000001
+       ],
+       "count": 26,
+       "mean_probability": 0.6456039239236572,
+       "observed_frequency": 0.8461538461538461
+      },
+      {
+       "bin": [
+        0.7000000000000001,
+        0.8
+       ],
+       "count": 28,
+       "mean_probability": 0.7522175220476309,
+       "observed_frequency": 0.9285714285714286
+      },
+      {
+       "bin": [
+        0.8,
+        0.9
+       ],
+       "count": 4,
+       "mean_probability": 0.8337436269891447,
+       "observed_frequency": 1.0
+      }
+     ],
+     "at_threshold": {
+      "threshold": 0.35725980394224305,
+      "tp": 144,
+      "fp": 44,
+      "fn": 112,
+      "tn": 6908,
+      "precision": 0.7659574468085106,
+      "recall": 0.5625,
+      "f1": 0.6486486486486486,
+      "false_positive_rate": 0.006329113924050633,
+      "false_negative_rate": 0.4375
+     },
+     "events": {
+      "horizon_s": 1,
+      "entering_walkers": 15,
+      "missed_entries": 0,
+      "missed_entry_rate": 0.0,
+      "non_entering_walkers": 45,
+      "false_crossing_alarms": 3,
+      "false_alarm_rate": 0.06666666666666667
+     }
+    },
+    "2s": {
+     "n": 6796,
+     "positives": 509,
+     "auroc": 0.9529052840191957,
+     "auprc": 0.7324719970693522,
+     "brier": 0.03745371114478613,
+     "ece": 0.017501251097853325,
+     "reliability": [
+      {
+       "bin": [
+        0.0,
+        0.1
+       ],
+       "count": 5869,
+       "mean_probability": 0.013952751514491706,
+       "observed_frequency": 0.014653262906798432
+      },
+      {
+       "bin": [
+        0.1,
+        0.2
+       ],
+       "count": 375,
+       "mean_probability": 0.13919690705324103,
+       "observed_frequency": 0.17333333333333334
+      },
+      {
+       "bin": [
+        0.2,
+        0.30000000000000004
+       ],
+       "count": 153,
+       "mean_probability": 0.24759117908814654,
+       "observed_frequency": 0.35294117647058826
+      },
+      {
+       "bin": [
+        0.30000000000000004,
+        0.4
+       ],
+       "count": 85,
+       "mean_probability": 0.34671317984474886,
+       "observed_frequency": 0.5529411764705883
+      },
+      {
+       "bin": [
+        0.4,
+        0.5
+       ],
+       "count": 77,
+       "mean_probability": 0.45113981039936774,
+       "observed_frequency": 0.7532467532467533
+      },
+      {
+       "bin": [
+        0.5,
+        0.6000000000000001
+       ],
+       "count": 100,
+       "mean_probability": 0.550590990927507,
+       "observed_frequency": 0.75
+      },
+      {
+       "bin": [
+        0.6000000000000001,
+        0.7000000000000001
+       ],
+       "count": 58,
+       "mean_probability": 0.6515418449242245,
+       "observed_frequency": 0.8448275862068966
+      },
+      {
+       "bin": [
+        0.7000000000000001,
+        0.8
+       ],
+       "count": 59,
+       "mean_probability": 0.7516316336081263,
+       "observed_frequency": 0.9322033898305084
+      },
+      {
+       "bin": [
+        0.8,
+        0.9
+       ],
+       "count": 20,
+       "mean_probability": 0.834466509309752,
+       "observed_frequency": 1.0
+      }
+     ],
+     "at_threshold": {
+      "threshold": 0.34488399542094006,
+      "tp": 282,
+      "fp": 77,
+      "fn": 227,
+      "tn": 6210,
+      "precision": 0.7855153203342619,
+      "recall": 0.5540275049115914,
+      "f1": 0.6497695852534562,
+      "false_positive_rate": 0.01224749483060283,
+      "false_negative_rate": 0.44597249508840864
+     },
+     "events": {
+      "horizon_s": 2,
+      "entering_walkers": 15,
+      "missed_entries": 0,
+      "missed_entry_rate": 0.0,
+      "non_entering_walkers": 43,
+      "false_crossing_alarms": 8,
+      "false_alarm_rate": 0.18604651162790697
+     }
+    },
+    "3s": {
+     "n": 6181,
+     "positives": 703,
+     "auroc": 0.9298790922126369,
+     "auprc": 0.7398973080058283,
+     "brier": 0.05580724608169222,
+     "ece": 0.02394860707524917,
+     "reliability": [
+      {
+       "bin": [
+        0.0,
+        0.1
+       ],
+       "count": 4836,
+       "mean_probability": 0.020498538477768745,
+       "observed_frequency": 0.020471464019851116
+      },
+      {
+       "bin": [
+        0.1,
+        0.2
+       ],
+       "count": 500,
+       "mean_probability": 0.14534302887112216,
+       "observed_frequency": 0.162
+      },
+      {
+       "bin": [
+        0.2,
+        0.30000000000000004
+       ],
+       "count": 275,
+       "mean_probability": 0.238982126836026,
+       "observed_frequency": 0.33454545454545453
+      },
+      {
+       "bin": [
+        0.30000000000000004,
+        0.4
+       ],
+       "count": 146,
+       "mean_probability": 0.3469554675443478,
+       "observed_frequency": 0.6301369863013698
+      },
+      {
+       "bin": [
+        0.4,
+        0.5
+       ],
+       "count": 108,
+       "mean_probability": 0.45307145862570414,
+       "observed_frequency": 0.6944444444444444
+      },
+      {
+       "bin": [
+        0.5,
+        0.6000000000000001
+       ],
+       "count": 85,
+       "mean_probability": 0.5540453663751576,
+       "observed_frequency": 0.6470588235294118
+      },
+      {
+       "bin": [
+        0.6000000000000001,
+        0.7000000000000001
+       ],
+       "count": 95,
+       "mean_probability": 0.6481213041904996,
+       "observed_frequency": 0.8315789473684211
+      },
+      {
+       "bin": [
+        0.7000000000000001,
+        0.8
+       ],
+       "count": 56,
+       "mean_probability": 0.7523229215757655,
+       "observed_frequency": 0.8928571428571429
+      },
+      {
+       "bin": [
+        0.8,
+        0.9
+       ],
+       "count": 75,
+       "mean_probability": 0.8375149845166845,
+       "observed_frequency": 1.0
+      },
+      {
+       "bin": [
+        0.9,
+        1.0
+       ],
+       "count": 5,
+       "mean_probability": 0.9033378301750833,
+       "observed_frequency": 1.0
+      }
+     ],
+     "at_threshold": {
+      "threshold": 0.38849471931598567,
+      "tp": 346,
+      "fp": 89,
+      "fn": 357,
+      "tn": 5389,
+      "precision": 0.7954022988505747,
+      "recall": 0.492176386913229,
+      "f1": 0.6080843585237258,
+      "false_positive_rate": 0.01624680540343191,
+      "false_negative_rate": 0.5078236130867709
+     },
+     "events": {
+      "horizon_s": 3,
+      "entering_walkers": 15,
+      "missed_entries": 0,
+      "missed_entry_rate": 0.0,
+      "non_entering_walkers": 35,
+      "false_crossing_alarms": 7,
+      "false_alarm_rate": 0.2
+     }
+    }
+   },
+   "baselines": {
+    "constant_prevalence": {
+     "1s": {
+      "n": 7208,
+      "positives": 256,
+      "auroc": 0.5,
+      "auprc": 0.03551609322974473,
+      "brier": 0.03429604041396411,
+      "ece": 0.0064296238244014245,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 7208,
+        "mean_probability": 0.029086469405343304,
+        "observed_frequency": 0.03551609322974473
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.029086469405343294,
+       "tp": 256,
+       "fp": 6952,
+       "fn": 0,
+       "tn": 0,
+       "precision": 0.03551609322974473,
+       "recall": 1.0,
+       "f1": 0.06859592711682744,
+       "false_positive_rate": 1.0,
+       "false_negative_rate": 0.0
+      },
+      "events": {
+       "horizon_s": 1,
+       "entering_walkers": 15,
+       "missed_entries": 0,
+       "missed_entry_rate": 0.0,
+       "non_entering_walkers": 45,
+       "false_crossing_alarms": 45,
+       "false_alarm_rate": 1.0
+      }
+     },
+     "2s": {
+      "n": 6796,
+      "positives": 509,
+      "auroc": 0.5,
+      "auprc": 0.07489699823425544,
+      "brier": 0.06949476268594582,
+      "ece": 0.014398777593686025,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 6796,
+        "mean_probability": 0.060498220640569415,
+        "observed_frequency": 0.07489699823425544
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.060498220640569395,
+       "tp": 509,
+       "fp": 6287,
+       "fn": 0,
+       "tn": 0,
+       "precision": 0.07489699823425544,
+       "recall": 1.0,
+       "f1": 0.13935660506502393,
+       "false_positive_rate": 1.0,
+       "false_negative_rate": 0.0
+      },
+      "events": {
+       "horizon_s": 2,
+       "entering_walkers": 15,
+       "missed_entries": 0,
+       "missed_entry_rate": 0.0,
+       "non_entering_walkers": 43,
+       "false_crossing_alarms": 43,
+       "false_alarm_rate": 1.0
+      }
+     },
+     "3s": {
+      "n": 6181,
+      "positives": 703,
+      "auroc": 0.5,
+      "auprc": 0.11373564148196084,
+      "brier": 0.10126426724316685,
+      "ece": 0.021550450216158826,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 6181,
+        "mean_probability": 0.09218519126580202,
+        "observed_frequency": 0.11373564148196084
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.092185191265802,
+       "tp": 703,
+       "fp": 5478,
+       "fn": 0,
+       "tn": 0,
+       "precision": 0.11373564148196084,
+       "recall": 1.0,
+       "f1": 0.2042417199302731,
+       "false_positive_rate": 1.0,
+       "false_negative_rate": 0.0
+      },
+      "events": {
+       "horizon_s": 3,
+       "entering_walkers": 15,
+       "missed_entries": 0,
+       "missed_entry_rate": 0.0,
+       "non_entering_walkers": 35,
+       "false_crossing_alarms": 35,
+       "false_alarm_rate": 1.0
+      }
+     }
+    },
+    "kinematic_constant_velocity": {
+     "1s": {
+      "n": 7208,
+      "positives": 256,
+      "auroc": 0.776851535529344,
+      "auprc": 0.46697028117690953,
+      "brier": 0.02039400665926748,
+      "ece": 0.02039400665926748,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 7031,
+        "mean_probability": 0.0,
+        "observed_frequency": 0.016071682548712843
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 177,
+        "mean_probability": 1.0,
+        "observed_frequency": 0.807909604519774
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 143,
+       "fp": 34,
+       "fn": 113,
+       "tn": 6918,
+       "precision": 0.807909604519774,
+       "recall": 0.55859375,
+       "f1": 0.6605080831408776,
+       "false_positive_rate": 0.004890678941311853,
+       "false_negative_rate": 0.44140625
+      },
+      "events": {
+       "horizon_s": 1,
+       "entering_walkers": 15,
+       "missed_entries": 2,
+       "missed_entry_rate": 0.13333333333333333,
+       "non_entering_walkers": 45,
+       "false_crossing_alarms": 4,
+       "false_alarm_rate": 0.08888888888888889
+      }
+     },
+     "2s": {
+      "n": 6796,
+      "positives": 509,
+      "auroc": 0.7362702779896646,
+      "auprc": 0.4050979940683693,
+      "brier": 0.05032371983519718,
+      "ece": 0.05032371983519718,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 6469,
+        "mean_probability": 0.0,
+        "observed_frequency": 0.040500850208687586
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 327,
+        "mean_probability": 1.0,
+        "observed_frequency": 0.7553516819571865
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 247,
+       "fp": 80,
+       "fn": 262,
+       "tn": 6207,
+       "precision": 0.7553516819571865,
+       "recall": 0.48526522593320237,
+       "f1": 0.5909090909090909,
+       "false_positive_rate": 0.012724669953873072,
+       "false_negative_rate": 0.5147347740667977
+      },
+      "events": {
+       "horizon_s": 2,
+       "entering_walkers": 15,
+       "missed_entries": 1,
+       "missed_entry_rate": 0.06666666666666667,
+       "non_entering_walkers": 43,
+       "false_crossing_alarms": 7,
+       "false_alarm_rate": 0.16279069767441862
+      }
+     },
+     "3s": {
+      "n": 6181,
+      "positives": 703,
+      "auroc": 0.736721358471517,
+      "auprc": 0.42202784492084067,
+      "brier": 0.07765733700048535,
+      "ece": 0.07765733700048535,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 5706,
+        "mean_probability": 0.0,
+        "observed_frequency": 0.06203995793901157
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 475,
+        "mean_probability": 1.0,
+        "observed_frequency": 0.7347368421052631
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 349,
+       "fp": 126,
+       "fn": 354,
+       "tn": 5352,
+       "precision": 0.7347368421052631,
+       "recall": 0.49644381223328593,
+       "f1": 0.5925297113752123,
+       "false_positive_rate": 0.023001095290251915,
+       "false_negative_rate": 0.5035561877667141
+      },
+      "events": {
+       "horizon_s": 3,
+       "entering_walkers": 15,
+       "missed_entries": 0,
+       "missed_entry_rate": 0.0,
+       "non_entering_walkers": 35,
+       "false_crossing_alarms": 9,
+       "false_alarm_rate": 0.2571428571428571
+      }
+     }
+    },
+    "kinematic_constant_velocity_soft": {
+     "1s": {
+      "n": 7208,
+      "positives": 256,
+      "auroc": 0.8256097053905351,
+      "auprc": 0.5777910790229664,
+      "brier": 0.019146586981831058,
+      "ece": 0.017413530251182835,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 6879,
+        "mean_probability": 0.0011439966559106869,
+        "observed_frequency": 0.013664776857101322
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "count": 57,
+        "mean_probability": 0.15665847742766664,
+        "observed_frequency": 0.10526315789473684
+       },
+       {
+        "bin": [
+         0.2,
+         0.30000000000000004
+        ],
+        "count": 43,
+        "mean_probability": 0.2497726574886677,
+        "observed_frequency": 0.09302325581395349
+       },
+       {
+        "bin": [
+         0.30000000000000004,
+         0.4
+        ],
+        "count": 29,
+        "mean_probability": 0.325307650812741,
+        "observed_frequency": 0.10344827586206896
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "count": 23,
+        "mean_probability": 0.4268012046813965,
+        "observed_frequency": 0.2608695652173913
+       },
+       {
+        "bin": [
+         0.5,
+         0.6000000000000001
+        ],
+        "count": 47,
+        "mean_probability": 0.5452590749618855,
+        "observed_frequency": 0.5319148936170213
+       },
+       {
+        "bin": [
+         0.6000000000000001,
+         0.7000000000000001
+        ],
+        "count": 32,
+        "mean_probability": 0.6650454737246037,
+        "observed_frequency": 0.90625
+       },
+       {
+        "bin": [
+         0.7000000000000001,
+         0.8
+        ],
+        "count": 42,
+        "mean_probability": 0.7497917115688324,
+        "observed_frequency": 0.8809523809523809
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "count": 56,
+        "mean_probability": 0.8283624553254673,
+        "observed_frequency": 0.9285714285714286
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 143,
+       "fp": 34,
+       "fn": 113,
+       "tn": 6918,
+       "precision": 0.807909604519774,
+       "recall": 0.55859375,
+       "f1": 0.6605080831408776,
+       "false_positive_rate": 0.004890678941311853,
+       "false_negative_rate": 0.44140625
+      },
+      "events": {
+       "horizon_s": 1,
+       "entering_walkers": 15,
+       "missed_entries": 2,
+       "missed_entry_rate": 0.13333333333333333,
+       "non_entering_walkers": 45,
+       "false_crossing_alarms": 4,
+       "false_alarm_rate": 0.08888888888888889
+      }
+     },
+     "2s": {
+      "n": 6796,
+      "positives": 509,
+      "auroc": 0.7833021830996258,
+      "auprc": 0.5255926801332685,
+      "brier": 0.0437557194123176,
+      "ece": 0.03599666297685721,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 6317,
+        "mean_probability": 4.248354544728966e-18,
+        "observed_frequency": 0.03340193129650151
+       },
+       {
+        "bin": [
+         0.1,
+         0.2
+        ],
+        "count": 58,
+        "mean_probability": 0.16251927704132837,
+        "observed_frequency": 0.20689655172413793
+       },
+       {
+        "bin": [
+         0.2,
+         0.30000000000000004
+        ],
+        "count": 30,
+        "mean_probability": 0.24895946184794107,
+        "observed_frequency": 0.3333333333333333
+       },
+       {
+        "bin": [
+         0.30000000000000004,
+         0.4
+        ],
+        "count": 28,
+        "mean_probability": 0.3290190100669861,
+        "observed_frequency": 0.35714285714285715
+       },
+       {
+        "bin": [
+         0.4,
+         0.5
+        ],
+        "count": 36,
+        "mean_probability": 0.42302509148915607,
+        "observed_frequency": 0.5277777777777778
+       },
+       {
+        "bin": [
+         0.5,
+         0.6000000000000001
+        ],
+        "count": 43,
+        "mean_probability": 0.5541049436081288,
+        "observed_frequency": 0.5348837209302325
+       },
+       {
+        "bin": [
+         0.6000000000000001,
+         0.7000000000000001
+        ],
+        "count": 34,
+        "mean_probability": 0.6743327309103573,
+        "observed_frequency": 0.5
+       },
+       {
+        "bin": [
+         0.7000000000000001,
+         0.8
+        ],
+        "count": 40,
+        "mean_probability": 0.7488550558686257,
+        "observed_frequency": 0.65
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "count": 53,
+        "mean_probability": 0.8507126119901549,
+        "observed_frequency": 0.8113207547169812
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 157,
+        "mean_probability": 0.9501519935905554,
+        "observed_frequency": 0.8789808917197452
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 247,
+       "fp": 80,
+       "fn": 262,
+       "tn": 6207,
+       "precision": 0.7553516819571865,
+       "recall": 0.48526522593320237,
+       "f1": 0.5909090909090909,
+       "false_positive_rate": 0.012724669953873072,
+       "false_negative_rate": 0.5147347740667977
+      },
+      "events": {
+       "horizon_s": 2,
+       "entering_walkers": 15,
+       "missed_entries": 1,
+       "missed_entry_rate": 0.06666666666666667,
+       "non_entering_walkers": 43,
+       "false_crossing_alarms": 7,
+       "false_alarm_rate": 0.16279069767441862
+      }
+     },
+     "3s": {
+      "n": 6181,
+      "positives": 703,
+      "auroc": 0.7389468646602445,
+      "auprc": 0.484436850655031,
+      "brier": 0.07325127865247924,
+      "ece": 0.06895229655780986,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 5706,
+        "mean_probability": 4.248354544728966e-18,
+        "observed_frequency": 0.06203995793901157
+       },
+       {
+        "bin": [
+         0.5,
+         0.6000000000000001
+        ],
+        "count": 39,
+        "mean_probability": 0.5583260823518802,
+        "observed_frequency": 0.5384615384615384
+       },
+       {
+        "bin": [
+         0.6000000000000001,
+         0.7000000000000001
+        ],
+        "count": 32,
+        "mean_probability": 0.6664304435253143,
+        "observed_frequency": 0.59375
+       },
+       {
+        "bin": [
+         0.7000000000000001,
+         0.8
+        ],
+        "count": 30,
+        "mean_probability": 0.751040522257487,
+        "observed_frequency": 0.6333333333333333
+       },
+       {
+        "bin": [
+         0.8,
+         0.9
+        ],
+        "count": 60,
+        "mean_probability": 0.8427753806114197,
+        "observed_frequency": 0.6333333333333333
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 314,
+        "mean_probability": 0.9713245704295529,
+        "observed_frequency": 0.802547770700637
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 349,
+       "fp": 126,
+       "fn": 354,
+       "tn": 5352,
+       "precision": 0.7347368421052631,
+       "recall": 0.49644381223328593,
+       "f1": 0.5925297113752123,
+       "false_positive_rate": 0.023001095290251915,
+       "false_negative_rate": 0.5035561877667141
+      },
+      "events": {
+       "horizon_s": 3,
+       "entering_walkers": 15,
+       "missed_entries": 0,
+       "missed_entry_rate": 0.0,
+       "non_entering_walkers": 35,
+       "false_crossing_alarms": 9,
+       "false_alarm_rate": 0.2571428571428571
+      }
+     }
+    },
+    "existing_physical_alternatives": {
+     "1s": {
+      "n": 7208,
+      "positives": 256,
+      "auroc": 0.7569741621116226,
+      "auprc": 0.1642566382489225,
+      "brier": 0.0732519422863485,
+      "ece": 0.0732519422863485,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 6642,
+        "mean_probability": 0.0,
+        "observed_frequency": 0.016410719662752184
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 566,
+        "mean_probability": 1.0,
+        "observed_frequency": 0.2597173144876325
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 147,
+       "fp": 419,
+       "fn": 109,
+       "tn": 6533,
+       "precision": 0.2597173144876325,
+       "recall": 0.57421875,
+       "f1": 0.35766423357664234,
+       "false_positive_rate": 0.06027042577675489,
+       "false_negative_rate": 0.42578125
+      },
+      "events": {
+       "horizon_s": 1,
+       "entering_walkers": 15,
+       "missed_entries": 2,
+       "missed_entry_rate": 0.13333333333333333,
+       "non_entering_walkers": 45,
+       "false_crossing_alarms": 7,
+       "false_alarm_rate": 0.15555555555555556
+      }
+     },
+     "2s": {
+      "n": 6796,
+      "positives": 509,
+      "auroc": 0.6888674450006453,
+      "auprc": 0.14620685607879363,
+      "brier": 0.1948204826368452,
+      "ece": 0.1948204826368452,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 5419,
+        "mean_probability": 0.0,
+        "observed_frequency": 0.04207418342867688
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 1377,
+        "mean_probability": 1.0,
+        "observed_frequency": 0.20406681190994916
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 281,
+       "fp": 1096,
+       "fn": 228,
+       "tn": 5191,
+       "precision": 0.20406681190994916,
+       "recall": 0.5520628683693517,
+       "f1": 0.2979851537645811,
+       "false_positive_rate": 0.17432797836806108,
+       "false_negative_rate": 0.44793713163064836
+      },
+      "events": {
+       "horizon_s": 2,
+       "entering_walkers": 15,
+       "missed_entries": 1,
+       "missed_entry_rate": 0.06666666666666667,
+       "non_entering_walkers": 43,
+       "false_crossing_alarms": 16,
+       "false_alarm_rate": 0.37209302325581395
+      }
+     },
+     "3s": {
+      "n": 6181,
+      "positives": 703,
+      "auroc": 0.6313109673921342,
+      "auprc": 0.15771783058170621,
+      "brier": 0.332632260152079,
+      "ece": 0.3326322601520789,
+      "reliability": [
+       {
+        "bin": [
+         0.0,
+         0.1
+        ],
+        "count": 4006,
+        "mean_probability": 0.0,
+        "observed_frequency": 0.07289066400399401
+       },
+       {
+        "bin": [
+         0.9,
+         1.0
+        ],
+        "count": 2175,
+        "mean_probability": 1.0,
+        "observed_frequency": 0.1889655172413793
+       }
+      ],
+      "at_threshold": {
+       "threshold": 0.5,
+       "tp": 411,
+       "fp": 1764,
+       "fn": 292,
+       "tn": 3714,
+       "precision": 0.1889655172413793,
+       "recall": 0.5846372688477952,
+       "f1": 0.28561501042390547,
+       "false_positive_rate": 0.32201533406352684,
+       "false_negative_rate": 0.41536273115220484
+      },
+      "events": {
+       "horizon_s": 3,
+       "entering_walkers": 15,
+       "missed_entries": 0,
+       "missed_entry_rate": 0.0,
+       "non_entering_walkers": 35,
+       "false_crossing_alarms": 21,
+       "false_alarm_rate": 0.6
+      }
+     }
+    }
+   }
+  },
+  "gates": {
+   "1s": {
+    "auroc": true,
+    "ece": true,
+    "auprc_over_baselines": true,
+    "brier_vs_constant": true,
+    "missed_entries": true,
+    "positives_present": true
+   },
+   "2s": {
+    "auroc": true,
+    "ece": true,
+    "auprc_over_baselines": true,
+    "brier_vs_constant": true,
+    "missed_entries": true,
+    "positives_present": true
+   },
+   "3s": {
+    "auroc": true,
+    "ece": true,
+    "auprc_over_baselines": true,
+    "brier_vs_constant": true,
+    "missed_entries": true,
+    "positives_present": true
+   }
+  }
+ }
+}

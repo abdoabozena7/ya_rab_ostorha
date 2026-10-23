@@ -260,6 +260,8 @@ class ActiveSafetySupervisor:
     def __init__(self, config=None, *, anticipation_enabled=True):
         self.config = config or RuntimeSafetyConfig.load()
         self.anticipation_enabled = anticipation_enabled
+        # Evaluation-only decision layer. None preserves the original RULE.
+        self.decision_layer = None; self.risk_estimator = None; self.risk_model_status = None
         self.enabled = self.config.enabled_by_default
         self.teacher = YaRabOstorhaSafetyTeacher(self.config.teacher)
         self.validator = RuntimeSafetyFeasibilityValidator()
@@ -269,6 +271,7 @@ class ActiveSafetySupervisor:
         from .path_conflicts import LidarPathConflicts, PATH_CONFLICT_POLICY
         self.path_conflicts=LidarPathConflicts()
         self.teacher.reset(); self.active = False; self.brake = 0.; self.started_s = None; self.previous_s = None
+        if getattr(self, 'evidence_budget', None) is not None: self.evidence_budget.reset()
         self.last_fault = getattr(self, 'last_fault', None)
         self.status = {'type': 'RULE_BASED_SAFETY', 'version': self.config.version,
             'path_conflict_policy': PATH_CONFLICT_POLICY,
@@ -365,11 +368,37 @@ class ActiveSafetySupervisor:
             envelope=envelope,hazard=hazard,conflict=conflict,
             reaction_time_s=t.reaction_time_s,deceleration_mps2=t.assumed_deceleration_mps2,
             maximum_cap_mps=min(target_speed,forecast_cap) if forecast_cap is not None else target_speed)
+        layer=None;layer_brake=None;risk_cap=None;layer_protective=False
+        if self.decision_layer and self.anticipation_enabled:
+            # Evaluation-only layers. Physical/measured conflicts keep RULE.
+            from .decision_layers import pedestrian_layer
+            layer_geometry=getattr(self,'geometry',None) or VehicleGeometry()
+            layer_prediction=getattr(self,'control_prediction',None)
+            conflicts=crossing_forecast(layer_prediction,observation,base,layer_geometry,allow_measured_unknown=True,
+                cap_mps=forecast_cap,all_conflicts=True)
+            crawl=cautious_speed
+            if crawl is None and self.decision_layer=='EVIDENCE_BUDGETED' and crossing_prediction is not None:
+                # The same RULE verification (reaction + full stop horizon) at a
+                # walking-pace 0.5 m/s cap beside a closer curbside person.
+                crawl=cautious_roadside_speed(layer_prediction,crossing_prediction,observation,base,layer_geometry,
+                    road_range=road_range,distance=distance,envelope=envelope,hazard=hazard,conflict=conflict,
+                    reaction_time_s=t.reaction_time_s,deceleration_mps2=t.assumed_deceleration_mps2,candidates=(.5,),
+                    maximum_cap_mps=min(target_speed,forecast_cap) if forecast_cap is not None else target_speed)
+            layer=pedestrian_layer(self,observation=observation,base=base,geometry=layer_geometry,prediction=layer_prediction,
+                conflicts=conflicts,hazard=hazard,conflict=conflict,rule_crawl_cap_mps=crawl,
+                target_speed_mps=requested_prediction_cap if requested_prediction_cap is not None else target_speed,
+                as_of_timestamp_s=as_of_timestamp_s)
+            if layer and layer['mode']=='EVIDENCE_BUDGETED' and not layer['keep_rule_braking']:
+                if layer['decision']['response']=='PROTECTIVE_BRAKING':cautious_speed=None;layer_protective=True
+                else:pedestrian=None;cautious_speed=layer['cap_mps'];layer_brake=layer['decision'].get('brake') or 0.
+            elif layer and layer['mode']=='LEARNED_RISK':risk_cap=layer['cap_mps']
         cautious=cautious_speed is not None
         if cautious:
             target_speed=min(target_speed,cautious_speed)
-            coverage_brake=max(coverage_brake,min(1.,max(0.,speed-cautious_speed)*.5))
-        requested = hazard or (conflict is not None or pedestrian is not None) and not cautious
+            coverage_brake=max(coverage_brake,layer_brake if layer_brake is not None else min(1.,max(0.,speed-cautious_speed)*.5))
+        if risk_cap is not None:
+            target_speed=min(target_speed,risk_cap);coverage_brake=max(coverage_brake,layer['decision']['brake'])
+        requested = hazard or (conflict is not None or pedestrian is not None) and not cautious or layer_protective
         reason = decision.diagnostics['reason'] if decision and decision.action[0]>0 else ('Measured obstacle inside braking envelope/TTC limit' if hazard
             else 'Insufficient measured forward road coverage; missing targets are not clear space' if unknown else 'Observed forward stopping corridor is clear')
         if conflict:reason='Measured moving object approaches the driving path; object type unconfirmed'
@@ -395,12 +424,20 @@ class ActiveSafetySupervisor:
         throttle = (min(base.throttle, max(0., (target_speed-speed)*.28))
                     if coverage_limited else base.throttle)
         if cautious:throttle=min(base.throttle,.5,max(0.,cautious_speed-speed)*.5)
+        if risk_cap is not None:throttle=min(throttle,.5,max(0.,risk_cap-speed)*.5)
         if not requested and not (desired > coverage_brake):
             if coverage_brake:
                 reason = f'Braking toward measured coverage speed limit {target_speed:.2f} m/s'
             elif throttle < base.throttle:
                 reason = f'Limiting acceleration to stop within {road_range:.2f} m of measured road'
         if cautious:reason=f'Advancing below verified {cautious_speed:.1f} m/s crossing limit'
+        if layer is not None and layer['mode']=='EVIDENCE_BUDGETED' and not layer['keep_rule_braking']:
+            response=layer['decision']['response']
+            if response=='CONTINUE' and layer['decision'].get('people'):
+                reason='Evidence budget: another observation is affordable before braking'
+            elif response=='CAUTIOUS_APPROACH':reason=f'Evidence budget: bounded approach below verified {cautious_speed:.1f} m/s'
+            elif response=='PROTECTIVE_BRAKING':reason='Protective braking: '+layer['decision']['reason']
+        if risk_cap is not None and not requested:reason=f'Calibrated crossing risk: approaching below {risk_cap:.1f} m/s'
         if desired > base.brake or desired > 0 and base.throttle > 0 or throttle < base.throttle:
             command = replace(base, source=CommandSource.SAFETY,
                               throttle=0. if max(base.brake, desired) > 0 else throttle,
@@ -432,5 +469,6 @@ class ActiveSafetySupervisor:
             path_conflict=conflict,pedestrian_prediction=pedestrian,cautious_roadside_approach=cautious,
             cautious_roadside_speed_mps=cautious_speed,side_rear_coverage=crossing['coverage'],
             side_rear_observations=crossing['observations'],
-            side_rear_free_space_verified=False)
+            side_rear_free_space_verified=False,decision_layer=self.decision_layer,
+            evidence_decision=layer['decision'] if layer else None)
         return proposed

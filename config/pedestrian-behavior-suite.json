@@ -1,0 +1,73 @@
+{
+  "id": "PEDESTRIAN_BEHAVIOR_SUITE_V1",
+  "version": 1,
+  "description": "Evaluator-side native pedestrian behaviors. Splits are disjoint by location (town:spawn), seed range and scenario identity; Town02_Opt is held out for TEST. Locations come from output/pedestrian-suite/location-probe.json (static OpenDRIVE geometry: sidewalks on both sides and no junction 20-100 m along the route).",
+  "behaviors": ["WAIT_AT_CURB", "WALK_PARALLEL", "CROSS_NORMAL", "SUDDEN_RUN", "HESITATE_THEN_CROSS",
+                "HESITATE_THEN_RETREAT", "START_AND_RETURN", "EMERGE_FROM_PARKED", "MULTI_PEDESTRIAN", "MIXED_TRAFFIC"],
+  "locations": {
+    "TRAIN": [
+      {"town": "Town10HD_Opt", "spawn_index": 10, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 54, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 60, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 62, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 65, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 69, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 75, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 82, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 88, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 123, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 131, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 150, "road_width_m": 22.0},
+      {"town": "Town01_Opt", "spawn_index": 1, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 8, "road_width_m": 10.5},
+      {"town": "Town01_Opt", "spawn_index": 18, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 26, "road_width_m": 10.5},
+      {"town": "Town01_Opt", "spawn_index": 35, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 46, "road_width_m": 10.5},
+      {"town": "Town01_Opt", "spawn_index": 53, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 62, "road_width_m": 10.5},
+      {"town": "Town01_Opt", "spawn_index": 69, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 72, "road_width_m": 10.5}
+    ],
+    "VALIDATION": [
+      {"town": "Town10HD_Opt", "spawn_index": 61, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 66, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 83, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 125, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 144, "road_width_m": 22.0},
+      {"town": "Town01_Opt", "spawn_index": 3, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 23, "road_width_m": 10.5},
+      {"town": "Town01_Opt", "spawn_index": 51, "road_width_m": 10.5}, {"town": "Town01_Opt", "spawn_index": 67, "road_width_m": 10.5}
+    ],
+    "TEST": [
+      {"town": "Town02_Opt", "spawn_index": 3, "road_width_m": 10.5}, {"town": "Town02_Opt", "spawn_index": 19, "road_width_m": 10.5},
+      {"town": "Town02_Opt", "spawn_index": 21, "road_width_m": 10.5}, {"town": "Town02_Opt", "spawn_index": 25, "road_width_m": 10.5},
+      {"town": "Town02_Opt", "spawn_index": 31, "road_width_m": 10.5}, {"town": "Town02_Opt", "spawn_index": 38, "road_width_m": 10.5},
+      {"town": "Town10HD_Opt", "spawn_index": 63, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 71, "road_width_m": 22.0},
+      {"town": "Town10HD_Opt", "spawn_index": 113, "road_width_m": 22.0}, {"town": "Town10HD_Opt", "spawn_index": 143, "road_width_m": 22.0}
+    ]
+  },
+  "ranges": {
+    "pedestrian_along_m": [34.0, 68.0],
+    "multi_along_m": [30.0, 50.0],
+    "curb_offset_m": [0.3, 1.2],
+    "occluded_curb_offset_m": [0.2, 0.6],
+    "walk_speed_mps": [1.0, 1.7],
+    "run_speed_mps": [2.6, 3.6],
+    "trigger_distance_m": [18.0, 45.0],
+    "hesitation_s": [0.8, 2.2],
+    "approach_offset_m": [0.2, 0.5],
+    "retreat_m": [0.9, 1.2],
+    "incursion_m": [0.6, 2.0],
+    "return_pause_s": [0.3, 0.9],
+    "far_offset_m": [0.8, 1.4],
+    "multi_count": [2, 3],
+    "multi_spacing_m": [6.0, 10.0],
+    "occluder_gap_m": [2.6, 4.0],
+    "occluder_curb_inset_m": [1.2, 1.4],
+    "occluder_min_road_width_m": 14.0,
+    "traffic_vehicles": [8, 20],
+    "traffic_pedestrians": [6, 14],
+    "route_length_m": [105.0, 130.0],
+    "ego_target_speed_kmh": [30, 40, 50],
+    "counterfactual_decision_s": [3.5, 6.0]
+  },
+  "occluder_blueprints": ["vehicle.mercedes.sprinter", "vehicle.volkswagen.t2", "vehicle.ford.ambulance", "vehicle.carlamotors.carlacola"],
+  "time_limit_s": 45.0,
+  "label": {
+    "id": "PEDESTRIAN_ENTERING_EGO_PATH_WITHIN_H_SECONDS",
+    "horizons_s": [1, 2, 3],
+    "corridor": "Planned route polyline fixed at decision time; arc [ego front, ego front + corridor_length_m]; |offset| <= ego half width + margin + measured walker half-extent.",
+    "corridor_length_m": 60.0,
+    "corridor_margin_m": 0.25,
+    "sample_stride_s": 0.1,
+    "association_radius_m": 1.5,
+    "statuses": ["LABELED", "IN_PATH_AT_DECISION", "MISSING_FUTURE", "POST_CONTACT"]
+  }
+}

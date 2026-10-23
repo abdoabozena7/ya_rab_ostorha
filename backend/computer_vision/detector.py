@@ -8,6 +8,41 @@ def default_model_path():return Path(__file__).resolve().parents[2]/'models/yolo
 
 ROAD_CLASSES = {0:'person', 1:'bicycle', 2:'car', 3:'motorcycle', 5:'bus',
                 7:'truck', 9:'traffic light', 11:'stop sign'}
+_ROAD_LABELS = np.array(sorted(ROAD_CLASSES))
+
+
+def decode_output(output, *, width, height, ratio, left, top):
+    """Decode one YOLOv8 view (rows x [box, classes]) into road detections.
+
+    A vectorized prefilter removes rows the per-row rules would reject (same
+    argmax and the same skip comparison, including NaN handling); accepted
+    rows are decoded by the unchanged scalar arithmetic in their original order.
+    """
+    import cv2
+    classes = output[:, 4:]
+    best = classes.argmax(axis=1)
+    confidence = classes[np.arange(len(best)), best].astype(np.float64)
+    minimum = np.where(np.isin(best, (9, 11)), .65, .25)
+    candidates = np.flatnonzero(np.isin(best, _ROAD_LABELS) & ~(confidence < minimum))
+    boxes, scores, labels = [], [], []
+    for row in output[candidates]:
+        label = int(row[4:].argmax()); confidence = float(row[4+label])
+        if label not in ROAD_CLASSES or confidence < (.65 if label in (9,11) else .25): continue
+        x,y,w,h = row[:4]
+        x1,y1 = max(0.,float((x-w/2-left)/ratio)),max(0.,float((y-h/2-top)/ratio))
+        x2,y2 = min(width,float((x+w/2-left)/ratio)),min(height,float((y+h/2-top)/ratio))
+        if x2 <= x1 or y2 <= y1: continue
+        boxes.append([x1,y1,x2-x1,y2-y1]);scores.append(confidence);labels.append(label)
+    results = []
+    # Class-wise NMS must not suppress a person overlapping a vehicle.
+    for label in ROAD_CLASSES:
+        indices = [i for i,l in enumerate(labels) if l==label]
+        chosen = cv2.dnn.NMSBoxes([boxes[i] for i in indices], [scores[i] for i in indices], .25,.45)
+        for local in np.asarray(chosen).reshape(-1):
+            i=indices[int(local)];x,y,w,h=boxes[i]
+            results.append({'class':ROAD_CLASSES[label],'confidence':scores[i],'xyxy':[x,y,x+w,y+h],
+                'classification_status':'SUPPORTED' if scores[i]>=.65 else 'UNCERTAIN'})
+    return sorted(results,key=lambda d:d['confidence'],reverse=True)[:256]
 
 
 class RoadDetector:
@@ -81,22 +116,4 @@ class RoadDetector:
         padded[top:top+resized.shape[0],left:left+resized.shape[1]] = resized
         tensor = padded.transpose(2,0,1)[None].astype(np.float32)/255.
         output = self.model.run(None, {self.input:tensor})[0][0].T
-        boxes, scores, labels = [], [], []
-        for row in output:
-            label = int(row[4:].argmax()); confidence = float(row[4+label])
-            if label not in ROAD_CLASSES or confidence < (.65 if label in (9,11) else .25): continue
-            x,y,w,h = row[:4]
-            x1,y1 = max(0.,float((x-w/2-left)/ratio)),max(0.,float((y-h/2-top)/ratio))
-            x2,y2 = min(width,float((x+w/2-left)/ratio)),min(height,float((y+h/2-top)/ratio))
-            if x2 <= x1 or y2 <= y1: continue
-            boxes.append([x1,y1,x2-x1,y2-y1]);scores.append(confidence);labels.append(label)
-        results = []
-        # Class-wise NMS must not suppress a person overlapping a vehicle.
-        for label in ROAD_CLASSES:
-            indices = [i for i,l in enumerate(labels) if l==label]
-            chosen = cv2.dnn.NMSBoxes([boxes[i] for i in indices], [scores[i] for i in indices], .25,.45)
-            for local in np.asarray(chosen).reshape(-1):
-                i=indices[int(local)];x,y,w,h=boxes[i]
-                results.append({'class':ROAD_CLASSES[label],'confidence':scores[i],'xyxy':[x,y,x+w,y+h],
-                    'classification_status':'SUPPORTED' if scores[i]>=.65 else 'UNCERTAIN'})
-        return sorted(results,key=lambda d:d['confidence'],reverse=True)[:256]
+        return decode_output(output, width=width, height=height, ratio=ratio, left=left, top=top)

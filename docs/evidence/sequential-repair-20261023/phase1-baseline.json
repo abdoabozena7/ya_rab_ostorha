@@ -1,0 +1,46 @@
+{
+  "phase": "PHASE_1_BASELINE_VERIFICATION",
+  "recorded_at": "2026-10-23T00:30:00+03:00",
+  "source_commit": "098317ba93b934fd88ea205a8be8600a65e6417f",
+  "scope": "Offline inspection and software tests. No native drive was started in Phase 1; historical native metrics are quoted from their reports and keep their original source identities.",
+  "tests": {
+    "python_full_suite": {"command": ".\\.venv-carla\\Scripts\\python.exe -m unittest discover -s tests -p test_*.py", "ran": 759, "result": "OK", "skipped": 2, "seconds": 37.1},
+    "javascript_suite": {"command": "npm test", "ran": 178, "passed": 178, "failed": 0},
+    "targeted_controller_and_comparison": {"modules": ["test_sensor_comparison", "test_pedestrian_anticipation", "test_active_safety", "test_crossing_comparison", "test_automatic_crossing_pair", "test_crossing_user_acceptance", "test_guided_flow_repair", "test_journey_comparison", "test_maneuver_observations", "test_display_prediction"], "ran": 106, "result": "OK"}
+  },
+  "controller_identities": {
+    "NORMAL": {"id": "NORMAL_REACTIVE_SENSORS_V1", "controller": "REACTIVE_SENSORS", "sensor_obstacle_braking": true, "motion_prediction_used": false, "learned_control_used": false, "reinforcement_learning_used": false},
+    "ROBOSPHERE": {"display_name": "Ya Rab Ostorha", "id": "ROBOSPHERE_PREDICTIVE_RULE_V1", "controller": "RULE", "sensor_obstacle_braking": true, "motion_prediction_used": true, "learned_control_used": false, "reinforcement_learning_used": false},
+    "source": "backend/core/driver_profiles.py; protocol SENSOR_REACTIVE_PREDICTIVE_V1"
+  },
+  "inspected_components": {
+    "kinematic_prediction": "Unranked physical alternatives; stationary people receive POSSIBLE_START, POSSIBLE_RETREAT and POSSIBLE_RUN (3.5 m/s, 6 m/s2). probability=None. rank_learned_modes rejects any >0.5 m motion of a currently stationary track (MEASURED_STATIONARY_OBJECT).",
+    "pedestrian_anticipation": "crossing_forecast brakes for the first space-time conflict between any physical alternative and ego paths at 2/4/6/8 m/s2 over max(3 s, 0.6+v/5). cautious_roadside_speed admits 4/3/2/1 m/s caps only at ego speed <= 4.5 m/s.",
+    "active_safety": "RULE supervisor: teacher, measured stopping envelope (clearance + v*reaction + v^2/(2a)), coverage speed limit, LiDAR path conflicts, pedestrian forecast; additional braking only; minimum brake hold and release rate.",
+    "control_scene": "Sensor-only tracks from LiDAR/depth plus YOLO semantic association; motion tracking only for guided ROBOSPHERE, HYBRID, planner or recovery.",
+    "independent_prediction": "Evaluator-side residual-MLP endpoint examples from native actor labels; failed admission.",
+    "rl": "YaRabOstorha-Maneuver-v1 MaskablePPO with 18 frozen candidates and reward version 2.",
+    "crossing_comparison": "Three validated Town10HD_Opt fixtures (crossing-a/b/c) with nine scheduled crossing participants each."
+  },
+  "historical_native_metrics": {
+    "crossing_six_pairs_20261020": {"source": "docs/CROSSING_COMPARISON_20261019.md", "normal_contacts": "6/6 at 5.90-5.95 s", "project_arrivals_without_contact": "6/6 at 32.95-36.90 s", "project_peak_kmh": [58.34, 60.91], "normal_peak_kmh": [63.81, 64.05], "requested_kmh": 120, "project_longest_standstill_s": [0.55, 1.0], "forecast_before_path_ingress_s": [0.9, 1.5], "strict_first_motion_gate": "3/6 passed", "native_observations_per_wall_second": [4.95, 6.89], "simulation_hz": 20, "real_time_factor_estimate": [0.25, 0.34]},
+    "core_repair_pilot_20261014": {"source": "docs/CORE_REPAIR_PILOT_20261014.md", "physical_probe_ordinary_routes": "9/10", "physical_freshness": "2850/2950 = 96.61% (gate 99%)", "maneuver_v1_autonomous_completions": "0/10", "maneuver_v1_hold_selection": "6000/6000 decisions in audited autonomous cases with CONTINUE admitted", "frozen_evaluation_freshness": "6046/6180 = 97.83% (gate 99%)"},
+    "drive_speed_20261018": {"source": "docs/DRIVE_SPEED_RESOURCES_20261018.md", "median_native_hz": {"protected": 6.89, "normal": 6.66}, "requested_hz": 20}
+  },
+  "failed_or_unaccepted_learning_experiments": [
+    {"id": "maneuver_v1/2924d97b26dd428698b3d9c3791caf11", "kind": "MaskablePPO", "status": "FAILED_BEHAVIORAL_BASELINE"},
+    {"id": "maneuver_v1/9ec465b1ea7d4a35b43e5bfce4c92d54", "kind": "MaskablePPO resumed", "status": "FAILED: 0/10 completions, stationary HOLD policy"},
+    {"id": "independent_prediction_v1/760ec313329b430388c30708eba6e62f", "kind": "residual MLP endpoint predictor", "status": "FAILED_ADMISSION: 1 s endpoint error -20.8%, coverage 63/98"},
+    {"id": "artifacts/learned_safety/v1 and predictive_v2", "kind": "behavior-cloned braking / predictive v2 research models", "status": "EXPERIMENTAL; learns intervention decisions, not pedestrian intent; not production"},
+    {"id": "experiments 1, 2A, 2B, 2C, 3A", "kind": "learned safety research", "status": "HISTORICAL; see docs/EXPERIMENT*.md"}
+  ],
+  "execution_dependencies": {
+    "carla": "C:\\CARLA\\CARLA_0.9.16 present; python API importable in .venv-carla",
+    "gpu": "NVIDIA GeForce RTX 3060 Laptop GPU, 6144 MiB, idle at inspection",
+    "venv_carla": "Python 3.12.10, numpy 2.5.3, carla; no torch; no scikit-learn",
+    "venv_learned": "torch 2.11.0+cu128 with CUDA",
+    "venv_rl": "torch 2.14.1+cpu",
+    "venv_perception": "torch 2.14.1+cpu, YOLOv8s CPU ONNX detector environment"
+  },
+  "comparison_preserved": "No source edits were made in Phase 1."
+}

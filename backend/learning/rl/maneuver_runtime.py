@@ -238,21 +238,24 @@ class ManeuverRuntime(RLRuntime):
                     blueprint=p.world.world.get_blueprint_library().find(actor.type_id)
                     vulnerable=blueprint.has_attribute('base_type') and blueprint.get_attribute('base_type').as_str() in ('bicycle','motorcycle')
                 collision='VULNERABLE' if vulnerable else 'VEHICLE'
-            discomfort=min(1.,abs(frame.vehicle.speed_mps-self.previous_speed)/max(.001,dt)/3.)
+            acceleration=(frame.vehicle.speed_mps-self.previous_speed)/max(.001,dt)
             safe_driver=self.mode=='MANUAL_PROTECTION' and self.bundle.candidates[1]['admitted']
             desired=to_dict(self.base)
             unnecessary=safe_driver and any(driver_controls_changed(desired,v['command']) for v in applied)
             self.metrics['unnecessary_manual_intervention_s']=self.metrics.get('unnecessary_manual_intervention_s',0.)+dt*int(unnecessary)
-            reward,components=self.reward_v1.evaluate(progress_m=progress,dt=dt,collision=collision,
-                completed=completed and self.mode=='AUTONOMOUS',risk=self.world_fixture.near_miss_exposure(),
-                discomfort=discomfort,unnecessary_manual_intervention=unnecessary)
-            self.previous_speed=frame.vehicle.speed_mps;self.steps+=1;self.total_reward+=reward
-            self.metrics['valid_transitions']+=1;self.metrics['shield_rejections']+=int(rejection is not None)
-            self.metrics['learned_proposals']+=int(self.policy_identity!='PHYSICAL_BASELINE');self.metrics['collisions']=len(self.contacts)
+            # Verified forward motion available at decision time, not taken.
             clear=any(c['admitted'] and c['id'] not in ('HOLD','STOP','REVERSE_STRAIGHT','REVERSE_LEFT','REVERSE_RIGHT')
                       and c['command']['throttle']>0 for c in self.bundle.candidates)
             driver_wait=self.mode=='MANUAL_PROTECTION' and (self.base.brake>.01 or self.base.throttle<=.01)
-            if frame.vehicle.speed_mps<.15 and clear and not self.road.get('traffic_stop') and not driver_wait:
+            idle=frame.vehicle.speed_mps<.15 and clear and not self.road.get('traffic_stop') and not driver_wait
+            reward,components=self.reward_v1.evaluate(progress_m=progress,dt=dt,collision=collision,
+                completed=completed and self.mode=='AUTONOMOUS',risk=self.world_fixture.near_miss_exposure(),
+                acceleration_mps2=acceleration,unnecessary_manual_intervention=unnecessary,
+                stationary_with_verified_forward=idle and self.mode=='AUTONOMOUS')
+            self.previous_speed=frame.vehicle.speed_mps;self.steps+=1;self.total_reward+=reward
+            self.metrics['valid_transitions']+=1;self.metrics['shield_rejections']+=int(rejection is not None)
+            self.metrics['learned_proposals']+=int(self.policy_identity!='PHYSICAL_BASELINE');self.metrics['collisions']=len(self.contacts)
+            if idle:
                 self.metrics['clear_path_stop_s']+=dt
                 self.metrics['maximum_clear_path_stop_s']=max(self.metrics['maximum_clear_path_stop_s'],self.metrics['clear_path_stop_s'])
             else:self.metrics['clear_path_stop_s']=0.

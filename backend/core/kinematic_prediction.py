@@ -57,8 +57,12 @@ def _mode(tr,index,source,xy,rank,grid):
 def rank_learned_modes(modes, tracks):
     """Rank by measured continuity; score is not a collision probability.
 
-    A remote mode cannot certify free space or displace the physical baseline.
-    At rest only a stationary measured hypothesis is credible.
+    A remote mode cannot certify free space or displace the physical baseline;
+    accepted modes stay supplementary and never mark occupied/unknown space
+    clear. Starting positions must match the measurement, motion must respect
+    speed/acceleration limits, and a currently stationary person may start
+    moving only within the distance reachable from rest (3.5 m/s, 6 m/s²,
+    the bounds of the physical POSSIBLE_RUN alternative).
     """
     indexed={t['id']:t for t in tracks}; accepted=[]; rejected=[]
     for mode in modes:
@@ -68,14 +72,23 @@ def rank_learned_modes(modes, tracks):
         elif len(p)<3 or p.shape[1]!=3 or not np.isfinite(p).all() or np.any(np.diff(p[:,0])<=0): reason='INVALID_TIME_OR_COORDINATES'
         else:
             v=np.asarray(tr['velocity_mps']); speed=np.linalg.norm(v)
+            person=str(tr.get('class','')).lower() in ('person','pedestrian')
+            limit,acceleration,run=(5.,6.,3.5) if person else (22.,8.,22.)
+            uncertainty=float(tr.get('uncertainty_m',.15) or .15)
             dt=np.diff(p[:,0]); pv=np.diff(p[:,1:3],axis=0)/dt[:,None]
-            if np.linalg.norm(p[0,1:3]-tr['position_m'])>1.: reason='SOURCE_ALIGNMENT_ERROR'
-            elif speed<.3 and np.linalg.norm(p[-1,1:3]-p[0,1:3])>.5: reason='MEASURED_STATIONARY_OBJECT'
-            elif np.max(np.linalg.norm(pv,axis=1))>(5. if tr.get('class')=='person' else 22.): reason='PHYSICAL_SPEED_LIMIT'
+            changes=np.linalg.norm(np.diff(pv,axis=0),axis=1)/((dt[1:]+dt[:-1])/2) if len(pv)>1 else np.zeros(0)
+            elapsed=p[:,0]-p[0,0]
+            reach=np.where(elapsed<run/acceleration,.5*acceleration*elapsed**2,run**2/(2*acceleration)+run*(elapsed-run/acceleration))
+            if np.linalg.norm(p[0,1:3]-tr['position_m'])>max(.5,2*uncertainty): reason='SOURCE_ALIGNMENT_ERROR'
+            elif np.max(np.linalg.norm(pv,axis=1))>limit: reason='PHYSICAL_SPEED_LIMIT'
+            elif len(changes) and np.max(changes)>1.5*acceleration: reason='PHYSICAL_ACCELERATION_LIMIT'
+            elif speed<.3:
+                if np.any(np.linalg.norm(p[:,1:3]-p[0,1:3],axis=1)>reach+uncertainty+.1): reason='UNREACHABLE_FROM_MEASURED_REST'
             elif np.linalg.norm(pv[0]-v)>max(1.5,speed*.4): reason='MEASURED_VELOCITY_DISAGREEMENT'
         if reason: rejected.append({'track_id':mode['track_id'],'mode':mode['mode'],'reason':reason}); continue
         error=float(np.linalg.norm(pv[0]-v)+.2*np.mean(np.linalg.norm(np.diff(pv,axis=0),axis=1)))
-        accepted.append({**mode,'continuity_error':error,'probability':None,'weight_kind':'CONTINUITY_SCORE_NOT_PROBABILITY'})
+        accepted.append({**mode,'continuity_error':error,'probability':None,'weight_kind':'CONTINUITY_SCORE_NOT_PROBABILITY',
+                         'certifies_free_space':False,'evidence_role':'SUPPLEMENTARY_NOT_CONTROL_EVIDENCE'})
     result=[]
     for key in indexed:
         ranked=sorted([m for m in accepted if m['track_id']==key],key=lambda m:m['continuity_error'])[:3]

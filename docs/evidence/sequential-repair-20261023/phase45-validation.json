@@ -1,0 +1,3179 @@
+{
+ "split": "VALIDATION",
+ "source": "LIVE_NATIVE_CARLA_HARNESS_LOGS",
+ "episodes": 39,
+ "summary": {
+  "B_PHYSICAL_PREDICTIVE": {
+   "episodes": 13,
+   "failed_or_missing_logs": 1,
+   "arrivals": 12,
+   "arrival_rate": 0.9230769230769231,
+   "timeouts": 0,
+   "collision_episodes": 0,
+   "walker_collisions": 0,
+   "collision_rate": 0.0,
+   "minimum_separation_m": {
+    "min": 1.9964830207161777,
+    "median": 5.991064298227512
+   },
+   "missed_hazards": 0,
+   "ingress_events": 4,
+   "prediction_lead_s_median": 2.9500000439584255,
+   "braking_lead_s_median": 5.800000086426735,
+   "unnecessary_braking_events": 77,
+   "unnecessary_full_stops": 28,
+   "unnecessary_stationary_s": 46.000000685453415,
+   "journey_time_s_median_arrived": 21.55000032037497,
+   "route_progress_mean": 0.9767136375138227,
+   "maximum_deceleration_mps2": {
+    "median": 23.312463476832633,
+    "max": 27.58497231875273
+   },
+   "maximum_abs_jerk_mps3_median": 129.52463054218575,
+   "maximum_lateral_acceleration_mps2_max": 3.7890648893908674,
+   "brake_release_oscillations": 196,
+   "maximum_speed_mps_max": 14.094,
+   "freshness": {
+    "usable_frames": 5834,
+    "frames": 5839,
+    "fraction": 0.9991436889878403,
+    "gate_99_percent": true
+   },
+   "ordinary_route_completion": {
+    "journeys": 2,
+    "arrived": 2,
+    "gate_all_arrive": true
+   },
+   "performance": {
+    "median_step_ms": 136.0975,
+    "p95_step_ms_median": 184.49299999999997,
+    "real_time_factor_median": 0.36291529566882935
+   },
+   "decision_responses": {
+    "CONTINUE": 0,
+    "CAUTIOUS_APPROACH": 0,
+    "PROTECTIVE_BRAKING": 0
+   },
+   "risk_used_frames": 0
+  },
+  "D_EVIDENCE_BUDGETED": {
+   "episodes": 13,
+   "failed_or_missing_logs": 1,
+   "arrivals": 9,
+   "arrival_rate": 0.6923076923076923,
+   "timeouts": 1,
+   "collision_episodes": 0,
+   "walker_collisions": 0,
+   "collision_rate": 0.0,
+   "minimum_separation_m": {
+    "min": 2.046416726567709,
+    "median": 5.110387905338824
+   },
+   "missed_hazards": 0,
+   "ingress_events": 4,
+   "prediction_lead_s_median": 3.9500000588595867,
+   "braking_lead_s_median": 5.250000078231096,
+   "unnecessary_braking_events": 82,
+   "unnecessary_full_stops": 50,
+   "unnecessary_stationary_s": 89.5000013321638,
+   "journey_time_s_median_arrived": 26.950000400841247,
+   "route_progress_mean": 0.8696603476682093,
+   "maximum_deceleration_mps2": {
+    "median": 23.862484369516693,
+    "max": 27.629990193210528
+   },
+   "maximum_abs_jerk_mps3_median": 123.4748923650277,
+   "maximum_lateral_acceleration_mps2_max": 3.3245101450544103,
+   "brake_release_oscillations": 172,
+   "maximum_speed_mps_max": 13.44,
+   "freshness": {
+    "usable_frames": 6876,
+    "frames": 6887,
+    "fraction": 0.9984027878611877,
+    "gate_99_percent": true
+   },
+   "ordinary_route_completion": {
+    "journeys": 2,
+    "arrived": 1,
+    "gate_all_arrive": false
+   },
+   "performance": {
+    "median_step_ms": 138.45499999999998,
+    "p95_step_ms_median": 189.2285,
+    "real_time_factor_median": 0.3539648589963127
+   },
+   "decision_responses": {
+    "CONTINUE": 4167,
+    "CAUTIOUS_APPROACH": 1448,
+    "PROTECTIVE_BRAKING": 1119
+   },
+   "risk_used_frames": 321
+  },
+  "E_PHYSICAL_ABLATION": {
+   "episodes": 13,
+   "failed_or_missing_logs": 1,
+   "arrivals": 9,
+   "arrival_rate": 0.6923076923076923,
+   "timeouts": 3,
+   "collision_episodes": 0,
+   "walker_collisions": 0,
+   "collision_rate": 0.0,
+   "minimum_separation_m": {
+    "min": 2.6016924527478023,
+    "median": 6.02446519677007
+   },
+   "missed_hazards": 0,
+   "ingress_events": 4,
+   "prediction_lead_s_median": 4.075000060722232,
+   "braking_lead_s_median": 5.300000078976154,
+   "unnecessary_braking_events": 56,
+   "unnecessary_full_stops": 46,
+   "unnecessary_stationary_s": 141.5500021070242,
+   "journey_time_s_median_arrived": 23.6500003516674,
+   "route_progress_mean": 0.8454214028402435,
+   "maximum_deceleration_mps2": {
+    "median": 23.51249863258228,
+    "max": 26.929990337638618
+   },
+   "maximum_abs_jerk_mps3_median": 123.61248700638589,
+   "maximum_lateral_acceleration_mps2_max": 3.6914996480779365,
+   "brake_release_oscillations": 146,
+   "maximum_speed_mps_max": 14.015,
+   "freshness": {
+    "usable_frames": 7080,
+    "frames": 7091,
+    "fraction": 0.9984487378366944,
+    "gate_99_percent": true
+   },
+   "ordinary_route_completion": {
+    "journeys": 2,
+    "arrived": 1,
+    "gate_all_arrive": false
+   },
+   "performance": {
+    "median_step_ms": 135.6175,
+    "p95_step_ms_median": 190.17174999999997,
+    "real_time_factor_median": 0.36059824192011536
+   },
+   "decision_responses": {
+    "CONTINUE": 5573,
+    "CAUTIOUS_APPROACH": 706,
+    "PROTECTIVE_BRAKING": 708
+   },
+   "risk_used_frames": 0
+  }
+ },
+ "by_behavior": {
+  "B_PHYSICAL_PREDICTIVE": {
+   "CROSS_NORMAL": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 0.7
+   },
+   "EMERGE_FROM_PARKED": {
+    "episodes": 1,
+    "arrived": 0,
+    "collisions": 0,
+    "unnecessary_braking": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   "HESITATE_THEN_CROSS": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 8,
+    "unnecessary_stationary_s": 2.5
+   },
+   "HESITATE_THEN_RETREAT": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 11,
+    "unnecessary_stationary_s": 20.6
+   },
+   "MIXED_TRAFFIC": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 0.6
+   },
+   "MULTI_PEDESTRIAN": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 8,
+    "unnecessary_stationary_s": 0.95
+   },
+   "ORDINARY_CITY_JOURNEY": {
+    "episodes": 2,
+    "arrived": 2,
+    "collisions": 0,
+    "unnecessary_braking": 16,
+    "unnecessary_stationary_s": 7.5
+   },
+   "START_AND_RETURN": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 12,
+    "unnecessary_stationary_s": 9.9
+   },
+   "SUDDEN_RUN": {
+    "episodes": 2,
+    "arrived": 2,
+    "collisions": 0,
+    "unnecessary_braking": 10,
+    "unnecessary_stationary_s": 2.0
+   },
+   "WAIT_AT_CURB": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 6,
+    "unnecessary_stationary_s": 0.65
+   },
+   "WALK_PARALLEL": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 0.6
+   }
+  },
+  "D_EVIDENCE_BUDGETED": {
+   "CROSS_NORMAL": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 0.6
+   },
+   "EMERGE_FROM_PARKED": {
+    "episodes": 1,
+    "arrived": 0,
+    "collisions": 0,
+    "unnecessary_braking": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   "HESITATE_THEN_CROSS": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 5,
+    "unnecessary_stationary_s": 2.65
+   },
+   "HESITATE_THEN_RETREAT": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 8,
+    "unnecessary_stationary_s": 3.15
+   },
+   "MIXED_TRAFFIC": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 10,
+    "unnecessary_stationary_s": 9.3
+   },
+   "MULTI_PEDESTRIAN": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 10,
+    "unnecessary_stationary_s": 5.55
+   },
+   "ORDINARY_CITY_JOURNEY": {
+    "episodes": 2,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 23,
+    "unnecessary_stationary_s": 18.45
+   },
+   "START_AND_RETURN": {
+    "episodes": 1,
+    "arrived": 0,
+    "collisions": 0,
+    "unnecessary_braking": 5,
+    "unnecessary_stationary_s": 4.95
+   },
+   "SUDDEN_RUN": {
+    "episodes": 2,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 8,
+    "unnecessary_stationary_s": 38.8
+   },
+   "WAIT_AT_CURB": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 9,
+    "unnecessary_stationary_s": 5.45
+   },
+   "WALK_PARALLEL": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 0.6
+   }
+  },
+  "E_PHYSICAL_ABLATION": {
+   "CROSS_NORMAL": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 1.35
+   },
+   "EMERGE_FROM_PARKED": {
+    "episodes": 1,
+    "arrived": 0,
+    "collisions": 0,
+    "unnecessary_braking": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   "HESITATE_THEN_CROSS": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 8,
+    "unnecessary_stationary_s": 4.4
+   },
+   "HESITATE_THEN_RETREAT": {
+    "episodes": 1,
+    "arrived": 0,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 37.3
+   },
+   "MIXED_TRAFFIC": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 11,
+    "unnecessary_stationary_s": 5.8
+   },
+   "MULTI_PEDESTRIAN": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 6,
+    "unnecessary_stationary_s": 3.05
+   },
+   "ORDINARY_CITY_JOURNEY": {
+    "episodes": 2,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 11,
+    "unnecessary_stationary_s": 32.65
+   },
+   "START_AND_RETURN": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 5,
+    "unnecessary_stationary_s": 16.4
+   },
+   "SUDDEN_RUN": {
+    "episodes": 2,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 3,
+    "unnecessary_stationary_s": 36.25
+   },
+   "WAIT_AT_CURB": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 6,
+    "unnecessary_stationary_s": 3.75
+   },
+   "WALK_PARALLEL": {
+    "episodes": 1,
+    "arrived": 1,
+    "collisions": 0,
+    "unnecessary_braking": 2,
+    "unnecessary_stationary_s": 0.6
+   }
+  }
+ },
+ "paired": {
+  "D_EVIDENCE_BUDGETED_vs_B_PHYSICAL_PREDICTIVE": {
+   "pairs": 12,
+   "both_arrived": 9,
+   "journey_time_delta_s_median": 4.950000073760748,
+   "unnecessary_braking_delta": 5,
+   "unnecessary_stationary_delta_s": 43.50000064671039,
+   "collision_episode_delta": 0,
+   "arrival_delta": -3,
+   "oscillation_delta": -24
+  },
+  "E_PHYSICAL_ABLATION_vs_B_PHYSICAL_PREDICTIVE": {
+   "pairs": 12,
+   "both_arrived": 9,
+   "journey_time_delta_s_median": 1.600000023841858,
+   "unnecessary_braking_delta": -21,
+   "unnecessary_stationary_delta_s": 95.55000142157077,
+   "collision_episode_delta": 0,
+   "arrival_delta": -3,
+   "oscillation_delta": -50
+  },
+  "D_EVIDENCE_BUDGETED_vs_E_PHYSICAL_ABLATION": {
+   "pairs": 12,
+   "both_arrived": 8,
+   "journey_time_delta_s_median": 4.100000061094761,
+   "unnecessary_braking_delta": 26,
+   "unnecessary_stationary_delta_s": -52.05000077486038,
+   "collision_episode_delta": 0,
+   "arrival_delta": 0,
+   "oscillation_delta": 26
+  },
+  "C_LEARNED_RISK_vs_B_PHYSICAL_PREDICTIVE": {
+   "pairs": 0
+  },
+  "B_PHYSICAL_PREDICTIVE_vs_A_REACTIVE": {
+   "pairs": 0
+  }
+ },
+ "counterfactual_pairs": [],
+ "superiority": {
+  "D_over_B": {
+   "claim": false,
+   "safety_not_worse": true,
+   "efficiency_better": false,
+   "acceptance_gates": false
+  },
+  "E_over_B": {
+   "claim": false,
+   "safety_not_worse": true,
+   "efficiency_better": false,
+   "acceptance_gates": false
+  },
+  "D_over_E": {
+   "claim": false,
+   "safety_not_worse": true,
+   "efficiency_better": false,
+   "acceptance_gates": false
+  }
+ },
+ "episode_metrics": [
+  {
+   "scenario_id": "0e7369cd0a5d8127f2aa457d0ce69b447128a390cdf6c441a4c19ec64172513a",
+   "behavior": "WALK_PARALLEL",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 12.704103103125975,
+   "missed_hazards": 0,
+   "distance_m": 108.29,
+   "route_length_m": 110.74607584975409,
+   "route_progress": 0.9863532527522431,
+   "journey_time_s": 17.25000025629997,
+   "simulated_s": 17.25000025629997,
+   "braking_events": 2,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 0.8000000111758709,
+   "maximum_speed_mps": 8.559,
+   "maximum_deceleration_mps2": 18.404976746351576,
+   "maximum_abs_jerk_mps3": 115.6997151147925,
+   "rms_jerk_mps3": 20.75334721600057,
+   "maximum_lateral_acceleration_mps2": 2.5896144717027925,
+   "brake_release_oscillations": 8,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.822,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.559,
+     "mean": 6.27776231884058
+    },
+    "restriction_frames": {
+     "OTHER": 2,
+     "NONE": 253,
+     "ROUTE_TERMINAL_OR_SIGNAL": 90
+    }
+   },
+   "freshness": {
+    "usable_frames": 345,
+    "frames": 345,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 122.14,
+    "p95_step_ms": 156.224,
+    "real_time_factor": 0.40692744439660844,
+    "wall_s": 42.39085
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\0e7369cd0a5d8127"
+  },
+  {
+   "scenario_id": "3394e48f709a17dbd0424423a8b87e041d3b51188a24d508eb57de26cff14c9f",
+   "behavior": "SUDDEN_RUN",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.415293321557124,
+   "missed_hazards": 0,
+   "distance_m": 118.32,
+   "route_length_m": 123.06363861094246,
+   "route_progress": 0.9783064975626673,
+   "journey_time_s": 23.5500003501773,
+   "simulated_s": 23.5500003501773,
+   "braking_events": 18,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 5,
+    "COVERAGE": 3,
+    "TIMING_DEADLINE": 8,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 7,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 1.4000000208616257,
+   "stationary_s": 1.5000000216066838,
+   "maximum_speed_mps": 8.506,
+   "maximum_deceleration_mps2": 23.719998372520035,
+   "maximum_abs_jerk_mps3": 134.2999203686658,
+   "rms_jerk_mps3": 28.69954498399609,
+   "maximum_lateral_acceleration_mps2": 3.4612190008563677,
+   "brake_release_oscillations": 25,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 10.211,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.506,
+     "mean": 5.0259363057324835
+    },
+    "restriction_frames": {
+     "OTHER": 38,
+     "NONE": 282,
+     "MEASURED_COVERAGE_LIMIT": 50,
+     "TIMING_DEADLINE": 8,
+     "MEASURED_OBSTACLE": 15,
+     "COVERAGE": 15,
+     "ROUTE_TERMINAL_OR_SIGNAL": 63
+    }
+   },
+   "freshness": {
+    "usable_frames": 471,
+    "frames": 471,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 174.18,
+    "p95_step_ms": 228.555,
+    "real_time_factor": 0.28397009174196053,
+    "wall_s": 82.93127
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\3394e48f709a17db"
+  },
+  {
+   "scenario_id": "497297a772a74afa3b7a38e555817e36135948a3206e4bcaa9ab30a175eb4c5b",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 3.2889805066639126,
+   "missed_hazards": 0,
+   "distance_m": 118.38,
+   "route_length_m": 123.06363861094246,
+   "route_progress": 0.976892594963316,
+   "journey_time_s": 31.400000467151415,
+   "simulated_s": 31.400000467151415,
+   "braking_events": 49,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 4,
+    "MEASURED_OBSTACLE": 4,
+    "COVERAGE": 9,
+    "TIMING_DEADLINE": 30,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 7,
+   "unnecessary_full_stops": 3,
+   "unnecessary_stationary_s": 6.3000000938773155,
+   "stationary_s": 7.3500001087784765,
+   "maximum_speed_mps": 12.452,
+   "maximum_deceleration_mps2": 26.544989887034383,
+   "maximum_abs_jerk_mps3": 171.79985786520973,
+   "rms_jerk_mps3": 28.408317251240586,
+   "maximum_lateral_acceleration_mps2": 3.5298193623986838,
+   "brake_release_oscillations": 48,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 9.343,
+    "controller_selected_mps_median": 7.3965,
+    "achieved_mps": {
+     "max": 12.452,
+     "mean": 3.770593949044586
+    },
+    "restriction_frames": {
+     "OTHER": 88,
+     "MEASURED_COVERAGE_LIMIT": 401,
+     "PEDESTRIAN_FORECAST": 26,
+     "MEASURED_OBSTACLE": 24,
+     "TIMING_DEADLINE": 41,
+     "ROUTE_TERMINAL_OR_SIGNAL": 14,
+     "COVERAGE": 28,
+     "NONE": 6
+    }
+   },
+   "freshness": {
+    "usable_frames": 625,
+    "frames": 628,
+    "fraction": 0.9952229299363057
+   },
+   "performance": {
+    "median_step_ms": 195.175,
+    "p95_step_ms": 257.3324999999999,
+    "real_time_factor": 0.25332720238875783,
+    "wall_s": 123.95036999999999
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\497297a772a74afa"
+  },
+  {
+   "scenario_id": "4f4e0b275ba5e8c7195a9ca95b342ad26266bc5a5856b65da0d7343ea3e21ee6",
+   "behavior": "CROSS_NORMAL",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.8942061704970707,
+   "missed_hazards": 0,
+   "distance_m": 101.68,
+   "route_length_m": 102.99335131473886,
+   "route_progress": 0.9872312003153084,
+   "journey_time_s": 19.550000290572644,
+   "simulated_s": 19.550000290572644,
+   "braking_events": 11,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 1,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 7,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.7000000104308128,
+   "stationary_s": 1.4000000201165677,
+   "maximum_speed_mps": 8.491,
+   "maximum_deceleration_mps2": 26.149994754492067,
+   "maximum_abs_jerk_mps3": 174.79972918325566,
+   "rms_jerk_mps3": 28.50959215532515,
+   "maximum_lateral_acceleration_mps2": 0.07855496594173564,
+   "brake_release_oscillations": 22,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 10.418,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.491,
+     "mean": 5.201951406649616
+    },
+    "restriction_frames": {
+     "OTHER": 10,
+     "NONE": 231,
+     "TIMING_DEADLINE": 8,
+     "PEDESTRIAN_FORECAST": 49,
+     "MEASURED_OBSTACLE": 5,
+     "MEASURED_COVERAGE_LIMIT": 8,
+     "ROUTE_TERMINAL_OR_SIGNAL": 80
+    }
+   },
+   "freshness": {
+    "usable_frames": 391,
+    "frames": 391,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 172.48,
+    "p95_step_ms": 232.065,
+    "real_time_factor": 0.28520486010333673,
+    "wall_s": 68.54722
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\4f4e0b275ba5e8c7"
+  },
+  {
+   "scenario_id": "62c5a74444b06a043c40777ff71bbd5460745afa5ec29248678ec2593eb1d62d",
+   "behavior": "START_AND_RETURN",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 3.0221450370574403,
+   "missed_hazards": 0,
+   "distance_m": 121.8,
+   "route_length_m": 125.75981233495783,
+   "route_progress": 0.9684012253744974,
+   "journey_time_s": 37.350000555813324,
+   "simulated_s": 37.350000555813324,
+   "braking_events": 17,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 10,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 5,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 12,
+   "unnecessary_full_stops": 8,
+   "unnecessary_stationary_s": 9.900000147521496,
+   "stationary_s": 10.050000149011613,
+   "maximum_speed_mps": 11.539,
+   "maximum_deceleration_mps2": 22.904928581145228,
+   "maximum_abs_jerk_mps3": 128.74930553321406,
+   "rms_jerk_mps3": 20.46656503144695,
+   "maximum_lateral_acceleration_mps2": 0.355319994392374,
+   "brake_release_oscillations": 15,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 9.785,
+    "controller_selected_mps_median": 8.139,
+    "achieved_mps": {
+     "max": 11.539,
+     "mean": 3.2626894243641233
+    },
+    "restriction_frames": {
+     "OTHER": 17,
+     "MEASURED_COVERAGE_LIMIT": 189,
+     "NONE": 120,
+     "PEDESTRIAN_FORECAST": 390,
+     "TIMING_DEADLINE": 5,
+     "MEASURED_OBSTACLE": 2,
+     "ROUTE_TERMINAL_OR_SIGNAL": 24
+    }
+   },
+   "freshness": {
+    "usable_frames": 747,
+    "frames": 747,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 164.29,
+    "p95_step_ms": 213.159,
+    "real_time_factor": 0.30670154405801137,
+    "wall_s": 121.77963000000001
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\62c5a74444b06a04"
+  },
+  {
+   "scenario_id": "77603da82a93bfa2bb890fc68b306899c5c053c2a5ed8f7a420d2aeeed21f4fc",
+   "behavior": "MIXED_TRAFFIC",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 10.977168872329354,
+   "missed_hazards": 0,
+   "distance_m": 110.84,
+   "route_length_m": 114.41062166019276,
+   "route_progress": 0.9706470484852101,
+   "journey_time_s": 16.000000237673532,
+   "simulated_s": 16.000000237673532,
+   "braking_events": 2,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 0.7500000104308129,
+   "maximum_speed_mps": 11.547,
+   "maximum_deceleration_mps2": 12.919984022622959,
+   "maximum_abs_jerk_mps3": 85.9748582109114,
+   "rms_jerk_mps3": 19.701319677665012,
+   "maximum_lateral_acceleration_mps2": 1.7757995056689355,
+   "brake_release_oscillations": 7,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.211,
+    "controller_selected_mps_median": 10.0,
+    "achieved_mps": {
+     "max": 11.547,
+     "mean": 6.928165625000001
+    },
+    "restriction_frames": {
+     "OTHER": 2,
+     "MEASURED_COVERAGE_LIMIT": 172,
+     "NONE": 133,
+     "ROUTE_TERMINAL_OR_SIGNAL": 13
+    }
+   },
+   "freshness": {
+    "usable_frames": 320,
+    "frames": 320,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 131.125,
+    "p95_step_ms": 178.1875,
+    "real_time_factor": 0.3737661101991783,
+    "wall_s": 42.807520000000004
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\77603da82a93bfa2"
+  },
+  {
+   "scenario_id": "8f85ef5fb9ea91d1948bdb5ba245840858d0aa5c321c0a2188a08b66b31b8357",
+   "behavior": "HESITATE_THEN_RETREAT",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 1.9964830207161777,
+   "missed_hazards": 0,
+   "distance_m": 110.56,
+   "route_length_m": 115.06363854275466,
+   "route_progress": 0.9769459644980006,
+   "journey_time_s": 44.90000066831708,
+   "simulated_s": 44.90000066831708,
+   "braking_events": 33,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 7,
+    "COVERAGE": 17,
+    "TIMING_DEADLINE": 5,
+    "OTHER": 3
+   },
+   "unnecessary_braking_events": 11,
+   "unnecessary_full_stops": 6,
+   "unnecessary_stationary_s": 20.60000030696392,
+   "stationary_s": 21.050000312924386,
+   "maximum_speed_mps": 11.528,
+   "maximum_deceleration_mps2": 20.73492632957122,
+   "maximum_abs_jerk_mps3": 129.79967831921536,
+   "rms_jerk_mps3": 21.335999570298316,
+   "maximum_lateral_acceleration_mps2": 3.2889586711022667,
+   "brake_release_oscillations": 29,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 8.152,
+    "controller_selected_mps_median": 8.152,
+    "achieved_mps": {
+     "max": 11.528,
+     "mean": 2.463635857461025
+    },
+    "restriction_frames": {
+     "OTHER": 244,
+     "MEASURED_COVERAGE_LIMIT": 334,
+     "NONE": 90,
+     "ROUTE_TERMINAL_OR_SIGNAL": 25,
+     "PEDESTRIAN_FORECAST": 36,
+     "MEASURED_OBSTACLE": 31,
+     "COVERAGE": 125,
+     "TIMING_DEADLINE": 13
+    }
+   },
+   "freshness": {
+    "usable_frames": 897,
+    "frames": 898,
+    "fraction": 0.9988864142538976
+   },
+   "performance": {
+    "median_step_ms": 169.4,
+    "p95_step_ms": 223.092,
+    "real_time_factor": 0.29141903784285195,
+    "wall_s": 154.07367
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\8f85ef5fb9ea91d1"
+  },
+  {
+   "scenario_id": "946274dba4e04069454d1c3475d79454bf44a35f944018c0ac6181cdc782687b",
+   "behavior": "HESITATE_THEN_CROSS",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.9046955851419725,
+   "missed_hazards": 0,
+   "distance_m": 121.86,
+   "route_length_m": 126.54113002727107,
+   "route_progress": 0.9684028676261814,
+   "journey_time_s": 28.100000417977583,
+   "simulated_s": 28.100000417977583,
+   "braking_events": 14,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 7,
+    "MEASURED_OBSTACLE": 2,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 2,
+    "OTHER": 3
+   },
+   "unnecessary_braking_events": 8,
+   "unnecessary_full_stops": 3,
+   "unnecessary_stationary_s": 2.500000037252903,
+   "stationary_s": 2.850000041723251,
+   "maximum_speed_mps": 8.538,
+   "maximum_deceleration_mps2": 27.58497231875273,
+   "maximum_abs_jerk_mps3": 129.24958276515613,
+   "rms_jerk_mps3": 26.024507582950903,
+   "maximum_lateral_acceleration_mps2": 2.434400919308069,
+   "brake_release_oscillations": 17,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.785,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.538,
+     "mean": 4.337741992882561
+    },
+    "restriction_frames": {
+     "OTHER": 34,
+     "NONE": 295,
+     "PEDESTRIAN_FORECAST": 119,
+     "MEASURED_OBSTACLE": 8,
+     "MEASURED_COVERAGE_LIMIT": 39,
+     "TIMING_DEADLINE": 2,
+     "ROUTE_TERMINAL_OR_SIGNAL": 65
+    }
+   },
+   "freshness": {
+    "usable_frames": 561,
+    "frames": 562,
+    "fraction": 0.998220640569395
+   },
+   "performance": {
+    "median_step_ms": 135.685,
+    "p95_step_ms": 187.7389999999999,
+    "real_time_factor": 0.36177005223750375,
+    "wall_s": 77.67365
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\946274dba4e04069"
+  },
+  {
+   "scenario_id": "9e28d0d5e2a37e66be14b02fe3742d6879f89ae25f80ee9dd27a090459d63801",
+   "behavior": "SUDDEN_RUN",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 6.491807954931724,
+   "missed_hazards": 0,
+   "distance_m": 125.61,
+   "route_length_m": 129.03492931575525,
+   "route_progress": 0.9774704483815949,
+   "journey_time_s": 15.750000233948242,
+   "simulated_s": 15.750000233948242,
+   "braking_events": 3,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 1,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 3,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 0.7000000096857548,
+   "maximum_speed_mps": 11.547,
+   "maximum_deceleration_mps2": 18.574980596081197,
+   "maximum_abs_jerk_mps3": 115.39979237611675,
+   "rms_jerk_mps3": 23.852171180011737,
+   "maximum_lateral_acceleration_mps2": 3.328918170109994,
+   "brake_release_oscillations": 8,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 12.674,
+    "controller_selected_mps_median": 11.111,
+    "achieved_mps": {
+     "max": 11.547,
+     "mean": 7.975666666666667
+    },
+    "restriction_frames": {
+     "OTHER": 7,
+     "MEASURED_COVERAGE_LIMIT": 102,
+     "NONE": 173,
+     "MEASURED_OBSTACLE": 7,
+     "ROUTE_TERMINAL_OR_SIGNAL": 26
+    }
+   },
+   "freshness": {
+    "usable_frames": 315,
+    "frames": 315,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 125.48,
+    "p95_step_ms": 181.24700000000004,
+    "real_time_factor": 0.38322268702479156,
+    "wall_s": 41.098819999999996
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\9e28d0d5e2a37e66"
+  },
+  {
+   "scenario_id": "a1ff8213066f43ef6dc8a44f5eacc4100661803193f151cb71b259d1fb7e83d4",
+   "behavior": "MULTI_PEDESTRIAN",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 5.490320641523299,
+   "missed_hazards": 0,
+   "distance_m": 117.48,
+   "route_length_m": 120.1253012260838,
+   "route_progress": 0.9833135792669201,
+   "journey_time_s": 19.100000283867132,
+   "simulated_s": 19.100000283867132,
+   "braking_events": 8,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 5,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 8,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.9500000141561031,
+   "stationary_s": 1.0500000149011612,
+   "maximum_speed_mps": 13.486,
+   "maximum_deceleration_mps2": 24.624984147045755,
+   "maximum_abs_jerk_mps3": 131.52485013982067,
+   "rms_jerk_mps3": 24.7624029272815,
+   "maximum_lateral_acceleration_mps2": 2.7520981184734206,
+   "brake_release_oscillations": 3,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.785,
+    "controller_selected_mps_median": 9.566,
+    "achieved_mps": {
+     "max": 13.486,
+     "mean": 6.15079842931937
+    },
+    "restriction_frames": {
+     "OTHER": 37,
+     "MEASURED_COVERAGE_LIMIT": 302,
+     "NONE": 20,
+     "PEDESTRIAN_FORECAST": 2,
+     "MEASURED_OBSTACLE": 21
+    }
+   },
+   "freshness": {
+    "usable_frames": 382,
+    "frames": 382,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 135.22500000000002,
+    "p95_step_ms": 175.6865,
+    "real_time_factor": 0.368222660265385,
+    "wall_s": 51.87079
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\a1ff8213066f43ef"
+  },
+  {
+   "scenario_id": "b1300fd050b5e9259bb708e544b0caae17dd349f2affe3bd5c8b25b3d78f1952",
+   "behavior": "EMERGE_FROM_PARKED",
+   "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "arrived": false,
+   "log_error": "[Errno 2] No such file or directory: 'output\\\\pedestrian-suite\\\\phase45-validation-20261023b\\\\VALIDATION\\\\B_PHYSICAL_PREDICTIVE\\\\b1300fd050b5e925\\\\manifest.json'",
+   "collisions": null,
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\b1300fd050b5e925"
+  },
+  {
+   "scenario_id": "e40944b07f63e80f0a89034ba976666115fbaee764789d2a2c383487885fd385",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.7375411595652475,
+   "missed_hazards": 0,
+   "distance_m": 102.83,
+   "route_length_m": 106.02904007287952,
+   "route_progress": 0.9707823933944837,
+   "journey_time_s": 24.700000367313635,
+   "simulated_s": 24.700000367313635,
+   "braking_events": 9,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 7,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 9,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 1.2000000178813934,
+   "stationary_s": 1.3000000186264515,
+   "maximum_speed_mps": 11.542,
+   "maximum_deceleration_mps2": 26.624964894294497,
+   "maximum_abs_jerk_mps3": 161.37456681942965,
+   "rms_jerk_mps3": 31.409771601651688,
+   "maximum_lateral_acceleration_mps2": 2.027488573037894,
+   "brake_release_oscillations": 9,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.211,
+    "controller_selected_mps_median": 9.785,
+    "achieved_mps": {
+     "max": 11.542,
+     "mean": 4.16323076923077
+    },
+    "restriction_frames": {
+     "OTHER": 26,
+     "MEASURED_COVERAGE_LIMIT": 222,
+     "NONE": 84,
+     "PEDESTRIAN_FORECAST": 137,
+     "MEASURED_OBSTACLE": 3,
+     "ROUTE_TERMINAL_OR_SIGNAL": 22
+    }
+   },
+   "freshness": {
+    "usable_frames": 494,
+    "frames": 494,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 136.51,
+    "p95_step_ms": 173.51149999999998,
+    "real_time_factor": 0.36406053910015496,
+    "wall_s": 67.84585999999999
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\e40944b07f63e80f"
+  },
+  {
+   "scenario_id": "f363addceca9101c15a358b096857e4785cf61f948387ba26ee7ac88ce8df688",
+   "behavior": "WAIT_AT_CURB",
+   "split": "VALIDATION",
+   "configuration": "B_PHYSICAL_PREDICTIVE",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 8.485797556691402,
+   "missed_hazards": 0,
+   "distance_m": 110.67,
+   "route_length_m": 114.00361688369296,
+   "route_progress": 0.9758165775454495,
+   "journey_time_s": 14.300000212341548,
+   "simulated_s": 14.300000212341548,
+   "braking_events": 6,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 3,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 6,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6500000096857548,
+   "stationary_s": 0.7500000104308129,
+   "maximum_speed_mps": 14.094,
+   "maximum_deceleration_mps2": 19.08501059709953,
+   "maximum_abs_jerk_mps3": 118.6750216066628,
+   "rms_jerk_mps3": 28.229644485100945,
+   "maximum_lateral_acceleration_mps2": 3.7890648893908674,
+   "brake_release_oscillations": 5,
+   "decision_responses": {},
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 11.214,
+    "controller_selected_mps_median": 10.822,
+    "achieved_mps": {
+     "max": 14.094,
+     "mean": 7.737681818181818
+    },
+    "restriction_frames": {
+     "OTHER": 27,
+     "MEASURED_COVERAGE_LIMIT": 170,
+     "PEDESTRIAN_FORECAST": 1,
+     "MEASURED_OBSTACLE": 21,
+     "NONE": 66,
+     "ROUTE_TERMINAL_OR_SIGNAL": 1
+    }
+   },
+   "freshness": {
+    "usable_frames": 286,
+    "frames": 286,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 130.03500000000003,
+    "p95_step_ms": 166.77,
+    "real_time_factor": 0.3857815546333186,
+    "wall_s": 37.06761
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\B_PHYSICAL_PREDICTIVE\\f363addceca9101c"
+  },
+  {
+   "scenario_id": "0e7369cd0a5d8127f2aa457d0ce69b447128a390cdf6c441a4c19ec64172513a",
+   "behavior": "WALK_PARALLEL",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 12.704103103125975,
+   "missed_hazards": 0,
+   "distance_m": 108.29,
+   "route_length_m": 110.74607584975409,
+   "route_progress": 0.9863532527522431,
+   "journey_time_s": 17.250000256299984,
+   "simulated_s": 17.250000256299984,
+   "braking_events": 2,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 0.8000000111758709,
+   "maximum_speed_mps": 8.559,
+   "maximum_deceleration_mps2": 18.404976746351576,
+   "maximum_abs_jerk_mps3": 115.6997151147925,
+   "rms_jerk_mps3": 20.75334721600057,
+   "maximum_lateral_acceleration_mps2": 2.5896144717027925,
+   "brake_release_oscillations": 8,
+   "decision_responses": {
+    "CONTINUE": 343
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.822,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.559,
+     "mean": 6.27776231884058
+    },
+    "restriction_frames": {
+     "OTHER": 2,
+     "NONE": 253,
+     "ROUTE_TERMINAL_OR_SIGNAL": 90
+    }
+   },
+   "freshness": {
+    "usable_frames": 345,
+    "frames": 345,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 121.58,
+    "p95_step_ms": 158.04600000000002,
+    "real_time_factor": 0.4058348046817099,
+    "wall_s": 42.504979999999996
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\0e7369cd0a5d8127"
+  },
+  {
+   "scenario_id": "3394e48f709a17dbd0424423a8b87e041d3b51188a24d508eb57de26cff14c9f",
+   "behavior": "SUDDEN_RUN",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "TIMEOUT",
+   "arrived": false,
+   "timeout": true,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.491317151637604,
+   "missed_hazards": 0,
+   "distance_m": 53.51,
+   "route_length_m": 123.06363861094246,
+   "route_progress": 0.4369255058968778,
+   "journey_time_s": null,
+   "simulated_s": 45.00000066980721,
+   "braking_events": 6,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 1,
+    "COVERAGE": 3,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 1
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 3,
+   "unnecessary_stationary_s": 35.950000534951684,
+   "stationary_s": 35.950000534951684,
+   "maximum_speed_mps": 8.608,
+   "maximum_deceleration_mps2": 24.624996199963913,
+   "maximum_abs_jerk_mps3": 123.14993273718574,
+   "rms_jerk_mps3": 14.372858926695317,
+   "maximum_lateral_acceleration_mps2": 2.7674384878669054,
+   "brake_release_oscillations": 6,
+   "decision_responses": {
+    "CONTINUE": 742,
+    "CAUTIOUS_APPROACH": 81,
+    "PROTECTIVE_BRAKING": 61
+   },
+   "risk_used_frames": 17,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 0.0,
+    "controller_selected_mps_median": 0.0,
+    "achieved_mps": {
+     "max": 8.608,
+     "mean": 1.1896344444444444
+    },
+    "restriction_frames": {
+     "OTHER": 64,
+     "NONE": 135,
+     "MEASURED_COVERAGE_LIMIT": 30,
+     "PEDESTRIAN_FORECAST": 66,
+     "TIMING_DEADLINE": 15,
+     "COVERAGE": 578,
+     "MEASURED_OBSTACLE": 12
+    }
+   },
+   "freshness": {
+    "usable_frames": 899,
+    "frames": 900,
+    "fraction": 0.9988888888888889
+   },
+   "performance": {
+    "median_step_ms": 178.72,
+    "p95_step_ms": 226.31499999999997,
+    "real_time_factor": 0.27908517536662303,
+    "wall_s": 161.24110000000002
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\3394e48f709a17db"
+  },
+  {
+   "scenario_id": "497297a772a74afa3b7a38e555817e36135948a3206e4bcaa9ab30a175eb4c5b",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT",
+   "arrived": false,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 3.7289678557459247,
+   "missed_hazards": 0,
+   "distance_m": 66.24,
+   "route_length_m": 123.06363861094246,
+   "route_progress": 0.551861016840976,
+   "journey_time_s": null,
+   "simulated_s": 38.950000579655125,
+   "braking_events": 60,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 14,
+    "MEASURED_OBSTACLE": 2,
+    "COVERAGE": 2,
+    "TIMING_DEADLINE": 41,
+    "OTHER": 1
+   },
+   "unnecessary_braking_events": 13,
+   "unnecessary_full_stops": 7,
+   "unnecessary_stationary_s": 8.900000131875277,
+   "stationary_s": 11.250000166893006,
+   "maximum_speed_mps": 8.318,
+   "maximum_deceleration_mps2": 20.870002069739673,
+   "maximum_abs_jerk_mps3": 110.1250236172347,
+   "rms_jerk_mps3": 22.497491330315498,
+   "maximum_lateral_acceleration_mps2": 3.2374995818559786,
+   "brake_release_oscillations": 54,
+   "decision_responses": {
+    "CONTINUE": 241,
+    "CAUTIOUS_APPROACH": 229,
+    "PROTECTIVE_BRAKING": 250
+   },
+   "risk_used_frames": 142,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 6.499,
+    "controller_selected_mps_median": 5.533,
+    "achieved_mps": {
+     "max": 8.318,
+     "mean": 1.7032246469833119
+    },
+    "restriction_frames": {
+     "OTHER": 32,
+     "MEASURED_COVERAGE_LIMIT": 267,
+     "PEDESTRIAN_FORECAST": 410,
+     "TIMING_DEADLINE": 58,
+     "MEASURED_OBSTACLE": 9,
+     "COVERAGE": 3
+    }
+   },
+   "freshness": {
+    "usable_frames": 774,
+    "frames": 779,
+    "fraction": 0.993581514762516
+   },
+   "performance": {
+    "median_step_ms": 202.58,
+    "p95_step_ms": 256.5179999999998,
+    "real_time_factor": 0.24636731918049648,
+    "wall_s": 158.09726999999998
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\497297a772a74afa"
+  },
+  {
+   "scenario_id": "4f4e0b275ba5e8c7195a9ca95b342ad26266bc5a5856b65da0d7343ea3e21ee6",
+   "behavior": "CROSS_NORMAL",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.895554889134687,
+   "missed_hazards": 0,
+   "distance_m": 101.58,
+   "route_length_m": 102.99335131473886,
+   "route_progress": 0.986104909102648,
+   "journey_time_s": 19.950000296533105,
+   "simulated_s": 19.950000296533105,
+   "braking_events": 15,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 12,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 2.4500000357627867,
+   "maximum_speed_mps": 8.5,
+   "maximum_deceleration_mps2": 19.174997324201073,
+   "maximum_abs_jerk_mps3": 123.79985199286965,
+   "rms_jerk_mps3": 22.813455477232992,
+   "maximum_lateral_acceleration_mps2": 0.08645976214566282,
+   "brake_release_oscillations": 21,
+   "decision_responses": {
+    "CONTINUE": 314,
+    "PROTECTIVE_BRAKING": 53,
+    "CAUTIOUS_APPROACH": 16
+   },
+   "risk_used_frames": 12,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 10.418,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.5,
+     "mean": 5.092218045112782
+    },
+    "restriction_frames": {
+     "OTHER": 7,
+     "NONE": 235,
+     "TIMING_DEADLINE": 14,
+     "PEDESTRIAN_FORECAST": 59,
+     "MEASURED_COVERAGE_LIMIT": 5,
+     "ROUTE_TERMINAL_OR_SIGNAL": 79
+    }
+   },
+   "freshness": {
+    "usable_frames": 399,
+    "frames": 399,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 177.77,
+    "p95_step_ms": 227.09599999999992,
+    "real_time_factor": 0.27825428559061394,
+    "wall_s": 71.69701
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\4f4e0b275ba5e8c7"
+  },
+  {
+   "scenario_id": "62c5a74444b06a043c40777ff71bbd5460745afa5ec29248678ec2593eb1d62d",
+   "behavior": "START_AND_RETURN",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT",
+   "arrived": false,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 3.0284848343720925,
+   "missed_hazards": 0,
+   "distance_m": 82.81,
+   "route_length_m": 125.75981233495783,
+   "route_progress": 0.6584293862301067,
+   "journey_time_s": null,
+   "simulated_s": 26.10000038817526,
+   "braking_events": 11,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 4,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 6,
+    "OTHER": 1
+   },
+   "unnecessary_braking_events": 5,
+   "unnecessary_full_stops": 5,
+   "unnecessary_stationary_s": 4.950000073760748,
+   "stationary_s": 4.950000073760748,
+   "maximum_speed_mps": 11.54,
+   "maximum_deceleration_mps2": 23.78999257099054,
+   "maximum_abs_jerk_mps3": 111.95000674267246,
+   "rms_jerk_mps3": 19.70591553916554,
+   "maximum_lateral_acceleration_mps2": 0.332559903224363,
+   "brake_release_oscillations": 6,
+   "decision_responses": {
+    "CONTINUE": 192,
+    "CAUTIOUS_APPROACH": 245,
+    "PROTECTIVE_BRAKING": 69
+   },
+   "risk_used_frames": 1,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 5.337,
+    "controller_selected_mps_median": 4.0,
+    "achieved_mps": {
+     "max": 11.54,
+     "mean": 3.181185823754789
+    },
+    "restriction_frames": {
+     "OTHER": 8,
+     "MEASURED_COVERAGE_LIMIT": 123,
+     "NONE": 84,
+     "PEDESTRIAN_FORECAST": 293,
+     "TIMING_DEADLINE": 14
+    }
+   },
+   "freshness": {
+    "usable_frames": 520,
+    "frames": 522,
+    "fraction": 0.9961685823754789
+   },
+   "performance": {
+    "median_step_ms": 180.055,
+    "p95_step_ms": 231.96399999999997,
+    "real_time_factor": 0.27469043796469395,
+    "wall_s": 95.01605
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\62c5a74444b06a04"
+  },
+  {
+   "scenario_id": "77603da82a93bfa2bb890fc68b306899c5c053c2a5ed8f7a420d2aeeed21f4fc",
+   "behavior": "MIXED_TRAFFIC",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.531448625658933,
+   "missed_hazards": 0,
+   "distance_m": 110.71,
+   "route_length_m": 114.41062166019276,
+   "route_progress": 0.9693579740911289,
+   "journey_time_s": 30.850000458955776,
+   "simulated_s": 30.850000458955776,
+   "braking_events": 10,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 7,
+    "MEASURED_OBSTACLE": 1,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 10,
+   "unnecessary_full_stops": 8,
+   "unnecessary_stationary_s": 9.300000138580799,
+   "stationary_s": 9.450000140070916,
+   "maximum_speed_mps": 11.606,
+   "maximum_deceleration_mps2": 23.93497616804284,
+   "maximum_abs_jerk_mps3": 104.84999854492382,
+   "rms_jerk_mps3": 23.795676759105408,
+   "maximum_lateral_acceleration_mps2": 2.2416797564865534,
+   "brake_release_oscillations": 6,
+   "decision_responses": {
+    "CONTINUE": 314,
+    "PROTECTIVE_BRAKING": 163,
+    "CAUTIOUS_APPROACH": 138
+   },
+   "risk_used_frames": 10,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.0,
+    "controller_selected_mps_median": 4.256,
+    "achieved_mps": {
+     "max": 11.606,
+     "mean": 3.5890259319286875
+    },
+    "restriction_frames": {
+     "OTHER": 46,
+     "MEASURED_COVERAGE_LIMIT": 219,
+     "NONE": 113,
+     "PEDESTRIAN_FORECAST": 208,
+     "MEASURED_OBSTACLE": 4,
+     "ROUTE_TERMINAL_OR_SIGNAL": 27
+    }
+   },
+   "freshness": {
+    "usable_frames": 617,
+    "frames": 617,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 134.26,
+    "p95_step_ms": 171.84999999999997,
+    "real_time_factor": 0.3702216560699163,
+    "wall_s": 83.32845999999999
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\77603da82a93bfa2"
+  },
+  {
+   "scenario_id": "8f85ef5fb9ea91d1948bdb5ba245840858d0aa5c321c0a2188a08b66b31b8357",
+   "behavior": "HESITATE_THEN_RETREAT",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.1459130553274806,
+   "missed_hazards": 0,
+   "distance_m": 110.42,
+   "route_length_m": 115.06363854275466,
+   "route_progress": 0.974964451211273,
+   "journey_time_s": 26.950000400841247,
+   "simulated_s": 26.950000400841247,
+   "braking_events": 25,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 3,
+    "MEASURED_OBSTACLE": 3,
+    "COVERAGE": 2,
+    "TIMING_DEADLINE": 15,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 8,
+   "unnecessary_full_stops": 2,
+   "unnecessary_stationary_s": 3.1500000469386578,
+   "stationary_s": 4.95000007301569,
+   "maximum_speed_mps": 11.594,
+   "maximum_deceleration_mps2": 23.38996823969336,
+   "maximum_abs_jerk_mps3": 126.52495596317601,
+   "rms_jerk_mps3": 32.76795522054337,
+   "maximum_lateral_acceleration_mps2": 3.3245101450544103,
+   "brake_release_oscillations": 29,
+   "decision_responses": {
+    "CONTINUE": 406,
+    "PROTECTIVE_BRAKING": 84,
+    "CAUTIOUS_APPROACH": 28
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 9.785,
+    "controller_selected_mps_median": 7.634,
+    "achieved_mps": {
+     "max": 11.594,
+     "mean": 4.099059369202227
+    },
+    "restriction_frames": {
+     "OTHER": 24,
+     "MEASURED_COVERAGE_LIMIT": 284,
+     "NONE": 92,
+     "TIMING_DEADLINE": 19,
+     "ROUTE_TERMINAL_OR_SIGNAL": 33,
+     "PEDESTRIAN_FORECAST": 72,
+     "COVERAGE": 4,
+     "MEASURED_OBSTACLE": 11
+    }
+   },
+   "freshness": {
+    "usable_frames": 539,
+    "frames": 539,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 185.78,
+    "p95_step_ms": 243.06199999999998,
+    "real_time_factor": 0.2695174148334107,
+    "wall_s": 99.99354000000001
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\8f85ef5fb9ea91d1"
+  },
+  {
+   "scenario_id": "946274dba4e04069454d1c3475d79454bf44a35f944018c0ac6181cdc782687b",
+   "behavior": "HESITATE_THEN_CROSS",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.852055160276713,
+   "missed_hazards": 0,
+   "distance_m": 121.47,
+   "route_length_m": 126.54113002727107,
+   "route_progress": 0.9653410843959137,
+   "journey_time_s": 28.500000423938047,
+   "simulated_s": 28.500000423938047,
+   "braking_events": 10,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 3,
+    "MEASURED_OBSTACLE": 2,
+    "COVERAGE": 1,
+    "TIMING_DEADLINE": 2,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 5,
+   "unnecessary_full_stops": 2,
+   "unnecessary_stationary_s": 2.650000039488077,
+   "stationary_s": 5.050000074505806,
+   "maximum_speed_mps": 8.538,
+   "maximum_deceleration_mps2": 25.00497911455345,
+   "maximum_abs_jerk_mps3": 155.24975283523423,
+   "rms_jerk_mps3": 28.157297445914306,
+   "maximum_lateral_acceleration_mps2": 2.793342810983321,
+   "brake_release_oscillations": 12,
+   "decision_responses": {
+    "CONTINUE": 380,
+    "CAUTIOUS_APPROACH": 39,
+    "PROTECTIVE_BRAKING": 144
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.566,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.538,
+     "mean": 4.2625596491228075
+    },
+    "restriction_frames": {
+     "OTHER": 20,
+     "NONE": 315,
+     "PEDESTRIAN_FORECAST": 133,
+     "MEASURED_COVERAGE_LIMIT": 27,
+     "MEASURED_OBSTACLE": 11,
+     "COVERAGE": 1,
+     "TIMING_DEADLINE": 5,
+     "ROUTE_TERMINAL_OR_SIGNAL": 58
+    }
+   },
+   "freshness": {
+    "usable_frames": 569,
+    "frames": 570,
+    "fraction": 0.9982456140350877
+   },
+   "performance": {
+    "median_step_ms": 137.43,
+    "p95_step_ms": 179.472,
+    "real_time_factor": 0.35872200346535577,
+    "wall_s": 79.44871
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\946274dba4e04069"
+  },
+  {
+   "scenario_id": "9e28d0d5e2a37e66be14b02fe3742d6879f89ae25f80ee9dd27a090459d63801",
+   "behavior": "SUDDEN_RUN",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 6.491807954931724,
+   "missed_hazards": 0,
+   "distance_m": 125.53,
+   "route_length_m": 129.03492931575525,
+   "route_progress": 0.9764558201007191,
+   "journey_time_s": 20.70000030770899,
+   "simulated_s": 20.70000030770899,
+   "braking_events": 6,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 2,
+    "MEASURED_OBSTACLE": 1,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 3
+   },
+   "unnecessary_braking_events": 6,
+   "unnecessary_full_stops": 3,
+   "unnecessary_stationary_s": 2.8500000424683094,
+   "stationary_s": 2.9500000432133673,
+   "maximum_speed_mps": 11.564,
+   "maximum_deceleration_mps2": 27.629990193210528,
+   "maximum_abs_jerk_mps3": 132.3497884220786,
+   "rms_jerk_mps3": 29.01995141046175,
+   "maximum_lateral_acceleration_mps2": 3.1604077779566118,
+   "brake_release_oscillations": 8,
+   "decision_responses": {
+    "CONTINUE": 329,
+    "CAUTIOUS_APPROACH": 60,
+    "PROTECTIVE_BRAKING": 23
+   },
+   "risk_used_frames": 9,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.418,
+    "controller_selected_mps_median": 10.003499999999999,
+    "achieved_mps": {
+     "max": 11.564,
+     "mean": 6.064973429951691
+    },
+    "restriction_frames": {
+     "OTHER": 22,
+     "MEASURED_COVERAGE_LIMIT": 174,
+     "NONE": 159,
+     "PEDESTRIAN_FORECAST": 24,
+     "MEASURED_OBSTACLE": 6,
+     "ROUTE_TERMINAL_OR_SIGNAL": 29
+    }
+   },
+   "freshness": {
+    "usable_frames": 414,
+    "frames": 414,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 125.74000000000001,
+    "p95_step_ms": 171.553,
+    "real_time_factor": 0.3888593910332218,
+    "wall_s": 53.232609999999994
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\9e28d0d5e2a37e66"
+  },
+  {
+   "scenario_id": "a1ff8213066f43ef6dc8a44f5eacc4100661803193f151cb71b259d1fb7e83d4",
+   "behavior": "MULTI_PEDESTRIAN",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.046416726567709,
+   "missed_hazards": 0,
+   "distance_m": 117.47,
+   "route_length_m": 120.1253012260838,
+   "route_progress": 0.9828890759657978,
+   "journey_time_s": 29.7500004425645,
+   "simulated_s": 29.7500004425645,
+   "braking_events": 13,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 5,
+    "MEASURED_OBSTACLE": 3,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 3,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 10,
+   "unnecessary_full_stops": 5,
+   "unnecessary_stationary_s": 5.550000082701445,
+   "stationary_s": 5.6500000834465025,
+   "maximum_speed_mps": 13.44,
+   "maximum_deceleration_mps2": 26.029997657275217,
+   "maximum_abs_jerk_mps3": 134.04983634900665,
+   "rms_jerk_mps3": 25.552694144572595,
+   "maximum_lateral_acceleration_mps2": 2.9519970382929417,
+   "brake_release_oscillations": 7,
+   "decision_responses": {
+    "CONTINUE": 364,
+    "PROTECTIVE_BRAKING": 80,
+    "CAUTIOUS_APPROACH": 144
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.343,
+    "controller_selected_mps_median": 6.076,
+    "achieved_mps": {
+     "max": 13.44,
+     "mean": 3.949549579831933
+    },
+    "restriction_frames": {
+     "OTHER": 34,
+     "MEASURED_COVERAGE_LIMIT": 369,
+     "NONE": 21,
+     "PEDESTRIAN_FORECAST": 162,
+     "TIMING_DEADLINE": 5,
+     "MEASURED_OBSTACLE": 3,
+     "ROUTE_TERMINAL_OR_SIGNAL": 1
+    }
+   },
+   "freshness": {
+    "usable_frames": 593,
+    "frames": 595,
+    "fraction": 0.9966386554621849
+   },
+   "performance": {
+    "median_step_ms": 138.94,
+    "p95_step_ms": 198.985,
+    "real_time_factor": 0.3492077145272697,
+    "wall_s": 85.19284999999998
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\a1ff8213066f43ef"
+  },
+  {
+   "scenario_id": "b1300fd050b5e9259bb708e544b0caae17dd349f2affe3bd5c8b25b3d78f1952",
+   "behavior": "EMERGE_FROM_PARKED",
+   "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "arrived": false,
+   "log_error": "[Errno 2] No such file or directory: 'output\\\\pedestrian-suite\\\\phase45-validation-20261023b\\\\VALIDATION\\\\D_EVIDENCE_BUDGETED\\\\b1300fd050b5e925\\\\manifest.json'",
+   "collisions": null,
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\b1300fd050b5e925"
+  },
+  {
+   "scenario_id": "e40944b07f63e80f0a89034ba976666115fbaee764789d2a2c383487885fd385",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.714645735644667,
+   "missed_hazards": 0,
+   "distance_m": 102.84,
+   "route_length_m": 106.02904007287952,
+   "route_progress": 0.9706852103948812,
+   "journey_time_s": 33.70000050142403,
+   "simulated_s": 33.70000050142403,
+   "braking_events": 10,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 8,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 10,
+   "unnecessary_full_stops": 7,
+   "unnecessary_stationary_s": 9.55000014230609,
+   "stationary_s": 9.650000143051148,
+   "maximum_speed_mps": 11.549,
+   "maximum_deceleration_mps2": 22.78997725357585,
+   "maximum_abs_jerk_mps3": 130.14970447499925,
+   "rms_jerk_mps3": 22.525845253690036,
+   "maximum_lateral_acceleration_mps2": 0.914248311056169,
+   "brake_release_oscillations": 10,
+   "decision_responses": {
+    "CONTINUE": 276,
+    "PROTECTIVE_BRAKING": 105,
+    "CAUTIOUS_APPROACH": 290
+   },
+   "risk_used_frames": 119,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.566,
+    "controller_selected_mps_median": 3.0,
+    "achieved_mps": {
+     "max": 11.549,
+     "mean": 3.0519851632047477
+    },
+    "restriction_frames": {
+     "OTHER": 33,
+     "MEASURED_COVERAGE_LIMIT": 199,
+     "NONE": 93,
+     "PEDESTRIAN_FORECAST": 327,
+     "TIMING_DEADLINE": 1,
+     "ROUTE_TERMINAL_OR_SIGNAL": 21
+    }
+   },
+   "freshness": {
+    "usable_frames": 674,
+    "frames": 674,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 137.97,
+    "p95_step_ms": 176.132,
+    "real_time_factor": 0.3610796485058324,
+    "wall_s": 93.33121
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\e40944b07f63e80f"
+  },
+  {
+   "scenario_id": "f363addceca9101c15a358b096857e4785cf61f948387ba26ee7ac88ce8df688",
+   "behavior": "WAIT_AT_CURB",
+   "split": "VALIDATION",
+   "configuration": "D_EVIDENCE_BUDGETED",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 8.484077579011336,
+   "missed_hazards": 0,
+   "distance_m": 110.79,
+   "route_length_m": 114.00361688369296,
+   "route_progress": 0.9765564850359458,
+   "journey_time_s": 26.650000396370885,
+   "simulated_s": 26.650000396370885,
+   "braking_events": 9,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 7,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 9,
+   "unnecessary_full_stops": 6,
+   "unnecessary_stationary_s": 5.4500000812113285,
+   "stationary_s": 5.550000081956386,
+   "maximum_speed_mps": 13.35,
+   "maximum_deceleration_mps2": 24.465003569586727,
+   "maximum_abs_jerk_mps3": 122.47466872134095,
+   "rms_jerk_mps3": 26.06541725982851,
+   "maximum_lateral_acceleration_mps2": 3.293222160440977,
+   "brake_release_oscillations": 5,
+   "decision_responses": {
+    "CONTINUE": 266,
+    "CAUTIOUS_APPROACH": 178,
+    "PROTECTIVE_BRAKING": 87
+   },
+   "risk_used_frames": 11,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.0,
+    "controller_selected_mps_median": 4.0,
+    "achieved_mps": {
+     "max": 13.35,
+     "mean": 4.158041275797373
+    },
+    "restriction_frames": {
+     "OTHER": 38,
+     "MEASURED_COVERAGE_LIMIT": 279,
+     "NONE": 19,
+     "PEDESTRIAN_FORECAST": 195,
+     "MEASURED_OBSTACLE": 2
+    }
+   },
+   "freshness": {
+    "usable_frames": 533,
+    "frames": 533,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 125.49,
+    "p95_step_ms": 168.278,
+    "real_time_factor": 0.39180068351753927,
+    "wall_s": 68.01928
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\D_EVIDENCE_BUDGETED\\f363addceca9101c"
+  },
+  {
+   "scenario_id": "0e7369cd0a5d8127f2aa457d0ce69b447128a390cdf6c441a4c19ec64172513a",
+   "behavior": "WALK_PARALLEL",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 12.704103103125975,
+   "missed_hazards": 0,
+   "distance_m": 108.27,
+   "route_length_m": 110.74607584975409,
+   "route_progress": 0.986208762311098,
+   "journey_time_s": 17.350000257790086,
+   "simulated_s": 17.350000257790086,
+   "braking_events": 3,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 1,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 0.850000011920929,
+   "maximum_speed_mps": 8.559,
+   "maximum_deceleration_mps2": 18.399976766170195,
+   "maximum_abs_jerk_mps3": 115.64971531297871,
+   "rms_jerk_mps3": 20.95923197203938,
+   "maximum_lateral_acceleration_mps2": 2.5896144717027925,
+   "brake_release_oscillations": 10,
+   "decision_responses": {
+    "CONTINUE": 344
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.822,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.559,
+     "mean": 6.240550432276657
+    },
+    "restriction_frames": {
+     "OTHER": 2,
+     "NONE": 253,
+     "ROUTE_TERMINAL_OR_SIGNAL": 91,
+     "TIMING_DEADLINE": 1
+    }
+   },
+   "freshness": {
+    "usable_frames": 347,
+    "frames": 347,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 123.83,
+    "p95_step_ms": 168.92399999999998,
+    "real_time_factor": 0.393098243016051,
+    "wall_s": 44.13655
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\0e7369cd0a5d8127"
+  },
+  {
+   "scenario_id": "3394e48f709a17dbd0424423a8b87e041d3b51188a24d508eb57de26cff14c9f",
+   "behavior": "SUDDEN_RUN",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "TIMEOUT",
+   "arrived": false,
+   "timeout": true,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.344488821528685,
+   "missed_hazards": 0,
+   "distance_m": 54.65,
+   "route_length_m": 123.06363861094246,
+   "route_progress": 0.44587499406142933,
+   "journey_time_s": null,
+   "simulated_s": 45.00000066980721,
+   "braking_events": 26,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 21,
+    "TIMING_DEADLINE": 4,
+    "OTHER": 1
+   },
+   "unnecessary_braking_events": 1,
+   "unnecessary_full_stops": 8,
+   "unnecessary_stationary_s": 35.650000530481336,
+   "stationary_s": 35.650000530481336,
+   "maximum_speed_mps": 8.608,
+   "maximum_deceleration_mps2": 22.759994206517014,
+   "maximum_abs_jerk_mps3": 136.09988567407703,
+   "rms_jerk_mps3": 12.863550847806657,
+   "maximum_lateral_acceleration_mps2": 3.2399981431685414,
+   "brake_release_oscillations": 21,
+   "decision_responses": {
+    "CONTINUE": 841,
+    "PROTECTIVE_BRAKING": 24,
+    "CAUTIOUS_APPROACH": 20
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 0.0,
+    "controller_selected_mps_median": 0.0,
+    "achieved_mps": {
+     "max": 8.608,
+     "mean": 1.2152099999999997
+    },
+    "restriction_frames": {
+     "OTHER": 206,
+     "NONE": 140,
+     "MEASURED_COVERAGE_LIMIT": 97,
+     "TIMING_DEADLINE": 14,
+     "COVERAGE": 419,
+     "MEASURED_OBSTACLE": 3,
+     "PEDESTRIAN_FORECAST": 21
+    }
+   },
+   "freshness": {
+    "usable_frames": 899,
+    "frames": 900,
+    "fraction": 0.9988888888888889
+   },
+   "performance": {
+    "median_step_ms": 173.61,
+    "p95_step_ms": 224.612,
+    "real_time_factor": 0.2845798192931278,
+    "wall_s": 158.12787
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\3394e48f709a17db"
+  },
+  {
+   "scenario_id": "497297a772a74afa3b7a38e555817e36135948a3206e4bcaa9ab30a175eb4c5b",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "TIMEOUT",
+   "arrived": false,
+   "timeout": true,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 3.301053394317557,
+   "missed_hazards": 0,
+   "distance_m": 54.63,
+   "route_length_m": 123.06363861094246,
+   "route_progress": 0.4457150072936125,
+   "journey_time_s": null,
+   "simulated_s": 45.00000066980721,
+   "braking_events": 19,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 2,
+    "MEASURED_OBSTACLE": 2,
+    "COVERAGE": 8,
+    "TIMING_DEADLINE": 6,
+    "OTHER": 1
+   },
+   "unnecessary_braking_events": 5,
+   "unnecessary_full_stops": 7,
+   "unnecessary_stationary_s": 29.95000044554472,
+   "stationary_s": 34.600000514835116,
+   "maximum_speed_mps": 10.555,
+   "maximum_deceleration_mps2": 26.929990337638618,
+   "maximum_abs_jerk_mps3": 124.72485567253734,
+   "rms_jerk_mps3": 16.178423504504362,
+   "maximum_lateral_acceleration_mps2": 3.369864115786599,
+   "brake_release_oscillations": 16,
+   "decision_responses": {
+    "CONTINUE": 781,
+    "PROTECTIVE_BRAKING": 63,
+    "CAUTIOUS_APPROACH": 33
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 0.0,
+    "controller_selected_mps_median": 0.0,
+    "achieved_mps": {
+     "max": 10.555,
+     "mean": 1.2143722222222222
+    },
+    "restriction_frames": {
+     "OTHER": 124,
+     "MEASURED_COVERAGE_LIMIT": 210,
+     "TIMING_DEADLINE": 23,
+     "PEDESTRIAN_FORECAST": 56,
+     "COVERAGE": 480,
+     "MEASURED_OBSTACLE": 7
+    }
+   },
+   "freshness": {
+    "usable_frames": 895,
+    "frames": 900,
+    "fraction": 0.9944444444444445
+   },
+   "performance": {
+    "median_step_ms": 176.94,
+    "p95_step_ms": 230.8105,
+    "real_time_factor": 0.27598595163945594,
+    "wall_s": 163.05178
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\497297a772a74afa"
+  },
+  {
+   "scenario_id": "4f4e0b275ba5e8c7195a9ca95b342ad26266bc5a5856b65da0d7343ea3e21ee6",
+   "behavior": "CROSS_NORMAL",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.895538391605188,
+   "missed_hazards": 0,
+   "distance_m": 101.48,
+   "route_length_m": 102.99335131473886,
+   "route_progress": 0.9852504952776772,
+   "journey_time_s": 21.1500003144145,
+   "simulated_s": 21.1500003144145,
+   "braking_events": 11,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 8,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 2,
+   "unnecessary_stationary_s": 1.3500000201165676,
+   "stationary_s": 2.9500000432133673,
+   "maximum_speed_mps": 8.502,
+   "maximum_deceleration_mps2": 23.58000313296611,
+   "maximum_abs_jerk_mps3": 130.02498046683178,
+   "rms_jerk_mps3": 23.752518577254286,
+   "maximum_lateral_acceleration_mps2": 0.2822948956870521,
+   "brake_release_oscillations": 22,
+   "decision_responses": {
+    "CONTINUE": 313,
+    "PROTECTIVE_BRAKING": 84,
+    "CAUTIOUS_APPROACH": 10
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 10.418,
+    "controller_selected_mps_median": 8.333,
+    "achieved_mps": {
+     "max": 8.502,
+     "mean": 4.798799054373522
+    },
+    "restriction_frames": {
+     "OTHER": 7,
+     "NONE": 235,
+     "TIMING_DEADLINE": 14,
+     "PEDESTRIAN_FORECAST": 79,
+     "MEASURED_OBSTACLE": 5,
+     "MEASURED_COVERAGE_LIMIT": 5,
+     "ROUTE_TERMINAL_OR_SIGNAL": 78
+    }
+   },
+   "freshness": {
+    "usable_frames": 419,
+    "frames": 423,
+    "fraction": 0.9905437352245863
+   },
+   "performance": {
+    "median_step_ms": 170.89,
+    "p95_step_ms": 231.98399999999998,
+    "real_time_factor": 0.28731303514652756,
+    "wall_s": 73.61309
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\4f4e0b275ba5e8c7"
+  },
+  {
+   "scenario_id": "62c5a74444b06a043c40777ff71bbd5460745afa5ec29248678ec2593eb1d62d",
+   "behavior": "START_AND_RETURN",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 3.023623116805457,
+   "missed_hazards": 0,
+   "distance_m": 121.82,
+   "route_length_m": 125.75981233495783,
+   "route_progress": 0.968663629373606,
+   "journey_time_s": 38.95000057965518,
+   "simulated_s": 38.95000057965518,
+   "braking_events": 19,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 3,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 14,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 5,
+   "unnecessary_full_stops": 4,
+   "unnecessary_stationary_s": 16.400000244379044,
+   "stationary_s": 16.60000024661422,
+   "maximum_speed_mps": 11.581,
+   "maximum_deceleration_mps2": 23.44499413219845,
+   "maximum_abs_jerk_mps3": 125.00007591574428,
+   "rms_jerk_mps3": 20.57735220506556,
+   "maximum_lateral_acceleration_mps2": 0.355319994392374,
+   "brake_release_oscillations": 23,
+   "decision_responses": {
+    "CONTINUE": 608,
+    "PROTECTIVE_BRAKING": 49,
+    "CAUTIOUS_APPROACH": 104
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 9.343,
+    "controller_selected_mps_median": 4.047,
+    "achieved_mps": {
+     "max": 11.581,
+     "mean": 3.127966623876765
+    },
+    "restriction_frames": {
+     "OTHER": 7,
+     "MEASURED_COVERAGE_LIMIT": 466,
+     "NONE": 127,
+     "PEDESTRIAN_FORECAST": 141,
+     "TIMING_DEADLINE": 16,
+     "ROUTE_TERMINAL_OR_SIGNAL": 22
+    }
+   },
+   "freshness": {
+    "usable_frames": 778,
+    "frames": 779,
+    "fraction": 0.9987163029525032
+   },
+   "performance": {
+    "median_step_ms": 140.9,
+    "p95_step_ms": 218.796,
+    "real_time_factor": 0.3338245188633578,
+    "wall_s": 116.67807
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\62c5a74444b06a04"
+  },
+  {
+   "scenario_id": "77603da82a93bfa2bb890fc68b306899c5c053c2a5ed8f7a420d2aeeed21f4fc",
+   "behavior": "MIXED_TRAFFIC",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.524562928151236,
+   "missed_hazards": 0,
+   "distance_m": 111.11,
+   "route_length_m": 114.41062166019276,
+   "route_progress": 0.9728982098004672,
+   "journey_time_s": 25.650000381469738,
+   "simulated_s": 25.650000381469738,
+   "braking_events": 12,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 9,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 1,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 11,
+   "unnecessary_full_stops": 6,
+   "unnecessary_stationary_s": 5.800000086426735,
+   "stationary_s": 5.950000087916851,
+   "maximum_speed_mps": 11.547,
+   "maximum_deceleration_mps2": 23.854993350905414,
+   "maximum_abs_jerk_mps3": 116.57479537739962,
+   "rms_jerk_mps3": 23.826618300816573,
+   "maximum_lateral_acceleration_mps2": 2.2277675907927574,
+   "brake_release_oscillations": 10,
+   "decision_responses": {
+    "CONTINUE": 312,
+    "PROTECTIVE_BRAKING": 103,
+    "CAUTIOUS_APPROACH": 92
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.211,
+    "controller_selected_mps_median": 4.175,
+    "achieved_mps": {
+     "max": 11.547,
+     "mean": 4.33288693957115
+    },
+    "restriction_frames": {
+     "OTHER": 17,
+     "MEASURED_COVERAGE_LIMIT": 184,
+     "NONE": 122,
+     "PEDESTRIAN_FORECAST": 154,
+     "TIMING_DEADLINE": 4,
+     "ROUTE_TERMINAL_OR_SIGNAL": 32
+    }
+   },
+   "freshness": {
+    "usable_frames": 513,
+    "frames": 513,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 137.12,
+    "p95_step_ms": 203.214,
+    "real_time_factor": 0.35045024838205036,
+    "wall_s": 73.19156
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\77603da82a93bfa2"
+  },
+  {
+   "scenario_id": "8f85ef5fb9ea91d1948bdb5ba245840858d0aa5c321c0a2188a08b66b31b8357",
+   "behavior": "HESITATE_THEN_RETREAT",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "TIMEOUT",
+   "arrived": false,
+   "timeout": true,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 5.557122438608416,
+   "missed_hazards": 0,
+   "distance_m": 53.63,
+   "route_length_m": 115.06363854275466,
+   "route_progress": 0.4681024290571333,
+   "journey_time_s": null,
+   "simulated_s": 45.00000066980719,
+   "braking_events": 8,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 1,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 2,
+    "TIMING_DEADLINE": 4,
+    "OTHER": 1
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 2,
+   "unnecessary_stationary_s": 37.30000055506825,
+   "stationary_s": 37.30000055506825,
+   "maximum_speed_mps": 11.645,
+   "maximum_deceleration_mps2": 23.015004596429645,
+   "maximum_abs_jerk_mps3": 118.47499498275995,
+   "rms_jerk_mps3": 13.696027072541831,
+   "maximum_lateral_acceleration_mps2": 3.073003708793945,
+   "brake_release_oscillations": 9,
+   "decision_responses": {
+    "CONTINUE": 793,
+    "PROTECTIVE_BRAKING": 46,
+    "CAUTIOUS_APPROACH": 49
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 40.234,
+     "max": 40.234
+    },
+    "applicable_safe_limit_mps_median": 0.0,
+    "controller_selected_mps_median": 0.0,
+    "achieved_mps": {
+     "max": 11.645,
+     "mean": 1.1919833333333332
+    },
+    "restriction_frames": {
+     "OTHER": 52,
+     "MEASURED_COVERAGE_LIMIT": 74,
+     "NONE": 61,
+     "TIMING_DEADLINE": 11,
+     "ROUTE_TERMINAL_OR_SIGNAL": 13,
+     "PEDESTRIAN_FORECAST": 43,
+     "COVERAGE": 643,
+     "MEASURED_OBSTACLE": 3
+    }
+   },
+   "freshness": {
+    "usable_frames": 900,
+    "frames": 900,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 159.14,
+    "p95_step_ms": 209.73749999999998,
+    "real_time_factor": 0.30694942121486474,
+    "wall_s": 146.60396000000003
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\8f85ef5fb9ea91d1"
+  },
+  {
+   "scenario_id": "946274dba4e04069454d1c3475d79454bf44a35f944018c0ac6181cdc782687b",
+   "behavior": "HESITATE_THEN_CROSS",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 2.6016924527478023,
+   "missed_hazards": 0,
+   "distance_m": 121.42,
+   "route_length_m": 126.54113002727107,
+   "route_progress": 0.9648914973909264,
+   "journey_time_s": 31.75000047236682,
+   "simulated_s": 31.75000047236682,
+   "braking_events": 10,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 6,
+    "MEASURED_OBSTACLE": 2,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 8,
+   "unnecessary_full_stops": 4,
+   "unnecessary_stationary_s": 4.400000065565109,
+   "stationary_s": 6.550000096857548,
+   "maximum_speed_mps": 8.672,
+   "maximum_deceleration_mps2": 25.824997760787358,
+   "maximum_abs_jerk_mps3": 127.89989794900978,
+   "rms_jerk_mps3": 25.593323931600708,
+   "maximum_lateral_acceleration_mps2": 2.8154964079680953,
+   "brake_release_oscillations": 8,
+   "decision_responses": {
+    "CONTINUE": 390,
+    "CAUTIOUS_APPROACH": 72,
+    "PROTECTIVE_BRAKING": 171
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 30.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.566,
+    "controller_selected_mps_median": 7.891,
+    "achieved_mps": {
+     "max": 8.672,
+     "mean": 3.8252472440944882
+    },
+    "restriction_frames": {
+     "OTHER": 30,
+     "NONE": 327,
+     "PEDESTRIAN_FORECAST": 166,
+     "MEASURED_COVERAGE_LIMIT": 44,
+     "MEASURED_OBSTACLE": 2,
+     "ROUTE_TERMINAL_OR_SIGNAL": 66
+    }
+   },
+   "freshness": {
+    "usable_frames": 635,
+    "frames": 635,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 132.35,
+    "p95_step_ms": 166.92499999999995,
+    "real_time_factor": 0.37848354427919834,
+    "wall_s": 83.8874
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\946274dba4e04069"
+  },
+  {
+   "scenario_id": "9e28d0d5e2a37e66be14b02fe3742d6879f89ae25f80ee9dd27a090459d63801",
+   "behavior": "SUDDEN_RUN",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 6.491807954931724,
+   "missed_hazards": 0,
+   "distance_m": 125.4,
+   "route_length_m": 129.03492931575525,
+   "route_progress": 0.976235847185851,
+   "journey_time_s": 15.30000022724272,
+   "simulated_s": 15.30000022724272,
+   "braking_events": 2,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 0,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 2,
+   "unnecessary_full_stops": 1,
+   "unnecessary_stationary_s": 0.6000000089406967,
+   "stationary_s": 0.7000000096857548,
+   "maximum_speed_mps": 11.547,
+   "maximum_deceleration_mps2": 14.65498087398891,
+   "maximum_abs_jerk_mps3": 104.27477269533334,
+   "rms_jerk_mps3": 18.18780750921761,
+   "maximum_lateral_acceleration_mps2": 3.6914996480779365,
+   "brake_release_oscillations": 6,
+   "decision_responses": {
+    "CONTINUE": 304
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 13.017,
+    "controller_selected_mps_median": 11.111,
+    "achieved_mps": {
+     "max": 11.547,
+     "mean": 8.196529411764706
+    },
+    "restriction_frames": {
+     "OTHER": 2,
+     "MEASURED_COVERAGE_LIMIT": 97,
+     "NONE": 187,
+     "ROUTE_TERMINAL_OR_SIGNAL": 20
+    }
+   },
+   "freshness": {
+    "usable_frames": 306,
+    "frames": 306,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 130.74,
+    "p95_step_ms": 172.71,
+    "real_time_factor": 0.3817780633632481,
+    "wall_s": 40.07564
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\9e28d0d5e2a37e66"
+  },
+  {
+   "scenario_id": "a1ff8213066f43ef6dc8a44f5eacc4100661803193f151cb71b259d1fb7e83d4",
+   "behavior": "MULTI_PEDESTRIAN",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 5.453138350547145,
+   "missed_hazards": 0,
+   "distance_m": 117.47,
+   "route_length_m": 120.1253012260838,
+   "route_progress": 0.9831885300689736,
+   "journey_time_s": 23.900000355392706,
+   "simulated_s": 23.900000355392706,
+   "braking_events": 6,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 3,
+    "MEASURED_OBSTACLE": 1,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 6,
+   "unnecessary_full_stops": 4,
+   "unnecessary_stationary_s": 3.0500000454485416,
+   "stationary_s": 3.1500000461935995,
+   "maximum_speed_mps": 13.44,
+   "maximum_deceleration_mps2": 24.99997145085429,
+   "maximum_abs_jerk_mps3": 112.05010809137232,
+   "rms_jerk_mps3": 23.674063945637247,
+   "maximum_lateral_acceleration_mps2": 2.121929046414878,
+   "brake_release_oscillations": 6,
+   "decision_responses": {
+    "CONTINUE": 335,
+    "PROTECTIVE_BRAKING": 44,
+    "CAUTIOUS_APPROACH": 97
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 30.0,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 9.566,
+    "controller_selected_mps_median": 8.645,
+    "achieved_mps": {
+     "max": 13.44,
+     "mean": 4.915937238493724
+    },
+    "restriction_frames": {
+     "OTHER": 23,
+     "MEASURED_COVERAGE_LIMIT": 331,
+     "NONE": 22,
+     "PEDESTRIAN_FORECAST": 99,
+     "MEASURED_OBSTACLE": 2,
+     "ROUTE_TERMINAL_OR_SIGNAL": 1
+    }
+   },
+   "freshness": {
+    "usable_frames": 478,
+    "frames": 478,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 134.115,
+    "p95_step_ms": 177.12949999999998,
+    "real_time_factor": 0.3707462354581803,
+    "wall_s": 64.46458000000001
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\a1ff8213066f43ef"
+  },
+  {
+   "scenario_id": "b1300fd050b5e9259bb708e544b0caae17dd349f2affe3bd5c8b25b3d78f1952",
+   "behavior": "EMERGE_FROM_PARKED",
+   "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "arrived": false,
+   "log_error": "[Errno 2] No such file or directory: 'output\\\\pedestrian-suite\\\\phase45-validation-20261023b\\\\VALIDATION\\\\E_PHYSICAL_ABLATION\\\\b1300fd050b5e925\\\\manifest.json'",
+   "collisions": null,
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\b1300fd050b5e925"
+  },
+  {
+   "scenario_id": "e40944b07f63e80f0a89034ba976666115fbaee764789d2a2c383487885fd385",
+   "behavior": "ORDINARY_CITY_JOURNEY",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 7.582910154312212,
+   "missed_hazards": 0,
+   "distance_m": 102.79,
+   "route_length_m": 106.02904007287952,
+   "route_progress": 0.9703671517114756,
+   "journey_time_s": 21.85000032484527,
+   "simulated_s": 21.85000032484527,
+   "braking_events": 7,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 4,
+    "MEASURED_OBSTACLE": 0,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 1,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 6,
+   "unnecessary_full_stops": 3,
+   "unnecessary_stationary_s": 2.7000000402331352,
+   "stationary_s": 3.3500000491738318,
+   "maximum_speed_mps": 11.548,
+   "maximum_deceleration_mps2": 22.48998987481562,
+   "maximum_abs_jerk_mps3": 122.50011834023442,
+   "rms_jerk_mps3": 26.66700734363599,
+   "maximum_lateral_acceleration_mps2": 0.9291239645832253,
+   "brake_release_oscillations": 11,
+   "decision_responses": {
+    "CONTINUE": 289,
+    "PROTECTIVE_BRAKING": 44,
+    "CAUTIOUS_APPROACH": 101
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 40.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.211,
+    "controller_selected_mps_median": 5.886,
+    "achieved_mps": {
+     "max": 11.548,
+     "mean": 4.705478260869565
+    },
+    "restriction_frames": {
+     "OTHER": 16,
+     "MEASURED_COVERAGE_LIMIT": 168,
+     "PEDESTRIAN_FORECAST": 108,
+     "NONE": 117,
+     "TIMING_DEADLINE": 1,
+     "ROUTE_TERMINAL_OR_SIGNAL": 27
+    }
+   },
+   "freshness": {
+    "usable_frames": 437,
+    "frames": 437,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 129.5,
+    "p95_step_ms": 175.65,
+    "real_time_factor": 0.3815723491696963,
+    "wall_s": 57.263059999999996
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\e40944b07f63e80f"
+  },
+  {
+   "scenario_id": "f363addceca9101c15a358b096857e4785cf61f948387ba26ee7ac88ce8df688",
+   "behavior": "WAIT_AT_CURB",
+   "split": "VALIDATION",
+   "configuration": "E_PHYSICAL_ABLATION",
+   "counterfactual": null,
+   "outcome": "ARRIVED",
+   "arrived": true,
+   "timeout": false,
+   "collisions": 0,
+   "walker_collisions": 0,
+   "minimum_separation_m": 8.484307553631435,
+   "missed_hazards": 0,
+   "distance_m": 110.92,
+   "route_length_m": 114.00361688369296,
+   "route_progress": 0.9776602805506719,
+   "journey_time_s": 23.6500003516674,
+   "simulated_s": 23.6500003516674,
+   "braking_events": 6,
+   "braking_by_reason": {
+    "PEDESTRIAN_FORECAST": 2,
+    "MEASURED_OBSTACLE": 2,
+    "COVERAGE": 0,
+    "TIMING_DEADLINE": 0,
+    "OTHER": 2
+   },
+   "unnecessary_braking_events": 6,
+   "unnecessary_full_stops": 4,
+   "unnecessary_stationary_s": 3.7500000558793545,
+   "stationary_s": 3.8500000566244124,
+   "maximum_speed_mps": 14.015,
+   "maximum_deceleration_mps2": 26.759985474064116,
+   "maximum_abs_jerk_mps3": 133.64979898054997,
+   "rms_jerk_mps3": 27.128395048207267,
+   "maximum_lateral_acceleration_mps2": 3.539547580541438,
+   "brake_release_oscillations": 4,
+   "decision_responses": {
+    "CONTINUE": 263,
+    "PROTECTIVE_BRAKING": 80,
+    "CAUTIOUS_APPROACH": 128
+   },
+   "risk_used_frames": 0,
+   "speed_handling": {
+    "requested_target_kmh": 50.0,
+    "posted_limit_kmh": {
+     "min": 64.374,
+     "max": 64.374
+    },
+    "applicable_safe_limit_mps_median": 10.211,
+    "controller_selected_mps_median": 4.791,
+    "achieved_mps": {
+     "max": 14.015,
+     "mean": 4.689594080338266
+    },
+    "restriction_frames": {
+     "OTHER": 29,
+     "MEASURED_COVERAGE_LIMIT": 246,
+     "NONE": 37,
+     "PEDESTRIAN_FORECAST": 157,
+     "MEASURED_OBSTACLE": 4
+    }
+   },
+   "freshness": {
+    "usable_frames": 473,
+    "frames": 473,
+    "fraction": 1.0
+   },
+   "performance": {
+    "median_step_ms": 118.59,
+    "p95_step_ms": 160.28199999999998,
+    "real_time_factor": 0.4167725548257222,
+    "wall_s": 56.74558
+   },
+   "directory": "output\\pedestrian-suite\\phase45-validation-20261023b\\VALIDATION\\E_PHYSICAL_ABLATION\\f363addceca9101c"
+  }
+ ]
+}

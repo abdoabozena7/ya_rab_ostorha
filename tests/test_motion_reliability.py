@@ -108,11 +108,20 @@ class ForecastTests(unittest.TestCase):
         self.assertGreater(modes[2]['points'][-1][2],4)
 
     def test_remote_and_static_learned_modes_rejected_without_fake_probabilities(self):
-        tr=track([10,3],[0,0]);bad={'track_id':'1','mode':1,'points':[[0,10,3],[1,12,3],[3,18,3]]}
+        # A stationary track may start moving within what is reachable from
+        # rest; an unreachable jump or a misaligned start is still rejected.
+        tr=track([10,3],[0,0]);tr['class']='person'
+        bad={'track_id':'1','mode':1,'points':[[0,10,3],[.5,12,3],[1,14,3]]}
         good={**bad,'mode':2,'points':[[0,10,3],[1,10,3],[3,10,3]]}
-        accepted,rejected=rank_learned_modes([bad,good],[tr])
-        self.assertEqual(accepted[0]['mode'],2);self.assertIsNone(accepted[0]['probability'])
-        self.assertEqual(rejected[0]['reason'],'MEASURED_STATIONARY_OBJECT')
+        start={**bad,'mode':3,'points':[[0,10,3],[1,10,2.],[2,10,.5]]}
+        shifted={**bad,'mode':4,'points':[[0,10,4.2],[1,10,4.2],[2,10,4.2]]}
+        accepted,rejected=rank_learned_modes([bad,good,start,shifted],[tr])
+        self.assertEqual({m['mode'] for m in accepted},{2,3})
+        self.assertTrue(all(m['probability'] is None and m['certifies_free_space'] is False for m in accepted))
+        reasons={r['mode']:r['reason'] for r in rejected}
+        self.assertEqual(reasons[1],'UNREACHABLE_FROM_MEASURED_REST');self.assertEqual(reasons[4],'SOURCE_ALIGNMENT_ERROR')
+        sprint={**bad,'mode':5,'points':[[0,10,3],[.5,10,.2],[1,10,-1.]]}
+        self.assertEqual(rank_learned_modes([sprint],[tr])[1][0]['reason'],'PHYSICAL_SPEED_LIMIT')
 
     def test_delayed_scores_require_future_measurements_and_report_missing(self):
         q=MotionQuality();tr=track([10,0],[1,0]);tr['history']=[[0,10,0,1,0]]

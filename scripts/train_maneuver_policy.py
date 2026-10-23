@@ -72,7 +72,7 @@ def main():
             'capabilities_accepted':False,'stage':stage,'requested_timesteps':args.timesteps,
             'qualification_kind':'FULL_ORDINARY_MOTION' if admitted else 'CONTROLLED_STAGE_ZERO_MOTION_VIABILITY',
             'full_ordinary_acceptance_passed':admitted,
-            'reward_version':2,'native_initialization_version':3,
+            'reward_version':3,'native_initialization_version':3,
             'historical_before':historical_hashes(),
             'implementation_sha256':control_hashes(),
             'configuration_sha256':hashlib.sha256((ROOT/'config/core-repair-pilot.json').read_bytes()).hexdigest(),

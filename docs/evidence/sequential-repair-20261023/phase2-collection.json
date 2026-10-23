@@ -1,0 +1,535 @@
+{
+ "source": "LIVE_NATIVE_CARLA_HARNESS",
+ "runs": [
+  {
+   "folder": "output\\pedestrian-suite\\train-20261023b",
+   "episodes": 70,
+   "outcomes": {
+    "COLLECTION_END_PASSED_PEDESTRIANS": 61,
+    "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 4,
+    "TIMEOUT": 4,
+    "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT": 1
+   },
+   "by_behavior": {
+    "CROSS_NORMAL": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 7
+    },
+    "EMERGE_FROM_PARKED": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 4,
+     "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 3
+    },
+    "HESITATE_THEN_CROSS": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 7
+    },
+    "HESITATE_THEN_RETREAT": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 7
+    },
+    "MIXED_TRAFFIC": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 6,
+     "STOPPED_YA_RAB_OSTORHA_SENSOR_FAULT": 1
+    },
+    "MULTI_PEDESTRIAN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 5,
+     "TIMEOUT": 2
+    },
+    "START_AND_RETURN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 7
+    },
+    "SUDDEN_RUN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 5,
+     "TIMEOUT": 2
+    },
+    "WAIT_AT_CURB": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 6,
+     "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 1
+    },
+    "WALK_PARALLEL": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 7
+    }
+   },
+   "towns": {
+    "Town10HD_Opt": 42,
+    "Town01_Opt": 28
+   },
+   "locations": [
+    "Town01_Opt:1",
+    "Town01_Opt:18",
+    "Town01_Opt:26",
+    "Town01_Opt:35",
+    "Town01_Opt:46",
+    "Town01_Opt:53",
+    "Town01_Opt:62",
+    "Town01_Opt:69",
+    "Town01_Opt:72",
+    "Town01_Opt:8",
+    "Town10HD_Opt:10",
+    "Town10HD_Opt:123",
+    "Town10HD_Opt:131",
+    "Town10HD_Opt:150",
+    "Town10HD_Opt:54",
+    "Town10HD_Opt:60",
+    "Town10HD_Opt:62",
+    "Town10HD_Opt:65",
+    "Town10HD_Opt:69",
+    "Town10HD_Opt:75",
+    "Town10HD_Opt:82",
+    "Town10HD_Opt:88"
+   ],
+   "scripted_walker_realization": {
+    "CROSS_NORMAL": {
+     "realized": 4,
+     "truncated_by_collection_end": 3
+    },
+    "EMERGE_FROM_PARKED": {
+     "truncated_by_collection_end": 3,
+     "realized": 1
+    },
+    "HESITATE_THEN_CROSS": {
+     "truncated_by_collection_end": 4,
+     "realized": 3
+    },
+    "HESITATE_THEN_RETREAT": {
+     "realized": 7
+    },
+    "MIXED_TRAFFIC": {
+     "realized": 6,
+     "not_realized": 1
+    },
+    "MULTI_PEDESTRIAN": {
+     "realized": 14,
+     "truncated_by_collection_end": 5
+    },
+    "START_AND_RETURN": {
+     "truncated_by_collection_end": 3,
+     "realized": 4
+    },
+    "SUDDEN_RUN": {
+     "realized": 6,
+     "truncated_by_collection_end": 1
+    },
+    "WAIT_AT_CURB": {
+     "realized": 6
+    },
+    "WALK_PARALLEL": {
+     "realized": 6,
+     "truncated_by_collection_end": 1
+    }
+   },
+   "construction_errors": [
+    {
+     "behavior": "EMERGE_FROM_PARKED",
+     "location": {
+      "town": "Town10HD_Opt",
+      "spawn_index": 88,
+      "road_width_m": 22.0
+     },
+     "error": "Invalid parked occluder spawn; no geometry substitution"
+    },
+    {
+     "behavior": "EMERGE_FROM_PARKED",
+     "location": {
+      "town": "Town10HD_Opt",
+      "spawn_index": 150,
+      "road_width_m": 22.0
+     },
+     "error": "Invalid parked occluder spawn; no geometry substitution"
+    },
+    {
+     "behavior": "EMERGE_FROM_PARKED",
+     "location": {
+      "town": "Town10HD_Opt",
+      "spawn_index": 75,
+      "road_width_m": 22.0
+     },
+     "error": "Invalid parked occluder spawn; no geometry substitution"
+    },
+    {
+     "behavior": "WAIT_AT_CURB",
+     "location": {
+      "town": "Town10HD_Opt",
+      "spawn_index": 75,
+      "road_width_m": 22.0
+     },
+     "error": "Invalid pedestrian spawn for ped_0; no geometry substitution"
+    }
+   ],
+   "simulated_s": 862.7,
+   "wall_s": 2985.58,
+   "source_identities": 2,
+   "source_identity_sha256": [
+    "c324c44a8a1d3763",
+    "3f92f68afdb132d2"
+   ]
+  },
+  {
+   "folder": "output\\pedestrian-suite\\validation-20261023",
+   "episodes": 30,
+   "outcomes": {
+    "COLLECTION_END_PASSED_PEDESTRIANS": 24,
+    "TIMEOUT": 5,
+    "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 1
+   },
+   "by_behavior": {
+    "CROSS_NORMAL": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "EMERGE_FROM_PARKED": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 2,
+     "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 1
+    },
+    "HESITATE_THEN_CROSS": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 2,
+     "TIMEOUT": 1
+    },
+    "HESITATE_THEN_RETREAT": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 2,
+     "TIMEOUT": 1
+    },
+    "MIXED_TRAFFIC": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "MULTI_PEDESTRIAN": {
+     "TIMEOUT": 1,
+     "COLLECTION_END_PASSED_PEDESTRIANS": 2
+    },
+    "START_AND_RETURN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "SUDDEN_RUN": {
+     "TIMEOUT": 2,
+     "COLLECTION_END_PASSED_PEDESTRIANS": 1
+    },
+    "WAIT_AT_CURB": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "WALK_PARALLEL": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    }
+   },
+   "towns": {
+    "Town10HD_Opt": 17,
+    "Town01_Opt": 13
+   },
+   "locations": [
+    "Town01_Opt:23",
+    "Town01_Opt:3",
+    "Town01_Opt:51",
+    "Town01_Opt:67",
+    "Town10HD_Opt:125",
+    "Town10HD_Opt:144",
+    "Town10HD_Opt:66",
+    "Town10HD_Opt:83"
+   ],
+   "scripted_walker_realization": {
+    "CROSS_NORMAL": {
+     "realized": 2,
+     "truncated_by_collection_end": 1
+    },
+    "EMERGE_FROM_PARKED": {
+     "truncated_by_collection_end": 2
+    },
+    "HESITATE_THEN_CROSS": {
+     "realized": 3
+    },
+    "HESITATE_THEN_RETREAT": {
+     "realized": 2,
+     "truncated_by_collection_end": 1
+    },
+    "MIXED_TRAFFIC": {
+     "truncated_by_collection_end": 2,
+     "realized": 1
+    },
+    "MULTI_PEDESTRIAN": {
+     "realized": 6,
+     "truncated_by_collection_end": 2
+    },
+    "START_AND_RETURN": {
+     "realized": 3
+    },
+    "SUDDEN_RUN": {
+     "realized": 2,
+     "truncated_by_collection_end": 1
+    },
+    "WAIT_AT_CURB": {
+     "realized": 3
+    },
+    "WALK_PARALLEL": {
+     "realized": 2,
+     "truncated_by_collection_end": 1
+    }
+   },
+   "construction_errors": [
+    {
+     "behavior": "EMERGE_FROM_PARKED",
+     "location": {
+      "town": "Town10HD_Opt",
+      "spawn_index": 125,
+      "road_width_m": 22.0
+     },
+     "error": "Invalid parked occluder spawn; no geometry substitution"
+    }
+   ],
+   "simulated_s": 492.9,
+   "wall_s": 1715.98,
+   "source_identities": 2,
+   "source_identity_sha256": [
+    "7b2462587d29c5b9",
+    "c324c44a8a1d3763"
+   ]
+  },
+  {
+   "folder": "output\\pedestrian-suite\\test-20261023",
+   "episodes": 36,
+   "outcomes": {
+    "COLLECTION_END_PASSED_PEDESTRIANS": 33,
+    "TIMEOUT": 2,
+    "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 1
+   },
+   "by_behavior": {
+    "COUNTERFACTUAL_PAIR": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 6
+    },
+    "CROSS_NORMAL": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "EMERGE_FROM_PARKED": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "HESITATE_THEN_CROSS": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "HESITATE_THEN_RETREAT": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "MIXED_TRAFFIC": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "MULTI_PEDESTRIAN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 1,
+     "TIMEOUT": 1,
+     "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE": 1
+    },
+    "START_AND_RETURN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "SUDDEN_RUN": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    },
+    "WAIT_AT_CURB": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 2,
+     "TIMEOUT": 1
+    },
+    "WALK_PARALLEL": {
+     "COLLECTION_END_PASSED_PEDESTRIANS": 3
+    }
+   },
+   "towns": {
+    "Town10HD_Opt": 18,
+    "Town02_Opt": 18
+   },
+   "locations": [
+    "Town02_Opt:19",
+    "Town02_Opt:21",
+    "Town02_Opt:25",
+    "Town02_Opt:3",
+    "Town02_Opt:38",
+    "Town10HD_Opt:113",
+    "Town10HD_Opt:143",
+    "Town10HD_Opt:63",
+    "Town10HD_Opt:71"
+   ],
+   "scripted_walker_realization": {
+    "COUNTERFACTUAL_PAIR": {
+     "realized": 6
+    },
+    "CROSS_NORMAL": {
+     "realized": 2,
+     "truncated_by_collection_end": 1
+    },
+    "EMERGE_FROM_PARKED": {
+     "realized": 3
+    },
+    "HESITATE_THEN_CROSS": {
+     "truncated_by_collection_end": 2,
+     "realized": 1
+    },
+    "HESITATE_THEN_RETREAT": {
+     "truncated_by_collection_end": 1,
+     "realized": 2
+    },
+    "MIXED_TRAFFIC": {
+     "realized": 2,
+     "truncated_by_collection_end": 1
+    },
+    "MULTI_PEDESTRIAN": {
+     "realized": 5,
+     "truncated_by_collection_end": 1
+    },
+    "START_AND_RETURN": {
+     "realized": 3
+    },
+    "SUDDEN_RUN": {
+     "realized": 3
+    },
+    "WAIT_AT_CURB": {
+     "realized": 3
+    },
+    "WALK_PARALLEL": {
+     "realized": 3
+    }
+   },
+   "construction_errors": [
+    {
+     "behavior": "MULTI_PEDESTRIAN",
+     "location": {
+      "town": "Town02_Opt",
+      "spawn_index": 3,
+      "road_width_m": 10.5
+     },
+     "error": "Native routing took an unintended detour; scenario invalid"
+    }
+   ],
+   "simulated_s": 423.95,
+   "wall_s": 1410.36,
+   "source_identities": 2,
+   "source_identity_sha256": [
+    "6b821c3a8cd9ce43",
+    "7b2462587d29c5b9"
+   ]
+  }
+ ],
+ "datasets": {
+  "TRAIN": {
+   "samples": 15047,
+   "coverage": {
+    "relevant": 10586,
+    "associated": 7727,
+    "unobserved": 2482,
+    "ambiguous": 315,
+    "scene_mismatch": 62,
+    "duplicate_tracks": 7320
+   },
+   "prediction_coverage": 0.7299263177781976,
+   "label_counts": {
+    "1s": {
+     "LABELED": 13924,
+     "IN_PATH_AT_DECISION": 805,
+     "MISSING_FUTURE": 318,
+     "POST_CONTACT": 0
+    },
+    "2s": {
+     "LABELED": 13207,
+     "IN_PATH_AT_DECISION": 805,
+     "MISSING_FUTURE": 1035,
+     "POST_CONTACT": 0
+    },
+    "3s": {
+     "LABELED": 12182,
+     "IN_PATH_AT_DECISION": 805,
+     "MISSING_FUTURE": 2060,
+     "POST_CONTACT": 0
+    }
+   },
+   "positives": {
+    "1s": 405,
+    "2s": 799,
+    "3s": 1123
+   },
+   "negatives": {
+    "1s": 13519,
+    "2s": 12408,
+    "3s": 11059
+   },
+   "sha256": "a395917b3f8de5115f54847449eec17b0118d7f0e53f13192ea56d0f27aaf92a",
+   "feature_version": "PATH_ENTRY_FEATURES_V1"
+  },
+  "VALIDATION": {
+   "samples": 6924,
+   "coverage": {
+    "relevant": 4987,
+    "associated": 3926,
+    "unobserved": 1039,
+    "ambiguous": 0,
+    "scene_mismatch": 22,
+    "duplicate_tracks": 2998
+   },
+   "prediction_coverage": 0.7872468417886505,
+   "label_counts": {
+    "1s": {
+     "LABELED": 6498,
+     "IN_PATH_AT_DECISION": 361,
+     "MISSING_FUTURE": 65,
+     "POST_CONTACT": 0
+    },
+    "2s": {
+     "LABELED": 6316,
+     "IN_PATH_AT_DECISION": 361,
+     "MISSING_FUTURE": 247,
+     "POST_CONTACT": 0
+    },
+    "3s": {
+     "LABELED": 5901,
+     "IN_PATH_AT_DECISION": 361,
+     "MISSING_FUTURE": 662,
+     "POST_CONTACT": 0
+    }
+   },
+   "positives": {
+    "1s": 204,
+    "2s": 417,
+    "3s": 620
+   },
+   "negatives": {
+    "1s": 6294,
+    "2s": 5899,
+    "3s": 5281
+   },
+   "sha256": "fc844fedbc97a6339a3479f10ca86e182973b33867883f48ff11c8a8226db785",
+   "feature_version": "PATH_ENTRY_FEATURES_V1"
+  },
+  "TEST": {
+   "samples": 7799,
+   "coverage": {
+    "relevant": 5376,
+    "associated": 3984,
+    "unobserved": 1160,
+    "ambiguous": 200,
+    "scene_mismatch": 32,
+    "duplicate_tracks": 3815
+   },
+   "prediction_coverage": 0.7410714285714286,
+   "label_counts": {
+    "1s": {
+     "LABELED": 7208,
+     "IN_PATH_AT_DECISION": 401,
+     "MISSING_FUTURE": 190,
+     "POST_CONTACT": 0
+    },
+    "2s": {
+     "LABELED": 6796,
+     "IN_PATH_AT_DECISION": 401,
+     "MISSING_FUTURE": 602,
+     "POST_CONTACT": 0
+    },
+    "3s": {
+     "LABELED": 6181,
+     "IN_PATH_AT_DECISION": 401,
+     "MISSING_FUTURE": 1217,
+     "POST_CONTACT": 0
+    }
+   },
+   "positives": {
+    "1s": 256,
+    "2s": 509,
+    "3s": 703
+   },
+   "negatives": {
+    "1s": 6952,
+    "2s": 6287,
+    "3s": 5478
+   },
+   "sha256": "5de8fda21e4a217683c195c425ad73969785cb1cfce7ad1243280cdade1081be",
+   "feature_version": "PATH_ENTRY_FEATURES_V1"
+  }
+ }
+}

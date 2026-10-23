@@ -35,6 +35,23 @@ export function forecastCanProject(prediction,session,camera) {
     !!camera?.worldTransform?.position_m&&Number.isFinite(camera.frame)&&
     Number.isFinite(prediction.evaluation_frame)&&prediction.evaluation_frame<=camera.frame;
 }
+// Evaluation decision-layer readout. Only measured/calibrated values that the
+// supervisor actually published are shown; absent values are omitted.
+export function decisionSummary(safety) {
+  const decision=safety?.evidence_decision;
+  if(!safety?.decision_layer||!decision)return '';
+  const parts=[decision.layer==='LEARNED_RISK_CAUTION_V1'?'Learned-risk caution':'Evidence budget',
+    String(decision.response||'unknown').replaceAll('_',' ').toLowerCase()];
+  if(Number.isFinite(decision.target_speed_mps))parts.push(`limit ${(decision.target_speed_mps*3.6).toFixed(0)} km/h`);
+  const people=decision.people||[];
+  const risk=people.map(person=>person.risk_3s).filter(Number.isFinite);
+  if(risk.length&&decision.risk_status?.status==='READY')
+    parts.push(`crossing risk within 3 s ${Math.round(Math.max(...risk)*100)}%${decision.risk_status.experimental?' (experimental model)':''}`);
+  const uncertainty=people.map(person=>person.uncertainty_m).filter(Number.isFinite);
+  if(uncertainty.length)parts.push(`tracking ±${Math.max(...uncertainty).toFixed(2)} m`);
+  if(decision.reason)parts.push(decision.reason);
+  return parts.join(' · ');
+}
 export function remainingForecast(points,age) {
   if(!points?.length||!Number.isFinite(age)||age<0||age>points.at(-1)[0])return [];
   const next=points.findIndex(row=>row[0]>=age);
@@ -144,7 +161,8 @@ export class PredictionView {
     this.canvas.hidden=!ok;
     if(guidedForecast)this.label.hidden=!ok;
     const diagnostic=p.stopDiagnostics;
-    this.diagnostic.textContent=diagnostic?.braking?`${diagnostic.decision_source} · ${diagnostic.reason||'Brake applied'} · sensor age ${(diagnostic.sensor_wall_age_s??0).toFixed(2)} s`:'';
+    this.diagnostic.textContent=[diagnostic?.braking?`${diagnostic.decision_source} · ${diagnostic.reason||'Brake applied'} · sensor age ${(diagnostic.sensor_wall_age_s??0).toFixed(2)} s`:'',
+      decisionSummary(p.safetySystem)].filter(Boolean).join(' · ');
     if(!ok)return;
     const bounds=img.getBoundingClientRect(),host=img.parentElement.getBoundingClientRect();
     const scale=Math.min(bounds.width/camera.width,bounds.height/camera.height);

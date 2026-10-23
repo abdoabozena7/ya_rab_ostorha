@@ -569,7 +569,7 @@ class CarlaProvider:
         from .presentation import population_audit
         return population_audit(self)
 
-    def start_navigation(self, speed_kmh, *, demo_options=None, driving_mode='ROBOSPHERE', presentation=False):
+    def start_navigation(self, speed_kmh, *, demo_options=None, driving_mode='ROBOSPHERE', presentation=False, evaluation=False):
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
             raise ValueError('Choose a valid destination and show its route before starting')
@@ -577,8 +577,11 @@ class CarlaProvider:
         self.dashboard_tools.replan_route()
         self.driving_mode = driving_mode
         self.presentation_mode = presentation
+        # Harness evaluation shares the guided arms' route controller and
+        # requested-target semantics; posted limits remain logged separately.
+        self.evaluation_navigation = bool(evaluation) and not presentation
         from ..learning.native_validation_budget import active_rule_ticket
-        self.rule_validation_mode = driving_mode == 'ROBOSPHERE' and active_rule_ticket() is not None
+        self.rule_validation_mode = driving_mode == 'ROBOSPHERE' and active_rule_ticket() is not None and not self.evaluation_navigation
         if driving_mode not in ('HYBRID','BASELINE') and not presentation and self.benchmark_fixture:
             self.benchmark_fixture.close(); self.benchmark_fixture = None
         self.hybrid_driver = None
@@ -590,11 +593,11 @@ class CarlaProvider:
                       # One shared native route controller for both guided arms.
                       # Saturated low-speed steering made the Mercedes point at
                       # parked curb geometry while recovering from a stop.
-                      **({'max_throttle':.9,'max_steering':.35} if presentation and getattr(self,'guided_presentation',False) else {}),
+                      **({'max_throttle':.9,'max_steering':.35} if (presentation and getattr(self,'guided_presentation',False)) or self.evaluation_navigation else {}),
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
-        if driving_mode in ('HYBRID', 'BASELINE') or presentation or self.rule_validation_mode:
+        if driving_mode in ('HYBRID', 'BASELINE') or presentation or self.rule_validation_mode or self.evaluation_navigation:
             from .hybrid_navigation import RoadSpeedPolicy, behavior_agent_class
             self.hybrid_speed_policy = RoadSpeedPolicy(self.dashboard_tools.map)
         if driving_mode == 'BASELINE':
@@ -763,7 +766,8 @@ class CarlaProvider:
         if self.navigation is None:
             raise RuntimeError('No active native route controller')
         limit = self.ego.actor.get_speed_limit()
-        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False):
+        evaluation = getattr(self,'evaluation_navigation',False)
+        if getattr(self, 'driving_mode', None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False) or evaluation:
             waypoint = self.dashboard_tools.map.get_waypoint(self.ego.actor.get_location())
             limit, self.hybrid_speed_limit_source = self.hybrid_speed_policy.limit(waypoint, limit)
         # This explicitly requested closed-simulator stress speed is shared by
@@ -772,24 +776,56 @@ class CarlaProvider:
         if getattr(self,'presentation_mode',False) and getattr(self,'guided_presentation',False):
             limit = speed_kmh
             self.hybrid_speed_limit_source = 'GUIDED_STRESS_TARGET'
+        elif evaluation:
+            limit = speed_kmh
+            self.hybrid_speed_limit_source = 'EVALUATION_REQUESTED_TARGET'
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         requested=min(speed_kmh,limit) if limit>0 else speed_kmh
         bypass=getattr(self,'navigation_bypass',None)
         if bypass and bypass.motion_required:requested=min(requested,bypass.config['maneuver_speed_mps']*3.6)
-        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False):
+        if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False) or evaluation:
             from ..core.route_terminal import terminal_speed_mps
             route=self.route_state()
             if route and route.get('remaining_m') is not None:
                 requested=min(requested,terminal_speed_mps(route['remaining_m'])*3.6)
+        self.navigation_curvature_limit_mps=None
+        if evaluation:
+            # Route geometry restricts speed before tight curves; the requested
+            # target remains the comparison request and is logged separately.
+            from ..core.launch_alignment import curvature_speed_limit
+            planner=self.navigation.get_local_planner() if hasattr(self.navigation,'get_local_planner') else None
+            location=self.ego.actor.get_location()
+            plan=[(wp.transform.location.x,wp.transform.location.y) for wp,_ in list(planner.get_plan())[:40]] if planner else []
+            curve=curvature_speed_limit((location.x,location.y),plan)
+            self.navigation_curvature_limit_mps=curve
+            if curve is not None and curve*3.6<requested:
+                requested=curve*3.6;self.hybrid_speed_limit_source='ROUTE_CURVATURE'
         self.navigation.set_target_speed(requested)
         self.navigation_target_mps=requested/3.6
         value = self.navigation.run_step()
         self.navigation_stop_reason = getattr(self.navigation,'stop_reason',None)
+        steering = float(value.steer)
+        self.launch_alignment = None
+        if evaluation:
+            from ..core.launch_alignment import LAUNCH_SPEED_MPS, lane_alignment, launch_steering, pursuit_steering
+            pose = self.ego.actor.get_transform()
+            speed = self.last_vehicle['speedMps'] if self.last_vehicle and 'speedMps' in self.last_vehicle else self.ego.actor.get_velocity().length()
+            if abs(speed) < LAUNCH_SPEED_MPS:
+                planner = self.navigation.get_local_planner() if hasattr(self.navigation, 'get_local_planner') else None
+                plan = [(wp.transform.location.x, wp.transform.location.y) for wp, _ in list(planner.get_plan())[:60]] if planner else []
+                pursuit = pursuit_steering((pose.location.x, pose.location.y), pose.rotation.yaw, plan)
+                if pursuit is not None:
+                    steering, self.launch_alignment = pursuit, 'LOW_SPEED_LANE_PURSUIT'
+                else:
+                    lane = self.dashboard_tools.map.get_waypoint(pose.location)
+                    if lane is not None:
+                        offset, error = lane_alignment(pose, lane.transform)
+                        steering, self.launch_alignment = launch_steering(steering, speed_mps=speed, lateral_offset_m=offset, heading_error_deg=error)
         # Canonical steering, like native telemetry, is right-positive. The
         # left-positive legacy dashboard adapter is used only in set_controls.
         # This command still goes through ControlSafetyLayer and CommandArbiter.
         return ControlCommand(frame_id, timestamp_s, float(value.throttle), float(value.brake),
-                              float(value.steer), bool(value.reverse), bool(value.hand_brake),
+                              steering, bool(value.reverse), bool(value.hand_brake),
                               CommandSource.NAVIGATION, -1 if value.reverse else 1)
 
     def navigation_done(self):
@@ -797,6 +833,7 @@ class CarlaProvider:
 
     def stop_navigation(self):
         self.navigation = None
+        self.evaluation_navigation = False
         self.navigation_planner = None
         self.navigation_recovery = None
         self.navigation_bypass = None
