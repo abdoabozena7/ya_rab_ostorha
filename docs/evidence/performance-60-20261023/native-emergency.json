@@ -1,0 +1,125 @@
+{
+  "source": "LIVE_NATIVE_GLOBAL_EMERGENCY_BETWEEN_PHYSICS_STEPS",
+  "purpose": "End stalled unbounded exploration; subsequent performance trials have explicit bounded windows",
+  "session_id": "161d1d89eef64030a1cdb082c9d6bdab",
+  "before_vehicle": {
+    "source": "carla",
+    "frame": 14980,
+    "timestamp": 251.81132784113288,
+    "actorId": 302,
+    "positionWorldM": [
+      -72.38903045654297,
+      -68.52070617675781,
+      -0.0011391066946089268
+    ],
+    "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+    "rotationDeg": {
+      "roll": 0.0,
+      "pitch": -0.00012294339830987155,
+      "yaw": 178.86070251464844
+    },
+    "velocityWorldMps": [
+      2.5998085462219933e-08,
+      7.278156033407868e-08,
+      4.1007993445418833e-07
+    ],
+    "angularVelocityWorldRadps": [
+      -7.853558878282471e-07,
+      2.3515398558357596e-07,
+      2.1685194570039028e-10
+    ],
+    "accelerationWorldMps2": [
+      2.558614824010874e-06,
+      6.178436251502717e-06,
+      -2.2888181774760596e-05
+    ],
+    "speedMps": -2.454669580761257e-08,
+    "speedMagnitudeMps": 4.172991835773411e-07,
+    "accelerationMps2": -2.4352128332562997e-06,
+    "speedKmh": 1.502277060878428e-06,
+    "steeringInput": -0.1879454404115677,
+    "throttle": 0.0,
+    "brake": 1.0,
+    "gear": "1",
+    "gearIndex": 1,
+    "reverse": false,
+    "handbrake": false,
+    "headingRad": 3.1217081613107167,
+    "engineRPM": null,
+    "fuelLevelL": null,
+    "damage": null
+  },
+  "after_vehicle": {
+    "source": "carla",
+    "frame": 14980,
+    "timestamp": 251.81132784113288,
+    "actorId": 302,
+    "positionWorldM": [
+      -72.38903045654297,
+      -68.52070617675781,
+      -0.0011391066946089268
+    ],
+    "coordinateFrame": "left-handed-x-forward-y-right-z-up",
+    "rotationDeg": {
+      "roll": 0.0,
+      "pitch": -0.00012294339830987155,
+      "yaw": 178.86070251464844
+    },
+    "velocityWorldMps": [
+      2.5998085462219933e-08,
+      7.278156033407868e-08,
+      4.1007993445418833e-07
+    ],
+    "angularVelocityWorldRadps": [
+      -7.853558878282471e-07,
+      2.3515398558357596e-07,
+      2.1685194570039028e-10
+    ],
+    "accelerationWorldMps2": [
+      2.558614824010874e-06,
+      6.178436251502717e-06,
+      -2.2888181774760596e-05
+    ],
+    "speedMps": -2.454669580761257e-08,
+    "speedMagnitudeMps": 4.172991835773411e-07,
+    "accelerationMps2": -2.4352128332562997e-06,
+    "speedKmh": 1.502277060878428e-06,
+    "steeringInput": -0.1879454404115677,
+    "throttle": 0.0,
+    "brake": 1.0,
+    "gear": "1",
+    "gearIndex": 1,
+    "reverse": false,
+    "handbrake": false,
+    "headingRad": 3.1217081613107167,
+    "engineRPM": null,
+    "fuelLevelL": null,
+    "damage": null
+  },
+  "guard": {
+    "session_id": "161d1d89eef64030a1cdb082c9d6bdab",
+    "frame_id": 14982,
+    "timestamp_s": 251.84466117620468,
+    "command_frame": 14980,
+    "command_timestamp_s": 251.81132784113288,
+    "source": "SAFETY",
+    "throttle": 0.0,
+    "brake": 1.0,
+    "emergency": true,
+    "reason": "emergency_stop",
+    "application": {
+      "decision_id": null,
+      "session_id": "161d1d89eef64030a1cdb082c9d6bdab",
+      "frame_id": 14982,
+      "source_frame": 14980,
+      "submitted_wall_s": 560647.3979179001,
+      "sensor_received_wall_s": 560647.1217933001,
+      "wall_age_s": 0.2761245999718085,
+      "simulation_age_s": 0.05000000173848207,
+      "fresh_aligned": false,
+      "injected_timeout": false,
+      "rpc_completed_wall_s": 560647.3980035001
+    }
+  },
+  "no_moving_stop_distance_claim": true
+}

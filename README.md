@@ -4,6 +4,15 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [720p / 60 Hz performance path](docs/PERFORMANCE_60_20261023.md) adds the
+opt-in `PERFORMANCE_60` profile: one native tick owner, 60 Hz physics/display
+capture, synchronized 20 Hz driving sensors/decisions, bounded asynchronous JPEG
+and independent image WebSockets with distinct RAF-frame diagnostics. Existing
+JPEG/replay paths and LEGACY defaults remain. Native exploration has **not**
+met the 58--60 displayed FPS, real-time and 4608 MiB acceptance gates; configured
+rates are not measured performance. The report preserves failures and separates
+software equivalence from native acceptance.
+
 The [23 October sequential repair](docs/SEQUENTIAL_REPAIR_20261023.md) adds a
 native pedestrian behavior suite (ten behaviors, counterfactual pairs,
 location-disjoint TRAIN/VALIDATION/TEST datasets) and a calibrated GRU
@@ -17,7 +26,7 @@ unmet. The Normal / Ya Rab Ostorha comparison is unchanged and was re-verified
 natively.
 
 The [23 October failed-gates recovery](docs/FAILED_GATES_RECOVERY_20261023.md)
-is on branch `repair/failed-gates-20261023` and is not merged into `main`. It
+was developed on `repair/failed-gates-20261023` and is now preserved in `main`. It
 repairs evaluation route tracking at corners and replaces the evidence-budgeted
 pedestrian rule with a time-indexed verifier. It adds an opt-in DirectML
 detector (63 instead of 422 ms per image), deterministic background traffic and
@@ -329,9 +338,11 @@ See [current crossing comparison](docs/CROSSING_COMPARISON_20261019.md) for the
 current profile, native outcomes and limits. [Extension validation](docs/JOURNEY_PERCEPTION_VALIDATION.md)
 describes the historical Nano/OCR extension.
 
-The English LTR dashboard has a native 800x450 RGB feed, five camera views, live
+The legacy English LTR dashboard has a native 800x450 RGB feed, five camera views, live
 telemetry, automatic current-position origin and persisted favorites. Settings
-apply camera, weather, vehicle/spawn and 10/20 Hz timing. A separate graphics button
+apply camera, weather, vehicle/spawn and 10/20 Hz legacy timing. The opt-in
+PERFORMANCE_60 path requests a real 1280x720 display camera at 60 Hz while driving
+observations remain at 20 Hz; it is not the accepted default. A separate graphics button
 cleans up and restarts CARLA, verifies the new session and rolls back failed profiles.
 Saved preferences are displayed separately from actual settings. Population is
 created only after explicit application. Normal traffic/walkers, measured profiles,

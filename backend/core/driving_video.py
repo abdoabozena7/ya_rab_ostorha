@@ -1,6 +1,7 @@
 """Post-drive MP4 export of original native driving-camera frames in sim time."""
 import hashlib
 import json
+import math
 from pathlib import Path
 import subprocess
 import threading
@@ -9,6 +10,13 @@ import time
 _workers=set()
 _roots={}
 _lock=threading.Lock()
+
+
+def camera_period_s(row):
+    period = row.get('calibration', {}).get('sensor_tick_s', .05)
+    if type(period) not in (int, float) or not math.isfinite(period) or period <= 0:
+        raise ValueError('Invalid recorded camera capture period')
+    return period
 
 
 def wait_for_exports(timeout=30.):
@@ -65,6 +73,8 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
             'clock_zero_timestamp_s':anchor if anchor is not None else frames[0]['timestamp_s'],
             'alignment_source':'ADMITTED_JOURNEY_START' if anchor is not None else 'FIRST_RECORDED_CAMERA_FRAME',
             'maximum_frame_gap_s':max((b['timestamp_s']-a['timestamp_s'] for a,b in zip(frames,frames[1:])),default=0.)}
+    status['last_frame_hold_s'] = camera_period_s(frames[-1])
+    status['encoded_duration_s'] = status['duration_s']+status['last_frame_hold_s']
     status['variants']={'raw':{'status':'READY','video':'driving.mp4','sha256':status['sha256'],'source':status['source']}}
     from .driver_profiles import SENSOR_COMPARISON_PROTOCOL
     profile=metadata.get('config',{}).get('driver_profile') or {}
@@ -87,7 +97,7 @@ def _encode_video(root,frames,ffmpeg,filename):
         path = (root/row['asset']['path']).resolve().as_posix().replace("'", "'\\''")
         lines.append("file '"+path+"'")
         lines.append('option framerate 1000')
-        dt = frames[i+1]['timestamp_s']-row['timestamp_s'] if i+1<len(frames) else .05
+        dt = frames[i+1]['timestamp_s']-row['timestamp_s'] if i+1<len(frames) else camera_period_s(row)
         lines.append(f'duration {dt:.9f}')
     lines.append(lines[-3])
     lines.append('option framerate 1000')

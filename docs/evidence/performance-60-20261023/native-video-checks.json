@@ -1,0 +1,143 @@
+{
+  "scope": "ACTUAL_NATIVE_RAW_MP4_HEAD_TAIL_AND_CHECKSUM_NOT_DRIVING_SUCCESS",
+  "checks": [
+    {
+      "label": "baseline",
+      "mode": "NORMAL",
+      "recording": "runs\\normal_city\\run_1ffa4eb7b7884ab98c310cb6a6185434",
+      "status": "READY",
+      "source_frames": 620,
+      "duration_simulation_s": 30.95000046119094,
+      "last_frame_hold_s": null,
+      "encoded_duration_s": null,
+      "checksum_verified": true,
+      "decodes": [
+        {
+          "at_simulation_s": 0.0,
+          "success": true,
+          "error": null
+        },
+        {
+          "at_simulation_s": 30.850000461190938,
+          "success": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "label": "baseline",
+      "mode": "ROBOSPHERE",
+      "recording": "runs\\normal_city\\run_eb649c5480de4d3d8a81683d79700dc5",
+      "status": "READY",
+      "source_frames": 778,
+      "duration_simulation_s": 38.85000057891011,
+      "last_frame_hold_s": null,
+      "encoded_duration_s": null,
+      "checksum_verified": true,
+      "decodes": [
+        {
+          "at_simulation_s": 0.0,
+          "success": true,
+          "error": null
+        },
+        {
+          "at_simulation_s": 38.75000057891011,
+          "success": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "label": "fullscan-dml-normal",
+      "mode": "NORMAL",
+      "recording": "runs\\normal_city\\run_1c34489fbcc8468a91b9d4f12c166d49",
+      "status": "READY",
+      "source_frames": 569,
+      "duration_simulation_s": 9.466667160391808,
+      "last_frame_hold_s": 0.016666666666666666,
+      "encoded_duration_s": 9.483333827058475,
+      "checksum_verified": true,
+      "decodes": [
+        {
+          "at_simulation_s": 0.0,
+          "success": true,
+          "error": null
+        },
+        {
+          "at_simulation_s": 9.366667160391808,
+          "success": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "label": "fullscan-dml-protected",
+      "mode": "ROBOSPHERE",
+      "recording": "runs\\normal_city\\run_abefca3c02e24ee191b402f06621b138",
+      "status": "READY",
+      "source_frames": 290,
+      "duration_simulation_s": 4.816666917875409,
+      "last_frame_hold_s": 0.016666666666666666,
+      "encoded_duration_s": 4.833333584542076,
+      "checksum_verified": true,
+      "decodes": [
+        {
+          "at_simulation_s": 0.0,
+          "success": true,
+          "error": null
+        },
+        {
+          "at_simulation_s": 4.7166669178754095,
+          "success": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "label": "fullscan-cpu-normal",
+      "mode": "NORMAL",
+      "recording": "runs\\normal_city\\run_06277c29e46c4fba84b6a5622dad3d53",
+      "status": "READY",
+      "source_frames": 493,
+      "duration_simulation_s": 8.200000427663326,
+      "last_frame_hold_s": 0.016666666666666666,
+      "encoded_duration_s": 8.216667094329994,
+      "checksum_verified": true,
+      "decodes": [
+        {
+          "at_simulation_s": 0.0,
+          "success": true,
+          "error": null
+        },
+        {
+          "at_simulation_s": 8.100000427663327,
+          "success": true,
+          "error": null
+        }
+      ]
+    },
+    {
+      "label": "fullscan-cpu-protected",
+      "mode": "ROBOSPHERE",
+      "recording": "runs\\normal_city\\run_d8ccb77ab4364f4b93c2007471ecc0d5",
+      "status": "READY",
+      "source_frames": 14,
+      "duration_simulation_s": 0.2166666779667139,
+      "last_frame_hold_s": 0.016666666666666666,
+      "encoded_duration_s": 0.23333334463338057,
+      "checksum_verified": true,
+      "decodes": [
+        {
+          "at_simulation_s": 0.0,
+          "success": true,
+          "error": null
+        },
+        {
+          "at_simulation_s": 0.1166666779667139,
+          "success": true,
+          "error": null
+        }
+      ]
+    }
+  ]
+}

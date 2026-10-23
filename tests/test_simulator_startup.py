@@ -13,6 +13,26 @@ from backend.server import Handler,DashboardHTTPServer
 
 
 class StartupTests(unittest.TestCase):
+    def test_temporarily_stale_or_reconfiguring_live_world_cannot_start_a_second_owner(self):
+        from types import SimpleNamespace as NS
+        from backend.core.service import SimulationService
+        from tests.core_packets import packet
+        provider=NS(name='test-fixture',connection=NS(host='127.0.0.1'),world=object(),startup_handler=Mock())
+        service=SimulationService(provider)
+        service._publish(packet())
+        self.assertEqual(service.start_simulation()['status'],'READY')
+        self.assertFalse(service.can_start_simulation())
+        for reconfiguring in (True,False):
+            service.reconfiguring=reconfiguring
+            service.state_at=0.
+            with self.subTest(reconfiguring=reconfiguring),patch('backend.core.service.threading.Thread') as thread:
+                self.assertFalse(service.can_start_simulation())
+                with self.assertRaisesRegex(ValueError,'startup is unavailable'):service.start_simulation()
+                thread.assert_not_called()
+        provider.startup_handler.assert_not_called()
+        provider.world=None
+        self.assertTrue(service.can_start_simulation())
+
     def test_concurrent_pages_dispatch_only_one_engine_start(self):
         from concurrent.futures import ThreadPoolExecutor
         start=Mock(return_value=None)

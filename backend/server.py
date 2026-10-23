@@ -77,6 +77,7 @@ class Handler(SimpleHTTPRequestHandler):
                                     "vision_warmup":snapshot.get('vision_warmup',False),
                                     "status": 'REPLAY' if replay else "CONNECTED" if connected else "ERROR" if snapshot.get('error') else "DISCONNECTED",
                                     "websocketPort": getattr(self.server, "websocket_port", None),
+                                    "imageWebsocketPath": "/images" if not replay and provider is not None else None,
                                     "error": snapshot.get('error') if provider else "CARLA is not connected. Start the official simulator and backend with --carla."})
         if path.startswith("/api/simulation/"):
             if provider is None:
@@ -154,9 +155,12 @@ class Handler(SimpleHTTPRequestHandler):
                     self.send_header("Content-Length", str(len(frame)))
                     for key, header in (("timestamp", "X-Sensor-Time"),
                                         ("frame", "X-Sensor-Frame"),
+                                        ("width", "X-Image-Width"), ("height", "X-Image-Height"),
+                                        ("sensorId", "X-Camera-Id"),
                                         ("receivedMonotonic", "X-Received-Monotonic")):
                         if metadata and metadata.get(key) is not None:
                             self.send_header(header, str(metadata[key]))
+                    self.send_header('X-Session-Id', provider.session_id)
                     self.end_headers()
                     return self.wfile.write(frame)
             except KeyError:
@@ -238,6 +242,8 @@ def main():
     parser.add_argument("--vehicle", default="vehicle.lincoln.mkz_2020")
     parser.add_argument("--spawn-index", type=int, default=0)
     parser.add_argument("--fixed-delta", type=float, default=.05)
+    parser.add_argument('--run-profile', choices=('LEGACY','PERFORMANCE_60'),
+                        help='Opt-in 60 Hz physics/display with synchronized 20 Hz driving')
     parser.add_argument('--session-duration', type=float, help='Stop cleanly after this many wall-clock seconds (native validation/recording)')
     parser.add_argument('--collision-sensor', action='store_true', help='Attach the real native collision sensor (Gate 2)')
     parser.add_argument('--sensors', action='store_true', help='Attach the validated seven native sensors (Gate 3)')
@@ -299,9 +305,11 @@ def main():
             provider = create_provider('carla', host=args.carla_host, port=args.carla_port,
                                      version=args.carla_version, map_name=args.map,
                                      blueprint=args.vehicle, spawn_index=args.spawn_index,
-                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor, sensor_suite=args.sensors,fresh_start=args.fresh_start)
+                                     fixed_delta=args.fixed_delta, collision_sensor=args.collision_sensor, sensor_suite=args.sensors,
+                                     fresh_start=args.fresh_start, run_profile=args.run_profile)
             ticket = json.loads(Path(args.restart_ticket).read_text(encoding='utf-8')) if args.restart_ticket else None
             if ticket:
+                provider.configure_run_profile(ticket['configuration'].get('run_profile', provider.run_profile))
                 provider.camera_settings.update(ticket['configuration']['camera'])
                 provider.restart_ticket = args.restart_ticket
             supervisor = ConnectionSupervisor(config.simulation.connection_timeout_s if config else 60)

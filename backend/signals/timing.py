@@ -56,7 +56,8 @@ class FrameTracker:
         else:
             if self.latest_frame >= 0 and frame_id > self.latest_frame+self.stride:
                 issues.add(FrameIssue.MISSING)
-                missing = (self.latest_frame+self.stride, frame_id-self.stride)
+                last_missing=self.latest_frame+((frame_id-self.latest_frame-1)//self.stride)*self.stride
+                missing = (self.latest_frame+self.stride, last_missing)
             if self.latest_frame >= 0 and timestamp_s <= self.latest_timestamp:
                 issues.add(FrameIssue.TIMESTAMP_MISMATCH)
         result = FrameDiagnostic(stream_id, frame_id, frozenset(issues), missing)

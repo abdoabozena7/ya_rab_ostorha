@@ -19,9 +19,30 @@ import {installDemoDrive} from './demo-drive.js';
 import {installPresentationRun} from './presentation-run.js';
 import {installSequentialDrive} from './sequential-drive.js';
 import {CameraPerformance} from './camera-performance.js';
+import {CameraImageStream} from './image-stream.js';
 const $ = id => document.getElementById(id);
 const provider = new SimulationClient(), controls = new DrivingControls();
 const cameraPerformance=new CameraPerformance();
+let lastCameraMetricsAt=-Infinity;
+const imageStream=new CameraImageStream({meter:cameraPerformance,
+  visible:()=>!document.hidden&&!!$('cameraCard').getClientRects().length,
+  draw:bitmap=>drawCamera(bitmap),
+  onUnavailable:message=>clearCameraVisual(message),
+  onPresent:(header,measurement,metrics)=>{
+    displayedCamera={source:'carla',sensorId:header.camera_id,sessionId:header.session_id,
+      frame:header.frame_id,timestamp:header.simulation_timestamp_s,width:header.width,height:header.height,
+      fovDeg:header.fov_deg,mountTransform:header.mount_transform,worldTransform:header.world_transform};
+    cameraCaption(displayedCamera);
+    const canvas=$('authoritativeCamera');
+    canvas.dataset.frame=String(header.frame_id);canvas.dataset.sessionId=header.session_id;
+    canvas.dataset.cameraId=header.camera_id;canvas.dataset.timestamp=String(header.simulation_timestamp_s);
+    canvas.dataset.captureClock=header.capture_clock||'UNAVAILABLE';
+    canvas.dataset.imageSha256=header.image_sha256||'';
+    provider.cameraDisplayMetrics=metrics;
+    if(performance.now()-lastCameraMetricsAt>=250){
+      lastCameraMetricsAt=performance.now();canvas.dataset.performance=JSON.stringify(measurement);
+    }
+  }});
 presentationUI(provider);
 const perception = new PerceptionView(provider);
 const predictionView = new PredictionView(provider);
@@ -62,12 +83,26 @@ function sendManual(state) {
   if (provider.updateControls(command)) manualOverridePending = false;
 }
 function clearCamera() {
-  displayedCamera = null;
+  imageStream.stop();
   cameraGeneration++; cameraRequest?.abort(); cameraRequest = null;
   if (cameraUrl) URL.revokeObjectURL(cameraUrl);
-  cameraUrl = cameraReceipt = null; $('authoritativeCamera').hidden = true;
-  $('authoritativeCamera').removeAttribute('src'); $('cameraUnavailable').hidden = false;
-  $('cameraActivity').textContent = 'Image unavailable'; $('cameraTimestamp').textContent = 't —';
+  cameraUrl = cameraReceipt = null;clearCameraVisual();
+}
+function clearCameraVisual(message='Image unavailable'){
+  displayedCamera=null;$('authoritativeCamera').hidden=true;$('cameraUnavailable').hidden=false;
+  $('cameraActivity').textContent=message;$('cameraTimestamp').textContent='t —';
+}
+function drawCamera(image){
+  const canvas=$('authoritativeCamera'),width=image.width||image.naturalWidth,height=image.height||image.naturalHeight;
+  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+  canvas.getContext('2d',{alpha:false,desynchronized:true}).drawImage(image,0,0);
+  canvas.hidden=false;$('cameraUnavailable').hidden=true;
+}
+function cameraCaption(metadata){
+  $('cameraActivity').textContent=provider.isReplay?'REPLAY · Recorded image':'RGB · Live image';
+  $('cameraTimestamp').textContent='t '+number(metadata.timestamp,' s',3);
+  $('cameraMetadata').textContent='Frame '+metadata.frame+' · '+metadata.width+'×'+metadata.height+
+    ' · FOV '+metadata.fovDeg+'° · mount '+JSON.stringify(metadata.mountTransform??null);
 }
 async function updateCamera(metadata) {
   if (document.hidden) return;
@@ -87,19 +122,19 @@ async function updateCamera(metadata) {
     try {await decoded.decode();} catch(error){URL.revokeObjectURL(nextUrl);throw error;}
     if (!provider.fresh || generation !== cameraGeneration) {URL.revokeObjectURL(nextUrl);return;}
     const previousUrl=cameraUrl;cameraUrl=nextUrl;cameraReceipt=key;
-    displayedCamera = {...metadata};
-    $('authoritativeCamera').src = cameraUrl; $('authoritativeCamera').hidden = false;
-    if(provider.journey?.status==='RUNNING')requestAnimationFrame(()=>{
-      cameraPerformance.present(metadata.frame,metadata.timestamp,performance.now(),provider.journey.pair_id+':'+provider.journey.driving_mode);
-      $('authoritativeCamera').dataset.performance=JSON.stringify(cameraPerformance.snapshot());
-    });
+    await new Promise(resolve=>requestAnimationFrame(()=>{
+      if(provider.fresh&&generation===cameraGeneration){
+        displayedCamera={...metadata};drawCamera(decoded);cameraCaption(displayedCamera);
+        cameraPerformance.present(metadata.frame,metadata.timestamp,performance.now(),
+          provider.journey?.pair_id+':'+provider.journey?.driving_mode);
+        $('authoritativeCamera').dataset.frame=String(metadata.frame);
+        $('authoritativeCamera').dataset.timestamp=String(metadata.timestamp);
+        $('authoritativeCamera').dataset.performance=JSON.stringify(cameraPerformance.snapshot());
+      }
+      resolve();
+    }));
     if(previousUrl)URL.revokeObjectURL(previousUrl);
-    $('cameraUnavailable').hidden = true; $('cameraActivity').textContent = provider.isReplay ? 'REPLAY · Recorded image' : 'RGB · Live image';
-    $('cameraTimestamp').textContent = 't '+number(Number(response.headers.get('X-Sensor-Time')),' s',3);
-    $('cameraMetadata').textContent = 'Frame '+response.headers.get('X-Sensor-Frame')+
-      ' · '+metadata.width+'×'+metadata.height+' · FOV '+metadata.fovDeg+
-      '° · mount '+JSON.stringify(metadata.mountTransform ?? null);
-  } catch(error) { if (error.name !== 'AbortError'&&!provider.fresh) clearCamera(); }
+  } catch(error) { if (error.name !== 'AbortError') clearCameraVisual('Camera request failed: '+error.message); }
   finally { if (cameraRequest === request) cameraRequest = null; }
 }
 function refresh() {
@@ -199,17 +234,31 @@ function refresh() {
   $('sensorStatus').textContent = provider.isReplay ? sensorCount+' sensors from recorded frame · recorded collision events' :
     live ? sensorCount+' periodic sensors receiving data · Collision sensor is event-driven' : 'Sensors unavailable';
   const displayedSensor=provider.displayCamera?'drivingCamera':'frontCamera';
-  $('cameraFps').textContent = number(provider.performance?.sensorWallRatesHz?.[displayedSensor])+' /wall seconds · '+number(provider.sensorRates[displayedSensor])+' Hz sim';
+  $('cameraFps').textContent = number(provider.cameraDisplayMetrics?.displayFps)+' displayed fps · '+
+    number(provider.performance?.sensorWallRatesHz?.[displayedSensor])+' captured /s';
   const perf = provider.performance || {}, gpu = perf.gpu;
-  $('performance').textContent = 'actual steps: '+number(perf.nativeTickRateHz)+' /s · Simulation time: '+
-    (provider.world.fixedDeltaSeconds?number(1/provider.world.fixedDeltaSeconds)+' Hz':'—')+
-    (gpu?' · VRAM '+gpu.usedMiB+' / '+gpu.totalMiB+' MiB':'')+' · FPS Rendering unavailable';
+  const display=provider.cameraDisplayMetrics||{},nvml=gpu?.processMemory?.processes||[];
+  const processMeasured=nvml.some(p=>Number.isFinite(p.usedMiB));
+  const memory=processMeasured?nvml:gpu?.wddmProcessMemory?.processes||[];
+  $('performance').textContent = 'Display '+number(display.displayFps)+' fps · p95 '+number(display.p95IntervalMs,' ms')+
+    ' · image age '+number(display.imageLatencyMs,' ms')+' · simulation '+number(perf.simulationRealTimeFactor,'×',2)+
+    ' · physics '+number(perf.nativeTickRateHz)+' /s · decisions '+number(perf.decisionRateHz)+' /s'+
+    (gpu?' · total GPU '+gpu.usedMiB+' / '+gpu.totalMiB+' MiB (budget 4608)':' · total GPU unmeasured')+
+    ' · process GPU '+(memory.some(p=>Number.isFinite(p.usedMiB))?memory.filter(p=>Number.isFinite(p.usedMiB)).map(p=>p.pid+': '+number(p.usedMiB,' MiB',0)).join(', ')+(processMeasured?'':' allocated across adapters'):'unavailable')+
+    ' · dropped images '+((display.droppedLate||0)+(display.droppedSuperseded||0))+' · engine renderer FPS unmeasured';
   $('debugTelemetry').textContent = telemetryText(state,{remote:true,latencyMs:provider.latencyMs,
     sensorRates:provider.sensorRates,sensorErrors:provider.sensorErrors,world:provider.world,mode:provider.controlMode});
   $('replayPauseBtn').hidden = !provider.isReplay;
   $('replayPauseBtn').textContent = provider.replay?.paused ? 'Resume replay' : 'Pause replay';
   if (controllable && provider.controlMode === 'MANUAL') sendManual(state);
-  if(!document.hidden&&$('cameraCard').getClientRects().length)updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
+  const streaming=live&&!provider.isReplay&&!!provider.imageWebsocketUrl&&!document.hidden&&!!$('cameraCard').getClientRects().length;
+  imageStream.configure({enabled:streaming,sessionId:provider.sessionId,url:provider.imageWebsocketUrl,
+    cameraId:provider.displayCamera?'drivingCamera':'frontCamera',profile:perf.runtimeRates?.profile||'LEGACY',
+    arm:provider.journey?.status==='RUNNING'?provider.journey.pair_id+':'+provider.journey.driving_mode:provider.sessionId+':held'});
+  if(streaming){
+    if(cameraRequest){cameraGeneration++;cameraRequest.abort();cameraRequest=null;}
+  }else if(!provider.imageWebsocketUrl&&!document.hidden&&$('cameraCard').getClientRects().length)
+    updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
   else if(cameraRequest||displayedCamera)clearCamera();
   tools.render(state,controllable);
   trafficPreparation.update(state);

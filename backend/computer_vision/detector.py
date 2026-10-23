@@ -73,6 +73,7 @@ class RoadDetector:
         if selected not in ('YOLOV8S_640_FRONT_AND_FOCUS_V1','YOLOV8S_640_FRONT_AND_FOCUS_V2','YOLOV8S_640_FRONT_AND_FOCUS_V3','LEGACY_320'):raise ValueError('Unknown detector preprocessing profile')
         if (self.size==320)!=(selected=='LEGACY_320'):raise ValueError('Detector model and preprocessing profile differ')
         self.focus_divisor=2 if selected.endswith('_V1') else 4
+        self.runtime={'execution_provider':provider,'onnxruntime_version':ort.__version__}
         self.profile={'id':selected,
             'input_size':self.size,'model_sha256':hashlib.sha256(Path(path).read_bytes()).hexdigest()}
         if provider != 'CPUExecutionProvider':self.profile['execution_provider'] = provider

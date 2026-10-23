@@ -30,6 +30,10 @@ def matching_setup(a, b, *, world_only=False):
     if not a or not b: return False
     if a.get('live_speed_changed') or b.get('live_speed_changed'): return False
     keys = ('map','blueprint','destination','speed_kmh','population','weather','actual_population')
+    if a.get('runtime_rates') is not None or b.get('runtime_rates') is not None:
+        keys += ('runtime_rates',)
+    if a.get('render_configuration') is not None or b.get('render_configuration') is not None:
+        keys += ('render_configuration',)
     if a.get('comparison_scenario') or b.get('comparison_scenario'):keys+=('perception_profile',)
     if a.get('protocol')==SENSOR_COMPARISON_PROTOCOL or b.get('protocol')==SENSOR_COMPARISON_PROTOCOL:
         if a.get('protocol')!=b.get('protocol'):return False

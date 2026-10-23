@@ -1,7 +1,5 @@
 """Read-only native endurance/performance evidence; never ticks or controls CARLA."""
 import argparse
-import ctypes
-from ctypes import wintypes
 import json
 import os
 from pathlib import Path
@@ -12,35 +10,7 @@ import time
 from websockets.sync.client import connect
 
 
-class ProcessMemory(ctypes.Structure):
-    _fields_ = [('cb', wintypes.DWORD), ('PageFaultCount', wintypes.DWORD)] + [
-        (name, ctypes.c_size_t) for name in ('PeakWorkingSetSize', 'WorkingSetSize',
-        'QuotaPeakPagedPoolUsage', 'QuotaPagedPoolUsage', 'QuotaPeakNonPagedPoolUsage',
-        'QuotaNonPagedPoolUsage', 'PagefileUsage', 'PeakPagefileUsage', 'PrivateUsage')]
-
-
-def memory(pid):
-    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
-    kernel.OpenProcess.restype = ctypes.c_void_p
-    kernel.CloseHandle.argtypes = [ctypes.c_void_p]
-    handle = kernel.OpenProcess(0x410, False, int(pid))
-    if not handle:
-        raise OSError('Cannot read process memory: '+str(pid))
-    try:
-        counter = ProcessMemory(); counter.cb = ctypes.sizeof(counter)
-        psapi = ctypes.WinDLL('psapi', use_last_error=True)
-        psapi.GetProcessMemoryInfo.argtypes = [ctypes.c_void_p, ctypes.c_void_p, wintypes.DWORD]
-        if not psapi.GetProcessMemoryInfo(handle, ctypes.byref(counter), counter.cb):
-            raise OSError('GetProcessMemoryInfo failed')
-        times = [wintypes.FILETIME() for _ in range(4)]
-        kernel.GetProcessTimes.argtypes = [ctypes.c_void_p]+[ctypes.POINTER(wintypes.FILETIME)]*4
-        if not kernel.GetProcessTimes(handle, *(ctypes.byref(t) for t in times)):
-            raise OSError('GetProcessTimes failed')
-        cpu = sum((t.dwHighDateTime << 32)+t.dwLowDateTime for t in times[2:])/10_000_000
-        return {'working_set_mib': counter.WorkingSetSize/1048576,
-                'private_mib': counter.PrivateUsage/1048576, 'cpu_seconds': cpu}
-    finally:
-        kernel.CloseHandle(handle)
+from backend.core.resources import process_resources as memory
 
 
 def backend_pid(port):

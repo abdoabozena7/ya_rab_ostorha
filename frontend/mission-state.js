@@ -9,6 +9,12 @@ const preparation={SELECTING:['Preparing your selected car','The world is alread
   RECOVERING:['Checking the sensors','Waiting for fresh sensor frames and a verified starting scene.']};
 export const modeLabel=m=>m==='NORMAL'?'Normal':PROJECT_NAME;
 export const nextLabel=m=>m==='NORMAL'?'See predictive driving now':'See reactive sensor driving now';
+export function preloadWasObserved(p,local){
+  const d=p.presentation||{};
+  return !!(local.preloadRequested&&!local.pageAdmitted&&Number.isFinite(local.preloadSequence)&&
+    p.failedSequence!==local.preloadSequence&&p.acknowledged>=local.preloadSequence&&d.id&&d.page_id!==local.pageId&&
+    !['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status));
+}
 export function missionFailure(reason){
   if(!reason)return 'Open Menu for diagnostics.';
   if(/presentation_phase_timeout|prepar.*tim.*out/i.test(reason))return 'Preparing this step took too long. Retry the step; recorded attempts remain saved.';

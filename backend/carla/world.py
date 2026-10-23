@@ -19,6 +19,9 @@ class CarlaWorld:
         settings.max_substeps = 10
         try:
             world.apply_settings(settings)
+            applied = world.get_settings()
+            if not applied.synchronous_mode or abs((applied.fixed_delta_seconds or 0)-fixed_delta)>1e-6:
+                raise RuntimeError('CARLA did not apply the requested synchronous physics time step')
         except Exception:
             world.apply_settings(self.previous)
             raise

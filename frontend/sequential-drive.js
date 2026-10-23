@@ -1,5 +1,5 @@
 import {installGuidedDetails} from './guided-details.js';
-import {missionState,modeLabel,stressSummary,missionFailure} from './mission-state.js';
+import {missionState,modeLabel,stressSummary,missionFailure,preloadWasObserved} from './mission-state.js';
 import {controlReasonText} from './cockpit-state.js';
 import {PROJECT_NAME} from './project-name.js';
 import {showWorkspace} from './presentation-ui.js';
@@ -69,7 +69,7 @@ export function installSequentialDrive(p,tools) {
     pending={id:d.id,phase:d.status,arm:d.arm,sequence:p.sequence,at:performance.now()};local.commandPending=true;
   };
   const prepareHere=(replace=false)=>{
-    p.operationError=null;local.preloadError=null;local.pageAdmitted=false;
+    p.operationError=null;local.preloadError=null;local.pageAdmitted=false;local.observing=false;
     if(!p.dashboardAction('presentation',{operation:'PRELOAD',page_id:local.pageId,replace})){
       local.preloadError=p.operationError;return;
     }
@@ -124,17 +124,21 @@ export function installSequentialDrive(p,tools) {
       pending=null;local.commandPending=false;
     }
     const savedResults=!local.newDrive&&d.guided&&['RESULTS','FINISHING','COMPLETE'].includes(d.status)&&d.pair_id;
-    if(!savedResults&&!local.autoRequested&&!p.isReplay&&p.simulatorStart?.available){
+    const activePresentation=d.id&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status);
+    if(activePresentation&&p.controller===false)local.observing=true;
+    if(!savedResults&&!activePresentation&&!local.autoRequested&&!p.isReplay&&p.simulatorStart?.available){
       local.autoRequested=true;
       if(!p.connected&&!p.simulationStarting&&p.simulatorStart.status!=='FAILED'&&p.simulatorStop?.status!=='STOPPING'){
         local.launchPending=true;p.startSimulation().finally(()=>{local.launchPending=false;update();});
       }
     }
-    const activePresentation=d.id&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status);
-    if(!savedResults&&!activePresentation&&!['STARTING','RUNNING'].includes(p.journey?.status)&&p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&!local.preloadError){
+    if(!savedResults&&!activePresentation&&!['STARTING','RUNNING'].includes(p.journey?.status)&&p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&!local.preloadError&&!local.observing){
       prepareHere();
     }
     if(d.page_id===local.pageId){local.pageAdmitted=true;if(d.id!==local.newDriveFrom)local.newDrive=false;}
+    if(preloadWasObserved(p,local)){
+      local.preloadRequested=false;local.preloadSequence=null;local.preloadError=null;local.observing=true;
+    }
     if(local.preloadSequence&&p.failedSequence===local.preloadSequence)local.preloadError=p.operationError||'The fresh scene request was rejected.';
     if(local.preloadRequested&&!local.pageAdmitted&&p.acknowledged<local.preloadSequence&&performance.now()-local.preloadAt>45000)local.preloadError='The page did not receive confirmation. Reconnect or prepare a fresh drive here.';
     const state=missionState(p,local);document.body.dataset.mission=state.screen;

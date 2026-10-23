@@ -1,9 +1,19 @@
 """Project synchronized native axial depth using each actual sensor mount."""
 import io
 import math
+from functools import lru_cache
 import numpy as np
 from .active_safety import _mount
 from .contracts import SensorKind
+
+
+@lru_cache(maxsize=8)
+def _depth_rays(width, height, fov):
+    focal=width/(2*math.tan(math.radians(fov)/2))
+    vv,uu=np.mgrid[0:height:2,0:width:2]
+    rays=np.stack((np.ones(uu.shape),(uu-(width-1)/2)/focal,-(vv-(height-1)/2)/focal),axis=-1)
+    for array in (vv,uu,rays):array.flags.writeable=False
+    return vv,uu,rays
 
 
 def depth_surfaces(observation, asset_reader, *, decoded=None):
@@ -19,9 +29,7 @@ def depth_surfaces(observation, asset_reader, *, decoded=None):
         h,w=values.shape
         if (channel.calibration.get('width'),channel.calibration.get('height'))!=(w,h) or not np.isfinite(values).all() or np.any(values<0):
             raise ValueError('Invalid calibrated recovery depth')
-        focal=w/(2*math.tan(math.radians(channel.calibration['fov_deg'])/2))
-        vv,uu=np.mgrid[0:h:2,0:w:2]
-        rays=np.stack((np.ones(uu.shape),(uu-(w-1)/2)/focal,-(vv-(h-1)/2)/focal),axis=-1)
+        vv,uu,rays=_depth_rays(w,h,channel.calibration['fov_deg'])
         position,angles=_mount(channel)
         roll,pitch,yaw=np.radians(angles)
         cr,sr,cp,sp,cy,sy=math.cos(roll),math.sin(roll),math.cos(pitch),math.sin(pitch),math.cos(yaw),math.sin(yaw)

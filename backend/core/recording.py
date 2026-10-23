@@ -114,6 +114,13 @@ class BufferedRunRecorder:
         """Seal admission immediately; drain and finalize away from control."""
         self.stopping.set()
 
+    def fail(self, error):
+        with self.stats_lock:
+            self.error = error
+            self.incomplete = True
+        self.stopping.set()
+        log(LogCategory.RECORDING, 'Recording failed; prefix retained', error=str(error))
+
     def _lost(self,item):
         if item[0]=='frame':
             frame=item[1][0];self.dropped_frames+=1

@@ -1,0 +1,2021 @@
+{
+  "acceptance": "NOT_ACCEPTED",
+  "trials": [
+    {
+      "source": "LIVE_NATIVE_CARLA_0916",
+      "scope": "UNCHANGED_20HZ_LOW_BASELINE_WITH_PARTIAL_ABORT",
+      "label": "baseline",
+      "probe_protocol": "LEGACY_OBSERVER_WITH_FAILURES",
+      "elapsed_wall_s": 487.875,
+      "maximum_arm_wall_s": null,
+      "attempted_pairs": 3,
+      "completed_two_arm_pairs": 2,
+      "errors": [],
+      "observation_outages": [
+        {
+          "phase": "PREPARING",
+          "reason": "Native observations unavailable",
+          "wall_s": 0.2190000000409782
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 10.781000000075437
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Native observations unavailable",
+          "wall_s": 41.828000000095926
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Observation receipt timeout",
+          "wall_s": 43.23400000005495
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 45.203000000095926
+        },
+        {
+          "phase": "PREPARING",
+          "reason": "Native observations unavailable",
+          "wall_s": 82.89000000001397
+        },
+        {
+          "phase": "READY",
+          "reason": "Native observations unavailable",
+          "wall_s": 91.43700000003446
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 95.78100000007544
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Native observations unavailable",
+          "wall_s": 220.5470000000205
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Observation receipt timeout",
+          "wall_s": 221.95300000009593
+        },
+        {
+          "phase": "READY",
+          "reason": "Observation receipt timeout",
+          "wall_s": 222.26500000001397
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 223.93700000003446
+        },
+        {
+          "phase": "PREPARING",
+          "reason": "Native observations unavailable",
+          "wall_s": 449.10900000005495
+        },
+        {
+          "phase": "READY",
+          "reason": "Native observations unavailable",
+          "wall_s": 461.01500000001397
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 461.43700000003446
+        }
+      ],
+      "cases": [
+        {
+          "round": 1,
+          "seed": 1702,
+          "scene": "DENSE_CHAOS",
+          "outcome": "FAILED_COMPARISON",
+          "conditions_match": true,
+          "runs": {
+            "NORMAL": {
+              "status": "COLLISION",
+              "reason": "collision",
+              "distance_m": 62.8776935955463,
+              "duration_s": 5.950000088661909,
+              "collisions": 1,
+              "local_recording": "runs\\normal_city\\run_93685389180a47cd8bc6ddd3f795f5a1",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            },
+            "ROBOSPHERE": {
+              "status": "ERROR",
+              "reason": "ya_rab_ostorha_sensor_fault",
+              "distance_m": 32.911643681091995,
+              "duration_s": 5.100000075995922,
+              "collisions": 0,
+              "local_recording": "runs\\normal_city\\run_138e757dbd40404bad56e87a7b682a93",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            }
+          },
+          "video_exports": {}
+        },
+        {
+          "round": 2,
+          "seed": 1702,
+          "scene": "DENSE_CHAOS",
+          "outcome": "FAILED_COMPARISON",
+          "conditions_match": true,
+          "runs": {
+            "NORMAL": {
+              "status": "ARRIVED",
+              "reason": "destination_reached",
+              "distance_m": 262.526733069914,
+              "duration_s": 30.90000046044588,
+              "collisions": 0,
+              "local_recording": "runs\\normal_city\\run_1ffa4eb7b7884ab98c310cb6a6185434",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            },
+            "ROBOSPHERE": {
+              "status": "ARRIVED",
+              "reason": "destination_reached",
+              "distance_m": 262.85252276647435,
+              "duration_s": 38.800000578165054,
+              "collisions": 0,
+              "local_recording": "runs\\normal_city\\run_eb649c5480de4d3d8a81683d79700dc5",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            }
+          },
+          "video_exports": {}
+        },
+        {
+          "round": 3,
+          "seed": 1702,
+          "scene": "DENSE_CHAOS",
+          "outcome": "FAILED",
+          "conditions_match": false,
+          "runs": {
+            "NORMAL": {
+              "status": "ERROR",
+              "reason": "ya_rab_ostorha_sensor_fault",
+              "distance_m": 23.306609896693672,
+              "duration_s": 3.5500000528991222,
+              "collisions": 0,
+              "local_recording": "runs\\normal_city\\run_daa6ddca9d9c4ac0be94d2f53bc8aa0d",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            }
+          },
+          "video_exports": {}
+        }
+      ],
+      "measurements": {
+        "NORMAL": {
+          "samples": 1378,
+          "native_steps_per_second": {
+            "samples": 1378,
+            "median": 5.2830381138909175,
+            "p95": 6.422439416872734,
+            "minimum": 0,
+            "maximum": 7.113190263903199
+          },
+          "simulation_wall_ratio": {
+            "samples": 14,
+            "median": 0.26075395928959355,
+            "p95": 0.28397566346117836,
+            "minimum": 0.21199273483758588,
+            "maximum": 0.28397566346117836
+          },
+          "clock_windows_10s": [
+            {
+              "round": 1,
+              "start_wall_s": 14.687000000034459,
+              "measured_wall_s": 9.952999999979511,
+              "simulation_wall_ratio": 0.26625138546102006,
+              "physics_hz": 5.325027629871306
+            },
+            {
+              "round": 1,
+              "start_wall_s": 24.68700000003446,
+              "measured_wall_s": 9.89000000001397,
+              "simulation_wall_ratio": 0.22244691939124844,
+              "physics_hz": 4.448938321530622
+            },
+            {
+              "round": 2,
+              "start_wall_s": 100.81200000003446,
+              "measured_wall_s": 9.90700000000652,
+              "simulation_wall_ratio": 0.24729989265228958,
+              "physics_hz": 4.945997779344681
+            },
+            {
+              "round": 2,
+              "start_wall_s": 110.81200000003446,
+              "measured_wall_s": 9.890999999945052,
+              "simulation_wall_ratio": 0.22242442956170017,
+              "physics_hz": 4.448488524946359
+            },
+            {
+              "round": 2,
+              "start_wall_s": 120.81200000003446,
+              "measured_wall_s": 9.890999999945052,
+              "simulation_wall_ratio": 0.23253463090541382,
+              "physics_hz": 4.650692548807557
+            },
+            {
+              "round": 2,
+              "start_wall_s": 130.81200000003446,
+              "measured_wall_s": 9.968999999924563,
+              "simulation_wall_ratio": 0.23573076888710118,
+              "physics_hz": 4.714615307488781
+            },
+            {
+              "round": 2,
+              "start_wall_s": 140.81200000003446,
+              "measured_wall_s": 9.812000000034459,
+              "simulation_wall_ratio": 0.25988585792794594,
+              "physics_hz": 5.197717081106899
+            },
+            {
+              "round": 2,
+              "start_wall_s": 150.81200000003446,
+              "measured_wall_s": 9.937000000034459,
+              "simulation_wall_ratio": 0.2767434880717175,
+              "physics_hz": 5.534869678958366
+            },
+            {
+              "round": 2,
+              "start_wall_s": 160.81200000003446,
+              "measured_wall_s": 9.85999999998603,
+              "simulation_wall_ratio": 0.28397566346117836,
+              "physics_hz": 5.679513184592225
+            },
+            {
+              "round": 2,
+              "start_wall_s": 170.81200000003446,
+              "measured_wall_s": 9.937999999965541,
+              "simulation_wall_ratio": 0.2716844475993658,
+              "physics_hz": 5.433688871019042
+            },
+            {
+              "round": 2,
+              "start_wall_s": 180.81200000003446,
+              "measured_wall_s": 9.843999999924563,
+              "simulation_wall_ratio": 0.26412028024816575,
+              "physics_hz": 5.282405526249339
+            },
+            {
+              "round": 2,
+              "start_wall_s": 190.81200000003446,
+              "measured_wall_s": 9.937999999965541,
+              "simulation_wall_ratio": 0.2616220606512411,
+              "physics_hz": 5.232441135055374
+            },
+            {
+              "round": 2,
+              "start_wall_s": 200.81200000003446,
+              "measured_wall_s": 9.858999999938533,
+              "simulation_wall_ratio": 0.2637184337923957,
+              "physics_hz": 5.274368597253697
+            },
+            {
+              "round": 3,
+              "start_wall_s": 465.90600000007544,
+              "measured_wall_s": 9.905999999959022,
+              "simulation_wall_ratio": 0.21199273483758588,
+              "physics_hz": 4.23985463357296
+            }
+          ],
+          "browser_windows_10s": [],
+          "browser_fps": null,
+          "browser_p95_frame_interval_ms": null,
+          "browser_image_latency_ms": null,
+          "browser_decode_ms": null,
+          "detector_ms": null,
+          "detector_runtimes": [],
+          "board_used_mib": {
+            "samples": 1378,
+            "median": 5545.0,
+            "p95": 5581,
+            "minimum": 5541,
+            "maximum": 5581
+          },
+          "gpu_utilization_percent": {
+            "samples": 1378,
+            "median": 30.0,
+            "p95": 75,
+            "minimum": 0,
+            "maximum": 90
+          },
+          "stages_ms": {
+            "native_ms.before_native": {
+              "samples": 1378,
+              "median": 7.4915000586770475,
+              "p95": 15.046400018036366,
+              "minimum": 0.13599998783320189,
+              "maximum": 21.554799983277917
+            },
+            "native_ms.native_tick": {
+              "samples": 1378,
+              "median": 56.76215002313256,
+              "p95": 80.75219998136163,
+              "minimum": 33.50220003630966,
+              "maximum": 111.97560001164675
+            },
+            "native_ms.scenario_audit": {
+              "samples": 1378,
+              "median": 0.6631499854847789,
+              "p95": 1.101000001654029,
+              "minimum": 0.01309998333454132,
+              "maximum": 2.42679996881634
+            },
+            "native_ms.population": {
+              "samples": 1378,
+              "median": 7.283849990926683,
+              "p95": 14.73599998280406,
+              "minimum": 0.0077999429777264595,
+              "maximum": 21.258900058455765
+            },
+            "native_ms.telemetry_and_spectator": {
+              "samples": 1378,
+              "median": 3.3569500083103776,
+              "p95": 10.202200035564601,
+              "minimum": 1.4581999275833368,
+              "maximum": 88.7044999981299
+            },
+            "control_ms.lock_wait": {
+              "samples": 1378,
+              "median": 0.000300002284348011,
+              "p95": 0.000600004568696022,
+              "minimum": 0.00019988510757684708,
+              "maximum": 0.014299992471933365
+            },
+            "control_ms.since_publication": {
+              "samples": 1378,
+              "median": 0.21299999207258224,
+              "p95": 0.4123999970033765,
+              "minimum": 0.09370001498609781,
+              "maximum": 20.268599968403578
+            },
+            "control_ms.sensor_to_scene": {
+              "samples": 1378,
+              "median": 90.14434996061027,
+              "p95": 124.05879993457347,
+              "minimum": 51.73800000920892,
+              "maximum": 201.63979998324066
+            },
+            "control_ms.scene_to_control": {
+              "samples": 1378,
+              "median": 0.7940999930724502,
+              "p95": 1.4917999505996704,
+              "minimum": 0.43999997433274984,
+              "maximum": 21.175700007006526
+            },
+            "control_ms.navigation": {
+              "samples": 1378,
+              "median": 2.1089999936521053,
+              "p95": 3.81380005273968,
+              "minimum": 1.0809999657794833,
+              "maximum": 33.01189991179854
+            },
+            "control_ms.sensor_age_before_safety_ms": {
+              "samples": 1374,
+              "median": 93.32809993065894,
+              "p95": 129.86029998864979,
+              "minimum": 54.153500008396804,
+              "maximum": 226.80589999072254
+            },
+            "control_ms.safety": {
+              "samples": 1378,
+              "median": 45.19089998211712,
+              "p95": 92.58529997896403,
+              "minimum": 0.07100007496774197,
+              "maximum": 210.6541000539437
+            },
+            "control_ms.actuator_submit": {
+              "samples": 1378,
+              "median": 0.716300040949136,
+              "p95": 1.4174999669194221,
+              "minimum": 0.043199979700148106,
+              "maximum": 3.409299999475479
+            },
+            "scene_ms.input_wait_before_build": {
+              "samples": 1378,
+              "median": 81.73580002039671,
+              "p95": 113.10259997844696,
+              "minimum": 46.87210009433329,
+              "maximum": 191.57949998043478
+            },
+            "scene_ms.lidar_decode": {
+              "samples": 1378,
+              "median": 0.47010002890601754,
+              "p95": 4.150599939748645,
+              "minimum": 0.1441999338567257,
+              "maximum": 9.829299990087748
+            },
+            "scene_ms.depth_decode_and_fusion": {
+              "samples": 1378,
+              "median": 6.751300068572164,
+              "p95": 15.103799989446998,
+              "minimum": 3.2110000029206276,
+              "maximum": 63.09810001403093
+            },
+            "scene_ms.tracking_and_forecasts": {
+              "samples": 1378,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            }
+          },
+          "incomplete_samples": 0,
+          "sensor_errors": []
+        },
+        "ROBOSPHERE": {
+          "samples": 2043,
+          "native_steps_per_second": {
+            "samples": 2043,
+            "median": 3.496187698657934,
+            "p95": 4.695630355005795,
+            "minimum": 3.197874110139946,
+            "maximum": 5.036564927182273
+          },
+          "simulation_wall_ratio": {
+            "samples": 24,
+            "median": 0.1718908013477829,
+            "p95": 0.19151295517764125,
+            "minimum": 0.15048154317342724,
+            "maximum": 0.22206520972858654
+          },
+          "clock_windows_10s": [
+            {
+              "round": 1,
+              "start_wall_s": 51.51500000001397,
+              "measured_wall_s": 9.90700000000652,
+              "simulation_wall_ratio": 0.1766427804659211,
+              "physics_hz": 3.532855556674772
+            },
+            {
+              "round": 1,
+              "start_wall_s": 61.51500000001397,
+              "measured_wall_s": 9.890999999945052,
+              "simulation_wall_ratio": 0.17187342284313195,
+              "physics_hz": 3.4374684056403684
+            },
+            {
+              "round": 1,
+              "start_wall_s": 71.51500000001397,
+              "measured_wall_s": 9.96799999999348,
+              "simulation_wall_ratio": 0.15048154317342724,
+              "physics_hz": 3.009630818621551
+            },
+            {
+              "round": 2,
+              "start_wall_s": 229.76500000001397,
+              "measured_wall_s": 9.954000000027008,
+              "simulation_wall_ratio": 0.17580872273179463,
+              "physics_hz": 3.5161744022408112
+            },
+            {
+              "round": 2,
+              "start_wall_s": 239.76500000001397,
+              "measured_wall_s": 9.843999999924563,
+              "simulation_wall_ratio": 0.16761479323441286,
+              "physics_hz": 3.3522958147351574
+            },
+            {
+              "round": 2,
+              "start_wall_s": 249.76500000001397,
+              "measured_wall_s": 9.890999999945052,
+              "simulation_wall_ratio": 0.15165302015570467,
+              "physics_hz": 3.033060357917972
+            },
+            {
+              "round": 2,
+              "start_wall_s": 259.76500000001397,
+              "measured_wall_s": 9.843999999924563,
+              "simulation_wall_ratio": 0.15745632091717573,
+              "physics_hz": 3.149126371417875
+            },
+            {
+              "round": 2,
+              "start_wall_s": 269.76500000001397,
+              "measured_wall_s": 9.89000000001397,
+              "simulation_wall_ratio": 0.1718908013477829,
+              "physics_hz": 3.4378159757282076
+            },
+            {
+              "round": 2,
+              "start_wall_s": 279.76500000001397,
+              "measured_wall_s": 9.906000000075437,
+              "simulation_wall_ratio": 0.17161316629507653,
+              "physics_hz": 3.432263274756822
+            },
+            {
+              "round": 2,
+              "start_wall_s": 289.76500000001397,
+              "measured_wall_s": 9.922000000020489,
+              "simulation_wall_ratio": 0.16629711999430646,
+              "physics_hz": 3.325942350325726
+            },
+            {
+              "round": 2,
+              "start_wall_s": 299.76500000001397,
+              "measured_wall_s": 9.89000000001397,
+              "simulation_wall_ratio": 0.1718908013477829,
+              "physics_hz": 3.4378159757282076
+            },
+            {
+              "round": 2,
+              "start_wall_s": 309.76500000001397,
+              "measured_wall_s": 9.905999999959022,
+              "simulation_wall_ratio": 0.17666061236465488,
+              "physics_hz": 3.5332121946441335
+            },
+            {
+              "round": 2,
+              "start_wall_s": 319.76500000001397,
+              "measured_wall_s": 9.859000000054948,
+              "simulation_wall_ratio": 0.1572167586051487,
+              "physics_hz": 3.1443351252487295
+            },
+            {
+              "round": 2,
+              "start_wall_s": 329.76500000001397,
+              "measured_wall_s": 9.875,
+              "simulation_wall_ratio": 0.16202531887006155,
+              "physics_hz": 3.240506329113924
+            },
+            {
+              "round": 2,
+              "start_wall_s": 339.76500000001397,
+              "measured_wall_s": 9.90700000000652,
+              "simulation_wall_ratio": 0.1766427804659211,
+              "physics_hz": 3.532855556674772
+            },
+            {
+              "round": 2,
+              "start_wall_s": 349.76500000001397,
+              "measured_wall_s": 9.937999999965541,
+              "simulation_wall_ratio": 0.16602938464405687,
+              "physics_hz": 3.3205876434005255
+            },
+            {
+              "round": 2,
+              "start_wall_s": 359.76500000001397,
+              "measured_wall_s": 9.936999999918044,
+              "simulation_wall_ratio": 0.18114119219451905,
+              "physics_hz": 3.6228237899061
+            },
+            {
+              "round": 2,
+              "start_wall_s": 369.76500000001397,
+              "measured_wall_s": 10.0,
+              "simulation_wall_ratio": 0.180000002682209,
+              "physics_hz": 3.6
+            },
+            {
+              "round": 2,
+              "start_wall_s": 379.76500000001397,
+              "measured_wall_s": 9.98499999998603,
+              "simulation_wall_ratio": 0.17025538561185302,
+              "physics_hz": 3.405107661497002
+            },
+            {
+              "round": 2,
+              "start_wall_s": 389.76500000001397,
+              "measured_wall_s": 9.890999999945052,
+              "simulation_wall_ratio": 0.17692852351498878,
+              "physics_hz": 3.538570417570967
+            },
+            {
+              "round": 2,
+              "start_wall_s": 399.76500000001397,
+              "measured_wall_s": 9.65700000000652,
+              "simulation_wall_ratio": 0.18639329261891632,
+              "physics_hz": 3.7278657968287976
+            },
+            {
+              "round": 2,
+              "start_wall_s": 409.76500000001397,
+              "measured_wall_s": 9.952999999979511,
+              "simulation_wall_ratio": 0.19089721976450494,
+              "physics_hz": 3.8179443383982945
+            },
+            {
+              "round": 2,
+              "start_wall_s": 419.76500000001397,
+              "measured_wall_s": 9.920999999972992,
+              "simulation_wall_ratio": 0.19151295517764125,
+              "physics_hz": 3.8302590464775172
+            },
+            {
+              "round": 2,
+              "start_wall_s": 429.76500000001397,
+              "measured_wall_s": 9.90700000000652,
+              "simulation_wall_ratio": 0.22206520972858654,
+              "physics_hz": 4.441304128391142
+            }
+          ],
+          "browser_windows_10s": [],
+          "browser_fps": null,
+          "browser_p95_frame_interval_ms": null,
+          "browser_image_latency_ms": null,
+          "browser_decode_ms": null,
+          "detector_ms": null,
+          "detector_runtimes": [],
+          "board_used_mib": {
+            "samples": 2043,
+            "median": 5573,
+            "p95": 5597,
+            "minimum": 5545,
+            "maximum": 5597
+          },
+          "gpu_utilization_percent": {
+            "samples": 2043,
+            "median": 6,
+            "p95": 78,
+            "minimum": 0,
+            "maximum": 85
+          },
+          "stages_ms": {
+            "native_ms.before_native": {
+              "samples": 2043,
+              "median": 6.6223000176250935,
+              "p95": 12.376700062304735,
+              "minimum": 0.05140004213899374,
+              "maximum": 55.363700026646256
+            },
+            "native_ms.native_tick": {
+              "samples": 2043,
+              "median": 57.61490005534142,
+              "p95": 85.17430000938475,
+              "minimum": 35.95170006155968,
+              "maximum": 159.2223000479862
+            },
+            "native_ms.scenario_audit": {
+              "samples": 2043,
+              "median": 0.6074999691918492,
+              "p95": 1.075900043360889,
+              "minimum": 0.013199984095990658,
+              "maximum": 3.337599919177592
+            },
+            "native_ms.population": {
+              "samples": 2043,
+              "median": 6.052100099623203,
+              "p95": 11.645999969914556,
+              "minimum": 0.004700035788118839,
+              "maximum": 55.12289993930608
+            },
+            "native_ms.telemetry_and_spectator": {
+              "samples": 2043,
+              "median": 3.8528000004589558,
+              "p95": 11.455300031229854,
+              "minimum": 1.2906999327242374,
+              "maximum": 109.50550006236881
+            },
+            "control_ms.lock_wait": {
+              "samples": 2043,
+              "median": 0.000300002284348011,
+              "p95": 0.001600012183189392,
+              "minimum": 0.000100000761449337,
+              "maximum": 0.0071999384090304375
+            },
+            "control_ms.since_publication": {
+              "samples": 2043,
+              "median": 0.2025000285357237,
+              "p95": 8.106399909593165,
+              "minimum": 0.08329993579536676,
+              "maximum": 383.1548999296501
+            },
+            "control_ms.sensor_to_scene": {
+              "samples": 2043,
+              "median": 160.31880001537502,
+              "p95": 230.97999999299645,
+              "minimum": 94.05980003066361,
+              "maximum": 346.46549995522946
+            },
+            "control_ms.scene_to_control": {
+              "samples": 2043,
+              "median": 0.8251999970525503,
+              "p95": 12.752400012686849,
+              "minimum": 0.3958999877795577,
+              "maximum": 383.6232000030577
+            },
+            "control_ms.navigation": {
+              "samples": 2043,
+              "median": 2.0955000072717667,
+              "p95": 3.6975000984966755,
+              "minimum": 1.1768999975174665,
+              "maximum": 95.52680002525449
+            },
+            "control_ms.safety": {
+              "samples": 2043,
+              "median": 45.050299959257245,
+              "p95": 74.61919996421784,
+              "minimum": 0.13800000306218863,
+              "maximum": 111.81629996281117
+            },
+            "control_ms.actuator_submit": {
+              "samples": 2043,
+              "median": 0.6623000372201204,
+              "p95": 1.240300014615059,
+              "minimum": 0.04169996827840805,
+              "maximum": 6.001399946399033
+            },
+            "scene_ms.input_wait_before_build": {
+              "samples": 2043,
+              "median": 89.94380000513047,
+              "p95": 113.01600001752377,
+              "minimum": 49.2342000361532,
+              "maximum": 322.8051000041887
+            },
+            "scene_ms.lidar_decode": {
+              "samples": 2043,
+              "median": 0.4925999091938138,
+              "p95": 6.050700088962913,
+              "minimum": 0.1436000457033515,
+              "maximum": 106.4512999728322
+            },
+            "scene_ms.depth_decode_and_fusion": {
+              "samples": 2043,
+              "median": 11.786899995058775,
+              "p95": 25.14589997008443,
+              "minimum": 6.151199922896922,
+              "maximum": 72.46649998705834
+            },
+            "scene_ms.tracking_and_forecasts": {
+              "samples": 2043,
+              "median": 21.857299958355725,
+              "p95": 41.4761999854818,
+              "minimum": 6.504399934783578,
+              "maximum": 155.11689998675138
+            },
+            "scene_ms.semantics_and_freezing": {
+              "samples": 2043,
+              "median": 29.42610008176416,
+              "p95": 92.526699998416,
+              "minimum": 4.666700027883053,
+              "maximum": 184.52179990708828
+            },
+            "control_ms.sensor_age_before_safety_ms": {
+              "samples": 1963,
+              "median": 163.94170001149178,
+              "p95": 221.9135999912396,
+              "minimum": 96.01680003106594,
+              "maximum": 249.4048000080511
+            }
+          },
+          "incomplete_samples": 0,
+          "sensor_errors": []
+        }
+      },
+      "process_resources_all_phases": {
+        "backend": {
+          "working_set_mib": {
+            "n": 162,
+            "min": 281.296875,
+            "median": 332.990234375,
+            "p95": 347.9140625,
+            "max": 357.6953125
+          },
+          "private_mib": {
+            "n": 162,
+            "min": 783.75390625,
+            "median": 835.302734375,
+            "p95": 849.48046875,
+            "max": 859.99609375
+          },
+          "cpu_percent_one_core": {
+            "n": 161,
+            "min": 91.76416609443461,
+            "median": 106.77083333333333,
+            "p95": 128.125,
+            "max": 205.72916666666666
+          }
+        },
+        "engine": {
+          "working_set_mib": {
+            "n": 162,
+            "min": 758.7109375,
+            "median": 1001.166015625,
+            "p95": 1043.5234375,
+            "max": 1094.66015625
+          },
+          "private_mib": {
+            "n": 162,
+            "min": 10040.5078125,
+            "median": 10075.208984375,
+            "p95": 10114.61328125,
+            "max": 10438.21484375
+          },
+          "cpu_percent_one_core": {
+            "n": 161,
+            "min": 142.60505581216398,
+            "median": 176.04166666666666,
+            "p95": 217.70833333333334,
+            "max": 267.1875
+          }
+        }
+      },
+      "raw_local_summary": "output\\performance-60\\baseline-summary.json"
+    },
+    {
+      "source": "LIVE_NATIVE_CARLA_0916",
+      "scope": "THIRD_PROTECTED_BASELINE_ATTEMPT",
+      "label": "baseline-repeat-4",
+      "probe_protocol": "LEGACY_OBSERVER_WITH_FAILURES",
+      "elapsed_wall_s": 119.79700000002049,
+      "maximum_arm_wall_s": null,
+      "attempted_pairs": 1,
+      "completed_two_arm_pairs": 1,
+      "errors": [],
+      "observation_outages": [
+        {
+          "phase": "PREPARING",
+          "reason": "Native observations unavailable",
+          "wall_s": 0.2190000000409782
+        },
+        {
+          "phase": "READY",
+          "reason": "Native observations unavailable",
+          "wall_s": 10.452999999979511
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 11.327999999979511
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Native observations unavailable",
+          "wall_s": 42.32799999997951
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Observation receipt timeout",
+          "wall_s": 43.79700000002049
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 45.56299999996554
+        }
+      ],
+      "cases": [
+        {
+          "round": 1,
+          "seed": 1702,
+          "scene": "DENSE_CHAOS",
+          "outcome": "FAILED_COMPARISON",
+          "conditions_match": true,
+          "runs": {
+            "NORMAL": {
+              "status": "COLLISION",
+              "reason": "collision",
+              "distance_m": 63.86176710843584,
+              "duration_s": 5.900000087916851,
+              "collisions": 1,
+              "local_recording": "runs\\normal_city\\run_729644533ead4a118128b6e08b80f5e1",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            },
+            "ROBOSPHERE": {
+              "status": "ERROR",
+              "reason": "ya_rab_ostorha_sensor_fault",
+              "distance_m": 85.19532555452089,
+              "duration_s": 11.050000164657831,
+              "collisions": 0,
+              "local_recording": "runs\\normal_city\\run_dfa9162f1db0401aa6a32325868d4ff2",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            }
+          },
+          "video_exports": {}
+        }
+      ],
+      "measurements": {
+        "NORMAL": {
+          "samples": 209,
+          "native_steps_per_second": {
+            "samples": 209,
+            "median": 5.9437581074859445,
+            "p95": 6.6516649897158695,
+            "minimum": 4.670442976135253,
+            "maximum": 6.7640049337030685
+          },
+          "simulation_wall_ratio": {
+            "samples": 2,
+            "median": 0.24473245097590396,
+            "p95": 0.26668008850547326,
+            "minimum": 0.22278481344633463,
+            "maximum": 0.26668008850547326
+          },
+          "clock_windows_10s": [
+            {
+              "round": 1,
+              "start_wall_s": 15.40700000000652,
+              "measured_wall_s": 9.937000000034459,
+              "simulation_wall_ratio": 0.26668008850547326,
+              "physics_hz": 5.333601690632606
+            },
+            {
+              "round": 1,
+              "start_wall_s": 25.40700000000652,
+              "measured_wall_s": 9.875,
+              "simulation_wall_ratio": 0.22278481344633463,
+              "physics_hz": 4.455696202531645
+            }
+          ],
+          "browser_windows_10s": [],
+          "browser_fps": null,
+          "browser_p95_frame_interval_ms": null,
+          "browser_image_latency_ms": null,
+          "browser_decode_ms": null,
+          "detector_ms": null,
+          "detector_runtimes": [],
+          "board_used_mib": {
+            "samples": 209,
+            "median": 5549,
+            "p95": 5549,
+            "minimum": 5549,
+            "maximum": 5549
+          },
+          "gpu_utilization_percent": {
+            "samples": 209,
+            "median": 17,
+            "p95": 52,
+            "minimum": 0,
+            "maximum": 52
+          },
+          "stages_ms": {
+            "native_ms.before_native": {
+              "samples": 209,
+              "median": 8.114199968986213,
+              "p95": 13.12420004978776,
+              "minimum": 3.610100015066564,
+              "maximum": 15.996199916116893
+            },
+            "native_ms.native_tick": {
+              "samples": 209,
+              "median": 55.66950002685189,
+              "p95": 77.49559998046607,
+              "minimum": 36.24769998714328,
+              "maximum": 83.37020000908524
+            },
+            "native_ms.scenario_audit": {
+              "samples": 209,
+              "median": 0.7330999942496419,
+              "p95": 1.129999989643693,
+              "minimum": 0.4181000404059887,
+              "maximum": 2.2959000198170543
+            },
+            "native_ms.population": {
+              "samples": 209,
+              "median": 7.943599950522184,
+              "p95": 12.873400002717972,
+              "minimum": 3.476400044746697,
+              "maximum": 15.720499912276864
+            },
+            "native_ms.telemetry_and_spectator": {
+              "samples": 209,
+              "median": 3.135700011625886,
+              "p95": 8.630700060166419,
+              "minimum": 1.6697000246495008,
+              "maximum": 14.92720004171133
+            },
+            "control_ms.lock_wait": {
+              "samples": 209,
+              "median": 0.000300002284348011,
+              "p95": 0.000700005330145359,
+              "minimum": 0.000200001522898674,
+              "maximum": 0.001300009898841381
+            },
+            "control_ms.since_publication": {
+              "samples": 209,
+              "median": 0.23740006145089865,
+              "p95": 0.4715999821200967,
+              "minimum": 0.1517999917268753,
+              "maximum": 10.86309994570911
+            },
+            "control_ms.sensor_to_scene": {
+              "samples": 209,
+              "median": 90.94189992174506,
+              "p95": 113.90090000350028,
+              "minimum": 56.76940002012998,
+              "maximum": 168.25779993087053
+            },
+            "control_ms.scene_to_control": {
+              "samples": 209,
+              "median": 0.7597999647259712,
+              "p95": 1.899800030514598,
+              "minimum": 0.4911000141873956,
+              "maximum": 11.769099975936115
+            },
+            "control_ms.navigation": {
+              "samples": 209,
+              "median": 2.060399972833693,
+              "p95": 4.463399993255734,
+              "minimum": 1.134399906732142,
+              "maximum": 5.5680000223219395
+            },
+            "control_ms.sensor_age_before_safety_ms": {
+              "samples": 209,
+              "median": 94.41639995202422,
+              "p95": 121.32899998687208,
+              "minimum": 58.854800066910684,
+              "maximum": 188.30789998173714
+            },
+            "control_ms.safety": {
+              "samples": 209,
+              "median": 57.15470004361123,
+              "p95": 93.1747000431642,
+              "minimum": 18.647099961526692,
+              "maximum": 128.48499999381602
+            },
+            "control_ms.actuator_submit": {
+              "samples": 209,
+              "median": 0.6843999726697803,
+              "p95": 1.3638000236824155,
+              "minimum": 0.04870002157986164,
+              "maximum": 5.52800006698817
+            },
+            "scene_ms.input_wait_before_build": {
+              "samples": 209,
+              "median": 84.10139998886734,
+              "p95": 104.08219997771084,
+              "minimum": 50.47130002640188,
+              "maximum": 159.22769997268915
+            },
+            "scene_ms.lidar_decode": {
+              "samples": 209,
+              "median": 0.45300007332116365,
+              "p95": 3.6941999569535255,
+              "minimum": 0.16569998115301132,
+              "maximum": 8.654700010083616
+            },
+            "scene_ms.depth_decode_and_fusion": {
+              "samples": 209,
+              "median": 6.536099943332374,
+              "p95": 13.931300025433302,
+              "minimum": 3.840699908323586,
+              "maximum": 23.58269994147122
+            },
+            "scene_ms.tracking_and_forecasts": {
+              "samples": 209,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            }
+          },
+          "incomplete_samples": 0,
+          "sensor_errors": []
+        },
+        "ROBOSPHERE": {
+          "samples": 528,
+          "native_steps_per_second": {
+            "samples": 528,
+            "median": 3.4301277384062474,
+            "p95": 5.144544018792725,
+            "minimum": 3.3297595147706858,
+            "maximum": 5.24440859034706
+          },
+          "simulation_wall_ratio": {
+            "samples": 6,
+            "median": 0.1710696011197841,
+            "p95": 0.18084999767163626,
+            "minimum": 0.16356573541615124,
+            "maximum": 0.18084999767163626
+          },
+          "clock_windows_10s": [
+            {
+              "round": 1,
+              "start_wall_s": 50.875,
+              "measured_wall_s": 9.952999999979511,
+              "simulation_wall_ratio": 0.18084999767163626,
+              "physics_hz": 3.6169998995352266
+            },
+            {
+              "round": 1,
+              "start_wall_s": 60.875,
+              "measured_wall_s": 9.922000000020489,
+              "simulation_wall_ratio": 0.1713364266608006,
+              "physics_hz": 3.4267284821537785
+            },
+            {
+              "round": 1,
+              "start_wall_s": 70.875,
+              "measured_wall_s": 9.78200000000652,
+              "simulation_wall_ratio": 0.16356573541615124,
+              "physics_hz": 3.271314659576638
+            },
+            {
+              "round": 1,
+              "start_wall_s": 80.875,
+              "measured_wall_s": 9.968999999924563,
+              "simulation_wall_ratio": 0.16551309304839018,
+              "physics_hz": 3.310261811641059
+            },
+            {
+              "round": 1,
+              "start_wall_s": 90.875,
+              "measured_wall_s": 9.76500000001397,
+              "simulation_wall_ratio": 0.17409114442698842,
+              "physics_hz": 3.481822836656565
+            },
+            {
+              "round": 1,
+              "start_wall_s": 100.875,
+              "measured_wall_s": 9.952999999979511,
+              "simulation_wall_ratio": 0.17080277557876758,
+              "physics_hz": 3.4160554606721583
+            }
+          ],
+          "browser_windows_10s": [],
+          "browser_fps": null,
+          "browser_p95_frame_interval_ms": null,
+          "browser_image_latency_ms": null,
+          "browser_decode_ms": null,
+          "detector_ms": null,
+          "detector_runtimes": [],
+          "board_used_mib": {
+            "samples": 528,
+            "median": 5549.0,
+            "p95": 5549,
+            "minimum": 5549,
+            "maximum": 5549
+          },
+          "gpu_utilization_percent": {
+            "samples": 528,
+            "median": 15.0,
+            "p95": 81,
+            "minimum": 0,
+            "maximum": 81
+          },
+          "stages_ms": {
+            "native_ms.before_native": {
+              "samples": 528,
+              "median": 6.820149952545762,
+              "p95": 11.992099927738309,
+              "minimum": 0.11789996642619371,
+              "maximum": 28.70309993159026
+            },
+            "native_ms.native_tick": {
+              "samples": 528,
+              "median": 61.05260003823787,
+              "p95": 87.02039998024702,
+              "minimum": 36.700200056657195,
+              "maximum": 104.5238000806421
+            },
+            "native_ms.scenario_audit": {
+              "samples": 528,
+              "median": 0.7332999957725406,
+              "p95": 1.3413999695330858,
+              "minimum": 0.023699947632849216,
+              "maximum": 4.261499969288707
+            },
+            "native_ms.population": {
+              "samples": 528,
+              "median": 6.261800066567957,
+              "p95": 11.334299924783409,
+              "minimum": 0.006200047209858894,
+              "maximum": 28.471000026911497
+            },
+            "native_ms.telemetry_and_spectator": {
+              "samples": 528,
+              "median": 4.126749932765961,
+              "p95": 9.642899967730045,
+              "minimum": 1.8301999662071466,
+              "maximum": 23.49959989078343
+            },
+            "control_ms.lock_wait": {
+              "samples": 528,
+              "median": 0.000300002284348011,
+              "p95": 0.001200009137392044,
+              "minimum": 0.000200001522898674,
+              "maximum": 0.010299962013959885
+            },
+            "control_ms.since_publication": {
+              "samples": 528,
+              "median": 0.22599997464567423,
+              "p95": 6.548300036229193,
+              "minimum": 0.14460005331784487,
+              "maximum": 12.712900061160326
+            },
+            "control_ms.sensor_to_scene": {
+              "samples": 528,
+              "median": 162.28700010105968,
+              "p95": 223.0952000245452,
+              "minimum": 117.10399994626641,
+              "maximum": 329.9504000460729
+            },
+            "control_ms.scene_to_control": {
+              "samples": 528,
+              "median": 0.821600086055696,
+              "p95": 11.27200003247708,
+              "minimum": 0.4938999190926552,
+              "maximum": 17.10080006159842
+            },
+            "control_ms.navigation": {
+              "samples": 528,
+              "median": 2.0795000018551946,
+              "p95": 3.5383000504225492,
+              "minimum": 1.2440000427886844,
+              "maximum": 6.825799937359989
+            },
+            "control_ms.sensor_age_before_safety_ms": {
+              "samples": 519,
+              "median": 166.17930005304515,
+              "p95": 219.6550000226125,
+              "minimum": 119.66089997440577,
+              "maximum": 246.7610000167042
+            },
+            "control_ms.safety": {
+              "samples": 528,
+              "median": 48.66875003790483,
+              "p95": 81.44049998372793,
+              "minimum": 3.4156000474467874,
+              "maximum": 185.7247999869287
+            },
+            "control_ms.actuator_submit": {
+              "samples": 528,
+              "median": 0.166199984960258,
+              "p95": 1.2236000038683414,
+              "minimum": 0.047900015488266945,
+              "maximum": 1.8020999850705266
+            },
+            "scene_ms.input_wait_before_build": {
+              "samples": 528,
+              "median": 91.59720002207905,
+              "p95": 108.56620001140982,
+              "minimum": 69.8026999598369,
+              "maximum": 186.6533999564126
+            },
+            "scene_ms.lidar_decode": {
+              "samples": 528,
+              "median": 0.4395999712869525,
+              "p95": 3.4241999965161085,
+              "minimum": 0.14949997421354055,
+              "maximum": 11.905299965292215
+            },
+            "scene_ms.depth_decode_and_fusion": {
+              "samples": 528,
+              "median": 11.631649977061898,
+              "p95": 23.22689990978688,
+              "minimum": 6.195600028149784,
+              "maximum": 102.80710004735738
+            },
+            "scene_ms.tracking_and_forecasts": {
+              "samples": 528,
+              "median": 21.693099988624454,
+              "p95": 39.90289999637753,
+              "minimum": 10.938400053419173,
+              "maximum": 149.47100006975234
+            },
+            "scene_ms.semantics_and_freezing": {
+              "samples": 528,
+              "median": 31.016900029499084,
+              "p95": 75.73939999565482,
+              "minimum": 14.0292999567464,
+              "maximum": 128.24680004268885
+            }
+          },
+          "incomplete_samples": 0,
+          "sensor_errors": []
+        }
+      },
+      "process_resources_all_phases": {
+        "backend": {
+          "working_set_mib": {
+            "n": 40,
+            "min": 247.96484375,
+            "median": 306.607421875,
+            "p95": 314.5234375,
+            "max": 316.78515625
+          },
+          "private_mib": {
+            "n": 40,
+            "min": 849.42578125,
+            "median": 853.6015625,
+            "p95": 858.53125,
+            "max": 863.13671875
+          },
+          "cpu_percent_one_core": {
+            "n": 39,
+            "min": 79.6875,
+            "median": 105.72916666666667,
+            "p95": 116.66666666666667,
+            "max": 126.04166666666667
+          }
+        },
+        "engine": {
+          "working_set_mib": {
+            "n": 40,
+            "min": 376.859375,
+            "median": 529.818359375,
+            "p95": 558.08984375,
+            "max": 566.8828125
+          },
+          "private_mib": {
+            "n": 40,
+            "min": 10069.296875,
+            "median": 10078.009765625,
+            "p95": 10107.16015625,
+            "max": 10354.16015625
+          },
+          "cpu_percent_one_core": {
+            "n": 39,
+            "min": 150.7630456176275,
+            "median": 175.0,
+            "p95": 232.8125,
+            "max": 272.9166666666667
+          }
+        }
+      },
+      "raw_local_summary": "output\\performance-60\\baseline-repeat-4-summary.json"
+    },
+    {
+      "source": "LIVE_NATIVE_CARLA_0916",
+      "scope": "ADDITIONAL_BASELINE_BROWSER_MEASUREMENT_UNAVAILABLE",
+      "label": "baseline-http-display",
+      "probe_protocol": "LEGACY_OBSERVER_WITH_FAILURES",
+      "elapsed_wall_s": 285.76500000001397,
+      "maximum_arm_wall_s": null,
+      "attempted_pairs": 1,
+      "completed_two_arm_pairs": 1,
+      "errors": [],
+      "observation_outages": [
+        {
+          "phase": "PREPARING",
+          "reason": "Native observations unavailable",
+          "wall_s": 0.2029999999795109
+        },
+        {
+          "phase": "READY",
+          "reason": "Native observations unavailable",
+          "wall_s": 10.312000000034459
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 11.937000000034459
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Native observations unavailable",
+          "wall_s": 44.25
+        },
+        {
+          "phase": "RESTORING",
+          "reason": "Observation receipt timeout",
+          "wall_s": 45.54700000002049
+        },
+        {
+          "phase": "STARTING",
+          "reason": "Native observations unavailable",
+          "wall_s": 47.32799999997951
+        }
+      ],
+      "cases": [
+        {
+          "round": 1,
+          "seed": 1702,
+          "scene": "DENSE_CHAOS",
+          "outcome": "VERIFIED_COMPARISON",
+          "conditions_match": true,
+          "runs": {
+            "NORMAL": {
+              "status": "COLLISION",
+              "reason": "collision",
+              "distance_m": 62.88506118371213,
+              "duration_s": 5.950000088661909,
+              "collisions": 1,
+              "local_recording": "runs\\normal_city\\run_0e190662f3f540de89353b7fe60ea6ee",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            },
+            "ROBOSPHERE": {
+              "status": "ARRIVED",
+              "reason": "destination_reached",
+              "distance_m": 262.7342839274052,
+              "duration_s": 40.00000059604645,
+              "collisions": 0,
+              "local_recording": "runs\\normal_city\\run_5addc262387a4c02b0ce4b355b83b017",
+              "runtime_rates": null,
+              "render_configuration": null,
+              "population": {
+                "vehicles": 60,
+                "pedestrians": 100,
+                "controllers": 91,
+                "walkers_active": 0
+              }
+            }
+          },
+          "video_exports": {}
+        }
+      ],
+      "measurements": {
+        "NORMAL": {
+          "samples": 222,
+          "native_steps_per_second": {
+            "samples": 222,
+            "median": 5.640725509413415,
+            "p95": 6.319750334330601,
+            "minimum": 4.478715576043622,
+            "maximum": 6.463567617966736
+          },
+          "simulation_wall_ratio": {
+            "samples": 2,
+            "median": 0.2365021096839089,
+            "p95": 0.2519653333247068,
+            "minimum": 0.22103888604311098,
+            "maximum": 0.2519653333247068
+          },
+          "clock_windows_10s": [
+            {
+              "round": 1,
+              "start_wall_s": 16.06200000003446,
+              "measured_wall_s": 9.922000000020489,
+              "simulation_wall_ratio": 0.2519653333247068,
+              "physics_hz": 5.039306591402616
+            },
+            {
+              "round": 1,
+              "start_wall_s": 26.06200000003446,
+              "measured_wall_s": 9.952999999979511,
+              "simulation_wall_ratio": 0.22103888604311098,
+              "physics_hz": 4.420777654987499
+            }
+          ],
+          "browser_windows_10s": [],
+          "browser_fps": null,
+          "browser_p95_frame_interval_ms": null,
+          "browser_image_latency_ms": null,
+          "browser_decode_ms": null,
+          "detector_ms": null,
+          "detector_runtimes": [],
+          "board_used_mib": {
+            "samples": 222,
+            "median": 5581.0,
+            "p95": 5581,
+            "minimum": 5581,
+            "maximum": 5581
+          },
+          "gpu_utilization_percent": {
+            "samples": 222,
+            "median": 25.0,
+            "p95": 67,
+            "minimum": 0,
+            "maximum": 98
+          },
+          "stages_ms": {
+            "native_ms.before_native": {
+              "samples": 222,
+              "median": 8.58289992902428,
+              "p95": 15.271599986590445,
+              "minimum": 3.5566999576985836,
+              "maximum": 21.812799968756735
+            },
+            "native_ms.native_tick": {
+              "samples": 222,
+              "median": 56.76115001551807,
+              "p95": 81.55480003915727,
+              "minimum": 37.88910002913326,
+              "maximum": 88.34030001889914
+            },
+            "native_ms.scenario_audit": {
+              "samples": 222,
+              "median": 0.7332999957725406,
+              "p95": 1.423400011844933,
+              "minimum": 0.42729999404400587,
+              "maximum": 1.877899980172515
+            },
+            "native_ms.population": {
+              "samples": 222,
+              "median": 8.337299921549857,
+              "p95": 14.956099912524223,
+              "minimum": 3.4138000337406993,
+              "maximum": 21.512100007385015
+            },
+            "native_ms.telemetry_and_spectator": {
+              "samples": 222,
+              "median": 3.35054995957762,
+              "p95": 9.44369996432215,
+              "minimum": 1.5855999663472176,
+              "maximum": 55.15750008635223
+            },
+            "control_ms.lock_wait": {
+              "samples": 222,
+              "median": 0.000300002284348011,
+              "p95": 0.000900006853044033,
+              "minimum": 0.00019988510757684708,
+              "maximum": 0.001700012944638729
+            },
+            "control_ms.since_publication": {
+              "samples": 222,
+              "median": 0.25414995616301894,
+              "p95": 0.449199927970767,
+              "minimum": 0.14190003275871277,
+              "maximum": 7.179499953053892
+            },
+            "control_ms.sensor_to_scene": {
+              "samples": 222,
+              "median": 95.89039999991655,
+              "p95": 124.46129997260869,
+              "minimum": 57.273600017651916,
+              "maximum": 151.67219995055348
+            },
+            "control_ms.scene_to_control": {
+              "samples": 222,
+              "median": 0.8307999232783914,
+              "p95": 1.5263999812304974,
+              "minimum": 0.5014999769628048,
+              "maximum": 7.84629990812391
+            },
+            "control_ms.navigation": {
+              "samples": 222,
+              "median": 2.2203500266186893,
+              "p95": 4.120300058275461,
+              "minimum": 1.2618000619113445,
+              "maximum": 4.848200012929738
+            },
+            "control_ms.sensor_age_before_safety_ms": {
+              "samples": 222,
+              "median": 99.31370004778728,
+              "p95": 128.8388998946175,
+              "minimum": 59.93399990256876,
+              "maximum": 245.5813999986276
+            },
+            "control_ms.safety": {
+              "samples": 222,
+              "median": 57.61820002226159,
+              "p95": 96.49949998129159,
+              "minimum": 20.780700026080012,
+              "maximum": 114.61009993217885
+            },
+            "control_ms.actuator_submit": {
+              "samples": 222,
+              "median": 0.6971500115469098,
+              "p95": 1.2147999368607998,
+              "minimum": 0.0540000619366765,
+              "maximum": 1.9968999549746513
+            },
+            "scene_ms.input_wait_before_build": {
+              "samples": 222,
+              "median": 87.0792999630794,
+              "p95": 114.28189999423921,
+              "minimum": 50.69329997058958,
+              "maximum": 136.87469996511936
+            },
+            "scene_ms.lidar_decode": {
+              "samples": 222,
+              "median": 0.5281499470584095,
+              "p95": 6.601000088267028,
+              "minimum": 0.14679995365440845,
+              "maximum": 8.429400040768087
+            },
+            "scene_ms.depth_decode_and_fusion": {
+              "samples": 222,
+              "median": 6.631549971643835,
+              "p95": 13.551299925893545,
+              "minimum": 3.3631999976933002,
+              "maximum": 21.71849994920194
+            },
+            "scene_ms.tracking_and_forecasts": {
+              "samples": 222,
+              "median": 0.0,
+              "p95": 0.0,
+              "minimum": 0.0,
+              "maximum": 0.0
+            }
+          },
+          "incomplete_samples": 0,
+          "sensor_errors": []
+        },
+        "ROBOSPHERE": {
+          "samples": 1871,
+          "native_steps_per_second": {
+            "samples": 1871,
+            "median": 3.4110481036484885,
+            "p95": 4.086844656351249,
+            "minimum": 3.1942006222564845,
+            "maximum": 4.494021439851944
+          },
+          "simulation_wall_ratio": {
+            "samples": 22,
+            "median": 0.17228284848614933,
+            "p95": 0.19592083081093928,
+            "minimum": 0.15237708475855716,
+            "maximum": 0.2003205158044186
+          },
+          "clock_windows_10s": [
+            {
+              "round": 1,
+              "start_wall_s": 55.81200000003446,
+              "measured_wall_s": 9.98499999998603,
+              "simulation_wall_ratio": 0.17025538561185302,
+              "physics_hz": 3.405107661497002
+            },
+            {
+              "round": 1,
+              "start_wall_s": 65.81200000003446,
+              "measured_wall_s": 9.76500000001397,
+              "simulation_wall_ratio": 0.16897081664972408,
+              "physics_hz": 3.3794162826372545
+            },
+            {
+              "round": 1,
+              "start_wall_s": 75.81200000003446,
+              "measured_wall_s": 9.922000000020489,
+              "simulation_wall_ratio": 0.1562185066613182,
+              "physics_hz": 3.1243700866696216
+            },
+            {
+              "round": 1,
+              "start_wall_s": 85.81200000003446,
+              "measured_wall_s": 9.875,
+              "simulation_wall_ratio": 0.1721519012994404,
+              "physics_hz": 3.4430379746835444
+            },
+            {
+              "round": 1,
+              "start_wall_s": 95.81200000003446,
+              "measured_wall_s": 9.84299999999348,
+              "simulation_wall_ratio": 0.16763182206522492,
+              "physics_hz": 3.352636391346323
+            },
+            {
+              "round": 1,
+              "start_wall_s": 105.81200000003446,
+              "measured_wall_s": 9.906000000075437,
+              "simulation_wall_ratio": 0.15647082809256976,
+              "physics_hz": 3.1294165152194555
+            },
+            {
+              "round": 1,
+              "start_wall_s": 115.81200000003446,
+              "measured_wall_s": 9.969000000040978,
+              "simulation_wall_ratio": 0.16551309304645737,
+              "physics_hz": 3.3102618116024027
+            },
+            {
+              "round": 1,
+              "start_wall_s": 125.81200000003446,
+              "measured_wall_s": 9.969000000040978,
+              "simulation_wall_ratio": 0.1755441895947275,
+              "physics_hz": 3.510883739578306
+            },
+            {
+              "round": 1,
+              "start_wall_s": 135.81200000003446,
+              "measured_wall_s": 9.85999999998603,
+              "simulation_wall_ratio": 0.17241379567285828,
+              "physics_hz": 3.448275862073851
+            },
+            {
+              "round": 1,
+              "start_wall_s": 145.81200000003446,
+              "measured_wall_s": 9.937999999965541,
+              "simulation_wall_ratio": 0.16602938464405687,
+              "physics_hz": 3.3205876434005255
+            },
+            {
+              "round": 1,
+              "start_wall_s": 155.81200000003446,
+              "measured_wall_s": 9.827999999979511,
+              "simulation_wall_ratio": 0.17806268071638995,
+              "physics_hz": 3.5612535612609855
+            },
+            {
+              "round": 1,
+              "start_wall_s": 165.81200000003446,
+              "measured_wall_s": 9.922000000020489,
+              "simulation_wall_ratio": 0.19149365332677715,
+              "physics_hz": 3.8298730094659876
+            },
+            {
+              "round": 1,
+              "start_wall_s": 175.81200000003446,
+              "measured_wall_s": 9.844000000040978,
+              "simulation_wall_ratio": 0.17777326554954767,
+              "physics_hz": 3.5554652580103925
+            },
+            {
+              "round": 1,
+              "start_wall_s": 185.81200000003446,
+              "measured_wall_s": 9.890999999945052,
+              "simulation_wall_ratio": 0.18703872485870243,
+              "physics_hz": 3.7407744414321655
+            },
+            {
+              "round": 1,
+              "start_wall_s": 195.81200000003446,
+              "measured_wall_s": 9.875,
+              "simulation_wall_ratio": 0.16708861008475098,
+              "physics_hz": 3.3417721518987342
+            },
+            {
+              "round": 1,
+              "start_wall_s": 205.81200000003446,
+              "measured_wall_s": 9.843999999924563,
+              "simulation_wall_ratio": 0.15237708475855716,
+              "physics_hz": 3.047541649759234
+            },
+            {
+              "round": 1,
+              "start_wall_s": 215.81200000003446,
+              "measured_wall_s": 9.905999999959022,
+              "simulation_wall_ratio": 0.16656572022953176,
+              "physics_hz": 3.331314354950183
+            },
+            {
+              "round": 1,
+              "start_wall_s": 225.81200000003446,
+              "measured_wall_s": 9.922000000020489,
+              "simulation_wall_ratio": 0.17637573332729473,
+              "physics_hz": 3.5275146139818307
+            },
+            {
+              "round": 1,
+              "start_wall_s": 235.81200000003446,
+              "measured_wall_s": 9.811999999918044,
+              "simulation_wall_ratio": 0.17325723862068626,
+              "physics_hz": 3.4651447207790453
+            },
+            {
+              "round": 1,
+              "start_wall_s": 245.81200000003446,
+              "measured_wall_s": 9.984000000054948,
+              "simulation_wall_ratio": 0.2003205158044186,
+              "physics_hz": 4.0064102563882065
+            },
+            {
+              "round": 1,
+              "start_wall_s": 255.81200000003446,
+              "measured_wall_s": 9.937999999965541,
+              "simulation_wall_ratio": 0.18615415854030617,
+              "physics_hz": 3.7230831153278623
+            },
+            {
+              "round": 1,
+              "start_wall_s": 265.81200000003446,
+              "measured_wall_s": 9.952999999979511,
+              "simulation_wall_ratio": 0.19592083081093928,
+              "physics_hz": 3.9184165578298287
+            }
+          ],
+          "browser_windows_10s": [],
+          "browser_fps": null,
+          "browser_p95_frame_interval_ms": null,
+          "browser_image_latency_ms": null,
+          "browser_decode_ms": null,
+          "detector_ms": null,
+          "detector_runtimes": [],
+          "board_used_mib": {
+            "samples": 1871,
+            "median": 5581,
+            "p95": 5581,
+            "minimum": 5581,
+            "maximum": 5581
+          },
+          "gpu_utilization_percent": {
+            "samples": 1871,
+            "median": 28,
+            "p95": 73,
+            "minimum": 0,
+            "maximum": 87
+          },
+          "stages_ms": {
+            "native_ms.before_native": {
+              "samples": 1871,
+              "median": 6.299200002104044,
+              "p95": 11.289800051599741,
+              "minimum": 0.15900004655122757,
+              "maximum": 22.968300036154687
+            },
+            "native_ms.native_tick": {
+              "samples": 1871,
+              "median": 61.15950003731996,
+              "p95": 85.92280000448227,
+              "minimum": 36.778599955141544,
+              "maximum": 108.1138999434188
+            },
+            "native_ms.scenario_audit": {
+              "samples": 1871,
+              "median": 0.5504000000655651,
+              "p95": 1.164899906143546,
+              "minimum": 0.01279998105019331,
+              "maximum": 3.257300006225705
+            },
+            "native_ms.population": {
+              "samples": 1871,
+              "median": 5.72350004222244,
+              "p95": 10.557399946264923,
+              "minimum": 0.01780001912266016,
+              "maximum": 22.534899995662272
+            },
+            "native_ms.telemetry_and_spectator": {
+              "samples": 1871,
+              "median": 3.9514999371021986,
+              "p95": 10.913300095126033,
+              "minimum": 1.1672999244183302,
+              "maximum": 70.86689991410822
+            },
+            "control_ms.lock_wait": {
+              "samples": 1871,
+              "median": 0.000300002284348011,
+              "p95": 0.001200009137392044,
+              "minimum": 0.00019988510757684708,
+              "maximum": 0.4879999905824661
+            },
+            "control_ms.since_publication": {
+              "samples": 1871,
+              "median": 0.19379996228963137,
+              "p95": 7.038300042040646,
+              "minimum": 0.08470006287097931,
+              "maximum": 24.055100046098232
+            },
+            "control_ms.sensor_to_scene": {
+              "samples": 1871,
+              "median": 161.52059996966273,
+              "p95": 223.8629999337718,
+              "minimum": 96.72789997421205,
+              "maximum": 332.0557000115514
+            },
+            "control_ms.scene_to_control": {
+              "samples": 1871,
+              "median": 0.8726000087335706,
+              "p95": 11.776800034567714,
+              "minimum": 0.395099981687963,
+              "maximum": 101.83810000307858
+            },
+            "control_ms.navigation": {
+              "samples": 1871,
+              "median": 2.196399960666895,
+              "p95": 4.034499987028539,
+              "minimum": 1.1699000606313348,
+              "maximum": 81.1647999798879
+            },
+            "control_ms.safety": {
+              "samples": 1871,
+              "median": 45.087400008924305,
+              "p95": 75.78640000429004,
+              "minimum": 0.14100002590566874,
+              "maximum": 128.1666000140831
+            },
+            "control_ms.actuator_submit": {
+              "samples": 1871,
+              "median": 0.6316000362858176,
+              "p95": 1.2373999925330281,
+              "minimum": 0.05270005203783512,
+              "maximum": 1.920199953019619
+            },
+            "scene_ms.input_wait_before_build": {
+              "samples": 1871,
+              "median": 89.11039994563907,
+              "p95": 114.87100005615503,
+              "minimum": 55.039400001987815,
+              "maximum": 180.06269994657487
+            },
+            "scene_ms.lidar_decode": {
+              "samples": 1871,
+              "median": 0.47719990834593773,
+              "p95": 5.263000028207898,
+              "minimum": 0.13630010653287172,
+              "maximum": 18.89619999565184
+            },
+            "scene_ms.depth_decode_and_fusion": {
+              "samples": 1871,
+              "median": 11.609000037424266,
+              "p95": 23.87010003440082,
+              "minimum": 6.2769000651314855,
+              "maximum": 134.62389993947
+            },
+            "scene_ms.tracking_and_forecasts": {
+              "samples": 1871,
+              "median": 22.493500029668212,
+              "p95": 50.65210000611842,
+              "minimum": 6.926000001840293,
+              "maximum": 150.09649994317442
+            },
+            "scene_ms.semantics_and_freezing": {
+              "samples": 1871,
+              "median": 29.516200069338083,
+              "p95": 73.63790005911142,
+              "minimum": 5.6013999274000525,
+              "maximum": 186.85800000093877
+            },
+            "control_ms.sensor_age_before_safety_ms": {
+              "samples": 1807,
+              "median": 165.28259997721761,
+              "p95": 219.67379993293434,
+              "minimum": 98.634900059551,
+              "maximum": 247.65240005217493
+            }
+          },
+          "incomplete_samples": 0,
+          "sensor_errors": []
+        }
+      },
+      "process_resources_all_phases": {
+        "backend": {
+          "working_set_mib": {
+            "n": 95,
+            "min": 270.6328125,
+            "median": 325.109375,
+            "p95": 329.90234375,
+            "max": 336.11328125
+          },
+          "private_mib": {
+            "n": 95,
+            "min": 793.296875,
+            "median": 852.08203125,
+            "p95": 858.21484375,
+            "max": 864.40625
+          },
+          "cpu_percent_one_core": {
+            "n": 94,
+            "min": 86.14543726347594,
+            "median": 106.25,
+            "p95": 111.45833333333333,
+            "max": 116.40548080000491
+          }
+        },
+        "engine": {
+          "working_set_mib": {
+            "n": 95,
+            "min": 536.296875,
+            "median": 553.0703125,
+            "p95": 576.73046875,
+            "max": 586.4140625
+          },
+          "private_mib": {
+            "n": 95,
+            "min": 10063.9921875,
+            "median": 10101.9765625,
+            "p95": 10133.83203125,
+            "max": 10385.24609375
+          },
+          "cpu_percent_one_core": {
+            "n": 94,
+            "min": 142.60505581216398,
+            "median": 166.40625,
+            "p95": 206.25,
+            "max": 259.375
+          }
+        }
+      },
+      "raw_local_summary": "output\\performance-60\\baseline-http-display-summary.json"
+    }
+  ]
+}

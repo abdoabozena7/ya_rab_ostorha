@@ -15,7 +15,6 @@ from ..core.scenarios import ActorControlSegment
 from ..core.contracts import to_dict
 from ..core.control import ControlMode
 from ..core.events import EventType
-from ..core.timing import SensorSynchronizer
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT_OPTIONS = {'ignore_vehicles': True, 'ignore_traffic_lights': True,
@@ -157,9 +156,9 @@ class ComparisonDemo:
                 if p.sensor_manager.cleanup_errors:
                     raise RuntimeError('; '.join(p.sensor_manager.cleanup_errors))
                 p.blueprint = 'vehicle.lincoln.mkz_2020'
-                p.fixed_delta = .05
+                p.fixed_delta = 1/60 if getattr(p,'run_profile',None)=='PERFORMANCE_60' else .05
                 native = p.world.world.get_settings()
-                native.fixed_delta_seconds = .05
+                native.fixed_delta_seconds = p.fixed_delta
                 p.world.world.apply_settings(native)
                 p.camera_settings.update(camera_view='front',camera_motion_blur=0)
                 p.set_paused(False)
@@ -172,8 +171,7 @@ class ComparisonDemo:
                 admitted_weather = p.world.world.get_weather()
                 self.group = (*self.group[:-1], tuple(float(getattr(admitted_weather, k, 0.)) for k in
                     ('cloudiness', 'precipitation', 'wetness', 'sun_altitude_angle', 'sun_azimuth_angle', 'fog_density')))
-            s.synchronizer = SensorSynchronizer(s.synchronizer.required, s.synchronizer.optional,
-                timeout_s=s.synchronizer.timeout_s, now=s.now)
+            s._reset_sensor_timing(required=s.synchronizer.required)
             s.camera_cache.clear()
             s.sensor_frame_cache.clear()
             s.collision_events.clear()

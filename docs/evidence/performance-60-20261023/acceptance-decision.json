@@ -1,0 +1,27 @@
+{
+  "profile": "PERFORMANCE_60",
+  "accepted": false,
+  "default_profile": "LEGACY",
+  "default_detector": "CPU",
+  "gates": {
+    "native_720p_dimensions": "VERIFIED",
+    "software_60_20_contracts": "VERIFIED",
+    "display_58_60_fps": "FAILED",
+    "real_time_0_95_1_05": "FAILED",
+    "p95_display_interval_le25ms": "FAILED",
+    "total_gpu_le4608MiB": "FAILED",
+    "applied_render_cvars": "OPEN_UNVERIFIED",
+    "complete_new_profile_pairs": "NOT_ACHIEVED",
+    "moving_browser_30m": "OPEN_NOT_ESTABLISHED"
+  },
+  "held_native_resource_soak_completed": true,
+  "held_soak_memory_mib": {
+    "n": 15712,
+    "min": 5830,
+    "median": 5830.0,
+    "p95": 5835,
+    "max": 5860
+  },
+  "directml_not_adopted_reason": "Faster inference did not satisfy overall display, real-time and whole-device memory gates",
+  "evidence_scope_note": "Bounded performance windows, interrupted/failed driving and held-world soak are not complete driving acceptance."
+}

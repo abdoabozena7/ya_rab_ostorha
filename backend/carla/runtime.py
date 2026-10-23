@@ -30,18 +30,27 @@ def native_processes():
 class NativeRuntime:
     def __init__(self):
         self.gpu = None
+        self.resources = {'status':'STARTING'}
+        self.gpu_error = None
+        self.process_ids = {}
+        self.engine_log = None
         self.active = self.inspect()
         threading.Thread(target=self._monitor_gpu, name='gpu-observer', daemon=True).start()
 
     def inspect(self):
         processes = native_processes()
+        self.process_ids = {'backend':os.getpid(), **{
+            'engine':int(p['ProcessId']) for p in processes if 'Shipping' in p['ExecutablePath']}}
         if not processes:
             return None
         command = processes[-1]['CommandLine'] or ''
+        log_path = re.search(r'-abslog=(?:"([^"]+)"|(\S+))',command,re.I)
+        if log_path:
+            self.engine_log = Path(log_path[1] or log_path[2])
         quality = re.search(r'-quality-level=(Low|Epic)', command, re.I)
         x = re.search(r'-ResX=(\d+)', command, re.I)
         y = re.search(r'-ResY=(\d+)', command, re.I)
-        profile = re.search(r'-ostorha-render-profile=(LOW|BALANCED|HIGH|ULTRA)\b', command, re.I)
+        profile = re.search(r'-ostorha-render-profile=(LOW|BALANCED|HIGH|ULTRA|PERFORMANCE_60)\b', command, re.I)
         return {'quality': quality[1] if quality else None,
                 'resolution': f'{x[1]}x{y[1]}' if x and y else None,
                 'offscreen': '-renderoffscreen' in command.lower(),
@@ -50,17 +59,95 @@ class NativeRuntime:
                 'source': 'VERIFIED_NATIVE_PROCESS'}
 
     def _monitor_gpu(self):
+        previous = None
+        from ..core.resources import process_resources, system_cpu_times, wddm_process_memory
         while True:
             try:
                 result = subprocess.run(['nvidia-smi', '--query-gpu=name,memory.used,memory.total,utilization.gpu',
                                          '--format=csv,noheader,nounits'], capture_output=True, text=True,
                                         timeout=5, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
                 name, used, total, utilization = result.stdout.strip().splitlines()[0].split(', ')
-                self.gpu = {'name': name, 'usedMiB': int(used), 'totalMiB': int(total),
+                gpu = {'name': name, 'usedMiB': int(used), 'totalMiB': int(total),
+                            'boardUsedMiB':int(used), 'scope':'TOTAL_DEVICE_ALL_PROCESSES',
                             'utilizationPercent': int(utilization), 'observedAtUnix': time.time()}
-            except (OSError, ValueError, IndexError, subprocess.TimeoutExpired):
+                self.gpu_error = None
+                process_result = subprocess.run(['nvidia-smi', '--query-compute-apps=pid,used_memory',
+                    '--format=csv,noheader,nounits'], capture_output=True, text=True, timeout=5,
+                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
+                entries = []
+                if process_result.returncode == 0:
+                    for line in process_result.stdout.strip().splitlines():
+                        pid, memory = (v.strip() for v in line.split(',', 1))
+                        available = memory.isdigit()
+                        entries.append({'pid':int(pid), 'usedMiB':int(memory) if available else None,
+                            'status':'MEASURED' if available else 'UNAVAILABLE',
+                            'reason':None if available else 'NVML process memory unavailable (WDDM)',
+                            'source':'NVIDIA_SMI_PROCESS_QUERY'})
+                gpu['processMemory'] = {'status':'OBSERVED' if process_result.returncode == 0 else 'UNAVAILABLE',
+                    'processes':entries, 'error':process_result.stderr.strip()[:300] or None}
+                try:
+                    gpu['wddmProcessMemory'] = wddm_process_memory(tuple(self.process_ids.values()))
+                except (OSError, ValueError, KeyError, subprocess.TimeoutExpired) as error:
+                    gpu['wddmProcessMemory'] = {'status':'UNAVAILABLE','error':str(error)}
+                self.gpu = gpu
+            except (OSError, ValueError, IndexError, subprocess.TimeoutExpired) as error:
                 self.gpu = None
+                self.gpu_error = str(error)
+            try:
+                now = time.monotonic()
+                processes = {name:process_resources(pid) for name,pid in self.process_ids.items()}
+                system = system_cpu_times()
+                cpu = None
+                if previous:
+                    elapsed = now-previous[0]
+                    for name,value in processes.items():
+                        prior = previous[1].get(name)
+                        if prior and prior['pid'] == value['pid']:
+                            value['cpuPercentOneCore'] = 100*(value['cpu_seconds']-prior['cpu_seconds'])/elapsed
+                            value['cpuPercentMachine'] = value['cpuPercentOneCore']/(os.cpu_count() or 1)
+                    total = system[1]-previous[2][1]
+                    cpu = 100*(1-(system[0]-previous[2][0])/total) if total > 0 else None
+                previous = (now, processes, system)
+                self.resources = {'status':'MEASURED', 'observedAtUnix':time.time(),
+                    'systemCpuPercent':cpu, 'logicalCpuCount':os.cpu_count(), 'processes':processes,
+                    'source':'WINDOWS_PROCESS_MEMORY_AND_CPU_TIMES'}
+            except OSError as error:
+                self.resources = {'status':'UNAVAILABLE', 'error':str(error), 'observedAtUnix':time.time()}
+            if self.engine_log and self.active:
+                active = self.active
+                audit = self.render_audit(self.engine_log, active['render_profile'])
+                if self.active is active:
+                    self.active = {**active,'renderAudit':audit}
             time.sleep(3)
+
+    @staticmethod
+    def render_audit(path, profile):
+        from ..graphics import render_settings
+        expected = render_settings(profile)
+        try:
+            with Path(path).open('r',encoding='utf8',errors='replace') as stream:
+                stream.seek(0,2)
+                size = stream.tell()
+                stream.seek(max(0,size-1_048_576))
+                lines = stream.read().splitlines()
+        except OSError as error:
+            return {'verified':False, 'source':'ENGINE_CONSOLE_RESPONSE', 'error':str(error),
+                'log':str(path), 'requested':expected, 'applied':{}, 'missing':sorted(expected)}
+        actual = {}
+        for line in lines:
+            if 'LogConsoleResponse' not in line:
+                continue
+            for key in expected:
+                match = re.search(re.escape(key)+r'\s*=\s*"?([-+]?\d+(?:\.\d+)?)',line)
+                if match:
+                    actual[key] = float(match[1])
+        missing = sorted(set(expected)-set(actual))
+        mismatches = {k:{'requested':v,'applied':actual[k]} for k,v in expected.items()
+            if k in actual and abs(float(v)-actual[k]) > 1e-6}
+        return {'verified':not missing and not mismatches, 'source':'ENGINE_CONSOLE_RESPONSE',
+            'log':str(path), 'observedAtUnix':time.time(), 'requested':expected, 'applied':actual,
+            'missing':missing, 'mismatches':mismatches,
+            'scope':'STARTUP_CONSOLE_QUERY_NOT_TEXTURE_POOL_AS_TOTAL_VRAM'}
 
     def stop(self, *, port=None):
         # Query identity immediately before using a PID; never match unrelated apps.
@@ -81,6 +168,8 @@ class NativeRuntime:
         if selected():
             raise RuntimeError('Verified CARLA process did not exit')
         self.active=None
+        self.engine_log=None
+        self.process_ids={'backend':os.getpid()}
 
     def launch(self, settings, host, port, api):
         marker = json.loads((INSTALL/'.carla-install.json').read_text(encoding='utf-8-sig'))
@@ -93,6 +182,7 @@ class NativeRuntime:
         if renderer not in ('D3D11','D3D12'):raise ValueError('Unsupported verified native renderer')
         from ..graphics import write_render_config
         profile = settings.get('render_profile') or ('HIGH' if settings['quality']=='Epic' else 'LOW')
+        self.engine_log = None
         user_config = Path(os.environ['LOCALAPPDATA'])/'CarlaUE4/Saved/Config/WindowsNoEditor/Engine.ini'
         backup = Path(__file__).resolve().parents[2]/'output/native-runtime/user-engine-before-optimization.ini'
         if user_config.exists() and not backup.exists():
@@ -104,6 +194,12 @@ class NativeRuntime:
                 '-ostorha-render-profile='+profile,
                 '-carla-rpc-port='+str(port), '-ResX='+width, '-ResY='+height]
         args.append('-RenderOffScreen' if settings.get('offscreen', True) else '-windowed')
+        if profile == 'PERFORMANCE_60':
+            import uuid
+            from ..graphics import render_settings
+            self.engine_log = Path(__file__).resolve().parents[2]/'output/native-runtime'/('engine-'+uuid.uuid4().hex+'.log')
+            self.engine_log.parent.mkdir(parents=True,exist_ok=True)
+            args += ['-abslog='+str(self.engine_log), '-ExecCmds='+','.join(render_settings(profile))]
         process = subprocess.Popen(args, cwd=executable.parent, creationflags=subprocess.CREATE_NO_WINDOW)
         deadline = time.monotonic()+90
         while time.monotonic()<deadline:
@@ -126,7 +222,10 @@ class NativeRuntime:
                     creationflags=subprocess.CREATE_NO_WINDOW)
                 if probe.returncode or 'CARLA_WORLD_READY' not in probe.stdout:
                     raise RuntimeError('Native world readiness probe has not succeeded')
+                self.inspect()
                 self.active = {**settings, 'renderer':renderer, 'render_profile':profile, 'source':'VERIFIED_NATIVE_LAUNCH'}
+                if self.engine_log:
+                    self.active['renderAudit'] = self.render_audit(self.engine_log, profile)
                 return
             except (OSError, RuntimeError, subprocess.TimeoutExpired):
                 time.sleep(1)

@@ -19,12 +19,21 @@ CAMERA_VIEWS = {'front': (1.5, 0., 1.6, 0., 0.), 'hood': (2.3, 0., 1.1, 0., 0.),
                 'top': (0., 0., 15., -90., 0.)}
 
 
-def validate_settings(data):
+def validate_settings(data, *, run_profile='LEGACY'):
     if not isinstance(data, dict) or set(data)-{'weather', 'camera_view', 'camera_resolution',
             'camera_fov', 'camera_postprocess', 'camera_motion_blur', 'camera_bloom',
-            'simulation_hz', 'vehicle', 'spawn_index', 'next_launch', 'traffic_plan', 'population', 'weather_preset'}:
+            'simulation_hz', 'run_profile', 'vehicle', 'spawn_index', 'next_launch', 'traffic_plan', 'population', 'weather_preset'}:
         raise ValueError('Unknown CARLA setting')
     result = dict(data)
+    if 'run_profile' in data:
+        from ..core.performance import validate_run_profile
+        validate_run_profile(data['run_profile'])
+    selected_profile = data.get('run_profile', run_profile)
+    if selected_profile == 'PERFORMANCE_60':
+        if 'simulation_hz' in data and data['simulation_hz'] != 60:
+            raise ValueError('PERFORMANCE_60 requires 60 Hz physics and 20 Hz driving sensors')
+        if 'camera_resolution' in data and data['camera_resolution'] != '1280x720':
+            raise ValueError('PERFORMANCE_60 requires a native 1280x720 display camera')
     if 'population' in data: result['population'] = validate_population(data['population'])
     if 'weather_preset' in data and (not isinstance(data['weather_preset'], str) or not data['weather_preset'].isalnum()):
         raise ValueError('Invalid native weather preset')
@@ -44,8 +53,9 @@ def validate_settings(data):
     for name, low, high in (('camera_fov', 60, 120), ('camera_motion_blur', 0, 1), ('camera_bloom', 0, 2)):
         if name in data and (type(data[name]) not in (int, float) or not math.isfinite(data[name]) or not low <= data[name] <= high):
             raise ValueError(f'{name} outside range')
-    if 'simulation_hz' in data and (type(data['simulation_hz']) is not int or data['simulation_hz'] not in (10, 20)):
-        raise ValueError('Development simulation rate must be 10 or 20 Hz')
+    supported_rates = (60,) if selected_profile == 'PERFORMANCE_60' else (10, 20)
+    if 'simulation_hz' in data and (type(data['simulation_hz']) is not int or data['simulation_hz'] not in supported_rates):
+        raise ValueError('Select PERFORMANCE_60 explicitly for 60 Hz; legacy rates are 10 or 20 Hz')
     if 'vehicle' in data and (not isinstance(data['vehicle'], str) or not data['vehicle'].startswith('vehicle.')):
         raise ValueError('Invalid native vehicle blueprint')
     if 'spawn_index' in data and (type(data['spawn_index']) is not int or data['spawn_index'] < 0):
@@ -233,6 +243,8 @@ class NativeDashboardTools:
                 'spawn_options': [{'index': i, 'name': f'Spawn {i+1:02d}',
                                    'location_m': [t.location.x, t.location.y, t.location.z]} for i,t in enumerate(self.spawns)],
                 'simulation_hz': round(1/p.fixed_delta), **p.camera_settings,
+                'run_profile':getattr(p,'run_profile','LEGACY'),
+                'decision_hz':round(1/getattr(p,'decision_delta',p.fixed_delta)),
                 'weather': {key: getattr(native_weather, key) for key in WEATHER_RANGES},
                 'weather_preset': current_preset, 'weather_presets': list(self.weather_presets()),
                 'weather_preset_values': {name: {key:getattr(weather,key) for key in WEATHER_RANGES}
@@ -245,7 +257,8 @@ class NativeDashboardTools:
                 'capabilities': {'camera_view': 'LIVE', 'camera_resolution': 'LIVE_STOP_REQUIRED',
                                  'camera_effects': 'LIVE_STOP_REQUIRED_LOW_MAY_IGNORE', 'weather': 'LIVE',
                                  'vehicle': 'LIVE_STOP_REQUIRED', 'spawn_index': 'LIVE_STOP_REQUIRED',
-                                 'simulation_hz': 'LIVE_STOP_REQUIRED', 'population': 'LIVE_EXPLICIT_APPLY',
+                                 'simulation_hz': 'LIVE_STOP_REQUIRED', 'run_profile':'LIVE_STOP_REQUIRED_EXPERIMENTAL',
+                                 'population': 'LIVE_EXPLICIT_APPLY',
                                  'next_launch': 'NEXT-LAUNCH', 'render_fps': 'NOT IMPLEMENTED',
                                  'nearby_actors': 'DISPLAY-ONLY', 'navigation': 'EXPLICIT_BASIC_AGENT_JOURNEY'},
                 'active_launch': getattr(p, 'active_launch', None),
@@ -254,7 +267,7 @@ class NativeDashboardTools:
 
     def apply(self, settings):
         p = self.provider
-        data = validate_settings(settings)
+        data = validate_settings(settings, run_profile=getattr(p, 'run_profile', 'LEGACY'))
         if 'weather_preset' in data and data['weather_preset'] not in self.weather_presets():
             raise ValueError('Weather preset absent from the native CARLA API')
         if 'vehicle' in data and data['vehicle'] not in p.catalog['vehicles']:
@@ -262,7 +275,7 @@ class NativeDashboardTools:
         if 'spawn_index' in data and data['spawn_index'] >= len(self.spawns):
             raise ValueError('Spawn index absent from current map')
         recreates = any(k in data for k in ('camera_resolution','camera_fov','camera_postprocess',
-                                           'camera_motion_blur','camera_bloom','simulation_hz','vehicle','spawn_index'))
+                                           'camera_motion_blur','camera_bloom','simulation_hz','run_profile','vehicle','spawn_index'))
         if recreates and p.last_vehicle and p.last_vehicle['speedMagnitudeMps'] > .15:
             raise ValueError('Stop the vehicle before changing camera, timing or vehicle settings')
         if recreates:
@@ -285,8 +298,16 @@ class NativeDashboardTools:
             write_json(self.settings_path, self.preferences)
         if 'simulation_hz' in data:
             p.fixed_delta = 1/data['simulation_hz']
+        if 'run_profile' in data:
+            p.configure_run_profile(data['run_profile'])
+            if data['run_profile'] == 'LEGACY' and 'simulation_hz' not in data:
+                p.fixed_delta = .05
+        if 'simulation_hz' in data or 'run_profile' in data:
             native = p.world.world.get_settings(); native.fixed_delta_seconds = p.fixed_delta
             p.world.world.apply_settings(native)
+            applied = p.world.world.get_settings()
+            if not applied.synchronous_mode or abs((applied.fixed_delta_seconds or 0)-p.fixed_delta)>1e-6:
+                raise RuntimeError('CARLA did not apply the requested synchronous physics time step')
         p.camera_settings.update({k:v for k,v in data.items() if k.startswith('camera_')})
         if 'camera_view' in data and not recreates:
             p.sensor_manager.change_camera_view(p.connection.api, data['camera_view'])
@@ -299,8 +320,11 @@ class NativeDashboardTools:
             p.sensor_manager.enable_suite(p.connection.api, p.fixed_delta, p.camera_settings)
         if 'population' in data:
             p.population.apply(data['population'])
-        view_keys={'camera_view','camera_resolution','camera_fov','camera_postprocess','camera_motion_blur','camera_bloom','simulation_hz','weather'}
+        view_keys={'camera_view','camera_resolution','camera_fov','camera_postprocess','camera_motion_blur','camera_bloom','simulation_hz','run_profile','weather'}
         view={k:v for k,v in data.items() if k in view_keys}
+        if 'run_profile' in data:
+            view.update(run_profile=p.run_profile, simulation_hz=round(1/p.fixed_delta),
+                camera_resolution=p.camera_settings['camera_resolution'])
         if 'weather_preset' in data:
             view['weather']={k:getattr(p.world.world.get_weather(),k) for k in WEATHER_RANGES}
         if view:

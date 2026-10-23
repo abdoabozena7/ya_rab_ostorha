@@ -115,7 +115,8 @@ def main():
             # Dedicated control semantics are published before OCR/annotation.
             # Geometry control never waits for either this worker or this file.
             detection_result={'status':'RUNNING','session_id':session,'frame_id':fid,'timestamp_s':stamp,
-                'detector_profile':detector.profile,'width':image.width,'height':image.height,
+                'detector_profile':detector.profile,'detector_runtime':{**detector.runtime,'process_id':os.getpid()},
+                'width':image.width,'height':image.height,
                 'detections':detections,'detector_ms':detection_ms,'published_at':time.time(),
                 'source_sensor':'frontCamera','semantic_coverage':'FRONT_CAMERA_ONLY'}
             detection_result['source_image_sha256']=hashlib.sha256(source).hexdigest()

@@ -1476,6 +1476,7 @@
         if (!status.configured || !["carla", "replay"].includes(status.provider) || !status.websocketPort)
           throw new Error(status.error || "CARLA must be running with its matching Python API");
         if (this.closed || abort.signal.aborted) return;
+        this.imageWebsocketUrl = status.imageWebsocketPath && !this.isReplay ? `${this.location.protocol === "https:" ? "wss" : "ws"}://${this.location.hostname}:${status.websocketPort}${status.imageWebsocketPath}` : null;
         const socket = new this.Socket(`${this.location.protocol === "https:" ? "wss" : "ws"}://${this.location.hostname}:${status.websocketPort}`);
         this.socket = socket;
         socket.onmessage = (event) => {
@@ -2073,11 +2074,24 @@
         this.apply();
       };
       $3("cleanImageBtn").onclick = () => {
-        $3("settingResolution").value = "800x450";
-        $3("settingPostprocess").checked = false;
+        $3("settingResolution").value = $3("settingRunProfile").value === "PERFORMANCE_60" ? "1280x720" : "800x450";
+        $3("settingPostprocess").checked = $3("settingRunProfile").value === "PERFORMANCE_60";
         $3("settingMotionBlur").value = 0;
         $3("settingBloom").value = 0;
         $3("settingsStatus").textContent = "Clear image settings ready. Select Apply changes to activate.";
+      };
+      $3("settingRunProfile").onchange = () => {
+        const split = $3("settingRunProfile").value === "PERFORMANCE_60";
+        if (split) {
+          $3("settingResolution").value = "1280x720";
+          $3("settingHz").value = "60";
+          $3("settingPostprocess").checked = true;
+          $3("settingMotionBlur").value = 0;
+          $3("settingBloom").value = 0;
+        } else if ($3("settingHz").value === "60") $3("settingHz").value = "20";
+        $3("settingResolution").disabled = split;
+        $3("settingHz").disabled = split;
+        for (const option of $3("settingHz").options) option.disabled = option.value === "60" && !split;
       };
       $3("restartGraphicsBtn").onclick = () => this.restartGraphics({ quality: $3("settingQuality").value, resolution: $3("settingWindow").value });
       $3("destinationSearch").oninput = () => {
@@ -2262,6 +2276,7 @@
         settingVehicle: s.vehicle,
         settingSpawn: s.spawn_index,
         settingResolution: s.camera_resolution,
+        settingRunProfile: s.run_profile || "LEGACY",
         settingFov: s.camera_fov,
         settingHz: s.simulation_hz,
         settingQuality: s.next_launch.quality,
@@ -2281,6 +2296,10 @@
         settingBloom: s.camera_bloom
       };
       for (const [id, value] of Object.entries(fields)) $3(id).value = value ?? 0;
+      const split = s.run_profile === "PERFORMANCE_60";
+      $3("settingResolution").disabled = split;
+      $3("settingHz").disabled = split;
+      for (const option of $3("settingHz").options) option.disabled = option.value === "60" && !split;
       $3("settingPostprocess").checked = s.camera_postprocess === true;
       for (const [key, id] of Object.entries(weatherFields)) $3(id).value = s.weather[key];
       this.updateLightingValue();
@@ -2322,6 +2341,7 @@
       const candidates = {
         vehicle: $3("settingVehicle").value,
         spawn_index: number3("settingSpawn"),
+        run_profile: $3("settingRunProfile").value,
         camera_view: $3("cameraView").value,
         camera_resolution: $3("settingResolution").value,
         camera_fov: number3("settingFov"),
@@ -2331,6 +2351,10 @@
         camera_bloom: number3("settingBloom")
       };
       for (const [key, value] of Object.entries(candidates)) if (value !== current[key]) data[key] = value;
+      if ($3("settingRunProfile").value === "PERFORMANCE_60" && current.active_launch?.render_profile !== "PERFORMANCE_60") {
+        data.next_launch = { quality: "Epic", resolution: "1280x720", render_profile: "PERFORMANCE_60" };
+        this.restartAfterSave = { preset: "PERFORMANCE_60" };
+      }
       this.clearControls();
       $3("settingsStatus").textContent = this.provider.dashboardAction("settings", data) ? "Applying live settings\u2026" : "Take control in connection settings first.";
     }
@@ -3313,6 +3337,10 @@
   };
   var modeLabel2 = (m) => m === "NORMAL" ? "Normal" : PROJECT_NAME;
   var nextLabel = (m) => m === "NORMAL" ? "See predictive driving now" : "See reactive sensor driving now";
+  function preloadWasObserved(p, local) {
+    const d = p.presentation || {};
+    return !!(local.preloadRequested && !local.pageAdmitted && Number.isFinite(local.preloadSequence) && p.failedSequence !== local.preloadSequence && p.acknowledged >= local.preloadSequence && d.id && d.page_id !== local.pageId && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status));
+  }
   function missionFailure(reason) {
     if (!reason) return "Open Menu for diagnostics.";
     if (/presentation_phase_timeout|prepar.*tim.*out/i.test(reason)) return "Preparing this step took too long. Retry the step; recorded attempts remain saved.";
@@ -4703,9 +4731,9 @@
     expand.setAttribute("aria-label", "Expand camera");
     expand.title = "Expand camera (F)";
     camera.append(expand);
-    const cameraCaption = el("div", "cockpit-camera-caption");
-    cameraCaption.innerHTML = '<span id="cockpitCameraState">Waiting for camera</span><span id="cockpitCameraRate"></span>';
-    camera.append(cameraCaption);
+    const cameraCaption2 = el("div", "cockpit-camera-caption");
+    cameraCaption2.innerHTML = '<span id="cockpitCameraState">Waiting for camera</span><span id="cockpitCameraRate"></span>';
+    camera.append(cameraCaption2);
     const canvas = el("canvas", "cockpit-detections");
     canvas.hidden = true;
     canvas.setAttribute("aria-hidden", "true");
@@ -4839,7 +4867,7 @@
         $6("connectionSetupBtn").hidden = fresh || p.isReplay;
         set("connectionSetupBtn", starting || restarting ? "View startup progress" : "Run presentation");
       }
-      set("cockpitCameraRate", !$6("authoritativeCamera").hidden && Number.isFinite(p.performance?.sensorWallRatesHz?.[displayed?.sensorId]) ? p.performance.sensorWallRatesHz[displayed.sensorId].toFixed(1) + " Hz" : "");
+      set("cockpitCameraRate", !$6("authoritativeCamera").hidden && Number.isFinite(p.cameraDisplayMetrics?.displayFps) ? p.cameraDisplayMetrics.displayFps.toFixed(1) + " displayed fps" : "");
       const counts = perceptionCounts(perception2.result, p);
       set("cockpitVehicles", metricText(counts.vehicles));
       set("cockpitPeople", metricText(counts.people));
@@ -5343,7 +5371,7 @@
         for (const item of items) {
           const run = pair.runs?.[item.mode];
           item.box.querySelector("h3").textContent = modeLabel2(item.mode);
-          item.box.querySelector(".presentation-driver").textContent = run?.setup?.comparison_scenario ? item.mode === "NORMAL" ? "Reactive sensor braking" : "Early crossing prediction and sensor braking" : recordedDriverDescription(run);
+          item.box.querySelector(".presentation-driver").textContent = !run ? "No recorded attempt" : run?.setup?.comparison_scenario ? item.mode === "NORMAL" ? "Reactive sensor braking" : "Early crossing prediction and sensor braking" : recordedDriverDescription(run);
           item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, !archived && data?.failures?.find((f) => f.mode === item.mode));
           item.box.querySelector(".presentation-speed").textContent = benchmarkSpeedText(run);
           item.box.querySelector(".presentation-stress").textContent = stressSummary(run?.stress_audit);
@@ -5363,10 +5391,10 @@
             }
           }
           const root2 = recordingVideoRoot(run?.recording);
-          if (item.root !== root2) {
+          if (item.root !== root2 || !root2 && item.status !== "UNAVAILABLE") {
             item.video.pause();
             item.root = root2;
-            item.status = "PENDING";
+            item.status = root2 ? "PENDING" : "UNAVAILABLE";
             item.video.removeAttribute("src");
             const download2 = item.box.querySelector(".video-download");
             download2.hidden = true;
@@ -5374,7 +5402,7 @@
           }
           const placeholder = item.box.querySelector(".video-preparing");
           placeholder.hidden = item.status === "READY";
-          placeholder.textContent = item.status === "ERROR" ? "Video export needs attention. The recorded outcome is saved." : item.status === "ENCODING_ANNOTATION" ? "Adding the selected forecast\u2026" : "Preparing this video\u2026";
+          placeholder.textContent = !root2 ? "No video: this drive was not recorded." : item.status === "ERROR" ? "Video export needs attention. The recorded outcome is saved." : item.status === "ENCODING_ANNOTATION" ? "Adding the selected forecast\u2026" : "Preparing this video\u2026";
         }
         if (!polling && performance.now() - lastPoll > 1500) {
           lastPoll = performance.now();
@@ -6391,6 +6419,7 @@
       p.operationError = null;
       local.preloadError = null;
       local.pageAdmitted = false;
+      local.observing = false;
       if (!p.dashboardAction("presentation", { operation: "PRELOAD", page_id: local.pageId, replace })) {
         local.preloadError = p.operationError;
         return;
@@ -6493,7 +6522,9 @@
         local.commandPending = false;
       }
       const savedResults = !local.newDrive && d.guided && ["RESULTS", "FINISHING", "COMPLETE"].includes(d.status) && d.pair_id;
-      if (!savedResults && !local.autoRequested && !p.isReplay && p.simulatorStart?.available) {
+      const activePresentation = d.id && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status);
+      if (activePresentation && p.controller === false) local.observing = true;
+      if (!savedResults && !activePresentation && !local.autoRequested && !p.isReplay && p.simulatorStart?.available) {
         local.autoRequested = true;
         if (!p.connected && !p.simulationStarting && p.simulatorStart.status !== "FAILED" && p.simulatorStop?.status !== "STOPPING") {
           local.launchPending = true;
@@ -6503,13 +6534,18 @@
           });
         }
       }
-      const activePresentation = d.id && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status);
-      if (!savedResults && !activePresentation && !["STARTING", "RUNNING"].includes(p.journey?.status) && p.connected && p.fresh && !p.isReplay && !local.shutdownPending && !local.preloadRequested && !local.preloadError) {
+      if (!savedResults && !activePresentation && !["STARTING", "RUNNING"].includes(p.journey?.status) && p.connected && p.fresh && !p.isReplay && !local.shutdownPending && !local.preloadRequested && !local.preloadError && !local.observing) {
         prepareHere();
       }
       if (d.page_id === local.pageId) {
         local.pageAdmitted = true;
         if (d.id !== local.newDriveFrom) local.newDrive = false;
+      }
+      if (preloadWasObserved(p, local)) {
+        local.preloadRequested = false;
+        local.preloadSequence = null;
+        local.preloadError = null;
+        local.observing = true;
       }
       if (local.preloadSequence && p.failedSequence === local.preloadSequence) local.preloadError = p.operationError || "The fresh scene request was rejected.";
       if (local.preloadRequested && !local.pageAdmitted && p.acknowledged < local.preloadSequence && performance.now() - local.preloadAt > 45e3) local.preloadError = "The page did not receive confirmation. Reconnect or prepare a fresh drive here.";
@@ -6583,7 +6619,8 @@
 
   // frontend/camera-performance.js
   var CameraPerformance = class {
-    constructor() {
+    constructor({ profile = "LEGACY" } = {}) {
+      this.profile = profile;
       this.reset();
     }
     reset() {
@@ -6593,30 +6630,58 @@
       this.frames = [];
       this.windows = [];
       this.maxGapMs = 0;
+      this.presented = 0;
+      this.failedWindows = 0;
+      this.completedWindows = 0;
+    }
+    setProfile(profile) {
+      if (this.profile !== profile) {
+        this.profile = profile;
+        this.reset();
+      }
     }
     present(frame, simTime, wallMs, arm) {
+      if (!Number.isSafeInteger(frame) || frame < 0 || !Number.isFinite(simTime) || !Number.isFinite(wallMs)) return false;
       if (this.arm !== arm) {
         this.reset();
         this.arm = arm;
       }
-      if (this.previous?.frame === frame) return;
+      if (this.previous && (frame <= this.previous.frame || wallMs <= this.previous.wallMs || simTime <= this.previous.simTime)) return false;
       if (this.started === null) this.started = wallMs;
-      const gap = this.previous ? wallMs - this.previous.wallMs : 0;
-      this.maxGapMs = Math.max(this.maxGapMs, gap);
-      this.previous = { frame, simTime, wallMs };
+      this.advance(wallMs);
+      const gap = this.previous ? wallMs - this.previous.wallMs : null;
+      this.maxGapMs = Math.max(this.maxGapMs, gap || 0);
+      this.previous = { frame, simTime, wallMs, gap };
       this.frames.push(this.previous);
+      this.presented++;
+      return true;
+    }
+    advance(wallMs) {
+      if (this.started === null) return;
       while (wallMs - this.started >= 1e4) {
         const end = this.started + 1e4, rows = this.frames.filter((f) => f.wallMs >= this.started && f.wallMs < end);
-        const rate = rows.length / 10, ratio = rows.length > 1 ? (rows.at(-1).simTime - rows[0].simTime) / ((rows.at(-1).wallMs - rows[0].wallMs) / 1e3) : 0;
-        const maxGap = Math.max(0, ...rows.slice(1).map((f, i) => f.wallMs - rows[i].wallMs));
+        const gaps = rows.map((f) => f.gap).filter(Number.isFinite);
+        const last = rows.at(-1);
+        if (last) gaps.push(end - last.wallMs);
+        gaps.sort((a, b) => a - b);
+        const rate = rows.length / 10;
+        const ratio = rows.length > 1 ? (last.simTime - rows[0].simTime) / ((last.wallMs - rows[0].wallMs) / 1e3) : 0;
+        const p95 = gaps.length ? gaps[Math.ceil(gaps.length * 0.95) - 1] : null;
+        const maxGap = Math.max(0, ...gaps);
+        const strict = this.profile === "PERFORMANCE_60";
+        const passed = strict ? rate >= 58 && rate <= 60 && ratio >= 0.95 && ratio <= 1.05 && p95 !== null && p95 <= 25 : rate >= 15 && maxGap <= 250 && ratio >= 0.9;
         this.windows.push({
           start_wall_ms: this.started,
           frames: rows.length,
           fps: rate,
           simulation_wall_ratio: ratio,
+          p95_frame_interval_ms: p95,
           max_frame_gap_ms: maxGap,
-          passed: rate >= 15 && maxGap <= 250 && ratio >= 0.9
+          passed
         });
+        if (this.windows.length > 180) this.windows.shift();
+        this.completedWindows++;
+        if (!passed) this.failedWindows++;
         this.started = end;
         this.frames = this.frames.filter((f) => f.wallMs >= end);
       }
@@ -6624,10 +6689,275 @@
     snapshot() {
       return {
         arm: this.arm,
+        profile: this.profile,
+        displayed_frames: this.presented,
         windows: this.windows,
+        completed_windows: this.completedWindows,
+        failed_windows: this.failedWindows,
         maximum_gap_ms: this.maxGapMs,
-        passed: this.windows.length > 0 && this.maxGapMs <= 250 && this.windows.every((w) => w.passed)
+        acceptance_scope: "DISTINCT_RAF_PRESENTATIONS_ONLY_GPU_BUDGET_MEASURED_SEPARATELY",
+        passed: this.completedWindows > 0 && this.failedWindows === 0 && (this.profile === "PERFORMANCE_60" || this.maxGapMs <= 250)
       };
+    }
+  };
+
+  // frontend/image-stream.js
+  var protocol = "ostorha-image-v1";
+  var maximumBytes = 4 * 1024 * 1024;
+  function parseImagePacket(buffer) {
+    if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 5 || buffer.byteLength > maximumBytes + 16388)
+      throw new Error("Invalid image packet size");
+    const length = new DataView(buffer).getUint32(0);
+    if (length < 2 || length > 16384 || 4 + length >= buffer.byteLength) throw new Error("Invalid image header size");
+    const header = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(new Uint8Array(buffer, 4, length)));
+    if (header.protocol !== protocol || header.content_type !== "image/jpeg" || typeof header.session_id !== "string" || !header.session_id || typeof header.camera_id !== "string" || !["frontCamera", "drivingCamera"].includes(header.camera_id) || !Number.isSafeInteger(header.frame_id) || header.frame_id < 0 || !Number.isFinite(header.simulation_timestamp_s) || header.simulation_timestamp_s < 0 || ![header.width, header.height].every((v) => Number.isInteger(v) && v > 0 && v <= 4096) || header.payload_bytes !== buffer.byteLength - 4 - length || header.payload_bytes > maximumBytes)
+      throw new Error("Invalid image identity, dimensions or payload");
+    if (header.capture_unix_s !== null && !Number.isFinite(header.capture_unix_s))
+      throw new Error("Invalid image capture clock");
+    return { header, payload: new Uint8Array(buffer, 4 + length) };
+  }
+  var CameraImageStream = class {
+    constructor({
+      Socket = globalThis.WebSocket,
+      decode = (blob) => globalThis.createImageBitmap(blob),
+      raf = (callback) => globalThis.requestAnimationFrame(callback),
+      cancel = (token) => globalThis.cancelAnimationFrame(token),
+      now = () => performance.now(),
+      wallNow = () => performance.timeOrigin + performance.now(),
+      visible = () => !globalThis.document?.hidden,
+      draw,
+      onPresent = () => {
+      },
+      onUnavailable = () => {
+      },
+      meter = new CameraPerformance()
+    } = {}) {
+      Object.assign(this, { Socket, decode, raf, cancel, now, wallNow, visible, draw, onPresent, onUnavailable, meter });
+      this.enabled = false;
+      this.generation = 0;
+      this.socket = null;
+      this.decoding = null;
+      this.pending = null;
+      this.ready = null;
+      this.lastFrame = -1;
+      this.lastSimTime = null;
+      this.offsetMs = null;
+      this.clockUncertaintyMs = null;
+      this.drops = { late: 0, superseded: 0, session: 0, outOfOrder: 0 };
+      this.retryAt = 0;
+      this.decodeMs = null;
+      this.imageLatencyMs = null;
+      this.lastPresentedAt = null;
+      this.reportedAt = -Infinity;
+    }
+    configure({ enabled, sessionId, url, cameraId = "drivingCamera", profile = "LEGACY", arm } = {}) {
+      if (!enabled || !sessionId || !url) {
+        if (this.enabled) this.stop();
+        return;
+      }
+      const key = [sessionId, url, cameraId].join(":");
+      this.arm = (arm || key) + ":" + cameraId;
+      this.meter.setProfile(profile);
+      if (this.enabled && key === this.key) return;
+      this.stop();
+      this.enabled = true;
+      this.key = key;
+      this.sessionId = sessionId;
+      this.url = url;
+      this.cameraId = cameraId;
+      this.meter.reset();
+      this.onUnavailable("Waiting for this session camera");
+      this.lastFrame = -1;
+      this.lastSimTime = null;
+      this.offsetMs = this.clockUncertaintyMs = null;
+      this.retryAt = 0;
+      this.connect();
+      this.rafToken = this.raf((time) => this.render(time));
+    }
+    connect() {
+      if (!this.enabled || this.socket || this.now() < this.retryAt) return;
+      const generation = this.generation, socket = new this.Socket(this.url);
+      this.socket = socket;
+      socket.binaryType = "arraybuffer";
+      socket.onopen = () => {
+        if (this.socket !== socket || generation !== this.generation) return;
+        this.clockSentAt = this.wallNow();
+        socket.send(JSON.stringify({
+          type: "subscribe",
+          session_id: this.sessionId,
+          camera_id: this.cameraId,
+          client_unix_ms: this.clockSentAt
+        }));
+      };
+      socket.onmessage = (event) => {
+        if (this.socket !== socket || generation !== this.generation) return;
+        try {
+          if (typeof event.data === "string") {
+            const message = JSON.parse(event.data);
+            if (message.type === "image_stream") {
+              if (message.session_id !== this.sessionId || message.camera_id !== this.cameraId || message.protocol !== protocol || message.client_unix_ms !== this.clockSentAt || !Number.isFinite(message.server_unix_ms))
+                throw new Error("Image clock/session handshake mismatch");
+              const received = this.wallNow();
+              this.offsetMs = message.server_unix_ms - (this.clockSentAt + received) / 2;
+              this.clockUncertaintyMs = Math.max(0, (received - this.clockSentAt) / 2);
+            } else if (message.status === "ERROR" || message.status === "SESSION_CHANGED") {
+              throw new Error(message.error || "Image session changed");
+            }
+            return;
+          }
+          if (this.offsetMs === null) throw new Error("Image arrived before its clock handshake");
+          const image = parseImagePacket(event.data), h = image.header;
+          socket.send(JSON.stringify({ type: "ack", session_id: h.session_id, frame_id: h.frame_id, metrics: this.metrics() }));
+          if (h.session_id !== this.sessionId || h.camera_id !== this.cameraId) {
+            this.drops.session++;
+            return;
+          }
+          if (h.frame_id <= this.lastFrame || h.frame_id <= (this.pending?.header.frame_id ?? -1) || h.frame_id <= (this.ready?.header.frame_id ?? -1) || h.frame_id <= (this.decoding?.header.frame_id ?? -1) || this.lastSimTime !== null && h.simulation_timestamp_s <= this.lastSimTime) {
+            this.drops.outOfOrder++;
+            return;
+          }
+          if (this.expired(h)) {
+            this.drops.late++;
+            return;
+          }
+          if (this.pending) this.drops.superseded++;
+          this.pending = image;
+          this.startDecode();
+        } catch (error) {
+          this.fail(error.message);
+        }
+      };
+      socket.onerror = () => this.fail("Image WebSocket connection error");
+      socket.onclose = () => {
+        if (this.socket !== socket) return;
+        this.socket = null;
+        this.generation++;
+        this.decoding = null;
+        this.retryAt = this.now() + 500;
+        this.clearPending();
+        this.onUnavailable("Image stream disconnected; controls are separate");
+      };
+    }
+    expired(header) {
+      if (header.capture_unix_s === null) return false;
+      return this.wallNow() + this.offsetMs - header.capture_unix_s * 1e3 > 250;
+    }
+    startDecode() {
+      if (this.decoding || !this.pending || !this.enabled) return;
+      const job = this.pending, generation = this.generation;
+      this.pending = null;
+      this.decoding = job;
+      const began = this.now();
+      Promise.resolve().then(() => this.decode(new Blob([job.payload], { type: "image/jpeg" }))).then((bitmap) => {
+        if (!this.enabled || generation !== this.generation) {
+          bitmap.close();
+          return;
+        }
+        if (bitmap.width !== job.header.width || bitmap.height !== job.header.height) {
+          bitmap.close();
+          throw new Error("Decoded JPEG dimensions differ from native metadata");
+        }
+        if (this.expired(job.header)) {
+          this.drops.late++;
+          bitmap.close();
+          return;
+        }
+        if (this.ready) {
+          this.drops.superseded++;
+          this.ready.bitmap.close();
+        }
+        this.decodeMs = this.now() - began;
+        this.ready = { header: job.header, bitmap };
+      }).catch((error) => {
+        if (this.enabled && generation === this.generation) this.fail("Image decode failed: " + error.message);
+      }).finally(() => {
+        if (this.decoding === job) {
+          this.decoding = null;
+          this.startDecode();
+        }
+      });
+    }
+    render(wallMs) {
+      if (!this.enabled) return;
+      this.connect();
+      this.meter.advance(wallMs);
+      const image = this.ready;
+      this.ready = null;
+      if (image) {
+        if (image.header.frame_id <= this.lastFrame) {
+          this.drops.outOfOrder++;
+          image.bitmap.close();
+        } else if (!this.visible() || this.expired(image.header)) {
+          this.drops.late++;
+          image.bitmap.close();
+        } else {
+          try {
+            this.draw(image.bitmap, image.header);
+            const h = image.header;
+            this.meter.present(h.frame_id, h.simulation_timestamp_s, wallMs, this.arm);
+            this.lastFrame = h.frame_id;
+            this.lastSimTime = h.simulation_timestamp_s;
+            this.lastPresentedAt = this.wallNow();
+            this.imageLatencyMs = h.capture_unix_s === null ? null : Math.max(0, this.lastPresentedAt + this.offsetMs - h.capture_unix_s * 1e3);
+            this.onPresent(h, this.meter.snapshot(), this.metrics());
+          } catch (error) {
+            this.fail("Image presentation failed: " + error.message);
+          } finally {
+            image.bitmap.close();
+          }
+        }
+      }
+      if (this.lastPresentedAt !== null && this.wallNow() - this.lastPresentedAt > 250) {
+        this.lastPresentedAt = null;
+        this.onUnavailable("Image expired; waiting for a fresh camera frame");
+      }
+      this.rafToken = this.raf((time) => this.render(time));
+    }
+    metrics() {
+      const s = this.meter.snapshot(), w = s.windows.at(-1);
+      const values = {
+        displayedFrames: s.displayed_frames,
+        displayFps: w?.fps,
+        p95IntervalMs: w?.p95_frame_interval_ms,
+        imageLatencyMs: this.imageLatencyMs,
+        decodeMs: this.decodeMs,
+        clockUncertaintyMs: this.clockUncertaintyMs,
+        droppedLate: this.drops.late,
+        droppedSuperseded: this.drops.superseded,
+        droppedSession: this.drops.session,
+        droppedOutOfOrder: this.drops.outOfOrder,
+        completedWindows: s.completed_windows,
+        failedWindows: s.failed_windows,
+        renderedAtUnixMs: this.lastPresentedAt
+      };
+      return Object.fromEntries(Object.entries(values).filter(([, v]) => Number.isFinite(v) && v >= 0));
+    }
+    fail(message) {
+      this.onUnavailable(message);
+      this.retryAt = this.now() + 1e3;
+      this.generation++;
+      this.decoding = null;
+      const socket = this.socket;
+      this.socket = null;
+      socket?.close();
+      this.clearPending();
+    }
+    clearPending() {
+      this.pending = null;
+      this.ready?.bitmap.close();
+      this.ready = null;
+    }
+    stop() {
+      this.enabled = false;
+      this.generation++;
+      this.cancel(this.rafToken);
+      this.rafToken = null;
+      const socket = this.socket;
+      this.socket = null;
+      socket?.close();
+      this.clearPending();
+      this.decoding = null;
+      this.lastPresentedAt = null;
     }
   };
 
@@ -6636,6 +6966,40 @@
   var provider = new SimulationClient();
   var controls = new DrivingControls();
   var cameraPerformance = new CameraPerformance();
+  var lastCameraMetricsAt = -Infinity;
+  var imageStream = new CameraImageStream({
+    meter: cameraPerformance,
+    visible: () => !document.hidden && !!$10("cameraCard").getClientRects().length,
+    draw: (bitmap) => drawCamera(bitmap),
+    onUnavailable: (message) => clearCameraVisual(message),
+    onPresent: (header, measurement, metrics) => {
+      displayedCamera = {
+        source: "carla",
+        sensorId: header.camera_id,
+        sessionId: header.session_id,
+        frame: header.frame_id,
+        timestamp: header.simulation_timestamp_s,
+        width: header.width,
+        height: header.height,
+        fovDeg: header.fov_deg,
+        mountTransform: header.mount_transform,
+        worldTransform: header.world_transform
+      };
+      cameraCaption(displayedCamera);
+      const canvas = $10("authoritativeCamera");
+      canvas.dataset.frame = String(header.frame_id);
+      canvas.dataset.sessionId = header.session_id;
+      canvas.dataset.cameraId = header.camera_id;
+      canvas.dataset.timestamp = String(header.simulation_timestamp_s);
+      canvas.dataset.captureClock = header.capture_clock || "UNAVAILABLE";
+      canvas.dataset.imageSha256 = header.image_sha256 || "";
+      provider.cameraDisplayMetrics = metrics;
+      if (performance.now() - lastCameraMetricsAt >= 250) {
+        lastCameraMetricsAt = performance.now();
+        canvas.dataset.performance = JSON.stringify(measurement);
+      }
+    }
+  });
   presentationUI(provider);
   var perception = new PerceptionView(provider);
   var predictionView = new PredictionView(provider);
@@ -6711,17 +7075,35 @@
     if (provider.updateControls(command)) manualOverridePending = false;
   }
   function clearCamera() {
-    displayedCamera = null;
+    imageStream.stop();
     cameraGeneration++;
     cameraRequest?.abort();
     cameraRequest = null;
     if (cameraUrl) URL.revokeObjectURL(cameraUrl);
     cameraUrl = cameraReceipt = null;
+    clearCameraVisual();
+  }
+  function clearCameraVisual(message = "Image unavailable") {
+    displayedCamera = null;
     $10("authoritativeCamera").hidden = true;
-    $10("authoritativeCamera").removeAttribute("src");
     $10("cameraUnavailable").hidden = false;
-    $10("cameraActivity").textContent = "Image unavailable";
+    $10("cameraActivity").textContent = message;
     $10("cameraTimestamp").textContent = "t \u2014";
+  }
+  function drawCamera(image) {
+    const canvas = $10("authoritativeCamera"), width = image.width || image.naturalWidth, height = image.height || image.naturalHeight;
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+    canvas.getContext("2d", { alpha: false, desynchronized: true }).drawImage(image, 0, 0);
+    canvas.hidden = false;
+    $10("cameraUnavailable").hidden = true;
+  }
+  function cameraCaption(metadata) {
+    $10("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 Recorded image" : "RGB \xB7 Live image";
+    $10("cameraTimestamp").textContent = "t " + number2(metadata.timestamp, " s", 3);
+    $10("cameraMetadata").textContent = "Frame " + metadata.frame + " \xB7 " + metadata.width + "\xD7" + metadata.height + " \xB7 FOV " + metadata.fovDeg + "\xB0 \xB7 mount " + JSON.stringify(metadata.mountTransform ?? null);
   }
   async function updateCamera(metadata) {
     if (document.hidden) return;
@@ -6755,20 +7137,26 @@
       const previousUrl = cameraUrl;
       cameraUrl = nextUrl;
       cameraReceipt = key;
-      displayedCamera = { ...metadata };
-      $10("authoritativeCamera").src = cameraUrl;
-      $10("authoritativeCamera").hidden = false;
-      if (provider.journey?.status === "RUNNING") requestAnimationFrame(() => {
-        cameraPerformance.present(metadata.frame, metadata.timestamp, performance.now(), provider.journey.pair_id + ":" + provider.journey.driving_mode);
-        $10("authoritativeCamera").dataset.performance = JSON.stringify(cameraPerformance.snapshot());
-      });
+      await new Promise((resolve) => requestAnimationFrame(() => {
+        if (provider.fresh && generation === cameraGeneration) {
+          displayedCamera = { ...metadata };
+          drawCamera(decoded);
+          cameraCaption(displayedCamera);
+          cameraPerformance.present(
+            metadata.frame,
+            metadata.timestamp,
+            performance.now(),
+            provider.journey?.pair_id + ":" + provider.journey?.driving_mode
+          );
+          $10("authoritativeCamera").dataset.frame = String(metadata.frame);
+          $10("authoritativeCamera").dataset.timestamp = String(metadata.timestamp);
+          $10("authoritativeCamera").dataset.performance = JSON.stringify(cameraPerformance.snapshot());
+        }
+        resolve();
+      }));
       if (previousUrl) URL.revokeObjectURL(previousUrl);
-      $10("cameraUnavailable").hidden = true;
-      $10("cameraActivity").textContent = provider.isReplay ? "REPLAY \xB7 Recorded image" : "RGB \xB7 Live image";
-      $10("cameraTimestamp").textContent = "t " + number2(Number(response.headers.get("X-Sensor-Time")), " s", 3);
-      $10("cameraMetadata").textContent = "Frame " + response.headers.get("X-Sensor-Frame") + " \xB7 " + metadata.width + "\xD7" + metadata.height + " \xB7 FOV " + metadata.fovDeg + "\xB0 \xB7 mount " + JSON.stringify(metadata.mountTransform ?? null);
     } catch (error) {
-      if (error.name !== "AbortError" && !provider.fresh) clearCamera();
+      if (error.name !== "AbortError") clearCameraVisual("Camera request failed: " + error.message);
     } finally {
       if (cameraRequest === request) cameraRequest = null;
     }
@@ -6861,9 +7249,12 @@
     const sensorCount = Object.keys(provider.sensorMetadata).length;
     $10("sensorStatus").textContent = provider.isReplay ? sensorCount + " sensors from recorded frame \xB7 recorded collision events" : live ? sensorCount + " periodic sensors receiving data \xB7 Collision sensor is event-driven" : "Sensors unavailable";
     const displayedSensor = provider.displayCamera ? "drivingCamera" : "frontCamera";
-    $10("cameraFps").textContent = number2(provider.performance?.sensorWallRatesHz?.[displayedSensor]) + " /wall seconds \xB7 " + number2(provider.sensorRates[displayedSensor]) + " Hz sim";
+    $10("cameraFps").textContent = number2(provider.cameraDisplayMetrics?.displayFps) + " displayed fps \xB7 " + number2(provider.performance?.sensorWallRatesHz?.[displayedSensor]) + " captured /s";
     const perf = provider.performance || {}, gpu = perf.gpu;
-    $10("performance").textContent = "actual steps: " + number2(perf.nativeTickRateHz) + " /s \xB7 Simulation time: " + (provider.world.fixedDeltaSeconds ? number2(1 / provider.world.fixedDeltaSeconds) + " Hz" : "\u2014") + (gpu ? " \xB7 VRAM " + gpu.usedMiB + " / " + gpu.totalMiB + " MiB" : "") + " \xB7 FPS Rendering unavailable";
+    const display = provider.cameraDisplayMetrics || {}, nvml = gpu?.processMemory?.processes || [];
+    const processMeasured = nvml.some((p) => Number.isFinite(p.usedMiB));
+    const memory = processMeasured ? nvml : gpu?.wddmProcessMemory?.processes || [];
+    $10("performance").textContent = "Display " + number2(display.displayFps) + " fps \xB7 p95 " + number2(display.p95IntervalMs, " ms") + " \xB7 image age " + number2(display.imageLatencyMs, " ms") + " \xB7 simulation " + number2(perf.simulationRealTimeFactor, "\xD7", 2) + " \xB7 physics " + number2(perf.nativeTickRateHz) + " /s \xB7 decisions " + number2(perf.decisionRateHz) + " /s" + (gpu ? " \xB7 total GPU " + gpu.usedMiB + " / " + gpu.totalMiB + " MiB (budget 4608)" : " \xB7 total GPU unmeasured") + " \xB7 process GPU " + (memory.some((p) => Number.isFinite(p.usedMiB)) ? memory.filter((p) => Number.isFinite(p.usedMiB)).map((p) => p.pid + ": " + number2(p.usedMiB, " MiB", 0)).join(", ") + (processMeasured ? "" : " allocated across adapters") : "unavailable") + " \xB7 dropped images " + ((display.droppedLate || 0) + (display.droppedSuperseded || 0)) + " \xB7 engine renderer FPS unmeasured";
     $10("debugTelemetry").textContent = telemetryText(state, {
       remote: true,
       latencyMs: provider.latencyMs,
@@ -6875,7 +7266,23 @@
     $10("replayPauseBtn").hidden = !provider.isReplay;
     $10("replayPauseBtn").textContent = provider.replay?.paused ? "Resume replay" : "Pause replay";
     if (controllable && provider.controlMode === "MANUAL") sendManual(state);
-    if (!document.hidden && $10("cameraCard").getClientRects().length) updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
+    const streaming = live && !provider.isReplay && !!provider.imageWebsocketUrl && !document.hidden && !!$10("cameraCard").getClientRects().length;
+    imageStream.configure({
+      enabled: streaming,
+      sessionId: provider.sessionId,
+      url: provider.imageWebsocketUrl,
+      cameraId: provider.displayCamera ? "drivingCamera" : "frontCamera",
+      profile: perf.runtimeRates?.profile || "LEGACY",
+      arm: provider.journey?.status === "RUNNING" ? provider.journey.pair_id + ":" + provider.journey.driving_mode : provider.sessionId + ":held"
+    });
+    if (streaming) {
+      if (cameraRequest) {
+        cameraGeneration++;
+        cameraRequest.abort();
+        cameraRequest = null;
+      }
+    } else if (!provider.imageWebsocketUrl && !document.hidden && $10("cameraCard").getClientRects().length)
+      updateCamera(provider.displayCamera || provider.sensorMetadata.frontCamera);
     else if (cameraRequest || displayedCamera) clearCamera();
     tools.render(state, controllable);
     trafficPreparation.update(state);

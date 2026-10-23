@@ -35,6 +35,17 @@ class SimulationService:
         self.thread = None
         self.clock = SimulationClock(now)
         self.synchronizer = SensorSynchronizer(required_sensors, optional_sensors, timeout_s=sensor_timeout_s, now=now)
+        if getattr(provider, 'run_profile', None) == 'PERFORMANCE_60':
+            self.synchronizer.sensor_frame_strides = {name: 3 for name in self.synchronizer.required | self.synchronizer.optional}
+        self.physics_anchors = OrderedDict()
+        self.sensor_anchors = OrderedDict()
+        self.initial_physics_frame = None
+        self.last_decision_frame = None
+        self.last_decision_timestamp = None
+        self.recent_clock_samples = deque(maxlen=1201)
+        self.recent_decisions = deque(maxlen=201)
+        self.physics_guard = None
+        self.display_metrics = {}
         self.arbiter = CommandArbiter(ControlSafetyLayer(command_timeout_s=self.CONTROL_TTL, now=now))
         self.arbiter.machine.allow_navigation = getattr(provider, 'allow_navigation', False)
         self.session_id = uuid.uuid4().hex
@@ -485,6 +496,28 @@ class SimulationService:
         required=getattr(self.provider,'required_sensors',None)
         return required if isinstance(required,(tuple,list,set,frozenset)) else self.synchronizer.required
 
+    @property
+    def split_rates(self):
+        return getattr(self.provider, 'run_profile', None) == 'PERFORMANCE_60'
+
+    def _reset_sensor_timing(self, required=None):
+        required = self._required_after_sensor_rebuild() if required is None else required
+        old = self.synchronizer
+        strides = {name: 3 for name in set(required) | old.optional} if self.split_rates else None
+        self.synchronizer = SensorSynchronizer(required, old.optional,
+            timeout_s=old.timeout_s, sensor_frame_strides=strides, now=self.now)
+        self.physics_anchors.clear()
+        self.sensor_anchors.clear()
+        self.initial_physics_frame = None
+        self.last_decision_frame = self.last_decision_timestamp = None
+
+    def _cache_physics_anchor(self, observation):
+        if self.initial_physics_frame is None:
+            self.initial_physics_frame = observation.frame_id
+        self.physics_anchors[observation.frame_id] = observation
+        while len(self.physics_anchors) > 32:
+            self.physics_anchors.popitem(last=False)
+
     def _audit_command(self, command):
         """Capture every applied brake source, including arbiter/freshness stops."""
         safety = self._safety_snapshot()
@@ -618,16 +651,18 @@ class SimulationService:
         """Final freshness observation immediately before the native RPC."""
         now=self.now();scene=self.control_scene;frame,stamp=self._context()
         if self.clock.frame_id is not None:frame,stamp=self.clock.frame_id,self.clock.timestamp_s
-        fresh=bool(scene and scene.session_id==self.session_id and scene.observation.frame_id==frame and scene.usable(stamp,now))
+        guard_stamp = stamp+getattr(self.provider, 'fixed_delta', .05) if self.split_rates else stamp
+        aligned = bool(scene and (scene.observation.frame_id <= frame if self.split_rates else scene.observation.frame_id == frame))
+        fresh=bool(scene and scene.session_id==self.session_id and aligned and scene.usable(guard_stamp,now))
         injected=now<getattr(self,'validation_timeout_until',0.)
         if injected:fresh=False
         self.application_timing={'decision_id':getattr(self,'maneuver_status',{}).get('decision_id'),
             'session_id':self.session_id,'frame_id':frame,'source_frame':scene.observation.frame_id if scene else None,
             'submitted_wall_s':now,'sensor_received_wall_s':scene.received_wall_s if scene else None,
             'wall_age_s':now-scene.received_wall_s if scene else None,
-            'simulation_age_s':stamp-scene.observation.timestamp_s if scene else None,'fresh_aligned':fresh,
+            'simulation_age_s':guard_stamp-scene.observation.timestamp_s if scene else None,'fresh_aligned':fresh,
             'injected_timeout':injected}
-        guarded=(self.arbiter.machine.mode==ControlMode.AUTOMATIC and not self._normal_driving()
+        guarded=(self.arbiter.machine.mode==ControlMode.AUTOMATIC and (self.split_rates or not self._normal_driving())
             and getattr(self.provider,'sensor_suite',False) is True)
         if guarded and not fresh:
             chosen=replace(chosen,source=CommandSource.SAFETY,throttle=0.,brake=1.)
@@ -742,7 +777,9 @@ class SimulationService:
             if not isinstance(initial, SimulationFrame):
                 raise RuntimeError('Provider did not supply a canonical connection snapshot')
             self.clock.observe(initial.world)
+            self._cache_physics_anchor(initial)
             self.synchronizer.begin(initial)
+            self.sensor_anchors[initial.frame_id] = True
             self._ingest_provider_sensors()
             for frame in self.synchronizer.drain():
                 self._publish(frame)
@@ -796,6 +833,13 @@ class SimulationService:
         drain = getattr(self.provider, 'drain_sensor_frames', None)
         if drain:
             for sensor in drain():
+                if self.split_rates and sensor.frame_id not in self.sensor_anchors:
+                    anchor = self.physics_anchors.get(sensor.frame_id)
+                    if anchor is not None:
+                        self.synchronizer.begin(anchor)
+                        self.sensor_anchors[sensor.frame_id] = True
+                        while len(self.sensor_anchors) > 64:
+                            self.sensor_anchors.popitem(last=False)
                 self.ingest_sensor(sensor)
 
     def _record(self, frame):
@@ -813,13 +857,7 @@ class SimulationService:
                 self._stop_navigation('recording_failure',status='ERROR')
         self._record_validation_oracle(frame)
         if hasattr(self.recorder, 'submit'):
-            manager=getattr(self.provider,'sensor_manager',None)
-            if manager and hasattr(self.recorder,'record_video'):
-                with manager.lock:
-                    cameras=[v for k,v in manager.driving_frames.items() if self.last_video_frame<k<=frame.frame_id]
-                for camera in cameras:
-                    if self.recorder.record_video(camera,self.provider.get_sensor_asset(camera.asset)):
-                        self.last_video_frame=camera.frame_id
+            self._record_display_frames(frame.frame_id)
             assets = [(sensor.asset, self.provider.get_sensor_asset(sensor.asset))
                       for sensor in frame.sensors if sensor.asset]
             self.recorder.submit(frame, assets)
@@ -835,6 +873,19 @@ class SimulationService:
         self.recorder.record(frame)
         if self.comparison:
             self.comparison.record(frame)
+
+    def _record_display_frames(self, through_frame):
+        manager = getattr(self.provider, 'sensor_manager', None)
+        if not manager or not self.recorder or not hasattr(self.recorder, 'record_video'):
+            return
+        pending = self.journey_recording_stop_pending
+        if pending and pending.get('end_capture_frame') is not None:
+            through_frame = min(through_frame, pending['end_capture_frame'])
+        with manager.lock:
+            cameras = [v for k,v in manager.driving_frames.items() if self.last_video_frame<k<=through_frame]
+        for camera in cameras:
+            if self.recorder.record_video(camera, self.provider.get_sensor_asset(camera.asset)):
+                self.last_video_frame = camera.frame_id
 
     def _record_validation_oracle(self,frame):
         if not getattr(self,'native_validation_budget',None) or not hasattr(self.recorder,'record_trace'):return
@@ -892,6 +943,8 @@ class SimulationService:
 
     def _choose(self):
         frame_id, timestamp_s = self._context()
+        if self.split_rates and self.clock.frame_id is not None:
+            frame_id, timestamp_s = self.clock.frame_id, self.clock.timestamp_s+self.provider.fixed_delta
         chosen = self.arbiter.choose(frame_id=frame_id, timestamp_s=timestamp_s, connected=self._check_observation_health())
         if self.arbiter.reason == 'command_timeout' and self.journey.get('status') == 'RUNNING':
             self.runtime_fault={'stage':'command_arbitration','exception_type':'CommandLeaseTimeout',
@@ -953,6 +1006,12 @@ class SimulationService:
             # its audit row has been queued, including the original exception.
             self.journey_recording_stop_pending = {
                 'mode': self.journey.get('driving_mode') or 'UNPAIRED', 'applied': False}
+            if self.split_rates:
+                terminal = self.clock.frame_id
+                if reason == 'collision' and self.collision_events:
+                    terminal = max(terminal or 0, self.collision_events[-1].frame_id)
+                self.journey_recording_stop_pending.update(end_capture_frame=terminal,
+                    camera_deadline=self.now()+1.)
         fixture=getattr(self.provider,'benchmark_fixture',None)
         presentation_fixture=bool(fixture and self.journey.get('presentation_id'))
         if presentation_fixture and self.journey.get('status') in ('STARTING','RUNNING'):
@@ -985,6 +1044,16 @@ class SimulationService:
         pending = self.journey_recording_stop_pending
         if not pending or not pending['applied']:
             return
+        if self.split_rates and pending.get('end_capture_frame') is not None:
+            self._record_display_frames(self.clock.frame_id)
+            if self.last_video_frame < pending['end_capture_frame']:
+                if self.now() < pending['camera_deadline']:
+                    return
+                error = 'Terminal driving-camera frame missing before recording deadline'
+                self._event(EventType.ControlChanged, recording_fault=error,
+                    expected_frame=pending['end_capture_frame'], last_video_frame=self.last_video_frame)
+                if self.recorder and hasattr(self.recorder, 'fail'):
+                    self.recorder.fail(RuntimeError(error))
         self.journey_recording_stop_pending = None
         run = self.journey_comparison.data['runs'].get(pending['mode'])
         if run:
@@ -1363,6 +1432,9 @@ class SimulationService:
             if self.comparison_v2: self.comparison_v2.request_stop('emergency_stop')
             self._stop_navigation('emergency_stop')
             self.arbiter.emergency_stop(connected=True)
+            if self.split_rates:
+                frame, stamp = self._context()
+                self.provider.apply_control(safe_command(frame, stamp))
             self._event(EventType.EmergencyStop, reason='explicit_operator_request')
 
     def acknowledge_stop(self):
@@ -1494,7 +1566,9 @@ class SimulationService:
 
     def can_start_simulation(self):
         return (getattr(getattr(self.provider,'connection',None),'host',None) in ('127.0.0.1','localhost','::1')
-                and callable(getattr(self.provider,'startup_handler',None)))
+                and callable(getattr(self.provider,'startup_handler',None))
+                and not self.reconfiguring and not self.restarting
+                and (self.closed or getattr(self.provider,'world',None) is None))
 
     def can_reset_simulation(self):
         return (getattr(getattr(self.provider,'connection',None),'host',None) in ('127.0.0.1','localhost','::1')
@@ -1580,10 +1654,15 @@ class SimulationService:
             self.restart_configuration = self.provider.restart_configuration()
             self.restart_configuration['restart_operation'] = operation
             self.restart_configuration['previous_camera']=dict(self.provider.camera_settings)
+            self.restart_configuration['previous_run_profile']=getattr(self.provider,'run_profile','LEGACY')
+            self.restart_configuration['previous_fixed_delta']=self.provider.fixed_delta
             if isinstance(value,dict) and 'preset' in value:
                 from ..graphics import camera
                 self.restart_configuration['camera'].update(camera(value['preset']))
                 self.restart_configuration['graphics_preset']=value['preset']
+                if value['preset']=='PERFORMANCE_60':
+                    self.restart_configuration.update(run_profile='PERFORMANCE_60',fixed_delta=1/60)
+                    self.restart_configuration['camera']['_run_profile']='PERFORMANCE_60'
             threading.Thread(target=self._restart_native, args=(launch, previous),
                              name='native-graphics-restart', daemon=True).start()
 
@@ -1710,7 +1789,8 @@ class SimulationService:
                     'restartResult': copy.deepcopy(self.restart_result),
                     'restarting': self.restarting, 'recording': bool(self.recorder),
                     'recordingStatus':self.last_recording.status() if self.last_recording else None,
-                    'performance': {'nativeTickRateHz': 0 if self.recent_ticks and self.now()-self.recent_ticks[-1]>.5 else
+                    'performance': {**self._performance_details(),
+                        'nativeTickRateHz': 0 if self.recent_ticks and self.now()-self.recent_ticks[-1]>.5 else
                         (len(self.recent_ticks)-1)/(self.recent_ticks[-1]-self.recent_ticks[0])
                         if len(self.recent_ticks)>1 and self.recent_ticks[-1]>self.recent_ticks[0] else None,
                         'renderFps': None, 'clock': 'WALL_TIME',
@@ -1773,6 +1853,52 @@ class SimulationService:
         result['simulatorReset']={'available':self.can_reset_simulation()}
         return result
 
+    def _performance_details(self):
+        from .performance import rates, GPU_BUDGET_MIB
+        now = self.now()
+        samples = [row for row in self.recent_clock_samples if now-row[0] <= 10]
+        ratio = ((samples[-1][1]-samples[0][1])/(samples[-1][0]-samples[0][0])
+            if len(samples)>1 and samples[-1][0]>samples[0][0] else None)
+        if samples and now-samples[-1][0] > .5:
+            ratio = 0.
+        manager = getattr(self.provider, 'sensor_manager', None)
+        runtime = getattr(self.provider, 'runtime', None)
+        gpu = getattr(runtime, 'gpu', None)
+        fresh_gpu = isinstance(gpu,dict) and time.time()-gpu.get('observedAtUnix',0) <= 6
+        encoders = getattr(manager, 'rgb_encoders', {})
+        perception_cache = getattr(self,'control_perception',None)
+        perception = perception_cache.latest(self.session_id) if perception_cache else None
+        detector_pid = (perception.get('detector_runtime') or {}).get('process_id') if perception else None
+        if runtime is not None and type(detector_pid) is int and detector_pid > 0:
+            identities = getattr(runtime,'process_ids',{})
+            if identities.get('perception') != detector_pid:
+                runtime.process_ids = {**identities,'perception':detector_pid}
+        return {'runtimeRates':rates('PERFORMANCE_60' if self.split_rates else 'LEGACY',
+                getattr(self.provider,'fixed_delta',.05)),
+            'physics':{'frame':self.clock.frame_id, 'timestamp_s':self.clock.timestamp_s},
+            'simulationRealTimeFactor':ratio,
+            'simulationWindowWallS':samples[-1][0]-samples[0][0] if len(samples)>1 else 0.,
+            'decisionRateHz':(len(self.recent_decisions)-1)/(self.recent_decisions[-1]-self.recent_decisions[0])
+                if len(self.recent_decisions)>1 and self.recent_decisions[-1]>self.recent_decisions[0]
+                and now-self.recent_decisions[-1] <= .5 else 0.,
+            'decisionTimingMs':dict(getattr(self,'last_decision_timing_ms',{})),
+            'perception':{k:perception.get(k) for k in ('frame_id','timestamp_s','detector_ms','detector_runtime')}
+                if perception else None,
+            'physicsCommandGuard':self.physics_guard,
+            'display':{k:dict(v) for k,v in self.display_metrics.items()
+                if v.get('sessionId') == self.session_id and time.time()-v.get('observedAtUnix',0) <= 2},
+            'imageEncoding':{k:v.snapshot() for k,v in encoders.items()},
+            'sensorTimingWarmup':dict(getattr(manager,'warmup',{})),
+            'imageTransport':self.image_transport.snapshot() if hasattr(self,'image_transport') else None,
+            'assetCacheBytes':getattr(manager,'asset_bytes_used',0),
+            'resources':getattr(runtime,'resources',None),
+            'gpuMonitorError':getattr(runtime,'gpu_error',None),
+            'gpuBudget':{'limitMiB':GPU_BUDGET_MIB, 'scope':'TOTAL_DEVICE_ALL_PROCESSES',
+                'status':'WITHIN_BUDGET' if fresh_gpu and gpu['usedMiB']<=GPU_BUDGET_MIB else
+                    'EXCEEDED' if fresh_gpu else 'UNMEASURED'},
+            'renderSettings':getattr(runtime,'active',None),
+            'rendererFpsStatus':'UNMEASURED_NOT_INFERRED_FROM_SENSOR_OR_BROWSER_RATE'}
+
     def _population_snapshot(self,compact):
         observer=getattr(self.provider,'operator_population_state',None) if compact else None
         return observer() if observer else getattr(self.provider,'population_state',lambda:None)()
@@ -1824,6 +1950,17 @@ class SimulationService:
                 frame, metadata = self.camera_cache.get(frame_id, (None, None))
                 return frame, copy.deepcopy(metadata)
             return self.frame, copy.deepcopy(self.frame_metadata)
+
+    def get_stream_image(self, camera_id):
+        with self.lock:
+            if not self._live():
+                return None, None
+            provider = self.provider
+            if camera_id == 'frontCamera':
+                return self.frame, self.frame_metadata
+        if camera_id != 'drivingCamera':
+            raise ValueError('Unknown display camera')
+        return provider.driving_camera()
 
     def get_sensor_asset(self, name, frame_id=None):
         with self.lock:
@@ -1927,7 +2064,17 @@ class SimulationService:
                 if sensor.sensor_id == 'frontCamera' and sensor.asset and hasattr(self.provider, 'get_sensor_asset'):
                     self.frame = self.provider.get_sensor_asset(sensor.asset)
                     self.frame_metadata = {'frame': sensor.frame_id, 'timestamp': sensor.timestamp_s,
-                                           'contentType': sensor.asset.media_type}
+                        'sensorId':sensor.sensor_id, 'contentType': sensor.asset.media_type,
+                        'sha256':sensor.asset.sha256,
+                        'width':sensor.metadata.get('width'), 'height':sensor.metadata.get('height'),
+                        'fovDeg':sensor.metadata.get('fov_deg'), 'worldTransform':to_dict(sensor.transform),
+                        'mountTransform':to_dict(sensor.metadata.get('mount_transform')),
+                        'receivedMonotonic':sensor.metadata.get('received_monotonic_s'),
+                        'captureMonotonic':sensor.metadata.get('capture_monotonic_s'),
+                        'captureUnix':sensor.metadata.get('capture_unix_s'),
+                        'captureClock':sensor.metadata.get('capture_clock'),
+                        'encodedMonotonic':sensor.metadata.get('encoded_monotonic_s'),
+                        'jpegEncodeMs':sensor.metadata.get('jpeg_encode_ms')}
                     self.camera_cache[sensor.frame_id] = (self.frame, self.frame_metadata)
                     while len(self.camera_cache)>32:
                         self.camera_cache.popitem(last=False)
@@ -2045,7 +2192,7 @@ class SimulationService:
                             self.arbiter.safety.clear()
                             # Keep ego held until two new synchronized, actually
                             # fresh frames arrive after controller construction.
-                            self.navigation_ready_frame=self.observation.frame_id+2
+                            self.navigation_ready_frame=self.observation.frame_id+2*(3 if self.split_rates else 1)
                             if self.presentation.data.get('automatic_pair') and journey.get('presentation_id'):
                                 # Record a real, held 1.5 s camera prelude in
                                 # both arms. Traffic can diverge on its first
@@ -2069,8 +2216,7 @@ class SimulationService:
                     self.provider.select_presentation_vehicle(value['mode'])
                     self.provider.benchmark_fixture.restore()
                     self.provider.benchmark_prepared=True
-                    self.synchronizer=SensorSynchronizer(self._required_after_sensor_rebuild(),self.synchronizer.optional,
-                        timeout_s=self.synchronizer.timeout_s,now=self.now)
+                    self._reset_sensor_timing()
                     self.camera_cache.clear();self.sensor_frame_cache.clear();self.render_pose_cache.clear()
                     self.policy_history.clear();self.motion_snapshot=None
                     self.dashboard_result={'action':action,'status':'APPLIED'}
@@ -2098,8 +2244,7 @@ class SimulationService:
                     self.runtime_fault=None;self.safety_fault=None;self.error=None;self.application_stale_since=None
                     self._clear_safety_command()
                     if self.active_safety: self.active_safety.reset()
-                    self.synchronizer = SensorSynchronizer(self._required_after_sensor_rebuild(), self.synchronizer.optional,
-                        timeout_s=self.synchronizer.timeout_s, now=self.now)
+                    self._reset_sensor_timing()
                     self.camera_cache.clear(); self.sensor_frame_cache.clear(); self.render_pose_cache.clear()
                     self.prepared_journey_pair = value['pair_id']
                     self.journey = {'status':'READY', 'reason':None, 'speed_kmh':manifest['speed_kmh'],
@@ -2118,7 +2263,7 @@ class SimulationService:
                 try:
                     sensor_change = action == 'settings' and isinstance(value, dict) and any(k in value for k in (
                         'camera_resolution', 'camera_fov', 'camera_postprocess', 'camera_motion_blur',
-                        'camera_bloom', 'simulation_hz', 'vehicle', 'spawn_index'))
+                        'camera_bloom', 'simulation_hz', 'run_profile', 'vehicle', 'spawn_index'))
                     sensor_change = sensor_change or action=='scenario' and isinstance(value,dict) and value.get('operation') in ('load','reset')
                     if sensor_change:
                         self.policy_history.clear()
@@ -2138,8 +2283,7 @@ class SimulationService:
                     if action=='scenario' and value.get('operation')=='stop' and result.get('outcome'):
                         self._event(EventType.ControlChanged,scenario_outcome=result['outcome'])
                     if sensor_change:
-                        self.synchronizer = SensorSynchronizer(self._required_after_sensor_rebuild(), self.synchronizer.optional,
-                                                               timeout_s=self.synchronizer.timeout_s, now=self.now)
+                        self._reset_sensor_timing()
                         self.camera_cache.clear(); self.sensor_frame_cache.clear()
                         self.policy_history.clear()
                 except ValueError as error:
@@ -2176,8 +2320,7 @@ class SimulationService:
                     self._record(pending)
                 old_actor_id = self.observation.vehicle.actor_id if self.observation else None
                 self.provider.reset_vehicle()
-                self.synchronizer = SensorSynchronizer(self._required_after_sensor_rebuild(), self.synchronizer.optional,
-                                                       timeout_s=self.synchronizer.timeout_s, now=self.now)
+                self._reset_sensor_timing()
                 self.camera_cache.clear(); self.sensor_frame_cache.clear()
                 self._event(EventType.VehicleDestroyed, actor_id=old_actor_id)
             else:
@@ -2185,6 +2328,11 @@ class SimulationService:
                 self.paused = value
         self.pending_control_traces=[]
         control_requested = self.now()
+        decision_due = (not self.split_rates or self.observation is not None and
+            self.observation.frame_id != self.last_decision_frame and
+            (self.last_decision_timestamp is None or
+             self.observation.timestamp_s-self.last_decision_timestamp >= self.provider.decision_delta-1e-6))
+        normal_observer = False
         with self.lock:
             control_acquired = self.now()
             self.control_timing_ms = {
@@ -2195,7 +2343,13 @@ class SimulationService:
                 self.control_timing_ms.update(
                     sensor_to_scene=(self.control_scene.published_wall_s-self.control_scene.received_wall_s)*1000,
                     scene_to_control=(control_acquired-self.control_scene.published_wall_s)*1000)
-            if training_command is None:
+            if self.split_rates and self.journey.get('status') in ('STARTING', 'RUNNING') and not self._navigation_connection_alive():
+                self._stop_navigation('dashboard_heartbeat_timeout')
+            if training_command is None and decision_due:
+                if self.observation:
+                    self.last_decision_frame = self.observation.frame_id
+                    self.last_decision_timestamp = self.observation.timestamp_s
+                    self.recent_decisions.append(self.now())
                 if self.navigation_ready_frame is not None:
                     if self.journey['status']!='STARTING':self.navigation_ready_frame=None
                     elif not self._navigation_connection_alive():
@@ -2236,19 +2390,24 @@ class SimulationService:
                     self.journey_comparison.sample(self.observation, self.provider.route_state(), self.journey_observer)
                 self.control_timing_ms['safety'] = (self.now()-safety_started)*1000
                 chosen = self._choose()
-            else:
+            elif training_command is not None:
                 if self.active_safety:
                     self._clear_safety_command(); self.active_safety.reset()
                     self.active_safety.status.update(status='SUSPENDED_RL', reason='Exclusive RL interface owns commands')
                     self.provider.active_safety_status = self.active_safety.snapshot()
                 chosen = training_command
+            else:
+                chosen = self._choose()
         if chosen.source != CommandSource.NAVIGATION or chosen.brake > .01:
             self.rear_assist = False
         apply_started=self.now()
-        if training_command is None:chosen=self._application_guard(chosen)
-        if (training_command is not None and self.rl_runtime and self.rl_runtime.supervisor) or chosen == self.safety_command:
-            self.provider.apply_control_confirmed(chosen)
-        else:self.provider.apply_control(chosen)
+        with self.lock:
+            if self.split_rates and self.arbiter.safety.emergency:
+                chosen = safe_command(*self._context())
+            if training_command is None:chosen=self._application_guard(chosen)
+            if (training_command is not None and self.rl_runtime and self.rl_runtime.supervisor) or chosen == self.safety_command:
+                self.provider.apply_control_confirmed(chosen)
+            else:self.provider.apply_control(chosen)
         self.control_timing_ms['actuator_submit']=(self.now()-apply_started)*1000
         if hasattr(self,'application_timing'):self.application_timing['rpc_completed_wall_s']=self.now()
         # Normal's sensor analysis has no control authority. Run it after the
@@ -2260,7 +2419,20 @@ class SimulationService:
             self.control_timing_ms['observer_after_application']=(self.now()-observer_started)*1000
         traces=self.pending_control_traces;self.pending_control_traces=None
         for recorder,row in traces:recorder.record_trace(row)
-        self._audit_command(chosen)
+        if decision_due or not self.split_rates or self.arbiter.reason != getattr(self, 'last_audited_reason', None):
+            if decision_due:
+                self.last_decision_timing_ms = dict(self.control_timing_ms)
+            self._audit_command(chosen)
+            self.last_audited_reason = self.arbiter.reason
+        if self.split_rates:
+            frame, stamp = self.clock.frame_id, self.clock.timestamp_s
+            self.physics_guard = {'session_id':self.session_id, 'frame_id':frame,
+                'timestamp_s':stamp, 'command_frame':chosen.frame_id, 'command_timestamp_s':chosen.timestamp_s,
+                'source':chosen.source.value, 'throttle':chosen.throttle, 'brake':chosen.brake,
+                'emergency':self.arbiter.safety.emergency, 'reason':self.arbiter.reason,
+                'application':dict(getattr(self,'application_timing',{}))}
+            if self.recorder and hasattr(self.recorder, 'record_trace'):
+                self.recorder.record_trace({'kind':'PHYSICS_COMMAND_GUARD', **self.physics_guard})
         if getattr(self,'presentation_traffic_hold_pending',False):
             self.presentation_traffic_hold_pending=False
             fixture=getattr(self.provider,'benchmark_fixture',None)
@@ -2271,6 +2443,9 @@ class SimulationService:
                     if not self.presentation.data.get('guided'):
                         self.presentation.fail('The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.')
         native_step_started = self.now()
+        if self.split_rates and self.stop_event.is_set():
+            self.provider.apply_control(safe_command(*self._context()))
+            return
         self.provider.step()
         # Native weather/population setters become observable on the following
         # simulation step. Publish APPLIED only with that step's real state.
@@ -2288,6 +2463,8 @@ class SimulationService:
         if not isinstance(observation, SimulationFrame):
             raise RuntimeError('Expected canonical observations from one native frame')
         diagnostic = self.clock.observe(observation.world)
+        if self.split_rates:
+            self._record_display_frames(observation.frame_id)
         if FrameIssue.MISSING in diagnostic.issues:
             log(LogCategory.SIMULATION, 'Missing native frame range', frame_id=observation.frame_id,
                 timestamp_s=observation.timestamp_s, missing_range=diagnostic.missing_range)
@@ -2301,12 +2478,16 @@ class SimulationService:
             while len(self.frame_tick_started)>32:self.frame_tick_started.popitem(last=False)
             self.recent_ticks.append(self.now())
             observation = replace(observation, control=chosen)
-            self.synchronizer.begin(observation)
+            self.recent_clock_samples.append((self.now(), observation.timestamp_s, observation.frame_id))
+            self._cache_physics_anchor(observation)
+            if not self.split_rates or not self.synchronizer.required and (observation.frame_id-self.initial_physics_frame)%3 == 0:
+                self.synchronizer.begin(observation)
+                self.sensor_anchors[observation.frame_id] = True
             self._ingest_provider_sensors()
             for synchronized in self.synchronizer.drain():
                 self._publish(synchronized)
                 self._record(synchronized)
-            if (self.comparison and self.comparison.busy or
+            if not self.split_rates and (self.comparison and self.comparison.busy or
                     self.active_safety and self.active_safety.enabled):
                 # Protected driving has one physics tick owner. Wait for that
                 # tick's existing GPU sensors before advancing physics again;
@@ -2350,6 +2531,7 @@ class SimulationService:
             self.release_controls();self.arbiter.disconnect();self.lifecycle.fail(error)
 
     def _run(self):
+        deadline = self.now()
         try:
             while not self.stop_event.is_set():
                 started = self.now()
@@ -2366,7 +2548,12 @@ class SimulationService:
                 except Exception as error:
                     self._iteration_failed(error)
                     break
-                self.stop_event.wait(max(0, getattr(self.provider, 'fixed_delta', .05)-(self.now()-started)))
+                period = getattr(self.provider, 'fixed_delta', .05)
+                if self.split_rates:
+                    deadline = max(deadline+period, self.now()-period)
+                    self.stop_event.wait(max(0, deadline-self.now()))
+                else:
+                    self.stop_event.wait(max(0, period-(self.now()-started)))
         finally:
             if self.rl_runtime and self.rl_runtime.active:
                 self.rl_runtime.close(reason='service_shutdown')

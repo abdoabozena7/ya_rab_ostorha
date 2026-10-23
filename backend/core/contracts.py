@@ -19,6 +19,11 @@ def _contract_hints(cls):
     # annotations per actor/sensor instance wastes the control freshness lease.
     return get_type_hints(cls)
 
+
+@lru_cache(maxsize=None)
+def _annotation_shape(annotation):
+    return get_origin(annotation), get_args(annotation)
+
 SCHEMA_VERSION = 1
 Vec3 = tuple[float, float, float]
 
@@ -36,7 +41,7 @@ def finite(value, name='value'):
 
 
 def _check(value, annotation, name):
-    origin, args = get_origin(annotation), get_args(annotation)
+    origin, args = _annotation_shape(annotation)
     if annotation is Any:
         freeze_json(value)
     elif origin in (Union, UnionType):
@@ -166,7 +171,7 @@ def to_dict(value):
 
 
 def _decode(annotation, value):
-    origin, args = get_origin(annotation), get_args(annotation)
+    origin, args = _annotation_shape(annotation)
     if origin in (Union, UnionType):
         for candidate in args:
             try:

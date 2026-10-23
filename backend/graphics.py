@@ -1,4 +1,4 @@
-"""Four camera/render presets backed by CARLA's two native quality levels."""
+"""Camera/render presets backed by CARLA's two native quality levels."""
 import configparser
 import io
 from pathlib import Path
@@ -7,7 +7,8 @@ PRESETS={
     'LOW':{'quality':'Low','resolution':'1280x720','rgb':'640x360','postprocess':False,'bloom':0.},
     'BALANCED':{'quality':'Low','resolution':'1600x900','rgb':'800x450','postprocess':False,'bloom':0.},
     'HIGH':{'quality':'Epic','resolution':'1280x720','rgb':'800x450','postprocess':True,'bloom':.15},
-    'ULTRA':{'quality':'Epic','resolution':'1920x1080','rgb':'1280x720','postprocess':True,'bloom':.5}}
+    'ULTRA':{'quality':'Epic','resolution':'1920x1080','rgb':'1280x720','postprocess':True,'bloom':.5},
+    'PERFORMANCE_60':{'quality':'Epic','resolution':'1280x720','rgb':'1280x720','postprocess':True,'bloom':0.}}
 
 def camera(preset):
     p=PRESETS[preset]
@@ -20,11 +21,10 @@ def launch(preset):
     return {'quality':p['quality'],'resolution':p['resolution'],'render_profile':preset}
 
 
-def write_render_config(source, destination, profile):
-    """Keep the package defaults, overriding only rendering budgets for this launch."""
+def render_settings(profile):
     if profile not in PRESETS:
         raise ValueError('Unknown render profile')
-    high = profile in ('HIGH','ULTRA')
+    high = profile in ('HIGH','ULTRA','PERFORMANCE_60')
     pool = 1400 if profile == 'ULTRA' else 1200 if high else 1000
     values = {'r.TextureStreaming':1, 'r.Streaming.PoolSize':pool,
               'r.Streaming.LimitPoolSizeToVRAM':1, 'r.Streaming.MaxTempMemoryAllowed':64,
@@ -47,6 +47,19 @@ def write_render_config(source, destination, profile):
               'r.ShadowQuality':3 if high else 1, 'r.BloomQuality':3 if high else 0,
               'r.SSS.Quality':0, 'r.SSS.Scale':0,
               'r.VSync':0, 't.MaxFPS':0}
+    if profile == 'PERFORMANCE_60':
+        values.update({'r.Streaming.PoolSize':768, 'r.Streaming.MipBias':0,
+            'r.Streaming.MaxEffectiveScreenSize':720, 'r.Streaming.FullyLoadUsedTextures':0,
+            'r.RenderTargetPoolMin':64, 'r.ShadowQuality':1, 'r.Shadow.MaxResolution':512,
+            'r.Shadow.MaxCSMResolution':512, 'r.Shadow.CSM.MaxCascades':1, 'r.Shadow.DistanceScale':.35,
+            'r.PostProcessAAQuality':4, 'r.DefaultFeature.AntiAliasing':2, 'r.ScreenPercentage':100,
+            'r.BloomQuality':0, 'r.SSR.Quality':0, 'r.RefractionQuality':0})
+    return values
+
+
+def write_render_config(source, destination, profile):
+    """Keep package defaults; the texture pool is not a total GPU-memory limit."""
+    values = render_settings(profile)
     config = configparser.ConfigParser(interpolation=None)
     config.optionxform = str
     config['/Script/Engine.RendererSettings'] = {k:str(v) for k,v in values.items()}

@@ -67,6 +67,7 @@ def backend_command(ticket, *, stopped=False, path=None):
     if path:args+=['--startup-ticket',str(path)]
     if ticket.get('fresh_start'):args+=['--fresh-start']
     if config.get('map'):args+=['--map',config['map']]
+    if config.get('run_profile'):args+=['--run-profile',config['run_profile']]
     return args
 
 

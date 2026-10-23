@@ -1,6 +1,7 @@
 """Native CARLA 0.9.16 decoders. No sensor generation or substitute rendering."""
 import io
 import math
+import time
 from ..core.contracts import SensorFrame, SensorKind, Transform, RotationRad
 from ..carla.contracts import CARLA_WORLD
 
@@ -28,16 +29,17 @@ def decode_sensor(manager, sensor_id, kind, native, mount, attributes):
                         source_encoding='CARLA BGRA8')
     if kind == SensorKind.RGB:
         from PIL import Image
-        bgra = np.frombuffer(native.raw_data, np.uint8).reshape(native.height, native.width, 4)
-        rgb = bgra[:, :, [2, 1, 0]]
-        encoded = io.BytesIO(); Image.fromarray(rgb).save(encoded, format='JPEG', quality=95)
+        began = time.perf_counter()
+        image = Image.frombytes('RGB', (native.width, native.height), native.raw_data, 'raw', 'BGRX')
+        encoded = io.BytesIO(); image.save(encoded, format='JPEG', quality=95)
         metadata['jpeg_quality'] = 95
+        metadata['jpeg_encode_ms'] = (time.perf_counter()-began)*1000
         # Latest diagnostic PNG is bounded; recordings continue to store one JPEG.
         with manager.lock:
             if not hasattr(manager, 'diagnostic_rgb'):
                 manager.diagnostic_rgb = {}
             if sensor_id == 'frontCamera':
-                manager.diagnostic_rgb[native.frame] = (native.frame, native.timestamp, native.width, native.height, rgb.tobytes())
+                manager.diagnostic_rgb[native.frame] = (native.frame, native.timestamp, native.width, native.height, image.tobytes())
             while len(manager.diagnostic_rgb)>8:
                 del manager.diagnostic_rgb[min(manager.diagnostic_rgb)]
         asset = manager.cache_asset('rgb', f'{sensor_id}-{manager.actors[sensor_id].id}-{native.frame}.jpg', encoded.getvalue(), 'image/jpeg')
@@ -56,10 +58,18 @@ def decode_sensor(manager, sensor_id, kind, native, mount, attributes):
     elif kind == SensorKind.RADAR:
         data = {'detections': [{'depth_m': d.depth, 'azimuth_rad': d.azimuth, 'altitude_rad': d.altitude,
                                'velocity_mps': d.velocity} for d in native]}
+        if getattr(manager,'sparse_timing',None):
+            with manager.lock:
+                data['detections'],correction=manager.sparse_timing.radar(sensor_id,native,data['detections'])
+            metadata.update(correction)
         units = {'depth_m': 'm', 'azimuth_rad': 'rad', 'altitude_rad': 'rad', 'velocity_mps': 'm/s'}
     elif kind == SensorKind.IMU:
         data = {'accelerometer_mps2': [native.accelerometer.x, native.accelerometer.y, native.accelerometer.z],
                 'gyroscope_radps': [native.gyroscope.x, native.gyroscope.y, native.gyroscope.z], 'compass_rad': native.compass}
+        if getattr(manager,'sparse_timing',None):
+            with manager.lock:
+                data['accelerometer_mps2'],correction=manager.sparse_timing.imu(sensor_id,native)
+            metadata.update(correction)
         units = {'accelerometer_mps2': 'm/s^2', 'gyroscope_radps': 'rad/s', 'compass_rad': 'rad'}
     elif kind == SensorKind.GNSS:
         data = {'latitude_deg': native.latitude, 'longitude_deg': native.longitude, 'altitude_m': native.altitude}

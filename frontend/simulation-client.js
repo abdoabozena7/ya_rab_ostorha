@@ -102,6 +102,8 @@ export class SimulationClient extends SimulationProvider {
       if (!status.configured || !['carla', 'replay'].includes(status.provider) || !status.websocketPort)
         throw new Error(status.error || 'CARLA must be running with its matching Python API');
       if (this.closed || abort.signal.aborted) return;
+      this.imageWebsocketUrl=status.imageWebsocketPath&&!this.isReplay?
+        `${this.location.protocol==='https:'?'wss':'ws'}://${this.location.hostname}:${status.websocketPort}${status.imageWebsocketPath}`:null;
       const socket = new this.Socket(`${this.location.protocol === 'https:' ? 'wss' : 'ws'}://${this.location.hostname}:${status.websocketPort}`);
       this.socket = socket;
       socket.onmessage = event => {

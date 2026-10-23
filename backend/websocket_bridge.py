@@ -9,6 +9,9 @@ class WebSocketBridge:
     def __init__(self, service, host, port, http_port):
         from websockets.sync.server import serve
         self.service = service
+        from .image_stream import ImageStreamBridge
+        self.images = ImageStreamBridge(service)
+        service.image_transport = self.images
         self.controller_lock = threading.Lock()
         self.ownership_lock = threading.RLock()
         self.snapshot_lock = threading.Lock()
@@ -199,6 +202,10 @@ class WebSocketBridge:
             return True
 
     def handle(self, socket):
+        from urllib.parse import urlsplit
+        path = getattr(getattr(socket, 'request', None), 'path', '/')
+        if isinstance(path, str) and urlsplit(path).path == '/images':
+            return self.images.handle(socket)
         from websockets.exceptions import ConnectionClosed
         with self.ownership_lock:
             self.sockets.add(socket)
@@ -263,6 +270,7 @@ class WebSocketBridge:
                     self.controller_lock.release()
 
     def close(self):
+        self.images.close()
         for socket in list(self.sockets):
             socket.close()
         self.server.shutdown()

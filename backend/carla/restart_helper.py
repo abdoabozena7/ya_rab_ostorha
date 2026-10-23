@@ -75,6 +75,8 @@ def main():
             config=ticket['configuration']
             if attempt:
                 config['camera']=config.get('previous_camera',config['camera'])
+                if 'previous_run_profile' in config:config['run_profile']=config['previous_run_profile']
+                if 'previous_fixed_delta' in config:config['fixed_delta']=config['previous_fixed_delta']
                 write_ticket(path,ticket)
             command=[sys.executable,'-X','faulthandler','-m','backend.server','--carla','--sensors','--start-paused',
                      '--host',ticket['host'],'--port',str(ticket['port']),
@@ -82,6 +84,7 @@ def main():
                      '--carla-host',ticket['carla_host'],'--carla-port',str(ticket['carla_port']),
                      '--vehicle',config['vehicle'],'--spawn-index',str(config['spawn_index']),
                      '--fixed-delta',str(config['fixed_delta']),'--map',config['map'],'--restart-ticket',str(path)]
+            if config.get('run_profile'):command+=['--run-profile',config['run_profile']]
             with path.with_suffix('.backend.log').open('a',encoding='utf-8') as log:
                 backend=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW)
             url=f"http://{ticket['host']}:{ticket['port']}/api/simulation/state"

@@ -1,9 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {missionState,stressSummary,missionFailure} from '../frontend/mission-state.js';
+import {missionState,stressSummary,missionFailure,preloadWasObserved} from '../frontend/mission-state.js';
 const ready={connected:true,fresh:true,controller:true,simulatorStop:{available:true}};
 const guided=(status,arm=0,first='NORMAL')=>({...ready,presentation:{guided:true,id:'current',status,arm,modes:[first,first==='NORMAL'?'ROBOSPHERE':'NORMAL']}});
 
+test('an acknowledged observational preload does not leave another active session behind a loader',()=>{
+  const local={pageId:'observer',preloadRequested:true,pageAdmitted:false,preloadSequence:12};
+  const p={...guided('DRIVING'),controller:false,acknowledged:12};
+  assert.equal(preloadWasObserved(p,local),true);
+  assert.equal(preloadWasObserved({...p,acknowledged:11},local),false);
+  assert.equal(preloadWasObserved({...p,presentation:{...p.presentation,page_id:'observer'}},local),false);
+  assert.equal(preloadWasObserved(p,{...local,pageAdmitted:true}),false);
+  assert.equal(preloadWasObserved({...p,presentation:{...p.presentation,status:'CANCELLED'}},local),false);
+  const resolved={...local,preloadRequested:false,observing:true};
+  assert.equal(missionState(p,resolved).camera,true);
+});
 test('automatic crossing runs expose no shortening action in either order',()=>{
   for(const first of ['NORMAL','ROBOSPHERE'])for(const arm of [0,1]){
     const p=guided('DRIVING',arm,first);p.presentation.automatic_pair=true;

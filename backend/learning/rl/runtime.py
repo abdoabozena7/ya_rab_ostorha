@@ -64,6 +64,8 @@ class RLRuntime:
                 reward_weights=None, collision_impulse_threshold=0., supervisor=False, policy_id=None):
         s=self.service;p=s.provider
         if self.active:raise RuntimeError('An exclusive RL session already exists')
+        if getattr(p,'run_profile',None)=='PERFORMANCE_60':
+            raise RuntimeError('Exclusive RL episodes require LEGACY timing; PERFORMANCE_60 is for dashboard driving')
         if p.name!='carla' or not getattr(p,'sensor_suite',False):raise RuntimeError('RL requires REAL CARLA with the native sensor suite')
         if s.recorder or s.restarting or s.reconfiguring or s.actions:raise RuntimeError('Finish recording or pending reconfiguration before acquiring RL')
         if s.arbiter.safety.emergency:raise RuntimeError('Acknowledge the emergency stop before acquiring RL')

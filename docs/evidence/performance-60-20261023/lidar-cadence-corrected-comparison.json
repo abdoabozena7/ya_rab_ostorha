@@ -1,0 +1,28 @@
+{
+  "source": "NATIVE_CORRECTED_COMPARISON_RIG",
+  "frame": 10877,
+  "point_count": 3453,
+  "bins_30_degrees": [
+    267,
+    279,
+    280,
+    314,
+    282,
+    273,
+    284,
+    310,
+    295,
+    301,
+    295,
+    273
+  ],
+  "attributes": {
+    "sensor_tick": 0.05,
+    "range": 100,
+    "channels": 32,
+    "points_per_second": 384000,
+    "rotation_frequency": 60.0,
+    "upper_fov": 10,
+    "lower_fov": -75
+  }
+}

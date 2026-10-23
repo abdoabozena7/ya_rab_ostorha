@@ -1,0 +1,1329 @@
+{
+  "source": "LIVE_NATIVE_CARLA_0916_WALL_CLOCK",
+  "scope": "HELD_DENSE_POST_COMPARISON_WORLD_NOT_MOVING_DRIVE_OR_BROWSER_ENDURANCE_ACCEPTANCE",
+  "requested_measurement_wall_s": 1800,
+  "warmup_wall_s": 60,
+  "actual_total_wall_s": 1860.0779999999795,
+  "first_sample_wall_s": 60.0,
+  "last_sample_wall_s": 1860.0,
+  "first_native_frame": 14322,
+  "last_native_frame": 51595,
+  "population_ranges": {
+    "vehicles": [
+      60,
+      60
+    ],
+    "pedestrians": [
+      100,
+      100
+    ],
+    "controllers": [
+      91,
+      91
+    ],
+    "walkers_active": [
+      100,
+      100
+    ]
+  },
+  "total_device_memory_mib": {
+    "n": 15712,
+    "min": 5830,
+    "median": 5830.0,
+    "p95": 5835,
+    "max": 5860
+  },
+  "simulation_real_time_factor": {
+    "n": 15712,
+    "min": 0.2564001762009944,
+    "median": 0.35007571509653335,
+    "p95": 0.3584150265980132,
+    "max": 0.3652835757239546
+  },
+  "system_cpu_percent": {
+    "n": 15712,
+    "min": 66.49305555555556,
+    "median": 72.89186507936508,
+    "p95": 83.75,
+    "max": 94.98697916666666
+  },
+  "maximum_asset_cache_bytes": 67108823,
+  "asset_cache_limit_bytes": 67108864,
+  "maximum_encoder_pending": {
+    "frontCamera": 1,
+    "drivingCamera": 1
+  },
+  "encoder_failures": {
+    "frontCamera": 0,
+    "drivingCamera": 0
+  },
+  "sensor_error_names": [],
+  "observation_outages": [],
+  "errors": [],
+  "bounded_native_resource_soak_completed": true,
+  "gpu_budget_4608_passed": false,
+  "moving_drive_30m_acceptance": "OPEN_NOT_ESTABLISHED",
+  "browser_30m_acceptance": "OPEN_NOT_ESTABLISHED",
+  "clock_windows_10s": [
+    {
+      "round": 0,
+      "start_wall_s": 60.0,
+      "measured_wall_s": 9.937000000034459,
+      "simulation_wall_ratio": 0.3371238980280264,
+      "physics_hz": 20.227432826738752
+    },
+    {
+      "round": 0,
+      "start_wall_s": 70.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.33367039151706274,
+      "physics_hz": 20.020222446887797
+    },
+    {
+      "round": 0,
+      "start_wall_s": 80.0,
+      "measured_wall_s": 9.920999999972992,
+      "simulation_wall_ratio": 0.30574876439292936,
+      "physics_hz": 18.34492490681337
+    },
+    {
+      "round": 0,
+      "start_wall_s": 90.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.33763355923293664,
+      "physics_hz": 20.258012497438514
+    },
+    {
+      "round": 0,
+      "start_wall_s": 100.0,
+      "measured_wall_s": 9.906000000075437,
+      "simulation_wall_ratio": 0.30957670367276835,
+      "physics_hz": 18.574601251625154
+    },
+    {
+      "round": 0,
+      "start_wall_s": 110.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3364624515169093,
+      "physics_hz": 20.187746038141555
+    },
+    {
+      "round": 0,
+      "start_wall_s": 120.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.32521148867119365,
+      "physics_hz": 19.51268830260562
+    },
+    {
+      "round": 0,
+      "start_wall_s": 130.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3533212378915509,
+      "physics_hz": 21.1992731678648
+    },
+    {
+      "round": 0,
+      "start_wall_s": 140.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.3454318921118896,
+      "physics_hz": 20.72591244577281
+    },
+    {
+      "round": 0,
+      "start_wall_s": 150.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3510548706296124,
+      "physics_hz": 21.063291139240505
+    },
+    {
+      "round": 0,
+      "start_wall_s": 160.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.34209641150486736,
+      "physics_hz": 20.525783619789006
+    },
+    {
+      "round": 0,
+      "start_wall_s": 170.0,
+      "measured_wall_s": 9.937000000034459,
+      "simulation_wall_ratio": 0.345510064645639,
+      "physics_hz": 20.73060279755315
+    },
+    {
+      "round": 0,
+      "start_wall_s": 180.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.35216038677905237,
+      "physics_hz": 21.129622104747476
+    },
+    {
+      "round": 0,
+      "start_wall_s": 190.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3139240670053265,
+      "physics_hz": 18.835443037974684
+    },
+    {
+      "round": 0,
+      "start_wall_s": 200.0,
+      "measured_wall_s": 9.936999999918044,
+      "simulation_wall_ratio": 0.31867433147301205,
+      "physics_hz": 19.120458891171083
+    },
+    {
+      "round": 0,
+      "start_wall_s": 210.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.3420019140835028,
+      "physics_hz": 20.520113774802837
+    },
+    {
+      "round": 0,
+      "start_wall_s": 220.0,
+      "measured_wall_s": 9.968999999924563,
+      "simulation_wall_ratio": 0.3444009943245663,
+      "physics_hz": 20.66405858175934
+    },
+    {
+      "round": 0,
+      "start_wall_s": 230.0,
+      "measured_wall_s": 10.0,
+      "simulation_wall_ratio": 0.34333335123956205,
+      "physics_hz": 20.6
+    },
+    {
+      "round": 0,
+      "start_wall_s": 240.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3477121729413825,
+      "physics_hz": 20.86272928840683
+    },
+    {
+      "round": 0,
+      "start_wall_s": 250.0,
+      "measured_wall_s": 9.936999999918044,
+      "simulation_wall_ratio": 0.3371238980319759,
+      "physics_hz": 20.227432826975726
+    },
+    {
+      "round": 0,
+      "start_wall_s": 260.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3122363032042226,
+      "physics_hz": 18.734177215189874
+    },
+    {
+      "round": 0,
+      "start_wall_s": 270.0,
+      "measured_wall_s": 9.937999999965541,
+      "simulation_wall_ratio": 0.3437982335350741,
+      "physics_hz": 20.62789293627599
+    },
+    {
+      "round": 0,
+      "start_wall_s": 280.0,
+      "measured_wall_s": 9.937000000034459,
+      "simulation_wall_ratio": 0.3471872979691615,
+      "physics_hz": 20.83123679171603
+    },
+    {
+      "round": 0,
+      "start_wall_s": 290.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3482737916359573,
+      "physics_hz": 20.896426408323872
+    },
+    {
+      "round": 0,
+      "start_wall_s": 300.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3482737916359573,
+      "physics_hz": 20.896426408323872
+    },
+    {
+      "round": 0,
+      "start_wall_s": 310.0,
+      "measured_wall_s": 9.906000000075437,
+      "simulation_wall_ratio": 0.34995627371704247,
+      "physics_hz": 20.99737532792409
+    },
+    {
+      "round": 0,
+      "start_wall_s": 320.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3459915792263007,
+      "physics_hz": 20.759493670886076
+    },
+    {
+      "round": 0,
+      "start_wall_s": 330.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3544303982318202,
+      "physics_hz": 21.265822784810126
+    },
+    {
+      "round": 0,
+      "start_wall_s": 340.0,
+      "measured_wall_s": 9.813000000081956,
+      "simulation_wall_ratio": 0.3464791783649671,
+      "physics_hz": 20.788749617680242
+    },
+    {
+      "round": 0,
+      "start_wall_s": 350.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.27466048006622096,
+      "physics_hz": 16.479627944493686
+    },
+    {
+      "round": 0,
+      "start_wall_s": 360.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3493671068285085,
+      "physics_hz": 20.962025316455698
+    },
+    {
+      "round": 0,
+      "start_wall_s": 370.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3375527602207812,
+      "physics_hz": 20.253164556962027
+    },
+    {
+      "round": 0,
+      "start_wall_s": 380.0,
+      "measured_wall_s": 9.937999999965541,
+      "simulation_wall_ratio": 0.34882942719656296,
+      "physics_hz": 20.929764540221495
+    },
+    {
+      "round": 0,
+      "start_wall_s": 390.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.3448276041915452,
+      "physics_hz": 20.689655172443107
+    },
+    {
+      "round": 0,
+      "start_wall_s": 400.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.35780592583402804,
+      "physics_hz": 21.468354430379748
+    },
+    {
+      "round": 0,
+      "start_wall_s": 410.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.34603240398997487,
+      "physics_hz": 20.761943156578774
+    },
+    {
+      "round": 0,
+      "start_wall_s": 420.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.30502192355852703,
+      "physics_hz": 18.301314459023693
+    },
+    {
+      "round": 0,
+      "start_wall_s": 430.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3230365603579894,
+      "physics_hz": 19.382192610619246
+    },
+    {
+      "round": 0,
+      "start_wall_s": 440.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.2944343649096257,
+      "physics_hz": 17.666060973220667
+    },
+    {
+      "round": 0,
+      "start_wall_s": 450.0,
+      "measured_wall_s": 9.828000000095926,
+      "simulation_wall_ratio": 0.34595036398968587,
+      "physics_hz": 20.757020756818157
+    },
+    {
+      "round": 0,
+      "start_wall_s": 460.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.3016210179868316,
+      "physics_hz": 18.09726013536423
+    },
+    {
+      "round": 0,
+      "start_wall_s": 470.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3482386373200011,
+      "physics_hz": 20.89431714947651
+    },
+    {
+      "round": 0,
+      "start_wall_s": 480.0,
+      "measured_wall_s": 9.968999999924563,
+      "simulation_wall_ratio": 0.35108839227261607,
+      "physics_hz": 21.06530243771583
+    },
+    {
+      "round": 0,
+      "start_wall_s": 490.0,
+      "measured_wall_s": 9.906000000075437,
+      "simulation_wall_ratio": 0.35332123788739866,
+      "physics_hz": 21.199273167615665
+    },
+    {
+      "round": 0,
+      "start_wall_s": 500.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.3471169257278621,
+      "physics_hz": 20.827014457458276
+    },
+    {
+      "round": 0,
+      "start_wall_s": 510.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3510717108441978,
+      "physics_hz": 21.064301552062933
+    },
+    {
+      "round": 0,
+      "start_wall_s": 520.0,
+      "measured_wall_s": 9.937000000034459,
+      "simulation_wall_ratio": 0.348864531292684,
+      "physics_hz": 20.931870785878907
+    },
+    {
+      "round": 0,
+      "start_wall_s": 530.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.35780592583402804,
+      "physics_hz": 21.468354430379748
+    },
+    {
+      "round": 0,
+      "start_wall_s": 540.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.35275147979560545,
+      "physics_hz": 21.165087683890984
+    },
+    {
+      "round": 0,
+      "start_wall_s": 550.0,
+      "measured_wall_s": 10.0,
+      "simulation_wall_ratio": 0.34833335150033234,
+      "physics_hz": 20.9
+    },
+    {
+      "round": 0,
+      "start_wall_s": 560.0,
+      "measured_wall_s": 9.906000000075437,
+      "simulation_wall_ratio": 0.32303656035419304,
+      "physics_hz": 19.382192610391467
+    },
+    {
+      "round": 0,
+      "start_wall_s": 570.0,
+      "measured_wall_s": 9.921999999904074,
+      "simulation_wall_ratio": 0.32083586972262457,
+      "physics_hz": 19.250151179383852
+    },
+    {
+      "round": 0,
+      "start_wall_s": 580.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3477121729413825,
+      "physics_hz": 20.86272928840683
+    },
+    {
+      "round": 0,
+      "start_wall_s": 590.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.3471169257278621,
+      "physics_hz": 20.827014457458276
+    },
+    {
+      "round": 0,
+      "start_wall_s": 600.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.34543189210782393,
+      "physics_hz": 20.725912445528866
+    },
+    {
+      "round": 0,
+      "start_wall_s": 610.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.3521720265879766,
+      "physics_hz": 21.130320493246504
+    },
+    {
+      "round": 0,
+      "start_wall_s": 620.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.3267642050401784,
+      "physics_hz": 19.60585127988588
+    },
+    {
+      "round": 0,
+      "start_wall_s": 630.0,
+      "measured_wall_s": 9.859000000054948,
+      "simulation_wall_ratio": 0.33471956304797845,
+      "physics_hz": 20.083172735459627
+    },
+    {
+      "round": 0,
+      "start_wall_s": 640.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.3622822283124696,
+      "physics_hz": 21.7369325650788
+    },
+    {
+      "round": 0,
+      "start_wall_s": 650.0,
+      "measured_wall_s": 9.797000000020489,
+      "simulation_wall_ratio": 0.353849836425454,
+      "physics_hz": 21.23098907824487
+    },
+    {
+      "round": 0,
+      "start_wall_s": 660.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3583325108655084,
+      "physics_hz": 21.499949530620757
+    },
+    {
+      "round": 0,
+      "start_wall_s": 670.0,
+      "measured_wall_s": 9.952999999979511,
+      "simulation_wall_ratio": 0.3483037121947713,
+      "physics_hz": 20.898221641759086
+    },
+    {
+      "round": 0,
+      "start_wall_s": 680.0,
+      "measured_wall_s": 9.813000000081956,
+      "simulation_wall_ratio": 0.3549713150895986,
+      "physics_hz": 21.29827779458417
+    },
+    {
+      "round": 0,
+      "start_wall_s": 690.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3477121729413825,
+      "physics_hz": 20.86272928840683
+    },
+    {
+      "round": 0,
+      "start_wall_s": 700.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.34378161550242825,
+      "physics_hz": 20.626895854369245
+    },
+    {
+      "round": 0,
+      "start_wall_s": 710.0,
+      "measured_wall_s": 9.827999999979511,
+      "simulation_wall_ratio": 0.3510378693466335,
+      "physics_hz": 21.062271062314974
+    },
+    {
+      "round": 0,
+      "start_wall_s": 720.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3533212378915509,
+      "physics_hz": 21.1992731678648
+    },
+    {
+      "round": 0,
+      "start_wall_s": 730.0,
+      "measured_wall_s": 9.812000000034459,
+      "simulation_wall_ratio": 0.3516102914716067,
+      "physics_hz": 21.09661638802212
+    },
+    {
+      "round": 0,
+      "start_wall_s": 740.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.3538570602080148,
+      "physics_hz": 21.231422505175914
+    },
+    {
+      "round": 0,
+      "start_wall_s": 750.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3516032618351702,
+      "physics_hz": 21.096194609857925
+    },
+    {
+      "round": 0,
+      "start_wall_s": 760.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3426728660871596,
+      "physics_hz": 20.56037089292267
+    },
+    {
+      "round": 0,
+      "start_wall_s": 770.0,
+      "measured_wall_s": 9.968999999924563,
+      "simulation_wall_ratio": 0.3561039407336535,
+      "physics_hz": 21.3662353296832
+    },
+    {
+      "round": 0,
+      "start_wall_s": 780.0,
+      "measured_wall_s": 9.96799999999348,
+      "simulation_wall_ratio": 0.34945159660971126,
+      "physics_hz": 20.967094703063474
+    },
+    {
+      "round": 0,
+      "start_wall_s": 790.0,
+      "measured_wall_s": 9.734000000054948,
+      "simulation_wall_ratio": 0.3527155858204478,
+      "physics_hz": 21.16293404549385
+    },
+    {
+      "round": 0,
+      "start_wall_s": 800.0,
+      "measured_wall_s": 9.891000000061467,
+      "simulation_wall_ratio": 0.27803054730629734,
+      "physics_hz": 16.681831968352505
+    },
+    {
+      "round": 0,
+      "start_wall_s": 810.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3459915792263007,
+      "physics_hz": 20.759493670886076
+    },
+    {
+      "round": 0,
+      "start_wall_s": 820.0,
+      "measured_wall_s": 9.859000000054948,
+      "simulation_wall_ratio": 0.3499340886410684,
+      "physics_hz": 20.996044223435064
+    },
+    {
+      "round": 0,
+      "start_wall_s": 830.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.351638755806353,
+      "physics_hz": 21.098324248017825
+    },
+    {
+      "round": 0,
+      "start_wall_s": 840.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.36005116623234235,
+      "physics_hz": 21.6030688472527
+    },
+    {
+      "round": 0,
+      "start_wall_s": 850.0,
+      "measured_wall_s": 9.859000000054948,
+      "simulation_wall_ratio": 0.3448625801100384,
+      "physics_hz": 20.691753727443253
+    },
+    {
+      "round": 0,
+      "start_wall_s": 860.0,
+      "measured_wall_s": 9.859000000054948,
+      "simulation_wall_ratio": 0.356696100015775,
+      "physics_hz": 21.401764884757483
+    },
+    {
+      "round": 0,
+      "start_wall_s": 870.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.35328557409275474,
+      "physics_hz": 21.197133340048634
+    },
+    {
+      "round": 0,
+      "start_wall_s": 880.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.3504869929720636,
+      "physics_hz": 21.029218481564605
+    },
+    {
+      "round": 0,
+      "start_wall_s": 890.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3078942215912086,
+      "physics_hz": 18.47365233199647
+    },
+    {
+      "round": 0,
+      "start_wall_s": 900.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.34659130955075945,
+      "physics_hz": 20.795477488476898
+    },
+    {
+      "round": 0,
+      "start_wall_s": 910.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3566862020619466,
+      "physics_hz": 21.40117100755875
+    },
+    {
+      "round": 0,
+      "start_wall_s": 920.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.3403088353009112,
+      "physics_hz": 20.418529053145395
+    },
+    {
+      "round": 0,
+      "start_wall_s": 930.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3544303982318202,
+      "physics_hz": 21.265822784810126
+    },
+    {
+      "round": 0,
+      "start_wall_s": 940.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.34209641150486736,
+      "physics_hz": 20.525783619789006
+    },
+    {
+      "round": 0,
+      "start_wall_s": 950.0,
+      "measured_wall_s": 9.828000000095926,
+      "simulation_wall_ratio": 0.32899201281372087,
+      "physics_hz": 19.739519739327072
+    },
+    {
+      "round": 0,
+      "start_wall_s": 960.0,
+      "measured_wall_s": 9.797000000020489,
+      "simulation_wall_ratio": 0.35214863528879314,
+      "physics_hz": 21.128917015368692
+    },
+    {
+      "round": 0,
+      "start_wall_s": 970.0,
+      "measured_wall_s": 9.859000000054948,
+      "simulation_wall_ratio": 0.35331509432842173,
+      "physics_hz": 21.198904554096274
+    },
+    {
+      "round": 0,
+      "start_wall_s": 980.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.32976648869878084,
+      "physics_hz": 19.785988290007147
+    },
+    {
+      "round": 0,
+      "start_wall_s": 990.0,
+      "measured_wall_s": 9.719000000040978,
+      "simulation_wall_ratio": 0.3481153935357189,
+      "physics_hz": 20.886922522805236
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1000.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.3639672619325276,
+      "physics_hz": 21.8380345770094
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1010.0,
+      "measured_wall_s": 9.968999999924563,
+      "simulation_wall_ratio": 0.35108839227261607,
+      "physics_hz": 21.06530243771583
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1020.0,
+      "measured_wall_s": 10.0,
+      "simulation_wall_ratio": 0.34500001799315216,
+      "physics_hz": 20.7
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1030.0,
+      "measured_wall_s": 9.984000000054948,
+      "simulation_wall_ratio": 0.3488915780232525,
+      "physics_hz": 20.93349358962838
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1040.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.35554654434423555,
+      "physics_hz": 21.332791548062353
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1050.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.350522431492672,
+      "physics_hz": 21.031344792690213
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1060.0,
+      "measured_wall_s": 9.84299999999348,
+      "simulation_wall_ratio": 0.3555826661121145,
+      "physics_hz": 21.334958854022055
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1070.0,
+      "measured_wall_s": 9.843999999924563,
+      "simulation_wall_ratio": 0.36231885947888676,
+      "physics_hz": 21.7391304349492
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1080.0,
+      "measured_wall_s": 9.937000000034459,
+      "simulation_wall_ratio": 0.35221899793972905,
+      "physics_hz": 21.133138774204667
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1090.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3533212378915509,
+      "physics_hz": 21.1992731678648
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1100.0,
+      "measured_wall_s": 9.780999999959022,
+      "simulation_wall_ratio": 0.35783664068642146,
+      "physics_hz": 21.47019732142724
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1110.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.3555420938322376,
+      "physics_hz": 21.332524517356404
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1120.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3544303982318202,
+      "physics_hz": 21.265822784810126
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1130.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3583325108655084,
+      "physics_hz": 21.499949530620757
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1140.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.351638755806353,
+      "physics_hz": 21.098324248017825
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1150.0,
+      "measured_wall_s": 9.952999999979511,
+      "simulation_wall_ratio": 0.36170000881764713,
+      "physics_hz": 21.70199939721136
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1160.0,
+      "measured_wall_s": 10.0,
+      "simulation_wall_ratio": 0.3283333504572511,
+      "physics_hz": 19.7
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1170.0,
+      "measured_wall_s": 9.64000000001397,
+      "simulation_wall_ratio": 0.3509682064090264,
+      "physics_hz": 21.058091286276536
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1180.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3616971353806775,
+      "physics_hz": 21.70182699100217
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1190.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.35836868414714446,
+      "physics_hz": 21.502119927405726
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1200.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3533212378915509,
+      "physics_hz": 21.1992731678648
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1210.0,
+      "measured_wall_s": 9.937999999965541,
+      "simulation_wall_ratio": 0.3521835563042222,
+      "physics_hz": 21.131012276185164
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1220.0,
+      "measured_wall_s": 9.96799999999348,
+      "simulation_wall_ratio": 0.35446764823568794,
+      "physics_hz": 21.268057784925627
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1230.0,
+      "measured_wall_s": 9.828000000095926,
+      "simulation_wall_ratio": 0.34934203422487886,
+      "physics_hz": 20.960520960316376
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1240.0,
+      "measured_wall_s": 9.969000000040978,
+      "simulation_wall_ratio": 0.35610394072949497,
+      "physics_hz": 21.36623532943369
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1250.0,
+      "measured_wall_s": 9.829000000027008,
+      "simulation_wall_ratio": 0.3510021548399676,
+      "physics_hz": 21.060128192026777
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1260.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.36005116623234235,
+      "physics_hz": 21.6030688472527
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1270.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.3538928394877938,
+      "physics_hz": 21.233569261850693
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1280.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3544303982318202,
+      "physics_hz": 21.265822784810126
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1290.0,
+      "measured_wall_s": 9.811999999918044,
+      "simulation_wall_ratio": 0.3567060928015144,
+      "physics_hz": 21.40236445187057
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1300.0,
+      "measured_wall_s": 9.422000000020489,
+      "simulation_wall_ratio": 0.3573197667421667,
+      "physics_hz": 21.43918488638938
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1310.0,
+      "measured_wall_s": 9.812999999965541,
+      "simulation_wall_ratio": 0.36855873385338145,
+      "physics_hz": 22.113522877892795
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1320.0,
+      "measured_wall_s": 9.921999999904074,
+      "simulation_wall_ratio": 0.3477121729454622,
+      "physics_hz": 20.86272928865161
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1330.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.35835025533631165,
+      "physics_hz": 21.501014198813426
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1340.0,
+      "measured_wall_s": 9.968999999924563,
+      "simulation_wall_ratio": 0.3427291448375538,
+      "physics_hz": 20.563747617770215
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1350.0,
+      "measured_wall_s": 9.952999999979511,
+      "simulation_wall_ratio": 0.31313843355972226,
+      "physics_hz": 18.788305033696872
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1360.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.35496959255012,
+      "physics_hz": 21.298174442220844
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1370.0,
+      "measured_wall_s": 9.640999999945052,
+      "simulation_wall_ratio": 0.35266053078966875,
+      "physics_hz": 21.159630743819385
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1380.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.36455698103844364,
+      "physics_hz": 21.873417721518987
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1390.0,
+      "measured_wall_s": 9.625,
+      "simulation_wall_ratio": 0.3636363826014779,
+      "physics_hz": 21.818181818181817
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1400.0,
+      "measured_wall_s": 9.98499999998603,
+      "simulation_wall_ratio": 0.3588716595116418,
+      "physics_hz": 21.53229844770163
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1410.0,
+      "measured_wall_s": 10.0,
+      "simulation_wall_ratio": 0.35000001825392246,
+      "physics_hz": 21.0
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1420.0,
+      "measured_wall_s": 9.984000000054948,
+      "simulation_wall_ratio": 0.35890760418659945,
+      "physics_hz": 21.53445512808661
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1430.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.3487742292138692,
+      "physics_hz": 20.926452661432595
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1440.0,
+      "measured_wall_s": 9.920999999972992,
+      "simulation_wall_ratio": 0.36454660369926195,
+      "physics_hz": 21.87279508120056
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1450.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3561181620329241,
+      "physics_hz": 21.367088607594937
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1460.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3544303982318202,
+      "physics_hz": 21.265822784810126
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1470.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.35726324748291566,
+      "physics_hz": 21.435793731011177
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1480.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.3522076354902329,
+      "physics_hz": 21.132457027270455
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1490.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.35726324748291566,
+      "physics_hz": 21.435793731011177
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1500.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3527426344307163,
+      "physics_hz": 21.164556962025316
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1510.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.3527426344307163,
+      "physics_hz": 21.164556962025316
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1520.0,
+      "measured_wall_s": 9.937999999965541,
+      "simulation_wall_ratio": 0.3404441044274148,
+      "physics_hz": 20.426645200312326
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1530.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.319472633295108,
+      "physics_hz": 19.16835699799876
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1540.0,
+      "measured_wall_s": 9.936999999918044,
+      "simulation_wall_ratio": 0.3488645312967711,
+      "physics_hz": 20.931870786124133
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1550.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.35949368963513195,
+      "physics_hz": 21.569620253164558
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1560.0,
+      "measured_wall_s": 9.89000000001397,
+      "simulation_wall_ratio": 0.3353555955146237,
+      "physics_hz": 20.12133468146804
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1570.0,
+      "measured_wall_s": 9.906000000075437,
+      "simulation_wall_ratio": 0.2591022411174257,
+      "physics_hz": 15.546133656251488
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1580.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.3498985983708326,
+      "physics_hz": 20.993914807331976
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1590.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.3515889297639284,
+      "physics_hz": 21.095334685628266
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1600.0,
+      "measured_wall_s": 9.936999999918044,
+      "simulation_wall_ratio": 0.36060516456156627,
+      "physics_hz": 21.63630874527254
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1610.0,
+      "measured_wall_s": 9.828000000095926,
+      "simulation_wall_ratio": 0.35103786934247533,
+      "physics_hz": 21.062271062065484
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1620.0,
+      "measured_wall_s": 9.937999999965541,
+      "simulation_wall_ratio": 0.3572147499657111,
+      "physics_hz": 21.432883880130664
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1630.0,
+      "measured_wall_s": 9.85999999998603,
+      "simulation_wall_ratio": 0.33806627861916194,
+      "physics_hz": 20.283975659257948
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1640.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.286919846187664,
+      "physics_hz": 17.21518987341772
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1650.0,
+      "measured_wall_s": 9.766000000061467,
+      "simulation_wall_ratio": 0.33620044076918343,
+      "physics_hz": 20.1720253940979
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1660.0,
+      "measured_wall_s": 9.625,
+      "simulation_wall_ratio": 0.3653679844233897,
+      "physics_hz": 21.92207792207792
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1670.0,
+      "measured_wall_s": 9.90700000000652,
+      "simulation_wall_ratio": 0.3549678863503393,
+      "physics_hz": 21.298072070239343
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1680.0,
+      "measured_wall_s": 9.890999999945052,
+      "simulation_wall_ratio": 0.3370067240115996,
+      "physics_hz": 20.22040238611981
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1690.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3499562737211552,
+      "physics_hz": 20.99737532817085
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1700.0,
+      "measured_wall_s": 9.937000000034459,
+      "simulation_wall_ratio": 0.3320921980574588,
+      "physics_hz": 19.925530844250115
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1710.0,
+      "measured_wall_s": 9.829000000027008,
+      "simulation_wall_ratio": 0.335741191586056,
+      "physics_hz": 20.144470444547352
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1720.0,
+      "measured_wall_s": 9.921999999904074,
+      "simulation_wall_ratio": 0.3477121729454622,
+      "physics_hz": 20.86272928865161
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1730.0,
+      "measured_wall_s": 9.937999999965541,
+      "simulation_wall_ratio": 0.3588918145195407,
+      "physics_hz": 21.5335077481125
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1740.0,
+      "measured_wall_s": 9.96799999999348,
+      "simulation_wall_ratio": 0.35279563102702904,
+      "physics_hz": 21.16773675763824
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1750.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.3589327019094188,
+      "physics_hz": 21.535960991377234
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1760.0,
+      "measured_wall_s": 9.936999999918044,
+      "simulation_wall_ratio": 0.35557346459093975,
+      "physics_hz": 21.334406762780365
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1770.0,
+      "measured_wall_s": 9.437000000034459,
+      "simulation_wall_ratio": 0.35675181119420607,
+      "physics_hz": 21.40510755528901
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1780.0,
+      "measured_wall_s": 9.859000000054948,
+      "simulation_wall_ratio": 0.3685296199215116,
+      "physics_hz": 22.11177604207171
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1790.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3544312487470131,
+      "physics_hz": 21.265873815719036
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1800.0,
+      "measured_wall_s": 9.875,
+      "simulation_wall_ratio": 0.35780592583402804,
+      "physics_hz": 21.468354430379748
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1810.0,
+      "measured_wall_s": 9.905999999959022,
+      "simulation_wall_ratio": 0.3533212378915509,
+      "physics_hz": 21.1992731678648
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1820.0,
+      "measured_wall_s": 9.844000000040978,
+      "simulation_wall_ratio": 0.36570501703978514,
+      "physics_hz": 21.94229987800699
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1830.0,
+      "measured_wall_s": 9.98499999998603,
+      "simulation_wall_ratio": 0.3521949774742159,
+      "physics_hz": 21.131697546349045
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1840.0,
+      "measured_wall_s": 9.922000000020489,
+      "simulation_wall_ratio": 0.3577907866498284,
+      "physics_hz": 21.46744607937514
+    },
+    {
+      "round": 0,
+      "start_wall_s": 1850.0,
+      "measured_wall_s": 9.968999999924563,
+      "simulation_wall_ratio": 0.354432091246641,
+      "physics_hz": 21.265924365694076
+    }
+  ]
+}

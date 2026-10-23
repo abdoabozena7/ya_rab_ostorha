@@ -1,0 +1,23 @@
+{
+  "d3d11": {
+    "adopted": false,
+    "native_sdk_host_exit_code": 3221226505,
+    "measurement_available": false,
+    "log": "output\\performance-60\\native-d3d11-cpu.err.log"
+  },
+  "page_start_race": {
+    "reproduced": true,
+    "unexpected_replacement_profile": "LEGACY",
+    "fixed": true,
+    "regression_test": "tests.test_simulator_startup.StartupTests.test_temporarily_stale_or_reconfiguring_live_world_cannot_start_a_second_owner"
+  },
+  "pre_correction_60hz_scans": {
+    "accepted": false,
+    "reason": "120-degree packets with one-third ray density; corrected and revalidated natively"
+  },
+  "unbounded_stalled_drive": {
+    "accepted": false,
+    "scope": "One prolonged incomplete NORMAL attempt; native emergency applied while already held",
+    "local_summary": "output\\performance-60\\verified-cpu-stalled-summary.json"
+  }
+}

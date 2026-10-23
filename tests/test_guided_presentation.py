@@ -11,6 +11,12 @@ from tests.core_packets import packet
 
 
 class GuidedPresentationTests(unittest.TestCase):
+    def test_settling_keeps_ten_driving_samples_instead_of_ten_faster_physics_ticks(self):
+        self.assertEqual(self.p._settled_frame(),self.s.observation.frame_id+10)
+        self.provider.run_profile='PERFORMANCE_60'
+        self.provider.fixed_delta=1/60
+        self.assertEqual(self.p._settled_frame(),self.s.observation.frame_id+30)
+
     def test_stopped_vision_warmup_holds_real_world_clock_and_releases_before_start(self):
         self.provider.name='carla';self.provider.world=NS(paused=False)
         self.p.data.update(id='vision',status='READY',guided=True,automatic_pair=True,arm=1,
@@ -39,6 +45,19 @@ class GuidedPresentationTests(unittest.TestCase):
         self.assertIsNot(old,self.s.synchronizer)
         self.assertFalse(self.s.camera_cache);self.assertFalse(self.s.sensor_frame_cache);self.assertFalse(self.s.render_pose_cache)
         self.assertFalse(self.s.reconfiguring)
+
+    def test_prepare_rebuild_keeps_split_rate_sensor_strides_and_retires_old_anchors(self):
+        self.provider.run_profile='PERFORMANCE_60'
+        self.provider.fixed_delta=1/60
+        self.provider.ego=NS(actor=NS(id=1))
+        self.s._required_after_sensor_rebuild=Mock(return_value=('frontCamera','depth'))
+        self.s.physics_anchors[1]=packet()
+        self.s.sensor_anchors[1]=True
+        def rebuild():self.provider.ego.actor=NS(id=2)
+        self.p._prepare_native(rebuild)
+        self.assertEqual(self.s.synchronizer.sensor_frame_strides,{'frontCamera':3,'depth':3})
+        self.assertFalse(self.s.physics_anchors)
+        self.assertFalse(self.s.sensor_anchors)
 
     def setUp(self):
         self.time=0.

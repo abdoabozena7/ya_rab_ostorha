@@ -136,15 +136,23 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
     if forward_path is not None and indexed_path:
         from .motion_geometry import PathCorridorIndex
         index=PathCorridorIndex(forward_path,width)
+    projections = []
+    def project(xx, yy):
+        for old_x, old_y, result in projections:
+            if old_x is xx and old_y is yy:
+                return result
+        from .motion_geometry import path_coordinates
+        result = index.coordinates(xx,yy) if index is not None else path_coordinates(xx,yy,forward_path)
+        projections.append((xx,yy,result))
+        return result
     x, y, z = local_points(points)
     heights = (z - a*x - b*y) / math.sqrt(1+a*a+b*b)
     def corridor(xx, yy):
         if index is not None:
-            along,lateral=index.coordinates(xx,yy)
+            along,lateral=project(xx,yy)
             return (along>front)&(lateral<=width)
         if forward_path is not None:
-            from .motion_geometry import path_coordinates
-            along,lateral=path_coordinates(xx,yy,forward_path)
+            along,lateral=project(xx,yy)
             return (along>front)&(lateral<=width)
         if steering is None: return (xx > front) & (np.abs(yy) <= width)
         # Steering-derived circular centerline. Width includes ego dimensions,
@@ -155,10 +163,9 @@ def assess_forward_space(observation, asset_reader, config, *, steering=None, ge
         return (xx > front) & (lateral <= width)
     path = corridor(x, y)
     def ranges(xx,yy):
-        if index is not None:return index.coordinates(xx,yy)[0]
+        if index is not None:return project(xx,yy)[0]
         if forward_path is not None:
-            from .motion_geometry import path_coordinates
-            return path_coordinates(xx,yy,forward_path)[0]
+            return project(xx,yy)[0]
         if steering is not None:
             curvature = math.tan(float(steering)*(geometry.max_steer_rad if geometry else .6))/(geometry.wheelbase_m if geometry else 2.8)
             if abs(curvature)>=1e-4:

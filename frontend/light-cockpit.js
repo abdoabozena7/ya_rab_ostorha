@@ -177,7 +177,7 @@ export function installLightCockpit(p,tools,perception,predictionView,onResume) 
       set('cameraEmptyDescription',failed?p.simulatorStart?.error||p.operationError||p.status:starting||restarting?'Connecting the simulator, vehicle and sensors. Driving remains stopped.':fresh?'The connection is live. Camera frames are not available; inspect Diagnostics.':'Use Restart above to start the simulator and run the presentation.');
       $('connectionSetupBtn').hidden=fresh||p.isReplay;set('connectionSetupBtn',starting||restarting?'View startup progress':'Run presentation');
     }
-    set('cockpitCameraRate',!$('authoritativeCamera').hidden&&Number.isFinite(p.performance?.sensorWallRatesHz?.[displayed?.sensorId])?p.performance.sensorWallRatesHz[displayed.sensorId].toFixed(1)+' Hz':'');
+    set('cockpitCameraRate',!$('authoritativeCamera').hidden&&Number.isFinite(p.cameraDisplayMetrics?.displayFps)?p.cameraDisplayMetrics.displayFps.toFixed(1)+' displayed fps':'');
     const counts=perceptionCounts(perception.result,p);set('cockpitVehicles',metricText(counts.vehicles));set('cockpitPeople',metricText(counts.people));set('cockpitObjectsStatus',counts.label);
     const prediction=predictionView.currentPrediction;
     set('cockpitTracks',fresh&&measuredPredictionFresh(prediction,p.sessionId,p.telemetry?.timestamp)?(prediction.tracks||[]).filter(t=>t.confirmed).length:'—');

@@ -110,9 +110,19 @@ export class DashboardTools {
     };
     $('settingsForm').onsubmit = event => { event.preventDefault(); this.apply(); };
     $('cleanImageBtn').onclick = () => {
-      $('settingResolution').value = '800x450'; $('settingPostprocess').checked = false;
+      $('settingResolution').value = $('settingRunProfile').value==='PERFORMANCE_60'?'1280x720':'800x450';
+      $('settingPostprocess').checked = $('settingRunProfile').value==='PERFORMANCE_60';
       $('settingMotionBlur').value = 0; $('settingBloom').value = 0;
       $('settingsStatus').textContent = 'Clear image settings ready. Select Apply changes to activate.';
+    };
+    $('settingRunProfile').onchange=()=>{
+      const split=$('settingRunProfile').value==='PERFORMANCE_60';
+      if(split){
+        $('settingResolution').value='1280x720';$('settingHz').value='60';
+        $('settingPostprocess').checked=true;$('settingMotionBlur').value=0;$('settingBloom').value=0;
+      }else if($('settingHz').value==='60')$('settingHz').value='20';
+      $('settingResolution').disabled=split;$('settingHz').disabled=split;
+      for(const option of $('settingHz').options)option.disabled=option.value==='60'&&!split;
     };
     $('restartGraphicsBtn').onclick = () => this.restartGraphics({quality:$('settingQuality').value,resolution:$('settingWindow').value});
     $('destinationSearch').oninput = () => { this.selectedPlace = null; this.renderPlaces(); };
@@ -255,6 +265,7 @@ export class DashboardTools {
       if (id === 'settingProfile' && entries.some(([value]) => value === previous)) select.value = previous;
     }
     const fields = {settingVehicle:s.vehicle,settingSpawn:s.spawn_index,settingResolution:s.camera_resolution,
+      settingRunProfile:s.run_profile||'LEGACY',
       settingFov:s.camera_fov,settingHz:s.simulation_hz,settingQuality:s.next_launch.quality,
       settingWindow:s.next_launch.resolution,settingTrafficCount:population.vehicle_count,
       settingPedestrianCount:population.pedestrian_count,settingTrafficSpeed:population.speed_behavior,
@@ -266,6 +277,9 @@ export class DashboardTools {
       settingWeather:s.weather_preset,cameraView:s.camera_view,
       settingMotionBlur:s.camera_motion_blur,settingBloom:s.camera_bloom};
     for (const [id,value] of Object.entries(fields)) $(id).value = value ?? 0;
+    const split=s.run_profile==='PERFORMANCE_60';
+    $('settingResolution').disabled=split;$('settingHz').disabled=split;
+    for(const option of $('settingHz').options)option.disabled=option.value==='60'&&!split;
     $('settingPostprocess').checked = s.camera_postprocess === true;
     for (const [key,id] of Object.entries(weatherFields)) $(id).value = s.weather[key];
     this.updateLightingValue();
@@ -293,10 +307,15 @@ export class DashboardTools {
         crossing_percent:number('settingCrossing'),world_profile:$('settingWorldProfile').value}};
     if ($('settingWeather').value !== 'CUSTOM') { delete data.weather; data.weather_preset = $('settingWeather').value; }
     const candidates = {vehicle:$('settingVehicle').value,spawn_index:number('settingSpawn'),
+      run_profile:$('settingRunProfile').value,
       camera_view:$('cameraView').value,camera_resolution:$('settingResolution').value,
       camera_fov:number('settingFov'),simulation_hz:number('settingHz'),camera_postprocess:$('settingPostprocess').checked,
       camera_motion_blur:number('settingMotionBlur'),camera_bloom:number('settingBloom')};
     for (const [key,value] of Object.entries(candidates)) if (value !== current[key]) data[key] = value;
+    if($('settingRunProfile').value==='PERFORMANCE_60'&&current.active_launch?.render_profile!=='PERFORMANCE_60'){
+      data.next_launch={quality:'Epic',resolution:'1280x720',render_profile:'PERFORMANCE_60'};
+      this.restartAfterSave={preset:'PERFORMANCE_60'};
+    }
     this.clearControls();
     $('settingsStatus').textContent = this.provider.dashboardAction('settings',data) ? 'Applying live settings…' : 'Take control in connection settings first.';
   }

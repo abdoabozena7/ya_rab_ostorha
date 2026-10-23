@@ -5,6 +5,7 @@ target tracks and forecasts contain sensor evidence only. The emergency braking
 supervisor retains priority over every admitted navigation command.
 """
 from dataclasses import replace
+from functools import lru_cache
 import math
 import time
 import numpy as np
@@ -12,6 +13,30 @@ from .contracts import CommandSource
 from .motion_geometry import GRID, VehicleGeometry, footprint_centers,object_assessments
 from .prediction import assess_conflicts
 from .measured_rows import unique_row_indices
+
+
+@lru_cache(maxsize=16)
+def _body_cells(size, resolution, limit, front, rear, half_width):
+    cells=np.indices((size,size)).transpose(1,2,0)*resolution-limit
+    own=(cells[:,:,0]<=front)&(cells[:,:,0]>=-rear)&(np.abs(cells[:,:,1])<=half_width)
+    own.flags.writeable=False
+    return own
+
+
+@lru_cache(maxsize=16)
+def _body_samples(front, rear, half_width, resolution):
+    xx=np.linspace(-rear,front,int(np.ceil((front+rear)/resolution))+1)
+    yy=np.linspace(-half_width,half_width,int(np.ceil(2*half_width/resolution))+1)
+    local=np.array(np.meshgrid(xx,yy)).reshape(2,-1).T
+    local.flags.writeable=False
+    return local
+
+
+@lru_cache(maxsize=32)
+def _ray_steps(count):
+    result=np.linspace(0.,.999,count)[None,:]
+    result.flags.writeable=False
+    return result
 
 
 class ObservedSpace:
@@ -35,8 +60,7 @@ class ObservedSpace:
             return out
         self.free=dilate(self.free,[(0,0),(-1,0),(0,-1),(-1,-1)])&~dilate(self.occupied,[(x,y) for x in (-1,0,1) for y in (-1,0,1)])
         self.measured_free=self.free.copy()
-        cells=np.indices(self.free.shape).transpose(1,2,0)*self.RESOLUTION-self.LIMIT
-        own=(cells[:,:,0]<=geometry.front_m)&(cells[:,:,0]>=-geometry.rear_m)&(np.abs(cells[:,:,1])<=geometry.half_width_m)
+        own=_body_cells(self.size,self.RESOLUTION,self.LIMIT,geometry.front_m,geometry.rear_m,geometry.half_width_m)
         self.free[own]=True
         self.own_cells=own
         self.occupied[own]=False
@@ -91,7 +115,7 @@ class ObservedSpace:
         # Preserve every original calibrated ray and sample. Bounded batches
         # keep high-resolution depth from allocating many cache-sized arrays
         # at once; sampling density, occupied cells and unknown space are exact.
-        steps=np.linspace(0.,.999,count)[None,:]
+        steps=_ray_steps(count)
         for start in range(0,len(xyz),128):
             stop=start+128;lo=near[start:stop];hi=far[start:stop]
             fractions=lo[:,None]+(hi-lo)[:,None]*steps
@@ -107,9 +131,7 @@ class ObservedSpace:
         g=self.geometry
         # Include exact body edges. Occupied-cell dilation supplies clearance;
         # padding the body again required fictitious rear/side space while held.
-        xx=np.linspace(-g.rear_m,g.front_m,int(np.ceil((g.front_m+g.rear_m)/self.RESOLUTION))+1)
-        yy=np.linspace(-g.half_width_m,g.half_width_m,int(np.ceil(2*g.half_width_m/self.RESOLUTION))+1)
-        local=np.array(np.meshgrid(xx,yy)).reshape(2,-1).T
+        local=_body_samples(g.front_m,g.rear_m,g.half_width_m,self.RESOLUTION)
         co=np.cos(sample[:,3]);si=np.sin(sample[:,3])
         xy=sample[:,None,1:3]+np.stack((co[:,None]*local[None,:,0]-si[:,None]*local[None,:,1],
             si[:,None]*local[None,:,0]+co[:,None]*local[None,:,1]),axis=2)

@@ -161,7 +161,7 @@ export function installPresentationRun(p,tools,clearControls){
       $('presentationSummary').textContent=presentationSummary(pair);
       for(const item of items){const run=pair.runs?.[item.mode];
         item.box.querySelector('h3').textContent=modeLabel(item.mode);
-        item.box.querySelector('.presentation-driver').textContent=run?.setup?.comparison_scenario?
+        item.box.querySelector('.presentation-driver').textContent=!run?'No recorded attempt':run?.setup?.comparison_scenario?
           item.mode==='NORMAL'?'Reactive sensor braking':'Early crossing prediction and sensor braking':recordedDriverDescription(run);
         item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,!archived&&data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
@@ -171,10 +171,10 @@ export function installPresentationRun(p,tools,clearControls){
         const events=run?.events||[],key=run?.id+':'+events.length;
         if(item.eventsKey!==key){item.eventsKey=key;const list=item.box.querySelector('ol');list.replaceChildren();for(const event of events.slice(-12)){const li=document.createElement('li');li.textContent=event.title+' · '+event.detail;list.append(li);}}
         const root=recordingVideoRoot(run?.recording);
-        if(item.root!==root){item.video.pause();item.root=root;item.status='PENDING';item.video.removeAttribute('src');
+        if(item.root!==root||!root&&item.status!=='UNAVAILABLE'){item.video.pause();item.root=root;item.status=root?'PENDING':'UNAVAILABLE';item.video.removeAttribute('src');
           const download=item.box.querySelector('.video-download');download.hidden=true;download.removeAttribute('href');}
         const placeholder=item.box.querySelector('.video-preparing');placeholder.hidden=item.status==='READY';
-        placeholder.textContent=item.status==='ERROR'?'Video export needs attention. The recorded outcome is saved.':item.status==='ENCODING_ANNOTATION'?'Adding the selected forecast…':'Preparing this video…';
+        placeholder.textContent=!root?'No video: this drive was not recorded.':item.status==='ERROR'?'Video export needs attention. The recorded outcome is saved.':item.status==='ENCODING_ANNOTATION'?'Adding the selected forecast…':'Preparing this video…';
       }
       if(!polling&&performance.now()-lastPoll>1500){lastPoll=performance.now();polling=true;
         Promise.allSettled(items.filter(i=>i.root&&i.status!=='READY').map(async i=>{const root=i.root,response=await fetch(root+'video-status.json',{cache:'no-store',signal:AbortSignal.timeout(5000)});if(!response.ok)return;const v=await response.json();if(i.root!==root)return;const filename=preferredVideo(v);i.status=filename?'READY':v.status==='READY'?'WAITING_FOR_ANNOTATION':v.status;i.duration_s=v.duration_s;if(filename){i.video.src=root+filename;const download=i.box.querySelector('.video-download');download.href=root+filename;download.hidden=false;}if(v.status==='ERROR')$('presentationPlaybackStatus').textContent=v.error||'Video export failed; the saved outcome remains available.';})).finally(()=>{polling=false;});

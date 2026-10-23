@@ -1,0 +1,39 @@
+{
+  "source": "NATIVE_LIDAR_30_DEGREE_BIN_COUNTS",
+  "unadjusted_60_physics": {
+    "frame": 52300,
+    "point_count": 1131,
+    "bins": [
+      0,
+      0,
+      0,
+      0,
+      304,
+      286,
+      271,
+      270,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "legacy_20_physics": {
+    "frame": 25318,
+    "point_count": 3476,
+    "bins": [
+      255,
+      292,
+      291,
+      289,
+      291,
+      271,
+      293,
+      292,
+      295,
+      320,
+      296,
+      291
+    ]
+  }
+}

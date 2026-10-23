@@ -246,6 +246,9 @@ class Presentation:
                 states[mode] = {'status': 'PENDING'}
         return states
 
+    def _settled_frame(self):
+        return self.service.observation.frame_id+10*(3 if self.service.split_rates else 1)
+
     def _prepare_native(self,operation,*args,**kwargs):
         """A stopped construction RPC is not a missing driving observation.
 
@@ -258,9 +261,7 @@ class Presentation:
             result=operation(*args,**kwargs)
             current=getattr(getattr(getattr(s.provider,'ego',None),'actor',None),'id',None)
             if previous is not None and current!=previous:
-                from .timing import SensorSynchronizer
-                s.synchronizer=SensorSynchronizer(s._required_after_sensor_rebuild(),s.synchronizer.optional,
-                    timeout_s=s.synchronizer.timeout_s,now=s.now)
+                s._reset_sensor_timing()
                 s.camera_cache.clear();s.sensor_frame_cache.clear();s.render_pose_cache.clear()
                 s.policy_history.clear();s.motion_snapshot=None
             return result
@@ -342,7 +343,7 @@ class Presentation:
                     if identity!=self.data.get('id') or self.data['status']!=phase:return
                     if setup.get('population_pending'):
                         self.data['setup']=setup;self.ready_frame=s.observation.frame_id+1;self.save();return
-                self.ready_frame = s.observation.frame_id + 10
+                self.ready_frame = self._settled_frame()
                 advance('READY', setup=setup)
             elif phase == 'READY' and stopped and closed and s.observation.frame_id >= getattr(self,'ready_frame',0):
                 if self.data.get('automatic_pair') and s.name=='carla':
@@ -386,7 +387,7 @@ class Presentation:
                 if result.get('action')=='prepare_guided_vehicle':
                     if result.get('status')=='REJECTED':self.fail(result.get('error','Vehicle preparation failed'))
                     elif result.get('status')=='APPLIED':
-                        self.ready_frame=s.observation.frame_id+10
+                        self.ready_frame=self._settled_frame()
                         advance('READY')
             elif phase == 'STARTING':
                 if s.journey['status'] == 'RUNNING':
@@ -452,7 +453,7 @@ class Presentation:
                         self.fail(result.get('error', 'Comparison restoration failed'))
                     elif result['status'] == 'APPLIED':
                         self.data['arm'] = 1
-                        self.ready_frame = s.observation.frame_id + 10
+                        self.ready_frame = self._settled_frame()
                         advance('RECOVERING' if self.data.get('recovery') else 'READY')
             elif phase=='RECOVERING':
                 recovery=self.data['recovery'];scene=s.control_scene

@@ -1,0 +1,50 @@
+{
+  "source": "NATIVE_CORRECTED_SPARSE_POSTPHYS_SENSORS",
+  "lidar": {
+    "frame": 5895,
+    "points": 829,
+    "bins": [
+      69,
+      64,
+      63,
+      82,
+      74,
+      62,
+      75,
+      68,
+      71,
+      72,
+      69,
+      60
+    ],
+    "attributes": {
+      "sensor_tick": 0.05,
+      "range": 100,
+      "channels": 16,
+      "points_per_second": 96000,
+      "rotation_frequency": 60.0,
+      "upper_fov": 10,
+      "lower_fov": -30
+    }
+  },
+  "imu": {
+    "data": {
+      "accelerometer_mps2": [
+        0.0,
+        0.0,
+        9.81
+      ],
+      "gyroscope_radps": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "compass_rad": 4.711979866027832
+    },
+    "compensation": "CARLA_0916_POST_PHYSICS_DT"
+  },
+  "radar": {
+    "sample_interval_s": 0.05000000260770321,
+    "compensation": "CARLA_0916_POST_PHYSICS_DT"
+  }
+}

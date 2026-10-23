@@ -24,12 +24,14 @@ class CarlaProvider:
 
     def __init__(self, host='127.0.0.1', port=2000, version=VERSION, map_name=None,
                  blueprint='vehicle.lincoln.mkz_2020', spawn_index=0, fixed_delta=.05, collision_sensor=False, sensor_suite=False, fresh_start=False,
-                 traffic_manager_port=8050):
+                 traffic_manager_port=8050, run_profile=None):
         self.connection = CarlaConnection(host, port, version)
         self.map_name, self.blueprint, self.spawn_index = map_name, blueprint, spawn_index
         self.fresh_start = fresh_start
         self.traffic_manager_port = traffic_manager_port
         self.fixed_delta = fixed_delta
+        self.requested_run_profile = run_profile
+        self.run_profile = 'LEGACY'
         self.collision_sensor = collision_sensor
         self.sensor_suite = sensor_suite
         self.camera_settings = {'camera_view': 'front', 'camera_resolution': '640x360', 'camera_fov': 90,
@@ -53,6 +55,20 @@ class CarlaProvider:
         self.catalog = {}
         self.cleanup_errors = []
         self.controls = {'throttle': 0, 'brake': 1, 'steering': 0, 'parkingbrake': 0, 'gear': 1}
+        self.configure_run_profile(run_profile or 'LEGACY')
+
+    @property
+    def decision_delta(self):
+        return .05 if self.run_profile == 'PERFORMANCE_60' else self.fixed_delta
+
+    def configure_run_profile(self, name):
+        from ..core.performance import validate_run_profile
+        self.run_profile = validate_run_profile(name)
+        self.camera_settings['_run_profile'] = name
+        if name == 'PERFORMANCE_60':
+            self.fixed_delta = 1/60
+            self.camera_settings.update(camera_resolution='1280x720', camera_postprocess=True,
+                camera_motion_blur=0., camera_bloom=0.)
 
     def create_comparison(self,service):
         from .comparison import ComparisonDemo
@@ -70,6 +86,7 @@ class CarlaProvider:
             saved_view=validate_settings(preferences.get('view',{}))
             self.camera_settings.update({k:v for k,v in saved_view.items() if k.startswith('camera_')})
             if 'simulation_hz' in saved_view:self.fixed_delta=1/saved_view['simulation_hz']
+            self.configure_run_profile(self.requested_run_profile or saved_view.get('run_profile', 'LEGACY'))
             from .runtime import get_runtime
             self.runtime = get_runtime()
             self.active_launch = self.runtime.active
@@ -273,6 +290,9 @@ class CarlaProvider:
             self.population.update(self.world.world.get_snapshot())
         after_population=time.perf_counter()
         before_native=time.perf_counter()
+        manager = getattr(self, 'sensor_manager', None)
+        if manager:
+            manager.note_tick(self.world.world.get_snapshot().frame+1)
         snapshot = self.world.advance()
         after_native=time.perf_counter()
         if stress:stress.after_tick(snapshot)
@@ -474,6 +494,10 @@ class CarlaProvider:
                       'rotation':[pose.rotation.pitch, pose.rotation.yaw, pose.rotation.roll]},
             'destination':copy.deepcopy(route['destination']), 'route_length_m':route['length_m'],
             'speed_kmh':speed_kmh,
+            'runtime_rates':{'profile':self.run_profile, 'physics_period_s':self.fixed_delta,
+                'decision_period_s':self.decision_delta, 'display_period_s':self.fixed_delta},
+            'render_configuration':{k:self.active_launch.get(k) for k in
+                ('quality','resolution','render_profile','renderer')} if isinstance(getattr(self,'active_launch',None),dict) else None,
             'speed_policy':'POSTED_ROAD_LIMIT',
             'population':copy.deepcopy(self.population.config),
             'actual_population':copy.deepcopy(self.population_state().get('actual')),
@@ -485,7 +509,8 @@ class CarlaProvider:
         manifest.update(vehicle_geometry=copy.deepcopy(self.vehicle_geometry.__dict__),
             vehicle_physics=physical_configuration(self.ego.actor),
             sensor_configuration={key:{field:value for field,value in config.items()
-                if field in ('blueprint','attributes','mountTransform','sensorTickSeconds','requestedRateHz')}
+                if field in ('blueprint','attributes','appliedAttributes','nativeAttributeAudit',
+                             'mountTransform','sensorTickSeconds','requestedRateHz')}
                 for key,config in self.sensor_manager.configurations.items()})
         if benchmark:
             from .benchmark_fixture import BenchmarkFixture
@@ -591,7 +616,7 @@ class CarlaProvider:
         self.hybrid_alternative = None
         from .route_agent import route_agent_class
         BasicAgent = route_agent_class()
-        delta = self.fixed_delta
+        delta = self.decision_delta
         self.navigation_options = {'dt': delta, 'max_brake': 1.,
                       # One shared native route controller for both guided arms.
                       # Saturated low-speed steering made the Mercedes point at
@@ -826,7 +851,7 @@ class CarlaProvider:
                     tracked, path, info = track((pose.location.x, pose.location.y), math.radians(pose.rotation.yaw), route_window,
                         speed_mps=speed, target_speed_mps=self.navigation_target_mps, geometry=self.vehicle_geometry,
                         limit=float(self.navigation_options.get('max_steering', .35)),
-                        previous_steering=getattr(self, 'route_tracker_steering', None), control_period_s=self.fixed_delta)
+                        previous_steering=getattr(self, 'route_tracker_steering', None), control_period_s=self.decision_delta)
                 except ValueError:
                     tracked = None
             if tracked is not None:
@@ -909,7 +934,12 @@ class CarlaProvider:
             view={'sensorId':'drivingCamera','source':'carla','frame':sensor.frame_id,'timestamp':sensor.timestamp_s,
                 'width':m['width'],'height':m['height'],'fovDeg':m['fov_deg'],
                 'worldTransform':to_dict(sensor.transform),'mountTransform':to_dict(m['mount_transform']),
-                'contentType':sensor.asset.media_type,'frameAvailable':True}
+                'contentType':sensor.asset.media_type,'frameAvailable':True,
+                'sha256':sensor.asset.sha256,
+                'receivedMonotonic':m.get('received_monotonic_s'),
+                'captureMonotonic':m.get('capture_monotonic_s'), 'captureUnix':m.get('capture_unix_s'),
+                'captureClock':m.get('capture_clock'), 'encodedMonotonic':m.get('encoded_monotonic_s'),
+                'jpegEncodeMs':m.get('jpeg_encode_ms')}
             return manager.asset_bytes(sensor.asset),view
 
     def get_sensor_rates(self):
@@ -1037,6 +1067,7 @@ class CarlaProvider:
         weather = self.world.world.get_weather()
         return {'camera': dict(self.camera_settings), 'vehicle':self.blueprint,
                 'spawn_index':self.spawn_index, 'fixed_delta':self.fixed_delta,
+                'run_profile':self.run_profile,
                 'map':self.world.world.get_map().name,
                 'weather':{key:getattr(weather,key) for key in WEATHER_PRESET_FIELDS if hasattr(weather,key)}}
 
@@ -1044,6 +1075,8 @@ class CarlaProvider:
         return {'native_version':self.connection.server_version,'python_api_version':self.connection.api_version,
                 'map':self.world.world.get_map().name,'blueprint':self.ego.actor.type_id,
                 'fixed_delta_seconds':self.fixed_delta,'camera':dict(self.camera_settings),
+                'run_profile':self.run_profile, 'decision_period_s':self.decision_delta,
+                'display_capture_period_s':self.fixed_delta,
                 'vehicle_geometry':self.vehicle_geometry.snapshot() if getattr(self,'vehicle_geometry',None) else None,
                 'jpeg_quality':95,'launch':self.active_launch,'gpu':self.runtime.gpu,
                 'navigation':'CARLA BehaviorAgent normal' if getattr(self,'driving_mode',None)=='BASELINE' else
