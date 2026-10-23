@@ -16,6 +16,7 @@
     "behavior": "HESITATE_THEN_CROSS",
     "outcome": "TIMEOUT",
     "simulated_s": 45.0,
+    "collisions": 0,
     "stall_causes": [
      "OFF_ROUTE_ALIGNMENT"
     ],
@@ -29,7 +30,15 @@
       "supervised_coverage_m": 0.0,
       "route_path_coverage_m": 0.0,
       "steering_arc_coverage_m": 0.0,
-      "rear_axle_cross_track_m": 3.181
+      "rear_axle_cross_track_m": 3.181,
+      "geometry_at_stop": {
+       "applied_steering": 0.222,
+       "route_heading_change_deg_at_5_10_15_m": [
+        42.82,
+        77.455,
+        89.234
+       ]
+      }
      }
     ]
    },
@@ -38,6 +47,7 @@
     "behavior": "SUDDEN_RUN",
     "outcome": "TIMEOUT",
     "simulated_s": 45.0,
+    "collisions": 0,
     "stall_causes": [
      "OFF_ROUTE_ALIGNMENT",
      "ARTIFICIAL_PROBE_DEADLOCK"
@@ -52,7 +62,15 @@
       "supervised_coverage_m": 11.499,
       "route_path_coverage_m": 12.999,
       "steering_arc_coverage_m": 11.499,
-      "rear_axle_cross_track_m": 3.015
+      "rear_axle_cross_track_m": 3.015,
+      "geometry_at_stop": {
+       "applied_steering": 0.232,
+       "route_heading_change_deg_at_5_10_15_m": [
+        47.034,
+        69.276,
+        69.276
+       ]
+      }
      },
      {
       "cause": "ARTIFICIAL_PROBE_DEADLOCK",
@@ -63,7 +81,15 @@
       "supervised_coverage_m": 0.0,
       "route_path_coverage_m": 12.999,
       "steering_arc_coverage_m": 0.0,
-      "rear_axle_cross_track_m": 3.023
+      "rear_axle_cross_track_m": 3.023,
+      "geometry_at_stop": {
+       "applied_steering": 0.232,
+       "route_heading_change_deg_at_5_10_15_m": [
+        47.034,
+        69.276,
+        69.276
+       ]
+      }
      }
     ]
    },
@@ -72,6 +98,7 @@
     "behavior": "ORDINARY_CITY_JOURNEY",
     "outcome": "ARRIVED",
     "simulated_s": 44.0,
+    "collisions": 0,
     "stall_causes": [
      "EXCESSIVE_PEDESTRIAN_CAUTION",
      "EXCESSIVE_PEDESTRIAN_CAUTION"
@@ -86,7 +113,15 @@
       "supervised_coverage_m": 15.0,
       "route_path_coverage_m": null,
       "steering_arc_coverage_m": 15.0,
-      "rear_axle_cross_track_m": null
+      "rear_axle_cross_track_m": null,
+      "geometry_at_stop": {
+       "applied_steering": 0.0,
+       "route_heading_change_deg_at_5_10_15_m": [
+        0.784,
+        0.784,
+        0.784
+       ]
+      }
      },
      {
       "cause": "EXCESSIVE_PEDESTRIAN_CAUTION",
@@ -97,7 +132,15 @@
       "supervised_coverage_m": 15.0,
       "route_path_coverage_m": null,
       "steering_arc_coverage_m": 15.0,
-      "rear_axle_cross_track_m": null
+      "rear_axle_cross_track_m": null,
+      "geometry_at_stop": {
+       "applied_steering": 0.0,
+       "route_heading_change_deg_at_5_10_15_m": [
+        0.784,
+        0.784,
+        0.784
+       ]
+      }
      }
     ]
    }
@@ -120,6 +163,7 @@
     "behavior": "WALK_PARALLEL",
     "outcome": "ARRIVED",
     "simulated_s": 18.15,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -128,6 +172,7 @@
     "behavior": "SUDDEN_RUN",
     "outcome": "ARRIVED",
     "simulated_s": 18.1,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -136,6 +181,7 @@
     "behavior": "ORDINARY_CITY_JOURNEY",
     "outcome": "TIMEOUT",
     "simulated_s": 45.0,
+    "collisions": 0,
     "stall_causes": [
      "LEGITIMATE_TRAFFIC_BLOCKAGE"
     ],
@@ -158,6 +204,7 @@
     "behavior": "ORDINARY_CITY_JOURNEY",
     "outcome": "ARRIVED",
     "simulated_s": 20.4,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -166,6 +213,7 @@
     "behavior": "HESITATE_THEN_RETREAT",
     "outcome": "ARRIVED",
     "simulated_s": 18.15,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -174,6 +222,7 @@
     "behavior": "HESITATE_THEN_CROSS",
     "outcome": "ARRIVED",
     "simulated_s": 15.35,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -182,6 +231,7 @@
     "behavior": "ORDINARY_CITY_JOURNEY",
     "outcome": "ARRIVED",
     "simulated_s": 28.45,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -190,6 +240,7 @@
     "behavior": "SUDDEN_RUN",
     "outcome": "ARRIVED",
     "simulated_s": 22.3,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    },
@@ -198,6 +249,7 @@
     "behavior": "ORDINARY_CITY_JOURNEY",
     "outcome": "ARRIVED",
     "simulated_s": 23.05,
+    "collisions": 0,
     "stall_causes": [],
     "stops": []
    }

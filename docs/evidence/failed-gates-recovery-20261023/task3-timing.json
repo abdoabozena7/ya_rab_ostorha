@@ -31,6 +31,77 @@
    "max_box_delta_px": 0.0001220703125
   }
  },
+ "phase7_test_hold_frame_profile": {
+  "folder": "output/pedestrian-suite/phase7-test-20261023",
+  "split": "TEST",
+  "definition": "hold = row whose safety reason is CONTROL_PROCESSING_DEADLINE; before_hold = the row immediately preceding a hold",
+  "hold_frames": {
+   "scene_build_ms": {
+    "n": 610,
+    "median": 74.7
+   },
+   "semantics_and_freezing_ms": {
+    "n": 602,
+    "median": 28.8
+   },
+   "tracking_and_forecasts_ms": {
+    "n": 610,
+    "median": 34.5
+   },
+   "sensor_arrival_spread_ms": {
+    "n": 610,
+    "median": 62.3
+   },
+   "safety_ms": {
+    "n": 610,
+    "median": 49.6
+   }
+  },
+  "frames_before_hold": {
+   "scene_build_ms": {
+    "n": 491,
+    "median": 122.5
+   },
+   "semantics_and_freezing_ms": {
+    "n": 486,
+    "median": 67.2
+   },
+   "tracking_and_forecasts_ms": {
+    "n": 491,
+    "median": 40.9
+   },
+   "sensor_arrival_spread_ms": {
+    "n": 491,
+    "median": 61.7
+   },
+   "safety_ms": {
+    "n": 491,
+    "median": 42.0
+   }
+  },
+  "other_frames": {
+   "scene_build_ms": {
+    "n": 49685,
+    "median": 41.6
+   },
+   "semantics_and_freezing_ms": {
+    "n": 41300,
+    "median": 12.7
+   },
+   "tracking_and_forecasts_ms": {
+    "n": 49685,
+    "median": 20.0
+   },
+   "sensor_arrival_spread_ms": {
+    "n": 49685,
+    "median": 38.0
+   },
+   "safety_ms": {
+    "n": 49685,
+    "median": 32.3
+   }
+  }
+ },
  "observation_to_control": {
   "definition": "scripts/summarize_native_performance.py (Phase 6): sensor_age_before_safety_ms + safety + actuator_submit",
   "phase7_test_before": {

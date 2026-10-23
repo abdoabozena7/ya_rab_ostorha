@@ -338,6 +338,24 @@
     "pairs": 0
    }
   },
+  "worker_logged_failures": [
+   {
+    "scenario_id": "b1300fd050b5e925",
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Invalid parked occluder spawn; no geometry substitution",
+    "log": "worker-VALIDATION-Town10HD_Opt.log"
+   },
+   {
+    "scenario_id": "b1300fd050b5e925",
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Invalid parked occluder spawn; no geometry substitution",
+    "log": "worker-VALIDATION-Town10HD_Opt.log"
+   }
+  ],
   "episodes": [
    {
     "configuration": "B_PHYSICAL_PREDICTIVE",

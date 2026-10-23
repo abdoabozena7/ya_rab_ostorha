@@ -24,7 +24,9 @@ detector (63 instead of 422 ms per image), deterministic background traffic and
 lockstep counterfactual perception. It then evaluates A–E once on a new
 location-disjoint HOLDOUT partition. On HOLDOUT the evidence-budgeted layer
 failed: it braked more than the predictive RULE. No superiority claim holds,
-and real time remains unmet (RTF ≈ 0.39). Production behavior is unchanged.
+and real time remains unmet (RTF ≈ 0.39). Production decisions are unchanged
+on replay. Eighteen native crossing pairs show that the pre-ingress
+pedestrian forecast is a camera-timing race in both versions.
 
 The [full crossing comparison](docs/CROSSING_COMPARISON_20261019.md) runs both
 drivers automatically, retains complete recordings to actual contact or arrival,

@@ -338,6 +338,15 @@ def reset_ego(service):
         service._publish(pending);service._record(pending)
     old = service.observation.vehicle.actor_id if service.observation else None
     service.provider.reset_vehicle()
+    if service.observation is not None:
+        # The first control step after this respawn is chosen before the new
+        # vehicle's first reading arrives, from the destroyed vehicle's last
+        # one; its gear selects manual neutral or automatic drive for that tick,
+        # so launches differed by one tick with the previous episode's ending.
+        # Every episode starts from the same neutral reading (harness only).
+        from dataclasses import replace
+        service.observation = replace(service.observation,
+                                      vehicle=replace(service.observation.vehicle, gear=0, reverse=False))
     service.synchronizer = SensorSynchronizer(service._required_after_sensor_rebuild(), service.synchronizer.optional,
                                               timeout_s=service.synchronizer.timeout_s, now=service.now)
     service.camera_cache.clear();service.sensor_frame_cache.clear();service.collision_events.clear()

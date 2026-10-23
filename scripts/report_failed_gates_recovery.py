@@ -65,26 +65,80 @@ def episode_rows(evaluation):
     return sorted(rows, key=lambda r: (str(r.get('behavior')), str(r.get('scenario_id')), str(r.get('configuration'))))
 
 
+def stop_geometry(directory, start_s):
+    """Applied steering and the planned route's heading change ahead of the ego when a stall began."""
+    directory = Path(directory)
+    try:
+        manifest = json.loads((directory/'manifest.json').read_text(encoding='utf8'))
+        rows = [json.loads(l) for l in gzip.open(directory/'episode.jsonl.gz', 'rt', encoding='utf8')]
+    except (OSError, ValueError):return None
+    row = min(rows, key=lambda r: abs(r['elapsed_s']-start_s))
+    route = np.asarray(manifest['route'], float)[:, :2]
+    cumulative = np.r_[0., np.cumsum(np.linalg.norm(np.diff(route, axis=0), axis=1))]
+    index = int(np.argmin(np.linalg.norm(route-np.asarray(row['ego']['position_m'][:2]), axis=1)))
+    def heading(s):
+        k = int(np.clip(np.searchsorted(cumulative, s), 1, len(route)-1))
+        d = route[k]-route[k-1]
+        return math.atan2(d[1], d[0])
+    turn = [abs(math.degrees((heading(cumulative[index]+ahead)-heading(cumulative[index])+math.pi) % (2*math.pi)-math.pi))
+            for ahead in (5., 10., 15.)]
+    return rounded({'applied_steering': (row.get('applied_command') or {}).get('steering'),
+                    'route_heading_change_deg_at_5_10_15_m': turn})
+
+
 def task1():
-    def episodes(name):
+    def episodes(name, geometry=False):
         data = load(REPRO/name)
         if not data:return {'status': 'MISSING', 'file': name}
+        def contacts(e):
+            outcome = load(Path(e['directory'])/'outcome.json') if e.get('directory') else None
+            return None if outcome is None else len(outcome.get('contacts') or ())
         return {'source': data.get('source'), 'stops_by_cause': data['stops_by_cause'],
                 'episodes': [{'route': f"{e['location']['town']}:{e['location']['spawn_index']}", 'behavior': e['behavior'],
-                              'outcome': e['outcome'], 'simulated_s': e['simulated_s'],
+                              'outcome': e['outcome'], 'simulated_s': e['simulated_s'], 'collisions': contacts(e),
                               'stall_causes': [s['cause'] for s in e['stops'] if s['cause'] != 'ARRIVAL_STOP'],
-                              'stops': [rounded({k: s.get(k) for k in ('cause', 'start_s', 'duration_s', 'remaining_m', 'reason',
-                                                                       'supervised_coverage_m', 'route_path_coverage_m',
-                                                                       'steering_arc_coverage_m', 'rear_axle_cross_track_m')})
+                              'stops': [rounded({**{k: s.get(k) for k in ('cause', 'start_s', 'duration_s', 'remaining_m', 'reason',
+                                                                          'supervised_coverage_m', 'route_path_coverage_m',
+                                                                          'steering_arc_coverage_m', 'rear_axle_cross_track_m')},
+                                                 **({'geometry_at_stop': stop_geometry(e['directory'], s['start_s'])}
+                                                    if geometry and e.get('directory') else {})})
                                         for s in e['stops'] if s['cause'] != 'ARRIVAL_STOP']} for e in data['episode_stops']]}
     return {'task': 'CORNER_AND_TURN_DEADLOCKS',
             'before_reproduction': {'harness': 'route tracker off (previous evaluation steering and steering-arc probe)',
-                                    'folder': 'output/pedestrian-suite/task1-before-20261023', **episodes('classify-before.json')},
+                                    'folder': 'output/pedestrian-suite/task1-before-20261023', **episodes('classify-before.json', geometry=True)},
             'failed_attempt': {'folder': 'output/pedestrian-suite/task1-after-20261023-failed-processing-deadline',
                                'outcome': 'All 9 episodes SENSOR_FAULT at 0.2 s: route-path corridor projection cost 690-845 ms; '
                                           'fixed with PathCorridorIndex (exactness-tested) before the verification run'},
             'after_verification': {'folder': 'output/pedestrian-suite/task1-after-20261023c', **episodes('classify-after-c.json')},
             'phase7_test_baseline': 'All five configurations stopped ~18 m short on the four Town02 spawn-25 routes (route-end turn)'}
+
+
+def hold_frame_profile(folder, split):
+    """Scene, sensor and safety timings of processing-deadline hold frames, the frames just
+    before them, and all other frames (native harness logs)."""
+    root = SUITE/folder/split
+    if not root.exists():return {'status': 'MISSING', 'folder': str(root)}
+    fields = ('scene_build_ms', 'semantics_and_freezing_ms', 'tracking_and_forecasts_ms', 'sensor_arrival_spread_ms', 'safety_ms')
+    groups = {name: {k: [] for k in fields} for name in ('hold_frames', 'frames_before_hold', 'other_frames')}
+    def add(group, r):
+        scene = r.get('scene') or {};timings = scene.get('timings_ms') or {};target = groups[group]
+        for key, value in (('scene_build_ms', scene.get('build_ms')), ('semantics_and_freezing_ms', timings.get('semantics_and_freezing')),
+                           ('tracking_and_forecasts_ms', timings.get('tracking_and_forecasts')),
+                           ('sensor_arrival_spread_ms', max((v.get('after_first_ms') or 0. for v in (r.get('sensors') or {}).values()), default=None)),
+                           ('safety_ms', (r.get('control_timing_ms') or {}).get('safety'))):
+            if value is not None:target[key].append(value)
+    for path in sorted(root.glob('*/*/episode.jsonl.gz')):
+        with gzip.open(path, 'rt', encoding='utf8') as stream:
+            rows = [json.loads(line) for line in stream]
+        hold = [(r.get('safety') or {}).get('reason') == 'CONTROL_PROCESSING_DEADLINE' for r in rows]
+        for k, r in enumerate(rows):
+            if hold[k]:add('hold_frames', r)
+            elif k+1 < len(rows) and hold[k+1]:add('frames_before_hold', r)
+            else:add('other_frames', r)
+    q = lambda a: {'n': len(a), 'median': round(float(np.median(a)), 1)} if a else None
+    return {'folder': f'output/pedestrian-suite/{folder}', 'split': split,
+            'definition': 'hold = row whose safety reason is CONTROL_PROCESSING_DEADLINE; before_hold = the row immediately preceding a hold',
+            **{group: {k: q(v) for k, v in values.items()} for group, values in groups.items()}}
 
 
 def task3():
@@ -109,6 +163,7 @@ def task3():
                 'safety_ms': q(safety), 'harness_step_ms': q(steps)}
     result = {'task': 'SENSOR_TIMING_AND_PROCESSING_STALLS',
               'detector_equivalence_idle_engine': benchmark or {'status': 'MISSING'},
+              'phase7_test_hold_frame_profile': hold_frame_profile('phase7-test-20261023', 'TEST'),
               'observation_to_control': {
                   'definition': 'scripts/summarize_native_performance.py (Phase 6): sensor_age_before_safety_ms + safety + actuator_submit',
                   'phase7_test_before': performance_digest(load(ROOT/'docs/evidence/sequential-repair-20261023/phase6-native-latency.json')),
@@ -197,7 +252,8 @@ def counterfactual_divergence(folder, split):
                         for t in (row.get('scene') or {}).get('tracks') or ()}
             def walker(row):
                 return next((a['position_m'][:2] for a in row['evaluator_truth'] if a['role'] == 'ped_0'), None)
-            first = {'measured_tracks': None, 'applied_command': None, 'ego_position': None, 'scripted_walker': None}
+            first = {'measured_tracks': None, 'applied_command': None, 'ego_position': None, 'scripted_walker': None,
+                     'applied_command_any': None, 'ego_position_any': None, 'ego_speed_any': None, 'ego_gear': None}
             for a, b in zip(prefix_a, prefix_b):
                 ta, tb = tracks(a), tracks(b)
                 if first['measured_tracks'] is None and ta != tb:
@@ -208,12 +264,23 @@ def counterfactual_divergence(folder, split):
                 if first['applied_command'] is None and gap > .05:
                     first['applied_command'] = {'elapsed_s': a['elapsed_s'], arm_a: {k: ca.get(k) for k in ('throttle', 'brake')},
                                                 arm_b: {k: cb.get(k) for k in ('throttle', 'brake')}}
-                if first['ego_position'] is None and math.dist(a['ego']['position_m'][:2], b['ego']['position_m'][:2]) > .25:
+                if first['applied_command_any'] is None and gap > 0.:
+                    first['applied_command_any'] = {'elapsed_s': a['elapsed_s'], arm_a: {k: ca.get(k) for k in ('throttle', 'brake', 'steering')},
+                                                    arm_b: {k: cb.get(k) for k in ('throttle', 'brake', 'steering')}}
+                ego_gap = math.dist(a['ego']['position_m'][:2], b['ego']['position_m'][:2])
+                if first['ego_position'] is None and ego_gap > .25:
                     first['ego_position'] = {'elapsed_s': a['elapsed_s']}
+                if first['ego_position_any'] is None and ego_gap > 0.:
+                    first['ego_position_any'] = {'elapsed_s': a['elapsed_s'], 'gap_m': ego_gap, 'commands_equal_so_far': first['applied_command_any'] is None}
+                if first['ego_speed_any'] is None and a['ego']['speed_mps'] != b['ego']['speed_mps']:
+                    first['ego_speed_any'] = {'elapsed_s': a['elapsed_s'], arm_a: a['ego']['speed_mps'], arm_b: b['ego']['speed_mps']}
+                if first['ego_gear'] is None and a['ego'].get('gear') != b['ego'].get('gear'):
+                    first['ego_gear'] = {'elapsed_s': a['elapsed_s'], arm_a: a['ego'].get('gear'), arm_b: b['ego'].get('gear')}
                 wa, wb = walker(a), walker(b)
                 if first['scripted_walker'] is None and wa and wb and math.dist(wa, wb) > .05:first['scripted_walker'] = {'elapsed_s': a['elapsed_s']}
             result.append(rounded({'configuration': configuration.name, 'pair_id': pair_id[:16], 'decision_s': decision,
-                                   'compared_frames': min(len(prefix_a), len(prefix_b)), 'first_divergence': first}))
+                                   'compared_frames': min(len(prefix_a), len(prefix_b)), 'first_divergence': first,
+                                   'log_resolution': 'positions and commands are logged at 1e-3 (1 mm, 0.001); "_any" fields mean any logged difference'}))
     return result
 
 
@@ -244,14 +311,31 @@ def queue_evidence(directory):
             if lateral < 2.5 and 0. < s-ego_s < 40.:ahead.append((s-ego_s, float(np.linalg.norm(a['velocity_mps'][:2]))))
         leads.append(min(ahead) if ahead else None)
     moving_after = rows[end+1]['elapsed_s'] if end+1 < len(rows) else None
+    # When the nearest in-lane vehicle ahead started moving (> 0.5 m/s), and when the
+    # ego then exceeded 0.5 m/s: the measured response to a clearing queue.
+    lead_moving = ego_moving = None
+    for r in rows[i:]:
+        if lead_moving is None:
+            ego_s, _ = along(np.asarray(r['ego']['position_m'][:2]))
+            ahead = []
+            for a in r['evaluator_truth']:
+                if a['kind'] != 'vehicle' or a['role'] == 'occluder':continue
+                s, lateral = along(np.asarray(a['position_m'][:2]))
+                if lateral < 2.5 and 0. < s-ego_s < 40.:ahead.append((s-ego_s, float(np.linalg.norm(a['velocity_mps'][:2]))))
+            if ahead and min(ahead)[1] > .5:lead_moving = r['elapsed_s']
+        elif r['ego']['speed_mps'] > .5:
+            ego_moving = r['elapsed_s'];break
     middle = final[len(final)//2]
     return rounded({'longest_stop_start_s': rows[i]['elapsed_s'], 'longest_stop_s': rows[end]['elapsed_s']-rows[i]['elapsed_s'],
                     'remaining_m': (rows[end].get('route') or {}).get('remaining_m'),
                     'nearest_vehicle_ahead_in_lane_gap_speed': [l for l in leads if l][:3],
                     'lead_vehicle_stationary_fraction': (sum(1 for l in leads if l and l[1] < .2)/len(leads)) if leads else None,
                     'safety_reason_at_stop': (middle.get('safety') or {}).get('reason'),
+                    'final_safety_reason': (rows[-1].get('safety') or {}).get('reason'),
                     'predicted_person_check': predicted_person_check(middle),
-                    'ego_resumed_at_s': moving_after})
+                    'ego_resumed_at_s': moving_after, 'lead_vehicle_moving_at_s': lead_moving,
+                    'ego_above_0_5_mps_after_lead_at_s': ego_moving,
+                    'ego_response_after_lead_s': ego_moving-lead_moving if ego_moving is not None and lead_moving is not None else None})
 
 
 def predicted_person_check(row):
@@ -300,7 +384,67 @@ def task2():
                                 'hysteresis fix)'],
             'final_dml_detector': {'folder': 'output/pedestrian-suite/task2c-validation-dml-20261023',
                                    'summary': compact_summary(final), 'paired': rounded((final or {}).get('paired')),
+                                   'worker_logged_failures': worker_failures('task2c-validation-dml-20261023'),
                                    'episodes': episode_rows(final)}}
+
+
+def worker_failures(folder):
+    """Non-arrival episodes that carry an explicit error in the harness worker logs."""
+    failures = []
+    for log in sorted((SUITE/folder).glob('worker-*.log')):
+        for line in log.read_text(encoding='utf8', errors='replace').splitlines():
+            start = line.find('{"scenario_id"')
+            if start < 0:continue
+            try:record = json.loads(line[start:])
+            except ValueError:continue
+            if record.get('error'):
+                failures.append({'scenario_id': record['scenario_id'][:16], 'configuration': record.get('configuration'),
+                                 'behavior': record.get('behavior'), 'outcome': record.get('outcome'), 'error': record['error'], 'log': log.name})
+    return failures
+
+
+def condition_hash_differences(folder, split, evaluation):
+    """Manifest fields that differ across configurations where the condition hash differs."""
+    ignored = {'admission', 'risk_model_status', 'condition_hash'}
+    def paths(value, prefix=''):
+        if isinstance(value, dict):
+            return {p: v for k, item in value.items() if not (prefix == '' and k in ignored) for p, v in paths(item, f'{prefix}/{k}').items()}
+        if isinstance(value, list):
+            return {p: v for i, item in enumerate(value) for p, v in paths(item, f'{prefix}[{i}]').items()}
+        return {prefix: value}
+    result = []
+    for entry in (evaluation or {}).get('initial_conditions', ()):
+        if entry.get('identical_condition_hash'):continue
+        flattened = {}
+        for manifest in sorted((SUITE/folder/split).glob(f"*/{entry['scenario_id'][:16]}/manifest.json")):
+            flattened[manifest.parent.parent.name] = paths(json.loads(manifest.read_text(encoding='utf8')))
+        keys = set().union(*flattened.values()) if flattened else set()
+        differing = sorted(k for k in keys if len({json.dumps(f.get(k), sort_keys=True) for f in flattened.values()}) > 1)
+        result.append({'scenario_id': entry['scenario_id'][:16], 'behavior': entry.get('behavior'),
+                       'configurations': sorted(flattened), 'differing_fields': differing})
+    return result
+
+
+def paired_episode_deltas(evaluation, folder, split, configuration='D_EVIDENCE_BUDGETED', baseline='B_PHYSICAL_PREDICTIVE'):
+    """Per-episode configuration-minus-baseline differences, largest braking difference first."""
+    locations = {}
+    for outcome in (SUITE/folder/split/baseline).glob('*/outcome.json'):
+        location = (load(outcome) or {}).get('location') or {}
+        locations[outcome.parent.name] = f"{str(location.get('town', '')).replace('_Opt', '')}:{location.get('spawn_index')}"
+    episodes = {}
+    for m in (evaluation or {}).get('episode_metrics', ()):
+        if 'log_error' in m:continue
+        episodes.setdefault((m['scenario_id'][:16], m.get('counterfactual')), {})[m['configuration']] = m
+    rows = []
+    for (scenario, arm), by_configuration in episodes.items():
+        if configuration not in by_configuration or baseline not in by_configuration:continue
+        a, b = by_configuration[configuration], by_configuration[baseline]
+        rows.append(rounded({'behavior': b['behavior'], 'location': locations.get(scenario), 'counterfactual_arm': arm,
+                             'outcomes': {baseline: b['outcome'], configuration: a['outcome']},
+                             'unnecessary_braking_events': a['unnecessary_braking_events']-b['unnecessary_braking_events'],
+                             'unnecessary_full_stops': a['unnecessary_full_stops']-b['unnecessary_full_stops'],
+                             'unnecessary_stationary_s': a['unnecessary_stationary_s']-b['unnecessary_stationary_s']}))
+    return sorted(rows, key=lambda r: (-r['unnecessary_braking_events'], -r['unnecessary_stationary_s']))
 
 
 def task5():
@@ -342,6 +486,14 @@ def task5():
                                         'run2_repeat': rounded((repeat or {}).get('counterfactual_pairs')),
                                         'run_to_run': runs_identical(lockstep, repeat),
                                         'holdout': rounded((holdout or {}).get('counterfactual_pairs')),
+                                        'respawn_gear_fix_verification': {
+                                            'change': 'scripts/native/run_pedestrian_suite.py reset_ego: carried-over observation set to neutral after respawn',
+                                            'run1': {'folder': 'output/pedestrian-suite/task5-lockstep-cf-20261023f-gear-fix',
+                                                     'pairs': rounded((load(REPRO/'eval-task5-gear-fix.json') or {}).get('counterfactual_pairs'))},
+                                            'run2_repeat': {'folder': 'output/pedestrian-suite/task5-lockstep-cf-20261023f-gear-fix-repeat',
+                                                            'pairs': rounded((load(REPRO/'eval-task5-gear-fix-repeat.json') or {}).get('counterfactual_pairs'))},
+                                            'first_divergence_run1': counterfactual_divergence('task5-lockstep-cf-20261023f-gear-fix', 'VALIDATION'),
+                                            'first_divergence_run2': counterfactual_divergence('task5-lockstep-cf-20261023f-gear-fix-repeat', 'VALIDATION')},
                                         'first_divergence': {
                                             'validation_run1': counterfactual_divergence('task5-lockstep-cf-20261023e', 'VALIDATION'),
                                             'validation_run2_repeat': counterfactual_divergence('task5-lockstep-cf-20261023e-repeat', 'VALIDATION'),
@@ -356,7 +508,12 @@ def task5():
                                    'paired': rounded((holdout or {}).get('paired')), 'superiority': rounded((holdout or {}).get('superiority')),
                                    'by_behavior': rounded((holdout or {}).get('by_behavior')), 'episodes': episode_rows(holdout),
                                    'performance': performance_digest(load(REPRO/'perf-holdout.json')),
-                                   'prediction': prediction_digest(load(REPRO/'holdout-prediction.json'))}}
+                                   'prediction': prediction_digest(load(REPRO/'holdout-prediction.json')),
+                                   'worker_logged_failures': worker_failures('holdout-final-20261023'),
+                                   'condition_hash_differences': condition_hash_differences('holdout-final-20261023', 'HOLDOUT', holdout),
+                                   'paired_d_minus_b_by_episode': paired_episode_deltas(holdout, 'holdout-final-20261023', 'HOLDOUT'),
+                                   'paired_e_minus_b_by_episode': paired_episode_deltas(holdout, 'holdout-final-20261023', 'HOLDOUT',
+                                                                                        configuration='E_PHYSICAL_ABLATION')}}
 
 
 def differs_from_commit(report_path, hashes, commit='ae7e9e1'):
@@ -385,7 +542,7 @@ def differs_from_commit(report_path, hashes, commit='ae7e9e1'):
     return {'method': 'ARCHIVED_SOURCE_LF' if stored is not None else 'HASH_ONLY', 'files': differing}
 
 
-def task6(crossing_reports, tests):
+def task6(crossing_reports, tests, notes=None):
     from scripts.crossing_user_acceptance import evaluate_user_plan
     pairs = []
     for path in crossing_reports:
@@ -412,21 +569,53 @@ def task6(crossing_reports, tests):
                       'strict_first_motion': rounded({k: strict.get(k) for k in ('first_critical_braking_forecast', 'native_first_motion_elapsed_s',
                                                                                  'predicted_before_actual_motion', 'braked_from_at_least_20_kmh')}),
                       'strict_native_acceptance': report.get('native_acceptance'), 'wall_s': rounded(report.get('wall_s')),
+                      'native_worker_exit_code': report.get('native_worker_exit_code'),
+                      'note': (notes or {}).get(Path(path).parent.name),
                       'error': report.get('error')})
+    def backend_version(pair):
+        files = pair['source_files_differing_from_ae7e9e1']['files']
+        if not any(f.startswith('backend/') for f in files):return 'ae7e9e1'
+        reverted = [f for f in LIVE_PATH_FILES if f not in files]
+        return 'branch' if not reverted else 'branch, at ae7e9e1: '+', '.join(reverted)
+    summary = {}
+    for pair in pairs:
+        if pair.get('status') == 'MISSING':continue
+        pair['backend_version'] = backend_version(pair)
+        key = f"seed {pair['seed']} {pair['first']} first | {pair['backend_version']}"
+        entry = summary.setdefault(key, {'runs': 0, 'scenario_validation_passed': 0, 'predictive_braking_before_ingress': 0,
+                                         'lifecycle_gates_all_passed': 0, 'strict_native_acceptance': 0})
+        gates = pair['user_plan_review']['gates']
+        entry['runs'] += 1
+        entry['scenario_validation_passed'] += bool(pair['scenario_validation_passed'])
+        entry['predictive_braking_before_ingress'] += bool(gates.get('predictive_braking_before_ingress'))
+        entry['lifecycle_gates_all_passed'] += all(v for k, v in gates.items()
+                                                   if k not in ('actual_scenario_outcomes', 'predictive_braking_before_ingress'))
+        entry['strict_native_acceptance'] += bool(pair['strict_native_acceptance'])
     return {'task': 'FINAL_ADMISSION_AND_INTEGRATION', 'offline_tests': tests,
-            'production_replay_digest': {'run': 'runs/normal_city/run_55f3028020ae4f449f4dceaaf9b7efc3', 'frames': 150,
-                                         'ae7e9e1_modules': '439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc',
-                                         'this_branch': '439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc'},
+            'production_replay_digest': [
+                {'run': 'runs/normal_city/run_55f3028020ae4f449f4dceaaf9b7efc3', 'frames': 150,
+                 'ae7e9e1_modules': '439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc',
+                 'this_branch': '439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc'},
+                {'run': 'runs/normal_city/run_84c1fa1a0a304ec9adb3d51c929146fd (native crossing pair, Ya Rab Ostorha arm)', 'frames': 709,
+                 'ae7e9e1_modules': 'cc7d0b9e8cce07793e6766a47878f649f06983115980abefe6c1085eee074174',
+                 'this_branch': 'cc7d0b9e8cce07793e6766a47878f649f06983115980abefe6c1085eee074174'}],
+            'original_crossing_comparison_summary': summary,
             'original_crossing_comparison': pairs}
+
+
+LIVE_PATH_FILES = ('backend/core/service.py', 'backend/carla/provider.py', 'backend/computer_vision/worker.py',
+                   'backend/computer_vision/service.py', 'backend/computer_vision/detector.py')
 
 
 def main():
     parser = argparse.ArgumentParser();parser.add_argument('--tasks', default='1,2,3,4,5')
     parser.add_argument('--crossing-report', action='append', default=[], help='validate_crossing_pair report.json (Task 6)')
+    parser.add_argument('--crossing-notes', default=None, help='JSON file: crossing-pairs folder id -> run condition note (Task 6)')
     parser.add_argument('--tests', default=None, help='JSON object, or a JSON file, with offline test results (Task 6)')
     args = parser.parse_args()
     tests = None
     if args.tests:tests = load(args.tests) if Path(args.tests).is_file() else json.loads(args.tests)
+    notes = load(args.crossing_notes) if args.crossing_notes else None
     EVIDENCE.mkdir(parents=True, exist_ok=True)
     builders = {'1': ('task1-corner-deadlocks.json', task1), '2': ('task2-pedestrian-braking.json', task2),
                 '3': ('task3-timing.json', task3), '4': ('task4-route-completion.json', task4),

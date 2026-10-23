@@ -879,6 +879,315 @@
     }
    }
   ],
+  "respawn_gear_fix_verification": {
+   "change": "scripts/native/run_pedestrian_suite.py reset_ego: carried-over observation set to neutral after respawn",
+   "run1": {
+    "folder": "output/pedestrian-suite/task5-lockstep-cf-20261023f-gear-fix",
+    "pairs": [
+     {
+      "configuration": "B_PHYSICAL_PREDICTIVE",
+      "complete": true,
+      "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+      "decision_s": 5.722,
+      "compared_frames": 114,
+      "perception_timing": "LOCKSTEP",
+      "lockstep_complete": [
+       false,
+       true
+      ],
+      "lockstep_complete_before_decision": [
+       false,
+       true
+      ],
+      "prefix_frames": [
+       114,
+       114
+      ],
+      "max_ego_position_gap_m": 0.0,
+      "max_applied_command_gap": 0.0,
+      "max_walker_position_gap_m": 0.0,
+      "max_measured_track_gap_m": 11.718,
+      "observable_prefix_identical_within_tolerance": true,
+      "tolerances": {
+       "ego_position_m": 0.25,
+       "command": 0.05,
+       "walker_m": 0.05
+      },
+      "arms": {
+       "A_REMAINS_STATIONARY": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       },
+       "B_SUDDEN_CROSSING": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       }
+      }
+     },
+     {
+      "configuration": "D_EVIDENCE_BUDGETED",
+      "complete": true,
+      "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+      "decision_s": 5.722,
+      "compared_frames": 114,
+      "perception_timing": "LOCKSTEP",
+      "lockstep_complete": [
+       true,
+       true
+      ],
+      "lockstep_complete_before_decision": [
+       true,
+       true
+      ],
+      "prefix_frames": [
+       114,
+       114
+      ],
+      "max_ego_position_gap_m": 0.0,
+      "max_applied_command_gap": 0.0,
+      "max_walker_position_gap_m": 0.0,
+      "max_measured_track_gap_m": 11.719,
+      "observable_prefix_identical_within_tolerance": true,
+      "tolerances": {
+       "ego_position_m": 0.25,
+       "command": 0.05,
+       "walker_m": 0.05
+      },
+      "arms": {
+       "A_REMAINS_STATIONARY": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       },
+       "B_SUDDEN_CROSSING": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       }
+      }
+     }
+    ]
+   },
+   "run2_repeat": {
+    "folder": "output/pedestrian-suite/task5-lockstep-cf-20261023f-gear-fix-repeat",
+    "pairs": [
+     {
+      "configuration": "B_PHYSICAL_PREDICTIVE",
+      "complete": true,
+      "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+      "decision_s": 5.722,
+      "compared_frames": 114,
+      "perception_timing": "LOCKSTEP",
+      "lockstep_complete": [
+       false,
+       true
+      ],
+      "lockstep_complete_before_decision": [
+       false,
+       true
+      ],
+      "prefix_frames": [
+       114,
+       114
+      ],
+      "max_ego_position_gap_m": 0.0,
+      "max_applied_command_gap": 0.0,
+      "max_walker_position_gap_m": 0.0,
+      "max_measured_track_gap_m": 11.718,
+      "observable_prefix_identical_within_tolerance": true,
+      "tolerances": {
+       "ego_position_m": 0.25,
+       "command": 0.05,
+       "walker_m": 0.05
+      },
+      "arms": {
+       "A_REMAINS_STATIONARY": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       },
+       "B_SUDDEN_CROSSING": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       }
+      }
+     },
+     {
+      "configuration": "D_EVIDENCE_BUDGETED",
+      "complete": true,
+      "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+      "decision_s": 5.722,
+      "compared_frames": 114,
+      "perception_timing": "LOCKSTEP",
+      "lockstep_complete": [
+       true,
+       true
+      ],
+      "lockstep_complete_before_decision": [
+       true,
+       true
+      ],
+      "prefix_frames": [
+       114,
+       114
+      ],
+      "max_ego_position_gap_m": 0.0,
+      "max_applied_command_gap": 0.0,
+      "max_walker_position_gap_m": 0.0,
+      "max_measured_track_gap_m": 11.719,
+      "observable_prefix_identical_within_tolerance": true,
+      "tolerances": {
+       "ego_position_m": 0.25,
+       "command": 0.05,
+       "walker_m": 0.05
+      },
+      "arms": {
+       "A_REMAINS_STATIONARY": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       },
+       "B_SUDDEN_CROSSING": {
+        "outcome": "ARRIVED",
+        "contacts": 0
+       }
+      }
+     }
+    ]
+   },
+   "first_divergence_run1": [
+    {
+     "configuration": "B_PHYSICAL_PREDICTIVE",
+     "pair_id": "1b7b36f34297ebfc",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "first_divergence": {
+      "measured_tracks": {
+       "elapsed_s": 0.45,
+       "only_in_A_REMAINS_STATIONARY": [
+        [
+         "depth-person-1",
+         [
+          51.9,
+          9.7
+         ]
+        ]
+       ],
+       "only_in_B_SUDDEN_CROSSING": [
+        [
+         "depth-person-1",
+         [
+          10.6,
+          6.7
+         ]
+        ]
+       ]
+      },
+      "applied_command": null,
+      "ego_position": null,
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
+    },
+    {
+     "configuration": "D_EVIDENCE_BUDGETED",
+     "pair_id": "1b7b36f34297ebfc",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "first_divergence": {
+      "measured_tracks": {
+       "elapsed_s": 0.25,
+       "only_in_A_REMAINS_STATIONARY": [],
+       "only_in_B_SUDDEN_CROSSING": [
+        [
+         "depth-person-0",
+         [
+          33.9,
+          -11.7
+         ]
+        ]
+       ]
+      },
+      "applied_command": null,
+      "ego_position": null,
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
+    }
+   ],
+   "first_divergence_run2": [
+    {
+     "configuration": "B_PHYSICAL_PREDICTIVE",
+     "pair_id": "1b7b36f34297ebfc",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "first_divergence": {
+      "measured_tracks": {
+       "elapsed_s": 0.45,
+       "only_in_A_REMAINS_STATIONARY": [
+        [
+         "depth-person-1",
+         [
+          51.9,
+          9.7
+         ]
+        ]
+       ],
+       "only_in_B_SUDDEN_CROSSING": [
+        [
+         "depth-person-1",
+         [
+          10.6,
+          6.7
+         ]
+        ]
+       ]
+      },
+      "applied_command": null,
+      "ego_position": null,
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
+    },
+    {
+     "configuration": "D_EVIDENCE_BUDGETED",
+     "pair_id": "1b7b36f34297ebfc",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "first_divergence": {
+      "measured_tracks": {
+       "elapsed_s": 0.25,
+       "only_in_A_REMAINS_STATIONARY": [],
+       "only_in_B_SUDDEN_CROSSING": [
+        [
+         "depth-person-0",
+         [
+          33.9,
+          -11.7
+         ]
+        ]
+       ]
+      },
+      "applied_command": null,
+      "ego_position": null,
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
+    }
+   ]
+  },
   "first_divergence": {
    "validation_run1": [
     {
@@ -914,8 +1223,37 @@
       "ego_position": {
        "elapsed_s": 1.95
       },
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": {
+       "elapsed_s": 0.7,
+       "A_REMAINS_STATIONARY": {
+        "throttle": 0.9,
+        "brake": 0,
+        "steering": -0.041
+       },
+       "B_SUDDEN_CROSSING": {
+        "throttle": 0.9,
+        "brake": 0,
+        "steering": -0.037
+       }
+      },
+      "ego_position_any": {
+       "elapsed_s": 0.65,
+       "gap_m": 0.007,
+       "commands_equal_so_far": true
+      },
+      "ego_speed_any": {
+       "elapsed_s": 0.65,
+       "A_REMAINS_STATIONARY": 0.0,
+       "B_SUDDEN_CROSSING": 0.449
+      },
+      "ego_gear": {
+       "elapsed_s": 0.7,
+       "A_REMAINS_STATIONARY": 0,
+       "B_SUDDEN_CROSSING": 1
+      }
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     },
     {
      "configuration": "D_EVIDENCE_BUDGETED",
@@ -938,8 +1276,13 @@
       },
       "applied_command": null,
       "ego_position": null,
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     }
    ],
    "validation_run2_repeat": [
@@ -998,8 +1341,37 @@
       "ego_position": {
        "elapsed_s": 1.95
       },
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": {
+       "elapsed_s": 0.7,
+       "A_REMAINS_STATIONARY": {
+        "throttle": 0.9,
+        "brake": 0,
+        "steering": -0.041
+       },
+       "B_SUDDEN_CROSSING": {
+        "throttle": 0.9,
+        "brake": 0,
+        "steering": -0.037
+       }
+      },
+      "ego_position_any": {
+       "elapsed_s": 0.65,
+       "gap_m": 0.007,
+       "commands_equal_so_far": true
+      },
+      "ego_speed_any": {
+       "elapsed_s": 0.65,
+       "A_REMAINS_STATIONARY": 0.0,
+       "B_SUDDEN_CROSSING": 0.449
+      },
+      "ego_gear": {
+       "elapsed_s": 0.7,
+       "A_REMAINS_STATIONARY": 0,
+       "B_SUDDEN_CROSSING": 1
+      }
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     },
     {
      "configuration": "D_EVIDENCE_BUDGETED",
@@ -1022,8 +1394,13 @@
       },
       "applied_command": null,
       "ego_position": null,
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     }
    ],
    "holdout": [
@@ -1036,8 +1413,13 @@
       "measured_tracks": null,
       "applied_command": null,
       "ego_position": null,
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": null,
+      "ego_position_any": null,
+      "ego_speed_any": null,
+      "ego_gear": null
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     },
     {
      "configuration": "B_PHYSICAL_PREDICTIVE",
@@ -1143,8 +1525,37 @@
       "ego_position": {
        "elapsed_s": 2.0
       },
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": {
+       "elapsed_s": 0.7,
+       "A_REMAINS_STATIONARY": {
+        "throttle": 0.9,
+        "brake": 0,
+        "steering": -0.014
+       },
+       "B_SUDDEN_CROSSING": {
+        "throttle": 0.9,
+        "brake": 0,
+        "steering": -0.015
+       }
+      },
+      "ego_position_any": {
+       "elapsed_s": 0.65,
+       "gap_m": 0.008,
+       "commands_equal_so_far": true
+      },
+      "ego_speed_any": {
+       "elapsed_s": 0.65,
+       "A_REMAINS_STATIONARY": 0.449,
+       "B_SUDDEN_CROSSING": 0.0
+      },
+      "ego_gear": {
+       "elapsed_s": 0.7,
+       "A_REMAINS_STATIONARY": 1,
+       "B_SUDDEN_CROSSING": 0
+      }
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     },
     {
      "configuration": "C_LEARNED_RISK",
@@ -1179,8 +1590,37 @@
       "ego_position": {
        "elapsed_s": 2.45
       },
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": {
+       "elapsed_s": 2.15,
+       "A_REMAINS_STATIONARY": {
+        "throttle": 0.795,
+        "brake": 0,
+        "steering": 0.001
+       },
+       "B_SUDDEN_CROSSING": {
+        "throttle": 0.0,
+        "brake": 1.0,
+        "steering": 0.001
+       }
+      },
+      "ego_position_any": {
+       "elapsed_s": 2.15,
+       "gap_m": 0.001,
+       "commands_equal_so_far": false
+      },
+      "ego_speed_any": {
+       "elapsed_s": 2.15,
+       "A_REMAINS_STATIONARY": 8.76,
+       "B_SUDDEN_CROSSING": 8.717
+      },
+      "ego_gear": {
+       "elapsed_s": 2.55,
+       "A_REMAINS_STATIONARY": 2,
+       "B_SUDDEN_CROSSING": 0
+      }
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     },
     {
      "configuration": "D_EVIDENCE_BUDGETED",
@@ -1215,8 +1655,37 @@
       "ego_position": {
        "elapsed_s": 2.75
       },
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": {
+       "elapsed_s": 2.35,
+       "A_REMAINS_STATIONARY": {
+        "throttle": 0.0,
+        "brake": 1.0,
+        "steering": 0.001
+       },
+       "B_SUDDEN_CROSSING": {
+        "throttle": 0.0,
+        "brake": 0.7,
+        "steering": 0.001
+       }
+      },
+      "ego_position_any": {
+       "elapsed_s": 2.35,
+       "gap_m": 0.001,
+       "commands_equal_so_far": false
+      },
+      "ego_speed_any": {
+       "elapsed_s": 2.35,
+       "A_REMAINS_STATIONARY": 8.198,
+       "B_SUDDEN_CROSSING": 8.224
+      },
+      "ego_gear": {
+       "elapsed_s": 2.55,
+       "A_REMAINS_STATIONARY": 0,
+       "B_SUDDEN_CROSSING": 2
+      }
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     },
     {
      "configuration": "E_PHYSICAL_ABLATION",
@@ -1251,8 +1720,37 @@
       "ego_position": {
        "elapsed_s": 2.75
       },
-      "scripted_walker": null
-     }
+      "scripted_walker": null,
+      "applied_command_any": {
+       "elapsed_s": 2.35,
+       "A_REMAINS_STATIONARY": {
+        "throttle": 0.0,
+        "brake": 1.0,
+        "steering": 0.001
+       },
+       "B_SUDDEN_CROSSING": {
+        "throttle": 0.0,
+        "brake": 0.7,
+        "steering": 0.001
+       }
+      },
+      "ego_position_any": {
+       "elapsed_s": 2.35,
+       "gap_m": 0.001,
+       "commands_equal_so_far": false
+      },
+      "ego_speed_any": {
+       "elapsed_s": 2.35,
+       "A_REMAINS_STATIONARY": 8.198,
+       "B_SUDDEN_CROSSING": 8.224
+      },
+      "ego_gear": {
+       "elapsed_s": 2.55,
+       "A_REMAINS_STATIONARY": 0,
+       "B_SUDDEN_CROSSING": 2
+      }
+     },
+     "log_resolution": "positions and commands are logged at 1e-3 (1 mm, 0.001); \"_any\" fields mean any logged difference"
     }
    ]
   }
@@ -5813,6 +6311,630 @@
      }
     }
    }
-  }
+  },
+  "worker_logged_failures": [
+   {
+    "scenario_id": "df3170716588614b",
+    "configuration": "E_PHYSICAL_ABLATION",
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "time-out of 30000ms while waiting for the simulator, make sure the simulator is ready and connected to 127.0.0.1:2000",
+    "log": "worker-HOLDOUT-Town02_Opt.log"
+   },
+   {
+    "scenario_id": "b6ad2bd5097528d9",
+    "configuration": "A_REACTIVE",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Parked occluder would intrude into the planned corridor",
+    "log": "worker-HOLDOUT-Town05_Opt.log"
+   },
+   {
+    "scenario_id": "b6ad2bd5097528d9",
+    "configuration": "B_PHYSICAL_PREDICTIVE",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Parked occluder would intrude into the planned corridor",
+    "log": "worker-HOLDOUT-Town05_Opt.log"
+   },
+   {
+    "scenario_id": "b6ad2bd5097528d9",
+    "configuration": "C_LEARNED_RISK",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Parked occluder would intrude into the planned corridor",
+    "log": "worker-HOLDOUT-Town05_Opt.log"
+   },
+   {
+    "scenario_id": "b6ad2bd5097528d9",
+    "configuration": "D_EVIDENCE_BUDGETED",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Parked occluder would intrude into the planned corridor",
+    "log": "worker-HOLDOUT-Town05_Opt.log"
+   },
+   {
+    "scenario_id": "b6ad2bd5097528d9",
+    "configuration": "E_PHYSICAL_ABLATION",
+    "behavior": "EMERGE_FROM_PARKED",
+    "outcome": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE",
+    "error": "Parked occluder would intrude into the planned corridor",
+    "log": "worker-HOLDOUT-Town05_Opt.log"
+   }
+  ],
+  "condition_hash_differences": [
+   {
+    "scenario_id": "fec3854e5a284cdd",
+    "behavior": "EMERGE_FROM_PARKED",
+    "configurations": [
+     "A_REACTIVE",
+     "B_PHYSICAL_PREDICTIVE",
+     "C_LEARNED_RISK",
+     "D_EVIDENCE_BUDGETED",
+     "E_PHYSICAL_ABLATION"
+    ],
+    "differing_fields": [
+     "/initial_truth[0]/id",
+     "/initial_truth[1]/id",
+     "/occluder/id"
+    ]
+   }
+  ],
+  "paired_d_minus_b_by_episode": [
+   {
+    "behavior": "MULTI_PEDESTRIAN",
+    "location": "Town02:4",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "TIMEOUT",
+     "D_EVIDENCE_BUDGETED": "TIMEOUT"
+    },
+    "unnecessary_braking_events": 109,
+    "unnecessary_full_stops": 12,
+    "unnecessary_stationary_s": -1.55
+   },
+   {
+    "behavior": "MIXED_TRAFFIC",
+    "location": "Town01:118",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 40,
+    "unnecessary_full_stops": 31,
+    "unnecessary_stationary_s": 34.9
+   },
+   {
+    "behavior": "SUDDEN_RUN",
+    "location": "Town01:182",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.3
+   },
+   {
+    "behavior": "HESITATE_THEN_RETREAT",
+    "location": "Town01:93",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.3
+   },
+   {
+    "behavior": "WALK_PARALLEL",
+    "location": "Town01:81",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.05
+   },
+   {
+    "behavior": "WAIT_AT_CURB",
+    "location": "Town05:300",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "CROSS_NORMAL",
+    "location": "Town05:300",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "START_AND_RETURN",
+    "location": "Town02:41",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "HESITATE_THEN_RETREAT",
+    "location": "Town01:93",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "WAIT_AT_CURB",
+    "location": "Town05:289",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "EMERGE_FROM_PARKED",
+    "location": "Town03:216",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "WALK_PARALLEL",
+    "location": "Town02:41",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": -1,
+    "unnecessary_stationary_s": -0.2
+   },
+   {
+    "behavior": "MULTI_PEDESTRIAN",
+    "location": "Town01:93",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": -0.45
+   },
+   {
+    "behavior": "COUNTERFACTUAL_PAIR",
+    "location": "Town01:91",
+    "counterfactual_arm": "B_SUDDEN_CROSSING",
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": -1,
+    "unnecessary_stationary_s": -1.1
+   },
+   {
+    "behavior": "HESITATE_THEN_CROSS",
+    "location": "Town01:70",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.5
+   },
+   {
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "location": "Town01:70",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.35
+   },
+   {
+    "behavior": "HESITATE_THEN_CROSS",
+    "location": "Town01:73",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.1
+   },
+   {
+    "behavior": "SUDDEN_RUN",
+    "location": "Town01:70",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": -0.4
+   },
+   {
+    "behavior": "COUNTERFACTUAL_PAIR",
+    "location": "Town01:91",
+    "counterfactual_arm": "A_REMAINS_STATIONARY",
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": -1,
+    "unnecessary_stationary_s": -0.4
+   },
+   {
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "location": "Town02:41",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "TIMEOUT"
+    },
+    "unnecessary_braking_events": -2,
+    "unnecessary_full_stops": 4,
+    "unnecessary_stationary_s": 65.3
+   },
+   {
+    "behavior": "START_AND_RETURN",
+    "location": "Town03:216",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -2,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "MIXED_TRAFFIC",
+    "location": "Town01:73",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "ARRIVED"
+    },
+    "unnecessary_braking_events": -2,
+    "unnecessary_full_stops": -3,
+    "unnecessary_stationary_s": -6.35
+   },
+   {
+    "behavior": "CROSS_NORMAL",
+    "location": "Town02:7",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "D_EVIDENCE_BUDGETED": "TIMEOUT"
+    },
+    "unnecessary_braking_events": -3,
+    "unnecessary_full_stops": 6,
+    "unnecessary_stationary_s": 76.75
+   }
+  ],
+  "paired_e_minus_b_by_episode": [
+   {
+    "behavior": "WALK_PARALLEL",
+    "location": "Town02:41",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 3,
+    "unnecessary_full_stops": -1,
+    "unnecessary_stationary_s": 0.3
+   },
+   {
+    "behavior": "CROSS_NORMAL",
+    "location": "Town02:7",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 2,
+    "unnecessary_full_stops": 3,
+    "unnecessary_stationary_s": 1.7
+   },
+   {
+    "behavior": "WALK_PARALLEL",
+    "location": "Town01:81",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.45
+   },
+   {
+    "behavior": "MULTI_PEDESTRIAN",
+    "location": "Town01:93",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 1,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.25
+   },
+   {
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "location": "Town01:70",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 1,
+    "unnecessary_full_stops": -2,
+    "unnecessary_stationary_s": -1.05
+   },
+   {
+    "behavior": "SUDDEN_RUN",
+    "location": "Town01:182",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.15
+   },
+   {
+    "behavior": "HESITATE_THEN_RETREAT",
+    "location": "Town01:93",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "WAIT_AT_CURB",
+    "location": "Town05:300",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "CROSS_NORMAL",
+    "location": "Town05:300",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "START_AND_RETURN",
+    "location": "Town02:41",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "HESITATE_THEN_RETREAT",
+    "location": "Town01:93",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "WAIT_AT_CURB",
+    "location": "Town05:289",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "EMERGE_FROM_PARKED",
+    "location": "Town03:216",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": 0,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "HESITATE_THEN_CROSS",
+    "location": "Town01:70",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 1,
+    "unnecessary_stationary_s": 0.5
+   },
+   {
+    "behavior": "MULTI_PEDESTRIAN",
+    "location": "Town02:4",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "TIMEOUT",
+     "E_PHYSICAL_ABLATION": "TIMEOUT"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.25
+   },
+   {
+    "behavior": "SUDDEN_RUN",
+    "location": "Town01:70",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": -0.25
+   },
+   {
+    "behavior": "MIXED_TRAFFIC",
+    "location": "Town01:118",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": -1,
+    "unnecessary_stationary_s": -0.6
+   },
+   {
+    "behavior": "COUNTERFACTUAL_PAIR",
+    "location": "Town01:91",
+    "counterfactual_arm": "B_SUDDEN_CROSSING",
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -1,
+    "unnecessary_full_stops": -1,
+    "unnecessary_stationary_s": -1.05
+   },
+   {
+    "behavior": "START_AND_RETURN",
+    "location": "Town03:216",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -2,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": 0.0
+   },
+   {
+    "behavior": "HESITATE_THEN_CROSS",
+    "location": "Town01:73",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -2,
+    "unnecessary_full_stops": 0,
+    "unnecessary_stationary_s": -0.1
+   },
+   {
+    "behavior": "COUNTERFACTUAL_PAIR",
+    "location": "Town01:91",
+    "counterfactual_arm": "A_REMAINS_STATIONARY",
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -3,
+    "unnecessary_full_stops": -2,
+    "unnecessary_stationary_s": -1.35
+   },
+   {
+    "behavior": "MIXED_TRAFFIC",
+    "location": "Town01:73",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "ARRIVED"
+    },
+    "unnecessary_braking_events": -3,
+    "unnecessary_full_stops": -2,
+    "unnecessary_stationary_s": -5.3
+   },
+   {
+    "behavior": "ORDINARY_CITY_JOURNEY",
+    "location": "Town02:41",
+    "counterfactual_arm": null,
+    "outcomes": {
+     "B_PHYSICAL_PREDICTIVE": "ARRIVED",
+     "E_PHYSICAL_ABLATION": "INVALID_CONSTRUCTION_OR_RUNTIME_FAILURE"
+    },
+    "unnecessary_braking_events": -11,
+    "unnecessary_full_stops": -2,
+    "unnecessary_stationary_s": -3.2
+   }
+  ]
  }
 }

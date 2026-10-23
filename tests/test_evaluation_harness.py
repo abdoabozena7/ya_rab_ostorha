@@ -144,6 +144,29 @@ class InitialConditionAuditTests(unittest.TestCase):
         self.assertEqual((population.last_recycle_at, population.last_replacement_at, population.last_walker_replacement_at),
                          (120.5, 120.5, 120.5))
 
+    def test_respawn_starts_every_episode_from_the_same_neutral_reading(self):
+        from scripts.native.run_pedestrian_suite import reset_ego
+        from tests.core_packets import packet
+        events, resets = [], []
+        def service_after(previous_gear):
+            previous = packet(frame_id=40, timestamp_s=2.)
+            previous = previous.__class__(**{**previous.__dict__, 'vehicle': previous.vehicle.__class__(
+                **{**previous.vehicle.__dict__, 'gear': previous_gear})})
+            return SimpleNamespace(policy_history=[], active_safety=None, _clear_safety_command=lambda: None,
+                                   _drain_collision_events=lambda: None, _ingest_provider_sensors=lambda: None,
+                                   synchronizer=SimpleNamespace(drain=lambda force=False: [], optional=(), timeout_s=.25),
+                                   observation=previous, provider=SimpleNamespace(reset_vehicle=lambda: resets.append(True)),
+                                   _required_after_sensor_rebuild=lambda: ('imu',), camera_cache={}, sensor_frame_cache={},
+                                   collision_events=[], control_scene=None, control_scene_builder=None, now=time.monotonic,
+                                   _event=lambda kind, **payload: events.append(payload))
+        after_first_gear, after_neutral = service_after(1), service_after(0)
+        reset_ego(after_first_gear);reset_ego(after_neutral)
+        self.assertEqual(len(resets), 2)
+        # The destroyed vehicle's ending no longer selects the first post-respawn gear.
+        self.assertEqual(after_first_gear.observation.vehicle, after_neutral.observation.vehicle)
+        self.assertEqual((after_first_gear.observation.vehicle.gear, after_first_gear.observation.vehicle.reverse), (0, False))
+        self.assertEqual(events[0]['actor_id'], after_first_gear.observation.vehicle.actor_id)
+
     def test_background_vehicle_and_walker_mismatches_are_reported(self):
         from scripts.evaluate_closed_loop import initial_conditions
         base = {'scenario_id': 's', 'behavior': 'MIXED_TRAFFIC', 'condition_hash': 'h', 'construction': 'c',

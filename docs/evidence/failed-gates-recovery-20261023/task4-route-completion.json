@@ -29,8 +29,12 @@
     ],
     "lead_vehicle_stationary_fraction": 0.959,
     "safety_reason_at_stop": "Braking toward measured coverage speed limit 0.00 m/s",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 43.4
+    "ego_resumed_at_s": 43.4,
+    "lead_vehicle_moving_at_s": 42.85,
+    "ego_above_0_5_mps_after_lead_at_s": 43.65,
+    "ego_response_after_lead_s": 0.8
    }
   },
   {
@@ -60,8 +64,12 @@
     ],
     "lead_vehicle_stationary_fraction": 0.926,
     "safety_reason_at_stop": "Holding measured clearance/TTC hysteresis",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 43.5
+    "ego_resumed_at_s": 43.5,
+    "lead_vehicle_moving_at_s": 42.85,
+    "ego_above_0_5_mps_after_lead_at_s": 43.65,
+    "ego_response_after_lead_s": 0.8
    }
   },
   {
@@ -86,6 +94,7 @@
     "nearest_vehicle_ahead_in_lane_gap_speed": [],
     "lead_vehicle_stationary_fraction": 0.0,
     "safety_reason_at_stop": "Braking for a person who may cross the driving path",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": {
      "track_id": "depth-person-33",
      "source": "STATIONARY",
@@ -97,7 +106,10 @@
      "nearest_true_walker_m": 40.4,
      "nearest_true_vehicle_m": 0.344
     },
-    "ego_resumed_at_s": 44.75
+    "ego_resumed_at_s": 44.75,
+    "lead_vehicle_moving_at_s": null,
+    "ego_above_0_5_mps_after_lead_at_s": null,
+    "ego_response_after_lead_s": null
    }
   },
   {
@@ -127,8 +139,12 @@
     ],
     "lead_vehicle_stationary_fraction": 0.912,
     "safety_reason_at_stop": "Braking toward measured coverage speed limit 0.00 m/s",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 43.85
+    "ego_resumed_at_s": 43.85,
+    "lead_vehicle_moving_at_s": 42.85,
+    "ego_above_0_5_mps_after_lead_at_s": 44.0,
+    "ego_response_after_lead_s": 1.15
    }
   },
   {
@@ -145,6 +161,7 @@
     "nearest_vehicle_ahead_in_lane_gap_speed": [],
     "lead_vehicle_stationary_fraction": 0.0,
     "safety_reason_at_stop": "Braking for a person who may cross the driving path",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": {
      "track_id": "depth-person-33",
      "source": "STATIONARY",
@@ -156,7 +173,10 @@
      "nearest_true_walker_m": 40.496,
      "nearest_true_vehicle_m": 0.305
     },
-    "ego_resumed_at_s": 44.7
+    "ego_resumed_at_s": 44.7,
+    "lead_vehicle_moving_at_s": null,
+    "ego_above_0_5_mps_after_lead_at_s": null,
+    "ego_response_after_lead_s": null
    }
   },
   {
@@ -186,8 +206,12 @@
     ],
     "lead_vehicle_stationary_fraction": 1.0,
     "safety_reason_at_stop": "Evidence budget: bounded approach below verified 0.0 m/s",
+    "final_safety_reason": "Evidence budget: bounded approach below verified 0.0 m/s",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 35.15
+    "ego_resumed_at_s": 35.15,
+    "lead_vehicle_moving_at_s": 42.85,
+    "ego_above_0_5_mps_after_lead_at_s": 42.9,
+    "ego_response_after_lead_s": 0.05
    }
   },
   {
@@ -204,8 +228,12 @@
     "nearest_vehicle_ahead_in_lane_gap_speed": [],
     "lead_vehicle_stationary_fraction": 0.0,
     "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 6.55
+    "ego_resumed_at_s": 6.55,
+    "lead_vehicle_moving_at_s": null,
+    "ego_above_0_5_mps_after_lead_at_s": null,
+    "ego_response_after_lead_s": null
    }
   },
   {
@@ -222,8 +250,12 @@
     "nearest_vehicle_ahead_in_lane_gap_speed": [],
     "lead_vehicle_stationary_fraction": 0.0,
     "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 38.9
+    "ego_resumed_at_s": 38.9,
+    "lead_vehicle_moving_at_s": null,
+    "ego_above_0_5_mps_after_lead_at_s": null,
+    "ego_response_after_lead_s": null
    }
   },
   {
@@ -253,8 +285,12 @@
     ],
     "lead_vehicle_stationary_fraction": 0.875,
     "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "final_safety_reason": "Advancing below verified 4.0 m/s crossing limit",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 43.6
+    "ego_resumed_at_s": 43.6,
+    "lead_vehicle_moving_at_s": 42.85,
+    "ego_above_0_5_mps_after_lead_at_s": 43.75,
+    "ego_response_after_lead_s": 0.9
    }
   },
   {
@@ -287,8 +323,12 @@
     "nearest_vehicle_ahead_in_lane_gap_speed": [],
     "lead_vehicle_stationary_fraction": 0.0,
     "safety_reason_at_stop": "Protective braking: Release hysteresis: verifying the clear decision",
+    "final_safety_reason": "Observed forward stopping corridor is clear",
     "predicted_person_check": null,
-    "ego_resumed_at_s": 14.8
+    "ego_resumed_at_s": 14.8,
+    "lead_vehicle_moving_at_s": null,
+    "ego_above_0_5_mps_after_lead_at_s": null,
+    "ego_response_after_lead_s": null
    }
   }
  ],

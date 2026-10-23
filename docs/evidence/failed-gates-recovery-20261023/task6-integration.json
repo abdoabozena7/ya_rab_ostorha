@@ -1,17 +1,76 @@
 {
  "task": "FINAL_ADMISSION_AND_INTEGRATION",
  "offline_tests": {
-  "python_unittest": "852 tests OK (4 skipped: optional environments)",
+  "python_unittest": "853 tests OK (4 skipped: optional environments)",
   "javascript_npm_test": "180/180 pass",
   "detector_decode_cpu_perception_venv": "2/2 OK",
   "detector_decode_directml_venv": "2/2 OK",
   "frontend_changed": false
  },
- "production_replay_digest": {
-  "run": "runs/normal_city/run_55f3028020ae4f449f4dceaaf9b7efc3",
-  "frames": 150,
-  "ae7e9e1_modules": "439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc",
-  "this_branch": "439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc"
+ "production_replay_digest": [
+  {
+   "run": "runs/normal_city/run_55f3028020ae4f449f4dceaaf9b7efc3",
+   "frames": 150,
+   "ae7e9e1_modules": "439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc",
+   "this_branch": "439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc"
+  },
+  {
+   "run": "runs/normal_city/run_84c1fa1a0a304ec9adb3d51c929146fd (native crossing pair, Ya Rab Ostorha arm)",
+   "frames": 709,
+   "ae7e9e1_modules": "cc7d0b9e8cce07793e6766a47878f649f06983115980abefe6c1085eee074174",
+   "this_branch": "cc7d0b9e8cce07793e6766a47878f649f06983115980abefe6c1085eee074174"
+  }
+ ],
+ "original_crossing_comparison_summary": {
+  "seed 1701 NORMAL first | ae7e9e1": {
+   "runs": 5,
+   "scenario_validation_passed": 5,
+   "predictive_braking_before_ingress": 3,
+   "lifecycle_gates_all_passed": 3,
+   "strict_native_acceptance": 0
+  },
+  "seed 1701 NORMAL first | branch": {
+   "runs": 7,
+   "scenario_validation_passed": 7,
+   "predictive_braking_before_ingress": 2,
+   "lifecycle_gates_all_passed": 6,
+   "strict_native_acceptance": 0
+  },
+  "seed 1702 ROBOSPHERE first | branch": {
+   "runs": 2,
+   "scenario_validation_passed": 1,
+   "predictive_braking_before_ingress": 1,
+   "lifecycle_gates_all_passed": 0,
+   "strict_native_acceptance": 0
+  },
+  "seed 1701 NORMAL first | branch, at ae7e9e1: backend/core/service.py, backend/carla/provider.py, backend/computer_vision/worker.py, backend/computer_vision/service.py, backend/computer_vision/detector.py": {
+   "runs": 1,
+   "scenario_validation_passed": 1,
+   "predictive_braking_before_ingress": 1,
+   "lifecycle_gates_all_passed": 0,
+   "strict_native_acceptance": 0
+  },
+  "seed 1701 NORMAL first | branch, at ae7e9e1: backend/computer_vision/worker.py, backend/computer_vision/service.py, backend/computer_vision/detector.py": {
+   "runs": 1,
+   "scenario_validation_passed": 1,
+   "predictive_braking_before_ingress": 0,
+   "lifecycle_gates_all_passed": 0,
+   "strict_native_acceptance": 0
+  },
+  "seed 1701 NORMAL first | branch, at ae7e9e1: backend/carla/provider.py": {
+   "runs": 1,
+   "scenario_validation_passed": 1,
+   "predictive_braking_before_ingress": 0,
+   "lifecycle_gates_all_passed": 0,
+   "strict_native_acceptance": 0
+  },
+  "seed 1703 NORMAL first | branch": {
+   "runs": 1,
+   "scenario_validation_passed": 1,
+   "predictive_braking_before_ingress": 1,
+   "lifecycle_gates_all_passed": 1,
+   "strict_native_acceptance": 1
+  }
  },
  "original_crossing_comparison": [
   {
@@ -102,7 +161,10 @@
    },
    "strict_native_acceptance": false,
    "wall_s": 266.453,
-   "error": null
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "ae7e9e1"
   },
   {
    "report": "output\\crossing-pairs\\80ced1b126744ec191c6df876fd25253\\report.json",
@@ -196,7 +258,10 @@
    },
    "strict_native_acceptance": false,
    "wall_s": 297.844,
-   "error": null
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
   },
   {
    "report": "output\\crossing-pairs\\75c00d7ac0c144938d9ee46f79cf42fe\\report.json",
@@ -290,7 +355,10 @@
    },
    "strict_native_acceptance": false,
    "wall_s": 299.875,
-   "error": null
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
   },
   {
    "report": "output\\crossing-pairs\\10980dafec1848fcb8acdc28c9b8c794\\report.json",
@@ -377,7 +445,1376 @@
    },
    "strict_native_acceptance": false,
    "wall_s": 90.687,
-   "error": null
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\345027d81ce34d999d8b2a1319ba17b6\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": []
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 33.900000505149364,
+     "distance_m": 262.7660790709566
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 58.716271037295314
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": false,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": false,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 4.95,
+     "speed_kmh": 51.976,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.607,
+     "native_lateral_m": 4.475,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": 0.9
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": {
+     "elapsed_s": 4.95,
+     "speed_kmh": 51.976,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "applied_brake": 1.0,
+     "native_association_error_m": 0.607
+    },
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": true
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 287.968,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "ae7e9e1"
+  },
+  {
+   "report": "output\\crossing-pairs\\562f7e791ab74377ac6b4c5711d0442f\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 36.700000546872616,
+     "distance_m": 262.5996114477445
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 60.246408108083635
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 300.484,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\1fd74e0e184e43a89a08bc0844e95627\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 30.350000452250242,
+     "distance_m": 262.7905029945467
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 56.920550707039915
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": null
+   },
+   "independent_cleanup_passed": null,
+   "videos_after_exit_passed": null,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": false,
+     "engine_exited": false,
+     "three_videos_after_exit": false,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 4.95,
+     "speed_kmh": 56.395,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.649,
+     "native_lateral_m": 4.475,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": 0.9
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": null,
+    "predicted_before_actual_motion": null,
+    "braked_from_at_least_20_kmh": null
+   },
+   "strict_native_acceptance": null,
+   "wall_s": 270.063,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch, at ae7e9e1: backend/core/service.py, backend/carla/provider.py, backend/computer_vision/worker.py, backend/computer_vision/service.py, backend/computer_vision/detector.py"
+  },
+  {
+   "report": "output\\crossing-pairs\\b370bb5b912f4739b89460be01c27f98\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 37.35000055655837,
+     "distance_m": 262.74859693228746
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 59.288236450135344
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 313.219,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\0f802b37b39b4dd6b5e39b9107d1eb72\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 5.950000088661909,
+     "distance_m": 64.68442406610157
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 32.95000049099326,
+     "distance_m": 263.01157924218404
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 64.05025414774323,
+    "ROBOSPHERE": 59.04224842540175
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": null,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": false,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": true,
+     "finish_waited_for_exports": false,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": false,
+     "source_unchanged": true
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 257.36,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": "[Errno 13] Permission denied: 'D:\\\\projects\\\\Ai\\\\ya_rab_ostorha\\\\runs\\\\normal_city\\\\run_b20cbeaaca224a2093aa62d14cb17551\\\\video-status.json'",
+   "backend_version": "branch, at ae7e9e1: backend/computer_vision/worker.py, backend/computer_vision/service.py, backend/computer_vision/detector.py"
+  },
+  {
+   "report": "output\\crossing-pairs\\cc04aa08ef184ae7a332ad3be062e144\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 5.950000088661909,
+     "distance_m": 64.68442406610157
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 30.550000455230474,
+     "distance_m": 262.719792164614
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 64.05025414774323,
+    "ROBOSPHERE": 58.97892837944292
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": false,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": false,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": true,
+     "finish_waited_for_exports": false,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": false,
+     "source_unchanged": true
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 246.922,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch, at ae7e9e1: backend/carla/provider.py"
+  },
+  {
+   "report": "output\\crossing-pairs\\327da9a731c842d69e778110962cc31a\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 5.950000088661909,
+     "distance_m": 64.68442406610157
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 69.90000104159117,
+     "distance_m": 262.85879548964647
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 64.05025414774323,
+    "ROBOSPHERE": 57.89574784135356
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": true,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 5.0,
+     "speed_kmh": 57.193,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.662,
+     "native_lateral_m": 4.412,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": 0.85
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": {
+     "elapsed_s": 5.0,
+     "speed_kmh": 57.193,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "applied_brake": 1.0,
+     "native_association_error_m": 0.662
+    },
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": true
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 464.109,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\3b902ccf05a140778907bd354e48f700\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": []
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 58.55000087246299,
+     "distance_m": 262.98182563242966
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 57.926534349453306
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 394.141,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "ae7e9e1"
+  },
+  {
+   "report": "output\\crossing-pairs\\71ce3362867f44719cc375d8c897b1a9\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 31.800000473856926,
+     "distance_m": 263.03061645292314
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": null,
+    "ROBOSPHERE": null
+   },
+   "lifecycle": {
+    "source_unchanged": null,
+    "completed_without_shortening": false,
+    "finish_completed": null,
+    "cleanup_confirmed": false,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": false,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": false,
+     "finish_waited_for_exports": false,
+     "cleanup_confirmed": false,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": false,
+     "source_unchanged": false
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": null,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": null,
+   "native_worker_exit_code": 3221225725,
+   "note": null,
+   "error": "Native worker exited before finalization; original logs and checkpoints retained",
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\dbb894394011413b9b8a5847803e0432\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": []
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 32.70000048726797,
+     "distance_m": 262.9651885649141
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 59.339663319707505
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": true,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 4.95,
+     "speed_kmh": 57.505,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.667,
+     "native_lateral_m": 4.475,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": 0.9
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": {
+     "elapsed_s": 4.95,
+     "speed_kmh": 57.505,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "applied_brake": 1.0,
+     "native_association_error_m": 0.667
+    },
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": true
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 263.469,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "ae7e9e1"
+  },
+  {
+   "report": "output\\crossing-pairs\\60aa835cebf54203a5d0df3b89467ba3\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 5.950000088661909,
+     "distance_m": 64.68442406610157
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 33.400000497698784,
+     "distance_m": 262.5419935601952
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 64.05025414774323,
+    "ROBOSPHERE": 59.02939497366951
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": true,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 5.0,
+     "speed_kmh": 57.815,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.669,
+     "native_lateral_m": 4.412,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": 0.85
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": {
+     "elapsed_s": 5.0,
+     "speed_kmh": 57.815,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "applied_brake": 1.0,
+     "native_association_error_m": 0.669
+    },
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": true
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 266.484,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\4a60ec907ad74d289a1c4b43964a171d\\report.json",
+   "seed": 1701,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": []
+   },
+   "scenario_id": "crossing-a",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.78166190973349
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 51.00000075995922,
+     "distance_m": 262.6451430083385
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 63.22034027072435,
+    "ROBOSPHERE": 57.15571575095498
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": false,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": false,
+     "complete_recordings": true,
+     "finish_waited_for_exports": false,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": null,
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": null
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": null,
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": false,
+    "braked_from_at_least_20_kmh": false
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 359.093,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "ae7e9e1"
+  },
+  {
+   "report": "output\\crossing-pairs\\2f2e454b5745468daf63db1d7e16742a\\report.json",
+   "seed": 1702,
+   "first": "ROBOSPHERE",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-b",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 35.6500005312264,
+     "distance_m": 262.6829067406397
+    },
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 5.950000088661909,
+     "distance_m": 62.88506118371213
+    }
+   },
+   "peak_speed_kmh": {
+    "ROBOSPHERE": 60.453656557229195,
+    "NORMAL": 62.97638485979835
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": null,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": false,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": false,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": false,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": false,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 4.7,
+     "speed_kmh": 55.875,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.708,
+     "native_lateral_m": 4.6,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.8,
+    "path_ingress_lead_s": 1.1
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": {
+     "elapsed_s": 4.7,
+     "speed_kmh": 55.875,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "applied_brake": 1.0,
+     "native_association_error_m": 0.708
+    },
+    "native_first_motion_elapsed_s": 4.8,
+    "predicted_before_actual_motion": true,
+    "braked_from_at_least_20_kmh": true
+   },
+   "strict_native_acceptance": false,
+   "wall_s": 264.797,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": "[Errno 13] Permission denied: 'D:\\\\projects\\\\Ai\\\\ya_rab_ostorha\\\\runs\\\\normal_city\\\\run_86cf6a2e02964521986699356bffc3dc\\\\video-status.json'",
+   "backend_version": "branch"
+  },
+  {
+   "report": "output\\crossing-pairs\\45b3b4f7e7364d4280d8300f494568b8\\report.json",
+   "seed": 1703,
+   "first": "NORMAL",
+   "source_files_differing_from_ae7e9e1": {
+    "method": "ARCHIVED_SOURCE_LF",
+    "files": [
+     "backend/carla/pedestrian_world.py",
+     "backend/carla/provider.py",
+     "backend/computer_vision/detector.py",
+     "backend/computer_vision/service.py",
+     "backend/computer_vision/worker.py",
+     "backend/core/active_safety.py",
+     "backend/core/closed_loop_evaluation.py",
+     "backend/core/closed_loop_metrics.py",
+     "backend/core/decision_layers.py",
+     "backend/core/evidence_budget.py",
+     "backend/core/motion_geometry.py",
+     "backend/core/path_entry_risk.py",
+     "backend/core/pedestrian_behaviors.py",
+     "backend/core/route_tracking.py (absent at ae7e9e1)",
+     "backend/core/service.py",
+     "backend/learning/counterfactual_check.py"
+    ]
+   },
+   "scenario_id": "crossing-c",
+   "scenario_validation_passed": true,
+   "gates": {
+    "both_recorded": true,
+    "normal_pedestrian_collision": true,
+    "project_arrived_without_contact": true,
+    "initial_conditions_verified": true,
+    "same_requested_speed": true,
+    "same_detector": true,
+    "same_scenario": true,
+    "scheduled_crossing_origins_verified": true,
+    "critical_crossing_realized": true
+   },
+   "conditions_match": true,
+   "runs": {
+    "NORMAL": {
+     "status": "COLLISION",
+     "reason": "collision",
+     "duration_s": 6.000000089406967,
+     "distance_m": 63.67265840390086
+    },
+    "ROBOSPHERE": {
+     "status": "ARRIVED",
+     "reason": "destination_reached",
+     "duration_s": 32.25000048056245,
+     "distance_m": 262.55580166482594
+    }
+   },
+   "peak_speed_kmh": {
+    "NORMAL": 62.97638485979835,
+    "ROBOSPHERE": 58.57119869725982
+   },
+   "lifecycle": {
+    "source_unchanged": true,
+    "completed_without_shortening": true,
+    "finish_completed": true,
+    "cleanup_confirmed": true,
+    "simulator_exit_confirmed": true
+   },
+   "independent_cleanup_passed": true,
+   "videos_after_exit_passed": true,
+   "user_plan_review": {
+    "policy": "PREDICTIVE_BRAKING_BEFORE_CRITICAL_PATH_INGRESS_V1",
+    "passed": true,
+    "gates": {
+     "actual_scenario_outcomes": true,
+     "predictive_braking_before_ingress": true,
+     "complete_recordings": true,
+     "finish_waited_for_exports": true,
+     "cleanup_confirmed": true,
+     "independent_cleanup": true,
+     "engine_exited": true,
+     "three_videos_after_exit": true,
+     "source_unchanged": true
+    },
+    "first_forecast": {
+     "elapsed_s": 4.65,
+     "speed_kmh": 56.478,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "native_association_error_m": 0.717,
+     "native_lateral_m": 4.6,
+     "reactive_risk": "FORWARD_CLEAR_SIDE_REAR_UNVERIFIED"
+    },
+    "first_path_ingress_elapsed_s": 5.85,
+    "path_ingress_lead_s": 1.2
+   },
+   "strict_first_motion": {
+    "first_critical_braking_forecast": {
+     "elapsed_s": 4.65,
+     "speed_kmh": 56.478,
+     "source": "PEDESTRIAN_POSSIBLE_RUN",
+     "applied_brake": 1.0,
+     "native_association_error_m": 0.717
+    },
+    "native_first_motion_elapsed_s": 4.85,
+    "predicted_before_actual_motion": true,
+    "braked_from_at_least_20_kmh": true
+   },
+   "strict_native_acceptance": true,
+   "wall_s": 261.094,
+   "native_worker_exit_code": null,
+   "note": null,
+   "error": null,
+   "backend_version": "branch"
   }
  ]
 }
