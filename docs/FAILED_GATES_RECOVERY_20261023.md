@@ -7,12 +7,14 @@ compiled by `scripts/report_failed_gates_recovery.py` from ignored native
 outputs under `output/`. Raw outputs, failed attempts and superseded runs are
 retained under their own folder names; none were overwritten.
 
-Production code paths are unchanged in their decisions: the ordinary RULE path
-(Ya Rab Ostorha) and Normal give the same offline replay digests as `ae7e9e1`
-on two recordings. The production-reachable changes are no-op attribute writes
-or argument passing, and evaluation-only branches. The native crossing
-comparison still shows run-to-run variance in the predictive-braking review
-(Task 6). New behavior is limited to harness evaluation journeys
+Production decision code is unchanged on replay. Two offline replays through
+the scene builder and the RULE supervisor (the Ya Rab Ostorha decision path)
+give the same output digests as `ae7e9e1`. The other production-reachable
+changes are attribute writes, an unused argument, or evaluation-only
+branches, according to a review of the diff `ae7e9e1..HEAD`. That review is
+a code review, not part of the evidence files. Native crossing pairs show
+run-to-run variance in the predictive-braking review (Task 6). New behavior
+is limited to harness evaluation journeys
 (`journey.evaluation`), the evaluation-only decision layers (C/D/E), and
 opt-in runtimes. Learned control and RL stay disabled.
 
@@ -222,7 +224,8 @@ the logs; evaluator truth was used offline only
 
 Resumption: in the queue episodes the car exceeded 0.5 m/s 0.8–1.15 s after
 the lead vehicle started moving (A, B 0.8 s; E 0.9 s; C 1.15 s;
-`ego_response_after_lead_s`). No false arrivals: every ARRIVED episode ends
+`ego_response_after_lead_s`). D's 0.05 s is excluded: D had already started
+creeping before the lead moved. No false arrivals: every ARRIVED episode ends
 within 4.8 m of the destination (arrival radius 5 m), now checked per episode
 (`false_arrival`). The stationary-time metric no longer counts red-light
 waits or waits behind a vehicle within 15 m in the planned corridor; those are
@@ -279,9 +282,10 @@ applied commands and ego positions were identical to log precision (1 mm,
 0.001) until the decision point (5.72 s, 114 frames) in both runs. The walker
 gap was 0.0. The measured track sets were not identical (first differences at
 0.45 s and 5.15 s), but no difference reached the commands. B: the arms still
-diverge. Before the fixes, the ego gap was 16.0 m with a full-brake command
-difference. After the fixes it is 0.55 m with a 0.75 command difference,
-above the 0.25 m / 0.05 tolerance. In both runs the ego positions differ by
+diverge. In the retained lockstep attempt before the signal reset, B's ego
+gap was 16.0 m with a full-brake command difference
+(`before_signal_reset_attempt`). After the signal reset it is 0.55 m with a
+0.75 command difference, above the 0.25 m / 0.05 tolerance. In both runs the ego positions differ by
 7 mm at 0.65 s while every logged command so far was equal. The logged gear
 differs at 0.70 s (one arm still in neutral, the other in first). Commands
 differ from 0.70 s, by more than 0.05 from 1.85 s. The gaps repeat exactly in
@@ -310,11 +314,12 @@ DML; same command as before; `respawn_gear_fix_verification`).** In two
 independent runs, both B and D kept identical observable prefixes until the
 decision point (5.72 s, 114 frames). The ego, command and walker gaps were
 0.0; before the fix, B had 0.55 m and 0.75. In both runs B's stationary arm
-missed one lockstep frame before the decision without changing the prefix.
+had an incomplete lockstep prefix (`lockstep_complete_before_decision`)
+without any change to the prefix.
 All eight episodes arrived. The measured track sets still differ between the
 arms, but the differences no longer reach the commands. The perception-input
-divergence of C–E on HOLDOUT is a separate mechanism and was not re-tested;
-HOLDOUT is not rerun.
+divergence of C–E on HOLDOUT is a separate mechanism and was not re-tested
+(the only HOLDOUT run is `holdout-final-20261023`).
 
 **Comfort metric.** Reported peak decelerations above 15 m/s² were
 cross-checked with a deceleration derived only from positions. The two agree
@@ -344,9 +349,12 @@ partition was built once and was not used to tune anything.
 
 `output/pedestrian-suite/holdout-final-20261023`: 24 specs × 5
 configurations = 120 episodes, DirectML detector, lockstep perception for the
-counterfactual pair only, 90 s limit. It was evaluated once with
-`scripts/evaluate_closed_loop.py`; nothing was changed afterwards. The
-findings below are reported, not fixed: fixing them would tune on HOLDOUT.
+counterfactual pair only, 90 s limit. It was evaluated with
+`scripts/evaluate_closed_loop.py`. No controller or evaluation code was changed
+in response to its results. The one later change, the harness respawn gear
+fix, addresses a determinism defect seen on VALIDATION and HOLDOUT alike; it
+was verified on VALIDATION only, and HOLDOUT was not rerun. The findings
+below are reported, not fixed: fixing them would tune on HOLDOUT.
 
 **Validity of the run.**
 
@@ -362,13 +370,13 @@ findings below are reported, not fixed: fixing them would tune on HOLDOUT.
   Task 5 fix holds at unseen locations.
 * *Script realization.* In three specs a scripted walker never performed its
   script in any configuration: START_AND_RETURN Town03:216, CROSS_NORMAL
-  Town05:300 and MULTI_PEDESTRIAN Town02:4. In MULTI_PEDESTRIAN two walkers
-  stood in the lane and every configuration timed out. These episodes stay in
-  every denominator, but they are not evidence for those behaviors.
-* *Simulator failure.* One E ordinary journey is INVALID. The CARLA server
-  stopped accepting connections, and the worker logged "time-out of 30000ms
-  while waiting for the simulator". The episode is counted and was not
-  repeated.
+  Town05:300 and MULTI_PEDESTRIAN Town02:4. In MULTI_PEDESTRIAN two scripted
+  walkers (`ped_0`, `ped_2`) never performed their scripts, and every
+  configuration timed out. These episodes stay in every denominator, but
+  they are not evidence for those behaviors.
+* *Simulator failure.* One E ordinary journey is INVALID. The worker logged
+  "time-out of 30000ms while waiting for the simulator"
+  (`worker_logged_failures`). It is counted and was not repeated.
 
 **Results (`task5-validity-and-holdout.json`).**
 
@@ -407,12 +415,12 @@ the acceptance gates fail. **D failed on HOLDOUT.** Paired with B over 23
 episodes, it had +136 unnecessary braking events, +48 full stops, +168 s
 unnecessary stationary time and −2 arrivals; it also failed the
 ordinary-journey gate. The VALIDATION improvement of Task 2 did not
-generalize. The excess is concentrated (`paired_d_minus_b_by_episode`); 19
+generalize. The excess is concentrated (`paired_d_minus_b_by_episode`); 20
 of the 23 paired episodes differ by at most two braking events.
 
 * *Braking events.* MULTI_PEDESTRIAN Town02:4 accounts for +109 (D 113 vs
-  B 4). There, two scripted walkers stood in the lane and every configuration
-  timed out (see *Script realization*). MIXED_TRAFFIC Town01:118 adds +40
+  B 4). There, two scripted walkers never performed their scripts and every
+  configuration timed out (see *Script realization*). MIXED_TRAFFIC Town01:118 adds +40
   events and +31 full stops (37.5 s stationary vs E 2.0 s; learned risk was
   used in 49 frames).
 * *Stationary time.* CROSS_NORMAL Town02:7 (+76.8 s), ORDINARY Town02:41
@@ -462,8 +470,9 @@ are two mechanisms:
 * *C–E, perception.* Commands and ego positions stayed identical to log
   precision until 2.15 s (C) and 2.35 s (D, E). The measured track sets
   differ first, from 0.95 s; in D a camera depth-person track 57 m ahead
-  exists in only one arm. C and D each missed one lockstep frame before the
-  decision; E missed none. The perception input itself differed, not only its
+  exists in only one arm. C and D had incomplete lockstep prefixes before the
+  decision; E's was complete (`lockstep_complete_before_decision`). The
+  perception input itself differed, not only its
   timing. Camera post-processing carries render state across episodes and is
   one candidate, but it is not verified.
 
@@ -501,16 +510,19 @@ with this branch. That holds for a recorded production run
 `439ab4f0f8b2bd7dc87472177a8e6183ea0894b3d30668a3268c1de4b1737ccc`) and for
 the Ya Rab Ostorha arm of a native crossing pair recorded in this task
 (`run_84c1fa1a0a304ec9adb3d51c929146fd`, 709 frames:
-`cc7d0b9e8cce07793e6766a47878f649f06983115980abefe6c1085eee074174`). A
-line-by-line review of the diff found that every production-reachable
-change is an attribute write, an unused argument or an evaluation-only
-branch.
+`cc7d0b9e8cce07793e6766a47878f649f06983115980abefe6c1085eee074174`). The
+replays cover the Ya Rab Ostorha decision path only; Normal's reactive
+driver, the detector process and the stale-data window were not replayed. A
+code review of the diff (this task; not part of the evidence files) found
+that their production-reachable changes are attribute writes, an unused
+argument or evaluation-only branches.
 
 **Native crossing regression (original Normal vs Ya Rab Ostorha comparison;
 `scripts/native/validate_crossing_pair.py`, unchanged; `task6-integration.json`).**
-Each run is a full production pair: guided presentation, CPU detector, natural
-terminal events, Finish, cleanup and engine exit. Source files were checked
-against `ae7e9e1` from each run's source archive.
+Each attempt runs a full production pair: guided presentation, CPU detector,
+natural terminal events, Finish, cleanup and engine exit. Source files were
+checked against `ae7e9e1` from each run's source archive; run conditions
+(host load, interruptions, pre-registration) are recorded per run as `note`.
 
 | Seed, first arm | Backend | Runs | Scenario validation* | Pre-ingress speculative forecast† | Lifecycle gates‡ | Strict first-motion acceptance |
 |---|---|---|---|---|---|---|
@@ -527,38 +539,45 @@ from ≥ 20 km/h, ≥ 0.5 s before path ingress and before Normal's contact.
 ‡ complete recordings, Finish waited for exports, cleanup, independent
 cleanup probe, engine exit, three playable videos, source unchanged.
 
-* *Outcomes.* In 17 of 18 pairs Normal hit the walker (5.95–6.0 s) and Ya Rab
-  Ostorha arrived without contact (30.4–69.9 s; the longer arrivals contain
-  later stops). The exception is the first seed-1702 run. There, the Ya Rab
-  Ostorha arm stopped fail-closed at 3.9 s: the 0.25 s sensor-freshness
-  deadline was missed in four consecutive frames, so Normal was not run.
-  Diagnosis: an offline replay of those frames on branch code tracked in
-  12 ms instead of 115 ms live; the stage times were host stalls, and every
-  run on 23 October was 10–20 % slower than on 20 October. Fifteen earlier
-  seed-1702 pairs had no such fault, and the repeat passed the scenario.
-  The fault is intermittent and recorded as a failure.
+* *Outcomes.* 18 attempts gave 17 complete pairs. In all 17, Normal hit the
+  walker (5.95–6.0 s) and Ya Rab Ostorha arrived without contact
+  (30.4–69.9 s; the longer arrivals contain later stops). 10 of 18 attempts
+  passed all lifecycle gates. The incomplete attempt is the first seed-1702
+  run. There, the Ya Rab Ostorha arm stopped fail-closed at 3.9 s on the
+  0.25 s sensor-freshness deadline, so Normal was not run. A diagnostic
+  analysis (not part of the evidence files) found the deadline missed in
+  four consecutive frames. An offline replay of those frames on branch code
+  tracked in 12 ms instead of 115 ms live, so the stage times were host
+  stalls. Runs on 23 October were 10–20 % slower than on 20 October, and
+  fifteen earlier seed-1702 pairs had no such fault. The repeat passed the
+  scenario. The fault is classified as intermittent and recorded as a
+  failure.
 * *Seed 1703* passed every gate, including the strict first-motion audit:
   forecast and brake at 4.65 s, before the walker's first motion at 4.85 s,
   1.2 s before path ingress.
-* *The pre-ingress forecast is a timing race in both versions.* On seed
-  1701 it can fire only in a one-to-two-frame window around 4.9 s: the
+* *The pre-ingress forecast is a timing race in both versions* (diagnostic
+  analysis of the recorded runs; not part of the evidence files). On seed
+  1701 it can fire only in a one-to-two-frame window around 4.9 s. The
   walker's depth-person track must carry a ≥ 0.65 camera person label with
   valid torso depth while the walker is still below 0.3 m/s. Only the camera
-  frames at about 4.70–4.80 s qualify (offline YOLO on the recorded images
-  reproduced all 41 worker detections exactly). Passing runs happened to
+  frames at about 4.70–4.80 s qualify; offline YOLO on the recorded images
+  reproduced all 41 worker detections exactly. Passing runs happened to
   process one of those frames; failing runs processed the neighbouring
   frames. The asynchronous CPU worker picks frames by wall clock.
-* *No version effect.* A first, unplanned bisection appeared to separate the
-  versions (3 passes with the `ae7e9e1` service/provider, 0 of 5 without), and
-  several of its runs ran under concurrent analysis load. A pre-registered,
-  interleaved replication on an idle host then gave branch 2 of 3 and
-  `ae7e9e1` 1 of 3. Over all idle seed-1701 runs the rates are 2 of 7
-  (branch) and 3 of 5 (`ae7e9e1`). Together with the identical replay
-  digests and the line-by-line review, this is attributed to run-to-run
-  variance, not to the branch. The forecast passed in all six historical
-  pairs on 20 October but in only about 40 % of the seed-1701 runs on
-  23 October with either version. Its reliability therefore depends on host
-  timing; this is a remaining limitation of production, not a regression.
+* *No reproducible version effect.* A first, unplanned bisection appeared to
+  separate the versions: 3 passes with the `ae7e9e1` service/provider and 0
+  of 5 without. Several of those runs ran under concurrent analysis load. A
+  pre-registered, interleaved replication on an idle host then gave branch
+  2 of 3 and `ae7e9e1` 1 of 3. Over all seed-1701 runs the rates are 2 of 7
+  (29 %, branch) and 3 of 5 (60 %, `ae7e9e1`), 5 of 12 (42 %) combined. This
+  sample is too small to show equivalence. Together with the identical
+  replay digests and the code review, the difference is attributed to
+  run-to-run variance, not to the branch. The forecast came 0.9–1.5 s before
+  path ingress in all six historical pairs of 20 October
+  (`docs/evidence/sequential-repair-20261023/phase8-crossing-regression.json`)
+  but in fewer than half of the seed-1701 runs on 23 October. Its reliability
+  therefore depends on host timing; this is a remaining limitation of
+  production.
 * *Lifecycle.* Export and finalization failures occurred with both versions
   and are recorded per run: a Windows "Permission denied" on a recording's
   `video-status.json`, Finish not waiting for exports, and one native crash
@@ -580,8 +599,8 @@ opt-in.
 | 2 Unnecessary pedestrian braking (D) | Implemented; verified on VALIDATION; **failed on HOLDOUT** | HOLDOUT D vs B: +136 braking events, +48 full stops, +168 s stationary, −2 arrivals; ordinary gate 1/2 |
 | 3 Sensor timing / processing stalls | Implemented and verified (opt-in DirectML) | Real time not reached (RTF 0.39); async risk gave no net latency gain |
 | 4 Mixed traffic / route completion | Failures classified; metrics corrected; B and C pass the ordinary gate on HOLDOUT | D and E fail the ordinary gate on HOLDOUT; camera person false positive on a queued vehicle not fixed |
-| 5 Experimental validity | Implemented: deterministic background, signal reset, lockstep, comfort check, HOLDOUT partition run once, respawn first-gear fix (B and D VALIDATION prefixes identical in 2 of 2 runs) | C–E HOLDOUT counterfactual prefixes still differ through perception input |
-| 6 Integration | Offline suites pass; replay digests identical; 18 native crossing pairs recorded | Pre-ingress forecast is a timing race (≈ 40 % on seed 1701, both versions); one intermittent fail-closed sensor fault; export/finalization failures in both versions |
+| 5 Experimental validity | Implemented: deterministic background, signal reset, lockstep, comfort check, HOLDOUT partition built and evaluated (single run), respawn first-gear fix (B and D VALIDATION prefixes identical in 2 of 2 runs) | C–E HOLDOUT counterfactual prefixes still differ through perception input |
+| 6 Integration | Offline suites pass; RULE replay digests identical; 18 native crossing attempts (17 complete pairs) recorded | Pre-ingress forecast is a timing race (seed 1701: 5 of 12 runs, no reproducible version effect); one intermittent fail-closed sensor fault; export/finalization failures in both versions (10 of 18 attempts passed all lifecycle gates) |
 
 **Before and after.** "Before" is the phase-7 TEST evaluation at `ae7e9e1`
 (17 specs, 45 s limit, CPU detector). "After" is this branch on VALIDATION (13
@@ -594,17 +613,18 @@ comparison.
 |---|---|---|---|
 | Route completion B / D | 8/17 / 8/17 | 12/12 / 11/12 valid | 22/24 / 20/24 |
 | Ordinary journeys B / D | 1/3 / 1/3 | 2/2 / 2/2 | 2/2 / 1/2 |
-| Corner deadlocks (reproduced routes) | 2 timeouts + one 44 s journey; all configurations ~18 m short at Town02:25 | 8/9 arrived, 0 corner stalls | 1 D mid-turn coverage stall |
+| Corner deadlocks (reproduced routes; Task 1 diagnostic runs, configuration B) | 2 timeouts + one 44 s journey (TEST: all configurations ~18 m short at Town02:25) | 8/9 arrived, 0 corner stalls | 1 D mid-turn coverage stall |
 | Unnecessary full stops B / D | 35 / 69 | 24 / 16 | 38 / 86 |
-| Pedestrian collisions B–E (A) | 0 (2) | 0 | 0 (2) |
+| Pedestrian collisions (A) | B–E 0 (A 2) | B, D 0 | B–E 0 (A 2) |
 | Brake/release oscillations B / D | 237 / 327 | 173 / 153 | 293 / 466 |
 | Observation→control B, median / p95 | 140 / 203 ms | 129 / 176 ms | 128 / 178 ms |
 | Real-time factor B (median) | 0.35 | 0.39 | 0.39 |
 
-**Production status.** Production on this branch is decision-identical to
-`ae7e9e1` on replay. That covers the Normal reactive driver, the Ya Rab
-Ostorha RULE supervisor, the CPU YOLO detector, the guided crossing
-comparison and the 1 s stale window. Experimental and evaluation-only:
+**Production status.** On replay, the Ya Rab Ostorha decision path on this
+branch is decision-identical to `ae7e9e1`. The other production components
+have only no-op changes (code review): the Normal reactive driver, the CPU
+YOLO detector, the guided crossing comparison and the 1 s stale window.
+Experimental and evaluation-only:
 
 * decision layers C, D (V2) and E;
 * route tracker and route probe;

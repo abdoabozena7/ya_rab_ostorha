@@ -486,6 +486,11 @@ def task5():
                                         'run2_repeat': rounded((repeat or {}).get('counterfactual_pairs')),
                                         'run_to_run': runs_identical(lockstep, repeat),
                                         'holdout': rounded((holdout or {}).get('counterfactual_pairs')),
+                                        'before_signal_reset_attempt': {
+                                            'folders': ['output/pedestrian-suite/task5-lockstep-cf-20261023c-first-frame-miss',
+                                                        'output/pedestrian-suite/task5-lockstep-cf-20261023c-repeat-first-frame-miss'],
+                                            'run1': rounded((load(REPRO/'eval-task5-lockstep-c-first-frame-miss.json') or {}).get('counterfactual_pairs')),
+                                            'run2': rounded((load(REPRO/'eval-task5-lockstep-repeat-c-first-frame-miss.json') or {}).get('counterfactual_pairs'))},
                                         'respawn_gear_fix_verification': {
                                             'change': 'scripts/native/run_pedestrian_suite.py reset_ego: carried-over observation set to neutral after respawn',
                                             'run1': {'folder': 'output/pedestrian-suite/task5-lockstep-cf-20261023f-gear-fix',
@@ -620,7 +625,7 @@ def main():
     builders = {'1': ('task1-corner-deadlocks.json', task1), '2': ('task2-pedestrian-braking.json', task2),
                 '3': ('task3-timing.json', task3), '4': ('task4-route-completion.json', task4),
                 '5': ('task5-validity-and-holdout.json', task5),
-                '6': ('task6-integration.json', lambda: task6(args.crossing_report, tests))}
+                '6': ('task6-integration.json', lambda: task6(args.crossing_report, tests, notes))}
     for key in args.tasks.split(','):
         name, build = builders[key]
         (EVIDENCE/name).write_text(json.dumps(build(), indent=1), encoding='utf8')

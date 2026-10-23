@@ -879,6 +879,176 @@
     }
    }
   ],
+  "before_signal_reset_attempt": {
+   "folders": [
+    "output/pedestrian-suite/task5-lockstep-cf-20261023c-first-frame-miss",
+    "output/pedestrian-suite/task5-lockstep-cf-20261023c-repeat-first-frame-miss"
+   ],
+   "run1": [
+    {
+     "configuration": "B_PHYSICAL_PREDICTIVE",
+     "complete": true,
+     "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "perception_timing": "LOCKSTEP",
+     "lockstep_complete": [
+      false,
+      true
+     ],
+     "lockstep_complete_before_decision": [
+      false,
+      true
+     ],
+     "prefix_frames": [
+      114,
+      114
+     ],
+     "max_ego_position_gap_m": 15.987,
+     "max_applied_command_gap": 1.0,
+     "max_walker_position_gap_m": 0.0,
+     "max_measured_track_gap_m": 16.125,
+     "observable_prefix_identical_within_tolerance": false,
+     "tolerances": {
+      "ego_position_m": 0.25,
+      "command": 0.05,
+      "walker_m": 0.05
+     },
+     "arms": {
+      "A_REMAINS_STATIONARY": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      },
+      "B_SUDDEN_CROSSING": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      }
+     }
+    },
+    {
+     "configuration": "D_EVIDENCE_BUDGETED",
+     "complete": true,
+     "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "perception_timing": "LOCKSTEP",
+     "lockstep_complete": [
+      false,
+      true
+     ],
+     "lockstep_complete_before_decision": [
+      false,
+      true
+     ],
+     "prefix_frames": [
+      114,
+      114
+     ],
+     "max_ego_position_gap_m": 0.0,
+     "max_applied_command_gap": 0.0,
+     "max_walker_position_gap_m": 0.0,
+     "max_measured_track_gap_m": 0.0,
+     "observable_prefix_identical_within_tolerance": true,
+     "tolerances": {
+      "ego_position_m": 0.25,
+      "command": 0.05,
+      "walker_m": 0.05
+     },
+     "arms": {
+      "A_REMAINS_STATIONARY": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      },
+      "B_SUDDEN_CROSSING": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      }
+     }
+    }
+   ],
+   "run2": [
+    {
+     "configuration": "B_PHYSICAL_PREDICTIVE",
+     "complete": true,
+     "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "perception_timing": "LOCKSTEP",
+     "lockstep_complete": [
+      false,
+      false
+     ],
+     "lockstep_complete_before_decision": [
+      false,
+      false
+     ],
+     "prefix_frames": [
+      114,
+      114
+     ],
+     "max_ego_position_gap_m": 15.987,
+     "max_applied_command_gap": 1.0,
+     "max_walker_position_gap_m": 0.0,
+     "max_measured_track_gap_m": 16.125,
+     "observable_prefix_identical_within_tolerance": false,
+     "tolerances": {
+      "ego_position_m": 0.25,
+      "command": 0.05,
+      "walker_m": 0.05
+     },
+     "arms": {
+      "A_REMAINS_STATIONARY": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      },
+      "B_SUDDEN_CROSSING": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      }
+     }
+    },
+    {
+     "configuration": "D_EVIDENCE_BUDGETED",
+     "complete": true,
+     "pair_id": "1b7b36f34297ebfc0a6f06b0f6c55b01600421dbb1076572f3ce8647f71681b3",
+     "decision_s": 5.722,
+     "compared_frames": 114,
+     "perception_timing": "LOCKSTEP",
+     "lockstep_complete": [
+      true,
+      true
+     ],
+     "lockstep_complete_before_decision": [
+      true,
+      true
+     ],
+     "prefix_frames": [
+      114,
+      114
+     ],
+     "max_ego_position_gap_m": 0.0,
+     "max_applied_command_gap": 0.0,
+     "max_walker_position_gap_m": 0.0,
+     "max_measured_track_gap_m": 0.0,
+     "observable_prefix_identical_within_tolerance": true,
+     "tolerances": {
+      "ego_position_m": 0.25,
+      "command": 0.05,
+      "walker_m": 0.05
+     },
+     "arms": {
+      "A_REMAINS_STATIONARY": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      },
+      "B_SUDDEN_CROSSING": {
+       "outcome": "ARRIVED",
+       "contacts": 0
+      }
+     }
+    }
+   ]
+  },
   "respawn_gear_fix_verification": {
    "change": "scripts/native/run_pedestrian_suite.py reset_ego: carried-over observation set to neutral after respawn",
    "run1": {

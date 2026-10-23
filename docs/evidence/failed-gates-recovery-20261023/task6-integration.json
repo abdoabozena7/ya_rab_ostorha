@@ -162,7 +162,7 @@
    "strict_native_acceptance": false,
    "wall_s": 266.453,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Phase 8 regression run of the sequential repair (committed ae7e9e1), earlier on 23 October; idle host",
    "error": null,
    "backend_version": "ae7e9e1"
   },
@@ -259,7 +259,7 @@
    "strict_native_acceptance": false,
    "wall_s": 297.844,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch run 1; light concurrent JSON reads by the operator",
    "error": null,
    "backend_version": "branch"
   },
@@ -356,7 +356,7 @@
    "strict_native_acceptance": false,
    "wall_s": 299.875,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch run 2; light concurrent JSON reads by the operator",
    "error": null,
    "backend_version": "branch"
   },
@@ -446,7 +446,7 @@
    "strict_native_acceptance": false,
    "wall_s": 90.687,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch, seed 1702; ROBOSPHERE arm ended SENSOR_FAULT_STOP at 3.9 s (0.25 s freshness deadline missed in 4 consecutive frames); NORMAL arm not run",
    "error": null,
    "backend_version": "branch"
   },
@@ -539,7 +539,7 @@
    "strict_native_acceptance": false,
    "wall_s": 287.968,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "A/B control: backend/ checked out at ae7e9e1; idle host",
    "error": null,
    "backend_version": "ae7e9e1"
   },
@@ -636,7 +636,7 @@
    "strict_native_acceptance": false,
    "wall_s": 300.484,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch run 3; idle host",
    "error": null,
    "backend_version": "branch"
   },
@@ -735,7 +735,7 @@
    "strict_native_acceptance": null,
    "wall_s": 270.063,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Bisection: five live-path files at ae7e9e1; idle host; the parent was interrupted after the worker finished, so cleanup/exit/video post-processing is missing",
    "error": null,
    "backend_version": "branch, at ae7e9e1: backend/core/service.py, backend/carla/provider.py, backend/computer_vision/worker.py, backend/computer_vision/service.py, backend/computer_vision/detector.py"
   },
@@ -832,7 +832,7 @@
    "strict_native_acceptance": false,
    "wall_s": 313.219,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch run 4; six offline analysis agents running concurrently (host load)",
    "error": null,
    "backend_version": "branch"
   },
@@ -926,7 +926,7 @@
    "strict_native_acceptance": false,
    "wall_s": 257.36,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Bisection: perception files at ae7e9e1; concurrent analysis load",
    "error": "[Errno 13] Permission denied: 'D:\\\\projects\\\\Ai\\\\ya_rab_ostorha\\\\runs\\\\normal_city\\\\run_b20cbeaaca224a2093aa62d14cb17551\\\\video-status.json'",
    "backend_version": "branch, at ae7e9e1: backend/computer_vision/worker.py, backend/computer_vision/service.py, backend/computer_vision/detector.py"
   },
@@ -1022,7 +1022,7 @@
    "strict_native_acceptance": false,
    "wall_s": 246.922,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Bisection: provider.py at ae7e9e1; concurrent analysis load",
    "error": null,
    "backend_version": "branch, at ae7e9e1: backend/carla/provider.py"
   },
@@ -1132,7 +1132,7 @@
    "strict_native_acceptance": false,
    "wall_s": 464.109,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Pre-registered replication 1/6 (branch); idle host",
    "error": null,
    "backend_version": "branch"
   },
@@ -1212,7 +1212,7 @@
    "strict_native_acceptance": false,
    "wall_s": 394.141,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Pre-registered replication 2/6 (ae7e9e1 backend); idle host",
    "error": null,
    "backend_version": "ae7e9e1"
   },
@@ -1309,7 +1309,7 @@
    "strict_native_acceptance": false,
    "wall_s": null,
    "native_worker_exit_code": 3221225725,
-   "note": null,
+   "note": "Pre-registered replication 3/6 (branch); idle host; validator worker crashed natively during finalization (0xC00000FD) after both arms finished",
    "error": "Native worker exited before finalization; original logs and checkpoints retained",
    "backend_version": "branch"
   },
@@ -1402,7 +1402,7 @@
    "strict_native_acceptance": false,
    "wall_s": 263.469,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Pre-registered replication 4/6 (ae7e9e1 backend); idle host",
    "error": null,
    "backend_version": "ae7e9e1"
   },
@@ -1512,7 +1512,7 @@
    "strict_native_acceptance": false,
    "wall_s": 266.484,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Pre-registered replication 5/6 (branch); idle host",
    "error": null,
    "backend_version": "branch"
   },
@@ -1592,7 +1592,7 @@
    "strict_native_acceptance": false,
    "wall_s": 359.093,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Pre-registered replication 6/6 (ae7e9e1 backend); idle host",
    "error": null,
    "backend_version": "ae7e9e1"
   },
@@ -1702,7 +1702,7 @@
    "strict_native_acceptance": false,
    "wall_s": 264.797,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch, seed 1702 repeat; idle host; Finish/export failed with a Windows Permission denied on the recording video-status.json",
    "error": "[Errno 13] Permission denied: 'D:\\\\projects\\\\Ai\\\\ya_rab_ostorha\\\\runs\\\\normal_city\\\\run_86cf6a2e02964521986699356bffc3dc\\\\video-status.json'",
    "backend_version": "branch"
   },
@@ -1812,7 +1812,7 @@
    "strict_native_acceptance": true,
    "wall_s": 261.094,
    "native_worker_exit_code": null,
-   "note": null,
+   "note": "Branch, seed 1703; idle host",
    "error": null,
    "backend_version": "branch"
   }
