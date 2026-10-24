@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,completedOvertakes,scenarioRunSummary,urbanAvailability} from '../frontend/scenario-profile.js';
+import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,completedOvertakes,scenarioRunSummary,urbanAvailability,scenarioStartState} from '../frontend/scenario-profile.js';
 import {recordedDriverDescription} from '../frontend/driver-profile.js';
 import {presentationSummary} from '../frontend/presentation-run.js';
 import {missionState,stressSummary} from '../frontend/mission-state.js';
@@ -10,12 +10,24 @@ test('scenario availability explains missing catalog, pending acceptance and val
   assert.match(urbanAvailability(null).notice,/has not been received/);
   const catalog={options:[{id:EGYPT_SCENARIO,available:false,reason:'Twelve source-bound native trips have not been accepted'}]};
   assert.equal(urbanAvailability(catalog).suffix,'unavailable');
-  assert.match(urbanAvailability(catalog).notice,/Twelve source-bound native trips/);
-  assert.match(urbanAvailability(catalog).notice,/No active validation window/);
+  assert.equal(urbanAvailability(catalog).label,'Needs validation');
+  assert.match(urbanAvailability(catalog).notice,/Neither is available/);
   Object.assign(catalog.options[0],{available:true,validation_window_active:true});
   assert.equal(urbanAvailability(catalog).available,true);assert.equal(urbanAvailability(catalog).suffix,'validation only');
   Object.assign(catalog.options[0],{native_accepted:true});
   assert.match(urbanAvailability(catalog).notice,/acceptance verified/);
+});
+
+test('an experimental selection is inspectable but cannot prepare or start without access',()=>{
+  const local={scenarioId:EGYPT_SCENARIO,scenarioDraft:true};
+  const catalog={options:[{id:EGYPT_SCENARIO,available:false}]};
+  assert.deepEqual(scenarioStartState(local,catalog),{blocked:true,checking:false,needsPreparation:false,label:'Validation required'});
+  assert.equal(scenarioStartState(local,null).checking,true);
+  catalog.options[0].available=true;
+  assert.equal(scenarioStartState(local,catalog).needsPreparation,true);
+  assert.equal(scenarioStartState(local,catalog).label,'Prepare selected scenario');
+  assert.equal(scenarioStartState({...local,scenarioDraft:false},catalog).label,null);
+  assert.equal(scenarioStartState({scenarioId:LEGACY_SCENARIO},null).blocked,false);
 });
 
 test('scenario selection is independent from first driver and preserves legacy speed',()=>{

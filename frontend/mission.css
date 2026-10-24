@@ -43,12 +43,31 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn{border-r
 #missionPreview .illustrated-drive{display:block;width:100%;height:100%}
 #missionPreview>span{position:absolute;bottom:18px;left:22px;background:#FDFCF8ed;padding:8px 14px;border-radius:999px;font-size:11px;color:var(--ink)}
 .mission-copy{padding:26px 0 0}
-#missionScenarioChoices{border:0;padding:0;margin:18px auto;min-width:0;max-width:620px;text-align:left}
-#missionScenarioChoices legend{font-size:14px;font-weight:550;margin-bottom:8px}
-#missionScenarioChoices label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-#missionScenario{display:block;width:100%;max-width:620px;padding:10px 16px;white-space:normal}
-#missionScenarioNotice{font-size:12px;color:var(--muted);margin:8px 0 0;overflow-wrap:anywhere}
-#missionScenarioChoices #missionRefreshScenarios{padding:5px 0;margin-top:6px;background:transparent;border:0;border-radius:3px;color:#8a4c47;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+#missionScenarioChoices{border:0;padding:0;margin:18px auto 24px;min-width:0;width:100%;max-width:700px;text-align:left}
+#missionScenarioChoices legend{font-size:14px;font-weight:550;padding:0}
+.mission-scenario-intro{font-size:12px;color:var(--muted);margin:4px 0 12px}
+#missionScenario{display:grid;gap:8px}
+#missionScenarioChoices .mission-scenario-option{display:flex;align-items:center;gap:14px;padding:16px 18px;margin:0;border:1px solid var(--line);border-radius:20px;background:#ffffffa8;cursor:pointer;transition:border-color 180ms ease,background 180ms ease}
+#missionScenarioChoices .mission-scenario-option:hover{border-color:#bda39c}
+#missionScenarioChoices .mission-scenario-option:has(input:checked){border-color:#9c746e;background:#fff6f2}
+#missionScenarioChoices .mission-scenario-option:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:3px}
+#missionScenarioChoices .mission-scenario-option:has(input:disabled){cursor:wait;opacity:.7}
+#missionScenarioChoices input{width:18px;height:18px;min-height:18px;margin:0;flex:none;accent-color:#8a4c47}
+.mission-experience #missionScenarioChoices input:focus-visible{outline:none}
+.mission-scenario-copy{display:block;min-width:0;flex:1}
+.mission-scenario-heading{display:flex;align-items:center;justify-content:space-between;gap:8px 16px}
+.mission-scenario-heading strong{font-size:15px;font-weight:500;color:var(--ink)}
+.mission-scenario-description{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.mission-scenario-status{flex:none;font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px;background:#e8efe8;color:#40664c}
+#missionScenarioChoices[data-urban-access=pending] label:has([value=EGYPT_URBAN_CHAOS_V1]) .mission-scenario-status{background:#f7e8df;color:#8a4c47}
+#missionScenarioAccess{padding:2px 0 2px 13px;margin:14px 0 4px;border-left:2px solid #cda69a}
+#missionScenarioAccessTitle{font-size:13px;font-weight:500;color:var(--ink)}
+#missionScenarioNotice{font-size:12px;color:#655e59;line-height:1.6;margin:4px 0 0;overflow-wrap:anywhere}
+#missionScenarioTechnical{margin-top:6px;font-size:11px;color:var(--muted)}
+#missionScenarioTechnical summary{cursor:pointer}#missionScenarioTechnical p{margin:6px 0 0;overflow-wrap:anywhere}
+.mission-scenario-footer{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+#missionScenarioChoices #missionRefreshScenarios{padding:6px 0;background:transparent;border:0;border-radius:3px;color:#8a4c47;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:700px){#missionScenarioChoices .mission-scenario-option{padding:14px;gap:12px}.mission-scenario-heading{align-items:flex-start;flex-wrap:wrap;gap:5px}.mission-scenario-heading strong{font-size:14px}.mission-scenario-description{font-size:11px;margin-top:6px}}
 .mission-driver-description{display:block}
 .presentation-scenario{font-size:12px;line-height:1.65;overflow-wrap:anywhere}
 .mission-location{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;font-size:12px;color:var(--muted);margin-bottom:12px}

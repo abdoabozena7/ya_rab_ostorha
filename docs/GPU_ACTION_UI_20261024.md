@@ -1,5 +1,9 @@
 # Scenario availability and GPU action status — 24 October 2026
 
+The later [selectable scenario chooser](SCENARIO_CHOOSER_20261024.md) supersedes
+the disabled dropdown described below. This report preserves its original
+verification and evidence.
+
 The Egypt road option was disabled because the running backend catalog reported
 `available: false`, `native_accepted: false` and
 `validation_window_active: false`. Its reason was “Twelve source-bound native

@@ -173,6 +173,10 @@ driving acceptance.
   from native driving acceptance.
 
 The guided screen has a **Road scenario** choice separate from the first driver.
+Its [selectable route rows](SCENARIO_CHOOSER_20261024.md) allow inspection of Egypt
+without native commands. A locked selection shows validation requirements;
+preparing and starting the scenario still require admission. Refreshing access
+does not automatically prepare an inspected selection.
 Until native acceptance, Egypt is available only inside an existing live
 validation reservation. The historical crossing choice remains available, with
 its original protocol and results. The backend also accepts the new

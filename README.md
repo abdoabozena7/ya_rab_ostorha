@@ -9,6 +9,9 @@ explains unavailable road choices and adds an explicit availability refresh.
 The main action now names native preparation/shutdown steps and shows measured
 GPU load, device VRAM pressure and sample freshness beside it. Resource warnings
 are advisory; native readiness and the Egypt acceptance gate remain separate.
+The [scenario chooser follow-up](docs/SCENARIO_CHOOSER_20261024.md) replaces the
+disabled dropdown with selectable route rows and visible validation requirements.
+Inspecting Egypt sends no native command; starting it still requires admission.
 
 The [Egypt mixed urban journey V1](docs/EGYPT_URBAN_CHAOS_V1.md) adds an
 independently selected, seeded 600--800 m scenario on the existing Town10 map,

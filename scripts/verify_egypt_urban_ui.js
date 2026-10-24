@@ -28,8 +28,8 @@ async page=>{
       simulatorStart:{status:'READY',available:false},simulatorStop:{status:'IDLE',available:true},
       population:{requested:{vehicle_count:60,pedestrian_count:100},actual:{vehicles:60,pedestrians:100,controllers:100}}});
     await page.locator('#missionScenario').waitFor({state:'visible'});
-    await page.waitForFunction(()=>!document.querySelector('#missionScenario option[value=EGYPT_URBAN_CHAOS_V1]').disabled);
-    await page.locator('#missionScenario').selectOption('EGYPT_URBAN_CHAOS_V1');
+    await page.waitForFunction(()=>document.getElementById('missionUrbanStatus').textContent==='Validation only');
+    await page.locator('[name=roadScenario][value=EGYPT_URBAN_CHAOS_V1]').check();
     await page.waitForFunction(()=>document.getElementById('missionScenarioNotice').textContent.includes('EGYPT_URBAN_CHAOS_V1'));
     let evidence=await page.evaluate(()=>window.missionEvidence());
     check(evidence.commands.some(c=>c.type==='presentation'&&c.value?.operation==='PRELOAD'&&

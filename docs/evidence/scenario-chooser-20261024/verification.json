@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-24",
+  "scope": "OFFLINE_AND_INTERCEPTED_BROWSER_ONLY",
+  "native_acceptance": false,
+  "build": "PASSED",
+  "javascript": {
+    "failed": 0,
+    "tests": 204,
+    "passed": 204
+  },
+  "python": {
+    "skipped": 4,
+    "tests": 923,
+    "passed": 919,
+    "failed": 0
+  },
+  "chooser_browser": {
+    "scope": "ISOLATED_BROWSER_FIXTURES_ONLY",
+    "native_acceptance": false,
+    "checks": [
+      "Both scenario rows are inspectable; validation status is explicit; 97% VRAM stays separate from 29% GPU load",
+      "Unvalidated Egypt selection persists without native commands; historical recovery and keyboard navigation work",
+      "Explicit recovery from cancellation restores the available scenario instead of getting stuck on an inspected draft",
+      "New validation access requires explicit scenario preparation; scenario and driver remain independent",
+      "Preparation button names its native phase and stays disabled even with zero device usage",
+      "Stale samples and missing monitor readings stay explicit and never claim current measurements",
+      "Closing is busy until lifecycle confirmation; remaining all-app VRAM is retained after CARLA exit",
+      "Refreshed unavailable validation blocks an already prepared Egypt start while leaving historical selection available",
+      "Desktop and 390px layout fit; action precedes the illustration; reduced motion disables the preparation spinner"
+    ],
+    "api_mutations_intercepted": [],
+    "browser_errors": []
+  },
+  "egypt_workflow_browser": {
+    "scope": "ISOLATED_BROWSER_AND_TEST_FIXTURE_MEDIA_ONLY",
+    "native_acceptance": false,
+    "checks": [
+      "Independent scenario selection; source-bound default/pending status stays explicit",
+      "Loading remains disabled until native preparation phases finish",
+      "Either first-driver choice is separate from the selected 60 km/h experiment",
+      "Visible emergency stop dispatches the canonical command and exposes the held state",
+      "Version 7 results show the supplied Normal-arrival fixture, driver identity, seed, metrics and unaccepted evidence",
+      "Both new-profile annotated software MP4s decode and play to their actual end",
+      "Saved results and both videos survive engine-disconnected state, Finish and page reload",
+      "Desktop and 390px results retain horizontal layout containment"
+    ],
+    "command_count": 7,
+    "api_mutations_intercepted": [],
+    "browser_errors": []
+  },
+  "live_catalog_read_only": {
+    "available": false,
+    "validation_window_active": false,
+    "native_accepted": false,
+    "reason": "Twelve source-bound native trips have not been accepted",
+    "scenario_id": "EGYPT_URBAN_CHAOS_V1"
+  },
+  "notes": [
+    "Selecting the locked Egypt row is inspection only and sends no native preparation or start command.",
+    "Validation access changes require explicit preparation of an inspected draft.",
+    "No native trip, budget extension or acceptance promotion was performed."
+  ]
+}
