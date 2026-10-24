@@ -4,6 +4,12 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [24 October scenario and GPU interface update](docs/GPU_ACTION_UI_20261024.md)
+explains unavailable road choices and adds an explicit availability refresh.
+The main action now names native preparation/shutdown steps and shows measured
+GPU load, device VRAM pressure and sample freshness beside it. Resource warnings
+are advisory; native readiness and the Egypt acceptance gate remain separate.
+
 The [Egypt mixed urban journey V1](docs/EGYPT_URBAN_CHAOS_V1.md) adds an
 independently selected, seeded 600--800 m scenario on the existing Town10 map,
 physical stop/go, parking, merging and pedestrian events, and a new sensor-only

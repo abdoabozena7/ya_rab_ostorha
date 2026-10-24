@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-24",
+  "scope": "OFFLINE_AND_ISOLATED_BROWSER_ONLY",
+  "native_acceptance": false,
+  "build": "PASSED",
+  "javascript": {
+    "passed": 203,
+    "failed": 0,
+    "tests": 203
+  },
+  "python": {
+    "passed": 919,
+    "skipped": 4,
+    "failed": 0,
+    "tests": 923
+  },
+  "browser": {
+    "scope": "ISOLATED_BROWSER_FIXTURES_ONLY",
+    "native_acceptance": false,
+    "checks": [
+      "Unavailable Egypt option names the backend gate and missing validation window; 97% VRAM stays separate from 29% GPU load",
+      "Refresh availability rechecks the catalog; authorized fixture selection keeps scenario and driver independent",
+      "Preparation button names its native phase and stays disabled even with zero device usage",
+      "Stale samples and missing monitor readings stay explicit and never claim current measurements",
+      "Closing is busy until lifecycle confirmation; remaining all-app VRAM is retained after CARLA exit",
+      "Refreshed unavailable validation blocks an already prepared Egypt start while leaving historical selection available",
+      "Desktop and 390px layout fit; action precedes the illustration; reduced motion disables the preparation spinner"
+    ],
+    "api_mutations_intercepted": [],
+    "browser_errors": []
+  },
+  "live_catalog_read_only": {
+    "validation_window_active": false,
+    "native_accepted": false,
+    "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+    "reason": "Twelve source-bound native trips have not been accepted",
+    "available": false
+  },
+  "notes": [
+    "Browser GPU values are supplied fixtures, not native measurements.",
+    "No native trip, validation reservation or acceptance promotion was performed.",
+    "An initial browser fixture omitted requested population fields; it was fixed before the passing run."
+  ]
+}

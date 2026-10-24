@@ -1,9 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,completedOvertakes,scenarioRunSummary} from '../frontend/scenario-profile.js';
+import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,completedOvertakes,scenarioRunSummary,urbanAvailability} from '../frontend/scenario-profile.js';
 import {recordedDriverDescription} from '../frontend/driver-profile.js';
 import {presentationSummary} from '../frontend/presentation-run.js';
 import {missionState,stressSummary} from '../frontend/mission-state.js';
+
+test('scenario availability explains missing catalog, pending acceptance and validation access',()=>{
+  assert.equal(urbanAvailability(null).available,false);
+  assert.match(urbanAvailability(null).notice,/has not been received/);
+  const catalog={options:[{id:EGYPT_SCENARIO,available:false,reason:'Twelve source-bound native trips have not been accepted'}]};
+  assert.equal(urbanAvailability(catalog).suffix,'unavailable');
+  assert.match(urbanAvailability(catalog).notice,/Twelve source-bound native trips/);
+  assert.match(urbanAvailability(catalog).notice,/No active validation window/);
+  Object.assign(catalog.options[0],{available:true,validation_window_active:true});
+  assert.equal(urbanAvailability(catalog).available,true);assert.equal(urbanAvailability(catalog).suffix,'validation only');
+  Object.assign(catalog.options[0],{native_accepted:true});
+  assert.match(urbanAvailability(catalog).notice,/acceptance verified/);
+});
 
 test('scenario selection is independent from first driver and preserves legacy speed',()=>{
   assert.deepEqual(scenarioOptions(EGYPT_SCENARIO),{scenario_id:EGYPT_SCENARIO,scene:'DENSE_CHAOS',speed_kmh:60});

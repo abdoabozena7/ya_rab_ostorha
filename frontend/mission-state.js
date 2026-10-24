@@ -48,19 +48,19 @@ export function missionState(p,local={}) {
   const base={phase,arm,mode,action:null,label:'',camera:false,choices:false,loadingDrive:false,loadStep:4,freeGPU:ownPage&&!preparingWorld&&!!p.simulatorStop?.available&&
     !['STOPPED','STOPPING'].includes(p.simulatorStop?.status)&&!p.isReplay&&!p.simulationStarting&&!p.restarting};
   const state=(screen,title,detail,extra={})=>({...base,screen,title,detail,...extra});
-  const loadingWorld=(title,detail,loadStep=0)=>state('choose',title,detail,{choices:true,label:driveLabel,loadingDrive:true,loadStep,freeGPU:false});
+  const loadingWorld=(title,detail,loadStep=0)=>state('choose',title,detail,{choices:true,label:title+'…',loadingDrive:true,loadStep,freeGPU:false});
   const preparedWorldView=()=>{
     const ready=phase==='CHOOSING',actual=p.population?.actual;
     const progress=ready?'The shared city is ready and held at its saved start.':preparation[phase]?.[1]||'Preparing the same seeded city for either drive.';
     return state('choose',ready?'Which world would you like to see first?':'Your city is preparing',
       progress+(ready&&actual?` Actual: ${actual.vehicles??'unmeasured'} vehicles and ${actual.pedestrians??'unmeasured'} pedestrians.`:' Requests 60 vehicles and 100 pedestrians; actual counts are checked.')+' Both drives: the same Mercedes and sensor rig.',
-      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:driveLabel,loadingDrive:!ready,loadStep:ready?4:phase==='READY'?3:phase==='PREPARING'?2:1,freeGPU:ready&&base.freeGPU});
+      {choices:true,action:ready&&local.firstMode?'START_GUIDED':null,label:ready?driveLabel:(preparation[phase]?.[0]||'Preparing the city')+'…',loadingDrive:!ready,loadStep:ready?4:phase==='READY'?3:phase==='PREPARING'?2:1,freeGPU:ready&&base.freeGPU});
   };
   const preparationView=()=>d.preloaded&&d.awaiting_choice?preparedWorldView():state(
     d.preloaded&&arm===0&&['SELECTING','READY','STARTING'].includes(phase)?'choose':'loading',
     ['SELECTING','READY','STARTING'].includes(phase)?'Starting your drive':preparation[phase][0],preparation[phase][1],
     {choices:!!d.preloaded&&arm===0&&['SELECTING','READY','STARTING'].includes(phase),loadingDrive:true,
-      label:phase==='FINALIZING'?'Saving this drive…':arm===1||phase==='RESTORING'?'Preparing the other drive…':driveLabel});
+      label:preparation[phase][0]+'…'});
   // A saved result belongs to the comparison, not the native connection.
   if(guided&&!local.newDrive&&['RESULTS','FINISHING','COMPLETE'].includes(phase)&&d.pair_id){
     const finishing=!!(phase==='FINISHING'||p.simulatorStop?.status==='STOPPING'||local.commandPending||local.shutdownPending);
@@ -69,7 +69,7 @@ export function missionState(p,local={}) {
       phase==='COMPLETE'?'Your recordings are saved. Playback remains available with CARLA closed.':d.finish_error||'Review both recordings, then Finish to close CARLA and free the GPU.',
       {action:finishing?null:p.simulatorStop?.status==='FAILED'?'FREE_GPU':phase==='COMPLETE'?'NEW_DRIVE':'FINISH',label:finishing?'Saving & closing…':p.simulatorStop?.status==='FAILED'?'Retry GPU release':phase==='COMPLETE'?'Start a new drive':d.finish_error?'Retry saving & closing':'Finish',loadingDrive:finishing,freeGPU:false});
   }
-  if(local.shutdownPending||p.simulatorStop?.status==='STOPPING')return state('releasing','Freeing the GPU','Saving recorded data, closing CARLA and verifying its processes have exited.',{freeGPU:false});
+  if(local.shutdownPending||p.simulatorStop?.status==='STOPPING')return state('releasing','Freeing the GPU','Saving recorded data, closing CARLA and verifying its processes have exited.',{freeGPU:false,loadingDrive:true,label:'Closing CARLA…'});
   if(p.simulatorStop?.status==='FAILED')return state('fault','CARLA could not close',p.simulatorStop.error||'Open Menu for runtime details.',{action:'FREE_GPU',label:'Retry GPU release'});
   if(p.simulationStarting||local.launchPending&&!p.connected)return loadingWorld('Starting the simulator','Launching CARLA. Choose your first drive while the city loads.');
   if(p.controlMode==='EMERGENCY_STOP')return state('emergency','Emergency stop is active','The vehicle is held. Release the stop to continue with available session actions.',{action:p.fresh&&p.controller?'RELEASE':null,label:'Release emergency stop'});

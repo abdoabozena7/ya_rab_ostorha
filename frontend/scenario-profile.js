@@ -1,5 +1,15 @@
 export const EGYPT_SCENARIO='EGYPT_URBAN_CHAOS_V1';
 export const LEGACY_SCENARIO='SUDDEN_PEDESTRIAN_COMPARISON_V1';
+export function urbanAvailability(catalog) {
+  const option=catalog?.options?.find(option=>option.id===EGYPT_SCENARIO);
+  if(!option)return {available:false,suffix:'checking availability',notice:'Egypt urban journey: availability has not been received. Connect to the simulator, then refresh availability.'};
+  if(option.available!==true)return {available:false,suffix:'unavailable',notice:
+    `Egypt urban journey unavailable: ${option.reason||'Native acceptance is pending'}. `+
+    'No active validation window is available. Historical crossing remains available.'};
+  return {available:true,suffix:option.native_accepted?'':'validation only',notice:option.native_accepted?
+    'Egypt urban journey is available; source-bound native acceptance verified.':
+    'Egypt urban journey is available in the active validation window. Native acceptance is pending.'};
+}
 export const isEgyptScenario=value=>value?.scenario_id===EGYPT_SCENARIO||value?.id===EGYPT_SCENARIO||value?.protocol==='EGYPT_COMPLETE_DRIVERS_V1';
 export function scenarioOptions(id) {
   return {scenario_id:id||LEGACY_SCENARIO,scene:'DENSE_CHAOS',speed_kmh:id===EGYPT_SCENARIO?60:120};

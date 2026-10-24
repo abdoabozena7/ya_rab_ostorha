@@ -47,7 +47,7 @@ test('preloaded world can be inspected while preparing but only starts once held
   const loading=guided('PREPARING');loading.presentation.preloaded=true;loading.presentation.awaiting_choice=true;
   const selecting=missionState(loading,{firstMode:'NORMAL'});
   assert.equal(selecting.choices,true);assert.equal(selecting.action,null);assert.match(selecting.detail,/60 vehicles and 100 pedestrians/);
-  assert.equal(selecting.loadingDrive,true);assert.equal(selecting.label,'Start the normal drive');assert.equal(selecting.freeGPU,false);
+  assert.equal(selecting.loadingDrive,true);assert.equal(selecting.label,'Preparing your drive…');assert.equal(selecting.freeGPU,false);
   loading.presentation.status='CHOOSING';assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).action,'START_GUIDED');
   assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).loadingDrive,false);assert.equal(missionState(loading).freeGPU,true);
   loading.controller=false;assert.equal(missionState(loading,{firstMode:'ROBOSPHERE'}).action,'START_GUIDED');
@@ -91,7 +91,7 @@ test('startup and preload acknowledgement keep a blocked start and hide GPU rele
     if(p.presentation)Object.assign(p.presentation,{preloaded:true,awaiting_choice:true});
     const state=missionState(p,{...local,firstMode:'ROBOSPHERE'});
     assert.equal(state.action,null);assert.equal(state.loadingDrive,true);assert.equal(state.choices,true);
-    assert.equal(state.label,'Start the protected drive');assert.equal(state.freeGPU,false);
+    assert.doesNotMatch(state.label,/^Start the protected drive$/);assert.match(state.label,/…$/);assert.equal(state.freeGPU,false);
   }
   assert.equal(missionState({...ready,connected:false}).freeGPU,false);
 });

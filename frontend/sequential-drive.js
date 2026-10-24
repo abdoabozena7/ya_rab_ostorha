@@ -6,7 +6,8 @@ import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome} from './presentation-run.js';
 import {installPreviewPlayer} from './preview-player.js';
 import {recordedDriverDescription} from './driver-profile.js';
-import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText} from './scenario-profile.js';
+import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,urbanAvailability} from './scenario-profile.js';
+import {installGPUStatus} from './gpu-status.js';
 
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
@@ -25,8 +26,13 @@ export function installSequentialDrive(p,tools) {
   experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes · reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="en" dir="ltr">Ya Rab Ostorha</strong>Same Mercedes · sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
   const preview=installPreviewPlayer(experience.querySelector('#missionPreview'));
   const scenarioField=document.createElement('fieldset');scenarioField.id='missionScenarioChoices';
-  scenarioField.innerHTML='<legend>Road scenario</legend><label for="missionScenario">Choose the traffic experiment</label><select id="missionScenario"><option value="SUDDEN_PEDESTRIAN_COMPARISON_V1">Historical crossing comparison</option><option value="EGYPT_URBAN_CHAOS_V1">Egypt mixed urban journey · v1 · up to 60 km/h</option></select><p id="missionScenarioNotice" role="status"></p>';
+  scenarioField.innerHTML='<legend>Road scenario</legend><label for="missionScenario">Choose the traffic experiment</label><select id="missionScenario" aria-describedby="missionScenarioNotice"><option value="SUDDEN_PEDESTRIAN_COMPARISON_V1">Historical crossing comparison</option><option value="EGYPT_URBAN_CHAOS_V1">Egypt mixed urban journey · v1 · up to 60 km/h</option></select><p id="missionScenarioNotice" role="status"></p><button id="missionRefreshScenarios" type="button">Refresh availability</button>';
   experience.querySelector('#missionChoices').before(scenarioField);
+  const actionArea=document.createElement('div');actionArea.id='missionActionArea';
+  const gpuPanel=document.createElement('section');gpuPanel.id='missionGPU';
+  actionArea.append(experience.querySelector('.mission-actions'),gpuPanel,experience.querySelector('#missionNextHint'));
+  experience.querySelector('#missionError').after(actionArea);
+  const updateGPU=installGPUStatus(gpuPanel);
   for(const label of experience.querySelectorAll('#missionChoices label span')){
     const description=document.createElement('span');description.className='mission-driver-description';
     for(const node of [...label.childNodes])if(node.nodeType===Node.TEXT_NODE)node.remove();
@@ -89,9 +95,14 @@ export function installSequentialDrive(p,tools) {
     local.preloadRequested=true;local.preloadSequence=p.sequence;local.preloadAt=performance.now();
   };
   $('missionScenario').onchange=()=>{
+    if($('missionScenario').value===EGYPT_SCENARIO&&!urbanAvailability(tools.catalog?.presentation_scenarios).available){update();return;}
     local.scenarioId=$('missionScenario').value;local.scenarioChosen=true;local.scenarioSelectionPending=true;
     if(p.connected&&p.fresh)prepareHere(true);
     update();
+  };
+  $('missionRefreshScenarios').onclick=async()=>{
+    local.scenarioRefreshing=true;update();
+    try{await tools.load(true);}finally{local.scenarioRefreshing=false;update();}
   };
   $('drivePrimaryAction').onclick=()=>{
     const state=missionState(p,local);if(!state.action)return;p.operationError=null;
@@ -184,6 +195,9 @@ export function installSequentialDrive(p,tools) {
     const actual=p.population?.actual,setup=d.setup;
     $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested '+(setup?.requested_route_vehicles??60)+' / '+(setup?.requested_route_pedestrians??100):''):'';
     $('missionChoices').hidden=!state.choices;
+    const actionAnchor=state.choices?$('missionChoices'):$('missionError');
+    if(actionAnchor.nextElementSibling!==actionArea)actionAnchor.after(actionArea);
+    updateGPU(p);
     scenarioField.hidden=!state.choices;
     const scenarioCatalog=tools.catalog?.presentation_scenarios;
     if(local.scenarioSelectionPending&&d.id&&d.page_id===local.pageId&&(d.scenario_id||LEGACY_SCENARIO)===local.scenarioId)local.scenarioSelectionPending=false;
@@ -191,22 +205,32 @@ export function installSequentialDrive(p,tools) {
     else if(!local.scenarioChosen&&!d.id&&scenarioCatalog?.default_id)local.scenarioId=scenarioCatalog.default_id;
     $('missionScenario').value=local.scenarioId;
     const urbanOption=scenarioCatalog?.options?.find(option=>option.id===EGYPT_SCENARIO);
-    $('missionScenario').querySelector(`[value="${EGYPT_SCENARIO}"]`).disabled=urbanOption?.available!==true;
+    const availability=urbanAvailability(scenarioCatalog),urbanSelect=$('missionScenario').querySelector(`[value="${EGYPT_SCENARIO}"]`);
+    urbanSelect.disabled=!availability.available;
+    const urbanLabel='Egypt mixed urban journey · v1 · up to 60 km/h'+(availability.suffix?' · '+availability.suffix:'');
+    if(urbanSelect.textContent!==urbanLabel)urbanSelect.textContent=urbanLabel;
     $('missionScenario').disabled=!!local.commandPending||!!d.id&&!d.awaiting_choice&&!['COMPLETE','CANCELLED','ERROR','IDLE'].includes(d.status);
-    $('missionScenarioNotice').textContent=local.scenarioId===EGYPT_SCENARIO?
+    $('missionRefreshScenarios').disabled=!p.fresh||tools.loading||local.scenarioRefreshing||$('missionScenario').disabled;
+    $('missionRefreshScenarios').textContent=local.scenarioRefreshing?'Checking availability…':'Refresh availability';
+    const scenarioNotice=local.scenarioId===EGYPT_SCENARIO?
       `EGYPT_URBAN_CHAOS_V1 · v1 · seed ${d.seed??'assigned during preparation'} · 600–800 m · requested 60 vehicles / 100 pedestrians. `+
-        (urbanOption?.native_accepted?'Source-bound native acceptance verified.':'Native acceptance pending; bounded validation only. No zero-contact guarantee.'):
-      'Historical crossing fixture and recordings remain available. Egypt urban chaos stays opt-in until all twelve native trips pass.';
+        (!availability.available?availability.notice:urbanOption?.native_accepted?'Source-bound native acceptance verified.':'Native acceptance pending; bounded validation only. No zero-contact guarantee.'):
+      availability.notice;
+    if($('missionScenarioNotice').textContent!==scenarioNotice)$('missionScenarioNotice').textContent=scenarioNotice;
     for(const input of experience.querySelectorAll('[name=firstDrive]'))input.closest('label').querySelector('.mission-driver-description').textContent=scenarioDriverText(input.value,local.scenarioId);
     for(const input of experience.querySelectorAll('[name=firstDrive]'))input.disabled=!!local.commandPending||local.scenarioSelectionPending||!!d.preloaded&&!d.awaiting_choice;
     const primary=$('drivePrimaryAction');
     primary.hidden=!state.action&&!state.choices&&!state.loadingDrive;
-    if(primary.textContent!==state.label)primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action||local.scenarioSelectionPending;
-    primary.dataset.loading=String(state.loadingDrive);primary.setAttribute('aria-busy',String(state.loadingDrive));
-    primary.style.setProperty('--load-step',state.loadStep??4);
-    primary.setAttribute('aria-describedby','missionNextHint');
+    const scenarioBlocked=state.action==='START_GUIDED'&&local.scenarioId===EGYPT_SCENARIO&&!availability.available;
+    const checkingScenario=scenarioBlocked&&availability.suffix==='checking availability';
+    const actionLabel=local.scenarioSelectionPending?'Preparing selected scenario…':scenarioBlocked?checkingScenario?'Checking scenario availability…':'Scenario unavailable':state.label;
+    const busy=state.loadingDrive||local.scenarioSelectionPending||checkingScenario;
+    if(primary.textContent!==actionLabel)primary.textContent=actionLabel;primary.dataset.action=state.action||'';primary.disabled=!state.action||local.scenarioSelectionPending||scenarioBlocked;
+    primary.dataset.loading=String(busy);primary.setAttribute('aria-busy',String(busy));
+    primary.dataset.gpuStatus=gpuPanel.dataset.status;
+    primary.setAttribute('aria-describedby','missionNextHint missionGPU');
     $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen);
-    $('missionNextHint').textContent=state.loadingDrive?state.detail:state.choices&&!state.action?'Simulation ready. Choose your first drive.':
+    $('missionNextHint').textContent=scenarioBlocked?availability.notice:local.scenarioSelectionPending?'Waiting for the selected road scenario to be prepared.':state.loadingDrive?state.detail:state.choices&&!state.action?'Simulation ready. Choose your first drive.':
       {PREPARE_HERE:'Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.',START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
     $('missionError').hidden=!p.operationError;$('missionError').textContent=p.operationError?missionFailure(p.operationError):'';
     $('missionOutcomes').hidden=!['comparison','outcome','fault'].includes(state.screen);

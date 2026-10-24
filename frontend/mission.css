@@ -43,11 +43,12 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn{border-r
 #missionPreview .illustrated-drive{display:block;width:100%;height:100%}
 #missionPreview>span{position:absolute;bottom:18px;left:22px;background:#FDFCF8ed;padding:8px 14px;border-radius:999px;font-size:11px;color:var(--ink)}
 .mission-copy{padding:26px 0 0}
-#missionScenarioChoices{border:0;padding:0;margin:18px 0;min-width:0;max-width:760px}
+#missionScenarioChoices{border:0;padding:0;margin:18px auto;min-width:0;max-width:620px;text-align:left}
 #missionScenarioChoices legend{font-size:14px;font-weight:550;margin-bottom:8px}
 #missionScenarioChoices label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
 #missionScenario{display:block;width:100%;max-width:620px;padding:10px 16px;white-space:normal}
 #missionScenarioNotice{font-size:12px;color:var(--muted);margin:8px 0 0;overflow-wrap:anywhere}
+#missionScenarioChoices #missionRefreshScenarios{padding:5px 0;margin-top:6px;background:transparent;border:0;border-radius:3px;color:#8a4c47;font-size:12px;text-decoration:underline;text-underline-offset:3px}
 .mission-driver-description{display:block}
 .presentation-scenario{font-size:12px;line-height:1.65;overflow-wrap:anywhere}
 .mission-location{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;font-size:12px;color:var(--muted);margin-bottom:12px}
@@ -59,14 +60,27 @@ body[data-mission=driving] #missionStep::before{background:#40664c}
 body.light-cockpit.mission-experience #drivePrimaryAction{background:var(--primary);color:var(--primary-ink);border:0;padding:15px 25px;min-height:52px;min-width:185px;font-size:15px;font-weight:500;box-shadow:var(--shadow-soft)}
 body.light-cockpit.mission-experience #drivePrimaryAction::after{content:'';display:inline-block;margin-left:20px;width:16px;height:16px;vertical-align:-3px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23292524' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 15 15 5M6 5h9v9'/%3E%3C/svg%3E")}
 body.light-cockpit.mission-experience #drivePrimaryAction:hover:enabled{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 6px 22px -2px #ae777624}
-/* White shell, solid organic coral growth. Stages advance only from native state. */
+/* Indeterminate preparation is separate from the measured VRAM meter. */
 body.light-cockpit.mission-experience #drivePrimaryAction{position:relative;isolation:isolate;overflow:hidden;transition:transform 240ms ease,box-shadow 240ms ease}
 body.light-cockpit.mission-experience #drivePrimaryAction:disabled{opacity:1;cursor:not-allowed}
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]{background:#fff;box-shadow:inset 0 0 0 1px #c9b6b0}
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::before{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--primary)}
 body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::after{content:'';visibility:visible;background:none;border:2px solid #e7d6d1;border-top-color:#8a4c47;border-radius:50%;width:16px;height:16px;margin-left:14px;animation:mission-spinner 850ms linear infinite}
 @keyframes mission-spinner{to{transform:rotate(360deg)}}
-@keyframes mission-load-fill{0%,100%{transform:scaleX(.75);border-radius:0 44% 58% 0/0 60% 44% 0}50%{transform:scaleX(1);border-radius:0 60% 36% 0/0 42% 62% 0}}
+#missionActionArea{margin-bottom:24px;min-width:0}
+#missionGPU{max-width:620px;margin:0 0 12px;padding:14px 0 0;border-top:1px solid var(--line);text-align:left;color:var(--muted);font-size:12px;line-height:1.5}
+.mission-gpu-heading,.mission-gpu-values{display:flex;align-items:baseline;justify-content:space-between;gap:6px 18px;flex-wrap:wrap}
+.mission-gpu-heading strong{font-size:13px;font-weight:500;color:var(--ink);overflow-wrap:anywhere}
+.mission-gpu-freshness{font-size:11px}.mission-gpu-values{margin-top:6px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.mission-vram-meter{height:5px;margin:9px 0;border-radius:4px;background:#e8e3dc;overflow:hidden}
+.mission-vram-meter i{display:block;height:100%;background:#66816d;transition:width 300ms ease,background-color 300ms ease}
+#missionGPU:is([data-status=high],[data-status=critical]) .mission-vram-meter i{background:#9d544d}
+#missionGPU:is([data-status=high],[data-status=critical]) .mission-gpu-detail{color:#8a4c47}
+#missionGPU[data-status=stale] .mission-vram-meter i{background:#a69e95}
+#missionGPU p{margin:5px 0 0;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#missionGPU .mission-gpu-budget{font-size:11px}
+#missionExperience:is([data-screen=welcome],[data-screen=choose]) #missionGPU{margin-left:auto;margin-right:auto}
+#missionExperience:is([data-screen=welcome],[data-screen=choose]) #missionNextHint{max-width:620px;margin:auto}
 .mission-experience #missionFreeGPU{background:#ffffffb3;padding:12px 22px;font-size:14px}
 .mission-copy #missionNextHint{font-size:12px;margin:0;color:var(--muted)}
 /* Welcome and choice precede the illustration; the live camera stays first. */

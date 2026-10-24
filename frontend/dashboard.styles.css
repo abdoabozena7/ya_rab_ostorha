@@ -10350,9 +10350,10 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
 #missionScenarioChoices {
   border: 0;
   padding: 0;
-  margin: 18px 0;
+  margin: 18px auto;
   min-width: 0;
-  max-width: 760px;
+  max-width: 620px;
+  text-align: left;
 }
 #missionScenarioChoices legend {
   font-size: 14px;
@@ -10377,6 +10378,17 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
   color: var(--muted);
   margin: 8px 0 0;
   overflow-wrap: anywhere;
+}
+#missionScenarioChoices #missionRefreshScenarios {
+  padding: 5px 0;
+  margin-top: 6px;
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  color: #8a4c47;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .mission-driver-description {
   display: block;
@@ -10500,15 +10512,80 @@ body.light-cockpit.mission-experience #drivePrimaryAction[data-loading=true]::af
     transform: rotate(360deg);
   }
 }
-@keyframes mission-load-fill {
-  0%, 100% {
-    transform: scaleX(.75);
-    border-radius: 0 44% 58% 0/0 60% 44% 0;
-  }
-  50% {
-    transform: scaleX(1);
-    border-radius: 0 60% 36% 0/0 42% 62% 0;
-  }
+#missionActionArea {
+  margin-bottom: 24px;
+  min-width: 0;
+}
+#missionGPU {
+  max-width: 620px;
+  margin: 0 0 12px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mission-gpu-heading,
+.mission-gpu-values {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 18px;
+  flex-wrap: wrap;
+}
+.mission-gpu-heading strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.mission-gpu-freshness {
+  font-size: 11px;
+}
+.mission-gpu-values {
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mission-vram-meter {
+  height: 5px;
+  margin: 9px 0;
+  border-radius: 4px;
+  background: #e8e3dc;
+  overflow: hidden;
+}
+.mission-vram-meter i {
+  display: block;
+  height: 100%;
+  background: #66816d;
+  transition: width 300ms ease, background-color 300ms ease;
+}
+#missionGPU:is([data-status=high], [data-status=critical]) .mission-vram-meter i {
+  background: #9d544d;
+}
+#missionGPU:is([data-status=high], [data-status=critical]) .mission-gpu-detail {
+  color: #8a4c47;
+}
+#missionGPU[data-status=stale] .mission-vram-meter i {
+  background: #a69e95;
+}
+#missionGPU p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+#missionGPU .mission-gpu-budget {
+  font-size: 11px;
+}
+#missionExperience:is([data-screen=welcome], [data-screen=choose]) #missionGPU {
+  margin-left: auto;
+  margin-right: auto;
+}
+#missionExperience:is([data-screen=welcome], [data-screen=choose]) #missionNextHint {
+  max-width: 620px;
+  margin: auto;
 }
 .mission-experience #missionFreeGPU {
   background: #ffffffb3;

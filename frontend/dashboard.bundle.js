@@ -3327,6 +3327,12 @@
   // frontend/scenario-profile.js
   var EGYPT_SCENARIO = "EGYPT_URBAN_CHAOS_V1";
   var LEGACY_SCENARIO = "SUDDEN_PEDESTRIAN_COMPARISON_V1";
+  function urbanAvailability(catalog) {
+    const option = catalog?.options?.find((option2) => option2.id === EGYPT_SCENARIO);
+    if (!option) return { available: false, suffix: "checking availability", notice: "Egypt urban journey: availability has not been received. Connect to the simulator, then refresh availability." };
+    if (option.available !== true) return { available: false, suffix: "unavailable", notice: `Egypt urban journey unavailable: ${option.reason || "Native acceptance is pending"}. No active validation window is available. Historical crossing remains available.` };
+    return { available: true, suffix: option.native_accepted ? "" : "validation only", notice: option.native_accepted ? "Egypt urban journey is available; source-bound native acceptance verified." : "Egypt urban journey is available in the active validation window. Native acceptance is pending." };
+  }
   var isEgyptScenario = (value) => value?.scenario_id === EGYPT_SCENARIO || value?.id === EGYPT_SCENARIO || value?.protocol === "EGYPT_COMPLETE_DRIVERS_V1";
   function scenarioOptions(id) {
     return { scenario_id: id || LEGACY_SCENARIO, scene: "DENSE_CHAOS", speed_kmh: id === EGYPT_SCENARIO ? 60 : 120 };
@@ -3391,7 +3397,7 @@
     const ownPage = !local.pageId || !d.page_id || d.page_id === local.pageId;
     const base = { phase, arm, mode, action: null, label: "", camera: false, choices: false, loadingDrive: false, loadStep: 4, freeGPU: ownPage && !preparingWorld && !!p.simulatorStop?.available && !["STOPPED", "STOPPING"].includes(p.simulatorStop?.status) && !p.isReplay && !p.simulationStarting && !p.restarting };
     const state = (screen, title, detail, extra = {}) => ({ ...base, screen, title, detail, ...extra });
-    const loadingWorld = (title, detail, loadStep = 0) => state("choose", title, detail, { choices: true, label: driveLabel, loadingDrive: true, loadStep, freeGPU: false });
+    const loadingWorld = (title, detail, loadStep = 0) => state("choose", title, detail, { choices: true, label: title + "\u2026", loadingDrive: true, loadStep, freeGPU: false });
     const preparedWorldView = () => {
       const ready = phase === "CHOOSING", actual = p.population?.actual;
       const progress = ready ? "The shared city is ready and held at its saved start." : preparation[phase]?.[1] || "Preparing the same seeded city for either drive.";
@@ -3399,7 +3405,7 @@
         "choose",
         ready ? "Which world would you like to see first?" : "Your city is preparing",
         progress + (ready && actual ? ` Actual: ${actual.vehicles ?? "unmeasured"} vehicles and ${actual.pedestrians ?? "unmeasured"} pedestrians.` : " Requests 60 vehicles and 100 pedestrians; actual counts are checked.") + " Both drives: the same Mercedes and sensor rig.",
-        { choices: true, action: ready && local.firstMode ? "START_GUIDED" : null, label: driveLabel, loadingDrive: !ready, loadStep: ready ? 4 : phase === "READY" ? 3 : phase === "PREPARING" ? 2 : 1, freeGPU: ready && base.freeGPU }
+        { choices: true, action: ready && local.firstMode ? "START_GUIDED" : null, label: ready ? driveLabel : (preparation[phase]?.[0] || "Preparing the city") + "\u2026", loadingDrive: !ready, loadStep: ready ? 4 : phase === "READY" ? 3 : phase === "PREPARING" ? 2 : 1, freeGPU: ready && base.freeGPU }
       );
     };
     const preparationView = () => d.preloaded && d.awaiting_choice ? preparedWorldView() : state(
@@ -3409,7 +3415,7 @@
       {
         choices: !!d.preloaded && arm === 0 && ["SELECTING", "READY", "STARTING"].includes(phase),
         loadingDrive: true,
-        label: phase === "FINALIZING" ? "Saving this drive\u2026" : arm === 1 || phase === "RESTORING" ? "Preparing the other drive\u2026" : driveLabel
+        label: preparation[phase][0] + "\u2026"
       }
     );
     if (guided2 && !local.newDrive && ["RESULTS", "FINISHING", "COMPLETE"].includes(phase) && d.pair_id) {
@@ -3421,7 +3427,7 @@
         { action: finishing ? null : p.simulatorStop?.status === "FAILED" ? "FREE_GPU" : phase === "COMPLETE" ? "NEW_DRIVE" : "FINISH", label: finishing ? "Saving & closing\u2026" : p.simulatorStop?.status === "FAILED" ? "Retry GPU release" : phase === "COMPLETE" ? "Start a new drive" : d.finish_error ? "Retry saving & closing" : "Finish", loadingDrive: finishing, freeGPU: false }
       );
     }
-    if (local.shutdownPending || p.simulatorStop?.status === "STOPPING") return state("releasing", "Freeing the GPU", "Saving recorded data, closing CARLA and verifying its processes have exited.", { freeGPU: false });
+    if (local.shutdownPending || p.simulatorStop?.status === "STOPPING") return state("releasing", "Freeing the GPU", "Saving recorded data, closing CARLA and verifying its processes have exited.", { freeGPU: false, loadingDrive: true, label: "Closing CARLA\u2026" });
     if (p.simulatorStop?.status === "FAILED") return state("fault", "CARLA could not close", p.simulatorStop.error || "Open Menu for runtime details.", { action: "FREE_GPU", label: "Retry GPU release" });
     if (p.simulationStarting || local.launchPending && !p.connected) return loadingWorld("Starting the simulator", "Launching CARLA. Choose your first drive while the city loads.");
     if (p.controlMode === "EMERGENCY_STOP") return state("emergency", "Emergency stop is active", "The vehicle is held. Release the stop to continue with available session actions.", { action: p.fresh && p.controller ? "RELEASE" : null, label: "Release emergency stop" });
@@ -6328,6 +6334,73 @@
     } };
   }
 
+  // frontend/gpu-status.js
+  var GPU_SAMPLE_MAX_AGE_S = 6;
+  function gpuStatus(provider2, nowUnix = Date.now() / 1e3) {
+    const perf = provider2.performance || {}, gpu = perf.gpu;
+    const unknown = {
+      status: "unavailable",
+      name: "GPU monitoring unavailable",
+      memory: "VRAM unmeasured",
+      load: "GPU load unmeasured",
+      percent: null,
+      detail: provider2.isReplay ? "Live GPU usage is unavailable during replay." : provider2.simulatorStop?.status === "STOPPED" ? "CARLA is closed. Other apps can still use GPU memory." : provider2.simulatorStop?.status === "STOPPING" ? "Closing CARLA. GPU release is confirmed by process exit, not by VRAM reaching zero." : perf.gpuMonitorError ? "The GPU monitor could not read the device." : "Waiting for a GPU measurement.",
+      freshness: "No current sample",
+      budget: ""
+    };
+    if (provider2.isReplay || !gpu) return unknown;
+    const age = nowUnix - gpu.observedAtUnix;
+    const dated = Number.isFinite(gpu.observedAtUnix) && Number.isFinite(age) && age >= -1;
+    const fresh = dated && age <= GPU_SAMPLE_MAX_AGE_S;
+    const memoryValid = Number.isFinite(gpu.usedMiB) && Number.isFinite(gpu.totalMiB) && gpu.totalMiB > 0 && gpu.usedMiB >= 0 && gpu.usedMiB <= gpu.totalMiB;
+    const percent = memoryValid ? 100 * gpu.usedMiB / gpu.totalMiB : null;
+    const loadValid = Number.isFinite(gpu.utilizationPercent) && gpu.utilizationPercent >= 0 && gpu.utilizationPercent <= 100;
+    const status = !fresh ? "stale" : !memoryValid ? "unavailable" : percent >= 95 ? "critical" : percent >= 90 ? "high" : "normal";
+    let detail = !fresh ? "Waiting for a current GPU sample; these are the last reported values." : !memoryValid ? "VRAM usage could not be measured." : percent >= 95 ? "VRAM is nearly full. Close GPU-heavy apps or use Free GPU." : percent >= 90 ? "VRAM usage is high. Limited memory remains for the simulator." : loadValid && gpu.utilizationPercent >= 95 ? "GPU load is high; the simulator may run more slowly." : "The drive becomes available after city and sensor checks.";
+    if (provider2.simulatorStop?.status === "STOPPING") detail = "Closing CARLA. GPU release is confirmed by process exit, not by VRAM reaching zero.";
+    else if (provider2.simulatorStop?.status === "STOPPED") detail = "CARLA is closed. Other apps can still use GPU memory.";
+    const limit = perf.gpuBudget?.limitMiB;
+    return {
+      status,
+      name: gpu.name || "Reported GPU",
+      percent,
+      memory: memoryValid ? `${Math.round(gpu.usedMiB).toLocaleString("en-US")} / ${Math.round(gpu.totalMiB).toLocaleString("en-US")} MiB \xB7 ${Math.round(percent)}% VRAM` : "VRAM unmeasured",
+      load: loadValid ? `${Math.round(gpu.utilizationPercent)}% GPU load` : "GPU load unmeasured",
+      detail: memoryValid ? `${fresh ? "" : "Last reported: "}${Math.round(gpu.totalMiB - gpu.usedMiB).toLocaleString("en-US")} MiB available \xB7 ${detail}` : detail,
+      freshness: !dated ? "Sample time unavailable" : `${fresh ? "Updated" : "Last sample"} ${Math.max(0, Math.floor(age))} s ago${fresh ? "" : " \xB7 stale"}`,
+      budget: fresh && memoryValid && Number.isFinite(limit) && limit > 0 ? `${limit.toLocaleString("en-US")} MiB VRAM target ${gpu.usedMiB > limit ? "exceeded" : "met"} \xB7 all apps on this GPU \xB7 advisory only` : ""
+    };
+  }
+  function installGPUStatus(container) {
+    container.innerHTML = '<div class="mission-gpu-heading"><strong></strong><span class="mission-gpu-freshness"></span></div><div class="mission-gpu-values"><span></span><span></span></div><div class="mission-vram-meter" role="meter" aria-label="Device VRAM used by all applications" aria-valuemin="0" aria-valuemax="100"><i></i></div><p class="mission-gpu-detail"></p><p class="mission-gpu-budget"></p>';
+    container.setAttribute("aria-label", "GPU and VRAM usage");
+    const meter = container.querySelector("[role=meter]");
+    return (provider2) => {
+      const data = gpuStatus(provider2);
+      container.dataset.status = data.status;
+      const set2 = (selector, value) => {
+        const el2 = container.querySelector(selector);
+        if (el2.textContent !== value) el2.textContent = value;
+      };
+      set2("strong", data.name);
+      set2(".mission-gpu-freshness", data.freshness);
+      set2(".mission-gpu-values span:first-child", data.memory);
+      set2(".mission-gpu-values span:last-child", data.load);
+      set2(".mission-gpu-detail", data.detail);
+      set2(".mission-gpu-budget", data.budget);
+      container.querySelector(".mission-gpu-budget").hidden = !data.budget;
+      meter.hidden = data.percent === null;
+      if (data.percent !== null) {
+        meter.setAttribute("aria-valuenow", String(data.percent));
+        meter.setAttribute("aria-valuetext", `${data.memory}${data.status === "stale" ? " \xB7 stale sample" : ""}`);
+        meter.querySelector("i").style.width = data.percent + "%";
+      } else {
+        meter.removeAttribute("aria-valuenow");
+        meter.removeAttribute("aria-valuetext");
+      }
+    };
+  }
+
   // frontend/sequential-drive.js
   function installSequentialDrive(p, tools2) {
     const $11 = (id) => document.getElementById(id);
@@ -6366,8 +6439,15 @@
     const preview = installPreviewPlayer(experience.querySelector("#missionPreview"));
     const scenarioField = document.createElement("fieldset");
     scenarioField.id = "missionScenarioChoices";
-    scenarioField.innerHTML = '<legend>Road scenario</legend><label for="missionScenario">Choose the traffic experiment</label><select id="missionScenario"><option value="SUDDEN_PEDESTRIAN_COMPARISON_V1">Historical crossing comparison</option><option value="EGYPT_URBAN_CHAOS_V1">Egypt mixed urban journey \xB7 v1 \xB7 up to 60 km/h</option></select><p id="missionScenarioNotice" role="status"></p>';
+    scenarioField.innerHTML = '<legend>Road scenario</legend><label for="missionScenario">Choose the traffic experiment</label><select id="missionScenario" aria-describedby="missionScenarioNotice"><option value="SUDDEN_PEDESTRIAN_COMPARISON_V1">Historical crossing comparison</option><option value="EGYPT_URBAN_CHAOS_V1">Egypt mixed urban journey \xB7 v1 \xB7 up to 60 km/h</option></select><p id="missionScenarioNotice" role="status"></p><button id="missionRefreshScenarios" type="button">Refresh availability</button>';
     experience.querySelector("#missionChoices").before(scenarioField);
+    const actionArea = document.createElement("div");
+    actionArea.id = "missionActionArea";
+    const gpuPanel = document.createElement("section");
+    gpuPanel.id = "missionGPU";
+    actionArea.append(experience.querySelector(".mission-actions"), gpuPanel, experience.querySelector("#missionNextHint"));
+    experience.querySelector("#missionError").after(actionArea);
+    const updateGPU = installGPUStatus(gpuPanel);
     for (const label of experience.querySelectorAll("#missionChoices label span")) {
       const description = document.createElement("span");
       description.className = "mission-driver-description";
@@ -6505,11 +6585,25 @@
       local.preloadAt = performance.now();
     };
     $11("missionScenario").onchange = () => {
+      if ($11("missionScenario").value === EGYPT_SCENARIO && !urbanAvailability(tools2.catalog?.presentation_scenarios).available) {
+        update();
+        return;
+      }
       local.scenarioId = $11("missionScenario").value;
       local.scenarioChosen = true;
       local.scenarioSelectionPending = true;
       if (p.connected && p.fresh) prepareHere(true);
       update();
+    };
+    $11("missionRefreshScenarios").onclick = async () => {
+      local.scenarioRefreshing = true;
+      update();
+      try {
+        await tools2.load(true);
+      } finally {
+        local.scenarioRefreshing = false;
+        update();
+      }
     };
     $11("drivePrimaryAction").onclick = () => {
       const state = missionState(p, local);
@@ -6666,6 +6760,9 @@
       const actual = p.population?.actual, setup = d.setup;
       $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested " + (setup?.requested_route_vehicles ?? 60) + " / " + (setup?.requested_route_pedestrians ?? 100) : "") : "";
       $11("missionChoices").hidden = !state.choices;
+      const actionAnchor = state.choices ? $11("missionChoices") : $11("missionError");
+      if (actionAnchor.nextElementSibling !== actionArea) actionAnchor.after(actionArea);
+      updateGPU(p);
       scenarioField.hidden = !state.choices;
       const scenarioCatalog = tools2.catalog?.presentation_scenarios;
       if (local.scenarioSelectionPending && d.id && d.page_id === local.pageId && (d.scenario_id || LEGACY_SCENARIO) === local.scenarioId) local.scenarioSelectionPending = false;
@@ -6673,23 +6770,33 @@
       else if (!local.scenarioChosen && !d.id && scenarioCatalog?.default_id) local.scenarioId = scenarioCatalog.default_id;
       $11("missionScenario").value = local.scenarioId;
       const urbanOption = scenarioCatalog?.options?.find((option) => option.id === EGYPT_SCENARIO);
-      $11("missionScenario").querySelector(`[value="${EGYPT_SCENARIO}"]`).disabled = urbanOption?.available !== true;
+      const availability = urbanAvailability(scenarioCatalog), urbanSelect = $11("missionScenario").querySelector(`[value="${EGYPT_SCENARIO}"]`);
+      urbanSelect.disabled = !availability.available;
+      const urbanLabel = "Egypt mixed urban journey \xB7 v1 \xB7 up to 60 km/h" + (availability.suffix ? " \xB7 " + availability.suffix : "");
+      if (urbanSelect.textContent !== urbanLabel) urbanSelect.textContent = urbanLabel;
       $11("missionScenario").disabled = !!local.commandPending || !!d.id && !d.awaiting_choice && !["COMPLETE", "CANCELLED", "ERROR", "IDLE"].includes(d.status);
-      $11("missionScenarioNotice").textContent = local.scenarioId === EGYPT_SCENARIO ? `EGYPT_URBAN_CHAOS_V1 \xB7 v1 \xB7 seed ${d.seed ?? "assigned during preparation"} \xB7 600\u2013800 m \xB7 requested 60 vehicles / 100 pedestrians. ` + (urbanOption?.native_accepted ? "Source-bound native acceptance verified." : "Native acceptance pending; bounded validation only. No zero-contact guarantee.") : "Historical crossing fixture and recordings remain available. Egypt urban chaos stays opt-in until all twelve native trips pass.";
+      $11("missionRefreshScenarios").disabled = !p.fresh || tools2.loading || local.scenarioRefreshing || $11("missionScenario").disabled;
+      $11("missionRefreshScenarios").textContent = local.scenarioRefreshing ? "Checking availability\u2026" : "Refresh availability";
+      const scenarioNotice = local.scenarioId === EGYPT_SCENARIO ? `EGYPT_URBAN_CHAOS_V1 \xB7 v1 \xB7 seed ${d.seed ?? "assigned during preparation"} \xB7 600\u2013800 m \xB7 requested 60 vehicles / 100 pedestrians. ` + (!availability.available ? availability.notice : urbanOption?.native_accepted ? "Source-bound native acceptance verified." : "Native acceptance pending; bounded validation only. No zero-contact guarantee.") : availability.notice;
+      if ($11("missionScenarioNotice").textContent !== scenarioNotice) $11("missionScenarioNotice").textContent = scenarioNotice;
       for (const input of experience.querySelectorAll("[name=firstDrive]")) input.closest("label").querySelector(".mission-driver-description").textContent = scenarioDriverText(input.value, local.scenarioId);
       for (const input of experience.querySelectorAll("[name=firstDrive]")) input.disabled = !!local.commandPending || local.scenarioSelectionPending || !!d.preloaded && !d.awaiting_choice;
       const primary = $11("drivePrimaryAction");
       primary.hidden = !state.action && !state.choices && !state.loadingDrive;
-      if (primary.textContent !== state.label) primary.textContent = state.label;
+      const scenarioBlocked = state.action === "START_GUIDED" && local.scenarioId === EGYPT_SCENARIO && !availability.available;
+      const checkingScenario = scenarioBlocked && availability.suffix === "checking availability";
+      const actionLabel = local.scenarioSelectionPending ? "Preparing selected scenario\u2026" : scenarioBlocked ? checkingScenario ? "Checking scenario availability\u2026" : "Scenario unavailable" : state.label;
+      const busy = state.loadingDrive || local.scenarioSelectionPending || checkingScenario;
+      if (primary.textContent !== actionLabel) primary.textContent = actionLabel;
       primary.dataset.action = state.action || "";
-      primary.disabled = !state.action || local.scenarioSelectionPending;
-      primary.dataset.loading = String(state.loadingDrive);
-      primary.setAttribute("aria-busy", String(state.loadingDrive));
-      primary.style.setProperty("--load-step", state.loadStep ?? 4);
-      primary.setAttribute("aria-describedby", "missionNextHint");
+      primary.disabled = !state.action || local.scenarioSelectionPending || scenarioBlocked;
+      primary.dataset.loading = String(busy);
+      primary.setAttribute("aria-busy", String(busy));
+      primary.dataset.gpuStatus = gpuPanel.dataset.status;
+      primary.setAttribute("aria-describedby", "missionNextHint missionGPU");
       $11("missionFreeGPU").hidden = !state.freeGPU || state.action === "FREE_GPU";
       $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen);
-      $11("missionNextHint").textContent = state.loadingDrive ? state.detail : state.choices && !state.action ? "Simulation ready. Choose your first drive." : { PREPARE_HERE: "Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.", START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
+      $11("missionNextHint").textContent = scenarioBlocked ? availability.notice : local.scenarioSelectionPending ? "Waiting for the selected road scenario to be prepared." : state.loadingDrive ? state.detail : state.choices && !state.action ? "Simulation ready. Choose your first drive." : { PREPARE_HERE: "Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.", START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";
       $11("missionError").hidden = !p.operationError;
       $11("missionError").textContent = p.operationError ? missionFailure(p.operationError) : "";
       $11("missionOutcomes").hidden = !["comparison", "outcome", "fault"].includes(state.screen);
