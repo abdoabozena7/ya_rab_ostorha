@@ -1,5 +1,10 @@
 # Egypt native development execution — 24 October 2026
 
+This is the first execution snapshot. The subsequent
+[storage recovery](STORAGE_CLEANUP_20261024.md) and
+[continued native validation](EGYPT_NATIVE_FOLLOWUP_20261024.md) retain later
+measurements and remaining authorization without replacing this evidence.
+
 Egypt remains unavailable for ordinary driving because native development
 **failed**. No native acceptance artifact was created, no reserved acceptance
 seed ran, and the historical crossing remains the default. Available VRAM alone

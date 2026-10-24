@@ -252,6 +252,21 @@ class HybridDrivingTests(unittest.TestCase):
         self.assertTrue(certificate(np.array([[0.,3.6,0.,0.]]),g,rows)['verified'])
         self.assertFalse(certificate(np.array([[0.,3.9,0.,0.]]),g,rows)['verified'])
 
+    def test_static_drivable_map_preparation_reuses_geometry_and_invalidates_on_map_change(self):
+        from backend.carla.hybrid_navigation import prepare_drivable_map
+        provider = SimpleNamespace(dashboard_tools=SimpleNamespace(map=object(), map_name='Town10'))
+        strips = [((1, 0, -1), (1, 0, -1), (0., 0., 1., 0., 1.75, 1., 0.))]
+        with patch('backend.carla.hybrid_navigation.build_drivable_strips', return_value=strips) as build:
+            prepare_drivable_map(provider)
+            rows = provider.hybrid_road_strip_array
+            prepare_drivable_map(provider)
+            build.assert_called_once_with(provider.dashboard_tools.map)
+            self.assertIs(rows, provider.hybrid_road_strip_array)
+            provider.dashboard_tools.map_name = 'Town05'
+            prepare_drivable_map(provider)
+            self.assertEqual(build.call_count, 2)
+            np.testing.assert_array_equal(rows, provider.hybrid_road_strip_array)
+
     def test_micrometre_duplicate_route_endpoints_do_not_limit_a_straight_road_to_walking_speed(self):
         scene,base,road=self.measured()
         road['centerline']=[[0.,0.],[7.227046962,.0001],[7.227046967,.0001019],

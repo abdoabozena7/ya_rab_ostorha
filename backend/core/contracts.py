@@ -106,6 +106,17 @@ class _FrozenJSONMapping(Mapping):
     def values(self):return self._data.values()
 
 
+def freeze_float_rows(value):
+    """Copy a finite floating-point matrix into validated immutable JSON rows."""
+    import numpy as np
+    if (type(value) is not np.ndarray or value.ndim != 2
+            or value.dtype not in (np.dtype('float32'), np.dtype('float64'))
+            or not np.isfinite(value).all()):
+        raise ValueError('Expected a finite float32/float64 matrix')
+    return tuple.__new__(_FrozenJSONSequence,
+        (tuple.__new__(_FrozenJSONSequence, row) for row in value.tolist()))
+
+
 def freeze_json(value, _memo=None):
     # Only containers created here can skip validation. An arbitrary tuple or
     # MappingProxyType may still contain mutable or non-finite nested values.

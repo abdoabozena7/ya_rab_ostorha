@@ -250,7 +250,7 @@ def run(args):
                     'source_unchanged', 'attempts_retained', 'native_acceptance', 'completed_without_shortening',
                     'finish_completed', 'exports_closed', 'cleanup_confirmed', 'simulator_exit_confirmed',
                     'independent_cleanup_probe', 'video_playback_after_exit', 'render_profile', 'error',
-                    'finalization_error', 'cleanup_error', 'worker_deadline_expired', 'native_worker_exit_code')})
+                    'finalization_error', 'cleanup_error', 'cleanup_stage', 'worker_deadline_expired', 'native_worker_exit_code')})
                 report['pairs'][-1].update(pair=compact_pair(raw.get('pair') or {'manifest': {}, 'runs': {}}),
                     preparation_failure=(raw.get('presentation') or {}).get('failure'),
                     drive_failures=(raw.get('presentation') or {}).get('failures') or [],

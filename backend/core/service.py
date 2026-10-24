@@ -1280,7 +1280,9 @@ class SimulationService:
                                     frame_id=frame_id, timestamp_s=timestamp_s, connected=True)
             return
         frame_id, timestamp_s = self._context()
+        native_navigation_started=self.now()
         command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
+        self.control_timing_ms['native_navigation']=(self.now()-native_navigation_started)*1000
         if self.active_safety is not None:
             # Evaluation journeys only: the frame-bound route-tracker path. The
             # supervisor re-checks frame, timestamp and steering before use.
@@ -1342,12 +1344,16 @@ class SimulationService:
                 return
             if self.control_scene is not None and not self._urban_driver():
                 self.provider.find_hybrid_alternative(self.control_scene)
+            road_started=self.now()
             road = self._hybrid_road_context()
+            self.control_timing_ms['road_context']=(self.now()-road_started)*1000
             cap = min(self.journey['speed_kmh']/3.6, self.provider.navigation_speed_limit_mps)
             if bypass_engaged:
                 cap=min(cap,bypass.config['maneuver_speed_mps'])
                 for side in ('left','right'):road[side+'_allowed']=road[side+'_allowed'] and side in bypass.sides
+            behavior_started=self.now()
             command, self.maneuver_status = driver.evaluate(self.control_scene, command, road, cap, wall=self.now())
+            self.control_timing_ms['behavior']=(self.now()-behavior_started)*1000
             if bypass_engaged:self.maneuver_status.update(driver_id='ROBOSPHERE_RULE_BYPASS_V1',scope='LOW_SPEED_STATIONARY_OBSTACLE_BYPASS')
             self.hybrid_decision_wall_at=self.now()
             if self.control_scene:

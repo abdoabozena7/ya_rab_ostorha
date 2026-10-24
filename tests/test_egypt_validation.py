@@ -223,11 +223,35 @@ class IsolatedEgyptTests(EgyptValidationFixture):
             child.wait.side_effect = finalize
             launch = stack.enter_context(patch.object(crossing.subprocess, 'Popen', return_value=child))
             self.assertEqual(crossing.run(args), 0)
+            finalized = json.loads((args.report_folder / 'report.json').read_text())
+            self.assertEqual(finalized['native_worker_exit_code'], 0)
             command = launch.call_args.args[0]
             for flag, value in (('--egypt-budget', args.egypt_budget), ('--egypt-reservation', ticket['reservation_id']),
                                 ('--egypt-deadline', '1200.0')):
                 self.assertEqual(command[command.index(flag) + 1], value)
             runtime.stop.assert_called_once_with(port=2000, deadline=1200.)
+            # A worker can save its measurements and then crash in native
+            # destruction. Keep that exit code even when report.json exists.
+            child.returncode = 3221225725
+            child.poll.side_effect = [None, child.returncode, child.returncode]
+            self.assertEqual(crossing.run(args), 1)
+            crashed = json.loads((args.report_folder / 'report.json').read_text())
+            self.assertEqual(crashed['native_worker_exit_code'], 3221225725)
+            self.assertFalse(crashed['native_acceptance'])
+            self.assertIn('pair', crashed)
+
+    def test_progress_checkpoint_is_small_and_cannot_certify_native_acceptance(self):
+        from scripts.native.validate_crossing_pair import progress_pair
+        original = measured_pair(1703, 'NORMAL', acceptance=False)
+        pair = original.get('pair') or {'version': 7, 'manifest': {}, 'runs': {}}
+        pair['manifest']['initial_conditions'] = {'actors': ['large raw actor proof'] * 1000}
+        checkpoint = progress_pair(runner.SimpleNamespace(data=pair))
+        self.assertTrue(checkpoint['progress_only'])
+        self.assertFalse(checkpoint['conditions_match'])
+        self.assertNotIn('initial_conditions', checkpoint['manifest'])
+        self.assertNotIn('scenario_validation', checkpoint)
+        self.assertLess(len(json.dumps(checkpoint)), 5000)
+        self.assertIn('initial_conditions', pair['manifest'])
 
     def test_duplicate_seed_order_and_reserved_seed_rejected_before_worker_launch(self):
         with self.budget.experiment('DEVELOPMENT', 1200, 'duplicates') as ticket:

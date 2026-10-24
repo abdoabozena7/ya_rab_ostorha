@@ -1,0 +1,198 @@
+{
+  "scope": "USER_AUTHORIZED_PROJECT_ONLY_UNUSED_STORAGE_CLEANUP",
+  "baseline_disk_free_bytes_before_git_duplicate_prune": 12307709952,
+  "before": {
+    "logical_bytes": 237146920100,
+    "files": 725743,
+    "disk_free_bytes": 17206210560,
+    "links_skipped": [],
+    "errors": []
+  },
+  "after": {
+    "logical_bytes": 68081679649,
+    "files": 246130,
+    "disk_free_bytes": 134896488448,
+    "native_attempt_report_hashes_unchanged": true,
+    "archived_telemetry_sample_hash_verified": true
+  },
+  "logical_bytes_removed_after_git_duplicate_prune": 169065240451,
+  "net_disk_free_increase_bytes": 122588778496,
+  "git_cleanup": {
+    "command": "git prune-packed",
+    "loose_objects_before": 5156,
+    "loose_objects_after": 296,
+    "prune_packable_before": 4860,
+    "prune_packable_after": 0,
+    "refs_and_history_rewritten": false
+  },
+  "retired_recordings": 228,
+  "raw_sensor_bytes_retired": 157876165764,
+  "compressed_telemetry_files": 1187,
+  "retention_errors": [],
+  "raw_replay_limitation": "Raw RGB/depth/LiDAR replay is unavailable for retired recordings; videos, metadata, results and hash-verified gzip telemetry remain.",
+  "preserved_recordings": [
+    {
+      "path": "runs/normal_city/run_091895b6fd2c45fe9e56c01008174296",
+      "bytes": 136735597,
+      "files": 446,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_10fcaee5901248bc9a4e635e35ccd1db",
+      "bytes": 71265009,
+      "files": 431,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_205d3c77aecb421495953096061f632a",
+      "bytes": 583950775,
+      "files": 4106,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_2b7e0b6e34804c84a78eabef39db0b82",
+      "bytes": 1476045654,
+      "files": 5138,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_3844e12afe31473fb91a570e8a78da32",
+      "bytes": 83284904,
+      "files": 286,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_68c885e85a134144ad01dc51e165ec3a",
+      "bytes": 1128224441,
+      "files": 8825,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_7f68e2a8035848f2a6f7415feca49be2",
+      "bytes": 80018907,
+      "files": 286,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_a941814cd504483387dbafc85016ef82",
+      "bytes": 74244275,
+      "files": 270,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_b26e37f48164413fb7eea7a755a23d92",
+      "bytes": 675456088,
+      "files": 4834,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_b410a459101244ec8fc9099a91b9cd05",
+      "bytes": 218112961,
+      "files": 1714,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_b8d057611c2942c1a646e33175e549ca",
+      "bytes": 743597692,
+      "files": 5794,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_c27d1bd1bebd4fda989fd64ce2345eb3",
+      "bytes": 84268994,
+      "files": 294,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_cc6bc8106a144d2ab16d01d7768d26ba",
+      "bytes": 8264476682,
+      "files": 27100,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_cfd3b7932e324cc2940cc5f6d398a876",
+      "bytes": 281480427,
+      "files": 950,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_dec2f1b0502b42da8d8379ff9a7fbfb8",
+      "bytes": 597899413,
+      "files": 4202,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_e6d1e1e46a074db1a431e1b95dee91d5",
+      "bytes": 80069095,
+      "files": 286,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_e9a793dc8a8b4d3a86ef020852bd4bf6",
+      "bytes": 888736896,
+      "files": 6306,
+      "unchanged": true
+    },
+    {
+      "path": "runs/normal_city/run_f49cc7dbdb2e4071bf434a5eca4b93a2",
+      "bytes": 8368976232,
+      "files": 29370,
+      "unchanged": true
+    }
+  ],
+  "removed_unused_downloads": [
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\.cache\\models\\nlp\\Qwen3-1.7B-Q8_0.gguf",
+      "bytes": 1834426016,
+      "reason": "Unused Qwen/llama downloads; no runtime code or config references, no matching process"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\.cache\\models\\nlp\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "bytes": 2497281120,
+      "reason": "Unused Qwen/llama downloads; no runtime code or config references, no matching process"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\.cache\\llama-b11146-vulkan.zip",
+      "bytes": 32127004,
+      "reason": "Unused Qwen/llama downloads; no runtime code or config references, no matching process"
+    }
+  ],
+  "blocked_unused_runtime_deletion": {
+    "path": ".runtime/llama",
+    "deleted": false,
+    "automatic_approval_review": "blocked by policy",
+    "additional_reason_provided": false
+  },
+  "manifests": [
+    {
+      "path": "output\\maintenance\\cleanup-20261024\\inventory-before.json",
+      "sha256": "96402c84aab9445f0577ceda54841e06341c0a9dcc1ce57602eb47d08e030ad3",
+      "bytes": 219458
+    },
+    {
+      "path": "output\\maintenance\\cleanup-20261024\\inventory-after.json",
+      "sha256": "d51bc2911b1c05f524636016db6cef05a18ef57a24d634e4546d70c02b11283f",
+      "bytes": 153877
+    },
+    {
+      "path": "output\\maintenance\\cleanup-20261024\\preserved-recordings.json",
+      "sha256": "e8bfd24749fb6334df12d26d86eb837751b7495f92e3f0e4500a7b3e81f7eb01",
+      "bytes": 1731
+    },
+    {
+      "path": "output\\maintenance\\cleanup-20261024\\recordings-applied.json",
+      "sha256": "cb5116a7709b823503852b8973061018a7d438080712e198bf9ef45f2cbc21d7",
+      "bytes": 333219
+    },
+    {
+      "path": "output\\maintenance\\cleanup-20261024\\recordings-dry-run.json",
+      "sha256": "0bf8bda79fd7d3fd578caeeb76634efa9330362f5769a51758a5ece1dd9ec7d8",
+      "bytes": 60297
+    },
+    {
+      "path": "output\\maintenance\\cleanup-20261024\\unused-downloads-removed.json",
+      "sha256": "e16dd74a841c53d02288921360c6f89a083755fb460382ed180b502b4b6e65fb",
+      "bytes": 706
+    }
+  ]
+}

@@ -241,7 +241,7 @@ class ControlSceneBuilder:
         # on the physical hypotheses used to authorize movement.
         horizon=max(3.,.1+.35+(abs(ego.speed_mps)+.25)/3.+.15)
         grid=np.round(np.arange(int(np.ceil(horizon/.1))+1)*.1,6)
-        prediction['trajectories']=kinematic_modes(prediction['tracks'],grid=grid)
+        prediction['trajectories']=kinematic_modes(prediction['tracks'],grid=grid,frozen_points=True)
         prediction['horizon_s']=float(grid[-1])
         prediction.update(published_wall_s=received_wall_s, publication_wall_s=monotonic(),
                           motion_tracking_complete=True,

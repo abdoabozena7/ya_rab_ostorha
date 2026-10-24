@@ -749,6 +749,9 @@ class CarlaProvider:
             admission=availability(int(time.monotonic()))
             if admission['available'] and self.dashboard_tools.map_name.rsplit('/',1)[-1]=='Town10HD_Opt':
                 self.navigation_bypass=RuleRouteBypass(self.vehicle_geometry,deadline=admission['deadline'],sides=admission['sides'])
+        if self.hybrid_driver is not None:
+            from .hybrid_navigation import prepare_drivable_map
+            prepare_drivable_map(self)
         return self.route_state()
 
     def local_road_context(self,session_id):

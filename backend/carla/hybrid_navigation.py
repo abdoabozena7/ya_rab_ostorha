@@ -81,6 +81,17 @@ def behavior_agent_class():
     return MatchedBehaviorAgent
 
 
+def prepare_drivable_map(provider):
+    """Cache static map geometry before driving; no actor state or permissions."""
+    if getattr(provider, 'hybrid_road_strips_map', None) != provider.dashboard_tools.map_name:
+        import numpy as np
+        strips = build_drivable_strips(provider.dashboard_tools.map)
+        rows = np.unique(np.round(np.array([row for _, _, row in strips]), 4), axis=0)
+        provider.hybrid_road_strips = strips
+        provider.hybrid_road_strip_array = rows
+        provider.hybrid_road_strips_map = provider.dashboard_tools.map_name
+
+
 def road_context(provider, session_id):
     """Only ego pose, native road topology and the selected route are read."""
     base = provider.local_road_context(session_id)
@@ -106,10 +117,7 @@ def road_context(provider, session_id):
                 route_lane_key=[reference.road_id, reference.section_id, reference.lane_id],
                 return_allowed=False, alternatives=False)
     import numpy as np
-    if getattr(provider,'hybrid_road_strips_map',None)!=provider.dashboard_tools.map_name:
-        provider.hybrid_road_strips=build_drivable_strips(provider.dashboard_tools.map)
-        provider.hybrid_road_strip_array=np.unique(np.round(np.array([row for _,_,row in provider.hybrid_road_strips]),4),axis=0)
-        provider.hybrid_road_strips_map=provider.dashboard_tools.map_name
+    prepare_drivable_map(provider)
     allowed={(point.road_id,point.section_id,point.lane_id) for point,_ in route}
     allowed.add((wp.road_id,wp.section_id,wp.lane_id))
     progress=provider.route_state()

@@ -14,6 +14,15 @@ from .events import EventType, SimulationEvent
 from .logging import log, LogCategory
 
 MAX_ROW_BYTES = 1_048_576
+DISK_RESERVE_BYTES = 4*1024**3
+
+
+def require_recording_space(path):
+    """Leave room for the host and finalization before accepting a new run."""
+    probe=Path(path).absolute()
+    while not probe.exists():probe=probe.parent
+    if shutil.disk_usage(probe).free < DISK_RESERVE_BYTES:
+        raise OSError(28,'Recording requires a 4 GiB disk reserve; clean old recordings before starting')
 
 
 def queued_snapshot(value):
@@ -140,7 +149,7 @@ class BufferedRunRecorder:
                     if isinstance(self.writer,RunRecorder):self.writer.flush()
                     continue
                 kind, value = item
-                if self.written_frames and self.written_frames%16 == 0 and shutil.disk_usage(self.root).free < 128*1024*1024:
+                if self.written_frames and self.written_frames%16 == 0 and shutil.disk_usage(self.root).free < DISK_RESERVE_BYTES:
                     raise OSError(28, 'Recording stopped before exhausting the disk reserve; recorded prefix preserved')
                 if kind == 'event': self.writer.record_event(value)
                 elif kind=='trace':self.writer.record_trace(value)
@@ -235,6 +244,7 @@ class RunRecorder:
             raise ValueError('Run metadata is required')
         self.metadata = metadata
         self.root = Path(output_directory)/metadata.run_id
+        require_recording_space(output_directory)
         self.root.mkdir(parents=True, exist_ok=False)
         for name in ('telemetry', 'rgb', 'depth', 'lidar', 'events'):
             (self.root/name).mkdir()

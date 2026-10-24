@@ -1,0 +1,1955 @@
+{
+  "recorded_at_utc": "2026-10-24T19:14:42.866031+00:00",
+  "source_sha256": "9f9e1ea0e312886f28f3af63ab7b2711dce3187962fd5b8db9883755c06dfd29",
+  "accepted": false,
+  "deployment": {
+    "accepted": false,
+    "reason": "Twelve source-bound native trips have not been accepted"
+  },
+  "prior_thirteen_report_hashes_unchanged": true,
+  "prior_index_sha256": "fe6b269c59caa5681859f375fc40406be2872ca240faaa217a7ad8d522d79651",
+  "budget": {
+    "kind": "EGYPT_NATIVE_VALIDATION_V1",
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+    "cap_s": 14400.0,
+    "charged_s": 2688.2660000004107,
+    "remaining_s": 11711.73399999959,
+    "development_remaining_s": 4511.733999999589,
+    "acceptance_remaining_s": 7200.0,
+    "unfinished": 0,
+    "acceptance_attempted": false,
+    "reservations": [
+      {
+        "id": "26cac65d1ecf4e569e2750830100bceb",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 59.78100000007544,
+        "started": 610812.031,
+        "deadline": 612012.031,
+        "owner_pid": 33916,
+        "outcome": "FAILED",
+        "elapsed_s": 59.78100000007544,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-01.json"
+      },
+      {
+        "id": "ac1bd428243a4206801df56bfeab3dd8",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 59.35999999998603,
+        "started": 611308.015,
+        "deadline": 612508.015,
+        "owner_pid": 32916,
+        "outcome": "FINISHED",
+        "elapsed_s": 59.35999999998603,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-02.json"
+      },
+      {
+        "id": "3ffd9d35d3744a35a16865b2490b263b",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 63.54700000002049,
+        "started": 611660.546,
+        "deadline": 612860.546,
+        "owner_pid": 24672,
+        "outcome": "FINISHED",
+        "elapsed_s": 63.54700000002049,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-03.json"
+      },
+      {
+        "id": "e001510d706a46688665ab7d706b3462",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 138.21900000004098,
+        "started": 611768.781,
+        "deadline": 612968.781,
+        "owner_pid": 36928,
+        "outcome": "FINISHED",
+        "elapsed_s": 138.21900000004098,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-04.json"
+      },
+      {
+        "id": "6caf26c31f264c6f8ffcfae0bba75942",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 80.0,
+        "started": 612436.515,
+        "deadline": 613636.515,
+        "owner_pid": 39312,
+        "outcome": "FINISHED",
+        "elapsed_s": 80.0,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-protected-05.json"
+      },
+      {
+        "id": "9fd0d6e0ea4a44f79e14c8c521a5f2f5",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 69.82900000002701,
+        "started": 612704.671,
+        "deadline": 613904.671,
+        "owner_pid": 20320,
+        "outcome": "FINISHED",
+        "elapsed_s": 69.82900000002701,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-protected-06.json"
+      },
+      {
+        "id": "fc2bb76ce80b4c35b4647c091ef98026",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 6600.0,
+        "charged_s": 1816.219000000041,
+        "started": 613102.718,
+        "deadline": 619702.718,
+        "owner_pid": 42228,
+        "outcome": "FINISHED",
+        "elapsed_s": 1816.219000000041,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-matrix-07.json"
+      },
+      {
+        "id": "4130615860c440248a8472525d578365",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 48.32799999997951,
+        "started": 615067.265,
+        "deadline": 616267.265,
+        "owner_pid": 29836,
+        "outcome": "FINISHED",
+        "elapsed_s": 48.32799999997951,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-2707-protected-08.json"
+      },
+      {
+        "id": "1df8c1d6f84b4ef3a99cca1a0292cf5c",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 83.53100000007544,
+        "started": 638494.906,
+        "deadline": 639694.906,
+        "owner_pid": 24680,
+        "outcome": "FINISHED",
+        "elapsed_s": 83.53100000007544,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-09.json"
+      },
+      {
+        "id": "7f1fc668a9584ffea60a17ecde2aadf1",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 54.203000000095926,
+        "started": 638927.781,
+        "deadline": 640127.781,
+        "owner_pid": 36228,
+        "outcome": "FINISHED",
+        "elapsed_s": 54.203000000095926,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-10.json"
+      },
+      {
+        "id": "08e9059bc8b64ba3be156b8846be27be",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 56.14000000001397,
+        "started": 639196.375,
+        "deadline": 640396.375,
+        "owner_pid": 41196,
+        "outcome": "FINISHED",
+        "elapsed_s": 56.14000000001397,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-11.json"
+      },
+      {
+        "id": "9481a63d72594492a6830ef11350cf84",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 55.89000000001397,
+        "started": 639947.453,
+        "deadline": 641147.453,
+        "owner_pid": 8740,
+        "outcome": "FINISHED",
+        "elapsed_s": 55.89000000001397,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-12.json"
+      },
+      {
+        "id": "ab2e862cbd5445fc8ed48de509b9d543",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 54.04700000002049,
+        "started": 640220.781,
+        "deadline": 641420.781,
+        "owner_pid": 42180,
+        "outcome": "FINISHED",
+        "elapsed_s": 54.04700000002049,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-13.json"
+      },
+      {
+        "id": "8510e3e7d2914eb68b01616b96058b40",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 49.17200000002049,
+        "started": 640403.015,
+        "deadline": 641603.015,
+        "owner_pid": 37168,
+        "outcome": "FINISHED",
+        "elapsed_s": 49.17200000002049,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-14.json"
+      }
+    ],
+    "sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+  },
+  "legacy_ledger_sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+  "ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "native_processes": [],
+  "disk_free_bytes": 135235063808,
+  "attempts": [
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "cb08f0cbef3e88b14fd4ce4de175398ea9f53769bcf5ed197237bafc8cf606a4",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "cleanup_stage": null,
+      "cleanup_confirmed": null,
+      "exports_closed": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "worker_deadline_expired": false,
+      "finalization_error": null,
+      "cleanup_error": null,
+      "error": null,
+      "wall_s": 63.15599999995902,
+      "report": "output\\egypt-urban-pairs\\fe06f59b7f174b7c81b88763845a0030\\report.json",
+      "report_sha256": "4b51a52b4533c71b8b78a0b6dba78468b3472d47f7830f0562081dfe8514247e",
+      "matrix_report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-09.json",
+      "matrix_report_sha256": "67f07fb6feaaf8881bb55e46485a0204349c78b58f8f4cbe651f45bcc5438dd0",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\fe06f59b7f174b7c81b88763845a0030\\source.zip",
+        "sha256": "2d26f933e9cd2ff58a37284309c75379f3691dde09d0a6a45f57be783d1ff2e2",
+        "files": 232,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 43.70299999997951
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 46.45299999997951
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 54.45299999997951
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 54.76500000001397
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 56.10900000005495
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 61.46799999999348
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 62.85900000005495
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 63.01500000001397
+        }
+      ],
+      "runs": [
+        {
+          "mode": "ROBOSPHERE",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_73b0f702907d465f96c5e9f31ff4eea4",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "destination_reached": false,
+          "maximum_sensor_wall_age_s": 0.6828520999988541,
+          "maximum_sensor_sim_age_s": 0.0,
+          "sensor_coverage_percent": 0.0,
+          "collisions": 0,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "initial_condition_audit_passed": true,
+          "pipeline_timings": [
+            {
+              "evaluation_frame": 416,
+              "sensor_wall_age_s": 0.5223706000251696,
+              "control_timing_ms": {
+                "lock_wait": 0.001700012944638729,
+                "since_publication": 0.2994999522343278,
+                "sensor_to_scene": 126.77630002144724,
+                "scene_to_control": 2.187000005505979,
+                "navigation": 137.9935999866575,
+                "safety": 0.20180002320557833,
+                "actuator_submit": 0.7025001104921103
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 62.830000068061054,
+                "lidar_decode": 0.33790001180022955,
+                "depth_decode_and_fusion": 12.704599997960031,
+                "tracking_and_forecasts": 26.197399944067,
+                "semantics_and_freezing": 24.70730000641197
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": "650538f8bad14d7d967317e0f7813249:416:1",
+                "session_id": "650538f8bad14d7d967317e0f7813249",
+                "frame_id": 416,
+                "source_frame": 416,
+                "submitted_wall_s": 638559.4662472,
+                "sensor_received_wall_s": 638558.9585284,
+                "wall_age_s": 0.5077187999850139,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638559.4669498
+              }
+            },
+            {
+              "evaluation_frame": 417,
+              "sensor_wall_age_s": 0.29389099997933954,
+              "control_timing_ms": {
+                "lock_wait": 0.003200024366378784,
+                "since_publication": 30.583900050260127,
+                "sensor_to_scene": 136.67139993049204,
+                "scene_to_control": 31.436300021596253,
+                "navigation": 107.16040001716465,
+                "safety": 0.18309999722987413,
+                "actuator_submit": 0.65179995726794
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 80.26169997174293,
+                "lidar_decode": 0.5315999733284116,
+                "depth_decode_and_fusion": 15.173600055277348,
+                "tracking_and_forecasts": 22.069499944336712,
+                "semantics_and_freezing": 18.63579999189824
+              },
+              "space_build_ms": 65.10370003525168,
+              "application_timing": {
+                "decision_id": "650538f8bad14d7d967317e0f7813249:417:2",
+                "session_id": "650538f8bad14d7d967317e0f7813249",
+                "frame_id": 417,
+                "source_frame": 417,
+                "submitted_wall_s": 638559.8595438001,
+                "sensor_received_wall_s": 638559.5839516001,
+                "wall_age_s": 0.2755921999923885,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638559.8601965001
+              }
+            },
+            {
+              "evaluation_frame": 418,
+              "sensor_wall_age_s": 0.2683285999810323,
+              "control_timing_ms": {
+                "lock_wait": 0.002300017513334751,
+                "since_publication": 1.0505999671295285,
+                "sensor_to_scene": 121.31669989321381,
+                "scene_to_control": 2.100300043821335,
+                "navigation": 131.30050001200289,
+                "safety": 0.17060001846402884,
+                "actuator_submit": 0.6500999443233013
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 78.57439992949367,
+                "lidar_decode": 0.37699996028095484,
+                "depth_decode_and_fusion": 9.451500023715198,
+                "tracking_and_forecasts": 18.755500088445842,
+                "semantics_and_freezing": 14.158799895085394
+              },
+              "space_build_ms": 57.32619995251298,
+              "application_timing": {
+                "decision_id": "650538f8bad14d7d967317e0f7813249:418:3",
+                "session_id": "650538f8bad14d7d967317e0f7813249",
+                "frame_id": 418,
+                "source_frame": 418,
+                "submitted_wall_s": 638560.1991626001,
+                "sensor_received_wall_s": 638559.9441364001,
+                "wall_age_s": 0.2550261999713257,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638560.1998133
+              }
+            },
+            {
+              "evaluation_frame": 419,
+              "sensor_wall_age_s": 0.3933011000044644,
+              "control_timing_ms": {
+                "lock_wait": 0.002400018274784088,
+                "since_publication": 1.3596999924629927,
+                "sensor_to_scene": 134.72500001080334,
+                "scene_to_control": 2.7329999720677733,
+                "navigation": 122.86909995600581,
+                "safety": 119.52539999037981,
+                "actuator_submit": 0.0591999851167202
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 92.14869991410524,
+                "lidar_decode": 0.16830000095069408,
+                "depth_decode_and_fusion": 9.60530003067106,
+                "tracking_and_forecasts": 17.08590006455779,
+                "semantics_and_freezing": 15.717399888671935
+              },
+              "space_build_ms": 76.30209997296333,
+              "application_timing": {
+                "decision_id": null,
+                "session_id": "650538f8bad14d7d967317e0f7813249",
+                "frame_id": 419,
+                "source_frame": 419,
+                "submitted_wall_s": 638560.6770212001,
+                "sensor_received_wall_s": 638560.2970433001,
+                "wall_age_s": 0.37997789995279163,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638560.6770799
+              }
+            }
+          ]
+        }
+      ],
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: exports_closed",
+        "2707/ROBOSPHERE: cleanup_confirmed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "worker_exit_code": 3221225725,
+      "worker_exit_code_source": "RETAINED_PARENT_CONSOLE",
+      "console_sha256": "c7418598c741d874d6bc93921362b4adaa0dd5b8db3447688e453ea6a568777f",
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 419,
+        "timestamp_s": 10.679444372653961,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "last_checkpoint_bytes": 449558
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "d4c24fc2ebaaa6d5abb7a10230bacdfbab42d2b454e646864a4cdbb4abb3e20d",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "cleanup_stage": null,
+      "cleanup_confirmed": true,
+      "exports_closed": true,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "worker_deadline_expired": false,
+      "finalization_error": null,
+      "cleanup_error": null,
+      "error": null,
+      "wall_s": 48.39099999994505,
+      "report": "output\\egypt-urban-pairs\\68023ab8f4cc4494a27dfedef4c64519\\report.json",
+      "report_sha256": "667be526981299b4eb3a65180a439cb430c51c5d4c2750ef059486b2fcfdb4cd",
+      "matrix_report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-10.json",
+      "matrix_report_sha256": "1b901cd338d6a3aa02edae24ed30543b5618032efdce3aa57a6d1281c824b2b8",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\68023ab8f4cc4494a27dfedef4c64519\\source.zip",
+        "sha256": "d4cee3ed974350fbc538fcb35f8d96cc612537c5fee333f38ce6f90b650c5dda",
+        "files": 232,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.67200000002049
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 26.469000000040978
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.57799999997951
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.82799999997951
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.39099999994505
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 43.01599999994505
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 44.59400000004098
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 44.79700000002049
+        }
+      ],
+      "runs": [
+        {
+          "mode": "ROBOSPHERE",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_8add87fff5c44f09834bf0205d8d836a",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "destination_reached": false,
+          "maximum_sensor_wall_age_s": 0.998979999916628,
+          "maximum_sensor_sim_age_s": 0.0,
+          "sensor_coverage_percent": 0.0,
+          "collisions": 0,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "initial_condition_audit_passed": true,
+          "pipeline_timings": [
+            {
+              "evaluation_frame": 397,
+              "sensor_wall_age_s": 0.5702595999464393,
+              "control_timing_ms": {
+                "lock_wait": 0.001500011421740055,
+                "since_publication": 0.5149999633431435,
+                "sensor_to_scene": 174.92729995865375,
+                "scene_to_control": 2.0471999887377024,
+                "navigation": 123.50890005473047,
+                "safety": 0.20809995476156473,
+                "actuator_submit": 0.7186000002548099
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 64.5469999872148,
+                "lidar_decode": 0.16870000399649143,
+                "depth_decode_and_fusion": 9.31619992479682,
+                "tracking_and_forecasts": 20.01049998216331,
+                "semantics_and_freezing": 80.88580006733537
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": "4030231945c24ff48da01f6ab4884920:397:1",
+                "session_id": "4030231945c24ff48da01f6ab4884920",
+                "frame_id": 397,
+                "source_frame": 397,
+                "submitted_wall_s": 638972.9871385,
+                "sensor_received_wall_s": 638972.4309242,
+                "wall_age_s": 0.5562142999842763,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638972.9878568
+              }
+            },
+            {
+              "evaluation_frame": 398,
+              "sensor_wall_age_s": 0.33646879997104406,
+              "control_timing_ms": {
+                "lock_wait": 0.003600027412176132,
+                "since_publication": 44.08979997970164,
+                "sensor_to_scene": 137.84670003224164,
+                "scene_to_control": 45.5398999620229,
+                "navigation": 125.45439996756613,
+                "safety": 0.3896000562235713,
+                "actuator_submit": 1.0040999623015523
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 87.84080005716532,
+                "lidar_decode": 0.17939996905624866,
+                "depth_decode_and_fusion": 12.010899954475462,
+                "tracking_and_forecasts": 21.73799998126924,
+                "semantics_and_freezing": 16.078100074082613
+              },
+              "space_build_ms": 65.62799995299429,
+              "application_timing": {
+                "decision_id": "4030231945c24ff48da01f6ab4884920:398:2",
+                "session_id": "4030231945c24ff48da01f6ab4884920",
+                "frame_id": 398,
+                "source_frame": 398,
+                "submitted_wall_s": 638973.4398479,
+                "sensor_received_wall_s": 638973.1304187999,
+                "wall_age_s": 0.309429100016132,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638973.4408516999
+              }
+            },
+            {
+              "evaluation_frame": 399,
+              "sensor_wall_age_s": 0.32541820011101663,
+              "control_timing_ms": {
+                "lock_wait": 0.001900014467537403,
+                "since_publication": 1.1587999761104584,
+                "sensor_to_scene": 208.53640011046082,
+                "scene_to_control": 2.374099916778505,
+                "navigation": 95.68969998508692,
+                "safety": 0.18919992726296186,
+                "actuator_submit": 0.9778999956324697
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 63.34000010974705,
+                "lidar_decode": 0.4520999500527978,
+                "depth_decode_and_fusion": 19.196499953977764,
+                "tracking_and_forecasts": 27.321900008246303,
+                "semantics_and_freezing": 98.22669997811317
+              },
+              "space_build_ms": 56.12140009179711,
+              "application_timing": {
+                "decision_id": "4030231945c24ff48da01f6ab4884920:399:3",
+                "session_id": "4030231945c24ff48da01f6ab4884920",
+                "frame_id": 399,
+                "source_frame": 399,
+                "submitted_wall_s": 638973.8536271999,
+                "sensor_received_wall_s": 638973.5466911999,
+                "wall_age_s": 0.30693600000813603,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638973.8546072999
+              }
+            },
+            {
+              "evaluation_frame": 400,
+              "sensor_wall_age_s": 0.3856104000005871,
+              "control_timing_ms": {
+                "lock_wait": 0.001600012183189392,
+                "since_publication": 1.2321999529376626,
+                "sensor_to_scene": 175.05600000731647,
+                "scene_to_control": 2.486599958501756,
+                "navigation": 73.72420001775026,
+                "safety": 117.9861999116838,
+                "actuator_submit": 0.07960002403706312
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 132.29330000467598,
+                "lidar_decode": 0.2264999784529209,
+                "depth_decode_and_fusion": 12.399200000800192,
+                "tracking_and_forecasts": 15.923600061796606,
+                "semantics_and_freezing": 14.213899965398014
+              },
+              "space_build_ms": 42.48679999727756,
+              "application_timing": {
+                "decision_id": null,
+                "session_id": "4030231945c24ff48da01f6ab4884920",
+                "frame_id": 400,
+                "source_frame": 400,
+                "submitted_wall_s": 638974.3159492,
+                "sensor_received_wall_s": 638973.946513,
+                "wall_age_s": 0.36943620000965893,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 638974.3160285
+              }
+            }
+          ]
+        }
+      ],
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "worker_exit_code": 1,
+      "worker_exit_code_source": "RETAINED_PARENT_CONSOLE",
+      "console_sha256": "8d8f5acdfcf47b2bd3e259d97fcc246ffa390673d3e318997aa40a5e949d814a",
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 400,
+        "timestamp_s": 10.850484628230333,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "last_checkpoint_bytes": 449554
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "85a4ebcb99ad24e6626c8e51684c8b85e9bf73df82a39ebad88695b9e56aaada",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "cleanup_stage": null,
+      "cleanup_confirmed": true,
+      "exports_closed": true,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "worker_deadline_expired": false,
+      "finalization_error": null,
+      "cleanup_error": null,
+      "error": null,
+      "wall_s": 49.34399999992456,
+      "report": "output\\egypt-urban-pairs\\ec48adb97ab548adb0b8ff47dcaf6778\\report.json",
+      "report_sha256": "854e60bdc08454d33a4f4ec9aff2989dfea606c17f14832535158f5b6cf69668",
+      "matrix_report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-11.json",
+      "matrix_report_sha256": "5de01b1147426b4bc9e4d52bafb6a66a2b89221d643a5bef53add208dd9b1f68",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\ec48adb97ab548adb0b8ff47dcaf6778\\source.zip",
+        "sha256": "c9f1b94302f28862ca362736b41c0267f4a136e8feb26a98affda885b7a8d2d7",
+        "files": 232,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 24.608999999938533
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 27.640999999945052
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.15599999995902
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.42200000002049
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.01599999994505
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 43.98399999993853
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 45.48399999993853
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 45.625
+        }
+      ],
+      "runs": [
+        {
+          "mode": "ROBOSPHERE",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3a1e0a7cdab04488b242d5aa73d1ae37",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "destination_reached": false,
+          "maximum_sensor_wall_age_s": 0.7724595000036061,
+          "maximum_sensor_sim_age_s": 0.0,
+          "sensor_coverage_percent": 0.0,
+          "collisions": 0,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "initial_condition_audit_passed": true,
+          "pipeline_timings": [
+            {
+              "evaluation_frame": 349,
+              "sensor_wall_age_s": 0.5449870999436826,
+              "control_timing_ms": {
+                "lock_wait": 0.001500011421740055,
+                "since_publication": 0.2720999764278531,
+                "sensor_to_scene": 161.629099980928,
+                "scene_to_control": 1.7897000070661306,
+                "native_navigation": 2.4476000107824802,
+                "road_context": 96.02050005923957,
+                "behavior": 0.07970002479851246,
+                "navigation": 98.78260002005845,
+                "safety": 0.1900999341160059,
+                "actuator_submit": 0.7023999933153391
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 92.2363999998197,
+                "lidar_decode": 0.5184999899938703,
+                "depth_decode_and_fusion": 16.792100039310753,
+                "tracking_and_forecasts": 25.20319994073361,
+                "semantics_and_freezing": 26.880100020207465
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": "6b438a26c69e414c80b35f3621b3d699:349:1",
+                "session_id": "6b438a26c69e414c80b35f3621b3d699",
+                "frame_id": 349,
+                "source_frame": 349,
+                "submitted_wall_s": 639243.6868591999,
+                "sensor_received_wall_s": 639243.1550779999,
+                "wall_age_s": 0.5317811999702826,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639243.6875621999
+              }
+            },
+            {
+              "evaluation_frame": 350,
+              "sensor_wall_age_s": 0.3907848000526428,
+              "control_timing_ms": {
+                "lock_wait": 0.0039000296965241432,
+                "since_publication": 37.31829999014735,
+                "sensor_to_scene": 126.23140006326139,
+                "scene_to_control": 38.319499930366874,
+                "native_navigation": 3.0662999488413334,
+                "road_context": 16.02069998625666,
+                "behavior": 176.2678000377491,
+                "navigation": 195.66880003549159,
+                "safety": 0.3640999784693122,
+                "actuator_submit": 1.0367999784648418
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 56.686899974010885,
+                "lidar_decode": 0.44650002382695675,
+                "depth_decode_and_fusion": 16.920699970796704,
+                "tracking_and_forecasts": 26.092000072821975,
+                "semantics_and_freezing": 26.08690003398806
+              },
+              "space_build_ms": 53.19360003340989,
+              "application_timing": {
+                "decision_id": "6b438a26c69e414c80b35f3621b3d699:350:2",
+                "session_id": "6b438a26c69e414c80b35f3621b3d699",
+                "frame_id": 350,
+                "source_frame": 350,
+                "submitted_wall_s": 639244.1468461999,
+                "sensor_received_wall_s": 639243.7859913999,
+                "wall_age_s": 0.36085479997564107,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639244.1478861999
+              }
+            },
+            {
+              "evaluation_frame": 351,
+              "sensor_wall_age_s": 0.2701051998883486,
+              "control_timing_ms": {
+                "lock_wait": 0.001800013706088066,
+                "since_publication": 0.8924000430852175,
+                "sensor_to_scene": 157.4222999624908,
+                "scene_to_control": 1.9753000233322382,
+                "native_navigation": 1.5485999174416065,
+                "road_context": 14.275399968028069,
+                "behavior": 71.5343999909237,
+                "navigation": 87.59280003141612,
+                "safety": 8.591399993747473,
+                "actuator_submit": 0.7213999051600695
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 103.84919994976372,
+                "lidar_decode": 0.255799968726933,
+                "depth_decode_and_fusion": 14.207500033080578,
+                "tracking_and_forecasts": 24.568900000303984,
+                "semantics_and_freezing": 14.541500015184283
+              },
+              "space_build_ms": 42.37949999514967,
+              "application_timing": {
+                "decision_id": "6b438a26c69e414c80b35f3621b3d699:351:3",
+                "session_id": "6b438a26c69e414c80b35f3621b3d699",
+                "frame_id": 351,
+                "source_frame": 351,
+                "submitted_wall_s": 639244.5339374999,
+                "sensor_received_wall_s": 639244.2782037,
+                "wall_age_s": 0.2557337998878211,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639244.5346580999
+              }
+            },
+            {
+              "evaluation_frame": 352,
+              "sensor_wall_age_s": 0.4053389999317005,
+              "control_timing_ms": {
+                "lock_wait": 0.001900014467537403,
+                "since_publication": 1.1378999333828688,
+                "sensor_to_scene": 186.28240004181862,
+                "scene_to_control": 2.728099934756756,
+                "native_navigation": 1.6238000243902206,
+                "road_context": 20.79180011060089,
+                "behavior": 67.98019993584603,
+                "navigation": 90.59150004759431,
+                "safety": 113.46000002231449,
+                "actuator_submit": 0.05719996988773346
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 133.6569000268355,
+                "lidar_decode": 0.21379999816417694,
+                "depth_decode_and_fusion": 11.265799985267222,
+                "tracking_and_forecasts": 19.878300023265183,
+                "semantics_and_freezing": 21.26819989643991
+              },
+              "space_build_ms": 49.96850003954023,
+              "application_timing": {
+                "decision_id": null,
+                "session_id": "6b438a26c69e414c80b35f3621b3d699",
+                "frame_id": 352,
+                "source_frame": 352,
+                "submitted_wall_s": 639245.0334307,
+                "sensor_received_wall_s": 639244.6402487999,
+                "wall_age_s": 0.39318190002813935,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639245.0334872999
+              }
+            }
+          ]
+        }
+      ],
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "worker_exit_code": 1,
+      "worker_exit_code_source": "RETAINED_PARENT_CONSOLE",
+      "console_sha256": "bb0cc87640d2d96de8599a59567b5809a90dd8dfa728a2d65acf84eecd748330",
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 352,
+        "timestamp_s": 10.516022119671106,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "last_checkpoint_bytes": 449548
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "69506dd8f7779b91ea981015278ddacd3610220e974d9ca04db1371268a29263",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "cleanup_stage": null,
+      "cleanup_confirmed": true,
+      "exports_closed": true,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "worker_deadline_expired": false,
+      "finalization_error": null,
+      "cleanup_error": null,
+      "error": null,
+      "wall_s": 49.53100000007544,
+      "report": "output\\egypt-urban-pairs\\0fe1431db29a4972b416dbfd9bb81109\\report.json",
+      "report_sha256": "f60941e2b66aae69fa4899cc32805692f86b73b696a3e0eb6fc9e564b7055ad7",
+      "matrix_report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-12.json",
+      "matrix_report_sha256": "be1fc4af282ed2d83d786ec70eecef70d072fcacfe633473827f1530670bb481",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\0fe1431db29a4972b416dbfd9bb81109\\source.zip",
+        "sha256": "5b50e26379f51b546454f3f6bdf973c0f7a72468d5c828d442a01420675c10ae",
+        "files": 232,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 25.906000000075437
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 28.54700000002049
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.96900000004098
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 37.23400000005495
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.703000000095926
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 44.39000000001397
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 45.85900000005495
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 45.98400000005495
+        }
+      ],
+      "runs": [
+        {
+          "mode": "ROBOSPHERE",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_99850205484d4f8d85658d625befde03",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "destination_reached": false,
+          "maximum_sensor_wall_age_s": 0.7620915001025423,
+          "maximum_sensor_sim_age_s": 0.0,
+          "sensor_coverage_percent": 0.0,
+          "collisions": 0,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "initial_condition_audit_passed": true,
+          "pipeline_timings": [
+            {
+              "evaluation_frame": 345,
+              "sensor_wall_age_s": 0.5628835000097752,
+              "control_timing_ms": {
+                "lock_wait": 0.002100015990436077,
+                "since_publication": 0.5381000228226185,
+                "sensor_to_scene": 179.61110000032932,
+                "scene_to_control": 2.9063000110909343,
+                "native_navigation": 3.1405999325215816,
+                "road_context": 20.604600082151592,
+                "behavior": 0.1023999648168683,
+                "navigation": 24.153699981980026,
+                "safety": 0.27820002287626266,
+                "actuator_submit": 1.3651000335812569
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 94.85180000774562,
+                "lidar_decode": 0.31729997135698795,
+                "depth_decode_and_fusion": 22.991000092588365,
+                "tracking_and_forecasts": 31.7327999509871,
+                "semantics_and_freezing": 29.71969998907298
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": "0a3c00385ba94ded9d85004eaafa04e8:345:1",
+                "session_id": "0a3c00385ba94ded9d85004eaafa04e8",
+                "frame_id": 345,
+                "source_frame": 345,
+                "submitted_wall_s": 639994.5190493,
+                "sensor_received_wall_s": 639993.9766639,
+                "wall_age_s": 0.5423854000400752,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639994.5204191
+              }
+            },
+            {
+              "evaluation_frame": 346,
+              "sensor_wall_age_s": 0.2952411000151187,
+              "control_timing_ms": {
+                "lock_wait": 0.002800021320581436,
+                "since_publication": 17.452300060540438,
+                "sensor_to_scene": 159.0901999734342,
+                "scene_to_control": 18.986500101163983,
+                "native_navigation": 2.142600016668439,
+                "road_context": 20.470299990847707,
+                "behavior": 74.95649997144938,
+                "navigation": 97.838299931027,
+                "safety": 0.22090005222707987,
+                "actuator_submit": 0.9303999831900001
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 93.07549998629838,
+                "lidar_decode": 0.45270007103681564,
+                "depth_decode_and_fusion": 18.511699978262186,
+                "tracking_and_forecasts": 26.394400047138333,
+                "semantics_and_freezing": 20.656799897551537
+              },
+              "space_build_ms": 51.07220006175339,
+              "application_timing": {
+                "decision_id": "0a3c00385ba94ded9d85004eaafa04e8:346:2",
+                "session_id": "0a3c00385ba94ded9d85004eaafa04e8",
+                "frame_id": 346,
+                "source_frame": 346,
+                "submitted_wall_s": 639994.9148303,
+                "sensor_received_wall_s": 639994.6385384,
+                "wall_age_s": 0.27629190008156,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639994.9157633
+              }
+            },
+            {
+              "evaluation_frame": 347,
+              "sensor_wall_age_s": 0.31858640001155436,
+              "control_timing_ms": {
+                "lock_wait": 0.001900014467537403,
+                "since_publication": 1.410100026987493,
+                "sensor_to_scene": 196.8980000820011,
+                "scene_to_control": 3.7388999480754137,
+                "native_navigation": 1.520400051958859,
+                "road_context": 19.72910005133599,
+                "behavior": 77.72489998023957,
+                "navigation": 99.2063001031056,
+                "safety": 0.23729994427412748,
+                "actuator_submit": 0.7995000341907144
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 128.99510003626347,
+                "lidar_decode": 0.8239999879151583,
+                "depth_decode_and_fusion": 13.389699975959957,
+                "tracking_and_forecasts": 32.23350003827363,
+                "semantics_and_freezing": 21.45669993478805
+              },
+              "space_build_ms": 58.26270009856671,
+              "application_timing": {
+                "decision_id": "0a3c00385ba94ded9d85004eaafa04e8:347:3",
+                "session_id": "0a3c00385ba94ded9d85004eaafa04e8",
+                "frame_id": 347,
+                "source_frame": 347,
+                "submitted_wall_s": 639995.309665,
+                "sensor_received_wall_s": 639995.0094412,
+                "wall_age_s": 0.3002238000044599,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639995.3104653
+              }
+            },
+            {
+              "evaluation_frame": 348,
+              "sensor_wall_age_s": 0.49689429998397827,
+              "control_timing_ms": {
+                "lock_wait": 0.002700020559132099,
+                "since_publication": 2.2591999731957912,
+                "sensor_to_scene": 187.90070002432913,
+                "scene_to_control": 4.976299940608442,
+                "native_navigation": 2.6741999899968505,
+                "road_context": 22.358099929988384,
+                "behavior": 144.38089996110648,
+                "navigation": 169.66029989998788,
+                "safety": 122.32920003589243,
+                "actuator_submit": 0.06160000339150429
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 113.96300001069903,
+                "lidar_decode": 0.5012999754399061,
+                "depth_decode_and_fusion": 22.80490007251501,
+                "tracking_and_forecasts": 28.950099949724972,
+                "semantics_and_freezing": 21.682600025087595
+              },
+              "space_build_ms": 56.19879998266697,
+              "application_timing": {
+                "decision_id": null,
+                "session_id": "0a3c00385ba94ded9d85004eaafa04e8",
+                "frame_id": 348,
+                "source_frame": 348,
+                "submitted_wall_s": 639995.9177537999,
+                "sensor_received_wall_s": 639995.4327565,
+                "wall_age_s": 0.48499729996547103,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 639995.9178147999
+              }
+            }
+          ]
+        }
+      ],
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "worker_exit_code": 1,
+      "worker_exit_code_source": "RETAINED_PARENT_CONSOLE",
+      "console_sha256": "ffa3611155725965ace08f3e1ae3d651f30169e46719daf97f9de3a4c6006a92",
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 348,
+        "timestamp_s": 10.53579955920577,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "last_checkpoint_bytes": 186544
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "f168ac0cc66653da6243e9c354cd9393999e4a1b4d8b0e26fb2e794df2f1a24e",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "cleanup_stage": null,
+      "cleanup_confirmed": null,
+      "exports_closed": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "worker_deadline_expired": false,
+      "finalization_error": null,
+      "cleanup_error": null,
+      "error": null,
+      "wall_s": 41.46799999999348,
+      "report": "output\\egypt-urban-pairs\\b784db5715f64310af47c914cc2b9130\\report.json",
+      "report_sha256": "bc17ffb94e6fdcae93491758c8d20b19815fc4917f8edacf344f20aad65ecc75",
+      "matrix_report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-13.json",
+      "matrix_report_sha256": "e274b6c248607da5a818b8d0fcc4ed9508e25f452dbd771e86b25fb828a1ee2d",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\b784db5715f64310af47c914cc2b9130\\source.zip",
+        "sha256": "3d378a8035d8c6ed64399a225508709b6ae6fd502e00577cc22e71022330a278",
+        "files": 232,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.07799999997951
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 25.57799999997951
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.10900000005495
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.375
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.73400000005495
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 39.85900000005495
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 41.18700000003446
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 41.28099999995902
+        }
+      ],
+      "runs": [
+        {
+          "mode": "ROBOSPHERE",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_d0948e3ff5e44b408348f56a0617dc48",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "destination_reached": false,
+          "maximum_sensor_wall_age_s": 0.6795871999347582,
+          "maximum_sensor_sim_age_s": 0.0,
+          "sensor_coverage_percent": 0.0,
+          "collisions": 0,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "initial_condition_audit_passed": true,
+          "pipeline_timings": [
+            {
+              "evaluation_frame": 322,
+              "sensor_wall_age_s": 0.311683899955824,
+              "control_timing_ms": {
+                "lock_wait": 0.0015998957678675652,
+                "since_publication": 0.32130000181496143,
+                "sensor_to_scene": 86.74840000458062,
+                "scene_to_control": 1.321599935181439,
+                "native_navigation": 2.10100004915148,
+                "road_context": 11.80840004235506,
+                "behavior": 0.08690007962286472,
+                "navigation": 14.181999955326319,
+                "safety": 0.19210006576031446,
+                "actuator_submit": 0.6503999466076493
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 53.3527999650687,
+                "lidar_decode": 0.1610000617802143,
+                "depth_decode_and_fusion": 8.356299949809909,
+                "tracking_and_forecasts": 15.56730002630502,
+                "semantics_and_freezing": 9.311400004662573
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": "e89e9e291b3e43f1acac21718b2edd44:322:1",
+                "session_id": "e89e9e291b3e43f1acac21718b2edd44",
+                "frame_id": 322,
+                "source_frame": 322,
+                "submitted_wall_s": 640263.3078104,
+                "sensor_received_wall_s": 640263.0086724,
+                "wall_age_s": 0.29913800000213087,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640263.3084615
+              }
+            },
+            {
+              "evaluation_frame": 323,
+              "sensor_wall_age_s": 0.29115860001184046,
+              "control_timing_ms": {
+                "lock_wait": 0.00300002284348011,
+                "since_publication": 6.868500029668212,
+                "sensor_to_scene": 145.53660003002733,
+                "scene_to_control": 7.845900021493435,
+                "native_navigation": 2.3126999149098992,
+                "road_context": 24.280100013129413,
+                "behavior": 86.17690007667989,
+                "navigation": 113.0847999593243,
+                "safety": 0.382099999114871,
+                "actuator_submit": 1.0463000508025289
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 87.85659994464368,
+                "lidar_decode": 0.16930000856518745,
+                "depth_decode_and_fusion": 13.456600019708276,
+                "tracking_and_forecasts": 24.156900006346405,
+                "semantics_and_freezing": 19.897700054571033
+              },
+              "space_build_ms": 54.34190004598349,
+              "application_timing": {
+                "decision_id": "e89e9e291b3e43f1acac21718b2edd44:323:2",
+                "session_id": "e89e9e291b3e43f1acac21718b2edd44",
+                "frame_id": 323,
+                "source_frame": 323,
+                "submitted_wall_s": 640263.71583,
+                "sensor_received_wall_s": 640263.4487545,
+                "wall_age_s": 0.26707549998536706,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640263.716874
+              }
+            },
+            {
+              "evaluation_frame": 324,
+              "sensor_wall_age_s": 0.2671258000191301,
+              "control_timing_ms": {
+                "lock_wait": 0.002100015990436077,
+                "since_publication": 1.630399958230555,
+                "sensor_to_scene": 127.00700003188103,
+                "scene_to_control": 3.409600001759827,
+                "native_navigation": 1.526899985037744,
+                "road_context": 24.36779998242855,
+                "behavior": 77.47080002445728,
+                "navigation": 103.61769993323833,
+                "safety": 18.191799987107515,
+                "actuator_submit": 0.6362999556586146
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 81.18010009638965,
+                "lidar_decode": 0.3111999249085784,
+                "depth_decode_and_fusion": 11.23960001859814,
+                "tracking_and_forecasts": 21.861499990336597,
+                "semantics_and_freezing": 12.415000004693866
+              },
+              "space_build_ms": 46.32250010035932,
+              "application_timing": {
+                "decision_id": "e89e9e291b3e43f1acac21718b2edd44:324:3",
+                "session_id": "e89e9e291b3e43f1acac21718b2edd44",
+                "frame_id": 324,
+                "source_frame": 324,
+                "submitted_wall_s": 640264.0829184001,
+                "sensor_received_wall_s": 640263.8305524,
+                "wall_age_s": 0.25236600008793175,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640264.0835552
+              }
+            },
+            {
+              "evaluation_frame": 325,
+              "sensor_wall_age_s": 0.3987481000367552,
+              "control_timing_ms": {
+                "lock_wait": 0.002900022082030773,
+                "since_publication": 1.5616000164300203,
+                "sensor_to_scene": 163.88850007206202,
+                "scene_to_control": 3.1771999783813953,
+                "native_navigation": 2.053000032901764,
+                "road_context": 24.973399937152863,
+                "behavior": 64.45669999811798,
+                "navigation": 91.67790005449206,
+                "safety": 126.94440002087504,
+                "actuator_submit": 0.09630003478378057
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 105.36719998344779,
+                "lidar_decode": 0.23490004241466522,
+                "depth_decode_and_fusion": 15.171900042332709,
+                "tracking_and_forecasts": 22.436299943365157,
+                "semantics_and_freezing": 20.67910006735474
+              },
+              "space_build_ms": 44.70269999001175,
+              "application_timing": {
+                "decision_id": null,
+                "session_id": "e89e9e291b3e43f1acac21718b2edd44",
+                "frame_id": 325,
+                "source_frame": 325,
+                "submitted_wall_s": 640264.583292,
+                "sensor_received_wall_s": 640264.1974212,
+                "wall_age_s": 0.3858708000043407,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640264.583388
+              }
+            }
+          ]
+        }
+      ],
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: exports_closed",
+        "2707/ROBOSPHERE: cleanup_confirmed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "worker_exit_code": 3221225725,
+      "worker_exit_code_source": "RETAINED_PARENT_CONSOLE",
+      "console_sha256": "60b0829280055a9711740602f85c2c9956911149bec3c435a8bc771348abf714",
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 325,
+        "timestamp_s": 10.485739443451166,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "last_checkpoint_bytes": 28054
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "9f9e1ea0e312886f28f3af63ab7b2711dce3187962fd5b8db9883755c06dfd29",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "cleanup_stage": "COMPLETE",
+      "cleanup_confirmed": true,
+      "exports_closed": true,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "worker_deadline_expired": false,
+      "finalization_error": null,
+      "cleanup_error": null,
+      "error": null,
+      "wall_s": 43.39000000001397,
+      "report": "output\\egypt-urban-pairs\\da098207df054f408862e6e2979699ca\\report.json",
+      "report_sha256": "c37edee920ea71c0f81479b7ea99a60b4102929bec027ae5ad815991a6777ada",
+      "matrix_report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-14.json",
+      "matrix_report_sha256": "cdc45f0c54e0e9c227a5eb35d559e7ca625eb7fb8e2bedb82e2e964210d377cd",
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\da098207df054f408862e6e2979699ca\\source.zip",
+        "sha256": "30701b7a37178417794c18e7608d7b55816355451f7140e90cc4b21fbe5f92ee",
+        "files": 232,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 21.844000000040978
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 24.14000000001397
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 31.67200000002049
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 31.92200000002049
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.203000000095926
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.17200000002049
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 39.54700000002049
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 39.65600000007544
+        }
+      ],
+      "runs": [
+        {
+          "mode": "ROBOSPHERE",
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a0a2db1d096e4b24bc806ebd5594d81a",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "destination_reached": false,
+          "maximum_sensor_wall_age_s": 0.6481923999963328,
+          "maximum_sensor_sim_age_s": 0.0,
+          "sensor_coverage_percent": 0.0,
+          "collisions": 0,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "initial_condition_audit_passed": true,
+          "pipeline_timings": [
+            {
+              "evaluation_frame": 328,
+              "sensor_wall_age_s": 0.2805172000080347,
+              "control_timing_ms": {
+                "lock_wait": 0.0013998942449688911,
+                "since_publication": 0.23030000738799572,
+                "sensor_to_scene": 84.94139998219907,
+                "scene_to_control": 1.2681999942287803,
+                "native_navigation": 1.9121000077575445,
+                "road_context": 11.518700048327446,
+                "behavior": 0.07499998901039362,
+                "navigation": 13.673400040715933,
+                "safety": 0.17419992946088314,
+                "actuator_submit": 0.6309999153017998
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 52.01970005873591,
+                "lidar_decode": 0.13749999925494194,
+                "depth_decode_and_fusion": 8.051699958741665,
+                "tracking_and_forecasts": 14.867000048980117,
+                "semantics_and_freezing": 9.86589991953224
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": "6999cdabf7664d3485c79fecfdca989d:328:1",
+                "session_id": "6999cdabf7664d3485c79fecfdca989d",
+                "frame_id": 328,
+                "source_frame": 328,
+                "submitted_wall_s": 640443.2938938,
+                "sensor_received_wall_s": 640443.0243755999,
+                "wall_age_s": 0.26951820007525384,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640443.2945250999
+              }
+            },
+            {
+              "evaluation_frame": 329,
+              "sensor_wall_age_s": 0.2792102999519557,
+              "control_timing_ms": {
+                "lock_wait": 0.004100031219422817,
+                "since_publication": 6.883100024424493,
+                "sensor_to_scene": 146.47030003834516,
+                "scene_to_control": 7.850699941627681,
+                "native_navigation": 2.347199944779277,
+                "road_context": 23.968699970282614,
+                "behavior": 77.55509996786714,
+                "navigation": 104.13530003279448,
+                "safety": 0.20929996389895678,
+                "actuator_submit": 0.8501999545842409
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 93.42129994183779,
+                "lidar_decode": 0.35390001721680164,
+                "depth_decode_and_fusion": 11.48540002759546,
+                "tracking_and_forecasts": 20.960900001227856,
+                "semantics_and_freezing": 20.24940005503595
+              },
+              "space_build_ms": 53.54500003159046,
+              "application_timing": {
+                "decision_id": "6999cdabf7664d3485c79fecfdca989d:329:2",
+                "session_id": "6999cdabf7664d3485c79fecfdca989d",
+                "frame_id": 329,
+                "source_frame": 329,
+                "submitted_wall_s": 640443.6882031,
+                "sensor_received_wall_s": 640443.4293758,
+                "wall_age_s": 0.25882730004377663,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640443.6890549
+              }
+            },
+            {
+              "evaluation_frame": 330,
+              "sensor_wall_age_s": 0.26964139996562153,
+              "control_timing_ms": {
+                "lock_wait": 0.002700020559132099,
+                "since_publication": 1.5791000332683325,
+                "sensor_to_scene": 136.6094999248162,
+                "scene_to_control": 3.4633000614121556,
+                "native_navigation": 1.5296000055968761,
+                "road_context": 16.902799950912595,
+                "behavior": 73.23830004315823,
+                "navigation": 91.9394000666216,
+                "safety": 21.46419999189675,
+                "actuator_submit": 0.7569999434053898
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 79.31229996029288,
+                "lidar_decode": 0.24429999757558107,
+                "depth_decode_and_fusion": 12.01870001386851,
+                "tracking_and_forecasts": 21.078099962323904,
+                "semantics_and_freezing": 23.956999997608364
+              },
+              "space_build_ms": 42.133399983868,
+              "application_timing": {
+                "decision_id": "6999cdabf7664d3485c79fecfdca989d:330:3",
+                "session_id": "6999cdabf7664d3485c79fecfdca989d",
+                "frame_id": 330,
+                "source_frame": 330,
+                "submitted_wall_s": 640444.0487528,
+                "sensor_received_wall_s": 640443.7950837,
+                "wall_age_s": 0.2536690999986604,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640444.0495096999
+              }
+            },
+            {
+              "evaluation_frame": 331,
+              "sensor_wall_age_s": 0.43672520003747195,
+              "control_timing_ms": {
+                "lock_wait": 0.003700028173625469,
+                "since_publication": 1.7219999572262168,
+                "sensor_to_scene": 155.57569998782128,
+                "scene_to_control": 4.301800043322146,
+                "native_navigation": 2.176000038161874,
+                "road_context": 104.15689996443689,
+                "behavior": 0.202300027012825,
+                "navigation": 106.81030002888292,
+                "safety": 152.86799997556955,
+                "actuator_submit": 0.07929990533739328
+              },
+              "scene_timing_ms": {
+                "input_wait_before_build": 99.81460007838905,
+                "lidar_decode": 0.24649989791214466,
+                "depth_decode_and_fusion": 16.783100087195635,
+                "tracking_and_forecasts": 20.684299990534782,
+                "semantics_and_freezing": 18.048299942165613
+              },
+              "space_build_ms": null,
+              "application_timing": {
+                "decision_id": null,
+                "session_id": "6999cdabf7664d3485c79fecfdca989d",
+                "frame_id": 331,
+                "source_frame": 331,
+                "submitted_wall_s": 640444.5915656999,
+                "sensor_received_wall_s": 640444.1718645999,
+                "wall_age_s": 0.41970109997782856,
+                "simulation_age_s": 0.0,
+                "fresh_aligned": false,
+                "injected_timeout": false,
+                "rpc_completed_wall_s": 640444.5916453999
+              }
+            }
+          ]
+        }
+      ],
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "worker_exit_code": 1,
+      "worker_exit_code_source": "FINAL_NATIVE_REPORT",
+      "console_sha256": "5ccfcfc5bf6937f90a9ded4375ed278b1317ce4ae935523b2f7c33b6de777802",
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 331,
+        "timestamp_s": 10.250895831733942,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "last_checkpoint_bytes": 28067
+    }
+  ],
+  "preflights": {
+    "acceptance": {
+      "can_run": false,
+      "reason": "Full current-source development matrix must pass before the protected acceptance window can be used",
+      "required_reservation_s": 7200.0,
+      "authorization_unchanged": true,
+      "source_sha256": "9f9e1ea0e312886f28f3af63ab7b2711dce3187962fd5b8db9883755c06dfd29",
+      "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\acceptance-preflight.json",
+      "sha256": "e3c4272d62c7777fb6e62f130e1d4ab463ab4690638462536aa5a18f140829c1"
+    },
+    "development": {
+      "can_run": false,
+      "reason": "Pending: authorized phase cannot cover this matrix; no allowance was reset or extended",
+      "required_reservation_s": 7200.0,
+      "authorization_unchanged": true,
+      "source_sha256": "9f9e1ea0e312886f28f3af63ab7b2711dce3187962fd5b8db9883755c06dfd29",
+      "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-preflight.json",
+      "sha256": "f06593af6811cad0bb65d4619f3eb85c9e3574172bed16856b54312f2a80a118"
+    }
+  },
+  "software_checks": {
+    "javascript": {
+      "discovered": 207,
+      "passed": 207,
+      "skipped": 0,
+      "log": "output\\maintenance\\cleanup-20261024\\javascript-tests.log",
+      "sha256": "ca9c02fbbd18a3333ac39a7beda80bc932a56ab1aa9148ba484fbc939fecf3c1"
+    },
+    "python": {
+      "discovered": 957,
+      "passed": 953,
+      "skipped": 4,
+      "log": "output\\maintenance\\cleanup-20261024\\python-final-tests.log",
+      "sha256": "eec69e19c992fb36a3229e07c6b21f8d06c496f726b6b5d13939157c8406a26b"
+    }
+  },
+  "offline_forecast_benchmark": {
+    "result": {
+      "old": {
+        "median_ms": 13.263600005302578,
+        "times_ms": [
+          31.188799999654293,
+          13.44679994508624,
+          12.576500070281327,
+          12.915100087411702,
+          13.524599955417216,
+          35.52239993587136,
+          13.051099958829582,
+          13.006100081838667,
+          13.022900093346834,
+          13.256500009447336,
+          13.27070000115782,
+          31.78940003272146
+        ]
+      },
+      "vectorized": {
+        "median_ms": 7.6344499830156565,
+        "times_ms": [
+          7.505199988372624,
+          8.000600035302341,
+          7.134899962693453,
+          7.763699977658689,
+          7.333599962294102,
+          7.404100033454597,
+          29.061099980026484,
+          7.929799961857498,
+          7.802800042554736,
+          7.765600108541548,
+          7.4486000230535865,
+          7.2734999703243375
+        ]
+      },
+      "tracks": 42,
+      "modes": 114,
+      "exact_payload_equality": true,
+      "scope": "OFFLINE_COMPUTE_ONLY"
+    },
+    "path": "output\\egypt-validation\\native-20261024-cleanup-followup\\forecast-freezing-benchmark.json",
+    "sha256": "14bee9c5d96231dfefcd9c82bdcd869061f38008c09ec5b7ed8d5095a3d4bd4a"
+  }
+}

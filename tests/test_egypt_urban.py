@@ -68,6 +68,19 @@ def track(identity, x, y, vx=0., vy=0., *, person=False):
 
 
 class UrbanDriverTests(unittest.TestCase):
+    def test_road_query_scales_with_stopping_distance_and_caps_speed_at_visible_tail(self):
+        driver=UrbanManeuverDriver(self.measured.geometry)
+        for speed in (0.,6.,12.,16.6):
+            scene,_,road=self.scene([],speed=speed)
+            scene.space.visible=6.
+            target,_=driver._speed(scene,road,60./3.6)
+            probe=scene.space.paths[-1]
+            distance=float(probe[-1,0])
+            required=speed*.5+speed**2/6.+4.
+            self.assertGreaterEqual(distance+.5,required)
+            if speed==0.:self.assertEqual(distance,6.)
+            self.assertLessEqual(target**2/6.+.45*target,5.+1e-6)
+
     def test_frozen_egypt_start_preserves_captured_route_but_ordinary_resume_replans(self):
         from backend.carla.provider import CarlaProvider
         class AdmittedForRouteTest(Exception):
@@ -737,8 +750,11 @@ class EgyptPresentationTests(unittest.TestCase):
                     ego=NS(actor=Mock()), benchmark_fixture=None, decision_delta=.05,
                     vehicle_geometry=VehicleGeometry(), route_state=lambda: {'id': 'route'})
                 agent = Mock()
-                with patch('backend.carla.route_agent.route_agent_class', return_value=Mock(return_value=agent)):
+                with patch('backend.carla.route_agent.route_agent_class', return_value=Mock(return_value=agent)), \
+                        patch('backend.carla.hybrid_navigation.prepare_drivable_map') as prepare_map:
                     CarlaProvider.start_navigation(p, 60., driving_mode=mode, presentation=True)
+                if mode == 'ROBOSPHERE': prepare_map.assert_called_once_with(p)
+                else: prepare_map.assert_not_called()
                 agent.ignore_vehicles.assert_called_with(True)
                 agent.ignore_traffic_lights.assert_called_with(False)
                 self.assertIsNone(p.navigation_bypass)

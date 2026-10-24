@@ -29,6 +29,7 @@ runtime versions and should not be read as current capability guarantees.
 
 | Area | Entry points | Detailed report |
 | --- | --- | --- |
+| Project-only recording retirement, preserved current runs and 4 GiB recording reserve | `backend/core/storage_retention.py`, `backend/core/recording.py`, `scripts/prune_recordings.py` | [24 October storage recovery](STORAGE_CLEANUP_20261024.md), [continued native validation](EGYPT_NATIVE_FOLLOWUP_20261024.md) |
 | Selectable road scenario rows, inspection without native commands and explicit validation requirements | `frontend/scenario-profile.js`, `frontend/sequential-drive.js`, `frontend/mission.css` | [24 October chooser follow-up and software/browser evidence](SCENARIO_CHOOSER_20261024.md) |
 | Road-choice availability reasons and native-stage action with measured GPU/VRAM context | `frontend/sequential-drive.js`, `frontend/mission-state.js`, `frontend/gpu-status.js`, `scripts/verify_gpu_action_ui.js` | [24 October software/browser verification; Egypt native acceptance remains pending](GPU_ACTION_UI_20261024.md) |
 | Egypt urban V1, measured route/events/maneuvers, isolated 2h development + 2h one-shot acceptance, exclusive simulator ownership and stopped-engine scenario progress | `backend/carla/egypt_urban.py`, `backend/core/urban_driver.py`, `backend/core/egypt_urban.py`, `backend/learning/egypt_budget.py`, `frontend/scenario-profile.js`, `scripts/native/validate_egypt_urban.py` | [Behavior specification](EGYPT_URBAN_CHAOS_V1.md), [actual native development failures and repairs; acceptance pending, legacy remains default](EGYPT_NATIVE_VALIDATION_20261024.md) |
@@ -125,8 +126,10 @@ Two old tracked language-model files exceeded GitHub's per-file upload limit:
 .cache/models/nlp/Qwen3-4B-Instruct-2507-Q4_K_M.gguf
 ```
 
-They total approximately 4.33 GB. Their bytes remain in the local model directory
-and in the verified recovery bundle. They are ignored in the current checkout.
+They total approximately 4.33 GB. At consolidation their bytes remained in the
+local model directory and verified recovery bundle. The unused local copies
+were removed during the [24 October project cleanup](STORAGE_CLEANUP_20261024.md);
+the external recovery bundle remains. They are ignored in the current checkout.
 Only these paths were removed from the unpublished delivery history. Published
 `origin/main` history is preserved, so the delivery uses a regular fast-forward
 push. Commit identities above that boundary change; the identity map records the

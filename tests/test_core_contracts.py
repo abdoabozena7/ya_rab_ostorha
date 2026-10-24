@@ -8,6 +8,27 @@ from tests.core_packets import packet, sensor, command, metadata, TRANSFORM
 
 
 class ContractTests(unittest.TestCase):
+    def test_numeric_matrix_freezing_preserves_values_without_mutable_aliases(self):
+        import numpy as np
+        from backend.core.kinematic_prediction import kinematic_modes
+        for dtype in (np.float32, np.float64):
+            matrix = np.array([[0., 1., 2.], [.1, 3., 4.]], dtype=dtype)
+            expected = matrix.tolist()
+            frozen = freeze_float_rows(matrix)
+            matrix[:] = 99.
+            self.assertEqual(to_dict(frozen), expected)
+            self.assertIs(freeze_json(frozen), frozen)
+            with self.assertRaises(TypeError): frozen[0][0] = 2.
+        for invalid in (np.array([[np.nan]]), np.array([[np.inf]]), np.array([1.]),
+                        np.array([[1]]), np.array([[True]]), np.array([['1']], object), [[1.]]):
+            with self.assertRaises(ValueError): freeze_float_rows(invalid)
+        tracks = [{'id': 'vehicle', 'position_m': [10., 2.], 'velocity_mps': [4., .3],
+                   'acceleration_mps2': [1., 0.], 'quality': 1., 'motion_observations': 8,
+                   'turn_rate_radps': .1},
+                  {'id': 'person', 'class': 'PERSON', 'position_m': [8., -3.], 'velocity_mps': [0., 0.]}]
+        self.assertEqual(to_dict(freeze_json(kinematic_modes(tracks))),
+                         to_dict(freeze_json(kinematic_modes(tracks, frozen_points=True))))
+
     def test_nested_roundtrip_preserves_units_and_provenance(self):
         frame = packet(sensors=(sensor(),), control=command())
         self.assertEqual(from_dict(SimulationFrame, json.loads(json.dumps(to_dict(frame)))), frame)

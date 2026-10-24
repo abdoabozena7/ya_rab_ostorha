@@ -4,6 +4,11 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [24 October storage recovery](docs/STORAGE_CLEANUP_20261024.md) retired old
+raw sensor assets while retaining videos/results and all current Egypt runs.
+It recovered 114.17 GiB of disk space at the cleanup snapshot and added a 4 GiB
+recording reserve. Retired raw recordings can no longer be replayed as sensors.
+
 The [24 October scenario and GPU interface update](docs/GPU_ACTION_UI_20261024.md)
 explains unavailable road choices and adds an explicit availability refresh.
 The main action now names native preparation/shutdown steps and shows measured
@@ -31,6 +36,8 @@ status refreshes with CARLA stopped, including completed trips and exact failed
 gates. The subsequently authorized [native development execution](docs/EGYPT_NATIVE_VALIDATION_20261024.md)
 retains actual preparation, timing and incomplete-route failures; development
 has not passed and the reserved acceptance seeds remain unused.
+The [post-cleanup native follow-up](docs/EGYPT_NATIVE_FOLLOWUP_20261024.md)
+retains subsequent timing measurements and attempts without promoting Egypt.
 Offline and browser-only checks do not close native acceptance or guarantee no
 contact; Egypt becomes the default only for new comparisons after full acceptance.
 

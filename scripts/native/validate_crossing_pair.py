@@ -56,7 +56,23 @@ def verify_videos(report, deadline=None):
     except (OSError,ValueError,KeyError,TypeError,subprocess.TimeoutExpired) as error:return {'passed':False,'error':str(error)}
 
 
+def progress_pair(comparison):
+    """Small, explicitly incomplete checkpoint; full evidence stays in final report."""
+    data = comparison.data
+    fields = ('id', 'mode', 'status', 'reason', 'recording', 'duration_s', 'distance_m',
+              'route_completion_percent', 'collisions', 'destination_reached')
+    return {'version': data.get('version'), 'pair_id': data.get('pair_id'),
+            'progress_only': True, 'conditions_match': False,
+            'manifest': {'comparison_scenario': {key: value for key, value in
+                ((data.get('manifest') or {}).get('comparison_scenario') or {}).items()
+                if key in ('id', 'version', 'seed')}},
+            'runs': {mode: {key: run.get(key) for key in fields}
+                     for mode, run in data.get('runs', {}).items()}}
+
+
 def worker(args):
+    import faulthandler
+    faulthandler.enable()
     # Keep this owned validation process responsive while unrelated normal-
     # priority background jobs run. Safety and command deadlines stay intact.
     if sys.platform=='win32':
@@ -125,7 +141,7 @@ def worker(args):
                 # Full actor starts remain in the recording metadata and final
                 # report. A compact progress checkpoint avoids serializing them
                 # on the tick owner just after a fresh scene was published.
-                checkpoint['pair']=service.journey_comparison.snapshot(compact=True)
+                checkpoint['pair']=progress_pair(service.journey_comparison)
                 save_json(folder/'checkpoint.json',checkpoint)
             if last=='CHOOSING':service.presentation.choose_preloaded(d['id'],args.first)
             if last=='DRIVING':
@@ -166,20 +182,29 @@ def worker(args):
         # exception during cleanup must not erase the failed attempt.
         report['source_unchanged']=source_hashes()==report['source_hashes'];report['wall_s']=time.monotonic()-began
         save_json(folder/'report.json',report)
+        def cleanup_stage(name):
+            report['cleanup_stage'] = name
+            save_json(folder/'report.json', report)
         heartbeat_stop.set()
+        cleanup_stage('HTTP_SERVER_CLOSE')
         if http:http.shutdown();http.server_close()
+        cleanup_stage('PERCEPTION_CLOSE')
         if perception:perception.close()
         if service:
             try:
                 if service.journey_comparison.active:report['incomplete_pair']=service.journey_comparison.snapshot()
+                cleanup_stage('SIMULATION_SERVICE_CLOSE')
                 service.close();report['cleanup_confirmed']=not provider.cleanup_errors
                 from backend.core.driving_video import wait_for_exports
+                cleanup_stage('RECORDING_EXPORTS_CLOSE')
                 report['exports_closed']=wait_for_exports(max(0.,min(45.,worker_deadline-time.monotonic())))
             except BaseException as error:report['cleanup_error']=str(error)
         elif provider:
+            cleanup_stage('PROVIDER_CLOSE')
             try:provider.close()
             except BaseException as error:report['cleanup_error']=str(error)
         report['source_unchanged']=source_hashes()==report['source_hashes'];report['wall_s']=time.monotonic()-began
+        report['cleanup_stage'] = 'ERROR' if report.get('cleanup_error') else 'COMPLETE'
         save_json(folder/'report.json',report)
     print(json.dumps({'report':str(folder/'report.json'),'passed':report.get('pair',{}).get('scenario_validation',{}).get('passed',False),'error':report.get('error')}),flush=True)
     return 0 if report.get('pair',{}).get('scenario_validation',{}).get('passed') else 1
@@ -258,6 +283,7 @@ def run(args):
         if not was_running:
             path=folder/'report.json'
             saved=json.loads(path.read_text(encoding='utf8')) if path.exists() else {**report,'error':'Worker failed before reporting'}
+            saved['native_worker_exit_code'] = child.returncode if child is not None else None
             saved['native_acceptance']=False
             try:
                 deadline=args.egypt_deadline if egypt else None

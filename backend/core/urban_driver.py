@@ -3,7 +3,7 @@ from dataclasses import replace
 import math
 import time
 import numpy as np
-from .contracts import freeze_json
+from .contracts import freeze_json, freeze_float_rows
 from .egypt_urban import DRIVER_ID
 from .hybrid_driver import HybridDriver
 from .kinematic_prediction import kinematic_modes
@@ -29,7 +29,7 @@ def urban_forecast(scene, horizon_s):
     if cached is not None and cached[0] is scene.prediction:
         return replace(scene, prediction=cached[1])
     tracks = scene.prediction['tracks']
-    modes = kinematic_modes(tracks, grid=grid)
+    modes = kinematic_modes(tracks, grid=grid, frozen_points=True)
     for track in tracks:
         p = np.asarray(track['position_m'], float)
         v = np.asarray(track['velocity_mps'], float)
@@ -60,7 +60,7 @@ def urban_forecast(scene, horizon_s):
             modes.append({'track_id': track['id'], 'mode': 100 + index, 'source': source,
                           'selected': False, 'probability': None, 'rank': 100 + index,
                           'weight_kind': 'UNRANKED_PHYSICAL_ALTERNATIVE',
-                          'points': np.column_stack((grid, xy)).tolist()})
+                          'points': freeze_float_rows(np.column_stack((grid, xy)))})
     prediction = {**dict(scene.prediction), 'control_trajectories': modes, 'horizon_s': float(grid[-1]),
                   'hypothesis_set_id': identity}
     prediction = freeze_json(prediction)
@@ -158,7 +158,12 @@ class UrbanManeuverDriver(HybridDriver):
     def _speed(self, scene, road, cap):
         from .launch_alignment import curvature_speed_limit
         speed = scene.observation.ego.speed_mps
-        lookahead = min(75., max(25., speed * .5 + speed ** 2 / 6. + 10.))
+        # Grow the measured-road query with current reaction/braking distance.
+        # A stopped car starts with 6 m of measured road; query farther as its
+        # current reaction and braking distance grows.
+        # The shorter query conservatively caps target speed; complete maneuver
+        # and independent stopping-tail proofs still expand their own scope.
+        lookahead = min(75., max(6., speed * .5 + speed ** 2 / 6. + 4.))
         probe = spatial_route(self.offset, road, np.arange(0., lookahead + .01, .5))
         scene.space.ensure_scope(probe)
         visible = scene.space.continuous_coverage(probe)
