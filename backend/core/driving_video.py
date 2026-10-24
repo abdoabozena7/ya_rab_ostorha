@@ -76,9 +76,9 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
     status['last_frame_hold_s'] = camera_period_s(frames[-1])
     status['encoded_duration_s'] = status['duration_s']+status['last_frame_hold_s']
     status['variants']={'raw':{'status':'READY','video':'driving.mp4','sha256':status['sha256'],'source':status['source']}}
-    from .driver_profiles import SENSOR_COMPARISON_PROTOCOL
+    from .driver_profiles import SENSOR_COMPARISON_PROTOCOLS
     profile=metadata.get('config',{}).get('driver_profile') or {}
-    status['annotation_required']=profile.get('protocol')==SENSOR_COMPARISON_PROTOCOL
+    status['annotation_required']=profile.get('protocol') in SENSOR_COMPARISON_PROTOCOLS
     if status['annotation_required']:
         status['status']='ENCODING_ANNOTATION';_status(root,status)
         from .video_prediction import export_annotated

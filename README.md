@@ -4,6 +4,18 @@ All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
 
+The [Egypt mixed urban journey V1](docs/EGYPT_URBAN_CHAOS_V1.md) adds an
+independently selected, seeded 600--800 m scenario on the existing Town10 map,
+physical stop/go, parking, merging and pedestrian events, and a new sensor-only
+moving-traffic maneuver driver. Both complete drivers use the same Mercedes and
+surround rig, request at most 60 km/h and retain their actual outcomes; **Normal
+contact is not required**. Requested 60/100 density, realized events, measured
+pass/return completion, waits and timing are reported separately. Old crossing
+scenarios, saved results and videos remain readable. The new scenario is
+**validation-only, not the default**: the twelve-trip reserved native matrix is
+pending, and the existing authorization has only 138.1613 s remaining. Offline
+and browser-only checks do not close native acceptance or guarantee no contact.
+
 The [720p / 60 Hz performance path](docs/PERFORMANCE_60_20261023.md) adds the
 opt-in `PERFORMANCE_60` profile: one native tick owner, 60 Hz physics/display
 capture, synchronized 20 Hz driving sensors/decisions, bounded asynchronous JPEG

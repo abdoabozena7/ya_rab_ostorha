@@ -6,6 +6,7 @@ import {metricValue} from './journey-comparison.js';
 import {stressSummary,modeLabel} from './mission-state.js';
 import {recordedDriverDescription,preferredVideo} from './driver-profile.js';
 import {PROJECT_NAME} from './project-name.js';
+import {isEgyptScenario,scenarioRunSummary,completedOvertakes} from './scenario-profile.js';
 
 const $=id=>document.getElementById(id);
 const phases={STOPPING:'Stopping the previous drive',PREPARING:'Choosing the route and preparing traffic',READY:'Confirming route traffic',
@@ -19,6 +20,14 @@ export function presentationStep(status,arm=0){
 export function presentationSummary(data){
   const runs=['ROBOSPHERE','NORMAL'].map(m=>data?.runs?.[m]);
   if(runs.some(r=>!r))return 'Both attempts must be recorded before comparing results.';
+  if(isEgyptScenario(data?.manifest?.comparison_scenario)||isEgyptScenario(data?.scenario_validation)){
+    const normal=data.runs.NORMAL,protectedRun=data.runs.ROBOSPHERE;
+    const outcomes=`Normal: ${presentationOutcome(normal)}. ${PROJECT_NAME}: ${presentationOutcome(protectedRun)}.`;
+    return (data.scenario_validation?.passed&&data.conditions_match?
+      `Protected urban trip accepted: arrival without contact, realized traffic variety and ${completedOvertakes(protectedRun)} complete overtakes. `:
+      'Urban-chaos acceptance is incomplete or failed; a stopped or timed-out trip is not a completed journey. ')+
+      outcomes+' This compares complete drivers; Normal contact is not required.';
+  }
   if(data.scenario_validation)return data.scenario_validation.passed&&data.conditions_match?
     `Normal recorded a pedestrian collision. ${PROJECT_NAME} reached the destination without contact.`:
     'This attempt did not meet the crossing comparison checks. Review the actual recorded outcomes.';
@@ -140,7 +149,7 @@ export function installPresentationRun(p,tools,clearControls){
     panel.querySelectorAll('.presentation-steps li').forEach((el,i)=>{el.dataset.active=String(busy&&i===step);el.dataset.complete=String(status==='COMPLETE'||i<step);});
     const archived=p.reviewedComparison;
     const pair=archived||p.journeyComparison,newAttempt=!archived&&data?.guided&&!['RESULTS','FINISHING','COMPLETE'].includes(status)&&pair?.manifest?.presentation_id!==data.id;
-    const isPresentation=[3,4,6].includes(pair?.version)&&!newAttempt;
+    const isPresentation=[3,4,6,7].includes(pair?.version)&&!newAttempt;
     results.hidden=!isPresentation;
     if(!isPresentation&&items.some(i=>i.root)){
       linked=false;p.presentationPlayback=false;sharedVideo.pause();sharedVideo.removeAttribute('src');sharedVideo.load();sharedURL=null;
@@ -161,12 +170,15 @@ export function installPresentationRun(p,tools,clearControls){
       $('presentationSummary').textContent=presentationSummary(pair);
       for(const item of items){const run=pair.runs?.[item.mode];
         item.box.querySelector('h3').textContent=modeLabel(item.mode);
-        item.box.querySelector('.presentation-driver').textContent=!run?'No recorded attempt':run?.setup?.comparison_scenario?
+        item.box.querySelector('.presentation-driver').textContent=!run?'No recorded attempt':run?.setup?.comparison_scenario&&!isEgyptScenario(run.setup.comparison_scenario)?
           item.mode==='NORMAL'?'Reactive sensor braking':'Early crossing prediction and sensor braking':recordedDriverDescription(run);
         item.box.querySelector('.presentation-outcome').textContent=presentationOutcome(run,!archived&&data?.failures?.find(f=>f.mode===item.mode));
         item.box.querySelector('.presentation-speed').textContent=benchmarkSpeedText(run);
         item.box.querySelector('.presentation-stress').textContent=stressSummary(run?.stress_audit);
         item.box.querySelector('.presentation-stress').hidden=!run?.stress_audit;
+        let scenario=item.box.querySelector('.presentation-scenario');
+        if(!scenario){scenario=document.createElement('p');scenario.className='presentation-scenario';item.box.querySelector('.presentation-metrics').before(scenario);}
+        scenario.textContent=scenarioRunSummary(run);scenario.hidden=!scenario.textContent;
         fields.forEach(([,field,digits,suffix],i)=>{item.box.querySelectorAll('dd')[i].textContent=metricValue(run,field,digits,suffix);});
         const events=run?.events||[],key=run?.id+':'+events.length;
         if(item.eventsKey!==key){item.eventsKey=key;const list=item.box.querySelector('ol');list.replaceChildren();for(const event of events.slice(-12)){const li=document.createElement('li');li.textContent=event.title+' · '+event.detail;list.append(li);}}

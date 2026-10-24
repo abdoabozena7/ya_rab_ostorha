@@ -18,17 +18,27 @@ class RouteService:
             if str(api_path) not in sys.path: sys.path.insert(0, str(api_path))
             from agents.navigation.global_route_planner import GlobalRoutePlanner
             self.planner = GlobalRoutePlanner(self.map, 4.)
-        destination = self.api.Location(*target['location'])
-        waypoint = self.map.get_waypoint(destination, project_to_road=True, lane_type=self.api.LaneType.Driving)
-        if waypoint is None or waypoint.transform.location.distance(destination) > 10.:
-            raise ValueError('Destination is outside a valid driving lane')
-        points = self.planner.trace_route(origin, waypoint.transform.location)
-        if not points: raise ValueError('No drivable route to this destination')
-        gap = points[-1][0].transform.location.distance(waypoint.transform.location)
-        if gap > 8.1: raise ValueError('Native route does not reach the selected road waypoint')
-        if gap > .5:
-            from agents.navigation.local_planner import RoadOption
-            points.append((waypoint, RoadOption.LANEFOLLOW))
+        via = target.get('via', [])
+        if (not isinstance(via, list) or len(via) > 8 or any(not isinstance(p, (list, tuple))
+                or len(p) != 3 or any(type(v) not in (int, float) or not math.isfinite(v) for v in p) for p in via)):
+            raise ValueError('Route intermediate destinations must be finite native positions')
+        points = []
+        for position in [*via, target['location']]:
+            destination = self.api.Location(*position)
+            waypoint = self.map.get_waypoint(destination, project_to_road=True, lane_type=self.api.LaneType.Driving)
+            if waypoint is None or waypoint.transform.location.distance(destination) > 10.:
+                raise ValueError('Destination is outside a valid driving lane')
+            leg = self.planner.trace_route(origin, waypoint.transform.location)
+            if not leg: raise ValueError('No drivable route to this destination')
+            gap = leg[-1][0].transform.location.distance(waypoint.transform.location)
+            if gap > 8.1: raise ValueError('Native route does not reach the selected road waypoint')
+            if gap > .5:
+                from agents.navigation.local_planner import RoadOption
+                leg.append((waypoint, RoadOption.LANEFOLLOW))
+            if points and points[-1][0].transform.location.distance(leg[0][0].transform.location) > 8.1:
+                raise ValueError('Native route intermediate destinations are disconnected')
+            points.extend(leg)
+            origin = waypoint.transform.location
         polyline = [[wp.transform.location.x, wp.transform.location.y, wp.transform.location.z] for wp, _ in points]
         route = {'id': uuid.uuid4().hex, 'destination': target, 'points': polyline,
                  'length_m': sum(math.dist(a, b) for a, b in zip(polyline, polyline[1:])),
@@ -76,9 +86,16 @@ class RouteService:
     @staticmethod
     def progress(route, position):
         if route is None: return None
-        nearest = min(range(len(route['points'])), key=lambda i: math.dist(position, route['points'][i]))
+        candidates = range(len(route['points']))
+        if route.get('destination', {}).get('via'):
+            previous = route.get('_progress_index', 0)
+            candidates = range(max(0, previous - 2), min(len(route['points']), previous + 9))
+        nearest = min(candidates, key=lambda i: math.dist(position, route['points'][i]))
+        if route.get('destination', {}).get('via'):
+            route['_progress_index'] = nearest
         remaining = math.dist(position, route['points'][nearest])+sum(
             math.dist(a, b) for a, b in zip(route['points'][nearest:], route['points'][nearest+1:]))
         upcoming = next((step for step in route['instructions'] if step['point_index'] >= nearest), None)
         return {**route, 'remaining_m': remaining, 'next_instruction': upcoming,
-                'arrived': math.dist(position, route['destination']['location']) <= 5}
+                'arrived': math.dist(position, route['destination']['location']) <= 5
+                    and (not route['destination'].get('via') or remaining <= 6.)}

@@ -36,7 +36,8 @@ export function recordedConditionsMatch(pair){
   const [a,b]=modes.map(m=>pair.runs?.[m]);
   if(!a?.setup||!b?.setup)return false;
   const x=a.setup,y=b.setup;
-  const sensorPair=x.protocol==='SENSOR_REACTIVE_PREDICTIVE_V1'||y.protocol==='SENSOR_REACTIVE_PREDICTIVE_V1';
+  const sensorProtocols=['SENSOR_REACTIVE_PREDICTIVE_V1','EGYPT_COMPLETE_DRIVERS_V1'];
+  const sensorPair=sensorProtocols.includes(x.protocol)||sensorProtocols.includes(y.protocol);
   if(sensorPair&&x.protocol!==y.protocol)return false;
   if(x.live_speed_changed||y.live_speed_changed)return false;
   const same=(u,v)=>{
@@ -46,9 +47,11 @@ export function recordedConditionsMatch(pair){
   };
   if(!['map','blueprint','destination','speed_kmh','population','weather','actual_population'].every(k=>x[k]!=null&&y[k]!=null&&same(x[k],y[k])))return false;
   if(sensorPair&&!['vehicle_geometry','vehicle_physics','sensor_configuration'].every(key=>x[key]!=null&&y[key]!=null&&same(x[key],y[key])))return false;
+  for(const key of ['runtime_rates','render_configuration'])if((x[key]!=null||y[key]!=null)&&(!x[key]||!y[key]||!same(x[key],y[key])))return false;
+  if((x.comparison_scenario||y.comparison_scenario)&&!['comparison_scenario','perception_profile'].every(key=>x[key]!=null&&y[key]!=null&&same(x[key],y[key])))return false;
   const valid=v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
   if(![x.origin?.location,y.origin?.location,x.origin?.rotation,y.origin?.rotation].every(valid))return false;
   if(Math.hypot(...x.origin.location.map((v,i)=>v-y.origin.location[i]))>.5||x.origin.rotation.some((v,i)=>Math.abs(((v-y.origin.rotation[i]+180)%360+360)%360-180)>1))return false;
-  return ![2,3,4,5,6].includes(pair.version)||!!x.initial_condition_id&&x.initial_condition_id===y.initial_condition_id&&
+  return ![2,3,4,5,6,7].includes(pair.version)||!!x.initial_condition_id&&x.initial_condition_id===y.initial_condition_id&&
     a.initial_condition_audit?.passed===true&&b.initial_condition_audit?.passed===true;
 }

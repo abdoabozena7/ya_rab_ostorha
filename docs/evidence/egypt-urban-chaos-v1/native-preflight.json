@@ -1,0 +1,64 @@
+{
+  "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+  "source": "READ_ONLY_NATIVE_AUTHORIZATION_PREFLIGHT",
+  "can_run": false,
+  "native_acceptance": false,
+  "engine_started": false,
+  "reason": "Pending: existing authorized window cannot cover this matrix; no allowance was reset or extended",
+  "required_reservation_s": 7200.0,
+  "planned_pairs": [
+    {
+      "seed": 961103,
+      "first_mode": "NORMAL"
+    },
+    {
+      "seed": 961103,
+      "first_mode": "ROBOSPHERE"
+    },
+    {
+      "seed": 961109,
+      "first_mode": "NORMAL"
+    },
+    {
+      "seed": 961109,
+      "first_mode": "ROBOSPHERE"
+    },
+    {
+      "seed": 961121,
+      "first_mode": "NORMAL"
+    },
+    {
+      "seed": 961121,
+      "first_mode": "ROBOSPHERE"
+    }
+  ],
+  "planned_trips": 12,
+  "cleanup_reservation_s": 1800.0,
+  "budget_before": {
+    "kind": "EXISTING_HYBRID_LEDGER",
+    "cap_s": 14400.0,
+    "charged_s": 14261.838707315263,
+    "gross_recorded_s": 34449.78325020009,
+    "excluded_verified_sleep_s": 20187.944542884827,
+    "remaining_s": 138.16129268473742,
+    "unfinished": 0,
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\budget.sqlite",
+    "sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"
+  },
+  "created_at_utc": "2026-10-24T09:04:26.698458+00:00",
+  "source_sha256": "0565070e7cdd1bf16ebdf3d14b9ba4ed9aa802793e4b6888d8df447c1030b957",
+  "budget_after": {
+    "kind": "EXISTING_HYBRID_LEDGER",
+    "cap_s": 14400.0,
+    "charged_s": 14261.838707315263,
+    "gross_recorded_s": 34449.78325020009,
+    "excluded_verified_sleep_s": 20187.944542884827,
+    "remaining_s": 138.16129268473742,
+    "unfinished": 0,
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\budget.sqlite",
+    "sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"
+  },
+  "authorization_unchanged": true
+}

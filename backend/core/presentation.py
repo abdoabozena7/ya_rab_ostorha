@@ -67,9 +67,28 @@ class Presentation:
         except OSError as error:
             self.data['storage_error'] = str(error)
 
-    def start(self, speed=50, *, seed=None, guided=False, first_mode='NORMAL', scene='BUSY_ROUTE'):
+    def start(self, speed=50, *, seed=None, guided=False, first_mode='NORMAL', scene='BUSY_ROUTE', scenario_id=None,
+              holdout_acceptance=False):
         s = self.service
-        maximum = 120 if guided else 50
+        from .egypt_urban import SCENARIO_ID
+        if scenario_id == 'SUDDEN_PEDESTRIAN_COMPARISON_V1':
+            scenario_id = None
+        if scenario_id not in (None, SCENARIO_ID):
+            raise ValueError('Choose a supported presentation scenario')
+        egypt = scenario_id == SCENARIO_ID
+        if type(holdout_acceptance) is not bool or holdout_acceptance and not egypt:
+            raise ValueError('Holdout admission belongs only to the Egypt acceptance harness')
+        if egypt:
+            from .egypt_urban import configuration
+            config = configuration()
+            if seed is None:
+                if holdout_acceptance:
+                    raise ValueError('The acceptance harness must identify its reserved seed')
+                seed = secrets.choice(config['development_seeds'])
+            allowed = config['holdout_seeds'] if holdout_acceptance else config['development_seeds']
+            if seed not in allowed:
+                raise ValueError('Egypt reserved seeds are unavailable for development or ordinary interface requests')
+        maximum = 60 if egypt else 120 if guided else 50
         if type(speed) not in (int, float) or not 5 <= speed <= maximum:
             raise ValueError(f'Presentation speed must be 5–{maximum} km/h')
         if seed is not None and (type(seed) is not int or not 0<=seed<2147483648):raise ValueError('Invalid presentation seed')
@@ -83,23 +102,45 @@ class Presentation:
             raise ValueError('A presentation is already running. Stop it before Restart')
         if s._comparison_busy():
             raise ValueError('Stop the current research comparison before Restart')
+        admitted = None
+        if egypt:
+            from .egypt_urban import admission
+            tools = getattr(s.provider, 'dashboard_tools', None)
+            map_name = getattr(tools, 'map_name', 'Town10HD_Opt')
+            admitted = admission(map_name, speed)
         s.stop_driving('presentation_restart')
         self.data = {'id': uuid.uuid4().hex, 'status': 'IDLE', 'speed_kmh': float(speed),
             'outcome':'PENDING','failures':[],'recovery':None,
             'guided':bool(guided), 'automatic_pair':bool(guided), 'scene':scene, 'next_requests':{},
+            'scenario_id': scenario_id, 'scenario_version': 1 if egypt else None,
             'seed': secrets.randbelow(2147483648) if seed is None else seed,
             'modes': [first_mode, next(m for m in self.MODES if m!=first_mode)] if guided else list(self.MODES), 'arm': 0,
             'pair_id': None, 'events': [], 'source': 'LIVE_NATIVE_CARLA',
             'comparison_note': 'Both drivers use sensor obstacle braking. Ya Rab Ostorha adds predictive RULE. The same Mercedes and sensor rig are used; traffic can react differently after release.'}
+        if egypt:
+            self.data.update(scene='DENSE_CHAOS', trip_timeout_s=600,
+                seed_partition='HOLDOUT' if holdout_acceptance else 'DEVELOPMENT',
+                comparison_note='Same Mercedes, sensor rig and seeded world start. Complete drivers differ in maneuver selection and prediction. Normal contact is not required.')
+            if not admitted['accepted']:
+                self.data['validation_deadline'] = admitted['deadline']
         self.transition('STOPPING')
 
-    def preload(self, page_id=None, *, replace=False):
+    def preload(self, page_id=None, *, replace=False, scenario_id=None):
         """Build one held scene before the operator chooses either driver."""
         with self.service.lock:
+            from .egypt_urban import SCENARIO_ID, default_scenario
+            selected = default_scenario() if scenario_id is None else None if scenario_id == 'SUDDEN_PEDESTRIAN_COMPARISON_V1' else scenario_id
+            if selected not in (None, SCENARIO_ID):
+                raise ValueError('Choose a supported presentation scenario')
+            if selected == SCENARIO_ID:
+                from .egypt_urban import admission
+                tools = getattr(self.service.provider, 'dashboard_tools', None)
+                admission(getattr(tools, 'map_name', 'Town10HD_Opt'), 60.)
             if page_id is not None and (not isinstance(page_id,str) or not 8<=len(page_id)<=80 or not all(c.isascii() and (c.isalnum() or c in '_-') for c in page_id)):
                 raise ValueError('Invalid page session')
             if self.busy:
-                if page_id is None or page_id==self.data.get('page_id'):return False
+                changing = replace and selected != self.data.get('scenario_id') and self.data.get('awaiting_choice')
+                if (page_id is None or page_id==self.data.get('page_id')) and not changing:return False
                 # Visiting/reconnecting a dashboard is observational. Only an
                 # explicit new-drive action may retire another page's attempt.
                 if not replace:return False
@@ -110,14 +151,18 @@ class Presentation:
             if self.service.journey.get('status') in ('STARTING','RUNNING'):
                 if not replace:return False
                 self.service.stop_driving('page_replaced')
-            self.start(120,guided=True,scene='DENSE_CHAOS')
+            self.start(60 if selected == SCENARIO_ID else 120,guided=True,scene='DENSE_CHAOS',
+                       scenario_id=selected or 'SUDDEN_PEDESTRIAN_COMPARISON_V1')
             self.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
             if page_id:self.data['page_id']=page_id
             self.save()
             return True
 
-    def choose_preloaded(self, identity, first_mode, page_id=None):
+    def choose_preloaded(self, identity, first_mode, page_id=None, *, scenario_id=None):
         with self.service.lock:
+            selected = None if scenario_id == 'SUDDEN_PEDESTRIAN_COMPARISON_V1' else scenario_id
+            if scenario_id is not None and selected != self.data.get('scenario_id'):
+                raise ValueError('The selected scenario differs from the prepared starting scene')
             if self.data.get('page_id') and page_id!=self.data['page_id']:
                 raise ValueError('This page needs its own fresh start. Prepare a new drive here.')
             if (identity==self.data.get('id') and first_mode==self.data.get('modes',[None])[0]
@@ -282,6 +327,9 @@ class Presentation:
         if not self.busy:
             return
         s = self.service
+        if s.now() >= self.data.get('validation_deadline', float('inf')):
+            s.stop_driving('egypt_validation_expired')
+            return
         identity=self.data.get('id')
         try:
             if self.data.get('storage_error') or s.journey_comparison.data.get('storage_error'):
@@ -338,8 +386,10 @@ class Presentation:
                     if identity!=self.data.get('id') or self.data['status']!=phase:return
                 else:
                     if self.data.get('guided'):
-                        setup=self._prepare_native(s.provider.prepare_presentation,self.data['seed'],self.data['speed_kmh'],scene=self.data['scene'],guided=True)
-                    else:setup = self._prepare_native(s.provider.prepare_presentation,self.data['seed'], self.data['speed_kmh'])
+                        setup=self._prepare_native(s.provider.prepare_presentation,self.data['seed'],self.data['speed_kmh'],scene=self.data['scene'],guided=True,
+                            **({'scenario_id':self.data['scenario_id']} if self.data.get('scenario_id') else {}))
+                    else:setup = self._prepare_native(s.provider.prepare_presentation,self.data['seed'], self.data['speed_kmh'],
+                        **({'scenario_id':self.data['scenario_id']} if self.data.get('scenario_id') else {}))
                     if identity!=self.data.get('id') or self.data['status']!=phase:return
                     if setup.get('population_pending'):
                         self.data['setup']=setup;self.ready_frame=s.observation.frame_id+1;self.save();return
@@ -401,8 +451,11 @@ class Presentation:
                     else:self.fail(s.journey.get('reason') or 'Journey start failed')
             elif phase == 'DRIVING':
                 run = s.journey_comparison.active
+                if run and self.data.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1' and run['duration_s'] > self.data['trip_timeout_s']:
+                    s.stop_driving('egypt_route_timeout', cancel_presentation=False)
                 if run and run['duration_s'] > 180 and not self.data.get('automatic_pair'):
-                    s.stop_driving('presentation_route_timeout', cancel_presentation=False)
+                    if not self.data.get('scenario_id'):
+                        s.stop_driving('presentation_route_timeout', cancel_presentation=False)
                 if s.journey['status'] in ('ARRIVED', 'ERROR', 'PAUSED'):
                     fault=getattr(s,'runtime_fault',None)
                     recoverable=s.journey.get('reason')=='runtime_failure' and fault and fault.get('exception_type')=='ControlSceneTimeout'
@@ -416,7 +469,7 @@ class Presentation:
                         if fault:self.data.setdefault('failures',[]).append({'mode':self.data['modes'][self.data['arm']], 'fault':copy.deepcopy(fault),'reason':s.journey.get('reason')})
                         advance('FINALIZING')
                     elif s.journey.get('reason') not in ('destination_reached', 'collision',
-                            'route_ended_before_destination', 'presentation_route_timeout'):
+                            'route_ended_before_destination', 'presentation_route_timeout', 'egypt_route_timeout'):
                         self.fail(s.journey.get('reason') or 'Journey interrupted')
                     else:
                         advance('FINALIZING')
@@ -429,7 +482,7 @@ class Presentation:
                     if not self.data.get('pair_id'):self.fail('Drive could not start; no recording was created. Free GPU to close this session.');return
                     if self.data['arm']==0:
                         if self.data.get('automatic_pair'):
-                            if s.journey.get('reason') in ('destination_reached','collision'):self._queue_other_arm()
+                            if s.journey.get('reason') in ('destination_reached','collision','egypt_route_timeout','route_ended_before_destination'):self._queue_other_arm()
                             else:advance('RESULTS',outcome='FAILED',reason='The first recording ended before arrival or contact; its evidence is saved.')
                         elif self.data['next_requests'].get('0'):self._queue_other_arm()
                         else:advance('AWAITING_NEXT')

@@ -269,7 +269,7 @@ class CarlaSensorManager:
         hybrid_surround=bool(hybrid.get('surround_rig_accepted') or hybrid_ticket() or bypass_surround) and not options.get('_suppress_pilot_surround',False)
         surround=bool(recovery.get('depth_sensors_accepted') or hybrid.get('surround_rig_accepted') or
                       (active_ticket() or hybrid_ticket() or bypass_surround) and not options.get('_suppress_pilot_surround',False))
-        if options.get('_comparison_rig'):hybrid_surround=surround=False
+        if options.get('_comparison_rig'):hybrid_surround=surround=bool(options.get('_urban_rig'))
         depth_mount=camera_mount;depth_attributes={**camera,'image_size_x':320,'image_size_y':180,'fov':90}
         if surround and not hybrid_surround:
             box=self.ego.bounding_box

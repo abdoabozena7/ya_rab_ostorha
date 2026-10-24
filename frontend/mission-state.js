@@ -1,4 +1,5 @@
 import {PROJECT_NAME} from './project-name.js';
+import {EGYPT_SCENARIO} from './scenario-profile.js';
 // Native phases determine actions. Button labels never determine commands.
 const preparation={SELECTING:['Preparing your selected car','The world is already prepared. Attaching the camera and checking fresh sensors for this car.'],STOPPING:['Holding the vehicle','Waiting for a full stop and the previous recording to close.'],
   PREPARING:['Preparing your drive','Building the route and native traffic. The live view comes next.'],
@@ -28,6 +29,9 @@ export function stressSummary(audit){
   if(!audit)return '';
   const vehicles=audit.counts?.vehicles||{},people=audit.counts?.pedestrians||{};
   const pending=audit.motion_measurement_ready===false||audit.series?.motion_samples===0;
+  if(audit.scenario_id===EGYPT_SCENARIO)return `Egypt traffic request 60 vehicles / 100 pedestrians. Actual totals: ${vehicles.total??'unmeasured'} / ${people.total??'unmeasured'}. `+
+    (pending?'Displacement-based movement is not measured yet.':`Measured moving in the latest interval: ${vehicles.moving_total??'unmeasured'} vehicles / ${people.moving_total??'unmeasured'} pedestrians. `)+
+    (audit.series?`Density below the requested total in ${audit.series.density_failures} of ${audit.series.samples} checks.`:'');
   return (pending?'Traffic check incomplete; motion needs another sample.':(audit.sustained_passed??audit.passed)?'Traffic check met the local target.':'Traffic check below the local target.')+
     ` Forward viewing area: ${vehicles.front_frustum_100m??'unmeasured'} vehicles and ${people.front_frustum_100m??'unmeasured'} pedestrians. `+
     (pending?'Motion not measured yet. ':`Moving there: ${vehicles.moving_front_frustum??'unmeasured'} vehicles and ${people.moving_front_frustum??'unmeasured'} pedestrians. `)+
@@ -35,6 +39,7 @@ export function stressSummary(audit){
 }
 export function missionState(p,local={}) {
   const d=p.presentation||{},guided=!!d.guided,phase=guided?d.status:'IDLE',arm=d.arm||0,mode=d.modes?.[arm]||'NORMAL';
+  const egypt=d.scenario_id===EGYPT_SCENARIO;
   const initialWorld=['IDLE','COMPLETE','CANCELLED'].includes(phase)||d.preloaded&&d.awaiting_choice;
   const preparingWorld=p.simulationStarting||local.launchPending&&!p.connected||
     d.preloaded&&d.awaiting_choice&&phase!=='CHOOSING'||local.preloadRequested&&!local.pageAdmitted&&['IDLE','COMPLETE','CANCELLED'].includes(phase);
@@ -85,7 +90,8 @@ export function missionState(p,local={}) {
   if(guided&&preparation[phase])return preparationView();
   if(guided&&d.preloaded&&phase!=='CHOOSING'&&!['DRIVING','AWAITING_NEXT','RESULTS','ERROR','COMPLETE','CANCELLED'].includes(phase))return state('loading','Preparing the shared world','Building a seeded city with a requested 60 vehicles and 100 pedestrians. Both drives use this starting scene.');
   if(guided&&phase==='DRIVING'&&d.automatic_pair)return state('driving',modeLabel(mode),
-    'Recording until the destination or a contact. Both drives run automatically from the same crossing scenario.',{camera:true});
+    egypt?'Recording until arrival, contact or the trip time limit. Mixed urban traffic, pedestrians and safe passing opportunities; maximum 60 km/h.':
+      'Recording until the destination or a contact. Both drives run automatically from the same crossing scenario.',{camera:true});
   if(guided&&phase==='DRIVING')return state('driving',modeLabel(mode),mode==='NORMAL'?
     'Normal follows the route and signals with reactive sensor braking. Project motion prediction is off.':'The same sensor braking plus predictive RULE. Paths may change; coral: people, cyan: other paths. RL is not active.',
     {camera:true,action:local.commandPending?null:'NEXT',loadingDrive:!!local.commandPending,label:local.commandPending?'Saving this drive…':arm===0?nextLabel(mode):'End drive & compare'});

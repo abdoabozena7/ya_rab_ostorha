@@ -88,6 +88,8 @@ class BenchmarkFixture:
         pop.benchmark_frozen=True;pop.benchmark_locked=True
         pop.clear_pedestrians();pop.clear_traffic()
         pop.config=dict(self.condition['population'])
+        if self.condition.get('comparison_scenario', {}).get('id') == 'EGYPT_URBAN_CHAOS_V1':
+            world.set_pedestrians_seed(pop.config['seed'])
         # Every road participant is retired before construction, including
         # survivors whose current positions might occupy a saved start.
         for row in self.actors:

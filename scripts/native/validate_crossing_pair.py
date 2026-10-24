@@ -69,6 +69,13 @@ def worker(args):
     folder=Path(args.folder);report=json.loads((folder/'initial.json').read_text());service=provider=http=perception=None
     began=time.monotonic();last=None;last_progress=-1;heartbeat_stop=threading.Event()
     try:
+        egypt = getattr(args, 'scenario', None) == 'EGYPT_URBAN_CHAOS_V1'
+        if egypt:
+            from backend.core.egypt_urban import admission
+            if getattr(args, 'rule_ticket', None):
+                from backend.learning.native_validation_budget import NativeValidationBudget
+                NativeValidationBudget(args.rule_ticket).activate_rule()
+            admission('Town10HD_Opt', 60.)
         runtime=NativeRuntime()
         from backend.graphics import launch
         if not runtime.active:runtime.launch({**launch(args.render_profile),'offscreen':True},'127.0.0.1',2000,carla)
@@ -79,7 +86,8 @@ def worker(args):
             for pid in identities:
                 subprocess.run(['powershell','-NoProfile','-Command',f'(Get-Process -Id {pid}).PriorityClass="AboveNormal"'],capture_output=True,timeout=10,creationflags=subprocess.CREATE_NO_WINDOW)
             report['validation_priority']='ABOVE_NORMAL_OWNED_WORKER_AND_VERIFIED_ENGINE'
-        provider=CarlaProvider(blueprint='vehicle.mercedes.coupe_2020',spawn_index=152,sensor_suite=True,collision_sensor=True,fresh_start=True,traffic_manager_port=8052)
+        provider=CarlaProvider(blueprint='vehicle.mercedes.coupe_2020',spawn_index=152,sensor_suite=True,collision_sensor=True,
+            fresh_start=True,traffic_manager_port=8052, **({'map_name':'Town10HD_Opt'} if egypt else {}))
         provider.camera_settings['_comparison_rig']=True
         provider.connect();provider._ensure_dashboard_tools()
         service=SimulationService(provider,required_sensors=provider.required_sensors)
@@ -92,7 +100,8 @@ def worker(args):
         perception=PerceptionService(8011);http.perception=perception;service.control_perception=ControlPerceptionCache()
         threading.Thread(target=http.serve_forever,daemon=True).start()
         for _ in range(20):service.step_once()
-        service.presentation.start(120,guided=True,seed=args.seed,first_mode=args.first,scene='DENSE_CHAOS')
+        service.presentation.start(60 if egypt else 120,guided=True,seed=args.seed,first_mode=args.first,scene='DENSE_CHAOS',
+            **({'scenario_id':'EGYPT_URBAN_CHAOS_V1','holdout_acceptance':getattr(args,'holdout_acceptance',False)} if egypt else {}))
         service.presentation.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
         report['samples']=[];report['phases']=[]
         while time.monotonic()-began<args.seconds-75:
@@ -172,14 +181,28 @@ def run(args):
     if s and s.get('connected'):raise RuntimeError('Stop the ordinary dashboard before isolated native validation')
     from backend.carla.runtime import NativeRuntime
     runtime=NativeRuntime();was_running=runtime.active is not None
-    folder=ROOT/'output/crossing-pairs'/uuid.uuid4().hex;folder.mkdir(parents=True)
+    egypt = getattr(args, 'scenario', None) == 'EGYPT_URBAN_CHAOS_V1'
+    if egypt:
+        from backend.core.egypt_urban import admission, configuration, source_fingerprint
+        if was_running:
+            raise RuntimeError('Egypt validation requires an unowned stopped simulator; the active engine is not touched')
+        if args.seed in configuration()['holdout_seeds'] and not getattr(args, 'holdout_acceptance', False):
+            raise ValueError('Reserved seeds require the frozen one-shot Egypt acceptance matrix')
+        admission('Town10HD_Opt', 60.)
+    folder=ROOT/'output'/('egypt-urban-pairs' if egypt else 'crossing-pairs')/uuid.uuid4().hex;folder.mkdir(parents=True)
+    args.report_folder = folder
     report={'source':'LIVE_NATIVE_CARLA','seed':args.seed,'first_mode':args.first,'source_hashes':source_hashes()}
+    if egypt:
+        report.update(scenario_id='EGYPT_URBAN_CHAOS_V1', source_sha256=source_fingerprint())
     report['source_archive']=archive_sources(folder,report['source_hashes'])
     (folder/'initial.json').write_text(json.dumps(report,indent=2));print(str(folder),flush=True)
     try:
         with (folder/'worker.log').open('w',encoding='utf8') as log:
             child=subprocess.Popen([sys.executable,'-m','scripts.native.validate_crossing_pair','--worker','--folder',str(folder),
-                '--seed',str(args.seed),'--first',args.first,'--seconds',str(args.seconds),'--render-profile',args.render_profile],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,
+                '--seed',str(args.seed),'--first',args.first,'--seconds',str(args.seconds),'--render-profile',args.render_profile,
+                *(['--scenario','EGYPT_URBAN_CHAOS_V1'] if egypt else []),
+                *(['--holdout-acceptance'] if egypt and getattr(args,'holdout_acceptance',False) else []),
+                *(['--rule-ticket',str(args.rule_ticket)] if getattr(args,'rule_ticket',None) else [])],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,
                 creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
             try:child.wait(timeout=args.seconds)
             except subprocess.TimeoutExpired:
@@ -198,13 +221,18 @@ def run(args):
             saved['independent_cleanup_probe']=probe
             saved['simulator_exit_confirmed']=runtime.inspect() is None
             saved['video_playback_after_exit']=verify_videos(saved)
-            from .crossing_causality import critical_prediction_evidence
-            saved['critical_prediction_evidence']=critical_prediction_evidence(saved)
+            if not egypt:
+                from .crossing_causality import critical_prediction_evidence
+                saved['critical_prediction_evidence']=critical_prediction_evidence(saved)
             saved['native_acceptance']=bool(saved.get('pair',{}).get('scenario_validation',{}).get('passed')
-                and saved['pair'].get('conditions_match') and saved['critical_prediction_evidence']['passed']
+                and saved['pair'].get('conditions_match') and (egypt or saved['critical_prediction_evidence']['passed'])
                 and saved.get('source_unchanged') and saved.get('completed_without_shortening') and saved.get('finish_completed')
                 and saved.get('cleanup_confirmed') and probe['passed'] and saved['video_playback_after_exit']['passed']
                 and child.returncode==0 and saved['simulator_exit_confirmed'])
+            if egypt:
+                saved['source_unchanged'] = saved.get('source_unchanged') and source_fingerprint() == saved['source_sha256']
+                saved['native_acceptance'] = saved['native_acceptance'] and saved['source_unchanged']
+                saved['attempts_retained'] = all((folder/name).is_file() for name in ('initial.json','worker.log','source.zip','report.json'))
             path.write_text(json.dumps(saved,indent=2,allow_nan=False),encoding='utf8')
     return 0 if json.loads((folder/'report.json').read_text(encoding='utf8')).get('native_acceptance') else 1
 
@@ -213,6 +241,8 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--seed',type=int,default=1701);p.add_argument('--first',choices=('NORMAL','ROBOSPHERE'),default='NORMAL')
     p.add_argument('--render-profile',choices=('LOW','BALANCED','HIGH'),default='LOW')
     p.add_argument('--seconds',type=float,default=900.);p.add_argument('--worker',action='store_true');p.add_argument('--folder')
+    p.add_argument('--scenario',choices=('EGYPT_URBAN_CHAOS_V1',));p.add_argument('--rule-ticket')
+    p.add_argument('--holdout-acceptance',action='store_true')
     a=p.parse_args()
     if not 180<=a.seconds<=1800:p.error('Use a bounded 180–1800 second validation')
     if a.worker:

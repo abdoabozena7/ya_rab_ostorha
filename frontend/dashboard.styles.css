@@ -10347,6 +10347,45 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
 .mission-copy {
   padding: 26px 0 0;
 }
+#missionScenarioChoices {
+  border: 0;
+  padding: 0;
+  margin: 18px 0;
+  min-width: 0;
+  max-width: 760px;
+}
+#missionScenarioChoices legend {
+  font-size: 14px;
+  font-weight: 550;
+  margin-bottom: 8px;
+}
+#missionScenarioChoices label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+#missionScenario {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  padding: 10px 16px;
+  white-space: normal;
+}
+#missionScenarioNotice {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+.mission-driver-description {
+  display: block;
+}
+.presentation-scenario {
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
 .mission-location {
   display: flex;
   flex-wrap: wrap;

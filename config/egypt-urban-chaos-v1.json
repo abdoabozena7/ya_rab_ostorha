@@ -1,0 +1,24 @@
+{
+  "id": "EGYPT_URBAN_CHAOS_V1",
+  "version": 1,
+  "protocol": "EGYPT_COMPLETE_DRIVERS_V1",
+  "map": "Town10HD_Opt",
+  "maximum_speed_kmh": 60,
+  "route_minimum_m": 600,
+  "route_maximum_m": 800,
+  "vehicles": 60,
+  "pedestrians": 100,
+  "trip_timeout_s": 600,
+  "minimum_completed_overtakes": 3,
+  "development_seeds": [1703, 2707, 3709],
+  "holdout_seeds": [961103, 961109, 961121],
+  "required_event_kinds": [
+    "STOP_GO",
+    "DOUBLE_PARK",
+    "CUT_IN",
+    "PEDESTRIAN_CROSSING",
+    "CHANGING_GAPS",
+    "OVERLAP"
+  ],
+  "default_requires_native_acceptance": true
+}

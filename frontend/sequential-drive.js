@@ -6,6 +6,7 @@ import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome} from './presentation-run.js';
 import {installPreviewPlayer} from './preview-player.js';
 import {recordedDriverDescription} from './driver-profile.js';
+import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText} from './scenario-profile.js';
 
 export function installSequentialDrive(p,tools) {
   const $=id=>document.getElementById(id);
@@ -23,12 +24,20 @@ export function installSequentialDrive(p,tools) {
   const experience=document.createElement('main');experience.id='missionExperience';
   experience.innerHTML='<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes · reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="en" dir="ltr">Ya Rab Ostorha</strong>Same Mercedes · sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
   const preview=installPreviewPlayer(experience.querySelector('#missionPreview'));
+  const scenarioField=document.createElement('fieldset');scenarioField.id='missionScenarioChoices';
+  scenarioField.innerHTML='<legend>Road scenario</legend><label for="missionScenario">Choose the traffic experiment</label><select id="missionScenario"><option value="SUDDEN_PEDESTRIAN_COMPARISON_V1">Historical crossing comparison</option><option value="EGYPT_URBAN_CHAOS_V1">Egypt mixed urban journey · v1 · up to 60 km/h</option></select><p id="missionScenarioNotice" role="status"></p>';
+  experience.querySelector('#missionChoices').before(scenarioField);
+  for(const label of experience.querySelectorAll('#missionChoices label span')){
+    const description=document.createElement('span');description.className='mission-driver-description';
+    for(const node of [...label.childNodes])if(node.nodeType===Node.TEXT_NODE)node.remove();
+    label.append(description);
+  }
   const telemetry=document.createElement('p');telemetry.id='missionTelemetry';telemetry.setAttribute('role','status');
   experience.querySelector('#missionDetail').after(telemetry);
   const guide=document.createElement('section');guide.id='missionGuide';guide.setAttribute('aria-labelledby','missionGuideTitle');
   guide.innerHTML='<h2 id="missionGuideTitle">Before you drive</h2>';
   for(const [index,[question,answer]] of [
-    ['What will I see?','The same Mercedes, sensors and crossing scenario. Normal uses reactive braking; Ya Rab Ostorha adds early crossing prediction and visible forecast paths. Choose either drive first; the other starts automatically.'],
+    ['What will I see?','Choose a road scenario independently of your first driver. The historical crossing remains available. Egypt urban chaos adds mixed traffic and verified maneuvers, capped at 60 km/h, inside an authorized validation window until native acceptance. Both use the same Mercedes and sensors.'],
     ['Does protection prevent every contact?','No. RULE protection may slow or stop the car, but contacts are still possible. The comparison shows what actually happened, including attempts ended early.'],
     ['What does Free GPU do?','It saves the recorded portion, closes CARLA and checks that its processes have exited. Your next start begins a new comparison. Previous recordings stay in Menu.'],
   ].entries()){
@@ -51,7 +60,8 @@ export function installSequentialDrive(p,tools) {
   const skip=document.querySelector('.skip-link');if(skip)skip.href='#missionTitle';
   let pageId;
   try{pageId=sessionStorage.getItem('ostorha.guidedPage')||crypto.randomUUID();sessionStorage.setItem('ostorha.guidedPage',pageId);}catch{pageId=crypto.randomUUID();}
-  const local={pageId,pageAdmitted:false,firstMode:'NORMAL',launchPending:false,shutdownPending:false,commandPending:false,autoRequested:false,preloadRequested:false};
+  const local={pageId,pageAdmitted:false,firstMode:'NORMAL',launchPending:false,shutdownPending:false,commandPending:false,autoRequested:false,preloadRequested:false,
+    scenarioId:LEGACY_SCENARIO,scenarioChosen:false,scenarioSelectionPending:false};
   experience.querySelector('[name=firstDrive][value=NORMAL]').checked=true;
   let previousScreen='',outcomeKey='',pending=null;
   const results=$('presentationResults'),resultsAnchor=document.createComment('saved comparison');results.before(resultsAnchor);
@@ -64,16 +74,24 @@ export function installSequentialDrive(p,tools) {
   });
   const command=operation=>{
     const d=p.presentation||{},value={operation,id:d.id,expected_arm:d.arm,expected_phase:d.status};
-    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,page_id:local.pageId,scene:'DENSE_CHAOS',speed_kmh:120,...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
+    if(operation==='START_GUIDED')Object.assign(value,{first_mode:local.firstMode,page_id:local.pageId,
+      ...scenarioOptions(d.status==='CHOOSING'?(d.scenario_id||LEGACY_SCENARIO):local.scenarioId),
+      ...(d.status==='CHOOSING'?{prepared_id:d.id}:{})});
     if(!p.dashboardAction('presentation',value))return;
     pending={id:d.id,phase:d.status,arm:d.arm,sequence:p.sequence,at:performance.now()};local.commandPending=true;
   };
   const prepareHere=(replace=false)=>{
     p.operationError=null;local.preloadError=null;local.pageAdmitted=false;local.observing=false;
-    if(!p.dashboardAction('presentation',{operation:'PRELOAD',page_id:local.pageId,replace})){
+    if(!p.dashboardAction('presentation',{operation:'PRELOAD',page_id:local.pageId,replace,
+      ...(local.scenarioChosen||tools.catalog?.presentation_scenarios?{scenario_id:local.scenarioId}:{})})){
       local.preloadError=p.operationError;return;
     }
     local.preloadRequested=true;local.preloadSequence=p.sequence;local.preloadAt=performance.now();
+  };
+  $('missionScenario').onchange=()=>{
+    local.scenarioId=$('missionScenario').value;local.scenarioChosen=true;local.scenarioSelectionPending=true;
+    if(p.connected&&p.fresh)prepareHere(true);
+    update();
   };
   $('drivePrimaryAction').onclick=()=>{
     const state=missionState(p,local);if(!state.action)return;p.operationError=null;
@@ -139,7 +157,10 @@ export function installSequentialDrive(p,tools) {
     if(preloadWasObserved(p,local)){
       local.preloadRequested=false;local.preloadSequence=null;local.preloadError=null;local.observing=true;
     }
-    if(local.preloadSequence&&p.failedSequence===local.preloadSequence)local.preloadError=p.operationError||'The fresh scene request was rejected.';
+    if(local.preloadSequence&&p.failedSequence===local.preloadSequence){
+      local.preloadError=p.operationError||'The fresh scene request was rejected.';
+      if(local.scenarioSelectionPending){local.scenarioId=d.scenario_id||LEGACY_SCENARIO;local.scenarioSelectionPending=false;}
+    }
     if(local.preloadRequested&&!local.pageAdmitted&&p.acknowledged<local.preloadSequence&&performance.now()-local.preloadAt>45000)local.preloadError='The page did not receive confirmation. Reconnect or prepare a fresh drive here.';
     const state=missionState(p,local);document.body.dataset.mission=state.screen;
 
@@ -163,10 +184,24 @@ export function installSequentialDrive(p,tools) {
     const actual=p.population?.actual,setup=d.setup;
     $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested '+(setup?.requested_route_vehicles??60)+' / '+(setup?.requested_route_pedestrians??100):''):'';
     $('missionChoices').hidden=!state.choices;
-    for(const input of experience.querySelectorAll('[name=firstDrive]'))input.disabled=!!local.commandPending||!!d.preloaded&&!d.awaiting_choice;
+    scenarioField.hidden=!state.choices;
+    const scenarioCatalog=tools.catalog?.presentation_scenarios;
+    if(local.scenarioSelectionPending&&d.id&&d.page_id===local.pageId&&(d.scenario_id||LEGACY_SCENARIO)===local.scenarioId)local.scenarioSelectionPending=false;
+    if(!local.scenarioSelectionPending&&d.id&&d.page_id===local.pageId)local.scenarioId=d.scenario_id||LEGACY_SCENARIO;
+    else if(!local.scenarioChosen&&!d.id&&scenarioCatalog?.default_id)local.scenarioId=scenarioCatalog.default_id;
+    $('missionScenario').value=local.scenarioId;
+    const urbanOption=scenarioCatalog?.options?.find(option=>option.id===EGYPT_SCENARIO);
+    $('missionScenario').querySelector(`[value="${EGYPT_SCENARIO}"]`).disabled=urbanOption?.available!==true;
+    $('missionScenario').disabled=!!local.commandPending||!!d.id&&!d.awaiting_choice&&!['COMPLETE','CANCELLED','ERROR','IDLE'].includes(d.status);
+    $('missionScenarioNotice').textContent=local.scenarioId===EGYPT_SCENARIO?
+      `EGYPT_URBAN_CHAOS_V1 · v1 · seed ${d.seed??'assigned during preparation'} · 600–800 m · requested 60 vehicles / 100 pedestrians. `+
+        (urbanOption?.native_accepted?'Source-bound native acceptance verified.':'Native acceptance pending; bounded validation only. No zero-contact guarantee.'):
+      'Historical crossing fixture and recordings remain available. Egypt urban chaos stays opt-in until all twelve native trips pass.';
+    for(const input of experience.querySelectorAll('[name=firstDrive]'))input.closest('label').querySelector('.mission-driver-description').textContent=scenarioDriverText(input.value,local.scenarioId);
+    for(const input of experience.querySelectorAll('[name=firstDrive]'))input.disabled=!!local.commandPending||local.scenarioSelectionPending||!!d.preloaded&&!d.awaiting_choice;
     const primary=$('drivePrimaryAction');
     primary.hidden=!state.action&&!state.choices&&!state.loadingDrive;
-    if(primary.textContent!==state.label)primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action;
+    if(primary.textContent!==state.label)primary.textContent=state.label;primary.dataset.action=state.action||'';primary.disabled=!state.action||local.scenarioSelectionPending;
     primary.dataset.loading=String(state.loadingDrive);primary.setAttribute('aria-busy',String(state.loadingDrive));
     primary.style.setProperty('--load-step',state.loadStep??4);
     primary.setAttribute('aria-describedby','missionNextHint');

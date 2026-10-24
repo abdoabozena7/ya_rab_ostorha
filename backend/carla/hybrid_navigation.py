@@ -127,7 +127,8 @@ def road_context(provider, session_id):
     origin=np.array([pose.location.x,pose.location.y])
     first=rows[:,:2]-origin;second=rows[:,2:4]-origin
     speed=abs((provider.last_vehicle or {}).get('speedMps',0.))
-    scope=max(12.,speed*.6+speed**2/6.+provider.vehicle_geometry.front_m+provider.vehicle_geometry.rear_m+5.)
+    scope=max(80. if getattr(provider,'urban_driver',None) is not None else 12.,
+              speed*.6+speed**2/6.+provider.vehicle_geometry.front_m+provider.vehicle_geometry.rear_m+5.)
     keep=np.minimum(np.sum(first*first,axis=1),np.sum(second*second,axis=1))<=scope**2
     transform=np.array([[co,-si],[si,co]])
     base['drivable_strips']=np.column_stack((first[keep]@transform,second[keep]@transform,

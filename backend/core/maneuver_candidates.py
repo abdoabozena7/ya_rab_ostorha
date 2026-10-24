@@ -94,7 +94,8 @@ class ExecutionShield:
         digest.update(np.asarray(road.get('drivable_strips',()),dtype='<f8').tobytes())
         digest.update(repr((int(command.frame_id),float(command.timestamp_s),float(command.throttle),float(command.brake),
             float(command.steering),bool(command.reverse),None if command.gear is None else int(command.gear),bool(command.handbrake),
-            bool(road.get('traffic_stop')),bool(full_maneuver),bool(forward_recovery),'drivable_strips' in road,float(timestamp_s))).encode())
+            bool(road.get('traffic_stop')),bool(full_maneuver),bool(forward_recovery),'drivable_strips' in road,float(timestamp_s),
+            scene.prediction.get('hypothesis_set_id'))).encode())
         key=digest.hexdigest();proof=lookup(scene.space,key)
         if proof is not None:
             ok,reason,evidence=to_dict(proof)

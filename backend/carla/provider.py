@@ -172,15 +172,21 @@ class CarlaProvider:
         self.benchmark_prepared=True
         return condition['id']
 
-    def prepare_guided_vehicle(self):
+    def prepare_guided_vehicle(self, *, urban=False):
         """Normalize the live app before capturing a matched comparison start."""
         if not self.sensor_suite:raise ValueError('The crossing comparison requires the native camera, depth and LiDAR sensor suite')
+        if urban and not self.collision_sensor:
+            raise ValueError('Egypt urban chaos requires an enabled native collision sensor')
         target='vehicle.mercedes.coupe_2020'
         self.world.world.get_blueprint_library().find(target)
         self.camera_settings['_comparison_rig']=True
+        self.camera_settings['_urban_rig'] = urban
         self.camera_settings.update(camera_view='chase',camera_resolution='800x450',camera_fov=90,
             camera_postprocess=True,camera_motion_blur=0.,camera_bloom=0.)
         expected={'collision','frontCamera','drivingCamera','depth','radar','lidar','imu','gnss'}
+        if urban:
+            expected.update(('frontLeftDepth','frontRightDepth','rearLeftDepth','rearRightDepth',
+                             'frontLeftRadar','frontRightRadar','rearLeftRadar','rearRightRadar'))
         configuration=getattr(self.sensor_manager,'configurations',{})
         attributes=lambda name:configuration.get(name,{}).get('attributes',{})
         calibrated=(int(attributes('frontCamera').get('image_size_x',0))==1280
@@ -191,7 +197,7 @@ class CarlaProvider:
             and self.sensor_manager.configurations.get('drivingCamera',{}).get('mountTransform',{}).get('positionM')==[-6.,0.,3.]
             and int(attributes('depth').get('image_size_x',0))==640
             and int(attributes('lidar').get('channels',0))==32
-            and abs(float(attributes('lidar').get('lower_fov',0))+75)<1e-3
+            and abs(float(attributes('lidar').get('lower_fov',0))+(60 if urban else 75))<1e-3
             and int(attributes('lidar').get('points_per_second',0))==128000)
         rebuild=self.ego.actor.type_id!=target or set(self.sensor_manager.actors)!=expected or not calibrated
         self.blueprint=target
@@ -355,12 +361,13 @@ class CarlaProvider:
 
     def dashboard_catalog(self):
         self._ensure_dashboard_tools()
+        from ..core.egypt_urban import scenario_catalog
         return {'places': self.dashboard_tools.places(), 'roads': self.dashboard_tools.roads(),
                 'settings': self.dashboard_tools.settings(), 'profiles': self.dashboard_tools.profiles(),
                 'scenes': self.dashboard_tools.scenes(),
                 'scenario_library': {'native_demonstrations':['FRONT_OBSTACLE','SUDDEN_BRAKING'],
                     'policy_status':'INTERFACE_PREPARED_NO_POLICY','seed_ranges':{'TRAIN':[0,999],'VALIDATION':[1000,1999],'TEST':[2000,2999]}},
-                'urban_world_profiles': WORLD_PROFILES}
+                'urban_world_profiles': WORLD_PROFILES, 'presentation_scenarios': scenario_catalog()}
 
     def _ensure_dashboard_tools(self):
         if self.dashboard_tools is None:
@@ -516,7 +523,8 @@ class CarlaProvider:
             from .benchmark_fixture import BenchmarkFixture
             if not self.benchmark_prepared:
                 if self.benchmark_fixture: self.benchmark_fixture.close()
-                self.benchmark_fixture = BenchmarkFixture(self,reconstructable=getattr(self,'guided_presentation',False))
+                self.benchmark_fixture = BenchmarkFixture(self,reconstructable=getattr(self,'guided_presentation',False)
+                    or getattr(self,'presentation_scenario_id',None) == 'EGYPT_URBAN_CHAOS_V1')
                 self.benchmark_fixture.capture()
             self.benchmark_prepared = False
             manifest.update(protocol='HYBRID_NATIVE_BASELINE_V1', initial_condition_id=self.benchmark_fixture.condition['id'],
@@ -526,10 +534,16 @@ class CarlaProvider:
                                    'controllers':sum(e.get('controller_id') is not None for e in self.population.walkers.values()),'walkers_active':0})
             if self.benchmark_fixture.condition.get('comparison_scenario'):
                 manifest['comparison_scenario']=copy.deepcopy(self.benchmark_fixture.condition['comparison_scenario'])
+                if manifest['comparison_scenario'].get('id') == 'EGYPT_URBAN_CHAOS_V1':
+                    manifest.update(scenario_id='EGYPT_URBAN_CHAOS_V1', scenario_version=1,
+                        scenario_seed=manifest['comparison_scenario']['seed'],
+                        comparison_scope='Complete drivers differ in maneuver selection and prediction; Normal contact is not required.')
             variants=getattr(self,'presentation_vehicle_variants',None)
             if variants:
                 manifest.update(vehicle_variants=dict(variants),vehicle_geometry=copy.deepcopy(self.vehicle_geometry.__dict__),
-                    comparison_scope='Same vehicle, sensors and world start; reactive sensors versus predictive RULE. Traffic can diverge.')
+                    comparison_scope='Same vehicle, sensors and world start; complete drivers differ in maneuver selection and prediction. Traffic can diverge.'
+                        if manifest.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1' else
+                        'Same vehicle, sensors and world start; reactive sensors versus predictive RULE. Traffic can diverge.')
         return manifest
 
     def clear_presentation_context(self):
@@ -538,6 +552,7 @@ class CarlaProvider:
         if stress:stress.running=False
         self.dense_chaos=None
         self.guided_presentation=False
+        self.presentation_scenario_id = None
         self.presentation_vehicle_variants=None
 
     def prepare_journey_comparison(self, manifest, *, mode=None):
@@ -548,10 +563,10 @@ class CarlaProvider:
             raise ValueError('Select the saved vehicle before preparing this comparison')
         self.stop_navigation()
         self.set_controls(brake=1)
-        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1','GUIDED_RULE_NORMAL_V2','SENSOR_REACTIVE_PREDICTIVE_V1') and manifest.get('initial_condition_id'):
+        if manifest.get('protocol') in ('HYBRID_NATIVE_BASELINE_V1', 'PRESENTATION_RULE_NORMAL_V1','GUIDED_RULE_NORMAL_V2','SENSOR_REACTIVE_PREDICTIVE_V1','EGYPT_COMPLETE_DRIVERS_V1') and manifest.get('initial_condition_id'):
             if not self.benchmark_fixture or self.benchmark_fixture.condition['id'] != manifest['initial_condition_id']:
                 raise ValueError('The live benchmark fixture expired; start a new pair')
-            self.benchmark_fixture.restore(**({'rebuild':True} if manifest.get('guided') else {}))
+            self.benchmark_fixture.restore(**({'rebuild':True} if manifest.get('guided') or manifest.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1' else {}))
             if manifest.get('vehicle_variants'):self.select_presentation_vehicle(mode)
             api, origin = self.connection.api, manifest['origin']
             self.ego.actor.set_target_velocity(api.Vector3D()); self.ego.actor.set_target_angular_velocity(api.Vector3D())
@@ -601,6 +616,21 @@ class CarlaProvider:
         # Resume always plans from the real vehicle's current location.
         self.dashboard_tools.replan_route()
         self.driving_mode = driving_mode
+        egypt = getattr(self, 'presentation_scenario_id', None) == 'EGYPT_URBAN_CHAOS_V1'
+        urban_admission = None
+        if egypt:
+            from ..core.egypt_urban import admission
+            from .egypt_urban import validate_route
+            checked = validate_route(self.dashboard_tools.native_route)
+            if not checked['passed']:
+                raise ValueError('Egypt route failed revalidation before release: ' + str(checked['gates']))
+            fixture = getattr(self, 'benchmark_fixture', None)
+            expected = fixture.condition.get('route') if fixture and fixture.condition else None
+            actual = self.dashboard_tools.route.get('points')
+            if expected and (not actual or len(actual) != len(expected)
+                    or any(math.dist(a, b) > .05 for a, b in zip(actual, expected))):
+                raise ValueError('Egypt route changed after the matched starting scene was captured')
+            urban_admission = admission(self.dashboard_tools.map_name, speed_kmh)
         self.presentation_mode = presentation
         # Harness evaluation shares the guided arms' route controller and
         # requested-target semantics; posted limits remain logged separately.
@@ -613,6 +643,7 @@ class CarlaProvider:
         if driving_mode not in ('HYBRID','BASELINE') and not presentation and self.benchmark_fixture:
             self.benchmark_fixture.close(); self.benchmark_fixture = None
         self.hybrid_driver = None
+        self.urban_driver = None
         self.hybrid_alternative = None
         from .route_agent import route_agent_class
         BasicAgent = route_agent_class()
@@ -621,7 +652,7 @@ class CarlaProvider:
                       # One shared native route controller for both guided arms.
                       # Saturated low-speed steering made the Mercedes point at
                       # parked curb geometry while recovering from a stop.
-                      **({'max_throttle':.9,'max_steering':.35} if (presentation and getattr(self,'guided_presentation',False)) or self.evaluation_navigation else {}),
+                      **({'max_throttle':.9,'max_steering':.35} if (presentation and getattr(self,'guided_presentation',False)) or egypt or self.evaluation_navigation else {}),
                       'lateral_control_dict': {'K_P': 1.95, 'K_I': .05, 'K_D': .2, 'dt': delta},
                       'longitudinal_control_dict': {'K_P': 1., 'K_I': .05, 'K_D': 0., 'dt': delta},
                       **(demo_options or {})}
@@ -660,6 +691,13 @@ class CarlaProvider:
             self.navigation.ignore_vehicles(True)
             self.navigation.ignore_traffic_lights(False)
             self.navigation.ignore_stop_signs(False)
+        elif driving_mode == 'ROBOSPHERE' and egypt:
+            from ..core.urban_driver import UrbanManeuverDriver
+            self.navigation.ignore_vehicles(True)
+            self.navigation.ignore_traffic_lights(False)
+            self.navigation.ignore_stop_signs(False)
+            self.urban_driver = UrbanManeuverDriver(self.vehicle_geometry, deadline=urban_admission['deadline'])
+            self.hybrid_driver = self.urban_driver
         elif demo_options is None:
             import json
             from pathlib import Path
@@ -698,7 +736,7 @@ class CarlaProvider:
                     # Validate the new bounded overlay around the existing route
                     # follower, rather than enabling the rejected full planner.
                     self.navigation_planner=None
-        if driving_mode=='ROBOSPHERE':
+        if driving_mode=='ROBOSPHERE' and not egypt:
             from ..core.route_bypass import availability,RuleRouteBypass
             admission=availability(int(time.monotonic()))
             if admission['available'] and self.dashboard_tools.map_name.rsplit('/',1)[-1]=='Town10HD_Opt':
@@ -714,7 +752,8 @@ class CarlaProvider:
             dx,dy=loc.x-origin.x,loc.y-origin.y
             return [dx*f.x+dy*f.y,dx*right.x+dy*right.y]
         plan=list(self.navigation.get_local_planner().get_plan())
-        points=[local(w.transform.location) for w,_ in plan if w.transform.location.distance(origin)<60.]
+        urban = getattr(self, 'urban_driver', None) is not None
+        points=[local(w.transform.location) for w,_ in plan if w.transform.location.distance(origin)<(120. if urban else 60.)]
         ahead=[p for p in points if p[0]>.5]
         if not ahead:ahead=[[50.,0.]]
         nearest=min(points,key=lambda p:math.hypot(*p)) if points else [0.,0.]
@@ -731,6 +770,22 @@ class CarlaProvider:
             direction=neighbour.transform.get_forward_vector()
             result[side+'_allowed']=bool(not junction and str(neighbour.lane_type)=='Driving' and
                 direction.x*f.x+direction.y*f.y>.8 and (side.title() in permissions or 'Both' in permissions))
+            if urban:
+                from .egypt_urban import permitted_neighbour
+                clearance = 0.
+                previous = origin
+                point = wp
+                for _ in range(60):
+                    if permitted_neighbour(point, side) is None:
+                        break
+                    clearance += previous.distance(point.transform.location)
+                    previous = point.transform.location
+                    choices = point.next(2.)
+                    if not choices:
+                        break
+                    heading = point.transform.rotation.yaw
+                    point = min(choices, key=lambda w: abs((w.transform.rotation.yaw-heading+180)%360-180))
+                result[side + '_clear_distance_m'] = clearance
         return result
 
     def replan_after_recovery(self):
@@ -801,7 +856,10 @@ class CarlaProvider:
         # This explicitly requested closed-simulator stress speed is shared by
         # both guided drivers. Research and legacy runs retain posted limits.
         self.navigation_posted_limit_kmh = limit
-        if getattr(self,'presentation_mode',False) and getattr(self,'guided_presentation',False):
+        if getattr(self, 'presentation_scenario_id', None) == 'EGYPT_URBAN_CHAOS_V1':
+            limit = min(60., limit) if limit > 0 else 60.
+            self.hybrid_speed_limit_source = 'EGYPT_URBAN_ROAD_LIMIT'
+        elif getattr(self,'presentation_mode',False) and getattr(self,'guided_presentation',False):
             limit = speed_kmh
             self.hybrid_speed_limit_source = 'GUIDED_STRESS_TARGET'
         elif evaluation:
@@ -809,6 +867,8 @@ class CarlaProvider:
             self.hybrid_speed_limit_source = 'EVALUATION_REQUESTED_TARGET'
         self.navigation_speed_limit_mps = limit/3.6 if limit > 0 else speed_kmh/3.6
         requested=min(speed_kmh,limit) if limit>0 else speed_kmh
+        if getattr(self, 'presentation_scenario_id', None) == 'EGYPT_URBAN_CHAOS_V1':
+            requested = min(requested, 58.)
         bypass=getattr(self,'navigation_bypass',None)
         if bypass and bypass.motion_required:requested=min(requested,bypass.config['maneuver_speed_mps']*3.6)
         if getattr(self,'driving_mode',None) in ('HYBRID','BASELINE') or getattr(self,'presentation_mode',False) or getattr(self,'rule_validation_mode',False) or evaluation:
@@ -872,6 +932,10 @@ class CarlaProvider:
         # Canonical steering, like native telemetry, is right-positive. The
         # left-positive legacy dashboard adapter is used only in set_controls.
         # This command still goes through ControlSafetyLayer and CommandArbiter.
+        if (getattr(self, 'presentation_scenario_id', None) == 'EGYPT_URBAN_CHAOS_V1'
+                and (self.last_vehicle or {}).get('speedMps', 0.) >= 59. / 3.6):
+            value.throttle = 0.
+            value.brake = max(value.brake, .35)
         return ControlCommand(frame_id, timestamp_s, float(value.throttle), float(value.brake),
                               steering, bool(value.reverse), bool(value.hand_brake),
                               CommandSource.NAVIGATION, -1 if value.reverse else 1)
@@ -906,6 +970,7 @@ class CarlaProvider:
         self.navigation_recovery = None
         self.navigation_bypass = None
         self.hybrid_driver = None
+        self.urban_driver = None
         self.hybrid_alternative = None
 
     @property
@@ -1084,7 +1149,8 @@ class CarlaProvider:
                     'Explicit BasicAgent journeys via NAVIGATION safety arbitration; manual guidance available',
                 'driving_mode':getattr(self,'driving_mode',None),
                 'storage_policy':'GUIDED_KEEP_TWO_RAW' if getattr(self,'presentation_mode',False) and
-                    getattr(self,'guided_presentation',False) else 'KEEP_RAW',
+                    getattr(self,'guided_presentation',False) and
+                    getattr(self,'presentation_scenario_id',None) != 'EGYPT_URBAN_CHAOS_V1' else 'KEEP_RAW',
                 'driver_id':'CARLA_BEHAVIOR_NORMAL' if getattr(self,'driving_mode',None)=='BASELINE' else
                     'ROBOSPHERE_HYBRID_V1' if getattr(self,'driving_mode',None)=='HYBRID' else getattr(self,'driving_mode',None),
                 'native_obstacle_handling':getattr(self,'driving_mode',None)=='BASELINE',

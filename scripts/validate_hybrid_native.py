@@ -24,10 +24,12 @@ ROOT = Path(__file__).resolve().parents[1]
 def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
         for pattern in ('backend/**/*.py',
-                        'config/hybrid-driving.json','config/route-bypass.json','config/crossing-comparison.json','scripts/validate_hybrid_native.py',
+                        'config/*.json','config/hybrid-driving.json','config/route-bypass.json','config/crossing-comparison.json',
+                        'config/egypt-urban-chaos-v1.json','scripts/native/validate_egypt_urban.py','scripts/validate_hybrid_native.py',
                         'scripts/native/validate_crossing_pair.py',
                         'scripts/native/crossing_causality.py',
-                        'scripts/native/route_bypass_world.py','scripts/native/validate_sensor_comparison.py') for p in ROOT.glob(pattern)}
+                        'scripts/native/route_bypass_world.py','scripts/native/validate_sensor_comparison.py') for p in ROOT.glob(pattern)
+        if p.name != 'dashboard-preferences.json' and not p.name.startswith('places-')}
 
 
 def archive_sources(folder,hashes,root=ROOT):

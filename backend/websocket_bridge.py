@@ -87,23 +87,29 @@ class WebSocketBridge:
                         # Observing an active attempt and acknowledging an
                         # already admitted choice do not need new sensor data.
                         if value.get('operation')=='PRELOAD' and presentation.busy and not value.get('replace'):
-                            if presentation.preload(value.get('page_id'),replace=False) is False:return True
+                            if presentation.preload(value.get('page_id'),replace=False,
+                                    **({'scenario_id':value['scenario_id']} if 'scenario_id' in value else {})) is False:return True
                         if (value.get('operation')=='START_GUIDED' and value.get('prepared_id')==data.get('id')
                                 and value.get('first_mode')==data.get('modes',[None])[0]
                                 and not data.get('awaiting_choice') and data.get('status') not in presentation.TERMINAL):
-                            presentation.choose_preloaded(value['prepared_id'],value['first_mode'],value.get('page_id'))
+                            presentation.choose_preloaded(value['prepared_id'],value['first_mode'],value.get('page_id'),
+                                **({'scenario_id':value['scenario_id']} if 'scenario_id' in value else {}))
                             return True
                     self.service.require_connected()
                     if presentation_start:
                         value=message['value']
                         if value.get('operation')=='PRELOAD':
-                            if self.service.presentation.preload(value.get('page_id'),replace=value.get('replace') is True) is False:return True
+                            if self.service.presentation.preload(value.get('page_id'),replace=value.get('replace') is True,
+                                    **({'scenario_id':value['scenario_id']} if 'scenario_id' in value else {})) is False:return True
                         elif value.get('operation')=='START_GUIDED' and value.get('prepared_id'):
-                            self.service.presentation.choose_preloaded(value['prepared_id'],value.get('first_mode'),value.get('page_id'))
+                            self.service.presentation.choose_preloaded(value['prepared_id'],value.get('first_mode'),value.get('page_id'),
+                                **({'scenario_id':value['scenario_id']} if 'scenario_id' in value else {}))
                         else:
                             options=({'guided':True,'first_mode':value.get('first_mode','NORMAL'),'scene':value.get('scene','DENSE_CHAOS')}
                                 if value.get('operation')=='START_GUIDED' else {})
-                            self.service.presentation.start(value.get('speed_kmh',120 if options.get('guided') else 50),seed=value.get('seed'),**options)
+                            if 'scenario_id' in value:
+                                options['scenario_id'] = value['scenario_id']
+                            self.service.presentation.start(value.get('speed_kmh',60 if value.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1' else 120 if options.get('guided') else 50),seed=value.get('seed'),**options)
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}

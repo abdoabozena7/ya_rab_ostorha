@@ -36,6 +36,23 @@ class MeasuredSpace:
         self.queries = 0
         self.execution_proofs=OrderedDict();self.proof_lock=threading.Lock();self.proof_cache_hits=0
         self.forward_assessments={}
+        self.requested_scope_m = 0.
+
+    def ensure_scope(self, path):
+        """Expand ray processing, never measured support or measurement age."""
+        path = np.asarray(path, float)
+        if path.ndim != 2 or path.shape[1] != 4 or not np.isfinite(path).all():
+            raise ValueError('Measured-space scope requires a finite physical path')
+        radius = float(np.max(np.abs(path[:, 1:3]))) + max(self.geometry.front_m, self.geometry.rear_m) + 1.
+        if radius > 95.:
+            raise ValueError('Complete maneuver exceeds measured-space processing range')
+        with self._lock:
+            if radius > self.requested_scope_m:
+                self.requested_scope_m = radius
+                if self._map is not None and radius > self._map.scope_m:
+                    self._map = None
+                    with self.proof_lock:
+                        self.execution_proofs.clear()
 
     def get_execution_proof(self,key):
         with self.proof_lock:
@@ -56,7 +73,7 @@ class MeasuredSpace:
                 began = time.perf_counter()
                 sources = self.measured_surfaces if self.measured_surfaces is not None else depth_surfaces(self.observation, lambda a: self.depth_assets[a.path])
                 speed=self.observation.ego.speed_mps
-                scope=max(6.,self.geometry.front_m+speed*.45+speed**2/6.+3.)
+                scope=max(6.,self.geometry.front_m+speed*.45+speed**2/6.+3.,self.requested_scope_m)
                 self._map = ObservedSpace(self.points, self.geometry, measured_surfaces=sources,scope_m=scope,
                     limit_m=min(100.,scope+self.geometry.front_m+2.))
                 self.build_ms = (time.perf_counter()-began)*1000

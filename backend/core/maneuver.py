@@ -184,7 +184,7 @@ def spatial_route(offset,road,distance):
     # At creep speed a timed 3.5 m shift could rotate the body toward the curb
     # while it had advanced only centimetres. Bound curvature by spreading the
     # remaining lateral displacement over sufficient actual forward travel.
-    transition=max(8.,abs(offset+line[0,1])*3.)
+    transition=max(8.,abs(offset+line[0,1])*3.,float(road.get('lane_transition_m',0.)))
     u=np.clip(distance/transition,0.,1.);blend=10*u**3-15*u**4+6*u**5
     displacement=-line[0,1]+(offset+line[0,1])*blend
     xy+=displacement[:,None]*np.column_stack((-np.sin(heading),np.cos(heading)))

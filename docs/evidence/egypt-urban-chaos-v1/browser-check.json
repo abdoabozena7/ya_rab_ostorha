@@ -1,0 +1,21 @@
+{
+  "scope": "ISOLATED_BROWSER_AND_TEST_FIXTURE_MEDIA_ONLY",
+  "native_acceptance": false,
+  "checks": [
+    "Independent scenario selection; source-bound default/pending status stays explicit",
+    "Loading remains disabled until native preparation phases finish",
+    "Either first-driver choice is separate from the selected 60 km/h experiment",
+    "Visible emergency stop dispatches the canonical command and exposes the held state",
+    "Version 7 results show the supplied Normal-arrival fixture, driver identity, seed, metrics and unaccepted evidence",
+    "Both new-profile annotated software MP4s decode and play to their actual end",
+    "Saved results and both videos survive engine-disconnected state, Finish and page reload",
+    "Desktop and 390px results retain horizontal layout containment"
+  ],
+  "command_count": 7,
+  "api_mutations_intercepted": [],
+  "browser_errors": [],
+  "browser_runtime": "EXISTING_PLAYWRIGHT_CHROMIUM_1243",
+  "created_at_utc": "2026-10-24T08:53:31.210Z",
+  "dashboard_bundle_sha256": "4447df0937df1bac56c01bda6227611270b9275cdb24ce014eea049896010638",
+  "dashboard_styles_sha256": "3d062c3acdd31d6731a6f87bd03a13fe09d1684661b8b0cb884069f19404e4a2"
+}

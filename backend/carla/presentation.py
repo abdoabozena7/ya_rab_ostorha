@@ -2,9 +2,10 @@
 import random
 
 
-def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
+def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False, scenario_id=None):
     p = provider
     p.guided_presentation=guided
+    p.presentation_scenario_id = scenario_id
     p.dense_chaos=None
     p.benchmark_prepared=False
     p.presentation_vehicle_variants=None
@@ -16,6 +17,12 @@ def prepare(provider, seed, speed, *, scene='BUSY_ROUTE', guided=False):
     p.stop_navigation()
     p.population.reset_population()
     p.set_controls(brake=1)
+    if scenario_id == 'EGYPT_URBAN_CHAOS_V1':
+        from ..core.egypt_urban import admission
+        from .egypt_urban import prepare_route
+        admission(p.dashboard_tools.map_name, speed)
+        p.prepare_guided_vehicle(urban=True)
+        return {**prepare_route(p, seed), 'speed_kmh': speed}
     if guided:p.prepare_guided_vehicle()
     rng = random.Random(seed)
     tools = p.dashboard_tools
@@ -66,6 +73,9 @@ def finish_prepare(p,seed,setup):
     # The sole worker has advanced the teleport. Population geometry now sees
     # the actual new ego pose instead of CARLA's previous-frame actor cache.
     tools=p.dashboard_tools
+    if setup.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1':
+        from .egypt_urban import finish_prepare as finish_egypt_prepare
+        return finish_egypt_prepare(p, seed, setup)
     if p.guided_presentation:seed=setup['scenario_seed']
     if setup.get('scene')=='DENSE_CHAOS':
         from .dense_chaos import DenseChaos

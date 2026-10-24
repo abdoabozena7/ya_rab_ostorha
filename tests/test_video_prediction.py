@@ -24,6 +24,23 @@ def forecast():
 
 
 class VideoPredictionTests(unittest.TestCase):
+    def test_egypt_profiles_save_both_original_and_annotated_mp4_without_native_claims(self):
+        try:import imageio_ffmpeg
+        except ImportError:self.skipTest('MP4 encoder unavailable')
+        for mode in ('NORMAL', 'ROBOSPHERE'):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                test_driving_video.DrivingVideoTests().recording(root)
+                (root / 'metadata.json').write_text(json.dumps({'data_origin': 'TEST_FIXTURE', 'provider': 'test',
+                    'config': {'driver_profile': driver_profile(mode, 'EGYPT_URBAN_CHAOS_V1'), 'session_id': 'software-fixture'}}))
+                status = export_video(root, allow_test_data=True)
+                self.assertTrue(status['annotation_required'])
+                self.assertEqual(status['preferred_video'], 'driving-annotated.mp4')
+                self.assertEqual(status['variants']['annotated']['source'], 'TEST_FIXTURE_WITH_OVERLAY')
+                self.assertEqual(status['variants']['annotated']['overlay']['predictive'], mode == 'ROBOSPHERE')
+                self.assertGreater((root / 'driving.mp4').stat().st_size, 500)
+                self.assertGreater((root / 'driving-annotated.mp4').stat().st_size, 500)
+
     def test_native_projection_and_elapsed_path_crop(self):
         self.assertAlmostEqual(project_prediction((10.,0.,1.6),forecast()['render_reference'],camera())[0],399.5)
         self.assertIsNone(project_prediction((-1.,0.,0.),forecast()['render_reference'],camera()))

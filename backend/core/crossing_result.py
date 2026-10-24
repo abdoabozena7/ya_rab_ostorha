@@ -22,6 +22,9 @@ def scheduled_origins_verified(scenario,runs):
 
 def evaluate_pair(data):
     scenario=(data.get('manifest') or {}).get('comparison_scenario')
+    if scenario and scenario.get('protocol') == 'EGYPT_COMPLETE_DRIVERS_V1':
+        from .egypt_urban import evaluate_pair as evaluate_egypt_pair
+        return evaluate_egypt_pair(data)
     if not scenario or scenario.get('protocol')!=PROTOCOL:return None
     runs=data.get('runs',{});normal=runs.get('NORMAL',{});project=runs.get('ROBOSPHERE',{})
     gates={'both_recorded':set(runs)>={'NORMAL','ROBOSPHERE'},

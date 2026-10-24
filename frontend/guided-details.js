@@ -145,7 +145,7 @@ export function installGuidedDetails(p,tools,trigger){
       const pair=await r.json();if(token!==selection)return;
       if(pair.pair_id!==comparison.value||!pair.runs)throw new Error('Saved comparison identity does not match.');
       selectedPair={...pair,conditions_match:recordedConditionsMatch(pair)};
-      resultNote.textContent=[3,4,6].includes(pair.version)?'Saved presentation; each original outcome is retained.':'Saved legacy comparison; paired video playback is available for presentations.';
+      resultNote.textContent=[3,4,6,7].includes(pair.version)?'Saved presentation; each original outcome is retained.':'Saved legacy comparison; paired video playback is available for presentations.';
       mediaKey='';update();
     }catch(error){if(token===selection)resultNote.textContent=error.message;}
   };
@@ -159,8 +159,8 @@ export function installGuidedDetails(p,tools,trigger){
     const request=++replayRequest;
     p.presentationPlayback=false;for(const video of document.querySelectorAll('#presentationResults video'))video.pause();
     p.reviewedComparison=comparison.value==='current'?null:pair;
-    document.body.classList.toggle('archive-review',![3,4,6].includes(pair.version));
-    if(![3,4,6].includes(pair.version))renderLegacy(pair);
+    document.body.classList.toggle('archive-review',![3,4,6,7].includes(pair.version));
+    if(![3,4,6,7].includes(pair.version))renderLegacy(pair);
     close();showWorkspace('results');
     if(action==='replay'){
       // The regular renderer owns loading and synchronizing the real media.
@@ -316,7 +316,7 @@ export function installGuidedDetails(p,tools,trigger){
     }
     const active=reviewBlocked();
     const action=resultAction.value,download=action.startsWith('download');
-    resultOpen.disabled=!pair||active||(action==='replay'&&(![3,4,6].includes(pair.version)||!['ROBOSPHERE','NORMAL'].every(m=>files.has(pair.pair_id+':'+m))))||
+    resultOpen.disabled=!pair||active||(action==='replay'&&(![3,4,6,7].includes(pair.version)||!['ROBOSPHERE','NORMAL'].every(m=>files.has(pair.pair_id+':'+m))))||
       (download&&!files.has(pair.pair_id+':'+action.slice(8)));
     if(active)resultNote.textContent='Finish or stop the current run before opening saved results.';
     else if(pair&&!resultNote.textContent)resultNote.textContent='Original outcomes and failures remain attached to each recording.';

@@ -2860,18 +2860,18 @@
       const appliedFresh = applied && measuredPredictionFresh(applied, p.sessionId, p.telemetry?.timestamp ?? camera?.timestamp);
       const principal = appliedFresh ? applied : latest;
       this.currentPrediction = principal;
-      const measured = (p.fresh || p.isReplay) && measuredPredictionFresh(principal, p.sessionId, p.telemetry?.timestamp ?? camera?.timestamp) ? principal : null;
+      const measured2 = (p.fresh || p.isReplay) && measuredPredictionFresh(principal, p.sessionId, p.telemetry?.timestamp ?? camera?.timestamp) ? principal : null;
       this.map.hidden = main;
-      const mapKey = [p.sessionId, measured?.timestamp_s, measured?.display_source].join(":");
+      const mapKey = [p.sessionId, measured2?.timestamp_s, measured2?.display_source].join(":");
       if (mapKey !== this.mapKey) {
         this.mapKey = mapKey;
-        this.drawMap(measured);
+        this.drawMap(measured2);
       }
-      this.label.hidden = !measured || img.hidden;
-      if (measured) {
-        const age2 = Math.max(0, (p.telemetry?.timestamp ?? camera.timestamp) - measured.timestamp_s);
-        this.message = `${measured.display_source || measured.decision_source} \xB7 ${measured.tracks.filter((t) => t.confirmed).length} confirmed tracks \xB7 measurement age ${age2.toFixed(1)} s. ${measured.model_reason || ""}`;
-        const conflict2 = measured.conflict_point;
+      this.label.hidden = !measured2 || img.hidden;
+      if (measured2) {
+        const age2 = Math.max(0, (p.telemetry?.timestamp ?? camera.timestamp) - measured2.timestamp_s);
+        this.message = `${measured2.display_source || measured2.decision_source} \xB7 ${measured2.tracks.filter((t) => t.confirmed).length} confirmed tracks \xB7 measurement age ${age2.toFixed(1)} s. ${measured2.model_reason || ""}`;
+        const conflict2 = measured2.conflict_point;
         const context = appliedFresh ? "Applied decision forecast" : "Display forecast";
         const supplementary = latest?.supplementary_model_candidates?.length ?? 0;
         this.label.textContent = guidedForecast ? latest.trajectories?.length ? "Selected risk forecast \xB7 may change" : "No risk forecast selected" : (conflict2 ? `${context} \xB7 overlap in ${conflict2.time_s.toFixed(1)} s` : context) + (supplementary ? ` \xB7 ${supplementary} supplementary model candidates` : "");
@@ -3324,6 +3324,31 @@
     return Number.isFinite(a[field]) && Number.isFinite(b[field]) ? a[field] - b[field] : null;
   }
 
+  // frontend/scenario-profile.js
+  var EGYPT_SCENARIO = "EGYPT_URBAN_CHAOS_V1";
+  var LEGACY_SCENARIO = "SUDDEN_PEDESTRIAN_COMPARISON_V1";
+  var isEgyptScenario = (value) => value?.scenario_id === EGYPT_SCENARIO || value?.id === EGYPT_SCENARIO || value?.protocol === "EGYPT_COMPLETE_DRIVERS_V1";
+  function scenarioOptions(id) {
+    return { scenario_id: id || LEGACY_SCENARIO, scene: "DENSE_CHAOS", speed_kmh: id === EGYPT_SCENARIO ? 60 : 120 };
+  }
+  function scenarioDriverText(mode, id) {
+    return mode === "NORMAL" ? "Same Mercedes \xB7 reactive sensor braking" : id === EGYPT_SCENARIO ? "Same Mercedes \xB7 prediction + moving-traffic maneuvers" : "Same Mercedes \xB7 sensor braking + prediction";
+  }
+  function completedOvertakes(run) {
+    if (!Array.isArray(run?.completed_maneuvers)) return null;
+    return run.completed_maneuvers.filter((m) => m && typeof m === "object" && m.kind === "OVERTAKE" && m.status === "COMPLETED" && m.measured_clearance === true && (!m.return_required || m.returned === true)).length;
+  }
+  var measured = (value, digits = 2, suffix = "") => Number.isFinite(value) ? value.toFixed(digits) + suffix : "unmeasured";
+  function scenarioRunSummary(run) {
+    const scenario = run?.setup?.comparison_scenario;
+    if (!isEgyptScenario(scenario)) return "";
+    const evidence = run.scenario_evidence, events = Object.values(evidence?.events || {});
+    const completed = events.filter((e) => e.realized && e.status === "COMPLETED");
+    const count = completedOvertakes(run);
+    const waits = Object.entries(run.waiting_reasons_s || {}).map(([reason, seconds]) => `${reason.replaceAll("_", " ")} ${measured(seconds, 1, " s")}`);
+    return `${EGYPT_SCENARIO} \xB7 v${scenario.version ?? "unrecorded"} \xB7 seed ${scenario.seed ?? "unrecorded"} \xB7 ${run.driver_id || "driver unrecorded"}. Physical events ${completed.length}/${events.length}${evidence ? "" : " (not measured yet)"} \xB7 completed overtakes ${count ?? "unmeasured"}. Minimum body separation ${measured(evidence?.minimum_body_separation_m, 2, " m")} (native scoring only). Sensor age sim/wall ${measured(run.maximum_sensor_sim_age_s, 3, " s")} / ${measured(run.maximum_sensor_wall_age_s, 3, " s")}. Missing current sensor scenes ${run.missing_current_sensor_frames ?? "unmeasured"}. Simulation/wall ratio ${measured(run.simulation_wall_ratio)}.` + (waits.length ? " Waits: " + waits.join("; ") : "");
+  }
+
   // frontend/mission-state.js
   var preparation = {
     SELECTING: ["Preparing your selected car", "The world is already prepared. Attaching the camera and checking fresh sensors for this car."],
@@ -3354,10 +3379,12 @@
     if (!audit) return "";
     const vehicles2 = audit.counts?.vehicles || {}, people = audit.counts?.pedestrians || {};
     const pending2 = audit.motion_measurement_ready === false || audit.series?.motion_samples === 0;
+    if (audit.scenario_id === EGYPT_SCENARIO) return `Egypt traffic request 60 vehicles / 100 pedestrians. Actual totals: ${vehicles2.total ?? "unmeasured"} / ${people.total ?? "unmeasured"}. ` + (pending2 ? "Displacement-based movement is not measured yet." : `Measured moving in the latest interval: ${vehicles2.moving_total ?? "unmeasured"} vehicles / ${people.moving_total ?? "unmeasured"} pedestrians. `) + (audit.series ? `Density below the requested total in ${audit.series.density_failures} of ${audit.series.samples} checks.` : "");
     return (pending2 ? "Traffic check incomplete; motion needs another sample." : audit.sustained_passed ?? audit.passed ? "Traffic check met the local target." : "Traffic check below the local target.") + ` Forward viewing area: ${vehicles2.front_frustum_100m ?? "unmeasured"} vehicles and ${people.front_frustum_100m ?? "unmeasured"} pedestrians. ` + (pending2 ? "Motion not measured yet. " : `Moving there: ${vehicles2.moving_front_frustum ?? "unmeasured"} vehicles and ${people.moving_front_frustum ?? "unmeasured"} pedestrians. `) + (audit.series ? `Density below target in ${audit.series.density_failures} of ${audit.series.samples} checks. ` : "") + "Buildings may hide some actors.";
   }
   function missionState(p, local = {}) {
     const d = p.presentation || {}, guided2 = !!d.guided, phase = guided2 ? d.status : "IDLE", arm = d.arm || 0, mode = d.modes?.[arm] || "NORMAL";
+    const egypt = d.scenario_id === EGYPT_SCENARIO;
     const initialWorld = ["IDLE", "COMPLETE", "CANCELLED"].includes(phase) || d.preloaded && d.awaiting_choice;
     const preparingWorld = p.simulationStarting || local.launchPending && !p.connected || d.preloaded && d.awaiting_choice && phase !== "CHOOSING" || local.preloadRequested && !local.pageAdmitted && ["IDLE", "COMPLETE", "CANCELLED"].includes(phase);
     const driveLabel = local.firstMode === "NORMAL" ? "Start the normal drive" : local.firstMode === "ROBOSPHERE" ? "Start the protected drive" : "Start the drive";
@@ -3415,7 +3442,7 @@
     if (guided2 && phase === "DRIVING" && d.automatic_pair) return state(
       "driving",
       modeLabel2(mode),
-      "Recording until the destination or a contact. Both drives run automatically from the same crossing scenario.",
+      egypt ? "Recording until arrival, contact or the trip time limit. Mixed urban traffic, pedestrians and safe passing opportunities; maximum 60 km/h." : "Recording until the destination or a contact. Both drives run automatically from the same crossing scenario.",
       { camera: true }
     );
     if (guided2 && phase === "DRIVING") return state(
@@ -4071,6 +4098,7 @@
   // frontend/driver-profile.js
   function recordedDriverDescription(run) {
     const profile = run?.driver_profile || run?.setup?.driver_profile;
+    if (profile?.protocol === "EGYPT_COMPLETE_DRIVERS_V1") return profile.motion_prediction_used ? "Complete protected driver v2 \xB7 sensor prediction + verified moving-traffic maneuvers \xB7 RL not active" : "Complete Normal driver \xB7 reactive sensor braking \xB7 project motion prediction off";
     if (profile?.protocol === "SENSOR_REACTIVE_PREDICTIVE_V1") return profile.motion_prediction_used ? "Sensors + reactive braking + predictive RULE \xB7 RL not active" : "Sensors + reactive braking \xB7 project motion prediction off";
     if (run?.mode === "BASELINE") return "CARLA BehaviorAgent normal \xB7 native obstacle checks";
     if (run?.mode === "HYBRID") return "Experimental hybrid behavior \xB7 recorded validation applies";
@@ -4401,11 +4429,11 @@
       const setupEmergency = $5("advancedSetupEmergency");
       if (setupEmergency) setupEmergency.disabled = $5("emergencyStopBtn").disabled;
       for (const m of JOURNEY_MODES) cards[m].button.disabled = ["RUNNING", "STARTING"].includes(p.journey?.status) || !!p.recording || !!pending2.intent || p.isReplay;
-      const fresh = p.fresh && !p.isReplay, measured = p.fresh, num2 = (v, suffix = "", digits = 0) => Number.isFinite(v) ? v.toFixed(digits) + suffix : "\u2014";
+      const fresh = p.fresh && !p.isReplay, measured2 = p.fresh, num2 = (v, suffix = "", digits = 0) => Number.isFinite(v) ? v.toFixed(digits) + suffix : "\u2014";
       txt($5("studioTown"), p.world?.map?.split("/").pop() || "CARLA");
       txt($5("studioOwnership"), p.isReplay ? "Recorded replay" : !fresh ? "Simulator offline" : p.controller ? "Vehicle control owned" : "Observer \xB7 control elsewhere");
-      txt($5("studioSpeed"), measured ? num2(vehicle.speedKmh) : "\u2014");
-      txt($5("studioGear"), measured ? vehicle.gear || "N" : "N");
+      txt($5("studioSpeed"), measured2 ? num2(vehicle.speedKmh) : "\u2014");
+      txt($5("studioGear"), measured2 ? vehicle.gear || "N" : "N");
       txt($5("studioTarget"), p.controlMode === "MANUAL" ? "30 \xB7 Shift 80 max" : "Target " + (fresh ? num2(p.journey?.speed_kmh, " km/h") : "\u2014"));
       const run = p.journeyComparison?.runs?.[p.journey?.driving_mode];
       txt($5("studioMode"), p.isReplay ? "Recorded replay" : !fresh ? "Simulator disconnected" : p.controlMode === "MANUAL" ? "Keyboard \xB7 " + modeName(p.manualDrivingMode) : ["RUNNING", "STARTING"].includes(p.journey?.status) ? (p.journey.status === "STARTING" ? "Starting \xB7 " : "") + modeName(p.journey.driving_mode) : $5("driveState").textContent);
@@ -4900,9 +4928,9 @@
   var benchmarkModes = ["BASELINE", "HYBRID"];
   function benchmarkSpeedText(run) {
     if (!run) return "";
-    const measured = (value) => run.samples !== 0 && Number.isFinite(value) ? value.toFixed(1) : "\u2014";
+    const measured2 = (value) => run.samples !== 0 && Number.isFinite(value) ? value.toFixed(1) : "\u2014";
     const requested = Number.isFinite(run.setup?.speed_kmh) ? run.setup.speed_kmh.toFixed(0) : "\u2014";
-    return `Speed km/h: mean ${measured(run.mean_speed_kmh)} \xB7 peak ${measured(run.maximum_speed_kmh)} \xB7 requested ${requested}`;
+    return `Speed km/h: mean ${measured2(run.mean_speed_kmh)} \xB7 peak ${measured2(run.maximum_speed_kmh)} \xB7 requested ${requested}`;
   }
   function selectPlaybackLeader(items) {
     return items.reduce((best, item) => !best || (item.duration_s || item.video?.duration || 0) > (best.duration_s || best.video?.duration || 0) ? item : best, null);
@@ -5143,6 +5171,11 @@
   function presentationSummary(data) {
     const runs = ["ROBOSPHERE", "NORMAL"].map((m) => data?.runs?.[m]);
     if (runs.some((r) => !r)) return "Both attempts must be recorded before comparing results.";
+    if (isEgyptScenario(data?.manifest?.comparison_scenario) || isEgyptScenario(data?.scenario_validation)) {
+      const normal = data.runs.NORMAL, protectedRun = data.runs.ROBOSPHERE;
+      const outcomes = `Normal: ${presentationOutcome(normal)}. ${PROJECT_NAME}: ${presentationOutcome(protectedRun)}.`;
+      return (data.scenario_validation?.passed && data.conditions_match ? `Protected urban trip accepted: arrival without contact, realized traffic variety and ${completedOvertakes(protectedRun)} complete overtakes. ` : "Urban-chaos acceptance is incomplete or failed; a stopped or timed-out trip is not a completed journey. ") + outcomes + " This compares complete drivers; Normal contact is not required.";
+    }
     if (data.scenario_validation) return data.scenario_validation.passed && data.conditions_match ? `Normal recorded a pedestrian collision. ${PROJECT_NAME} reached the destination without contact.` : "This attempt did not meet the crossing comparison checks. Review the actual recorded outcomes.";
     if (data?.version === 5) return (data.world_start_match ? "World starting conditions matched. " : "World starting conditions were not verified. ") + "The cars have different models and physical geometry; results are observations, not a brake-only comparison.";
     if (runs.some((r) => r.status !== "ARRIVED")) return "One or both attempts ended early. Review each outcome and its covered distance.";
@@ -5330,7 +5363,7 @@
       });
       const archived = p.reviewedComparison;
       const pair = archived || p.journeyComparison, newAttempt = !archived && data?.guided && !["RESULTS", "FINISHING", "COMPLETE"].includes(status) && pair?.manifest?.presentation_id !== data.id;
-      const isPresentation = [3, 4, 6].includes(pair?.version) && !newAttempt;
+      const isPresentation = [3, 4, 6, 7].includes(pair?.version) && !newAttempt;
       results.hidden = !isPresentation;
       if (!isPresentation && items.some((i) => i.root)) {
         linked = false;
@@ -5371,11 +5404,19 @@
         for (const item of items) {
           const run = pair.runs?.[item.mode];
           item.box.querySelector("h3").textContent = modeLabel2(item.mode);
-          item.box.querySelector(".presentation-driver").textContent = !run ? "No recorded attempt" : run?.setup?.comparison_scenario ? item.mode === "NORMAL" ? "Reactive sensor braking" : "Early crossing prediction and sensor braking" : recordedDriverDescription(run);
+          item.box.querySelector(".presentation-driver").textContent = !run ? "No recorded attempt" : run?.setup?.comparison_scenario && !isEgyptScenario(run.setup.comparison_scenario) ? item.mode === "NORMAL" ? "Reactive sensor braking" : "Early crossing prediction and sensor braking" : recordedDriverDescription(run);
           item.box.querySelector(".presentation-outcome").textContent = presentationOutcome(run, !archived && data?.failures?.find((f) => f.mode === item.mode));
           item.box.querySelector(".presentation-speed").textContent = benchmarkSpeedText(run);
           item.box.querySelector(".presentation-stress").textContent = stressSummary(run?.stress_audit);
           item.box.querySelector(".presentation-stress").hidden = !run?.stress_audit;
+          let scenario = item.box.querySelector(".presentation-scenario");
+          if (!scenario) {
+            scenario = document.createElement("p");
+            scenario.className = "presentation-scenario";
+            item.box.querySelector(".presentation-metrics").before(scenario);
+          }
+          scenario.textContent = scenarioRunSummary(run);
+          scenario.hidden = !scenario.textContent;
           fields.forEach(([, field, digits, suffix], i) => {
             item.box.querySelectorAll("dd")[i].textContent = metricValue(run, field, digits, suffix);
           });
@@ -5487,7 +5528,8 @@
     const [a, b] = modes2.map((m) => pair.runs?.[m]);
     if (!a?.setup || !b?.setup) return false;
     const x = a.setup, y = b.setup;
-    const sensorPair = x.protocol === "SENSOR_REACTIVE_PREDICTIVE_V1" || y.protocol === "SENSOR_REACTIVE_PREDICTIVE_V1";
+    const sensorProtocols = ["SENSOR_REACTIVE_PREDICTIVE_V1", "EGYPT_COMPLETE_DRIVERS_V1"];
+    const sensorPair = sensorProtocols.includes(x.protocol) || sensorProtocols.includes(y.protocol);
     if (sensorPair && x.protocol !== y.protocol) return false;
     if (x.live_speed_changed || y.live_speed_changed) return false;
     const same = (u, v) => {
@@ -5498,10 +5540,12 @@
     };
     if (!["map", "blueprint", "destination", "speed_kmh", "population", "weather", "actual_population"].every((k) => x[k] != null && y[k] != null && same(x[k], y[k]))) return false;
     if (sensorPair && !["vehicle_geometry", "vehicle_physics", "sensor_configuration"].every((key) => x[key] != null && y[key] != null && same(x[key], y[key]))) return false;
+    for (const key of ["runtime_rates", "render_configuration"]) if ((x[key] != null || y[key] != null) && (!x[key] || !y[key] || !same(x[key], y[key]))) return false;
+    if ((x.comparison_scenario || y.comparison_scenario) && !["comparison_scenario", "perception_profile"].every((key) => x[key] != null && y[key] != null && same(x[key], y[key]))) return false;
     const valid = (v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
     if (![x.origin?.location, y.origin?.location, x.origin?.rotation, y.origin?.rotation].every(valid)) return false;
     if (Math.hypot(...x.origin.location.map((v, i) => v - y.origin.location[i])) > 0.5 || x.origin.rotation.some((v, i) => Math.abs(((v - y.origin.rotation[i] + 180) % 360 + 360) % 360 - 180) > 1)) return false;
-    return ![2, 3, 4, 5, 6].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
+    return ![2, 3, 4, 5, 6, 7].includes(pair.version) || !!x.initial_condition_id && x.initial_condition_id === y.initial_condition_id && a.initial_condition_audit?.passed === true && b.initial_condition_audit?.passed === true;
   }
 
   // frontend/guided-details.js
@@ -5751,7 +5795,7 @@
         if (token !== selection) return;
         if (pair.pair_id !== comparison.value || !pair.runs) throw new Error("Saved comparison identity does not match.");
         selectedPair = { ...pair, conditions_match: recordedConditionsMatch(pair) };
-        resultNote.textContent = [3, 4, 6].includes(pair.version) ? "Saved presentation; each original outcome is retained." : "Saved legacy comparison; paired video playback is available for presentations.";
+        resultNote.textContent = [3, 4, 6, 7].includes(pair.version) ? "Saved presentation; each original outcome is retained." : "Saved legacy comparison; paired video playback is available for presentations.";
         mediaKey = "";
         update();
       } catch (error) {
@@ -5775,8 +5819,8 @@
       p.presentationPlayback = false;
       for (const video of document.querySelectorAll("#presentationResults video")) video.pause();
       p.reviewedComparison = comparison.value === "current" ? null : pair;
-      document.body.classList.toggle("archive-review", ![3, 4, 6].includes(pair.version));
-      if (![3, 4, 6].includes(pair.version)) renderLegacy(pair);
+      document.body.classList.toggle("archive-review", ![3, 4, 6, 7].includes(pair.version));
+      if (![3, 4, 6, 7].includes(pair.version)) renderLegacy(pair);
       close();
       showWorkspace("results");
       if (action === "replay") {
@@ -6057,7 +6101,7 @@
       }
       const active = reviewBlocked();
       const action = resultAction.value, download = action.startsWith("download");
-      resultOpen.disabled = !pair || active || action === "replay" && (![3, 4, 6].includes(pair.version) || !["ROBOSPHERE", "NORMAL"].every((m) => files.has(pair.pair_id + ":" + m))) || download && !files.has(pair.pair_id + ":" + action.slice(8));
+      resultOpen.disabled = !pair || active || action === "replay" && (![3, 4, 6, 7].includes(pair.version) || !["ROBOSPHERE", "NORMAL"].every((m) => files.has(pair.pair_id + ":" + m))) || download && !files.has(pair.pair_id + ":" + action.slice(8));
       if (active) resultNote.textContent = "Finish or stop the current run before opening saved results.";
       else if (pair && !resultNote.textContent) resultNote.textContent = "Original outcomes and failures remain attached to each recording.";
     }
@@ -6320,6 +6364,16 @@
     experience.id = "missionExperience";
     experience.innerHTML = '<section id="missionPreview" aria-label="Illustrated driving preview"></section><section id="missionScene" hidden></section><section class="mission-copy"><div class="mission-location"><span id="missionStep"></span><span id="missionTraffic"></span></div><h2 id="missionTitle" tabindex="-1"></h2><p id="missionDetail" role="status"></p><fieldset id="missionChoices" hidden><legend>Choose your first drive</legend><label><input type="radio" name="firstDrive" value="NORMAL"><span><strong>Normal</strong>Mercedes \xB7 reactive sensor braking</span></label><label><input type="radio" name="firstDrive" value="ROBOSPHERE"><span><strong lang="en" dir="ltr">Ya Rab Ostorha</strong>Same Mercedes \xB7 sensor braking + prediction</span></label></fieldset><div id="missionOutcomes" hidden></div><p id="missionError" role="alert" hidden></p><div class="mission-actions"><button id="drivePrimaryAction" class="primary" hidden></button><button id="missionFreeGPU" hidden>Free GPU</button><span id="missionWorking" hidden><i></i> In progress</span></div><p id="missionNextHint"></p></section>';
     const preview = installPreviewPlayer(experience.querySelector("#missionPreview"));
+    const scenarioField = document.createElement("fieldset");
+    scenarioField.id = "missionScenarioChoices";
+    scenarioField.innerHTML = '<legend>Road scenario</legend><label for="missionScenario">Choose the traffic experiment</label><select id="missionScenario"><option value="SUDDEN_PEDESTRIAN_COMPARISON_V1">Historical crossing comparison</option><option value="EGYPT_URBAN_CHAOS_V1">Egypt mixed urban journey \xB7 v1 \xB7 up to 60 km/h</option></select><p id="missionScenarioNotice" role="status"></p>';
+    experience.querySelector("#missionChoices").before(scenarioField);
+    for (const label of experience.querySelectorAll("#missionChoices label span")) {
+      const description = document.createElement("span");
+      description.className = "mission-driver-description";
+      for (const node4 of [...label.childNodes]) if (node4.nodeType === Node.TEXT_NODE) node4.remove();
+      label.append(description);
+    }
     const telemetry = document.createElement("p");
     telemetry.id = "missionTelemetry";
     telemetry.setAttribute("role", "status");
@@ -6329,7 +6383,7 @@
     guide.setAttribute("aria-labelledby", "missionGuideTitle");
     guide.innerHTML = '<h2 id="missionGuideTitle">Before you drive</h2>';
     for (const [index, [question, answer]] of [
-      ["What will I see?", "The same Mercedes, sensors and crossing scenario. Normal uses reactive braking; Ya Rab Ostorha adds early crossing prediction and visible forecast paths. Choose either drive first; the other starts automatically."],
+      ["What will I see?", "Choose a road scenario independently of your first driver. The historical crossing remains available. Egypt urban chaos adds mixed traffic and verified maneuvers, capped at 60 km/h, inside an authorized validation window until native acceptance. Both use the same Mercedes and sensors."],
       ["Does protection prevent every contact?", "No. RULE protection may slow or stop the car, but contacts are still possible. The comparison shows what actually happened, including attempts ended early."],
       ["What does Free GPU do?", "It saves the recorded portion, closes CARLA and checks that its processes have exited. Your next start begins a new comparison. Previous recordings stay in Menu."]
     ].entries()) {
@@ -6385,7 +6439,19 @@
     } catch {
       pageId = crypto.randomUUID();
     }
-    const local = { pageId, pageAdmitted: false, firstMode: "NORMAL", launchPending: false, shutdownPending: false, commandPending: false, autoRequested: false, preloadRequested: false };
+    const local = {
+      pageId,
+      pageAdmitted: false,
+      firstMode: "NORMAL",
+      launchPending: false,
+      shutdownPending: false,
+      commandPending: false,
+      autoRequested: false,
+      preloadRequested: false,
+      scenarioId: LEGACY_SCENARIO,
+      scenarioChosen: false,
+      scenarioSelectionPending: false
+    };
     experience.querySelector("[name=firstDrive][value=NORMAL]").checked = true;
     let previousScreen = "", outcomeKey = "", pending2 = null;
     const results = $11("presentationResults"), resultsAnchor = document.createComment("saved comparison");
@@ -6410,7 +6476,12 @@
     });
     const command = (operation) => {
       const d = p.presentation || {}, value = { operation, id: d.id, expected_arm: d.arm, expected_phase: d.status };
-      if (operation === "START_GUIDED") Object.assign(value, { first_mode: local.firstMode, page_id: local.pageId, scene: "DENSE_CHAOS", speed_kmh: 120, ...d.status === "CHOOSING" ? { prepared_id: d.id } : {} });
+      if (operation === "START_GUIDED") Object.assign(value, {
+        first_mode: local.firstMode,
+        page_id: local.pageId,
+        ...scenarioOptions(d.status === "CHOOSING" ? d.scenario_id || LEGACY_SCENARIO : local.scenarioId),
+        ...d.status === "CHOOSING" ? { prepared_id: d.id } : {}
+      });
       if (!p.dashboardAction("presentation", value)) return;
       pending2 = { id: d.id, phase: d.status, arm: d.arm, sequence: p.sequence, at: performance.now() };
       local.commandPending = true;
@@ -6420,13 +6491,25 @@
       local.preloadError = null;
       local.pageAdmitted = false;
       local.observing = false;
-      if (!p.dashboardAction("presentation", { operation: "PRELOAD", page_id: local.pageId, replace })) {
+      if (!p.dashboardAction("presentation", {
+        operation: "PRELOAD",
+        page_id: local.pageId,
+        replace,
+        ...local.scenarioChosen || tools2.catalog?.presentation_scenarios ? { scenario_id: local.scenarioId } : {}
+      })) {
         local.preloadError = p.operationError;
         return;
       }
       local.preloadRequested = true;
       local.preloadSequence = p.sequence;
       local.preloadAt = performance.now();
+    };
+    $11("missionScenario").onchange = () => {
+      local.scenarioId = $11("missionScenario").value;
+      local.scenarioChosen = true;
+      local.scenarioSelectionPending = true;
+      if (p.connected && p.fresh) prepareHere(true);
+      update();
     };
     $11("drivePrimaryAction").onclick = () => {
       const state = missionState(p, local);
@@ -6547,7 +6630,13 @@
         local.preloadError = null;
         local.observing = true;
       }
-      if (local.preloadSequence && p.failedSequence === local.preloadSequence) local.preloadError = p.operationError || "The fresh scene request was rejected.";
+      if (local.preloadSequence && p.failedSequence === local.preloadSequence) {
+        local.preloadError = p.operationError || "The fresh scene request was rejected.";
+        if (local.scenarioSelectionPending) {
+          local.scenarioId = d.scenario_id || LEGACY_SCENARIO;
+          local.scenarioSelectionPending = false;
+        }
+      }
       if (local.preloadRequested && !local.pageAdmitted && p.acknowledged < local.preloadSequence && performance.now() - local.preloadAt > 45e3) local.preloadError = "The page did not receive confirmation. Reconnect or prepare a fresh drive here.";
       const state = missionState(p, local);
       document.body.dataset.mission = state.screen;
@@ -6577,12 +6666,23 @@
       const actual = p.population?.actual, setup = d.setup;
       $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested " + (setup?.requested_route_vehicles ?? 60) + " / " + (setup?.requested_route_pedestrians ?? 100) : "") : "";
       $11("missionChoices").hidden = !state.choices;
-      for (const input of experience.querySelectorAll("[name=firstDrive]")) input.disabled = !!local.commandPending || !!d.preloaded && !d.awaiting_choice;
+      scenarioField.hidden = !state.choices;
+      const scenarioCatalog = tools2.catalog?.presentation_scenarios;
+      if (local.scenarioSelectionPending && d.id && d.page_id === local.pageId && (d.scenario_id || LEGACY_SCENARIO) === local.scenarioId) local.scenarioSelectionPending = false;
+      if (!local.scenarioSelectionPending && d.id && d.page_id === local.pageId) local.scenarioId = d.scenario_id || LEGACY_SCENARIO;
+      else if (!local.scenarioChosen && !d.id && scenarioCatalog?.default_id) local.scenarioId = scenarioCatalog.default_id;
+      $11("missionScenario").value = local.scenarioId;
+      const urbanOption = scenarioCatalog?.options?.find((option) => option.id === EGYPT_SCENARIO);
+      $11("missionScenario").querySelector(`[value="${EGYPT_SCENARIO}"]`).disabled = urbanOption?.available !== true;
+      $11("missionScenario").disabled = !!local.commandPending || !!d.id && !d.awaiting_choice && !["COMPLETE", "CANCELLED", "ERROR", "IDLE"].includes(d.status);
+      $11("missionScenarioNotice").textContent = local.scenarioId === EGYPT_SCENARIO ? `EGYPT_URBAN_CHAOS_V1 \xB7 v1 \xB7 seed ${d.seed ?? "assigned during preparation"} \xB7 600\u2013800 m \xB7 requested 60 vehicles / 100 pedestrians. ` + (urbanOption?.native_accepted ? "Source-bound native acceptance verified." : "Native acceptance pending; bounded validation only. No zero-contact guarantee.") : "Historical crossing fixture and recordings remain available. Egypt urban chaos stays opt-in until all twelve native trips pass.";
+      for (const input of experience.querySelectorAll("[name=firstDrive]")) input.closest("label").querySelector(".mission-driver-description").textContent = scenarioDriverText(input.value, local.scenarioId);
+      for (const input of experience.querySelectorAll("[name=firstDrive]")) input.disabled = !!local.commandPending || local.scenarioSelectionPending || !!d.preloaded && !d.awaiting_choice;
       const primary = $11("drivePrimaryAction");
       primary.hidden = !state.action && !state.choices && !state.loadingDrive;
       if (primary.textContent !== state.label) primary.textContent = state.label;
       primary.dataset.action = state.action || "";
-      primary.disabled = !state.action;
+      primary.disabled = !state.action || local.scenarioSelectionPending;
       primary.dataset.loading = String(state.loadingDrive);
       primary.setAttribute("aria-busy", String(state.loadingDrive));
       primary.style.setProperty("--load-step", state.loadStep ?? 4);
@@ -7217,9 +7317,9 @@
     $10("demoWithoutBtn").setAttribute("aria-pressed", String(demo?.mode === "WITHOUT" && demoBusy));
     $10("demoWithBtn").setAttribute("aria-pressed", String(demo?.mode === "WITH" && demoBusy));
     $10("demoStatus").textContent = demo?.mode ? (demo.mode === "WITH" ? "WITH YA RAB OSTORHA" : "WITHOUT SAFETY") + " \xB7 " + demo.phase + " \xB7 Safety " + (demo.safety_enabled ? "ON" : "OFF") + " during run \xB7 Controller: " + demo.active_controller + (demo.latest_outcome ? " \xB7 Outcome: " + demo.latest_outcome : "") + (demo.error ? " \xB7 " + demo.error : "") : demo?.error || "Choose a comparison mode. Each button resets and automatically records a fresh run.";
-    const measured = demo?.mode && ["RUNNING", "STOPPING", "FINISHED"].includes(demo.phase);
+    const measured2 = demo?.mode && ["RUNNING", "STOPPING", "FINISHED"].includes(demo.phase);
     const ds = demoBusy ? safety : demo?.last_safety;
-    $10("demoMeasurements").textContent = measured ? "Hazard: " + (demo.mode === "WITHOUT" ? "Safety detection OFF" : ds?.risk ?? "UNKNOWN") + " \xB7 Reason: " + (ds?.reason ?? "Waiting for sensors") + " \xB7 Run brake: " + number2((demoBusy ? state.brake : demo.last_applied_brake) == null ? null : (demoBusy ? state.brake : demo.last_applied_brake) * 100, "%") + " \xB7 Interventions: " + (demo.metrics?.safety_intervention_count ?? "\u2014") + " \xB7 Collision: " + (demo.metrics?.collision_count == null ? "Not assessed" : demo.metrics.collision_count > 0 ? "Collision detected" : "No collision recorded") + " \xB7 Time: " + number2(demo.metrics?.elapsed_simulation_s, " s") + " \xB7 Distance: " + number2(demo.metrics?.distance_traveled_m, " m") + " \xB7 Progress: " + number2(demo.metrics?.progress_m, " m") : "Measurements appear during the real CARLA run.";
+    $10("demoMeasurements").textContent = measured2 ? "Hazard: " + (demo.mode === "WITHOUT" ? "Safety detection OFF" : ds?.risk ?? "UNKNOWN") + " \xB7 Reason: " + (ds?.reason ?? "Waiting for sensors") + " \xB7 Run brake: " + number2((demoBusy ? state.brake : demo.last_applied_brake) == null ? null : (demoBusy ? state.brake : demo.last_applied_brake) * 100, "%") + " \xB7 Interventions: " + (demo.metrics?.safety_intervention_count ?? "\u2014") + " \xB7 Collision: " + (demo.metrics?.collision_count == null ? "Not assessed" : demo.metrics.collision_count > 0 ? "Collision detected" : "No collision recorded") + " \xB7 Time: " + number2(demo.metrics?.elapsed_simulation_s, " s") + " \xB7 Distance: " + number2(demo.metrics?.distance_traveled_m, " m") + " \xB7 Progress: " + number2(demo.metrics?.progress_m, " m") : "Measurements appear during the real CARLA run.";
     $10("safetyEnabled").checked = safety?.enabled === true;
     $10("safetyEnabled").disabled = !live || provider.isReplay || !provider.controller || provider.controlMode === "TRAINING" || demoBusy || !Number.isFinite(state.speedMps) || Math.abs(state.speedMps) > 0.15;
     $10("safetyController").disabled = $10("safetyEnabled").disabled;

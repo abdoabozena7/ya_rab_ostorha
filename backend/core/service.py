@@ -196,6 +196,11 @@ class SimulationService:
         value=getattr(self.provider,'navigation_bypass',None)
         return value if isinstance(value,RuleRouteBypass) else None
 
+    def _urban_driver(self):
+        from .urban_driver import UrbanManeuverDriver
+        value = getattr(getattr(self, 'provider', None), 'urban_driver', None)
+        return value if isinstance(value, UrbanManeuverDriver) else None
+
     def _guided_forecast_required(self):
         if (self.arbiter.machine.mode==ControlMode.AUTOMATIC and self.journey.get('driving_mode')=='ROBOSPHERE'
                 and self.journey.get('status') in ('STARTING','RUNNING')):
@@ -218,7 +223,7 @@ class SimulationService:
         bypass=self._route_bypass()
         if self.arbiter.machine.mode==ControlMode.AUTOMATIC and bypass is not None and bypass.engaged:
             return self._hybrid_execution_step(route_bypass=True)
-        if self.arbiter.machine.mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') == 'HYBRID':
+        if self.arbiter.machine.mode == ControlMode.AUTOMATIC and (self.journey.get('driving_mode') == 'HYBRID' or self._urban_driver()):
             return self._hybrid_execution_step()
         mode = self.arbiter.machine.mode
         observer_only = self._normal_driving()
@@ -408,6 +413,9 @@ class SimulationService:
         scene = self.control_scene
         ok, reason, evidence = False, 'STALE_CONTROL_SCENE', {}
         if scene is not None and scene.observation.frame_id==frame_id and scene.usable(stamp, self.now()) and scene.prediction.get('motion_tracking_complete',True):
+            if self._urban_driver():
+                from .urban_driver import urban_forecast
+                scene = urban_forecast(scene, scene.prediction['horizon_s'])
             path = signed_path(scene.observation.ego.speed_mps, base.steering,
                                base.throttle*2.5-base.brake*5., scene.geometry, base.reverse, bounded=base.reverse)
             road = self.provider.hybrid_road_context(self.session_id)
@@ -431,6 +439,11 @@ class SimulationService:
                   'decision_source':('RULE_BYPASS' if route_bypass else 'HYBRID') if ok else 'EXECUTION_SHIELD', 'evidence':evidence,
                   'measured_range_m':(self.maneuver_status.get('front_blocker') or {}).get('gap_m'),
                   'ttc_s':None,'path_conflict':None,'observed_road_range_m':None}
+        if self._urban_driver():
+            status.update(type='URBAN_EXECUTION_SHIELD', version=2, controller='URBAN_MANEUVER_RULE',
+                          driver_id=self._urban_driver().DRIVER_ID,
+                          actual_generator='URBAN_MANEUVER_RULE' if ok else 'EXECUTION_SHIELD',
+                          decision_source='URBAN_MANEUVER_RULE' if ok else 'EXECUTION_SHIELD')
         self.active_safety.status.update(status)
         self.provider.active_safety_status = dict(status)
         self.journey_observer = dict(status)
@@ -529,12 +542,12 @@ class SimulationService:
         if command.source == CommandSource.NAVIGATION and command.brake > .01:
             navigation_reason=getattr(self.provider,'navigation_stop_reason',None)
             reason = navigation_reason or reason
-            if self.journey.get('driving_mode')=='HYBRID' and not navigation_reason:
+            if (self.journey.get('driving_mode')=='HYBRID' or self._urban_driver()) and not navigation_reason:
                 behavior=getattr(self,'maneuver_status',{})
                 if behavior.get('reason'):
-                    source='HYBRID'
+                    source='URBAN_MANEUVER_RULE' if self._urban_driver() else 'HYBRID'
                     reason=behavior['reason']
-                    if reason=='VERIFIED_MEASURED_MOTION':reason='HYBRID_CONTROLLED_DECELERATION'
+                    if reason=='VERIFIED_MEASURED_MOTION':reason='URBAN_CONTROLLED_DECELERATION' if self._urban_driver() else 'HYBRID_CONTROLLED_DECELERATION'
         if command.source == CommandSource.MANUAL and self.manual_stop_reason and command.brake > .01:
             reason = self.manual_stop_reason
         if command != self.safety_command:
@@ -578,7 +591,7 @@ class SimulationService:
             'runtime_fault': getattr(self, 'runtime_fault', None),
             'behavior_decision': {k:getattr(self,'maneuver_status',{}).get(k) for k in
                 ('decision_id','source_frame','action','phase','reason','target_speed_kmh')}
-                if self.journey.get('driving_mode')=='HYBRID' else None,
+                if self.journey.get('driving_mode')=='HYBRID' or self._urban_driver() else None,
             'sensor_wall_age_s': self.now()-(self.state_at if self.safety_observed_at is None else self.safety_observed_at),
             'control_timing_ms': dict(getattr(self,'control_timing_ms',{})),
             'comfort_control':dict(getattr(getattr(self,'comfort_controller',None),'status',{})),
@@ -597,6 +610,9 @@ class SimulationService:
             if event_reason: self.journey_comparison.event('Waiting', stamp, event_reason)
             elif getattr(self,'previous_stop_event',None): self.journey_comparison.event('Driving resumed', stamp, 'Automatic continuation')
         self.previous_stop_event = event_reason
+        if getattr(self, 'journey_comparison', None) is not None:
+            self.journey_comparison.sample_driver(self.observation, getattr(self, 'maneuver_status', {}),
+                scene, wall_s=self.now(), waiting_reason=event_reason)
         prediction = safety.get('prediction')
         if (self.journey.get('driving_mode')=='ROBOSPHERE' and self.journey.get('status')=='RUNNING'
                 and scene is not None and scene.session_id==self.session_id and scene.prediction.get('motion_tracking_complete')):
@@ -735,11 +751,16 @@ class SimulationService:
                 recording_config['driver_id']=self.journey['driver_profile']['id']
             if self.journey.get('presentation_id'):
                 recording_config.update(presentation_id=self.journey['presentation_id'],automatic_pair=self.presentation.data.get('automatic_pair',False))
+                scenario = getattr(self.provider, 'dense_chaos', None)
+                if self.journey.get('scenario_id') and callable(getattr(scenario, 'descriptor', None)):
+                    recording_config.update(scenario_id=self.journey['scenario_id'], scenario_version=1,
+                        scenario_seed=scenario.seed, seed_partition=self.presentation.data.get('seed_partition'),
+                        comparison_scenario=scenario.descriptor())
                 cache=getattr(self,'control_perception',None);detected=cache.latest(self.session_id) if cache else None
                 recording_config['perception_profile']=copy.deepcopy((detected or {}).get('detector_profile'))
             self.recorder = RunRecorder(directory, ExperimentMetadata('run_'+uuid.uuid4().hex,
                 label, self.name, DataOrigin.REAL_SIMULATION,
-                seed=(environment.get('scenario') or {}).get('random_seed') if environment else None,
+                seed=recording_config.get('scenario_seed', (environment.get('scenario') or {}).get('random_seed') if environment else None),
                 created_at_utc=datetime.now(timezone.utc).isoformat(), config=recording_config))
             from .recording import BufferedRunRecorder
             self.recorder = BufferedRunRecorder(self.recorder)
@@ -804,14 +825,13 @@ class SimulationService:
             for collision in drain():
                 with self.lock:
                     self.collision_events.append(collision)
-                    self.journey_comparison.collision(collision)
-                    run=self.journey_comparison.active
-                    if run and run.get('setup',{}).get('comparison_scenario'):
+                    run=self.journey_comparison.collision(collision)
+                    if run is self.journey_comparison.active and run and run.get('setup',{}).get('comparison_scenario'):
                         stress=getattr(self.provider,'dense_chaos',None)
                         role=next((k for k,v in getattr(stress,'bindings',{}).items() if v==collision.other_actor_id),None)
                         run.setdefault('collision_events',[]).append({'frame_id':collision.frame_id,'timestamp_s':collision.timestamp_s,
                             'actor_id':collision.other_actor_id,'type':collision.other_actor_type,'role':role})
-                    if self.journey_auto_recording and self.recorder:
+                    if (self.journey_auto_recording or self.journey_recording_stop_pending) and self.recorder:
                         self.recorder.record_event(SimulationEvent(EventType.CollisionDetected,
                             collision.frame_id, collision.timestamp_s, {'collision': to_dict(collision)}))
                     if (self.journey.get('driving_mode') in ('HYBRID','BASELINE') or self.journey.get('presentation_id')) and self.journey.get('status') == 'RUNNING':
@@ -994,6 +1014,9 @@ class SimulationService:
             self.last_drive_stop = {'reason':reason,'status':status,'frame_id':frame_id,'timestamp_s':stamp,
                 'detail':fault.get('message') if fault and status == 'ERROR' else reason}
         if self.journey_comparison.active:
+            driver = self._urban_driver()
+            if driver is not None:
+                self.journey_comparison.active['completed_maneuvers'] = copy.deepcopy(driver.completed_maneuvers)
             stress=getattr(self.provider,'dense_chaos',None)
             if callable(getattr(stress,'run_evidence',None)):
                 self.journey_comparison.active['scenario_evidence']=stress.run_evidence()
@@ -1112,7 +1135,8 @@ class SimulationService:
         from ..learning.native_validation_budget import active_rule_ticket
         rule_validation = active_rule_ticket() if driving_mode in ('ROBOSPHERE','NORMAL') else None
         guided = presentation and self.presentation.data.get('guided') is True
-        maximum = 120 if guided else evaluation.max_speed_kmh if evaluation is not None else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
+        egypt = presentation and self.presentation.data.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1'
+        maximum = 60 if egypt else 120 if guided else evaluation.max_speed_kmh if evaluation is not None else 50 if driving_mode in ('HYBRID','BASELINE') or presentation or rule_validation else 30
         if not 5 <= speed <= maximum:
             raise ValueError(f'Journey speed must be 5–{maximum} km/h')
         if driving_mode == 'HYBRID':
@@ -1150,7 +1174,12 @@ class SimulationService:
             self.journey = {'status': 'STARTING', 'reason': None, 'speed_kmh': speed}
             if evaluation is not None:self.journey['evaluation']=evaluation.snapshot()
             if rule_validation and evaluation is None:self.journey['validation_deadline']=rule_validation['expires_monotonic_s']
-            if presentation: self.journey.update(presentation_id=presentation_id, benchmark=True)
+            if presentation:
+                self.journey.update(presentation_id=presentation_id, benchmark=True)
+                if egypt:
+                    self.journey.update(scenario_id='EGYPT_URBAN_CHAOS_V1', scenario_version=1)
+                    if self.presentation.data.get('validation_deadline'):
+                        self.journey['validation_deadline'] = self.presentation.data['validation_deadline']
             if driving_mode in ('HYBRID','BASELINE'):self.journey['benchmark']=benchmark or pair_id is not None
             self.last_drive_stop = None
             self.safety_processing_wait_at = None
@@ -1251,7 +1280,7 @@ class SimulationService:
         # shield hold. Keep it in its legacy/validation scope; the guided RULE
         # shield, signal stops and final freshness veto remain unchanged.
         legacy_presentation=self.journey.get('presentation_id') and not self.presentation.data.get('guided')
-        if legacy_presentation or self.journey.get('validation_deadline'):
+        if (legacy_presentation or self.journey.get('validation_deadline')) and not self.journey.get('scenario_id'):
             from .comfort_control import ComfortControl
             if getattr(self,'comfort_controller',None) is None:self.comfort_controller=ComfortControl()
             stop_reason=getattr(self.provider,'navigation_stop_reason',None)
@@ -1278,10 +1307,10 @@ class SimulationService:
                 self.command_at=self.now();return
         driver = getattr(self.provider, 'hybrid_driver', None)
         bypass_engaged=bypass is not None and bypass.engaged
-        if driver is not None and (self.journey.get('driving_mode') == 'HYBRID' or bypass_engaged):
+        if driver is not None and (self.journey.get('driving_mode') == 'HYBRID' or bypass_engaged or self._urban_driver()):
             if self.now() >= driver.deadline:
                 self._stop_navigation('hybrid_validation_expired'); return
-            if (driver.previous_command is not None and driver.previous_stamp is not None
+            if (not self._urban_driver() and driver.previous_command is not None and driver.previous_stamp is not None
                     and 0<=timestamp_s-driver.previous_stamp<.1-1e-6
                     and self.now()-getattr(self,'hybrid_decision_wall_at',-float('inf'))<.25):
                 # Behavior owns a 100 ms simulation lease. Route steering still
@@ -1300,7 +1329,7 @@ class SimulationService:
                     'actuation_source_frame':self.control_scene.observation.frame_id if updated is not None else None,
                     'proposal':to_dict(reused)})
                 return
-            if self.control_scene is not None:
+            if self.control_scene is not None and not self._urban_driver():
                 self.provider.find_hybrid_alternative(self.control_scene)
             road = self.provider.hybrid_road_context(self.session_id)
             cap = min(self.journey['speed_kmh']/3.6, self.provider.navigation_speed_limit_mps)
@@ -2153,17 +2182,20 @@ class SimulationService:
                         manifest = (self.provider.journey_manifest(value, benchmark=True) if journey.get('benchmark')
                                     else self.provider.journey_manifest(value))
                         if driving_mode in ('NORMAL','ROBOSPHERE'):
-                            from .driver_profiles import driver_profile,SENSOR_COMPARISON_PROTOCOL
-                            manifest.update(protocol=SENSOR_COMPARISON_PROTOCOL,driver_profile=driver_profile(driving_mode))
-                            journey['driver_profile']=driver_profile(driving_mode)
+                            from .driver_profiles import driver_profile
+                            profile = driver_profile(driving_mode, journey.get('scenario_id'))
+                            manifest.update(protocol=profile['protocol'], driver_profile=profile)
+                            journey['driver_profile'] = profile
                         if journey.get('presentation_id'):
                             manifest.update(presentation_id=journey['presentation_id'])
+                            if journey.get('scenario_id'):
+                                manifest['seed_partition'] = self.presentation.data['seed_partition']
                             cache=getattr(self,'control_perception',None);detected=cache.latest(self.session_id) if cache else None
                             manifest['perception_profile']=copy.deepcopy((detected or {}).get('detector_profile'))
                             if self.presentation.data.get('guided'):
                                 manifest.update(guided=True,
                                     presentation_order=list(self.presentation.data['modes']),scene=self.presentation.data['scene'],
-                                    speed_policy='GUIDED_STRESS_TARGET')
+                                    speed_policy='EGYPT_URBAN_ROAD_LIMIT' if journey.get('scenario_id') else 'GUIDED_STRESS_TARGET')
                         self.active_safety.set_controller('RULE')
                         self.active_safety.enabled = True
                         self.active_safety.reset()

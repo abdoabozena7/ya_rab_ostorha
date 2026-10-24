@@ -9,7 +9,7 @@ import math
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from .driver_profiles import SENSOR_COMPARISON_PROTOCOL
+from .driver_profiles import SENSOR_COMPARISON_PROTOCOL, SENSOR_COMPARISON_PROTOCOLS
 
 MODES = ('ROBOSPHERE', 'NORMAL')
 BENCHMARK_MODES = ('HYBRID', 'BASELINE')
@@ -34,8 +34,8 @@ def matching_setup(a, b, *, world_only=False):
         keys += ('runtime_rates',)
     if a.get('render_configuration') is not None or b.get('render_configuration') is not None:
         keys += ('render_configuration',)
-    if a.get('comparison_scenario') or b.get('comparison_scenario'):keys+=('perception_profile',)
-    if a.get('protocol')==SENSOR_COMPARISON_PROTOCOL or b.get('protocol')==SENSOR_COMPARISON_PROTOCOL:
+    if a.get('comparison_scenario') or b.get('comparison_scenario'):keys+=('perception_profile','comparison_scenario')
+    if a.get('protocol') in SENSOR_COMPARISON_PROTOCOLS or b.get('protocol') in SENSOR_COMPARISON_PROTOCOLS:
         if a.get('protocol')!=b.get('protocol'):return False
         keys+=('vehicle_geometry','vehicle_physics','sensor_configuration')
     if world_only:keys=tuple(k for k in keys if k!='blueprint')
@@ -59,7 +59,7 @@ class JourneyComparison:
         self.near = self.intervening = False
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
-            if saved.get('version') in (1, 2, 3, 4, 5, 6) and isinstance(saved.get('runs'), dict):
+            if saved.get('version') in (1, 2, 3, 4, 5, 6, 7) and isinstance(saved.get('runs'), dict):
                 self.data = saved
                 for run in saved['runs'].values():
                     if run['status'] == 'RUNNING':
@@ -90,13 +90,13 @@ class JourneyComparison:
             raise ValueError('Comparison changed; prepare its mode again')
         if pair_id is None:
             benchmark = mode in BENCHMARK_MODES
-            self.data = {'version': 6 if manifest.get('protocol')==SENSOR_COMPARISON_PROTOCOL else 5 if manifest.get('guided') and manifest.get('vehicle_variants') else 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
+            self.data = {'version': 7 if manifest.get('protocol')=='EGYPT_COMPLETE_DRIVERS_V1' else 6 if manifest.get('protocol')==SENSOR_COMPARISON_PROTOCOL else 5 if manifest.get('guided') and manifest.get('vehicle_variants') else 4 if manifest.get('guided') else 3 if manifest.get('presentation_id') else 2 if benchmark else 1, 'pair_id': uuid.uuid4().hex,
                          'driver_modes':list(BENCHMARK_MODES if benchmark else MODES),
                          'manifest': copy.deepcopy(manifest), 'runs': {}}
             if manifest.get('guided'):self.data['order']=list(manifest['presentation_order'])
         elif mode not in self.data.get('driver_modes', MODES):
             raise ValueError('Legacy protection comparisons and the hybrid benchmark are separate protocols')
-        if (self.data['manifest'].get('protocol')==SENSOR_COMPARISON_PROTOCOL) != (manifest.get('protocol')==SENSOR_COMPARISON_PROTOCOL):
+        if (self.data['manifest'].get('protocol') in SENSOR_COMPARISON_PROTOCOLS or manifest.get('protocol') in SENSOR_COMPARISON_PROTOCOLS) and self.data['manifest'].get('protocol') != manifest.get('protocol'):
             raise ValueError('Historical and sensor-reactive comparisons use different protocols')
         old = self.data['runs'].get(mode)
         if old:
@@ -106,36 +106,79 @@ class JourneyComparison:
                'driver_profile':copy.deepcopy(manifest.get('driver_profile')),
                'created_at_utc': datetime.now(timezone.utc).isoformat(), 'recording': recording,
                'duration_s': 0., 'distance_m': 0., 'route_completion_percent': 0.,
-               'collisions': 0, 'maximum_impulse_ns': 0., 'near_misses': 0,
+               'collisions': 0, 'contact_callbacks': 0, 'maximum_impulse_ns': 0., 'near_misses': 0,
                'safety_interventions': 0, 'high_risk_s': 0., 'sensor_coverage_percent': 0.,
                'safety_intervention_s': 0., 'harsh_braking_events': 0, 'destination_reached': False,
                'acceleration_samples': 0, 'intervention_samples': 0,
                'minimum_forward_range_m': None, 'mean_speed_kmh': 0.,
                'maximum_speed_kmh':0.,
                'samples': 0, 'observed_samples': 0, 'risk_timeline': [], 'events': []}
+        if manifest.get('protocol') == 'EGYPT_COMPLETE_DRIVERS_V1':
+            run.update(completed_maneuvers=[], waiting_reasons_s={}, sensor_age_samples=0,
+                       maximum_sensor_sim_age_s=None, maximum_sensor_wall_age_s=None, simulation_wall_ratio=None,
+                       missing_current_sensor_frames=0)
         self.data['runs'][mode] = self.active = run
         self.previous = None
         self.contact_times = {}
         self.near = self.intervening = False
         self.harsh = False
+        self.driver_metric_frame = self.driver_metric_stamp = self.driver_metric_wall = self.driver_metric_start = None
         self.save()
         return run
 
     def collision(self, collision):
-        if not self.active: return
+        run = self.active
+        if self.data.get('version') == 7:
+            candidates = [r for r in self.data['runs'].values() if
+                          r.get('first_timestamp_s', math.inf) <= collision.timestamp_s <= r.get('last_timestamp_s', -math.inf) + .1]
+            if candidates:
+                run = max(candidates, key=lambda r: r['first_timestamp_s'])
+        if run is None: return
+        run['contact_callbacks'] = run.get('contact_callbacks', 0) + 1
         actor, stamp = collision.other_actor_id, collision.timestamp_s
         last = self.contact_times.get(actor, -math.inf)
         self.contact_times[actor] = stamp
         if stamp-last > 1.:
-            self.active['collisions'] += 1
-            self.event('Collision', stamp, f'Actor {actor}')
+            run['collisions'] += 1
+            run['events'].append({'title': 'Collision', 'timestamp_s': stamp, 'detail': f'Actor {actor}'})
         impulse = getattr(collision, 'impulse_magnitude_ns', None)
         if impulse is None: impulse = math.sqrt(sum(v*v for v in collision.impulse_ns))
-        self.active['maximum_impulse_ns'] = max(self.active['maximum_impulse_ns'], impulse)
+        run['maximum_impulse_ns'] = max(run['maximum_impulse_ns'], impulse)
+        if run is not self.active:
+            run.setdefault('collision_events', []).append({'frame_id': collision.frame_id, 'timestamp_s': stamp,
+                'actor_id': actor, 'type': getattr(collision, 'other_actor_type', None), 'late_callback': True})
+            run.update(status='COLLISION', reason='collision', terminal_contact_recorded_late=True)
+            self.save()
+        return run
 
     def event(self, title, stamp, detail):
         self.active['events'].append({'title': title, 'timestamp_s': stamp, 'detail': str(detail)})
         self.active['events'] = self.active['events'][-60:]
+
+    def sample_driver(self, frame, behavior, scene, *, wall_s, waiting_reason=None):
+        run = self.active
+        if not run or self.data.get('version') != 7 or frame is None or frame.frame_id == self.driver_metric_frame:
+            return
+        stamp = frame.timestamp_s
+        dt = max(0., stamp - self.driver_metric_stamp) if self.driver_metric_stamp is not None else 0.
+        self.driver_metric_frame, self.driver_metric_stamp = frame.frame_id, stamp
+        if self.driver_metric_wall is None:
+            self.driver_metric_wall, self.driver_metric_start = wall_s, stamp
+        if wall_s > self.driver_metric_wall:
+            run['simulation_wall_ratio'] = (stamp - self.driver_metric_start) / (wall_s - self.driver_metric_wall)
+        if frame.vehicle.speed_mps < .15 and waiting_reason:
+            waits = run['waiting_reasons_s']
+            waits[waiting_reason] = waits.get(waiting_reason, 0.) + dt
+        if behavior.get('driver_id') == run.get('driver_id'):
+            run['completed_maneuvers'] = copy.deepcopy(behavior.get('completed_maneuvers', []))
+        if scene is None or scene.observation.frame_id != frame.frame_id:
+            run['missing_current_sensor_frames'] += 1
+        if scene is not None and scene.observation.frame_id <= frame.frame_id:
+            sim_age, wall_age = stamp - scene.observation.timestamp_s, wall_s - scene.received_wall_s
+            if sim_age >= 0 and wall_age >= 0:
+                run['sensor_age_samples'] += 1
+                run['maximum_sensor_sim_age_s'] = max(sim_age, run['maximum_sensor_sim_age_s'] or 0.)
+                run['maximum_sensor_wall_age_s'] = max(wall_age, run['maximum_sensor_wall_age_s'] or 0.)
 
     def sample(self, frame, route, safety):
         run = self.active
@@ -144,6 +187,9 @@ class JourneyComparison:
         self.previous = frame
         dt = max(0., frame.timestamp_s-previous.timestamp_s) if previous else 0.
         run['samples'] += 1
+        if self.data.get('version') == 7:
+            run.setdefault('first_timestamp_s', frame.timestamp_s)
+            run['last_timestamp_s'] = frame.timestamp_s
         run['duration_s'] += dt
         if previous:
             run['distance_m'] += math.dist(frame.vehicle.transform.position_m, previous.vehicle.transform.position_m)
@@ -153,7 +199,7 @@ class JourneyComparison:
         if route and length > 0:
             run['route_completion_percent'] = max(run['route_completion_percent'], min(100., max(0., 100*(1-route.get('remaining_m', length)/length))))
         # No stale observer value is counted as a clear frame.
-        measured_risk=safety.get('reactive_risk',safety.get('risk')) if self.data.get('version')==6 else safety.get('risk')
+        measured_risk=safety.get('reactive_risk',safety.get('risk')) if self.data.get('version') in (6,7) else safety.get('risk')
         observed = frame.complete and safety.get('frame_id') == frame.frame_id and measured_risk not in (None, 'UNKNOWN', 'UNKNOWN_SPACE')
         run['observed_samples'] += int(observed)
         run['sensor_coverage_percent'] = 100*run['observed_samples']/run['samples']
@@ -194,7 +240,7 @@ class JourneyComparison:
 
     def finish(self, reason, status='INTERRUPTED'):
         if not self.active: return
-        self.active.update(status='ARRIVED' if reason == 'destination_reached' else 'COLLISION' if reason == 'collision' else 'SHORTENED' if reason=='guided_shortened' else status, reason=reason)
+        self.active.update(status='ARRIVED' if reason == 'destination_reached' else 'COLLISION' if reason == 'collision' else 'TIMEOUT' if reason=='egypt_route_timeout' else 'SHORTENED' if reason=='guided_shortened' else status, reason=reason)
         if self.active['status'] == 'ARRIVED':
             self.active['route_completion_percent'] = 100.
             self.active['destination_reached'] = True
@@ -223,7 +269,7 @@ class JourneyComparison:
         result = copy.deepcopy(data)
         modes = result.get('driver_modes', MODES)
         result['conditions_match'] = matching_setup(*(result['runs'].get(m, {}).get('setup') for m in modes))
-        if result.get('version') in (2, 3, 4, 5, 6):
+        if result.get('version') in (2, 3, 4, 5, 6, 7):
             audits = [result['runs'].get(m, {}).get('setup', {}).get('initial_condition_id') for m in modes]
             verified = all(result['runs'].get(m, {}).get('initial_condition_audit', {}).get('passed') is True for m in modes)
             result['conditions_match'] = result['conditions_match'] and bool(audits[0]) and audits[0] == audits[1] and verified
