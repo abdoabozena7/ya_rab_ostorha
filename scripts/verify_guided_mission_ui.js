@@ -1,6 +1,6 @@
 async (page,options={})=>{
   // Reuse either known local asset host; all API calls and the fake socket stay intercepted.
-  const origin=new URL(page.url()).origin;
+  const origin=page.url().split('/').slice(0,3).join('/');
   const hosts=['http://127.0.0.1:8000','http://127.0.0.1:8016','http://127.0.0.1:8019'];
   const root=options.root||(hosts.includes(origin)?origin:'http://127.0.0.1:8000'),commands=[],errors=[],requests=[];
   if(!hosts.includes(root))throw Error('Browser fixture requires a local project asset host');
@@ -15,12 +15,17 @@ async (page,options={})=>{
   let socket,frame=100;
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/api/**',async route=>{
-    const url=new URL(route.request().url());
-    if(route.request().method()==='POST')requests.push(url.pathname);
-    if(url.pathname.endsWith('/status'))return route.fulfill({json:{provider:'carla',configured:true,websocketPort:8017}});
-    if(url.pathname.endsWith('/catalog'))return route.fulfill({json:catalog});
-    if(url.pathname.endsWith('/start'))return route.fulfill({json:{status:'STARTING'}});
-    if(url.pathname.endsWith('/camera.jpg'))return route.fulfill({...(options.image_path?{path:options.image_path}:{body:image}),contentType:'image/jpeg',headers:{'X-Sensor-Frame':url.searchParams.get('frame_id')||String(frame),'X-Sensor-Time':String(1+(Number(url.searchParams.get('frame_id'))-100)*.05)}});
+    const url=route.request().url(),path=url.split('?')[0];
+    if(route.request().method()==='POST')requests.push(path.slice(root.length));
+    if(path.endsWith('/status'))return route.fulfill({json:{provider:'carla',configured:true,websocketPort:8017}});
+    if(path.endsWith('/catalog'))return route.fulfill({json:catalog});
+    if(path.endsWith('/scenarios'))return route.fulfill({json:catalog.presentation_scenarios||{
+      default_id:'SUDDEN_PEDESTRIAN_COMPARISON_V1',options:[
+        {id:'SUDDEN_PEDESTRIAN_COMPARISON_V1',available:true},
+        {id:'EGYPT_URBAN_CHAOS_V1',available:false,native_accepted:false}]}});
+    if(path.endsWith('/start'))return route.fulfill({json:{status:'STARTING'}});
+    const frameId=/[?&]frame_id=(\d+)/.exec(url)?.[1];
+    if(path.endsWith('/camera.jpg'))return route.fulfill({...(options.image_path?{path:options.image_path}:{body:image}),contentType:'image/jpeg',headers:{'X-Sensor-Frame':frameId||String(frame),'X-Sensor-Time':String(1+(Number(frameId)-100)*.05)}});
     return route.fulfill({json:{status:'UNAVAILABLE'}});
   });
   const publish=()=>{if(!socket)return;const timestamp=1+(++frame-100)*.05;
@@ -35,8 +40,11 @@ async (page,options={})=>{
       setup:{scene:'DENSE_CHAOS',requested_route_vehicles:60,requested_route_pedestrians:100}};
     publish();
   });});
-  const publishing=setInterval(publish,100);
-  await page.exposeFunction('stopMissionFixture',()=>clearInterval(publishing));
+  await page.exposeFunction('publishMissionFixture',publish);
+  await page.addInitScript(()=>{
+    const publishing=setInterval(()=>window.publishMissionFixture(),100);
+    window.stopMissionFixture=()=>clearInterval(publishing);
+  });
   await page.exposeFunction('setMissionFixture',patch=>{Object.assign(state,patch);publish();});
   await page.exposeFunction('missionEvidence',()=>({commands,errors,requests,scope:'ISOLATED_UI_FIXTURE_NO_NATIVE_COMMANDS'}));
   await page.goto(root+'/?verification=guided-mission');

@@ -10439,6 +10439,12 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn {
   background: #e8efe8;
   color: #40664c;
 }
+#missionValidationStatus {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 #missionScenarioChoices[data-urban-access=pending] label:has([value=EGYPT_URBAN_CHAOS_V1]) .mission-scenario-status {
   background: #f7e8df;
   color: #8a4c47;

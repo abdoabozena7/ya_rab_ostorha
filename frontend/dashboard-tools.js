@@ -8,6 +8,7 @@ export class DashboardTools {
   constructor(provider, controls, clearControls, options = {}) {
     Object.assign(this, {provider, controls, clearControls, options});
     this.catalog = null; this.session = null; this.loading = false; this.retryAt = 0;
+    this.scenarios = null; this.scenarioLoading = false; this.scenarioError = '';
     this.selectedPlace = null; this.result = null; this.panel = null; this.panelTrigger = null;
     this.restartAfterSave = null; this.restartSeen = null; this.lightingPending = false;
     this.recordingPath = ''; this.cameraChange = null;
@@ -204,6 +205,16 @@ export class DashboardTools {
       this.catalog = catalog; this.fillSettings(); this.renderPlaces(); this.renderRoads();
     } catch (error) { this.retryAt = performance.now()+2000; $('settingsStatus').textContent = error.message; }
     finally { this.loading = false; }
+  }
+  async loadScenarios() {
+    if (this.scenarioLoading || this.provider.isReplay) return;
+    this.scenarioLoading = true;
+    try {
+      this.scenarios = await this.provider.scenarios();
+      this.scenarioError = '';
+    } catch (error) {
+      this.scenarioError = 'Could not refresh validation status: ' + error.message;
+    } finally { this.scenarioLoading = false; }
   }
   renderPlaces() {
     const list = $('placeResults'); list.replaceChildren();

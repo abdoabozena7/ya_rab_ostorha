@@ -69,6 +69,9 @@ export function missionState(p,local={}) {
       phase==='COMPLETE'?'Your recordings are saved. Playback remains available with CARLA closed.':d.finish_error||'Review both recordings, then Finish to close CARLA and free the GPU.',
       {action:finishing?null:p.simulatorStop?.status==='FAILED'?'FREE_GPU':phase==='COMPLETE'?'NEW_DRIVE':'FINISH',label:finishing?'Saving & closing…':p.simulatorStop?.status==='FAILED'?'Retry GPU release':phase==='COMPLETE'?'Start a new drive':d.finish_error?'Retry saving & closing':'Finish',loadingDrive:finishing,freeGPU:false});
   }
+  if(local.validationReserved)return state('welcome','Native validation owns the simulator',
+    'Dashboard startup and preparation are paused. Validation progress refreshes with CARLA stopped.',
+    {freeGPU:false});
   if(local.shutdownPending||p.simulatorStop?.status==='STOPPING')return state('releasing','Freeing the GPU','Saving recorded data, closing CARLA and verifying its processes have exited.',{freeGPU:false,loadingDrive:true,label:'Closing CARLA…'});
   if(p.simulatorStop?.status==='FAILED')return state('fault','CARLA could not close',p.simulatorStop.error||'Open Menu for runtime details.',{action:'FREE_GPU',label:'Retry GPU release'});
   if(p.simulationStarting||local.launchPending&&!p.connected)return loadingWorld('Starting the simulator','Launching CARLA. Choose your first drive while the city loads.');

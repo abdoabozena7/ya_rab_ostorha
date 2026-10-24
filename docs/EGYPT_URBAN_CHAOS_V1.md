@@ -24,6 +24,105 @@ Zero contact is an acceptance requirement, not a guarantee for every possible
 scene. Remaining stationary for the whole trip cannot pass route completion.
 Normal is allowed to arrive safely: **a Normal collision is not a requirement**.
 
+## Separate allowance and stopped-engine status: 24 October follow-up
+
+The follow-up implements the validation infrastructure, not native acceptance.
+The request explicitly calls this a plan and defers native execution until
+implementation is requested. No confirmation was available, so no native trip,
+shutdown, repair calibration or reserved-seed run was started. The existing live
+dashboard/attempt was left untouched. Egypt is still locked and the historical
+crossing remains the default. There is no new native acceptance artifact.
+
+The separate [Egypt ledger](../backend/learning/egypt_budget.py) was allocated
+once at `output/egypt-validation`, with **14,400 s unspent**: at most 7,200 s for
+development and 7,200 s protected for final acceptance. It does not modify the
+hybrid research ledger, sleep adjustments or RULE authorizations. Allocation is
+not a reservation and does not start CARLA. Reallocating an existing directory
+is rejected; the runner never creates or extends an allowance implicitly.
+
+On an authorized native run, the parent acquires exclusive cross-process
+simulator ownership before saving the current dashboard snapshot and requesting
+its ordinary `stop_simulator` recording/SDK/engine shutdown. It waits for engine
+exit before launching validation. Startup, scenario construction, both trips,
+exports, playback checks and native cleanup are inside the reservation.
+Workers receive `--egypt-budget`, the exact reservation ID and a delegated
+monotonic deadline. The parent terminates a worker at its deadline; native
+cleanup and decoding use bounded timeouts. Actual elapsed time is recorded,
+including overruns rather than hiding them at the cap. An overrun fails
+validation. Failed and interrupted attempts retain their reports, raw data,
+source archive and charges. An abrupt parent exit leaves the full reservation
+crash-charged and blocks automatic reuse. Unverified engine cleanup retains
+the ownership lock; recovery requires inspection, not an automatic refund,
+retry or extension.
+
+The runner uses Town10/LOW, the unchanged 60/100 request, shared Mercedes/sensors
+and 60 km/h ceiling. Development defaults to 1703, 2707 and 3709 in both orders.
+Focused development checks may use `--development-seed` and `--first`; their
+successful exit is explicitly **development success**, never deployment
+acceptance. Only the complete latest six-pair current-source development matrix
+can admit final acceptance. Repair attempts and old-source results remain in
+their original reports but cannot certify the repaired source.
+
+Acceptance reserves exactly 7,200 s, freezes per-file source/configuration
+hashes and runs 961103, 961109 and 961121 in both orders, once. It cannot be
+resumed selectively or rerun under the allowance after failure/interruption.
+The six-pair/twelve-trip gate, all physical driving gates, actual Normal outcome,
+LOW/Town10 identity, exports, post-engine-exit playback and independent cleanup
+must pass. Publication occurs only after the reservation has finalized, and
+rechecks the development snapshot, frozen hashes and separate allowance.
+Changing any driving/backend/runner source invalidates deployment admission.
+
+`GET /api/simulation/scenarios` is read-only and requires neither a provider nor
+a live simulator. It preserves `default_id`, `options` and existing option
+fields, adding validation phase/state, completed trips, failed gates, blocking
+reasons and simulator ownership. The chooser refreshes this endpoint every two
+seconds while visible, also on the stopped welcome screen. A validation block is
+status text, not a disabled action with an arrow. GPU measurements are advisory
+and cannot unlock it. Acceptance changes the default only for new comparisons;
+active drives, explicit historical choices and saved media retain their IDs.
+The backend must be restarted normally to load the new implementation; this
+delivery does not reload or retire the current native host.
+
+For a fresh, separately authorized setup, allocation is an explicit one-time
+operation (already performed in this checkout; do not repeat it):
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --allocate-egypt-budget --egypt-budget output\egypt-validation
+```
+
+Read-only preflight is safe before native execution is authorized:
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --egypt-budget output\egypt-validation --acceptance --report output\egypt-validation\acceptance-preflight.json
+```
+
+After explicit native execution authorization, the separate phases are:
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --run --egypt-budget output\egypt-validation --report output\egypt-validation\development-matrix.json
+.\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --run --acceptance --egypt-budget output\egypt-validation --report output\egypt-validation\acceptance-matrix.json
+```
+
+Do not run the second command if development is incomplete or its allocation is
+exhausted. A nonzero acceptance exit retains the lock and exact failed gates.
+`--rule-ticket` now supports read-only legacy preflight only; it never funds
+Egypt execution. Raw attempts remain ignored under `runs`/`output`, not committed.
+The compact [follow-up software evidence](evidence/egypt-urban-chaos-v1/validation-infrastructure.json)
+and [browser evidence](evidence/egypt-urban-chaos-v1/validation-browser.json)
+distinguish intercepted fixtures and offline checks from native acceptance.
+
+Follow-up verification:
+
+| Check | Result | Scope |
+| --- | --- | --- |
+| Dashboard build | Passed; checked-in JavaScript/CSS regenerated | Software |
+| `npm test` | 207 passed | Offline software |
+| Python discovery suite | 942 discovered: 938 passed, 4 skipped | Offline software |
+| Isolated browser workflow | 12 checks; no browser errors | Intercepted status/commands and software-fixture media |
+| Separate Egypt allowance | Allocated once; 14,400 s remain; no reservations | No native execution |
+| Development / reserved acceptance | 0 / 12 native trips in each partition | Deferred; no driving acceptance |
+| Default promotion | Not performed | Requires the frozen native matrix |
+
 ## Environment behavior, specified before implementation
 
 All actor selections and persona parameters come from a local seeded generator,
@@ -189,7 +288,8 @@ Read-only authorization preflight (does not launch CARLA or create a ledger):
 .\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --acceptance --report output\egypt-urban-chaos\preflight.json
 ```
 
-With a genuinely available existing authorization, `--run --acceptance` freezes
+The original runner used a genuinely available existing authorization. Its
+`--run --acceptance` froze
 source/configuration, runs the three reserved seeds in both orders without
 retries, saves each failure and evaluates all twelve trips. `--rule-ticket` may
 identify an **existing** unexpired RULE repair ticket; no ticket is manufactured.
@@ -208,7 +308,7 @@ contact keeps promotion closed. Normal's actual outcome is retained without
 an expected collision. Historical crossing success checks apply only to their
 own older protocol.
 
-## Verification evidence and remaining gates
+## Original implementation evidence and remaining native gates
 
 | Check | Observed result | Scope |
 | --- | --- | --- |
@@ -251,6 +351,8 @@ larger measured rear gap, without weakening the execution shield.
 Native route feasibility on the actual map, dense-scene timing, behavior
 realization, actuator response, three complete overtakes and zero-contact arrival
 across all twelve reserved trips remain **unverified/pending**. The only native
-authorization available cannot cover them. The historical budget, failures and
-evidence are preserved. Legacy remains the primary default; no prototype or
+authorization at the original implementation could not cover them. The separate
+follow-up allowance above is allocated but unspent; native execution remains
+deferred by the explicit plan stop condition. The historical budget, failures
+and evidence are preserved. Legacy remains the primary default; no prototype or
 synthetic/browser result is promoted to accepted native control.

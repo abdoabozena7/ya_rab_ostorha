@@ -109,7 +109,11 @@ class WebSocketBridge:
                                 if value.get('operation')=='START_GUIDED' else {})
                             if 'scenario_id' in value:
                                 options['scenario_id'] = value['scenario_id']
-                            self.service.presentation.start(value.get('speed_kmh',60 if value.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1' else 120 if options.get('guided') else 50),seed=value.get('seed'),**options)
+                            elif options.get('guided'):
+                                from .core.egypt_urban import default_scenario
+                                options['scenario_id'] = default_scenario()
+                            speed = 60 if options.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1' else 120 if options.get('guided') else 50
+                            self.service.presentation.start(value.get('speed_kmh',speed),seed=value.get('seed'),**options)
                     elif kind == 'start_journey':
                         # Validate before taking control away from another dashboard.
                         options = {key:message[key] for key in ('driving_mode','pair_id','benchmark') if key in message}

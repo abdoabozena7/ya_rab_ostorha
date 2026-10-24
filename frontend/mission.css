@@ -59,6 +59,7 @@ body.light-cockpit.mission-experience[data-ui=guided] #emergencyStopBtn{border-r
 .mission-scenario-heading strong{font-size:15px;font-weight:500;color:var(--ink)}
 .mission-scenario-description{display:block;font-size:12px;color:var(--muted);margin-top:3px}
 .mission-scenario-status{flex:none;font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px;background:#e8efe8;color:#40664c}
+#missionValidationStatus{font-size:14px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
 #missionScenarioChoices[data-urban-access=pending] label:has([value=EGYPT_URBAN_CHAOS_V1]) .mission-scenario-status{background:#f7e8df;color:#8a4c47}
 #missionScenarioAccess{padding:2px 0 2px 13px;margin:14px 0 4px;border-left:2px solid #cda69a}
 #missionScenarioAccessTitle{font-size:13px;font-weight:500;color:var(--ink)}

@@ -10,32 +10,62 @@ async page=>{
   const observed=JSON.parse(await read('/output/guided-ui-20261018/observed-state.json'));
   catalog.presentation_scenarios={default_id:'SUDDEN_PEDESTRIAN_COMPARISON_V1',options:[
     {id:'SUDDEN_PEDESTRIAN_COMPARISON_V1',available:true},
-    {id:'EGYPT_URBAN_CHAOS_V1',available:true,native_accepted:false,validation_window_active:true,
+    {id:'EGYPT_URBAN_CHAOS_V1',available:false,native_accepted:false,validation_window_active:false,
+      validation:{state:'PENDING',phase:'ACCEPTANCE',completed_trips:0,failed_gates:[]},
       reason:'ISOLATED_BROWSER_FIXTURE_NOT_NATIVE_AUTHORIZATION'}]};
   await (new Function('return ('+installer+')'))()(page,{root,observed,catalog,
     image_path:workspace+'\\public\\assets\\native-preview.jpg'});
   await page.route('**/runs/normal_city/**',route=>{
-    const url=new URL(route.request().url()),normal=url.pathname.includes('run_'+'a'.repeat(32));
-    if(url.pathname.endsWith('video-status.json'))return route.fulfill({json:{status:'READY',annotation_required:true,
+    const path=route.request().url().split('?')[0],normal=path.includes('run_'+'a'.repeat(32));
+    if(path.endsWith('video-status.json'))return route.fulfill({json:{status:'READY',annotation_required:true,
       source:'TEST_FIXTURE',variants:{annotated:{status:'READY',video:'driving-annotated.mp4'}}}});
-    if(url.pathname.endsWith('.mp4'))return route.fulfill({path:workspace+'\\output\\egypt-urban-ui\\'+(normal?'normal':'protected')+'\\driving-annotated.mp4',contentType:'video/mp4'});
+    if(path.endsWith('.mp4'))return route.fulfill({path:workspace+'\\output\\egypt-urban-ui\\'+(normal?'normal':'protected')+'\\driving-annotated.mp4',contentType:'video/mp4'});
     return route.fulfill({status:404,body:'Isolated fixture has no native recording'});
   });
   const fixture=async patch=>page.evaluate(patch=>window.setMissionFixture(patch),patch);
   try{
     await page.setViewportSize({width:1440,height:1000});
+    await page.locator('[name=roadScenario][value=EGYPT_URBAN_CHAOS_V1]').check();
+    await page.waitForFunction(()=>document.getElementById('missionValidationStatus').textContent.includes('Acceptance pending'));
+    check(await page.locator('#drivePrimaryAction').isHidden(),'Pending validation was presented as a disabled action');
+    let evidence=await page.evaluate(()=>window.missionEvidence());
+    check(!evidence.commands.some(c=>c.type==='presentation')&&evidence.requests.length===0,'Inspecting pending Egypt sent a native command');
+    checks.push('Pending acceptance shows 0/12 completed trips as status, not a disabled action; no native commands');
+    catalog.presentation_scenarios.simulator_reserved=true;
+    catalog.presentation_scenarios.options[1].validation={state:'RUNNING',phase:'DEVELOPMENT',completed_trips:4,failed_gates:[]};
+    await page.waitForFunction(()=>document.getElementById('missionValidationStatus').textContent.includes('Development running · 4/12'));
+    check((await page.locator('#missionTitle').textContent()).includes('validation owns'),'Exclusive validation did not pause the dashboard');
+    check(await page.locator('#drivePrimaryAction').isHidden(),'Running validation allowed conflicting startup');
+    checks.push('Visible chooser automatically refreshes running development progress with CARLA disconnected; exclusive ownership pauses startup');
+    catalog.presentation_scenarios.simulator_reserved=false;
+    catalog.presentation_scenarios.options[1].validation={state:'FAILED',phase:'ACCEPTANCE',completed_trips:6,
+      failed_gates:['961103/NORMAL: three_measured_complete_overtakes']};
+    await page.waitForFunction(()=>document.getElementById('missionValidationStatus').textContent.includes('961103/NORMAL: three_measured_complete_overtakes'));
+    check(await page.locator('#drivePrimaryAction').isHidden(),'Failed acceptance unlocked Egypt');
+    checks.push('Failed acceptance refreshes exact seed/order and failed gate without starting CARLA');
+    catalog.presentation_scenarios.default_id='EGYPT_URBAN_CHAOS_V1';
+    Object.assign(catalog.presentation_scenarios.options[1],{available:true,native_accepted:true,
+      validation:{state:'ACCEPTED',phase:'ACCEPTANCE',completed_trips:12,failed_gates:[]}});
+    await page.waitForFunction(()=>document.getElementById('missionUrbanStatus').textContent==='Ready');
+    await page.reload();
+    await page.waitForFunction(()=>document.querySelector('[name=roadScenario][value=EGYPT_URBAN_CHAOS_V1]').checked);
+    check(await page.locator('#drivePrimaryAction').isEnabled(),'Accepted Egypt did not enable a new comparison');
+    checks.push('Accepted source-bound fixture enables preparation and defaults new comparisons to Egypt while CARLA is stopped');
     await fixture({connected:true,available:true,controller:true,mode:'PAUSED',
       simulatorStart:{status:'READY',available:false},simulatorStop:{status:'IDLE',available:true},
       population:{requested:{vehicle_count:60,pedestrian_count:100},actual:{vehicles:60,pedestrians:100,controllers:100}}});
     await page.locator('#missionScenario').waitFor({state:'visible'});
-    await page.waitForFunction(()=>document.getElementById('missionUrbanStatus').textContent==='Validation only');
+    await page.waitForFunction(()=>document.getElementById('missionUrbanStatus').textContent==='Ready');
+    await page.locator('[name=roadScenario][value=SUDDEN_PEDESTRIAN_COMPARISON_V1]').check();
     await page.locator('[name=roadScenario][value=EGYPT_URBAN_CHAOS_V1]').check();
+    await page.waitForFunction(async()=>{const e=await window.missionEvidence();return e.commands.some(c=>
+      c.type==='presentation'&&c.value?.operation==='PRELOAD'&&c.value.scenario_id==='EGYPT_URBAN_CHAOS_V1'&&c.value.replace===true);});
     await page.waitForFunction(()=>document.getElementById('missionScenarioNotice').textContent.includes('EGYPT_URBAN_CHAOS_V1'));
-    let evidence=await page.evaluate(()=>window.missionEvidence());
+    evidence=await page.evaluate(()=>window.missionEvidence());
     check(evidence.commands.some(c=>c.type==='presentation'&&c.value?.operation==='PRELOAD'&&
       c.value.scenario_id==='EGYPT_URBAN_CHAOS_V1'&&c.value.replace===true),'Scenario selection was not independent');
-    check((await page.locator('#missionScenarioNotice').textContent()).includes('Native acceptance pending'),'Pending gate hidden');
-    checks.push('Independent scenario selection; source-bound default/pending status stays explicit');
+    check((await page.locator('#missionScenarioNotice').textContent()).includes('acceptance verified'),'Accepted gate hidden');
+    checks.push('Independent scenario selection; source-bound acceptance status stays explicit');
     const d={guided:true,automatic_pair:true,id:'fixture-preloaded',preloaded:true,awaiting_choice:true,
       scenario_id:'EGYPT_URBAN_CHAOS_V1',scenario_version:1,speed_kmh:60,seed:123,status:'PREPARING',arm:0,
       modes:['ROBOSPHERE','NORMAL'],prepared_condition_id:'fixture-world'};

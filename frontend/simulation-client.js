@@ -310,6 +310,13 @@ export class SimulationClient extends SimulationProvider {
     if (!response.ok) throw new Error(result.error);
     return result;
   }
+  async scenarios() {
+    const response = await this.fetcher('/api/simulation/scenarios', {cache:'no-store',signal:AbortSignal.timeout(5000)});
+    if (!response.ok) throw new Error((await response.json()).error || 'Scenario status is unavailable');
+    const catalog = await response.json();
+    if (!catalog.default_id || !Array.isArray(catalog.options)) throw new Error('Invalid scenario status response');
+    return catalog;
+  }
   updateControls({throttle = 0, brake = 0, steering = 0, parkingbrake = 0} = {}) {
     // Sample the latest keys once per native observation. Repeated snapshots
     // must not queue old commands faster than the simulator can admit them.

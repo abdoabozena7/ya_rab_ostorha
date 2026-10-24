@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-24",
+  "scope": "SOFTWARE_AND_INTERCEPTED_BROWSER_VERIFICATION_NOT_NATIVE_ACCEPTANCE",
+  "software_verified_source_sha256": "276f19ca23a783b58df8c449ec9d193faf8502c7dd5f939d8b854853c1a4caae",
+  "frozen_native_acceptance_source_sha256": null,
+  "implementation": {
+    "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+    "scenario_status_endpoint": "GET /api/simulation/scenarios",
+    "status_requires_live_provider": false,
+    "chooser_refresh_interval_s": 2,
+    "runner_budget_option": "--egypt-budget",
+    "driver_orders": ["NORMAL", "ROBOSPHERE"],
+    "development_seeds": [1703, 2707, 3709],
+    "reserved_acceptance_seeds": [961103, 961109, 961121],
+    "required_pairs_per_matrix": 6,
+    "required_trips_per_matrix": 12,
+    "map": "Town10HD_Opt",
+    "render_profile": "LOW",
+    "requested_vehicles": 60,
+    "requested_pedestrians": 100,
+    "maximum_speed_kmh": 60,
+    "normal_collision_required": false
+  },
+  "separate_egypt_allowance": {
+    "scope": "EGYPT_NATIVE_VALIDATION_V1",
+    "local_directory": "output/egypt-validation",
+    "cap_s": 14400,
+    "development_cap_s": 7200,
+    "protected_acceptance_cap_s": 7200,
+    "charged_s": 0,
+    "remaining_s": 14400,
+    "reservations": [],
+    "acceptance_attempted": false,
+    "ledger_sha256": "90d05991fa3421867081150435cf0430b4386a2c92a8dc5ce68ad29edaa4eed4",
+    "allowance_or_raw_runs_committed": false
+  },
+  "legacy_research_ledger": {
+    "sha256_before": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+    "sha256_after": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+    "bytes_unchanged": true,
+    "remaining_s": 138.16129268473742,
+    "rule_limits_changed": false
+  },
+  "verification": {
+    "dashboard_build": {
+      "command": "npm run build:dashboard",
+      "exit_code": 0,
+      "javascript_sha256": "8573af98272a352a562896d52b0cc3fdc4bbef377271b2bb604c7327bd62833d",
+      "css_sha256": "362b2151e324e0aec991ba7b12cc9da1181ab8bdaa3eae85cdf083b0ea19d457"
+    },
+    "javascript": {
+      "command": "npm test",
+      "exit_code": 0,
+      "passed": 207,
+      "failed": 0
+    },
+    "python": {
+      "command": ".\\.venv-carla\\Scripts\\python.exe -m unittest discover -s tests -p 'test_*.py'",
+      "exit_code": 0,
+      "discovered": 942,
+      "passed": 938,
+      "skipped": 4,
+      "failed": 0
+    },
+    "browser": {
+      "report": "validation-browser.json",
+      "checks": 12,
+      "browser_errors": 0,
+      "native_acceptance": false
+    },
+    "regressions": [
+      "Isolated allowance leaves existing research bytes and RULE limits unchanged",
+      "Development cannot borrow acceptance time; actual overruns remain charged",
+      "Parent reservation, partition and delegated deadline propagate to child workers",
+      "Expired worker admission still permits terminal braking and native cleanup",
+      "Failed, interrupted and abruptly exited reservations retain charges and evidence",
+      "Partial worker reports are indexed before launch and retain completed-trip progress",
+      "Unverified engine cleanup retains exclusive simulator ownership",
+      "Incomplete or duplicate seed/order matrices cannot publish acceptance",
+      "Changed source aborts remaining holdout work without retries",
+      "Final acceptance requires a full current-source development matrix",
+      "Successful development exits zero without claiming deployment acceptance",
+      "Acceptance is one-shot even when unused allowance remains",
+      "Read-only scenario status works without a provider and refreshes while disconnected",
+      "Accepted default and 60 km/h request apply to new comparisons; explicit legacy remains 120 km/h",
+      "Exports, post-exit playback and cleanup are independently required for publication"
+    ]
+  },
+  "native_result": {
+    "execution_started": false,
+    "current_live_attempt_touched": false,
+    "native_development_trips_executed": 0,
+    "native_acceptance_trips_executed": 0,
+    "native_acceptance": false,
+    "acceptance_artifact_written": false,
+    "default_scenario_id": "SUDDEN_PEDESTRIAN_COMPARISON_V1",
+    "egypt_available": false,
+    "preflight_can_run_acceptance": false,
+    "blocking_reason": "Full current-source development matrix must pass before the protected acceptance window can be used",
+    "execution_deferred_reason": "The request explicitly described a plan and deferred native execution until implementation is requested; confirmation was unavailable",
+    "remaining_native_gates": [
+      "Actual Town10 route feasibility and both-order development matrix",
+      "Physical traffic events, actual density and motion",
+      "Matching common starts and measured timing and speed",
+      "Each protected reserved trip arrives with zero contacts and three verified completed overtakes",
+      "Native exports, playback after engine exit and verified cleanup for all six reserved pairs"
+    ]
+  }
+}

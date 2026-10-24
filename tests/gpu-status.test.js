@@ -49,6 +49,9 @@ test('shutdown confirmation uses lifecycle, while remaining device VRAM can stay
 });
 
 test('VRAM readings cannot admit an unprepared drive or block lifecycle recovery',()=>{
+  const advisory=gpuStatus(provider({usedMiB:2000}),100);
+  assert.match(advisory.detail,/does not grant scenario access/);
+  assert.doesNotMatch(advisory.detail,/becomes available after/);
   const preparing={connected:true,fresh:true,presentation:{guided:true,status:'PREPARING',preloaded:true,awaiting_choice:true}};
   for(const usedMiB of [0,5950]){
     assert.equal(missionState({...preparing,...provider({usedMiB})},{firstMode:'NORMAL'}).action,null);

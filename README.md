@@ -22,8 +22,15 @@ contact is not required**. Requested 60/100 density, realized events, measured
 pass/return completion, waits and timing are reported separately. Old crossing
 scenarios, saved results and videos remain readable. The new scenario is
 **validation-only, not the default**: the twelve-trip reserved native matrix is
-pending, and the existing authorization has only 138.1613 s remaining. Offline
-and browser-only checks do not close native acceptance or guarantee no contact.
+pending. A [separate four-hour Egypt allowance](docs/EGYPT_URBAN_CHAOS_V1.md#separate-allowance-and-stopped-engine-status-24-october-follow-up)
+now protects two hours for development and two for one-shot acceptance without
+changing the existing research ledger (138.1613 s remaining) or RULE limits.
+The runner propagates reservation/deadline ownership to workers and requires the
+complete current-source development matrix before reserved acceptance. Scenario
+status refreshes with CARLA stopped, including completed trips and exact failed
+gates. **Native execution has not been started** under this plan-only request.
+Offline and browser-only checks do not close native acceptance or guarantee no
+contact; Egypt becomes the default only for new comparisons after full acceptance.
 
 The [720p / 60 Hz performance path](docs/PERFORMANCE_60_20261023.md) adds the
 opt-in `PERFORMANCE_60` profile: one native tick owner, 60 Hz physics/display

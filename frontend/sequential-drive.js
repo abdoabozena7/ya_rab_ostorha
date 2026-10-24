@@ -33,6 +33,9 @@ export function installSequentialDrive(p,tools) {
   actionArea.append(experience.querySelector('.mission-actions'),gpuPanel,experience.querySelector('#missionNextHint'));
   experience.querySelector('#missionError').after(actionArea);
   const updateGPU=installGPUStatus(gpuPanel);
+  const validationNotice=document.createElement('p');validationNotice.id='missionValidationStatus';validationNotice.setAttribute('role','status');validationNotice.hidden=true;
+  actionArea.prepend(validationNotice);
+  const scenarios=()=>tools.scenarioError?null:tools.scenarios||tools.catalog?.presentation_scenarios;
   for(const label of experience.querySelectorAll('#missionChoices label span')){
     const description=document.createElement('span');description.className='mission-driver-description';
     for(const node of [...label.childNodes])if(node.nodeType===Node.TEXT_NODE)node.remove();
@@ -90,12 +93,12 @@ export function installSequentialDrive(p,tools) {
     if(local.scenarioDraft){
       if(!replace)return false;
       local.scenarioId=p.presentation?.scenario_id||LEGACY_SCENARIO;
-      if(local.scenarioId===EGYPT_SCENARIO&&!urbanAvailability(tools.catalog?.presentation_scenarios).available)local.scenarioId=LEGACY_SCENARIO;
+      if(local.scenarioId===EGYPT_SCENARIO&&!urbanAvailability(scenarios()).available)local.scenarioId=LEGACY_SCENARIO;
       local.scenarioDraft=false;
     }
     p.operationError=null;local.preloadError=null;local.pageAdmitted=false;local.observing=false;
     if(!p.dashboardAction('presentation',{operation:'PRELOAD',page_id:local.pageId,replace,
-      ...(local.scenarioChosen||tools.catalog?.presentation_scenarios?{scenario_id:local.scenarioId}:{})})){
+      ...(local.scenarioChosen||scenarios()?{scenario_id:local.scenarioId}:{})})){
       local.preloadError=p.operationError;return false;
     }
     local.preloadRequested=true;local.preloadSequence=p.sequence;local.preloadAt=performance.now();
@@ -107,26 +110,29 @@ export function installSequentialDrive(p,tools) {
   };
   for(const input of scenarioField.querySelectorAll('[name=roadScenario]'))input.onchange=()=>{
     local.scenarioId=input.value;local.scenarioChosen=true;local.scenarioDraft=true;
-    const d=p.presentation||{},available=input.value!==EGYPT_SCENARIO||urbanAvailability(tools.catalog?.presentation_scenarios).available;
+    const d=p.presentation||{},available=!scenarios()?.simulator_reserved&&(input.value!==EGYPT_SCENARIO||urbanAvailability(scenarios()).available);
     if(available&&d.preloaded&&d.awaiting_choice&&(d.scenario_id||LEGACY_SCENARIO)===input.value)local.scenarioDraft=false;
     else if(available&&p.connected&&p.fresh)prepareSelectedScenario();
     update();
   };
   $('missionRefreshScenarios').onclick=async()=>{
     local.scenarioRefreshing=true;update();
-    const previousCatalog=tools.catalog;
-    try{await tools.load(true);local.scenarioRefreshError=tools.catalog===previousCatalog?'Could not refresh availability. Check the connection and try again.':'';}
+    try{await tools.loadScenarios();}
     finally{local.scenarioRefreshing=false;update();}
   };
   $('drivePrimaryAction').onclick=()=>{
     const state=missionState(p,local);if(!state.action)return;p.operationError=null;
+    if(['NEW_DRIVE','START_SIMULATION','START_GUIDED','PREPARE_HERE'].includes(state.action)&&(!scenarios()||scenarios().simulator_reserved)){
+      p.operationError=tools.scenarioError||'Wait for current validation status before preparing a new drive.';update();return;
+    }
     if(state.action==='START_GUIDED'){
-      const scenario=scenarioStartState(local,tools.catalog?.presentation_scenarios);
+      const scenario=scenarioStartState(local,scenarios());
       if(scenario.blocked)return;
       if(scenario.needsPreparation){prepareSelectedScenario();update();return;}
     }
     if(state.action==='NEW_DRIVE'){
       local.newDrive=true;local.newDriveFrom=p.presentation?.id;local.autoRequested=true;local.preloadRequested=false;local.pageAdmitted=false;clearMedia();
+      local.scenarioChosen=false;local.scenarioDraft=false;local.scenarioId=scenarios()?.default_id||LEGACY_SCENARIO;
       if(p.connected&&p.fresh)prepareHere(true);
       else {local.launchPending=true;p.startSimulation().finally(()=>{local.launchPending=false;update();});}
     } else if(state.action==='START_SIMULATION'){
@@ -159,7 +165,9 @@ export function installSequentialDrive(p,tools) {
     return section;
   }
   function update(){
-    const d=p.presentation||{};if(p.connected&&p.fresh)local.launchPending=false;
+    const d=p.presentation||{},scenarioCatalog=scenarios();
+    if(!local.scenarioChosen&&(!d.id||local.newDrive)&&scenarioCatalog?.default_id)local.scenarioId=scenarioCatalog.default_id;
+    if(p.connected&&p.fresh)local.launchPending=false;
     const driving=p.journey?.status==='RUNNING',speed=Number.isFinite(p.telemetry?.speedMps)?p.telemetry.speedMps*3.6:null,target=p.journey?.speed_kmh;
     const brakeReason=p.stopDiagnostics?.comfort_control?.constraint==='MEASURED_APPROACH'?
       'Slowing for measured forward clearance':controlReasonText(p.stopDiagnostics?.reason||p.safetySystem?.reason||'Following route');
@@ -174,13 +182,14 @@ export function installSequentialDrive(p,tools) {
     const savedResults=!local.newDrive&&d.guided&&['RESULTS','FINISHING','COMPLETE'].includes(d.status)&&d.pair_id;
     const activePresentation=d.id&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status);
     if(activePresentation&&p.controller===false)local.observing=true;
-    if(!savedResults&&!activePresentation&&!local.autoRequested&&!p.isReplay&&p.simulatorStart?.available){
+    const validationOwnsSimulator=!!scenarioCatalog?.simulator_reserved;
+    if(scenarioCatalog&&!validationOwnsSimulator&&!savedResults&&!activePresentation&&!local.autoRequested&&!p.isReplay&&p.simulatorStart?.available){
       local.autoRequested=true;
       if(!p.connected&&!p.simulationStarting&&p.simulatorStart.status!=='FAILED'&&p.simulatorStop?.status!=='STOPPING'){
         local.launchPending=true;p.startSimulation().finally(()=>{local.launchPending=false;update();});
       }
     }
-    if(!savedResults&&!activePresentation&&!['STARTING','RUNNING'].includes(p.journey?.status)&&p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&!local.preloadError&&!local.observing){
+    if(scenarioCatalog&&!validationOwnsSimulator&&!savedResults&&!activePresentation&&!['STARTING','RUNNING'].includes(p.journey?.status)&&p.connected&&p.fresh&&!p.isReplay&&!local.shutdownPending&&!local.preloadRequested&&!local.preloadError&&!local.observing){
       prepareHere();
     }
     if(d.page_id===local.pageId){local.pageAdmitted=true;if(d.id!==local.newDriveFrom)local.newDrive=false;}
@@ -192,7 +201,7 @@ export function installSequentialDrive(p,tools) {
       if(local.scenarioSelectionPending){local.scenarioId=d.scenario_id||LEGACY_SCENARIO;local.scenarioSelectionPending=false;}
     }
     if(local.preloadRequested&&!local.pageAdmitted&&p.acknowledged<local.preloadSequence&&performance.now()-local.preloadAt>45000)local.preloadError='The page did not receive confirmation. Reconnect or prepare a fresh drive here.';
-    const state=missionState(p,local);document.body.dataset.mission=state.screen;
+    const state=missionState(p,{...local,validationReserved:validationOwnsSimulator});document.body.dataset.mission=state.screen;
 
     if(!state.camera&&$('cameraCard').classList.contains('camera-expanded'))tools.expandCamera(false);
     const history=document.body.dataset.workspace==='results';experience.hidden=history;returnToMission.hidden=!history;
@@ -203,7 +212,7 @@ export function installSequentialDrive(p,tools) {
     if($('missionPreview').parentElement!==previewParent)previewParent.insertBefore($('missionPreview'),state.choices?$('missionOutcomes'):$('missionScene'));
     if($('missionTitle').textContent!==state.title){
       $('missionTitle').textContent=state.title;
-      if(state.screen==='welcome'){
+      if(state.screen==='welcome'&&state.title==='Take the driver’s view.'){
         const emphasis=document.createElement('span');emphasis.className='mission-handwritten';emphasis.textContent='view.';
         $('missionTitle').replaceChildren(document.createTextNode('Take the driver’s '),emphasis);
       }
@@ -217,8 +226,11 @@ export function installSequentialDrive(p,tools) {
     const actionAnchor=state.choices?$('missionChoices'):$('missionError');
     if(actionAnchor.nextElementSibling!==actionArea)actionAnchor.after(actionArea);
     updateGPU(p);
-    scenarioField.hidden=!state.choices;
-    const scenarioCatalog=tools.catalog?.presentation_scenarios;
+    scenarioField.hidden=history||!state.choices&&state.screen!=='welcome';
+    if(!p.isReplay&&!document.hidden&&(!scenarioCatalog||!scenarioField.hidden)&&!tools.scenarioLoading&&performance.now()>=(local.scenarioRefreshAt||0)){
+      local.scenarioRefreshAt=performance.now()+2000;
+      tools.loadScenarios().then(update);
+    }
     if(local.scenarioSelectionPending&&d.id&&d.page_id===local.pageId&&(d.scenario_id||LEGACY_SCENARIO)===local.scenarioId)local.scenarioSelectionPending=false;
     if(!local.scenarioDraft&&!local.scenarioSelectionPending&&d.id&&d.page_id===local.pageId)local.scenarioId=d.scenario_id||LEGACY_SCENARIO;
     else if(!local.scenarioChosen&&!d.id&&scenarioCatalog?.default_id)local.scenarioId=scenarioCatalog.default_id;
@@ -229,8 +241,8 @@ export function installSequentialDrive(p,tools) {
     if($('missionUrbanStatus').textContent!==availability.label)$('missionUrbanStatus').textContent=availability.label;
     scenarioField.dataset.urbanAccess=availability.available?'available':'pending';
     scenarioField.disabled=!!local.commandPending||local.scenarioSelectionPending||!!d.id&&!d.awaiting_choice&&!['COMPLETE','CANCELLED','ERROR','IDLE'].includes(d.status);
-    $('missionRefreshScenarios').disabled=!p.fresh||tools.loading||local.scenarioRefreshing;
-    $('missionRefreshScenarios').textContent=local.scenarioRefreshing?'Checking availability…':'Refresh availability';
+    $('missionRefreshScenarios').disabled=tools.scenarioLoading||local.scenarioRefreshing;
+    $('missionRefreshScenarios').textContent=tools.scenarioLoading?'Checking availability…':'Refresh availability';
     $('missionScenarioAccessTitle').textContent=availability.title;
     $('missionScenarioBackendReason').textContent=urbanOption?.reason||'Waiting for the simulator catalog.';
     $('missionScenarioTechnical').hidden=availability.available||!urbanOption?.reason;
@@ -238,23 +250,26 @@ export function installSequentialDrive(p,tools) {
     const scenarioNotice=(local.scenarioId===EGYPT_SCENARIO&&availability.available?
       `EGYPT_URBAN_CHAOS_V1 · v1 · seed ${d.seed??'assigned during preparation'} · 600–800 m · requested 60 vehicles / 100 pedestrians. `+
         (urbanOption?.native_accepted?'Source-bound native acceptance verified.':'Native acceptance pending; bounded validation only. No zero-contact guarantee.'):
-      availability.notice)+(local.scenarioRefreshError?' '+local.scenarioRefreshError:'');
+      availability.notice)+(tools.scenarioError?' '+tools.scenarioError:'');
     if($('missionScenarioNotice').textContent!==scenarioNotice)$('missionScenarioNotice').textContent=scenarioNotice;
     for(const input of experience.querySelectorAll('[name=firstDrive]'))input.closest('label').querySelector('.mission-driver-description').textContent=scenarioDriverText(input.value,local.scenarioId);
     for(const input of experience.querySelectorAll('[name=firstDrive]'))input.disabled=!!local.commandPending||local.scenarioSelectionPending||!!d.preloaded&&!d.awaiting_choice;
     const primary=$('drivePrimaryAction');
     primary.hidden=!state.action&&!state.choices&&!state.loadingDrive;
-    const scenario=state.action==='START_GUIDED'?scenarioStartState(local,scenarioCatalog):{};
+    const scenario=validationOwnsSimulator||['START_GUIDED','START_SIMULATION','PREPARE_HERE'].includes(state.action)?scenarioStartState(local,scenarioCatalog):{};
     const scenarioBlocked=scenario.blocked;
     const actionLabel=local.scenarioSelectionPending?'Preparing selected scenario…':scenario.label||state.label;
     const busy=!!(state.loadingDrive||local.scenarioSelectionPending||scenario.checking);
+    if(scenarioBlocked)primary.hidden=true;
+    validationNotice.hidden=!scenarioBlocked;
+    validationNotice.textContent=scenarioBlocked?scenario.label:'';
     if(primary.textContent!==actionLabel)primary.textContent=actionLabel;primary.dataset.action=scenarioBlocked?'':state.action||'';primary.disabled=!state.action||local.scenarioSelectionPending||scenarioBlocked;
     if(scenario.needsPreparation)primary.dataset.action='PREPARE_SCENARIO';
     primary.dataset.loading=String(busy);primary.setAttribute('aria-busy',String(busy));
     primary.dataset.gpuStatus=gpuPanel.dataset.status;
     primary.setAttribute('aria-describedby','missionNextHint missionGPU');
     $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen);
-    $('missionNextHint').textContent=scenarioBlocked?'Select Historical crossing comparison to drive now. Egypt requires a validation session or accepted driving validation.':scenario.needsPreparation?'Access is available. Prepare this scenario, then choose when to start driving.':local.scenarioSelectionPending?'Waiting for the selected road scenario to be prepared.':state.loadingDrive?state.detail:state.choices&&!state.action?'Simulation ready. Choose your first drive.':
+    $('missionNextHint').textContent=scenarioBlocked?availability.notice:scenario.needsPreparation?'Access is available. Prepare this scenario, then choose when to start driving.':local.scenarioSelectionPending?'Waiting for the selected road scenario to be prepared.':state.loadingDrive?state.detail:state.choices&&!state.action?'Simulation ready. Choose your first drive.':
       {PREPARE_HERE:'Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.',START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';
     $('missionError').hidden=!p.operationError;$('missionError').textContent=p.operationError?missionFailure(p.operationError):'';
     $('missionOutcomes').hidden=!['comparison','outcome','fault'].includes(state.screen);

@@ -75,6 +75,8 @@ class CarlaProvider:
         return ComparisonDemo(service)
 
     def connect(self):
+        from ..learning.egypt_budget import require_simulator_access
+        require_simulator_access()
         if self.world is not None or self.ego is not None or self.cleanup_errors:
             raise RuntimeError('Disconnect the existing CARLA session first')
         try:

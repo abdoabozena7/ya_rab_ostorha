@@ -69,8 +69,12 @@ class Presentation:
 
     def start(self, speed=50, *, seed=None, guided=False, first_mode='NORMAL', scene='BUSY_ROUTE', scenario_id=None,
               holdout_acceptance=False):
+        from ..learning.egypt_budget import require_simulator_access
+        require_simulator_access()
         s = self.service
-        from .egypt_urban import SCENARIO_ID
+        from .egypt_urban import SCENARIO_ID, default_scenario
+        if scenario_id is None and guided:
+            scenario_id = default_scenario()
         if scenario_id == 'SUDDEN_PEDESTRIAN_COMPARISON_V1':
             scenario_id = None
         if scenario_id not in (None, SCENARIO_ID):
@@ -128,6 +132,8 @@ class Presentation:
     def preload(self, page_id=None, *, replace=False, scenario_id=None):
         """Build one held scene before the operator chooses either driver."""
         with self.service.lock:
+            from ..learning.egypt_budget import require_simulator_access
+            require_simulator_access()
             from .egypt_urban import SCENARIO_ID, default_scenario
             selected = default_scenario() if scenario_id is None else None if scenario_id == 'SUDDEN_PEDESTRIAN_COMPARISON_V1' else scenario_id
             if selected not in (None, SCENARIO_ID):
@@ -160,6 +166,8 @@ class Presentation:
 
     def choose_preloaded(self, identity, first_mode, page_id=None, *, scenario_id=None):
         with self.service.lock:
+            from ..learning.egypt_budget import require_simulator_access
+            require_simulator_access()
             selected = None if scenario_id == 'SUDDEN_PEDESTRIAN_COMPARISON_V1' else scenario_id
             if scenario_id is not None and selected != self.data.get('scenario_id'):
                 raise ValueError('The selected scenario differs from the prepared starting scene')

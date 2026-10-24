@@ -1089,7 +1089,7 @@ class SimulationService:
 
     def stop_driving(self, reason='operator_stop', *, cancel_comparison=True, failure=False, cancel_presentation=True):
         with self.lock:
-            self._require_normal_runtime()
+            self._require_normal_runtime(validation_shutdown=True)
             # Cancelling a stopped preparation or failing journey must remain
             # possible when construction temporarily suspends telemetry.
             if cancel_presentation:
@@ -1594,7 +1594,9 @@ class SimulationService:
             callable(getattr(self.provider,'shutdown_handler',None)))
 
     def can_start_simulation(self):
-        return (getattr(getattr(self.provider,'connection',None),'host',None) in ('127.0.0.1','localhost','::1')
+        from ..learning.egypt_budget import ownership_status
+        return (not ownership_status()['reserved']
+                and getattr(getattr(self.provider,'connection',None),'host',None) in ('127.0.0.1','localhost','::1')
                 and callable(getattr(self.provider,'startup_handler',None))
                 and not self.reconfiguring and not self.restarting
                 and (self.closed or getattr(self.provider,'world',None) is None))
@@ -1639,7 +1641,7 @@ class SimulationService:
     def stop_simulator(self):
         """Explicit local operator shutdown; keep the dashboard host available."""
         with self.lock:
-            self._require_normal_runtime()
+            self._require_normal_runtime(validation_shutdown=True)
             if not self.can_stop_simulator():raise ValueError('Only this local CARLA runtime can be stopped')
             if self.simulator_start['status']=='STARTING':raise ValueError('Wait for simulation startup to finish')
             if self.restarting:raise ValueError('Wait for the CARLA restart to finish')
@@ -2591,7 +2593,9 @@ class SimulationService:
                 self.rl_runtime.close(reason='service_shutdown')
             self._close_provider()
 
-    def _require_normal_runtime(self):
+    def _require_normal_runtime(self, *, validation_shutdown=False):
+        from ..learning.egypt_budget import require_simulator_access
+        require_simulator_access(shutdown=validation_shutdown)
         if self.rl_runtime and self.rl_runtime.active:
             raise RuntimeError('Exclusive RL session owns simulation ticks and ego commands')
 

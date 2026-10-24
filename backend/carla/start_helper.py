@@ -36,6 +36,8 @@ def reset_preferences():
 
 
 def dispatch_start(server,args,status,configuration=None,*,fresh=False):
+    from ..learning.egypt_budget import require_simulator_access
+    require_simulator_access()
     if args.carla_host not in ('127.0.0.1','localhost','::1'):
         raise ValueError('Only the local CARLA runtime can be started')
     launch=launch_settings(status)

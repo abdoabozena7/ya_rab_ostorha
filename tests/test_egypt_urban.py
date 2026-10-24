@@ -486,7 +486,11 @@ class EgyptAcceptanceTests(unittest.TestCase):
                     setup['seed_partition'] = 'HOLDOUT'
                 pairs.append({'seed': seed, 'first_mode': first, 'source': 'LIVE_NATIVE_CARLA',
                               'source_sha256': 'frozen', 'source_unchanged': True,
-                              'attempts_retained': True, 'native_acceptance': True, 'pair': pair})
+                              'attempts_retained': True, 'native_acceptance': True, 'pair': pair,
+                              'completed_without_shortening': True, 'finish_completed': True, 'exports_closed': True,
+                              'cleanup_confirmed': True, 'simulator_exit_confirmed': True,
+                              'independent_cleanup_probe': {'passed': True}, 'video_playback_after_exit': {'passed': True},
+                              'render_profile': {'render_profile': 'LOW'}})
         self.assertTrue(acceptance_matrix(pairs, 'frozen')['accepted'])
         self.assertFalse(acceptance_matrix(pairs[:-1], 'frozen')['accepted'])
         pairs[0]['native_acceptance'] = False

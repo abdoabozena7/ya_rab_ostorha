@@ -7,6 +7,19 @@ import {telemetryText} from '../frontend/telemetry.js';
 import {sensorFrameKey, matchesSensorResponse} from '../frontend/sensor-frame.js';
 import {DRIVING_KEYS, isEditableTarget, drivingInputAllowed} from '../frontend/input-policy.js';
 
+test('read-only scenario status is available without fresh telemetry or a running engine',async()=>{
+  const calls=[],catalog={default_id:'SUDDEN_PEDESTRIAN_COMPARISON_V1',options:[]};
+  const p=new SimulationClient({fetcher:async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>catalog};}});
+  assert.equal(p.fresh,false);
+  assert.deepEqual(await p.scenarios(),catalog);
+  assert.equal(calls[0].url,'/api/simulation/scenarios');assert.equal(calls[0].options.cache,'no-store');
+  assert.equal(calls[0].options.method,undefined);
+  p.fetcher=async()=>({ok:true,json:async()=>({})});
+  await assert.rejects(p.scenarios(),/Invalid scenario status/);
+  p.fetcher=async()=>({ok:false,json:async()=>({error:'Validation status unavailable'})});
+  await assert.rejects(p.scenarios(),/Validation status unavailable/);
+});
+
 test('closing an autonomous dashboard never sends manual release pedals',()=>{
   for(const [mode,status] of [['AUTOMATIC','RUNNING'],['PAUSED','STARTING']]){
     const {p,sent,snapshot}=clientFixture();p.acceptSnapshot({...snapshot,mode,journey:{status}});

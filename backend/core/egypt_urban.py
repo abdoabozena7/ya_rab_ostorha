@@ -25,22 +25,24 @@ def configuration():
     return value
 
 
-def source_fingerprint():
+def source_manifest():
     configs = [p for p in sorted((ROOT / 'config').glob('*.json'))
                if p.name != 'dashboard-preferences.json' and not p.name.startswith('places-')]
-    paths = [*configs, *sorted((ROOT / 'backend' / 'core').glob('*.py')),
-             *sorted((ROOT / 'backend' / 'carla').glob('*.py')),
-             *sorted((ROOT / 'backend' / 'computer_vision').glob('*.py')),
+    paths = [*configs, *sorted((ROOT / 'backend').rglob('*.py')),
              ROOT / 'scripts' / 'native' / 'validate_egypt_urban.py',
              ROOT / 'scripts' / 'native' / 'validate_crossing_pair.py',
              ROOT / 'scripts' / 'validate_hybrid_native.py']
-    hashes = {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
-    return hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest()
+    return {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
 
 
-def acceptance_matrix(pairs, fingerprint):
+def source_fingerprint():
+    return hashlib.sha256(json.dumps(source_manifest(), sort_keys=True).encode()).hexdigest()
+
+
+def evaluate_matrix(pairs, fingerprint, *, acceptance=True):
     config = configuration()
-    expected = {(seed, first) for seed in config['holdout_seeds'] for first in ('NORMAL', 'ROBOSPHERE')}
+    seeds = config['holdout_seeds' if acceptance else 'development_seeds']
+    expected = {(seed, first) for seed in seeds for first in ('NORMAL', 'ROBOSPHERE')}
     keys = [(p.get('seed'), p.get('first_mode')) for p in pairs]
     gates = {
         'six_unique_pairs_twelve_trips': len(keys) == 6 and set(keys) == expected,
@@ -50,14 +52,52 @@ def acceptance_matrix(pairs, fingerprint):
         'all_pairs_accepted': len(pairs) == 6 and all(p.get('native_acceptance') is True for p in pairs),
         'reserved_seed_and_order_verified': len(pairs) == 6 and all(
             p.get('pair', {}).get('manifest', {}).get('comparison_scenario', {}).get('seed') == p.get('seed')
-            and p.get('pair', {}).get('manifest', {}).get('seed_partition') == 'HOLDOUT'
+            and p.get('pair', {}).get('manifest', {}).get('seed_partition') == ('HOLDOUT' if acceptance else 'DEVELOPMENT')
             and p.get('pair', {}).get('order') == [p.get('first_mode'), 'ROBOSPHERE' if p.get('first_mode') == 'NORMAL' else 'NORMAL']
             and p.get('source') == 'LIVE_NATIVE_CARLA' for p in pairs),
         'all_driver_outcomes_recorded': all(set(p.get('pair', {}).get('runs', {})) == {'NORMAL', 'ROBOSPHERE'}
-                                            and evaluate_pair(p['pair'])['passed'] for p in pairs)
+                                            and evaluate_pair(p['pair'])['passed'] for p in pairs),
+        'exports_playback_and_cleanup_verified': len(pairs) == 6 and all(
+            all(p.get(key) is True for key in ('completed_without_shortening', 'finish_completed',
+                'exports_closed', 'cleanup_confirmed', 'simulator_exit_confirmed'))
+            and p.get('independent_cleanup_probe', {}).get('passed') is True
+            and p.get('video_playback_after_exit', {}).get('passed') is True for p in pairs),
+        'town10_low_profile_verified': len(pairs) == 6 and all(
+            p.get('render_profile', {}).get('render_profile') == 'LOW'
+            and all(run.get('setup', {}).get('map', '').rsplit('/', 1)[-1] == config['map']
+                    for run in p.get('pair', {}).get('runs', {}).values()) for p in pairs)
     }
     return {'scenario_id': SCENARIO_ID, 'version': 1, 'source_sha256': fingerprint,
-            'accepted': all(gates.values()), 'gates': gates, 'pairs': pairs}
+            'passed': all(gates.values()), 'accepted': acceptance and all(gates.values()),
+            'partition': 'HOLDOUT' if acceptance else 'DEVELOPMENT', 'gates': gates, 'pairs': pairs}
+
+
+def acceptance_matrix(pairs, fingerprint):
+    return evaluate_matrix(pairs, fingerprint)
+
+
+def publication_gates(report, fingerprint):
+    from ..learning.egypt_budget import SCOPE, CAP_SECONDS, PHASE_SECONDS
+    budget = report.get('budget_after', {})
+    reservations = budget.get('reservations', [])
+    acceptance = [row for row in reservations if row.get('phase') == 'ACCEPTANCE']
+    development = report.get('development', {})
+    return {
+        'development_matrix_passed_before_freeze': development.get('source_sha256') == fingerprint
+            and evaluate_matrix(development.get('pairs', []), fingerprint, acceptance=False)['passed'],
+        'source_configuration_hashes_frozen': report.get('source_manifest') == source_manifest()
+            and report.get('source_sha256') == fingerprint and report.get('source_unchanged') is True,
+        'separate_allowance_and_cleanup_charged': budget.get('kind') == SCOPE
+            and budget.get('cap_s') == CAP_SECONDS and budget.get('unfinished') == 0
+            and len(acceptance) == 1 and acceptance[0].get('reserved_s') == PHASE_SECONDS
+            and acceptance[0].get('outcome') == 'FINISHED'
+            and type(acceptance[0].get('elapsed_s')) in (int, float)
+            and 0 <= acceptance[0]['elapsed_s'] <= PHASE_SECONDS
+            and all(type(row.get('charged_s')) in (int, float) and math.isfinite(row['charged_s'])
+                    and row['charged_s'] >= 0 for row in reservations)
+            and all(sum(row['charged_s'] for row in reservations if row.get('phase') == phase) <= PHASE_SECONDS
+                    for phase in ('DEVELOPMENT', 'ACCEPTANCE'))
+    }
 
 
 def deployment_status():
@@ -65,15 +105,21 @@ def deployment_status():
         return {'accepted': False, 'reason': 'Twelve source-bound native trips have not been accepted'}
     try:
         report = json.loads(ACCEPTANCE.read_text(encoding='utf8'))
-        checked = acceptance_matrix(report['pairs'], source_fingerprint())
-        accepted = report.get('accepted') is True and checked['accepted']
+        fingerprint = source_fingerprint()
+        checked = acceptance_matrix(report['pairs'], fingerprint)
+        gates = {**checked['gates'], **publication_gates(report, fingerprint)}
+        accepted = report.get('accepted') is True and all(gates.values())
         return {'accepted': accepted, 'reason': 'Source-bound native acceptance verified' if accepted
-                else 'Native acceptance is incomplete or belongs to different source'}
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        return {'accepted': False, 'reason': 'Cannot verify Egypt native acceptance: ' + str(error)}
+                else 'Native acceptance is incomplete or belongs to different source',
+                'failed_gates': [name for name, passed in gates.items() if not passed]}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        return {'accepted': False, 'reason': 'Cannot verify Egypt native acceptance: ' + str(error),
+                'failed_gates': ['acceptance_artifact_readable']}
 
 
 def admission(map_name, speed_kmh):
+    from ..learning.egypt_budget import active_ticket as egypt_ticket, require_simulator_access
+    require_simulator_access()
     config = configuration()
     if map_name.rsplit('/', 1)[-1] != config['map'] or type(speed_kmh) not in (int, float) or not 5 <= speed_kmh <= 60:
         raise ValueError('Egypt urban chaos requires Town10HD_Opt and a 5--60 km/h request')
@@ -82,7 +128,7 @@ def admission(map_name, speed_kmh):
         return {'accepted': True, 'deadline': float('inf'), 'reason': status['reason']}
     from ..learning.hybrid_budget import active_ticket
     from ..learning.native_validation_budget import active_rule_ticket
-    ticket = active_ticket() or active_rule_ticket()
+    ticket = egypt_ticket() or active_ticket() or active_rule_ticket()
     if ticket is None or ticket['expires_monotonic_s'] <= time.monotonic():
         raise ValueError(status['reason'] + '; an existing live bounded validation reservation is required')
     return {'accepted': False, 'deadline': ticket['expires_monotonic_s'], 'reason': status['reason']}
@@ -92,19 +138,57 @@ def default_scenario():
     return SCENARIO_ID if deployment_status()['accepted'] else None
 
 
+def validation_status():
+    from ..learning.egypt_budget import PROGRESS, ownership_status
+    deployed = deployment_status()
+    owner = ownership_status()
+    progress = {}
+    if PROGRESS.exists():
+        try:
+            progress = json.loads(PROGRESS.read_text(encoding='utf8'))
+            if not isinstance(progress, dict):
+                raise ValueError('Expected validation progress object')
+        except (OSError, ValueError) as error:
+            progress = {'state': 'FAILED', 'failed_gates': ['validation_progress_readable'], 'error': str(error)}
+    state = 'ACCEPTED' if deployed['accepted'] else progress.get('state', 'PENDING')
+    failed = [] if deployed['accepted'] else progress.get('failed_gates', [])
+    if not deployed['accepted'] and state == 'ACCEPTED':
+        state, failed = 'SOURCE_CHANGED', deployed.get('failed_gates', ['frozen_source'])
+    if not progress and deployed.get('failed_gates'):
+        failed = deployed['failed_gates']
+        state = 'SOURCE_CHANGED' if any(name in failed for name in (
+            'frozen_source', 'source_configuration_hashes_frozen')) else 'FAILED'
+    if state == 'RUNNING' and not owner['active']:
+        state = 'INTERRUPTED'
+        failed = [*failed, 'reservation_interrupted']
+    return {**progress, 'state': state, 'native_accepted': deployed['accepted'],
+            'phase': 'ACCEPTANCE' if deployed['accepted'] else progress.get('phase', 'ACCEPTANCE'),
+            'completed_trips': 12 if deployed['accepted'] else progress.get('completed_trips', 0),
+            'total_trips': 12, 'failed_gates': failed, 'reason': deployed['reason'],
+            'simulator_reserved': owner['reserved'], 'ownership': owner}
+
+
 def scenario_catalog():
     from ..learning.hybrid_budget import active_ticket
     from ..learning.native_validation_budget import active_rule_ticket
-    status = deployment_status()
-    validation = active_ticket() is not None or active_rule_ticket() is not None
+    from ..learning.egypt_budget import active_ticket as egypt_ticket
+    status = validation_status()
+    validation = any(ticket is not None and ticket['expires_monotonic_s'] > time.monotonic()
+                     for ticket in (egypt_ticket(), active_ticket(), active_rule_ticket()))
+    owned_elsewhere = status['simulator_reserved'] and egypt_ticket() is None
+    available = (status['native_accepted'] or validation) and not owned_elsewhere
+    blocking = ([status['ownership']['reason']] if owned_elsewhere else []) + (
+        [] if status['native_accepted'] else [status['reason'], *status['failed_gates']])
     legacy = 'SUDDEN_PEDESTRIAN_COMPARISON_V1'
-    return {'default_id': SCENARIO_ID if status['accepted'] else legacy,
+    return {'default_id': SCENARIO_ID if status['native_accepted'] else legacy,
+            'validation': status, 'simulator_reserved': status['simulator_reserved'],
             'options': [{'id': legacy, 'version': 1, 'name': 'Historical crossing comparison',
-                         'available': True, 'maximum_speed_kmh': 120},
+                         'available': not owned_elsewhere, 'maximum_speed_kmh': 120},
                         {'id': SCENARIO_ID, 'version': 1, 'name': 'Egypt mixed urban journey',
-                         'available': status['accepted'] or validation, 'native_accepted': status['accepted'],
+                         'available': available, 'native_accepted': status['native_accepted'],
                          'validation_window_active': validation, 'maximum_speed_kmh': 60,
-                         'reason': status['reason']}]}
+                         'reason': status['reason'], 'blocking_reasons': blocking,
+                         'validation': status}]}
 
 
 def event_realized(kind, measurements, persona=None):

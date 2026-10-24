@@ -23,10 +23,15 @@ def stopped_service(ticket,dispatch,start_dispatch=None,reset_dispatch=None):
             if saved and saved.get('finish_requested') and saved.get('completed_pair_id'):
                 self.presentation.data=saved
         def can_stop_simulator(self):return True
-        def can_start_simulation(self):return callable(start_dispatch)
-        def can_reset_simulation(self):return callable(reset_dispatch)
+        def can_start_simulation(self):
+            from ..learning.egypt_budget import ownership_status
+            return callable(start_dispatch) and not ownership_status()['reserved']
+        def can_reset_simulation(self):
+            from ..learning.egypt_budget import ownership_status
+            return callable(reset_dispatch) and not ownership_status()['reserved']
         def reset_simulation(self):
             with self.lock:
+                self._require_normal_runtime()
                 if self.simulator_stop['status']=='STOPPING':raise ValueError('CARLA is still stopping')
                 if not self.can_reset_simulation():raise ValueError('Local simulation reset is unavailable')
                 if self.simulator_start['status']=='STARTING':return dict(self.simulator_start)
@@ -36,6 +41,7 @@ def stopped_service(ticket,dispatch,start_dispatch=None,reset_dispatch=None):
                 return dict(self.simulator_start)
         def start_simulation(self):
             with self.lock:
+                self._require_normal_runtime()
                 if self.simulator_stop['status']=='STOPPING':raise ValueError('CARLA is still stopping')
                 if not self.can_start_simulation():raise ValueError('Local simulation startup is unavailable')
                 if self.simulator_start['status']=='STARTING':return dict(self.simulator_start)
@@ -46,6 +52,7 @@ def stopped_service(ticket,dispatch,start_dispatch=None,reset_dispatch=None):
         def reconnect(self):
             raise ValueError('CARLA is stopped. Run Start-YA-RAB-OSTORHA.ps1 to start it again.')
         def stop_simulator(self):
+            self._require_normal_runtime(validation_shutdown=True)
             if self.simulator_stop['status'] in ('STOPPING','STOPPED'):return
             self.simulator_stop={**self.simulator_stop,'status':'STOPPING','error':None}
             dispatch(self.simulator_stop)

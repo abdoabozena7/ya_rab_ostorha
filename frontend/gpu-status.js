@@ -20,7 +20,7 @@ export function gpuStatus(provider,nowUnix=Date.now()/1000) {
   let detail=!fresh?'Waiting for a current GPU sample; these are the last reported values.':
     !memoryValid?'VRAM usage could not be measured.':percent>=95?'VRAM is nearly full. Close GPU-heavy apps or use Free GPU.':
     percent>=90?'VRAM usage is high. Limited memory remains for the simulator.':
-    loadValid&&gpu.utilizationPercent>=95?'GPU load is high; the simulator may run more slowly.':'The drive becomes available after city and sensor checks.';
+    loadValid&&gpu.utilizationPercent>=95?'GPU load is high; the simulator may run more slowly.':'GPU usage does not grant scenario access. Native validation and city/sensor readiness are separate checks.';
   if(provider.simulatorStop?.status==='STOPPING')detail='Closing CARLA. GPU release is confirmed by process exit, not by VRAM reaching zero.';
   else if(provider.simulatorStop?.status==='STOPPED')detail='CARLA is closed. Other apps can still use GPU memory.';
   const limit=perf.gpuBudget?.limitMiB;

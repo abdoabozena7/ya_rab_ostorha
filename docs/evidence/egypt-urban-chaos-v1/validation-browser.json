@@ -1,0 +1,41 @@
+{
+  "scope": "ISOLATED_BROWSER_AND_TEST_FIXTURE_MEDIA_ONLY",
+  "date": "2026-10-24",
+  "native_acceptance": false,
+  "native_commands_dispatched": false,
+  "interception": "All API mutations and WebSocket commands intercepted; existing local software-fixture MP4s only",
+  "checks": [
+    "Pending acceptance shows 0/12 completed trips as status, not a disabled action; no native commands",
+    "Visible chooser automatically refreshes running development progress with CARLA disconnected; exclusive ownership pauses startup",
+    "Failed acceptance refreshes exact seed/order and failed gate without starting CARLA",
+    "Accepted source-bound fixture enables preparation and defaults new comparisons to Egypt while CARLA is stopped",
+    "Independent scenario selection; source-bound acceptance status stays explicit",
+    "Loading remains disabled until native preparation phases finish",
+    "Either first-driver choice is separate from the selected 60 km/h experiment",
+    "Visible emergency stop dispatches the canonical command and exposes the held state",
+    "Version 7 results show the supplied Normal-arrival fixture, driver identity, seed, metrics and unaccepted evidence",
+    "Both new-profile annotated software MP4s decode and play to their actual end",
+    "Saved results and both videos survive engine-disconnected state, Finish and page reload",
+    "Desktop and 390px results retain horizontal layout containment"
+  ],
+  "command_count_intercepted": 8,
+  "api_mutations_intercepted": [],
+  "browser_errors": [],
+  "retained_browser_repair_attempts": [
+    {
+      "failure": "Exclusive validation heading was overwritten by welcome-screen decoration",
+      "repair": "Apply welcome heading decoration only to the actual welcome title; leave reservation status heading intact",
+      "scope": "UI fixture, not native driving"
+    },
+    {
+      "failure": "Selection fixture assumed Egypt was not already the accepted default",
+      "repair": "Exercise explicit historical-to-Egypt selection after separately checking the accepted default",
+      "scope": "Browser fixture assertion, not native driving"
+    }
+  ],
+  "limitations": [
+    "Stopped-engine and acceptance states were intercepted fixtures, not a new native CARLA run",
+    "Shared starting-view video was explicitly unavailable in this fixture",
+    "No native route, event, maneuver, density, timing or zero-contact gate is certified"
+  ]
+}

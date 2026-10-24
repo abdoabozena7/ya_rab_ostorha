@@ -13,11 +13,11 @@ INSTALL = Path('C:/CARLA/CARLA_0.9.16')
 _runtime = None
 
 
-def native_processes():
+def native_processes(*, timeout=15):
     script = ("Get-CimInstance Win32_Process -Filter \"Name LIKE 'CarlaUE4%'\" | "
               "Select-Object ProcessId,ExecutablePath,CommandLine | ConvertTo-Json -Compress")
     result = subprocess.run(['powershell', '-NoProfile', '-Command', script],
-                            capture_output=True, text=True, timeout=15,
+                            capture_output=True, text=True, timeout=timeout,
                             creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
     if result.returncode:
         raise RuntimeError('Cannot verify native CARLA process identity')
@@ -149,10 +149,14 @@ class NativeRuntime:
             'missing':missing, 'mismatches':mismatches,
             'scope':'STARTUP_CONSOLE_QUERY_NOT_TEXTURE_POOL_AS_TOTAL_VRAM'}
 
-    def stop(self, *, port=None):
+    def stop(self, *, port=None, deadline=None):
+        from ..learning.egypt_budget import remaining_seconds, require_simulator_access
+        require_simulator_access(shutdown=True)
+        def bounded(maximum):
+            return remaining_seconds(deadline, maximum) if deadline is not None else maximum
         # Query identity immediately before using a PID; never match unrelated apps.
         def selected():
-            entries=native_processes()
+            entries=native_processes(**({'timeout': bounded(15)} if deadline is not None else {}))
             if port is None:return entries
             result=[]
             for entry in entries:
@@ -161,9 +165,9 @@ class NativeRuntime:
             return result
         for entry in reversed(selected()):
             subprocess.run(['taskkill', '/PID', str(entry['ProcessId']), '/F'],
-                           capture_output=True, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW)
-        deadline = time.monotonic()+15
-        while selected() and time.monotonic()<deadline:
+                           capture_output=True, timeout=bounded(10), creationflags=subprocess.CREATE_NO_WINDOW)
+        stop_deadline = min(deadline, time.monotonic()+15) if deadline is not None else time.monotonic()+15
+        while selected() and time.monotonic()<stop_deadline:
             time.sleep(.3)
         if selected():
             raise RuntimeError('Verified CARLA process did not exit')
@@ -172,6 +176,8 @@ class NativeRuntime:
         self.process_ids={'backend':os.getpid()}
 
     def launch(self, settings, host, port, api):
+        from ..learning.egypt_budget import require_simulator_access
+        require_simulator_access()
         marker = json.loads((INSTALL/'.carla-install.json').read_text(encoding='utf-8-sig'))
         executable = Path(marker['executable']).resolve()
         if not executable.is_relative_to(INSTALL.resolve()) or not executable.is_file() or \

@@ -79,6 +79,9 @@ class Handler(SimpleHTTPRequestHandler):
                                     "websocketPort": getattr(self.server, "websocket_port", None),
                                     "imageWebsocketPath": "/images" if not replay and provider is not None else None,
                                     "error": snapshot.get('error') if provider else "CARLA is not connected. Start the official simulator and backend with --carla."})
+        if path == '/api/simulation/scenarios':
+            from .core.egypt_urban import scenario_catalog
+            return self._json(200, scenario_catalog())
         if path.startswith("/api/simulation/"):
             if provider is None:
                 return self._json(503, {"error": "CARLA provider is not running"})
