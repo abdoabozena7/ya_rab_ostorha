@@ -26,15 +26,16 @@ Normal is allowed to arrive safely: **a Normal collision is not a requirement**.
 
 ## Separate allowance and stopped-engine status: 24 October follow-up
 
-The follow-up implements the validation infrastructure, not native acceptance.
-The request explicitly calls this a plan and defers native execution until
-implementation is requested. No confirmation was available, so no native trip,
-shutdown, repair calibration or reserved-seed run was started. The existing live
-dashboard/attempt was left untouched. Egypt is still locked and the historical
-crossing remains the default. There is no new native acceptance artifact.
+The first follow-up implemented validation infrastructure without starting
+native execution. The user subsequently authorized the remaining native
+development and acceptance validation. The [native execution report](EGYPT_NATIVE_VALIDATION_20261024.md)
+records the normal dashboard handoff, actual development attempts, repairs and
+remaining failures. Development has not passed, so reserved acceptance has not
+started. Egypt is still locked and the historical crossing remains the default.
+There is no native acceptance artifact.
 
 The separate [Egypt ledger](../backend/learning/egypt_budget.py) was allocated
-once at `output/egypt-validation`, with **14,400 s unspent**: at most 7,200 s for
+once at `output/egypt-validation`, with **14,400 s originally allocated**: at most 7,200 s for
 development and 7,200 s protected for final acceptance. It does not modify the
 hybrid research ledger, sleep adjustments or RULE authorizations. Allocation is
 not a reservation and does not start CARLA. Reallocating an existing directory
@@ -352,7 +353,7 @@ Native route feasibility on the actual map, dense-scene timing, behavior
 realization, actuator response, three complete overtakes and zero-contact arrival
 across all twelve reserved trips remain **unverified/pending**. The only native
 authorization at the original implementation could not cover them. The separate
-follow-up allowance above is allocated but unspent; native execution remains
-deferred by the explicit plan stop condition. The historical budget, failures
-and evidence are preserved. Legacy remains the primary default; no prototype or
+follow-up allowance above now records actual development charges; the native
+execution report records the remaining failed gates and untouched acceptance
+window. The historical budget, failures and evidence are preserved. Legacy remains the primary default; no prototype or
 synthetic/browser result is promoted to accepted native control.

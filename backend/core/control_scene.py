@@ -36,6 +36,7 @@ class MeasuredSpace:
         self.queries = 0
         self.execution_proofs=OrderedDict();self.proof_lock=threading.Lock();self.proof_cache_hits=0
         self.forward_assessments={}
+        self.urban_forecasts=OrderedDict()
         self.requested_scope_m = 0.
 
     def ensure_scope(self, path):

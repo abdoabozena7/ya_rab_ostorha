@@ -3,6 +3,25 @@ from scripts.audit_hybrid_sensor_coverage import camera_contains
 
 
 class NominalCameraAuditTests(unittest.TestCase):
+    def test_urban_comparison_mounts_are_identical_across_native_respawn_noise(self):
+        from types import SimpleNamespace as NS
+        from backend.carla.sensors import CarlaSensorManager
+        api=NS(Location=lambda **values:NS(**values),Rotation=lambda **values:NS(**values),
+               Transform=lambda *values:NS(values=values))
+        def mounts(noise):
+            ego=NS(bounding_box=NS(location=NS(x=-.0025927+noise,y=noise),
+                                   extent=NS(x=2.3368195+noise,y=.9059073)))
+            manager=CarlaSensorManager(None,ego);manager.actors['collision']=object();plans={}
+            manager.spawn=lambda name,blueprint,mount,attrs,decode:plans.update({name:mount})
+            manager.enable_suite(api,.05,{'camera_view':'chase','camera_resolution':'800x450',
+                'camera_fov':90,'_comparison_rig':True,'_urban_rig':True})
+            return {name:[vars(value) for value in mount.values] for name,mount in plans.items()
+                    if name.startswith(('frontLeft','frontRight','rearLeft','rearRight'))}
+        baseline=mounts(0.)
+        self.assertEqual(len(baseline),8)
+        self.assertEqual(baseline,mounts(.0000008))
+        self.assertNotEqual(baseline,mounts(.001))
+
     def test_denser_lidar_is_confined_to_the_admitted_or_ticketed_hybrid_or_route_bypass_rig(self):
         from types import SimpleNamespace as NS
         from unittest.mock import patch

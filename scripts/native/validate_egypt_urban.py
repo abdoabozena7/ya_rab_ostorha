@@ -80,9 +80,9 @@ def preflight(plan, seconds_per_pair, status, *, acceptance=False):
 
 def compact_pair(pair):
     result = {k: v for k, v in pair.items() if k in ('version', 'order', 'conditions_match', 'manifest', 'runs', 'scenario_validation')}
-    result['manifest'] = {k: v for k, v in result['manifest'].items() if k != 'initial_conditions'}
-    result['runs'] = {mode: {**run, 'setup': {k: v for k, v in run['setup'].items() if k != 'initial_conditions'}}
-                      for mode, run in result['runs'].items()}
+    result['manifest'] = {k: v for k, v in (result.get('manifest') or {}).items() if k != 'initial_conditions'}
+    result['runs'] = {mode: {**run, 'setup': {k: v for k, v in (run.get('setup') or {}).items() if k != 'initial_conditions'}}
+                      for mode, run in (result.get('runs') or {}).items()}
     return result
 
 
@@ -149,9 +149,21 @@ def failed_pair_gates(item):
             failures.append(name)
     if item.get('native_acceptance') is not True:
         failures.append('native_pair_acceptance')
-    for key in ('error', 'finalization_error'):
+    for key in ('error', 'finalization_error', 'cleanup_error'):
         if item.get(key):
             failures.append(key + ': ' + str(item[key]))
+    if item.get('preparation_failure'):
+        failures.append('preparation: ' + str(item['preparation_failure'].get('message')))
+    for mode, run in item.get('pair', {}).get('runs', {}).items():
+        if run.get('status') == 'ERROR':
+            failures.append(mode + ': ' + str(run.get('reason') or 'Native drive failed'))
+    for failure in item.get('drive_failures', []):
+        detail = (failure.get('fault') or {}).get('message') or failure.get('reason')
+        if detail:
+            failures.append(str(failure.get('mode')) + ': ' + str(detail))
+    stop = item.get('drive_stop') or {}
+    if stop.get('status') == 'ERROR' and stop.get('detail') and stop['detail'] != stop.get('reason'):
+        failures.append('drive: ' + str(stop['detail']))
     return [f"{item['seed']}/{item['first_mode']}: {name}" for name in failures]
 
 
@@ -238,8 +250,11 @@ def run(args):
                     'source_unchanged', 'attempts_retained', 'native_acceptance', 'completed_without_shortening',
                     'finish_completed', 'exports_closed', 'cleanup_confirmed', 'simulator_exit_confirmed',
                     'independent_cleanup_probe', 'video_playback_after_exit', 'render_profile', 'error',
-                    'finalization_error', 'worker_deadline_expired', 'native_worker_exit_code')})
+                    'finalization_error', 'cleanup_error', 'worker_deadline_expired', 'native_worker_exit_code')})
                 report['pairs'][-1].update(pair=compact_pair(raw.get('pair') or {'manifest': {}, 'runs': {}}),
+                    preparation_failure=(raw.get('presentation') or {}).get('failure'),
+                    drive_failures=(raw.get('presentation') or {}).get('failures') or [],
+                    drive_stop=raw.get('last_drive_stop'),
                     report=str(folder / 'report.json'), report_sha256=hashlib.sha256((folder / 'report.json').read_bytes()).hexdigest())
                 write_report(target, report)
                 budget.finish_attempt(ticket, item['seed'], item['first_mode'], raw.get('native_acceptance') is True, folder / 'report.json')

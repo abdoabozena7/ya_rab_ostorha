@@ -122,7 +122,10 @@ def worker(args):
                 last=d['status'];event={'phase':last,'arm':d.get('arm'),'reason':d.get('reason'),'wall_s':time.monotonic()-began}
                 report['phases'].append(event);print(json.dumps(event),flush=True)
                 checkpoint={k:v for k,v in report.items() if k!='samples'}
-                checkpoint['pair']=service.journey_comparison.snapshot()
+                # Full actor starts remain in the recording metadata and final
+                # report. A compact progress checkpoint avoids serializing them
+                # on the tick owner just after a fresh scene was published.
+                checkpoint['pair']=service.journey_comparison.snapshot(compact=True)
                 save_json(folder/'checkpoint.json',checkpoint)
             if last=='CHOOSING':service.presentation.choose_preloaded(d['id'],args.first)
             if last=='DRIVING':

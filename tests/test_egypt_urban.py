@@ -1,5 +1,6 @@
 import ast
 import copy
+from collections import OrderedDict
 from contextlib import closing
 from dataclasses import replace
 import math
@@ -48,6 +49,7 @@ class OpenMeasuredSpace:
     def __init__(self, visible=70.):
         self.visible = visible
         self.paths = []
+        self.urban_forecasts = OrderedDict()
 
     def ensure_scope(self, path):
         self.paths.append(np.asarray(path))
@@ -66,6 +68,24 @@ def track(identity, x, y, vx=0., vy=0., *, person=False):
 
 
 class UrbanDriverTests(unittest.TestCase):
+    def test_frozen_egypt_start_preserves_captured_route_but_ordinary_resume_replans(self):
+        from backend.carla.provider import CarlaProvider
+        class AdmittedForRouteTest(Exception):
+            pass
+        points=[[0.,0.,0.],[700.,0.,0.]]
+        for frozen in (True,False):
+            tools=NS(route={'points':points},native_route=[object()],replan_route=Mock(),map_name='Town10HD_Opt')
+            fixture=NS(frozen=frozen,condition={'route':points,'comparison_scenario':{'id':SCENARIO_ID}})
+            provider=NS(_ensure_dashboard_tools=Mock(),dashboard_tools=tools,benchmark_fixture=fixture,
+                presentation_scenario_id=SCENARIO_ID)
+            original=tools.native_route
+            with patch('backend.carla.egypt_urban.validate_route',return_value={'passed':True}), \
+                 patch('backend.core.egypt_urban.admission',side_effect=AdmittedForRouteTest):
+                with self.assertRaises(AdmittedForRouteTest):
+                    CarlaProvider.start_navigation(provider,60.)
+            self.assertEqual(tools.replan_route.call_count,0 if frozen else 1)
+            self.assertIs(tools.native_route,original)
+
     @classmethod
     def setUpClass(cls):
         cls.measured, cls.base, _ = measured_fixtures.ControlSceneTests().measured()
@@ -204,6 +224,21 @@ class UrbanDriverTests(unittest.TestCase):
         self.assertEqual(forecast.observation.frame_id, scene.observation.frame_id)
         self.assertNotIn('hypothesis_set_id', scene.prediction)
 
+    def test_forecast_cache_is_bound_to_immutable_measurements_and_horizon(self):
+        scene, _, _ = self.scene([track('walker', 15., 3., 0., -1.5, person=True)])
+        with patch('backend.core.urban_driver.kinematic_modes', wraps=__import__(
+                'backend.core.kinematic_prediction', fromlist=['kinematic_modes']).kinematic_modes) as modes:
+            first = urban_forecast(scene, 8.)
+            again = urban_forecast(scene, 8.)
+            self.assertIs(first.prediction, again.prediction)
+            self.assertIs(urban_forecast(first, 8.), first)
+            self.assertEqual(modes.call_count, 1)
+            self.assertEqual(first.received_wall_s, scene.received_wall_s)
+            self.assertIsNot(urban_forecast(scene, 9.).prediction, first.prediction)
+            changed = replace(scene, prediction=freeze_json({**scene.prediction, 'tracks': []}))
+            self.assertFalse(urban_forecast(changed, 8.).prediction['tracks'])
+            self.assertEqual(modes.call_count, 3)
+
     def test_speed_ceiling_and_missing_legal_tail(self):
         scene, base, road = self.scene([], speed=60. / 3.6)
         command, result = UrbanManeuverDriver(scene.geometry).evaluate(scene, base, road, 100., wall=100.)
@@ -293,6 +328,34 @@ class EgyptScenarioTests(unittest.TestCase):
         disconnected = route[:30] + route[35:]
         self.assertFalse(validate_route(disconnected)['gates']['connected_driving_lanes'])
 
+    def test_missing_event_vehicle_is_staged_only_in_free_space_before_recording(self):
+        p, rows, validation = self.native_fixture()
+        for wp, _ in p.dashboard_tools.native_route:
+            wp.transform.rotation = NS(pitch=0., yaw=0., roll=0.)
+            wp.get_left_lane = lambda: None
+        bounds = NS(location=NS(x=0., y=0.), rotation=NS(yaw=0.), extent=NS(x=2., y=.9))
+        actors = {row['id']: Mock(bounding_box=bounds) for row in rows}
+        ego = Mock(bounding_box=bounds)
+        ego.get_transform.return_value = NS(location=Location(0., 0.), rotation=NS(pitch=0., yaw=0., roll=0.))
+        p.ego = NS(actor=ego)
+        p.world.world.get_actor = actors.get
+        p.population = NS(traffic_manager=NS(port=8052))
+        p.connection = NS(api=NS(Location=Location, Transform=lambda location, rotation: NS(location=location, rotation=rotation),
+            Rotation=lambda **v: NS(**v), Vector3D=lambda: NS(x=0., y=0., z=0.), LaneType=NS(Driving='Driving')))
+        row = rows[6]
+        row['pose']['location'] = [680., 0., 0.]
+        scenario = EgyptUrbanChaos(p, 1703, validation)
+        staged, arc, _ = scenario._stage_vehicle([row], set(), rows, 525., False, (510., 545.))
+        self.assertIs(staged, row)
+        self.assertEqual(arc, 525.)
+        actors[row['id']].set_simulate_physics.assert_called_once_with(False)
+        actors[row['id']].set_transform.assert_called_once()
+        self.assertEqual(row['pose']['location'][:2], [525., 0.])
+        self.assertEqual(len(rows), 13)
+        scenario.running = True
+        with self.assertRaisesRegex(ValueError, 'pre-recording'):
+            scenario._stage_vehicle([row], set(), rows, 525., False, (510., 545.))
+
     def test_body_separation_is_edge_distance_not_actor_center_distance(self):
         a = [(-2., -1.), (2., -1.), (2., 1.), (-2., 1.)]
         self.assertAlmostEqual(body_separation(a, [(x+5., y) for x, y in a]), 1.)
@@ -300,10 +363,17 @@ class EgyptScenarioTests(unittest.TestCase):
         self.assertEqual(body_separation(a, [(x+4., y) for x, y in a]), 0.)
 
     def physical(self, plan):
+        from enum import IntEnum
+        class VehicleLights(IntEnum):
+            NONE=0
+            Brake=1
+            LeftBlinker=2
+            RightBlinker=4
+            BrakeAndHazards=7
         p, _, validation = self.native_fixture()
         p.connection = NS(api=NS(VehicleControl=lambda **v: NS(**v), WalkerControl=lambda **v: NS(**v),
             Vector3D=lambda x=0., y=0., z=0.: NS(x=x, y=y, z=z), Location=Location, LaneType=NS(Driving='Driving'),
-            VehicleLightState=NS(Brake=1, LeftBlinker=2, RightBlinker=4, NONE=0)))
+            VehicleLightState=VehicleLights))
         p.population = NS(traffic_manager=NS(port=8052))
         p.dashboard_tools.map = NS(get_waypoint=lambda location, **_: object() if abs(location.y) < 3.6 else None)
         scenario = EgyptUrbanChaos(p, 1703, validation)
@@ -334,6 +404,8 @@ class EgyptScenarioTests(unittest.TestCase):
         step(5.5)
         self.assertEqual(event['status'], 'COMPLETED')
         actor.set_autopilot.assert_called_once_with(True, 8052)
+        self.assertTrue(all(isinstance(call.args[0], p.connection.api.VehicleLightState)
+                            for call in actor.set_light_state.call_args_list))
 
     def test_hesitation_and_retreat_use_measured_walker_motion_and_real_stops(self):
         for persona in ('HESITANT', 'RETREATING'):

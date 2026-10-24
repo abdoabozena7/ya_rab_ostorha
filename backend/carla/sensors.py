@@ -309,6 +309,12 @@ class CarlaSensorManager:
             box=self.ego.bounding_box
             front=box.location.x+box.extent.x+.1;rear=box.location.x-box.extent.x-.1
             half=box.extent.y+abs(box.location.y)+.1
+            if options.get('_comparison_rig'):
+                # Native respawns can jitter body dimensions by sub-micrometres.
+                # Construct the frozen comparison rig on a 0.1 mm grid; the
+                # 100 mm body offset remains conservative and calibration is
+                # still compared exactly between the two recorded arms.
+                front,rear,half=(round(value,4) for value in (front,rear,half))
             attrs={**camera,'image_size_x':240,'image_size_y':135,'fov':120}
             plans+=tuple((name,SensorKind.DEPTH,'sensor.camera.depth',
                 api.Transform(api.Location(x=x,y=y,z=1.),api.Rotation(pitch=-5,yaw=yaw)),attrs)

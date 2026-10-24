@@ -28,7 +28,9 @@ changing the existing research ledger (138.1613 s remaining) or RULE limits.
 The runner propagates reservation/deadline ownership to workers and requires the
 complete current-source development matrix before reserved acceptance. Scenario
 status refreshes with CARLA stopped, including completed trips and exact failed
-gates. **Native execution has not been started** under this plan-only request.
+gates. The subsequently authorized [native development execution](docs/EGYPT_NATIVE_VALIDATION_20261024.md)
+retains actual preparation, timing and incomplete-route failures; development
+has not passed and the reserved acceptance seeds remain unused.
 Offline and browser-only checks do not close native acceptance or guarantee no
 contact; Egypt becomes the default only for new comparisons after full acceptance.
 

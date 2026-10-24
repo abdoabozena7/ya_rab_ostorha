@@ -262,6 +262,30 @@ class IsolatedEgyptTests(EgyptValidationFixture):
 
 
 class EgyptRunnerTests(EgyptValidationFixture):
+    def test_failed_preparation_without_manifest_remains_a_reported_failure(self):
+        pair = runner.compact_pair({'manifest': None, 'runs': {}, 'conditions_match': False})
+        self.assertEqual(pair['manifest'], {})
+        self.assertEqual(pair['runs'], {})
+        result = {'seed': 1703, 'first_mode': 'NORMAL', 'pair': pair,
+                  'preparation_failure': {'message': 'Missing physical pass_obstacle_2 participant'}}
+        self.assertIn('1703/NORMAL: preparation: Missing physical pass_obstacle_2 participant', runner.failed_pair_gates(result))
+
+    def test_recording_and_cleanup_errors_are_visible_in_scenario_progress(self):
+        result = {'seed': 1703, 'first_mode': 'NORMAL', 'pair': {'runs': {
+            'NORMAL': {'status': 'ERROR', 'reason': 'recording_failure'}}},
+            'cleanup_error': 'Recording stopped before exhausting the disk reserve'}
+        failures = runner.failed_pair_gates(result)
+        self.assertIn('1703/NORMAL: NORMAL: recording_failure', failures)
+        self.assertIn('1703/NORMAL: cleanup_error: Recording stopped before exhausting the disk reserve', failures)
+
+    def test_start_route_and_control_timeout_details_survive_progress_compaction(self):
+        result = {'seed': 2707, 'first_mode': 'ROBOSPHERE', 'pair': {},
+            'drive_failures': [{'mode': 'ROBOSPHERE', 'reason': 'Route failed revalidation'}],
+            'drive_stop': {'status': 'ERROR', 'reason': 'runtime_failure', 'detail': 'Current scene unavailable for one second'}}
+        failures = runner.failed_pair_gates(result)
+        self.assertIn('2707/ROBOSPHERE: ROBOSPHERE: Route failed revalidation', failures)
+        self.assertIn('2707/ROBOSPHERE: drive: Current scene unavailable for one second', failures)
+
     def setUp(self):
         super().setUp()
         self.artifact = self.root / 'acceptance.json'

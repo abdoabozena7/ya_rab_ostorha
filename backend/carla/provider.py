@@ -615,10 +615,17 @@ class CarlaProvider:
         self._ensure_dashboard_tools()
         if not self.dashboard_tools.route:
             raise ValueError('Choose a valid destination and show its route before starting')
-        # Resume always plans from the real vehicle's current location.
-        self.dashboard_tools.replan_route()
-        self.driving_mode = driving_mode
         egypt = getattr(self, 'presentation_scenario_id', None) == 'EGYPT_URBAN_CHAOS_V1'
+        fixture = getattr(self, 'benchmark_fixture', None)
+        frozen_egypt = bool(egypt and fixture and getattr(fixture, 'frozen', False) and fixture.condition
+            and fixture.condition.get('comparison_scenario', {}).get('id') == 'EGYPT_URBAN_CHAOS_V1')
+        # A held Egypt fixture already owns the verified route and start. A
+        # second planner snap can choose another lane after suspension settles,
+        # changing the captured experiment. Its route and measured start are
+        # still audited before the first control frame. Ordinary resumes replan.
+        if not frozen_egypt:
+            self.dashboard_tools.replan_route()
+        self.driving_mode = driving_mode
         urban_admission = None
         if egypt:
             from ..core.egypt_urban import admission
@@ -626,7 +633,6 @@ class CarlaProvider:
             checked = validate_route(self.dashboard_tools.native_route)
             if not checked['passed']:
                 raise ValueError('Egypt route failed revalidation before release: ' + str(checked['gates']))
-            fixture = getattr(self, 'benchmark_fixture', None)
             expected = fixture.condition.get('route') if fixture and fixture.condition else None
             actual = self.dashboard_tools.route.get('points')
             if expected and (not actual or len(actual) != len(expected)

@@ -224,15 +224,16 @@ class EgyptUrbanChaos(DenseChaos):
                 if (gap > 2.5) != adjacent:
                     continue
                 options.append((abs(arc - progress), row, arc, index))
-            if not options:
-                raise ValueError('Missing physical ' + name + ' participant')
-            _, row, arc, index = min(options, key=lambda item: item[0])
-            if abs(arc - progress) > 65.:
-                raise ValueError('No local vehicle for Egypt ' + name)
+            staged = not options or min(item[0] for item in options) > 65.
+            if staged:
+                row, arc, index = self._stage_vehicle(vehicles, used, rows, progress, adjacent, window)
+            else:
+                _, row, arc, index = min(options, key=lambda item: item[0])
             used.add(row['id'])
             row['role'] = name
             persona = rng.choice(('CAUTIOUS', 'ORDINARY', 'IMPATIENT', 'HESITANT'))
             self.plans[name] = {'kind': kind, 'persona': persona, 'progress_m': arc,
+                                'staged_before_recording': staged,
                                 'trigger_m': max(0., arc - 45.), 'expire_m': arc + 55.,
                                 'hold_s': rng.uniform(16., 22.) if kind == 'DOUBLE_PARK' else rng.uniform(1.2, 2.4),
                                 'speed_mps': rng.uniform(4., 7.), 'index': index,
@@ -273,6 +274,61 @@ class EgyptUrbanChaos(DenseChaos):
                                             'expire_m': overlap_progress + 80.}
         self.route_validation['gates']['native_sidewalk_crossings'] = True
         self.bind(rows)
+
+    def _stage_vehicle(self, vehicles, used, rows, progress, adjacent, window):
+        """Fill a missing event slot before capture, never during either drive."""
+        p = self.provider
+        api, world = p.connection.api, p.world.world
+        available = [row for row in vehicles if row['id'] not in used]
+        if self.running or not available:
+            raise ValueError('No unused vehicle for pre-recording Egypt staging')
+        actors = {row['id']: world.get_actor(row['id']) for row in rows}
+        ego_pose = p.ego.actor.get_transform()
+        native = p.dashboard_tools.native_route
+        indices = sorted(range(len(native)), key=lambda index: (abs(self.arcs[index] - progress), index))
+        for index in indices:
+            arc = self.arcs[index]
+            if abs(arc - progress) > 65. or window is not None and not window[0] <= arc <= window[1]:
+                continue
+            waypoint = native[index][0]
+            if waypoint.is_junction:
+                continue
+            lanes = [(0, waypoint)] if not adjacent else [(offset, permitted_neighbour(waypoint, side))
+                for offset, side in ((-1, 'left'), (1, 'right'))]
+            for offset, lane in lanes:
+                if lane is None or lane.is_junction or lane.lane_width < 2.8:
+                    continue
+                t = lane.transform
+                pose = api.Transform(api.Location(t.location.x, t.location.y, t.location.z + .3), t.rotation)
+                if pose.location.distance(ego_pose.location) < 24.:
+                    continue
+                for row in sorted(available, key=lambda row: (math.dist(row['pose']['location'], xyz(pose.location)), row['role'])):
+                    actor = actors.get(row['id'])
+                    if actor is None:
+                        continue
+                    body = rectangle(pose, actor.bounding_box)
+                    occupied = [(p.ego.actor, ego_pose)]
+                    for other in rows:
+                        other_actor = actors.get(other['id'])
+                        if other['id'] != row['id'] and other_actor is not None:
+                            other_pose = other['pose']
+                            occupied.append((other_actor, api.Transform(api.Location(*other_pose['location']),
+                                api.Rotation(pitch=other_pose['rotation'][0], yaw=other_pose['rotation'][1], roll=other_pose['rotation'][2]))))
+                    if any(body_separation(body, rectangle(other_pose, other.bounding_box)) < 1.
+                           for other, other_pose in occupied):
+                        continue
+                    actor.set_autopilot(False, p.population.traffic_manager.port)
+                    actor.set_simulate_physics(False)
+                    actor.set_target_velocity(api.Vector3D())
+                    actor.set_target_angular_velocity(api.Vector3D())
+                    actor.set_transform(pose)
+                    row['pose'] = {'location': xyz(pose.location),
+                        'rotation': [pose.rotation.pitch, pose.rotation.yaw, pose.rotation.roll]}
+                    from .route_crowding import driving_lanes
+                    row['profile']['route_points'] = [xyz(driving_lanes(wp, api).get(offset, wp).transform.location)
+                                                       for wp, _ in native[index:]]
+                    return row, arc, index
+        raise ValueError('No unoccupied physical pre-recording slot for Egypt event near ' + str(progress))
 
     def _stage_walker(self, row):
         p = self.provider
@@ -468,7 +524,8 @@ class EgyptUrbanChaos(DenseChaos):
             stopped = now - event.get('stopped_at', now)
             if stopped < plan['hold_s']:
                 actor.apply_control(api.VehicleControl(brake=1.))
-                actor.set_light_state(api.VehicleLightState.Brake | api.VehicleLightState.LeftBlinker | api.VehicleLightState.RightBlinker)
+                actor.set_light_state(api.VehicleLightState(
+                    api.VehicleLightState.Brake | api.VehicleLightState.LeftBlinker | api.VehicleLightState.RightBlinker))
                 measures['stopped_s'] = stopped if speed <= .2 else 0.
                 return
             points = plan['points'][:50]

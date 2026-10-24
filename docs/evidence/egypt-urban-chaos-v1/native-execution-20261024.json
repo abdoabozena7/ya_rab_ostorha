@@ -1,0 +1,4066 @@
+{
+  "recorded_at_utc": "2026-10-24T12:16:50.689804+00:00",
+  "source_sha256": "cb08f0cbef3e88b14fd4ce4de175398ea9f53769bcf5ed197237bafc8cf606a4",
+  "accepted": false,
+  "deployment": {
+    "accepted": false,
+    "reason": "Twelve source-bound native trips have not been accepted"
+  },
+  "acceptance_trips_executed": 0,
+  "acceptance_artifact_exists": false,
+  "budget": {
+    "kind": "EGYPT_NATIVE_VALIDATION_V1",
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+    "cap_s": 14400.0,
+    "charged_s": 2335.2830000001704,
+    "remaining_s": 12064.71699999983,
+    "development_remaining_s": 4864.71699999983,
+    "acceptance_remaining_s": 7200.0,
+    "unfinished": 0,
+    "acceptance_attempted": false,
+    "reservations": [
+      {
+        "id": "26cac65d1ecf4e569e2750830100bceb",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 59.78100000007544,
+        "started": 610812.031,
+        "deadline": 612012.031,
+        "owner_pid": 33916,
+        "outcome": "FAILED",
+        "elapsed_s": 59.78100000007544,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-01.json"
+      },
+      {
+        "id": "ac1bd428243a4206801df56bfeab3dd8",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 59.35999999998603,
+        "started": 611308.015,
+        "deadline": 612508.015,
+        "owner_pid": 32916,
+        "outcome": "FINISHED",
+        "elapsed_s": 59.35999999998603,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-02.json"
+      },
+      {
+        "id": "3ffd9d35d3744a35a16865b2490b263b",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 63.54700000002049,
+        "started": 611660.546,
+        "deadline": 612860.546,
+        "owner_pid": 24672,
+        "outcome": "FINISHED",
+        "elapsed_s": 63.54700000002049,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-03.json"
+      },
+      {
+        "id": "e001510d706a46688665ab7d706b3462",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 138.21900000004098,
+        "started": 611768.781,
+        "deadline": 612968.781,
+        "owner_pid": 36928,
+        "outcome": "FINISHED",
+        "elapsed_s": 138.21900000004098,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-04.json"
+      },
+      {
+        "id": "6caf26c31f264c6f8ffcfae0bba75942",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 80.0,
+        "started": 612436.515,
+        "deadline": 613636.515,
+        "owner_pid": 39312,
+        "outcome": "FINISHED",
+        "elapsed_s": 80.0,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-protected-05.json"
+      },
+      {
+        "id": "9fd0d6e0ea4a44f79e14c8c521a5f2f5",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 69.82900000002701,
+        "started": 612704.671,
+        "deadline": 613904.671,
+        "owner_pid": 20320,
+        "outcome": "FINISHED",
+        "elapsed_s": 69.82900000002701,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-protected-06.json"
+      },
+      {
+        "id": "fc2bb76ce80b4c35b4647c091ef98026",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 6600.0,
+        "charged_s": 1816.219000000041,
+        "started": 613102.718,
+        "deadline": 619702.718,
+        "owner_pid": 42228,
+        "outcome": "FINISHED",
+        "elapsed_s": 1816.219000000041,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-matrix-07.json"
+      },
+      {
+        "id": "4130615860c440248a8472525d578365",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 48.32799999997951,
+        "started": 615067.265,
+        "deadline": 616267.265,
+        "owner_pid": 29836,
+        "outcome": "FINISHED",
+        "elapsed_s": 48.32799999997951,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-2707-protected-08.json"
+      }
+    ],
+    "sha256": "a2d1f41d112186b5978464b9ad233b07e2fe2f0561b94e7a4ee5060ee5726308"
+  },
+  "legacy_ledger_sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+  "experiments": [
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "276f19ca23a783b58df8c449ec9d193faf8502c7dd5f939d8b854853c1a4caae",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/NORMAL: egypt_scenario",
+        "1703/NORMAL: completed_without_shortening",
+        "1703/NORMAL: finish_completed",
+        "1703/NORMAL: video_playback_after_exit",
+        "1703/NORMAL: native_pair_acceptance"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-1703-normal-01.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "a5654c878f2bfbcabdea561cd7fd9214279809789acaba63db3a45c1525c91e0",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/NORMAL: both_recorded",
+        "1703/NORMAL: protected_arrived_without_any_contact",
+        "1703/NORMAL: contact_measurement_available_and_healthy",
+        "1703/NORMAL: matching_complete_driver_setup",
+        "1703/NORMAL: initial_conditions_verified",
+        "1703/NORMAL: same_scenario_seed_and_definition",
+        "1703/NORMAL: full_route_verified",
+        "1703/NORMAL: actual_event_diversity",
+        "1703/NORMAL: pedestrian_intent_and_occlusion_realized",
+        "1703/NORMAL: three_measured_complete_overtakes",
+        "1703/NORMAL: actual_density_and_motion",
+        "1703/NORMAL: measured_speed_within_sixty",
+        "1703/NORMAL: body_separation_measured",
+        "1703/NORMAL: timing_measured",
+        "1703/NORMAL: new_driver_identified",
+        "1703/NORMAL: completed_without_shortening",
+        "1703/NORMAL: finish_completed",
+        "1703/NORMAL: video_playback_after_exit",
+        "1703/NORMAL: native_pair_acceptance"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-1703-normal-02.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "274f5ff8f0c825fc4500d6940cc7d7b3c44f692d71656260e69bf10dffa0502a",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/NORMAL: egypt_scenario",
+        "1703/NORMAL: completed_without_shortening",
+        "1703/NORMAL: finish_completed",
+        "1703/NORMAL: video_playback_after_exit",
+        "1703/NORMAL: native_pair_acceptance",
+        "1703/NORMAL: error: Python argument types in\n    Vehicle.set_light_state(Vehicle, int)\ndid not match C++ signature:\n    set_light_state(class carla::client::Vehicle {lvalue}, enum carla::rpc::VehicleLightState::LightState light_state)"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-1703-normal-03.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "49ec464a9a738677130aaf4e9a47a1d2523cb4c22a1b1e1f354c7ebb5d160646",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/NORMAL: both_recorded",
+        "1703/NORMAL: protected_arrived_without_any_contact",
+        "1703/NORMAL: contact_measurement_available_and_healthy",
+        "1703/NORMAL: matching_complete_driver_setup",
+        "1703/NORMAL: initial_conditions_verified",
+        "1703/NORMAL: same_scenario_seed_and_definition",
+        "1703/NORMAL: full_route_verified",
+        "1703/NORMAL: actual_event_diversity",
+        "1703/NORMAL: pedestrian_intent_and_occlusion_realized",
+        "1703/NORMAL: three_measured_complete_overtakes",
+        "1703/NORMAL: actual_density_and_motion",
+        "1703/NORMAL: measured_speed_within_sixty",
+        "1703/NORMAL: body_separation_measured",
+        "1703/NORMAL: timing_measured",
+        "1703/NORMAL: new_driver_identified",
+        "1703/NORMAL: completed_without_shortening",
+        "1703/NORMAL: finish_completed",
+        "1703/NORMAL: exports_closed",
+        "1703/NORMAL: cleanup_confirmed",
+        "1703/NORMAL: video_playback_after_exit",
+        "1703/NORMAL: native_pair_acceptance"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-1703-normal-04.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "f63cbc5a4cfe77243e5d9d3cd9613287bcd1674bcc7bd5f9826b16da379215c3",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/ROBOSPHERE: both_recorded",
+        "1703/ROBOSPHERE: protected_arrived_without_any_contact",
+        "1703/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "1703/ROBOSPHERE: matching_complete_driver_setup",
+        "1703/ROBOSPHERE: initial_conditions_verified",
+        "1703/ROBOSPHERE: same_scenario_seed_and_definition",
+        "1703/ROBOSPHERE: full_route_verified",
+        "1703/ROBOSPHERE: actual_event_diversity",
+        "1703/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "1703/ROBOSPHERE: three_measured_complete_overtakes",
+        "1703/ROBOSPHERE: actual_density_and_motion",
+        "1703/ROBOSPHERE: measured_speed_within_sixty",
+        "1703/ROBOSPHERE: completed_without_shortening",
+        "1703/ROBOSPHERE: finish_completed",
+        "1703/ROBOSPHERE: video_playback_after_exit",
+        "1703/ROBOSPHERE: native_pair_acceptance",
+        "1703/ROBOSPHERE: ROBOSPHERE: runtime_failure"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-1703-protected-05.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "f63cbc5a4cfe77243e5d9d3cd9613287bcd1674bcc7bd5f9826b16da379215c3",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/ROBOSPHERE: both_recorded",
+        "1703/ROBOSPHERE: protected_arrived_without_any_contact",
+        "1703/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "1703/ROBOSPHERE: matching_complete_driver_setup",
+        "1703/ROBOSPHERE: initial_conditions_verified",
+        "1703/ROBOSPHERE: same_scenario_seed_and_definition",
+        "1703/ROBOSPHERE: full_route_verified",
+        "1703/ROBOSPHERE: actual_event_diversity",
+        "1703/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "1703/ROBOSPHERE: three_measured_complete_overtakes",
+        "1703/ROBOSPHERE: measured_speed_within_sixty",
+        "1703/ROBOSPHERE: completed_without_shortening",
+        "1703/ROBOSPHERE: finish_completed",
+        "1703/ROBOSPHERE: video_playback_after_exit",
+        "1703/ROBOSPHERE: native_pair_acceptance",
+        "1703/ROBOSPHERE: ROBOSPHERE: runtime_failure"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-1703-protected-06.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "cb08f0cbef3e88b14fd4ce4de175398ea9f53769bcf5ed197237bafc8cf606a4",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "2707/ROBOSPHERE: both_recorded",
+        "2707/ROBOSPHERE: protected_arrived_without_any_contact",
+        "2707/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "2707/ROBOSPHERE: matching_complete_driver_setup",
+        "2707/ROBOSPHERE: initial_conditions_verified",
+        "2707/ROBOSPHERE: same_scenario_seed_and_definition",
+        "2707/ROBOSPHERE: full_route_verified",
+        "2707/ROBOSPHERE: actual_event_diversity",
+        "2707/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "2707/ROBOSPHERE: three_measured_complete_overtakes",
+        "2707/ROBOSPHERE: actual_density_and_motion",
+        "2707/ROBOSPHERE: measured_speed_within_sixty",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "2707/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/ROBOSPHERE: ROBOSPHERE: Current synchronized sensor scene unavailable for one second",
+        "2707/ROBOSPHERE: drive: Current synchronized sensor scene unavailable for one second"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-2707-protected-08.json",
+      "pairs": 1
+    },
+    {
+      "state": "FAILED",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": false,
+      "failed_gates": [
+        "1703/NORMAL: both_recorded",
+        "1703/NORMAL: protected_arrived_without_any_contact",
+        "1703/NORMAL: contact_measurement_available_and_healthy",
+        "1703/NORMAL: matching_complete_driver_setup",
+        "1703/NORMAL: initial_conditions_verified",
+        "1703/NORMAL: same_scenario_seed_and_definition",
+        "1703/NORMAL: full_route_verified",
+        "1703/NORMAL: actual_event_diversity",
+        "1703/NORMAL: pedestrian_intent_and_occlusion_realized",
+        "1703/NORMAL: three_measured_complete_overtakes",
+        "1703/NORMAL: actual_density_and_motion",
+        "1703/NORMAL: measured_speed_within_sixty",
+        "1703/NORMAL: body_separation_measured",
+        "1703/NORMAL: timing_measured",
+        "1703/NORMAL: new_driver_identified",
+        "1703/NORMAL: completed_without_shortening",
+        "1703/NORMAL: finish_completed",
+        "1703/NORMAL: exports_closed",
+        "1703/NORMAL: video_playback_after_exit",
+        "1703/NORMAL: native_pair_acceptance",
+        "1703/ROBOSPHERE: both_recorded",
+        "1703/ROBOSPHERE: protected_arrived_without_any_contact",
+        "1703/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "1703/ROBOSPHERE: matching_complete_driver_setup",
+        "1703/ROBOSPHERE: initial_conditions_verified",
+        "1703/ROBOSPHERE: same_scenario_seed_and_definition",
+        "1703/ROBOSPHERE: full_route_verified",
+        "1703/ROBOSPHERE: actual_event_diversity",
+        "1703/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "1703/ROBOSPHERE: three_measured_complete_overtakes",
+        "1703/ROBOSPHERE: actual_density_and_motion",
+        "1703/ROBOSPHERE: measured_speed_within_sixty",
+        "1703/ROBOSPHERE: completed_without_shortening",
+        "1703/ROBOSPHERE: finish_completed",
+        "1703/ROBOSPHERE: video_playback_after_exit",
+        "1703/ROBOSPHERE: native_pair_acceptance",
+        "1703/ROBOSPHERE: ROBOSPHERE: runtime_failure",
+        "2707/NORMAL: egypt_scenario",
+        "2707/NORMAL: completed_without_shortening",
+        "2707/NORMAL: finish_completed",
+        "2707/NORMAL: video_playback_after_exit",
+        "2707/NORMAL: native_pair_acceptance",
+        "2707/ROBOSPHERE: egypt_scenario",
+        "2707/ROBOSPHERE: completed_without_shortening",
+        "2707/ROBOSPHERE: finish_completed",
+        "2707/ROBOSPHERE: video_playback_after_exit",
+        "2707/ROBOSPHERE: native_pair_acceptance",
+        "3709/NORMAL: both_recorded",
+        "3709/NORMAL: protected_arrived_without_any_contact",
+        "3709/NORMAL: contact_measurement_available_and_healthy",
+        "3709/NORMAL: matching_complete_driver_setup",
+        "3709/NORMAL: initial_conditions_verified",
+        "3709/NORMAL: same_scenario_seed_and_definition",
+        "3709/NORMAL: full_route_verified",
+        "3709/NORMAL: actual_event_diversity",
+        "3709/NORMAL: pedestrian_intent_and_occlusion_realized",
+        "3709/NORMAL: three_measured_complete_overtakes",
+        "3709/NORMAL: actual_density_and_motion",
+        "3709/NORMAL: measured_speed_within_sixty",
+        "3709/NORMAL: body_separation_measured",
+        "3709/NORMAL: timing_measured",
+        "3709/NORMAL: new_driver_identified",
+        "3709/NORMAL: completed_without_shortening",
+        "3709/NORMAL: finish_completed",
+        "3709/NORMAL: exports_closed",
+        "3709/NORMAL: video_playback_after_exit",
+        "3709/NORMAL: native_pair_acceptance",
+        "3709/ROBOSPHERE: both_recorded",
+        "3709/ROBOSPHERE: protected_arrived_without_any_contact",
+        "3709/ROBOSPHERE: contact_measurement_available_and_healthy",
+        "3709/ROBOSPHERE: matching_complete_driver_setup",
+        "3709/ROBOSPHERE: initial_conditions_verified",
+        "3709/ROBOSPHERE: same_scenario_seed_and_definition",
+        "3709/ROBOSPHERE: full_route_verified",
+        "3709/ROBOSPHERE: actual_event_diversity",
+        "3709/ROBOSPHERE: pedestrian_intent_and_occlusion_realized",
+        "3709/ROBOSPHERE: three_measured_complete_overtakes",
+        "3709/ROBOSPHERE: actual_density_and_motion",
+        "3709/ROBOSPHERE: measured_speed_within_sixty",
+        "3709/ROBOSPHERE: completed_without_shortening",
+        "3709/ROBOSPHERE: finish_completed",
+        "3709/ROBOSPHERE: video_playback_after_exit",
+        "3709/ROBOSPHERE: native_pair_acceptance",
+        "3709/ROBOSPHERE: ROBOSPHERE: runtime_failure"
+      ],
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-matrix-07.json",
+      "pairs": 6
+    },
+    {
+      "state": "PENDING",
+      "phase": "DEVELOPMENT",
+      "source_sha256": "cb08f0cbef3e88b14fd4ce4de175398ea9f53769bcf5ed197237bafc8cf606a4",
+      "source_unchanged": null,
+      "accepted": false,
+      "development_passed": false,
+      "development_matrix_passed": null,
+      "failed_gates": null,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\development-remaining-preflight.json",
+      "pairs": 0
+    }
+  ],
+  "attempts": [
+    {
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "276f19ca23a783b58df8c449ec9d193faf8502c7dd5f939d8b854853c1a4caae",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 49.70299999997951,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\7521ddb9843e40c498693a6d9ee4ec64\\report.json",
+      "report_sha256": "8a2bdc8fb55c727dd99c7a49534b3d4ef6eaef0109348ce3eb80b345eb1a20ed",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\7521ddb9843e40c498693a6d9ee4ec64\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 40.46899999992456
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 43.20299999997951
+        },
+        {
+          "phase": "ERROR",
+          "arm": 0,
+          "reason": "Missing physical pass_obstacle_2 participant",
+          "wall_s": 49.10899999993853
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "presentation_failed",
+        "status": "ERROR",
+        "frame_id": 149,
+        "timestamp_s": 8.580606881529093,
+        "detail": "presentation_failed"
+      },
+      "presentation_failure": {
+        "exception_type": "ValueError",
+        "message": "Missing physical pass_obstacle_2 participant",
+        "traceback": "Traceback (most recent call last):\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\backend\\core\\presentation.py\", line 436, in tick\n    self.data['prepared_condition_id']=self._prepare_native(freeze)\n                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\backend\\core\\presentation.py\", line 314, in _prepare_native\n    result=operation(*args,**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\backend\\carla\\provider.py\", line 173, in hold_prepared_presentation\n    condition=self.benchmark_fixture.capture()\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\backend\\carla\\benchmark_fixture.py\", line 58, in capture\n    if stress:stress.compile(self.actors)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\backend\\carla\\egypt_urban.py\", line 245, in compile\n    vehicle('DOUBLE_PARK', section['progress_m'] + 25., f'pass_obstacle_{i}',\n  File \"D:\\projects\\Ai\\ya_rab_ostorha\\backend\\carla\\egypt_urban.py\", line 228, in vehicle\n    raise ValueError('Missing physical ' + name + ' participant')\nValueError: Missing physical pass_obstacle_2 participant\n",
+        "phase": "READY",
+        "frame_id": 149
+      },
+      "presentation_failures": [],
+      "route_validation": null,
+      "runs": {}
+    },
+    {
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "a5654c878f2bfbcabdea561cd7fd9214279809789acaba63db3a45c1525c91e0",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 53.43799999996554,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'ROBOSPHERE'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\917cfd66addc4614a30c7cb8d20f7b39\\report.json",
+      "report_sha256": "167c60fd2ea9d51e99ac777870d0b22c43a1b67d584a854dab20f47a22b79314",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\917cfd66addc4614a30c7cb8d20f7b39\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.20299999997951
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 25.67200000002049
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.0
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.25
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.28099999995902
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 37.90599999995902
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 38.25
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "benchmark_initial_conditions_mismatch",
+        "status": "ERROR",
+        "frame_id": 346,
+        "timestamp_s": 10.38928522914648,
+        "detail": "benchmark_initial_conditions_mismatch"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "NORMAL",
+          "reason": "benchmark_initial_conditions_mismatch",
+          "fault": null,
+          "phase": "STARTING",
+          "frame_id": 347
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 711.973877966404,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 146.18510389328003,
+            "index": 34,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 242.48614728450775,
+            "index": 61,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 409.63143983483315,
+            "index": 102,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "NORMAL": {
+          "status": "ERROR",
+          "reason": "benchmark_initial_conditions_mismatch",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_a941814cd504483387dbafc85016ef82",
+          "distance_m": 0.0,
+          "duration_s": 0.0,
+          "maximum_speed_kmh": 0.0,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.4331792000448331,
+          "simulation_wall_ratio": 0.5200577004510125,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": false,
+            "failures": [
+              "sensor calibration or camera settings changed"
+            ],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "c53963b502d875d50a9b9b288753dafbf82b44cb2b4a83d5e9132560a76acbe8",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "274f5ff8f0c825fc4500d6940cc7d7b3c44f692d71656260e69bf10dffa0502a",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": null,
+      "wall_s": 56.98399999993853,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'pair'"
+      },
+      "worker_deadline_expired": false,
+      "error": "Python argument types in\n    Vehicle.set_light_state(Vehicle, int)\ndid not match C++ signature:\n    set_light_state(class carla::client::Vehicle {lvalue}, enum carla::rpc::VehicleLightState::LightState light_state)",
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\c2c83a03a8f842d68725d1442c34606a\\report.json",
+      "report_sha256": "8d58fcf954c1f87abc7945f9a4f6d9fcf83d519af2c00079511649a3b7b5e864",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\c2c83a03a8f842d68725d1442c34606a\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 21.718999999924563
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 24.140999999945052
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 30.421999999904074
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 30.718999999924563
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 31.765999999945052
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 35.35899999993853
+        }
+      ],
+      "last_drive_stop": null,
+      "presentation_failure": null,
+      "presentation_failures": null,
+      "route_validation": null,
+      "runs": {}
+    },
+    {
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "49ec464a9a738677130aaf4e9a47a1d2523cb4c22a1b1e1f354c7ebb5d160646",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 131.26599999994505,
+      "cleanup_confirmed": null,
+      "cleanup_error": "Recording failed: [Errno 28] Recording stopped before exhausting the disk reserve; recorded prefix preserved",
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": null,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'ROBOSPHERE'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\861aca3b399e4abe862501b457f11bd0\\report.json",
+      "report_sha256": "4b1a3751555c0288945a70d3b2b67319f1fd2d56bb0d011f8a300ed6dcee037c",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\861aca3b399e4abe862501b457f11bd0\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 18.483999999938533
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 21.030999999959022
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 27.405999999959022
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 27.625
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 28.56299999996554
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 32.15599999995902
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 129.9529999999795
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 130.3279999999795
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "recording_failure",
+        "status": "ERROR",
+        "frame_id": 905,
+        "timestamp_s": 40.44629030302167,
+        "detail": "[Errno 28] Recording stopped before exhausting the disk reserve; recorded prefix preserved"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "NORMAL",
+          "fault": {
+            "stage": "recording",
+            "exception_type": "RecordingFailure",
+            "message": "[Errno 28] Recording stopped before exhausting the disk reserve; recorded prefix preserved",
+            "evaluation_frame": 905,
+            "timestamp_s": 40.44629030302167
+          },
+          "reason": "recording_failure"
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 711.973877966404,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 146.18510389328003,
+            "index": 34,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 242.48614728450775,
+            "index": 61,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 409.63143983483315,
+            "index": 102,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "NORMAL": {
+          "status": "ERROR",
+          "reason": "recording_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2b7e0b6e34804c84a78eabef39db0b82",
+          "distance_m": 116.8558590789036,
+          "duration_s": 30.550000455230474,
+          "maximum_speed_kmh": 32.01610767578204,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.45585120003670454,
+          "simulation_wall_ratio": 0.31753858694726017,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "943f0f0dec22ce783a236bde75556db545923e672f154df0d466eaca53e87a61",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "EXECUTING",
+              "realized": false,
+              "measurements": {
+                "stopped_s": 1.1500000171363354
+              },
+              "transitions": [
+                {
+                  "phase": "REQUESTED",
+                  "frame_id": 881,
+                  "timestamp_s": 39.246290285140276,
+                  "reason": null
+                },
+                {
+                  "phase": "EXECUTING",
+                  "frame_id": 881,
+                  "timestamp_s": 39.246290285140276,
+                  "reason": null
+                }
+              ],
+              "reason": null,
+              "began_s": 39.246290285140276,
+              "start_position": [
+                -11.320108413696289,
+                140.64089965820312,
+                -0.004660472739487886
+              ],
+              "stopped_at": 39.246290285140276,
+              "stopped_position": [
+                -11.320108413696289,
+                140.64089965820312,
+                -0.004660472739487886
+              ]
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "COMPLETED",
+              "realized": true,
+              "measurements": {
+                "approach_m": 7.423478240740114,
+                "stopped_s": 1.5000000223517418,
+                "resumed_m": 1.0395797155287845
+              },
+              "transitions": [
+                {
+                  "phase": "REQUESTED",
+                  "frame_id": 343,
+                  "timestamp_s": 12.34628988429904,
+                  "reason": null
+                },
+                {
+                  "phase": "EXECUTING",
+                  "frame_id": 343,
+                  "timestamp_s": 12.34628988429904,
+                  "reason": null
+                },
+                {
+                  "phase": "COMPLETED",
+                  "frame_id": 446,
+                  "timestamp_s": 17.49628996104002,
+                  "reason": null
+                }
+              ],
+              "reason": null,
+              "began_s": 12.34628988429904,
+              "start_position": [
+                -107.05890655517578,
+                109.4244613647461,
+                -0.009044208563864231
+              ],
+              "stopped_at": 14.946289923042059,
+              "stopped_position": [
+                -104.17121124267578,
+                115.12142181396484,
+                -0.00567563995718956
+              ],
+              "departing": true
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "seed": 1703,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "f63cbc5a4cfe77243e5d9d3cd9613287bcd1674bcc7bd5f9826b16da379215c3",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 63.65599999995902,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\8d63e2ebbe594b17833355eb335b74d0\\report.json",
+      "report_sha256": "15d7dc889de7c422e38b76e207fa45992bae52ac90af846b19b86c55c57490a3",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\8d63e2ebbe594b17833355eb335b74d0\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 27.936999999918044
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 30.82799999997951
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 40.171999999904074
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 40.51599999994505
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 42.171999999904074
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 48.60899999993853
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 50.15599999995902
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 50.546999999904074
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 373,
+        "timestamp_s": 10.837890267372131,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "ROBOSPHERE",
+          "fault": {
+            "stage": "hybrid_execution",
+            "exception_type": "ControlSceneTimeout",
+            "message": "Current synchronized sensor scene unavailable for one second",
+            "evaluation_frame": 373,
+            "timestamp_s": 10.837890267372131,
+            "reason": "STALE_CONTROL_SCENE",
+            "source_frame": 373,
+            "applied_command": {
+              "frame_id": 373,
+              "timestamp_s": 10.837890267372131,
+              "throttle": 0.0,
+              "brake": 1.0,
+              "steering": -0.014958194456994534,
+              "reverse": false,
+              "handbrake": false,
+              "source": "SAFETY",
+              "gear": 1
+            }
+          },
+          "reason": "runtime_failure"
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 711.973877966404,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 146.18510389328003,
+            "index": 34,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 242.48614728450775,
+            "index": 61,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 409.63143983483315,
+            "index": 102,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_7f68e2a8035848f2a6f7415feca49be2",
+          "distance_m": 0.00022117618937045336,
+          "duration_s": 0.10000000149011612,
+          "maximum_speed_kmh": 0.007588771451302204,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.5626335999695584,
+          "simulation_wall_ratio": 0.24260254349127117,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "943f0f0dec22ce783a236bde75556db545923e672f154df0d466eaca53e87a61",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "seed": 1703,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "f63cbc5a4cfe77243e5d9d3cd9613287bcd1674bcc7bd5f9826b16da379215c3",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 58.68799999996554,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\7e614c81a75746b39dda91b60dbbb8ee\\report.json",
+      "report_sha256": "a9c5e3acd7e5365430e3dac43375cbd3cc74a4cb4e818742a82b2a215cc9f9b9",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\7e614c81a75746b39dda91b60dbbb8ee\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.98499999998603
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 26.65700000000652
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.21900000004098
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.51600000006147
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 35.81299999996554
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 40.71900000004098
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 48.10999999998603
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 48.375
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 363,
+        "timestamp_s": 11.674959771335125,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "ROBOSPHERE",
+          "fault": {
+            "stage": "command_application",
+            "exception_type": "ControlSceneTimeout",
+            "message": "Current synchronized sensor scene unavailable for one second",
+            "evaluation_frame": 363,
+            "timestamp_s": 11.674959771335125,
+            "applied_command": {
+              "frame_id": 363,
+              "timestamp_s": 11.674959771335125,
+              "throttle": 0.0,
+              "brake": 1.0,
+              "steering": -0.015091920271515846,
+              "reverse": false,
+              "handbrake": false,
+              "source": "SAFETY",
+              "gear": 1
+            },
+            "injected_validation_fault": false
+          },
+          "reason": "runtime_failure"
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 711.973877966404,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 146.18510389328003,
+            "index": 34,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 242.48614728450775,
+            "index": 61,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 409.63143983483315,
+            "index": 102,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_091895b6fd2c45fe9e56c01008174296",
+          "distance_m": 0.000600891187787056,
+          "duration_s": 1.1000000163912773,
+          "maximum_speed_kmh": 0.007588771451302204,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.5449298999737948,
+          "simulation_wall_ratio": 0.23066750879249884,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "943f0f0dec22ce783a236bde75556db545923e672f154df0d466eaca53e87a61",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "seed": 1703,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 775.5470000000205,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": false,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'ROBOSPHERE'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\b3a5746a2ccf4ac08de730d58e764795\\report.json",
+      "report_sha256": "ba9f494b14e8b1da5ae980f4ad3f60d390a9ae766b3b3af1477fc1b5713c18ab",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\b3a5746a2ccf4ac08de730d58e764795\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 19.484000000054948
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 22.17200000002049
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 28.43700000003446
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 28.68700000003446
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 29.71799999999348
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.40600000007544
+        }
+      ],
+      "last_drive_stop": null,
+      "presentation_failure": null,
+      "presentation_failures": [],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 711.973877966404,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 146.18510389328003,
+            "index": 34,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 242.48614728450775,
+            "index": 61,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 409.63143983483315,
+            "index": 102,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "NORMAL": {
+          "status": "RUNNING",
+          "reason": null,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2",
+          "distance_m": 156.3512154797993,
+          "duration_s": 181.90000271052122,
+          "maximum_speed_kmh": 32.01610767578204,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.5135819000424817,
+          "simulation_wall_ratio": 0.2639602110449568,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "943f0f0dec22ce783a236bde75556db545923e672f154df0d466eaca53e87a61",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": null
+        }
+      }
+    },
+    {
+      "seed": 1703,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 70.26600000006147,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\57bb65b04e24411d80261103cea4f574\\report.json",
+      "report_sha256": "18c9bf950af23533c84cc5240c4530c6622feb3a7908e1f18b44a3791f358426",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\57bb65b04e24411d80261103cea4f574\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 31.063000000081956
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.59400000004098
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 45.15700000000652
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 45.563000000081956
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 47.21900000004098
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 53.65700000000652
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 54.98499999998603
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 55.34400000004098
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 435,
+        "timestamp_s": 11.657559737563133,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "ROBOSPHERE",
+          "fault": {
+            "stage": "hybrid_execution",
+            "exception_type": "ControlSceneTimeout",
+            "message": "Current synchronized sensor scene unavailable for one second",
+            "evaluation_frame": 435,
+            "timestamp_s": 11.657559737563133,
+            "reason": "STALE_CONTROL_SCENE",
+            "source_frame": 435,
+            "applied_command": {
+              "frame_id": 435,
+              "timestamp_s": 11.657559737563133,
+              "throttle": 0.0,
+              "brake": 1.0,
+              "steering": -0.014958194456994534,
+              "reverse": false,
+              "handbrake": false,
+              "source": "SAFETY",
+              "gear": 1
+            }
+          },
+          "reason": "runtime_failure"
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 711.973877966404,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 146.18510389328003,
+            "index": 34,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 242.48614728450775,
+            "index": 61,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 409.63143983483315,
+            "index": 102,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e6d1e1e46a074db1a431e1b95dee91d5",
+          "distance_m": 0.00022117618937045336,
+          "duration_s": 0.10000000149011612,
+          "maximum_speed_kmh": 0.007588771451302204,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.7491403999738395,
+          "simulation_wall_ratio": 0.2502910963074251,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "943f0f0dec22ce783a236bde75556db545923e672f154df0d466eaca53e87a61",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "seed": 2707,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 39.71799999999348,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\ada9d85dd5da43a89777020bb3715b62\\report.json",
+      "report_sha256": "197ffb29150188a17d862c276c91f384e97ddb903e76f163bbb0648e6b1013d3",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\ada9d85dd5da43a89777020bb3715b62\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 26.406000000075437
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 29.56200000003446
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 37.15600000007544
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 37.46799999999348
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.76500000001397
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.96799999999348
+        },
+        {
+          "phase": "ERROR",
+          "arm": 0,
+          "reason": "Drive could not start; no recording was created. Free GPU to close this session.",
+          "wall_s": 39.10900000005495
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "presentation_failed",
+        "status": "ERROR",
+        "frame_id": 405,
+        "timestamp_s": 10.412398912012577,
+        "detail": "presentation_failed"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "NORMAL",
+          "reason": "Egypt route failed revalidation before release: {'length_600_to_800_m': True, 'connected_driving_lanes': False, 'three_separated_passing_sections': True}",
+          "fault": null,
+          "phase": "STARTING",
+          "frame_id": 404
+        }
+      ],
+      "route_validation": null,
+      "runs": {}
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 39.328000000095926,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\eb9e51fb55734c469f3476f7930178db\\report.json",
+      "report_sha256": "26b9ea8973d774ee7331930ec8b33bc26151323ffaa475f6b337c2835125c550",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\eb9e51fb55734c469f3476f7930178db\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.76500000001397
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 26.609000000054948
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.15600000007544
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.60900000005495
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.28100000007544
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.578000000095926
+        },
+        {
+          "phase": "ERROR",
+          "arm": 0,
+          "reason": "Drive could not start; no recording was created. Free GPU to close this session.",
+          "wall_s": 38.68700000003446
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "presentation_failed",
+        "status": "ERROR",
+        "frame_id": 333,
+        "timestamp_s": 9.340039145201445,
+        "detail": "presentation_failed"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "ROBOSPHERE",
+          "reason": "Egypt route failed revalidation before release: {'length_600_to_800_m': True, 'connected_driving_lanes': False, 'three_separated_passing_sections': True}",
+          "fault": null,
+          "phase": "STARTING",
+          "frame_id": 332
+        }
+      ],
+      "route_validation": null,
+      "runs": {}
+    },
+    {
+      "seed": 3709,
+      "first_mode": "NORMAL",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 773.6879999999655,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": false,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'ROBOSPHERE'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\f98d0a90e6f44a63b37f1646984fe1c3\\report.json",
+      "report_sha256": "48a7ab5bda914c2cfae71147ad7a9b015a05bd202b4cba865bc694b9fd534c53",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\f98d0a90e6f44a63b37f1646984fe1c3\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.45299999997951
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 26.358999999938533
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.93799999996554
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 34.28099999995902
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 35.56299999996554
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 39.98399999993853
+        }
+      ],
+      "last_drive_stop": null,
+      "presentation_failure": null,
+      "presentation_failures": [],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 712.2865189909935,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 95.31999588012695,
+            "index": 24,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 193.79385805130005,
+            "index": 50,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 316.65328907966614,
+            "index": 82,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "NORMAL": {
+          "status": "RUNNING",
+          "reason": null,
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba",
+          "distance_m": 110.24587573731478,
+          "duration_s": 167.70000249892473,
+          "maximum_speed_kmh": 31.213874557043326,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.7077590000117198,
+          "simulation_wall_ratio": 0.24565089559227388,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "0925d8cd4fe866e92fcb97f03529e101a40a9f8f369a8c8920757a554f2bfecb",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "NORMAL"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": null
+        }
+      }
+    },
+    {
+      "seed": 3709,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 68.875,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\62eb5c1c35994f99acfb624fe03cc882\\report.json",
+      "report_sha256": "0721cd548b05c1a7e78eafdabbb4454b7f23860fb0f8a125029a4cc92a3e9808",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\62eb5c1c35994f99acfb624fe03cc882\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 29.85999999998603
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 33.04700000002049
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 43.53200000000652
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 43.875
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 45.75
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 52.625
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 54.125
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 54.40700000000652
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 357,
+        "timestamp_s": 11.364575058221817,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "ROBOSPHERE",
+          "fault": {
+            "stage": "hybrid_execution",
+            "exception_type": "ControlSceneTimeout",
+            "message": "Current synchronized sensor scene unavailable for one second",
+            "evaluation_frame": 357,
+            "timestamp_s": 11.364575058221817,
+            "reason": "STALE_CONTROL_SCENE",
+            "source_frame": 357,
+            "applied_command": {
+              "frame_id": 357,
+              "timestamp_s": 11.364575058221817,
+              "throttle": 0.0,
+              "brake": 1.0,
+              "steering": -0.07678505778312683,
+              "reverse": false,
+              "handbrake": false,
+              "source": "SAFETY",
+              "gear": 1
+            }
+          },
+          "reason": "runtime_failure"
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 712.2865189909935,
+        "maximum_segment_gap_m": 7.929994106292725,
+        "passing_sections": [
+          {
+            "progress_m": 95.31999588012695,
+            "index": 24,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 193.79385805130005,
+            "index": 50,
+            "sides": [
+              "left"
+            ]
+          },
+          {
+            "progress_m": 316.65328907966614,
+            "index": 82,
+            "sides": [
+              "left"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_3844e12afe31473fb91a570e8a78da32",
+          "distance_m": 0.00019958498887717724,
+          "duration_s": 0.10000000149011612,
+          "maximum_speed_kmh": 0.00677471892351807,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.7103629000484943,
+          "simulation_wall_ratio": 0.2320213642724668,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "0925d8cd4fe866e92fcb97f03529e101a40a9f8f369a8c8920757a554f2bfecb",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "EXECUTING",
+              "realized": false,
+              "measurements": {
+                "approach_m": 7.62939453125e-06
+              },
+              "transitions": [
+                {
+                  "phase": "REQUESTED",
+                  "frame_id": 355,
+                  "timestamp_s": 11.264575056731701,
+                  "reason": null
+                },
+                {
+                  "phase": "EXECUTING",
+                  "frame_id": 355,
+                  "timestamp_s": 11.264575056731701,
+                  "reason": null
+                }
+              ],
+              "reason": null,
+              "began_s": 11.264575056731701,
+              "start_position": [
+                109.50276947021484,
+                53.29157638549805,
+                0.0014949607430025935
+              ]
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "source": "LIVE_NATIVE_CARLA",
+      "source_sha256": "cb08f0cbef3e88b14fd4ce4de175398ea9f53769bcf5ed197237bafc8cf606a4",
+      "source_unchanged": true,
+      "native_acceptance": false,
+      "completed_without_shortening": false,
+      "wall_s": 42.82799999997951,
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "simulator_exit_confirmed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "exports_closed": true,
+      "finish_completed": null,
+      "video_playback_after_exit": {
+        "passed": false,
+        "error": "'NORMAL'"
+      },
+      "worker_deadline_expired": false,
+      "error": null,
+      "report": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\f0f432e71f904cae96ca2e5323b5e399\\report.json",
+      "report_sha256": "26f17cd3ab0c46c0b4220a910234735d1476b9d6002835e979161319507be1d6",
+      "source_archive": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\f0f432e71f904cae96ca2e5323b5e399\\source.zip",
+      "phases": [
+        {
+          "phase": "PREPARING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 20.718999999924563
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 23.030999999959022
+        },
+        {
+          "phase": "CHOOSING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 30.233999999938533
+        },
+        {
+          "phase": "READY",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 30.5
+        },
+        {
+          "phase": "STARTING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 31.70299999997951
+        },
+        {
+          "phase": "DRIVING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 36.78099999995902
+        },
+        {
+          "phase": "FINALIZING",
+          "arm": 0,
+          "reason": null,
+          "wall_s": 38.061999999918044
+        },
+        {
+          "phase": "RESULTS",
+          "arm": 0,
+          "reason": "The first recording ended before arrival or contact; its evidence is saved.",
+          "wall_s": 38.171999999904074
+        }
+      ],
+      "last_drive_stop": {
+        "reason": "runtime_failure",
+        "status": "ERROR",
+        "frame_id": 307,
+        "timestamp_s": 10.187590427696705,
+        "detail": "Current synchronized sensor scene unavailable for one second"
+      },
+      "presentation_failure": null,
+      "presentation_failures": [
+        {
+          "mode": "ROBOSPHERE",
+          "fault": {
+            "stage": "hybrid_execution",
+            "exception_type": "ControlSceneTimeout",
+            "message": "Current synchronized sensor scene unavailable for one second",
+            "evaluation_frame": 307,
+            "timestamp_s": 10.187590427696705,
+            "reason": "STALE_CONTROL_SCENE",
+            "source_frame": 307,
+            "applied_command": {
+              "frame_id": 307,
+              "timestamp_s": 10.187590427696705,
+              "throttle": 0.0,
+              "brake": 1.0,
+              "steering": 5.305583385961654e-07,
+              "reverse": false,
+              "handbrake": false,
+              "source": "SAFETY",
+              "gear": 1
+            }
+          },
+          "reason": "runtime_failure"
+        }
+      ],
+      "route_validation": {
+        "passed": true,
+        "gates": {
+          "length_600_to_800_m": true,
+          "connected_driving_lanes": true,
+          "three_separated_passing_sections": true,
+          "native_sidewalk_crossings": true
+        },
+        "length_m": 714.5668123066425,
+        "maximum_segment_gap_m": 7.9300079345703125,
+        "passing_sections": [
+          {
+            "progress_m": 67.213623046875,
+            "index": 18,
+            "sides": [
+              "right"
+            ]
+          },
+          {
+            "progress_m": 258.8091504871845,
+            "index": 70,
+            "sides": [
+              "right"
+            ]
+          },
+          {
+            "progress_m": 466.67767956852913,
+            "index": 124,
+            "sides": [
+              "right"
+            ]
+          }
+        ]
+      },
+      "runs": {
+        "ROBOSPHERE": {
+          "status": "ERROR",
+          "reason": "runtime_failure",
+          "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c27d1bd1bebd4fda989fd64ce2345eb3",
+          "distance_m": 0.0002631760435178876,
+          "duration_s": 0.15000000223517418,
+          "maximum_speed_kmh": 0.007589252579267463,
+          "contact_callbacks": 0,
+          "collisions": 0,
+          "maximum_sensor_wall_age_s": 0.5524172999430448,
+          "simulation_wall_ratio": 0.3130844575150508,
+          "completed_maneuvers": [],
+          "initial_condition_audit": {
+            "passed": true,
+            "failures": [],
+            "light_samples": [
+              {
+                "id": 9,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 10,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 11,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 12,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 13,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 14,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 15,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 16,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 17,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 18,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 19,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 20,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 21,
+                "expected_state": "Green",
+                "actual_state": "Green",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 22,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              },
+              {
+                "id": 23,
+                "expected_state": "Red",
+                "actual_state": "Red",
+                "elapsed_s": 0.0,
+                "frozen": true
+              }
+            ],
+            "condition_id": "2446d4c67ac9898ee412618c1b4e8929bef99bb9bb90572cb91edeebad76b7fe",
+            "matching_scope": "Initial actor poses, profiles, zero velocities, signals, sensors, clock and seed; reactive futures may diverge",
+            "ego_blueprint": "vehicle.mercedes.coupe_2020",
+            "vehicle_variant": "ROBOSPHERE"
+          },
+          "actual_population": {
+            "vehicles": 60,
+            "pedestrians": 100,
+            "controllers": 96,
+            "walkers_active": 0
+          },
+          "events": {
+            "pass_obstacle_0": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_1": {
+              "kind": "DOUBLE_PARK",
+              "persona": "ORDINARY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pass_obstacle_2": {
+              "kind": "DOUBLE_PARK",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "queue_lead": {
+              "kind": "STOP_GO",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "hesitant_merge": {
+              "kind": "CUT_IN",
+              "persona": "CAUTIOUS",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "gap_stream": {
+              "kind": "CHANGING_GAPS",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "occlusion_vehicle": {
+              "kind": "DOUBLE_PARK",
+              "persona": "IMPATIENT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_brake": {
+              "kind": "STOP_GO",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_occluded": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "OCCLUDED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_hesitant": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "HESITANT",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "pedestrian_retreating": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "RETREATING",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlap_person": {
+              "kind": "PEDESTRIAN_CROSSING",
+              "persona": "STEADY",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            },
+            "overlapping_hazards": {
+              "kind": "OVERLAP",
+              "persona": "COMBINED",
+              "status": "PENDING",
+              "realized": false,
+              "measurements": {},
+              "transitions": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "software_checks": {
+    "python-tests-final.log": {
+      "log": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\python-tests-final.log",
+      "sha256": "34d7c2192f2036bfc77ba5c304a99abf15a5bd9faeeccd126df5f4c94c23e06e",
+      "scope": "OFFLINE_SOFTWARE_ONLY",
+      "result": "950 discovered, 946 passed, 4 skipped",
+      "success_marker_present": true
+    },
+    "npm-tests-final.log": {
+      "log": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\native-20261024-run1\\npm-tests-final.log",
+      "sha256": "615b5dcded069bc08c269325aef238ccfb939a6d8ac3547796ff7efe5bf0bab8",
+      "scope": "OFFLINE_SOFTWARE_ONLY",
+      "result": "207 passed, 0 failed",
+      "success_marker_present": true
+    }
+  },
+  "final_preflights": {
+    "acceptance-not-started": {
+      "can_run": false,
+      "reason": "Full current-source development matrix must pass before the protected acceptance window can be used",
+      "required_reservation_s": 7200.0,
+      "authorization_unchanged": true
+    },
+    "development-remaining-preflight": {
+      "can_run": false,
+      "reason": "Pending: authorized phase cannot cover this matrix; no allowance was reset or extended",
+      "required_reservation_s": 7200.0,
+      "authorization_unchanged": true
+    }
+  },
+  "storage": {
+    "free_bytes": 12302249984,
+    "initial_free_bytes_after_disk_failure": 96636928,
+    "operation": "Lossless NTFS LZX compression of retained sensor arrays and telemetry; no raw recording retirement",
+    "sample_hashes": [
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_5941beb860394da5bdd9c1d4f5492b2b\\telemetry\\frames.jsonl",
+        "before_sha256": "036d6ffb62976a2ad55d06eaea848040c6aca102ead9674b9fdb8a877d2aeb8b",
+        "after_sha256": "036d6ffb62976a2ad55d06eaea848040c6aca102ead9674b9fdb8a877d2aeb8b"
+      },
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2b7e0b6e34804c84a78eabef39db0b82\\depth\\depth-318-265.npy",
+        "before_sha256": "5ed85b5f817d7c010780b80f8e69f7d517deb33505a5ac00932632a83a70d936",
+        "after_sha256": "5ed85b5f817d7c010780b80f8e69f7d517deb33505a5ac00932632a83a70d936"
+      }
+    ],
+    "sample_hashes_match": true
+  }
+}

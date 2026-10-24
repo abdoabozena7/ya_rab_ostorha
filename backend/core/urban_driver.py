@@ -17,6 +17,17 @@ from .route_terminal import terminal_speed_mps
 def urban_forecast(scene, horizon_s):
     """Recompute bounded physical alternatives from this same measured frame."""
     grid = np.round(np.arange(int(math.ceil(max(3., horizon_s) / .1)) + 1) * .1, 6)
+    identity = f'URBAN_BOUNDED_V2:{grid[-1]}'
+    if scene.prediction.get('hypothesis_set_id') == identity:
+        return scene
+    # The behavior owner and independent veto use the same immutable measured
+    # frame. Share only its forecast calculation; both still check their own
+    # command, path, current time and clearance proof.
+    cache = scene.space.urban_forecasts
+    key = (id(scene.prediction), len(grid))
+    cached = cache.get(key)
+    if cached is not None and cached[0] is scene.prediction:
+        return replace(scene, prediction=cached[1])
     tracks = scene.prediction['tracks']
     modes = kinematic_modes(tracks, grid=grid)
     for track in tracks:
@@ -51,8 +62,12 @@ def urban_forecast(scene, horizon_s):
                           'weight_kind': 'UNRANKED_PHYSICAL_ALTERNATIVE',
                           'points': np.column_stack((grid, xy)).tolist()})
     prediction = {**dict(scene.prediction), 'control_trajectories': modes, 'horizon_s': float(grid[-1]),
-                  'hypothesis_set_id': f'URBAN_BOUNDED_V2:{grid[-1]}'}
-    return replace(scene, prediction=freeze_json(prediction))
+                  'hypothesis_set_id': identity}
+    prediction = freeze_json(prediction)
+    cache[key] = (scene.prediction, prediction)
+    while len(cache) > 4:
+        cache.popitem(last=False)
+    return replace(scene, prediction=prediction)
 
 
 class UrbanManeuverDriver(HybridDriver):

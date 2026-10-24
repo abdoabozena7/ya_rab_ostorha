@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import numpy as np
 from backend.core.hybrid_driver import HybridDriver
 from backend.core.hybrid_acceptance import validate
@@ -14,6 +14,22 @@ from tests import test_control_scene as measured_fixtures
 
 
 class HybridDrivingTests(unittest.TestCase):
+    def test_map_context_reuse_expires_with_frame_session_or_route_and_cannot_be_mutated(self):
+        from backend.core.service import SimulationService
+        tools=SimpleNamespace(native_route=[])
+        provider=SimpleNamespace(name='test-fixture',allow_navigation=True,dashboard_tools=tools,
+            hybrid_road_context=Mock(return_value={'centerline':[[0.,0.],[50.,0.]],'left_allowed':True}))
+        service=SimulationService(provider)
+        service.clock.frame_id=10;service.clock.timestamp_s=.5
+        road=service._hybrid_road_context();road['centerline'][0][1]=99.;road['left_allowed']=False
+        fresh=service._hybrid_road_context()
+        self.assertEqual(fresh['centerline'][0],[0.,0.]);self.assertTrue(fresh['left_allowed'])
+        self.assertEqual(provider.hybrid_road_context.call_count,1)
+        service.clock.frame_id=11;service._hybrid_road_context()
+        service.session_id='new';service._hybrid_road_context()
+        tools.native_route=[];service._hybrid_road_context()
+        self.assertEqual(provider.hybrid_road_context.call_count,4)
+
     def measured(self):
         scene, base, _ = measured_fixtures.ControlSceneTests().measured()
         road={'session_id':'test','centerline':[[0.,0.],[50.,0.]],'lane_width_m':3.5,

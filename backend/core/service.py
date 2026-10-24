@@ -403,6 +403,17 @@ class SimulationService:
         return (mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') == 'BASELINE' or
                 mode == ControlMode.MANUAL and self.manual_driving_mode == 'NORMAL')
 
+    def _hybrid_road_context(self):
+        """Reuse map geometry within this frame, with isolated caller copies."""
+        tools = getattr(self.provider, 'dashboard_tools', None)
+        key = (self.session_id, *self._context(), id(self.provider),
+               id(getattr(self.provider, 'navigation', None)), id(getattr(tools, 'native_route', None)))
+        cached = getattr(self, '_hybrid_road_cache', None)
+        if cached is None or cached[0] != key:
+            cached = (key, copy.deepcopy(self.provider.hybrid_road_context(self.session_id)))
+            self._hybrid_road_cache = cached
+        return copy.deepcopy(cached[1])
+
     def _hybrid_execution_step(self,*,route_bypass=False):
         """Independent per-native-frame veto after the behavior owner proposes."""
         from .maneuver_candidates import ExecutionShield, signed_path
@@ -418,7 +429,7 @@ class SimulationService:
                 scene = urban_forecast(scene, scene.prediction['horizon_s'])
             path = signed_path(scene.observation.ego.speed_mps, base.steering,
                                base.throttle*2.5-base.brake*5., scene.geometry, base.reverse, bounded=base.reverse)
-            road = self.provider.hybrid_road_context(self.session_id)
+            road = self._hybrid_road_context()
             ok, reason, evidence = ExecutionShield().check(scene, path, base, road, timestamp_s=stamp, wall_s=self.now(),
                 forward_recovery=self.maneuver_status.get('action') in ('FOLLOW','SLOW'))
             if self.now()-scene.received_wall_s > .25:
@@ -1331,7 +1342,7 @@ class SimulationService:
                 return
             if self.control_scene is not None and not self._urban_driver():
                 self.provider.find_hybrid_alternative(self.control_scene)
-            road = self.provider.hybrid_road_context(self.session_id)
+            road = self._hybrid_road_context()
             cap = min(self.journey['speed_kmh']/3.6, self.provider.navigation_speed_limit_mps)
             if bypass_engaged:
                 cap=min(cap,bypass.config['maneuver_speed_mps'])
