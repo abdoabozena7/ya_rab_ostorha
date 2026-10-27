@@ -8,6 +8,40 @@ from tests.core_packets import packet, sensor, command, metadata, TRANSFORM
 
 
 class ContractTests(unittest.TestCase):
+    def test_freezing_builtin_and_custom_containers_preserves_shared_validated_values(self):
+        from collections import UserDict
+        class Values(list):
+            pass
+        class Count(int):
+            pass
+        class Measure(float):
+            pass
+        class Label(str):
+            pass
+        row=Values([Measure(.1),Count(2),True,None,Label('measured')])
+        payload=UserDict({'first':row,'second':row,'nested':({'value':3.},)})
+        frozen=freeze_json(payload)
+        expected={'first':[.1,2,True,None,'measured'],'second':[.1,2,True,None,'measured'],
+                  'nested':[{'value':3.}]}
+        self.assertEqual(to_dict(frozen),expected)
+        self.assertIs(frozen['first'],frozen['second'])
+        row.append(99.)
+        payload['nested'][0]['value']=99.
+        self.assertEqual(to_dict(frozen),expected)
+        with self.assertRaises(TypeError):frozen['nested'][0]['value']=1.
+
+    def test_custom_container_dispatch_does_not_bypass_invalid_nested_payloads(self):
+        from collections import UserDict
+        class Values(list):
+            pass
+        class Measure(float):
+            pass
+        cyclic=Values();cyclic.append(UserDict({'cycle':cyclic}))
+        for value in (UserDict({1:'invalid key'}),Values([Measure('nan')]),
+                      {'nested':UserDict({'value':10**400})},cyclic):
+            with self.subTest(value_type=type(value).__name__),self.assertRaises(ValueError):
+                freeze_json(value)
+
     def test_frozen_modes_share_equal_bounds_without_sharing_mutable_legacy_bounds(self):
         from backend.core.kinematic_prediction import kinematic_modes
         tracks=[{'id':'person','class':'PERSON','position_m':[10.,2.],'velocity_mps':[0.,0.]}]

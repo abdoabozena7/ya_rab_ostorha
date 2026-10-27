@@ -120,18 +120,27 @@ def freeze_float_rows(value):
 def freeze_json(value, _memo=None):
     # Only containers created here can skip validation. An arbitrary tuple or
     # MappingProxyType may still contain mutable or non-finite nested values.
-    if type(value) in (_FrozenJSONSequence,_FrozenJSONMapping):return value
+    kind=type(value)
+    if kind is _FrozenJSONSequence or kind is _FrozenJSONMapping:return value
     # Numeric trajectory samples dominate these payloads. Validate primitives
     # before the comparatively costly Mapping ABC checks on every sample.
-    if type(value) is float:
+    if kind is float:
         if not math.isfinite(value):raise ValueError('value must be a finite number')
         return value
-    if value is None or isinstance(value, (str, bool)):
+    if value is None or kind is str or kind is bool:
         return value
-    if isinstance(value, (int, float)):
+    if kind is int:
         finite(value)
         return value
-    sequence=isinstance(value,(tuple,list));mapping=isinstance(value,Mapping)
+    sequence=kind is list or kind is tuple
+    mapping=kind is dict
+    if not sequence and not mapping:
+        if isinstance(value,(str,bool)):return value
+        if isinstance(value,(int,float)):
+            finite(value)
+            return value
+        sequence=isinstance(value,(tuple,list))
+        mapping=not sequence and isinstance(value,Mapping)
     if not sequence and not mapping:
         raise ValueError('Payload must contain JSON data or asset references, not binary objects')
     if _memo is None:_memo={}

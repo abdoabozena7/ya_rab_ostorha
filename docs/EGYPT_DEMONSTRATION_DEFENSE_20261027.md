@@ -6,14 +6,15 @@
 authorization or completion certificate.** No new CARLA run or browser acceptance
 was performed to write it. The [delivery index](evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)
 keeps source identities, measurements, failed attempts and local artifact paths.
-The [delivery report](EGYPT_DELIVERY_20261027.md) and
-[fresh verification](evidence/egypt-urban-chaos-v1/delivery-verification-20261027.json)
-record the final offline checks and unresolved native prerequisites.
+The [current continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) and
+[fresh verification](evidence/egypt-urban-chaos-v1/freeze-continuation-verification-20261027.json)
+record the updated-source offline checks and unresolved native prerequisites.
+The [earlier delivery](EGYPT_DELIVERY_20261027.md) retains its historical source.
 
 | Evidence class | What may be said |
 | --- | --- |
 | Historical measured | Dated reports certify only their recorded source and protocol. Attempts 18/19 are short failed DEVELOPMENT diagnostics, not accepted route runs. |
-| Current source | Fresh delivery verification passed 210 JavaScript tests, 1,036 Python tests with 4 optional skips, and the dashboard build. Bounded replay comparisons passed; native deadline replay remains non-equivalent. No old certificate is relabeled as current. |
+| Current source | Fingerprint `4486828d...`: 210 JavaScript tests, 1,041 Python tests with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. New offline software certificate only; controlled-age replay does not reproduce native asynchronous timing. No old native result certifies this source. |
 | Experimental | Egypt maneuver driving remains restricted; learned research modes, the disabled path-entry predictor and shadow proposals have their own limits. |
 | Future | VLM integration, new RL training, maps and PERFORMANCE_60 acceptance are not delivered Egypt results. |
 
@@ -22,6 +23,13 @@ and [EGYPT_URBAN_CHAOS_V1.md](EGYPT_URBAN_CHAOS_V1.md), implemented by
 `evaluate_pair`, `evaluate_matrix` and `publication_gates` in
 `backend\core\egypt_urban.py`. A green UI state, unit tests, a playable video,
 zero contacts in a prefix or worker exit 0 cannot unlock Egypt.
+
+The [reproducible freezing benchmark](EGYPT_REPLAY_CONTINUATION_20261027.md#optimized-source-and-live-graph-measurements)
+measured median 1.62555 to 1.33070 ms and p95 1.73133 to 1.426885 ms on one
+actual captured pre-freeze graph, with 1,000 alternating samples per version.
+This isolated approximately 0.295 ms median saving does not establish a native
+latency reduction or fix Normal's stalls; full route/overtaking results remain
+unexecuted on this source. Safety and timing thresholds are unchanged.
 
 ## Actual architecture
 

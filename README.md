@@ -15,11 +15,14 @@ contacts, but failed timing: p95 215.750 ms, p99 234.514 ms and two frames over
 stalls remain unresolved natively. The ordered current-source DEVELOPMENT and
 holdout ACCEPTANCE matrices and final native browser gate have not executed.
 Prior certificates do not certify source changes made after their fingerprint.
-The [current delivery report](docs/EGYPT_DELIVERY_20261027.md) records fresh
-software verification: **210 JavaScript tests passed; 1,036 Python tests passed,
-4 optional skips; dashboard build passed**. Bounded saved-evidence replay passed
-its recorded-field comparisons but did not reproduce native deadline behavior.
-No new native admission certificate was issued.
+The [current continuation report](docs/EGYPT_FREEZE_CONTINUATION_20261027.md)
+records **210 JavaScript tests passed; 1,041 Python tests passed, 4 optional
+skips; dashboard build passed** on the updated driving source. Exact complete
+payloads match for all 30 selected saved decisions at controlled identical ages.
+Builtin dispatch reduces measured freezing cost on one captured prediction;
+this is not native timing improvement. A fresh **offline software** certificate
+was issued; no native admission or acceptance certificate was issued.
+The [earlier delivery](docs/EGYPT_DELIVERY_20261027.md) remains historical.
 
 ### Choose an execution mode
 
@@ -57,10 +60,11 @@ Saved MP4s can also be played directly without CARLA or a backend.
 - Node/npm with [the lockfile](package-lock.json) for dashboard checks;
   `npm ci` restores frontend dependencies when needed.
 - Egypt requires Town10HD_Opt, LOW/D3D12, retained evidence storage and an
-  existing authorized reservation. The historical 91.764 GiB free versus
-  provisional 130.431 GiB requirement was insufficient; current resource
-  measurements and exact remaining deficit are in the
-  [read-only resource preflight](docs/EGYPT_RESOURCE_PREFLIGHT_20261027.md).
+  existing authorized reservation. Storage still fails the provisional
+  130.431 GiB requirement; the latest snapshot and exact remaining deficit
+  are in the [continuation report](docs/EGYPT_FREEZE_CONTINUATION_20261027.md#f-remaining-blockers).
+  The [storage investigation](docs/EGYPT_STORAGE_CONTINUATION_20261027.md)
+  explains why an unverified C/D junction is not a supported solution.
 
 ```powershell
 npm test
@@ -76,6 +80,7 @@ Start here: [architecture, walkthrough and defense Q&A](docs/EGYPT_DEMONSTRATION
 · [machine-readable results/evidence index](docs/evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)
 · [strict execution gates](docs/EGYPT_COMPLETION_GATES_20261027.md)
 · [bounded offline diagnosis](docs/EGYPT_OFFLINE_DIAGNOSIS_20261027.md)
+· [exact saved-input replay and reproduction](docs/EGYPT_REPLAY_CONTINUATION_20261027.md)
 · [scenario contract](docs/EGYPT_URBAN_CHAOS_V1.md)
 · [repository/evidence/recovery workflow](docs/CONSOLIDATED_DELIVERY_20261014.md).
 The [shadow research package](docs/BEHAVIOR_PROPOSALS_20261027.md) remains

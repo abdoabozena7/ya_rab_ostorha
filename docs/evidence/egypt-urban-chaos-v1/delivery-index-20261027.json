@@ -4,23 +4,34 @@
   "status": "NOT_ACCEPTED",
   "task_complete": false,
   "native_acceptance": false,
-  "scope": "Documentation index of retained historical evidence; not a new execution certificate",
+  "scope": "Current offline continuation and retained historical evidence; not a native execution certificate",
   "current_source_verification": {
     "status": "OFFLINE_SUITES_AND_BUILD_PASSED_NATIVE_ASSURANCE_BLOCKED",
-    "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
-    "software_certificate": null,
-    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\delivery-verification-20261027.json",
-    "delivery_report": "docs\\EGYPT_DELIVERY_20261027.md",
+    "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+    "software_certificate": "output\\egypt-validation\\continuation-20261027\\software-gate.json",
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json",
+    "verification_sha256": "244a6010b32470eca52093c166193060a62a91f3c9ff140f8a8512ae7f800842",
+    "delivery_report": "docs\\EGYPT_FREEZE_CONTINUATION_20261027.md",
     "javascript_passed": 210,
-    "python_total": 1040,
-    "python_passed": 1036,
+    "python_total": 1045,
+    "python_passed": 1041,
     "python_optional_skips": 4,
     "dashboard_built": true,
     "bundle_syntax_passed": true,
     "bounded_replay_comparisons_passed": true,
+    "exact_complete_payload_decisions_matched": 30,
+    "controlled_behavior_age_ms": 100,
+    "controlled_shield_age_ms": 150,
     "native_deadline_replay_equivalence": false,
     "native_runs_executed_for_this_documentation": 0,
-    "note": "Fresh complete suites/build and bounded saved-evidence checks are recorded, not inherited from the historical certificate. Driving source is unchanged; changed frontend hashes are separately recorded. No new native admission certificate was issued and no native acceptance gate is closed."
+    "note": "Updated driving source has fresh complete suites/build and exact complete-payload comparison at controlled identical ages with full preceding history. One live-graph benchmark improves freezing cost only, not native timing. A new offline software certificate was issued; no historical native result certifies this source and no native acceptance gate is closed."
+  },
+  "previous_delivery_checkpoint": {
+    "commit": "0414f7128af22eed58d13bd362121826ca1e00ce",
+    "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\delivery-verification-20261027.json",
+    "report": "docs\\EGYPT_DELIVERY_20261027.md",
+    "scope": "Historical initial partial delivery; preserved without relabeling its source or results"
   },
   "path_contract": {
     "relative_to": "repository root",
@@ -56,6 +67,16 @@
     }
   },
   "preserved_evidence_chain": [
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json",
+      "report": "docs\\EGYPT_FREEZE_CONTINUATION_20261027.md",
+      "scope": "New-source offline suites/build, 30 exact controlled-age complete payloads, both actual live-graph trials and rejected exploratory tails; current source has no native diagnostics"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\storage-continuation-20261027.json",
+      "report": "docs\\EGYPT_STORAGE_CONTINUATION_20261027.md",
+      "scope": "Read-only supported-path investigation and dated capacity snapshot; multi-volume retention not implemented or verified. Later free-space snapshot is in freeze continuation verification."
+    },
     {
       "path": "docs\\evidence\\egypt-urban-chaos-v1\\native-execution-20261024.json",
       "scope": "Original failed preparations, single-arm attempts and failed six-pair development matrix; not current-source acceptance"
@@ -428,11 +449,11 @@
     "acceptance_attempted": false,
     "budget_sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854",
     "current_resource_resolution": "READ_ONLY_PREFLIGHT_COMPLETE_STORAGE_AND_NATIVE_PREREQUISITES_BLOCKED",
-    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\resource-preflight-20261027.json",
+    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json",
     "note": "Full-route acceptance sizing must use a complete successful development matrix; no ledger reset, additional authorization or archive deletion is implied."
   },
   "required_ordered_execution": {
-    "protected_2707_diagnostic": "FAILED_HISTORICALLY_AT_GATE_B",
+    "protected_2707_diagnostic": "NOT_EXECUTED_ON_CURRENT_SOURCE_HISTORICAL_GATE_B_FAILED",
     "normal_1703_current_ordered_diagnostic": "NOT_EXECUTED",
     "normal_3709_current_ordered_diagnostic": "NOT_EXECUTED",
     "complete_current_source_development": {
@@ -453,7 +474,7 @@
       "acceptance_artifact": null
     },
     "final_native_browser": "NOT_EXECUTED",
-    "updated_lifecycle_labels": "SOURCE_IMPLEMENTATION_PENDING_PARENT_VALIDATION_NOT_NATIVE_BROWSER_EVIDENCE"
+    "updated_lifecycle_labels": "OFFLINE_SOFTWARE_VERIFIED_NOT_NATIVE_BROWSER_EVIDENCE"
   },
   "scientific_limits": [
     "Egypt compares two complete drivers; no causal attribution to one subsystem without a controlled ablation.",

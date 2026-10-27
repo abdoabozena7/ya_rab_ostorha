@@ -1,5 +1,10 @@
 # Egypt V1 delivery - 27 October 2026
 
+**Historical checkpoint, published as `0414f7128af22eed58d13bd362121826ca1e00ce`.**
+The [later freezing continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) records
+updated driving source, fresh software verification and unchanged native
+acceptance blockers. Measurements below retain their original scope.
+
 ## A. Overall status
 
 **PARTIALLY COMPLETED / BLOCKED / NOT ACCEPTED.**

@@ -1,0 +1,492 @@
+{
+  "created_at_utc": "2026-10-27T19:23:14.911270+00:00",
+  "scope": "OFFLINE_FREEZE_OPTIMIZATION_AND_EXACT_CONTROLLED_AGE_REPLAY",
+  "status": "PARTIALLY_COMPLETED_BLOCKED_NOT_ACCEPTED",
+  "native_acceptance": false,
+  "native_runs_executed": 0,
+  "base_commit": "0414f7128af22eed58d13bd362121826ca1e00ce",
+  "previous_source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+  "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+  "source_unchanged_during_final_validation": true,
+  "source_manifest_delta": {
+    "backend/core/contracts.py": {
+      "before": "b25d2477807c9133c11caa56f9ead5123b206c76b1f06db4512ee6f127b3c3dc",
+      "after": "bd97cfe9b1350a16ab14bc15a5d235efb6fe25e9c7a6b082e66d2ac92272c24d"
+    }
+  },
+  "previous_full_manifest": "docs\\evidence\\egypt-urban-chaos-v1\\delivery-verification-20261027.json",
+  "current_full_manifest": {
+    "path": "output\\egypt-validation\\continuation-20261027\\software-gate.json",
+    "bytes": 31114,
+    "sha256": "59f190d0fed886056a85dedc4d8783e9ae7060f286afd78cba92129bddf06562"
+  },
+  "software": {
+    "npm_test_exit_code": 0,
+    "javascript_tests_passed": 210,
+    "python_tests_exit_code": 0,
+    "python_tests_total": 1045,
+    "python_tests_passed": 1041,
+    "python_optional_skips": 4,
+    "python_duration_s": 39.352,
+    "frontend_build_exit_code": 0,
+    "bundle_syntax_exit_code": 0,
+    "diff_check_exit_code": 0,
+    "replay_verified": true,
+    "replay_scope": "30 complete saved DEVELOPMENT decisions at identical controlled 100/150ms ages, full preceding input/driver history",
+    "native_deadline_replay_equivalence": false,
+    "native_acceptance": false
+  },
+  "files": [
+    {
+      "path": "frontend\\mission-state.js",
+      "bytes": 15218,
+      "sha256": "91cbb72e3aa0c50e5827033d4b543db75fc8c4b870753dd18b14304ac6d16768"
+    },
+    {
+      "path": "frontend\\sequential-drive.js",
+      "bytes": 29195,
+      "sha256": "d84255bcf03b20f567f62911719e75f50796f67f78eda81118d441c440c738a5"
+    },
+    {
+      "path": "frontend\\dashboard.bundle.js",
+      "bytes": 500740,
+      "sha256": "3262fb4ce3378e34650d518ba6657dc145c091d3f7ccde202ab149ef3ac38062"
+    },
+    {
+      "path": "frontend\\dashboard.styles.css",
+      "bytes": 240460,
+      "sha256": "362b2151e324e0aec991ba7b12cc9da1181ab8bdaa3eae85cdf083b0ea19d457"
+    },
+    {
+      "path": "scripts\\replay_urban_control.py",
+      "bytes": 17818,
+      "sha256": "7ea6c2316143d46972d43aa4e988381a2726580d604a87053785e64f6b82b329"
+    },
+    {
+      "path": "scripts\\benchmark_freeze_json.py",
+      "bytes": 4562,
+      "sha256": "a67bf7ce0bc18f79e93537e64959b9e2e12e8a72b6802bf824dd5d331c2f1468"
+    },
+    {
+      "path": "tests\\test_core_contracts.py",
+      "bytes": 9997,
+      "sha256": "0c39f12c98f9902c5fb8c63081e39c65df3ce8a5d3b16f8faa60768b1e3c282e"
+    },
+    {
+      "path": "tests\\test_replay_urban_control.py",
+      "bytes": 2875,
+      "sha256": "5eee29d88c3b294d97688665a13d65e7dfa8f2f2e54d19a19312110bbe8a89c2"
+    }
+  ],
+  "replays": [
+    {
+      "artifact": "original-repeat.json",
+      "baseline": "original-baseline.json",
+      "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+      "history_frames": 582,
+      "history_sha256": "6a3944cbeca9f2f50ef3af6c587008d498a99f1074e0ca67711ff9cdff9946d9",
+      "clock": {
+        "received": "100 + frame_id",
+        "build_elapsed_s": 0,
+        "planning_elapsed_s": 0,
+        "behavior_age_ms": 100.0,
+        "shield_age_ms": 150.0
+      },
+      "comparison": {
+        "equivalent": true,
+        "differences": [],
+        "baseline_rows": 21,
+        "candidate_rows": 21
+      }
+    },
+    {
+      "artifact": "original-optimized.json",
+      "baseline": "original-baseline.json",
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "history_frames": 582,
+      "history_sha256": "6a3944cbeca9f2f50ef3af6c587008d498a99f1074e0ca67711ff9cdff9946d9",
+      "clock": {
+        "received": "100 + frame_id",
+        "build_elapsed_s": 0,
+        "planning_elapsed_s": 0,
+        "behavior_age_ms": 100.0,
+        "shield_age_ms": 150.0
+      },
+      "comparison": {
+        "equivalent": true,
+        "differences": [],
+        "baseline_rows": 21,
+        "candidate_rows": 21
+      }
+    },
+    {
+      "artifact": "latest-repeat.json",
+      "baseline": "latest-baseline.json",
+      "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+      "history_frames": 389,
+      "history_sha256": "a71819b97efc770f3335e4db8a720709f35f57a74f471e10671c092f9418a5be",
+      "clock": {
+        "received": "100 + frame_id",
+        "build_elapsed_s": 0,
+        "planning_elapsed_s": 0,
+        "behavior_age_ms": 100.0,
+        "shield_age_ms": 150.0
+      },
+      "comparison": {
+        "equivalent": true,
+        "differences": [],
+        "baseline_rows": 9,
+        "candidate_rows": 9
+      }
+    },
+    {
+      "artifact": "latest-optimized.json",
+      "baseline": "latest-baseline.json",
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "history_frames": 389,
+      "history_sha256": "a71819b97efc770f3335e4db8a720709f35f57a74f471e10671c092f9418a5be",
+      "clock": {
+        "received": "100 + frame_id",
+        "build_elapsed_s": 0,
+        "planning_elapsed_s": 0,
+        "behavior_age_ms": 100.0,
+        "shield_age_ms": 150.0
+      },
+      "comparison": {
+        "equivalent": true,
+        "differences": [],
+        "baseline_rows": 9,
+        "candidate_rows": 9
+      }
+    }
+  ],
+  "benchmarks": [
+    {
+      "scope": "OFFLINE_REAL_PRE_FREEZE_GRAPH_MICROBENCHMARK_NOT_NATIVE_TIMING",
+      "native_acceptance": false,
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "original_contracts_sha256": "b25d2477807c9133c11caa56f9ead5123b206c76b1f06db4512ee6f127b3c3dc",
+      "optimized_contracts_sha256": "bd97cfe9b1350a16ab14bc15a5d235efb6fe25e9c7a6b082e66d2ac92272c24d",
+      "live_sample_sha256": "233889b82122d639243bd6ab4f25b855792da8dc5b2ed1524d87ddddaca8c0fd",
+      "evaluation_frame": 900,
+      "tracks": 48,
+      "physical_modes": 54,
+      "equal_complete_values": true,
+      "frozen_rows_and_shared_trajectory_input_verified": true,
+      "samples_per_implementation": 1000,
+      "method": "Unprofiled perf_counter_ns, alternating order, 20 warmups, cyclic GC disabled/restored, no concurrent replay jobs",
+      "timing_ms": {
+        "original": {
+          "median": 1.6005,
+          "p95": 1.709145,
+          "p99": 2.4446659999999993
+        },
+        "optimized": {
+          "median": 1.28635,
+          "p95": 1.3661050000000001,
+          "p99": 1.9854199999999997
+        }
+      },
+      "limitations": "One saved live-shaped prediction; no end-to-end or native latency/gate improvement is established"
+    },
+    {
+      "scope": "OFFLINE_REAL_PRE_FREEZE_GRAPH_MICROBENCHMARK_NOT_NATIVE_TIMING",
+      "native_acceptance": false,
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "original_contracts_sha256": "b25d2477807c9133c11caa56f9ead5123b206c76b1f06db4512ee6f127b3c3dc",
+      "optimized_contracts_sha256": "bd97cfe9b1350a16ab14bc15a5d235efb6fe25e9c7a6b082e66d2ac92272c24d",
+      "live_sample_sha256": "233889b82122d639243bd6ab4f25b855792da8dc5b2ed1524d87ddddaca8c0fd",
+      "script_sha256": "a67bf7ce0bc18f79e93537e64959b9e2e12e8a72b6802bf824dd5d331c2f1468",
+      "evaluation_frame": 900,
+      "tracks": 48,
+      "physical_modes": 54,
+      "equal_complete_values": true,
+      "frozen_rows_and_shared_trajectory_input_verified": true,
+      "samples_per_implementation": 1000,
+      "method": "Unprofiled perf_counter_ns, alternating order, 20 warmups, cyclic GC disabled/restored",
+      "timing_ms": {
+        "original": {
+          "median": 1.62555,
+          "p95": 1.73133,
+          "p99": 2.0450079999999997
+        },
+        "optimized": {
+          "median": 1.3307,
+          "p95": 1.426885,
+          "p99": 1.8058329999999998
+        }
+      },
+      "limitations": "One captured prediction; no end-to-end or native timing/gate improvement established"
+    }
+  ],
+  "exploratory_trials": {
+    "scope": "OFFLINE_FREEZE_CANDIDATE_EXPLORATION_NOT_NATIVE_ACCEPTANCE",
+    "driving_source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+    "method": "Eight saved predictions, reconstructed frozen kinematic modes and shared trajectory list, 25 alternating rounds, 200 samples per candidate, unprofiled perf_counter_ns, cyclic GC disabled and restored",
+    "limitations": [
+      "Reconstructed payloads do not recreate every live immutable/shared input",
+      "Concurrent offline workers and shared-host scheduling can affect tails",
+      "No native latency improvement or gate pass is established"
+    ],
+    "experiments": [
+      {
+        "id": 1,
+        "timing_ms": {
+          "original": {
+            "median": 3.53145,
+            "p95": 4.6148799999999985,
+            "p99": 5.696932999999997
+          },
+          "container_dispatch": {
+            "median": 3.35575,
+            "p95": 4.124015,
+            "p99": 4.869444999999995
+          },
+          "exact_type_dispatch": {
+            "median": 3.2503,
+            "p95": 4.742825,
+            "p99": 6.048959999999997
+          }
+        },
+        "decision": "No implementation selected; exact-type-only experiment worsened measured tails"
+      },
+      {
+        "id": 2,
+        "timing_ms": {
+          "original": {
+            "median": 3.36195,
+            "p95": 3.9332549999999995,
+            "p99": 4.384135
+          },
+          "container_dispatch": {
+            "median": 3.224,
+            "p95": 3.79373,
+            "p99": 4.090507
+          },
+          "exact_type_dispatch": {
+            "median": 3.1210500000000003,
+            "p95": 3.7025599999999965,
+            "p99": 4.876157999999998
+          },
+          "builtin_dispatch": {
+            "median": 2.94165,
+            "p95": 3.5616899999999996,
+            "p99": 4.1324029999999965
+          }
+        },
+        "decision": "Builtin dispatch candidate merits live-shaped payload and deterministic complete-command replay validation, not native execution"
+      }
+    ]
+  },
+  "storage": {
+    "snapshot_utc": "2026-10-27T19:23:14.875265+00:00",
+    "D_free_bytes": 100371652608,
+    "provisional_required_free_bytes": 140049743825,
+    "D_deficit_bytes_at_snapshot": 39678091217,
+    "passed": false,
+    "estimate_source": "docs\\evidence\\egypt-urban-chaos-v1\\resource-preflight-20261027.json",
+    "estimate_recomputed": false,
+    "acceptance_capacity_finalized": false,
+    "multi_volume_retention_implemented": false
+  },
+  "budgets": {
+    "current": {
+      "kind": "EGYPT_NATIVE_VALIDATION_V1",
+      "authorized": true,
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+      "cap_s": 21600.0,
+      "development_cap_s": 14400.0,
+      "acceptance_cap_s": 7200.0,
+      "base_cap_s": 14400.0,
+      "extensions": [
+        {
+          "id": "EGYPT_DEVELOPMENT_20261027",
+          "phase": "DEVELOPMENT",
+          "seconds": 7200.0,
+          "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+          "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+        }
+      ],
+      "charged_s": 6074.98700000043,
+      "remaining_s": 15525.01299999957,
+      "development_remaining_s": 8325.01299999957,
+      "diagnostic_remaining_s": 645.0129999995697,
+      "protected_development_matrix_s": 7200.0,
+      "protected_browser_s": 480.0,
+      "acceptance_remaining_s": 7200.0,
+      "unfinished": 0,
+      "acceptance_attempted": false,
+      "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+    },
+    "unchanged_files": [
+      {
+        "path": "output\\egypt-validation\\budget.sqlite",
+        "bytes": 49152,
+        "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+      },
+      {
+        "path": "output\\egypt-validation\\allowance.json",
+        "bytes": 275,
+        "sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be"
+      },
+      {
+        "path": "output\\hybrid-driving\\budget.sqlite",
+        "bytes": 40960,
+        "sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"
+      }
+    ],
+    "additional_authorization_applied": false,
+    "requested_additional_diagnostic_seconds_not_granted": 795,
+    "conservative_three_target_minimum_reservation_s": 1440
+  },
+  "preflights": {
+    "development": {
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "can_run": false,
+      "engine_started": false,
+      "reason": "All three current-source native diagnostics must pass before the full development matrix",
+      "software_gate": {
+        "passed": true,
+        "reason": "Current-source software and replay gate passed",
+        "record": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\software-gate.json"
+      },
+      "diagnostic_gate": {
+        "passed": false,
+        "passed_targets": [],
+        "attempted_targets": []
+      },
+      "required_reservation_s": 7200.0,
+      "run_kind": "MATRIX",
+      "accepted": false
+    },
+    "acceptance": {
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "can_run": false,
+      "engine_started": false,
+      "reason": "Full current-source development matrix must pass before the protected acceptance window can be used",
+      "software_gate": {
+        "passed": true,
+        "reason": "Current-source software and replay gate passed",
+        "record": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\software-gate.json"
+      },
+      "diagnostic_gate": {
+        "passed": false,
+        "passed_targets": [],
+        "attempted_targets": []
+      },
+      "required_reservation_s": 7200.0,
+      "run_kind": "MATRIX",
+      "accepted": false
+    }
+  },
+  "simulator_ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "native_processes": [],
+  "artifacts": [
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\contracts_original.py",
+      "bytes": 21649,
+      "sha256": "b25d2477807c9133c11caa56f9ead5123b206c76b1f06db4512ee6f127b3c3dc"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\live-prediction.pkl",
+      "bytes": 145389,
+      "sha256": "233889b82122d639243bd6ab4f25b855792da8dc5b2ed1524d87ddddaca8c0fd"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\freeze-experiments.json",
+      "bytes": 1716,
+      "sha256": "974a11bf0b43abc262454acaecccfd5d050483e53e08f4eb1c488b7b191500f8"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\freeze-live-comparison.json",
+      "bytes": 31054,
+      "sha256": "e7c05dcccc0360c99b25e6b8018be7d5c510c33d9ce48eeba682a0a1c69b27e7"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\freeze-live-reproduction.json",
+      "bytes": 31068,
+      "sha256": "ef4634e273ad481d26b70fb70dc540595160419b476c8714e846807c57389259"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\javascript-tests.log",
+      "bytes": 94884,
+      "sha256": "d9c257ebffb00be45cee7ebd2961a0d9a6f12871e24cc0189aee9886efcdd46a"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\python-tests.log",
+      "bytes": 16252,
+      "sha256": "8a951159e46b255232e908c4212c45116d7458291b0f564b66bebb9309fbbbfd"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\dashboard-build.log",
+      "bytes": 970,
+      "sha256": "ff0b88d42ce2ffc61f1665f7956d3942c276d5f0ae221d4ac66545bb620295c6"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\original-repeat.json",
+      "bytes": 64357445,
+      "sha256": "da21ac6ea357731a59a4c2994f5d0dd91c0938c4efa8a0298f4fbc9848a67a88"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\original-optimized.json",
+      "bytes": 64357434,
+      "sha256": "a1d0a9ecc3f9a91d81697a3ca0265acf4198269986cffe00dda081c7cea9d7e2"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\original-baseline.json",
+      "bytes": 64357308,
+      "sha256": "e2c3a923fef906551814b74a86a8f66358f232f587cd718110643586d148a6cd"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\latest-repeat.json",
+      "bytes": 42629069,
+      "sha256": "0d98ad163fb9ff1b8bfb29dc9842bce2bae31896b71fc894ed24f70a07aba16a"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\latest-optimized.json",
+      "bytes": 42629068,
+      "sha256": "c7cc39a75d3ba8a11d9c39107025888a630663238522dbe78026477b8c48b98c"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\latest-baseline.json",
+      "bytes": 42628936,
+      "sha256": "0bcff7b2a01c10f7f8f2d5103ecd00ed3be71eaa687a253ae3024e2516a86229"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\development-preflight.json",
+      "bytes": 59581,
+      "sha256": "3190e88854c4d6b049160bdad5ceca498f80481dde53ae59a7c7bee0a8113db6"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\development-preflight.log",
+      "bytes": 245,
+      "sha256": "1ba4d190629955d3371801afe6f155316af3abb1058d2cf545a245917aaf35c5"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\acceptance-preflight.json",
+      "bytes": 59710,
+      "sha256": "546e68828e70dcec0f1c4dd7b9e3462082b6c7c05ea8e9bd2c624d962243d7c6"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\acceptance-preflight.log",
+      "bytes": 255,
+      "sha256": "cadae721b5cd9a6a7d622c39a25ab450b0a21f09ddf7dbf2f2191d188337db77"
+    },
+    {
+      "path": "output\\egypt-validation\\continuation-20261027\\software-gate-before-continuation.json",
+      "bytes": 32451,
+      "sha256": "07e21c0b9dd124534462d711c3496f01ac0ae90f4b4750d3b7afa1b517073bf3"
+    }
+  ],
+  "limitations": [
+    "One live pre-freeze graph microbenchmark; no end-to-end or native latency reduction is established",
+    "Synthetic matched ages and recorded evaluation-frame semantics are not exact native asynchronous sensor/detector delivery",
+    "30 selected decisions preserve complete payloads, not an unrestricted all-input proof or native timing gate",
+    "Historical protected diagnostic19 remains failed on c2ec0594 source, not a result on this new source",
+    "Normal stall repair, native diagnostics, full DEVELOPMENT/ACCEPTANCE, final native browser and cleanup are not executed or passed",
+    "Raw recordings, graphs and heavyweight reports remain local and ignored; an ordinary clone does not include them"
+  ]
+}

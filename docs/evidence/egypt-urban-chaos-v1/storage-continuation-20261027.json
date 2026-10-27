@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "scope": "READ_ONLY_STORAGE_IMPLEMENTATION_AND_FEASIBILITY",
+  "investigation_complete": true,
+  "branch": "main",
+  "snapshot_utc": "2026-10-27T19:07:06.473948+00:00",
+  "native_acceptance": false,
+  "native_execution_performed": false,
+  "multi_volume_retention_implemented": false,
+  "multi_volume_retention_verified": false,
+  "existing_code_safely_supports_proposed_split": false,
+  "native_storage_prerequisite": "BLOCKED",
+  "actions_not_performed": [
+    "move_delete_or_compress_recordings",
+    "create_remove_or_change_junctions",
+    "change_backend_configuration_or_budgets",
+    "install_dependencies",
+    "start_or_stop_CARLA",
+    "reserve_or_consume_native_windows",
+    "commit_or_push"
+  ],
+  "capacity": {
+    "measurement": "Fresh read-only shutil.disk_usage snapshot; not reserved capacity",
+    "D_free_bytes": 100070772736,
+    "C_free_bytes": 72559644672,
+    "D_total_bytes": 561197871104,
+    "C_total_bytes": 461693251584,
+    "filesystem": "NTFS",
+    "volumes_distinct": true,
+    "C_counted_as_D": false,
+    "D_volume_id": "\\\\?\\Volume{ec54a325-63b8-458c-be75-396593bf2318}\\",
+    "C_volume_id": "\\\\?\\Volume{1713e35f-7025-4745-afb7-7a4c7c6de225}\\",
+    "saved_estimate_source": "docs\\evidence\\egypt-urban-chaos-v1\\resource-preflight-20261027.json",
+    "estimate_recomputed_this_task": false,
+    "saved_sample_count": 34,
+    "saved_matrix_estimate_bytes": 90503184353,
+    "provisional_required_free_bytes": 140049743825,
+    "D_deficit_bytes_at_snapshot": 39978971089,
+    "C_whole_destination_deficit_bytes_at_snapshot": 67490099153,
+    "margin_fraction": 0.5,
+    "reserve_bytes_per_volume": 4294967296,
+    "acceptance_capacity_finalized": false
+  },
+  "observed_paths": {
+    "recording_root": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city",
+    "recording_root_is_junction": false,
+    "report_root_is_junction": false,
+    "protected_archive": "D:\\CodexArchives\\native-evidence\\ya_rab_ostorha",
+    "archive_is_junction": false,
+    "old_C_link": "C:\\Users\\A-plus\\.codex\\native-evidence\\ya_rab_ostorha",
+    "old_C_link_type": "Junction",
+    "old_C_link_verified_target": "D:\\CodexArchives\\native-evidence\\ya_rab_ostorha",
+    "archive_policy": "One archive on D; preserve archive and old C junction. No archive tree scan or evidence movement."
+  },
+  "code_contracts": [
+    {
+      "source": "backend\\core\\storage_retention.py:contained,recording_roots",
+      "finding": "Storage mutation requires a non-root resolved project-contained path, rejects links/junctions; discovery skips linked/junction children."
+    },
+    {
+      "source": "scripts\\native\\validate_egypt_urban.py:storage_preflight,compress_pair_recordings",
+      "finding": "Whole estimate is checked against disk_usage(ROOT) on D; compression passes the project ROOT as workspace. No per-volume allocation or reserves."
+    },
+    {
+      "source": "backend\\core\\video_http.py:serve_video",
+      "finding": "Resolved run parent must equal resolved recording root; an external per-run junction is rejected for browser video/status."
+    },
+    {
+      "source": "scripts\\native\\validate_crossing_pair.py:verify_videos",
+      "finding": "Resolved run must be inside resolved ROOT\\runs\\normal_city; external per-run junction fails final video verification."
+    },
+    {
+      "source": "backend\\core\\replay.py:ReplayReader; backend\\core\\recording.py:read_asset",
+      "finding": "Explicit replay resolves root and checks run-local asset containment/length/hash; direct copied-root readability is plausible but was not tested as a migration."
+    },
+    {
+      "source": "backend\\core\\recording_storage.py:compress_file,compress_recording",
+      "finding": "Run-relative lossless manifest proves decoded equality before original removal; report records root string. No relocation manifest or automatic path remapping. Up to four temporary gzip candidates coexist with originals."
+    },
+    {
+      "source": "backend\\core\\journey_comparison.py:begin; scripts\\native\\validate_egypt_urban.py",
+      "finding": "Comparison run stores recording path; matrix records bind report bytes with SHA-256. Historical path rewrites are not transparent relocation."
+    }
+  ],
+  "hypothetical_split_not_an_execution_plan": {
+    "allocation": "Six of ten retained closed runs on C; four retained plus two raw trips, all videos and temporary annotation on D",
+    "rounding": "C=ceil(6*saved_retained_bytes/10); D=saved_matrix_total-C; required=ceil(1.5*component)+4GiB for each volume",
+    "C_component_bytes": 36268644208,
+    "D_component_bytes": 54234540145,
+    "C_required_bytes": 58697933608,
+    "D_required_bytes": 85646777514,
+    "C_snapshot_headroom_bytes": 13861711064,
+    "D_snapshot_headroom_bytes": 14423995222,
+    "arithmetic_fits_saved_components": true,
+    "existing_storage_gate_would_pass": false,
+    "measured_individual_six_run_sizes": false,
+    "copy_and_compression_peak_verified": false,
+    "warning": "Capacity illustration only; no supported allocator, path migration, copy proof, consumer integration or per-volume gate exists."
+  },
+  "peak_lifecycle": {
+    "existing_sequence": "Finish pair, drain exports and stop simulator, retain report, compress closed pair, proceed to next pair",
+    "exports": "Raw, annotated and shared videos plus encoding/concat/annotation intermediates live in run trees",
+    "compression": "Original remains until decompressed equality proof is fsynced; four parallel candidates; no separately itemized temporary compression bound in estimator",
+    "future_copy_requirement": "Keep source until complete destination manifest/hashes, replay, browser/video and rollback are verified; budget both copies and per-volume reserves",
+    "unresolved": [
+      "Successful full-route duration and complete DEVELOPMENT matrix rates",
+      "Exact export/compression/copy transient overlap",
+      "Existing and failed attempts plus combined DEVELOPMENT/ACCEPTANCE retention",
+      "Destination ownership, quota/write permissions and guaranteed available space",
+      "End-to-end path readability after deliberate multi-volume relocation"
+    ]
+  },
+  "selected_next_action_proposed_only": {
+    "plan": "Keep current paths; provision additional usable free capacity on D without deleting evidence",
+    "minimum_additional_D_bytes_at_snapshot": 39978971089,
+    "permissions_needed": "Explicit storage-maintenance authorization and any required disk/volume-administration permission. No such permission was exercised.",
+    "verification_needed": "Fresh free-space measurement and unchanged storage preflight before separately authorized execution; recalculate from complete successful DEVELOPMENT before ACCEPTANCE",
+    "alternative": "A full separate destination requires at least 140049743825 usable free bytes plus copy/retention costs and verified path/gate integration; C is insufficient.",
+    "split_prerequisite": "Separately authorize scoped backend/gate/consumer integration and offline verification; filesystem/junction privileges alone are insufficient.",
+    "budget_extension_authorized": false,
+    "native_retry_authorized": false
+  },
+  "source_sha256_at_inspection": {
+    "backend\\core\\recording_storage.py": "0c4e8bf9111a4db9b54f9a604c2bd4856f4189eba06e0cb6265e1ad4abb7d1b8",
+    "backend\\core\\storage_retention.py": "ea8ebb0e6a0d427967c465f885af2412bb29148b49e85bd55909e9bbb024e9fc",
+    "scripts\\native\\validate_egypt_urban.py": "3965fe1157f1c662c78e74eeb0d37df18a27968065e269fcf0dae5fc3b947bd4",
+    "backend\\core\\video_http.py": "db950f48707a72bee596e989f45e6c7135b21f8970a512468248f4646f73a67f",
+    "scripts\\native\\validate_crossing_pair.py": "ccd1e7e4d64619585fa1aa1b0e098add465b0ef2e3faf406b9e0dd57e05c0dc1"
+  },
+  "verification_limits": "Read-only source review, physical volume/free-space and archive-link metadata inspection, and arithmetic. No migration, replay/media test, native execution or software/native certificate."
+}
