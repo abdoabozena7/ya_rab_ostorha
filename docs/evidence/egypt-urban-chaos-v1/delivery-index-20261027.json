@@ -1,0 +1,467 @@
+{
+  "schema": "EGYPT_DEFENSE_DELIVERY_INDEX_V1",
+  "document_date": "2026-10-27",
+  "status": "NOT_ACCEPTED",
+  "task_complete": false,
+  "native_acceptance": false,
+  "scope": "Documentation index of retained historical evidence; not a new execution certificate",
+  "current_source_verification": {
+    "status": "OFFLINE_SUITES_AND_BUILD_PASSED_NATIVE_ASSURANCE_BLOCKED",
+    "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+    "software_certificate": null,
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\delivery-verification-20261027.json",
+    "delivery_report": "docs\\EGYPT_DELIVERY_20261027.md",
+    "javascript_passed": 210,
+    "python_total": 1040,
+    "python_passed": 1036,
+    "python_optional_skips": 4,
+    "dashboard_built": true,
+    "bundle_syntax_passed": true,
+    "bounded_replay_comparisons_passed": true,
+    "native_deadline_replay_equivalence": false,
+    "native_runs_executed_for_this_documentation": 0,
+    "note": "Fresh complete suites/build and bounded saved-evidence checks are recorded, not inherited from the historical certificate. Driving source is unchanged; changed frontend hashes are separately recorded. No new native admission certificate was issued and no native acceptance gate is closed."
+  },
+  "path_contract": {
+    "relative_to": "repository root",
+    "separator": "Windows backslash",
+    "tracked_evidence": "docs\\evidence",
+    "local_artifacts": "output and runs are ignored; an ordinary clone does not include raw recordings, reports, source archives or videos",
+    "historical_archive": "D:\\CodexArchives\\native-evidence\\ya_rab_ostorha",
+    "archive_warning": "The old C archive path is a junction to this archive, not a second disposable copy. Some older raw assets were retired; video retention does not imply sensor replay availability."
+  },
+  "metric_contract": {
+    "null": "Not supplied or verified for the indexed run; never assume zero",
+    "distance_m": "Reported travelled distance, distinct from route_completion_percent",
+    "waiting_reasons_s": "Recorded decision-reason duration; not total stopped duration",
+    "simulation_wall_ratio": "Recorded RTF; not calculated from the parent/worker lifecycle wall time",
+    "worker_wall_s": "Native worker lifecycle wall time; not complete ledger charge and not driving-only wall time",
+    "control_latency": "HOST_MONOTONIC, first required sensor receipt to application check",
+    "rpc_latency": "CARLA call duration, separate from pipeline and next-frame control-state verification",
+    "resource_consumption": "Per-run RAM, VRAM and disk consumption are null where not verified; storage preflight is a separate historical snapshot"
+  },
+  "historical_source_under_review": {
+    "commit": "cebed2c32541978f18ee89352c0a8e1a737f39e8",
+    "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+    "review": "output\\project-review-20261027\\PROJECT_REVIEW_AR.md",
+    "software": {
+      "python_total": 1040,
+      "python_passed": 1036,
+      "python_optional_skips": 4,
+      "javascript_passed": 209,
+      "dashboard_built": true,
+      "certificate": "output\\egypt-validation\\software-20261027\\software-gate-delivery19.json",
+      "certificate_sha256": "07e21c0b9dd124534462d711c3496f01ac0ae90f4b4750d3b7afa1b517073bf3",
+      "scope": "HISTORICAL_OFFLINE_SOFTWARE_ONLY"
+    }
+  },
+  "preserved_evidence_chain": [
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\native-execution-20261024.json",
+      "scope": "Original failed preparations, single-arm attempts and failed six-pair development matrix; not current-source acceptance"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\native-followup-20261024.json",
+      "scope": "Additional historical native failures, timing traces and cleanup/crash evidence; prior thirteen report hashes retained"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\completion-gates-20261027.json",
+      "scope": "Original strict-gate checkpoint; protected diagnostics 01/02"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\continuation-20261027.json",
+      "sha256": "8f5e3647595bdea38106467ef3345e6804a20ee7f8658f9196f93aca12ee8387",
+      "scope": "All protected diagnostics through 17, separate source versions, failed attempts, crashes and compressed replay evidence"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\cpu-deadline-followup-20261027.json",
+      "scope": "Protected diagnostics 18/19, their exact report/source archive hashes, old budget/storage snapshots and retained failures"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\offline-diagnosis-20261027.json",
+      "report": "docs\\EGYPT_OFFLINE_DIAGNOSIS_20261027.md",
+      "scope": "New read-only saved-evidence analysis and focused offline replay/tests; no runtime driving change or native acceptance. Retains all 601 driving timings plus 32 held-prefix submissions separately, including attempt-19 all-submission p99 242.103 ms and maximum 667.504 ms. Latest replay explicitly differs from native deadline behavior."
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\resource-preflight-20261027.json",
+      "report": "docs\\EGYPT_RESOURCE_PREFLIGHT_20261027.md",
+      "scope": "Completed read-only resource/environment preflight; refreshed exact storage deficit and conditional budget arithmetic, no implemented storage solution, native trial or ledger changes"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\browser-check.json",
+      "scope": "Intercepted browser commands and software-fixture videos only; not native browser acceptance"
+    },
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\validation-browser.json",
+      "scope": "Validation-status browser fixtures only; not native Egypt driving"
+    },
+    {
+      "path": "docs\\CROSSING_COMPARISON_20261019.md",
+      "scope": "Historical crossing acceptance/media/browser checks retain their original scenario, source and protocol; not Egypt acceptance"
+    },
+    {
+      "path": "docs\\BEHAVIOR_PROPOSALS_20261027.md",
+      "scope": "Preserved non-authoritative shadow research, no VLM actuator authority or measured VLM benefit"
+    }
+  ],
+  "historical_failed_matrix": {
+    "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+    "protocol": "EGYPT_COMPLETE_DRIVERS_V1",
+    "partition": "DEVELOPMENT",
+    "source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+    "matrix_report": "output\\egypt-validation\\native-20261024-run1\\development-matrix-07.json",
+    "summary_reference": "docs\\evidence\\egypt-urban-chaos-v1\\native-execution-20261024.json",
+    "status": "FAILED",
+    "six_pair_attempts_are_not_twelve_completed_runs": true,
+    "comparisons": [
+      {
+        "seed": 1703,
+        "first_mode": "NORMAL",
+        "intended_order": ["NORMAL", "ROBOSPHERE"],
+        "pair_id": "8a2ce3ce75c941ad9fb07832e54db223",
+        "native_report": "output\\egypt-urban-pairs\\b3a5746a2ccf4ac08de730d58e764795\\report.json",
+        "native_report_sha256": "ba9f494b14e8b1da5ae980f4ad3f60d390a9ae766b3b3af1477fc1b5713c18ab",
+        "worker_wall_s": 775.5470000000205,
+        "missing_driver": "ROBOSPHERE",
+        "run": {
+          "driver": "NORMAL",
+          "run_id": "7dd4d944baf64661841aebd8594dd29e",
+          "recording": "runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2",
+          "reported_status": "RUNNING",
+          "interpretation": "Retained stalled/incomplete prefix; not arrival or genuine terminal contact",
+          "distance_m": 156.3512154797993,
+          "route_completion_percent": 22.177598458253968,
+          "duration_s": 181.90000271052122,
+          "mean_speed_kmh": 3.0938163013727498,
+          "maximum_speed_kmh": 32.01610767578204,
+          "contact_callbacks": 0,
+          "completed_overtakes": 0,
+          "waiting_reasons_s": {
+            "CONTROL_PROCESSING_DEADLINE": 2.650000039488077,
+            "Risk cleared; releasing brake smoothly to base driver": 1.1000000163912773,
+            "Braking toward measured coverage speed limit 0.00 m/s": 131.20000195503235
+          },
+          "total_stopped_s": null,
+          "control_latency": null,
+          "simulation_wall_ratio": 0.2639602110449568,
+          "resource_consumption": null
+        },
+        "exports_closed": false,
+        "native_acceptance": false
+      },
+      {
+        "seed": 1703,
+        "first_mode": "ROBOSPHERE",
+        "intended_order": ["ROBOSPHERE", "NORMAL"],
+        "pair_id": "655f8981b5a146a283e97259a52f8623",
+        "native_report": "output\\egypt-urban-pairs\\57bb65b04e24411d80261103cea4f574\\report.json",
+        "native_report_sha256": "18c9bf950af23533c84cc5240c4530c6622feb3a7908e1f18b44a3791f358426",
+        "worker_wall_s": 70.26600000006147,
+        "missing_driver": "NORMAL",
+        "run": {
+          "driver": "ROBOSPHERE",
+          "run_id": "be49a58c365540e1ad6e3921b8a52ecb",
+          "recording": "runs\\normal_city\\run_e6d1e1e46a074db1a431e1b95dee91d5",
+          "reported_status": "ERROR",
+          "reason": "runtime_failure: Current synchronized sensor scene unavailable for one second",
+          "distance_m": 0.00022117618937045336,
+          "route_completion_percent": 0.0,
+          "duration_s": 0.10000000149011612,
+          "mean_speed_kmh": 0.0028036764837206943,
+          "maximum_speed_kmh": 0.007588771451302204,
+          "contact_callbacks": 0,
+          "completed_overtakes": 0,
+          "waiting_reasons_s": {"CONTROL_PROCESSING_DEADLINE": 0.10000000149011612},
+          "total_stopped_s": null,
+          "control_latency": null,
+          "simulation_wall_ratio": 0.2502910963074251,
+          "resource_consumption": null
+        },
+        "native_acceptance": false
+      },
+      {
+        "seed": 2707,
+        "first_mode": "NORMAL",
+        "intended_order": ["NORMAL", "ROBOSPHERE"],
+        "pair_id": null,
+        "native_report": "output\\egypt-urban-pairs\\ada9d85dd5da43a89777020bb3715b62\\report.json",
+        "native_report_sha256": "197ffb29150188a17d862c276c91f384e97ddb903e76f163bbb0648e6b1013d3",
+        "worker_wall_s": 39.71799999999348,
+        "run": null,
+        "reason": "Route revalidation failed connected_driving_lanes before release; neither driver recorded",
+        "native_acceptance": false
+      },
+      {
+        "seed": 2707,
+        "first_mode": "ROBOSPHERE",
+        "intended_order": ["ROBOSPHERE", "NORMAL"],
+        "pair_id": null,
+        "native_report": "output\\egypt-urban-pairs\\eb9e51fb55734c469f3476f7930178db\\report.json",
+        "native_report_sha256": "26b9ea8973d774ee7331930ec8b33bc26151323ffaa475f6b337c2835125c550",
+        "worker_wall_s": 39.328000000095926,
+        "run": null,
+        "reason": "Route revalidation failed connected_driving_lanes before release; neither driver recorded",
+        "native_acceptance": false
+      },
+      {
+        "seed": 3709,
+        "first_mode": "NORMAL",
+        "intended_order": ["NORMAL", "ROBOSPHERE"],
+        "pair_id": "45255b6d16b84e36bdeb628cfcad63bd",
+        "native_report": "output\\egypt-urban-pairs\\f98d0a90e6f44a63b37f1646984fe1c3\\report.json",
+        "native_report_sha256": "48a7ab5bda914c2cfae71147ad7a9b015a05bd202b4cba865bc694b9fd534c53",
+        "worker_wall_s": 773.6879999999655,
+        "missing_driver": "ROBOSPHERE",
+        "run": {
+          "driver": "NORMAL",
+          "run_id": "6708fe9b98e348ae8298fcd4b935bfaa",
+          "recording": "runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba",
+          "reported_status": "RUNNING",
+          "interpretation": "Retained stalled/incomplete prefix; not arrival or genuine terminal contact",
+          "distance_m": 110.24587573731478,
+          "route_completion_percent": 15.624751758112298,
+          "duration_s": 167.70000249892473,
+          "mean_speed_kmh": 2.368111387436062,
+          "maximum_speed_kmh": 31.213874557043326,
+          "contact_callbacks": 0,
+          "completed_overtakes": 0,
+          "waiting_reasons_s": {
+            "CONTROL_PROCESSING_DEADLINE": 2.400000035762787,
+            "Risk cleared; releasing brake smoothly to base driver": 1.3500000201165676,
+            "Braking toward measured coverage speed limit 0.00 m/s": 132.60000197589397
+          },
+          "total_stopped_s": null,
+          "control_latency": null,
+          "simulation_wall_ratio": 0.24565089559227388,
+          "resource_consumption": null
+        },
+        "exports_closed": false,
+        "native_acceptance": false
+      },
+      {
+        "seed": 3709,
+        "first_mode": "ROBOSPHERE",
+        "intended_order": ["ROBOSPHERE", "NORMAL"],
+        "pair_id": "657bd5d376ef436f8b4d9928aa8ee1eb",
+        "native_report": "output\\egypt-urban-pairs\\62eb5c1c35994f99acfb624fe03cc882\\report.json",
+        "native_report_sha256": "0721cd548b05c1a7e78eafdabbb4454b7f23860fb0f8a125029a4cc92a3e9808",
+        "worker_wall_s": 68.875,
+        "missing_driver": "NORMAL",
+        "run": {
+          "driver": "ROBOSPHERE",
+          "run_id": "b2dd5f7abc0d4436a7a8e7e9d3fada18",
+          "recording": "runs\\normal_city\\run_3844e12afe31473fb91a570e8a78da32",
+          "reported_status": "ERROR",
+          "reason": "runtime_failure: Current synchronized sensor scene unavailable for one second",
+          "distance_m": 0.00019958498887717724,
+          "route_completion_percent": 0.0,
+          "duration_s": 0.10000000149011612,
+          "mean_speed_kmh": 0.002875213535788945,
+          "maximum_speed_kmh": 0.00677471892351807,
+          "contact_callbacks": 0,
+          "completed_overtakes": 0,
+          "waiting_reasons_s": {"CONTROL_PROCESSING_DEADLINE": 0.10000000149011612},
+          "total_stopped_s": null,
+          "control_latency": null,
+          "simulation_wall_ratio": 0.2320213642724668,
+          "resource_consumption": null
+        },
+        "native_acceptance": false
+      }
+    ]
+  },
+  "historical_diagnostics": [
+    {
+      "attempt": 18,
+      "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "executed_order": ["ROBOSPHERE"],
+      "missing_driver": "NORMAL",
+      "scope": "DEVELOPMENT_DIAGNOSTIC_PREFIX_NOT_MATRIX",
+      "source_sha256": "a4bdcef33a299f43a73263e249fc446601e7cf1a422f76a8901634a183a3be79",
+      "pair_id": "2fec67ec8f1b464bbf20841124052f24",
+      "run_id": "d4b2a48d31494d3eb3d6fc49a51e636e",
+      "driver": "ROBOSPHERE",
+      "recording": "runs\\normal_city\\run_6100d71dcc5c49aabd2090ca241137d0",
+      "diagnostic_report": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-18.json",
+      "native_report": "output\\egypt-urban-pairs\\eb01e424e4f342e9a4de086e18bd6ffb\\report.json",
+      "native_report_sha256": "721a6c7112ff1edf0f95eb9977f2e95ed4ac0baad01545189fe7c37f8d1849de",
+      "source_archive": "output\\egypt-urban-pairs\\eb01e424e4f342e9a4de086e18bd6ffb\\source.zip",
+      "source_archive_sha256": "d8856de465a1d8e22b2fb4f987b3152c9b96764c72f916727caea2306f8ae14c",
+      "reported_status": "INTERRUPTED",
+      "reason": "diagnostic_goal_reached",
+      "distance_m": 64.56692360381764,
+      "route_completion_percent": 8.843278805473187,
+      "duration_s": 30.000000447034836,
+      "mean_speed_kmh": 7.735863677794822,
+      "maximum_speed_kmh": 20.483683667853683,
+      "contact_callbacks": 0,
+      "completed_overtakes": 0,
+      "waiting_reasons_s": {"FOLLOWING_LEAD": 8.950000133365393},
+      "total_stopped_s": null,
+      "simulation_wall_ratio": 0.22333262496269302,
+      "worker_wall_s": 219.51500000001397,
+      "resource_consumption": null,
+      "control_latency": {
+        "clock": "HOST_MONOTONIC",
+        "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+        "samples": 601,
+        "p95_ms": 199.00470005813986,
+        "p99_ms": 224.1719999583438,
+        "maximum_ms": 255.3274999372661,
+        "deadline_exceeded_frames": 1,
+        "unmeasured_frames": 0,
+        "unaligned_frames": 1,
+        "carla_call_p95_ms": 0.10140007361769676,
+        "carla_call_p99_ms": 0.11879997327923775
+      },
+      "worker_exit_code": 0,
+      "independent_cleanup_passed": true,
+      "engine_exit_verified": true,
+      "post_exit_video_hash_first_last_decode_passed": true,
+      "raw_video_sha256": "c975cead9b1b414eb937f148d12b910d498300d6ca1d51010eccc231bc7f06d1",
+      "annotated_video_sha256": "e755addff9cbcc5ba4c096eada72972e00994a6e76522d5dcd140db9be00f229",
+      "diagnostic_passed": false,
+      "failed_gate": "sensor_latency_targets: one frame exceeded 250 ms despite passing p95/p99",
+      "native_acceptance": false
+    },
+    {
+      "attempt": 19,
+      "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+      "seed": 2707,
+      "first_mode": "ROBOSPHERE",
+      "executed_order": ["ROBOSPHERE"],
+      "missing_driver": "NORMAL",
+      "scope": "DEVELOPMENT_DIAGNOSTIC_PREFIX_NOT_MATRIX",
+      "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+      "pair_id": "6a28adb15c9149d2b00a213fa4d455f9",
+      "run_id": "aea4ac068efc47bbb61c85072aa86cdc",
+      "driver": "ROBOSPHERE",
+      "recording": "runs\\normal_city\\run_c8d966cf0d16438180d3dd7e9e879bea",
+      "diagnostic_report": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-19.json",
+      "native_report": "output\\egypt-urban-pairs\\e35e6323adfc47a689643872d2da6d10\\report.json",
+      "native_report_sha256": "61bd127acd1de304d50ab18ea71d9e4238a980c058c4307447db0e6d70a874db",
+      "source_archive": "output\\egypt-urban-pairs\\e35e6323adfc47a689643872d2da6d10\\source.zip",
+      "source_archive_sha256": "930d595d3be0e7c5f9eb8e7bfd942891ada844882febf5c5ad63d12938c0b8a6",
+      "reported_status": "INTERRUPTED",
+      "reason": "diagnostic_goal_reached",
+      "distance_m": 63.946154339704144,
+      "route_completion_percent": 8.84608366727525,
+      "duration_s": 30.000000447034836,
+      "mean_speed_kmh": 7.661365059541406,
+      "maximum_speed_kmh": 21.768549129110735,
+      "contact_callbacks": 0,
+      "completed_overtakes": 0,
+      "waiting_reasons_s": {"FOLLOWING_LEAD": 9.100000135600567},
+      "total_stopped_s": null,
+      "simulation_wall_ratio": 0.2167081271902891,
+      "worker_wall_s": 218.23400000005495,
+      "resource_consumption": null,
+      "control_latency": {
+        "clock": "HOST_MONOTONIC",
+        "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+        "samples": 601,
+        "p95_ms": 215.75039997696877,
+        "p99_ms": 234.51360000763088,
+        "maximum_ms": 259.9568000296131,
+        "deadline_exceeded_frames": 2,
+        "unmeasured_frames": 0,
+        "unaligned_frames": 2,
+        "carla_call_p95_ms": 0.10469998233020306,
+        "carla_call_p99_ms": 0.16659998800605536
+      },
+      "worker_exit_code": 0,
+      "independent_cleanup_passed": true,
+      "engine_exit_verified": true,
+      "post_exit_video_hash_first_last_decode_passed": true,
+      "raw_video_sha256": "5daa36e660c54b83d30205ed3578c6f69061e794d85555f56294f517709e570b",
+      "annotated_video_sha256": "0daad58fa8b26e38133f7b40f346bfcdb481e31724363dfc41ef196f1d518977",
+      "diagnostic_passed": false,
+      "failed_gate": "sensor_latency_targets: p95, p99 and two frames over 250 ms",
+      "native_acceptance": false
+    }
+  ],
+  "recording_layout": {
+    "relative_to_each_recording": true,
+    "metadata": "metadata.json",
+    "timing_and_control_traces": "telemetry\\comparison-controls.jsonl.gz",
+    "telemetry": "telemetry\\frames.jsonl.gz",
+    "events": "events\\events.jsonl.gz",
+    "video_status": "video-status.json",
+    "raw_video": "driving.mp4",
+    "annotated_video": "driving-annotated.mp4",
+    "compression_proof": "lossless-compression.json",
+    "note": "Compressed and original layouts are supported. Consult actual recording references rather than assuming every optional file exists."
+  },
+  "replay_evidence": [
+    {
+      "path": "output\\egypt-validation\\software-20261027\\current-source-frozen-replay18.json",
+      "sha256": "bda8ff70578a0909d3d798e23032f599d244e6f75f69ad0740231de19ea480ce",
+      "scope": "Historical numeric optimization replay; not native timing"
+    },
+    {
+      "path": "output\\egypt-validation\\software-20261027\\late-frame-reserve19.json",
+      "sha256": "01375469e8d755be5503e29b5a2988d9b07775c61b4ff91151937e54315c7d54",
+      "scope": "Historical replay of attempt-18 late entry age with braking-headroom guard; attempt 19 still failed natively"
+    },
+    {
+      "path": "output\\egypt-validation\\software-20261027\\replay-video-after-compression19.json",
+      "sha256": "187e2ab10c73eced5fd3c4ffaee25649e562a135c80374f4aa66c45ec52796a8",
+      "scope": "Historical replay/video checks after verified lossless compression"
+    }
+  ],
+  "historical_resource_snapshot": {
+    "source": "docs\\evidence\\egypt-urban-chaos-v1\\cpu-deadline-followup-20261027.json",
+    "scope": "HISTORICAL_AFTER_ATTEMPT_19_NOT_CURRENT_MEASUREMENT",
+    "disk_free_bytes": 98531069952,
+    "required_free_bytes_provisional": 140049743825,
+    "margin_fraction": 0.5,
+    "reserve_bytes": 4294967296,
+    "storage_passed": false,
+    "estimate_report": "output\\egypt-validation\\software-20261027\\storage-after-diagnostic19.json",
+    "development_remaining_s": 8325.01299999957,
+    "diagnostic_spendable_s": 645.0129999995697,
+    "protected_development_matrix_s": 7200.0,
+    "protected_browser_s": 480.0,
+    "acceptance_remaining_s": 7200.0,
+    "acceptance_attempted": false,
+    "budget_sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854",
+    "current_resource_resolution": "READ_ONLY_PREFLIGHT_COMPLETE_STORAGE_AND_NATIVE_PREREQUISITES_BLOCKED",
+    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\resource-preflight-20261027.json",
+    "note": "Full-route acceptance sizing must use a complete successful development matrix; no ledger reset, additional authorization or archive deletion is implied."
+  },
+  "required_ordered_execution": {
+    "protected_2707_diagnostic": "FAILED_HISTORICALLY_AT_GATE_B",
+    "normal_1703_current_ordered_diagnostic": "NOT_EXECUTED",
+    "normal_3709_current_ordered_diagnostic": "NOT_EXECUTED",
+    "complete_current_source_development": {
+      "status": "NOT_EXECUTED",
+      "seeds": [1703, 2707, 3709],
+      "first_modes": ["NORMAL", "ROBOSPHERE"],
+      "required_comparisons": 6,
+      "required_runs": 12,
+      "historical_failed_matrix_is_not_this_gate": true
+    },
+    "frozen_holdout_acceptance": {
+      "status": "NOT_EXECUTED",
+      "seeds": [961103, 961109, 961121],
+      "first_modes": ["NORMAL", "ROBOSPHERE"],
+      "required_comparisons": 6,
+      "required_runs": 12,
+      "one_shot_only": true,
+      "acceptance_artifact": null
+    },
+    "final_native_browser": "NOT_EXECUTED",
+    "updated_lifecycle_labels": "SOURCE_IMPLEMENTATION_PENDING_PARENT_VALIDATION_NOT_NATIVE_BROWSER_EVIDENCE"
+  },
+  "scientific_limits": [
+    "Egypt compares two complete drivers; no causal attribution to one subsystem without a controlled ablation.",
+    "Normal retains reactive sensor braking and genuine outcomes; a collision is not required.",
+    "No completed Egypt full route or three completed overtakes are certified here.",
+    "Driving policy is rule-based, not an RL or VLM policy.",
+    "Zero contact in diagnostic prefixes does not establish universal safety or general superiority.",
+    "Video FPS does not establish real-time simulation or live display performance.",
+    "Historical crossing, experimental learned predictors and shadow research retain separate identities."
+  ]
+}

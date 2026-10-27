@@ -1,0 +1,175 @@
+{
+  "kind": "BOUNDED_OFFLINE_DEVELOPMENT_DIAGNOSIS",
+  "date": "2026-10-27",
+  "head_commit": "cebed2c32541978f18ee89352c0a8e1a737f39e8",
+  "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+  "runtime_source_changed": false,
+  "native_started": false,
+  "native_acceptance": false,
+  "software_certificate_issued": false,
+  "holdout_used": false,
+  "ledgers_modified": false,
+  "status": "ANALYSIS_DELIVERED_NO_DEFENSIBLE_SMALL_FIX_GATE_B_UNRESOLVED",
+  "attempt19": {
+    "recording": "runs\\normal_city\\run_c8d966cf0d16438180d3dd7e9e879bea",
+    "pair": "output\\egypt-urban-pairs\\e35e6323adfc47a689643872d2da6d10",
+    "trace_sha256": "daac8125aadad6ae9dbbbc655768318afc7481e82337e15db782261650c8fd9b",
+    "samples_sha256": "1c08ea6ee0d6d01c4defad1d3123f435aaf6c32349e074568be09ed304244cfe",
+    "driving_frames": 601,
+    "late_frames": [700, 708],
+    "unmeasured_application_checks": 0,
+    "unaligned_or_stale": 2,
+    "worker_sample_rows": 600,
+    "all_submitted_traces": 633,
+    "non_decision_submissions_retained": 32,
+    "all_submitted_p95_p99_max_ms": [215.78472000546753, 242.1028159279375, 667.5038000103086],
+    "driving_stage_p95_p99_ms": {
+      "sensor_collection": [106.68399999849498, 117.46770003810525],
+      "encoding_tail": [1.6885000513866544, 2.4574000854045153],
+      "synchronization": [0.5978000117465854, 0.8141999132931232],
+      "scene_queue": [2.6308000087738037, 2.9166999738663435],
+      "scene_geometry": [22.079400019720197, 24.529799935407937],
+      "prediction_inclusive": [49.10639999434352, 57.66419996507466],
+      "scene_total_inclusive": [68.82990000303835, 78.99019995238632],
+      "published_to_control": [8.341100066900253, 10.899699991568923],
+      "navigation_prefetch_overlapping_not_serial": [24.243434949312356, 34.63505292776972],
+      "maneuver": [46.93719989154488, 54.906200035475194],
+      "independent_shield": [9.180899942293763, 12.021600035950541],
+      "safety_inclusive": [9.598499978892505, 12.48829998075962],
+      "post_safety_application_check": [0.2698999596759677, 0.345699954777956],
+      "application_check": [215.75039997696877, 234.51360000763088],
+      "rpc_separate": [0.10469998233020306, 0.16659998800605536]
+    },
+    "native_sample_scene_p95_p99_ms": {
+      "lidar_decode": [0.3550100256688892, 0.5265109345782547],
+      "depth_decode_and_fusion": [21.838290034793317, 24.238263021688905],
+      "tracking_and_engine_forecasts": [23.564879992045455, 28.07906904025003],
+      "semantics_people_final_modes_and_freezing": [26.509444980183602, 33.623768016695976]
+    },
+    "late_frame_breakdown_ms": {
+      "700": {
+        "application_check": 259.9568000296131,
+        "sensor_collection": 101.41980007756501,
+        "scene": 92.83229999709874,
+        "prediction_inclusive": 73.9594999467954,
+        "published_to_control": 11.182700050994754,
+        "maneuver_hold": 0.2277999883517623,
+        "safety_inclusive": 50.90199992991984,
+        "shield": 32.715999986976385,
+        "final_brake": 1.0
+      },
+      "708": {
+        "application_check": 250.55640004575253,
+        "sensor_collection": 87.1606000000611,
+        "scene": 88.7675000121817,
+        "prediction_inclusive": 64.68440010212362,
+        "maneuver": 55.0224999897182,
+        "safety_inclusive": 8.106400026008487,
+        "final_brake": 1.0
+      }
+    },
+    "last_sensor_all_601_frames": "rearRightDepth",
+    "rearRightDepth_decode_p95_p99_ms": [1.6855000285431743, 2.4534999392926693],
+    "rearRightDepth_queue_wait_p95_p99_ms": [0.00400003045797348, 0.005600042641162872],
+    "frontCamera_decode_p95_p99_ms": [21.473700064234436, 25.04340000450611],
+    "recording_finalized": true,
+    "dropped_frames_events_trace_rows": [0, 0, 0],
+    "interference_attribution": "UNRESOLVED: final zero backlog is not a per-frame CPU, IO or worker scheduling trace"
+  },
+  "historical_attempt18": {
+    "source_sha256": "a4bdcef33a299f43a73263e249fc446601e7cf1a422f76a8901634a183a3be79",
+    "recording": "runs\\normal_city\\run_6100d71dcc5c49aabd2090ca241137d0",
+    "driving_frames": 601,
+    "application_check_p95_p99_max_ms": [199.00470005813986, 224.1719999583438, 255.3274999372661],
+    "all_submitted_frames": 633,
+    "all_submitted_p95_p99_max_ms": [199.18486003298312, 228.81393999326949, 598.5588999465108],
+    "late_frame": 763,
+    "shield_interval_measured_frames": 600,
+    "missing_shield_interval_reason": "Late frame 763 expired before entering shield; not treated as zero-cost shield"
+  },
+  "original_replay_comparison": {
+    "original_artifact": "output\\egypt-validation\\software-20261027\\current-source-frozen-replay18.json",
+    "original_sha256": "bda8ff70578a0909d3d798e23032f599d244e6f75f69ad0740231de19ea480ce",
+    "original_source_sha256": "a4bdcef33a299f43a73263e249fc446601e7cf1a422f76a8901634a183a3be79",
+    "recording": "runs\\normal_city\\run_6328c6a903aa4881b8f12a1018a66698",
+    "frames": [900, 920],
+    "rows": 21,
+    "equal_rows": 21,
+    "compared_fields": ["frame", "tracks", "modes", "action", "reason", "shield_accepted", "shield_reason", "prediction_sha256"],
+    "prediction_hash_scope": "Complete tracks and control-trajectory modes after serialization",
+    "differences": [],
+    "current_profile_p95_p99_ms": {
+      "scene": [53.835000027902424, 53.958040033467114],
+      "maneuver": [18.603799981065094, 18.742280011065304],
+      "shield": [4.903699969872832, 4.935619933530688],
+      "total": [75.67220006603748, 76.75428001675755]
+    },
+    "original_total_profile_p95_p99_ms": [75.09079994633794, 83.15832000225782],
+    "full_command_equivalence_established": false,
+    "native_async_equivalence_established": false
+  },
+  "latest_window_replay": {
+    "frames": [700, 708],
+    "rows": 9,
+    "current_source": true,
+    "profile_p95_p99_ms": {
+      "scene": [54.9832200165838, 55.287444023415446],
+      "maneuver": [39.30496003013104, 39.38115201424807],
+      "shield": [8.019480016082525, 8.23301600292325],
+      "total": [101.80744002573192, 102.26772806607187]
+    },
+    "frame700_action": "FOLLOW",
+    "native_frame700_action": "HOLD",
+    "non_equivalence_explanation": "Synthetic fresh replay wall clock excludes original sensor receipt spread; no native deadline-behavior reproduction claimed",
+    "semantic_alignment": "Latest recorded camera detection by evaluation frame, not exact asynchronous arrival",
+    "measured_space_preparation": "Existing helper enables immutable same-frame preparation; not proof of native scheduling"
+  },
+  "normal_stall_replay": {
+    "frames": [3973, 3683],
+    "recordings": ["run_f49cc7dbdb2e4071bf434a5eca4b93a2", "run_cc6bc8106a144d2ab16d01d7768d26ba"],
+    "corridor_original_and_expanded_m": [3.0, 3.0],
+    "coverage_speed_cap_mps": [0.0, 0.0],
+    "foreground_gap_m": [4.378617423353717, 4.401212374214083],
+    "first_unknown_footprint_m": [3.5, 3.5],
+    "unknown_samples_first_footprint": [5, 5],
+    "occupied_samples_first_footprint": [0, 0],
+    "scope_expansion_fixed_coverage": false,
+    "mounts_within_0_03m": true,
+    "route_completion_proven": false
+  },
+  "focused_tests": {
+    "passed": 4,
+    "full_suite_run": false,
+    "selectors": [
+      "tests.test_egypt_urban.UrbanDriverTests.test_late_scene_reserves_independent_braking_time_without_erasing_maneuver_state",
+      "tests.test_egypt_urban.UrbanDriverTests.test_occluded_space_and_stale_or_missing_motion_data_never_admit_a_maneuver",
+      "tests.test_control_scene.ControlSceneTests.test_disconnected_far_ground_is_not_a_continuous_corridor",
+      "tests.test_control_scene.ControlSceneTests.test_sensor_geometry_can_admit_forward_and_reject_unobserved_reverse"
+    ]
+  },
+  "local_artifacts": {
+    "base_directory": "output\\egypt-validation\\offline-diagnosis-20261027",
+    "sha256": {
+      "analyze_traces.py": "c8d16a6cffd823f46697d94470982670abc312afde702c1d0e2311bd945c9945",
+      "trace-analysis.json": "c6d16c5a87483eb8b974384f0c2b81b6bf8273b885117635420662628ff4b82f",
+      "sensor-and-replay-comparison.json": "73d630f663f9c855881c3a6037eac618b61f3f94b6d5c3db02ab8e473458c94f",
+      "current-original-window.json": "f762f5edc25b23abc3167226f0ed9fdf7f36afccb5a68ce5397324dc4d60dae5",
+      "attempt19-late-window.json": "91daacd54f684ef2cf4ab0847b971fb65b2e9ba0eb46ec9a2593af49a4ba025a",
+      "normal-coverage.json": "006bb4792c067fc1d52d06ca8c4d5e96d0db975686b487532a783edeb7724349"
+    },
+    "original_helper_directory": "output\\egypt-validation\\software-20261027",
+    "original_helper_sha256": {
+      "profile_egypt_semantics.py": "69c3702662c31dbdef2bc4964bab1a447fefc1dcfb9f51a1b9f46eb3d03ca1ab",
+      "profile_frozen_road_control.py": "bad843c6d27b9a54257094a27ffe9437753078842fa88a33e9e7c9e69525b401"
+    },
+    "availability": "Retained project-local raw evidence, not supplied by an ordinary Git clone"
+  },
+  "remaining_blockers": [
+    "No measured small behavior-equivalent repair established",
+    "Current native p95, p99 and zero-late-frame timing gates fail",
+    "Recording/detector/external-worker interference not causally separable from saved streams",
+    "Normal native progress unresolved; unknown cells cannot be declared free",
+    "Full development matrix and native acceptance remain unexecuted",
+    "Storage/protected-time readiness remains independently blocked; no allowance modified"
+  ]
+}

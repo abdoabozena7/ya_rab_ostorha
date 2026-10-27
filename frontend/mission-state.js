@@ -10,6 +10,14 @@ const preparation={SELECTING:['Preparing your selected car','The world is alread
   RECOVERING:['Checking the sensors','Waiting for fresh sensor frames and a verified starting scene.']};
 export const modeLabel=m=>m==='NORMAL'?'Normal':PROJECT_NAME;
 export const nextLabel=m=>m==='NORMAL'?'See predictive driving now':'See reactive sensor driving now';
+export function missionStatus(state,{verificationRequired=false}={}){
+  if(verificationRequired||['fault','emergency'].includes(state.screen))return 'Verification Required';
+  if(state.screen==='releasing'||state.screen==='comparison'&&state.loadingDrive||
+    ['FINALIZING','FINISHING'].includes(state.phase))return 'Saving';
+  if(state.loadingDrive||state.screen==='loading')return 'Preparing';
+  if(state.screen==='driving')return 'Running';
+  return 'Ready';
+}
 export function preloadWasObserved(p,local){
   const d=p.presentation||{};
   return !!(local.preloadRequested&&!local.pageAdmitted&&Number.isFinite(local.preloadSequence)&&

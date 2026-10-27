@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "snapshot_utc": "2026-10-27T18:45:40.140029+00:00",
+  "scope": "READ_ONLY_RESOURCE_PREFLIGHT",
+  "preflight_complete": true,
+  "native_acceptance": false,
+  "native_execution_performed": false,
+  "branch": "main",
+  "source_sha256_at_snapshot": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+  "source_binding_note": "Other workers may change source after this snapshot; this is not a software certificate or permission to execute.",
+  "actions_not_performed": ["start_or_stop_CARLA", "reserve_extend_reset_budget", "compress_delete_move_evidence", "install_dependencies", "change_storage_paths"],
+  "disk": {
+    "measurement": "shutil.disk_usage; point-in-time bytes, not a reservation",
+    "D": {"total_bytes": 561197871104, "free_bytes": 100071837696, "free_gib": 93.19916152954102},
+    "C": {"total_bytes": 461693251584, "free_bytes": 72010211328, "free_gib": 67.06473541259766},
+    "C_counted_toward_D_recording_capacity": false,
+    "free_space_changed_during_collection": true,
+    "earlier_D_free_bytes_during_estimation": 99143864320,
+    "note": "The environment is shared; remeasure immediately before execution. No space was reclaimed by this preflight."
+  },
+  "paths": {
+    "recording_root": "runs\\normal_city",
+    "export_root": "runs\\normal_city\\<run_id>",
+    "temporary_exports": ["driving.mp4.encoding.mp4", "driving-annotated.mp4.encoding.mp4", "*.ffconcat", "annotation frames within recording"],
+    "report_root": "output\\egypt-validation",
+    "recording_and_output_roots_exist": true,
+    "recording_and_output_roots_are_junctions": false,
+    "recording_export_and_temporary_export_volume": "D",
+    "archive": {
+      "target": "D:\\CodexArchives\\native-evidence\\ya_rab_ostorha",
+      "exists": true,
+      "target_is_junction": false,
+      "legacy_junction": "%USERPROFILE%\\.codex\\native-evidence\\ya_rab_ostorha",
+      "legacy_link_type": "Junction",
+      "verified_junction_target": "D:\\CodexArchives\\native-evidence\\ya_rab_ostorha",
+      "normal_city_child_readable_through_both_paths": true,
+      "policy": "ONE archive reached through two paths, not a duplicate; never delete.",
+      "archive_tree_scanned": false
+    },
+    "verified_closed_exports": [
+      {
+        "recording": "runs\\normal_city\\run_6100d71dcc5c49aabd2090ca241137d0",
+        "finalized": true, "video_status": "READY", "temporary_encoding_files": [],
+        "videos": [
+          {"name": "driving.mp4", "bytes": 29923934, "sha256": "c975cead9b1b414eb937f148d12b910d498300d6ca1d51010eccc231bc7f06d1", "matches_saved_variant_hash": true},
+          {"name": "driving-annotated.mp4", "bytes": 26984128, "sha256": "e755addff9cbcc5ba4c096eada72972e00994a6e76522d5dcd140db9be00f229", "matches_saved_variant_hash": true}
+        ]
+      },
+      {
+        "recording": "runs\\normal_city\\run_c8d966cf0d16438180d3dd7e9e879bea",
+        "finalized": true, "video_status": "READY", "temporary_encoding_files": [],
+        "videos": [
+          {"name": "driving.mp4", "bytes": 29279230, "sha256": "5daa36e660c54b83d30205ed3578c6f69061e794d85555f56294f517709e570b", "matches_saved_variant_hash": true},
+          {"name": "driving-annotated.mp4", "bytes": 26325490, "sha256": "0daad58fa8b26e38133f7b40f346bfcdb481e31724363dfc41ef196f1d518977", "matches_saved_variant_hash": true}
+        ]
+      }
+    ],
+    "verification_limit": "Existence, finalized status, recorded variants and actual SHA-256 verified; no playback/native acceptance check performed."
+  },
+  "storage": {
+    "method": "Existing backend.core.recording_storage.recording_size_estimate(closed_egypt_recordings()); default trips=12, duration_s=None",
+    "estimator_source_sha256": "0c4e8bf9111a4db9b54f9a604c2bd4856f4189eba06e0cb6265e1ad4abb7d1b8",
+    "source": "MEASURED_EGYPT_DEVELOPMENT_RECORDINGS",
+    "sample_count": 34,
+    "sample_rates_sha256": "896b30a964d85b84916a77ab9c4ad60e1a7dd43d1993d2587c26597a19056d6a",
+    "sample_hash_method": "SHA256(json.dumps(samples, sort_keys=True).encode()) from existing estimator output; contains local absolute paths",
+    "sample_duration_min_s": 1.5500000223517418,
+    "estimated_trip_sim_s": 183.45000273287297,
+    "trips": 12,
+    "concurrent_raw_trips": 2,
+    "recording_bytes": 21677515477,
+    "retained_closed_recording_bytes": 60447740346,
+    "export_bytes": 5155483073,
+    "temporary_export_bytes": 3222445455,
+    "matrix_estimate_bytes": 90503184353,
+    "margin_fraction": 0.5,
+    "reserve_bytes": 4294967296,
+    "required_free_bytes": 140049743825,
+    "required_free_gib": 130.4314879933372,
+    "free_bytes_at_snapshot": 100071837696,
+    "deficit_bytes_at_snapshot": 39977906129,
+    "deficit_gib_at_snapshot": 37.2323264637962,
+    "passed_provisional_storage_gate": false,
+    "compression_between_pairs_required": true,
+    "export_estimate_source": "MEASURED_READY_VIDEOS",
+    "formula": "int(matrix_estimate_bytes * 1.5) + 4294967296; component rounding is performed by existing estimator",
+    "minimum_resource_options_not_implemented": [
+      "At snapshot, add 39977906129 usable free bytes to D while preserving all evidence.",
+      "Alternatively provision a deliberately configured and verified recording/export volume with at least 140049743825 usable free bytes (131 GiB rounded up), excluding existing evidence/copy costs; no path was changed."
+    ],
+    "complete_successful_DEVELOPMENT_matrix_exists": false,
+    "acceptance_capacity_finalized": false,
+    "unknown_full_route_requirements": [
+      "Full-route duration, event completion and longest successful DEVELOPMENT trip are not yet measured.",
+      "Successful full-matrix raw/compressed rates, finished-video rates, export/compression wall time and transient overlap remain unverified.",
+      "Retaining DEVELOPMENT plus ACCEPTANCE evidence may require more capacity than a single 12-trip peak; recalculate before acceptance from the complete successful DEVELOPMENT matrix."
+    ],
+    "limit": "Provisional lower-bound planning requirement for the sampled workload, not proven sufficient acceptance capacity; future pair compression must be separately permitted and verified."
+  },
+  "budgets": {
+    "sqlite_read_mode": "mode=ro&immutable=1",
+    "sidecars_present_before_and_after": false,
+    "hashes_unchanged": true,
+    "files": [
+      {"path": "output\\egypt-validation\\budget.sqlite", "bytes": 49152, "sha256_before": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854", "sha256_after": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"},
+      {"path": "output\\egypt-validation\\allowance.json", "bytes": 275, "sha256_before": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be", "sha256_after": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be"},
+      {"path": "output\\hybrid-driving\\budget.sqlite", "bytes": 40960, "sha256_before": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c", "sha256_after": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"}
+    ],
+    "egypt": {
+      "base_cap_s": 14400.0,
+      "existing_extension": {"id": "EGYPT_DEVELOPMENT_20261027", "seconds": 7200.0, "phase": "DEVELOPMENT"},
+      "effective_cap_s": 21600.0,
+      "development_cap_s": 14400.0,
+      "charged_development_s": 6074.98700000043,
+      "development_remaining_s": 8325.01299999957,
+      "diagnostic_remaining_s": 645.0129999995697,
+      "protected_development_matrix_s": 7200.0,
+      "protected_browser_s": 480.0,
+      "acceptance_remaining_s": 7200.0,
+      "acceptance_attempted": false,
+      "unfinished_reservations": 0,
+      "reservation_count": 34
+    },
+    "historical_hybrid": {
+      "cap_s": 14400.0, "gross_recorded_s": 34449.78325020009,
+      "excluded_verified_sleep_s": 20187.944542884827,
+      "remaining_s": 138.16129268473713,
+      "unfinished_reservations": 0,
+      "available_to_Egypt": false
+    },
+    "diagnostic_allocation_feasibility": {
+      "ordered_targets": ["2707/ROBOSPHERE", "1703/NORMAL", "3709/NORMAL"],
+      "minimum_seconds_per_pair_s": 180.0,
+      "cleanup_per_target_s": 300.0,
+      "minimum_reservation_per_target_s": 480.0,
+      "default_reservation_per_target_s": 1200.0,
+      "one_minimum_reservation_fits_budget_only": true,
+      "default_reservation_fits": false,
+      "default_single_target_shortfall_s": 554.9870000004303,
+      "three_minimum_full_reservations_s": 1440.0,
+      "three_minimum_no_refund_shortfall_s": 794.9870000004303,
+      "remaining_after_one_fully_charged_minimum_s": 165.0129999995697,
+      "conditional_three_target_feasibility": "No guarantee. Refunds/headroom return only at verified finalization. With 480-second reservations throughout, charges for the first two targets together must be <=165.0129999995697 s to admit the third while retaining protected windows; these charges are unmeasured and cannot be assumed.",
+      "additional_authorization_requested_or_granted": false,
+      "time_accounting": "Reservation/charge is wall clock including preparation, driving, export, compression if performed, and cleanup; simulation seconds are not budget seconds."
+    }
+  },
+  "ownership": {
+    "egypt_owner_file_reserved": false, "egypt_owner_active": false,
+    "CARLA_or_Unreal_processes_observed": 0,
+    "CARLA_listeners_2000_2001_observed": 0,
+    "backend_listeners": {"8000": 15176, "8001": 15176},
+    "backend_process_ids_observed": [11004, 15176],
+    "egypt_native_workers_observed": 0, "ffmpeg_processes_observed": 0,
+    "policy": "No processes started/stopped. Existing backend retained. Read-only process/port snapshots are advisory, not a simulator lease."
+  },
+  "hardware": {
+    "os": "Windows 11 Pro", "os_version": "10.0.26300",
+    "cpu": "AMD Ryzen 7 6800H with Radeon Graphics", "physical_cores": 8, "logical_processors": 16,
+    "physical_ram_bytes": 16371494912, "available_physical_ram_bytes_at_query": 2059550720,
+    "gpu": {"name": "NVIDIA GeForce RTX 3060 Laptop GPU", "total_vram_mib": 6144, "free_vram_mib": 5985, "used_vram_mib": 10, "utilization_percent": 0, "driver_version": "617.14", "source": "nvidia-smi"},
+    "integrated_gpu": "AMD Radeon(TM) Graphics",
+    "limits": "Resource snapshots are advisory. WMI's truncated NVIDIA AdapterRAM was not used. No measured minimum CPU/RAM/GPU upgrade can be inferred and no latency or full-route capacity is certified."
+  },
+  "versions": {
+    "node": "22.18.0", "npm": "10.9.3", "ffmpeg": "7.1-essentials_build-www.gyan.dev",
+    "CARLA_install": {
+      "directory": "C:\\CARLA\\CARLA_0.9.16", "marker_version": "0.9.16",
+      "marker_package_verified": true, "marker_python_api_validated": true, "marker_native_boot_validated": true,
+      "marker_sha256": "520d4f488e30e7e67c72de6948922d91c36b91d56d6d77fb99e74129e0b8cb39",
+      "launcher_sha256": "0bc4b3d089470ffdc91a2ec6bf2f26187de271d0e9e71a01beee8416633c7320",
+      "current_server_version_queried": false,
+      "note": "Prior install marker and actual launcher bytes, not fresh engine boot or full installed-package verification."
+    },
+    "environments": [
+      {"path": ".venv-carla", "python": "3.12.10", "packages": {"carla": "0.9.16", "numpy": "2.5.3", "numba": "0.68.0", "llvmlite": "0.50.0", "imageio-ffmpeg": "0.6.0", "Pillow": "12.3.0", "websockets": "15.0.1"}},
+      {"path": ".venv", "python": "3.13.7", "packages": {"numpy": "2.5.3", "onnxruntime": "1.30.0", "Pillow": "12.3.0"}},
+      {"path": ".venv-perception", "python": "3.12.10", "packages": {"numpy": "2.5.2", "opencv-python": "5.0.0.93", "onnxruntime": "1.23.2", "torch": "2.14.1+cpu", "ultralytics": "8.4.174", "Pillow": "12.3.0"}},
+      {"path": ".venv-perception-dml", "python": "3.12.10", "packages": {"numpy": "2.5.2", "onnxruntime-directml": "1.24.4", "Pillow": "12.3.0"}},
+      {"path": ".venv-learned", "python": "3.12.10", "packages": {"numpy": "2.5.3", "torch": "2.11.0+cu128", "stable-baselines3": "2.9.0", "sb3-contrib": "2.9.0"}},
+      {"path": ".venv-rl", "python": "3.12.10", "packages": {"numpy": "2.5.3", "torch": "2.14.1+cpu", "stable-baselines3": "2.9.0", "sb3-contrib": "2.9.0"}},
+      {"path": ".venv-trajectron", "python": "3.12.10", "packages": {"numpy": "1.26.4", "torch": "2.11.0+cu128", "stable-baselines3": "2.9.0", "sb3-contrib": "2.9.0"}}
+    ],
+    "verification_limit": "Installed distribution metadata, interpreter --version and ffmpeg -version only; no dependency installation, inference, compatibility suite, training or native boot."
+  },
+  "model_artifacts": {
+    "scope": "Existing models root/OCR, .cache/models/cv, .cache/trajectron top-level weights and artifacts/learned_safety; bounded inventory, not a whole-disk scan.",
+    "activation_or_acceptance_implied": false,
+    "nlp_cache_directory_has_weight_files": false,
+    "trajectron_lock_config_and_weights_match": true,
+    "files": [
+      {"path": ".cache\\models\\cv\\yolox_tiny.onnx", "bytes": 20219662, "sha256": "427cc366d34e27ff7a03e2899b5e3671425c262ea2291f88bb942bc1cc70b0f7"},
+      {"path": ".cache\\trajectron\\config.json", "bytes": 2208, "sha256": "3538638ef65601e80dd2ac146d1a3f7ca87fa28fc2936bae2cb2adea2b18923d"},
+      {"path": ".cache\\trajectron\\model_registrar-12.pt", "bytes": 1121423, "sha256": "3fcc65cd8f48b70fce4965813e503e03c664e027f1f83f8a27d317773a138028"},
+      {"path": "models\\yolov8n-320.onnx", "bytes": 12698161, "sha256": "c47f9eb8a04aab5f6f960035b5871ef1972238d43511965a8874c34129975ee0"},
+      {"path": "models\\yolov8n-640.onnx", "bytes": 12824165, "sha256": "9981ce5b69303aeb04ba40690ba2aa9faf5cbc94346a86c808fc5cce996b66fc"},
+      {"path": "models\\yolov8n.pt", "bytes": 6549796, "sha256": "f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36"},
+      {"path": "models\\yolov8s-640.onnx", "bytes": 44842815, "sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"},
+      {"path": "models\\yolov8s.pt", "bytes": 22588772, "sha256": "1f47a78bf100391c2a140b7ac73a1caae18c32779be7d310658112f7ac9aa78a"},
+      {"path": "models\\ocr\\arabic.pth", "bytes": 215400714, "sha256": "2a9afd42c374deb98aed0b53c9b77d75e1d00d4e0501f3b0276c54190c89b1a8"},
+      {"path": "models\\ocr\\craft_mlt_25k.pth", "bytes": 83152330, "sha256": "4a5efbfb48b4081100544e75e1e2b57f8de3d84f213004b14b85fd4b3748db17"},
+      {"path": "models\\ocr\\english_g2.pth", "bytes": 15143997, "sha256": "e2272681d9d67a04e2dff396b6e95077bc19001f8f6d3593c307b9852e1c29e8"},
+      {"path": "artifacts\\learned_safety\\independent_prediction_v1\\760ec313329b430388c30708eba6e62f\\residual-mlp.pt", "bytes": 15313, "sha256": "b82848b5192a124efa277835147a19fba3191cc31830c6ea434af9010990dcd4"},
+      {"path": "artifacts\\learned_safety\\maneuver_v1\\2924d97b26dd428698b3d9c3791caf11\\maskable-ppo.zip", "bytes": 29940112, "sha256": "d04d73727eeea12241d898924d67c9d5d471db737cbcbe14ed94f1ff0b76c364"},
+      {"path": "artifacts\\learned_safety\\maneuver_v1\\9ec465b1ea7d4a35b43e5bfce4c92d54\\maskable-ppo.zip", "bytes": 29940125, "sha256": "1892bdb763745908790e63a99cc0b7b7714719e0180b7b3558fa0394d35e204f"},
+      {"path": "artifacts\\learned_safety\\path_entry_risk_v1\\714c4b860ec24f51bd85bc6e52582063\\weights.npz", "bytes": 30902, "sha256": "d33474aeb2920b6813d6ff738a441142d8639a06547b8500a72fb958277bcf79"},
+      {"path": "artifacts\\learned_safety\\predictive_v2\\heads.npz", "bytes": 7240, "sha256": "511a67dce5a0370f3cdfb2150e4abc74cce103be531aa9d48c96989ddb78a29e"},
+      {"path": "artifacts\\learned_safety\\v1\\checkpoint.pt", "bytes": 21369, "sha256": "fb0e9ad9606b644074987ef9fc05a735cc95ec60dcbca2cdd850b2d036a73e73"},
+      {"path": "artifacts\\learned_safety\\v1\\weights.npz", "bytes": 18539, "sha256": "5b3b793565bb54836d06e450732d4ac75fcb0656bf57810693656ec706c7e629"}
+    ]
+  },
+  "blocking_native_prerequisites": [
+    "D storage short by 39977906129 bytes at snapshot even against provisional single-matrix estimate.",
+    "No complete successful DEVELOPMENT matrix exists, so acceptance capacity and full-route wall time are not finalized.",
+    "645.0129999995697 diagnostic seconds cannot guarantee three minimum 480-second reservations; default 1200-second reservation cannot fit.",
+    "Snapshot source already attempted and failed 2707/ROBOSPHERE; resources alone cannot authorize a same-source retry. A meaningful evidenced driving fix and fresh source-bound software/replay gate are prerequisites.",
+    "Latest native diagnostic fails latency Gate B; no ordered NORMAL diagnostics, successful full DEVELOPMENT matrix, frozen ACCEPTANCE matrix or final native browser verification is certified by this preflight."
+  ],
+  "supporting_records": [
+    {"path": "output\\egypt-validation\\development.json", "sha256": "671f2984de2806e689cb45e34f6c388f2f29340e2559e88371d11095a7dc15bb", "pairs": 1, "successful_pairs": 0},
+    {"path": "output\\egypt-validation\\diagnostics.json", "sha256": "7bc58a842398acc83cf38d7b23d56ec278cd45eec92d70870e9cbb7401577040", "last_state": "FAILED", "last_target": "2707/ROBOSPHERE"},
+    {"path": "scripts\\native\\validate_egypt_urban.py", "sha256": "3965fe1157f1c662c78e74eeb0d37df18a27968065e269fcf0dae5fc3b947bd4"}
+  ]
+}

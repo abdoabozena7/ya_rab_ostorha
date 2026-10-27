@@ -1,5 +1,98 @@
 # YA RAB OSTORHA: CARLA Collision-Avoidance Prototype
 
+## Current entry guide — 27 October 2026
+
+CARLA supplies physics and sensors; Python builds a measured scene, tracks
+motion, predicts physical alternatives and selects **rule-based** maneuvers.
+An independent execution barrier checks the proposed control and stopping path.
+The dashboard records complete-driver comparisons and preserves results/videos.
+**The Egypt driving policy uses neither RL nor a VLM.**
+
+**Egypt Urban Chaos V1 is NOT ACCEPTED and is not the default.** Historical
+protected diagnostic 19 covered 63.946 m / 30 simulation seconds with zero
+contacts, but failed timing: p95 215.750 ms, p99 234.514 ms and two frames over
+250 ms. It completed no overtakes and is not a completed route. Normal's retained
+stalls remain unresolved natively. The ordered current-source DEVELOPMENT and
+holdout ACCEPTANCE matrices and final native browser gate have not executed.
+Prior certificates do not certify source changes made after their fingerprint.
+The [current delivery report](docs/EGYPT_DELIVERY_20261027.md) records fresh
+software verification: **210 JavaScript tests passed; 1,036 Python tests passed,
+4 optional skips; dashboard build passed**. Bounded saved-evidence replay passed
+its recorded-field comparisons but did not reproduce native deadline behavior.
+No new native admission certificate was issued.
+
+### Choose an execution mode
+
+Run commands from this checkout; do not start a second backend/tick owner.
+**No new native execution is authorized by this guide.** Opening the native
+dashboard can prepare CARLA automatically; use saved playback/replay while
+resource, ownership and execution-budget prerequisites remain blocked.
+
+```powershell
+# Read-only launcher inspection; no CARLA start:
+.\Start-YA-RAB-OSTORHA.ps1 -Check
+# Initially stopped backend; guided page can auto-start CARLA (not offline isolation):
+.\.venv-carla\Scripts\python.exe -m backend.server
+# Instead of the dashboard-only server: saved sensor replay, no CARLA:
+.\.venv-carla\Scripts\python.exe -m backend.server --replay runs\normal_city\run_c8d966cf0d16438180d3dd7e9e879bea
+# Native dashboard: ONLY after authorization and resource/ownership checks:
+.\Start-YA-RAB-OSTORHA.ps1
+```
+
+For offline browser review, use **Replay** at <http://127.0.0.1:8000/>,
+not the ordinary stopped-backend guided page, which may auto-start CARLA.
+Replay requires the retained local recording
+(not included in Git); retired raw recordings cannot be replayed as sensors.
+Saved MP4s can also be played directly without CARLA or a backend.
+
+### Requirements and reproduction
+
+- Windows x64, CARLA **0.9.16** with its matching CPython **3.12 x64** wheel,
+  isolated `.venv-carla`, and the locked [backend dependencies](backend/requirements.txt).
+  See [installation and ABI checks](docs/CARLA_0916_MIGRATION.md).
+- Live perception uses a separate `.venv-perception` and pinned
+  YOLOv8s-640 ONNX; [setup, exact hashes and versions](docs/EGYPT_DEMONSTRATION_DEFENSE_20261027.md#environment-and-models)
+  distinguish installed assets from historical run manifests. Missing assets
+  are unavailable, not replaced with simulated detections.
+- Node/npm with [the lockfile](package-lock.json) for dashboard checks;
+  `npm ci` restores frontend dependencies when needed.
+- Egypt requires Town10HD_Opt, LOW/D3D12, retained evidence storage and an
+  existing authorized reservation. The historical 91.764 GiB free versus
+  provisional 130.431 GiB requirement was insufficient; current resource
+  measurements and exact remaining deficit are in the
+  [read-only resource preflight](docs/EGYPT_RESOURCE_PREFLIGHT_20261027.md).
+
+```powershell
+npm test
+.\.venv-carla\Scripts\python.exe -m unittest discover -s tests -p 'test_*.py'
+npm run build:dashboard
+```
+
+These are **offline software checks**, not native acceptance. Real-time
+execution, full Egypt route completion, three measured passes/returns and the
+reserved matrices remain unverified. A video's configured FPS is not live FPS.
+
+Start here: [architecture, walkthrough and defense Q&A](docs/EGYPT_DEMONSTRATION_DEFENSE_20261027.md)
+· [machine-readable results/evidence index](docs/evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)
+· [strict execution gates](docs/EGYPT_COMPLETION_GATES_20261027.md)
+· [bounded offline diagnosis](docs/EGYPT_OFFLINE_DIAGNOSIS_20261027.md)
+· [scenario contract](docs/EGYPT_URBAN_CHAOS_V1.md)
+· [repository/evidence/recovery workflow](docs/CONSOLIDATED_DELIVERY_20261014.md).
+The [shadow research package](docs/BEHAVIOR_PROPOSALS_20261027.md) remains
+non-authoritative; VLM integration, new RL training, maps and PERFORMANCE_60
+acceptance are separate future work.
+
+## Historical delivery notes — not current operating instructions
+
+<details>
+<summary>Expand dated implementations, earlier protocols, setup examples and results</summary>
+
+The material below is retained for provenance. Its statements about a running
+backend, installed state, budgets, vehicles, defaults and accepted gates apply
+to the dated revisions described, not automatically to this checkout. Historical
+crossing acceptance does not grant Egypt acceptance. Use the current entry guide
+and defense package above before using any historical command.
+
 All project work is consolidated on **`main`**, in one working checkout.
 Use [the consolidated delivery guide](docs/CONSOLIDATED_DELIVERY_20261014.md)
 for the Git workflow, implementation index, verification and recovery details.
@@ -467,3 +560,5 @@ documents the bounded repositioning implementation and its failed native
 acceptance. That recovery prototype and its rule exceptions remain gated off;
 the later ordinary bypass has its own scoped evidence and surround rig. Fresh sensor health can now clear a historical fault while the
 vehicle stays held; the cockpit keeps controller names out of its main status.
+
+</details>

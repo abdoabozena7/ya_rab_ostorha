@@ -1,8 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {missionState,stressSummary,missionFailure,preloadWasObserved} from '../frontend/mission-state.js';
+import {missionState,missionStatus,stressSummary,missionFailure,preloadWasObserved} from '../frontend/mission-state.js';
 const ready={connected:true,fresh:true,controller:true,simulatorStop:{available:true}};
 const guided=(status,arm=0,first='NORMAL')=>({...ready,presentation:{guided:true,id:'current',status,arm,modes:[first,first==='NORMAL'?'ROBOSPHERE':'NORMAL']}});
+
+test('primary status separates preparation, driving, saving and verification from readiness',()=>{
+  assert.equal(missionStatus(missionState(guided('CHOOSING'))),'Ready');
+  assert.equal(missionStatus(missionState(guided('PREPARING'))),'Preparing');
+  assert.equal(missionStatus(missionState(guided('DRIVING'))),'Running');
+  assert.equal(missionStatus(missionState(guided('FINALIZING'))),'Saving');
+  for(const phase of ['FINISHING','COMPLETE']){
+    const p=guided(phase);p.presentation.pair_id='saved';p.connected=false;
+    assert.equal(missionStatus(missionState(p)),phase==='FINISHING'?'Saving':'Ready');
+  }
+  const results=guided('RESULTS');results.presentation.pair_id='saved';
+  assert.equal(missionStatus(missionState(results,{commandPending:true})),'Saving');
+  assert.equal(missionStatus(missionState(ready,{shutdownPending:true})),'Saving');
+  assert.equal(missionStatus(missionState(guided('ERROR'))),'Verification Required');
+  assert.equal(missionStatus(missionState({...ready,controlMode:'EMERGENCY_STOP'})),'Verification Required');
+  assert.equal(missionStatus(missionState(guided('DRIVING')),{verificationRequired:true}),'Verification Required');
+  assert.equal(missionStatus(missionState(guided('CHOOSING')),{verificationRequired:true}),'Verification Required');
+});
 
 test('the primary action waits for the server-confirmed post-release sensor stage',()=>{
   const p={...guided('STARTING'),journey:{startup_stage:'WAITING_FOR_FRESH_SENSORS'}};

@@ -3442,6 +3442,13 @@
   };
   var modeLabel2 = (m) => m === "NORMAL" ? "Normal" : PROJECT_NAME;
   var nextLabel = (m) => m === "NORMAL" ? "See predictive driving now" : "See reactive sensor driving now";
+  function missionStatus(state, { verificationRequired = false } = {}) {
+    if (verificationRequired || ["fault", "emergency"].includes(state.screen)) return "Verification Required";
+    if (state.screen === "releasing" || state.screen === "comparison" && state.loadingDrive || ["FINALIZING", "FINISHING"].includes(state.phase)) return "Saving";
+    if (state.loadingDrive || state.screen === "loading") return "Preparing";
+    if (state.screen === "driving") return "Running";
+    return "Ready";
+  }
   function preloadWasObserved(p, local) {
     const d = p.presentation || {};
     return !!(local.preloadRequested && !local.pageAdmitted && Number.isFinite(local.preloadSequence) && p.failedSequence !== local.preloadSequence && p.acknowledged >= local.preloadSequence && d.id && d.page_id !== local.pageId && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status));
@@ -6874,7 +6881,7 @@
         }
       }
       if ($11("missionDetail").textContent !== state.detail) $11("missionDetail").textContent = state.detail;
-      $11("missionStep").textContent = state.screen === "driving" ? `Drive ${state.arm + 1} of 2 \xB7 Live` : state.screen === "choose" ? "Your starting point" : state.screen === "comparison" ? "Your comparison" : state.screen === "outcome" ? "Drive 1 of 2 \xB7 Saved" : state.screen === "welcome" ? "The simulator is off" : "Your driving session";
+      const stepLabel = state.screen === "driving" ? `Drive ${state.arm + 1} of 2 \xB7 Live` : state.screen === "choose" ? "Your starting point" : state.screen === "comparison" ? "Your comparison" : state.screen === "outcome" ? "Drive 1 of 2 \xB7 Saved" : state.screen === "welcome" ? "The simulator is off" : "Your driving session";
       guide.hidden = state.screen !== "welcome";
       const actual = p.population?.actual, setup = d.setup;
       $11("missionTraffic").textContent = state.camera && actual ? `${actual.vehicles ?? "\u2014"} vehicles \xB7 ${actual.pedestrians ?? "\u2014"} pedestrians` + (setup?.scene === "DENSE_CHAOS" ? " \xB7 requested " + (setup?.requested_route_vehicles ?? 60) + " / " + (setup?.requested_route_pedestrians ?? 100) : "") : "";
@@ -6913,6 +6920,9 @@
       const scenarioBlocked = scenario.blocked;
       const actionLabel = local.scenarioSelectionPending ? "Preparing selected scenario\u2026" : scenario.label || state.label;
       const busy = !!(state.loadingDrive || local.scenarioSelectionPending || scenario.checking);
+      const status = missionStatus({ ...state, loadingDrive: busy }, { verificationRequired: !!(scenarioBlocked || validationOwnsSimulator2 || p.operationError || state.camera && (!p.connected || !p.fresh) || state.screen === "comparison" && d.finish_error) });
+      $11("missionStep").textContent = status + " \xB7 " + stepLabel;
+      experience.dataset.status = status;
       if (scenarioBlocked) primary.hidden = false;
       validationNotice.hidden = !scenarioBlocked;
       validationNotice.textContent = scenarioBlocked ? validationSummary(scenarioCatalog) : "";

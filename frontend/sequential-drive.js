@@ -1,5 +1,5 @@
 import {installGuidedDetails} from './guided-details.js';
-import {missionState,modeLabel,stressSummary,missionFailure,preloadWasObserved} from './mission-state.js';
+import {missionState,missionStatus,modeLabel,stressSummary,missionFailure,preloadWasObserved} from './mission-state.js';
 import {controlReasonText} from './cockpit-state.js';
 import {PROJECT_NAME} from './project-name.js';
 import {showWorkspace} from './presentation-ui.js';
@@ -218,7 +218,7 @@ export function installSequentialDrive(p,tools) {
       }
     }
     if($('missionDetail').textContent!==state.detail)$('missionDetail').textContent=state.detail;
-    $('missionStep').textContent=state.screen==='driving'?`Drive ${state.arm+1} of 2 · Live`:state.screen==='choose'?'Your starting point':state.screen==='comparison'?'Your comparison':state.screen==='outcome'?'Drive 1 of 2 · Saved':state.screen==='welcome'?'The simulator is off':'Your driving session';
+    const stepLabel=state.screen==='driving'?`Drive ${state.arm+1} of 2 · Live`:state.screen==='choose'?'Your starting point':state.screen==='comparison'?'Your comparison':state.screen==='outcome'?'Drive 1 of 2 · Saved':state.screen==='welcome'?'The simulator is off':'Your driving session';
     guide.hidden=state.screen!=='welcome';
     const actual=p.population?.actual,setup=d.setup;
     $('missionTraffic').textContent=state.camera&&actual?`${actual.vehicles??'—'} vehicles · ${actual.pedestrians??'—'} pedestrians`+(setup?.scene==='DENSE_CHAOS'?' · requested '+(setup?.requested_route_vehicles??60)+' / '+(setup?.requested_route_pedestrians??100):''):'';
@@ -260,6 +260,10 @@ export function installSequentialDrive(p,tools) {
     const scenarioBlocked=scenario.blocked;
     const actionLabel=local.scenarioSelectionPending?'Preparing selected scenario…':scenario.label||state.label;
     const busy=!!(state.loadingDrive||local.scenarioSelectionPending||scenario.checking);
+    const status=missionStatus({...state,loadingDrive:busy},{verificationRequired:!!(scenarioBlocked||validationOwnsSimulator||
+      p.operationError||state.camera&&(!p.connected||!p.fresh)||state.screen==='comparison'&&d.finish_error)});
+    $('missionStep').textContent=status+' · '+stepLabel;
+    experience.dataset.status=status;
     if(scenarioBlocked)primary.hidden=false;
     validationNotice.hidden=!scenarioBlocked;
     validationNotice.textContent=scenarioBlocked?validationSummary(scenarioCatalog):'';
