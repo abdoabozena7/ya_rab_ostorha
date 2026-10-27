@@ -28,14 +28,15 @@ def native_processes(*, timeout=15):
 
 
 class NativeRuntime:
-    def __init__(self):
+    def __init__(self, *, monitor=True):
         self.gpu = None
         self.resources = {'status':'STARTING'}
         self.gpu_error = None
         self.process_ids = {}
         self.engine_log = None
         self.active = self.inspect()
-        threading.Thread(target=self._monitor_gpu, name='gpu-observer', daemon=True).start()
+        if monitor:
+            threading.Thread(target=self._monitor_gpu, name='gpu-observer', daemon=True).start()
 
     def inspect(self):
         processes = native_processes()

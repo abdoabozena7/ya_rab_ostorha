@@ -6,6 +6,7 @@ from backend.core.motion_geometry import VehicleGeometry
 
 
 class UnbatchedSpace(ObservedSpace):
+    _observe = ObservedSpace._observe_reference
     def _mark_free_rays(self,xyz,delta,near,far,origin,count):
         fractions=near[:,None]+(far-near)[:,None]*np.linspace(0.,.999,count)[None,:]
         sample=origin[:2]+delta[:,None,:]*fractions[:,:,None]

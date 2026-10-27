@@ -3,6 +3,7 @@
   "version": 1,
   "protocol": "EGYPT_COMPLETE_DRIVERS_V1",
   "map": "Town10HD_Opt",
+  "native_renderer": "D3D12",
   "maximum_speed_kmh": 60,
   "route_minimum_m": 600,
   "route_maximum_m": 800,

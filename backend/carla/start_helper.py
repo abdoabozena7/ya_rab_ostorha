@@ -18,7 +18,11 @@ def launch_settings(status):
     from .dashboard_tools import validate_settings
     # Select only validated launch fields; native status includes observation metadata.
     value={key:value[key] for key in ('quality','resolution','render_profile') if value.get(key) is not None}
-    return {**validate_settings({'next_launch':value})['next_launch'],'offscreen':True}
+    result = {**validate_settings({'next_launch':value})['next_launch'],'offscreen':True}
+    from ..core.egypt_urban import configuration, deployment_status
+    if deployment_status()['accepted']:
+        result['renderer'] = configuration()['native_renderer']
+    return result
 
 
 def fresh_configuration():

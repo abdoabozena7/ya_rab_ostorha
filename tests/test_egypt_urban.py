@@ -139,6 +139,16 @@ class UrbanDriverTests(unittest.TestCase):
         self.assertGreater(max(p[-1, 0] for p in scene.space.paths), 3.)
         self.assertEqual(result['driver_id'], DRIVER_ID)
 
+    def test_optional_lane_planning_preserves_headroom_for_current_frame_safety(self):
+        driver = UrbanManeuverDriver(self.measured.geometry)
+        scene, base, road = self.warm(driver, [track('lead', 35., 0., 3.)])
+        command, result = driver.evaluate(scene, base, road, 8., wall=100.12)
+        self.assertEqual(result['action'], 'FOLLOW')
+        self.assertEqual(driver.phase, 'FOLLOW')
+        self.assertTrue(result['space']['complete_stopping_tail_verified'])
+        self.assertIn('OPTIONAL_PLANNING_HEADROOM', [item['reason'] for item in result['rejected']])
+        self.assertGreaterEqual(command.throttle, 0.)
+
     def test_fast_rear_vehicle_and_occupied_side_lane_veto_the_entire_change(self):
         for hazard in (track('rear', -20., -3.5, 20.), track('accelerating_rear', -35., -3.5, 10.),
                        track('side', 15., -3.5)):
@@ -578,7 +588,7 @@ class EgyptAcceptanceTests(unittest.TestCase):
                               'cleanup_confirmed': True, 'simulator_exit_confirmed': True,
                               'native_worker_exit_code': 0, 'cleanup_stage': 'COMPLETE',
                               'independent_cleanup_probe': {'passed': True}, 'video_playback_after_exit': {'passed': True},
-                              'render_profile': {'render_profile': 'LOW'}})
+                              'render_profile': {'render_profile': 'LOW', 'renderer': configuration()['native_renderer']}})
         self.assertTrue(acceptance_matrix(pairs, 'frozen')['accepted'])
         self.assertFalse(acceptance_matrix(pairs[:-1], 'frozen')['accepted'])
         pairs[0]['native_acceptance'] = False

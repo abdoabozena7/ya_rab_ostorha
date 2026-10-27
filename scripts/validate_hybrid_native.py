@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def source_hashes():
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest()
-        for pattern in ('backend/**/*.py',
+        for pattern in ('backend/**/*.py', 'backend/requirements*.txt',
                         'config/*.json','config/hybrid-driving.json','config/route-bypass.json','config/crossing-comparison.json',
                         'config/egypt-urban-chaos-v1.json','scripts/native/validate_egypt_urban.py','scripts/validate_hybrid_native.py',
                         'scripts/native/validate_crossing_pair.py',

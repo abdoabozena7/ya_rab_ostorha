@@ -5,11 +5,15 @@ Software verification, replay, a diagnostic prefix, and a saved worker report
 are not native acceptance. The reserved holdout is still one attempt, not a
 source of tuning data.
 
-Two protected-seed diagnostics failed the unchanged sensor deadline. Neither
-Normal diagnostic, either full matrix, nor the native browser check was run.
-The [retained evidence index](evidence/egypt-urban-chaos-v1/completion-gates-20261027.json)
-records both source versions, original report hashes, remaining balances and
-independent cleanup/video results.
+Seventeen protected-seed diagnostics are retained. The latest reached 63.93 m
+over 30 simulation seconds, exited cleanly and passed post-exit video checks,
+but still failed the unchanged latency gate. Neither Normal diagnostic, either
+full matrix in this ordered execution, nor the final native browser check ran.
+The [initial checkpoint index](evidence/egypt-urban-chaos-v1/completion-gates-20261027.json)
+remains historical and unchanged. The
+[continuation index](evidence/egypt-urban-chaos-v1/continuation-20261027.json)
+records all source versions, original report hashes, current balances and
+independent cleanup/video results. No diagnostic is a completed matrix trip.
 
 This follows the [retained native failures](EGYPT_NATIVE_FOLLOWUP_20261024.md)
 and [scenario contract](EGYPT_URBAN_CHAOS_V1.md). Work remains on `main` in the
@@ -143,7 +147,7 @@ On full acceptance, the six verified comparison records are published to the
 existing saved-comparison directory without replacing the user's latest
 comparison. Their three videos remain available independently of CARLA.
 
-## Verification record
+## Initial checkpoint verification (historical)
 
 Local software, compression, handoff and replay records are retained under
 `output/egypt-validation/software-20261027`. The initial external paused-engine
@@ -206,3 +210,132 @@ cost, verify the resulting source offline, and run an evidenced new-source
 protected 2707 diagnostic. Only after that passes may Normal 1703/3709 and the
 later gates proceed. This checkpoint must not be described as completed Egypt
 acceptance or an unlocked driving option.
+
+## Continued implementation and current checkpoint
+
+The first checkpoint above was committed as `4ed8e48`. Subsequent work did not
+reset its expenditure or rewrite any failed attempt.
+
+- Measured occupancy and ray marking now use strict compiled kernels, warmed
+  before driving. Original sample fractions, rounding, body exclusion,
+  first-return deduplication and free/occupied/unknown states are preserved.
+  The original NumPy observation path remains the test oracle at 6/35/75 m.
+- Body-core depth measurement is compiled without fast math. Full measured
+  person histories are immutable and shared; all history rows and physical
+  alternatives remain. Spatial-support matching uses the same nine-neighbor
+  tolerance without repeatedly expanding it for every track.
+- Native BLAS work is bounded to one thread. The dependency manifest pins
+  `threadpoolctl`, `numba` and `llvmlite` and is included in source fingerprints.
+  There are no new model weights, sensor reductions or lower traffic counts.
+- Frame recording is bounded and deferred until after command submission.
+  Strict forecast JSON is encoded once rather than twice; immutable queued
+  inputs retain conservative byte charges. Cyclic collection is kept outside
+  sensor-to-control windows and its prior enabled/disabled state is restored.
+- Optional *new* lane changes/returns wait for sufficient lease headroom.
+  FOLLOW, committed maneuvers, all stopping checks and the independent veto
+  remain active. This can defer overtaking; it does not waive the three measured
+  completed-overtake requirement.
+- Concurrent measured-space preparation is available for bounded experiments,
+  but is disabled in the live service after its measured contention. Frame
+  arrival uses an event rather than coarse polling. Native navigation/map
+  prefetch still cannot authorize a command without its current sensor frame.
+- D3D11 aborted during initial native stepping in attempt 15. D3D12 is restored.
+  Attempt 16's render-thread queue experiment had no convincing improvement
+  and no applied-console proof; both the code and its local INI override were
+  removed. These settings are not claimed as validated optimizations.
+- The auxiliary native evidence recorder now closes with the trip recorders,
+  before export completion, actor destruction and world restoration. Retiring
+  SDK workers keep their single-thread numeric limit until process exit;
+  reusable services restore the previous limit. Ordinary and repeated close,
+  writer failure and ordering have regression coverage.
+
+### Retained native sequence
+
+All rows are protected seed 2707, never holdout. Times are sensor receipt to
+application check, not CARLA RPC duration. Exit 0 means the bounded diagnostic
+goal/cleanup completed; it does **not** override the failed latency assessment.
+
+| Attempt | Distance (m) | Simulation (s) | p95 / p99 (ms) | Over 250 ms / samples | Worker exit |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 03 | 0.585 | 5.80 | 269.547 / 328.299 | 15 / 116 | 1 |
+| 04 | 0.676 | 6.20 | 272.795 / 310.214 | 27 / 124 | 1 |
+| 05 | 6.451 | 11.40 | 259.960 / 275.151 | 32 / 228 | 1 |
+| 06 | 5.616 | 10.30 | 260.382 / 272.140 | 33 / 206 | 3221225725 |
+| 07 | 8.321 | 15.35 | 260.405 / 324.216 | 42 / 307 | 1 |
+| 08 | 29.676 | 12.85 | 259.108 / 271.993 | 30 / 257 | 1 |
+| 09 | 23.739 | 22.65 | 259.418 / 269.095 | 65 / 453 | 3221225725 |
+| 10 | 41.685 | 38.45 | 258.837 / 271.118 | 99 / 769 | 1 |
+| 11 | 38.600 | 19.25 | 259.539 / 272.108 | 49 / 385 | 1 |
+| 12 | 64.477 | 30.00 | 244.701 / 259.654 | 23 / 601 | 0 |
+| 13 | 64.561 | 30.00 | 236.028 / 252.400 | 12 / 601 | 0 |
+| 14 | 63.038 | 30.00 | 234.506 / 254.884 | 13 / 601 | 0 |
+| 15 | no trip | no trip | unmeasured | unmeasured | 3 |
+| 16 | 63.333 | 30.00 | 235.900 / 258.825 | 13 / 601 | 3221225725 |
+| 17 | 63.932 | 30.00 | 228.343 / 248.143 | 6 / 601 | 0 |
+
+Attempts 06/09/16 suffered Windows stack overflow (`0xC00000FD`) after native
+cleanup while the auxiliary evidence writer was closing. The retained Windows
+error identifies `ntdll.dll`, not a proven defective CARLA function. Saved
+measurements, a restored world and a playable video did not turn those crashes
+into clean exits. Their fault traces and last-stage markers remain local.
+
+Attempt 17 confirms the new shutdown order in one actual run: worker exit 0,
+complete exports, independent asynchronous-world/zero-owned-actor probe, engine
+exit and saved-video hash/first-last-frame decoding all passed. This one closure
+does not prove the intermittent failure is eradicated or substitute for the
+three required same-source successful diagnostics.
+
+Its only failed diagnostic gate is sensor latency. The maximum was 263.003 ms;
+six unaligned/deadline-exceeding frames remain in all 601 samples. CARLA RPC
+p95/p99 was 0.096/0.634 ms. No failing samples were dropped and the lease remains
+250 ms.
+
+### Current software verification and remaining gates
+
+On source
+`44eb8fb1316d3bc906a7fd1d8bd10734ca4fbc40ed5c7cacf33a75b20e66a088`:
+
+- Full Python suite: **1033 tests, 1029 passed and 4 optional skips**.
+- Full JavaScript suite: **209 passed**; dashboard JavaScript/CSS regenerated.
+- Exact compiled occupancy/certificate and body-core regressions pass.
+- All 21 retained late-frame person/forecast hashes match before/after the
+  relevant geometry optimizations. The final shutdown-only change also keeps
+  all 21 full recorded-semantic replay forecast hashes equal.
+- Full semantic profiling is distinct from the earlier geometry-only replay.
+  It replays history from the recording start and selects the latest recorded
+  detection by evaluation frame. It does not reconstruct exact asynchronous
+  native detector arrival or predict a live latency percentile.
+
+The final profiler and original inputs remain in the local evidence directory.
+Its profiled scene/maneuver/shield costs still leave substantial CPU work;
+passing an offline replay is not a reason to waive the native timing gate.
+
+| Separate allowance after diagnostic 17 | Seconds |
+| --- | ---: |
+| Development charged, including historical work and shutdown | 5625.034 |
+| Development remaining | 8774.966 |
+| Diagnostic spendable after protecting matrix/browser | 1094.966 |
+| Protected development matrix / browser | 7200 / 480 |
+| Acceptance remaining / spent | 7200 / 0 |
+
+The 32 closed development recordings are retained, including failed prefixes.
+Stopped-engine compression completed for all 32, recovered **8.848 GiB
+additional original-file bytes** and left the native budget unchanged. Every
+removed original was verified by decompressed SHA-256. The latest saved video
+still passes hash/first-last-frame decoding, and all 21 selected full semantic
+replay hashes remain equal when read from compressed storage.
+
+Storage is also still blocked: the snapshot had **92.587 GiB free**, below the
+**130.431 GiB** empirical requirement including 50% margin and 4 GiB reserve.
+The prior requirement was 197.403 GiB before the remaining recordings were
+compressed. These are point-in-time free-space measurements, not a claim that
+this shared machine's other disk use stayed constant. Compression reports and
+both estimates are in the continuation index. Historical-prefix sizing is provisional:
+the acceptance preflight must use the successful current-source development
+matrix, then add the required 50% margin and 4 GiB reserve.
+
+There is no permission to proceed to Normal or either matrix while Gate B
+fails. Further native diagnosis requires a specific measured change, enough
+remaining diagnostic time, and another current-source software gate; there is
+no unchanged-source retry. The task, automatic Egypt admission and final native
+browser acceptance remain **incomplete**.

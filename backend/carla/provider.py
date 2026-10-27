@@ -54,6 +54,9 @@ class CarlaProvider:
         self.last_vehicle = self.last_world = None
         self.catalog = {}
         self.cleanup_errors = []
+        self.retain_client_until_exit = False
+        self.retired_client = None
+        self.retired_native_handles = []
         self.controls = {'throttle': 0, 'brake': 1, 'steering': 0, 'parkingbrake': 0, 'gear': 1}
         self.configure_run_profile(run_profile or 'LEGACY')
 
@@ -238,6 +241,11 @@ class CarlaProvider:
 
     def destroy_ego_vehicle(self):
         self.stop_navigation()
+        if getattr(self, 'retain_client_until_exit', False):
+            if self.sensor_manager:
+                self.retired_native_handles.extend(self.sensor_manager.actors.values())
+            if self.ego and self.ego.actor:
+                self.retired_native_handles.append(self.ego.actor)
         if self.sensor_manager:
             self.sensor_manager.close()
             self.cleanup_errors.extend(self.sensor_manager.cleanup_errors)
@@ -1104,8 +1112,19 @@ class CarlaProvider:
         if self.sensor_manager:
             self.sensor_manager.stop_receiving()
 
+    def wait_for_sensor_frames(self, timeout):
+        if self.sensor_manager:
+            self.sensor_manager.frame_available.wait(timeout)
+
     def disconnect(self):
         self.cleanup_errors = []
+        if getattr(self, 'retain_client_until_exit', False):
+            if self.world:
+                self.retired_native_handles.append(self.world.world)
+            if self.population:
+                self.retired_native_handles.append(self.population.traffic_manager.manager)
+            if self.dashboard_tools:
+                self.retired_native_handles.append(self.dashboard_tools.map)
         try:
             if self.benchmark_fixture:self.benchmark_fixture.close()
         except RuntimeError as error:
@@ -1138,6 +1157,8 @@ class CarlaProvider:
             self.scenarios = None
             self.strict_ego_spawn = False
             self.last_vehicle = self.last_world = None
+            if getattr(self, 'retain_client_until_exit', False):
+                self.retired_client = self.connection.client
             self.connection.disconnect()
 
     close = disconnect

@@ -76,6 +76,7 @@ def urban_forecast(scene, horizon_s):
 
 class UrbanManeuverDriver(HybridDriver):
     DRIVER_ID = DRIVER_ID
+    OPTIONAL_MANEUVER_START_AGE_S = .1
 
     def __init__(self, geometry, *, deadline=float('inf')):
         super().__init__(geometry, deadline=deadline, allow_reverse=False)
@@ -154,21 +155,29 @@ class UrbanManeuverDriver(HybridDriver):
         if path is None:
             return False, 'COMPLETE_MANEUVER_HORIZON_UNAVAILABLE', {}
         if complete:
-            scene.space.ensure_scope(path)
+            from .corridor_uncertainty import uncertain_corridor_tracks
+            if not scene.usable(command.timestamp_s, wall + time.perf_counter() - began):
+                return False, 'STALE_CONTROL_SCENE', {}
+            uncertain = uncertain_corridor_tracks(scene.prediction['tracks'],
+                scene.prediction['control_trajectories'], path, scene.geometry, retained_forecasts=True)
+            if uncertain:
+                return False, 'REACHABLE_CORRIDOR_UNCERTAINTY', {'track_ids': uncertain}
         forecast = urban_forecast(scene, float(path[-1, 0]) if complete else scene.prediction['horizon_s'])
         return self.shield.check(forecast, path, command, road, timestamp_s=command.timestamp_s,
                                  wall_s=wall + time.perf_counter() - began, full_maneuver=complete)
 
-    def _speed(self, scene, road, cap):
-        from .launch_alignment import curvature_speed_limit
-        speed = scene.observation.ego.speed_mps
+    def coverage_path(self, speed, road):
         # Grow the measured-road query with current reaction/braking distance.
         # A stopped car starts with 6 m of measured road; query farther as its
         # current reaction and braking distance grows.
         # The shorter query conservatively caps target speed; complete maneuver
         # and independent stopping-tail proofs still expand their own scope.
         lookahead = min(75., max(6., speed * .5 + speed ** 2 / 6. + 4.))
-        probe = spatial_route(self.offset, road, np.arange(0., lookahead + .01, .5))
+        return spatial_route(self.offset, road, np.arange(0., lookahead + .01, .5))
+
+    def _speed(self, scene, road, cap):
+        from .launch_alignment import curvature_speed_limit
+        probe = self.coverage_path(scene.observation.ego.speed_mps, road)
         scene.space.ensure_scope(probe)
         visible = scene.space.continuous_coverage(probe)
         usable = max(0., visible - 1.)
@@ -284,6 +293,12 @@ class UrbanManeuverDriver(HybridDriver):
         proposals.append((self.phase if self.phase in ('CHANGE', 'PASS', 'RETURN') else 'FOLLOW',
                           self.offset, min(follow_target, 10.) if self.phase != 'FOLLOW' else follow_target, curve))
         for action, offset, desired, curve in proposals:
+            if action.startswith('CHANGE_') or action == 'START_RETURN':
+                age = wall + time.perf_counter() - began - scene.received_wall_s
+                if age >= self.OPTIONAL_MANEUVER_START_AGE_S:
+                    result['rejected'].append({'action': action, 'reason': 'OPTIONAL_PLANNING_HEADROOM',
+                                               'sensor_wall_age_s': age})
+                    continue
             command, path = self._proposal(scene, base, road, desired, offset, self.control_dt, maneuver_curve=curve)
             complete = action.startswith('CHANGE_') or action in ('CHANGE', 'START_RETURN', 'RETURN')
             if complete:

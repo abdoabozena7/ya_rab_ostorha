@@ -39,6 +39,9 @@ class MeasuredSpace:
         self.urban_forecasts=OrderedDict()
         self.forecast_geometries=OrderedDict()
         self.requested_scope_m = 0.
+        self.preparation_future = None
+        self.preparation_status = 'LAZY'
+        self.preparation_started_wall_s = self.preparation_completed_wall_s = None
 
     def ensure_scope(self, path):
         """Expand ray processing, never measured support or measurement age."""
@@ -79,18 +82,25 @@ class MeasuredSpace:
                 self.forecast_geometries.popitem(last=False)
         return cached[1]
 
-    def certificate(self, path):
+    def prepare(self):
         from .maneuver import ObservedSpace
         from .recovery_depth import depth_surfaces
         with self._lock:
             if self._map is None:
                 began = time.perf_counter()
+                self.preparation_started_wall_s = monotonic()
                 sources = self.measured_surfaces if self.measured_surfaces is not None else depth_surfaces(self.observation, lambda a: self.depth_assets[a.path])
                 speed=self.observation.ego.speed_mps
                 scope=max(6.,self.geometry.front_m+speed*.45+speed**2/6.+3.,self.requested_scope_m)
                 self._map = ObservedSpace(self.points, self.geometry, measured_surfaces=sources,scope_m=scope,
                     limit_m=min(100.,scope+self.geometry.front_m+2.))
                 self.build_ms = (time.perf_counter()-began)*1000
+                self.preparation_completed_wall_s = monotonic()
+
+    def certificate(self, path):
+        if self.preparation_future is not None:
+            self.preparation_future.result()
+        self.prepare()
         self.queries += 1
         return {**self._map.certificate(path), 'measurement_frame': self.observation.frame_id,
                 'measurement_timestamp_s': self.observation.timestamp_s}
@@ -140,6 +150,7 @@ class ControlScene:
                 'wall_age_s': wall_s-self.received_wall_s,
                 'usable': self.usable(timestamp_s, wall_s), 'build_ms': self.build_ms,
                 'space_build_ms': self.space.build_ms, 'space_queries': self.space.queries,
+                'space_preparation': self.space.preparation_status,
                 'proof_cache_hits':self.space.proof_cache_hits,
                 'track_count': len(self.prediction['tracks']),
                 'radar_velocity_tracks':self.prediction.get('radar_velocity_tracks',0),
@@ -165,10 +176,36 @@ class ControlSceneBuilder:
         self.depth_people=DepthPeople()
         from .control_radar import RadarVelocityFusion
         self.radar_velocity=RadarVelocityFusion()
+        self.space_executor = None
+        self.space_future = None
+
+    def close(self):
+        if self.space_executor is not None:
+            try:
+                if self.space_future is not None:
+                    self.space_future.result()
+            finally:
+                self.space_executor.shutdown(wait=True)
+                self.space_executor = None
+
+    def _prepare_space(self, space, path):
+        if self.space_future is not None:
+            if not self.space_future.done():
+                space.preparation_status = 'BUSY_PREPARATION_DEFERRED_TO_QUERY'
+                return
+            self.space_future.result()
+        from concurrent.futures import ThreadPoolExecutor
+        if self.space_executor is None:
+            self.space_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='measured-space')
+        space.ensure_scope(path)
+        space.preparation_status = 'CONCURRENT_SAME_FRAME'
+        self.space_future = self.space_executor.submit(space.prepare)
+        space.preparation_future = self.space_future
 
     def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None, track_motion=True,
-              sensor_timing=None):
+              sensor_timing=None, space_scope_path=None):
         began = time.perf_counter()
+        began_cpu = time.thread_time()
         began_wall=monotonic()
         if not isinstance(observation, SensorObservation):
             raise ValueError('ControlScene accepts sensor observations only')
@@ -196,6 +233,9 @@ class ControlSceneBuilder:
         from .recovery_depth import depth_surfaces
         depth_images={}
         sources=depth_surfaces(observation,lambda a:assets[a.path],decoded=depth_images)
+        space = MeasuredSpace(points,self.geometry,observation,assets,measured_surfaces=sources,depth_images=depth_images)
+        if space_scope_path is not None:
+            self._prepare_space(space, space_scope_path)
         if not track_motion:
             # RULE consumes current calibrated geometry, not the hybrid motion
             # forecasts. Display tracking runs in its own observer thread.
@@ -208,9 +248,10 @@ class ControlSceneBuilder:
                 'source':'RULE_GEOMETRY_ONLY'})
             timing=freeze_json({'input_wait_before_build':(began_wall-received_wall_s)*1000,
                 'lidar_decode':(lidar_ready-began)*1000,
-                'depth_decode_and_fusion':(finished-lidar_ready)*1000, 'tracking_and_forecasts':0.})
+                'depth_decode_and_fusion':(finished-lidar_ready)*1000, 'tracking_and_forecasts':0.,
+                'thread_cpu':(time.thread_time()-began_cpu)*1000})
             return ControlScene(1,self.session_id,observation,self.geometry,points,prediction,
-                MeasuredSpace(points,self.geometry,observation,assets,measured_surfaces=sources,depth_images=depth_images),
+                space,
                 received_wall_s,published,(finished-began)*1000,
                 freeze_json({'motion_tracking':'DISPLAY_OBSERVER_ONLY','classified':False}),timing,
                 freeze_json(stages),freeze_json(timing_metadata))
@@ -227,6 +268,7 @@ class ControlSceneBuilder:
                 measured.append(valid[indices])
         tracking_points=np.concatenate(measured)
         tracking_points.flags.writeable=False
+        space.visual_points = tracking_points
         depth_ready=time.perf_counter()
         stages.update(scene_geometry_ready=monotonic(), prediction_started=monotonic())
         ego = observation.ego
@@ -284,8 +326,9 @@ class ControlSceneBuilder:
         stages.update(prediction_completed=published, scene_published=published)
         timing={'input_wait_before_build':(began_wall-received_wall_s)*1000,
                 'lidar_decode':(lidar_ready-began)*1000,'depth_decode_and_fusion':(depth_ready-lidar_ready)*1000,
-                'tracking_and_forecasts':(tracked-depth_ready)*1000,'semantics_and_freezing':(finished-tracked)*1000}
+                'tracking_and_forecasts':(tracked-depth_ready)*1000,'semantics_and_freezing':(finished-tracked)*1000,
+                'thread_cpu':(time.thread_time()-began_cpu)*1000}
         return ControlScene(1, self.session_id, observation, self.geometry, points,
-                            frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources,depth_images=depth_images,visual_points=tracking_points),
+                            frozen_prediction, space,
                             received_wall_s, published, (finished-began)*1000,
                             frozen_coverage,freeze_json(timing),freeze_json(stages),freeze_json(timing_metadata))

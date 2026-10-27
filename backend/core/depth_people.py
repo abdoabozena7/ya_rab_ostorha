@@ -6,8 +6,50 @@ fixture schedule enters this module; missing/occluded measurements are omitted.
 """
 import math
 import numpy as np
+from numba import njit
 from .camera_geometry import mount_rotation
 from .prediction import rotation
+from .contracts import freeze_float_rows, freeze_json
+
+
+@njit(cache=True, nogil=True, fastmath=False)
+def measured_body_core(image, left, right, top, bottom, axial_expected, focal, sensor_rotation, mount_position):
+    values = np.empty((bottom-top)*(right-left), dtype=np.float32)
+    xyz = np.empty((len(values), 3), dtype=np.float64)
+    h, w = image.shape
+    count = 0
+    tolerance = max(.6, .04*axial_expected)
+    for v in range(top, bottom):
+        for u in range(left, right):
+            value = image[v, u]
+            if not np.isfinite(value) or value <= np.float32(.1) or abs(value-axial_expected) >= tolerance:
+                continue
+            values[count] = value
+            rx = float(value)
+            ry = (u-(w-1)/2)/focal * value
+            rz = -(v-(h-1)/2)/focal * value
+            for axis in range(3):
+                xyz[count, axis] = (rx*sensor_rotation[axis, 0] + ry*sensor_rotation[axis, 1]
+                                    + rz*sensor_rotation[axis, 2]) + mount_position[axis]
+            count += 1
+    if count < 4:
+        return False, 0., 0., count, np.zeros(3)
+    selected = values[:count]
+    axial = float(np.float32(np.median(selected)))
+    deviation = np.empty(count, dtype=np.float32)
+    for i in range(count):
+        deviation[i] = abs(selected[i]-np.float32(axial))
+    mad = float(np.float32(np.median(deviation)))
+    if mad > .25:
+        return False, axial, mad, count, np.zeros(3)
+    center = np.array([np.median(xyz[:count, i]) for i in range(3)])
+    return True, axial, mad, count, center
+
+
+def warm_depth_people():
+    image = np.ones((4, 4), dtype=np.float32)
+    image.flags.writeable = False
+    measured_body_core(image, 0, 4, 0, 4, 1., 2., np.eye(3), np.zeros(3))
 
 
 class DepthPeople:
@@ -91,14 +133,10 @@ class DepthPeople:
             left,right=max(0,cx-rx),min(w,cx+rx+1)
             top,bottom=max(0,cy-ry),min(h,cy+ry+1)
             if left>=right or top>=bottom:continue
-            vv,uu=np.mgrid[top:bottom,left:right];values=image[top:bottom,left:right]
-            valid=np.isfinite(values)&(values>.1)&(abs(values-camera[0])<max(.6,.04*camera[0]))
-            if valid.sum()<4:continue
-            axial=float(np.median(values[valid]));mad=float(np.median(abs(values[valid]-axial)))
-            if mad>.25:continue
-            rays=np.column_stack((np.ones(valid.sum()),(uu[valid]-(w-1)/2)/focal,-(vv[valid]-(h-1)/2)/focal))
-            xyz=(rays*values[valid,None])@sensor_rotation.T+mount_position
-            center=np.median(xyz,axis=0);world=origin+r@center[:2]
+            valid, axial, mad, support, center = measured_body_core(
+                image, left, right, top, bottom, camera[0], focal, sensor_rotation, mount_position)
+            if not valid:continue
+            world=origin+r@center[:2]
             if np.linalg.norm(world-track['seed_world'])>1.5+(now-track['seed_s'])*5.:continue
             recent=[row for row in track['history'] if 0<now-row[0]<=.3]
             if recent and now-recent[0][0]>=.15:
@@ -117,16 +155,17 @@ class DepthPeople:
             if (track['observed_inside'] and center[1]*track['initial_side']<-cleared_distance
                 and center[1]*local_velocity[1]>=-.2):track['crossing_cleared']=True
             if center[1]*local_velocity[1]<-.5:track['crossing_cleared']=False
-            track['history'].append([now,*world,*track['velocity']]);track['history']=track['history'][-60:]
+            row = freeze_float_rows(np.array([[now, *world, *track['velocity']]], dtype=float))[0]
+            track['history'].append(row);track['history']=track['history'][-60:]
             classified=semantic_age<=.75 and bool(track.get('semantic'))
             entry={'id':key,'class':'person' if classified else 'UNKNOWN','confirmed':track['hits']>=3,'occlusion_s':0.,
                 'position_m':center[:2].tolist(),'velocity_mps':local_velocity.tolist(),
                 'observed_crossing_cleared':track['crossing_cleared'],
                 'half_size_m':[.35,.35],'uncertainty_m':.25+min(semantic_age,.75)*.2,'quality':.8,
-                'motion_observations':len(recent)+1,'history':list(track['history']),
+                'motion_observations':len(recent)+1,'history':freeze_json(track['history']),
                 'measurement_evidence':{'session_id':session,
                     'frame_id':observation.frame_id,'timestamp_s':now,'sensor_ids':['depth'],
-                    'source':'CURRENT_DEPTH_BODY_CORE','support_points':int(valid.sum()),'mad_m':mad,
+                    'source':'CURRENT_DEPTH_BODY_CORE','support_points':support,'mad_m':mad,
                     'motion_span_s':now-recent[0][0] if recent else 0.}}
             if classified:entry['semantic_evidence']=track['semantic']
             published.append(entry)

@@ -68,6 +68,15 @@ class ObservedSpace:
     def _observe(self,points,origin):
         xyz=np.asarray(points,float)
         if xyz.ndim!=2 or xyz.shape[1]!=3 or not np.isfinite(xyz).all():raise ValueError('Invalid space observations')
+        from .measured_rays import observe_surfaces
+        g = self.geometry
+        count = max(2, int(np.ceil(2*self.scope_m/self.RESOLUTION))+1)
+        observe_surfaces(self.free, self.occupied, xyz, origin, self.ground_plane, self.LIMIT,
+                         self.RESOLUTION, self.scope_m, g.front_m, g.rear_m, g.half_width_m, _ray_steps(count)[0])
+
+    def _observe_reference(self,points,origin):
+        xyz=np.asarray(points,float)
+        if xyz.ndim!=2 or xyz.shape[1]!=3 or not np.isfinite(xyz).all():raise ValueError('Invalid space observations')
         radius=np.linalg.norm(xyz[:,:2],axis=1)
         relative_height=xyz[:,2]-xyz[:,0]*self.ground_plane[0]-xyz[:,1]*self.ground_plane[1]-self.ground_plane[2]
         usable=(radius>.5)&(radius<self.LIMIT)&(relative_height>-.2)&(relative_height<2.5)
@@ -112,18 +121,9 @@ class ObservedSpace:
         self._mark_free_rays(xyz,delta,near,far,origin,count)
 
     def _mark_free_rays(self,xyz,delta,near,far,origin,count):
-        # Preserve every original calibrated ray and sample. Bounded batches
-        # keep high-resolution depth from allocating many cache-sized arrays
-        # at once; sampling density, occupied cells and unknown space are exact.
-        steps=_ray_steps(count)
-        for start in range(0,len(xyz),128):
-            stop=start+128;lo=near[start:stop];hi=far[start:stop]
-            fractions=lo[:,None]+(hi-lo)[:,None]*steps
-            sample=origin[:2]+delta[start:stop,None,:]*fractions[:,:,None]
-            height=origin[2]+(xyz[start:stop,2,None]-origin[2])*fractions
-            height-=sample[:,:,0]*self.ground_plane[0]+sample[:,:,1]*self.ground_plane[1]+self.ground_plane[2]
-            idx=self.indices(sample[(height>=.25)&(height<=1.5)])
-            self.free[idx[:,0],idx[:,1]]=True
+        from .measured_rays import mark_free_rays
+        mark_free_rays(self.free, xyz, delta, near, far, origin, _ray_steps(count)[0],
+                       self.ground_plane, self.LIMIT, self.RESOLUTION)
 
     def indices(self,xy):return np.clip(np.rint((np.asarray(xy)+self.LIMIT)/self.RESOLUTION).astype(int),0,self.size-1)
 

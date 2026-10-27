@@ -154,6 +154,8 @@ class ExecutionShield:
         if conflicts:return False,'PREDICTED_INTERSECTION',{'conflicts':[
             {k:c[k] for k in ('track_id','mode','source','time_s','point_m')} for c in conflicts]}
         moving=bool(np.any(np.linalg.norm(path[:,1:3],axis=1)>.01))
+        if full_maneuver:
+            scene.space.ensure_scope(checked)
         certificate=scene.space.certificate(checked)
         if not certificate['verified']:return False,'SWEPT_SPACE_UNKNOWN_OR_OCCUPIED',certificate
         if 'drivable_strips' in road:

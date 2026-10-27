@@ -114,8 +114,7 @@ class MotionTracker:
                 keys=np.rint(cloud/.2).astype(int)
                 current_surface_keys.update(map(tuple,keys.tolist()))
                 for previous_keys in spatial_frames:
-                    supported=sum(any((int(x)+dx,int(y)+dy) in previous_keys
-                        for dx in (-1,0,1) for dy in (-1,0,1)) for x,y in keys)
+                    supported=sum((int(x),int(y)) in previous_keys for x,y in keys)
                     if len(keys) and supported/len(keys)>=.8:spatial_support+=1
             if key is None:
                 key = self.next_id; self.next_id += 1
@@ -164,7 +163,10 @@ class MotionTracker:
             if now-self.tracks[key]['last_seen'] > MAX_TRACK_OCCLUSION_S+1e-6: del self.tracks[key]
             else: self.tracks[key]['hits'] = 0  # reacquisition requires consecutive evidence
         result = []
-        if self.enhanced:self.surface_history.append((now,current_surface_keys))
+        if self.enhanced:
+            neighbours = {(x+dx, y+dy) for x, y in current_surface_keys
+                          for dx in (-1,0,1) for dy in (-1,0,1)}
+            self.surface_history.append((now, neighbours))
         for tr in self.tracks.values():
             age = now-tr['last_seen']
             if tr['hits'] >= 3 or tr.get('spatially_supported_frames',0)>=3: tr['confirmed'] = True

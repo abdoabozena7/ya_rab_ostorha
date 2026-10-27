@@ -18,6 +18,172 @@ from tests.test_control_scene import ControlSceneTests
 
 
 class EgyptControlLifecycleTests(unittest.TestCase):
+    def test_retiring_sdk_client_stays_alive_after_explicit_actor_cleanup(self):
+        from backend.carla.provider import CarlaProvider
+        provider = CarlaProvider()
+        client = object()
+        provider.connection.client = client
+        provider.retain_client_until_exit = True
+        with patch.object(provider, 'destroy_ego_vehicle'):
+            provider.disconnect()
+        self.assertIs(provider.retired_client, client)
+        self.assertIsNone(provider.connection.client)
+        self.assertFalse(provider.connection.is_connected())
+
+    def test_supervising_process_does_not_start_an_unused_gpu_monitor(self):
+        from backend.carla.runtime import NativeRuntime
+        with patch('backend.carla.runtime.native_processes', return_value=[]), \
+             patch('backend.carla.runtime.threading.Thread') as thread:
+            NativeRuntime(monitor=False)
+            thread.assert_not_called()
+
+    def test_native_numeric_worker_limit_is_restored_when_service_closes(self):
+        provider = NS(name='carla', sensor_suite=True, scenario_outcomes_enabled=False)
+        with patch('threadpoolctl.threadpool_limits') as limit:
+            service = SimulationService(provider)
+            limit.assert_called_once_with(limits=1, user_api='blas')
+            service.close()
+            limit.return_value.restore_original_limits.assert_called_once()
+
+    def test_retiring_native_process_keeps_numeric_limits_until_exit(self):
+        provider = NS(name='carla', sensor_suite=True, scenario_outcomes_enabled=False,
+                      retain_client_until_exit=True)
+        with patch('threadpoolctl.threadpool_limits') as limit:
+            service = SimulationService(provider)
+            service.close()
+            service.close()
+            limit.return_value.restore_original_limits.assert_not_called()
+            self.assertIs(service.numeric_thread_limiter, limit.return_value)
+            self.assertIn('RETAIN_PROCESS_NUMERIC_THREAD_LIMITS',
+                          [row['stage'] for row in service.shutdown_stages])
+
+    def test_external_evidence_is_closed_before_exports_and_native_cleanup(self):
+        order = []
+        provider = NS(name='test', scenario_outcomes_enabled=False,
+                      close=lambda: order.append('actors'))
+        service = SimulationService(provider)
+        service.evidence_recorder = NS(close=lambda: order.append('evidence'))
+        with patch('backend.core.driving_video.wait_for_exports',
+                   side_effect=lambda timeout: order.append('exports') or True):
+            service.close()
+            service.close()
+        self.assertEqual(order, ['evidence', 'exports', 'actors'])
+
+    def test_external_evidence_failure_is_retained_while_native_cleanup_still_runs(self):
+        provider = NS(name='test', scenario_outcomes_enabled=False, close=Mock())
+        service = SimulationService(provider)
+        service.evidence_recorder = NS(close=Mock(side_effect=RuntimeError('evidence flush failed')))
+        with patch('backend.core.driving_video.wait_for_exports', return_value=True):
+            with self.assertRaisesRegex(RuntimeError, 'FINALIZE_RECORDINGS: evidence flush failed'):
+                service.close()
+        provider.close.assert_called_once()
+        self.assertEqual(service.shutdown_stages[-1]['stage'], 'FAILED')
+
+    def test_recording_shares_only_validated_immutable_forecasts_with_the_same_byte_charge(self):
+        from backend.core.contracts import freeze_json
+        from backend.core.recording import queued_snapshot
+        value = {'points': [[0., 1., 2.], [1., 2., 3.]], 'label': 'quoted " data'}
+        immutable = freeze_json(value)
+        copied, plain_size = queued_snapshot(value)
+        shared, frozen_size = queued_snapshot(immutable)
+        self.assertIs(shared, immutable)
+        self.assertEqual(plain_size, frozen_size)
+        value['points'][0][0] = 9.
+        self.assertEqual(copied['points'][0][0], 0.)
+        self.assertEqual(shared['points'][0][0], 0.)
+
+    def test_trace_forecast_is_encoded_once_without_changing_json_values_or_bounds(self):
+        import tempfile
+        import json
+        from pathlib import Path
+        from backend.core import recording
+        from tests.core_packets import metadata
+        with tempfile.TemporaryDirectory() as directory:
+            recorder = recording.RunRecorder(directory, metadata())
+            original = recording._json_text
+            prediction = {'quoted': '"}\\n', 'values': [1.25, None, True]}
+            with patch.object(recording, '_json_text', wraps=original) as encode:
+                recorder.record_trace({'kind': 'test', 'prediction': prediction})
+                self.assertEqual(sum(call.args[0] is prediction for call in encode.call_args_list), 1)
+                recorder.record_trace({'prediction': prediction})
+            recorder.close()
+            rows = [json.loads(line) for line in (recorder.root/'telemetry'/'comparison-controls.jsonl').read_text().splitlines()]
+            self.assertEqual(rows, [{'kind': 'test', 'prediction': prediction}, {'prediction': prediction}])
+
+    def test_cyclic_gc_is_restored_after_control_and_preserves_an_existing_disabled_state(self):
+        service = SimulationService(None)
+        service.journey.update(scenario_id='EGYPT_URBAN_CHAOS_V1', status='RUNNING')
+        with patch('backend.core.service.gc.isenabled', return_value=True), \
+             patch('backend.core.service.gc.disable') as disable, patch('backend.core.service.gc.enable') as enable:
+            service._suspend_cyclic_gc()
+            self.assertTrue(service.cyclic_gc_suspended)
+            disable.assert_called_once()
+            service._resume_cyclic_gc()
+            service._resume_cyclic_gc()
+            enable.assert_called_once()
+        with patch('backend.core.service.gc.isenabled', return_value=False), \
+             patch('backend.core.service.gc.enable') as enable:
+            service._suspend_cyclic_gc()
+            service._resume_cyclic_gc()
+            enable.assert_not_called()
+
+    def test_sensor_recording_is_bounded_deferred_and_keeps_original_frames(self):
+        service = SimulationService(None)
+        service.journey['scenario_id'] = 'EGYPT_URBAN_CHAOS_V1'
+        service.recorder = Mock()
+        service._record = Mock()
+        frames = [packet(i, i*.05) for i in range(1, 5)]
+        for frame in frames:
+            service._queue_recording_frame(frame)
+        service._record.assert_not_called()
+        with self.assertRaisesRegex(RuntimeError, 'queue exhausted'):
+            service._queue_recording_frame(packet(5, .25))
+        service.recorder.fail.assert_called_once()
+        service._drain_recording_frames()
+        self.assertEqual([call.args[0] for call in service._record.call_args_list], frames)
+        self.assertFalse(service.pending_recording_frames)
+
+    def test_parallel_space_preparation_preserves_all_measured_cells_and_freshness(self):
+        from backend.core.control_scene import ControlSceneBuilder
+        source, _, assets = ControlSceneTests().measured()
+        path = np.column_stack((np.arange(13)*.5, np.arange(13)*.5, np.zeros((13, 2))))
+        builder = ControlSceneBuilder('test', source.geometry)
+        self.addCleanup(builder.close)
+        warm = builder.build(source.observation, assets, received_wall_s=100., space_scope_path=path)
+        source.space.ensure_scope(path)
+        a, b = source.space.certificate(path), warm.space.certificate(path)
+        self.assertEqual(a, b)
+        for name in ('free', 'occupied', 'measured_free'):
+            np.testing.assert_array_equal(getattr(source.space._map, name), getattr(warm.space._map, name))
+        self.assertEqual(warm.space.preparation_status, 'CONCURRENT_SAME_FRAME')
+        self.assertEqual(warm.received_wall_s, 100.)
+        self.assertFalse(warm.usable(source.observation.timestamp_s, 100.251))
+
+    def test_parallel_space_failure_is_reported_not_converted_to_clear_space(self):
+        from backend.core.control_scene import ControlSceneBuilder
+        source, _, assets = ControlSceneTests().measured()
+        builder = ControlSceneBuilder('test', source.geometry)
+        path = np.array([[0., 0., 0., 0.], [1., 1., 0., 0.]])
+        with patch('backend.core.maneuver.ObservedSpace', side_effect=ValueError('invalid measured geometry')):
+            warm = builder.build(source.observation, assets, received_wall_s=100., space_scope_path=path)
+            with self.assertRaisesRegex(ValueError, 'invalid measured geometry'):
+                warm.space.certificate(path)
+            with self.assertRaisesRegex(ValueError, 'invalid measured geometry'):
+                builder.close()
+
+    def test_rejected_full_maneuver_does_not_invalidate_the_following_corridor(self):
+        source, base, _ = ControlSceneTests().measured()
+        from backend.core.urban_driver import UrbanManeuverDriver
+        driver = UrbanManeuverDriver(source.geometry)
+        path = np.array([[0., 0., 0., 0.], [3., 20., 3.5, 0.]])
+        source.space.certificate(np.array([[0., 0., 0., 0.]]))
+        original = source.space._map
+        with patch.object(driver.shield, 'check', return_value=(False, 'REACHABLE_CORRIDOR_UNCERTAINTY', {})):
+            ok, _, _ = driver._proof(source, path, base, {}, 0., 100., complete=True)
+        self.assertFalse(ok)
+        self.assertIs(source.space._map, original)
+        self.assertEqual(source.space.requested_scope_m, 0.)
+
     def test_current_native_route_proposal_is_staged_during_sensor_wait_and_consumed_once(self):
         from backend.core.urban_driver import UrbanManeuverDriver
         scene, base, _ = ControlSceneTests().measured(frame=2)

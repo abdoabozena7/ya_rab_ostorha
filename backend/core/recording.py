@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import threading
 import shutil
-from .contracts import AssetReference, ExperimentMetadata, SimulationFrame, to_dict
+from .contracts import AssetReference, ExperimentMetadata, SimulationFrame, to_dict, _FrozenJSONMapping, _FrozenJSONSequence
 from .events import EventType, SimulationEvent
 from .logging import log, LogCategory
 
@@ -34,17 +34,23 @@ def queued_snapshot(value):
     kind=type(value)
     if kind is str:return value,64+len(value)*6
     if kind in (int,float,bool,type(None)):return value,64
+    frozen = kind in (_FrozenJSONMapping, _FrozenJSONSequence)
+    if kind is _FrozenJSONSequence and all(type(item) in (int, float, bool, type(None)) for item in value):
+        return value, 64 + 80*len(value)
     if isinstance(value,Mapping):
-        result={};size=256
+        result=None if frozen else {};size=256
         for key,item in value.items():
-            copied,charge=queued_snapshot(item);result[key]=copied
+            copied,charge=queued_snapshot(item)
+            if result is not None:result[key]=copied
             size+=charge+128+len(str(key))*6
-        return result,size
+        return value if frozen else result,size
     if isinstance(value,(tuple,list)):
-        result=[];size=64
+        result=None if frozen else [];size=64
         for item in value:
-            copied,charge=queued_snapshot(item);result.append(copied);size+=charge+16
-        return result,size
+            copied,charge=queued_snapshot(item)
+            if result is not None:result.append(copied)
+            size+=charge+16
+        return value if frozen else result,size
     if is_dataclass(value):return queued_snapshot({f.name:getattr(value,f.name) for f in fields(value)})
     if isinstance(value,str):return value,64+len(value)*6
     return value,64
@@ -326,8 +332,9 @@ class RunRecorder:
             if self.closed:raise RuntimeError('Recorder is closed')
             if self.trace_file is None:self.trace_file=(self.root/'telemetry/comparison-controls.jsonl').open('xb')
             wire=dict(row)
+            encoded = None
             if 'prediction' in wire:
-                data=_json_text(wire['prediction']).encode('utf8')
+                data=_json_text(wire.pop('prediction')).encode('utf8')
                 if len(data)>MAX_ROW_BYTES//2:
                     if len(data)>32*MAX_ROW_BYTES:raise ValueError('Control prediction asset exceeds its size bound')
                     compressed=gzip.compress(data,compresslevel=1,mtime=0)
@@ -336,9 +343,15 @@ class RunRecorder:
                     target=self.root/filename
                     if not target.exists():
                         with target.open('xb') as stream:stream.write(compressed)
-                    wire.pop('prediction')
                     wire.update(trace_version=2,prediction_asset=to_dict(AssetReference(filename,'application/gzip',len(compressed),digest)))
-            self.trace_file.write(encode_row(wire))
+                else:
+                    # Both fragments come from the strict JSON encoder. Avoid
+                    # encoding the same forecast again inside the trace object.
+                    outer = _json_text(wire).encode('utf8')
+                    encoded = outer[:-1] + (b',' if len(outer)>2 else b'') + b'"prediction":' + data + b'}\n'
+                    if len(encoded)>MAX_ROW_BYTES:
+                        raise ValueError('Recording row exceeds 1 MiB; store large sensor payloads as asset references')
+            self.trace_file.write(encoded if encoded is not None else encode_row(wire))
             if self.autoflush:self.trace_file.flush()
 
     def record_safety(self, row):

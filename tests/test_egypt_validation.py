@@ -44,7 +44,7 @@ def measured_pair(seed, first, *, acceptance):
             'cleanup_confirmed': True, 'simulator_exit_confirmed': True,
             'native_worker_exit_code': 0, 'cleanup_stage': 'COMPLETE',
             'independent_cleanup_probe': {'passed': True}, 'video_playback_after_exit': {'passed': True},
-            'render_profile': {'render_profile': 'LOW'}}
+            'render_profile': {'render_profile': 'LOW', 'renderer': configuration()['native_renderer']}}
 
 
 def measured_matrix(*, acceptance):

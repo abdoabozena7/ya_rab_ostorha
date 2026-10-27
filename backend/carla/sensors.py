@@ -26,6 +26,7 @@ class CarlaSensorManager:
         self.wall_sample_times = {}
         self.pending_collisions = deque()
         self.pending_frames = deque()
+        self.frame_available = threading.Event()
         self.assets = OrderedDict()
         self.errors = {}
         self.queue_overflows = 0
@@ -149,6 +150,7 @@ class CarlaSensorManager:
                                 self.evidence_error = self.errors['queue'] = 'Sensor evidence callback queue exhausted'
                             else:
                                 self.pending_frames.append(decoded)
+                                self.frame_available.set()
                         return True
                 return False
             def receive(data, received=None, received_unix=None):
@@ -246,6 +248,7 @@ class CarlaSensorManager:
             if self.evidence_error and not self.reception_stopped:
                 raise RuntimeError(self.evidence_error)
             frames = tuple(self.pending_frames); self.pending_frames.clear()
+            self.frame_available.clear()
             return frames
 
     def registry(self):
@@ -262,6 +265,10 @@ class CarlaSensorManager:
                        'eventDriven': name == 'collision'} for name, config in configurations.items()}
 
     def enable_suite(self, api, fixed_delta, options=None):
+        from ..core.measured_rays import warm_measured_rays
+        warm_measured_rays()
+        from ..core.depth_people import warm_depth_people
+        warm_depth_people()
         from ..core.contracts import SensorKind
         from .sensor_decoders import decode_sensor
         from .dashboard_tools import CAMERA_VIEWS

@@ -1,5 +1,6 @@
 """Application worker: canonical observations in, validated command data out."""
 import copy
+import gc
 import math
 import statistics
 from dataclasses import replace, is_dataclass
@@ -38,6 +39,8 @@ class SimulationService:
         if isinstance(recorder,RunRecorder):recorder=BufferedRunRecorder(recorder)
         self.policy_history = ObservationHistory()
         self.provider, self.recorder, self.now = provider, recorder, now
+        self.evidence_recorder = None
+        self.numeric_thread_limiter = None
         self.lock = threading.RLock()
         self.stop_event = threading.Event()
         self.thread = None
@@ -66,6 +69,7 @@ class SimulationService:
         self.journey_observer = {}
         self.journey_auto_recording = False
         self.journey_recording_stop_pending = None
+        self.pending_recording_frames = deque()
         self.last_video_frame = -1
         self.motion_snapshot=None
         self.navigation_heartbeat_at = -float('inf')
@@ -96,6 +100,7 @@ class SimulationService:
         self.navigation_ready_frame=None
         self.navigation_release_frame=None
         self.navigation_prefetch=None
+        self.cyclic_gc_suspended = False
         self.last_recording=recorder if isinstance(recorder,BufferedRunRecorder) else None
         self.sensors, self.sensor_rates = {}, {}
         self.frame = self.frame_metadata = None
@@ -160,6 +165,9 @@ class SimulationService:
                 self.historical_comparison = self.comparison
                 v2_factory = getattr(provider,'create_comparison_v2',None)
                 if v2_factory: self.comparison_v2 = v2_factory(self)
+        if getattr(provider, 'name', None) == 'carla' and getattr(provider, 'sensor_suite', False) is True:
+            from threadpoolctl import threadpool_limits
+            self.numeric_thread_limiter = threadpool_limits(limits=1, user_api='blas')
 
     def set_safety_enabled(self, value):
         with self.lock:
@@ -801,6 +809,7 @@ class SimulationService:
     def _change_recording(self, value):
         if not isinstance(value, dict) or set(value) != {'enabled'} or type(value['enabled']) is not bool:
             raise ValueError('Recording requires an explicit enabled boolean')
+        self._drain_recording_frames()
         if value['enabled']:
             if self.recorder: raise ValueError('A recording is already active')
             if self.last_recording and not self.last_recording.closed:
@@ -818,6 +827,9 @@ class SimulationService:
             environment=self.provider.environment_state()
             label='Controlled scenario native run' if environment and environment.get('mode')=='TRAINING' else 'Living city native run'
             recording_config=dict(self.provider.recording_metadata())
+            if self.numeric_thread_limiter is not None:
+                from threadpoolctl import threadpool_info
+                recording_config['numeric_runtime'] = threadpool_info()
             if self.journey.get('driver_profile') and self.journey.get('status') in ('STARTING','RUNNING'):
                 recording_config.update(driver_profile=copy.deepcopy(self.journey['driver_profile']),session_id=self.session_id)
                 recording_config['driver_id']=self.journey['driver_profile']['id']
@@ -888,7 +900,20 @@ class SimulationService:
         try:self._iteration()
         except Exception as error:
             self._iteration_failed(error)
+            self._resume_cyclic_gc()
             raise
+
+    def _suspend_cyclic_gc(self):
+        if (self.journey.get('scenario_id') == 'EGYPT_URBAN_CHAOS_V1'
+                and self.journey.get('status') in ('STARTING', 'RUNNING')
+                and not self.closing and gc.isenabled()):
+            gc.disable()
+            self.cyclic_gc_suspended = True
+
+    def _resume_cyclic_gc(self):
+        if self.cyclic_gc_suspended:
+            self.cyclic_gc_suspended = False
+            gc.enable()
 
     def _drain_collision_events(self):
         from .contracts import to_dict
@@ -933,6 +958,27 @@ class SimulationService:
                         while len(self.sensor_anchors) > 64:
                             self.sensor_anchors.popitem(last=False)
                 self.ingest_sensor(sensor)
+
+    def _queue_recording_frame(self, frame):
+        if self.journey.get('scenario_id') != 'EGYPT_URBAN_CHAOS_V1' or self.closing:
+            self._record(frame)
+            return
+        if self.recorder is None:
+            return
+        if len(self.pending_recording_frames) >= 4:
+            error = RuntimeError('Current-frame recording queue exhausted; sensor evidence prefix retained')
+            if hasattr(self.recorder, 'fail'):
+                self.recorder.fail(error)
+            raise error
+        self.pending_recording_frames.append((self.recorder, frame))
+
+    def _drain_recording_frames(self):
+        while self.pending_recording_frames:
+            recorder, frame = self.pending_recording_frames[0]
+            if recorder is not self.recorder:
+                raise RuntimeError('Queued sensor evidence belongs to a different recording')
+            self._record(frame)
+            self.pending_recording_frames.popleft()
 
     def _record(self, frame):
         if not self.recorder:
@@ -1139,6 +1185,7 @@ class SimulationService:
         pending = self.journey_recording_stop_pending
         if not pending or not pending['applied']:
             return
+        self._drain_recording_frames()
         if self.split_rates and pending.get('end_capture_frame') is not None:
             self._record_display_frames(self.clock.frame_id)
             if self.last_video_frame < pending['end_capture_frame']:
@@ -1422,10 +1469,12 @@ class SimulationService:
                 cap=min(cap,bypass.config['maneuver_speed_mps'])
                 for side in ('left','right'):road[side+'_allowed']=road[side+'_allowed'] and side in bypass.sides
             behavior_started=self.now()
+            behavior_cpu_started=time.thread_time()
             self.control_stages_wall_s['maneuver_selection_started'] = behavior_started
             command, self.maneuver_status = driver.evaluate(self.control_scene, command, road, cap, wall=self.now())
             self.control_stages_wall_s['maneuver_selection_completed'] = self.now()
             self.control_timing_ms['behavior']=(self.now()-behavior_started)*1000
+            self.control_timing_ms['behavior_thread_cpu']=(time.thread_time()-behavior_cpu_started)*1000
             if self.behavior_shadow is not None and self._urban_driver():
                 self.behavior_shadow_context = (self.control_scene, road, self.maneuver_status)
             if bypass_engaged:self.maneuver_status.update(driver_id='ROBOSPHERE_RULE_BYPASS_V1',scope='LOW_SPEED_STATIONARY_OBSTACLE_BYPASS')
@@ -1723,6 +1772,7 @@ class SimulationService:
 
     def _start_simulation_native(self,reset=False):
         try:
+            self.provider.retain_client_until_exit = True
             self.close()
             handler=self.provider.reset_handler if reset else self.provider.startup_handler
             self.startup_ticket=handler(self.simulator_stop)
@@ -1747,6 +1797,7 @@ class SimulationService:
 
     def _stop_simulator_native(self):
         warning=None;launch=self.simulator_stop.get('launch')
+        self.provider.retain_client_until_exit = True
         try:self.close()
         except Exception as error:warning=str(error)
         try:
@@ -1790,6 +1841,7 @@ class SimulationService:
 
     def _restart_native(self, launch, previous):
         try:
+            self.provider.retain_client_until_exit = True
             self.close()
             if self.provider.cleanup_errors:
                 raise RuntimeError('Native actor cleanup failed: '+'; '.join(self.provider.cleanup_errors))
@@ -2120,6 +2172,8 @@ class SimulationService:
                 from .pipeline_timing import sensor_timing
                 if (self.control_scene_builder is None or self.control_scene_builder.session_id != self.session_id
                         or self.control_scene_ego_actor_id != observation.vehicle.actor_id):
+                    if self.control_scene_builder is not None:
+                        self.control_scene_builder.close()
                     self.control_scene_builder = ControlSceneBuilder(self.session_id, getattr(self.provider, 'vehicle_geometry', None))
                     self.control_scene_ego_actor_id = observation.vehicle.actor_id
                 measured = sensor_observation(observation)
@@ -2261,6 +2315,8 @@ class SimulationService:
                 raise RuntimeError('Normal operations were queued during exclusive RL tick ownership')
             actions = list(self.actions)
             self.actions.clear()
+        if actions:
+            self._drain_recording_frames()
         for action, value in actions:
             if action == 'comparison_v2':
                 try:
@@ -2562,6 +2618,8 @@ class SimulationService:
             self.application_timing.update(rpc_completed_wall_s=completed, carla_control_call_ms=(completed-rpc_started)*1000)
             self.application_timing.setdefault('stages_monotonic_s', {}).update(
                 carla_control_called=rpc_started, carla_control_returned=completed)
+        self._resume_cyclic_gc()
+        self._drain_recording_frames()
         pipeline_trace = None
         if training_command is None:
             from .pipeline_timing import command_trace
@@ -2621,6 +2679,7 @@ class SimulationService:
         if self.split_rates and self.stop_event.is_set():
             self.provider.apply_control(safe_command(*self._context()))
             return
+        self._suspend_cyclic_gc()
         self.provider.step()
         # Native weather/population setters become observable on the following
         # simulation step. Publish APPLIED only with that step's real state.
@@ -2667,7 +2726,7 @@ class SimulationService:
             self._ingest_provider_sensors()
             for synchronized in self.synchronizer.drain():
                 self._publish(synchronized)
-                self._record(synchronized)
+                self._queue_recording_frame(synchronized)
             if not self.split_rates and (self.comparison and self.comparison.busy or
                     self.active_safety and self.active_safety.enabled):
                 # Protected driving has one physics tick owner. Wait for that
@@ -2675,11 +2734,15 @@ class SimulationService:
                 # this keeps the validated RULE simulation-age gate intact.
                 deadline = self.now() + min(.2, self.synchronizer.timeout_s)
                 while (self.observation is None or self.observation.frame_id < observation.frame_id) and self.now() < deadline:
-                    self.stop_event.wait(.002)
+                    waiter = getattr(self.provider, 'wait_for_sensor_frames', None)
+                    if callable(waiter):
+                        waiter(max(0., deadline-self.now()))
+                    else:
+                        self.stop_event.wait(.002)
                     self._ingest_provider_sensors()
                     for synchronized in self.synchronizer.drain():
                         self._publish(synchronized)
-                        self._record(synchronized)
+                        self._queue_recording_frame(synchronized)
         elif self.observation:
             self.state_at = self.now()  # Explicit native pause; no new observations are recorded.
         if any(name == 'reset' for name, _ in actions):
@@ -2693,6 +2756,7 @@ class SimulationService:
 
     def _iteration_failed(self,error):
         """Same original-fault boundary for native thread and manual tick owner."""
+        self._resume_cyclic_gc()
         with self.lock:
             frame_id,stamp=self._context()
             native_controls=getattr(self.provider,'controls',None)
@@ -2807,9 +2871,11 @@ class SimulationService:
                     self.provider.apply_control(terminal)
                     self._audit_command(terminal)
             stage('STOP_CONTROL', stop_control)
+            self._resume_cyclic_gc()
             stop_sensors = getattr(self.provider, 'stop_sensor_receiving', None)
             stage('STOP_SENSOR_RECEPTION', lambda: stop_sensors() if callable(stop_sensors) else None)
             def drain():
+                self._drain_recording_frames()
                 self._drain_collision_events()
                 self._ingest_provider_sensors()
                 for pending in self.synchronizer.drain(force=True):
@@ -2821,7 +2887,8 @@ class SimulationService:
                     self._event(EventType.SimulationStopped, cleanup_pending=True, cleanup_error='; '.join(errors) or None)
             stage('DRAIN_FINAL_EVENTS', drain)
             def recordings():
-                writers = [writer for writer in (self.recorder, self.last_recording) if writer is not None]
+                writers = [writer for writer in (self.recorder, self.last_recording, self.evidence_recorder)
+                           if writer is not None]
                 self._finish_journey_recording()
                 if self.recorder:
                     self._change_recording({'enabled': False})
@@ -2835,6 +2902,8 @@ class SimulationService:
                 if not wait_for_exports(timeout):
                     raise RuntimeError('Recording exports did not close before the shutdown deadline')
             stage('FINALIZE_EXPORTS', exports)
+            if self.control_scene_builder is not None:
+                stage('CLOSE_MEASURED_SPACE_WORKER', self.control_scene_builder.close)
             if getattr(self, 'control_perception', None):
                 stage('CLOSE_PERCEPTION', self.control_perception.close)
             if self.comparison:
@@ -2842,6 +2911,14 @@ class SimulationService:
             if callable(getattr(self.provider, 'close', None)):
                 stage('DESTROY_ACTORS_AND_RESTORE_WORLD', self.provider.close)
                 errors.extend(getattr(self.provider, 'cleanup_errors', []))
+            if self.numeric_thread_limiter is not None:
+                if getattr(self.provider, 'retain_client_until_exit', False):
+                    # Native SDK handles still exist until this process exits;
+                    # do not recreate a large BLAS pool during that retirement.
+                    self._shutdown_stage('RETAIN_PROCESS_NUMERIC_THREAD_LIMITS')
+                else:
+                    stage('RESTORE_NUMERIC_THREAD_LIMITS', self.numeric_thread_limiter.restore_original_limits)
+                    self.numeric_thread_limiter = None
             self.closed = True
             self.policy_history.clear()
             self.arbiter.disconnect()
@@ -2856,17 +2933,20 @@ class SimulationService:
             self._shutdown_stage('FAILED' if errors else 'COMPLETE')
 
     def close(self, *, deadline=None):
-        with self.close_lock:
-            if not self.closed:
-                self.closing = True
-                self.shutdown_deadline = deadline
-                self.release_controls()
-                self.stop_event.set()
-                if self.thread and self.thread is not threading.current_thread():
-                    self.thread.join(timeout=max(0., min(120., deadline-self.now())) if deadline else 120.)
-                    if self.thread.is_alive():
-                        raise RuntimeError('Simulator worker did not stop; actor cleanup is not confirmed')
-                else:
-                    self._close_provider()
-            if self.shutdown_error:
-                raise RuntimeError(self.shutdown_error)
+        try:
+            with self.close_lock:
+                if not self.closed:
+                    self.closing = True
+                    self.shutdown_deadline = deadline
+                    self.release_controls()
+                    self.stop_event.set()
+                    if self.thread and self.thread is not threading.current_thread():
+                        self.thread.join(timeout=max(0., min(120., deadline-self.now())) if deadline else 120.)
+                        if self.thread.is_alive():
+                            raise RuntimeError('Simulator worker did not stop; actor cleanup is not confirmed')
+                    else:
+                        self._close_provider()
+                if self.shutdown_error:
+                    raise RuntimeError(self.shutdown_error)
+        finally:
+            self._resume_cyclic_gc()

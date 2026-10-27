@@ -1,0 +1,1301 @@
+{
+  "recorded_at_utc": "2026-10-27T14:37:42.578331+00:00",
+  "status": "BLOCKED_AT_GATE_B",
+  "task_complete": false,
+  "native_acceptance": false,
+  "source_sha256": "44eb8fb1316d3bc906a7fd1d8bd10734ca4fbc40ed5c7cacf33a75b20e66a088",
+  "deployment": {
+    "accepted": false,
+    "reason": "Twelve source-bound native trips have not been accepted"
+  },
+  "initial_checkpoint": {
+    "path": "docs\\evidence\\egypt-urban-chaos-v1\\completion-gates-20261027.json",
+    "sha256": "46a89c41fe0b651f3bfd68dc9e94a2c5564490b31fcedba0e04e42ce88d8439d"
+  },
+  "software": {
+    "python_tests": 1033,
+    "python_passed": 1029,
+    "python_optional_skips": 4,
+    "javascript_tests_passed": 209,
+    "dashboard_built": true,
+    "certificate": {
+      "path": "output\\egypt-validation\\software-20261027\\software-gate-final17.json",
+      "sha256": "711d51b83f9fdb0622ae43746a57b2289da0bed136722ab9f1fed1c389941367"
+    },
+    "logs": [
+      {
+        "path": "output\\egypt-validation\\software-20261027\\python-full-repair17.log",
+        "sha256": "aa49a0afe052fbc7432e37e558e7cc7d605c73b160684281ab261a21f6f22f40"
+      },
+      {
+        "path": "output\\egypt-validation\\software-20261027\\npm-test-repair17.log",
+        "sha256": "a13b7f83af261489feca30da2221c74360eea7f15e495ce2df3e5d0334f05a3b"
+      },
+      {
+        "path": "output\\egypt-validation\\software-20261027\\dashboard-build-repair17.log",
+        "sha256": "1437deb8992e0f9394df592a99b7426c402aba5dbfdd9da4636bc50eea658e48"
+      }
+    ],
+    "full_semantic_replay": {
+      "frames": 21,
+      "all_prediction_hashes_equal_after_compression": true,
+      "native_acceptance": false,
+      "alignment": "LATEST_RECORDED_EVALUATION_FRAME_NOT_NATIVE_ASYNC_RECONSTRUCTION",
+      "script": {
+        "path": "output\\egypt-validation\\software-20261027\\profile_egypt_semantics.py",
+        "sha256": "69c3702662c31dbdef2bc4964bab1a447fefc1dcfb9f51a1b9f46eb3d03ca1ab"
+      },
+      "before": {
+        "path": "output\\egypt-validation\\software-20261027\\full-semantic-profile-after17.json",
+        "sha256": "f921efe9c08d6c4f739d75c7228c6df826bc64b54fcb621f95c664f7ebb0e290"
+      },
+      "after": {
+        "path": "output\\egypt-validation\\software-20261027\\full-semantic-profile-compressed17.json",
+        "sha256": "16a85808cc1ad64aa5eca68a04a8019d791bc65072aed260dffbbd082862fbdb"
+      }
+    },
+    "saved_video_after_compression": {
+      "path": "output\\egypt-validation\\software-20261027\\video-after-compression17.json",
+      "sha256": "486a75e8d01318f95f9c8eefd0720d5426ca3f2457ae73ba24dd74d2c87c4800"
+    }
+  },
+  "diagnostics": [
+    {
+      "attempt": 1,
+      "source_sha256": "59558e4ab48db9c3245b18aeb0643e5b4e952fd8094768ef6eb2f9a412f6c088",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-01.json",
+        "sha256": "39c858f1c304a9fbda74facb025b3d6919f98b84f28ae3fd12e4de7a115781ac"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\4cfe793882ca4399b230f9591a53aba3\\report.json",
+        "sha256": "cf552d40e5adab7dc11f260efcf565bf8a4549dea806a52d4be6f4fe331436de"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\4cfe793882ca4399b230f9591a53aba3\\source.zip",
+        "sha256": "fbb77c1184fe1ffb46e0590b4bac68ab52c25b6b4ff5891433b04b3d642a3a4c"
+      },
+      "hypothesis": "Move initial audit, traffic release, UI/sample capture and report persistence out of the fresh-frame control interval; wait for a new post-release frame; share immutable same-frame geometry; drain sensor callbacks before serialized recording/export/actor cleanup. Current-source full suites pass and retained replay outputs match without changing the 250ms lease, sensors or density.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_fb5cadd97a7e4b2f8fd7eb3762a04641",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 0.00040855410043150187,
+        "duration_s": 2.400000035762787,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 48,
+          "p95_ms": 291.023969987873,
+          "p99_ms": 293.87839797651395,
+          "maximum_ms": 295.6064000027254,
+          "deadline_exceeded_frames": 16,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 16,
+          "carla_call_p95_ms": 0.9986050019506364,
+          "carla_call_p99_ms": 1.2178539996966724
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 2.450000036507845
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets",
+        "2707/ROBOSPHERE: clean_worker_exit"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 2,
+      "source_sha256": "adf910b4d175a17b39500c48b2cd01df24139376393486ac2033a4cded6502c4",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-02.json",
+        "sha256": "783f58e87bfa123deea1a9e9ba04565edc67115a3b580dcd63ce8ccbd69ab877"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\719cb8b4bf94403784e292caf654a0a0\\report.json",
+        "sha256": "d8d73ba1d9d87b099fedb4941e7c26102d6ffedb8496a00e9f2fe7b2a6730d3c"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\719cb8b4bf94403784e292caf654a0a0\\source.zip",
+        "sha256": "1d7be1a1b2a3d3030c08f074c6c4041530f5ecbbda53997afa6253cbd911c6f5"
+      },
+      "hypothesis": "Diagnostic01 measured16/48 controls over250ms (p95=291.024ms), repeatedly resetting throttle before movement. Repair02 stages the same-frame native route proposal and map during GPU sensor wait and shares immutable road strips instead of repeated4.2ms deep copies; later sensor, maneuver, independent shield and application checks remain unchanged.1019 Python and209JS checks pass; all49 recorded-input control/forecast/shield hashes match. Larger ray batches were tested and rejected as slower.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_dd678bb0d05945168b8b168232b10188",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 0.00040855410043150187,
+        "duration_s": 2.8500000424683094,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 57,
+          "p95_ms": 271.5066000120714,
+          "p99_ms": 296.83849997352803,
+          "maximum_ms": 310.4184999829158,
+          "deadline_exceeded_frames": 16,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 16,
+          "carla_call_p95_ms": 1.0851599974557755,
+          "carla_call_p99_ms": 1.1535160522907972
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 2.9000000432133675
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 3,
+      "source_sha256": "faad9ea4f5b771708463843b96ff475af46c5176ce7fbbe6336cc518dcb691c6",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-03.json",
+        "sha256": "0829128219468a2da80913746cb0d88c8425c4e6b76843b1634dae2c8403ca1b"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\9f5807ff78e3441aa02bab25f586f51f\\report.json",
+        "sha256": "2be53e678ad937b39c6f474c3e1a64d07f9d1a3ba2afbe8bed7e9aab05f6e9ce"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\9f5807ff78e3441aa02bab25f586f51f\\source.zip",
+        "sha256": "bf607e84aecdcbcc0112b8bb52a549da9467882d8def036d2afc0108fc01ad92"
+      },
+      "hypothesis": "Repair03 builds exact current-frame measured space in one bounded worker concurrently with tracking, using the same route scope; all grid/command/forecast/shield checks match offline. Current sensor frames now enter the bounded evidence writer after command application instead of starting JSON work immediately before control.1022 Python tests pass(4skips); previous native scene/behavior jitter and30ms measured-space cost motivate overlap and removal of same-process writer contention.250ms lease/sensors/60-100 density unchanged.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_32490cea3b334df190be7e62ec2039a5",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 0.5853955557940135,
+        "duration_s": 5.800000086426735,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 116,
+          "p95_ms": 269.5465249416884,
+          "p99_ms": 328.29933505854564,
+          "maximum_ms": 340.06449999287724,
+          "deadline_exceeded_frames": 15,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 15,
+          "carla_call_p95_ms": 0.8621500164736062,
+          "carla_call_p99_ms": 1.0332450678106397
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 5.850000087171793
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 4,
+      "source_sha256": "28318cef8716d9a44c4ba463001618ee670a2d78c146e51afe1d6d9449115323",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-04.json",
+        "sha256": "a09c01a63af2642c399b16a808c99bf1220bbc95cdbbc52c34bac8f1f8f23b90"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\68830648fc654615bb6f9c2fbd834c4b\\report.json",
+        "sha256": "bf3ea3122ff6ec5fec511ff4647387d9a6ef57ab1f3308762a13d041bad76b8d"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\68830648fc654615bb6f9c2fbd834c4b\\source.zip",
+        "sha256": "f13d3638e20994f3ecc92b14bb5aa37b8291006ed05cdba643c3a7dc1fe2ecc6"
+      },
+      "hypothesis": "Diagnostic03 moved0.585m but lane-change proposals at frames499-503 were rejected by motion uncertainty/intersection after already expanding and invalidating the following-space map, producing115-160ms behavior work. Repair04 defers full-map expansion until the same complete maneuver passes those existing motion vetoes. Valid full maneuvers still get complete original space/stopping proofs; rejected proposals no longer force a larger FOLLOW map.1023 offline tests pass; sensors and250ms unchanged.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_ae05b78965b1491a80bfeb66f18fefee",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 0.6757877823123329,
+        "duration_s": 6.200000092387199,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 124,
+          "p95_ms": 272.7946399943903,
+          "p99_ms": 310.21397407283064,
+          "maximum_ms": 331.8335000658408,
+          "deadline_exceeded_frames": 27,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 27,
+          "carla_call_p95_ms": 0.8511749794706701,
+          "carla_call_p99_ms": 1.1907529586460435
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 6.2500000931322575
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 5,
+      "source_sha256": "3a164e2b65c71b1ab1f84dc3931df9ba23412bdb3138482292275da0a65c92fb",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-05.json",
+        "sha256": "0880cc1587b4647076cbc79591d02cc91a50f2fb38cf311fca8dc081748d182c"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\887a6a312a3d46b786c10ef80492372d\\report.json",
+        "sha256": "d1eab602e579bf04a4e48f1145a45f142c6d3016eebba54a3455a84ee92d7b96"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\887a6a312a3d46b786c10ef80492372d\\source.zip",
+        "sha256": "392b91deeaa9bf8c93348e954ce952d77599a2f4123da8f3ff9766df7ada86e7"
+      },
+      "hypothesis": "Diagnostic04 still paid86-180ms for behavior, including full-horizon hypotheses for maneuvers already vetoed by current measured uncertainty. Repair05 performs the identical conservative uncertainty veto before extending forecasts; all positive candidates retain the full shield. Cyclic GC is restored after each applied control and suspended only across Egypt sensor-to-control windows, to test observed live-only allocation jitter without changing measurements or250ms.1024 offline tests pass with failure/close restoration checks.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_603b62ce40c549a2876eb6ee294fe381",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 6.450989013542192,
+        "duration_s": 11.400000169873238,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 228,
+          "p95_ms": 259.95967997587286,
+          "p99_ms": 275.15050496091135,
+          "maximum_ms": 283.41350005939603,
+          "deadline_exceeded_frames": 32,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 32,
+          "carla_call_p95_ms": 0.902460003271699,
+          "carla_call_p99_ms": 1.0446209844667462
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 11.450000170618296
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 6,
+      "source_sha256": "edd065dee6d0e128a087de7ed8b906eda8f74673c803bea384b100c3d3c8c664",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-06.json",
+        "sha256": "6b7e73988285f64a839f213ce4bd089f381367de2be471f88bb04b3617ae4826"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\00b191247cf44aba925e976276752ffa\\report.json",
+        "sha256": "d7cfd19be11db1cc13f063fe967e56b7ce387522a6c2a2d485517c9971e1494e"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\00b191247cf44aba925e976276752ffa\\source.zip",
+        "sha256": "b036f575e7445f037981616f6b6f0e84a6a91dc77e298d08ca6076e458a0a7ae"
+      },
+      "hypothesis": "Repair06 removes duplicate forecast JSON serialization(measured10.4ms forecast plus16.8ms repeated trace encoding) and shares already immutable snapshots with identical byte bounds. Native NumPy was measured using16 OpenBLAS threads; bound BLAS to1 for tiny real-time matrices and restore on close. The same49-frame offline replay reduced p99 computation from119.8 to91.0ms under one-thread BLAS;1027 full tests pass. All sensor timestamps,250ms and maneuver checks unchanged.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_2be6dea0f0f1439393ef36720d336471",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 5.6155831076826885,
+        "duration_s": 10.30000015348196,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 206,
+          "p95_ms": 260.3823249810375,
+          "p99_ms": 272.1398999972734,
+          "maximum_ms": 276.83760004583746,
+          "deadline_exceeded_frames": 33,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 33,
+          "carla_call_p95_ms": 0.8660999883431941,
+          "carla_call_p99_ms": 1.028274919372052
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 3221225725,
+        "cleanup_stage": "EVIDENCE_WRITER_CLOSE",
+        "cleanup_confirmed": null,
+        "exports_closed": null,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 10.350000154227018
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets",
+        "2707/ROBOSPHERE: clean_worker_exit",
+        "2707/ROBOSPHERE: exports_closed"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 7,
+      "source_sha256": "5e713a961b9c34a3e3b05edb803dc757e0385afeaa029df1d6a1b1dd1bf6a407",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-07.json",
+        "sha256": "e785fec6851278a50204ccda4fa0eb06c5864478f87c358c45cf4524366b6ed7"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\176cd20977044a059fae6612b27cfd18\\report.json",
+        "sha256": "5f72bebd849a99db1b83eb42f987d3a01aad177e9bfe6550e894606019f3d66e"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\176cd20977044a059fae6612b27cfd18\\source.zip",
+        "sha256": "ab887072b42d9bf8c08772d80c7c0f9dce08787b2894bc65f2ea151740ccd1bb"
+      },
+      "hypothesis": "Diagnostic06 fault handler showed two concurrent GPU observer threads performing expensive WDDM PowerShell queries, and a native stack overflow after explicit actor/world cleanup while final evidence was closing. Repair07 shares the existing singleton runtime between launcher/provider, removes unused parent monitoring, and retains the already-cleaned SDK client until the mandated process retirement.1029 tests pass; same250ms/sensor/traffic/proof limits. Expect less monitoring contention and no asynchronous Client destructor before report finalization.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e04252bd4ca845c7a6be39551f69b2ee",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 8.321456981971549,
+        "duration_s": 15.350000228732824,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 307,
+          "p95_ms": 260.4053500108421,
+          "p99_ms": 324.2164959432556,
+          "maximum_ms": 357.07829997409135,
+          "deadline_exceeded_frames": 42,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 42,
+          "carla_call_p95_ms": 0.813179975375533,
+          "carla_call_p99_ms": 1.107874074950814
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 15.400000229477882
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 8,
+      "source_sha256": "b7ca7085bfd2c71f8d740fbdcbf4c11f98ab2f0e4b4efeb4d5cbd6e8d1d2ca03",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-08.json",
+        "sha256": "f0b2332fdc75dff84f2dfc53b7edee405d184b5acccefabbd2d109e191901099"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\c66ee4b0ee544c8e871bb560b2c8b450\\report.json",
+        "sha256": "fe3bf398b3cb3e293e124f130b1ccbe59faf116e144fe6e66c1cce0ac529a546"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\c66ee4b0ee544c8e871bb560b2c8b450\\source.zip",
+        "sha256": "33c2a183ffea53f49838863405eb85acef9e163f7804ac4f32b499e4ec5ecd67"
+      },
+      "hypothesis": "Repair08 replaces only the original measured-ray sampling loop with a compiled nogil kernel, fastmath disabled, same samples/heights/rounding and all grid states verified equal at6/35/75m scopes. JIT warms during sensor preparation, not control.49 complete native replay proposal/forecast/shield digests match;1029 full tests pass. Measured replay behavior falls from40ms to15ms; preserve250ms, sensors, traffic and all motion/corridor checks.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cfd26004c5fd43229a7e5ec4e462e2cc",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 29.676187488514998,
+        "duration_s": 12.850000191479921,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 257,
+          "p95_ms": 259.10765998996794,
+          "p99_ms": 271.9930239766836,
+          "maximum_ms": 281.1075000790879,
+          "deadline_exceeded_frames": 30,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 30,
+          "carla_call_p95_ms": 0.8052999386563895,
+          "carla_call_p99_ms": 1.038516005501151
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 12.90000019222498
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 9,
+      "source_sha256": "875e7155c7d7950852b44f790fa50e1ea08c2fca79a3787531f9bb35588c7342",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-09.json",
+        "sha256": "c14672a668a5534ce1fa8fbd908f3ceaa000b20a1bdf025e8ff9d9fcc0e27ad1"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\c766f93919734b94ae5d626f2fca9368\\report.json",
+        "sha256": "fd54c6161834f9bda9f9d003081bbe455c3dfdd710ed39511a238f8c5b7f921e"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\c766f93919734b94ae5d626f2fca9368\\source.zip",
+        "sha256": "8b4f7c7b6f3b104530d4ea1f0830961fb16dee3fa1bd17c92d776ddbf8c70bb7"
+      },
+      "hypothesis": "Diagnostic08 reached29.676m, but the concurrent space worker consumed69-99ms wall while the main tracker contended for Python execution. With the exact compiled nogil ray kernel now warmed, repair09 disables live speculative space concurrency and runs the fast same-frame query synchronously. Preserve geometry, hypotheses, deadlines and source clocks;1029 tests pass. Remove the measured contention instead of changing any250ms limit.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b0b8d856234d40c898f3f894d8d34c3d",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 23.738793036501704,
+        "duration_s": 22.6500003375113,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 453,
+          "p95_ms": 259.417560021393,
+          "p99_ms": 269.09518799278885,
+          "maximum_ms": 282.0072000613436,
+          "deadline_exceeded_frames": 65,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 65,
+          "carla_call_p95_ms": 0.8750199805945152,
+          "carla_call_p99_ms": 1.0637320159003143
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 3221225725,
+        "cleanup_stage": "EVIDENCE_WRITER_CLOSE",
+        "cleanup_confirmed": null,
+        "exports_closed": null,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 22.70000033825636
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets",
+        "2707/ROBOSPHERE: clean_worker_exit",
+        "2707/ROBOSPHERE: exports_closed"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 10,
+      "source_sha256": "542dd0837c089f06f78718d24d20a36096455731232190719a29aa3c3d6a8c9f",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-10.json",
+        "sha256": "2dfac9e0b4fdd4dae2cc3bbd1a7712907bb2a479866318dfef7feccca57f27d1"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\5e342d938fdd4a5ab5dc7893c0bbded2\\report.json",
+        "sha256": "f328cdd2e8acdf1f206cb063cf4fd39d3587d81d0567bd44ed3789b48f3f7d7f"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\5e342d938fdd4a5ab5dc7893c0bbded2\\source.zip",
+        "sha256": "78bf159c368b708f46f932376744829680189fe71c7b809ec83472e6083ddda7"
+      },
+      "hypothesis": "Repair10 reserves current-frame safety headroom by deferring ONLY a new optional lane-change/return search when the sensor scene is already100ms old. It still validates FOLLOW with every current physical mode and stopping proof, and committed maneuvers keep full checks; no unknown space becomes free. Native09 late rejected proposals consumed remaining lease. Also retain explicitly destroyed native sensor/ego/world/traffic-manager wrappers until SDK retirement to avoid the measured post-cleanup stack overflow.1030 tests pass.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_5c41b6fc38184da6bee7a90b407c52c2",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 41.68491782732501,
+        "duration_s": 38.45000057294965,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 769,
+          "p95_ms": 258.83696004748344,
+          "p99_ms": 271.11767998896534,
+          "maximum_ms": 286.6332000121474,
+          "deadline_exceeded_frames": 99,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 99,
+          "carla_call_p95_ms": 0.8987400215119116,
+          "carla_call_p99_ms": 1.2302560219541159
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 38.500000573694706
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 11,
+      "source_sha256": "1be487f60390c21bcb46a3fdd5e20aca3509f3fecf89279a389d11edc32ec74d",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-11.json",
+        "sha256": "869e154397013851c3631f7bd19351cdfeeb12e4d0c974576c41c1bcd2b32a54"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\1d245eae002a4160a8710499ff61cf4b\\report.json",
+        "sha256": "439fe5e520027fbe3429c7e2e37cf33698072ea72c3ea23fbe7fb5430dbed8c1"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\1d245eae002a4160a8710499ff61cf4b\\source.zip",
+        "sha256": "f2219fa66f07770cfd7ed9df99631428dbb9c9c3295fb9854aec06d56b2d6ad1"
+      },
+      "hypothesis": "Diagnostic10 reached41.68m/38.45sim s, but required-frame delivery and scene construction still incurred up to130/136ms. Repair11 wakes the synchronizer directly from real sensor callbacks instead of2ms Windows polling (observed15ms synchronization slips) and records separate thread CPU versus wall cost to distinguish computation from scheduling/resource contention.1030 tests pass; all timestamps, optional-headroom and250ms vetoes unchanged.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_b77d16d672954f67b1cb523021766951",
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "distance_m": 38.59963998967888,
+        "duration_s": 19.250000286847353,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 385,
+          "p95_ms": 259.53885996714234,
+          "p99_ms": 272.1081959409639,
+          "maximum_ms": 282.4576999992132,
+          "deadline_exceeded_frames": 49,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 49,
+          "carla_call_p95_ms": 0.8901400258764623,
+          "carla_call_p99_ms": 1.065303925424813
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 1,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 19.30000028759241
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 12,
+      "source_sha256": "bb8ae0424cb87f4522c24127c6e74ca362a0aed0933c7d69d7bea0bd1c4e03a5",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-12.json",
+        "sha256": "68b272f01e9d635c9ce09a936495c42e1a9d753a353da30d853114c0a6c0bc65"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\63029a20c46f4e7bb12676021c32248c\\report.json",
+        "sha256": "c1637d0da34706f855d64842b2e157abe9d210edaafa46c4db48fec488d9beb9"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\63029a20c46f4e7bb12676021c32248c\\source.zip",
+        "sha256": "12a36033bfae6207052e6a07b2b82c5e7a875adc011455530ec1be168ab7a005"
+      },
+      "hypothesis": "Recorded semantic replay exposed~9400 repeated scalar validations per frame in up-to60-row measured-person histories, unlike the earlier geometry-only profiler. Repair12 creates each measured history row once as validated immutable native floats and shares past rows without removing samples. All21 late-frame person histories/tracks/physical forecasts match exactly; unprofiled scene median62.36->54.56ms;1030 tests pass. Preserve all hypotheses, native timestamps and250ms.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_126bff0f94b74f739a7cbc5afd802ebb",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 64.47713716161049,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 244.7008000453934,
+          "p99_ms": 259.6536000492051,
+          "maximum_ms": 269.7425000369549,
+          "deadline_exceeded_frames": 23,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 23,
+          "carla_call_p95_ms": 0.11509994510561228,
+          "carla_call_p99_ms": 0.8996999822556973
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 0,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 13,
+      "source_sha256": "c5fbfd2ad7d07c395e0dda051104448001000e557b8749b078d56c0a276c052f",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-13.json",
+        "sha256": "fa3afc0af9881b8397a291971f87a0390e37426f5326fd4bc0a27c6af8912be6"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\9214960ae6d745f684a75cb60f09c52b\\report.json",
+        "sha256": "c6fef01b11d5189ed9fd1e785b6c6c3d167bdf9b01fdf974c28ed224efc8634f"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\9214960ae6d745f684a75cb60f09c52b\\source.zip",
+        "sha256": "848608a977aaf0149688901705aad83f523a47e7d90a2d03c0f16c6c9a7ef91a"
+      },
+      "hypothesis": "Repair13 compiles the unchanged occupancy filtering, ego-body exclusion, first-return-per-cell/height deduplication, ground/obstacle endpoints and clipped ray samples, avoiding large repeated NumPy arrays. Exact free/occupied/unknown grids and coverage compare equal to the retained original NumPy reference at6/35/75m;1030 tests pass. Kernel warmed before driving, no fastmath; mandatory geometry and motion hypotheses unchanged. Target the remaining17-32ms map construction seen in goal-reaching diagnostic12.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_e0841bed7ee54d89aa4f6131b0b1c510",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 64.56095717361792,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 236.02770001161844,
+          "p99_ms": 252.40040000062436,
+          "maximum_ms": 266.61139994394034,
+          "deadline_exceeded_frames": 12,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 12,
+          "carla_call_p95_ms": 0.10190007742494345,
+          "carla_call_p99_ms": 0.8817999623715878
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 0,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 14,
+      "source_sha256": "c2a76e59bffbcb8d67d12af693f1bba4a928f05761d63d1c1429b18fb838151e",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-14.json",
+        "sha256": "fb2c9393babb758b24680ffb0ed1fd9c4e5a7ca55e1df377e94de44459f050c8"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\f5859072675c4b3dba14f7cb16c03b95\\report.json",
+        "sha256": "a09ab0b97b0f71b55e4ba1b0e269df43e6ed6464543e486a3d787875863b35d1"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\f5859072675c4b3dba14f7cb16c03b95\\source.zip",
+        "sha256": "2a49eb63ab6a5c65609ecbf78f93b1a1018ac6471eaf4717b04431018e99f01b"
+      },
+      "hypothesis": "Repair14 compiles the same depth body-core measurement/mad/median projection and precomputes the existing9-neighbor spatial matching tolerance once per measured frame rather than per track. All21 late-frame classified-person histories, tracked geometry and physical-mode hashes remain exact; semantic replay scene median62.36->45.72ms;1030 tests pass. Preserve classifications, unknown regions, sensors, density and250ms; target the remaining18ms depth-person CPU and5ms repeated matching cost.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c5674e508b4a41b9abb04f483d86a9a7",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 63.0381825386178,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 234.50600006617606,
+          "p99_ms": 254.88380005117506,
+          "maximum_ms": 264.1024999320507,
+          "deadline_exceeded_frames": 13,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 13,
+          "carla_call_p95_ms": 0.10189996100962162,
+          "carla_call_p99_ms": 0.9537000441923738
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 0,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 15,
+      "source_sha256": "3331f815bcefe9f42851410c5cd4c15d81e5faf1e55afe20add7d2d561546f38",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-15.json",
+        "sha256": "c3a113ae32b3ade9133b158dfaf06918404c43973b02ac9ef3f0f7a8723ce44b"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\83fdcd1bd9e44cbd9df22591c567bff0\\report.json",
+        "sha256": "18ae021fdade54b14ae1cf7200e778026fcc27ae5b2330d63bbb5a89493bc44f"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\83fdcd1bd9e44cbd9df22591c567bff0\\source.zip",
+        "sha256": "3881211522990f87daf57a34923b7fa60089ce7415435bf6f7263860bafb0dcd"
+      },
+      "hypothesis": "Diagnostics12-14 reached63-64m in30sim s with clean exits, but p95 remained234-245ms, including GPU sensor collection up to185ms. Repair15 tests the already-supported D3D11 renderer instead of D3D12 while preserving Town10HD_Opt/LOW, exact Mercedes/sensor rig and60/100 density. Renderer is source-configured and matrix-checked, not a sensor/rate reduction.1030 tests pass; no inference from VRAM alone.",
+      "trip": null,
+      "cleanup": {
+        "native_worker_exit_code": 3,
+        "cleanup_stage": null,
+        "cleanup_confirmed": false,
+        "exports_closed": null,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "passed": false,
+          "error": ""
+        },
+        "video_playback_after_exit": {
+          "passed": false,
+          "error": "'pair'"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: measured_diagnostic_goal",
+        "2707/ROBOSPHERE: protected_without_contact",
+        "2707/ROBOSPHERE: no_control_timeout",
+        "2707/ROBOSPHERE: sensor_latency_targets",
+        "2707/ROBOSPHERE: clean_worker_exit",
+        "2707/ROBOSPHERE: exports_closed",
+        "2707/ROBOSPHERE: saved_video_playback",
+        "2707/ROBOSPHERE: independent_cleanup",
+        "2707/ROBOSPHERE: source_unchanged"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 16,
+      "source_sha256": "f2410e2961eb340f61e410995d9ae500b8322fc60efd02a32070b6c8062ee564",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-16.json",
+        "sha256": "0d34367bc58769908b18f50eb3c6ff39ebdb928288a367a0b86da968c259e46f"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\dd385696c1f04e5fb581381d071d6d86\\report.json",
+        "sha256": "9b651715752ceec5028755327836d70b5fed690ff7149a33aa17a3808fefa648"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\dd385696c1f04e5fb581381d071d6d86\\source.zip",
+        "sha256": "f023ef4cd6f193c24009dc6ac2389791d07563525e104ab9b4d5f6c8348d7aa0"
+      },
+      "hypothesis": "D3D11 attempt15 aborted in native world ticking before any drive; restore verified D3D12. Repair16 disables only the LOW render-thread one-frame queue(r.OneFrameThreadLag=0) to test measured GPU sensor collection delays, preserving resolution, sensor cadence, actual images, traffic and250ms. LOW now records the applied renderer console audit instead of assuming an INI value took effect.1030 offline tests pass; no acceptance seeds used.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_6328c6a903aa4881b8f12a1018a66698",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 63.333228055332576,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 235.9001999720931,
+          "p99_ms": 258.8248000247404,
+          "maximum_ms": 271.8340998981148,
+          "deadline_exceeded_frames": 13,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 13,
+          "carla_call_p95_ms": 0.09510002564638853,
+          "carla_call_p99_ms": 0.9496000129729509
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 3221225725,
+        "cleanup_stage": "EVIDENCE_WRITER_CLOSE",
+        "cleanup_confirmed": null,
+        "exports_closed": null,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: sensor_latency_targets",
+        "2707/ROBOSPHERE: clean_worker_exit",
+        "2707/ROBOSPHERE: exports_closed"
+      ],
+      "diagnostic_passed": false
+    },
+    {
+      "attempt": 17,
+      "source_sha256": "44eb8fb1316d3bc906a7fd1d8bd10734ca4fbc40ed5c7cacf33a75b20e66a088",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-17.json",
+        "sha256": "7ce758baedc89ff774659bfffd7f7fdda255e74ea0c25bda277f8d1a97fb5de3"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\f9d45ee9546047d98d86aa8e82c64d75\\report.json",
+        "sha256": "cbfcdf9f1347ec5a342518ca226e687e8138362246c38dbc54905055e04c26a7"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\f9d45ee9546047d98d86aa8e82c64d75\\source.zip",
+        "sha256": "18213eac8f748602c715fcb9a9fb2f9ff0a8c8d76c49562a87c63f5741615ebd"
+      },
+      "hypothesis": "Repair17 addresses a demonstrated shutdown ordering defect: the bounded native evidence writer now finalizes with other recordings before exports and actor/world cleanup, rather than joining after SDK retirement. All three retained stack-overflow traces followed restoring the BLAS pool; process-retiring workers now retain the single-thread numeric limit until actual exit, while reusable services restore it. D3D12 is restored and the unverified frame-queue experiment is removed, including its local INI override.1033 Python tests and209 JS tests pass;21 full recorded-semantic forecast hashes remain equal. This is a shutdown hypothesis, not a claim that unresolved p95/p99 latency is fixed; keep250ms and all original sensors/traffic.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_25714383dff344069686cd13dbc2fa64",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 63.932386949956744,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 228.3429999370128,
+          "p99_ms": 248.14290006179363,
+          "maximum_ms": 263.00329994410276,
+          "deadline_exceeded_frames": 6,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 6,
+          "carla_call_p95_ms": 0.09550002869218588,
+          "carla_call_p99_ms": 0.6343999411910772
+        }
+      },
+      "cleanup": {
+        "native_worker_exit_code": 0,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "simulator_exit_confirmed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      },
+      "failed_gates": [
+        "2707/ROBOSPHERE: sensor_latency_targets"
+      ],
+      "diagnostic_passed": false
+    }
+  ],
+  "current_source_normal_diagnostics_executed": 0,
+  "full_matrices_after_ordered_diagnostic_gate": 0,
+  "reserved_acceptance_attempts": 0,
+  "final_native_browser_check_executed": false,
+  "budget": {
+    "kind": "EGYPT_NATIVE_VALIDATION_V1",
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+    "cap_s": 21600.0,
+    "development_cap_s": 14400.0,
+    "acceptance_cap_s": 7200.0,
+    "base_cap_s": 14400.0,
+    "extensions": [
+      {
+        "id": "EGYPT_DEVELOPMENT_20261027",
+        "phase": "DEVELOPMENT",
+        "seconds": 7200.0,
+        "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+        "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+      }
+    ],
+    "charged_s": 5625.034000000451,
+    "remaining_s": 15974.96599999955,
+    "development_remaining_s": 8774.96599999955,
+    "diagnostic_remaining_s": 1094.9659999995492,
+    "protected_development_matrix_s": 7200.0,
+    "protected_browser_s": 480.0,
+    "acceptance_remaining_s": 7200.0,
+    "unfinished": 0,
+    "acceptance_attempted": false,
+    "sha256": "dace5e380f65f59cb035c1a4a6c867c73e2e708fc976d5e7f0a7aa392a37bb16"
+  },
+  "legacy_research_ledger_sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+  "simulator_ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "storage": {
+    "recordings": 32,
+    "new_saved_bytes": 9500528876,
+    "original_sha256_verified_before_unlink": true,
+    "native_budget_unchanged": true,
+    "compression_report": {
+      "path": "output\\egypt-validation\\software-20261027\\compression-closed-egypt-after17.json",
+      "sha256": "0ca31194c149b0a4cfeef6e5c9fcc277f0bfe3e8740466f231f9f4cd90301c95"
+    },
+    "before": {
+      "path": "output\\egypt-validation\\software-20261027\\storage-after-diagnostic17.json",
+      "sha256": "dc89f06982a11f191fab9918e02224ec33a349a53a7ba51acf592dcb2220d5b4"
+    },
+    "after": {
+      "path": "output\\egypt-validation\\software-20261027\\storage-after-compression17.json",
+      "sha256": "b35677271c75f4db8757fdfc95c8e7539f3811eff69f9ae3946255df0bfe3dc1"
+    },
+    "matrix_estimate_bytes": 90503184353,
+    "required_free_bytes": 140049743825,
+    "free_bytes": 99414708224,
+    "margin_fraction": 0.5,
+    "reserve_bytes": 4294967296,
+    "provisional_development_storage_passed": false,
+    "acceptance_storage_verified": false,
+    "note": "Historical-prefix sizing is provisional; acceptance needs successful current-source development trips."
+  },
+  "read_only_preflight": {
+    "development": {
+      "path": "output\\egypt-validation\\software-20261027\\final-development-preflight17.json",
+      "sha256": "dfbbc8b51fc0ad84530173a5a2a12c95a419c3806cc00ebef1a52c85d4fc0207",
+      "reason": "All three current-source native diagnostics must pass before the full development matrix"
+    },
+    "acceptance": {
+      "path": "output\\egypt-validation\\software-20261027\\final-acceptance-preflight17.json",
+      "sha256": "5dd7b9efe8220e64a1dba74423ec75e177a552ad9b31a8381d6526d1f9c43cb4",
+      "reason": "Full current-source development matrix must pass before the protected acceptance window can be used"
+    }
+  }
+}

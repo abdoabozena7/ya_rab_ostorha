@@ -244,6 +244,7 @@ class DemoIntegrationTests(unittest.TestCase):
     def test_queued_run_blocks_manual_start_and_configuration(self):
         with tempfile.TemporaryDirectory() as directory:
             service,manager=self.manager(directory)
+            service.now = lambda: service.state_at
             manager.request({'operation':'RUN','side':'RULE'})
             for action in (lambda:service.set_paused(False),lambda:service.queue_dashboard_action('settings',{}),lambda:service.set_safety_enabled({'enabled':False})):
                 with self.assertRaises(ValueError): action()

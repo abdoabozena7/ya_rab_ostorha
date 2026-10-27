@@ -142,7 +142,7 @@ def worker(args):
         kernel.SetPriorityClass.argtypes=(ctypes.c_void_p,ctypes.c_uint)
         kernel.SetPriorityClass(kernel.GetCurrentProcess(),0x8000)
     import carla
-    from backend.carla.runtime import NativeRuntime
+    from backend.carla.runtime import get_runtime
     from backend.carla.provider import CarlaProvider
     from backend.core.service import SimulationService
     from backend.core.journey_comparison import JourneyComparison
@@ -159,9 +159,13 @@ def worker(args):
             os.environ['OSTORHA_EGYPT_DEADLINE'] = str(args.egypt_deadline)
             admission('Town10HD_Opt', 60.)
         worker_deadline = min(began + args.seconds, args.egypt_deadline - 120.) if egypt else began + args.seconds
-        runtime=NativeRuntime()
+        runtime=get_runtime()
         from backend.graphics import launch
-        if not runtime.active:runtime.launch({**launch(args.render_profile),'offscreen':True},'127.0.0.1',2000,carla)
+        settings = {**launch(args.render_profile),'offscreen':True}
+        if egypt:
+            from backend.core.egypt_urban import configuration
+            settings['renderer'] = configuration()['native_renderer']
+        if not runtime.active:runtime.launch(settings,'127.0.0.1',2000,carla)
         report['render_profile']=runtime.active
         if sys.platform=='win32':
             from backend.carla.runtime import native_processes
@@ -171,9 +175,12 @@ def worker(args):
             report['validation_priority']='ABOVE_NORMAL_OWNED_WORKER_AND_VERIFIED_ENGINE'
         provider=CarlaProvider(blueprint='vehicle.mercedes.coupe_2020',spawn_index=152,sensor_suite=True,collision_sensor=True,
             fresh_start=True,traffic_manager_port=8052, **({'map_name':'Town10HD_Opt'} if egypt else {}))
+        provider.retain_client_until_exit=True
         provider.camera_settings['_comparison_rig']=True
         provider.connect();provider._ensure_dashboard_tools()
         service=SimulationService(provider,required_sensors=provider.required_sensors)
+        from threadpoolctl import threadpool_info
+        report['numeric_runtime'] = threadpool_info()
         service.journey_comparison=JourneyComparison(folder/'comparisons');service.presentation.directory=folder/'presentations'
         service.pause_on_first_observation=True;service.start(threaded=False)
         def heartbeat():
@@ -189,6 +196,7 @@ def worker(args):
         service.presentation.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
         from backend.core.recording import BufferedRunRecorder
         evidence = BufferedRunRecorder(EvidenceFiles(folder), capacity=32, maximum_bytes=32*1024*1024)
+        service.evidence_recorder = evidence
         report.update(samples=[], phases=[], full_samples='samples.jsonl', samples_summary_period_s=1, sample_count=0)
         def write_evidence(name, data):
             if not evidence.record_trace({'file': name, 'data': data}):
@@ -283,8 +291,8 @@ def worker(args):
         if http:http.shutdown();http.server_close()
         cleanup_stage('PERCEPTION_CLOSE')
         if perception:perception.close()
-        if evidence:
-            cleanup_stage('EVIDENCE_WRITER_CLOSE')
+        if evidence and not evidence.closed:
+            cleanup_stage('EVIDENCE_WRITER_CLOSE_FALLBACK')
             try:evidence.close()
             except RuntimeError as error:report['cleanup_error']=str(error)
         report['source_unchanged']=source_hashes()==report['source_hashes'];report['wall_s']=time.monotonic()-began
@@ -316,7 +324,7 @@ def run(args):
     s=state()
     if s and s.get('connected'):raise RuntimeError('Stop the ordinary dashboard before isolated native validation')
     from backend.carla.runtime import NativeRuntime
-    runtime=NativeRuntime();was_running=runtime.active is not None
+    runtime=NativeRuntime(monitor=False);was_running=runtime.active is not None
     egypt = getattr(args, 'scenario', None) == 'EGYPT_URBAN_CHAOS_V1'
     if egypt:
         from backend.core.egypt_urban import admission, configuration, source_fingerprint

@@ -21,7 +21,9 @@ from backend.core.urban_driver import UrbanManeuverDriver, urban_forecast
 from backend.learning.egypt_budget import save_json
 
 
-def replay(root):
+def replay(root, *, prepare_space=False):
+    from backend.core.measured_rays import warm_measured_rays
+    warm_measured_rays()
     reader = ReplayReader(root)
     with open_recorded(root / 'telemetry' / 'comparison-controls.jsonl', 'rt') as stream:
         decisions = {row['frame_id']: row for line in stream
@@ -39,7 +41,10 @@ def replay(root):
             continue
         assets = {s.asset.path: read_asset(root, s.asset) for s in frame.sensors if s.asset}
         began = time.perf_counter()
-        scene = builder.build(sensor_observation(frame), lambda asset: assets[asset.path], received_wall_s=100.)
+        scope = (driver.coverage_path(frame.vehicle.speed_mps, decisions[frame.frame_id]['road_context'])
+                 if prepare_space and frame.frame_id in decisions else None)
+        scene = builder.build(sensor_observation(frame), lambda asset: assets[asset.path], received_wall_s=100.,
+                              space_scope_path=scope)
         built = time.perf_counter()
         if frame.frame_id not in decisions:
             continue
@@ -63,6 +68,7 @@ def replay(root):
                      'total_ms': (finished - began) * 1000, 'action': behavior['action'],
                      'reason': behavior['reason'], 'shield_reason': reason,
                      'output_sha256': hashlib.sha256(json.dumps(semantic, sort_keys=True).encode()).hexdigest()})
+    builder.close()
     return rows
 
 
@@ -70,10 +76,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('recording', type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--prepare-space', action='store_true')
     args = parser.parse_args()
     profiler = cProfile.Profile()
     profiler.enable()
-    rows = replay(args.recording)
+    rows = replay(args.recording, prepare_space=args.prepare_space)
     profiler.disable()
     if not rows:
         raise ValueError('No complete recorded Egypt control frames')

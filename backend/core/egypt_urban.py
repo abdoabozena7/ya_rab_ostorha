@@ -29,6 +29,7 @@ def configuration():
     value = json.loads(CONFIG.read_text(encoding='utf8'))
     if (value['id'] != SCENARIO_ID or value['version'] != 1 or value['protocol'] != PROTOCOL
             or value['map'] != 'Town10HD_Opt' or value['maximum_speed_kmh'] != 60
+            or value.get('native_renderer') not in ('D3D11', 'D3D12')
             or not 600 <= value['route_minimum_m'] < value['route_maximum_m'] <= 800
             or len(set(value['holdout_seeds'])) != 3
             or set(value['holdout_seeds']) & set(value['development_seeds'])):
@@ -39,7 +40,7 @@ def configuration():
 def source_manifest():
     configs = [p for p in sorted((ROOT / 'config').glob('*.json'))
                if p.name != 'dashboard-preferences.json' and not p.name.startswith('places-')]
-    paths = [*configs, *sorted((ROOT / 'backend').rglob('*.py')),
+    paths = [*configs, *sorted((ROOT / 'backend').rglob('*.py')), *sorted((ROOT / 'backend').glob('requirements*.txt')),
              ROOT / 'scripts' / 'native' / 'validate_egypt_urban.py',
              ROOT / 'scripts' / 'native' / 'validate_crossing_pair.py',
              ROOT / 'scripts' / 'validate_hybrid_native.py']
@@ -77,6 +78,7 @@ def evaluate_matrix(pairs, fingerprint, *, acceptance=True):
             and p.get('video_playback_after_exit', {}).get('passed') is True for p in pairs),
         'town10_low_profile_verified': len(pairs) == 6 and all(
             p.get('render_profile', {}).get('render_profile') == 'LOW'
+            and p.get('render_profile', {}).get('renderer') == config['native_renderer']
             and all(run.get('setup', {}).get('map', '').rsplit('/', 1)[-1] == config['map']
                     for run in p.get('pair', {}).get('runs', {}).values()) for p in pairs),
         'sensor_to_control_latency_targets': len(pairs) == 6 and all(

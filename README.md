@@ -16,9 +16,14 @@ serialized shutdown. Native matrices remain required; software checks and
 diagnostic prefixes do not unlock Egypt. The concurrently integrated
 [shadow proposal package](docs/BEHAVIOR_PROPOSALS_20261027.md) has no model or
 actuator authority and makes no native timing or VLM-benefit claim.
-The two protected follow-up diagnostics still failed the 250 ms lease:
-Gate B is blocked, Egypt remains restricted, and the reserved acceptance
-window has not been used.
+Seventeen protected follow-up diagnostics are retained. The latest traveled
+63.93 m over 30 simulation seconds and closed cleanly, with its saved video
+verified after engine exit. Its latency still fails admission (p95 228.34 ms,
+p99 248.14 ms; six frames exceeded 250 ms). Gate B remains blocked, Egypt
+remains restricted, and the reserved acceptance window has not been used.
+The [continuation evidence](docs/evidence/egypt-urban-chaos-v1/continuation-20261027.json)
+separates exact compiled-kernel/replay verification from native acceptance,
+retains the earlier shutdown crashes and records protected budget balances.
 
 The [24 October scenario and GPU interface update](docs/GPU_ACTION_UI_20261024.md)
 explains unavailable road choices and adds an explicit availability refresh.
