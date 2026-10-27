@@ -77,6 +77,7 @@ def urban_forecast(scene, horizon_s):
 class UrbanManeuverDriver(HybridDriver):
     DRIVER_ID = DRIVER_ID
     OPTIONAL_MANEUVER_START_AGE_S = .1
+    MANEUVER_START_MAX_AGE_S = .2
 
     def __init__(self, geometry, *, deadline=float('inf')):
         super().__init__(geometry, deadline=deadline, allow_reverse=False)
@@ -215,6 +216,15 @@ class UrbanManeuverDriver(HybridDriver):
                               else 'FORWARD_GEAR_OR_HANDBRAKE_HOLD')
         if 'drivable_strips' not in road:
             return self._hold(scene, base, result, 'DRIVABLE_BODY_COVERAGE_UNAVAILABLE')
+        age=wall+time.perf_counter()-began-scene.received_wall_s
+        if age>=self.MANEUVER_START_MAX_AGE_S:
+            # The independent brake-path veto and native submission still need
+            # time inside the unchanged 250 ms lease.
+            result.update(scene_wall_age_s=age,scene_sim_age_s=base.timestamp_s-now,
+                          planning_ms=(time.perf_counter()-began)*1000)
+            self.wait_reason='CONTROL_APPLICATION_HEADROOM'
+            result['wait_reason']=self.wait_reason
+            return self._hold(scene,base,result,self.wait_reason)
         tracks = scene.prediction['tracks']
         probe = spatial_route(self.offset, road, np.arange(0., 70.01, .5))
         front = []
@@ -293,6 +303,10 @@ class UrbanManeuverDriver(HybridDriver):
         proposals.append((self.phase if self.phase in ('CHANGE', 'PASS', 'RETURN') else 'FOLLOW',
                           self.offset, min(follow_target, 10.) if self.phase != 'FOLLOW' else follow_target, curve))
         for action, offset, desired, curve in proposals:
+            if wall+time.perf_counter()-began-scene.received_wall_s>=self.MANEUVER_START_MAX_AGE_S:
+                self.wait_reason='CONTROL_APPLICATION_HEADROOM'
+                result['wait_reason']=self.wait_reason
+                return self._hold(scene,base,result,self.wait_reason)
             if action.startswith('CHANGE_') or action == 'START_RETURN':
                 age = wall + time.perf_counter() - began - scene.received_wall_s
                 if age >= self.OPTIONAL_MANEUVER_START_AGE_S:
@@ -316,6 +330,8 @@ class UrbanManeuverDriver(HybridDriver):
             if not ok:
                 result['rejected'].append({'action': action, 'reason': reason, 'evidence': evidence})
                 continue
+            if not scene.usable(base.timestamp_s,wall+time.perf_counter()-began):
+                return self._hold(scene,base,result,'CONTROL_PROCESSING_DEADLINE')
             if action.startswith('CHANGE_'):
                 self.phase = 'CHANGE'
                 self.offset = offset

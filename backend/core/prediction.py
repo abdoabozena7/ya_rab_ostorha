@@ -13,6 +13,7 @@ from .kinematic_prediction import kinematic_modes
 
 GRID = np.round(np.arange(31) * .1, 6)
 MAX_TRACK_OCCLUSION_S=.3
+_HISTORY_ROW_DTYPE=np.dtype('f8,f8,f8,f8,f8')
 
 
 def rotation(yaw):
@@ -111,10 +112,10 @@ class MotionTracker:
                 # Object IDs can split as a parked body's visible faces change.
                 # Count repeated *occupied measurements* in the odometry frame,
                 # without carrying free space or pretending an ID has history.
-                keys=np.rint(cloud/.2).astype(int)
-                current_surface_keys.update(map(tuple,keys.tolist()))
+                keys=list(map(tuple,np.rint(cloud/.2).astype(int).tolist()))
+                current_surface_keys.update(keys)
                 for previous_keys in spatial_frames:
-                    supported=sum((int(x),int(y)) in previous_keys for x,y in keys)
+                    supported=sum(key in previous_keys for key in keys)
                     if len(keys) and supported/len(keys)>=.8:spatial_support+=1
             if key is None:
                 key = self.next_id; self.next_id += 1
@@ -189,7 +190,8 @@ class MotionTracker:
 
     @staticmethod
     def sample_history(history, now):
-        h=np.asarray(history); times=now-np.arange(8,-1,-1)*.5
+        h=np.fromiter(map(tuple,history),dtype=_HISTORY_ROW_DTYPE,count=len(history)).view(np.float64).reshape(-1,5)
+        times=now-np.arange(8,-1,-1)*.5
         times=times[(times>=h[0,0]) & (times<=h[-1,0])]
         return np.column_stack((times,*[np.interp(times,h[:,0],h[:,i]) for i in range(1,5)])).tolist()
 
@@ -211,7 +213,7 @@ def intended_conflict(conflicts, speed, throttle):
         and not c.get('separating_rear_overlap') and not c.get('braking_worsens_rear_conflict')), None)
 
 
-def forecast_geometry(tracks, modes, grid):
+def forecast_geometry(tracks, modes, grid, *, row_reader=None):
     grid=np.asarray(grid,float)
     indexed = {t['id']: t for t in tracks if t['confirmed']}
     accepted = [m for m in modes if m['track_id'] in indexed]
@@ -219,7 +221,7 @@ def forecast_geometry(tracks, modes, grid):
         return indexed, accepted, None, None
     centers = []
     for mode in accepted:
-        points = np.asarray(mode['points'])
+        points = row_reader(mode['points']) if row_reader is not None else np.asarray(mode['points'])
         centers.append(np.column_stack([np.interp(grid,points[:,0],points[:,i]) for i in (1,2)]))
     centers=np.asarray(centers)
     half=np.array([indexed[m['track_id']]['half_size_m'] for m in accepted])[:,None,None,:]

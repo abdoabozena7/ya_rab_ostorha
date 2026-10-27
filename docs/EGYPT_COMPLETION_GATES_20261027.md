@@ -5,7 +5,7 @@ Software verification, replay, a diagnostic prefix, and a saved worker report
 are not native acceptance. The reserved holdout is still one attempt, not a
 source of tuning data.
 
-Seventeen protected-seed diagnostics are retained. The latest reached 63.93 m
+Nineteen protected-seed diagnostics are retained. The latest reached 63.95 m
 over 30 simulation seconds, exited cleanly and passed post-exit video checks,
 but still failed the unchanged latency gate. Neither Normal diagnostic, either
 full matrix in this ordered execution, nor the final native browser check ran.
@@ -14,6 +14,8 @@ remains historical and unchanged. The
 [continuation index](evidence/egypt-urban-chaos-v1/continuation-20261027.json)
 records all source versions, original report hashes, current balances and
 independent cleanup/video results. No diagnostic is a completed matrix trip.
+The [CPU/deadline follow-up](evidence/egypt-urban-chaos-v1/cpu-deadline-followup-20261027.json)
+extends that historical index through attempt 19 without overwriting it.
 
 This follows the [retained native failures](EGYPT_NATIVE_FOLLOWUP_20261024.md)
 and [scenario contract](EGYPT_URBAN_CHAOS_V1.md). Work remains on `main` in the
@@ -211,7 +213,7 @@ protected 2707 diagnostic. Only after that passes may Normal 1703/3709 and the
 later gates proceed. This checkpoint must not be described as completed Egypt
 acceptance or an unlocked driving option.
 
-## Continued implementation and current checkpoint
+## First continuation checkpoint (through attempt 17)
 
 The first checkpoint above was committed as `4ed8e48`. Subsequent work did not
 reset its expenditure or rewrite any failed attempt.
@@ -339,3 +341,83 @@ fails. Further native diagnosis requires a specific measured change, enough
 remaining diagnostic time, and another current-source software gate; there is
 no unchanged-source retry. The task, automatic Egypt admission and final native
 browser acceptance remain **incomplete**.
+
+## CPU and deadline follow-up (attempts 18-19)
+
+Further work stayed within the existing allowance:
+
+- Bounded surface registration is compiled without fast math. The original
+  batched NumPy implementation and scalar tests remain independent oracles;
+  ragged clouds, ties, missing inliers and both seed policies are covered.
+- History conversion retains five-field records, exact sampled values and
+  explicit rejection of ragged rows. Equal immutable uncertainty bounds are
+  shared; mutable legacy results retain independent containers.
+- Forecast and road numeric rows are cached only for validated immutable
+  same-frame inputs. Cached arrays are backed by immutable bytes; mutable
+  callers are converted afresh. All physical hypotheses and time grids remain.
+- The compiled map can now overlap measured tracking using one bounded worker
+  and an exactly frame-matched prefetched road. Errors propagate rather than
+  yielding empty/free geometry. Recorded forecast hashes remain identical.
+- A late maneuver start reserves 50 ms for the independent braking-path check
+  and submission inside the original 250 ms lease. It brakes without erasing
+  an active maneuver, and an expired proof cannot commit a new maneuver.
+  This is an explicit emergency hold, not permission to omit safety checks.
+
+| Protected 2707 diagnostic | 18 | 19 |
+| --- | ---: | ---: |
+| Distance / simulation time | 64.567 m / 30.00 s | 63.946 m / 30.00 s |
+| Application-check p95 | 199.005 ms | 215.750 ms |
+| Application-check p99 | 224.172 ms | 234.514 ms |
+| Maximum | 255.327 ms | 259.957 ms |
+| Frames over 250 ms / samples | 1 / 601 | 2 / 601 |
+| Worker exit / independent cleanup / post-exit video | 0 / passed / passed | 0 / passed / passed |
+| Complete diagnostic gate | failed | failed |
+
+Attempt 18 met the percentile targets but was **not promoted**: frame 763
+started maneuver selection at 207.717 ms and finished it at 254.981 ms.
+Its independent execution check could no longer run on a fresh scene.
+Replaying that measured entry age with the headroom guard produced full braking,
+preserved maneuver state and passed the independent complete stopping-tail
+check at 247.641 ms under profiling. This is offline case verification only:
+attempt 19 still had two late frames and worse percentiles. It does not establish
+stable native latency or close Gate B.
+
+The current source is
+`c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137`.
+Its full Python suite ran **1040 tests: 1036 passed, 4 optional skips**.
+All **209 JavaScript tests** passed again and dashboard assets were regenerated.
+No new model weights or weaker acceptance criteria were introduced.
+
+Additional read-only Normal analysis found a stationary Nissan Patrol roughly
+9.068 m ahead of the ego in both retained stops, consistent with the measured
+foreground gap. Other traffic still moved; these were not empty roads.
+The old runs also lost their sustained 60-vehicle density, and a merge event
+expired in seed 3709. The precise cause of the persistent traffic queue is not
+proved by these snapshots. No forced movement, invented clearance, fabricated
+collision or successful Normal outcome was substituted.
+
+Alternative lossless XZ/delta/bitshuffle and reversible depth-difference codecs
+were benchmarked on original bytes. They were not adopted: the probes did not
+establish a sufficient end-to-end storage solution, and no recording was
+rewritten into an experimental format. Other closed recordings under `runs`
+held less than 4 GiB of additional uncompressed candidate data, insufficient
+to close the observed capacity gap. No files outside the project were removed.
+
+| Allowance after attempt 19 | Seconds |
+| --- | ---: |
+| Development charged / remaining | 6074.987 / 8325.013 |
+| Diagnostic spendable | 645.013 |
+| Protected full development / browser | 7200 / 480 |
+| Acceptance remaining / attempted | 7200 / no |
+
+The two new recordings, their final lossless compression reports and refreshed
+storage estimate are preserved in the latest evidence index. Their verified
+compression recovered another **1.496 GiB** without consuming native budget;
+both compressed replays and post-compression video checks pass. The refreshed
+capacity snapshot is **91.764 GiB free versus 130.431 GiB required**.
+No unchanged-source
+retry or borrowing from protected windows is allowed. Further native work needs
+a justified change and enough diagnostic reservation; any additional allowance
+requires explicit authorization. Storage capacity must also pass before a
+matrix. Egypt, both ordered Normal diagnostics, the matrices and final browser
+acceptance remain **incomplete**.

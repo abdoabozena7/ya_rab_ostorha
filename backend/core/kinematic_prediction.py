@@ -9,51 +9,60 @@ def kinematic_modes(tracks, *, grid=GRID, frozen_points=False):
     grid=np.asarray(grid,float)
     if grid.ndim!=1 or len(grid)<2 or grid[0]!=0 or np.any(np.diff(grid)<=0):
         raise ValueError('Physical forecast needs an increasing time grid starting at zero')
-    modes=[]
+    modes=[];bounds_cache={}
+    frozen_times=freeze_float_rows(grid[None,:])[0] if frozen_points else None
     for tr in tracks:
+        bounds=None
+        if frozen_points:
+            uncertainty=float(tr.get('uncertainty_m',.15))
+            if uncertainty not in bounds_cache:
+                radii=freeze_float_rows((uncertainty+.12*grid)[None,:])[0]
+                bounds_cache[uncertainty]=freeze_json({'kind':'UNCALIBRATED_METRIC_MARGIN',
+                    'times_s':frozen_times,'radius_m':radii})
+            bounds=bounds_cache[uncertainty]
         p=np.asarray(tr['position_m'],float); v=np.asarray(tr['velocity_mps'],float)
         speed=float(np.linalg.norm(v)); a=np.asarray(tr.get('acceleration_mps2',[0.,0.]),float)
         a=np.clip(a,-3.,2.); quality=float(tr.get('quality',0.))
         if speed<.3:
-            modes.append(_mode(tr,0,'STATIONARY',p+grid[:,None]*np.zeros(2),0,grid,frozen_points))
+            modes.append(_mode(tr,0,'STATIONARY',p+grid[:,None]*np.zeros(2),0,grid,frozen_points,bounds))
             if tr.get('class','UNKNOWN').upper() in ('PERSON','PEDESTRIAN'):
                 # Observable person, unknown intent: waiting, starting toward
                 # the corridor, or retreating remain separate possibilities.
                 toward=np.array([0.,-1. if p[1]>=0 else 1.])
                 distance=np.minimum(1.5*grid, .75*grid**2)
-                modes.append(_mode(tr,1,'PEDESTRIAN_POSSIBLE_START',p+distance[:,None]*toward,1,grid,frozen_points))
-                modes.append(_mode(tr,2,'PEDESTRIAN_POSSIBLE_RETREAT',p-distance[:,None]*toward,2,grid,frozen_points))
+                modes.append(_mode(tr,1,'PEDESTRIAN_POSSIBLE_START',p+distance[:,None]*toward,1,grid,frozen_points,bounds))
+                modes.append(_mode(tr,2,'PEDESTRIAN_POSSIBLE_RETREAT',p-distance[:,None]*toward,2,grid,frozen_points,bounds))
                 # Preserve walking alternatives and include a sudden run.
                 # Bound speed to 3.5 m/s and initial acceleration to 6 m/s².
                 # This is an unranked possibility, never known future intent.
                 accelerating=np.minimum(grid,3.5/6.)
                 running=3.*accelerating**2+3.5*np.maximum(0.,grid-3.5/6.)
-                modes.append(_mode(tr,3,'PEDESTRIAN_POSSIBLE_RUN',p+running[:,None]*toward,3,grid,frozen_points))
+                modes.append(_mode(tr,3,'PEDESTRIAN_POSSIBLE_RUN',p+running[:,None]*toward,3,grid,frozen_points,bounds))
             continue
         cv=p+grid[:,None]*v
-        modes.append(_mode(tr,0,'CONSTANT_VELOCITY',cv,0,grid,frozen_points))
+        modes.append(_mode(tr,0,'CONSTANT_VELOCITY',cv,0,grid,frozen_points,bounds))
         if quality>=.7 and tr.get('motion_observations',tr.get('consecutive_observations',0))>=5:
             direction=v/speed; longitudinal=float(np.dot(a,direction))
             if abs(longitudinal)>.2:
                 vel=np.maximum(0.,speed+longitudinal*grid)
                 distance=np.r_[0.,np.cumsum((vel[:-1]+vel[1:])*np.diff(grid)/2)]
-                modes.append(_mode(tr,1,'CONSTANT_ACCELERATION',p+distance[:,None]*direction,1,grid,frozen_points))
+                modes.append(_mode(tr,1,'CONSTANT_ACCELERATION',p+distance[:,None]*direction,1,grid,frozen_points,bounds))
             rate=float(np.clip(tr.get('turn_rate_radps',0.),-.7,.7))
             if abs(rate)>.04:
                 heading=math.atan2(v[1],v[0]); angles=heading+rate*grid
                 step=np.diff(grid)[:,None]*speed*np.column_stack((np.cos((angles[:-1]+angles[1:])/2),np.sin((angles[:-1]+angles[1:])/2)))
                 xy=p+np.vstack((np.zeros(2),np.cumsum(step,axis=0)))
-                modes.append(_mode(tr,2,'COORDINATED_TURN',xy,2,grid,frozen_points))
+                modes.append(_mode(tr,2,'COORDINATED_TURN',xy,2,grid,frozen_points,bounds))
     return modes
 
 
-def _mode(tr,index,source,xy,rank,grid,frozen_points=False):
+def _mode(tr,index,source,xy,rank,grid,frozen_points=False,bounds=None):
     points = np.column_stack((grid, xy))
-    bounds = {'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':grid.tolist(),
-              'radius_m':(float(tr.get('uncertainty_m',.15))+.12*grid).tolist()}
-    if frozen_points:
-        times, radii = freeze_float_rows(np.vstack((grid, float(tr.get('uncertainty_m',.15))+.12*grid)))
-        bounds = freeze_json({'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':times,'radius_m':radii})
+    if bounds is None:
+        bounds = {'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':grid.tolist(),
+                  'radius_m':(float(tr.get('uncertainty_m',.15))+.12*grid).tolist()}
+        if frozen_points:
+            bounds=freeze_json(bounds)
     return {'track_id':tr['id'],'source':source,'mode':index,'rank':rank,'selected':rank==0,
         'probability':None,'weight_kind':'UNRANKED_PHYSICAL_ALTERNATIVE',
         'uncertainty_bounds':bounds,

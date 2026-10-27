@@ -2177,6 +2177,12 @@ class SimulationService:
                     self.control_scene_builder = ControlSceneBuilder(self.session_id, getattr(self.provider, 'vehicle_geometry', None))
                     self.control_scene_ego_actor_id = observation.vehicle.actor_id
                 measured = sensor_observation(observation)
+                space_scope=None
+                driver=self._urban_driver()
+                road_cache=getattr(self,'_hybrid_road_cache',None)
+                if (driver is not None and road_cache is not None
+                        and road_cache[0]==self._road_context_key(observation.frame_id,observation.timestamp_s)):
+                    space_scope=driver.coverage_path(observation.vehicle.speed_mps,road_cache[1])
                 scene = self.control_scene_builder.build(measured, self.provider.get_sensor_asset,
                     track_motion=(self.journey.get('driving_mode')=='HYBRID' or
                         self._guided_forecast_required() or
@@ -2186,6 +2192,7 @@ class SimulationService:
                     received_wall_s=min((c.metadata.get('received_monotonic_s', self.now()) for c in observation.sensors
                         if c.sensor_id in self.synchronizer.required), default=self.now()),
                     sensor_timing=sensor_timing(observation, self.synchronizer.required, synchronized_wall_s),
+                    space_scope_path=space_scope,
                     semantic_result=getattr(self, 'control_perception', None).latest(self.session_id)
                         if getattr(self, 'control_perception', None) else None)
                 self.control_scene = scene

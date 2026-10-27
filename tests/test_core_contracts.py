@@ -8,6 +8,15 @@ from tests.core_packets import packet, sensor, command, metadata, TRANSFORM
 
 
 class ContractTests(unittest.TestCase):
+    def test_frozen_modes_share_equal_bounds_without_sharing_mutable_legacy_bounds(self):
+        from backend.core.kinematic_prediction import kinematic_modes
+        tracks=[{'id':'person','class':'PERSON','position_m':[10.,2.],'velocity_mps':[0.,0.]}]
+        frozen=kinematic_modes(tracks,frozen_points=True);legacy=kinematic_modes(tracks)
+        self.assertEqual(to_dict(freeze_json(frozen)),to_dict(freeze_json(legacy)))
+        self.assertTrue(all(mode['uncertainty_bounds'] is frozen[0]['uncertainty_bounds'] for mode in frozen))
+        self.assertIsNot(legacy[0]['uncertainty_bounds'],legacy[1]['uncertainty_bounds'])
+        with self.assertRaises(TypeError):frozen[0]['uncertainty_bounds']['radius_m'][0]=99.
+
     def test_numeric_matrix_freezing_preserves_values_without_mutable_aliases(self):
         import numpy as np
         from backend.core.kinematic_prediction import kinematic_modes

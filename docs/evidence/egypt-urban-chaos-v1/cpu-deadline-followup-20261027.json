@@ -1,0 +1,317 @@
+{
+  "created_at_utc": "2026-10-27T16:36:09.434997+00:00",
+  "status": "BLOCKED_AT_GATE_B_AND_STORAGE",
+  "task_complete": false,
+  "native_acceptance": false,
+  "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+  "deployment": {
+    "accepted": false,
+    "reason": "Twelve source-bound native trips have not been accepted"
+  },
+  "prior_evidence": {
+    "path": "docs\\evidence\\egypt-urban-chaos-v1\\continuation-20261027.json",
+    "sha256": "8f5e3647595bdea38106467ef3345e6804a20ee7f8658f9196f93aca12ee8387"
+  },
+  "software": {
+    "python_tests": 1040,
+    "python_passed": 1036,
+    "python_optional_skips": 4,
+    "javascript_passed": 209,
+    "dashboard_built": true,
+    "certificate": {
+      "path": "output\\egypt-validation\\software-20261027\\software-gate-delivery19.json",
+      "sha256": "07e21c0b9dd124534462d711c3496f01ac0ae90f4b4750d3b7afa1b517073bf3"
+    },
+    "numeric_optimization_replay": {
+      "path": "output\\egypt-validation\\software-20261027\\current-source-frozen-replay18.json",
+      "sha256": "bda8ff70578a0909d3d798e23032f599d244e6f75f69ad0740231de19ea480ce"
+    },
+    "late_frame_replay": {
+      "path": "output\\egypt-validation\\software-20261027\\late-frame-reserve19.json",
+      "sha256": "01375469e8d755be5503e29b5a2988d9b07775c61b4ff91151937e54315c7d54"
+    },
+    "profile_boundary_script": {
+      "path": "output\\egypt-validation\\software-20261027\\profile_frozen_road_control.py",
+      "sha256": "bad843c6d27b9a54257094a27ffe9437753078842fa88a33e9e7c9e69525b401"
+    }
+  },
+  "diagnostics": [
+    {
+      "attempt": 18,
+      "source_sha256": "a4bdcef33a299f43a73263e249fc446601e7cf1a422f76a8901634a183a3be79",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-18.json",
+        "sha256": "0b5508b7cde09d605cfa808e234c079e49b6c9d051ceed41fd4d8ee30accbfc8"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\eb01e424e4f342e9a4de086e18bd6ffb\\report.json",
+        "sha256": "721a6c7112ff1edf0f95eb9977f2e95ed4ac0baad01545189fe7c37f8d1849de"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\eb01e424e4f342e9a4de086e18bd6ffb\\source.zip",
+        "sha256": "d8856de465a1d8e22b2fb4f987b3152c9b96764c72f916727caea2306f8ae14c"
+      },
+      "hypothesis": "Repair18 targets measured CPU costs rather than renderer settings: exact compiled bounded ICP with original NumPy oracle, shape-validated history conversion, immutable shared uncertainty bounds, reuse of same-frame numeric forecast/road rows, and bounded measured-space overlap now that geometry and registration release the GIL.1039 Python tests pass; all21 full recorded-semantic forecast hashes match, including the immutable live road boundary. No physical hypotheses, body samples, sensors, traffic density or250ms lease are removed. This is one new-source latency measurement; storage and later gates remain independently enforced.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_6100d71dcc5c49aabd2090ca241137d0",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 64.56692360381764,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 199.00470005813986,
+          "p99_ms": 224.1719999583438,
+          "maximum_ms": 255.3274999372661,
+          "deadline_exceeded_frames": 1,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 1,
+          "carla_call_p95_ms": 0.10140007361769676,
+          "carla_call_p99_ms": 0.11879997327923775
+        }
+      },
+      "assessment": {
+        "passed": false,
+        "gates": {
+          "measured_diagnostic_goal": true,
+          "protected_without_contact": true,
+          "no_control_timeout": true,
+          "sensor_latency_targets": false,
+          "clean_worker_exit": true,
+          "exports_closed": true,
+          "saved_video_playback": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "source_unchanged": true
+        },
+        "native_acceptance": false
+      },
+      "cleanup": {
+        "native_worker_exit_code": 0,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "simulator_exit_confirmed": true,
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      }
+    },
+    {
+      "attempt": 19,
+      "source_sha256": "c2ec0594d7a0a80141820d0e2ffc0a448887e0f7f85a35da5a75e40a5fb90137",
+      "diagnostic_report": {
+        "path": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-19.json",
+        "sha256": "38672cd04f4f1ff3827a2ec9bcb60e7e0838c681caa036b6d8ba5b7931f46a07"
+      },
+      "native_report": {
+        "path": "output\\egypt-urban-pairs\\e35e6323adfc47a689643872d2da6d10\\report.json",
+        "sha256": "61bd127acd1de304d50ab18ea71d9e4238a980c058c4307447db0e6d70a874db"
+      },
+      "source_archive": {
+        "path": "output\\egypt-urban-pairs\\e35e6323adfc47a689643872d2da6d10\\source.zip",
+        "sha256": "930d595d3be0e7c5f9eb8e7bfd942891ada844882febf5c5ad63d12938c0b8a6"
+      },
+      "hypothesis": "Repair19 addresses the single measured late frame in attempt18: frame763 began maneuver work at207.7ms and spent47.3ms planning, missing250ms despite passing p95/p99 targets. Late-scene admission now reserves50ms for the independent full braking-path check and submission, without clearing maneuver state, removing hypotheses or altering timestamps. A replay with that original207.7ms entry age applied HOLD, independently verified its complete stopping tail, and finished its check at247.64ms under profiling.1040 Python tests pass. Keep all strict latency gates, traffic and sensors unchanged; no acceptance seeds used.",
+      "trip": {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_c8d966cf0d16438180d3dd7e9e879bea",
+        "status": "INTERRUPTED",
+        "reason": "diagnostic_goal_reached",
+        "distance_m": 63.946154339704144,
+        "duration_s": 30.000000447034836,
+        "collisions": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 601,
+          "p95_ms": 215.75039997696877,
+          "p99_ms": 234.51360000763088,
+          "maximum_ms": 259.9568000296131,
+          "deadline_exceeded_frames": 2,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 2,
+          "carla_call_p95_ms": 0.10469998233020306,
+          "carla_call_p99_ms": 0.16659998800605536
+        }
+      },
+      "assessment": {
+        "passed": false,
+        "gates": {
+          "measured_diagnostic_goal": true,
+          "protected_without_contact": true,
+          "no_control_timeout": true,
+          "sensor_latency_targets": false,
+          "clean_worker_exit": true,
+          "exports_closed": true,
+          "saved_video_playback": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "source_unchanged": true
+        },
+        "native_acceptance": false
+      },
+      "cleanup": {
+        "native_worker_exit_code": 0,
+        "cleanup_stage": "COMPLETE",
+        "cleanup_confirmed": true,
+        "exports_closed": true,
+        "independent_cleanup_probe": {
+          "synchronous": false,
+          "remaining_project_actors": [],
+          "passed": true
+        },
+        "simulator_exit_confirmed": true,
+        "video_playback_after_exit": {
+          "passed": true,
+          "checks": {
+            "ROBOSPHERE": {
+              "sha256_verified": true,
+              "first_and_last_decode": [
+                true,
+                true
+              ],
+              "duration_s": 30.100000448524952
+            }
+          },
+          "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+        }
+      }
+    }
+  ],
+  "original_late_frame": {
+    "frame": 763,
+    "clock": "HOST_MONOTONIC",
+    "stages_since_first_ms": {
+      "first_required_sensor_received": 0.0,
+      "last_required_sensor_received": 114.92660001385957,
+      "required_sensors_encoded": 116.3813000312075,
+      "frame_complete": 116.94320000242442,
+      "scene_build_started": 119.51039999257773,
+      "scene_geometry_ready": 143.83600000292063,
+      "prediction_started": 143.83660000748932,
+      "prediction_completed": 201.25879999250174,
+      "scene_published": 201.25879999250174,
+      "control_started": 207.5240999693051,
+      "navigation_prefetch_started": 18.06230004876852,
+      "navigation_prefetch_completed": 34.483399940654635,
+      "maneuver_selection_started": 207.71330001298338,
+      "maneuver_selection_completed": 254.981099977158,
+      "safety_check_started": 255.07389998529106,
+      "safety_check_completed": 255.18300000112504,
+      "application_checked": 255.3274999372661,
+      "carla_control_called": 255.37150003947318,
+      "carla_control_returned": 256.0933999484405
+    },
+    "applied_command": {
+      "frame_id": 763,
+      "timestamp_s": 28.72065608203411,
+      "throttle": 0.0,
+      "brake": 1.0,
+      "steering": 0.001008840510621667,
+      "reverse": false,
+      "handbrake": false,
+      "source": "SAFETY",
+      "gear": 1
+    },
+    "fresh_at_check": false
+  },
+  "budget": {
+    "kind": "EGYPT_NATIVE_VALIDATION_V1",
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+    "cap_s": 21600.0,
+    "development_cap_s": 14400.0,
+    "acceptance_cap_s": 7200.0,
+    "base_cap_s": 14400.0,
+    "extensions": [
+      {
+        "id": "EGYPT_DEVELOPMENT_20261027",
+        "phase": "DEVELOPMENT",
+        "seconds": 7200.0,
+        "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+        "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+      }
+    ],
+    "charged_s": 6074.98700000043,
+    "remaining_s": 15525.01299999957,
+    "development_remaining_s": 8325.01299999957,
+    "diagnostic_remaining_s": 645.0129999995697,
+    "protected_development_matrix_s": 7200.0,
+    "protected_browser_s": 480.0,
+    "acceptance_remaining_s": 7200.0,
+    "unfinished": 0,
+    "acceptance_attempted": false,
+    "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+  },
+  "legacy_ledger_sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+  "ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "storage": {
+    "compression_report": {
+      "path": "output\\egypt-validation\\software-20261027\\compression-diagnostics18-19.json",
+      "sha256": "c5fd5f84f6ce8df263d11e9b56fcddbfd3b2845681ac199e99452e3681300445"
+    },
+    "new_saved_bytes": 1606681234,
+    "replay_and_video_checks": {
+      "path": "output\\egypt-validation\\software-20261027\\replay-video-after-compression19.json",
+      "sha256": "187e2ab10c73eced5fd3c4ffaee25649e562a135c80374f4aa66c45ec52796a8"
+    },
+    "estimate_report": {
+      "path": "output\\egypt-validation\\software-20261027\\storage-after-diagnostic19.json",
+      "sha256": "3810c22b8603bea3d32ab596fed3d91e787de69ea74de5708b69f9bb32d9c0b1"
+    },
+    "free_bytes": 98531069952,
+    "required_free_bytes": 140049743825,
+    "margin_fraction": 0.5,
+    "reserve_bytes": 4294967296,
+    "passed": false,
+    "alternative_codecs_adopted": false,
+    "rejected_codec_probes": [
+      {
+        "path": "output\\egypt-validation\\software-20261027\\bitshuffle-benchmark18.json",
+        "sha256": "1d4fee1e3880d9ea2371697326c0a4d6dc1ed88d11f8c3608ad43199652df6ff"
+      },
+      {
+        "path": "output\\egypt-validation\\software-20261027\\float-predictor-storage18.json",
+        "sha256": "18d20a6cc3cc654ef2b45d1054abe854be3515987897f7d8dd2593499a3f64bf"
+      }
+    ]
+  },
+  "ordered_normal_diagnostics_executed": 0,
+  "full_development_executed": false,
+  "reserved_acceptance_attempted": false,
+  "final_native_browser_executed": false,
+  "preflight": {
+    "development": {
+      "path": "output\\egypt-validation\\software-20261027\\final-development-preflight19.json",
+      "sha256": "6309d2685b1d10fcfa0dc412a8f26b25650be15ebac0f47130382f9b920dfdf3",
+      "reason": "All three current-source native diagnostics must pass before the full development matrix"
+    },
+    "acceptance": {
+      "path": "output\\egypt-validation\\software-20261027\\final-acceptance-preflight19.json",
+      "sha256": "a0ebfb996eac528174935e145c42514aefcbf61dc281a76513733ba890628621",
+      "reason": "Full current-source development matrix must pass before the protected acceptance window can be used"
+    }
+  }
+}

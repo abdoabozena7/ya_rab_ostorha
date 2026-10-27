@@ -269,6 +269,8 @@ class CarlaSensorManager:
         warm_measured_rays()
         from ..core.depth_people import warm_depth_people
         warm_depth_people()
+        from ..core.surface_registration import warm_surface_registration
+        warm_surface_registration()
         from ..core.contracts import SensorKind
         from .sensor_decoders import decode_sensor
         from .dashboard_tools import CAMERA_VIEWS

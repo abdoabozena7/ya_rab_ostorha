@@ -9,7 +9,7 @@ import time
 import threading
 import numpy as np
 from .active_safety import _mount
-from .contracts import CommandSource, ControlCommand, SensorKind, freeze_json, to_dict
+from .contracts import CommandSource, ControlCommand, SensorKind, freeze_json, to_dict, _FrozenJSONSequence
 from .motion_geometry import VehicleGeometry
 from .prediction import PredictionEngine
 from .safety_policy import SensorObservation
@@ -38,6 +38,7 @@ class MeasuredSpace:
         self.forward_assessments={}
         self.urban_forecasts=OrderedDict()
         self.forecast_geometries=OrderedDict()
+        self.numerical_rows=OrderedDict()
         self.requested_scope_m = 0.
         self.preparation_future = None
         self.preparation_status = 'LAZY'
@@ -76,11 +77,27 @@ class MeasuredSpace:
         key = (id(prediction), np.asarray(grid, dtype='<f8').tobytes())
         cached = self.forecast_geometries.get(key)
         if cached is None or cached[0] is not prediction:
-            cached = (prediction, forecast_geometry(prediction['tracks'], prediction['control_trajectories'], grid))
+            cached = (prediction, forecast_geometry(prediction['tracks'], prediction['control_trajectories'],
+                                                    grid, row_reader=self.numeric_rows))
             self.forecast_geometries[key] = cached
             while len(self.forecast_geometries) > 4:
                 self.forecast_geometries.popitem(last=False)
         return cached[1]
+
+    def numeric_rows(self, rows):
+        immutable=type(rows) is _FrozenJSONSequence
+        key=id(rows)
+        cached=self.numerical_rows.get(key) if immutable else None
+        if cached is not None and cached[0] is rows:
+            return cached[1]
+        array=np.asarray(rows,dtype='<f8')
+        if not np.isfinite(array).all():
+            raise ValueError('Measured geometry rows must be finite')
+        readonly=np.frombuffer(array.tobytes(),dtype='<f8').reshape(array.shape)
+        if immutable:
+            self.numerical_rows[key]=(rows,readonly)
+            while len(self.numerical_rows)>1024:self.numerical_rows.popitem(last=False)
+        return readonly
 
     def prepare(self):
         from .maneuver import ObservedSpace

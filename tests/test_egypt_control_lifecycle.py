@@ -18,6 +18,39 @@ from tests.test_control_scene import ControlSceneTests
 
 
 class EgyptControlLifecycleTests(unittest.TestCase):
+    def test_same_frame_numeric_rows_share_only_verified_immutable_storage(self):
+        from backend.core.contracts import freeze_json
+        scene,_,_=ControlSceneTests().measured()
+        rows=freeze_json([[0.,1.,2.],[.1,3.,4.]])
+        array=scene.space.numeric_rows(rows)
+        self.assertIs(scene.space.numeric_rows(rows),array)
+        np.testing.assert_array_equal(array,np.asarray(rows))
+        with self.assertRaises(ValueError):array.flags.writeable=True
+        mutable=[[0.,1.,2.]]
+        original=scene.space.numeric_rows(mutable)
+        mutable[0][1]=99.
+        replacement=scene.space.numeric_rows(mutable)
+        self.assertEqual(original[0,1],1.)
+        self.assertEqual(replacement[0,1],99.)
+        with self.assertRaises(ValueError):scene.space.numeric_rows([[float('nan')]])
+
+    def test_forecast_numeric_rows_keep_all_hypotheses_on_different_time_grids(self):
+        from backend.core.contracts import freeze_json
+        scene,_,_=ControlSceneTests().measured()
+        scene=replace(scene,prediction=freeze_json({
+            'tracks':[{'id':'measured','confirmed':True,'half_size_m':[2.,1.],'uncertainty_m':.15}],
+            'control_trajectories':[
+                {'track_id':'measured','points':[[0.,10.,0.],[1.,11.,0.]]},
+                {'track_id':'measured','points':[[0.,10.,0.],[1.,10.,-1.]]}]}))
+        for grid in (np.arange(11)*.1,np.arange(21)*.05):
+            expected=forecast_geometry(scene.prediction['tracks'],scene.prediction['control_trajectories'],grid)
+            self.assertEqual(len(expected[1]),2)
+            actual=scene.space.forecast_geometry(scene.prediction,grid)
+            self.assertEqual(actual[0],expected[0])
+            self.assertEqual(actual[1],expected[1])
+            for first,second in zip(actual[2:],expected[2:]):
+                if first is not None:np.testing.assert_array_equal(first,second)
+
     def test_retiring_sdk_client_stays_alive_after_explicit_actor_cleanup(self):
         from backend.carla.provider import CarlaProvider
         provider = CarlaProvider()

@@ -149,6 +149,22 @@ class UrbanDriverTests(unittest.TestCase):
         self.assertIn('OPTIONAL_PLANNING_HEADROOM', [item['reason'] for item in result['rejected']])
         self.assertGreaterEqual(command.throttle, 0.)
 
+    def test_late_scene_reserves_independent_braking_time_without_erasing_maneuver_state(self):
+        driver = UrbanManeuverDriver(self.measured.geometry)
+        scene, base, road = self.warm(driver, [])
+        driver.phase='RETURN';driver.return_required=True
+        curve=driver.maneuver_curve
+        with patch.object(driver,'_speed',side_effect=AssertionError('Do not start late planning')):
+            command,result=driver.evaluate(scene,base,road,8.,wall=100.2077)
+        self.assertEqual((command.throttle,command.brake),(0.,1.))
+        self.assertEqual(result['reason'],'CONTROL_APPLICATION_HEADROOM')
+        self.assertEqual(driver.phase,'RETURN')
+        self.assertIs(driver.maneuver_curve,curve)
+        self.assertTrue(driver.return_required)
+        self.assertEqual(result['fallback_hold_status'],'UNVERIFIED_EMERGENCY_HOLD')
+        self.assertEqual(command.frame_id,base.frame_id)
+        self.assertEqual(command.timestamp_s,base.timestamp_s)
+
     def test_fast_rear_vehicle_and_occupied_side_lane_veto_the_entire_change(self):
         for hazard in (track('rear', -20., -3.5, 20.), track('accelerating_rear', -35., -3.5, 10.),
                        track('side', 15., -3.5)):

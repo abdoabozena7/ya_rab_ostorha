@@ -80,6 +80,12 @@ def stopping_tail(path,speed,geometry,reverse,*,reaction_s=.35,initial_decelerat
     return np.vstack((path,np.column_stack((end[0]+times,xy,yaw))))
 
 
+def _drivable_rows(scene, road):
+    rows=road.get('drivable_strips',())
+    reader=getattr(type(scene.space),'numeric_rows',None)
+    return reader(scene.space,rows) if reader is not None else np.asarray(rows,dtype='<f8')
+
+
 class ExecutionShield:
     """No learned dependency; checks fresh space, every mode and entire body."""
     def check(self,scene,path,command,road,*,timestamp_s,wall_s,full_maneuver=False,forward_recovery=False):
@@ -91,7 +97,7 @@ class ExecutionShield:
         # The independent check revalidates freshness and binds every proposed
         # control, its exact path and the measured road context before lookup.
         digest=hashlib.sha256(np.asarray(path,dtype='<f8').tobytes())
-        digest.update(np.asarray(road.get('drivable_strips',()),dtype='<f8').tobytes())
+        digest.update(_drivable_rows(scene,road).tobytes())
         digest.update(repr((int(command.frame_id),float(command.timestamp_s),float(command.throttle),float(command.brake),
             float(command.steering),bool(command.reverse),None if command.gear is None else int(command.gear),bool(command.handbrake),
             bool(road.get('traffic_stop')),bool(full_maneuver),bool(forward_recovery),'drivable_strips' in road,float(timestamp_s),
@@ -160,7 +166,7 @@ class ExecutionShield:
         if not certificate['verified']:return False,'SWEPT_SPACE_UNKNOWN_OR_OCCUPIED',certificate
         if 'drivable_strips' in road:
             from .drivable_corridor import certificate as road_certificate
-            road_evidence=road_certificate(checked,scene.geometry,road['drivable_strips'])
+            road_evidence=road_certificate(checked,scene.geometry,_drivable_rows(scene,road))
             if not road_evidence['verified']:return False,'BODY_OUTSIDE_DRIVABLE_ROAD',road_evidence
             certificate={**certificate,'drivable_body':road_evidence}
         if road.get('traffic_stop') and moving:return False,'TRAFFIC_RULE_STOP',certificate

@@ -2,7 +2,7 @@
 from unittest import TestCase
 from unittest.mock import patch
 import numpy as np
-from backend.core.surface_registration import register_surfaces
+from backend.core.surface_registration import register_surfaces, register_surfaces_reference
 
 
 class RegistrationReductionTests(TestCase):
@@ -16,6 +16,6 @@ class RegistrationReductionTests(TestCase):
                 centers=np.array([a.mean(axis=0)-b.mean(axis=0) for a,b in zip(current,previous)])
                 original=lambda values,valid:np.nanmedian(np.where(valid,values,np.nan),axis=2)
                 with patch('backend.core.surface_registration._masked_median',original):
-                    expected=register_surfaces(current,previous,prior,centers,enhanced=enhanced)
+                    expected=register_surfaces_reference(current,previous,prior,centers,enhanced=enhanced)
                 actual=register_surfaces(current,previous,prior,centers,enhanced=enhanced)
                 np.testing.assert_allclose(actual,expected,rtol=0,atol=1e-12)

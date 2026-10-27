@@ -1,7 +1,7 @@
 """Numerical equivalence to the scalar sensor-registration algorithm."""
 import unittest
 import numpy as np
-from backend.core.surface_registration import register_surfaces
+from backend.core.surface_registration import register_surfaces, register_surfaces_reference
 
 
 def scalar_reference(cloud,old,prior,center,enhanced):
@@ -23,6 +23,40 @@ def scalar_reference(cloud,old,prior,center,enhanced):
 
 
 class SurfaceRegistrationTests(unittest.TestCase):
+    def test_history_sampling_preserves_values_and_rejects_ragged_records(self):
+        from collections import deque
+        from backend.core.prediction import MotionTracker
+        values=np.arange(500,dtype=float).reshape(100,5)
+        values[:,0]=np.arange(100)*.05
+        now=float(values[-1,0])
+        times=now-np.arange(8,-1,-1)*.5
+        times=times[(times>=values[0,0])&(times<=values[-1,0])]
+        expected=np.column_stack((times,*[np.interp(times,values[:,0],values[:,i]) for i in range(1,5)])).tolist()
+        for history in (values.tolist(),deque(map(tuple,values),maxlen=100)):
+            self.assertEqual(MotionTracker.sample_history(history,now),expected)
+        with self.assertRaises(ValueError):
+            MotionTracker.sample_history([(0.,1.,2.,3.),(.05,1.,2.,3.,4.,5.)],.05)
+
+    def test_compiled_registration_is_exact_for_ties_and_ragged_measured_clouds(self):
+        rng=np.random.default_rng(2707)
+        for enhanced in (False,True):
+            for sizes in ((1,2,3,4,5,6),(12,24,48),(64,64,64)):
+                previous=[np.round(rng.normal(size=(n,2)),2) for n in sizes]
+                current=[p+rng.normal(0,.2,p.shape) for p in previous]
+                prior=rng.normal(0,.1,(len(sizes),2));centers=rng.normal(0,.2,(len(sizes),2))
+                expected=register_surfaces_reference(current,previous,prior,centers,enhanced=enhanced)
+                actual=register_surfaces(current,previous,prior,centers,enhanced=enhanced)
+                np.testing.assert_array_equal(actual,expected)
+
+    def test_compiled_registration_rejects_malformed_measured_inputs(self):
+        for current,previous,prior,centers in (
+                ([np.ones((3,3))],[np.ones((3,2))],[[0.,0.]],[[0.,0.]]),
+                ([np.empty((0,2))],[np.ones((3,2))],[[0.,0.]],[[0.,0.]]),
+                ([np.full((3,2),np.nan)],[np.ones((3,2))],[[0.,0.]],[[0.,0.]]),
+                ([np.ones((3,2))],[],[[0.,0.]],[[0.,0.]])):
+            with self.assertRaises(ValueError):
+                register_surfaces(current,previous,prior,centers,enhanced=True)
+
     def test_batch_preserves_scalar_results_for_changed_visibility_fast_motion_and_padding(self):
         rng=np.random.default_rng(442)
         previous=[rng.normal(size=(int(rng.integers(4,25)),2)) for _ in range(40)]
