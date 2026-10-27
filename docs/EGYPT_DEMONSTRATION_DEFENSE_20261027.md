@@ -23,11 +23,15 @@ The [latest admission checkpoint](EGYPT_DIAGNOSTIC_STORAGE_20261027.md) applies
 the existing storage gate to diagnostics too. It refreshes offline software
 verification on the new gate fingerprint; no driving policy or native result
 changes.
+The [preserved-recording relocation checkpoint](EGYPT_RECORDING_RELOCATION_20261027.md)
+now resolves provisional storage through verified preservation of 165 closed
+recordings and original paths. New runs remain on D; full successful DEVELOPMENT
+must still determine final acceptance sizing.
 
 | Evidence class | What may be said |
 | --- | --- |
 | Historical measured | Dated reports certify only their recorded source and protocol. Attempts 18/19 are short failed DEVELOPMENT diagnostics, not accepted route runs. |
-| Current source | Fingerprint `a0c2eb77...`: 210 JavaScript passes, 1,048 Python passes with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. Diagnostic storage admission now refuses insufficient capacity. Offline software certificate only; controlled-age replay does not reproduce native asynchronous timing, and a gate-only source change is not a driving repair or retry authorization. |
+| Current source | Fingerprint `a7ece445...`: 210 JavaScript passes, 1,060 Python passes with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. Verified relocation resolves provisional storage; first read-only diagnostic admission passes. Offline software/resource checks only, not native acceptance; a storage-only source change is not a driving repair or retry authorization. |
 | Experimental | Egypt maneuver driving remains restricted; learned research modes, the disabled path-entry predictor and shadow proposals have their own limits. |
 | Future | VLM integration, new RL training, maps and PERFORMANCE_60 acceptance are not delivered Egypt results. |
 

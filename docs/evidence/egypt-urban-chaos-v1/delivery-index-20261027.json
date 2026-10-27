@@ -7,14 +7,14 @@
   "scope": "Current offline continuation and retained historical evidence; not a native execution certificate",
   "current_source_verification": {
     "status": "OFFLINE_SUITES_AND_BUILD_PASSED_NATIVE_ASSURANCE_BLOCKED",
-    "source_sha256": "a0c2eb77002ee711f8ba4aedf13414e244ac52ae52db03337e34969f242a5ed0",
-    "software_certificate": "output\\egypt-validation\\diagnostic-storage-20261027\\software-gate.json",
-    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\diagnostic-storage-20261027.json",
-    "verification_sha256": "03d03c5a1149c4555d9a7b062c9beb8e366079d653f85508533c1a6c1328609d",
-    "delivery_report": "docs\\EGYPT_DIAGNOSTIC_STORAGE_20261027.md",
+    "source_sha256": "a7ece445d9eab71d4328f08bb1b25e245499eb39539461b573646271b3777933",
+    "software_certificate": "output\\recording-relocations\\software-gate.json",
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\recording-relocation-20261027.json",
+    "verification_sha256": "8cf2f558a40ccfddfc56e9aa8dd26b59208197c4773a6c2f78e489903ed34a9e",
+    "delivery_report": "docs\\EGYPT_RECORDING_RELOCATION_20261027.md",
     "javascript_passed": 210,
-    "python_total": 1052,
-    "python_passed": 1048,
+    "python_total": 1064,
+    "python_passed": 1060,
     "python_optional_skips": 4,
     "dashboard_built": true,
     "bundle_syntax_passed": true,
@@ -24,7 +24,7 @@
     "controlled_shield_age_ms": 150,
     "native_deadline_replay_equivalence": false,
     "native_runs_executed_for_this_documentation": 0,
-    "note": "Only native admission script changed from4486828d: diagnostics now enforce existing full-plan storage. Fresh complete suites/build and30 complete controlled-age replay payloads passed. Real read-only diagnostic preflight refuses insufficient storage, ledgers unchanged. Gate-only source change is not a driving repair or retry authorization; no native gate is closed."
+    "note": "Verified relocation of165 closed recordings preserves173140 files and original paths. D142215745536 free passes unchanged140049743825-byte provisional gate; first read-only480s diagnostic admission passes, ledgers unchanged. Fresh suites/build and30 complete controlled-age payloads passed. Storage-only source changes do not authorize failed unchanged-driving retries; native gates remain pending."
   },
   "previous_delivery_checkpoint": {
     "commit": "0414f7128af22eed58d13bd362121826ca1e00ce",
@@ -93,6 +93,11 @@
     }
   },
   "preserved_evidence_chain": [
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\recording-relocation-20261027.json",
+      "report": "docs\\EGYPT_RECORDING_RELOCATION_20261027.md",
+      "scope": "165 closed recordings preserved on C with original D paths, complete byte manifests, tested rollback/replay/video access; unchanged provisional D storage gate passes. No native run or budget increase."
+    },
     {
       "path": "docs\\evidence\\egypt-urban-chaos-v1\\diagnostic-storage-20261027.json",
       "report": "docs\\EGYPT_DIAGNOSTIC_STORAGE_20261027.md",
@@ -489,8 +494,8 @@
     "acceptance_remaining_s": 7200.0,
     "acceptance_attempted": false,
     "budget_sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854",
-    "current_resource_resolution": "READ_ONLY_PREFLIGHT_COMPLETE_STORAGE_AND_NATIVE_PREREQUISITES_BLOCKED",
-    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\diagnostic-storage-20261027.json",
+    "current_resource_resolution": "PROVISIONAL_STORAGE_RESOLVED_FIRST_DIAGNOSTIC_ADMISSION_PASSED_NATIVE_ACCEPTANCE_PENDING",
+    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\recording-relocation-20261027.json",
     "note": "Full-route acceptance sizing must use a complete successful development matrix; no ledger reset, additional authorization or archive deletion is implied."
   },
   "required_ordered_execution": {

@@ -1,5 +1,10 @@
 # Egypt storage continuation — 27 October 2026
 
+The later [verified relocation](EGYPT_RECORDING_RELOCATION_20261027.md) implements
+an explicit location/trust contract and resolves provisional capacity while
+preserving original paths. The unsupported-junction findings and snapshots
+below remain historical; they were not overwritten or treated as a solution.
+
 **Read-only investigation complete; multi-volume retention is NOT implemented
 or verified. Native storage remains blocked.** No recording, archive, junction,
 configuration, budget or engine was changed. This report and its

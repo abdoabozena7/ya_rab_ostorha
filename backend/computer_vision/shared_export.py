@@ -11,8 +11,8 @@ ROOT=Path(__file__).resolve().parents[2]
 
 
 def detect(root,job):
-    root=Path(root).resolve()
-    if not root.is_relative_to((ROOT/'runs/normal_city').resolve()):raise ValueError('Unexpected recording root')
+    from backend.core.recording_locations import recording_location
+    root=recording_location(root,ROOT/'runs/normal_city')
     profile=job.get('detector_profile') or {}
     model_path=ROOT/'models/yolov8n-320.onnx' if profile.get('id')=='LEGACY_320' else default_model_path()
     model=RoadDetector(model_path,profile_id=profile.get('id'))

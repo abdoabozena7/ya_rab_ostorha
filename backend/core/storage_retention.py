@@ -29,6 +29,9 @@ def recording_roots(folder,workspace):
         dirs[:]=[name for name in dirs if not (Path(base)/name).is_symlink() and not os.path.isjunction(Path(base)/name)]
         if 'metadata.json' in files and (Path(base)/'telemetry').is_dir():
             dirs.clear();yield Path(base)
+    if folder == Path(workspace).resolve()/'runs'/'normal_city':
+        from .recording_locations import relocated_roots
+        yield from relocated_roots(workspace)
 
 
 def archive_recording(root,workspace,*,apply=False):
@@ -91,6 +94,7 @@ def _retire_guided_history(workspace,keep):
     if not parent.is_dir():return []
     candidates=[]
     for root in recording_roots(parent,workspace):
+        if not root.resolve().is_relative_to(workspace):continue
         try:
             metadata=json.loads((root/'metadata.json').read_text(encoding='utf8'))
             if metadata.get('config',{}).get('storage_policy')!='GUIDED_KEEP_TWO_RAW':continue

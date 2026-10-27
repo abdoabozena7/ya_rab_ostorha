@@ -88,12 +88,12 @@ def cleanup_probe(deadline=None):
 
 def verify_videos(report, deadline=None, *, diagnostic=False):
     import hashlib
+    from backend.core.recording_locations import recording_location
     from imageio_ffmpeg import get_ffmpeg_exe
     files={}
     try:
         for mode in (report['first_mode'],) if diagnostic else ('NORMAL','ROBOSPHERE'):
-            root=Path(report['pair']['runs'][mode]['recording']).resolve()
-            if not root.is_relative_to((ROOT/'runs/normal_city').resolve()):raise ValueError('Unexpected video root')
+            root=recording_location(report['pair']['runs'][mode]['recording'],ROOT/'runs/normal_city')
             state=json.loads((root/'video-status.json').read_text(encoding='utf8'));name=state.get('preferred_video','driving.mp4')
             if name not in ('driving.mp4','driving-annotated.mp4'):raise ValueError('Unexpected video variant')
             variant=state.get('variants',{}).get('annotated' if 'annotated' in name else 'raw',state)

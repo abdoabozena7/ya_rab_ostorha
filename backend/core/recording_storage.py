@@ -90,6 +90,10 @@ def compress_file(path, root, manifest, *, proof_lock=None):
 def compress_recording(root, workspace):
     from .driving_video import wait_for_exports
     from ..learning.egypt_budget import require_stopped_storage_access, save_json
+    if not Path(root).resolve().is_relative_to(Path(workspace).resolve()):
+        from .recording_locations import recording_location
+        root = recording_location(root, Path(workspace) / 'runs' / 'normal_city', workspace=workspace)
+        workspace = root.parent
     root = contained(root, workspace)
     require_stopped_storage_access()
     if not wait_for_exports(0):

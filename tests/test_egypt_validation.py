@@ -63,6 +63,7 @@ class EgyptValidationFixture(unittest.TestCase):
         self.progress = self.root / 'progress.json'
         self.stack.enter_context(patch('backend.learning.egypt_budget.OWNERSHIP', self.owner))
         self.stack.enter_context(patch('backend.learning.egypt_budget.PROGRESS', self.progress))
+        self.stack.enter_context(patch('backend.learning.egypt_budget.RELOCATION_LOCK', self.root / 'relocation.lock'))
         self.stack.enter_context(patch.object(runner, 'PROGRESS', self.progress))
         self.stack.enter_context(patch.dict(os.environ, {}, clear=False))
         for name in ('OSTORHA_EGYPT_BUDGET', 'OSTORHA_EGYPT_RESERVATION', 'OSTORHA_EGYPT_DEADLINE'):
@@ -139,6 +140,20 @@ class IsolatedEgyptTests(EgyptValidationFixture):
         self.assertEqual(final['extensions'], initial['extensions'])
         self.assertEqual(final['acceptance_remaining_s'], 7200.)
         self.assertGreaterEqual(final['development_remaining_s'], 7200. + 480.)
+
+    def test_relocation_lease_blocks_native_start_and_reservations_without_charges(self):
+        lock = self.root / 'relocation.lock'
+        lock.write_text('offline evidence migration')
+        before = self.budget.status()['sha256']
+        with patch('backend.learning.egypt_budget.RELOCATION_LOCK', lock):
+            with self.assertRaisesRegex(RuntimeError, 'relocation'):
+                require_simulator_access()
+            require_simulator_access(shutdown=True)
+            with self.assertRaisesRegex(RuntimeError, 'relocation'):
+                with self.budget.experiment('DEVELOPMENT', 480., 'must-not-start'):
+                    self.fail('Reserved native work during evidence migration')
+        self.assertEqual(self.budget.status()['sha256'], before)
+        self.assertFalse(self.owner.exists())
 
     def test_third_diagnostic_cannot_borrow_protected_time_when_actual_charges_exceed_headroom(self):
         self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)

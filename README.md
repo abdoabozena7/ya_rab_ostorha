@@ -30,12 +30,18 @@ the final queue stops; their downstream physical cause remains unverified.
 The [resource-accounting checkpoint](docs/EGYPT_RESOURCE_ACCOUNTING_20261027.md)
 clarifies that one minimum diagnostic reservation fits, while three depend on
 actual charges; the 795-second request is conservative, not proven unavoidable.
-Storage still fails even the maximum possible existing compression recovery.
+Existing compression alone could not close the storage deficit.
 The [latest diagnostic admission checkpoint](docs/EGYPT_DIAGNOSTIC_STORAGE_20261027.md)
 enforces storage for diagnostics as well as matrices. Fresh checks on that
 source: **210 JavaScript passes, 1,048 Python passes, 4 optional skips**, build
 and all 30 controlled-age complete payloads passed. Real read-only diagnostic
 admission now correctly refuses insufficient storage without native execution.
+The [latest preserved-recording relocation](docs/EGYPT_RECORDING_RELOCATION_20261027.md)
+resolves provisional capacity: 165 closed recordings retain every file and
+original path, D now has 142.22 GB free against the unchanged 140.05 GB gate.
+Fresh verification: **210 JavaScript passes, 1,060 Python passes, 4 optional
+skips**, build and all 30 controlled-age complete payloads passed.
+Read-only first-diagnostic admission now passes; **native acceptance remains pending**.
 
 ### Choose an execution mode
 
@@ -73,11 +79,12 @@ Saved MP4s can also be played directly without CARLA or a backend.
 - Node/npm with [the lockfile](package-lock.json) for dashboard checks;
   `npm ci` restores frontend dependencies when needed.
 - Egypt requires Town10HD_Opt, LOW/D3D12, retained evidence storage and an
-  existing authorized reservation. Storage still fails the provisional
-  130.431 GiB requirement; the latest snapshot and exact remaining deficit
-  are in the [diagnostic admission checkpoint](docs/EGYPT_DIAGNOSTIC_STORAGE_20261027.md#real-read-only-admission-result).
+  existing authorized reservation. Provisional storage now passes the unchanged
+  130.431 GiB requirement; the current paths, snapshots and preservation proofs
+  are in the [relocation checkpoint](docs/EGYPT_RECORDING_RELOCATION_20261027.md).
   The [storage investigation](docs/EGYPT_STORAGE_CONTINUATION_20261027.md)
-  explains why an unverified C/D junction is not a supported solution.
+  explains why an unverified C/D junction alone was not a supported solution;
+  [verified relocation](docs/RECORDING_RELOCATION.md) adds an explicit trust contract.
 
 ```powershell
 npm test

@@ -1,5 +1,9 @@
 # Egypt diagnostic storage admission - 27 October 2026
 
+The later [verified relocation checkpoint](EGYPT_RECORDING_RELOCATION_20261027.md)
+resolves provisional capacity without reducing this gate. This report preserves
+the earlier insufficient-space measurement and admission-guard source.
+
 **BLOCKED / NOT ACCEPTED. The overall goal remains incomplete.** This checkpoint
 closes a resource-admission gap; it does not provision storage, repair driving
 or pass a native gate. No native run, budget extension, relocation, compression

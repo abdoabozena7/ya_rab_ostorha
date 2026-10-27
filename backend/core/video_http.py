@@ -4,6 +4,7 @@ import json
 import re
 from functools import lru_cache
 from pathlib import Path
+from .recording_locations import recording_location
 
 VIDEO_ROUTE=re.compile(r'/runs/normal_city/(run_[a-f0-9]{32})/(video-status\.json|shared-perception-status\.json|driving(?:-annotated)?\.mp4|shared-perception\.mp4)')
 
@@ -35,8 +36,7 @@ def serve_video(handler,path,root):
     if not match:return False
     started=False
     try:
-        root=Path(root).resolve();folder=(root/match[1]).resolve()
-        if folder.parent!=root:raise ValueError('Video escaped its recording directory')
+        root=Path(root).resolve();folder=recording_location(root/match[1],root)
         metadata_path=(folder/'metadata.json').resolve()
         if metadata_path.parent!=folder:raise ValueError('Metadata escaped its recording')
         metadata=json.loads(metadata_path.read_text(encoding='utf8'))

@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DIRECTORY = ROOT / 'output' / 'egypt-validation'
 OWNERSHIP = DIRECTORY / 'simulator-owner.json'
 PROGRESS = DIRECTORY / 'progress.json'
+RELOCATION_LOCK = ROOT / 'output' / 'recording-relocations' / 'relocation.lock'
 CAP_SECONDS = 14400.
 PHASE_SECONDS = 7200.
 SCOPE = 'EGYPT_NATIVE_VALIDATION_V1'
@@ -110,6 +111,8 @@ def active_ticket():
 
 
 def require_simulator_access(*, shutdown=False):
+    if not shutdown and RELOCATION_LOCK.exists():
+        raise RuntimeError('Closed-recording relocation exclusively owns storage; native start is blocked')
     state = ownership_status()
     if state['reserved'] and active_ticket() is None:
         if shutdown and state.get('active') and state.get('stage') == 'HANDOFF':
@@ -226,6 +229,8 @@ class EgyptBudget:
 
     @contextmanager
     def experiment(self, phase, seconds, report, *, purpose=None):
+        if RELOCATION_LOCK.exists():
+            raise RuntimeError('Finalize closed-recording relocation before reserving native work')
         if (phase not in ('DEVELOPMENT', 'ACCEPTANCE') or type(seconds) not in (float, int)
                 or not math.isfinite(seconds) or not 0 < seconds <= PHASE_SECONDS
                 or phase == 'ACCEPTANCE' and seconds != PHASE_SECONDS):
