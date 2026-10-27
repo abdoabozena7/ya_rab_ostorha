@@ -1,5 +1,10 @@
 # Egypt Normal queue checkpoint - 27 October 2026
 
+See the later [resource-accounting correction](EGYPT_RESOURCE_ACCOUNTING_20261027.md):
+the requested 795 seconds is conservative headroom, not an unavoidable deficit.
+Unused reservation headroom can return through actual elapsed charging;
+storage remains independently failed. Measurements below retain their scope.
+
 ## Status and success condition
 
 **PARTIALLY COMPLETED / BLOCKED / NOT ACCEPTED.** The overall objective remains

@@ -1,5 +1,10 @@
 # Egypt freezing continuation - 27 October 2026
 
+The later [resource-accounting correction](EGYPT_RESOURCE_ACCOUNTING_20261027.md)
+clarifies the budget bound: 795 seconds is conservative fully charged
+reservation headroom, not proven unavoidable. Original measurements below are
+preserved; one minimum diagnostic reservation fits, subject to resource gates.
+
 ## A. Overall status
 
 **PARTIALLY COMPLETED / BLOCKED / NOT ACCEPTED.** A measured immutable-payload

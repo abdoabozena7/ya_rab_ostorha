@@ -4,6 +4,9 @@
 The [later freezing continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) records
 updated driving source, fresh software verification and unchanged native
 acceptance blockers. Measurements below retain their original scope.
+The [later budget clarification](EGYPT_RESOURCE_ACCOUNTING_20261027.md)
+distinguishes conservative fully charged reservations from actual elapsed
+charges; the 795-second request is not a proven unavoidable shortfall.
 
 ## A. Overall status
 

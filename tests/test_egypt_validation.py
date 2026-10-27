@@ -116,6 +116,50 @@ class IsolatedEgyptTests(EgyptValidationFixture):
         self.assertEqual(self.budget.status()['development_remaining_s'], 0)
         self.assertEqual(self.budget.status()['acceptance_remaining_s'], 7200)
 
+    def test_sequential_diagnostics_reuse_unspent_headroom_without_an_extension(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6074.987, 'prior-work'):
+            self.now += 6074.987
+        initial = self.budget.status()
+        self.assertAlmostEqual(initial['diagnostic_remaining_s'], 645.013)
+        plan = [{'seed': 2707, 'first_mode': 'ROBOSPHERE'}]
+        for index, elapsed in enumerate((80., 80., 200.)):
+            before = self.budget.status()
+            check = runner.preflight(plan, 180., before, diagnostic=True)
+            self.assertTrue(check['can_run'])
+            self.assertEqual(check['required_reservation_s'], 480.)
+            with self.budget.experiment('DEVELOPMENT', 480., 'diagnostic-' + str(index),
+                                        purpose='DIAGNOSTIC') as ticket:
+                ticket['cleanup_verified'] = True
+                self.now += elapsed
+            self.assertFalse(self.owner.exists())
+        final = self.budget.status()
+        self.assertAlmostEqual(final['diagnostic_remaining_s'], 645.013 - 360.)
+        self.assertAlmostEqual(final['charged_s'] - initial['charged_s'], 360.)
+        self.assertEqual(final['extensions'], initial['extensions'])
+        self.assertEqual(final['acceptance_remaining_s'], 7200.)
+        self.assertGreaterEqual(final['development_remaining_s'], 7200. + 480.)
+
+    def test_third_diagnostic_cannot_borrow_protected_time_when_actual_charges_exceed_headroom(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6074.987, 'prior-work'):
+            self.now += 6074.987
+        for index in range(2):
+            with self.budget.experiment('DEVELOPMENT', 480., 'diagnostic-' + str(index),
+                                        purpose='DIAGNOSTIC') as ticket:
+                ticket['cleanup_verified'] = True
+                self.now += 82.507
+        status = self.budget.status()
+        self.assertAlmostEqual(status['diagnostic_remaining_s'], 479.999)
+        check = runner.preflight([{'seed': 3709, 'first_mode': 'NORMAL'}], 180.,
+                                 status, diagnostic=True)
+        self.assertFalse(check['can_run'])
+        with self.assertRaisesRegex(ValueError, 'preserve'):
+            with self.budget.experiment('DEVELOPMENT', 480., 'third-diagnostic', purpose='DIAGNOSTIC'):
+                self.fail('Spent the protected matrix/browser allowance')
+        self.assertEqual(self.budget.status()['sha256'], status['sha256'])
+        self.assertFalse(self.owner.exists())
+
     def test_separate_allowance_never_resets_or_charges_old_ledgers(self):
         research = self.root / 'research.sqlite'
         rule = self.root / 'rule.json'

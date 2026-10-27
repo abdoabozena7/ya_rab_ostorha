@@ -1,0 +1,171 @@
+{
+  "created_at_utc": "2026-10-27T20:01:27.382143+00:00",
+  "scope": "READ_ONLY_RESOURCE_ACCOUNTING_AND_ISOLATED_LEDGER_REGRESSIONS",
+  "status": "BLOCKED_NOT_ACCEPTED",
+  "overall_goal_complete": false,
+  "native_acceptance": false,
+  "native_execution_performed": false,
+  "runtime_driving_changes": false,
+  "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+  "base_commit": "0fed9410802b230263d8003af938ed8fb9a0af83",
+  "budget_correction": {
+    "minimum_reservation_per_target_s": 480,
+    "current_diagnostic_remaining_s": 645.0129999995697,
+    "one_minimum_reservation_fits_budget_alone": true,
+    "actual_elapsed_charged_on_context_finalization": true,
+    "crash_charge_and_cleanup_ownership_checks_unchanged": true,
+    "first_two_combined_charge_limit_to_admit_third_s": 165.01299999956973,
+    "three_fully_charged_reservations_s": 1440,
+    "conservative_gap_s": 794.9870000004303,
+    "additional_diagnostic_seconds_requested_not_authorized": 795,
+    "extension_proven_unavoidable": false,
+    "native_sequence_feasibility_measured": false,
+    "fixture_success": "Three480s reservations with actual80+80+200s charges fit without changing caps",
+    "fixture_refusal": "First two actual82.507+82.507s charges leave479.999s; third480s reservation rejected without protected-time borrowing",
+    "important": "Budget-only readiness is not a resource plan, native timing pass or execution authorization; storage remains failed"
+  },
+  "compression_capacity_bound": {
+    "created_at_utc": "2026-10-27T19:58:47.9847279Z",
+    "scope": "READ_ONLY_RECORDING_COMPRESSION_CAPACITY_UPPER_BOUND",
+    "recording_root": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city",
+    "recordings_measured": 511,
+    "finalized_recordings": 509,
+    "all_finalized_uncompressed_npy_bin_jsonl_bytes": 4074105155,
+    "upper_bound_note": "Deliberately overestimates supported compression: recursively counts all such files, including possible manifests and retired/ineligible recordings; actual compression output is nonzero and RGB/video excluded",
+    "D_free_bytes": 100371116032,
+    "provisional_required_free_bytes": 140049743825,
+    "current_deficit_bytes": 39678627793,
+    "minimum_gap_after_impossible_zero_byte_compression": 35604522638,
+    "compression_can_close_gap": false,
+    "storage_mutations_performed": false,
+    "native_execution_performed": false,
+    "native_acceptance": false
+  },
+  "latest_storage_snapshot": {
+    "D_free_bytes": 100370800640,
+    "provisional_required_free_bytes": 140049743825,
+    "D_deficit_bytes_at_snapshot": 39678943185,
+    "impossible_zero_byte_compression_recovery_upper_bound": 4074105155,
+    "minimum_gap_after_impossible_zero_byte_compression": 35604838030,
+    "storage_passed": false,
+    "requirement_recomputed": false,
+    "recordings_mutated": false
+  },
+  "diagnostic_budget_only_preflight": {
+    "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+    "can_run": true,
+    "engine_started": false,
+    "reason": "Authorized phase can cover the requested matrix",
+    "required_reservation_s": 480.0,
+    "software_gate": {
+      "passed": true,
+      "reason": "Current-source software and replay gate passed",
+      "record": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\software-gate.json"
+    },
+    "diagnostic_gate": {
+      "passed": false,
+      "passed_targets": [],
+      "attempted_targets": []
+    },
+    "authorization_unchanged": true
+  },
+  "software": {
+    "python_total": 1051,
+    "python_passed": 1047,
+    "optional_skips": 4,
+    "duration_s": 35.373,
+    "new_regressions": 2,
+    "exit_code": 0,
+    "javascript_build_replay": "UNCHANGED_FROM_SOURCE_IDENTICAL_FREEZE_CHECKPOINT"
+  },
+  "budgets": {
+    "current": {
+      "kind": "EGYPT_NATIVE_VALIDATION_V1",
+      "authorized": true,
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+      "cap_s": 21600.0,
+      "development_cap_s": 14400.0,
+      "acceptance_cap_s": 7200.0,
+      "base_cap_s": 14400.0,
+      "extensions": [
+        {
+          "id": "EGYPT_DEVELOPMENT_20261027",
+          "phase": "DEVELOPMENT",
+          "seconds": 7200.0,
+          "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+          "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+        }
+      ],
+      "charged_s": 6074.98700000043,
+      "remaining_s": 15525.01299999957,
+      "development_remaining_s": 8325.01299999957,
+      "diagnostic_remaining_s": 645.0129999995697,
+      "protected_development_matrix_s": 7200.0,
+      "protected_browser_s": 480.0,
+      "acceptance_remaining_s": 7200.0,
+      "unfinished": 0,
+      "acceptance_attempted": false,
+      "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+    },
+    "unchanged_files": [
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\budget.sqlite",
+        "bytes": 49152,
+        "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+      },
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\allowance.json",
+        "bytes": 275,
+        "sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be"
+      },
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\budget.sqlite",
+        "bytes": 40960,
+        "sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"
+      }
+    ],
+    "extension_applied": false
+  },
+  "simulator_ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "artifacts": [
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\compression-capacity-bound.json",
+      "bytes": 226623,
+      "sha256": "84f3d6ab1c16cdf51acebd2a7a704d7190072be766ffdb2527c891a4594b5360"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\diagnostic-capacity-preflight.json",
+      "bytes": 59367,
+      "sha256": "055823d503dcf7ea7808073b73a06c645b19f3e0aef9d17c9c794c82ad4c69df"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\resource-accounting-python-tests.log",
+      "bytes": 14488,
+      "sha256": "0eb0a9757d69e721f81c03084c46e5edf92576d0db49ac667dab3f98d5881f56"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\tests\\test_egypt_validation.py",
+      "bytes": 42942,
+      "sha256": "b06ee5eab757099804a75046740424e7491c33804ec6bb3a8837b7fd94c2224d"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\backend\\learning\\egypt_budget.py",
+      "bytes": 18962,
+      "sha256": "dee1c269fe2da11664e0fe3cf3cb9bdaf78ba109cba891d7ba82d02c5f8ddbc2"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\scripts\\native\\validate_egypt_urban.py",
+      "bytes": 32548,
+      "sha256": "3965fe1157f1c662c78e74eeb0d37df18a27968065e269fcf0dae5fc3b947bd4"
+    }
+  ],
+  "remaining_blockers": [
+    "Storage provision or supported verified integration; existing compression cannot close gap",
+    "Native wall-time feasibility is unmeasured; conservative additional time request remains unapproved",
+    "No current-source native diagnostics, completed routes/overtakes or repaired Normal queue outcome",
+    "Complete DEVELOPMENT, one-shot ACCEPTANCE and final native browser/cleanup remain unexecuted"
+  ]
+}

@@ -14,6 +14,11 @@ The [latest queue checkpoint](EGYPT_QUEUE_CONTINUATION_20261027.md) records
 1045 Python passes with 4 optional skips on unchanged driving source and
 separates completed event holds from later physical queues. It does not repair
 or certify native route progress.
+The [resource-accounting clarification](EGYPT_RESOURCE_ACCOUNTING_20261027.md)
+adds two temporary-ledger regressions (1047 Python passes / 4 skips): one
+minimum diagnostic reservation fits today's budget, three depend on actual
+elapsed charges. The conservative 795-second request is not a proven required
+increase; storage remains independently insufficient.
 
 | Evidence class | What may be said |
 | --- | --- |

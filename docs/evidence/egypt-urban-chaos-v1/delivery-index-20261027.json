@@ -44,6 +44,21 @@
     "python_optional_skips": 4,
     "scope": "Historical DEVELOPMENT queue attribution only; both original holds completed before final observation windows. No native progress repair, timing improvement, density compliance or new acceptance is established."
   },
+  "latest_resource_accounting_checkpoint": {
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\resource-accounting-20261027.json",
+    "verification_sha256": "11b94d733d136bb4fb5fcdff208084dcea44f9cb5f372e439e3c639754c37ba8",
+    "report": "docs\\EGYPT_RESOURCE_ACCOUNTING_20261027.md",
+    "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+    "runtime_driving_changes": false,
+    "python_total": 1051,
+    "python_passed": 1047,
+    "python_optional_skips": 4,
+    "one_minimum_diagnostic_fits_budget_alone": true,
+    "three_diagnostic_sequence_feasibility_measured": false,
+    "additional_795_seconds_proven_unavoidable": false,
+    "existing_compression_can_close_storage_gap": false,
+    "scope": "Corrected sequential reservation versus actual elapsed charging interpretation; two isolated ledger regressions, fresh full Python discovery, read-only single-diagnostic preflight and compression capacity upper bound. Storage still fails; no native execution or budget increase."
+  },
   "path_contract": {
     "relative_to": "repository root",
     "separator": "Windows backslash",
@@ -78,6 +93,11 @@
     }
   },
   "preserved_evidence_chain": [
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\resource-accounting-20261027.json",
+      "report": "docs\\EGYPT_RESOURCE_ACCOUNTING_20261027.md",
+      "scope": "Budget-only readiness is not storage or native acceptance. One480s reservation fits; admitting the third requires first-two actual charges<=165.013s. Existing compression cannot close measured storage gap."
+    },
     {
       "path": "docs\\evidence\\egypt-urban-chaos-v1\\queue-continuation-20261027.json",
       "report": "docs\\EGYPT_QUEUE_CONTINUATION_20261027.md",
@@ -465,7 +485,7 @@
     "acceptance_attempted": false,
     "budget_sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854",
     "current_resource_resolution": "READ_ONLY_PREFLIGHT_COMPLETE_STORAGE_AND_NATIVE_PREREQUISITES_BLOCKED",
-    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\queue-continuation-20261027.json",
+    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\resource-accounting-20261027.json",
     "note": "Full-route acceptance sizing must use a complete successful development matrix; no ledger reset, additional authorization or archive deletion is implied."
   },
   "required_ordered_execution": {

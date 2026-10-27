@@ -27,6 +27,11 @@ The [latest Normal queue audit](docs/EGYPT_QUEUE_CONTINUATION_20261027.md)
 adds four offline regressions: **1,045 Python tests passed, 4 optional skips**
 on unchanged driving source. Both historical event holds had completed before
 the final queue stops; their downstream physical cause remains unverified.
+The [resource-accounting checkpoint](docs/EGYPT_RESOURCE_ACCOUNTING_20261027.md)
+clarifies that one minimum diagnostic reservation fits, while three depend on
+actual charges; the 795-second request is conservative, not proven unavoidable.
+Storage still fails even the maximum possible existing compression recovery.
+Latest Python discovery: **1,047 passed, 4 optional skips**.
 
 ### Choose an execution mode
 
@@ -66,7 +71,7 @@ Saved MP4s can also be played directly without CARLA or a backend.
 - Egypt requires Town10HD_Opt, LOW/D3D12, retained evidence storage and an
   existing authorized reservation. Storage still fails the provisional
   130.431 GiB requirement; the latest snapshot and exact remaining deficit
-  are in the [latest queue checkpoint](docs/EGYPT_QUEUE_CONTINUATION_20261027.md#remaining-blockers-and-next-admissible-action).
+  are in the [resource-accounting checkpoint](docs/EGYPT_RESOURCE_ACCOUNTING_20261027.md#compression-cannot-close-storage).
   The [storage investigation](docs/EGYPT_STORAGE_CONTINUATION_20261027.md)
   explains why an unverified C/D junction is not a supported solution.
 
