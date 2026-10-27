@@ -1,0 +1,371 @@
+{
+  "created_at_utc": "2026-10-27T21:22:32.119961+00:00",
+  "base_commit": "03f3695ff5bc520da68e0d6059d5a677a67ae8dc",
+  "scope": "PASSED_FIRST_ORDERED_NATIVE_PROTECTED_DIAGNOSTIC_NOT_ROUTE_ACCEPTANCE",
+  "status": "PROTECTED_DIAGNOSTIC_PASSED_NEXT_GATE_BUDGET_BLOCKED",
+  "source_sha256": "a7ece445d9eab71d4328f08bb1b25e245499eb39539461b573646271b3777933",
+  "source_unchanged": true,
+  "overall_goal_complete": false,
+  "native_acceptance": false,
+  "diagnostic_passed": true,
+  "native_runs_executed": 1,
+  "target": {
+    "seed": 2707,
+    "first_mode": "ROBOSPHERE"
+  },
+  "reservation_s": 600,
+  "native_reservation_actual_charge_s": 218.0779999999795,
+  "charged_compression_and_checks_s": 83.93799999996554,
+  "offline_rebalance_wall_s_separately_recorded": 35.79700000002049,
+  "offline_rebalance_reserved_or_changed_native_ledger": false,
+  "run": {
+    "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_ec5dd4a906a848c0bacfbee1780e8d32",
+    "duration_s": 30.000000447034836,
+    "distance_m": 64.75613429681773,
+    "route_completion_percent": 8.844293881543841,
+    "collisions": 0,
+    "status": "INTERRUPTED",
+    "reason": "diagnostic_goal_reached",
+    "completed_maneuvers": [],
+    "maximum_sensor_sim_age_s": 0.0,
+    "maximum_sensor_wall_age_s": 0.5676908000605181,
+    "sensor_coverage_percent": 99.50083194675541,
+    "sensor_age_samples": 632,
+    "missing_current_sensor_frames": 0,
+    "simulation_wall_ratio": 0.24501831426933596,
+    "control_latency": {
+      "clock": "HOST_MONOTONIC",
+      "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+      "samples": 601,
+      "p95_ms": 184.52480004634708,
+      "p99_ms": 212.4108000425622,
+      "maximum_ms": 229.6567999292165,
+      "deadline_exceeded_frames": 0,
+      "unmeasured_frames": 0,
+      "unaligned_frames": 0,
+      "carla_call_p95_ms": 0.09810004848986864,
+      "carla_call_p99_ms": 0.17140002455562353
+    }
+  },
+  "timing_populations": {
+    "clock": "HOST_MONOTONIC_FIRST_REQUIRED_RECEIPT_TO_APPLICATION_CHECK",
+    "driving_gate_population": {
+      "samples": 601,
+      "first_frame": 179,
+      "last_frame": 779,
+      "p95_ms": 184.52480004634708,
+      "p99_ms": 212.4108000425622,
+      "maximum_ms": 229.6567999292165,
+      "frames_over_250ms": []
+    },
+    "all_submissions_including_held_prefix_and_post_stop": {
+      "samples": 633,
+      "first_frame": 148,
+      "last_frame": 780,
+      "p95_ms": 185.09496005717662,
+      "p99_ms": 217.33545601367922,
+      "maximum_ms": 567.4087000079453,
+      "frames_over_250ms": [
+        148,
+        178
+      ]
+    },
+    "held_prefix_only_not_a_driving_gate": {
+      "samples": 31,
+      "first_frame": 148,
+      "last_frame": 178,
+      "p95_ms": 214.7990000084974,
+      "p99_ms": 483.9787000091744,
+      "maximum_ms": 567.4087000079453,
+      "frames_over_250ms": [
+        148,
+        178
+      ]
+    },
+    "post_stop_not_a_driving_gate": {
+      "samples": 1,
+      "first_frame": 780,
+      "last_frame": 780,
+      "p95_ms": 100.20659992005676,
+      "p99_ms": 100.20659992005676,
+      "maximum_ms": 100.20659992005676,
+      "frames_over_250ms": []
+    },
+    "logical_controls_jsonl_sha256": "cc54b48ea952d062e26f1ef1c061cd59ac06a1c627e2d60487329f43d4fa8dbe",
+    "native_async_equivalence_claim": false
+  },
+  "diagnostic_assessment": {
+    "passed": true,
+    "gates": {
+      "measured_diagnostic_goal": true,
+      "protected_without_contact": true,
+      "no_control_timeout": true,
+      "sensor_latency_targets": true,
+      "clean_worker_exit": true,
+      "exports_closed": true,
+      "saved_video_playback": true,
+      "independent_cleanup": true,
+      "engine_exited": true,
+      "source_unchanged": true
+    },
+    "native_acceptance": false
+  },
+  "density_and_motion": {
+    "density_verified": true,
+    "motion_verified": true,
+    "audit": {
+      "frame_id": 779,
+      "counts": {
+        "vehicles": {
+          "total": 60,
+          "near_120m": 20,
+          "front_frustum_100m": 15,
+          "moving_near": 1,
+          "moving_front_frustum": 0,
+          "moving_total": 13
+        },
+        "pedestrians": {
+          "total": 100,
+          "near_120m": 77,
+          "front_frustum_100m": 35,
+          "moving_near": 67,
+          "moving_front_frustum": 32,
+          "moving_total": 87
+        }
+      },
+      "requested": {
+        "vehicles": 60,
+        "pedestrians": 100
+      },
+      "passed": true,
+      "pending": false,
+      "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+      "density_passed": true,
+      "motion_passed": true,
+      "motion_measurement_ready": true,
+      "motion_window_s": 1.0000000149011612,
+      "motion_sample_age_s": 0.0,
+      "observations": {},
+      "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+      "series": {
+        "samples": 31,
+        "density_failures": 0,
+        "motion_samples": 30,
+        "motion_failures": 0
+      },
+      "sustained_passed": true
+    }
+  },
+  "cleanup": {
+    "cleanup_confirmed": true,
+    "exports_closed": true,
+    "native_worker_exit_code": 0,
+    "independent_cleanup_probe": {
+      "synchronous": false,
+      "remaining_project_actors": [],
+      "passed": true
+    },
+    "simulator_exit_confirmed": true,
+    "video_playback_after_exit": {
+      "passed": true,
+      "checks": {
+        "ROBOSPHERE": {
+          "sha256_verified": true,
+          "first_and_last_decode": [
+            true,
+            true
+          ],
+          "duration_s": 30.100000448524952
+        }
+      },
+      "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+    },
+    "attempts_retained": true
+  },
+  "compression": {
+    "status": "COMPLETE",
+    "files_compressed": 3803,
+    "saved_bytes": 795852928,
+    "elapsed_s": 75.18700000003446
+  },
+  "storage_after_compression_and_offline_rebalance": {
+    "source": "MEASURED_EGYPT_DEVELOPMENT_RECORDINGS",
+    "trips": 12,
+    "estimated_trip_sim_s": 183.45000273287297,
+    "concurrent_raw_trips": 2,
+    "recording_bytes": 21677515477,
+    "retained_closed_recording_bytes": 60447740346,
+    "compression_between_pairs_required": true,
+    "temporary_export_bytes": 3222445455,
+    "export_estimate_source": "MEASURED_READY_VIDEOS",
+    "export_bytes": 5155483073,
+    "matrix_estimate_bytes": 90503184353,
+    "margin_fraction": 0.5,
+    "reserve_bytes": 4294967296,
+    "required_free_bytes": 140049743825,
+    "free_bytes": 142193082368,
+    "passed": true
+  },
+  "budget_after": {
+    "kind": "EGYPT_NATIVE_VALIDATION_V1",
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+    "cap_s": 21600.0,
+    "development_cap_s": 14400.0,
+    "acceptance_cap_s": 7200.0,
+    "base_cap_s": 14400.0,
+    "extensions": [
+      {
+        "id": "EGYPT_DEVELOPMENT_20261027",
+        "phase": "DEVELOPMENT",
+        "seconds": 7200.0,
+        "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+        "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+      }
+    ],
+    "charged_s": 6377.003000000375,
+    "remaining_s": 15222.996999999625,
+    "development_remaining_s": 8022.996999999625,
+    "diagnostic_remaining_s": 342.9969999996247,
+    "protected_development_matrix_s": 7200.0,
+    "protected_browser_s": 480.0,
+    "acceptance_remaining_s": 7200.0,
+    "unfinished": 0,
+    "acceptance_attempted": false,
+    "sha256": "93f6bfa9b8417593633f18f86373ea479fbe82ab467feb7099f5faceaa752783"
+  },
+  "funding_bounds": {
+    "diagnostic_remaining_s": 342.9969999996247,
+    "unavoidable_next_minimum_480s_admission_gap_s": 137.00300000037532,
+    "rounded_next_minimum_admission_gap_s": 138,
+    "next_600s_window_gap_s": 257.0030000003753,
+    "rounded_next_600s_window_gap_s": 258,
+    "conservative_two_remaining_600s_windows_gap_s": 857.0030000003753,
+    "conservative_two_window_rounded_gap_s": 858,
+    "allocation_if_separately_authorized": "Existing 342.997 plus 858 seconds would cover two 600-second diagnostic reservations (Normal1703 then3709), each 300 execution plus 300 cleanup, with 0.997 seconds headroom if both fully charged; unused time returns only on finalization",
+    "not_a_proven_minimum_total_extension": true,
+    "protected_windows_borrowed": false,
+    "budget_increase_authorized_or_applied": false,
+    "gates_depending_on_additional_authorization": [
+      "Normal1703",
+      "Normal3709",
+      "ordered DEVELOPMENT prerequisite"
+    ]
+  },
+  "next_target_read_only_preflights": [
+    {
+      "artifact": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\recording-relocations\\normal1703-after-maintenance-180s.json",
+        "bytes": 61421,
+        "sha256": "d0210f1325a5856466322d3fd2eff9ec71e1733eda9dd45a0cc29be6810cfa10"
+      },
+      "can_run": false,
+      "engine_started": false,
+      "reason": "Pending: authorized phase cannot cover this matrix; no allowance was reset or extended",
+      "required_reservation_s": 480.0,
+      "authorization_unchanged": true
+    },
+    {
+      "artifact": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\recording-relocations\\normal1703-after-maintenance-300s.json",
+        "bytes": 61421,
+        "sha256": "9307d558a012f90fad93420aee4fd986c8224f12f1fb055ebe637fdb170e4615"
+      },
+      "can_run": false,
+      "engine_started": false,
+      "reason": "Pending: authorized phase cannot cover this matrix; no allowance was reset or extended",
+      "required_reservation_s": 600.0,
+      "authorization_unchanged": true
+    }
+  ],
+  "simulator_ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "native_processes": [],
+  "artifacts": [
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\recording-relocations\\protected2707-native.json",
+      "bytes": 576181,
+      "sha256": "8792ac4942f06657592435d5b8d6963f949fb5dd235ddbdd8c3c12ef66eca87d"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\recording-relocations\\protected2707-native.log",
+      "bytes": 766,
+      "sha256": "62b664e87be41fbb555c23d66152863ffa657ec132fca1f2907beec271c8e628"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\57e71d2c6d0a476384305901e6fcb69b\\report.json",
+      "bytes": 3889605,
+      "sha256": "54927b2f07b9bee94ce676d61966037227672b7b07fd0b08299df7a287577fed"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\57e71d2c6d0a476384305901e6fcb69b\\source.zip",
+      "bytes": 623600,
+      "sha256": "b353144c3e837fe40616a3fb371c4ae81e67a666d64ffca3f21df5d014ab93dc"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\57e71d2c6d0a476384305901e6fcb69b\\samples.jsonl",
+      "bytes": 6550401,
+      "sha256": "334bc4a50f1fc6b8435f6add8338ff4c32ce680438caeedf96e96621e82bf72e"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\57e71d2c6d0a476384305901e6fcb69b\\worker.log",
+      "bytes": 928,
+      "sha256": "e28e638b8968dbc6a05aec7f4cd4f265b8496c722724a9cad419b9dd5663fa71"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\recording-relocations\\protected2707-compression.json",
+      "bytes": 3829,
+      "sha256": "f80e7b4f502a1b286f1eeae98f0d38097152d716328e546a30ea408ed98c0bea"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\recording-relocations\\protected2707-offline-rebalance.json",
+      "bytes": 1602,
+      "sha256": "10a7bdb58b6458e57a15376f94bf3edf90ce35de13b4a814d2f02fc6e85d90ac"
+    },
+    {
+      "path": "C:\\Users\\A-plus\\AppData\\Local\\ya-rab-ostorha\\recordings\\run_ec5dd4a906a848c0bacfbee1780e8d32\\metadata.json",
+      "bytes": 362536,
+      "sha256": "0b2f1316290a4f125d86d1393ba539a9e32e38be8d05b2be959477fb5625dbc8"
+    },
+    {
+      "path": "C:\\Users\\A-plus\\AppData\\Local\\ya-rab-ostorha\\recordings\\run_ec5dd4a906a848c0bacfbee1780e8d32\\recording-status.json",
+      "bytes": 277,
+      "sha256": "83fa5caec200a4c61b1eaf0452ac3804d74b48c4f0d6b0882ce430b0a4aebcc3"
+    },
+    {
+      "path": "C:\\Users\\A-plus\\AppData\\Local\\ya-rab-ostorha\\recordings\\run_ec5dd4a906a848c0bacfbee1780e8d32\\video-status.json",
+      "bytes": 1504,
+      "sha256": "c9893e295a070651bff9e0dfb37b1bc9fa8c89a90484b33103e31eabec8cc3fa"
+    },
+    {
+      "path": "C:\\Users\\A-plus\\AppData\\Local\\ya-rab-ostorha\\recordings\\run_ec5dd4a906a848c0bacfbee1780e8d32\\telemetry\\comparison-controls.jsonl.gz",
+      "bytes": 77794204,
+      "sha256": "7d77e188f59f8968426cdd25f7484c68a90ee0008721e06d6832167f3461f918"
+    },
+    {
+      "path": "C:\\Users\\A-plus\\AppData\\Local\\ya-rab-ostorha\\recordings\\run_ec5dd4a906a848c0bacfbee1780e8d32\\lossless-compression.jsonl",
+      "bytes": 1426617,
+      "sha256": "553b8b178ddfe25feb50e31cb7ccb41bdbd37a73a065c1962842c3c29c8f223c"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\budget.sqlite",
+      "bytes": 49152,
+      "sha256": "93f6bfa9b8417593633f18f86373ea479fbe82ab467feb7099f5faceaa752783"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\allowance.json",
+      "bytes": 275,
+      "sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be"
+    }
+  ],
+  "limits": [
+    "This is one30simsecond prefix,64.756m and no completed overtake; not a full route or native acceptance",
+    "All 633 submissions including 31 held-prefix and 1 post-stop records remain reported; frames 148 and 178 exceed 250ms outside the driving gate",
+    "One native result is not causal attribution to freezing or storage, a statistical improvement claim or all-seed assurance",
+    "Full Normal outcomes, DEVELOPMENT, one-shot ACCEPTANCE and final native browser remain unexecuted",
+    "Source unchanged: do not retry this passed target or tune on holdout",
+    "Budget is now a demonstrated next-admission blocker; original no-increase restriction still holds"
+  ]
+}

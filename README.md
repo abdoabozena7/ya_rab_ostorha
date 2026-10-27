@@ -8,8 +8,14 @@ An independent execution barrier checks the proposed control and stopping path.
 The dashboard records complete-driver comparisons and preserves results/videos.
 **The Egypt driving policy uses neither RL nor a VLM.**
 
-**Egypt Urban Chaos V1 is NOT ACCEPTED and is not the default.** Historical
-protected diagnostic 19 covered 63.946 m / 30 simulation seconds with zero
+**Egypt Urban Chaos V1 is NOT ACCEPTED and is not the default.** The
+[current-source protected diagnostic](docs/EGYPT_PROTECTED_DIAGNOSTIC_20261027.md)
+passed all diagnostic gates: 601 driving timings, p95 **184.525 ms**, p99
+**212.411 ms**, maximum **229.657 ms**, zero contacts over 64.756 m / 30 simulation
+seconds. It is not a full route or acceptance. Storage admission passes, but
+Normal 1703 is budget-blocked: **342.997 s** spendable versus a **480 s** minimum
+reservation. No allowance increase or protected-window borrowing was applied.
+Historical protected diagnostic 19 covered 63.946 m / 30 simulation seconds with zero
 contacts, but failed timing: p95 215.750 ms, p99 234.514 ms and two frames over
 250 ms. It completed no overtakes and is not a completed route. Normal's retained
 stalls remain unresolved natively. The ordered current-source DEVELOPMENT and
@@ -28,20 +34,22 @@ adds four offline regressions: **1,045 Python tests passed, 4 optional skips**
 on unchanged driving source. Both historical event holds had completed before
 the final queue stops; their downstream physical cause remains unverified.
 The [resource-accounting checkpoint](docs/EGYPT_RESOURCE_ACCOUNTING_20261027.md)
-clarifies that one minimum diagnostic reservation fits, while three depend on
+clarifies that one minimum diagnostic reservation fitted that snapshot, while three depended on
 actual charges; the 795-second request is conservative, not proven unavoidable.
 Existing compression alone could not close the storage deficit.
 The [latest diagnostic admission checkpoint](docs/EGYPT_DIAGNOSTIC_STORAGE_20261027.md)
 enforces storage for diagnostics as well as matrices. Fresh checks on that
 source: **210 JavaScript passes, 1,048 Python passes, 4 optional skips**, build
 and all 30 controlled-age complete payloads passed. Real read-only diagnostic
-admission now correctly refuses insufficient storage without native execution.
+admission then correctly refused insufficient storage without native execution.
 The [latest preserved-recording relocation](docs/EGYPT_RECORDING_RELOCATION_20261027.md)
 resolves provisional capacity: 165 closed recordings retain every file and
-original path, D now has 142.22 GB free against the unchanged 140.05 GB gate.
+original path, with 142.22 GB free on D against the unchanged 140.05 GB gate.
 Fresh verification: **210 JavaScript passes, 1,060 Python passes, 4 optional
 skips**, build and all 30 controlled-age complete payloads passed.
-Read-only first-diagnostic admission now passes; **native acceptance remains pending**.
+First-diagnostic admission passed at that checkpoint. The newer native report
+above adds the diagnostic pass and 166th preserved recording; **native acceptance
+remains pending**.
 
 ### Choose an execution mode
 

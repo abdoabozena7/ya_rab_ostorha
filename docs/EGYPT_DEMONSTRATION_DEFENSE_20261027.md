@@ -3,8 +3,9 @@
 ## Status and claim boundaries
 
 **NOT ACCEPTED. This is a presentation/reproduction guide, not a native execution
-authorization or completion certificate.** No new CARLA run or browser acceptance
-was performed to write it. The [delivery index](evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)
+authorization or completion certificate.** The current protected diagnostic
+below ran once; no native browser acceptance has been performed.
+The [historical delivery index](evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)
 keeps source identities, measurements, failed attempts and local artifact paths.
 The [freezing continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) and
 [fresh verification](evidence/egypt-urban-chaos-v1/freeze-continuation-verification-20261027.json)
@@ -16,9 +17,9 @@ separates completed event holds from later physical queues. It does not repair
 or certify native route progress.
 The [resource-accounting clarification](EGYPT_RESOURCE_ACCOUNTING_20261027.md)
 adds two temporary-ledger regressions (1047 Python passes / 4 skips): one
-minimum diagnostic reservation fits today's budget, three depend on actual
+minimum diagnostic reservation fitted that snapshot's budget, three depend on actual
 elapsed charges. The conservative 795-second request is not a proven required
-increase; storage remains independently insufficient.
+increase; storage was independently insufficient at that checkpoint.
 The [latest admission checkpoint](EGYPT_DIAGNOSTIC_STORAGE_20261027.md) applies
 the existing storage gate to diagnostics too. It refreshes offline software
 verification on the new gate fingerprint; no driving policy or native result
@@ -27,11 +28,15 @@ The [preserved-recording relocation checkpoint](EGYPT_RECORDING_RELOCATION_20261
 now resolves provisional storage through verified preservation of 165 closed
 recordings and original paths. New runs remain on D; full successful DEVELOPMENT
 must still determine final acceptance sizing.
+The [current native checkpoint](EGYPT_PROTECTED_DIAGNOSTIC_20261027.md) records
+the protected diagnostic pass and the 166th preserved recording. Storage passes;
+the next Normal 1703 diagnostic is budget-blocked, with 342.997 s remaining
+against its 480 s minimum reservation. No allowance increase was applied.
 
 | Evidence class | What may be said |
 | --- | --- |
 | Historical measured | Dated reports certify only their recorded source and protocol. Attempts 18/19 are short failed DEVELOPMENT diagnostics, not accepted route runs. |
-| Current source | Fingerprint `a7ece445...`: 210 JavaScript passes, 1,060 Python passes with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. Verified relocation resolves provisional storage; first read-only diagnostic admission passes. Offline software/resource checks only, not native acceptance; a storage-only source change is not a driving repair or retry authorization. |
+| Current source | Fingerprint `a7ece445...`: 210 JavaScript passes, 1,060 Python passes with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. First protected native diagnostic passed: p95/p99/max 184.525/212.411/229.657 ms across 601 driving frames. Storage passes; next Normal diagnostic lacks funding. This prefix is not route acceptance; storage-only changes are not driving repairs or retry authorization. |
 | Experimental | Egypt maneuver driving remains restricted; learned research modes, the disabled path-entry predictor and shadow proposals have their own limits. |
 | Future | VLM integration, new RL training, maps and PERFORMANCE_60 acceptance are not delivered Egypt results. |
 
@@ -308,20 +313,30 @@ recreation. Focused offline safety tests do not close Gate B or Normal progress.
 
 ### Remaining execution/resource gates
 
-The latest historical snapshot left **645.013 s** diagnostic spendable,
+The pre-native historical snapshot left **645.013 s** diagnostic spendable,
 **7200 s** protected DEVELOPMENT matrix, **480 s** browser, and **7200 s**
 unused one-shot ACCEPTANCE. Historical D storage was **91.764 GiB free** versus
 **130.431 GiB provisionally required**, including 50% margin and 4 GiB reserve.
 Those are historical snapshots. The [completed read-only resource preflight](EGYPT_RESOURCE_PREFLIGHT_20261027.md)
 provides a refreshed free-space snapshot, exact deficit and conditional diagnostic
-reservation arithmetic; **storage and native prerequisites remain blocked**.
-No storage relocation, maintenance, budget extension or native trial was performed.
-Capacity must be recomputed from a complete
-successful development matrix, not a 183.45 s prefix. C free space is not D
-recording capacity. Do not delete the archive, reset ledgers or extend budgets.
+reservation arithmetic. No storage relocation, maintenance, budget extension or
+native trial was performed at that checkpoint.
 
-Required order remains software/replay + resources, protected 2707 diagnostic,
-Normal 1703 then 3709 diagnostics, complete DEVELOPMENT (1703/2707/3709,
+The [later current-source native checkpoint](EGYPT_PROTECTED_DIAGNOSTIC_20261027.md)
+supersedes those resource snapshots: protected 2707 passed; its charge was
+218.078 s, followed by 83.938 s separately charged compression/checks. The
+35.797 s offline recording relocation is separately recorded and did not change
+the ledger. Storage now passes at 142.193 GB free versus 140.050 GB required.
+Diagnostics have **342.997 s** left: the next minimum 480 s reservation is short
+**137.003 s** (138 whole seconds). Protected matrix/browser/acceptance windows
+remain untouched. No budget increase is authorized or applied.
+Capacity must still be recomputed from a complete successful development
+matrix, not a 183.45 s prefix. C free space alone is not D recording capacity;
+only verified preserved relocation resolved this gate. Do not delete the
+archive, reset ledgers or extend budgets.
+
+Software/replay, provisional resources and the current protected 2707 diagnostic
+have passed. Remaining order is Normal 1703 then 3709 diagnostics, complete DEVELOPMENT (1703/2707/3709,
 both first-driver orders: 6 pairs/12 runs), frozen-source one-shot ACCEPTANCE
 (961103/961109/961121, both orders: 6 pairs/12 runs), then protected native
 browser verification. The current ordered Normal checks, full matrices and
