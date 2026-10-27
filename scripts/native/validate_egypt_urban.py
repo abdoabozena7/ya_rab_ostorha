@@ -327,7 +327,7 @@ def run(args):
         if not diagnostic:
             if report['required_reservation_s'] != PHASE_SECONDS:
                 raise ValueError('Each full matrix reserves exactly 7200 seconds including preparation, export and cleanup')
-        if not diagnostic and report['can_run']:
+        if report['can_run']:
             try:
                 storage = storage_preflight(acceptance=args.acceptance, development=development)
                 report['storage_preflight'] = storage

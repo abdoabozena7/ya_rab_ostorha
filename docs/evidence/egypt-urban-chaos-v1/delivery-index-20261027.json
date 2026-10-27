@@ -7,14 +7,14 @@
   "scope": "Current offline continuation and retained historical evidence; not a native execution certificate",
   "current_source_verification": {
     "status": "OFFLINE_SUITES_AND_BUILD_PASSED_NATIVE_ASSURANCE_BLOCKED",
-    "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
-    "software_certificate": "output\\egypt-validation\\continuation-20261027\\software-gate.json",
-    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json",
-    "verification_sha256": "244a6010b32470eca52093c166193060a62a91f3c9ff140f8a8512ae7f800842",
-    "delivery_report": "docs\\EGYPT_FREEZE_CONTINUATION_20261027.md",
+    "source_sha256": "a0c2eb77002ee711f8ba4aedf13414e244ac52ae52db03337e34969f242a5ed0",
+    "software_certificate": "output\\egypt-validation\\diagnostic-storage-20261027\\software-gate.json",
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\diagnostic-storage-20261027.json",
+    "verification_sha256": "03d03c5a1149c4555d9a7b062c9beb8e366079d653f85508533c1a6c1328609d",
+    "delivery_report": "docs\\EGYPT_DIAGNOSTIC_STORAGE_20261027.md",
     "javascript_passed": 210,
-    "python_total": 1045,
-    "python_passed": 1041,
+    "python_total": 1052,
+    "python_passed": 1048,
     "python_optional_skips": 4,
     "dashboard_built": true,
     "bundle_syntax_passed": true,
@@ -24,7 +24,7 @@
     "controlled_shield_age_ms": 150,
     "native_deadline_replay_equivalence": false,
     "native_runs_executed_for_this_documentation": 0,
-    "note": "Updated driving source has fresh complete suites/build and exact complete-payload comparison at controlled identical ages with full preceding history. One live-graph benchmark improves freezing cost only, not native timing. A new offline software certificate was issued; no historical native result certifies this source and no native acceptance gate is closed."
+    "note": "Only native admission script changed from4486828d: diagnostics now enforce existing full-plan storage. Fresh complete suites/build and30 complete controlled-age replay payloads passed. Real read-only diagnostic preflight refuses insufficient storage, ledgers unchanged. Gate-only source change is not a driving repair or retry authorization; no native gate is closed."
   },
   "previous_delivery_checkpoint": {
     "commit": "0414f7128af22eed58d13bd362121826ca1e00ce",
@@ -93,6 +93,11 @@
     }
   },
   "preserved_evidence_chain": [
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\diagnostic-storage-20261027.json",
+      "report": "docs\\EGYPT_DIAGNOSTIC_STORAGE_20261027.md",
+      "scope": "Diagnostic storage admission hardened; refreshed suites/build,30 exact controlled-age payloads and read-only insufficient-storage refusal. No native run, capacity provision, driving repair or retry authorization."
+    },
     {
       "path": "docs\\evidence\\egypt-urban-chaos-v1\\resource-accounting-20261027.json",
       "report": "docs\\EGYPT_RESOURCE_ACCOUNTING_20261027.md",
@@ -485,7 +490,7 @@
     "acceptance_attempted": false,
     "budget_sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854",
     "current_resource_resolution": "READ_ONLY_PREFLIGHT_COMPLETE_STORAGE_AND_NATIVE_PREREQUISITES_BLOCKED",
-    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\resource-accounting-20261027.json",
+    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\diagnostic-storage-20261027.json",
     "note": "Full-route acceptance sizing must use a complete successful development matrix; no ledger reset, additional authorization or archive deletion is implied."
   },
   "required_ordered_execution": {

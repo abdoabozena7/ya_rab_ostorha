@@ -492,6 +492,32 @@ class EgyptRunnerTests(EgyptValidationFixture):
         self.assertEqual(report['required_reservation_s'], 900)
         self.assertEqual(report['protected_development_reservation_s'], 7680)
 
+    def test_diagnostic_refuses_insufficient_or_unavailable_storage_before_native_work(self):
+        for storage in (
+                {'passed': False, 'required_free_bytes': 100, 'free_bytes': 99},
+                OSError('Recording volume unavailable'),
+                ValueError('No closed development recordings')):
+            with self.subTest(storage=storage):
+                args = self.options('--diagnostic', '--development-seed', '2707', '--first', 'ROBOSPHERE',
+                                    '--seconds-per-pair', '180', '--hypothesis', 'Offline storage gate fixture')
+                before = self.budget.status()['sha256']
+                with patch.object(runner, 'storage_preflight',
+                                  **({'side_effect': storage} if isinstance(storage, Exception)
+                                     else {'return_value': storage})) as check:
+                    self.assertEqual(runner.run(args), 2)
+                check.assert_called_once_with(acceptance=False,
+                    development={'source_sha256': 'frozen', 'pairs': []})
+                report = json.loads(Path(args.report).read_text())
+                self.assertFalse(report['can_run'])
+                self.assertFalse(report['engine_started'])
+                self.assertTrue(report['authorization_unchanged'])
+                self.assertIn('disk' if isinstance(storage, dict) else 'Storage preflight unavailable', report['reason'])
+                self.assertEqual(self.budget.status()['sha256'], before)
+        self.pair_runner.assert_not_called()
+        self.handoff.assert_not_called()
+        self.assertFalse(self.owner.exists())
+        self.assertFalse((self.budget.directory / 'diagnostics.json').exists())
+
     def test_browser_ticket_reaches_stopped_server_without_allowing_foreign_dashboard(self):
         from backend.carla.stop_helper import stopped_service
         from backend.learning.egypt_budget import inherited_session_duration

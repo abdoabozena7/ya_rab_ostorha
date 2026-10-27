@@ -6,7 +6,7 @@
 authorization or completion certificate.** No new CARLA run or browser acceptance
 was performed to write it. The [delivery index](evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)
 keeps source identities, measurements, failed attempts and local artifact paths.
-The [current continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) and
+The [freezing continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) and
 [fresh verification](evidence/egypt-urban-chaos-v1/freeze-continuation-verification-20261027.json)
 record the updated-source offline checks and unresolved native prerequisites.
 The [earlier delivery](EGYPT_DELIVERY_20261027.md) retains its historical source.
@@ -19,11 +19,15 @@ adds two temporary-ledger regressions (1047 Python passes / 4 skips): one
 minimum diagnostic reservation fits today's budget, three depend on actual
 elapsed charges. The conservative 795-second request is not a proven required
 increase; storage remains independently insufficient.
+The [latest admission checkpoint](EGYPT_DIAGNOSTIC_STORAGE_20261027.md) applies
+the existing storage gate to diagnostics too. It refreshes offline software
+verification on the new gate fingerprint; no driving policy or native result
+changes.
 
 | Evidence class | What may be said |
 | --- | --- |
 | Historical measured | Dated reports certify only their recorded source and protocol. Attempts 18/19 are short failed DEVELOPMENT diagnostics, not accepted route runs. |
-| Current source | Fingerprint `4486828d...`: 210 JavaScript tests, 1,041 Python tests with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. New offline software certificate only; controlled-age replay does not reproduce native asynchronous timing. No old native result certifies this source. |
+| Current source | Fingerprint `a0c2eb77...`: 210 JavaScript passes, 1,048 Python passes with 4 optional skips, dashboard build and 30/30 exact complete saved-decision payload comparisons passed. Diagnostic storage admission now refuses insufficient capacity. Offline software certificate only; controlled-age replay does not reproduce native asynchronous timing, and a gate-only source change is not a driving repair or retry authorization. |
 | Experimental | Egypt maneuver driving remains restricted; learned research modes, the disabled path-entry predictor and shadow proposals have their own limits. |
 | Future | VLM integration, new RL training, maps and PERFORMANCE_60 acceptance are not delivered Egypt results. |
 

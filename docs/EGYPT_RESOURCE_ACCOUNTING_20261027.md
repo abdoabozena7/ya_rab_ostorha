@@ -1,5 +1,9 @@
 # Egypt resource accounting correction - 27 October 2026
 
+The later [diagnostic admission checkpoint](EGYPT_DIAGNOSTIC_STORAGE_20261027.md)
+closes the bypass described here: diagnostic admission now evaluates storage
+too. This report preserves its earlier budget-only result and source identity.
+
 **BLOCKED / NOT ACCEPTED. The overall objective remains open.** No native
 execution, real budget modification, evidence deletion or recording compression
 occurred. Driving fingerprint remains

@@ -15,7 +15,7 @@ contacts, but failed timing: p95 215.750 ms, p99 234.514 ms and two frames over
 stalls remain unresolved natively. The ordered current-source DEVELOPMENT and
 holdout ACCEPTANCE matrices and final native browser gate have not executed.
 Prior certificates do not certify source changes made after their fingerprint.
-The [current continuation report](docs/EGYPT_FREEZE_CONTINUATION_20261027.md)
+The [freezing continuation report](docs/EGYPT_FREEZE_CONTINUATION_20261027.md)
 records **210 JavaScript tests passed; 1,041 Python tests passed, 4 optional
 skips; dashboard build passed** on the updated driving source. Exact complete
 payloads match for all 30 selected saved decisions at controlled identical ages.
@@ -31,7 +31,11 @@ The [resource-accounting checkpoint](docs/EGYPT_RESOURCE_ACCOUNTING_20261027.md)
 clarifies that one minimum diagnostic reservation fits, while three depend on
 actual charges; the 795-second request is conservative, not proven unavoidable.
 Storage still fails even the maximum possible existing compression recovery.
-Latest Python discovery: **1,047 passed, 4 optional skips**.
+The [latest diagnostic admission checkpoint](docs/EGYPT_DIAGNOSTIC_STORAGE_20261027.md)
+enforces storage for diagnostics as well as matrices. Fresh checks on that
+source: **210 JavaScript passes, 1,048 Python passes, 4 optional skips**, build
+and all 30 controlled-age complete payloads passed. Real read-only diagnostic
+admission now correctly refuses insufficient storage without native execution.
 
 ### Choose an execution mode
 
@@ -71,7 +75,7 @@ Saved MP4s can also be played directly without CARLA or a backend.
 - Egypt requires Town10HD_Opt, LOW/D3D12, retained evidence storage and an
   existing authorized reservation. Storage still fails the provisional
   130.431 GiB requirement; the latest snapshot and exact remaining deficit
-  are in the [resource-accounting checkpoint](docs/EGYPT_RESOURCE_ACCOUNTING_20261027.md#compression-cannot-close-storage).
+  are in the [diagnostic admission checkpoint](docs/EGYPT_DIAGNOSTIC_STORAGE_20261027.md#real-read-only-admission-result).
   The [storage investigation](docs/EGYPT_STORAGE_CONTINUATION_20261027.md)
   explains why an unverified C/D junction is not a supported solution.
 

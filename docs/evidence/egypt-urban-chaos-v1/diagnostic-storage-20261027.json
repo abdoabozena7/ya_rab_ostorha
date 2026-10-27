@@ -1,0 +1,214 @@
+{
+  "created_at_utc": "2026-10-27T20:08:31.243255+00:00",
+  "base_commit": "ef64fb360e4e41862df8599b23d0a99e3efb54da",
+  "scope": "NATIVE_ADMISSION_STORAGE_GUARD_AND_REFRESHED_OFFLINE_VERIFICATION",
+  "status": "BLOCKED_NOT_ACCEPTED",
+  "overall_goal_complete": false,
+  "native_execution_performed": false,
+  "native_acceptance": false,
+  "source_sha256": "a0c2eb77002ee711f8ba4aedf13414e244ac52ae52db03337e34969f242a5ed0",
+  "previous_source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+  "source_manifest_delta": {
+    "scripts/native/validate_egypt_urban.py": {
+      "before": "3965fe1157f1c662c78e74eeb0d37df18a27968065e269fcf0dae5fc3b947bd4",
+      "after": "232c34f5f4f507d4e2cb462b2fdfca06b907fac209094300597e19af84a157ff"
+    }
+  },
+  "driving_policy_or_sensor_source_changed": false,
+  "software": {
+    "npm_test_exit_code": 0,
+    "javascript_tests_passed": 210,
+    "python_tests_exit_code": 0,
+    "python_tests_total": 1052,
+    "python_tests_passed": 1048,
+    "python_optional_skips": 4,
+    "python_duration_s": 35.339,
+    "frontend_build_exit_code": 0,
+    "bundle_syntax_exit_code": 0,
+    "diff_check_exit_code": 0,
+    "replay_verified": true,
+    "native_deadline_replay_equivalence": false,
+    "native_acceptance": false
+  },
+  "replays": [
+    {
+      "baseline": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\continuation-20261027\\original-baseline.json",
+        "bytes": 64357308,
+        "sha256": "e2c3a923fef906551814b74a86a8f66358f232f587cd718110643586d148a6cd"
+      },
+      "candidate": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\original-replay.json",
+        "bytes": 64357439,
+        "sha256": "4834bd0a06be013fba7b5b5650346bea47c2f0d98c1399a9a306a0b91b281ce8"
+      },
+      "comparison": {
+        "equivalent": true,
+        "differences": [],
+        "baseline_rows": 21,
+        "candidate_rows": 21
+      },
+      "history_sha256": "6a3944cbeca9f2f50ef3af6c587008d498a99f1074e0ca67711ff9cdff9946d9",
+      "history_frames": 582,
+      "clock": {
+        "received": "100 + frame_id",
+        "build_elapsed_s": 0,
+        "planning_elapsed_s": 0,
+        "behavior_age_ms": 100.0,
+        "shield_age_ms": 150.0
+      }
+    },
+    {
+      "baseline": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\continuation-20261027\\latest-baseline.json",
+        "bytes": 42628936,
+        "sha256": "0bcff7b2a01c10f7f8f2d5103ecd00ed3be71eaa687a253ae3024e2516a86229"
+      },
+      "candidate": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\latest-replay.json",
+        "bytes": 42629051,
+        "sha256": "e8923d2ab8b5c7f7a5a50dcc23fba4a207190e131e4d9b824bba719628a8b269"
+      },
+      "comparison": {
+        "equivalent": true,
+        "differences": [],
+        "baseline_rows": 9,
+        "candidate_rows": 9
+      },
+      "history_sha256": "a71819b97efc770f3335e4db8a720709f35f57a74f471e10671c092f9418a5be",
+      "history_frames": 389,
+      "clock": {
+        "received": "100 + frame_id",
+        "build_elapsed_s": 0,
+        "planning_elapsed_s": 0,
+        "behavior_age_ms": 100.0,
+        "shield_age_ms": 150.0
+      }
+    }
+  ],
+  "software_certificate": {
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\software-gate.json",
+    "bytes": 29029,
+    "sha256": "0ce131e521609158a1616ace2b9b6da59950b3fb0b4e0b131b4cded53b2c1d1a"
+  },
+  "diagnostic_preflight": {
+    "source_sha256": "a0c2eb77002ee711f8ba4aedf13414e244ac52ae52db03337e34969f242a5ed0",
+    "can_run": false,
+    "engine_started": false,
+    "reason": "Insufficient disk for the measured matrix estimate, 50% margin and 4 GiB reserve",
+    "required_reservation_s": 480.0,
+    "software_gate": {
+      "passed": true,
+      "reason": "Current-source software and replay gate passed",
+      "record": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\software-gate.json"
+    },
+    "diagnostic_gate": {
+      "passed": false,
+      "passed_targets": [],
+      "attempted_targets": []
+    },
+    "authorization_unchanged": true
+  },
+  "storage_preflight": {
+    "source": "MEASURED_EGYPT_DEVELOPMENT_RECORDINGS",
+    "trips": 12,
+    "estimated_trip_sim_s": 183.45000273287297,
+    "concurrent_raw_trips": 2,
+    "recording_bytes": 21677515477,
+    "retained_closed_recording_bytes": 60447740346,
+    "compression_between_pairs_required": true,
+    "temporary_export_bytes": 3222445455,
+    "export_estimate_source": "MEASURED_READY_VIDEOS",
+    "export_bytes": 5155483073,
+    "matrix_estimate_bytes": 90503184353,
+    "margin_fraction": 0.5,
+    "reserve_bytes": 4294967296,
+    "required_free_bytes": 140049743825,
+    "free_bytes": 100653821952,
+    "passed": false
+  },
+  "budget_only_reservation_still_fits": true,
+  "additional_budget_authorized_or_applied": false,
+  "budgets_unchanged": [
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\budget.sqlite",
+      "bytes": 49152,
+      "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\allowance.json",
+      "bytes": 275,
+      "sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\budget.sqlite",
+      "bytes": 40960,
+      "sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"
+    }
+  ],
+  "simulator_ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "regression_cases": [
+    "insufficient_space",
+    "storage_io_error",
+    "missing_usable_development_samples"
+  ],
+  "regression_guarantees": [
+    "no_budget_charge",
+    "no_ownership",
+    "no_handoff",
+    "no_native_pair",
+    "no_attempt_record"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\python-tests.log",
+      "bytes": 15584,
+      "sha256": "9f68ce85937e0ce74e9dec71f7d0b8e127b9e43b660f8e55a5a524eb34767778"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\javascript-tests.log",
+      "bytes": 94880,
+      "sha256": "b4bb7b39fc2a861a74dfd37ec625c793d86a7bceaa723f67a985a2ed224c1c23"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\dashboard-build.log",
+      "bytes": 968,
+      "sha256": "a26680623fac4f3aef43f60623e642e2f6812c07c658f367ac563fb446d81e65"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\diagnostic-preflight.json",
+      "bytes": 75535,
+      "sha256": "d68d91bc21351f9e304ca1c7af786a03ce60f48b717bb408d07034065e783683"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\diagnostic-preflight.log",
+      "bytes": 242,
+      "sha256": "e048eb0d25b916f2c8ffe612dda8e9b0289c139f2d324b10ceac49ddb3afc5fa"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\diagnostic-storage-20261027\\software-gate-before-storage-check.json",
+      "bytes": 31114,
+      "sha256": "59f190d0fed886056a85dedc4d8783e9ae7060f286afd78cba92129bddf06562"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\scripts\\native\\validate_egypt_urban.py",
+      "bytes": 32529,
+      "sha256": "232c34f5f4f507d4e2cb462b2fdfca06b907fac209094300597e19af84a157ff"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\tests\\test_egypt_validation.py",
+      "bytes": 44702,
+      "sha256": "d8227a83ee98f82dafde9fdd291dac736a8259712d3e2bb3ad19e7fd818c9e72"
+    }
+  ],
+  "limitations": [
+    "Storage admission uses existing full-plan provisional estimator unchanged, not a smaller diagnostic-only estimate",
+    "No capacity provision, relocation or compression was performed; storage still fails",
+    "A new gate fingerprint is not an evidenced driving repair and does not permit retrying failed unchanged driving",
+    "Controlled-age complete payload equivalence is not native asynchronous timing or full-route acceptance",
+    "Ordered native diagnostics, DEVELOPMENT, one-shot ACCEPTANCE and final browser/cleanup remain unpassed"
+  ]
+}
