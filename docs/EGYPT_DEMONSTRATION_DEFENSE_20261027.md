@@ -10,6 +10,10 @@ The [current continuation](EGYPT_FREEZE_CONTINUATION_20261027.md) and
 [fresh verification](evidence/egypt-urban-chaos-v1/freeze-continuation-verification-20261027.json)
 record the updated-source offline checks and unresolved native prerequisites.
 The [earlier delivery](EGYPT_DELIVERY_20261027.md) retains its historical source.
+The [latest queue checkpoint](EGYPT_QUEUE_CONTINUATION_20261027.md) records
+1045 Python passes with 4 optional skips on unchanged driving source and
+separates completed event holds from later physical queues. It does not repair
+or certify native route progress.
 
 | Evidence class | What may be said |
 | --- | --- |

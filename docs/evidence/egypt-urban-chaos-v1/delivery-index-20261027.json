@@ -33,6 +33,17 @@
     "report": "docs\\EGYPT_DELIVERY_20261027.md",
     "scope": "Historical initial partial delivery; preserved without relabeling its source or results"
   },
+  "latest_queue_checkpoint": {
+    "verification": "docs\\evidence\\egypt-urban-chaos-v1\\queue-continuation-20261027.json",
+    "verification_sha256": "7cf1404cf2ca29864a828d5a4a8aa381fb5ff82d9910326e0d46b05b7587f2b5",
+    "report": "docs\\EGYPT_QUEUE_CONTINUATION_20261027.md",
+    "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+    "runtime_driving_changes": false,
+    "python_total": 1049,
+    "python_passed": 1045,
+    "python_optional_skips": 4,
+    "scope": "Historical DEVELOPMENT queue attribution only; both original holds completed before final observation windows. No native progress repair, timing improvement, density compliance or new acceptance is established."
+  },
   "path_contract": {
     "relative_to": "repository root",
     "separator": "Windows backslash",
@@ -67,6 +78,11 @@
     }
   },
   "preserved_evidence_chain": [
+    {
+      "path": "docs\\evidence\\egypt-urban-chaos-v1\\queue-continuation-20261027.json",
+      "report": "docs\\EGYPT_QUEUE_CONTINUATION_20261027.md",
+      "scope": "Source-identical offline checkpoint: frame/time-aligned event/actor queue audit, original input hashes, four regression tests and fresh full Python discovery; budgets unchanged, native gates blocked"
+    },
     {
       "path": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json",
       "report": "docs\\EGYPT_FREEZE_CONTINUATION_20261027.md",
@@ -449,7 +465,7 @@
     "acceptance_attempted": false,
     "budget_sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854",
     "current_resource_resolution": "READ_ONLY_PREFLIGHT_COMPLETE_STORAGE_AND_NATIVE_PREREQUISITES_BLOCKED",
-    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json",
+    "refreshed_resource_evidence": "docs\\evidence\\egypt-urban-chaos-v1\\queue-continuation-20261027.json",
     "note": "Full-route acceptance sizing must use a complete successful development matrix; no ledger reset, additional authorization or archive deletion is implied."
   },
   "required_ordered_execution": {

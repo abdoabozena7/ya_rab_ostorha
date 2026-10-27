@@ -1,0 +1,515 @@
+{
+  "created_at_utc": "2026-10-27T19:56:25.591797+00:00",
+  "scope": "READ_ONLY_DEVELOPMENT_QUEUE_CAUSAL_ATTRIBUTION_CHECKPOINT",
+  "status": "PARTIALLY_COMPLETED_BLOCKED_NOT_ACCEPTED",
+  "native_acceptance": false,
+  "native_execution_performed": false,
+  "runtime_driving_changes": false,
+  "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+  "source_unchanged": true,
+  "base_commit": "fbf0d13b774285e64cc682b08d23fe816c2540b2",
+  "software": {
+    "python_total": 1049,
+    "python_passed": 1045,
+    "optional_skips": 4,
+    "duration_s": 37.298,
+    "exit_code": 0,
+    "new_regressions": 4,
+    "javascript_build_and_replay": "UNCHANGED_FROM_SOURCE_IDENTICAL_PREVIOUS_CHECKPOINT",
+    "previous_verification": "docs\\evidence\\egypt-urban-chaos-v1\\freeze-continuation-verification-20261027.json"
+  },
+  "artifacts": [
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\normal-queues.json",
+      "bytes": 14258,
+      "sha256": "7df940f22277da5a27bb7243f1d8771bb509e3d99a6cb8fc6237dba0a2eaa654"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\audit.log",
+      "bytes": 5544,
+      "sha256": "aec1bab368d750784e801dd6fa81227ec7895f13b8ab153d3b0a05fb125e8b1d"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\python-tests.log",
+      "bytes": 14484,
+      "sha256": "7765e1d5816809b732cdd0c6b441fca6e6e7a45ef5c199d6980ea6574e00e085"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\scripts\\audit_egypt_queue.py",
+      "bytes": 10257,
+      "sha256": "cc088cb1040f84ed7daf5318551ab540f30aee8546ad07693f3380ff4974eb57"
+    },
+    {
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\tests\\test_audit_egypt_queue.py",
+      "bytes": 4083,
+      "sha256": "140412a5a92cb1ec4f8ccaa29a40ac118385264b486382c5d94cd03ddee428fb"
+    }
+  ],
+  "findings": [
+    {
+      "native_report": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\b3a5746a2ccf4ac08de730d58e764795\\report.json",
+        "bytes": 56912567,
+        "sha256": "ba9f494b14e8b1da5ae980f4ad3f60d390a9ae766b3b3af1477fc1b5713c18ab"
+      },
+      "recording_metadata": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2\\metadata.json",
+        "bytes": 331965,
+        "sha256": "9de1e1b7ed51323b555671b1e2f00428f7e1823b0442d8ae30bb65ae35608570"
+      },
+      "recorded_frames": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2\\telemetry\\frames.jsonl.gz",
+        "bytes": 102542828,
+        "sha256": "5193b456af230192bb99fca0e2b654a8a296351f45b8fa54d0108df03a849ca8"
+      },
+      "seed": 1703,
+      "historical_source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2",
+      "frame_id": 3974,
+      "timestamp_s": 192.1221639290452,
+      "observation_window": {
+        "requested_s": 30.0,
+        "recorded_start_s": 162.17216348275542,
+        "recorded_end_s": 192.1221639290452,
+        "frames": 600,
+        "native_samples": 600
+      },
+      "ego_displacement_m": 9.888665859223286,
+      "final_front_queue": [
+        {
+          "actor_id": 250,
+          "initial_role": "participant_100",
+          "class_name": "vehicle.nissan.patrol",
+          "along_center_m": 9.068065298660501,
+          "lateral_center_m": -0.009726159988936563,
+          "position_m": [
+            -7.800447940826416,
+            140.66404724121094
+          ],
+          "speed_mps": 9.296755009935167e-08
+        },
+        {
+          "actor_id": 252,
+          "initial_role": "participant_102",
+          "class_name": "vehicle.bh.crossbike",
+          "along_center_m": 13.606364011277451,
+          "lateral_center_m": -0.006144268589032664,
+          "position_m": [
+            -3.2622995376586914,
+            140.70115661621094
+          ],
+          "speed_mps": 7.000697907992518e-08
+        },
+        {
+          "actor_id": 254,
+          "initial_role": "queue_lead",
+          "class_name": "vehicle.audi.etron",
+          "along_center_m": 26.023250741608067,
+          "lateral_center_m": 0.03943860604548485,
+          "position_m": [
+            9.153911590576172,
+            140.83847045898438
+          ],
+          "speed_mps": 2.009745325939526e-10
+        },
+        {
+          "actor_id": 260,
+          "initial_role": "participant_110",
+          "class_name": "vehicle.diamondback.century",
+          "along_center_m": 29.828903979639485,
+          "lateral_center_m": -1.4804934023800227,
+          "position_m": [
+            12.97068977355957,
+            139.34669494628906
+          ],
+          "speed_mps": 1.6138412636582682e-08
+        }
+      ],
+      "final_lead_history": {
+        "actor_id": 250,
+        "observed_frames": 600,
+        "nearest_front_vehicle_frames": 600,
+        "missing_frames": 0,
+        "maximum_displacement_from_first_m": 9.870822277838107,
+        "maximum_speed_mps": 4.144656453295499
+      },
+      "terminal_joint_stationary_observation": {
+        "speed_threshold_mps": 0.1,
+        "frames": 294,
+        "duration_s": 14.650000218302011,
+        "start_s": 177.4721637107432,
+        "end_s": 192.1221639290452,
+        "limited_to_requested_window": false
+      },
+      "scripted_events": {
+        "queue_lead": {
+          "status": "COMPLETED",
+          "realized": true,
+          "measurements": {
+            "approach_m": 7.423478240740114,
+            "stopped_s": 1.5000000223517418,
+            "resumed_m": 1.0395797155287845
+          },
+          "completed_transition": {
+            "phase": "COMPLETED",
+            "frame_id": 487,
+            "timestamp_s": 17.772161331027746,
+            "reason": null
+          },
+          "completed_before_window": true
+        },
+        "pass_obstacle_0": {
+          "status": "COMPLETED",
+          "realized": true,
+          "measurements": {
+            "stopped_s": 21.050000313669443,
+            "resumed_m": 1.0361625055353205
+          },
+          "completed_transition": {
+            "phase": "COMPLETED",
+            "frame_id": 1374,
+            "timestamp_s": 62.122161991894245,
+            "reason": null
+          },
+          "completed_before_window": true
+        }
+      },
+      "stop_reason_samples": {
+        "Braking toward measured coverage speed limit 0.00 m/s": 462,
+        "CONTROL_PROCESSING_DEADLINE": 12,
+        "Risk cleared; releasing brake smoothly to base driver": 8,
+        "Limiting acceleration to stop within 3.50 m of measured road": 20,
+        "Limiting acceleration to stop within 4.00 m of measured road": 18,
+        "Limiting acceleration to stop within 4.50 m of measured road": 20,
+        "Limiting acceleration to stop within 5.00 m of measured road": 5,
+        "Limiting acceleration to stop within 5.50 m of measured road": 9,
+        "Limiting acceleration to stop within 6.00 m of measured road": 7,
+        "Limiting acceleration to stop within 6.50 m of measured road": 19,
+        "Limiting acceleration to stop within 7.00 m of measured road": 11,
+        "Braking toward measured coverage speed limit 2.50 m/s": 1,
+        "Braking toward measured coverage speed limit 1.86 m/s": 3,
+        "Braking toward measured coverage speed limit 1.09 m/s": 5
+      },
+      "final_density_audit": {
+        "frame_id": 3956,
+        "counts": {
+          "vehicles": {
+            "total": 52,
+            "near_120m": 40,
+            "front_frustum_100m": 14,
+            "moving_near": 5,
+            "moving_front_frustum": 0,
+            "moving_total": 9
+          },
+          "pedestrians": {
+            "total": 100,
+            "near_120m": 34,
+            "front_frustum_100m": 10,
+            "moving_near": 33,
+            "moving_front_frustum": 10,
+            "moving_total": 96
+          }
+        },
+        "requested": {
+          "vehicles": 60,
+          "pedestrians": 100
+        },
+        "passed": false,
+        "pending": false,
+        "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+        "density_passed": false,
+        "motion_passed": true,
+        "motion_measurement_ready": true,
+        "motion_window_s": 1.0000000149011612,
+        "motion_sample_age_s": 0.0,
+        "observations": {},
+        "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+        "series": {
+          "samples": 182,
+          "density_failures": 88,
+          "motion_samples": 181,
+          "motion_failures": 0
+        },
+        "sustained_passed": false
+      },
+      "interpretation": "MEASURED_FRONT_VEHICLE_QUEUE_NOT_PROOF_OF_STUCK_SCRIPTED_HOLD",
+      "unresolved": [
+        "NPC controls and traffic-light phases are not in these actor rows",
+        "The physical cause of the downstream queue is not established",
+        "No absent actor is classified as destroyed from a local observation alone",
+        "Event completion proves its recorded stop/resumption, not continued traffic flow"
+      ],
+      "runtime_policy_change_justified": false
+    },
+    {
+      "native_report": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\f98d0a90e6f44a63b37f1646984fe1c3\\report.json",
+        "bytes": 54611061,
+        "sha256": "48a7ab5bda914c2cfae71147ad7a9b015a05bd202b4cba865bc694b9fd534c53"
+      },
+      "recording_metadata": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba\\metadata.json",
+        "bytes": 336092,
+        "sha256": "d3b105527081802622434199bceb3c35c03634fad9e259f5291c5a76dfd38978"
+      },
+      "recorded_frames": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba\\telemetry\\frames.jsonl.gz",
+        "bytes": 85081620,
+        "sha256": "b1ea1a526783fd5b1f4beb8e9c74da4b02bc3bdeb249e978ef9637723c8dc22e"
+      },
+      "seed": 3709,
+      "historical_source_sha256": "095f1480862a7ac7eb1d49fcc6c0b61e935efdc6e566b0f8e94b597bd25a85ca",
+      "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba",
+      "frame_id": 3684,
+      "timestamp_s": 178.48383954167366,
+      "observation_window": {
+        "requested_s": 30.0,
+        "recorded_start_s": 148.53383909538388,
+        "recorded_end_s": 178.48383954167366,
+        "frames": 600,
+        "native_samples": 600
+      },
+      "ego_displacement_m": 4.860734125341567,
+      "final_front_queue": [
+        {
+          "actor_id": 250,
+          "initial_role": "queue_lead",
+          "class_name": "vehicle.nissan.patrol",
+          "along_center_m": 9.06875762314742,
+          "lateral_center_m": -0.5994269537157388,
+          "position_m": [
+            109.22429656982422,
+            -29.46051597595215
+          ],
+          "speed_mps": 3.02154440785306e-08
+        }
+      ],
+      "final_lead_history": {
+        "actor_id": 250,
+        "observed_frames": 600,
+        "nearest_front_vehicle_frames": 600,
+        "missing_frames": 0,
+        "maximum_displacement_from_first_m": 4.877683937612349,
+        "maximum_speed_mps": 4.069723259401819
+      },
+      "terminal_joint_stationary_observation": {
+        "speed_threshold_mps": 0.1,
+        "frames": 505,
+        "duration_s": 25.200000375509262,
+        "start_s": 153.2838391661644,
+        "end_s": 178.48383954167366,
+        "limited_to_requested_window": false
+      },
+      "scripted_events": {
+        "queue_lead": {
+          "status": "COMPLETED",
+          "realized": true,
+          "measurements": {
+            "approach_m": 6.133124960848379,
+            "stopped_s": 1.2000000178813934,
+            "resumed_m": 1.0635263375694617
+          },
+          "completed_transition": {
+            "phase": "COMPLETED",
+            "frame_id": 473,
+            "timestamp_s": 17.93383714929223,
+            "reason": null
+          },
+          "completed_before_window": true
+        },
+        "pass_obstacle_0": {
+          "status": "COMPLETED",
+          "realized": true,
+          "measurements": {
+            "stopped_s": 21.450000319629908,
+            "resumed_m": 1.0188611157242837
+          },
+          "completed_transition": {
+            "phase": "COMPLETED",
+            "frame_id": 1241,
+            "timestamp_s": 56.33383772149682,
+            "reason": null
+          },
+          "completed_before_window": true
+        }
+      },
+      "stop_reason_samples": {
+        "Braking toward measured coverage speed limit 0.00 m/s": 510,
+        "Risk cleared; releasing brake smoothly to base driver": 6,
+        "Limiting acceleration to stop within 3.50 m of measured road": 24,
+        "Limiting acceleration to stop within 4.00 m of measured road": 5,
+        "CONTROL_PROCESSING_DEADLINE": 11,
+        "Limiting acceleration to stop within 4.50 m of measured road": 6,
+        "Limiting acceleration to stop within 5.00 m of measured road": 6,
+        "Limiting acceleration to stop within 5.50 m of measured road": 7,
+        "Limiting acceleration to stop within 6.00 m of measured road": 9,
+        "Limiting acceleration to stop within 6.50 m of measured road": 10,
+        "Braking toward measured coverage speed limit 2.50 m/s": 2,
+        "Braking toward measured coverage speed limit 1.86 m/s": 3,
+        "Braking toward measured coverage speed limit 1.09 m/s": 1
+      },
+      "final_density_audit": {
+        "frame_id": 3670,
+        "counts": {
+          "vehicles": {
+            "total": 52,
+            "near_120m": 36,
+            "front_frustum_100m": 7,
+            "moving_near": 1,
+            "moving_front_frustum": 0,
+            "moving_total": 2
+          },
+          "pedestrians": {
+            "total": 100,
+            "near_120m": 62,
+            "front_frustum_100m": 6,
+            "moving_near": 60,
+            "moving_front_frustum": 5,
+            "moving_total": 95
+          }
+        },
+        "requested": {
+          "vehicles": 60,
+          "pedestrians": 100
+        },
+        "passed": false,
+        "pending": false,
+        "scope": "Native positions and displacement in front viewing cone; occlusion and behavior diversity require camera review",
+        "density_passed": false,
+        "motion_passed": true,
+        "motion_measurement_ready": true,
+        "motion_window_s": 1.0000000149011612,
+        "motion_sample_age_s": 0.0,
+        "observations": {},
+        "scenario_id": "EGYPT_URBAN_CHAOS_V1",
+        "series": {
+          "samples": 168,
+          "density_failures": 73,
+          "motion_samples": 167,
+          "motion_failures": 3
+        },
+        "sustained_passed": false
+      },
+      "interpretation": "MEASURED_FRONT_VEHICLE_QUEUE_NOT_PROOF_OF_STUCK_SCRIPTED_HOLD",
+      "unresolved": [
+        "NPC controls and traffic-light phases are not in these actor rows",
+        "The physical cause of the downstream queue is not established",
+        "No absent actor is classified as destroyed from a local observation alone",
+        "Event completion proves its recorded stop/resumption, not continued traffic flow"
+      ],
+      "runtime_policy_change_justified": false
+    }
+  ],
+  "budgets": {
+    "unchanged_files": [
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\budget.sqlite",
+        "bytes": 49152,
+        "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+      },
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\allowance.json",
+        "bytes": 275,
+        "sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be"
+      },
+      {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\hybrid-driving\\budget.sqlite",
+        "bytes": 40960,
+        "sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c"
+      }
+    ],
+    "status": {
+      "kind": "EGYPT_NATIVE_VALIDATION_V1",
+      "authorized": true,
+      "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+      "cap_s": 21600.0,
+      "development_cap_s": 14400.0,
+      "acceptance_cap_s": 7200.0,
+      "base_cap_s": 14400.0,
+      "extensions": [
+        {
+          "id": "EGYPT_DEVELOPMENT_20261027",
+          "phase": "DEVELOPMENT",
+          "seconds": 7200.0,
+          "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+          "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+        }
+      ],
+      "charged_s": 6074.98700000043,
+      "remaining_s": 15525.01299999957,
+      "development_remaining_s": 8325.01299999957,
+      "diagnostic_remaining_s": 645.0129999995697,
+      "protected_development_matrix_s": 7200.0,
+      "protected_browser_s": 480.0,
+      "acceptance_remaining_s": 7200.0,
+      "unfinished": 0,
+      "acceptance_attempted": false,
+      "sha256": "29a80b0a46ff44784952c92c59b53c910ac80382e0e7e8e972ae0bb70936d854"
+    },
+    "additional_diagnostic_seconds_requested_not_authorized": 795
+  },
+  "storage": {
+    "D_free_bytes": 100371247104,
+    "provisional_required_free_bytes": 140049743825,
+    "D_deficit_bytes_at_snapshot": 39678496721,
+    "requirement_recomputed": false,
+    "passed": false
+  },
+  "simulator_ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "preflights": {
+    "development": {
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "can_run": false,
+      "engine_started": false,
+      "reason": "All three current-source native diagnostics must pass before the full development matrix",
+      "software_gate": {
+        "passed": true,
+        "reason": "Current-source software and replay gate passed",
+        "record": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\software-gate.json"
+      },
+      "diagnostic_gate": {
+        "passed": false,
+        "passed_targets": [],
+        "attempted_targets": []
+      },
+      "artifact": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\development-preflight.json",
+        "bytes": 59581,
+        "sha256": "e13da83f542038c09d188f5131170251491e493f42189a385458376fba519e8d"
+      }
+    },
+    "acceptance": {
+      "source_sha256": "4486828db532a310fccffa90ec9d480246425c40fa4460a630c696abd8a5eea3",
+      "can_run": false,
+      "engine_started": false,
+      "reason": "Full current-source development matrix must pass before the protected acceptance window can be used",
+      "software_gate": {
+        "passed": true,
+        "reason": "Current-source software and replay gate passed",
+        "record": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\software-gate.json"
+      },
+      "diagnostic_gate": {
+        "passed": false,
+        "passed_targets": [],
+        "attempted_targets": []
+      },
+      "artifact": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation\\queue-continuation-20261027\\acceptance-preflight.json",
+        "bytes": 59710,
+        "sha256": "58e64137eba17b4bf6a92d4e0eb98e799dacd3fd6bd052afadc800a8e16d6289"
+      }
+    }
+  },
+  "conclusion": "Both event holds completed before the final queue window; both ego and lead made recent progress, then stopped jointly. No sensor-policy override or scripted-hold repair is justified by these data. NPC controls/traffic-light phases and physical downstream cause remain unverified.",
+  "remaining_gates": [
+    "Verified storage plan",
+    "Authorized diagnostic-time feasibility",
+    "Current-source protected2707, Normal1703 and Normal3709 diagnostics",
+    "Complete DEVELOPMENT",
+    "Frozen one-shot ACCEPTANCE",
+    "Native browser and final cleanup/playback"
+  ]
+}
