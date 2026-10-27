@@ -8,6 +8,8 @@ import numpy as np
 from backend.core.motion_geometry import VehicleGeometry,footprint_centers,rectangle_clearances,GRID
 from backend.core.kinematic_prediction import kinematic_modes
 from backend.core.prediction import assess_conflicts
+from backend.core.recording import read_asset
+from backend.core.storage_retention import open_telemetry
 
 
 def main():
@@ -41,12 +43,10 @@ def full_scene(root,case,output):
     builder=ControlSceneBuilder('retained-replay',VehicleGeometry(**case['geometry']))
     durations=[];count=0
     def read(asset):
-        data=(run/asset.path).read_bytes()
-        if hashlib.sha256(data).hexdigest()!=asset.sha256:raise ValueError('Native asset checksum mismatch')
-        return data
+        return read_asset(run, asset)
     # Rebuild from the recording start: identity/history cannot be fabricated
     # by seeding just the problematic object into an otherwise empty scene.
-    for line in (run/'telemetry/frames.jsonl').open():
+    for line in open_telemetry(run/'telemetry/frames.jsonl'):
         raw=json.loads(line)
         if raw['frame_id']>case['frame_id']:break
         frame=from_dict(SimulationFrame,raw)
@@ -55,7 +55,7 @@ def full_scene(root,case,output):
         scene=builder.build(sensor_observation(frame),read,received_wall_s=0.,track_motion=True)
         durations.append((time.perf_counter()-began)*1000);count+=1
     original=None
-    for line in (run/'telemetry/comparison-controls.jsonl').open():
+    for line in open_telemetry(run/'telemetry/comparison-controls.jsonl'):
         row=json.loads(line)
         if row.get('frame_id')==case['frame_id'] and row.get('kind')=='HYBRID_DECISION':original=row;break
     tracks=to_dict(scene.prediction['tracks']);modes=to_dict(scene.prediction['control_trajectories'])

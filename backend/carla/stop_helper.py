@@ -24,11 +24,11 @@ def stopped_service(ticket,dispatch,start_dispatch=None,reset_dispatch=None):
                 self.presentation.data=saved
         def can_stop_simulator(self):return True
         def can_start_simulation(self):
-            from ..learning.egypt_budget import ownership_status
-            return callable(start_dispatch) and not ownership_status()['reserved']
+            from ..learning.egypt_budget import active_ticket, ownership_status
+            return callable(start_dispatch) and (not ownership_status()['reserved'] or active_ticket() is not None)
         def can_reset_simulation(self):
-            from ..learning.egypt_budget import ownership_status
-            return callable(reset_dispatch) and not ownership_status()['reserved']
+            from ..learning.egypt_budget import active_ticket, ownership_status
+            return callable(reset_dispatch) and (not ownership_status()['reserved'] or active_ticket() is not None)
         def reset_simulation(self):
             with self.lock:
                 self._require_normal_runtime()

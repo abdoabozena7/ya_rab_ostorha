@@ -1,0 +1,1013 @@
+{
+  "recorded_at_utc": "2026-10-27T11:08:03.689441+00:00",
+  "status": "BLOCKED_AT_GATE_B",
+  "task_complete": false,
+  "source_sha256": "adf910b4d175a17b39500c48b2cd01df24139376393486ac2033a4cded6502c4",
+  "native_acceptance": false,
+  "deployment": {
+    "accepted": false,
+    "reason": "Twelve source-bound native trips have not been accepted"
+  },
+  "software": {
+    "python_tests": 1019,
+    "python_skipped": 4,
+    "javascript_tests": 209,
+    "dashboard_built": true,
+    "source_stable_during_full_suite": true,
+    "full_python_log": "output\\egypt-validation\\software-20261027\\python-full-repair02b.log",
+    "full_python_log_sha256": "f18b8838d65035c01631e07cc471146dd3f4b4c9fafc1916a2eac8d34d0c4c76",
+    "software_gate": {
+      "source": "OFFLINE_SUITE_BUILD_AND_RETAINED_REPLAY",
+      "source_sha256": "adf910b4d175a17b39500c48b2cd01df24139376393486ac2033a4cded6502c4",
+      "source_manifest": {
+        "config/behavior-proposals-v1.json": "0f570603899926bbf0540592468280df359908181a2d13a86f9a366c1454e139",
+        "config/congestion-recovery.json": "eb7f223329a998acd256066f7f9277b5f0f785cdb06b2637d5ac30eb53151dc5",
+        "config/core-repair-pilot.json": "c753170b576c6ff2c5d4b396d9e1a9e6a6142807650724b0f52734314f146e12",
+        "config/crossing-comparison.json": "ef3b8a8330acb22ec668c88f79fca0a1968d2b9014b4a17c2b346544ba3b06bc",
+        "config/curriculum.json": "eaaec71d98acc446a297e1f4b91a7cc248f7c2f455731f2ca6f3a9fb9cf03a11",
+        "config/egypt-urban-chaos-v1.json": "7da41fa2134e35322f4d155008fe78e20eb7aa0872d0ada4984b25fc505ef0cf",
+        "config/hybrid-driving.json": "e2b254a4da315b381f2a78c96149ad6904482f2ffdcfd5ead8318d9f6195bf05",
+        "config/learned_safety.json": "dd3899ddd185dce9b18afbe3bb761282edb202cad8c61b2869e3b15b679a06e9",
+        "config/maneuver-curriculum-v1.json": "0f58eb6de9d791c8c2a4992249f9b432824b5aeadef41cba1080ec4bbac6f7e4",
+        "config/motion-reliability.json": "be5f27e8c43bc87f6a7f8c7b1fff4d0d4eb18320c3fc5877918da7aeb73c5e80",
+        "config/normal-city-profiles.json": "cf94efea30719c9471db320f76a6f39f23c9b9a02848452ca1ee3ba3bf668ba7",
+        "config/path-entry-risk.json": "471542806fcd94d796841cb618b8ff2cb7b1ed387c0c2e906b5ad18124c50737",
+        "config/pedestrian-behavior-suite.json": "097e436b9fc08b182212062c734beacb7d9204b542eb1e9887745d00433c9947",
+        "config/pedestrian-holdout-partition.json": "d9bffbcbf28b7b2ef394eb0a33a733fdbfb4d5e3bfe5097dead33ce7c5a68fdb",
+        "config/predictive-v2.json": "d750ebbfd1cb1b735b2b64ff36fd98fd2026a98a90acf5cf10d30723db9f706e",
+        "config/research-contracts.json": "a7891ea3773e12b837f5801f8ca4e13ad957333b79d0e3827aad9ccb6a1c2d15",
+        "config/route-bypass.json": "3694cc54e293ddb1315fe70594d0653e991d34ffd7590e02225f8ee187676d58",
+        "config/scenario-library.json": "fe6dd83862256719165e5dfde42fb5180824d962d6d258da6aea229f661f6c7b",
+        "config/trajectron-lock.json": "e27aa9564970a9a1d10fd73eb31f5a494df4d73149f3f130c74863c8c9b62f8b",
+        "config/urban-world-profiles.json": "db0e8870c73812ad6d2e562428bec0948b25eb7588a40995202a4269da8b7f8f",
+        "config/ya_rab_ostorha_safety.json": "626f4e30402a351501d4774009da4a5a66df5c7e7b096048fdcf3cbe99f71738",
+        "backend/__init__.py": "6b64dd6bf8bbb5087c60097a21968d2bbb15dfcff86394521a726fa41ee16451",
+        "backend/carla/__init__.py": "ce728f3803a6cd778e37986b03762a4d926ec12a7a69787391ac67e200232b60",
+        "backend/carla/benchmark_fixture.py": "66a0daa5f782134b9900367ee6ac4ac06d5b189cc991a5b424979f845f251895",
+        "backend/carla/comparison.py": "e23848b4fb4d0607d226567183ccf13abd78cca6c518c2a489b7cd603baa530b",
+        "backend/carla/comparison_v2.py": "6245293c2c7747e4fa55d3e043973d8f356d8773602e6850f7a36512cf537fe0",
+        "backend/carla/comparison_vehicle.py": "f59f92a0ee5a48bf1ddba5db06bba5d313b1b7afd696119d241954845cf8c989",
+        "backend/carla/connection.py": "632a59f7801dafcc90d625ca19b6aa1187282d146e61f50da110aaed8bc74b88",
+        "backend/carla/contracts.py": "179544f49a950f589f14ed215d103f36bdddcce1180641aa5559b4343d1534c1",
+        "backend/carla/controls.py": "1786ebb30bef1f3a5f93463ae6f287d342839884593ed9ddfae1778ddfa12743",
+        "backend/carla/crossing_comparison.py": "44e7b9f9d303de0c1d9af24f4161edb80df1a659b7c8f7d3791af8a8ddf376fb",
+        "backend/carla/dashboard_tools.py": "ecde4a3f56e3aa1590ca6815e879c490c70ac8000b218dc376a3221d3d008407",
+        "backend/carla/dense_chaos.py": "95505ec1ca58d3c0cdd094aaad49d1824292cbc2463f213c316f1f2172e4cf25",
+        "backend/carla/egypt_urban.py": "04d93e1b4a86138adcb8ef13c8e270ba8edf8738c10b1294ad8fe9cfb8b83af8",
+        "backend/carla/geometry.py": "9e71ed70eb0524780aa7798f8bcb77abdfdf6a84904cbe762afd171f54c0c1cd",
+        "backend/carla/graphics.py": "c37718359776004bdc717c700f15148f01fa4bfd9fad08e328d57d3cbfdc2b72",
+        "backend/carla/ground_truth.py": "f5ed075e00a0994fcbcc00522f790491c16567064b35c132eff438d0fd4f3b19",
+        "backend/carla/hybrid_navigation.py": "b977aa627139b78ad26d40348e280c55575a1f2ff71d40015515df9708cb5e90",
+        "backend/carla/hybrid_world.py": "c4b9c8741c81592b4784ed76badd87cb22c5889151e949d0855ce3adec13185a",
+        "backend/carla/onboard_geometry.py": "5811fbf832b14cad820db4059a0f3395783391017807e36e4161515f97451d7e",
+        "backend/carla/pedestrian_world.py": "a841420b9d84130b1f50c09d0885d1614dc96cee0856b4b200da500dc1eff151",
+        "backend/carla/pilot_world.py": "b4abd2b5d34e4e61bc5a170bbe140bfc5be2b7f3d21f0d894636faca246b61e5",
+        "backend/carla/population.py": "bf6ed74480b517d1b27895a825393c9f6b7ce354211cea2cf62e3d55cc62e859",
+        "backend/carla/preflight.py": "1698845580fbc394c9d6a4e1bd7baea0f679281be21d0acc2438ac8c3b254bd6",
+        "backend/carla/presentation.py": "6b747211743c4b0614573f15d32c93946332bc97325fb6976782bcd4094a17f2",
+        "backend/carla/provider.py": "a436c0ff0650a1fbf1e282b474bec55134ebac3a62e9c6aabc93f36f4d987446",
+        "backend/carla/restart_helper.py": "a69a1fb691ff9bdebc692598f4f5de94529d6ceb678d4d22466ce20a5a51e631",
+        "backend/carla/route_agent.py": "a168a9941168e3a66b87770e05ef8eb57b5bec2fe9d7931870a54eb8dc2167e3",
+        "backend/carla/route_crowding.py": "5a6faf6ba2baf58fb5903d8f63b927ebbba4843dad6f75bf957abc8f26ab66a0",
+        "backend/carla/routes.py": "f0ad9a79daba2bc5109a495b524b1a4ed38dcf33fc16c4380ea7344d185276ce",
+        "backend/carla/runtime.py": "c2d2c43236ca1f59155f224e2745fed4c0b3ce58e7352a5db7e71d6907f820e5",
+        "backend/carla/scenarios.py": "f2b9844e3e95152391530d467120f614a02f0fea958c74804a597cb2eb39c0d9",
+        "backend/carla/scene_overlays.py": "0dbb4126b9fc026302b324188f9f3338e5987cf57ae494a98619d733338f7a9c",
+        "backend/carla/sensor_decoders.py": "f7bfd23f08ab81911510993035ecb4258d0eece4794f00f8cf7f496c4ee5f233",
+        "backend/carla/sensors.py": "a6a328da778597a00331c0316b0a862f74ab52e5906c6bc87c23f9f269f06704",
+        "backend/carla/start_helper.py": "9fd85655c8a51d6d97c8da1d3d6ee62104f74a3772e4f47cdd3fb4421a413521",
+        "backend/carla/stop_helper.py": "3bf9e27ecf4740317febc32c1dc3038ddf5e96222939581af22ab94e95c3f202",
+        "backend/carla/target.py": "77f1aa4455aa843ec5b8786cea10e7127ab0c3cb7c08b0dd9e6b7f7041679b8c",
+        "backend/carla/telemetry.py": "474323d59a8879cc6d3665b9ae5e58f490589ef989d1534d33903412eaf4c2a4",
+        "backend/carla/urban.py": "f49798dbe285628ac58c2e3cb6362a0889a57540129df01d9c162877ba079229",
+        "backend/carla/urban_chaos.py": "d884070cdda085be54011910341c2b7918815df092e0e199a4a070d074f0e2ab",
+        "backend/carla/vehicle.py": "5c60d96494ebb769ac76b2c3d6c38e61896158fa306d54a23e686bf081df9c92",
+        "backend/carla/world.py": "1c0caecd102e48e82aac940b52861c67219ebcaa1632f9ceec689c22e003d94e",
+        "backend/computer_vision/__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+        "backend/computer_vision/depth_evidence.py": "8a0946784fbbc276ef7bfacca6834e6b4c18789139a12fa72c4a6b3be88e14e9",
+        "backend/computer_vision/detector.py": "7d7f9a6ada74ff40a011a5ff8feeb8e94658597b770dc72ac8bb50555be99b48",
+        "backend/computer_vision/ocr.py": "2dbe59cba998a4419677c5801be6005b5dbe6a07f78580ead2ca63f79819e7a7",
+        "backend/computer_vision/service.py": "0a3dcf32d36ea113f82ec548ae2bf2534646dcfd510006a110d85aaefbd49712",
+        "backend/computer_vision/shared_export.py": "050ec0866736911bb92583b3886902ea3e2b3680bdf73fd43c81d3e80bad529b",
+        "backend/computer_vision/worker.py": "fe0aaf84bd96c6a1b96517abb2ba33d25b51a023fc6cfe8359c9d4a43afddbb0",
+        "backend/core/__init__.py": "e64fb6a47bad83efe0387337fcbb8dd4b3f50d4d2e20034c01ef6d6ddb1714f6",
+        "backend/core/active_safety.py": "8b9c1b981efb63c1cf86f0bb939005a1f1ec41dccf1c58734327a6348dea1d5b",
+        "backend/core/agents.py": "ffe208794346410d37c52ba0b726c5f4b35632df3efe1d02037475d70d6332f6",
+        "backend/core/behavior_proposals.py": "ed5f3cb1834e38856ce413d7d15ee0ebbb2732f7075918deb734d7ce428a221a",
+        "backend/core/camera_geometry.py": "c8200bc92d5c921f6a7006ebb6b24bc2b9dbedde48505ed9c47de4556104fc01",
+        "backend/core/closed_loop_evaluation.py": "8d53978e7219947671bf6096fba2f23985958a1b7e0aab55d94263f57d44b2f3",
+        "backend/core/closed_loop_metrics.py": "9d4f3de92aa708d02024cc91cbe57dd9d4becb4ea4f88c8e326e65c5a2385845",
+        "backend/core/comfort_control.py": "db0f0f4b2efe7934110e24cc125913cb64576c43e3777a760e3793931296648b",
+        "backend/core/config.py": "7e239f339fedcf20a028c374dd86751a72cfaa2b14aab2097dcc83fd1ebd0693",
+        "backend/core/congestion_recovery.py": "772f60d18374d4ce687c7b690dceba1c5a907fea37131a3465c814a1f378052c",
+        "backend/core/contracts.py": "b25d2477807c9133c11caa56f9ead5123b206c76b1f06db4512ee6f127b3c3dc",
+        "backend/core/control.py": "8675b041666717fccf7774ad316222f733e2f6877e398d59d3238e4a87687641",
+        "backend/core/control_radar.py": "da10e3feaaa2db625f298812f1ecf437cee4b803a06a3217809d90f5fd48d53c",
+        "backend/core/control_scene.py": "917b513586360c62d0f4bcbbea447e58b9bdf3d790ec181368b301cdb0cc6d92",
+        "backend/core/control_semantics.py": "efa0395852712d9b69f21f25caf29be10f1fa6a210671adf4f42b43364780580",
+        "backend/core/corridor_uncertainty.py": "c25e7446eb890dbac414d6b4338ea8e756a53a3561509ef1395e05478d77bdce",
+        "backend/core/crossing_result.py": "f0c0c2c3074a090abb502b28ebdb8bd9f02ced0376177d449e05dcae41c41d1d",
+        "backend/core/dashboard.py": "aea250be06b57815b225a7b6a0eb82043132c6eb9d54bbf20b520dc0f56bfabe",
+        "backend/core/decision_layers.py": "011f3bfc6598a8f7c187e7b3065086f594c34375dd18040ca50fca46fd40e83f",
+        "backend/core/depth_people.py": "26d8abdabc7e559a9c3462c23ed332de218a104a10108518b6957d8b984d9337",
+        "backend/core/display_prediction.py": "eb77968d547f3e58e210c111f95177ff0bac253ab75f7f1925379f2ad3dba826",
+        "backend/core/drivable_corridor.py": "f1f5f8ff7fc0ae00ad2ee9f52e1b7f86e8bee7398169b5141934113924926d4f",
+        "backend/core/driver_profiles.py": "3603812fc5feca500ad2ab587989c5080faff35eba8595dbfec8ffedca00880c",
+        "backend/core/driving_quality.py": "0cf9e13d02643da26e9755f8907adf326e0db7a9eb5bbb06cc00a86f4d2afe9e",
+        "backend/core/driving_video.py": "6b9cd3ed29d7b56f3dc8affc9f5fe2ff433cf6b6818bb8f56569319daacf8ccf",
+        "backend/core/ego_motion.py": "556d0333ea7119a9514e12089c3b08190329f66ff9a3c910d8abe6518fb69230",
+        "backend/core/egypt_urban.py": "4e44f844ed346db5becb64ffeedb20cd64c560f19f08c153f44621a1e9cf1d25",
+        "backend/core/evaluation.py": "e2ea328052d0404a282699806cf7a18fe4e19aadcd636c3a5af5710a04b36104",
+        "backend/core/events.py": "4370d63b8d44fb96f8264eeca5e44921f7deea951dd390646c40db5411f07a67",
+        "backend/core/evidence_budget.py": "3ad4f0292c611d6d2ea9d9f4a55f2dc2cb88808a4956ea5a1f30cf9bb24693cf",
+        "backend/core/ground_geometry.py": "e07d0005bf2f5bae26f576a25a4a7902a4755a59bc7c877edb73a2c8130578fb",
+        "backend/core/host_clock.py": "2f34466e444cfb3b08f3a18a0fc733d28d082346a7a992ce814bcb38c49ced91",
+        "backend/core/hybrid_acceptance.py": "ac0807310941958fec939d0b6449a593ed0f07df0f6d83b3ab4866b902f346e6",
+        "backend/core/hybrid_config.py": "5cab29e9efa1f4cdc90e4163ea3968b0b0a18b8520b7c0b805075a06024a17c8",
+        "backend/core/hybrid_driver.py": "0350ba49d6ed4066af9671ef74913198bd1b7a832e080921ce561cc71b014a9d",
+        "backend/core/journey_comparison.py": "24f3e9d8791fd8cd07b2f8fff14fdb2102ea10773ed53d53e5639b39b50c7efb",
+        "backend/core/kinematic_prediction.py": "874f5148e26020529fd8d652d86524a0a2fed7feb85db7b71a981a6a1764c191",
+        "backend/core/launch_alignment.py": "2acab7b0a93c4d0908e4533f7c9f33a3f3294d967082bfcbe94a2e6ede3011f3",
+        "backend/core/lifecycle.py": "629160fdca0e44b0bec2cff96c258b687accaba2e1b0a4ebbf1cfdbe54ae8f1d",
+        "backend/core/logging.py": "a4734de93047bf2470699d4acb9cff37237ff0a84677dcc1349340bbc7b04d5d",
+        "backend/core/maneuver.py": "f072ad793fe8331afe5de79906e579118e6bf3328135995c4b7c4c48fc4b9ce8",
+        "backend/core/maneuver_candidates.py": "a2492c4ae283d51b051135e4c5c2c485d89b3d9c9cd03d3b14cfa857e1b187bc",
+        "backend/core/measured_rows.py": "29b31182f03257db164e30bf278527c58f8ca666cc4634304e1b56bd677e07c6",
+        "backend/core/motion_geometry.py": "7480982da28681ce296ac8fe06101081a2ad49f8ab4f69b71b421760b891586d",
+        "backend/core/motion_quality.py": "14c16ae36468dcfc977fde47547624a43f553b10eb95de10fdf3d347ea499239",
+        "backend/core/motion_scene.py": "5881a39c96f00929f4985889e36f34af9e65a4fdf96dfeaedabc08d6912090d7",
+        "backend/core/normal_navigation.py": "184d1c047c328d6cff7107a3896115932bb923eb3ef0abf7ce32cff1e349a6cd",
+        "backend/core/path_conflicts.py": "a7655a290669133d123130c4a7fe3a780886d327eb9202085f8addb6bc0c7d9d",
+        "backend/core/path_entry_features.py": "29e961355a32642604f9b56001648618257d102ddf28953e06cb2d750d90771b",
+        "backend/core/path_entry_risk.py": "86fb65703ccfcdde1f85d50437bf9d03f40972efa44c14bcae77bf856bd4d520",
+        "backend/core/pedestrian_anticipation.py": "654bdabc7c390e4df43e8a7fdb5efc7b46d0eb3fcf6f2a231d78fd6d72616069",
+        "backend/core/pedestrian_behaviors.py": "17667f706b03773912b5b2099ecd006043949f10b052178705966466e803708e",
+        "backend/core/performance.py": "cc751117d2645500468ac2aef7de5e97f519acb6ffb047ff57699e49c4c0017b",
+        "backend/core/pipeline_timing.py": "18a4fcac2c91527f05977e1e696e9eab934ebac8cb3c0b3f969d0dfb1ebe3e8f",
+        "backend/core/prediction.py": "d666d2d5fe110652f07b7dab52dad22a523aaead5bacb48c1ff08a65d3d62071",
+        "backend/core/predictive_safety.py": "6213e1a715df53fb138a59362d52eab6781b45607b3e6640a64d2d379f9f3504",
+        "backend/core/presentation.py": "155ea0d6d0eac80d3b64e1ae0701b04a791ebdba4895026107e13caa191e82ff",
+        "backend/core/rear_separation.py": "64c118d963bcb67220d7bf526adecd165752a407b2de7cdd4da527e12da05b6d",
+        "backend/core/recording.py": "e9693144142d17c9b8bcb1382557ca313bb1aaac17f2eb5559a7e917bd37460a",
+        "backend/core/recording_storage.py": "0c4e8bf9111a4db9b54f9a604c2bd4856f4189eba06e0cb6265e1ad4abb7d1b8",
+        "backend/core/recovery_depth.py": "4674f6f56f41b3323dfba9ae15496ffdcf27ada870ddb702accabc28baa0856e",
+        "backend/core/replay.py": "9094ef5336f784f4e4148121cb9849360dacec3b2443b0f2043274bac1ee6dc7",
+        "backend/core/reposition_lease.py": "c2c2a9088856287c8d462ea293ee66553340f5d0e216551793ee5a73ad68f008",
+        "backend/core/research.py": "d698624a37c30779c520714b8ffa2089334ef1ec153d442122b327e1914cbbc0",
+        "backend/core/research_safety.py": "78bd8dd8e5e35e60c6d96b4a8d218f111b62d6cba358b8dbf017f57302f67a5b",
+        "backend/core/resources.py": "046f9d4d6d8af5c84b8a94d42cca5962114d10089e00eeb4eab422af0a9b70e5",
+        "backend/core/route_bypass.py": "c6512ff6756e117a04d1a5ea69687403e81465c240f25af5927c2d26255c6c0d",
+        "backend/core/route_terminal.py": "4be10620a3da84c32d6744195bf122e984d030f49346910fcf999c7d41328ccc",
+        "backend/core/route_tracking.py": "6118ab0ace57f8abc7fba55988b03146d791b23deccac92c04c82a79297e9a68",
+        "backend/core/safety_policy.py": "4c64603f924dcfb2a51b9d376a699587658b082e9cbb0117aa953f29b53123bc",
+        "backend/core/scenarios.py": "669a4befd5b9a848843cb49aa1373c3816671b7c9bbb1e35f1e82b99edbfcbf4",
+        "backend/core/scene_overlays.py": "2ac644f094a922f9c523ef3e7bb5b8cecfdb33d35b50e21bbe564cf74d673ad1",
+        "backend/core/service.py": "539a282409816b63c251e32c186f2a1fd70f2de12f209b7e5ab356697f3f3d73",
+        "backend/core/shared_perception.py": "b8518727c4156b9f23ec9223b59b0d28fb1dce1221d5958968c8a94ca24b5458",
+        "backend/core/storage_retention.py": "ea8ebb0e6a0d427967c465f885af2412bb29148b49e85bd55909e9bbb024e9fc",
+        "backend/core/surface_motion.py": "7dee4e93398449830105cf668cfd2e12345d806fec232c48fc71ddd48def5280",
+        "backend/core/surface_registration.py": "7e15e373950eb9e8f7e321b699b421a43b80b37813860fdaae180716857ad3b2",
+        "backend/core/timing.py": "6d5d02c0f5989a1a041b03a09f250fe1a864a0e41b53d9224b5b403ec4976482",
+        "backend/core/urban_driver.py": "d2825717ba4e6ebf12cea951e2f1e0c0e82b6f3996dcdeb209574fb3c012c02d",
+        "backend/core/video_http.py": "db950f48707a72bee596e989f45e6c7135b21f8970a512468248f4646f73a67f",
+        "backend/core/video_prediction.py": "03650324ed39752b31db5a6d0b3de136337797cc7208abf9654d230430dc6d61",
+        "backend/core/visual_geometry.py": "9829e6ab8c6a7eab77f7dfbce47f237976974597a563faf9e5e854d08a48dabe",
+        "backend/graphics.py": "ae34b43e4f08db1fb8fd8e340b407244f0f0e7923e32bde33d54e2149b8c93f5",
+        "backend/image_stream.py": "62840162e258c1fe3a5da77557f75984129e052c5200df56c0d18ed6f25b187e",
+        "backend/learned/__init__.py": "45f3132efb9fad031c826e2374272cf67afd911913d2129b188f6a9bc95dffb1",
+        "backend/learned/features.py": "98cbf462edea0146217b9b636ab2e10c22c943d53ec2b7e078b3ef37dc1f6dc7",
+        "backend/learned/inference.py": "6040ac82d79bc51879b518692604492fae1e77abce57a9701307cd4152785288",
+        "backend/learning/__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+        "backend/learning/async_worker.py": "f61aa7ce6e7ef87abc2a9afad92866b44ab11153ba7ac27fe0d49660c4f006b0",
+        "backend/learning/counterfactual_check.py": "4220ce0b15f52a84fc18c23776959d59e64061c59d1757ef8d78865fee8a1c25",
+        "backend/learning/cpu_worker.py": "f72adf3aa86f024d5d6c7ab1e2ad38a9c9c58ebf9359d24bc9df6d2d49753bb4",
+        "backend/learning/egypt_budget.py": "dee1c269fe2da11664e0fe3cf3cb9bdaf78ba109cba891d7ba82d02c5f8ddbc2",
+        "backend/learning/experiment_budget.py": "ba6276a64759d62787f1847421deefd8cd74dbce647b9ca089676a175bcbf10c",
+        "backend/learning/hybrid_budget.py": "f81f36eed0b67ffcf285f36fdb607ba6bbd4625979c1c1a69e180eb75b72b8bc",
+        "backend/learning/independent_prediction.py": "6741bdc09c1366b824a49c34089e736b4c2e99f036c635c5b686b63e171cb148",
+        "backend/learning/motion_budget.py": "09fdf11ca17431178d444b6b30713b6b03bab1048402527536fb2c5263504389",
+        "backend/learning/motion_selector.py": "59e0c617c83088583f5ae2d96469b538ae5827ae427bdd2545d4f14665b053a7",
+        "backend/learning/native_validation_budget.py": "fc3403300738d3789b34d7673b54d5e18452b0177212d23f53695b74c1426499",
+        "backend/learning/path_entry_dataset.py": "4e45a85d18c258dff3d651aa9db4cf6438e23a6266d4d54f733da30244e791b4",
+        "backend/learning/path_entry_metrics.py": "da51bdc40913daaea114600f13dbda45353d4606d6375cf6b9f5b0811493d7b9",
+        "backend/learning/pilot_acceptance.py": "f308e3b659f11e33f4ce47ee5ec544cb748713463bdcf38a8a8a4a085aab2a90",
+        "backend/learning/pilot_budget.py": "9a3e07b0e718114b7b0473c8e6c3fa154f62607682f23f0c9b69e8d98b96bba6",
+        "backend/learning/pilot_provenance.py": "05000053499cdfc7f4324ebd25402c98547b1abe59cba4ebd0a3cc798b22a72b",
+        "backend/learning/recovery_budget.py": "3baa2c55a905aa4cf52f7cfb8f8f5344f8716a0152b07f80b75ee9ab73d57c3f",
+        "backend/learning/rl/__init__.py": "3e5db5decde1661989fb95ed4ecd05be3e5b158e200c1f8e3cfc91d16251df63",
+        "backend/learning/rl/actions.py": "5932427bbba82a5771cf8c830a532025afedf859cc74d66ea5310d645d30ea4f",
+        "backend/learning/rl/baselines.py": "54451c32a7be9951c823e2b765d0983d6a6bf6f598b2bfbb6727777e12c7ef8a",
+        "backend/learning/rl/demonstrations.py": "0e7fe094a96e5ad2f3d2189ee472ca808bf32262fd475465b6b96792ac52a8bc",
+        "backend/learning/rl/env.py": "3746cfc0f9eee3c0622afe7d81f3307918374d0074159a1e0a72902ae6317677",
+        "backend/learning/rl/evaluation.py": "c6f57b53eecf012836df57ed340ec4f887796920dab9d79715505c546bdf12b2",
+        "backend/learning/rl/maneuver_env.py": "ed15c133a6c4b5053eabc191bffc13a51bfa45bd142167208efb9a2b653c4e27",
+        "backend/learning/rl/maneuver_observations.py": "13292ffcf34610ae967590d6a5a83b3c52b32226d058a9585a1660c0e2de75fc",
+        "backend/learning/rl/maneuver_reward.py": "5319e2cef9077cbef4b4c74633092004cc3ad7346c14cf6ff34c1a3cacc8efd6",
+        "backend/learning/rl/maneuver_runtime.py": "9cf487881f2faf4a8ec039603c5f3ccebd835c8775446ae697d0f4126146d580",
+        "backend/learning/rl/observations.py": "2ef02934128557873ec1dac86b09dbdeb51e2cc3d299014ffafa595c628cc346",
+        "backend/learning/rl/radar.py": "38ffee7098c9228a0ac850dd5ad984f342199b9d6eb5f083a0a21ad14eff5f5f",
+        "backend/learning/rl/radar_retention.py": "93eff7e32db9584585a55474391a079102bc8ba2b5236d0bd3b0cada38e3bbf5",
+        "backend/learning/rl/reward.py": "4a946a17f60e8b6814b22c0e765e5891249b7abb3b3073610cfcca08a441e605",
+        "backend/learning/rl/route_progress.py": "80240e8c01a5282fea15ce9cce9f8b89d71cc78594fbbbf399e0cc56479e5473",
+        "backend/learning/rl/runtime.py": "da0c0a19e6359064674579b5fbff459b9e2187f557446ab52cf1729d00a454e9",
+        "backend/learning/rl/scenarios.py": "8e6f0ce9dc9522269cc4024b725fe3d102b9f3592099e8ecf7e45ad2ba5f8ee4",
+        "backend/learning/rl/supervisor.py": "6e2f4d4913abb9da2b05332682b92f4fe72836b448d354aaae48e2ed980cbc7e",
+        "backend/learning/rl/teacher.py": "973503d101e4e4ad3ca69d90aa491e53f9f8960f9b00a50f0587a5a5c3a6ea10",
+        "backend/learning/supervised/__init__.py": "2ef3924a78c1ef61d9b2abbff09d0ca8e6ae051b24d083e858e3e68317d5d863",
+        "backend/learning/supervised/features.py": "33cb0c5d51965c6e94b151584e8a70ae0d7c66d699c6bf59bc17867ed49344bf",
+        "backend/learning/supervised/inference.py": "0a2564265aaa9b301380cb812bb9b36b2ccadc2f25690711dbb102bd4f316431",
+        "backend/learning/supervised/motion.py": "a2352a161ef72f81f180cd5811b40292875226e167543f7712cd8a2fbe0b4e9d",
+        "backend/learning/trajectron_adapter.py": "a8b09808509bcc175d2355bff03c4f768e0cad5505f64e46579452873269994c",
+        "backend/nlp/__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+        "backend/nlp/processor.py": "eef9755066c83164b844249b61a102e6b09eafda20df04f302fd7601b8bb2896",
+        "backend/perception.py": "6ac3f714b37562b31acb69abf812aac65c6ab2ca877adf8bbb1fcfc434b45a3f",
+        "backend/perception_worker.py": "d6b54995e03f58d423c068ac1d172cc4d5cd26cbfa8398b90c5459c3feaabd1f",
+        "backend/provider.py": "36188bdbf50106dd073c3ff81bfdb5b6b407453166abc0d907ac5162a984b776",
+        "backend/providers.py": "380ad3b487f137b57a065794476bcc188ec9e6a170d030e12558536d2f2dc4e5",
+        "backend/recording.py": "654b788528d7e3e1d3e6902d2267f32344cf06bda579da4c8ec5dd5abb9d8383",
+        "backend/replay_service.py": "35a2a08afcb5e1b639b3c3e91280e5beb97bddfd63a17549217f8af2fdb5842a",
+        "backend/rl/__init__.py": "2d0a567926549787fe96b3856e462c4d63c4984d73e4cc916d6fdf66bcb4a4f0",
+        "backend/rl/actions.py": "b7a46995ec4385f2aadf81ebe0626f673a17e0d68fcd2a89ce1820258279b78f",
+        "backend/rl/baselines.py": "43b1ef61d2c04b8ad45f1d2249e77170b7f6485f093507eb69b8fc56c29043f3",
+        "backend/rl/demonstrations.py": "d040805f505491030b2e5185b408663130e3ca8b40da9c801380771ec9b0dda4",
+        "backend/rl/env.py": "171d39e9776575c666c084214f43adbc0c5732e5de71305db961722a3491fedc",
+        "backend/rl/evaluation.py": "75afad3242a03c8029bd76b46d1dd32873c57c8dca1bfd1be79d2c8fd1a0dab8",
+        "backend/rl/observations.py": "fc84daa64fa707110386b69fb4900130704f6d01c5ce94104170de439bc2d296",
+        "backend/rl/radar.py": "15f0440d38a33aab7654f44c6e7af2551c1d51d213d2789ce53c6f763e9aa6dd",
+        "backend/rl/radar_retention.py": "f8351472b2836c7a6a3c29e025ca4fdf23f8bde7a9e05baf83d739fdeb40f0c2",
+        "backend/rl/reward.py": "2714e0848130c3c53ddf4c30a23ff16b0a461c789479a45bd31c69691b43a9a1",
+        "backend/rl/runtime.py": "808a2896ffa84fc8e01100211467176c0ca75f92c0182e21ab26fad237b574ff",
+        "backend/rl/scenarios.py": "05c3673d963f45c02d56dc364a94ae0c07985e5a6f7432add6ce82931b848d44",
+        "backend/rl/supervisor.py": "e85826e2c2ccedb0c383a3f11203255ca47ba2cbec6ef4bc6ab57ef314edd259",
+        "backend/rl/teacher.py": "863edde0344ba3090bb6f396bc3bdb8d3f12ffaf56492c6e32058ceef6d43ce6",
+        "backend/server.py": "567f054dc3514b2e67ddd61859ecea7316622747094ec95b2508244f714462bb",
+        "backend/signals/__init__.py": "0968236a4b7b2af3e2cdd79af0b02cbda673236a6b1b27dc5793c5c48c07af97",
+        "backend/signals/decoders.py": "3826a3e1b90621d5788adb912bc160ef8c9774b71f53c20ec92413103d096c36",
+        "backend/signals/image_encoding.py": "3c0139dc8a427e41bb762bf119be134fdc0e451f2b401ab07846adda9eae5ad5",
+        "backend/signals/multirate.py": "1e3287eeb59303c899009e8a63b2b8c7423934665ae906559973daf6c9768e42",
+        "backend/signals/radar.py": "eda6905e3f7a48f73764aaf30b822cd989fc6814b39f4527e04eaeda4f172cd0",
+        "backend/signals/radar_retention.py": "bd74938925153bcc0abec2ff04e96cff0993266c3306427de06be2fe99b099fc",
+        "backend/signals/timing.py": "9f9449de8b76f2ec8255cbab3018590e16ff6e6fc283b119fe25d5512a09d2c3",
+        "backend/simulation_service.py": "fa0b731618e5dc73b777b4a94a1e44710b18b0e6fc85d206626f2510970ff25a",
+        "backend/websocket_bridge.py": "98c19af17b55a018db8275a806b2691da835f2750c452b813028043a26d16175",
+        "scripts/native/validate_egypt_urban.py": "3965fe1157f1c662c78e74eeb0d37df18a27968065e269fcf0dae5fc3b947bd4",
+        "scripts/native/validate_crossing_pair.py": "4d5a607a21d0d317e4ec16202bd2979556e293f65441ff1490147ec4898405a5",
+        "scripts/validate_hybrid_native.py": "daae232a3276d5cb176daa363aaa5615be4e1f92db59c589a16293cf06421895"
+      },
+      "created_at_utc": "2026-10-27T10:56:28.908121+00:00",
+      "npm_test_exit_code": 0,
+      "python_tests_exit_code": 0,
+      "frontend_build_exit_code": 0,
+      "replay_verified": true,
+      "javascript_tests": 209,
+      "python_tests": 1019,
+      "python_skipped": 4,
+      "compressed_normal_audits_identical": true,
+      "urban_command_forecast_veto_hashes_identical": true,
+      "extension_duplicate_noop_verified": true,
+      "native_acceptance": false,
+      "log_sha256": {
+        "python-full-03.log": "a2a2f38489ef63aab361d05d45220c1c95169e4f3eccf246d16a3c334c0e051b",
+        "npm-final.log": "97c412480ca5396ecf805238d464d92e0cfed6f9511c8c1f5eac04926b3ad935",
+        "dashboard-build-final.log": "6adf927baa6442e7a9d8205226f8015d75cccbe65e57078b3c6a79c2d1dc9ceb",
+        "normal-lossless-compression-resumed.json": "3778eb21983b7fc93b073f77cc11eec559b859c67ccbfebe41535ba79f3bf5fc",
+        "normal-coverage-after-compression.json": "006bb4792c067fc1d52d06ca8c4d5e96d0db975686b487532a783edeb7724349",
+        "urban-final-software.json": "cd8670305e7ddae9eb2a35bd65a2b012094cf1787eb8b1c9a334acef6357aaab",
+        "python-full-repair02b.log": "f18b8838d65035c01631e07cc471146dd3f4b4c9fafc1916a2eac8d34d0c4c76",
+        "diagnostic01-repair02-replay.json": "a9b8630bb6ac8795827725d3f7eeef5bf4ffb4974699c503797c3c298eebc965"
+      },
+      "logs_directory": "output\\egypt-validation\\software-20261027",
+      "repair": "SAME_FRAME_NAVIGATION_AND_MAP_STAGING_DURING_GPU_WAIT"
+    }
+  },
+  "budget": {
+    "kind": "EGYPT_NATIVE_VALIDATION_V1",
+    "authorized": true,
+    "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-validation",
+    "cap_s": 21600.0,
+    "development_cap_s": 14400.0,
+    "acceptance_cap_s": 7200.0,
+    "base_cap_s": 14400.0,
+    "extensions": [
+      {
+        "id": "EGYPT_DEVELOPMENT_20261027",
+        "phase": "DEVELOPMENT",
+        "seconds": 7200.0,
+        "created_at_utc": "2026-10-27T08:24:14.160123+00:00",
+        "prior_ledger_sha256": "8fafc96ad415b0366c4db248c59fff768aba2f86c1c32d1dc53a898a4008f6ae"
+      }
+    ],
+    "charged_s": 2868.470000000554,
+    "remaining_s": 18731.529999999446,
+    "development_remaining_s": 11531.529999999446,
+    "diagnostic_remaining_s": 3851.529999999446,
+    "protected_development_matrix_s": 7200.0,
+    "protected_browser_s": 480.0,
+    "acceptance_remaining_s": 7200.0,
+    "unfinished": 0,
+    "acceptance_attempted": false,
+    "reservations": [
+      {
+        "id": "26cac65d1ecf4e569e2750830100bceb",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 59.78100000007544,
+        "started": 610812.031,
+        "deadline": 612012.031,
+        "owner_pid": 33916,
+        "outcome": "FAILED",
+        "elapsed_s": 59.78100000007544,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-01.json"
+      },
+      {
+        "id": "ac1bd428243a4206801df56bfeab3dd8",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 59.35999999998603,
+        "started": 611308.015,
+        "deadline": 612508.015,
+        "owner_pid": 32916,
+        "outcome": "FINISHED",
+        "elapsed_s": 59.35999999998603,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-02.json"
+      },
+      {
+        "id": "3ffd9d35d3744a35a16865b2490b263b",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 63.54700000002049,
+        "started": 611660.546,
+        "deadline": 612860.546,
+        "owner_pid": 24672,
+        "outcome": "FINISHED",
+        "elapsed_s": 63.54700000002049,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-03.json"
+      },
+      {
+        "id": "e001510d706a46688665ab7d706b3462",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 138.21900000004098,
+        "started": 611768.781,
+        "deadline": 612968.781,
+        "owner_pid": 36928,
+        "outcome": "FINISHED",
+        "elapsed_s": 138.21900000004098,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-normal-04.json"
+      },
+      {
+        "id": "6caf26c31f264c6f8ffcfae0bba75942",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 80.0,
+        "started": 612436.515,
+        "deadline": 613636.515,
+        "owner_pid": 39312,
+        "outcome": "FINISHED",
+        "elapsed_s": 80.0,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-protected-05.json"
+      },
+      {
+        "id": "9fd0d6e0ea4a44f79e14c8c521a5f2f5",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 69.82900000002701,
+        "started": 612704.671,
+        "deadline": 613904.671,
+        "owner_pid": 20320,
+        "outcome": "FINISHED",
+        "elapsed_s": 69.82900000002701,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-1703-protected-06.json"
+      },
+      {
+        "id": "fc2bb76ce80b4c35b4647c091ef98026",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 6600.0,
+        "charged_s": 1816.219000000041,
+        "started": 613102.718,
+        "deadline": 619702.718,
+        "owner_pid": 42228,
+        "outcome": "FINISHED",
+        "elapsed_s": 1816.219000000041,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-matrix-07.json"
+      },
+      {
+        "id": "4130615860c440248a8472525d578365",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 48.32799999997951,
+        "started": 615067.265,
+        "deadline": 616267.265,
+        "owner_pid": 29836,
+        "outcome": "FINISHED",
+        "elapsed_s": 48.32799999997951,
+        "report": "output\\egypt-validation\\native-20261024-run1\\development-2707-protected-08.json"
+      },
+      {
+        "id": "1df8c1d6f84b4ef3a99cca1a0292cf5c",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 83.53100000007544,
+        "started": 638494.906,
+        "deadline": 639694.906,
+        "owner_pid": 24680,
+        "outcome": "FINISHED",
+        "elapsed_s": 83.53100000007544,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-09.json"
+      },
+      {
+        "id": "7f1fc668a9584ffea60a17ecde2aadf1",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 54.203000000095926,
+        "started": 638927.781,
+        "deadline": 640127.781,
+        "owner_pid": 36228,
+        "outcome": "FINISHED",
+        "elapsed_s": 54.203000000095926,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-10.json"
+      },
+      {
+        "id": "08e9059bc8b64ba3be156b8846be27be",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 56.14000000001397,
+        "started": 639196.375,
+        "deadline": 640396.375,
+        "owner_pid": 41196,
+        "outcome": "FINISHED",
+        "elapsed_s": 56.14000000001397,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-11.json"
+      },
+      {
+        "id": "9481a63d72594492a6830ef11350cf84",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 55.89000000001397,
+        "started": 639947.453,
+        "deadline": 641147.453,
+        "owner_pid": 8740,
+        "outcome": "FINISHED",
+        "elapsed_s": 55.89000000001397,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-12.json"
+      },
+      {
+        "id": "ab2e862cbd5445fc8ed48de509b9d543",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 54.04700000002049,
+        "started": 640220.781,
+        "deadline": 641420.781,
+        "owner_pid": 42180,
+        "outcome": "FINISHED",
+        "elapsed_s": 54.04700000002049,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-13.json"
+      },
+      {
+        "id": "8510e3e7d2914eb68b01616b96058b40",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 1200.0,
+        "charged_s": 49.17200000002049,
+        "started": 640403.015,
+        "deadline": 641603.015,
+        "owner_pid": 37168,
+        "outcome": "FINISHED",
+        "elapsed_s": 49.17200000002049,
+        "report": "output\\egypt-validation\\native-20261024-cleanup-followup\\development-2707-protected-14.json"
+      },
+      {
+        "id": "ceb4ee1fa45745499dd366f8d410cc38",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 180.0,
+        "charged_s": 5.313000000081956,
+        "started": 865670.296,
+        "deadline": 865850.296,
+        "owner_pid": 25948,
+        "outcome": "FINISHED",
+        "elapsed_s": 5.313000000081956,
+        "report": "output\\egypt-validation\\software-20261027\\external-session-handoff.json"
+      },
+      {
+        "id": "56fa3c1c5d1d4f349465d3b402eb4e90",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 900.0,
+        "charged_s": 95.34400000004098,
+        "started": 868311.406,
+        "deadline": 869211.406,
+        "owner_pid": 39796,
+        "outcome": "FINISHED",
+        "elapsed_s": 95.34400000004098,
+        "report": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-01.json"
+      },
+      {
+        "id": "89c9219c774449b591a797a11f8e89aa",
+        "phase": "DEVELOPMENT",
+        "reserved_s": 900.0,
+        "charged_s": 79.54700000002049,
+        "started": 869826.203,
+        "deadline": 870726.203,
+        "owner_pid": 19776,
+        "outcome": "FINISHED",
+        "elapsed_s": 79.54700000002049,
+        "report": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-02.json"
+      }
+    ],
+    "sha256": "daa11f6e792d685c9336f3d35ec8da74a798173ac2959a7a32ec292253b9c9c5"
+  },
+  "legacy_ledger_sha256": "ca6ac6acde5266168ac4af7da8bfd755303cdd9ff147b707050073a4f3bd7c3c",
+  "native_processes": [],
+  "ownership": {
+    "reserved": false,
+    "active": false
+  },
+  "diagnostic_attempts": [
+    {
+      "matrix_report": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-01.json",
+      "matrix_report_sha256": "39c858f1c304a9fbda74facb025b3d6919f98b84f28ae3fd12e4de7a115781ac",
+      "original_report": "output\\egypt-urban-pairs\\4cfe793882ca4399b230f9591a53aba3\\report.json",
+      "original_report_sha256": "cf552d40e5adab7dc11f260efcf565bf8a4549dea806a52d4be6f4fe331436de",
+      "source_sha256": "59558e4ab48db9c3245b18aeb0643e5b4e952fd8094768ef6eb2f9a412f6c088",
+      "source_unchanged": true,
+      "hypothesis": "Move initial audit, traffic release, UI/sample capture and report persistence out of the fresh-frame control interval; wait for a new post-release frame; share immutable same-frame geometry; drain sensor callbacks before serialized recording/export/actor cleanup. Current-source full suites pass and retained replay outputs match without changing the 250ms lease, sensors or density.",
+      "native_acceptance": false,
+      "seed": 2707,
+      "mode": "ROBOSPHERE",
+      "run": {
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_fb5cadd97a7e4b2f8fd7eb3762a04641",
+        "distance_m": 0.00040855410043150187,
+        "duration_s": 2.400000035762787,
+        "collisions": 0,
+        "contact_callbacks": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 48,
+          "p95_ms": 291.023969987873,
+          "p99_ms": 293.87839797651395,
+          "maximum_ms": 295.6064000027254,
+          "deadline_exceeded_frames": 16,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 16,
+          "carla_call_p95_ms": 0.9986050019506364,
+          "carla_call_p99_ms": 1.2178539996966724
+        }
+      },
+      "worker_exit_code": 1,
+      "cleanup_stage": "COMPLETE",
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "exports_closed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "simulator_exit_confirmed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "checks": {
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 2.450000036507845
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\4cfe793882ca4399b230f9591a53aba3\\source.zip",
+        "sha256": "fbb77c1184fe1ffb46e0590b4bac68ab52c25b6b4ff5891433b04b3d642a3a4c",
+        "files": 236,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "original_diagnostic_assessment": {
+        "passed": false,
+        "gates": {
+          "measured_diagnostic_goal": false,
+          "protected_without_contact": true,
+          "no_control_timeout": false,
+          "sensor_latency_targets": false,
+          "clean_worker_exit": false,
+          "exports_closed": true,
+          "saved_video_playback": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "source_unchanged": true
+        },
+        "native_acceptance": false
+      },
+      "shutdown_stages": [
+        {
+          "stage": "SIMULATION_SERVICE_CLOSE",
+          "monotonic_s": 868393.343
+        },
+        {
+          "stage": "STOP_CONTROL",
+          "monotonic_s": 868393.343
+        },
+        {
+          "stage": "STOP_SENSOR_RECEPTION",
+          "monotonic_s": 868393.343
+        },
+        {
+          "stage": "DRAIN_FINAL_EVENTS",
+          "monotonic_s": 868393.343
+        },
+        {
+          "stage": "FINALIZE_RECORDINGS",
+          "monotonic_s": 868393.359
+        },
+        {
+          "stage": "FINALIZE_EXPORTS",
+          "monotonic_s": 868393.359
+        },
+        {
+          "stage": "CLOSE_PERCEPTION",
+          "monotonic_s": 868402.562
+        },
+        {
+          "stage": "FINALIZE_COMPARISON",
+          "monotonic_s": 868402.562
+        },
+        {
+          "stage": "DESTROY_ACTORS_AND_RESTORE_WORLD",
+          "monotonic_s": 868402.562
+        },
+        {
+          "stage": "COMPLETE",
+          "monotonic_s": 868402.734
+        },
+        {
+          "stage": "RECORDING_EXPORTS_CLOSE",
+          "monotonic_s": 868402.781
+        },
+        {
+          "stage": "HTTP_SERVER_CLOSE",
+          "monotonic_s": 868402.781
+        },
+        {
+          "stage": "PERCEPTION_CLOSE",
+          "monotonic_s": 868402.859
+        },
+        {
+          "stage": "EVIDENCE_WRITER_CLOSE",
+          "monotonic_s": 868402.875
+        }
+      ]
+    },
+    {
+      "matrix_report": "output\\egypt-validation\\native-20261027\\diagnostic-2707-protected-02.json",
+      "matrix_report_sha256": "783f58e87bfa123deea1a9e9ba04565edc67115a3b580dcd63ce8ccbd69ab877",
+      "original_report": "output\\egypt-urban-pairs\\719cb8b4bf94403784e292caf654a0a0\\report.json",
+      "original_report_sha256": "d8d73ba1d9d87b099fedb4941e7c26102d6ffedb8496a00e9f2fe7b2a6730d3c",
+      "source_sha256": "adf910b4d175a17b39500c48b2cd01df24139376393486ac2033a4cded6502c4",
+      "source_unchanged": true,
+      "hypothesis": "Diagnostic01 measured16/48 controls over250ms (p95=291.024ms), repeatedly resetting throttle before movement. Repair02 stages the same-frame native route proposal and map during GPU sensor wait and shares immutable road strips instead of repeated4.2ms deep copies; later sensor, maneuver, independent shield and application checks remain unchanged.1019 Python and209JS checks pass; all49 recorded-input control/forecast/shield hashes match. Larger ray batches were tested and rejected as slower.",
+      "native_acceptance": false,
+      "seed": 2707,
+      "mode": "ROBOSPHERE",
+      "run": {
+        "status": "ERROR",
+        "reason": "runtime_failure",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_dd678bb0d05945168b8b168232b10188",
+        "distance_m": 0.00040855410043150187,
+        "duration_s": 2.8500000424683094,
+        "collisions": 0,
+        "contact_callbacks": 0,
+        "control_latency": {
+          "clock": "HOST_MONOTONIC",
+          "scope": "SENSOR_RECEIPT_TO_APPLICATION_CHECK",
+          "samples": 57,
+          "p95_ms": 271.5066000120714,
+          "p99_ms": 296.83849997352803,
+          "maximum_ms": 310.4184999829158,
+          "deadline_exceeded_frames": 16,
+          "unmeasured_frames": 0,
+          "unaligned_frames": 16,
+          "carla_call_p95_ms": 1.0851599974557755,
+          "carla_call_p99_ms": 1.1535160522907972
+        }
+      },
+      "worker_exit_code": 1,
+      "cleanup_stage": "COMPLETE",
+      "cleanup_confirmed": true,
+      "cleanup_error": null,
+      "exports_closed": true,
+      "independent_cleanup_probe": {
+        "synchronous": false,
+        "remaining_project_actors": [],
+        "passed": true
+      },
+      "simulator_exit_confirmed": true,
+      "video_playback_after_exit": {
+        "passed": true,
+        "checks": {
+          "ROBOSPHERE": {
+            "sha256_verified": true,
+            "first_and_last_decode": [
+              true,
+              true
+            ],
+            "duration_s": 2.9000000432133675
+          }
+        },
+        "clock": "AFTER_VERIFIED_ENGINE_EXIT"
+      },
+      "source_archive": {
+        "path": "D:\\projects\\Ai\\ya_rab_ostorha\\output\\egypt-urban-pairs\\719cb8b4bf94403784e292caf654a0a0\\source.zip",
+        "sha256": "1d7be1a1b2a3d3030c08f074c6c4041530f5ecbbda53997afa6253cbd911c6f5",
+        "files": 236,
+        "scope": "EXACT_SOURCE_BYTES_FOR_THIS_DIAGNOSTIC"
+      },
+      "original_diagnostic_assessment": {
+        "passed": false,
+        "gates": {
+          "measured_diagnostic_goal": false,
+          "protected_without_contact": true,
+          "no_control_timeout": false,
+          "sensor_latency_targets": false,
+          "clean_worker_exit": true,
+          "exports_closed": true,
+          "saved_video_playback": true,
+          "independent_cleanup": true,
+          "engine_exited": true,
+          "source_unchanged": true
+        },
+        "native_acceptance": false
+      },
+      "shutdown_stages": [
+        {
+          "stage": "SIMULATION_SERVICE_CLOSE",
+          "monotonic_s": 869897.421
+        },
+        {
+          "stage": "STOP_CONTROL",
+          "monotonic_s": 869897.421
+        },
+        {
+          "stage": "STOP_SENSOR_RECEPTION",
+          "monotonic_s": 869897.421
+        },
+        {
+          "stage": "DRAIN_FINAL_EVENTS",
+          "monotonic_s": 869897.437
+        },
+        {
+          "stage": "FINALIZE_RECORDINGS",
+          "monotonic_s": 869897.437
+        },
+        {
+          "stage": "FINALIZE_EXPORTS",
+          "monotonic_s": 869897.437
+        },
+        {
+          "stage": "CLOSE_PERCEPTION",
+          "monotonic_s": 869901.937
+        },
+        {
+          "stage": "FINALIZE_COMPARISON",
+          "monotonic_s": 869901.953
+        },
+        {
+          "stage": "DESTROY_ACTORS_AND_RESTORE_WORLD",
+          "monotonic_s": 869901.953
+        },
+        {
+          "stage": "COMPLETE",
+          "monotonic_s": 869902.109
+        },
+        {
+          "stage": "RECORDING_EXPORTS_CLOSE",
+          "monotonic_s": 869902.187
+        },
+        {
+          "stage": "HTTP_SERVER_CLOSE",
+          "monotonic_s": 869902.187
+        },
+        {
+          "stage": "PERCEPTION_CLOSE",
+          "monotonic_s": 869902.25
+        },
+        {
+          "stage": "EVIDENCE_WRITER_CLOSE",
+          "monotonic_s": 869902.265
+        }
+      ]
+    }
+  ],
+  "normal_native_diagnostics_executed": 0,
+  "development_matrix_executed": false,
+  "reserved_acceptance_executed": false,
+  "native_browser_check_executed": false,
+  "compression": {
+    "saved_bytes": 7088187123,
+    "recordings": [
+      {
+        "version": 1,
+        "status": "COMPLETE",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2",
+        "raw_replay_available": true,
+        "original_recording_status": {
+          "incomplete": false,
+          "error": null,
+          "dropped_frames": 0,
+          "dropped_events": 0,
+          "dropped_trace_rows": 0,
+          "first_dropped_frame": null,
+          "last_dropped_frame": null,
+          "written_frames": 3669,
+          "queued_bytes": 0,
+          "pending_items": 0,
+          "finalized": true
+        },
+        "files_compressed": 22019,
+        "saved_bytes": 3732147030,
+        "manifest": "lossless-compression.jsonl",
+        "rgb_policy": "ORIGINAL_COMPRESSED_IMAGES_UNCHANGED",
+        "started_at_utc": "2026-10-27T10:17:07.714491+00:00",
+        "previous_attempts": [
+          {
+            "status": "COMPRESSING",
+            "started_at_utc": "2026-10-27T09:52:02.055663+00:00",
+            "finished_at_utc": null,
+            "error": null,
+            "saved_bytes": 0
+          }
+        ],
+        "planned_files": 5104,
+        "processed_files": 5104,
+        "maximum_parallel_files": 4,
+        "finished_at_utc": "2026-10-27T10:18:43.107125+00:00",
+        "elapsed_s": 95.39000000001397
+      },
+      {
+        "version": 1,
+        "status": "COMPLETE",
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba",
+        "raw_replay_available": true,
+        "original_recording_status": {
+          "incomplete": false,
+          "error": null,
+          "dropped_frames": 0,
+          "dropped_events": 0,
+          "dropped_trace_rows": 0,
+          "first_dropped_frame": null,
+          "last_dropped_frame": null,
+          "written_frames": 3385,
+          "queued_bytes": 0,
+          "pending_items": 0,
+          "finalized": true
+        },
+        "files_compressed": 20315,
+        "saved_bytes": 3356040093,
+        "manifest": "lossless-compression.jsonl",
+        "rgb_policy": "ORIGINAL_COMPRESSED_IMAGES_UNCHANGED",
+        "started_at_utc": "2026-10-27T10:19:13.289642+00:00",
+        "planned_files": 20315,
+        "processed_files": 20315,
+        "maximum_parallel_files": 4,
+        "finished_at_utc": "2026-10-27T10:24:14.100397+00:00",
+        "elapsed_s": 300.81200000003446
+      }
+    ],
+    "post_compression_audits_identical": true
+  },
+  "normal_replay_audit": {
+    "source": "OFFLINE_RETAINED_NATIVE_SENSOR_GEOMETRY",
+    "native_acceptance": false,
+    "recordings": [
+      {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_f49cc7dbdb2e4071bf434a5eca4b93a2",
+        "frame_id": 3973,
+        "timestamp_s": 192.07216392830014,
+        "ego_position_m": [
+          -16.868337631225586,
+          140.60678100585938,
+          -0.0011921691475436091
+        ],
+        "geometry": {
+          "front_m": 2.3342264716047794,
+          "rear_m": 2.339412349043414,
+          "half_width_m": 1.01,
+          "wheelbase_m": 1.630126953125,
+          "max_steer_rad": 1.2217303432379762,
+          "source": "NATIVE_SPECIFICATIONS_WITH_AUDITED_MIRROR_ENVELOPE"
+        },
+        "original_asset_checksums_verified": true,
+        "metadata_sha256": "9de1e1b7ed51323b555671b1e2f00428f7e1823b0442d8ae30bb65ae35608570",
+        "front_camera": {
+          "path": "rgb/frontCamera-316-3973.jpg",
+          "sha256": "329d2b71d2188a8a8e667f8ea0f9e326719791e76bf986c471d48fb9b64b6fe5"
+        },
+        "sensor_mount_position_errors_m": {
+          "depth": 3.674304821508583e-06,
+          "frontCamera": 3.674304821508583e-06,
+          "frontLeftDepth": 1.0346297478010011e-05,
+          "frontLeftRadar": 1.0347085388578799e-05,
+          "frontRightDepth": 6.251241364661678e-06,
+          "frontRightRadar": 6.270587295788726e-06,
+          "gnss": 9.546933292035232e-07,
+          "imu": 0.0,
+          "lidar": 7.761262249023659e-07,
+          "radar": 6.1180671616451745e-06,
+          "rearLeftDepth": 1.640775604277972e-05,
+          "rearLeftRadar": 1.6401561108903513e-05,
+          "rearRightDepth": 1.228519073392996e-05,
+          "rearRightRadar": 1.2286114182931948e-05
+        },
+        "mount_positions_match_native_transforms": true,
+        "ground_plane": [
+          1.3179859302205836e-06,
+          -1.275382455374896e-07,
+          0.0014067866578169606
+        ],
+        "ground_support": 482,
+        "original_processing_scope_m": 6.0,
+        "expanded_processing_scope_m": 13.339412349043414,
+        "original_observed_road_range_m": 3.0,
+        "expanded_observed_road_range_m": 3.0,
+        "coverage_speed_limit_mps": 0.0,
+        "nearest_foreground_gap_m": 4.378617423353717,
+        "foreground_source": "DEPTH",
+        "first_unverified_pose_distance_m": 3.5,
+        "unknown_body_samples": 5,
+        "occupied_body_samples": 0,
+        "classification": "UNOBSERVED_CORRIDOR",
+        "unknown_space_policy": "UNCHANGED; NO UNOBSERVED CELL DECLARED FREE"
+      },
+      {
+        "recording": "D:\\projects\\Ai\\ya_rab_ostorha\\runs\\normal_city\\run_cc6bc8106a144d2ab16d01d7768d26ba",
+        "frame_id": 3683,
+        "timestamp_s": 178.4338395409286,
+        "ego_position_m": [
+          109.92354583740234,
+          -20.398908615112305,
+          -0.001192283583804965
+        ],
+        "geometry": {
+          "front_m": 2.334221681114286,
+          "rear_m": 2.339417139533907,
+          "half_width_m": 1.01,
+          "wheelbase_m": 1.61775390625,
+          "max_steer_rad": 1.2217303432379762,
+          "source": "NATIVE_SPECIFICATIONS_WITH_AUDITED_MIRROR_ENVELOPE"
+        },
+        "original_asset_checksums_verified": true,
+        "metadata_sha256": "d3b105527081802622434199bceb3c35c03634fad9e259f5291c5a76dfd38978",
+        "front_camera": {
+          "path": "rgb/frontCamera-316-3683.jpg",
+          "sha256": "f731b7ca1776107e3f3336c12dfadbfe0d8663aeaf5f97dda2d9b95af444e2e6"
+        },
+        "sensor_mount_position_errors_m": {
+          "depth": 2.3576378591667756e-06,
+          "frontCamera": 2.3576378591667756e-06,
+          "frontLeftDepth": 3.525663965971997e-06,
+          "frontLeftRadar": 3.5740155430183943e-06,
+          "frontRightDepth": 8.577243568899354e-06,
+          "frontRightRadar": 8.585188412607327e-06,
+          "gnss": 9.549834993771168e-07,
+          "imu": 0.0,
+          "lidar": 7.764977706365063e-07,
+          "radar": 6.7189865774914115e-06,
+          "rearLeftDepth": 3.0042178979814926e-06,
+          "rearLeftRadar": 3.068577227081334e-06,
+          "rearRightDepth": 4.6676121651504854e-07,
+          "rearRightRadar": 6.055805511059869e-07
+        },
+        "mount_positions_match_native_transforms": true,
+        "ground_plane": [
+          -7.165082193633443e-07,
+          -1.6058275302305476e-07,
+          0.0014134803171553505
+        ],
+        "ground_support": 490,
+        "original_processing_scope_m": 6.0,
+        "expanded_processing_scope_m": 13.339417139533907,
+        "original_observed_road_range_m": 3.0,
+        "expanded_observed_road_range_m": 3.0,
+        "coverage_speed_limit_mps": 0.0,
+        "nearest_foreground_gap_m": 4.401212374214083,
+        "foreground_source": "DEPTH",
+        "first_unverified_pose_distance_m": 3.5,
+        "unknown_body_samples": 5,
+        "occupied_body_samples": 0,
+        "classification": "UNOBSERVED_CORRIDOR",
+        "unknown_space_policy": "UNCHANGED; NO UNOBSERVED CELL DECLARED FREE"
+      }
+    ]
+  },
+  "gates": {
+    "A_SOFTWARE_AND_REPLAY": true,
+    "B_NATIVE_DIAGNOSTICS": false,
+    "C_SOURCE_FREEZE_FOR_MATRICES": false,
+    "D_DEVELOPMENT_MATRIX": false,
+    "E_RESERVED_ACCEPTANCE": false,
+    "F_NATIVE_BROWSER": false
+  },
+  "remaining_step": "Repair and measure remaining sensor collection/scene/space-planning latency, repeat only an evidenced new-source protected2707 diagnostic, then proceed in order. Do not spend acceptance or claim Egypt is complete."
+}

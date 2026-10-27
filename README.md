@@ -9,6 +9,17 @@ raw sensor assets while retaining videos/results and all current Egypt runs.
 It recovered 114.17 GiB of disk space at the cleanup snapshot and added a 4 GiB
 recording reserve. Retired raw recordings can no longer be replayed as sensors.
 
+The [27 October strict Egypt gates](docs/EGYPT_COMPLETION_GATES_20261027.md)
+add the separately authorized development-only extension, protected diagnostic
+and browser windows, lossless closed-recording storage, frame-bound timing and
+serialized shutdown. Native matrices remain required; software checks and
+diagnostic prefixes do not unlock Egypt. The concurrently integrated
+[shadow proposal package](docs/BEHAVIOR_PROPOSALS_20261027.md) has no model or
+actuator authority and makes no native timing or VLM-benefit claim.
+The two protected follow-up diagnostics still failed the 250 ms lease:
+Gate B is blocked, Egypt remains restricted, and the reserved acceptance
+window has not been used.
+
 The [24 October scenario and GPU interface update](docs/GPU_ACTION_UI_20261024.md)
 explains unavailable road choices and adds an explicit availability refresh.
 The main action now names native preparation/shutdown steps and shows measured

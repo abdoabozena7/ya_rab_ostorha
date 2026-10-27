@@ -139,8 +139,13 @@ def road_context(provider, session_id):
               speed*.6+speed**2/6.+provider.vehicle_geometry.front_m+provider.vehicle_geometry.rear_m+5.)
     keep=np.minimum(np.sum(first*first,axis=1),np.sum(second*second,axis=1))<=scope**2
     transform=np.array([[co,-si],[si,co]])
-    base['drivable_strips']=np.column_stack((first[keep]@transform,second[keep]@transform,
-                                            rows[keep,4],rows[keep,5:7]@transform)).tolist()
+    local_strips = np.column_stack((first[keep]@transform,second[keep]@transform,
+                                   rows[keep,4],rows[keep,5:7]@transform))
+    if getattr(provider, 'urban_driver', None) is not None:
+        from ..core.contracts import freeze_float_rows
+        base['drivable_strips'] = freeze_float_rows(local_strips)
+    else:
+        base['drivable_strips'] = local_strips.tolist()
     # A map route is only available after the provider actually found it around
     # a measured route blocker. Search can precede a complete standstill.
     base['alternatives'] = bool(getattr(provider, 'hybrid_alternative', None))

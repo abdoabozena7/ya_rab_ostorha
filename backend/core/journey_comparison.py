@@ -57,6 +57,7 @@ class JourneyComparison:
         self.previous = None
         self.contact_times = {}
         self.near = self.intervening = False
+        self.control_latency_samples = []
         try:
             saved = json.loads((self.directory/'latest.json').read_text(encoding='utf-8'))
             if saved.get('version') in (1, 2, 3, 4, 5, 6, 7) and isinstance(saved.get('runs'), dict):
@@ -123,8 +124,36 @@ class JourneyComparison:
         self.near = self.intervening = False
         self.harsh = False
         self.driver_metric_frame = self.driver_metric_stamp = self.driver_metric_wall = self.driver_metric_start = None
+        self.control_latency_samples = []
         self.save()
         return run
+
+    def record_application(self, timing):
+        if self.active is None or self.data.get('version') != 7:
+            return
+        sample = timing.get('sensor_to_application_check_ms')
+        if (type(sample) not in (int, float) or not math.isfinite(sample) or sample < 0
+                or timing.get('sensor_timing_verified') is not True):
+            self.active['control_latency_unmeasured_frames'] = self.active.get('control_latency_unmeasured_frames', 0) + 1
+            return
+        frame = timing.get('frame_id')
+        if self.control_latency_samples and frame == self.control_latency_samples[-1][0]:
+            return
+        self.control_latency_samples.append((frame, sample, timing.get('carla_control_call_ms'), timing.get('fresh_aligned')))
+
+    def _finish_control_timing(self):
+        if self.active is None or not self.control_latency_samples:
+            return
+        import numpy as np
+        samples = [row[1] for row in self.control_latency_samples]
+        calls = [row[2] for row in self.control_latency_samples if type(row[2]) in (int, float) and math.isfinite(row[2])]
+        self.active['control_latency'] = {'clock': 'HOST_MONOTONIC', 'scope': 'SENSOR_RECEIPT_TO_APPLICATION_CHECK',
+            'samples': len(samples), 'p95_ms': float(np.percentile(samples, 95)), 'p99_ms': float(np.percentile(samples, 99)),
+            'maximum_ms': max(samples), 'deadline_exceeded_frames': sum(value > 250. for value in samples),
+            'unmeasured_frames': self.active.get('control_latency_unmeasured_frames', 0),
+            'unaligned_frames': sum(row[3] is not True for row in self.control_latency_samples),
+            'carla_call_p95_ms': float(np.percentile(calls, 95)) if calls else None,
+            'carla_call_p99_ms': float(np.percentile(calls, 99)) if calls else None}
 
     def collision(self, collision):
         run = self.active
@@ -240,6 +269,7 @@ class JourneyComparison:
 
     def finish(self, reason, status='INTERRUPTED'):
         if not self.active: return
+        self._finish_control_timing()
         self.active.update(status='ARRIVED' if reason == 'destination_reached' else 'COLLISION' if reason == 'collision' else 'TIMEOUT' if reason=='egypt_route_timeout' else 'SHORTENED' if reason=='guided_shortened' else status, reason=reason)
         if self.active['status'] == 'ARRIVED':
             self.active['route_completion_percent'] = 100.

@@ -266,6 +266,11 @@ def main():
     if args.startup_ticket and not args.carla:parser.error('Native startup ticket requires CARLA')
     if args.session_duration is not None and args.session_duration <= 0:
         parser.error('Session duration must be positive')
+    from .learning.egypt_budget import inherited_session_duration
+    try:
+        args.session_duration = inherited_session_duration(args.session_duration)
+    except ValueError as error:
+        parser.error(str(error))
     configure_logging()
     validation_budget = None
     if args.validation_ticket:

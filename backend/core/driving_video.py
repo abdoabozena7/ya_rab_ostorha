@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import threading
 import time
+from .recording_storage import open_recorded, stored_exists
 
 _workers=set()
 _roots={}
@@ -35,13 +36,14 @@ def export_video(root, *, ffmpeg=None, allow_test_data=False):
     native=metadata.get('data_origin')=='REAL_SIMULATION' and metadata.get('provider')=='carla'
     if not native and not allow_test_data:raise ValueError('Video native provenance is unavailable')
     source = root / 'telemetry/video-frames.jsonl'
-    if not source.exists(): raise ValueError('No recorded driving-camera frames; no substitute image is used')
-    frames = [json.loads(line) for line in source.read_text(encoding='utf8').splitlines()]
+    if not stored_exists(source): raise ValueError('No recorded driving-camera frames; no substitute image is used')
+    with open_recorded(source, 'rt') as stream:
+        frames = [json.loads(line) for line in stream]
     if not frames: raise ValueError('The native driving-camera recording is empty')
     anchor=None
     events=root/'events/events.jsonl'
-    if events.exists():
-        with events.open(encoding='utf8') as stream:
+    if stored_exists(events):
+        with open_recorded(events, 'rt') as stream:
             for line in stream:
                 event=json.loads(line);journey=event.get('payload',{}).get('journey',{})
                 if journey.get('status')=='RUNNING' and (journey.get('driving_mode') in ('HYBRID','BASELINE') or journey.get('presentation_id') or metadata.get('config',{}).get('driver_profile')):

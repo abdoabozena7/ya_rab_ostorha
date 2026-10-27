@@ -60,7 +60,8 @@ export function missionState(p,local={}) {
     d.preloaded&&arm===0&&['SELECTING','READY','STARTING'].includes(phase)?'choose':'loading',
     ['SELECTING','READY','STARTING'].includes(phase)?'Starting your drive':preparation[phase][0],preparation[phase][1],
     {choices:!!d.preloaded&&arm===0&&['SELECTING','READY','STARTING'].includes(phase),loadingDrive:true,
-      label:preparation[phase][0]+'…'});
+      label:phase==='STARTING'&&p.journey?.startup_stage==='WAITING_FOR_FRESH_SENSORS'?
+        'Waiting for fresh sensors…':preparation[phase][0]+'…'});
   // A saved result belongs to the comparison, not the native connection.
   if(guided&&!local.newDrive&&['RESULTS','FINISHING','COMPLETE'].includes(phase)&&d.pair_id){
     const finishing=!!(phase==='FINISHING'||p.simulatorStop?.status==='STOPPING'||local.commandPending||local.shutdownPending);

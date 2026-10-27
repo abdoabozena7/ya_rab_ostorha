@@ -47,7 +47,7 @@ class ReplayService:
             return None, None
         for sensor in frame.sensors:
             if sensor.kind == SensorKind.RGB and sensor.asset:
-                return self.session.reader.asset_path(sensor).read_bytes(), {'frame': sensor.frame_id, 'timestamp': sensor.timestamp_s,
+                return self.session.reader.asset_bytes(sensor), {'frame': sensor.frame_id, 'timestamp': sensor.timestamp_s,
                                                                            'contentType': sensor.asset.media_type}
         return None, None
 
@@ -56,7 +56,7 @@ class ReplayService:
         if frame:
             for sensor in frame.sensors:
                 if sensor.sensor_id == name and sensor.asset:
-                    return self.session.reader.asset_path(sensor).read_bytes(), {'frame': sensor.frame_id,
+                    return self.session.reader.asset_bytes(sensor), {'frame': sensor.frame_id,
                         'timestamp': sensor.timestamp_s, 'contentType': sensor.asset.media_type}
         raise KeyError(name)
 

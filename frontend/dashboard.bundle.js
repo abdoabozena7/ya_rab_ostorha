@@ -3349,37 +3349,62 @@
   // frontend/scenario-profile.js
   var EGYPT_SCENARIO = "EGYPT_URBAN_CHAOS_V1";
   var LEGACY_SCENARIO = "SUDDEN_PEDESTRIAN_COMPARISON_V1";
+  var validationOwnsSimulator = (catalog) => !!catalog?.simulator_reserved && catalog?.validation_session_owned !== true;
   function validationSummary(catalog) {
     const option = catalog?.options?.find((option2) => option2.id === EGYPT_SCENARIO);
     const progress = option?.validation || catalog?.validation || {};
     const count = Number.isInteger(progress.completed_trips) && progress.completed_trips >= 0 ? progress.completed_trips : 0;
-    const phase = progress.phase === "DEVELOPMENT" ? "Development" : "Acceptance";
+    const phase = progress.run_kind === "DIAGNOSTIC" ? "Development diagnostic" : progress.phase === "DEVELOPMENT" ? "Development" : "Acceptance";
     const labels = {
       PENDING: "pending",
       RUNNING: "running",
       FAILED: "failed",
       INTERRUPTED: "interrupted",
       SOURCE_CHANGED: "source changed",
+      DIAGNOSTIC_PASSED: "passed; matrices pending",
       DEVELOPMENT_PASSED: "checks passed; acceptance pending",
       ACCEPTED: "accepted"
     };
     const state = option?.native_accepted ? "ACCEPTED" : progress.state || "PENDING";
-    const failed = Array.isArray(progress.failed_gates) ? progress.failed_gates : [];
-    return `${phase} ${labels[state] || "pending"} \xB7 ${count}/12 trips completed` + (failed.length ? ` \xB7 Failed gate: ${failed.join("; ")}` : "") + (progress.error ? ` \xB7 ${progress.error}` : "");
+    const pairs = Number.isInteger(progress.accepted_comparisons) && progress.accepted_comparisons >= 0 ? progress.accepted_comparisons : 0;
+    return `${phase} ${labels[state] || "pending"} \xB7 ${Math.min(12, count)}/12 trips completed \xB7 ${Math.min(6, pairs)}/6 comparisons accepted`;
+  }
+  function validationDetails(catalog) {
+    const option = catalog?.options?.find((option2) => option2.id === EGYPT_SCENARIO), progress = option?.validation || catalog?.validation || {};
+    return [option?.reason, validationSummary(catalog), ...progress.failed_gates || [], progress.error].filter(Boolean).join("\n");
+  }
+  function validationBlockReason(catalog) {
+    if (validationOwnsSimulator(catalog)) return "Native validation currently owns CARLA.";
+    const option = catalog?.options?.find((option2) => option2.id === EGYPT_SCENARIO), progress = option?.validation || catalog?.validation || {};
+    const reason = [progress.error, ...progress.failed_gates || [], option?.reason].filter(Boolean).join(" ");
+    if (/sensor.*latency|latency.*target/i.test(reason)) return "Sensor-to-control latency has not met the measured targets.";
+    if (/sensor|ControlSceneTimeout|freshness/i.test(reason)) return "Sensor processing has not passed the 250 ms deadline.";
+    if (/cleanup|shutdown|worker_exit/i.test(reason)) return "A clean native shutdown has not been verified.";
+    if (/storage|disk|space_required/i.test(reason)) return "The recording and export space requirement has not been met.";
+    if (/source|fingerprint/i.test(reason) && progress.state === "SOURCE_CHANGED") return "Native validation belongs to an older source version.";
+    if (/overtake/i.test(reason)) return "The required measured overtakes have not passed.";
+    return "Egypt requires successful native validation before driving.";
   }
   function urbanAvailability(catalog) {
     const option = catalog?.options?.find((option2) => option2.id === EGYPT_SCENARIO);
     if (!option) return { available: false, suffix: "checking availability", label: "Checking access", title: "Checking Egypt journey access", notice: "Availability has not been received. Status can refresh with CARLA stopped." };
-    if (option.available !== true) return { available: false, suffix: "unavailable", label: "Needs validation", title: "Egypt journey needs validation", notice: validationSummary(catalog) + ". " + (catalog?.simulator_reserved ? "The validation runner owns CARLA exclusively; dashboard preparation is paused." : "Egypt remains locked until source-bound native acceptance passes. GPU memory cannot unlock it.") };
+    if (option.available !== true) return {
+      available: false,
+      suffix: "unavailable",
+      label: "Needs validation",
+      title: "Egypt journey needs validation",
+      notice: validationBlockReason(catalog),
+      details: validationDetails(catalog)
+    };
     return { available: true, suffix: option.native_accepted ? "" : "validation only", label: option.native_accepted ? "Ready" : "Validation only", title: option.native_accepted ? "Egypt journey is ready" : "Validation session active", notice: option.native_accepted ? "Egypt urban journey is available; source-bound native acceptance verified." : "Egypt urban journey is available in the active validation window. Native acceptance is pending." };
   }
   function scenarioStartState(local, catalog) {
-    const access = urbanAvailability(catalog), blocked = !!catalog?.simulator_reserved || local.scenarioId === EGYPT_SCENARIO && !access.available;
+    const access = urbanAvailability(catalog), blocked = validationOwnsSimulator(catalog) || local.scenarioId === EGYPT_SCENARIO && !access.available;
     return {
       blocked,
       checking: blocked && access.suffix === "checking availability",
       needsPreparation: !blocked && !!local.scenarioDraft,
-      label: blocked ? access.suffix === "checking availability" ? "Checking scenario access\u2026" : validationSummary(catalog) : local.scenarioDraft ? "Prepare selected scenario" : null
+      label: blocked ? access.suffix === "checking availability" ? "Checking scenario access\u2026" : validationOwnsSimulator(catalog) ? "Native validation in progress" : "Validation required" : local.scenarioDraft ? "Prepare selected scenario" : null
     };
   }
   var isEgyptScenario = (value) => value?.scenario_id === EGYPT_SCENARIO || value?.id === EGYPT_SCENARIO || value?.protocol === "EGYPT_COMPLETE_DRIVERS_V1";
@@ -3464,7 +3489,7 @@
       {
         choices: !!d.preloaded && arm === 0 && ["SELECTING", "READY", "STARTING"].includes(phase),
         loadingDrive: true,
-        label: preparation[phase][0] + "\u2026"
+        label: phase === "STARTING" && p.journey?.startup_stage === "WAITING_FOR_FRESH_SENSORS" ? "Waiting for fresh sensors\u2026" : preparation[phase][0] + "\u2026"
       }
     );
     if (guided2 && !local.newDrive && ["RESULTS", "FINISHING", "COMPLETE"].includes(phase) && d.pair_id) {
@@ -6794,8 +6819,8 @@
       const savedResults = !local.newDrive && d.guided && ["RESULTS", "FINISHING", "COMPLETE"].includes(d.status) && d.pair_id;
       const activePresentation = d.id && !["IDLE", "COMPLETE", "CANCELLED", "ERROR"].includes(d.status);
       if (activePresentation && p.controller === false) local.observing = true;
-      const validationOwnsSimulator = !!scenarioCatalog?.simulator_reserved;
-      if (scenarioCatalog && !validationOwnsSimulator && !savedResults && !activePresentation && !local.autoRequested && !p.isReplay && p.simulatorStart?.available) {
+      const validationOwnsSimulator2 = validationOwnsSimulator(scenarioCatalog);
+      if (scenarioCatalog && !validationOwnsSimulator2 && !savedResults && !activePresentation && !local.autoRequested && !p.isReplay && p.simulatorStart?.available) {
         local.autoRequested = true;
         if (!p.connected && !p.simulationStarting && p.simulatorStart.status !== "FAILED" && p.simulatorStop?.status !== "STOPPING") {
           local.launchPending = true;
@@ -6805,7 +6830,7 @@
           });
         }
       }
-      if (scenarioCatalog && !validationOwnsSimulator && !savedResults && !activePresentation && !["STARTING", "RUNNING"].includes(p.journey?.status) && p.connected && p.fresh && !p.isReplay && !local.shutdownPending && !local.preloadRequested && !local.preloadError && !local.observing) {
+      if (scenarioCatalog && !validationOwnsSimulator2 && !savedResults && !activePresentation && !["STARTING", "RUNNING"].includes(p.journey?.status) && p.connected && p.fresh && !p.isReplay && !local.shutdownPending && !local.preloadRequested && !local.preloadError && !local.observing) {
         prepareHere();
       }
       if (d.page_id === local.pageId) {
@@ -6826,7 +6851,7 @@
         }
       }
       if (local.preloadRequested && !local.pageAdmitted && p.acknowledged < local.preloadSequence && performance.now() - local.preloadAt > 45e3) local.preloadError = "The page did not receive confirmation. Reconnect or prepare a fresh drive here.";
-      const state = missionState(p, { ...local, validationReserved: validationOwnsSimulator });
+      const state = missionState(p, { ...local, validationReserved: validationOwnsSimulator2 });
       document.body.dataset.mission = state.screen;
       if (!state.camera && $11("cameraCard").classList.contains("camera-expanded")) tools2.expandCamera(false);
       const history2 = document.body.dataset.workspace === "results";
@@ -6875,8 +6900,8 @@
       $11("missionRefreshScenarios").disabled = tools2.scenarioLoading || local.scenarioRefreshing;
       $11("missionRefreshScenarios").textContent = tools2.scenarioLoading ? "Checking availability\u2026" : "Refresh availability";
       $11("missionScenarioAccessTitle").textContent = availability.title;
-      $11("missionScenarioBackendReason").textContent = urbanOption?.reason || "Waiting for the simulator catalog.";
-      $11("missionScenarioTechnical").hidden = availability.available || !urbanOption?.reason;
+      $11("missionScenarioBackendReason").textContent = urbanOption ? validationDetails(scenarioCatalog) : "Waiting for the simulator catalog.";
+      $11("missionScenarioTechnical").hidden = !urbanOption;
       $11("missionScenarioSelectionHint").textContent = local.scenarioDraft ? "Selection only \xB7 no drive started" : "Both drivers use the selected scenario";
       const scenarioNotice = (local.scenarioId === EGYPT_SCENARIO && availability.available ? `EGYPT_URBAN_CHAOS_V1 \xB7 v1 \xB7 seed ${d.seed ?? "assigned during preparation"} \xB7 600\u2013800 m \xB7 requested 60 vehicles / 100 pedestrians. ` + (urbanOption?.native_accepted ? "Source-bound native acceptance verified." : "Native acceptance pending; bounded validation only. No zero-contact guarantee.") : availability.notice) + (tools2.scenarioError ? " " + tools2.scenarioError : "");
       if ($11("missionScenarioNotice").textContent !== scenarioNotice) $11("missionScenarioNotice").textContent = scenarioNotice;
@@ -6884,13 +6909,13 @@
       for (const input of experience.querySelectorAll("[name=firstDrive]")) input.disabled = !!local.commandPending || local.scenarioSelectionPending || !!d.preloaded && !d.awaiting_choice;
       const primary = $11("drivePrimaryAction");
       primary.hidden = !state.action && !state.choices && !state.loadingDrive;
-      const scenario = validationOwnsSimulator || ["START_GUIDED", "START_SIMULATION", "PREPARE_HERE"].includes(state.action) ? scenarioStartState(local, scenarioCatalog) : {};
+      const scenario = validationOwnsSimulator2 || ["START_GUIDED", "START_SIMULATION", "PREPARE_HERE"].includes(state.action) ? scenarioStartState(local, scenarioCatalog) : {};
       const scenarioBlocked = scenario.blocked;
       const actionLabel = local.scenarioSelectionPending ? "Preparing selected scenario\u2026" : scenario.label || state.label;
       const busy = !!(state.loadingDrive || local.scenarioSelectionPending || scenario.checking);
-      if (scenarioBlocked) primary.hidden = true;
+      if (scenarioBlocked) primary.hidden = false;
       validationNotice.hidden = !scenarioBlocked;
-      validationNotice.textContent = scenarioBlocked ? scenario.label : "";
+      validationNotice.textContent = scenarioBlocked ? validationSummary(scenarioCatalog) : "";
       if (primary.textContent !== actionLabel) primary.textContent = actionLabel;
       primary.dataset.action = scenarioBlocked ? "" : state.action || "";
       primary.disabled = !state.action || local.scenarioSelectionPending || scenarioBlocked;
@@ -6898,7 +6923,7 @@
       primary.dataset.loading = String(busy);
       primary.setAttribute("aria-busy", String(busy));
       primary.dataset.gpuStatus = gpuPanel.dataset.status;
-      primary.setAttribute("aria-describedby", "missionNextHint missionGPU");
+      primary.setAttribute("aria-describedby", "missionValidationStatus missionNextHint missionGPU");
       $11("missionFreeGPU").hidden = !state.freeGPU || state.action === "FREE_GPU";
       $11("missionWorking").hidden = !["loading", "releasing"].includes(state.screen);
       $11("missionNextHint").textContent = scenarioBlocked ? availability.notice : scenario.needsPreparation ? "Access is available. Prepare this scenario, then choose when to start driving." : local.scenarioSelectionPending ? "Waiting for the selected road scenario to be prepared." : state.loadingDrive ? state.detail : state.choices && !state.action ? "Simulation ready. Choose your first drive." : { PREPARE_HERE: "Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.", START_SIMULATION: "Next: connect the camera, then choose your first drive.", START_GUIDED: "Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.", NEXT: state.arm === 0 ? "Next: stop, save, then check the other drive\u2019s starting scene." : "Next: stop, save, then compare the recorded results.", FINISH: "Recordings and previous comparisons remain in Menu." }[state.action] || "";

@@ -37,6 +37,7 @@ class MeasuredSpace:
         self.execution_proofs=OrderedDict();self.proof_lock=threading.Lock();self.proof_cache_hits=0
         self.forward_assessments={}
         self.urban_forecasts=OrderedDict()
+        self.forecast_geometries=OrderedDict()
         self.requested_scope_m = 0.
 
     def ensure_scope(self, path):
@@ -65,6 +66,18 @@ class MeasuredSpace:
         with self.proof_lock:
             self.execution_proofs[key]=freeze_json(proof)
             while len(self.execution_proofs)>32:self.execution_proofs.popitem(last=False)
+
+    def forecast_geometry(self, prediction, grid):
+        from .prediction import forecast_geometry
+        prediction = freeze_json(prediction)
+        key = (id(prediction), np.asarray(grid, dtype='<f8').tobytes())
+        cached = self.forecast_geometries.get(key)
+        if cached is None or cached[0] is not prediction:
+            cached = (prediction, forecast_geometry(prediction['tracks'], prediction['control_trajectories'], grid))
+            self.forecast_geometries[key] = cached
+            while len(self.forecast_geometries) > 4:
+                self.forecast_geometries.popitem(last=False)
+        return cached[1]
 
     def certificate(self, path):
         from .maneuver import ObservedSpace
@@ -109,6 +122,8 @@ class ControlScene:
     build_ms: float
     semantic_coverage: object
     timings_ms: object = None
+    stages_wall_s: object = None
+    timing_metadata: object = None
 
     def usable(self, timestamp_s, wall_s, *, max_sim_age_s=.1, max_wall_age_s=.25):
         return (0 <= timestamp_s-self.observation.timestamp_s <= max_sim_age_s+1e-6
@@ -130,6 +145,8 @@ class ControlScene:
                 'radar_velocity_tracks':self.prediction.get('radar_velocity_tracks',0),
                 'radar_velocity_observability':to_dict(self.prediction.get('radar_velocity_observability',{})),
                 'timings_ms': to_dict(self.timings_ms),
+                'stages_monotonic_s': to_dict(self.stages_wall_s),
+                'timing_metadata': to_dict(self.timing_metadata),
                 'coordinate_frame': 'EGO_AT_MEASUREMENT_X_FORWARD_Y_RIGHT_Z_UP',
                 'space_states': ['FREE', 'OCCUPIED', 'UNKNOWN'],
                 'occlusion_policy': 'UNOBSERVED_CELLS_UNKNOWN',
@@ -149,11 +166,16 @@ class ControlSceneBuilder:
         from .control_radar import RadarVelocityFusion
         self.radar_velocity=RadarVelocityFusion()
 
-    def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None, track_motion=True):
+    def build(self, observation, asset_reader, *, received_wall_s, semantic_result=None, track_motion=True,
+              sensor_timing=None):
         began = time.perf_counter()
         began_wall=monotonic()
         if not isinstance(observation, SensorObservation):
             raise ValueError('ControlScene accepts sensor observations only')
+        timing_metadata = sensor_timing or {
+            'source': 'UNINSTRUMENTED_OR_REPLAY', 'issues': ['SENSOR_TIMING_NOT_CAPTURED'],
+            'stages': {'first_required_sensor_received': received_wall_s, 'frame_complete': None}}
+        stages = {**timing_metadata['stages'], 'scene_build_started': began_wall}
         if observation.frame_id <= self.last_frame:
             raise ValueError('ControlScene frames must advance')
         if any(c.frame_id != observation.frame_id or
@@ -179,6 +201,8 @@ class ControlSceneBuilder:
             # forecasts. Display tracking runs in its own observer thread.
             self.last_frame=observation.frame_id
             published=monotonic();finished=time.perf_counter()
+            stages.update(scene_geometry_ready=published, prediction_started=published,
+                          prediction_completed=published, scene_published=published)
             prediction=freeze_json({'tracks':[],'trajectories':[], 'motion_tracking_complete':False,
                 'timestamp_s':observation.timestamp_s, 'frame_id':observation.frame_id,
                 'source':'RULE_GEOMETRY_ONLY'})
@@ -188,7 +212,8 @@ class ControlSceneBuilder:
             return ControlScene(1,self.session_id,observation,self.geometry,points,prediction,
                 MeasuredSpace(points,self.geometry,observation,assets,measured_surfaces=sources,depth_images=depth_images),
                 received_wall_s,published,(finished-began)*1000,
-                freeze_json({'motion_tracking':'DISPLAY_OBSERVER_ONLY','classified':False}),timing)
+                freeze_json({'motion_tracking':'DISPLAY_OBSERVER_ONLY','classified':False}),timing,
+                freeze_json(stages),freeze_json(timing_metadata))
         # Tracking and space use the same synchronized surround measurements.
         # Sparse LiDAR alone repeatedly split parked bodies between rotations.
         # Voxel sampling bounds cost while preserving original sensor evidence.
@@ -203,6 +228,7 @@ class ControlSceneBuilder:
         tracking_points=np.concatenate(measured)
         tracking_points.flags.writeable=False
         depth_ready=time.perf_counter()
+        stages.update(scene_geometry_ready=monotonic(), prediction_started=monotonic())
         ego = observation.ego
         base = ControlCommand(observation.frame_id, observation.timestamp_s,
                               ego.throttle, ego.brake, ego.steering, ego.reverse,
@@ -255,10 +281,11 @@ class ControlSceneBuilder:
         self.last_frame = observation.frame_id
         frozen_prediction=freeze_json(prediction);frozen_coverage=freeze_json(coverage)
         published=monotonic();finished=time.perf_counter()
+        stages.update(prediction_completed=published, scene_published=published)
         timing={'input_wait_before_build':(began_wall-received_wall_s)*1000,
                 'lidar_decode':(lidar_ready-began)*1000,'depth_decode_and_fusion':(depth_ready-lidar_ready)*1000,
                 'tracking_and_forecasts':(tracked-depth_ready)*1000,'semantics_and_freezing':(finished-tracked)*1000}
         return ControlScene(1, self.session_id, observation, self.geometry, points,
                             frozen_prediction, MeasuredSpace(points, self.geometry, observation, assets,measured_surfaces=sources,depth_images=depth_images,visual_points=tracking_points),
                             received_wall_s, published, (finished-began)*1000,
-                            frozen_coverage,freeze_json(timing))
+                            frozen_coverage,freeze_json(timing),freeze_json(stages),freeze_json(timing_metadata))

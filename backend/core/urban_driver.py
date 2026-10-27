@@ -29,7 +29,11 @@ def urban_forecast(scene, horizon_s):
     if cached is not None and cached[0] is scene.prediction:
         return replace(scene, prediction=cached[1])
     tracks = scene.prediction['tracks']
-    modes = kinematic_modes(tracks, grid=grid, frozen_points=True)
+    modes = (list(scene.prediction['control_trajectories'])
+             if scene.prediction.get('source') == 'CONTROL_SENSOR_PIPELINE'
+             and scene.prediction.get('horizon_s') == float(grid[-1])
+             and not scene.prediction.get('hypothesis_set_id')
+             else kinematic_modes(tracks, grid=grid, frozen_points=True))
     for track in tracks:
         p = np.asarray(track['position_m'], float)
         v = np.asarray(track['velocity_mps'], float)
@@ -205,12 +209,13 @@ class UrbanManeuverDriver(HybridDriver):
         tracks = scene.prediction['tracks']
         probe = spatial_route(self.offset, road, np.arange(0., 70.01, .5))
         front = []
-        for track in tracks:
-            x, y = track['position_m']
-            along, lateral = path_coordinates([x], [y], probe)
+        positions = np.asarray([track['position_m'] for track in tracks], float).reshape(-1, 2)
+        along, lateral = path_coordinates(positions[:, 0], positions[:, 1], probe) if len(positions) else ((), ())
+        for index, track in enumerate(tracks):
+            x = track['position_m'][0]
             if (track.get('confirmed') and x > self.geometry.front_m
-                    and lateral[0] < self.geometry.half_width_m + track['half_size_m'][1] + .3):
-                front.append((max(0., float(along[0]) - track['half_size_m'][0] - self.geometry.front_m), track))
+                    and lateral[index] < self.geometry.half_width_m + track['half_size_m'][1] + .3):
+                front.append((max(0., float(along[index]) - track['half_size_m'][0] - self.geometry.front_m), track))
         nearest = min(front, key=lambda row: row[0]) if front else None
         result['front_blocker'] = {'track_id': nearest[1]['id'], 'gap_m': nearest[0]} if nearest else None
         target, visible = self._speed(scene, road, max(0., cap_mps))

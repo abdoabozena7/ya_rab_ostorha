@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "created_at_utc": "2026-10-27T09:47:18.979919+00:00",
+  "scope": "FIRST_PACKAGE_OFFLINE_HANDOFF_NOT_NATIVE_ACCEPTANCE",
+  "focused": {
+    "tests": 27,
+    "wall_seconds": 0.946,
+    "passed": true,
+    "log_sha256": "92817d7f86cfc9aec44ddf39fcb981eac1b84c97bc34f55233e1b5e45cd8ed26"
+  },
+  "integrated": {
+    "tests": 117,
+    "wall_seconds": 4.466,
+    "passed": true,
+    "log_sha256": "1d90021d591a590b524e687d4d04cd0337dfa1bd8baa44b50d26289173af4bfc"
+  },
+  "recorded_replay": {
+    "passed": true,
+    "source_sha256_at_check": "b352cd4ff07b11c7bdb6e5392287e4de07320fe7b5a8cc3c5aac8c7792794605",
+    "historical_a_sha256": "f62df374747e5c7945eaaa6ec99336d0bb28e52403f522b509f07c60f082c00d",
+    "urban_decisions": 4,
+    "rule_frames": 34,
+    "urban_output_sha256": "763e9a5e83e1fe0fc82f97345e766f3d5baff985848f71b4cfd0abd24c8d29d4",
+    "rule_output_sha256": "e1edf762f13573679f33523dc64aa799b5480d3e34e3dc0d88b9292617f3daea",
+    "input_sha256": "2d81e1daa39063d6ddc5f6c668fabafbc09f436871a501928d0f5d98f772f0c7"
+  },
+  "verified_properties": {
+    "egypt_default_shadow_disabled": true,
+    "valid_prepare_intent_does_not_change_egypt_control": true,
+    "model_failure_does_not_change_recorded_replay": true,
+    "shadow_observes_after_submission": true,
+    "wall_and_simulation_freshness_unchanged": true,
+    "stale_or_missing_traces_cannot_pass_p95_target": true,
+    "no_inference_worker_loaded": true
+  },
+  "budget_files": [
+    {
+      "path": "output/egypt-validation/budget.sqlite",
+      "before_sha256": "4f808a070deb9fe13a0fe714b68f9a41e7f6f2998c5c5c50f8330ed66d3f9224",
+      "after_sha256": "4f808a070deb9fe13a0fe714b68f9a41e7f6f2998c5c5c50f8330ed66d3f9224",
+      "unchanged": true
+    },
+    {
+      "path": "output/egypt-validation/allowance.json",
+      "before_sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be",
+      "after_sha256": "ce173469841fa671f7367c065826755ec00f1cdf380975acbe5e0ba523fbc6be",
+      "unchanged": true
+    }
+  ],
+  "owned_file_sha256": {
+    "backend/core/pipeline_timing.py": "18a4fcac2c91527f05977e1e696e9eab934ebac8cb3c0b3f969d0dfb1ebe3e8f",
+    "backend/core/behavior_proposals.py": "ed5f3cb1834e38856ce413d7d15ee0ebbb2732f7075918deb734d7ce428a221a",
+    "config/behavior-proposals-v1.json": "0f570603899926bbf0540592468280df359908181a2d13a86f9a366c1454e139",
+    "scripts/behavior_experiment.py": "738abfbf8dc49cd2b9588a0d5ff55405219f7108e3dc1d4f4b853a0863164ffd",
+    "tests/test_behavior_proposals.py": "bae5243a6df76c5c0b73e3fb0c87236e72cdf051e8563d98f884163309a62cd7",
+    "tests/test_pipeline_timing.py": "5250fbd2f2933c03db9e1a890603e24ec116b0724bc9c4beb362a012005713b4",
+    "tests/test_behavior_experiment.py": "2f3292db3051810c188417398655a6f34a97d2b52ad3fce5725310ae6c0cc114"
+  },
+  "environment": {
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "packages": {
+      "numpy": {
+        "status": "INSTALLED",
+        "version": "2.5.3"
+      },
+      "Pillow": {
+        "status": "INSTALLED",
+        "version": "12.3.0"
+      },
+      "scipy": {
+        "status": "NOT_INSTALLED",
+        "version": null
+      },
+      "carla": {
+        "status": "INSTALLED",
+        "version": "0.9.16"
+      }
+    }
+  },
+  "full_suite_diagnostic": {
+    "tests": 1013,
+    "wall_seconds": 59.252,
+    "passed": false,
+    "log_sha256": "f735eb3a24b89ca4fea52908aaeb6b298c64233de6519ecd9b2f451c9830ae7e",
+    "skipped": 4,
+    "failures": 1,
+    "errors": 2,
+    "status": "SHARED_OWNER_REPAIR_PENDING",
+    "issues": [
+      "SensorOwnershipTests.test_destroy_is_attempted_even_when_sensor_stop_fails",
+      "ServiceBoundaryTests.test_provider_is_closed_when_safe_command_fails_and_recording_flushes",
+      "NativePreparationTests.test_core_imports_no_sdk_renderer_or_ml_dependency"
+    ]
+  },
+  "native_run": false,
+  "native_acceptance": false,
+  "git_operations": false,
+  "frontend_modified_by_package": false,
+  "final_current_source_freeze_owner": "Concurrent Egypt completion session"
+}

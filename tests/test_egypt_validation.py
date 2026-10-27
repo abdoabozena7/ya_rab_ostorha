@@ -18,7 +18,8 @@ from backend.core.egypt_urban import (
     acceptance_matrix, configuration, deployment_status, evaluate_matrix, evaluate_pair, scenario_catalog,
 )
 from backend.learning.egypt_budget import (
-    EgyptBudget, active_ticket, ownership_status, require_simulator_access, save_json,
+    DEVELOPMENT_EXTENSION_ID, EgyptBudget, active_ticket, effective_caps, ownership_status,
+    require_simulator_access, save_json,
 )
 from backend.server import Handler
 from scripts.native import validate_egypt_urban as runner
@@ -28,6 +29,9 @@ from tests.test_egypt_urban import accepted_pair
 
 def measured_pair(seed, first, *, acceptance):
     pair = accepted_pair()
+    for run in pair['runs'].values():
+        run['control_latency'] = {'samples': 600, 'p95_ms': 200., 'p99_ms': 225.,
+                                  'deadline_exceeded_frames': 0, 'carla_call_p99_ms': 2.}
     pair['order'] = [first, 'ROBOSPHERE' if first == 'NORMAL' else 'NORMAL']
     for setup in [pair['manifest'], *(run['setup'] for run in pair['runs'].values())]:
         setup['comparison_scenario']['seed'] = seed
@@ -38,6 +42,7 @@ def measured_pair(seed, first, *, acceptance):
             'source_unchanged': True, 'attempts_retained': True, 'native_acceptance': True, 'pair': pair,
             'completed_without_shortening': True, 'finish_completed': True, 'exports_closed': True,
             'cleanup_confirmed': True, 'simulator_exit_confirmed': True,
+            'native_worker_exit_code': 0, 'cleanup_stage': 'COMPLETE',
             'independent_cleanup_probe': {'passed': True}, 'video_playback_after_exit': {'passed': True},
             'render_profile': {'render_profile': 'LOW'}}
 
@@ -71,6 +76,46 @@ class EgyptValidationFixture(unittest.TestCase):
 
 
 class IsolatedEgyptTests(EgyptValidationFixture):
+    def test_development_extension_is_immutable_idempotent_and_preserves_prior_charges(self):
+        with self.budget.experiment('DEVELOPMENT', 300, 'old-development'):
+            self.now += 123
+        original = self.budget.status()
+        base = self.budget.authorization.read_bytes()
+        self.assertTrue(self.budget.extend_development(DEVELOPMENT_EXTENSION_ID))
+        extended = self.budget.status()
+        self.assertEqual(extended['cap_s'], 21600)
+        self.assertEqual(extended['development_remaining_s'], 14400 - 123)
+        self.assertEqual(extended['acceptance_remaining_s'], 7200)
+        self.assertEqual(extended['reservations'], original['reservations'])
+        self.assertEqual(extended['extensions'][0]['prior_ledger_sha256'], original['sha256'])
+        self.assertEqual(self.budget.authorization.read_bytes(), base)
+        self.assertFalse(self.budget.extend_development(DEVELOPMENT_EXTENSION_ID))
+        self.assertEqual(self.budget.status()['sha256'], extended['sha256'])
+        with self.assertRaises(ValueError):
+            self.budget.extend_development('another-extension')
+        import sqlite3
+        from contextlib import closing
+        with closing(self.budget.connect()) as db, self.assertRaises(sqlite3.IntegrityError):
+            db.execute('DELETE FROM extensions')
+        with self.assertRaises(ValueError):
+            effective_caps(extended['extensions'] * 2)
+
+    def test_diagnostics_preserve_matrix_and_browser_windows(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        available = self.budget.status()['diagnostic_remaining_s']
+        with self.budget.experiment('DEVELOPMENT', available, 'diagnosis', purpose='DIAGNOSTIC') as ticket:
+            self.assertEqual(ticket['purpose'], 'DIAGNOSTIC')
+            self.now += available
+        with self.assertRaisesRegex(ValueError, 'preserve'):
+            with self.budget.experiment('DEVELOPMENT', 1, 'extra-diagnosis', purpose='DIAGNOSTIC'):
+                self.fail('Spent protected development time')
+        with self.budget.experiment('DEVELOPMENT', 7200, 'matrix', purpose='MATRIX'):
+            self.now += 7200
+        with self.budget.experiment('DEVELOPMENT', 480, 'browser', purpose='BROWSER'):
+            self.now += 480
+        self.assertEqual(self.budget.status()['development_remaining_s'], 0)
+        self.assertEqual(self.budget.status()['acceptance_remaining_s'], 7200)
+
     def test_separate_allowance_never_resets_or_charges_old_ledgers(self):
         research = self.root / 'research.sqlite'
         rule = self.root / 'rule.json'
@@ -225,7 +270,8 @@ class IsolatedEgyptTests(EgyptValidationFixture):
             self.assertEqual(crossing.run(args), 0)
             finalized = json.loads((args.report_folder / 'report.json').read_text())
             self.assertEqual(finalized['native_worker_exit_code'], 0)
-            command = launch.call_args.args[0]
+            command = next(call.args[0] for call in launch.call_args_list
+                           if call.args[0][1:3] == ['-m', 'scripts.native.validate_crossing_pair'])
             for flag, value in (('--egypt-budget', args.egypt_budget), ('--egypt-reservation', ticket['reservation_id']),
                                 ('--egypt-deadline', '1200.0')):
                 self.assertEqual(command[command.index(flag) + 1], value)
@@ -286,6 +332,11 @@ class IsolatedEgyptTests(EgyptValidationFixture):
 
 
 class EgyptRunnerTests(EgyptValidationFixture):
+    def test_completed_trips_excludes_errors_timeouts_and_stopped_prefixes(self):
+        statuses = ('ARRIVED', 'COLLISION', 'ERROR', 'RUNNING', 'PAUSED', 'TIMEOUT', None)
+        pairs = [{'pair': {'runs': {str(i): {'status': status} for i, status in enumerate(statuses)}}}]
+        self.assertEqual(runner.completed_trips(pairs), 2)
+
     def test_failed_preparation_without_manifest_remains_a_reported_failure(self):
         pair = runner.compact_pair({'manifest': None, 'runs': {}, 'conditions_match': False})
         self.assertEqual(pair['manifest'], {})
@@ -312,6 +363,13 @@ class EgyptRunnerTests(EgyptValidationFixture):
 
     def setUp(self):
         super().setUp()
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        self.stack.enter_context(patch.object(runner, 'software_gate_status', return_value={'passed': True}))
+        self.stack.enter_context(patch.object(runner, 'diagnostic_gate_status', return_value={
+            'passed': True, 'passed_targets': runner.DIAGNOSTIC_ORDER, 'attempted_targets': []}))
+        self.stack.enter_context(patch.object(runner, 'storage_preflight', return_value={'passed': True}))
+        self.stack.enter_context(patch.object(runner, 'compress_pair_recordings', return_value=[]))
+        self.stack.enter_context(patch.object(runner, 'publish_accepted_recordings', return_value=[]))
         self.artifact = self.root / 'acceptance.json'
         self.stack.enter_context(patch.object(runner, 'ACCEPTANCE', self.artifact))
         self.stack.enter_context(patch.object(runner, 'source_fingerprint', return_value='frozen'))
@@ -357,6 +415,50 @@ class EgyptRunnerTests(EgyptValidationFixture):
         self.pair_runner.assert_not_called()
         self.handoff.assert_not_called()
         self.assertEqual(self.budget.status()['charged_s'], 0)
+
+    def test_software_diagnostics_and_space_are_ordered_native_prerequisites(self):
+        for target, result in (
+                ('software_gate_status', {'passed': False, 'reason': 'Software gate missing'}),
+                ('diagnostic_gate_status', {'passed': False, 'passed_targets': [], 'attempted_targets': []}),
+                ('storage_preflight', {'passed': False, 'required_free_bytes': 100, 'free_bytes': 99})):
+            with patch.object(runner, target, return_value=result):
+                self.assertEqual(runner.run(self.options()), 2)
+        self.pair_runner.assert_not_called()
+        self.handoff.assert_not_called()
+
+    def test_diagnostic_is_separate_from_development_matrix_and_protects_windows(self):
+        def diagnostic_pair(options):
+            self.fake_pair(options)
+            path = options.report_folder / 'report.json'
+            report = json.loads(path.read_text())
+            report.update(native_acceptance=False, diagnostic_passed=True,
+                          diagnostic_assessment={'passed': True, 'gates': {'software_fixture': True}})
+            report['pair']['runs'] = {'ROBOSPHERE': {'status': 'PAUSED', 'reason': 'diagnostic_goal_reached'}}
+            save_json(path, report)
+        self.pair_runner.side_effect = diagnostic_pair
+        args = self.options('--diagnostic', '--development-seed', '2707', '--first', 'ROBOSPHERE',
+                            '--seconds-per-pair', '600', '--hypothesis', 'Software fixture: move audit before fresh frame')
+        self.assertEqual(runner.run(args), 0)
+        report = json.loads(Path(args.report).read_text())
+        self.assertTrue(report['diagnostic_passed'])
+        self.assertEqual(report['pairs'], [])
+        self.assertFalse(report['development_passed'])
+        self.assertFalse((self.budget.directory / 'development.json').exists())
+        self.assertEqual(json.loads(self.progress.read_text())['completed_trips'], 0)
+        self.assertEqual(report['required_reservation_s'], 900)
+        self.assertEqual(report['protected_development_reservation_s'], 7680)
+
+    def test_browser_ticket_reaches_stopped_server_without_allowing_foreign_dashboard(self):
+        from backend.carla.stop_helper import stopped_service
+        from backend.learning.egypt_budget import inherited_session_duration
+        with self.budget.experiment('DEVELOPMENT', 480, 'browser', purpose='BROWSER'):
+            server = stopped_service({'result': {'status': 'STOPPED'}}, Mock(), Mock())
+            self.assertTrue(server.can_start_simulation())
+            self.assertEqual(inherited_session_duration(), 480)
+            self.assertEqual(inherited_session_duration(60), 60)
+            self.assertEqual(inherited_session_duration(1000), 480)
+            with patch.dict(os.environ, {'OSTORHA_EGYPT_RESERVATION': ''}):
+                self.assertFalse(server.can_start_simulation())
 
     def test_full_acceptance_publishes_only_after_exports_cleanup_and_budget_finalization(self):
         self.ready_development()
@@ -438,6 +540,14 @@ class EgyptRunnerTests(EgyptValidationFixture):
             broken = copy.deepcopy(pairs)
             broken[0][key] = False
             self.assertFalse(acceptance_matrix(broken, 'frozen')['accepted'])
+        for key, value in (('native_worker_exit_code', 3221225725), ('cleanup_stage', 'DRAIN_FINAL_EVENTS')):
+            broken = copy.deepcopy(pairs)
+            broken[0][key] = value
+            self.assertFalse(acceptance_matrix(broken, 'frozen')['accepted'])
+        for metric, value in (('p95_ms', 200.01), ('p99_ms', 225.01), ('deadline_exceeded_frames', 1)):
+            broken = copy.deepcopy(pairs)
+            broken[0]['pair']['runs']['ROBOSPHERE']['control_latency'][metric] = value
+            self.assertFalse(acceptance_matrix(broken, 'frozen')['accepted'])
         pairs[-1] = copy.deepcopy(pairs[0])
         self.assertFalse(acceptance_matrix(pairs, 'frozen')['gates']['six_unique_pairs_twelve_trips'])
         pairs = measured_matrix(acceptance=False)
@@ -446,6 +556,28 @@ class EgyptRunnerTests(EgyptValidationFixture):
 
 
 class ScenarioStatusHTTPTests(unittest.TestCase):
+    def test_accepted_comparison_archives_remain_readable_without_rewriting_latest_results(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(runner, 'ROOT', Path(directory)):
+            root = Path(directory)
+            original = root / 'output' / 'native' / 'report.json'
+            identity = 'a' * 32
+            raw = {'pair': {'pair_id': identity, 'runs': {'NORMAL': {'recording': 'retained-original'}}},
+                   'shared_perception': {'status': 'READY', 'recording': 'retained-original'}}
+            save_json(original, raw)
+            latest = root / 'output' / 'journey-comparisons' / 'latest.json'
+            save_json(latest, {'existing_result': True})
+            matrix = {'accepted': True, 'source_sha256': 'frozen', 'pairs': [{
+                'report': str(original), 'report_sha256': hashlib.sha256(original.read_bytes()).hexdigest()}]}
+            saved = runner.publish_accepted_recordings(matrix)
+            self.assertEqual(len(saved), 1)
+            pair = json.loads(Path(saved[0]).read_text())
+            self.assertEqual(pair['pair_id'], identity)
+            self.assertEqual(pair['shared_perception'], raw['shared_perception'])
+            self.assertEqual(json.loads(latest.read_text()), {'existing_result': True})
+            self.assertEqual(runner.publish_accepted_recordings(matrix), saved)
+            with self.assertRaisesRegex(ValueError, 'fully accepted'):
+                runner.publish_accepted_recordings({**matrix, 'accepted': False})
+
     def test_guided_start_uses_accepted_default_and_its_speed_without_rewriting_explicit_legacy(self):
         from backend.websocket_bridge import WebSocketBridge
         for explicit, speed, scenario in ((None, 60, 'EGYPT_URBAN_CHAOS_V1'),

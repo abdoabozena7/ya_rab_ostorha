@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "id": "URBAN_BEHAVIOR_PROPOSALS_V1",
+  "scope": "OFFLINE_FIRST_PACKAGE",
+  "arms": {
+    "A": "Frozen effective current driver, including explicitly inventoried pre-existing edits",
+    "B": "A with decision-equivalent timing changes only",
+    "C": "B with simple queue/parked-vehicle rules",
+    "D": "B with VLM behavior proposals and exactly the same permitted inputs as C"
+  },
+  "cases": [
+    "CLEAR_ROAD",
+    "MOVING_QUEUE",
+    "PARKED_BLOCKER",
+    "PASS_FORBIDDEN",
+    "UNSAFE_GAP",
+    "AMBIGUOUS_WAIT"
+  ],
+  "inputs": {
+    "coordinate_frame": "EGO_AT_MEASUREMENT_X_FORWARD_Y_RIGHT",
+    "maximum_tracks": 32,
+    "maximum_history_frames": 8,
+    "maximum_images": 2,
+    "permitted": ["measured_ego_motion", "measured_tracks", "short_measured_history", "current_road_context", "frame_bound_rgb_references"],
+    "forbidden": ["scenario_labels", "native_actor_ids", "future_ground_truth", "oracle_trajectories"]
+  },
+  "proposal": {
+    "mode": "SHADOW_ONLY",
+    "control_authority": false,
+    "maximum_pending_requests": 1,
+    "maximum_wall_lifetime_s": 1.0,
+    "maximum_simulation_lifetime_s": 1.0,
+    "maximum_blocker_displacement_m": 1.5,
+    "maximum_blocker_velocity_change_mps": 0.5,
+    "maximum_track_occlusion_s": 0.1
+  },
+  "freshness": {
+    "maximum_sensor_wall_age_s": 0.25,
+    "maximum_sensor_simulation_age_s": 0.1,
+    "proposal_lifetime_never_extends_physical_freshness": true
+  },
+  "replay": {
+    "partition": "DEVELOPMENT_DIAGNOSTIC_ONLY",
+    "require_finalized_recording": true,
+    "verify_every_selected_sensor_asset": true,
+    "reject_partitions": ["TEST", "HOLDOUT", "ACCEPTANCE"],
+    "decision_clock": "FIXED_REPLAY_CLOCK",
+    "decision_wall_age_s": 0.05,
+    "shield_wall_age_s": 0.06,
+    "require_exact_command_behavior_forecast_and_shield_equality": true,
+    "native_performance_evidence": false
+  },
+  "native": {
+    "authorized_by_this_package": false,
+    "reserved_acceptance_may_be_reallocated": false,
+    "new_development_seeds": [271001, 271003, 271007, 271009, 271013, 271019],
+    "new_test_seeds": [971001, 971003, 971009, 971011, 971021, 971027],
+    "location_manifest_status": "UNASSIGNED_BLOCKS_NATIVE_EXPERIMENT",
+    "require_location_disjoint_from_development_and_all_prior_holdouts": true,
+    "test_run_limit": 1,
+    "counterbalanced_order": [["C", "D"], ["D", "C"]]
+  },
+  "metrics": {
+    "primary_benefit": "Unnecessary waiting seconds per matched route, with unnecessary braking events reported separately",
+    "benefit_target_relative_reduction": 0.2,
+    "benefit_target_status": "PROPOSED_NOT_ACCEPTED_OR_MEASURED",
+    "sensor_to_observed_control_p95_target_ms": 200,
+    "timing_target_status": "PROPOSED_UPPER_BOUND_NOT_NATIVE_ACCEPTANCE",
+    "required": ["collisions", "arrival", "route_completion", "unnecessary_wait_seconds", "unnecessary_braking_events", "completed_pass_and_return", "acceleration_and_jerk", "sensor_to_rpc_ms", "sensor_to_observed_control_ms", "simulation_age_s", "real_time_factor", "worker_latency_memory_and_utilization"],
+    "analysis_unit": "Matched route and seed, never individual correlated frames",
+    "uncertainty": "Paired route-level bootstrap confidence intervals; retain every failed and incomplete route",
+    "zero_baseline_wait": "Relative benefit undefined; report absolute difference",
+    "noninferiority_margins_and_sample_size": "UNASSIGNED_BLOCKS_CLOSED_LOOP_CLAIMS",
+    "safety_claim": "A small collision-free sample does not establish general safety",
+    "real_time_claim": "Requires independent native wall/simulation throughput measurement"
+  }
+}

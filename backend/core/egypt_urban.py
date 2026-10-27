@@ -14,6 +14,17 @@ CONFIG = ROOT / 'config' / 'egypt-urban-chaos-v1.json'
 ACCEPTANCE = ROOT / 'docs' / 'evidence' / 'egypt-urban-chaos-v1' / 'acceptance.json'
 
 
+def control_latency_passed(value):
+    if not isinstance(value, dict) or type(value.get('samples')) is not int or value['samples'] <= 0:
+        return False
+    fields = ('p95_ms', 'p99_ms', 'carla_call_p99_ms')
+    if any(type(value.get(key)) not in (int, float) or not math.isfinite(value[key]) or value[key] < 0 for key in fields):
+        return False
+    return (value['p95_ms'] <= 200. and value['p95_ms'] <= value['p99_ms'] <= 225.
+            and value.get('deadline_exceeded_frames') == 0
+            and value.get('unmeasured_frames', 0) == 0 and value.get('unaligned_frames', 0) == 0)
+
+
 def configuration():
     value = json.loads(CONFIG.read_text(encoding='utf8'))
     if (value['id'] != SCENARIO_ID or value['version'] != 1 or value['protocol'] != PROTOCOL
@@ -60,12 +71,17 @@ def evaluate_matrix(pairs, fingerprint, *, acceptance=True):
         'exports_playback_and_cleanup_verified': len(pairs) == 6 and all(
             all(p.get(key) is True for key in ('completed_without_shortening', 'finish_completed',
                 'exports_closed', 'cleanup_confirmed', 'simulator_exit_confirmed'))
+            and p.get('native_worker_exit_code') == 0 and p.get('cleanup_stage') == 'COMPLETE'
+            and not any(p.get(key) for key in ('cleanup_error', 'finalization_error', 'error', 'worker_deadline_expired'))
             and p.get('independent_cleanup_probe', {}).get('passed') is True
             and p.get('video_playback_after_exit', {}).get('passed') is True for p in pairs),
         'town10_low_profile_verified': len(pairs) == 6 and all(
             p.get('render_profile', {}).get('render_profile') == 'LOW'
             and all(run.get('setup', {}).get('map', '').rsplit('/', 1)[-1] == config['map']
-                    for run in p.get('pair', {}).get('runs', {}).values()) for p in pairs)
+                    for run in p.get('pair', {}).get('runs', {}).values()) for p in pairs),
+        'sensor_to_control_latency_targets': len(pairs) == 6 and all(
+            control_latency_passed(run.get('control_latency'))
+            for pair in pairs for run in pair.get('pair', {}).get('runs', {}).values())
     }
     return {'scenario_id': SCENARIO_ID, 'version': 1, 'source_sha256': fingerprint,
             'passed': all(gates.values()), 'accepted': acceptance and all(gates.values()),
@@ -77,25 +93,29 @@ def acceptance_matrix(pairs, fingerprint):
 
 
 def publication_gates(report, fingerprint):
-    from ..learning.egypt_budget import SCOPE, CAP_SECONDS, PHASE_SECONDS
+    from ..learning.egypt_budget import SCOPE, PHASE_SECONDS, effective_caps
     budget = report.get('budget_after', {})
     reservations = budget.get('reservations', [])
     acceptance = [row for row in reservations if row.get('phase') == 'ACCEPTANCE']
     development = report.get('development', {})
+    try:
+        caps = effective_caps(budget.get('extensions', []))
+    except ValueError:
+        caps = None
     return {
         'development_matrix_passed_before_freeze': development.get('source_sha256') == fingerprint
             and evaluate_matrix(development.get('pairs', []), fingerprint, acceptance=False)['passed'],
         'source_configuration_hashes_frozen': report.get('source_manifest') == source_manifest()
             and report.get('source_sha256') == fingerprint and report.get('source_unchanged') is True,
         'separate_allowance_and_cleanup_charged': budget.get('kind') == SCOPE
-            and budget.get('cap_s') == CAP_SECONDS and budget.get('unfinished') == 0
+            and caps is not None and budget.get('cap_s') == caps['cap_s'] and budget.get('unfinished') == 0
             and len(acceptance) == 1 and acceptance[0].get('reserved_s') == PHASE_SECONDS
             and acceptance[0].get('outcome') == 'FINISHED'
             and type(acceptance[0].get('elapsed_s')) in (int, float)
             and 0 <= acceptance[0]['elapsed_s'] <= PHASE_SECONDS
             and all(type(row.get('charged_s')) in (int, float) and math.isfinite(row['charged_s'])
                     and row['charged_s'] >= 0 for row in reservations)
-            and all(sum(row['charged_s'] for row in reservations if row.get('phase') == phase) <= PHASE_SECONDS
+            and all(sum(row['charged_s'] for row in reservations if row.get('phase') == phase) <= caps[phase.lower() + '_cap_s']
                     for phase in ('DEVELOPMENT', 'ACCEPTANCE'))
     }
 
@@ -125,7 +145,8 @@ def admission(map_name, speed_kmh):
         raise ValueError('Egypt urban chaos requires Town10HD_Opt and a 5--60 km/h request')
     status = deployment_status()
     if status['accepted']:
-        return {'accepted': True, 'deadline': float('inf'), 'reason': status['reason']}
+        ticket = egypt_ticket()
+        return {'accepted': True, 'deadline': ticket['expires_monotonic_s'] if ticket else float('inf'), 'reason': status['reason']}
     from ..learning.hybrid_budget import active_ticket
     from ..learning.native_validation_budget import active_rule_ticket
     ticket = egypt_ticket() or active_ticket() or active_rule_ticket()
@@ -136,6 +157,11 @@ def admission(map_name, speed_kmh):
 
 def default_scenario():
     return SCENARIO_ID if deployment_status()['accepted'] else None
+
+
+def completed_trips(pairs):
+    return sum(run.get('status') in ('ARRIVED', 'COLLISION') for item in pairs
+               for run in item.get('pair', {}).get('runs', {}).values())
 
 
 def validation_status():
@@ -150,6 +176,16 @@ def validation_status():
                 raise ValueError('Expected validation progress object')
         except (OSError, ValueError) as error:
             progress = {'state': 'FAILED', 'failed_gates': ['validation_progress_readable'], 'error': str(error)}
+    if progress.get('report') and progress.get('progress_version') != 2:
+        path = Path(progress['report']).resolve()
+        if path.is_relative_to((ROOT / 'output').resolve()) and path.is_file():
+            try:
+                report = json.loads(path.read_text(encoding='utf8'))
+                progress.update(completed_trips=completed_trips(report.get('pairs', [])),
+                                accepted_comparisons=sum(pair.get('native_acceptance') is True for pair in report.get('pairs', [])))
+            except (OSError, ValueError, TypeError, AttributeError) as error:
+                progress.update(state='FAILED', completed_trips=0, accepted_comparisons=0,
+                                error='Cannot verify saved validation outcomes: ' + str(error))
     state = 'ACCEPTED' if deployed['accepted'] else progress.get('state', 'PENDING')
     failed = [] if deployed['accepted'] else progress.get('failed_gates', [])
     if not deployed['accepted'] and state == 'ACCEPTED':
@@ -164,6 +200,8 @@ def validation_status():
     return {**progress, 'state': state, 'native_accepted': deployed['accepted'],
             'phase': 'ACCEPTANCE' if deployed['accepted'] else progress.get('phase', 'ACCEPTANCE'),
             'completed_trips': 12 if deployed['accepted'] else progress.get('completed_trips', 0),
+            'accepted_comparisons': 6 if deployed['accepted'] else progress.get('accepted_comparisons', 0),
+            'total_comparisons': 6,
             'total_trips': 12, 'failed_gates': failed, 'reason': deployed['reason'],
             'simulator_reserved': owner['reserved'], 'ownership': owner}
 
@@ -182,6 +220,7 @@ def scenario_catalog():
     legacy = 'SUDDEN_PEDESTRIAN_COMPARISON_V1'
     return {'default_id': SCENARIO_ID if status['native_accepted'] else legacy,
             'validation': status, 'simulator_reserved': status['simulator_reserved'],
+            'validation_session_owned': egypt_ticket() is not None,
             'options': [{'id': legacy, 'version': 1, 'name': 'Historical crossing comparison',
                          'available': not owned_elsewhere, 'maximum_speed_kmh': 120},
                         {'id': SCENARIO_ID, 'version': 1, 'name': 'Egypt mixed urban journey',
@@ -265,6 +304,9 @@ def evaluate_pair(data):
     separation = evidence.get('minimum_body_separation_m')
     gates = {
         'both_recorded': set(runs) == {'NORMAL', 'ROBOSPHERE'} and all(r.get('recording') for r in runs.values()),
+        'normal_reached_recorded_end': (runs.get('NORMAL', {}).get('status') == 'ARRIVED'
+            and runs['NORMAL'].get('destination_reached') is True
+            or runs.get('NORMAL', {}).get('status') == 'COLLISION' and runs['NORMAL'].get('contact_callbacks', 0) > 0),
         'protected_arrived_without_any_contact': protected.get('status') == 'ARRIVED'
             and protected.get('destination_reached') is True and protected.get('collisions') == 0
             and protected.get('contact_callbacks') == 0 and not protected.get('collision_events'),

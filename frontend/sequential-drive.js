@@ -6,7 +6,7 @@ import {showWorkspace} from './presentation-ui.js';
 import {presentationOutcome} from './presentation-run.js';
 import {installPreviewPlayer} from './preview-player.js';
 import {recordedDriverDescription} from './driver-profile.js';
-import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,urbanAvailability,scenarioStartState} from './scenario-profile.js';
+import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,urbanAvailability,scenarioStartState,validationSummary,validationDetails,validationOwnsSimulator as reservedElsewhere} from './scenario-profile.js';
 import {installGPUStatus} from './gpu-status.js';
 
 export function installSequentialDrive(p,tools) {
@@ -182,7 +182,7 @@ export function installSequentialDrive(p,tools) {
     const savedResults=!local.newDrive&&d.guided&&['RESULTS','FINISHING','COMPLETE'].includes(d.status)&&d.pair_id;
     const activePresentation=d.id&&!['IDLE','COMPLETE','CANCELLED','ERROR'].includes(d.status);
     if(activePresentation&&p.controller===false)local.observing=true;
-    const validationOwnsSimulator=!!scenarioCatalog?.simulator_reserved;
+    const validationOwnsSimulator=reservedElsewhere(scenarioCatalog);
     if(scenarioCatalog&&!validationOwnsSimulator&&!savedResults&&!activePresentation&&!local.autoRequested&&!p.isReplay&&p.simulatorStart?.available){
       local.autoRequested=true;
       if(!p.connected&&!p.simulationStarting&&p.simulatorStart.status!=='FAILED'&&p.simulatorStop?.status!=='STOPPING'){
@@ -244,8 +244,8 @@ export function installSequentialDrive(p,tools) {
     $('missionRefreshScenarios').disabled=tools.scenarioLoading||local.scenarioRefreshing;
     $('missionRefreshScenarios').textContent=tools.scenarioLoading?'Checking availability…':'Refresh availability';
     $('missionScenarioAccessTitle').textContent=availability.title;
-    $('missionScenarioBackendReason').textContent=urbanOption?.reason||'Waiting for the simulator catalog.';
-    $('missionScenarioTechnical').hidden=availability.available||!urbanOption?.reason;
+    $('missionScenarioBackendReason').textContent=urbanOption?validationDetails(scenarioCatalog):'Waiting for the simulator catalog.';
+    $('missionScenarioTechnical').hidden=!urbanOption;
     $('missionScenarioSelectionHint').textContent=local.scenarioDraft?'Selection only · no drive started':'Both drivers use the selected scenario';
     const scenarioNotice=(local.scenarioId===EGYPT_SCENARIO&&availability.available?
       `EGYPT_URBAN_CHAOS_V1 · v1 · seed ${d.seed??'assigned during preparation'} · 600–800 m · requested 60 vehicles / 100 pedestrians. `+
@@ -260,14 +260,14 @@ export function installSequentialDrive(p,tools) {
     const scenarioBlocked=scenario.blocked;
     const actionLabel=local.scenarioSelectionPending?'Preparing selected scenario…':scenario.label||state.label;
     const busy=!!(state.loadingDrive||local.scenarioSelectionPending||scenario.checking);
-    if(scenarioBlocked)primary.hidden=true;
+    if(scenarioBlocked)primary.hidden=false;
     validationNotice.hidden=!scenarioBlocked;
-    validationNotice.textContent=scenarioBlocked?scenario.label:'';
+    validationNotice.textContent=scenarioBlocked?validationSummary(scenarioCatalog):'';
     if(primary.textContent!==actionLabel)primary.textContent=actionLabel;primary.dataset.action=scenarioBlocked?'':state.action||'';primary.disabled=!state.action||local.scenarioSelectionPending||scenarioBlocked;
     if(scenario.needsPreparation)primary.dataset.action='PREPARE_SCENARIO';
     primary.dataset.loading=String(busy);primary.setAttribute('aria-busy',String(busy));
     primary.dataset.gpuStatus=gpuPanel.dataset.status;
-    primary.setAttribute('aria-describedby','missionNextHint missionGPU');
+    primary.setAttribute('aria-describedby','missionValidationStatus missionNextHint missionGPU');
     $('missionFreeGPU').hidden=!state.freeGPU||state.action==='FREE_GPU';$('missionWorking').hidden=!['loading','releasing'].includes(state.screen);
     $('missionNextHint').textContent=scenarioBlocked?availability.notice:scenario.needsPreparation?'Access is available. Prepare this scenario, then choose when to start driving.':local.scenarioSelectionPending?'Waiting for the selected road scenario to be prepared.':state.loadingDrive?state.detail:state.choices&&!state.action?'Simulation ready. Choose your first drive.':
       {PREPARE_HERE:'Next: save and stop the previous attempt, then prepare a new starting scene using the same running simulator.',START_SIMULATION:'Next: connect the camera, then choose your first drive.',START_GUIDED:'Your fresh scene is ready. Next: fit the selected car, verify sensors, then start from the beginning.',NEXT:state.arm===0?'Next: stop, save, then check the other drive’s starting scene.':'Next: stop, save, then compare the recorded results.',FINISH:'Recordings and previous comparisons remain in Menu.'}[state.action]||'';

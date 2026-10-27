@@ -6,7 +6,8 @@ import threading
 import time
 from .contracts import DataOrigin, ExperimentMetadata, SimulationFrame, from_dict
 from .events import SimulationEvent
-from .recording import MAX_ROW_BYTES, resolve_asset
+from .recording import MAX_ROW_BYTES, resolve_asset, read_asset
+from .recording_storage import open_recorded, stored_exists
 
 
 class ReplayReader:
@@ -23,7 +24,7 @@ class ReplayReader:
             raise ValueError('Test fixture recordings cannot be opened in the user dashboard')
         self.path = self.root/'telemetry/frames.jsonl'
         self.index = []  # Only offsets/timestamps are indexed; image/cloud bytes stay on disk.
-        with self.path.open('rb') as file:
+        with open_recorded(self.path) as file:
             previous = None
             while True:
                 offset = file.tell()
@@ -40,8 +41,8 @@ class ReplayReader:
         self.timestamps = [entry[0] for entry in self.index]
         self.safety_index = {}
         sidecar = self.root/'telemetry/safety-v2.jsonl'
-        if sidecar.exists():
-            with sidecar.open('rb') as stream:
+        if stored_exists(sidecar):
+            with open_recorded(sidecar) as stream:
                 while True:
                     offset = stream.tell(); row = stream.readline(MAX_ROW_BYTES+1)
                     if not row: break
@@ -53,7 +54,7 @@ class ReplayReader:
     def safety_at(self, frame_id):
         offset = self.safety_index.get(frame_id)
         if offset is None: return None  # Old recordings retain their original view.
-        with (self.root/'telemetry/safety-v2.jsonl').open('rb') as stream:
+        with open_recorded(self.root/'telemetry/safety-v2.jsonl') as stream:
             stream.seek(offset)
             return json.loads(stream.readline(MAX_ROW_BYTES+1))
 
@@ -68,7 +69,7 @@ class ReplayReader:
     def frame_at(self, index):
         if type(index) is not int or not 0 <= index < len(self.index):
             raise ValueError('Replay frame index out of range')
-        with self.path.open('rb') as file:
+        with open_recorded(self.path) as file:
             file.seek(self.index[index][1])
             return self._decode(file.readline(MAX_ROW_BYTES+1))
 
@@ -78,11 +79,12 @@ class ReplayReader:
         return self.frame_at(max(0, min(len(self.index)-1, bisect_right(self.timestamps, timestamp_s)-1)))
 
     def frames(self):
-        for index in range(len(self.index)):
-            yield self.frame_at(index)
+        with open_recorded(self.path) as file:
+            for _ in self.index:
+                yield self._decode(file.readline(MAX_ROW_BYTES+1))
 
     def events(self):
-        with (self.root/'events/events.jsonl').open('rb') as file:
+        with open_recorded(self.root/'events/events.jsonl') as file:
             while True:
                 row = file.readline(MAX_ROW_BYTES+1)
                 if not row:
@@ -95,6 +97,11 @@ class ReplayReader:
         if sensor.asset is None:
             raise ValueError('Recorded sensor has no file reference')
         return resolve_asset(self.root, sensor.asset)
+
+    def asset_bytes(self, sensor):
+        if sensor.asset is None:
+            raise ValueError('Recorded sensor has no file reference')
+        return read_asset(self.root, sensor.asset)
 
 
 class ReplaySession:

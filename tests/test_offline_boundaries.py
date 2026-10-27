@@ -81,7 +81,8 @@ class ServiceBoundaryTests(unittest.TestCase):
             service = SimulationService(provider, recorder)
             service._publish(packet())
             recorder.record(packet())
-            service.close()
+            with self.assertRaisesRegex(RuntimeError, 'transport failed'):
+                service.close()
             provider.close.assert_called_once()
             self.assertTrue(recorder.closed)
             self.assertFalse(service.snapshot()['connected'])

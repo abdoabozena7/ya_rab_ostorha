@@ -18,6 +18,27 @@ PROGRESS = DIRECTORY / 'progress.json'
 CAP_SECONDS = 14400.
 PHASE_SECONDS = 7200.
 SCOPE = 'EGYPT_NATIVE_VALIDATION_V1'
+DEVELOPMENT_EXTENSION_ID = 'EGYPT_DEVELOPMENT_20261027'
+DEVELOPMENT_EXTENSION_SECONDS = 7200.
+BROWSER_SECONDS = 480.
+DEVELOPMENT_RESERVE_SECONDS = PHASE_SECONDS + BROWSER_SECONDS
+
+
+def effective_caps(extensions):
+    """Only the separately authorized development extension changes the cap."""
+    if not isinstance(extensions, list):
+        raise ValueError('Egypt allowance extensions must be an explicit list')
+    seen = set()
+    for entry in extensions:
+        if (not isinstance(entry, dict) or entry.get('id') != DEVELOPMENT_EXTENSION_ID
+                or entry.get('id') in seen or entry.get('phase') != 'DEVELOPMENT'
+                or type(entry.get('seconds')) not in (int, float)
+                or entry['seconds'] != DEVELOPMENT_EXTENSION_SECONDS):
+            raise ValueError('Unknown, duplicate or invalid Egypt development authorization')
+        seen.add(entry['id'])
+    development = PHASE_SECONDS + len(seen) * DEVELOPMENT_EXTENSION_SECONDS
+    return {'cap_s': development + PHASE_SECONDS, 'development_cap_s': development,
+            'acceptance_cap_s': PHASE_SECONDS}
 
 
 def save_json(path, value):
@@ -100,6 +121,22 @@ def require_simulator_access(*, shutdown=False):
         raise RuntimeError(state['reason'])
 
 
+def inherited_session_duration(requested=None):
+    if not os.environ.get('OSTORHA_EGYPT_RESERVATION'):
+        return requested
+    ticket = active_ticket()
+    if ticket is None:
+        raise ValueError('The inherited Egypt reservation is expired or cannot be verified')
+    remaining = ticket['expires_monotonic_s'] - time.monotonic()
+    return min(requested, remaining) if requested is not None else remaining
+
+
+def require_stopped_storage_access():
+    from ..carla.runtime import native_processes
+    if native_processes() or ownership_status()['reserved'] and active_ticket() is None:
+        raise RuntimeError('Lossless recording compression requires CARLA stopped and no foreign native reservation')
+
+
 def remaining_seconds(deadline, maximum):
     remaining = min(maximum, deadline - time.monotonic())
     if remaining <= 0:
@@ -116,7 +153,7 @@ class EgyptBudget:
         if (ticket.get('scope') != SCOPE or ticket.get('cap_s') != CAP_SECONDS
                 or ticket.get('development_cap_s') != PHASE_SECONDS or ticket.get('acceptance_cap_s') != PHASE_SECONDS
                 or not self.path.is_file()):
-            raise ValueError('Invalid separate Egypt allowance; existing ledgers are never converted or extended')
+            raise ValueError('Invalid base Egypt allowance; extensions require a separate authorization record')
 
     def connect(self):
         return sqlite3.connect(self.path.as_uri() + '?mode=rw', uri=True)
@@ -148,26 +185,59 @@ class EgyptBudget:
         with closing(self.connect()) as db:
             db.row_factory = sqlite3.Row
             rows = [dict(row) for row in db.execute('SELECT * FROM reservations ORDER BY started')]
+            exists = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='extensions'").fetchone()
+            extensions = [dict(row) for row in db.execute('SELECT * FROM extensions ORDER BY created_at_utc')] if exists else []
+        caps = effective_caps(extensions)
         charged = {phase: sum(row['charged_s'] for row in rows if row['phase'] == phase)
                    for phase in ('DEVELOPMENT', 'ACCEPTANCE')}
-        return {'kind': SCOPE, 'authorized': True, 'path': str(self.directory), 'cap_s': CAP_SECONDS,
-                'charged_s': sum(charged.values()), 'remaining_s': max(0., CAP_SECONDS - sum(charged.values())),
-                'development_remaining_s': max(0., PHASE_SECONDS - charged['DEVELOPMENT']),
+        development_remaining = max(0., caps['development_cap_s'] - charged['DEVELOPMENT'])
+        return {'kind': SCOPE, 'authorized': True, 'path': str(self.directory), **caps,
+                'base_cap_s': CAP_SECONDS, 'extensions': extensions,
+                'charged_s': sum(charged.values()), 'remaining_s': max(0., caps['cap_s'] - sum(charged.values())),
+                'development_remaining_s': development_remaining,
+                'diagnostic_remaining_s': max(0., development_remaining - DEVELOPMENT_RESERVE_SECONDS),
+                'protected_development_matrix_s': PHASE_SECONDS, 'protected_browser_s': BROWSER_SECONDS,
                 'acceptance_remaining_s': max(0., PHASE_SECONDS - charged['ACCEPTANCE']),
                 'unfinished': sum(row['outcome'] == 'RUNNING' for row in rows),
                 'acceptance_attempted': any(row['phase'] == 'ACCEPTANCE' for row in rows),
                 'reservations': rows,
                 'sha256': hashlib.sha256(self.path.read_bytes()).hexdigest()}
 
+    def extend_development(self, authorization_id):
+        effective_caps([{'id': authorization_id, 'phase': 'DEVELOPMENT',
+                         'seconds': DEVELOPMENT_EXTENSION_SECONDS}])
+        before = self.status()
+        if before['unfinished'] or ownership_status()['reserved']:
+            raise ValueError('Finalize native ownership before recording the development extension')
+        with closing(self.connect()) as db:
+            db.execute('BEGIN IMMEDIATE')
+            db.execute('CREATE TABLE IF NOT EXISTS extensions (id TEXT PRIMARY KEY, phase TEXT NOT NULL, '
+                       'seconds REAL NOT NULL, created_at_utc TEXT NOT NULL, prior_ledger_sha256 TEXT NOT NULL)')
+            for operation in ('UPDATE', 'DELETE'):
+                db.execute(f'CREATE TRIGGER IF NOT EXISTS immutable_extensions_{operation.lower()} '
+                           f'BEFORE {operation} ON extensions BEGIN '
+                           "SELECT RAISE(ABORT, 'Egypt authorization records are immutable'); END")
+            if db.execute('SELECT 1 FROM extensions WHERE id=?', (authorization_id,)).fetchone():
+                return False
+            db.execute('INSERT INTO extensions VALUES (?,?,?,?,?)', (authorization_id, 'DEVELOPMENT',
+                       DEVELOPMENT_EXTENSION_SECONDS, datetime.now(timezone.utc).isoformat(), before['sha256']))
+            db.commit()
+        return True
+
     @contextmanager
-    def experiment(self, phase, seconds, report):
+    def experiment(self, phase, seconds, report, *, purpose=None):
         if (phase not in ('DEVELOPMENT', 'ACCEPTANCE') or type(seconds) not in (float, int)
                 or not math.isfinite(seconds) or not 0 < seconds <= PHASE_SECONDS
                 or phase == 'ACCEPTANCE' and seconds != PHASE_SECONDS):
-            raise ValueError('Egypt development is capped at two hours; final acceptance reserves exactly 7200 seconds')
+            raise ValueError('Each Egypt reservation is at most 7200 seconds; acceptance reserves exactly 7200 seconds')
+        if (purpose not in (None, 'DIAGNOSTIC', 'MATRIX', 'BROWSER')
+                or purpose in ('DIAGNOSTIC', 'BROWSER') and phase != 'DEVELOPMENT'
+                or purpose == 'BROWSER' and seconds != BROWSER_SECONDS
+                or purpose == 'MATRIX' and seconds != PHASE_SECONDS):
+            raise ValueError('Invalid Egypt reservation purpose or protected window duration')
         key, started = uuid.uuid4().hex, time.monotonic()
         ticket = {'budget': str(self.directory), 'reservation_id': key, 'phase': phase, 'stage': 'HANDOFF',
-                  'owner_pid': os.getpid(), 'expires_monotonic_s': started + seconds}
+                  'purpose': purpose, 'owner_pid': os.getpid(), 'expires_monotonic_s': started + seconds}
         OWNERSHIP.parent.mkdir(parents=True, exist_ok=True)
         with OWNERSHIP.open('x', encoding='utf8') as stream:
             json.dump(ticket, stream)
@@ -183,6 +253,10 @@ class EgyptBudget:
                     raise ValueError('Frozen Egypt acceptance is one-shot; retries are prohibited')
                 if seconds > min(status['remaining_s'], status[phase.lower() + '_remaining_s']):
                     raise ValueError('Egypt ' + phase.lower() + ' allowance exhausted; the acceptance window is protected')
+                protected = (DEVELOPMENT_RESERVE_SECONDS if purpose == 'DIAGNOSTIC' else
+                             BROWSER_SECONDS if purpose == 'MATRIX' and phase == 'DEVELOPMENT' else 0.)
+                if protected and status['development_remaining_s'] - seconds < protected:
+                    raise ValueError('Development diagnosis must preserve the 7200-second matrix and 480-second browser windows')
                 db.execute('INSERT INTO reservations VALUES (?,?,?,?,?,?,?,?,?,?)',
                            (key, phase, seconds, seconds, started, started + seconds, os.getpid(), 'RUNNING', None, str(report)))
                 db.commit()

@@ -90,8 +90,13 @@ class BufferedRunRecorder:
                 except Full:pass
             # Stop admitting subsequent frames: the saved prefix keeps original
             # time/IDs. Control never waits for storage or raises its disk error.
+            first_failure = not self.incomplete and self.error is None
             self.incomplete=True
+            if self.error is None:
+                self.error=RuntimeError('Recording evidence queue exhausted; original prefix retained')
             self._lost(item)
+        if first_failure:
+            log(LogCategory.RECORDING, 'Recording evidence queue exhausted; original prefix retained')
         return False
 
     def submit(self, frame, assets):
@@ -213,18 +218,29 @@ def encode_row(value):
 
 
 def resolve_asset(root, asset):
+    """Return the verified physical file; read_asset returns its original bytes."""
+    from .recording_storage import stored_path
+    read_asset(root, asset)
+    return stored_path(Path(root) / asset.path)
+
+
+def read_asset(root, asset):
+    from .recording_storage import open_recorded, stored_path
     target = (Path(root)/asset.path).resolve()
     if not target.is_relative_to(Path(root).resolve()):
         raise ValueError('Asset escaped its run directory')
-    if not target.is_file():
+    physical = stored_path(target).resolve()
+    if not physical.is_relative_to(Path(root).resolve()):
+        raise ValueError('Compressed asset escaped its run directory')
+    if not physical.is_file():
         raise ValueError(f'Missing recorded asset: {asset.path}')
-    if asset.byte_count is not None and target.stat().st_size != asset.byte_count:
+    with open_recorded(target) as stream:
+        data = stream.read(asset.byte_count + 1) if asset.byte_count is not None else stream.read()
+    if asset.byte_count is not None and len(data) != asset.byte_count:
         raise ValueError('Recorded asset length mismatch')
-    if asset.sha256:
-        with target.open('rb') as file:
-            if hashlib.file_digest(file, 'sha256').hexdigest() != asset.sha256:
-                raise ValueError('Recorded asset checksum mismatch')
-    return target
+    if asset.sha256 and hashlib.sha256(data).hexdigest() != asset.sha256:
+        raise ValueError('Recorded asset checksum mismatch')
+    return data
 
 
 def read_trace_row(root, row):

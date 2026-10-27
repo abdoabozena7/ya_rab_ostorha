@@ -9,6 +9,8 @@ from backend.core.active_safety import ActiveSafetySupervisor
 from backend.core.contracts import SimulationFrame, ControlCommand, from_dict
 from backend.core.motion_geometry import VehicleGeometry
 from backend.core.safety_policy import sensor_observation
+from backend.core.recording import read_asset
+from backend.core.storage_retention import open_telemetry
 
 
 def main():
@@ -17,7 +19,7 @@ def main():
     parser.add_argument('--baseline-ref',default='cbb862e')
     parser.add_argument('--output',type=Path,default=Path('output/path-conflict-repair/radar-replay.json'))
     args=parser.parse_args();telemetry=args.run/'telemetry'
-    rows={a['evaluation_frame']:a for a in map(json.loads,(telemetry/'safety-v2.jsonl').open())}
+    rows={a['evaluation_frame']:a for a in map(json.loads,open_telemetry(telemetry/'safety-v2.jsonl'))}
     source=subprocess.check_output(['git','show',args.baseline_ref+':backend/core/active_safety.py'])
     baseline=types.ModuleType('backend.core._baseline_active_safety');baseline.__package__='backend.core'
     baseline.__file__=str(Path('backend/core/active_safety.py').resolve())
@@ -31,10 +33,8 @@ def main():
         'recording':args.run.as_posix(),'baseline_ref':args.baseline_ref,
         'baseline_active_safety_sha256':hashlib.sha256(source).hexdigest(),'samples':[]}
     def read(asset):
-        data=(args.run/asset.path).read_bytes()
-        if hashlib.sha256(data).hexdigest()!=asset.sha256:raise ValueError('Asset checksum mismatch: '+asset.path)
-        return data
-    for line in (telemetry/'frames.jsonl').open():
+        return read_asset(args.run, asset)
+    for line in open_telemetry(telemetry/'frames.jsonl'):
         raw=json.loads(line);f=raw['frame_id']
         if f<args.start_frame or f>args.end_frame:continue
         audit=rows[f]

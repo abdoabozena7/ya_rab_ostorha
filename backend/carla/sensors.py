@@ -15,6 +15,12 @@ class CarlaSensorManager:
         self.actors = {}
         self.frames = {}
         self.lock = threading.RLock()
+        self.close_lock = threading.RLock()
+        self.callbacks = threading.Condition()
+        self.active_callbacks = 0
+        self.reception_stopped = False
+        self.closed = False
+        self.evidence_error = None
         self.cleanup_errors = []
         self.sample_times = {}
         self.wall_sample_times = {}
@@ -41,6 +47,8 @@ class CarlaSensorManager:
                 self.capture_times.popitem(last=False)
 
     def spawn(self, sensor_id, blueprint_id, transform, attributes, decode):
+        if self.reception_stopped or self.closed:
+            raise RuntimeError('Sensor manager is closing')
         if sensor_id in self.actors:
             raise ValueError(f'Duplicate sensor ID: {sensor_id}')
         blueprint = self.world.get_blueprint_library().find(blueprint_id)
@@ -77,7 +85,7 @@ class CarlaSensorManager:
         if self.sparse_timing and blueprint_id=='sensor.other.radar':
             self.sparse_timing.seed_radar(sensor_id,self.world.get_snapshot(),actor.get_transform())
         try:
-            def receive(data, received=None, received_unix=None):
+            def decode_received(data, received=None, received_unix=None):
                 with self.lock:
                     if self.actors.get(sensor_id) is not actor:
                         return False
@@ -137,17 +145,35 @@ class CarlaSensorManager:
                             while len(self.driving_frames)>32:self.driving_frames.popitem(last=False)
                         elif isinstance(decoded, SensorFrame):
                             if len(self.pending_frames) >= 512:
-                                self.pending_frames.popleft()
                                 self.queue_overflows += 1
-                                self.errors['queue'] = f'Sensor callback queue overflow: {self.queue_overflows} dropped samples'
-                            self.pending_frames.append(decoded)
+                                self.evidence_error = self.errors['queue'] = 'Sensor evidence callback queue exhausted'
+                            else:
+                                self.pending_frames.append(decoded)
                         return True
                 return False
-            if self.split_rates and blueprint_id == 'sensor.camera.rgb':
+            def receive(data, received=None, received_unix=None):
+                with self.callbacks:
+                    if self.reception_stopped and received is None:
+                        return False
+                    self.active_callbacks += 1
+                try:
+                    return decode_received(data, received, received_unix)
+                finally:
+                    with self.callbacks:
+                        self.active_callbacks -= 1
+                        self.callbacks.notify_all()
+            if blueprint_id == 'sensor.camera.rgb':
                 from ..signals.image_encoding import LatestImageEncoder
-                encoder = LatestImageEncoder(receive, name='jpeg-'+sensor_id)
+                encoder = LatestImageEncoder(receive, name='jpeg-'+sensor_id,
+                                             lossless=not self.split_rates, capacity=8)
                 self.rgb_encoders[sensor_id] = encoder
-                actor.listen(lambda data: encoder.submit(data, monotonic(), time.time()))
+                def enqueue(data):
+                    if self.reception_stopped:
+                        return
+                    if not encoder.submit(data, monotonic(), time.time()) and encoder.error:
+                        with self.lock:
+                            self.evidence_error = self.errors[sensor_id] = encoder.error
+                actor.listen(enqueue)
             else:
                 actor.listen(receive)
         except Exception:
@@ -217,6 +243,8 @@ class CarlaSensorManager:
 
     def drain_frames(self):
         with self.lock:
+            if self.evidence_error and not self.reception_stopped:
+                raise RuntimeError(self.evidence_error)
             frames = tuple(self.pending_frames); self.pending_frames.clear()
             return frames
 
@@ -369,32 +397,56 @@ class CarlaSensorManager:
             for name in ('drivingCamera',):
                 self.configurations[name]['mountTransform'] = {'positionM':vector(mount.location), 'rotationDeg':rotation(mount.rotation)}
 
+    def stop_receiving(self):
+        """Stop callbacks and drain encoders, retaining final events/assets for the owner."""
+        with self.close_lock:
+            if self.reception_stopped:
+                if self.cleanup_errors:
+                    raise RuntimeError('; '.join(self.cleanup_errors))
+                return
+            with self.callbacks:
+                self.reception_stopped = True
+            for actor in tuple(self.actors.values()):
+                try:
+                    actor.stop()
+                except RuntimeError as error:
+                    self.cleanup_errors.append(str(error))
+            for encoder in tuple(self.rgb_encoders.values()):
+                try:
+                    encoder.close()
+                except RuntimeError as error:
+                    self.cleanup_errors.append(str(error))
+            with self.callbacks:
+                if not self.callbacks.wait_for(lambda: self.active_callbacks == 0, timeout=5):
+                    self.cleanup_errors.append('Native sensor callbacks did not drain')
+            if self.cleanup_errors:
+                raise RuntimeError('; '.join(self.cleanup_errors))
+
     def close(self):
-        with self.lock:
-            encoders = list(self.rgb_encoders.values())
-            self.rgb_encoders.clear()
-            actors = list(self.actors.values())
-            self.actors.clear(); self.frames.clear(); self.sample_times.clear()
-            self.wall_sample_times.clear()
-            self.pending_frames.clear(); self.assets.clear(); self.configurations.clear()
-            self.driving_frames.clear()
-            self.pending_collisions.clear()
-            self.capture_times.clear()
-            self.warmup.clear()
-            self.asset_bytes_used = 0
-        self.cleanup_errors = []
-        for actor in actors:
+        with self.close_lock:
+            if self.closed:
+                return
             try:
-                actor.stop()
+                self.stop_receiving()
             except RuntimeError as error:
-                self.cleanup_errors.append(str(error))
-            try:
-                if actor.is_alive and not actor.destroy():
-                    self.cleanup_errors.append(f'Could not destroy sensor {actor.id}')
-            except RuntimeError as error:
-                self.cleanup_errors.append(str(error))
-        for encoder in encoders:
-            try:
-                encoder.close()
-            except RuntimeError as error:
-                self.cleanup_errors.append(str(error))
+                with self.callbacks:
+                    if self.active_callbacks:
+                        raise
+                from ..core.logging import log, LogCategory
+                log(LogCategory.SENSOR, 'Sensor reception failed to stop cleanly; attempting actor cleanup after callbacks drained',
+                    error=str(error))
+            with self.lock:
+                actors = list(self.actors.values())
+                self.actors.clear(); self.frames.clear(); self.sample_times.clear()
+                self.wall_sample_times.clear(); self.rgb_encoders.clear()
+                self.pending_frames.clear(); self.assets.clear(); self.configurations.clear()
+                self.driving_frames.clear(); self.pending_collisions.clear()
+                self.capture_times.clear(); self.warmup.clear()
+                self.asset_bytes_used = 0
+            for actor in actors:
+                try:
+                    if actor.is_alive and not actor.destroy():
+                        self.cleanup_errors.append(f'Could not destroy sensor {actor.id}')
+                except RuntimeError as error:
+                    self.cleanup_errors.append(str(error))
+            self.closed = True

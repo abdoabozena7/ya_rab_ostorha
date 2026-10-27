@@ -13,6 +13,65 @@ from scripts.validate_hybrid_native import ROOT,source_hashes,archive_sources
 from backend.learning.egypt_budget import EgyptBudget, remaining_seconds, save_json
 
 
+DIAGNOSTIC_TARGETS = {(2707, 'ROBOSPHERE'): (50., 30.),
+                      (1703, 'NORMAL'): (157.3512154797993, 0.),
+                      (3709, 'NORMAL'): (111.24587573731478, 0.)}
+
+
+def diagnostic_goal(seed, mode, run):
+    distance, duration = DIAGNOSTIC_TARGETS[(seed, mode)]
+    terminal = run.get('status') == 'ARRIVED' or (
+        run.get('status') == 'COLLISION' and run.get('contact_callbacks', 0) > 0)
+    return ((mode == 'NORMAL' and terminal) or
+            run.get('distance_m', 0.) >= distance and run.get('duration_s', 0.) >= duration)
+
+
+class EvidenceFiles:
+    def __init__(self, root):
+        self.root, self.metadata = root, None
+        self.streams = {}
+
+    def record_trace(self, row):
+        name = row['file']
+        if name not in ('checkpoint.json', 'samples.jsonl', 'progress.jsonl'):
+            raise ValueError('Unexpected native evidence destination')
+        if name.endswith('.json'):
+            save_json(self.root / name, row['data'])
+        else:
+            if name not in self.streams:
+                self.streams[name] = (self.root / name).open('a', encoding='utf8')
+            self.streams[name].write(json.dumps(row['data'], separators=(',', ':')) + '\n')
+            self.streams[name].flush()
+
+    def close(self):
+        for stream in self.streams.values():
+            stream.flush()
+            os.fsync(stream.fileno())
+            stream.close()
+
+
+def diagnostic_assessment(report):
+    from backend.core.egypt_urban import control_latency_passed
+    mode = report['first_mode']
+    run = report.get('pair', {}).get('runs', {}).get(mode, {})
+    latency = run.get('control_latency', {})
+    gates = {
+        'measured_diagnostic_goal': diagnostic_goal(report['seed'], mode, run),
+        'protected_without_contact': mode == 'NORMAL' or run.get('collisions') == 0,
+        'no_control_timeout': not report.get('error') and (
+            run.get('reason') == 'diagnostic_goal_reached' or run.get('status') in ('ARRIVED', 'COLLISION')),
+        'sensor_latency_targets': control_latency_passed(latency),
+        'clean_worker_exit': report.get('native_worker_exit_code') in (0, 1) and report.get('cleanup_stage') == 'COMPLETE'
+            and report.get('cleanup_confirmed') is True and not report.get('cleanup_error'),
+        'exports_closed': report.get('exports_closed') is True,
+        'saved_video_playback': report.get('video_playback_after_exit', {}).get('passed') is True,
+        'independent_cleanup': report.get('independent_cleanup_probe', {}).get('passed') is True,
+        'engine_exited': report.get('simulator_exit_confirmed') is True,
+        'source_unchanged': report.get('source_unchanged') is True and report.get('attempts_retained') is True,
+    }
+    return {'passed': all(gates.values()), 'gates': gates, 'native_acceptance': False}
+
+
 def cleanup_probe(deadline=None):
     code=('import carla,json; c=carla.Client("127.0.0.1",2000);c.set_timeout(8);w=c.get_world(); '
         'sync=w.get_settings().synchronous_mode; '
@@ -27,21 +86,22 @@ def cleanup_probe(deadline=None):
     except (OSError,ValueError,StopIteration,subprocess.TimeoutExpired) as error:return {'passed':False,'error':str(error)}
 
 
-def verify_videos(report, deadline=None):
+def verify_videos(report, deadline=None, *, diagnostic=False):
     import hashlib
     from imageio_ffmpeg import get_ffmpeg_exe
     files={}
     try:
-        for mode in ('NORMAL','ROBOSPHERE'):
+        for mode in (report['first_mode'],) if diagnostic else ('NORMAL','ROBOSPHERE'):
             root=Path(report['pair']['runs'][mode]['recording']).resolve()
             if not root.is_relative_to((ROOT/'runs/normal_city').resolve()):raise ValueError('Unexpected video root')
             state=json.loads((root/'video-status.json').read_text(encoding='utf8'));name=state.get('preferred_video','driving.mp4')
             if name not in ('driving.mp4','driving-annotated.mp4'):raise ValueError('Unexpected video variant')
             variant=state.get('variants',{}).get('annotated' if 'annotated' in name else 'raw',state)
             files[mode]=(root/name,state,variant)
-        common=report['shared_perception'];root=Path(common['recording']).resolve()
-        if root!=Path(report['pair']['runs']['NORMAL']['recording']).resolve():raise ValueError('Unexpected shared root')
-        files['shared']=(root/'shared-perception.mp4',common,common)
+        if not diagnostic:
+            common=report['shared_perception'];root=Path(common['recording']).resolve()
+            if root!=Path(report['pair']['runs']['NORMAL']['recording']).resolve():raise ValueError('Unexpected shared root')
+            files['shared']=(root/'shared-perception.mp4',common,common)
         checks={}
         for label,(path,state,variant) in files.items():
             valid=variant['status']=='READY' and hashlib.sha256(path.read_bytes()).hexdigest()==variant['sha256']
@@ -88,8 +148,9 @@ def worker(args):
     from backend.core.journey_comparison import JourneyComparison
     from backend.server import DashboardHTTPServer,Handler
     from backend.computer_vision.service import PerceptionService,ControlPerceptionCache
-    folder=Path(args.folder);report=json.loads((folder/'initial.json').read_text());service=provider=http=perception=None
+    folder=Path(args.folder);report=json.loads((folder/'initial.json').read_text());service=provider=http=perception=evidence=None
     began=time.monotonic();last=None;last_progress=-1;heartbeat_stop=threading.Event()
+    worker_deadline = min(began + args.seconds, args.egypt_deadline - 120.) if getattr(args, 'egypt_deadline', None) else began + args.seconds
     try:
         egypt = getattr(args, 'scenario', None) == 'EGYPT_URBAN_CHAOS_V1'
         if egypt:
@@ -126,7 +187,42 @@ def worker(args):
             **({'scenario_id':'EGYPT_URBAN_CHAOS_V1','holdout_acceptance':getattr(args,'holdout_acceptance',False)} if egypt else
                {'scenario_id':'SUDDEN_PEDESTRIAN_COMPARISON_V1'}))
         service.presentation.data.update(preloaded=True,awaiting_choice=True,vehicle_variants=True)
-        report['samples']=[];report['phases']=[]
+        from backend.core.recording import BufferedRunRecorder
+        evidence = BufferedRunRecorder(EvidenceFiles(folder), capacity=32, maximum_bytes=32*1024*1024)
+        report.update(samples=[], phases=[], full_samples='samples.jsonl', samples_summary_period_s=1, sample_count=0)
+        def write_evidence(name, data):
+            if not evidence.record_trace({'file': name, 'data': data}):
+                raise RuntimeError('Native evidence queue exhausted; its saved prefix is retained')
+        def capture_after_control():
+            nonlocal last, last_progress
+            d=service.presentation.data
+            if d['status']!=last:
+                last=d['status'];event={'phase':last,'arm':d.get('arm'),'reason':d.get('reason'),'wall_s':time.monotonic()-began}
+                report['phases'].append(event);print(json.dumps(event),flush=True)
+                checkpoint={k:v for k,v in report.items() if k!='samples'}
+                checkpoint['pair']=progress_pair(service.journey_comparison)
+                write_evidence('checkpoint.json',checkpoint)
+            if last!='DRIVING':
+                return
+            v=service.observation.vehicle
+            row={'frame':service.observation.frame_id,'timestamp_s':service.observation.timestamp_s,
+                'arm':d['arm'],'mode':service.journey.get('driving_mode'),'speed_kmh':v.speed_mps*3.6,
+                'yaw_rad':v.transform.rotation_rad.yaw,
+                'position_m':list(v.transform.position_m),'stop':service._public_stop_diagnostics(),
+                'scenario':getattr(provider,'dense_chaos',None).run_evidence(),'performance':service.backend_step_ms,
+                'application_timing':dict(service.application_timing)}
+            write_evidence('samples.jsonl',row)
+            report['sample_count']+=1
+            second=int(service.observation.timestamp_s)
+            if second!=last_progress:
+                last_progress=second
+                report['samples'].append(row)
+                write_evidence('progress.jsonl',{k:row[k] for k in ('frame','timestamp_s','arm','mode','speed_kmh','position_m','scenario')})
+            run=service.journey_comparison.active
+            if getattr(args,'diagnostic',False) and run and diagnostic_goal(args.seed,args.first,run):
+                report['diagnostic_goal_reached']=True
+                service.stop_driving('diagnostic_goal_reached',cancel_comparison=False,cancel_presentation=False)
+        service.after_control=capture_after_control
         while time.monotonic()<worker_deadline-75:
             if (folder/'abort.json').exists():
                 report['calibration_aborted']=json.loads((folder/'abort.json').read_text())
@@ -134,30 +230,9 @@ def worker(args):
                 for _ in range(6):service.step_once()
                 break
             service.journey_heartbeat(service.session_id);service.step_once();d=service.presentation.data
-            if d['status']!=last:
-                last=d['status'];event={'phase':last,'arm':d.get('arm'),'reason':d.get('reason'),'wall_s':time.monotonic()-began}
-                report['phases'].append(event);print(json.dumps(event),flush=True)
-                checkpoint={k:v for k,v in report.items() if k!='samples'}
-                # Full actor starts remain in the recording metadata and final
-                # report. A compact progress checkpoint avoids serializing them
-                # on the tick owner just after a fresh scene was published.
-                checkpoint['pair']=progress_pair(service.journey_comparison)
-                save_json(folder/'checkpoint.json',checkpoint)
-            if last=='CHOOSING':service.presentation.choose_preloaded(d['id'],args.first)
-            if last=='DRIVING':
-                v=service.observation.vehicle
-                row={'frame':service.observation.frame_id,'timestamp_s':service.observation.timestamp_s,
-                    'arm':d['arm'],'mode':service.journey.get('driving_mode'),'speed_kmh':v.speed_mps*3.6,
-                    'yaw_rad':v.transform.rotation_rad.yaw,
-                    'position_m':list(v.transform.position_m),'stop':service._public_stop_diagnostics(),
-                    'scenario':getattr(provider,'dense_chaos',None).run_evidence(),'performance':service.backend_step_ms}
-                report['samples'].append(row)
-                second=int(service.observation.timestamp_s)
-                if second!=last_progress:
-                    last_progress=second
-                    with (folder/'progress.jsonl').open('a',encoding='utf8') as stream:
-                        stream.write(json.dumps({k:row[k] for k in ('frame','timestamp_s','arm','mode','speed_kmh','position_m','scenario')})+'\n')
-            if last in ('RESULTS','ERROR','CANCELLED'):break
+            if d['status']=='CHOOSING':service.presentation.choose_preloaded(d['id'],args.first)
+            if d['status'] in ('RESULTS','ERROR','CANCELLED'):break
+            if getattr(args,'diagnostic',False) and report.get('diagnostic_goal_reached') and not service.journey_recording_stop_pending:break
         report['presentation']=service.presentation.snapshot();report['pair']=service.journey_comparison.snapshot()
         report['journey']=service.journey;report['last_drive_stop']=service.last_drive_stop;report['dashboard_result']=service.dashboard_result
         report['completed_without_shortening']=service.presentation.data['status']=='RESULTS' and len(report['pair']['runs'])==2 and all(r['status'] in ('ARRIVED','COLLISION') for r in report['pair']['runs'].values())
@@ -184,29 +259,41 @@ def worker(args):
         save_json(folder/'report.json',report)
         def cleanup_stage(name):
             report['cleanup_stage'] = name
-            save_json(folder/'report.json', report)
+            report.setdefault('shutdown_stages', []).append({'stage':name,'monotonic_s':time.monotonic()})
+            save_json(folder/'cleanup-stage.json', {'stage':name,'stages':report['shutdown_stages']})
         heartbeat_stop.set()
-        cleanup_stage('HTTP_SERVER_CLOSE')
-        if http:http.shutdown();http.server_close()
-        cleanup_stage('PERCEPTION_CLOSE')
-        if perception:perception.close()
         if service:
             try:
+                service.after_control=None
+                service.shutdown_observer=cleanup_stage
                 if service.journey_comparison.active:report['incomplete_pair']=service.journey_comparison.snapshot()
                 cleanup_stage('SIMULATION_SERVICE_CLOSE')
-                service.close();report['cleanup_confirmed']=not provider.cleanup_errors
+                service.close(deadline=args.egypt_deadline-90. if egypt else worker_deadline)
+                report['cleanup_confirmed']=not provider.cleanup_errors and service.shutdown_error is None
+                report['pair']=service.journey_comparison.snapshot()
                 from backend.core.driving_video import wait_for_exports
                 cleanup_stage('RECORDING_EXPORTS_CLOSE')
-                report['exports_closed']=wait_for_exports(max(0.,min(45.,worker_deadline-time.monotonic())))
+                report['exports_closed']=wait_for_exports(0.)
             except BaseException as error:report['cleanup_error']=str(error)
         elif provider:
             cleanup_stage('PROVIDER_CLOSE')
             try:provider.close()
             except BaseException as error:report['cleanup_error']=str(error)
+        cleanup_stage('HTTP_SERVER_CLOSE')
+        if http:http.shutdown();http.server_close()
+        cleanup_stage('PERCEPTION_CLOSE')
+        if perception:perception.close()
+        if evidence:
+            cleanup_stage('EVIDENCE_WRITER_CLOSE')
+            try:evidence.close()
+            except RuntimeError as error:report['cleanup_error']=str(error)
         report['source_unchanged']=source_hashes()==report['source_hashes'];report['wall_s']=time.monotonic()-began
         report['cleanup_stage'] = 'ERROR' if report.get('cleanup_error') else 'COMPLETE'
         save_json(folder/'report.json',report)
     print(json.dumps({'report':str(folder/'report.json'),'passed':report.get('pair',{}).get('scenario_validation',{}).get('passed',False),'error':report.get('error')}),flush=True)
+    if getattr(args,'diagnostic',False):
+        run=report.get('pair',{}).get('runs',{}).get(args.first,{})
+        return 0 if diagnostic_goal(args.seed,args.first,run) and report.get('cleanup_confirmed') and report.get('exports_closed') and not report.get('cleanup_error') and not report.get('error') else 1
     return 0 if report.get('pair',{}).get('scenario_validation',{}).get('passed') else 1
 
 
@@ -219,6 +306,8 @@ def validate_egypt_worker(args):
         args.egypt_reservation,args.egypt_deadline,args.seed,args.first)
     if (ticket['phase']=='ACCEPTANCE') != bool(getattr(args,'holdout_acceptance',False)):
         raise ValueError('Egypt worker partition differs from its parent reservation')
+    if bool(getattr(args, 'diagnostic', False)) != (ticket.get('purpose') == 'DIAGNOSTIC'):
+        raise ValueError('Egypt worker diagnostic scope differs from its reservation')
     return ticket
 
 
@@ -237,6 +326,8 @@ def run(args):
         if args.seed in configuration()['holdout_seeds'] and not getattr(args, 'holdout_acceptance', False):
             raise ValueError('Reserved seeds require the frozen one-shot Egypt acceptance matrix')
         admission('Town10HD_Opt', 60.)
+        if getattr(args,'diagnostic',False) and (egypt_ticket.get('purpose')!='DIAGNOSTIC' or (args.seed,args.first) not in DIAGNOSTIC_TARGETS):
+            raise ValueError('Diagnostic workers require a development diagnostic reservation and declared target')
     folder=ROOT/'output'/('egypt-urban-pairs' if egypt else 'crossing-pairs')/uuid.uuid4().hex;folder.mkdir(parents=True)
     args.report_folder = folder
     if egypt:
@@ -244,6 +335,8 @@ def run(args):
     report={'source':'LIVE_NATIVE_CARLA','seed':args.seed,'first_mode':args.first,'source_hashes':source_hashes()}
     if egypt:
         report.update(scenario_id='EGYPT_URBAN_CHAOS_V1', source_sha256=source_fingerprint())
+        if getattr(args,'diagnostic',False):
+            report.update(diagnostic=True, scope='DEVELOPMENT_DIAGNOSTIC', native_acceptance=False)
     report['source_archive']=archive_sources(folder,report['source_hashes'])
     if egypt:
         report['egypt_reservation']={'id':args.egypt_reservation,'deadline':args.egypt_deadline,'budget':args.egypt_budget}
@@ -255,11 +348,12 @@ def run(args):
                 '--seed',str(args.seed),'--first',args.first,'--seconds',str(args.seconds),'--render-profile',args.render_profile,
                 *(['--scenario','EGYPT_URBAN_CHAOS_V1'] if egypt else []),
                 *(['--holdout-acceptance'] if egypt and getattr(args,'holdout_acceptance',False) else []),
+                *(['--diagnostic'] if getattr(args,'diagnostic',False) else []),
                 *(['--egypt-budget',str(args.egypt_budget),'--egypt-reservation',args.egypt_reservation,
                    '--egypt-deadline',str(args.egypt_deadline)] if egypt else []),
                 *(['--rule-ticket',str(args.rule_ticket)] if getattr(args,'rule_ticket',None) else [])],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,
                 creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
-            deadline=min(time.monotonic()+args.seconds,args.egypt_deadline-120.) if egypt else time.monotonic()+args.seconds
+            deadline=min(time.monotonic()+args.seconds+180.,args.egypt_deadline-90.) if egypt else time.monotonic()+args.seconds
             while child.poll() is None:
                 try:
                     child.wait(timeout=remaining_seconds(deadline,1.))
@@ -284,6 +378,10 @@ def run(args):
             path=folder/'report.json'
             saved=json.loads(path.read_text(encoding='utf8')) if path.exists() else {**report,'error':'Worker failed before reporting'}
             saved['native_worker_exit_code'] = child.returncode if child is not None else None
+            cleanup_marker=folder/'cleanup-stage.json'
+            if cleanup_marker.is_file() and child is not None and child.returncode not in (0,1):
+                marker=json.loads(cleanup_marker.read_text(encoding='utf8'))
+                saved.update(cleanup_stage=marker['stage'],shutdown_stages=marker['stages'])
             saved['native_acceptance']=False
             try:
                 deadline=args.egypt_deadline if egypt else None
@@ -295,7 +393,8 @@ def run(args):
                     saved['simulator_exit_confirmed']=not native_processes(timeout=remaining_seconds(deadline,15))
                 else:
                     saved['simulator_exit_confirmed']=runtime.inspect() is None
-                saved['video_playback_after_exit']=(verify_videos(saved,deadline) if saved['simulator_exit_confirmed'] else
+                saved['video_playback_after_exit']=(verify_videos(saved,deadline,diagnostic=True) if saved['simulator_exit_confirmed'] and getattr(args,'diagnostic',False) else
+                    verify_videos(saved,deadline) if saved['simulator_exit_confirmed'] else
                     {'passed':False,'error':'CARLA process exit was not verified; playback was not attempted'})
                 if not egypt:
                     from .crossing_causality import critical_prediction_evidence
@@ -314,8 +413,13 @@ def run(args):
                 saved['attempts_retained'] = all((folder/name).is_file() for name in ('initial.json','worker.log','source.zip'))
                 saved['worker_deadline_expired']=report.get('worker_deadline_expired',False)
                 saved['native_acceptance']=saved['native_acceptance'] and not saved['worker_deadline_expired']
+                if getattr(args,'diagnostic',False):
+                    saved['native_acceptance']=False
+                    saved['diagnostic_assessment']=diagnostic_assessment(saved)
+                    saved['diagnostic_passed']=saved['diagnostic_assessment']['passed']
             save_json(path,saved)
-    return 0 if json.loads((folder/'report.json').read_text(encoding='utf8')).get('native_acceptance') else 1
+    return 0 if json.loads((folder/'report.json').read_text(encoding='utf8')).get(
+        'diagnostic_passed' if getattr(args,'diagnostic',False) else 'native_acceptance') else 1
 
 
 if __name__=='__main__':
@@ -325,6 +429,7 @@ if __name__=='__main__':
     p.add_argument('--scenario',choices=('EGYPT_URBAN_CHAOS_V1',));p.add_argument('--rule-ticket')
     p.add_argument('--egypt-budget');p.add_argument('--egypt-reservation');p.add_argument('--egypt-deadline',type=float)
     p.add_argument('--holdout-acceptance',action='store_true')
+    p.add_argument('--diagnostic',action='store_true')
     a=p.parse_args()
     if not 180<=a.seconds<=1800:p.error('Use a bounded 180–1800 second validation')
     if a.worker:

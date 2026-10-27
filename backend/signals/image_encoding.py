@@ -1,11 +1,16 @@
 """One in-flight native image and one replaceable pending image per camera."""
 import threading
+from collections import deque
 from ..core.host_clock import monotonic
 
 
 class LatestImageEncoder:
-    def __init__(self, callback, *, name):
+    def __init__(self, callback, *, name, lossless=False, capacity=1):
+        if type(capacity) is not int or capacity < 1:
+            raise ValueError('Image encoding capacity must be positive')
         self.callback = callback
+        self.lossless, self.capacity = lossless, capacity
+        self.backlog = deque()
         self.condition = threading.Condition()
         self.pending = None
         self.stopped = False
@@ -22,21 +27,36 @@ class LatestImageEncoder:
             if self.stopped:
                 return False
             self.submitted += 1
-            if self.pending is not None:
-                self.dropped += 1
-            self.pending = (image, received_wall_s, received_unix_s)
-            self.maximum_pending = 1
+            if self.lossless:
+                if len(self.backlog) >= self.capacity:
+                    from ..core.logging import log, LogCategory
+                    self.error = 'Sensor evidence image queue exhausted'
+                    self.failed += 1
+                    self.stopped = True
+                    self.condition.notify_all()
+                    log(LogCategory.RECORDING, self.error, capacity=self.capacity)
+                    return False
+                self.backlog.append((image, received_wall_s, received_unix_s))
+                self.maximum_pending = max(self.maximum_pending, len(self.backlog))
+            else:
+                if self.pending is not None:
+                    self.dropped += 1
+                self.pending = (image, received_wall_s, received_unix_s)
+                self.maximum_pending = 1
             self.condition.notify()
             return True
 
     def _run(self):
         while True:
             with self.condition:
-                self.condition.wait_for(lambda: self.stopped or self.pending is not None)
-                if self.stopped:
+                self.condition.wait_for(lambda: self.stopped or self.pending is not None or self.backlog)
+                if self.stopped and (not self.lossless or not self.backlog):
                     return
-                image, received, received_unix = self.pending
-                self.pending = None
+                if self.lossless:
+                    image, received, received_unix = self.backlog.popleft()
+                else:
+                    image, received, received_unix = self.pending
+                    self.pending = None
             began = monotonic()
             try:
                 accepted = self.callback(image, received, received_unix)
@@ -57,8 +77,9 @@ class LatestImageEncoder:
     def snapshot(self):
         with self.condition:
             return {'submitted': self.submitted, 'encoded': self.completed, 'failed':self.failed,
-                'droppedBeforeEncoding': self.dropped, 'pending': int(self.pending is not None),
-                'capacity': 1, 'maximumPending': self.maximum_pending,
+                'droppedBeforeEncoding': self.dropped, 'pending': len(self.backlog) if self.lossless else int(self.pending is not None),
+                'capacity': self.capacity if self.lossless else 1, 'maximumPending': self.maximum_pending,
+                'lossless': self.lossless,
                 'queueWaitMs': self.queue_wait_ms, 'processingMs': self.processing_ms,
                 'error': self.error}
 
@@ -70,3 +91,5 @@ class LatestImageEncoder:
         self.thread.join(timeout=5)
         if self.thread.is_alive():
             raise RuntimeError('Image encoder did not stop within five seconds')
+        if self.error:
+            raise RuntimeError(self.error)

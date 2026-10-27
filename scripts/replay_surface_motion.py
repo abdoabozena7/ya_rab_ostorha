@@ -13,21 +13,21 @@ from backend.core.contracts import SimulationFrame, SensorKind, from_dict
 from backend.core.motion_geometry import VehicleGeometry
 from backend.core.path_conflicts import LidarPathConflicts, PATH_CONFLICT_POLICY
 from backend.core.safety_policy import sensor_observation
+from backend.core.recording import read_asset
+from backend.core.storage_retention import open_telemetry
 
 
 def replay(run, baseline):
     telemetry=run/'telemetry'
-    decisions={r['evaluation_frame']:r for r in map(json.loads,(telemetry/'safety-v2.jsonl').open())}
+    decisions={r['evaluation_frame']:r for r in map(json.loads,open_telemetry(telemetry/'safety-v2.jsonl'))}
     geometry=VehicleGeometry(**next(r['vehicle_geometry'] for r in decisions.values() if r.get('vehicle_geometry')))
     trackers=[baseline.LidarPathConflicts(),LidarPathConflicts()]
     conflicts=[[],[]];evidence=Counter();durations=[];frames=0
-    for line in (telemetry/'frames.jsonl').open():
+    for line in open_telemetry(telemetry/'frames.jsonl'):
         raw=json.loads(line)
         o=sensor_observation(from_dict(SimulationFrame,raw))
         channel=next(c for c in o.channels if c.kind==SensorKind.LIDAR)
-        data=(run/channel.asset.path).read_bytes()
-        if hashlib.sha256(data).hexdigest()!=channel.asset.sha256:
-            raise ValueError('Recorded LiDAR checksum mismatch: '+channel.asset.path)
+        data=read_asset(run, channel.asset)
         points=np.frombuffer(data,'<f4').reshape(-1,4)[:,:3]+_mount(channel)[0]
         frame_results=[]
         for i,tracker in enumerate(trackers):

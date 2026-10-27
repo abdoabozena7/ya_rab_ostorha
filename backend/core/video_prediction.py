@@ -8,6 +8,7 @@ import tempfile
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from .camera_geometry import mount_rotation
+from .recording_storage import open_recorded, stored_exists
 
 
 def pose_rotation(pose):
@@ -47,8 +48,8 @@ def forecast_matches(prediction, camera, session):
 
 def video_predictions(root):
     source=root/'telemetry/comparison-controls.jsonl'
-    if not source.exists():return
-    with source.open(encoding='utf8') as stream:
+    if not stored_exists(source):return
+    with open_recorded(source, 'rt') as stream:
         previous=-math.inf
         for line in stream:
             row=json.loads(line)

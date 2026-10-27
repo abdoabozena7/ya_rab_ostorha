@@ -1,33 +1,47 @@
 export const EGYPT_SCENARIO='EGYPT_URBAN_CHAOS_V1';
 export const LEGACY_SCENARIO='SUDDEN_PEDESTRIAN_COMPARISON_V1';
+export const validationOwnsSimulator=catalog=>!!catalog?.simulator_reserved&&catalog?.validation_session_owned!==true;
 export function validationSummary(catalog) {
   const option=catalog?.options?.find(option=>option.id===EGYPT_SCENARIO);
   const progress=option?.validation||catalog?.validation||{};
   const count=Number.isInteger(progress.completed_trips)&&progress.completed_trips>=0?progress.completed_trips:0;
-  const phase=progress.phase==='DEVELOPMENT'?'Development':'Acceptance';
+  const phase=progress.run_kind==='DIAGNOSTIC'?'Development diagnostic':progress.phase==='DEVELOPMENT'?'Development':'Acceptance';
   const labels={PENDING:'pending',RUNNING:'running',FAILED:'failed',INTERRUPTED:'interrupted',
-    SOURCE_CHANGED:'source changed',DEVELOPMENT_PASSED:'checks passed; acceptance pending',ACCEPTED:'accepted'};
+    SOURCE_CHANGED:'source changed',DIAGNOSTIC_PASSED:'passed; matrices pending',DEVELOPMENT_PASSED:'checks passed; acceptance pending',ACCEPTED:'accepted'};
   const state=option?.native_accepted?'ACCEPTED':progress.state||'PENDING';
-  const failed=Array.isArray(progress.failed_gates)?progress.failed_gates:[];
-  return `${phase} ${labels[state]||'pending'} · ${count}/12 trips completed`+
-    (failed.length?` · Failed gate: ${failed.join('; ')}`:'')+(progress.error?` · ${progress.error}`:'');
+  const pairs=Number.isInteger(progress.accepted_comparisons)&&progress.accepted_comparisons>=0?progress.accepted_comparisons:0;
+  return `${phase} ${labels[state]||'pending'} · ${Math.min(12,count)}/12 trips completed · ${Math.min(6,pairs)}/6 comparisons accepted`;
+}
+export function validationDetails(catalog) {
+  const option=catalog?.options?.find(option=>option.id===EGYPT_SCENARIO),progress=option?.validation||catalog?.validation||{};
+  return [option?.reason,validationSummary(catalog),...(progress.failed_gates||[]),progress.error].filter(Boolean).join('\n');
+}
+export function validationBlockReason(catalog) {
+  if(validationOwnsSimulator(catalog))return 'Native validation currently owns CARLA.';
+  const option=catalog?.options?.find(option=>option.id===EGYPT_SCENARIO),progress=option?.validation||catalog?.validation||{};
+  const reason=[progress.error,...(progress.failed_gates||[]),option?.reason].filter(Boolean).join(' ');
+  if(/sensor.*latency|latency.*target/i.test(reason))return 'Sensor-to-control latency has not met the measured targets.';
+  if(/sensor|ControlSceneTimeout|freshness/i.test(reason))return 'Sensor processing has not passed the 250 ms deadline.';
+  if(/cleanup|shutdown|worker_exit/i.test(reason))return 'A clean native shutdown has not been verified.';
+  if(/storage|disk|space_required/i.test(reason))return 'The recording and export space requirement has not been met.';
+  if(/source|fingerprint/i.test(reason)&&progress.state==='SOURCE_CHANGED')return 'Native validation belongs to an older source version.';
+  if(/overtake/i.test(reason))return 'The required measured overtakes have not passed.';
+  return 'Egypt requires successful native validation before driving.';
 }
 export function urbanAvailability(catalog) {
   const option=catalog?.options?.find(option=>option.id===EGYPT_SCENARIO);
   if(!option)return {available:false,suffix:'checking availability',label:'Checking access',title:'Checking Egypt journey access',notice:'Availability has not been received. Status can refresh with CARLA stopped.'};
-  if(option.available!==true)return {available:false,suffix:'unavailable',label:'Needs validation',title:'Egypt journey needs validation',notice:
-    validationSummary(catalog)+'. '+(catalog?.simulator_reserved?
-      'The validation runner owns CARLA exclusively; dashboard preparation is paused.':
-      'Egypt remains locked until source-bound native acceptance passes. GPU memory cannot unlock it.')};
+  if(option.available!==true)return {available:false,suffix:'unavailable',label:'Needs validation',title:'Egypt journey needs validation',
+    notice:validationBlockReason(catalog),details:validationDetails(catalog)};
   return {available:true,suffix:option.native_accepted?'':'validation only',label:option.native_accepted?'Ready':'Validation only',title:option.native_accepted?'Egypt journey is ready':'Validation session active',notice:option.native_accepted?
     'Egypt urban journey is available; source-bound native acceptance verified.':
     'Egypt urban journey is available in the active validation window. Native acceptance is pending.'};
 }
 export function scenarioStartState(local,catalog) {
-  const access=urbanAvailability(catalog),blocked=!!catalog?.simulator_reserved||local.scenarioId===EGYPT_SCENARIO&&!access.available;
+  const access=urbanAvailability(catalog),blocked=validationOwnsSimulator(catalog)||local.scenarioId===EGYPT_SCENARIO&&!access.available;
   return {blocked,checking:blocked&&access.suffix==='checking availability',
     needsPreparation:!blocked&&!!local.scenarioDraft,
-    label:blocked?access.suffix==='checking availability'?'Checking scenario access…':validationSummary(catalog):
+    label:blocked?access.suffix==='checking availability'?'Checking scenario access…':validationOwnsSimulator(catalog)?'Native validation in progress':'Validation required':
       local.scenarioDraft?'Prepare selected scenario':null};
 }
 export const isEgyptScenario=value=>value?.scenario_id===EGYPT_SCENARIO||value?.id===EGYPT_SCENARIO||value?.protocol==='EGYPT_COMPLETE_DRIVERS_V1';

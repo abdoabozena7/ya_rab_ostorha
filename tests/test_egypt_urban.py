@@ -535,6 +535,8 @@ def accepted_pair():
            'scenario_evidence': {'events': events, 'density_verified': True, 'motion_verified': True,
                                  'minimum_body_separation_m': .8, 'collision_measurement_healthy': True},
            'driver_id': DRIVER_ID, 'maximum_speed_kmh': 58., 'simulation_wall_ratio': .4, 'sensor_age_samples': 100,
+           'control_latency': {'samples': 600, 'p95_ms': 200., 'p99_ms': 225.,
+                               'deadline_exceeded_frames': 0, 'carla_call_p99_ms': 2.},
            'completed_maneuvers': [{'id': i, 'kind': 'OVERTAKE', 'status': 'COMPLETED', 'measured_clearance': True,
                                    'clearance_proof': {'rear_clearance_m': 3., 'frame_id': i * 100 + 1},
                                    'return_required': True, 'returned': True, 'completion_frame': i * 100 + 50,
@@ -574,6 +576,7 @@ class EgyptAcceptanceTests(unittest.TestCase):
                               'attempts_retained': True, 'native_acceptance': True, 'pair': pair,
                               'completed_without_shortening': True, 'finish_completed': True, 'exports_closed': True,
                               'cleanup_confirmed': True, 'simulator_exit_confirmed': True,
+                              'native_worker_exit_code': 0, 'cleanup_stage': 'COMPLETE',
                               'independent_cleanup_probe': {'passed': True}, 'video_playback_after_exit': {'passed': True},
                               'render_profile': {'render_profile': 'LOW'}})
         self.assertTrue(acceptance_matrix(pairs, 'frozen')['accepted'])

@@ -209,19 +209,30 @@ def intended_conflict(conflicts, speed, throttle):
         and not c.get('separating_rear_overlap') and not c.get('braking_worsens_rear_conflict')), None)
 
 
-def assess_conflicts(tracks, modes, paths, *, grid=GRID):
+def forecast_geometry(tracks, modes, grid):
     grid=np.asarray(grid,float)
-    conflicts = []; indexed = {t['id']: t for t in tracks if t['confirmed']}
+    indexed = {t['id']: t for t in tracks if t['confirmed']}
     accepted = [m for m in modes if m['track_id'] in indexed]
-    if not accepted: return conflicts
+    if not accepted:
+        return indexed, accepted, None, None
     centers = []
     for mode in accepted:
         points = np.asarray(mode['points'])
         centers.append(np.column_stack([np.interp(grid,points[:,0],points[:,i]) for i in (1,2)]))
-    centers=np.asarray(centers); ego=np.array([p['points'] for p in paths]); eh=np.array([p['half'] for p in paths])[None,:,None,:]
+    centers=np.asarray(centers)
     half=np.array([indexed[m['track_id']]['half_size_m'] for m in accepted])[:,None,None,:]
     uncertainty=np.array([indexed[m['track_id']]['uncertainty_m'] for m in accepted])[:,None,None,None]
     oh=half+uncertainty+.12*grid[None,None,:,None]+.2
+    centers.flags.writeable = oh.flags.writeable = False
+    return indexed, accepted, centers, oh
+
+
+def assess_conflicts(tracks, modes, paths, *, grid=GRID, prepared=None):
+    grid=np.asarray(grid,float)
+    conflicts = []
+    indexed, accepted, centers, oh = prepared if prepared is not None else forecast_geometry(tracks, modes, grid)
+    if not accepted: return conflicts
+    ego=np.array([p['points'] for p in paths]); eh=np.array([p['half'] for p in paths])[None,:,None,:]
     delta=centers[:,None,:,:]-ego[None,:,:,1:3];co=np.cos(ego[None,:,:,3]);si=np.sin(ego[None,:,:,3])
     dx,dy=delta[...,0],delta[...,1];hx,hy=oh[...,0],oh[...,1];ex,ey=eh[...,0],eh[...,1]
     mask=((np.abs(dx)<=hx+ex*np.abs(co)+ey*np.abs(si)) & (np.abs(dy)<=hy+ex*np.abs(si)+ey*np.abs(co)) &

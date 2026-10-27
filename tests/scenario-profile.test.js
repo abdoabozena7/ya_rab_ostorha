@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,completedOvertakes,scenarioRunSummary,urbanAvailability,scenarioStartState,validationSummary} from '../frontend/scenario-profile.js';
+import {EGYPT_SCENARIO,LEGACY_SCENARIO,scenarioOptions,scenarioDriverText,completedOvertakes,scenarioRunSummary,urbanAvailability,scenarioStartState,validationSummary,validationDetails} from '../frontend/scenario-profile.js';
 import {recordedDriverDescription} from '../frontend/driver-profile.js';
 import {presentationSummary} from '../frontend/presentation-run.js';
 import {missionState,stressSummary} from '../frontend/mission-state.js';
@@ -11,8 +11,8 @@ test('scenario availability explains missing catalog, pending acceptance and val
   const catalog={options:[{id:EGYPT_SCENARIO,available:false,reason:'Twelve source-bound native trips have not been accepted'}]};
   assert.equal(urbanAvailability(catalog).suffix,'unavailable');
   assert.equal(urbanAvailability(catalog).label,'Needs validation');
-  assert.match(urbanAvailability(catalog).notice,/0\/12 trips completed/);
-  assert.match(urbanAvailability(catalog).notice,/GPU memory cannot unlock/);
+  assert.match(validationSummary(catalog),/0\/12 trips completed · 0\/6 comparisons accepted/);
+  assert.equal(urbanAvailability(catalog).notice,'Egypt requires successful native validation before driving.');
   Object.assign(catalog.options[0],{available:true,validation_window_active:true});
   assert.equal(urbanAvailability(catalog).available,true);assert.equal(urbanAvailability(catalog).suffix,'validation only');
   Object.assign(catalog.options[0],{native_accepted:true});
@@ -22,7 +22,7 @@ test('scenario availability explains missing catalog, pending acceptance and val
 test('an experimental selection is inspectable but cannot prepare or start without access',()=>{
   const local={scenarioId:EGYPT_SCENARIO,scenarioDraft:true};
   const catalog={options:[{id:EGYPT_SCENARIO,available:false}]};
-  assert.deepEqual(scenarioStartState(local,catalog),{blocked:true,checking:false,needsPreparation:false,label:'Acceptance pending · 0/12 trips completed'});
+  assert.deepEqual(scenarioStartState(local,catalog),{blocked:true,checking:false,needsPreparation:false,label:'Validation required'});
   assert.equal(scenarioStartState(local,null).checking,true);
   catalog.options[0].available=true;
   assert.equal(scenarioStartState(local,catalog).needsPreparation,true);
@@ -35,7 +35,8 @@ test('validation status distinguishes development, failed gates and accepted tri
   const catalog={options:[{id:EGYPT_SCENARIO,available:false,validation:{state:'RUNNING',phase:'DEVELOPMENT',completed_trips:4}}]};
   assert.match(validationSummary(catalog),/Development running · 4\/12/);
   Object.assign(catalog.options[0].validation,{state:'FAILED',phase:'ACCEPTANCE',completed_trips:7,failed_gates:['961103/NORMAL: three_measured_complete_overtakes']});
-  assert.match(urbanAvailability(catalog).notice,/Failed gate: 961103\/NORMAL: three_measured_complete_overtakes/);
+  assert.equal(urbanAvailability(catalog).notice,'The required measured overtakes have not passed.');
+  assert.match(validationDetails(catalog),/961103\/NORMAL: three_measured_complete_overtakes/);
   catalog.options[0].native_accepted=true;
   assert.match(validationSummary(catalog),/Acceptance accepted/);
   catalog.simulator_reserved=true;
@@ -48,6 +49,15 @@ test('exclusive validation pauses new preparation without changing saved compari
   assert.equal(reserved.action,null);assert.equal(reserved.choices,false);assert.match(reserved.title,/validation owns/);
   const saved=missionState({...p,presentation:{guided:true,id:'old',status:'COMPLETE',pair_id:'old'}},{validationReserved:true});
   assert.equal(saved.screen,'comparison');assert.equal(saved.action,'NEW_DRIVE');
+});
+
+test('the server inheriting its browser reservation may drive without bypassing native acceptance',()=>{
+  const catalog={simulator_reserved:true,validation_session_owned:true,
+    options:[{id:EGYPT_SCENARIO,available:true,native_accepted:true,validation:{completed_trips:12,accepted_comparisons:6}}]};
+  assert.equal(scenarioStartState({scenarioId:EGYPT_SCENARIO},catalog).blocked,false);
+  assert.match(validationSummary(catalog),/12\/12 trips completed · 6\/6 comparisons accepted/);
+  catalog.validation_session_owned=false;
+  assert.equal(scenarioStartState({scenarioId:EGYPT_SCENARIO},catalog).blocked,true);
 });
 
 test('scenario selection is independent from first driver and preserves legacy speed',()=>{

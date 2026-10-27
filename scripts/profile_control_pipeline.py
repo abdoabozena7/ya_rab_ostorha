@@ -37,6 +37,7 @@ from backend.core.contracts import CommandSource, ControlCommand, to_dict  # noq
 from backend.core.control_scene import ControlSceneBuilder  # noqa: E402
 from backend.core.motion_geometry import VehicleGeometry  # noqa: E402
 from backend.core.replay import ReplayReader  # noqa: E402
+from backend.core.recording import read_asset  # noqa: E402
 from backend.core.safety_policy import sensor_observation  # noqa: E402
 
 
@@ -50,7 +51,7 @@ def run(root, frames, geometry):
     config = active_safety.RuntimeSafetyConfig.load(ROOT/'config/ya_rab_ostorha_safety.json')
     supervisor = ActiveSafetySupervisor(config);supervisor.geometry = geometry
     timings = {'scene_build_ms': [], 'safety_ms': [], 'total_ms': []};outputs = hashlib.sha256();count = 0
-    def read(asset):return (Path(root)/asset.path).read_bytes()
+    def read(asset):return read_asset(root, asset)
     for frame in reader.frames():
         if count >= frames:break
         try:observation = sensor_observation(frame)

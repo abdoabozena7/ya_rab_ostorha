@@ -24,9 +24,9 @@ def preferred_launch():
     return {**value,'offscreen':True}
 
 
-def state():
+def state(port=8000):
     try:
-        with urllib.request.urlopen('http://127.0.0.1:8000/api/simulation/state',timeout=2) as r:return json.load(r)
+        with urllib.request.urlopen(f'http://127.0.0.1:{port}/api/simulation/state',timeout=2) as r:return json.load(r)
     except OSError:return None
 
 

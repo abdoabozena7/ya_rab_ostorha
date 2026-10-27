@@ -4,6 +4,13 @@ import {missionState,stressSummary,missionFailure,preloadWasObserved} from '../f
 const ready={connected:true,fresh:true,controller:true,simulatorStop:{available:true}};
 const guided=(status,arm=0,first='NORMAL')=>({...ready,presentation:{guided:true,id:'current',status,arm,modes:[first,first==='NORMAL'?'ROBOSPHERE':'NORMAL']}});
 
+test('the primary action waits for the server-confirmed post-release sensor stage',()=>{
+  const p={...guided('STARTING'),journey:{startup_stage:'WAITING_FOR_FRESH_SENSORS'}};
+  const state=missionState(p);
+  assert.equal(state.action,null);assert.equal(state.label,'Waiting for fresh sensors…');
+  assert.equal(state.loadingDrive,true);
+});
+
 test('an acknowledged observational preload does not leave another active session behind a loader',()=>{
   const local={pageId:'observer',preloadRequested:true,pageAdmitted:false,preloadSequence:12};
   const p={...guided('DRIVING'),controller:false,acknowledged:12};

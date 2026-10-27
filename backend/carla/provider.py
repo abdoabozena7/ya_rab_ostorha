@@ -1100,6 +1100,10 @@ class CarlaProvider:
         name = self.world.world.get_map().name if self.world else self.map_name
         return self.load_world(name)
 
+    def stop_sensor_receiving(self):
+        if self.sensor_manager:
+            self.sensor_manager.stop_receiving()
+
     def disconnect(self):
         self.cleanup_errors = []
         try:

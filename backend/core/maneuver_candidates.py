@@ -135,7 +135,9 @@ class ExecutionShield:
         if uncertain:return False,'REACHABLE_CORRIDOR_UNCERTAINTY',{'track_ids':uncertain}
         grid=np.unique(np.round(np.r_[GRID,checked[:,0]],6))
         conflict_path=np.column_stack((grid,*(np.interp(grid,checked[:,0],checked[:,i]) for i in (1,2,3))))
-        conflicts=assess_conflicts(tracks,modes,[{'intent':'CANDIDATE','points':footprint_centers(conflict_path,scene.geometry),'half':scene.geometry.half}],grid=grid)
+        prepare = getattr(type(scene.space), 'forecast_geometry', None)
+        prepared = prepare(scene.space, prediction, grid) if prepare is not None else None
+        conflicts=assess_conflicts(tracks,modes,[{'intent':'CANDIDATE','points':footprint_centers(conflict_path,scene.geometry),'half':scene.geometry.half}],grid=grid,prepared=prepared)
         conflicts=[c for c in conflicts if not c.get('separating_rear_overlap')]
         separations=[]
         if forward_recovery and not full_maneuver and not command.reverse and command.brake==0 and speed<=2.:

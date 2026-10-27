@@ -8,7 +8,7 @@ import time
 import uuid
 import traceback
 from collections import deque, OrderedDict, Counter
-from .contracts import CommandSource, ControlCommand, SensorFrame, SimulationFrame, finite, to_dict
+from .contracts import CommandSource, ControlCommand, SensorFrame, SimulationFrame, finite, freeze_json, to_dict
 from .control import CommandArbiter, ControlMode, ControlSafetyLayer, ControlStateMachine, safe_command
 from .dashboard import dashboard_frame
 from .events import EventBus, EventType, SimulationEvent
@@ -23,8 +23,16 @@ from .host_clock import monotonic
 class SimulationService:
     CONTROL_TTL = .35
 
-    def __init__(self, provider, recorder=None, *, required_sensors=(), optional_sensors=(), sensor_timeout_s=.25, now=monotonic, validation_budget=None):
+    def __init__(self, provider, recorder=None, *, required_sensors=(), optional_sensors=(), sensor_timeout_s=.25, now=monotonic, validation_budget=None,
+                 behavior_shadow=None):
         self.native_validation_budget = validation_budget
+        if behavior_shadow is not None:
+            from .behavior_proposals import BehaviorProposalShadow
+            if not isinstance(behavior_shadow, BehaviorProposalShadow):
+                raise ValueError('Behavior proposals require the shadow-only data boundary')
+        self.behavior_shadow = behavior_shadow
+        self.behavior_shadow_context = None
+        self.behavior_shadow_status = None
         from .safety_policy import ObservationHistory
         from .recording import RunRecorder,BufferedRunRecorder
         if isinstance(recorder,RunRecorder):recorder=BufferedRunRecorder(recorder)
@@ -72,6 +80,7 @@ class SimulationService:
         self.recent_ticks = deque(maxlen=100)
         self.observation_latencies_ms = deque(maxlen=100)
         self.control_timing_ms = {}
+        self.control_stages_wall_s = {}
         self.publication_at = None
         self.frame_tick_started = OrderedDict()
         self.lifecycle = ConnectionLifecycle(now=now)
@@ -85,6 +94,8 @@ class SimulationService:
         self.state_at = 0.
         self.safety_observed_at=None
         self.navigation_ready_frame=None
+        self.navigation_release_frame=None
+        self.navigation_prefetch=None
         self.last_recording=recorder if isinstance(recorder,BufferedRunRecorder) else None
         self.sensors, self.sensor_rates = {}, {}
         self.frame = self.frame_metadata = None
@@ -97,6 +108,14 @@ class SimulationService:
         self.started_session = False
         self.sensor_ids = set()
         self.closed = False
+        self.closing = False
+        self.close_lock = threading.Lock()
+        self.cleanup_lock = threading.Lock()
+        self.shutdown_stages = []
+        self.shutdown_error = None
+        self.shutdown_observer = None
+        self.shutdown_deadline = None
+        self.after_control = None
         self.collision_events = deque(maxlen=50)
         self.camera_cache = OrderedDict()
         self.sensor_frame_cache = OrderedDict()
@@ -403,16 +422,49 @@ class SimulationService:
         return (mode == ControlMode.AUTOMATIC and self.journey.get('driving_mode') == 'BASELINE' or
                 mode == ControlMode.MANUAL and self.manual_driving_mode == 'NORMAL')
 
-    def _hybrid_road_context(self):
-        """Reuse map geometry within this frame, with isolated caller copies."""
+    def _road_context_key(self, frame_id=None, timestamp_s=None):
         tools = getattr(self.provider, 'dashboard_tools', None)
-        key = (self.session_id, *self._context(), id(self.provider),
-               id(getattr(self.provider, 'navigation', None)), id(getattr(tools, 'native_route', None)))
+        frame_id, timestamp_s = self._context() if frame_id is None else (frame_id, timestamp_s)
+        return (self.session_id, frame_id, timestamp_s, id(self.provider),
+                id(getattr(self.provider, 'navigation', None)), id(getattr(tools, 'native_route', None)),
+                self.journey.get('speed_kmh'))
+
+    def _hybrid_road_context(self):
+        """Share immutable urban geometry; legacy mutable callers retain copies."""
+        key = self._road_context_key()
         cached = getattr(self, '_hybrid_road_cache', None)
         if cached is None or cached[0] != key:
-            cached = (key, copy.deepcopy(self.provider.hybrid_road_context(self.session_id)))
+            raw = self.provider.hybrid_road_context(self.session_id)
+            cached = (key, freeze_json(raw) if self._urban_driver() else copy.deepcopy(raw))
             self._hybrid_road_cache = cached
-        return copy.deepcopy(cached[1])
+        return dict(cached[1]) if self._urban_driver() else copy.deepcopy(cached[1])
+
+    def _prefetch_navigation(self, observation):
+        """Use the new native anchor while its GPU sensors are still arriving.
+
+        This stages only a route-controller proposal and map geometry. The
+        sensor scene, maneuver owner, independent shield and application lease
+        must still authorize the command at the following control boundary.
+        """
+        if (self.split_rates or self.arbiter.machine.mode != ControlMode.AUTOMATIC
+                or self.journey.get('status') != 'RUNNING' or self.journey.get('driving_mode') != 'ROBOSPHERE'
+                or self._urban_driver() is None
+                or not self._navigation_connection_alive()
+                or self.now() >= self.journey.get('validation_deadline', float('inf'))):
+            self.navigation_prefetch = None
+            return
+        key = self._road_context_key(observation.frame_id, observation.timestamp_s)
+        if self.navigation_prefetch is not None and self.navigation_prefetch['key'] == key:
+            return
+        started = self.now()
+        done = self.provider.navigation_done()
+        command = None if done else self.provider.navigation_command(
+            observation.frame_id, observation.timestamp_s, self.journey['speed_kmh'])
+        road = freeze_json(self.provider.hybrid_road_context(self.session_id)) if not done else None
+        self.navigation_prefetch = {'key': key, 'done': done, 'command': command,
+                                    'started_wall_s': started, 'completed_wall_s': self.now()}
+        if road is not None:
+            self._hybrid_road_cache = (key, road)
 
     def _hybrid_execution_step(self,*,route_bypass=False):
         """Independent per-native-frame veto after the behavior owner proposes."""
@@ -430,8 +482,10 @@ class SimulationService:
             path = signed_path(scene.observation.ego.speed_mps, base.steering,
                                base.throttle*2.5-base.brake*5., scene.geometry, base.reverse, bounded=base.reverse)
             road = self._hybrid_road_context()
+            self.control_stages_wall_s['execution_shield_started'] = self.now()
             ok, reason, evidence = ExecutionShield().check(scene, path, base, road, timestamp_s=stamp, wall_s=self.now(),
                 forward_recovery=self.maneuver_status.get('action') in ('FOLLOW','SLOW'))
+            self.control_stages_wall_s['execution_shield_completed'] = self.now()
             if self.now()-scene.received_wall_s > .25:
                 ok, reason = False, 'CONTROL_PROCESSING_DEADLINE'
         if not ok:
@@ -689,6 +743,13 @@ class SimulationService:
             'wall_age_s':now-scene.received_wall_s if scene else None,
             'simulation_age_s':guard_stamp-scene.observation.timestamp_s if scene else None,'fresh_aligned':fresh,
             'injected_timeout':injected}
+        self.application_timing['stages_monotonic_s'] = {
+            **(dict(getattr(scene, 'stages_wall_s', None) or {}) if scene else {}),
+            **getattr(self, 'control_stages_wall_s', {}), 'application_checked': now}
+        self.application_timing['sensor_to_application_check_ms'] = (now-scene.received_wall_s)*1000 if scene else None
+        sensor_timing = getattr(scene, 'timing_metadata', None) or {}
+        self.application_timing['sensor_timing_verified'] = (
+            sensor_timing.get('source') == 'LIVE_SYNCHRONIZER_HOST_MONOTONIC' and not sensor_timing.get('issues'))
         guarded=(self.arbiter.machine.mode==ControlMode.AUTOMATIC and (self.split_rates or not self._normal_driving())
             and getattr(self.provider,'sensor_suite',False) is True)
         if guarded and not fresh:
@@ -790,7 +851,7 @@ class SimulationService:
                 attempt=self.presentation.data.get('id')
                 deferred=bool(self.presentation.data.get('automatic_pair'))
                 def export_ready():
-                    return (self.closed or self.presentation.data.get('id')!=attempt or
+                    return (self.closing or self.closed or self.presentation.data.get('id')!=attempt or
                         self.presentation.data.get('status') in ('RESULTS','FINISHING','COMPLETE','ERROR','CANCELLED','IDLE'))
                 export_after_close(recorder,ready=export_ready if deferred else None)
         else:recorder.close()
@@ -822,7 +883,7 @@ class SimulationService:
 
     def step_once(self):
         """Controlled experiment step through the same safety/arbitration worker."""
-        if self.thread is not None or self.closed:
+        if self.thread is not None or self.closed or self.closing:
             raise RuntimeError('Manual stepping requires an open, unthreaded service')
         try:self._iteration()
         except Exception as error:
@@ -1264,7 +1325,11 @@ class SimulationService:
                     driver.alternative_started,self.observation.vehicle.transform.position_m[:2])>=5.:
                 driver.completed_maneuvers.append('ALTERNATE_ROUTE')
             self._stop_navigation('destination_reached',status='ARRIVED'); return
-        if self.provider.navigation_done():
+        prefetched = self.navigation_prefetch
+        if prefetched is not None and prefetched['key'] != self._road_context_key():
+            prefetched = self.navigation_prefetch = None
+        navigation_done = prefetched['done'] if prefetched is not None else self.provider.navigation_done()
+        if navigation_done:
             if self.active_safety is not None:self.active_safety.route_probe=None
             frame_id, timestamp_s = self._context()
             self.base_driver_command = safe_command(frame_id, timestamp_s, source=CommandSource.NAVIGATION)
@@ -1281,7 +1346,12 @@ class SimulationService:
             return
         frame_id, timestamp_s = self._context()
         native_navigation_started=self.now()
-        command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
+        if prefetched is not None:
+            command = prefetched['command']
+            self.control_stages_wall_s.update(navigation_prefetch_started=prefetched['started_wall_s'],
+                                               navigation_prefetch_completed=prefetched['completed_wall_s'])
+        else:
+            command = self.provider.navigation_command(frame_id, timestamp_s, self.journey['speed_kmh'])
         self.control_timing_ms['native_navigation']=(self.now()-native_navigation_started)*1000
         if self.active_safety is not None:
             # Evaluation journeys only: the frame-bound route-tracker path. The
@@ -1352,8 +1422,12 @@ class SimulationService:
                 cap=min(cap,bypass.config['maneuver_speed_mps'])
                 for side in ('left','right'):road[side+'_allowed']=road[side+'_allowed'] and side in bypass.sides
             behavior_started=self.now()
+            self.control_stages_wall_s['maneuver_selection_started'] = behavior_started
             command, self.maneuver_status = driver.evaluate(self.control_scene, command, road, cap, wall=self.now())
+            self.control_stages_wall_s['maneuver_selection_completed'] = self.now()
             self.control_timing_ms['behavior']=(self.now()-behavior_started)*1000
+            if self.behavior_shadow is not None and self._urban_driver():
+                self.behavior_shadow_context = (self.control_scene, road, self.maneuver_status)
             if bypass_engaged:self.maneuver_status.update(driver_id='ROBOSPHERE_RULE_BYPASS_V1',scope='LOW_SPEED_STATIONARY_OBSTACLE_BYPASS')
             self.hybrid_decision_wall_at=self.now()
             if self.control_scene:
@@ -1611,8 +1685,8 @@ class SimulationService:
             callable(getattr(self.provider,'shutdown_handler',None)))
 
     def can_start_simulation(self):
-        from ..learning.egypt_budget import ownership_status
-        return (not ownership_status()['reserved']
+        from ..learning.egypt_budget import active_ticket, ownership_status
+        return ((not ownership_status()['reserved'] or active_ticket() is not None)
                 and getattr(getattr(self.provider,'connection',None),'host',None) in ('127.0.0.1','localhost','::1')
                 and callable(getattr(self.provider,'startup_handler',None))
                 and not self.reconfiguring and not self.restarting
@@ -1756,7 +1830,7 @@ class SimulationService:
 
     def _live(self):
         controlled_idle = self.rl_runtime is not None and self.rl_runtime.active and not self.rl_runtime.expired()
-        return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and not self.reconfiguring and (controlled_idle or self.now()-self.state_at < 1)
+        return self.observation is not None and self.lifecycle.state == ConnectionState.CONNECTED and self.error is None and not self.closed and not self.closing and not self.reconfiguring and (controlled_idle or self.now()-self.state_at < 1)
 
     def stream_snapshot(self):
         return self.snapshot(stream=True)
@@ -2031,6 +2105,7 @@ class SimulationService:
         return result
 
     def _publish(self, observation):
+        synchronized_wall_s = self.now()
         if not isinstance(observation, SimulationFrame):
             raise RuntimeError('Provider must return one canonical SimulationFrame')
         if self.provider and observation.world.provider != self.provider.name:
@@ -2038,10 +2113,11 @@ class SimulationService:
         # The tick/sensor owner is the sole scene writer. Expensive measured
         # tracking stays outside the lock shared with heartbeat and snapshots.
         measured=None
-        if observation.complete and getattr(self.provider, 'sensor_suite', False) is True:
+        if not self.closing and observation.complete and getattr(self.provider, 'sensor_suite', False) is True:
             try:
                 from .control_scene import ControlSceneBuilder
                 from .safety_policy import sensor_observation
+                from .pipeline_timing import sensor_timing
                 if (self.control_scene_builder is None or self.control_scene_builder.session_id != self.session_id
                         or self.control_scene_ego_actor_id != observation.vehicle.actor_id):
                     self.control_scene_builder = ControlSceneBuilder(self.session_id, getattr(self.provider, 'vehicle_geometry', None))
@@ -2055,6 +2131,7 @@ class SimulationService:
                         getattr(self.provider,'navigation_recovery',None) is not None),
                     received_wall_s=min((c.metadata.get('received_monotonic_s', self.now()) for c in observation.sensors
                         if c.sensor_id in self.synchronizer.required), default=self.now()),
+                    sensor_timing=sensor_timing(observation, self.synchronizer.required, synchronized_wall_s),
                     semantic_result=getattr(self, 'control_perception', None).latest(self.session_id)
                         if getattr(self, 'control_perception', None) else None)
                 self.control_scene = scene
@@ -2152,6 +2229,31 @@ class SimulationService:
                 self._event(EventType.CollisionDetected, collision=to_dict(collision))
             self.publication_at = self.now()
 
+    def _release_navigation_start(self):
+        fixture = getattr(self.provider, 'benchmark_fixture', None)
+        if (self.navigation_ready_frame is None or self.navigation_release_frame is not None
+                or self.journey.get('status') != 'STARTING' or not self.journey.get('benchmark') or not fixture
+                or self.observation is None or not self.observation.complete
+                or self.observation.frame_id < self.navigation_ready_frame or not self._navigation_connection_alive()):
+            return
+        self.provider.apply_control(safe_command(*self._context()))
+        self.journey['startup_stage'] = 'VERIFYING_START'
+        audit = self.presentation._prepare_native(fixture.verify)
+        self.journey_comparison.active['initial_condition_audit'] = audit
+        self._event(EventType.ControlChanged, benchmark_initial_conditions=audit)
+        self.journey_comparison.save()
+        if not audit['passed']:
+            self._stop_navigation('benchmark_initial_conditions_mismatch', status='ERROR')
+            return
+        self.journey['startup_stage'] = 'RELEASING_TRAFFIC'
+        self.presentation._prepare_native(fixture.release)
+        self.navigation_release_frame = self.clock.frame_id
+        self.navigation_ready_frame = self.clock.frame_id + (3 if self.split_rates else 1)
+        self.journey.update(release_frame_id=self.clock.frame_id, release_timestamp_s=self.clock.timestamp_s,
+                            release_monotonic_s=self.now(), startup_stage='WAITING_FOR_FRESH_SENSORS')
+        self._event(EventType.ControlChanged, benchmark_start_released={
+            key: self.journey[key] for key in ('release_frame_id', 'release_timestamp_s', 'release_monotonic_s')})
+
     def _iteration(self, training_command=None):
         started = self.now()
         with self.lock:
@@ -2244,6 +2346,7 @@ class SimulationService:
                             # Keep ego held until two new synchronized, actually
                             # fresh frames arrive after controller construction.
                             self.navigation_ready_frame=self.observation.frame_id+2*(3 if self.split_rates else 1)
+                            self.navigation_release_frame=None
                             if self.presentation.data.get('automatic_pair') and journey.get('presentation_id'):
                                 # Record a real, held 1.5 s camera prelude in
                                 # both arms. Traffic can diverge on its first
@@ -2377,6 +2480,8 @@ class SimulationService:
             else:
                 self.provider.set_paused(value)
                 self.paused = value
+        if training_command is None:
+            self._release_navigation_start()
         self.pending_control_traces=[]
         control_requested = self.now()
         decision_due = (not self.split_rates or self.observation is not None and
@@ -2390,6 +2495,7 @@ class SimulationService:
                 'lock_wait': (control_acquired-control_requested)*1000,
                 'since_publication': (control_acquired-self.publication_at)*1000 if self.publication_at is not None else None,
             }
+            self.control_stages_wall_s = {'control_started': control_acquired}
             if self.control_scene:
                 self.control_timing_ms.update(
                     sensor_to_scene=(self.control_scene.published_wall_s-self.control_scene.received_wall_s)*1000,
@@ -2409,21 +2515,9 @@ class SimulationService:
                           and (self.active_safety is None or (self.safety_observed_at is not None
                           and self.now()-self.safety_observed_at<=self.active_safety.config.maximum_sensor_wall_age_s))):
                         self.navigation_ready_frame=None
-                        fixture = getattr(self.provider,'benchmark_fixture',None)
-                        audit = self.presentation._prepare_native(fixture.verify) if self.journey.get('benchmark') and fixture else None
-                        if audit is not None:
-                            self.journey_comparison.active['initial_condition_audit']=audit
-                            self._event(EventType.ControlChanged,benchmark_initial_conditions=audit)
-                        if audit is not None and not audit['passed']:
-                            self._stop_navigation('benchmark_initial_conditions_mismatch',status='ERROR')
-                        else:
-                            if audit is not None:
-                                self.journey_comparison.active['initial_condition_audit']=audit
-                                self.journey_comparison.save()
-                                self.presentation._prepare_native(fixture.release)
-                            self.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
-                            self.journey.update(status='RUNNING')
-                            self._event(EventType.ControlChanged,journey=copy.deepcopy(self.journey))
+                        self.arbiter.machine.transition(ControlMode.AUTOMATIC,connected=True,explicit=True)
+                        self.journey.update(status='RUNNING', startup_stage='DRIVING')
+                        self._event(EventType.ControlChanged,journey=copy.deepcopy(self.journey))
                 if self.comparison:
                     try:
                         self.comparison.before_control()
@@ -2434,11 +2528,11 @@ class SimulationService:
                 navigation_started = self.now()
                 self._navigation_step()
                 safety_started = self.now()
+                self.control_stages_wall_s['safety_check_started'] = safety_started
                 self.control_timing_ms['navigation'] = (safety_started-navigation_started)*1000
                 normal_observer=self._normal_driving()
                 if not normal_observer:self._active_safety_step()
-                if self.journey_comparison.active and self.journey.get('status') == 'RUNNING':
-                    self.journey_comparison.sample(self.observation, self.provider.route_state(), self.journey_observer)
+                self.control_stages_wall_s['safety_check_completed'] = self.now()
                 self.control_timing_ms['safety'] = (self.now()-safety_started)*1000
                 chosen = self._choose()
             elif training_command is not None:
@@ -2456,11 +2550,28 @@ class SimulationService:
             if self.split_rates and self.arbiter.safety.emergency:
                 chosen = safe_command(*self._context())
             if training_command is None:chosen=self._application_guard(chosen)
-            if (training_command is not None and self.rl_runtime and self.rl_runtime.supervisor) or chosen == self.safety_command:
+            rpc_started = self.now()
+            acknowledged = bool((training_command is not None and self.rl_runtime and self.rl_runtime.supervisor)
+                                or chosen == self.safety_command)
+            if acknowledged:
                 self.provider.apply_control_confirmed(chosen)
             else:self.provider.apply_control(chosen)
         self.control_timing_ms['actuator_submit']=(self.now()-apply_started)*1000
-        if hasattr(self,'application_timing'):self.application_timing['rpc_completed_wall_s']=self.now()
+        if hasattr(self,'application_timing'):
+            completed = self.now()
+            self.application_timing.update(rpc_completed_wall_s=completed, carla_control_call_ms=(completed-rpc_started)*1000)
+            self.application_timing.setdefault('stages_monotonic_s', {}).update(
+                carla_control_called=rpc_started, carla_control_returned=completed)
+        pipeline_trace = None
+        if training_command is None:
+            from .pipeline_timing import command_trace
+            pipeline_trace = command_trace(self.application_timing, self.control_scene, chosen,
+                acknowledged=acknowledged, actor_id=self.observation.vehicle.actor_id if self.observation else None)
+            if self.recorder:self._record_control_trace(pipeline_trace)
+            if self.journey.get('status') == 'RUNNING':
+                self.journey_comparison.record_application(self.application_timing)
+        if self.journey_comparison.active and self.journey.get('status') == 'RUNNING':
+            self.journey_comparison.sample(self.observation, self.provider.route_state(), self.journey_observer)
         # Normal's sensor analysis has no control authority. Run it after the
         # native command is applied so diagnostic work cannot expire that command.
         # Supply the selected command directly: observing must not select again.
@@ -2468,6 +2579,17 @@ class SimulationService:
             observer_started=self.now()
             with self.lock:self._active_safety_step(observer_base=chosen)
             self.control_timing_ms['observer_after_application']=(self.now()-observer_started)*1000
+        if self.behavior_shadow is not None and self.behavior_shadow_context is not None:
+            shadow_started = self.now()
+            scene, road, behavior = self.behavior_shadow_context
+            self.behavior_shadow_context = None
+            self.behavior_shadow_status = self.behavior_shadow.observe(scene, road, behavior, wall_s=self.now())
+            self.control_timing_ms['behavior_shadow_after_application'] = (self.now()-shadow_started)*1000
+            if self.recorder:
+                self._record_control_trace({'kind': 'BEHAVIOR_PROPOSAL_SHADOW',
+                    'session_id': self.session_id, 'frame_id': chosen.frame_id,
+                    'timestamp_s': chosen.timestamp_s, 'status': self.behavior_shadow_status,
+                    'wall_ms': self.control_timing_ms['behavior_shadow_after_application']})
         traces=self.pending_control_traces;self.pending_control_traces=None
         for recorder,row in traces:recorder.record_trace(row)
         if decision_due or not self.split_rates or self.arbiter.reason != getattr(self, 'last_audited_reason', None):
@@ -2493,6 +2615,8 @@ class SimulationService:
                     self.presentation.data['fixture_fault']=held
                     if not self.presentation.data.get('guided'):
                         self.presentation.fail('The comparison traffic changed; its recordings are retained. Use Restart for a new matched setup.')
+        if self.after_control is not None:
+            self.after_control()
         native_step_started = self.now()
         if self.split_rates and self.stop_event.is_set():
             self.provider.apply_control(safe_command(*self._context()))
@@ -2511,8 +2635,13 @@ class SimulationService:
                 self.dashboard_result = {**self.dashboard_result,'status':'APPLIED','result':result}
         self._drain_collision_events()
         observation = self.provider.get_simulation_frame()
+        control_observed_wall_s = self.now()
         if not isinstance(observation, SimulationFrame):
             raise RuntimeError('Expected canonical observations from one native frame')
+        if pipeline_trace is not None:
+            from .pipeline_timing import observed_control
+            self.application_observation = observed_control(pipeline_trace, observation, control_observed_wall_s)
+            if self.recorder:self.recorder.record_trace(self.application_observation)
         diagnostic = self.clock.observe(observation.world)
         if self.split_rates:
             self._record_display_frames(observation.frame_id)
@@ -2531,6 +2660,7 @@ class SimulationService:
             observation = replace(observation, control=chosen)
             self.recent_clock_samples.append((self.now(), observation.timestamp_s, observation.frame_id))
             self._cache_physics_anchor(observation)
+            self._prefetch_navigation(observation)
             if not self.split_rates or not self.synchronizer.required and (observation.frame_id-self.initial_physics_frame)%3 == 0:
                 self.synchronizer.begin(observation)
                 self.sensor_anchors[observation.frame_id] = True
@@ -2653,69 +2783,90 @@ class SimulationService:
         else:future.set_result(result)
         return True
 
-    def _close_provider(self):
-        if self.closed:
-            return
-        if getattr(self,'control_perception',None):self.control_perception.close()
-        try:
-            if self.provider:
-                try:
-                    if self.provider.is_connected():
-                        terminal = safe_command(*self._context())
-                        self.provider.apply_control(terminal)
-                        self._audit_command(terminal)
-                        self._finish_journey_recording()
-                finally:
-                    try:
-                        self._drain_collision_events()
-                        self._ingest_provider_sensors()
-                        for pending in self.synchronizer.drain(force=True):
-                            self._publish(pending)
-                            self._record(pending)
-                    finally:
-                        try:
-                            if self.comparison:
-                                self.comparison.finish('service_shutdown')
-                        finally:
-                            self.provider.close()
-                errors = getattr(self.provider, 'cleanup_errors', [])
-                if errors:
-                    raise RuntimeError('; '.join(errors))
-                if self.started_session:
-                    self._event(EventType.VehicleDestroyed, actor_id=self.observation.vehicle.actor_id if self.observation else None)
-        except Exception as error:
-            self.error = '; '.join(filter(None, [self.error, 'Actor cleanup unconfirmed: '+str(error)]))
-        finally:
-            try:
-                try:
-                    for pending in self.synchronizer.drain(force=True):
-                        if self.recorder:
-                            self._record(pending)
-                    for sensor_id in self.sensor_ids:
-                        self._event(EventType.SensorStopped, sensor_id=sensor_id, cleanup_confirmed=self.error is None)
-                    if self.started_session:
-                        self._event(EventType.SimulationStopped, cleanup_error=self.error)
-                finally:
-                    if self.recorder:
-                        self.recorder.close()
-                    if self.last_recording and self.last_recording is not self.recorder:
-                        self.last_recording.close()
-            finally:
-                self.closed = True
-                self.policy_history.clear()
-                self.arbiter.disconnect()
-                self.lifecycle.disconnect()
-                self.observation = self.state = self.world = self.frame = self.frame_metadata = None
-                self.sensors = {}
-                self.camera_cache.clear()
-                self.sensor_frame_cache.clear()
+    def _shutdown_stage(self, name):
+        self.shutdown_stages.append({'stage': name, 'monotonic_s': self.now()})
+        if self.shutdown_observer is not None:
+            self.shutdown_observer(name)
 
-    def close(self):
-        self.release_controls()
-        self.stop_event.set()
-        if self.thread:
-            self.thread.join(timeout=15)
-            if self.thread.is_alive():
-                raise RuntimeError('Simulator worker did not stop; actor cleanup is not confirmed')
-        else:
-            self._close_provider()
+    def _close_provider(self):
+        with self.cleanup_lock:
+            if self.closed:
+                return
+            self.closing = True
+            errors = []
+            def stage(name, operation):
+                self._shutdown_stage(name)
+                try:
+                    operation()
+                except (OSError, RuntimeError, ValueError) as error:
+                    errors.append(name + ': ' + str(error))
+                    log(LogCategory.SIMULATION, 'Shutdown stage failed', stage=name, error=str(error))
+            def stop_control():
+                if self.provider and callable(getattr(self.provider, 'is_connected', None)) and self.provider.is_connected():
+                    terminal = safe_command(*self._context())
+                    self.provider.apply_control(terminal)
+                    self._audit_command(terminal)
+            stage('STOP_CONTROL', stop_control)
+            stop_sensors = getattr(self.provider, 'stop_sensor_receiving', None)
+            stage('STOP_SENSOR_RECEPTION', lambda: stop_sensors() if callable(stop_sensors) else None)
+            def drain():
+                self._drain_collision_events()
+                self._ingest_provider_sensors()
+                for pending in self.synchronizer.drain(force=True):
+                    self._publish(pending)
+                    self._record(pending)
+                for sensor_id in self.sensor_ids:
+                    self._event(EventType.SensorStopped, sensor_id=sensor_id, reception_stopped=not errors)
+                if self.started_session:
+                    self._event(EventType.SimulationStopped, cleanup_pending=True, cleanup_error='; '.join(errors) or None)
+            stage('DRAIN_FINAL_EVENTS', drain)
+            def recordings():
+                writers = [writer for writer in (self.recorder, self.last_recording) if writer is not None]
+                self._finish_journey_recording()
+                if self.recorder:
+                    self._change_recording({'enabled': False})
+                for index, writer in enumerate(writers):
+                    if all(writer is not previous for previous in writers[:index]):
+                        writer.close()
+            stage('FINALIZE_RECORDINGS', recordings)
+            def exports():
+                from .driving_video import wait_for_exports
+                timeout = max(0., min(90., self.shutdown_deadline-self.now())) if self.shutdown_deadline else 90.
+                if not wait_for_exports(timeout):
+                    raise RuntimeError('Recording exports did not close before the shutdown deadline')
+            stage('FINALIZE_EXPORTS', exports)
+            if getattr(self, 'control_perception', None):
+                stage('CLOSE_PERCEPTION', self.control_perception.close)
+            if self.comparison:
+                stage('FINALIZE_COMPARISON', lambda: self.comparison.finish('service_shutdown'))
+            if callable(getattr(self.provider, 'close', None)):
+                stage('DESTROY_ACTORS_AND_RESTORE_WORLD', self.provider.close)
+                errors.extend(getattr(self.provider, 'cleanup_errors', []))
+            self.closed = True
+            self.policy_history.clear()
+            self.arbiter.disconnect()
+            self.lifecycle.disconnect()
+            self.observation = self.state = self.world = self.frame = self.frame_metadata = None
+            self.sensors = {}
+            self.camera_cache.clear()
+            self.sensor_frame_cache.clear()
+            self.shutdown_error = '; '.join(errors) or None
+            if self.shutdown_error:
+                self.error = '; '.join(filter(None, [self.error, 'Native cleanup unconfirmed: ' + self.shutdown_error]))
+            self._shutdown_stage('FAILED' if errors else 'COMPLETE')
+
+    def close(self, *, deadline=None):
+        with self.close_lock:
+            if not self.closed:
+                self.closing = True
+                self.shutdown_deadline = deadline
+                self.release_controls()
+                self.stop_event.set()
+                if self.thread and self.thread is not threading.current_thread():
+                    self.thread.join(timeout=max(0., min(120., deadline-self.now())) if deadline else 120.)
+                    if self.thread.is_alive():
+                        raise RuntimeError('Simulator worker did not stop; actor cleanup is not confirmed')
+                else:
+                    self._close_provider()
+            if self.shutdown_error:
+                raise RuntimeError(self.shutdown_error)

@@ -2,7 +2,7 @@
 import math
 import numpy as np
 from .motion_geometry import GRID
-from .contracts import freeze_float_rows
+from .contracts import freeze_float_rows, freeze_json
 
 
 def kinematic_modes(tracks, *, grid=GRID, frozen_points=False):
@@ -49,10 +49,14 @@ def kinematic_modes(tracks, *, grid=GRID, frozen_points=False):
 
 def _mode(tr,index,source,xy,rank,grid,frozen_points=False):
     points = np.column_stack((grid, xy))
+    bounds = {'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':grid.tolist(),
+              'radius_m':(float(tr.get('uncertainty_m',.15))+.12*grid).tolist()}
+    if frozen_points:
+        times, radii = freeze_float_rows(np.vstack((grid, float(tr.get('uncertainty_m',.15))+.12*grid)))
+        bounds = freeze_json({'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':times,'radius_m':radii})
     return {'track_id':tr['id'],'source':source,'mode':index,'rank':rank,'selected':rank==0,
         'probability':None,'weight_kind':'UNRANKED_PHYSICAL_ALTERNATIVE',
-        'uncertainty_bounds':{'kind':'UNCALIBRATED_METRIC_MARGIN','times_s':grid.tolist(),
-            'radius_m':(float(tr.get('uncertainty_m',.15))+.12*grid).tolist()},
+        'uncertainty_bounds':bounds,
         'points':freeze_float_rows(points) if frozen_points else points.tolist()}
 
 

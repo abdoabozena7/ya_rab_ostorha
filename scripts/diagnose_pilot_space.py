@@ -5,7 +5,7 @@ from pathlib import Path
 from dataclasses import replace
 import numpy as np
 from backend.core.replay import ReplayReader
-from backend.core.recording import resolve_asset
+from backend.core.recording import read_asset
 from backend.core.control_scene import ControlSceneBuilder
 from backend.core.safety_policy import sensor_observation
 from backend.core.motion_geometry import VehicleGeometry
@@ -20,7 +20,7 @@ def main():
     if not geometry:raise ValueError('Recorded native geometry is required; no default-body substitution')
     reader=ReplayReader(args.episode/'sensors');frame=reader.frame_at(len(reader.index)-1)
     scene=ControlSceneBuilder('offline',VehicleGeometry(**geometry)).build(sensor_observation(frame),
-        lambda asset:resolve_asset(reader.root,asset).read_bytes(),received_wall_s=100.)
+        lambda asset:read_asset(reader.root,asset),received_wall_s=100.)
     row=json.loads((args.episode/'transitions.jsonl').read_text().splitlines()[-1])
     base=ControlCommand(frame.frame_id,frame.timestamp_s,.75,0.,row['applied'][0]['command']['steering'],False,False,CommandSource.TRAINING,1)
     road={'centerline':[[0.,0.],[50.,0.]],'junction_ahead':False,'lane_width_m':3.5}
