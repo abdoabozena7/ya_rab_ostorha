@@ -15,7 +15,35 @@ CARLA budgets are separate. CARLA and its raw data must remain until the native
 GTA capability gate passes. Retain code, weights, numeric results, reports and
 videos during any subsequently admitted cleanup.
 
-## Current result: BLOCKED_UNVERIFIED
+## Latest continuation: 31 October — local candidate exists; startup blocked
+
+The browser's published `ScriptHookV_3889.0_1158.13.zip` completed after the earlier
+timeout. Its real local ZIP, SHA-256 and original `Zone.Identifier` HostUrl have
+now been inspected. The old exact-package failure below remains historical.
+The current archive's changelog mentions 1013.20, but its explicit Enhanced
+support list does not; actual compatibility still requires native evidence.
+
+`bootstrap.py` inspects this pinned candidate and builds a small C++ ASI with the
+installed compiler. The ASI only reads the actual game frame/time natives. The
+owned launch uses the user's existing `PlayGTAV.exe` shortcut target and an owned
+Windows job; a direct game-binary attempt is retained separately. Only three
+new, hash-recorded files are temporarily installed, then removed after owned
+process cleanup. No args, anti-cheat/settings changes, xinput replacement or
+NativeTrainer are installed.
+
+The actual launcher attempt returned Windows `Access is denied`. Read-only
+Defender metadata flags the installation's launcher/version files as
+`PUA:Win32/Packunwan`, and records the game's `RUNE64.dll` as
+`Trojan:Win32/Kepavll!rfn`. That is a protection classification, not an independent
+malware verdict or proof of a false positive. No quarantine restoration,
+exclusion, protection change or further flagged launch is performed.
+
+The parent architecture prioritizes **RGB computer vision, tracking and metric
+calibration, Trajectron++ future trajectories, and an RL maneuver proposal with
+the independent safety check**. A GTA data/control repository is not a replacement
+for these models. See the [continuation report](../../docs/GTA_BOOTSTRAP_CV_20261031.md).
+
+## Earlier dependency checkpoint: BLOCKED_UNVERIFIED
 
 The real local executable reports `1.0.1013.20`. Original-host requests for the
 matching `ScriptHookV_3725.0_1013.20.zip` returned HTTP 406 from both tested
