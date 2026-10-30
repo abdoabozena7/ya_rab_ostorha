@@ -44,6 +44,21 @@ class BootstrapTests(unittest.TestCase):
             gate.require_clean_security(observation)
         self.assertIsNone(gate.require_clean_security({'ActiveProjectThreats':[]}))
 
+    def test_owner_allowance_is_not_blanket_detection_override(self):
+        allowance={'verified':True,'false_positive_proven':False,'allowed_threat_ids':[298189,2147939874]}
+        self.assertIsNone(gate.require_clean_security({'ActiveProjectThreats':[{'ThreatID':298189}]},allowance))
+        with self.assertRaisesRegex(RuntimeError,'Windows protection flags'):
+            gate.require_clean_security({'ActiveProjectThreats':[{'ThreatID':999}]},allowance)
+        with self.assertRaisesRegex(RuntimeError,'Windows protection flags'):
+            gate.require_clean_security({'ActiveProjectThreats':[{'ThreatID':298189}]},{**allowance,'verified':False})
+
+    def test_admin_only_readback_is_not_missing_exclusion(self):
+        self.assertIsNone(gate.validate_exclusion_readback({'visibility':'administrator-only','matches':None}))
+        self.assertIsNone(gate.validate_exclusion_readback({'visibility':'readable','matches':[True,True,True]}))
+        for bad in ({'visibility':'readable','matches':[True,False,True]},
+                    {'visibility':'unknown','matches':None}):
+            with self.assertRaises(ValueError):gate.validate_exclusion_readback(bad)
+
     def test_unfinished_reservation_remains_charged(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'ledger.json'; budget=gate.RuntimeBudget(path)

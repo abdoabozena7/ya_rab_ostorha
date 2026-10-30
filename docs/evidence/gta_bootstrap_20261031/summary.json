@@ -1,0 +1,20 @@
+{
+  "bootstrap_verified": true,
+  "cleanup_confirmed": true,
+  "files_restored": true,
+  "protected_inputs_unchanged": true,
+  "owned_game_pid": 30384,
+  "observed_game_pids": [
+    30384
+  ],
+  "run_id": "e0aafc04f3b44519b65e380d5e7d5f44",
+  "native_runtime_seconds": 86.48400000000038,
+  "uac_wall_seconds": 101.86000000000058,
+  "training_started": false,
+  "full_capability_accepted": false,
+  "source_digest": "fb985a25668c1584f7a4e692c0fc6487c3f666590a5bc4b5913b7bbf8a1c4c04",
+  "proof_gate": "EVIDENCE_GATE_PASSED",
+  "source_native_result_sha256": "d7a12dbf18de76691e241e7992599f8916cbcf0f3b89e202ca7e68701ae208ac",
+  "collector_receipt_sha256": "0b2a0daf32519c1a34f9cd28038275c4a99c74a4c0f75b56aea2f9dd0ff8104d",
+  "scope": "Native callback bootstrap only; full migration remains open"
+}

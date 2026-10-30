@@ -1,5 +1,9 @@
 # GTA continuation: completed download, CV architecture and startup blocker
 
+Historical checkpoint before the owner's explicit exact-file allowance and UAC
+continuation. The [later bootstrap report](GTA_UAC_BOOTSTRAP_20261031.md) records
+actual native callbacks and clean shutdown; the full migration remains open.
+
 **BLOCKED_UNVERIFIED — 31 October 2026, Cairo.** The original migration goal is
 still open. No camera/perception/control capability, training or CARLA cleanup
 has been accepted.

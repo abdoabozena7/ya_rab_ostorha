@@ -1,0 +1,5 @@
+{"stage":"ATTACHED","run_id":"e0aafc04f3b44519b65e380d5e7d5f44","pid":30384,"frame":0,"game_ms":0,"host_tick_ms":20660937}
+{"stage":"SCRIPT_ENTERED","run_id":"e0aafc04f3b44519b65e380d5e7d5f44","pid":30384,"frame":0,"game_ms":0,"host_tick_ms":20742750}
+{"stage":"FRAME","run_id":"e0aafc04f3b44519b65e380d5e7d5f44","pid":30384,"frame":8132,"game_ms":44780,"host_tick_ms":20742765}
+{"stage":"FRAME","run_id":"e0aafc04f3b44519b65e380d5e7d5f44","pid":30384,"frame":8137,"game_ms":45049,"host_tick_ms":20743046}
+{"stage":"FRAME","run_id":"e0aafc04f3b44519b65e380d5e7d5f44","pid":30384,"frame":8145,"game_ms":45306,"host_tick_ms":20743296}

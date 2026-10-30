@@ -15,7 +15,24 @@ CARLA budgets are separate. CARLA and its raw data must remain until the native
 GTA capability gate passes. Retain code, weights, numeric results, reports and
 videos during any subsequently admitted cleanup.
 
-## Latest continuation: 31 October — local candidate exists; startup blocked
+## Latest continuation: 31 October — native bootstrap verified
+
+The owner-approved exact-file allowance and normal Windows UAC launch now work.
+The supplied `xinput1_4.dll` loader loads this project's ASI in the installed
+Enhanced executable. Actual PID-bound native frame/time samples advance;
+owned shutdown, temporary-file restoration and protected-input hashes passed.
+The sealed `gta-uac-bootstrap-20261031` evidence gate passed after artifact review.
+This verifies bootstrap only: RGB/depth/rays, actuation, forecasts, RL training,
+the full route and CARLA retirement remain unaccepted. See the
+[current UAC/bootstrap report](../../docs/GTA_UAC_BOOTSTRAP_20261031.md).
+
+The three owner-authorized file exclusions remain local. No independent
+false-positive verdict is claimed. The helper never disables general protection,
+changes unrelated exclusions, approves UAC itself or launches GTA silently as
+administrator. `uac_bootstrap.py` uses the normal owner consent step and an owned
+bounded job. Do not use either helper as a general security/launch tool.
+
+## Earlier 31 October checkpoint — local candidate exists; startup blocked
 
 The browser's published `ScriptHookV_3889.0_1158.13.zip` completed after the earlier
 timeout. Its real local ZIP, SHA-256 and original `Zone.Identifier` HostUrl have

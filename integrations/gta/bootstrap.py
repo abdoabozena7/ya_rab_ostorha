@@ -1,7 +1,7 @@
 """Inspect a completed original download; optionally run an owned native probe.
 
 This is only bootstrap evidence. It never trains, creates driving commands,
-accepts sensors or retires CARLA/data. args.txt, xinput and NativeTrainer are not
+accepts sensors or retires CARLA/data. args.txt and NativeTrainer are not
 installed. Existing game files and Windows/security/account settings are not
 changed. A Windows job bounds all children of the one owned game process.
 """
@@ -59,7 +59,7 @@ def inspect_candidate():
         if 'v3889.0/1158.13' not in text.split('Description:',1)[0]:
             raise ValueError('Wrong archive release')
         versions = advertised_versions(text)
-        binaries = {name:archive.read('bin/'+name) for name in ('ScriptHookV.dll','dinput8.dll')}
+        binaries = {name:archive.read('bin/'+name) for name in ('ScriptHookV.dll','dinput8.dll','xinput1_4.dll')}
         if any(not body.startswith(b'MZ') for body in binaries.values()):
             raise ValueError('Invalid DLL candidate')
     return {'candidate_available':True,'path':str(CANDIDATE),'source_url':SOURCE,
@@ -223,12 +223,77 @@ def security_observation():
     return json.loads(completed.stdout)
 
 
-def require_clean_security(observation):
-    if observation.get('ActiveProjectThreats'):
+def load_owner_allowance():
+    """Consume the separately verified exact-file operation, never a clean verdict."""
+    manifest=HERE/'downloads/owner-file-allowance.json'
+    if not manifest.exists():
+        return None
+    wrapper=json.loads(manifest.read_text())
+    result_path=Path(wrapper['result_path']).resolve()
+    root=(HERE/'.runtime-proof/gta-owner-allowance-20261031').resolve()
+    if (wrapper.get('schema')!=1 or wrapper.get('operation')!='OWNER_THREE_FILE_ALLOWANCE'
+            or wrapper.get('false_positive_proven') is not False
+            or not result_path.is_relative_to(root) or result_path.name!='result.json'
+            or digest(result_path)!=wrapper['result_sha256']):
+        raise ValueError('Owner allowance provenance mismatch')
+    result=json.loads(result_path.read_text(encoding='utf-8-sig'))
+    expected={str((preflight.GAME.parent/name).resolve()) for name in ('RUNE64.dll','PlayGTAV.exe','version.dll')}
+    actual={str(Path(p).resolve()) for p in result.get('targets',[])}
+    if (actual!=expected or len(result.get('files',[]))!=3 or result.get('success') is not True
+            or result.get('is_elevated') is not True or result.get('unrelated_settings_unchanged') is not True
+            or result.get('false_positive_proven') is not False or result.get('game_started') is not False
+            or result.get('request_id')!=wrapper.get('request_id')
+            or result.get('helper_sha256','').lower()!=digest(HERE/'owner_file_allowance.ps1')):
+        raise ValueError('Owner allowance result is incomplete or stale')
+    hashed=set()
+    for item in result['files']:
+        path=Path(item['path']).resolve()
+        if str(path) not in expected or digest(path)!=item['sha256'].lower():
+            raise ValueError('An owner-allowed game file changed')
+        hashed.add(str(path))
+    if hashed!=expected:
+        raise ValueError('Owner allowance hashes omit an approved file')
+    wanted=','.join("'"+str(preflight.GAME.parent/name).replace("'","''")+"'"
+                    for name in ('RUNE64.dll','PlayGTAV.exe','version.dll'))
+    command=("$wanted=@("+wanted+"); $actual=@((Get-MpPreference).ExclusionPath); "
+             "$readback=if($actual.Count -eq 1 -and $actual[0] -eq 'N/A: Must be an administrator to view exclusions')"
+             "{[pscustomobject]@{visibility='administrator-only';matches=$null}}"
+             "else{[pscustomobject]@{visibility='readable';matches=@($wanted | ForEach-Object {$actual -contains $_})}}; "
+             "$readback | ConvertTo-Json -Compress")
+    current=subprocess.run(['powershell.exe','-NoProfile','-Command',command],
+                           capture_output=True,text=True,timeout=30,check=True)
+    readback=json.loads(current.stdout)
+    validate_exclusion_readback(readback)
+    return {'verified':True,'request_id':result['request_id'],'result_sha256':wrapper['result_sha256'],
+            'false_positive_proven':False,'allowed_threat_ids':[298189,2147939874],
+            'current_exclusion_visibility':readback['visibility'],
+            'scope':'Three unchanged, hash-bound local GTA files only; no other detection is admitted'}
+
+
+def validate_exclusion_readback(readback):
+    # A normal game process cannot read administrator-only preferences. That
+    # explicit OS response is not evidence the verified admin operation vanished.
+    # In that case the caller has already verified the admin result/source and
+    # all current file hashes; no present-tense engine-query claim is made.
+    if readback.get('visibility')=='administrator-only' and readback.get('matches') is None:
+        return
+    if readback.get('visibility')=='readable' and readback.get('matches')==[True,True,True]:
+        return
+    raise ValueError('Exact-file owner exclusions absent or readback unrecognized')
+
+
+def require_clean_security(observation,owner_allowance=None):
+    active=observation.get('ActiveProjectThreats',[])
+    if active:
+        if (owner_allowance and owner_allowance.get('verified') is True
+                and owner_allowance.get('false_positive_proven') is False
+                and set(owner_allowance.get('allowed_threat_ids',[]))=={298189,2147939874}
+                and all(item.get('ThreatID') in (298189,2147939874) for item in active)):
+            return
         raise RuntimeError('Windows protection flags this installation; no quarantine restoration, exclusions or repeated launch attempt is performed')
 
 
-def native_probe(output,candidate):
+def native_probe(output,candidate,outer_deadline=None):
     result={'bootstrap_verified':False,'cleanup_confirmed':False,'files_restored':False,
             'training_started':False,'full_capability_accepted':False,'candidate':candidate,
             'native_runtime_seconds':0.,'run_id':uuid.uuid4().hex}
@@ -237,13 +302,15 @@ def native_probe(output,candidate):
     with lock.open('x') as stream:
         stream.write(str(os.getpid()))
     try:
+        if outer_deadline is not None and time.monotonic()+110>=outer_deadline:
+            raise ValueError('Insufficient remaining UAC worker deadline; no launch')
         if candidate['installed_build'] != preflight.BUILD:
             raise ValueError('Installed build changed')
         result['native_processes_before']=existing_native()
         if result['native_processes_before']:
             raise RuntimeError('Another native simulator/game already owns this host')
         game=preflight.GAME.parent
-        for name in ('ScriptHookV.dll','dinput8.dll','OstorhaBootstrap.asi'):
+        for name in ('ScriptHookV.dll','dinput8.dll','xinput1_4.dll','OstorhaBootstrap.asi'):
             if (game/name).exists():
                 raise RuntimeError('Refuse to overwrite existing game dependency/probe: '+name)
         if list(game.glob('*.asi')):
@@ -251,11 +318,14 @@ def native_probe(output,candidate):
         before=preflight.protected_inventory(); preflight.write_json(output/'protected-before.json',before)
         result['security_observation']=security_observation()
         preflight.write_json(output/'security-observation.json',result['security_observation'])
-        require_clean_security(result['security_observation'])
+        result['owner_file_allowance']=load_owner_allowance()
+        require_clean_security(result['security_observation'],result['owner_file_allowance'])
         probe=compile_probe(output)
         payloads={'OstorhaBootstrap.asi':probe.read_bytes()}
         with zipfile.ZipFile(CANDIDATE) as archive:
-            for name in ('ScriptHookV.dll','dinput8.dll'):
+            # dumpbin /dependents on this actual Enhanced executable lists
+            # XINPUT1_4.dll, not dinput8.dll. Use the supplied loader it imports.
+            for name in ('ScriptHookV.dll','xinput1_4.dll'):
                 payloads[name]=archive.read('bin/'+name)
         for name,body in payloads.items():
             target=game/name
@@ -263,7 +333,7 @@ def native_probe(output,candidate):
                 stream.write(body)
             installed.append((target,hashlib.sha256(body).hexdigest()))
         preflight.write_json(output/'install-manifest.json',{'new_files':[{ 'path':str(p),'sha256':h} for p,h in installed],
-            'not_installed':['args.txt','xinput1_4.dll','NativeTrainer.asi'],'candidate_hash':ARCHIVE_HASH})
+            'not_installed':['args.txt','dinput8.dll','NativeTrainer.asi'],'candidate_hash':ARCHIVE_HASH})
         budget=RuntimeBudget(storage/'native-runtime-ledger.json'); reservation=budget.reserve(result['run_id'])
         started=time.monotonic()
         job=OwnedJob()
@@ -274,18 +344,33 @@ def native_probe(output,candidate):
             # Launching the game binary directly exited 0x1337 before hook load.
             launcher=game/'PlayGTAV.exe'
             result['launcher_path']=str(launcher); result['launcher_sha256']=digest(launcher)
-            process=subprocess.Popen([str(launcher)],cwd=game,env=env,stdout=stdout,stderr=stderr)
+            try:
+                process=subprocess.Popen([str(launcher)],cwd=game,env=env,stdout=stdout,stderr=stderr)
+            except OSError as error:
+                if getattr(error,'winerror',None)!=740:
+                    raise
+                # The launcher requires elevation. The restored, hash-checked
+                # game executable can be tested normally without changing UAC
+                # policy or suppressing a requested permission prompt.
+                result['launcher_requires_elevation']=True
+                launcher=preflight.GAME
+                result['launcher_fallback']='Existing game executable with ordinary token'
+                result['launcher_path']=str(launcher); result['launcher_sha256']=digest(launcher)
+                process=subprocess.Popen([str(launcher)],cwd=game,env=env,stdout=stdout,stderr=stderr)
             result['owned_launcher_pid']=process.pid
             try:
                 job.assign(process)
             except Exception:
                 process.terminate(); process.wait(timeout=15); raise
             print(json.dumps({'stage':'GTA_LAUNCHER_STARTED','owned_launcher_pid':process.pid,'run_id':result['run_id']}),flush=True)
-            deadline=started+240
+            preflight.write_json(output/'native-progress.json',{**result,'stage':'LAUNCHER_STARTED'})
+            seen_game_pids=set()
+            deadline=min(started+240,outer_deadline-20) if outer_deadline is not None else started+240
             while time.monotonic()<deadline:
                 rows=read_samples(output/'native-frames.jsonl')
                 members=job.members()
                 game_pids=[pid for pid in members if process_image(pid)==preflight.GAME.resolve()]
+                seen_game_pids.update(game_pids)
                 for pid in game_pids:
                     if samples_qualify(rows,pid,result['run_id']):
                         result.update(bootstrap_verified=True,samples=len(rows),owned_game_pid=pid)
@@ -295,11 +380,15 @@ def native_probe(output,candidate):
                 time.sleep(.5)
             if not result['bootstrap_verified']:
                 result['error']='No matching advancing in-game probe frames before exit/deadline'
+            result['observed_game_pids']=sorted(seen_game_pids)
+        result['owned_members_before_stop']=job.members()
+        preflight.write_json(output/'native-progress.json',{**result,'stage':'STOPPING_OWNED_JOB'})
         result['cleanup_confirmed']=job.stop(); job=None
         process.wait(timeout=15)
     except Exception as error:
         result['error']=str(error)
     finally:
+        preflight.write_json(output/'native-progress.json',{**result,'stage':'FINALLY_ENTERED'})
         if job is not None:
             try:result['cleanup_confirmed']=job.stop()
             except Exception as error:result['cleanup_error']=str(error)
@@ -311,15 +400,27 @@ def native_probe(output,candidate):
             except Exception as error:result['budget_error']=str(error)
         if result['cleanup_confirmed']:
             for path,expected in installed:
-                if path.is_file() and digest(path)==expected:
-                    path.unlink() # Only a newly installed, owned, hash-matched file.
-                elif path.exists():
-                    result['restore_error']='Owned temporary file changed; preserved for inspection: '+str(path)
+                try:
+                    if path.is_file() and digest(path)==expected:
+                        until=time.monotonic()+5
+                        while True:
+                            try:path.unlink();break # Newly installed, owned, hash-matched file only.
+                            except PermissionError:
+                                if time.monotonic()>=until:raise
+                                time.sleep(.25)
+                    elif path.exists():
+                        result['restore_error']='Owned temporary file changed; preserved for inspection: '+str(path)
+                except OSError as error:
+                    result['restore_error']=str(error)
             result['files_restored']=all(not p.exists() for p,_ in installed)
-            lock.unlink()
+            if result['files_restored']:lock.unlink()
+        preflight.write_json(output/'native-progress.json',{**result,'stage':'CHECKING_PROTECTED_INPUTS'})
         if 'before' in locals():
-            after=preflight.protected_inventory(); preflight.write_json(output/'protected-after.json',after)
-            result['protected_inputs_unchanged']=before==after
+            try:
+                after=preflight.protected_inventory(); preflight.write_json(output/'protected-after.json',after)
+                result['protected_inputs_unchanged']=before==after
+            except Exception as error:
+                result.update(protected_inputs_unchanged=False,protected_inventory_error=str(error))
         for name in ('ScriptHookV.log','asiloader.log'):
             source=preflight.GAME.parent/name
             if source.is_file():
