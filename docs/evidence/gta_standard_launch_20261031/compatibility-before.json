@@ -1,0 +1,23 @@
+{
+  "target": "D:\\Games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe",
+  "value": [
+    "RUNASADMIN",
+    1
+  ],
+  "other_values_sha256": "71a6cee0b2bd8ddb136588f6888e0b025a161d3e73937f07c7f6f5d645095870",
+  "uac": {
+    "EnableLUA": [
+      1,
+      4
+    ],
+    "ConsentPromptBehaviorAdmin": [
+      5,
+      4
+    ],
+    "PromptOnSecureDesktop": [
+      1,
+      4
+    ]
+  },
+  "launcher_sha256": "a5d731f67f55f0f7af9cf6ae078cf0ec65dccd66cc07f88092afff6419579612"
+}

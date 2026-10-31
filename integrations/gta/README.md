@@ -17,6 +17,14 @@ videos during any subsequently admitted cleanup.
 
 ## Latest continuation: 31 October — native bootstrap verified
 
+[Ordinary launch iteration now passes twice](../../docs/GTA_STANDARD_LAUNCH_20261031.md):
+only the owner's exact per-game RUNASADMIN compatibility flag was removed,
+actual game tokens were non-elevated, and Story entry was automated. Use normal
+launches for new work; the UAC wrappers below document earlier diagnostics.
+The requested final scene is a narrow urban street with localized junction
+congestion. [Later field/motion diagnostics](../../docs/GTA_FIELD_MOTION_20261031.md)
+record real ring rays/motion/concurrent DML but fail the off-axis reference gate.
+
 The subsequent [recorded vision/model test](../../docs/GTA_VISION_REPLAY_20261031.md)
 executes existing YOLO on actual GTA RGB and real Trajectron++ on a measured
 static CV/depth track. Installed DML is about38.7ms versus394.6ms CPU on six

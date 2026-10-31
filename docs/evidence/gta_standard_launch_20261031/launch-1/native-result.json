@@ -1,0 +1,403 @@
+{
+  "bootstrap_verified": true,
+  "cleanup_confirmed": true,
+  "files_restored": true,
+  "training_started": false,
+  "full_capability_accepted": false,
+  "candidate": {
+    "candidate_available": true,
+    "path": "C:\\Users\\A-plus\\Downloads\\ScriptHookV_3889.0_1158.13.zip",
+    "source_url": "https://www.dev-c.com/files/ScriptHookV_3889.0_1158.13.zip",
+    "bytes": 1722210,
+    "sha256": "b64c97c3353906f14621e7e9511e4aec2a7d436ecc21ed124d3816585e2e6188",
+    "release": "v3889.0/1158.13",
+    "installed_build": "1.0.1013.20",
+    "explicit_enhanced_versions": [
+      "1.0.1013.17",
+      "1.0.1013.29",
+      "1.0.1013.33",
+      "1.0.1013.34",
+      "1.0.1158.13",
+      "1.0.811.8",
+      "1.0.812.8",
+      "1.0.813.11",
+      "1.0.814.9",
+      "1.0.889.15",
+      "1.0.889.19",
+      "1.0.889.22"
+    ],
+    "advertised_installed_build": false,
+    "changelog_mentions_installed_build": true,
+    "binary_sha256": {
+      "ScriptHookV.dll": "126be57ca9dca00e471f9de611766009c900aad88f89ae6c2926ec62e5aaeb4f",
+      "dinput8.dll": "9fd9e02353b7d39fe07b9667f7ea2697229a7f2d0e7d389eb79eb212b1bb181d",
+      "xinput1_4.dll": "a1a8bde409ed75d94a0439c37cf881bc354b13c2f8cd32e4bef3b10f308f1392"
+    },
+    "native_compatibility_verified": false,
+    "policy_sensors_accepted": false
+  },
+  "native_runtime_seconds": 139.92199999999139,
+  "run_id": "edbda20ff16c415f9ee9d669f65fb630",
+  "native_processes_before": [],
+  "security_observation": {
+    "ActiveProjectThreats": [
+      {
+        "ThreatID": 298189,
+        "ThreatName": "PUA:Win32/Packunwan",
+        "SeverityID": 1,
+        "IsActive": true
+      }
+    ],
+    "ProjectThreats": [
+      {
+        "ThreatID": 298189,
+        "ThreatName": "PUA:Win32/Packunwan",
+        "SeverityID": 1,
+        "IsActive": true
+      },
+      {
+        "ThreatID": 2147939874,
+        "ThreatName": "Trojan:Win32/Kepavll!rfn",
+        "SeverityID": 5,
+        "IsActive": false
+      }
+    ],
+    "Detections": [
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1792703778378)/",
+        "LastThreatStatusChangeTime": "/Date(1792704129100)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 6,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1792874783999)/",
+        "LastThreatStatusChangeTime": "/Date(1793089825899)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 6,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 2147939874,
+        "InitialDetectionTime": "/Date(1792424319922)/",
+        "LastThreatStatusChangeTime": "/Date(1792424342170)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 7,
+        "Resources": [
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\RUNE64.dll"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1792424319440)/",
+        "LastThreatStatusChangeTime": "/Date(1792505464428)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 6,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\version.dll"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1793089996526)/",
+        "LastThreatStatusChangeTime": "/Date(1793108764678)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 6,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1792705038231)/",
+        "LastThreatStatusChangeTime": "/Date(1792763973178)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 6,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 2147939874,
+        "InitialDetectionTime": "/Date(1793399828957)/",
+        "LastThreatStatusChangeTime": "/Date(1793399844636)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 103,
+        "Resources": [
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\RUNE64.dll"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1793380774725)/",
+        "LastThreatStatusChangeTime": "/Date(1793398127629)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 1,
+        "Resources": [
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\version.dll"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1792797139066)/",
+        "LastThreatStatusChangeTime": "/Date(1792852450265)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 6,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1793124142912)/",
+        "LastThreatStatusChangeTime": "/Date(1793192684802)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 106,
+        "Resources": [
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 298189,
+        "InitialDetectionTime": "/Date(1793124142912)/",
+        "LastThreatStatusChangeTime": "/Date(1793380630365)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 106,
+        "Resources": [
+          "file:_C:\\Users\\Public\\Desktop\\Grand Theft Auto V Enhanced.lnk",
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe"
+        ]
+      },
+      {
+        "ThreatID": 2147939874,
+        "InitialDetectionTime": "/Date(1793398118474)/",
+        "LastThreatStatusChangeTime": "/Date(1793398144198)/",
+        "ActionSuccess": true,
+        "ThreatStatusID": 7,
+        "Resources": [
+          "file:_D:\\games\\Grand Theft Auto V Enhanced\\RUNE64.dll"
+        ]
+      }
+    ]
+  },
+  "owner_file_allowance": {
+    "verified": true,
+    "request_id": "addc297e7a344c239d72324398f4d03b",
+    "result_sha256": "915c1c86d6f9415375a324faac0e390732eb4aa1c670543612daabeb849a20bd",
+    "false_positive_proven": false,
+    "allowed_threat_ids": [
+      298189,
+      2147939874
+    ],
+    "current_exclusion_visibility": "administrator-only",
+    "scope": "Three unchanged, hash-bound local GTA files only; no other detection is admitted"
+  },
+  "launcher_path": "D:\\games\\Grand Theft Auto V Enhanced\\PlayGTAV.exe",
+  "launcher_sha256": "a5d731f67f55f0f7af9cf6ae078cf0ec65dccd66cc07f88092afff6419579612",
+  "owned_launcher_pid": 24248,
+  "samples": 5,
+  "owned_game_pid": 35852,
+  "observed_game_pids": [
+    35852
+  ],
+  "owned_members_before_stop": [
+    24248,
+    35852
+  ],
+  "protected_inputs_unchanged": true,
+  "budget": {
+    "grant_id": "user-approved-gta-migration-10800s-20261030",
+    "limit_seconds": 10800,
+    "charged_seconds": 2793.658999999985,
+    "reservations": [
+      {
+        "id": "45f46268762b446ebc7f3676c955f079",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 10.562999999998283
+      },
+      {
+        "id": "5655289945774a0a9fa7c3888dd7d4ef",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 0.6879999999982829
+      },
+      {
+        "id": "9d2d84f23f504beca49fb0a6c68224b3",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 0.01599999999962165
+      },
+      {
+        "id": "d10af5c39a034a77b645871456887aa6",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 4.062999999998283
+      },
+      {
+        "id": "uac-2fc3961872454679b485e11c16ecc42b",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 284.6409999999996
+      },
+      {
+        "id": "f9ec4db166ac4b789a273b2a34d92ba2",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 240.43700000000172
+      },
+      {
+        "id": "uac-960c0be5c8fd446582f85fb72315fc47",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 15.376000000000204
+      },
+      {
+        "id": "e0aafc04f3b44519b65e380d5e7d5f44",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 86.48400000000038
+      },
+      {
+        "id": "6adfc36ed63a4f5aa339e97a5633a9b0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 36.09400000000096
+      },
+      {
+        "id": "6adfc36ed63a4f5aa339e97a5633a9b0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 430.03099999999904
+      },
+      {
+        "id": "9c524f70d721441b8d19dc1ed51b1aa0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.405999999995402
+      },
+      {
+        "id": "9c524f70d721441b8d19dc1ed51b1aa0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 210.20300000000134
+      },
+      {
+        "id": "e942ecc7bd49431fa556b4b9800aba9d-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.610000000000582
+      },
+      {
+        "id": "e942ecc7bd49431fa556b4b9800aba9d-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 164.53100000000268
+      },
+      {
+        "id": "vision-replay-2bf7a778b0074862ae5c7b9dd660872a",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 62.18800000000192
+      },
+      {
+        "id": "vision-replay-7d04f87b95564bd18bfdd81df1efdbb1",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 18.639999999999418
+      },
+      {
+        "id": "vision-replay-ea5b65e0984e4e758efd952da1557091",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 16.82800000000134
+      },
+      {
+        "id": "bfc747779d81448ba762ed04fe3f2ccd-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 11.687999999994645
+      },
+      {
+        "id": "bfc747779d81448ba762ed04fe3f2ccd-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 145.64100000000326
+      },
+      {
+        "id": "c28a7c3a77474850b89b26dc4075953d-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 12.171000000002095
+      },
+      {
+        "id": "c28a7c3a77474850b89b26dc4075953d-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 149.48500000000058
+      },
+      {
+        "id": "8843194c2dd5493f92e484413a8098d0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 11.750999999996566
+      },
+      {
+        "id": "8843194c2dd5493f92e484413a8098d0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 150.9210000000021
+      },
+      {
+        "id": "07b394dc201c4d868c1a42f2d8ca85b7-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.421999999998661
+      },
+      {
+        "id": "07b394dc201c4d868c1a42f2d8ca85b7-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 146.875
+      },
+      {
+        "id": "9aa9e66773c64801a1adde7e7c0ec679-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 11.968999999997322
+      },
+      {
+        "id": "9aa9e66773c64801a1adde7e7c0ec679-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 148.67200000000594
+      },
+      {
+        "id": "0f8693b984b043abb2da37d4f8f620d7",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 240.34299999999348
+      },
+      {
+        "id": "edbda20ff16c415f9ee9d669f65fb630",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 139.92199999999139
+      }
+    ]
+  }
+}
