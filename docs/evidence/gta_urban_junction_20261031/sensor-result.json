@@ -1,0 +1,57 @@
+{
+  "sensor_probe_accepted": true,
+  "cleanup_confirmed": true,
+  "files_restored": true,
+  "full_migration_accepted": false,
+  "training_started": false,
+  "native_runtime_seconds": 231.78100000000268,
+  "urban_accepted": true,
+  "localized_congestion_accepted": true,
+  "live_vision_accepted": true,
+  "normal_token_verified": true,
+  "user_view_accepted": true,
+  "population_summary": {
+    "samples": 100,
+    "actual_full_counts": true,
+    "narrow_road": true,
+    "sufficient_physical_motion": true,
+    "max_cars_moved": 60,
+    "max_pedestrians_moved": 100,
+    "max_near_slow": 17,
+    "max_away_moving": 41,
+    "street_names": [
+      "Forum Dr"
+    ],
+    "junction_names": [
+      "Grove St"
+    ],
+    "road_membership_width_m": 6.5,
+    "ego_spawn": [
+      -172.75,
+      -1698.0,
+      31.28125
+    ],
+    "junction": [
+      -106.25,
+      -1766.5,
+      28.84375
+    ],
+    "simultaneous_visible_people_5_cars_2_samples": 100,
+    "max_visible_people": 31,
+    "max_visible_cars": 8
+  },
+  "live_vision": {
+    "processed_frames": 788,
+    "captured_frames": 810,
+    "inference_p95_ms": 82.89978500251891,
+    "native_snapshot_to_result_p95_ms": 141.0
+  },
+  "owned_game_pids": [
+    25144
+  ],
+  "protected_inputs_unchanged": true,
+  "owned_game_tokens": {
+    "25144": false
+  },
+  "controller_elevated": false
+}

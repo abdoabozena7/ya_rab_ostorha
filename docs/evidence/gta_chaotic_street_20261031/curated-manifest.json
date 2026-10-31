@@ -1,0 +1,74 @@
+{
+  "source_run": "integrations\\gta\\.runtime-proof\\gta-chaos-crossing-20261031\\runs\\native-chaos-probe\\20261031T133526-19b148f020",
+  "retention": "Curated numerical/visual evidence; raw sensor captures and full telemetry remain local and ignored. No CARLA or other training-data retirement.",
+  "files": {
+    "chaotic-street-review.mp4": {
+      "sha256": "02b3d85920b635de8d6237c318f015a1db3e4538539e345ec716bf15469a284c",
+      "bytes": 6193429
+    },
+    "contract.json": {
+      "sha256": "4736d715049ca202d98872cae131cbd5445db557b85993318be98f57c16d9613",
+      "bytes": 12357
+    },
+    "crossings.jsonl": {
+      "sha256": "f62521535d9ded2dce8c23e73e62ed27997677aed00a3d78eb487bb5015260ce",
+      "bytes": 89537
+    },
+    "failed-attempts.json": {
+      "sha256": "e63d4133c2ca5fc9ba502bc5ec1d190c97b347d0066a68a5ca6e73ad2f329045",
+      "bytes": 4244
+    },
+    "gate.json": {
+      "sha256": "ab08ac0ce9919ad4d2c630e0552180f8a35f781019f052cfdf76582e0b0b915d",
+      "bytes": 4725
+    },
+    "parking.jsonl": {
+      "sha256": "3deba76f518464feecae18a2aa3c4d3ebded5957a9f3eedb5507b57ce6005be2",
+      "bytes": 223900
+    },
+    "receipt.json": {
+      "sha256": "d643a43c1336db2ece0debf327d28b22fcf2d7ca85afb710a0ead7c60f7aaacf",
+      "bytes": 6039
+    },
+    "review-video-inspection.json": {
+      "sha256": "0c1121134003f7e10bcbd8d1a7d8ebee2445616fa7c212d27b0ce32e381b5d8b",
+      "bytes": 672
+    },
+    "review.json": {
+      "sha256": "6e2a569e9aedf5fdf56d2b1ad8526976c24bfdaa5d55aef54ff6336f89d0fd01",
+      "bytes": 5086
+    },
+    "seal.json": {
+      "sha256": "2e01d75d7894f5c19c49dec3876b528a2de5831a9f5741fb5d5eb80769a1f1e1",
+      "bytes": 1856
+    },
+    "sensor-result.json": {
+      "sha256": "1012c95e2428d87d787a90c99f90b61b75180d0af9eb1e120a4c67a11159ec89",
+      "bytes": 4387
+    },
+    "storage-projection.json": {
+      "sha256": "5f96538777fcd8f25037ae5d1a6908a1a8f69ac8926ffa7d87ec0bfb9c5a7b14",
+      "bytes": 221
+    },
+    "ui-chaotic-street-early.png": {
+      "sha256": "27b889975729b754972d385ef9dc319a898c3f3c2a363dd9137e072479a4cf16",
+      "bytes": 257117
+    },
+    "ui-chaotic-street-late.png": {
+      "sha256": "8a5a4feb1618efcc2181157b1b66b1aa268034f0775a2e6b862627ada96db9e2",
+      "bytes": 251131
+    },
+    "urban.jsonl": {
+      "sha256": "842bfbba2f01245ba2df2c6fda91a2a75338fab033f96e915a87186d40b5bd26",
+      "bytes": 199892
+    },
+    "video-contact-sheet.jpg": {
+      "sha256": "65366873d5957cffa1220b6c8ec8d4567df6305ddbe578f08ce76b1f4aac2221",
+      "bytes": 1180748
+    },
+    "video-inspection.json": {
+      "sha256": "e90d8ef15309616872864e09d2a1495489cbe90907ef62c7d20a279401d7ca2c",
+      "bytes": 10882
+    }
+  }
+}

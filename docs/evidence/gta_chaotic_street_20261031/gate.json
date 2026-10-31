@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "task_id": "gta-chaos-crossing-20261031",
+  "at": "2026-10-31T13:44:19.295411+00:00",
+  "status": "EVIDENCE_GATE_PASSED",
+  "passed": true,
+  "source_digest": "c605b9156d5c328cafda646d2a04ddeefbf527b86aca7f8e0ba5f08e170abaac",
+  "checks": {
+    "chaos-controls": {
+      "passed": true,
+      "run": "runs/chaos-controls/20261031T133521-6634d273cb",
+      "receipt_hash": "ddc05e53feb8e10f3a46a1afab9e5868e068bc60c2b81ae583653daaef51ce0c",
+      "artifacts": {
+        "stderr.log": {
+          "sha256": "f7a811d003e147f0ddf4a09f0576f3d8688acfdd526148d2afbc4258eba2e727",
+          "bytes": 1078
+        },
+        "stdout.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      "errors": []
+    },
+    "build-chaos-probe": {
+      "passed": true,
+      "run": "runs/build-chaos-probe/20261031T133522-cfa088ccdc",
+      "receipt_hash": "32f8948e9097b9242e89de9c601a11fa98d3857072ee9f44e3a7608f4ae3b1e4",
+      "artifacts": {
+        "build-result.json": {
+          "sha256": "2c0160f5a21aa24733314a97b45157e63e51a9b2295c8042cdc9b5922dbad8bc",
+          "bytes": 154
+        },
+        "stdout.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        "stderr.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      "errors": []
+    },
+    "native-chaos-probe": {
+      "passed": true,
+      "run": "runs/native-chaos-probe/20261031T133526-19b148f020",
+      "receipt_hash": "d643a43c1336db2ece0debf327d28b22fcf2d7ca85afb710a0ead7c60f7aaacf",
+      "artifacts": {
+        "sensor-result.json": {
+          "sha256": "1012c95e2428d87d787a90c99f90b61b75180d0af9eb1e120a4c67a11159ec89",
+          "bytes": 4387
+        },
+        "bridge.jsonl": {
+          "sha256": "89921b584047340f2f5b74ee8c20967b4dffb8bce0ddace0e04313f8f2606a34",
+          "bytes": 629288
+        },
+        "capture.jsonl": {
+          "sha256": "fa44f7e5af2a1b780171217656cda8988e628713f441fe636747d17014bfbf5c",
+          "bytes": 409267
+        },
+        "geometry.jsonl": {
+          "sha256": "5abe1049cd9a1690beaea7abbd4c13311e5920c69188343af46d08283b5f9231",
+          "bytes": 47710089
+        },
+        "urban.jsonl": {
+          "sha256": "842bfbba2f01245ba2df2c6fda91a2a75338fab033f96e915a87186d40b5bd26",
+          "bytes": 199892
+        },
+        "crossings.jsonl": {
+          "sha256": "f62521535d9ded2dce8c23e73e62ed27997677aed00a3d78eb487bb5015260ce",
+          "bytes": 89537
+        },
+        "parking.jsonl": {
+          "sha256": "3deba76f518464feecae18a2aa3c4d3ebded5957a9f3eedb5507b57ce6005be2",
+          "bytes": 223900
+        },
+        "live-vision.jsonl": {
+          "sha256": "c45953c150ff2515929b0f4eba0a4f447bb94357d03e06684d6b427ef16c3401",
+          "bytes": 5505400
+        },
+        "live-vision-result.json": {
+          "sha256": "865b87db7980e5b66e32acd566897cf4029be3ab9ec005e342b7690b093770dd",
+          "bytes": 440
+        },
+        "raw-manifest.json": {
+          "sha256": "1336d2899c7dbcb40351a20d8334e807339278baa3113e4a4f2cf4d3f834cf2c",
+          "bytes": 238929
+        },
+        "stdout.log": {
+          "sha256": "1012c95e2428d87d787a90c99f90b61b75180d0af9eb1e120a4c67a11159ec89",
+          "bytes": 4387
+        },
+        "stderr.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      "errors": []
+    }
+  },
+  "requirements": [
+    {
+      "id": "C01",
+      "claim": "Parked vehicles on both sides make a genuinely narrower varying passable corridor.",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "id": "C02",
+      "claim": "Pedestrians actually enter and cross the carriageway in both directions amid live traffic.",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "id": "C03",
+      "claim": "The local group contains6moving cars and4motorcycles while traffic remains distributed beyond it.",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "plan": [
+    {
+      "id": "T01",
+      "status": "VERIFIED",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "id": "T02",
+      "status": "VERIFIED",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "boundary": "Validates recorded execution, source freshness, coverage and artifact integrity; does not prove oracle quality, visual judgment or honesty of a same-user process."
+}

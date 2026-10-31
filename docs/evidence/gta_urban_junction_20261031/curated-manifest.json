@@ -1,0 +1,46 @@
+{
+  "source_run": "integrations\\gta\\.runtime-proof\\gta-urban-junction-20261031\\runs\\native-urban-probe\\20261031T123644-0449f201d4",
+  "retention": "Curated numerical/visual evidence; raw sensor captures and full telemetry remain local and ignored. No CARLA or other training-data retirement.",
+  "files": {
+    "contract.json": {
+      "sha256": "4a64e907ba06a4be528ed9d34a671e89fd58eaf2a070d452222f138719e02270",
+      "bytes": 11327
+    },
+    "earlier-visual-rejection.json": {
+      "sha256": "b668c9a3d45e2c11eb7c7a099f03e1011bf5a2f9081f0f1ad0106029a9b92812",
+      "bytes": 2955
+    },
+    "gate.json": {
+      "sha256": "8469f68be970f6570b0163f0ffbc8e758bd732c9a91581a8466e8a11988fb903",
+      "bytes": 4405
+    },
+    "receipt.json": {
+      "sha256": "6041dde9c5e83d09c77a4cf85becf52d4fa5d3011988ba4dcaba623d2e028a8d",
+      "bytes": 5764
+    },
+    "review.json": {
+      "sha256": "b93b10e0abf65f282bcc70950d0c04763400567b6d67cfb414397f822d32fa16",
+      "bytes": 3876
+    },
+    "seal.json": {
+      "sha256": "28e35c696fa16da7f4cb20c332cd2ee3faa647eff75bfed06681de1b08d641d4",
+      "bytes": 1856
+    },
+    "sensor-result.json": {
+      "sha256": "7a2ea873cc29ff63df1850b4595a6b86b7c20695d14554dcb5f49fcbc51d3f14",
+      "bytes": 1394
+    },
+    "storage-projection.json": {
+      "sha256": "b91136f6708e44f94978b5c5755a7fd87967d3138f3410136dd9498edb5082af",
+      "bytes": 221
+    },
+    "ui-urban-crowd.png": {
+      "sha256": "9274cfe1e080eebebd9bcc367bc74026d4be3fec22533593729be2aa4eaea1cf",
+      "bytes": 240900
+    },
+    "urban.jsonl": {
+      "sha256": "732231a146e1e918fce00b885ffe25d4f02c51c26873d162232aa7522c962c32",
+      "bytes": 65871
+    }
+  }
+}

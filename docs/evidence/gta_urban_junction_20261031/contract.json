@@ -1,0 +1,334 @@
+{
+  "schema": 1,
+  "task_id": "gta-urban-junction-20261031",
+  "goal": "Actual owner-directed urban/local-junction stress fixture with ordinary startup; not driver-policy training or completed migration.",
+  "kind": "simulation",
+  "source_paths": [
+    "urban_probe.py",
+    "urban_probe.cpp",
+    "urban_vision.py",
+    "urban-scenario.json",
+    "test_urban_probe.py",
+    "sensor_shared.hpp",
+    "capture_addon.cpp",
+    "OstorhaDepth.fx",
+    "render-lock.json",
+    "vision-lock.json",
+    "vision_probe.py",
+    "standard_launch.py",
+    "bootstrap.py",
+    "preflight.py",
+    "uac_bootstrap.py",
+    "owner_file_allowance.ps1"
+  ],
+  "scope_rationale": "Dependency-bound native qualification milestone. It does not close parent P02 coverage/timing/perception admission or P03-P06. Diagnostic scenario labels/GT are evaluation-only; no learned driving policy is claimed. All runtime sources, verifiers and pinned SDK/runtime identifiers are scoped. Prior failed task is immutable. Its60/100m diagnostics are now disclosed regressions; independent80/120m holdouts are fixed before this implementation/run. No accepted model, full-field coverage or parent migration follows.",
+  "authorization": "Owner explicitly requests a narrow city street, many walkers/cars and localized junction congestion, plus unattended repeated launches. Normal token only, no UAC/security change, original100MB/10800s grant, local-only single-owner diagnostic control.60cars/100on-foot walkers retained. No training or CARLA retirement follows from scene setup.",
+  "requirements": [
+    {
+      "id": "U01",
+      "claim": "Ego actually starts on a narrow urban road, with real60cars and100on-foot pedestrians.",
+      "oracle": "Native road membership is true, measured contiguous0.5m lateral road-membership band is3\u201312m, actual street/crossing labels and positions recorded. Every controlled actor count is verified by actual native existence/alive/on-foot state, not requested counts. Inspect real image/video for a city street outside airport. At least50walkers and20traffic cars move>0.5m during measured fixture.",
+      "failure_example": "Spawn at airport, fabricate actor counts, use drivers as100on-foot pedestrians, call a large avenue narrow or a static screenshot a moving populated world.",
+      "runtime_required": true,
+      "checks": [
+        "native-urban-probe"
+      ],
+      "negative_checks": [
+        "urban-controls"
+      ],
+      "review_required": true
+    },
+    {
+      "id": "U02",
+      "claim": "Congestion is concentrated at the selected junction while some traffic away remains moving.",
+      "oracle": "One explicitly scripted bad stop/blockage has actual actor/position/timing trace; no in-stage teleport. For at least5 observed seconds,>=4controlled cars within70m of junction have speed<0.5m/s, and>=3controlled cars beyond110m move>1m/s. Report time histories and other contacts, do not infer every road is jam-free.",
+      "failure_example": "Freeze all traffic, inject fake queues, spread jam everywhere or label arbitrary parked actors as traffic response.",
+      "runtime_required": true,
+      "checks": [
+        "native-urban-probe"
+      ],
+      "negative_checks": [
+        "urban-controls"
+      ],
+      "review_required": true
+    },
+    {
+      "id": "U03",
+      "claim": "Actual normal-token game, capture and existing CV operate together with owned cleanup.",
+      "oracle": "Query owned game TokenElevation=false, actual same-PID/run RGB/depth/geometry, existing pinned real DmlExecutionProvider on>=40unique images with actual person/vehicle detections. Report all timing and unknown measurements; driver alive, normal owner commands/deadman retained, no sensor/policy admission from setup.",
+      "failure_example": "Invoke elevated wrapper, use fake/recorded images, hide missing model data, delete CARLA or claim a trained driver from this fixture.",
+      "runtime_required": true,
+      "checks": [
+        "native-urban-probe"
+      ],
+      "negative_checks": [
+        "urban-controls"
+      ],
+      "review_required": true
+    }
+  ],
+  "checks": [
+    {
+      "id": "urban-controls",
+      "description": "False population/jam/normal-token evidence is rejected",
+      "command": [
+        "{python}",
+        "-B",
+        "-m",
+        "unittest",
+        "test_urban_probe",
+        "-v"
+      ],
+      "timeout_seconds": 120,
+      "expected_exit_codes": [
+        0
+      ],
+      "assertions": [
+        {
+          "type": "stderr_contains",
+          "value": "OK"
+        }
+      ],
+      "artifacts": [
+        {
+          "glob": "stderr.log",
+          "min_count": 1,
+          "min_bytes": 2
+        }
+      ],
+      "mode": "fixture",
+      "role": "negative_control",
+      "fault": "No ring intersections, missing moving phases, malformed geometry or fake DML must fail."
+    },
+    {
+      "id": "build-urban-probe",
+      "description": "Compile actual C++ ASI and renderer addon against pinned local runtime/SDK",
+      "command": [
+        "{python}",
+        "-B",
+        "urban_probe.py",
+        "--output",
+        "{run}",
+        "--build-only"
+      ],
+      "timeout_seconds": 120,
+      "expected_exit_codes": [
+        0
+      ],
+      "assertions": [
+        {
+          "type": "json",
+          "file": "build-result.json",
+          "pointer": "/build_available",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "artifacts": [
+        {
+          "glob": "build-result.json",
+          "min_count": 1,
+          "min_bytes": 2
+        }
+      ],
+      "mode": "live",
+      "role": "regression"
+    },
+    {
+      "id": "native-urban-probe",
+      "description": "Actual narrow urban/junction fixture with ordinary token and real DML",
+      "command": [
+        "{python}",
+        "-B",
+        "urban_probe.py",
+        "--output",
+        "{run}"
+      ],
+      "timeout_seconds": 650,
+      "expected_exit_codes": [
+        0
+      ],
+      "assertions": [
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/sensor_probe_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/urban_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/localized_congestion_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/live_vision_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/normal_token_verified",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/cleanup_confirmed",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/files_restored",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/protected_inputs_unchanged",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "artifacts": [
+        {
+          "glob": "sensor-result.json",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "bridge.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "capture.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "geometry.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "urban.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "live-vision.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "live-vision-result.json",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "raw-manifest.json",
+          "min_count": 1,
+          "min_bytes": 2
+        }
+      ],
+      "mode": "live",
+      "role": "acceptance"
+    }
+  ],
+  "plan": {
+    "strategy": "serial",
+    "rationale": "One owned game/renderer/control socket; develop then exercise a bounded diagnostic before provider/training.",
+    "delegation": {
+      "available": false,
+      "evidence": "Only native Copilot workers permitted by AGENTS; none exposed. No external inference layer used."
+    },
+    "tasks": [
+      {
+        "id": "T01",
+        "title": "Implement and exercise actual narrow-city/local-jam fixture",
+        "outcome": "Owner urban scene measured, all unqualified sensor/provider/training goals retained.",
+        "owner": "coordinator",
+        "role": "implement",
+        "execution": "serial",
+        "depends_on": [],
+        "write_scope": [
+          "urban_probe.py",
+          "urban_probe.cpp",
+          "urban_vision.py",
+          "urban-scenario.json",
+          "test_urban_probe.py",
+          "sensor_shared.hpp",
+          "capture_addon.cpp",
+          "OstorhaDepth.fx",
+          "render-lock.json",
+          "vision-lock.json",
+          "vision_probe.py",
+          "standard_launch.py",
+          "bootstrap.py",
+          "preflight.py",
+          "uac_bootstrap.py",
+          "owner_file_allowance.ps1"
+        ],
+        "outputs": [
+          "Urban native fixture and ordinary supervisor"
+        ],
+        "requirements": [
+          "U01",
+          "U02",
+          "U03"
+        ],
+        "checks": [
+          "urban-controls",
+          "build-urban-probe",
+          "native-urban-probe"
+        ],
+        "acceptance": "Native measured counts/road band/local jam and actual imagery/CV/token/owned cleanup. Do not invent population or grant parent migration acceptance."
+      },
+      {
+        "id": "T02",
+        "title": "Inspect population, junction traffic, actual street images and normal token",
+        "outcome": "Owner urban scene measured, all unqualified sensor/provider/training goals retained.",
+        "owner": "coordinator",
+        "role": "integrate",
+        "execution": "serial",
+        "depends_on": [
+          "T01"
+        ],
+        "write_scope": [
+          "README.md"
+        ],
+        "outputs": [
+          "Actual inspected urban evidence"
+        ],
+        "requirements": [
+          "U01",
+          "U02",
+          "U03"
+        ],
+        "checks": [
+          "urban-controls",
+          "build-urban-probe",
+          "native-urban-probe"
+        ],
+        "acceptance": "Native measured counts/road band/local jam and actual imagery/CV/token/owned cleanup. Do not invent population or grant parent migration acceptance."
+      }
+    ]
+  }
+}

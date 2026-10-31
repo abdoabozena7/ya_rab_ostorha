@@ -1,0 +1,188 @@
+{
+  "sensor_probe_accepted": true,
+  "cleanup_confirmed": true,
+  "files_restored": true,
+  "full_migration_accepted": false,
+  "training_started": false,
+  "native_runtime_seconds": 192.1090000000113,
+  "parking_accepted": true,
+  "crossing_accepted": true,
+  "local_traffic_accepted": true,
+  "live_vision_accepted": true,
+  "normal_token_verified": true,
+  "parking": {
+    "accepted": true,
+    "minimum_gap_m": 3.1714900000000004,
+    "maximum_gap_m": 5.268190000000001,
+    "actual_ego_width_m": 1.75871,
+    "count_verified": true,
+    "method": "Actual parked model corner bounds projected in fixed local road frame; no learned ego passage claim"
+  },
+  "crossings": {
+    "accepted": true,
+    "distinct_entered_road": 24,
+    "completed_crossings": 76,
+    "directions": [
+      "LEFT_TO_RIGHT",
+      "RIGHT_TO_LEFT"
+    ],
+    "conservative_road_occupancy_s": 92.719,
+    "casualty_events": 0,
+    "stalled_events": 9,
+    "assigned_tasks_not_crossings": 99
+  },
+  "population_summary": {
+    "initial_targets_verified": true,
+    "local_placement_verified": true,
+    "local_motion_verified": true,
+    "initial_local_group": [
+      {
+        "entity": 9218,
+        "role": "LOCAL_CAR",
+        "along_m": 16.74091,
+        "lateral_m": -0.01045,
+        "position": [
+          -161.3873,
+          -1710.29419,
+          30.63639
+        ]
+      },
+      {
+        "entity": 9730,
+        "role": "LOCAL_CAR",
+        "along_m": 29.57392,
+        "lateral_m": 0.03176,
+        "position": [
+          -152.71394,
+          -1719.75256,
+          29.76455
+        ]
+      },
+      {
+        "entity": 10242,
+        "role": "LOCAL_CAR",
+        "along_m": 46.36795,
+        "lateral_m": 0.00066,
+        "position": [
+          -141.30003,
+          -1732.07178,
+          29.62797
+        ]
+      },
+      {
+        "entity": 10754,
+        "role": "LOCAL_CAR",
+        "along_m": 62.16217,
+        "lateral_m": 3e-05,
+        "position": [
+          -130.58667,
+          -1743.677,
+          29.61295
+        ]
+      },
+      {
+        "entity": 11266,
+        "role": "LOCAL_CAR",
+        "along_m": 82.67751,
+        "lateral_m": 0.00556,
+        "position": [
+          -116.67559,
+          -1758.75549,
+          29.43002
+        ]
+      },
+      {
+        "entity": 11778,
+        "role": "LOCAL_CAR",
+        "along_m": -14.61374,
+        "lateral_m": 0.01522,
+        "position": [
+          -182.67339,
+          -1687.27209,
+          32.8661
+        ]
+      },
+      {
+        "entity": 12290,
+        "role": "MOTORCYCLE",
+        "along_m": 12.81828,
+        "lateral_m": -1.5999,
+        "position": [
+          -162.88,
+          -1706.33374,
+          30.52597
+        ]
+      },
+      {
+        "entity": 12802,
+        "role": "MOTORCYCLE",
+        "along_m": 30.51225,
+        "lateral_m": 1.60015,
+        "position": [
+          -153.22995,
+          -1721.50586,
+          29.47218
+        ]
+      },
+      {
+        "entity": 13314,
+        "role": "MOTORCYCLE",
+        "along_m": 47.35221,
+        "lateral_m": -1.59996,
+        "position": [
+          -139.45628,
+          -1731.70935,
+          29.66155
+        ]
+      },
+      {
+        "entity": 13826,
+        "role": "MOTORCYCLE",
+        "along_m": -6.81889,
+        "lateral_m": 1.60001,
+        "position": [
+          -178.55081,
+          -1694.07471,
+          32.34355
+        ]
+      }
+    ],
+    "minimum_live_traffic": 60,
+    "minimum_live_walkers": 100,
+    "max_local_cars_moved": 6,
+    "max_motorcycles_moved": 4,
+    "max_near_queue_from_moving": 15,
+    "max_away_moving": 32,
+    "street_names": [
+      "Forum Dr"
+    ],
+    "junction_names": [
+      "Grove St"
+    ],
+    "road_membership_width_m": 6.5,
+    "ego_spawn": [
+      -172.75,
+      -1698.0,
+      31.28125
+    ],
+    "junction": [
+      -106.25,
+      -1766.5,
+      28.84375
+    ]
+  },
+  "live_vision": {
+    "processed_frames": 783,
+    "captured_frames": 806,
+    "inference_p95_ms": 90.91693000518717,
+    "native_snapshot_to_result_p95_ms": 156.0
+  },
+  "owned_game_pids": [
+    30956
+  ],
+  "protected_inputs_unchanged": true,
+  "owned_game_tokens": {
+    "30956": false
+  },
+  "controller_elevated": false
+}

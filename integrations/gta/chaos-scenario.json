@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "site_id": "TRAIN_CHAOTIC_PARKING_CROSSING_V1",
+  "anchor_gta_xyz": [
+    -156,
+    -1663,
+    32
+  ],
+  "seed": 1428,
+  "traffic_vehicles": 60,
+  "on_foot_pedestrians": 100,
+  "junction_vehicles": 40,
+  "junction_pedestrians": 60,
+  "junction_radius_m": 70,
+  "normal_zone_min_distance_m": 110,
+  "duration_s": 100,
+  "road_membership_width_limit_m": 12,
+  "blocker": "One scripted bad stop in the junction; physical NPC braking/queue is measured, not assumed.",
+  "split_sites": {
+    "TRAIN": {
+      "anchor": [
+        -156,
+        -1663,
+        32
+      ],
+      "seeds": [
+        1000,
+        1999
+      ]
+    },
+    "VALIDATION": {
+      "anchor": [
+        -1240,
+        -1050,
+        8
+      ],
+      "seeds": [
+        10000,
+        10999
+      ]
+    },
+    "TEST": {
+      "anchor": [
+        1110,
+        -680,
+        57
+      ],
+      "seeds": [
+        20000,
+        20999
+      ]
+    }
+  },
+  "calibration_only_airport": true,
+  "training_admitted": false,
+  "feeder_spawn_radius_m": 110,
+  "parked_vehicles": 10,
+  "local_moving_cars": 6,
+  "local_motorcycles": 4,
+  "designated_crossers": 24,
+  "usable_corridor_max_m": 4.2,
+  "minimum_ego_margin_m": 0.45,
+  "parking": "Staggered both sides, varying real transverse clearance; handbrake only, no frozen/invincible vehicles.",
+  "crossing": "Staggered direct walking tasks both directions; record actual mid-road occupancy and completed crossings, not assigned tasks."
+}

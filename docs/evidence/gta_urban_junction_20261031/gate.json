@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "task_id": "gta-urban-junction-20261031",
+  "at": "2026-10-31T12:47:02.302114+00:00",
+  "status": "EVIDENCE_GATE_PASSED",
+  "passed": true,
+  "source_digest": "6ac41f59a2e38a7bf00021f999a21ce78516276ba8235cadf5e0938871c51aea",
+  "checks": {
+    "urban-controls": {
+      "passed": true,
+      "run": "runs/urban-controls/20261031T123539-6ca68b8922",
+      "receipt_hash": "3610fc87ef7b2a95e5dc94aa32d504d4b28571e659c290ef2b6c98eb8d55b8d7",
+      "artifacts": {
+        "stderr.log": {
+          "sha256": "7fb1358237aa0048465aa2936c9467819a0f8043c367f095e2b9b256bd3e61f0",
+          "bytes": 1108
+        },
+        "stdout.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      "errors": []
+    },
+    "build-urban-probe": {
+      "passed": true,
+      "run": "runs/build-urban-probe/20261031T123540-121c5ab676",
+      "receipt_hash": "aa5aaaeb1aa479097fdf0892a4fa2b9e01566f2ca72274aab0b5d9733c8841c5",
+      "artifacts": {
+        "build-result.json": {
+          "sha256": "2c0160f5a21aa24733314a97b45157e63e51a9b2295c8042cdc9b5922dbad8bc",
+          "bytes": 154
+        },
+        "stdout.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        "stderr.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      "errors": []
+    },
+    "native-urban-probe": {
+      "passed": true,
+      "run": "runs/native-urban-probe/20261031T123644-0449f201d4",
+      "receipt_hash": "6041dde9c5e83d09c77a4cf85becf52d4fa5d3011988ba4dcaba623d2e028a8d",
+      "artifacts": {
+        "sensor-result.json": {
+          "sha256": "7a2ea873cc29ff63df1850b4595a6b86b7c20695d14554dcb5f49fcbc51d3f14",
+          "bytes": 1394
+        },
+        "bridge.jsonl": {
+          "sha256": "75d8e63447707f4909c192abb1909ceaaf501aaf4ea67ee67235224ebee1e3ee",
+          "bytes": 645908
+        },
+        "capture.jsonl": {
+          "sha256": "c570adb36e1a5f50898c779abcd1a4d7fd7d649b7b6dbd8211785d1ca25db384",
+          "bytes": 412394
+        },
+        "geometry.jsonl": {
+          "sha256": "48744c6cfeabf031ef2c4b870ce8d2a90b4c7d9e546dc3c367051fcb31ba9e45",
+          "bytes": 48730724
+        },
+        "urban.jsonl": {
+          "sha256": "732231a146e1e918fce00b885ffe25d4f02c51c26873d162232aa7522c962c32",
+          "bytes": 65871
+        },
+        "live-vision.jsonl": {
+          "sha256": "f9fc802db819428f4d22aa54a8e7b1a974e5234012178da3956456199af09fcc",
+          "bytes": 2650115
+        },
+        "live-vision-result.json": {
+          "sha256": "c97f91b4d10c2341b40ed83740a16b6409fd84231ce354c67d2095c5a7cc9787",
+          "bytes": 440
+        },
+        "raw-manifest.json": {
+          "sha256": "90b9665c42bb5884814e0e5108011350abba16e3e1bfbc82f69fcb5c5c4c35ae",
+          "bytes": 238929
+        },
+        "stdout.log": {
+          "sha256": "7a2ea873cc29ff63df1850b4595a6b86b7c20695d14554dcb5f49fcbc51d3f14",
+          "bytes": 1394
+        },
+        "stderr.log": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        }
+      },
+      "errors": []
+    }
+  },
+  "requirements": [
+    {
+      "id": "U01",
+      "claim": "Ego actually starts on a narrow urban road, with real60cars and100on-foot pedestrians.",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "id": "U02",
+      "claim": "Congestion is concentrated at the selected junction while some traffic away remains moving.",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "id": "U03",
+      "claim": "Actual normal-token game, capture and existing CV operate together with owned cleanup.",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "plan": [
+    {
+      "id": "T01",
+      "status": "VERIFIED",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "id": "T02",
+      "status": "VERIFIED",
+      "passed": true,
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "boundary": "Validates recorded execution, source freshness, coverage and artifact integrity; does not prove oracle quality, visual judgment or honesty of a same-user process."
+}

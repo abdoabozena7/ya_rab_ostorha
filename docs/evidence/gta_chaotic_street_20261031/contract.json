@@ -1,0 +1,351 @@
+{
+  "schema": 1,
+  "task_id": "gta-chaos-crossing-20261031",
+  "goal": "Latest owner chaotic narrow usable corridor: parked cars both sides, local cars/bikes and actual bidirectional road crossing; no policy or full migration admission.",
+  "kind": "simulation",
+  "source_paths": [
+    "chaos_probe.py",
+    "chaos_probe.cpp",
+    "chaos_vision.py",
+    "chaos-scenario.json",
+    "test_chaos_probe.py",
+    "sensor_shared.hpp",
+    "capture_addon.cpp",
+    "OstorhaDepth.fx",
+    "render-lock.json",
+    "vision-lock.json",
+    "vision_probe.py",
+    "standard_launch.py",
+    "bootstrap.py",
+    "preflight.py",
+    "uac_bootstrap.py",
+    "owner_file_allowance.ps1"
+  ],
+  "scope_rationale": "Dependency-bound native qualification milestone. It does not close parent P02 coverage/timing/perception admission or P03-P06. Diagnostic scenario labels/GT are evaluation-only; no learned driving policy is claimed. All runtime sources, verifiers and pinned SDK/runtime identifiers are scoped. Prior failed task is immutable. Its60/100m diagnostics are now disclosed regressions; independent80/120m holdouts are fixed before this implementation/run. No accepted model, full-field coverage or parent migration follows.",
+  "authorization": "Latest owner explicitly requests narrower usable road, staggered parked cars on both sides with varying passable gaps,5\u20136local moving cars and3\u20134motorcycles right/left/rear, and pedestrians actually crossing amid traffic. Original60traffic/100on-foot target,10800s/100MB grant and normal-token restrictions remain; parked vehicles are additional and not substituted for moving traffic. No global security change, training, CARLA/data retirement or policy admission.",
+  "requirements": [
+    {
+      "id": "C01",
+      "claim": "Parked vehicles on both sides make a genuinely narrower varying passable corridor.",
+      "oracle": "Create10actual parked vehicles, at least4on each side. Measure model bounds, actual current poses and resulting transverse gaps over the parking zone; minimum gap>=actual ego width+.45m and<=4.2m, with>=.5m variation. Inspect real images/video of parked rows on both sides and foreground users. No frozen/invincible cars; preserve physical contact. Report geometric passability separately from unperformed learned-driver passage.",
+      "failure_example": "Just zoom camera, describe nominal road width as usable clearance, fake parking count or make an impassable wall and call it passable.",
+      "runtime_required": true,
+      "checks": [
+        "native-chaos-probe"
+      ],
+      "negative_checks": [
+        "chaos-controls"
+      ],
+      "review_required": true
+    },
+    {
+      "id": "C02",
+      "claim": "Pedestrians actually enter and cross the carriageway in both directions amid live traffic.",
+      "oracle": "Spawn target100on-foot walkers;24scheduled crossing roles with staggered times, no in-stage teleport. Actual native positions show>=8distinct walkers entering the road and>=6completed crossings including both directions; cumulative road-occupancy samples span>=8s. Retain attrition/contacts and actual visible RGB/CV; assigned tasks or sidewalk motion alone never count as crossing.",
+      "failure_example": "Claim crossing from task assignment, keep pedestrians only on sidewalks, move them by teleport or hide casualties.",
+      "runtime_required": true,
+      "checks": [
+        "native-chaos-probe"
+      ],
+      "negative_checks": [
+        "chaos-controls"
+      ],
+      "review_required": true
+    },
+    {
+      "id": "C03",
+      "claim": "The local group contains6moving cars and4motorcycles while traffic remains distributed beyond it.",
+      "oracle": "Initial controlled moving-traffic population60(excluding10parked), including6explicit local cars and4actual native motorcycle models with left/right/rear initial placements. At least3motorcycles and4local cars physically move>2m; a local traffic queue is observed while>=3far vehicles remain moving. Actual100on-foot initial count, live counts/attrition and visible cars/bikes/road walkers recorded. Query ordinary game token, real same-PID/run capture and unchanged existing DML>=40unique frames; owned cleanup/protected inputs match.",
+      "failure_example": "Count parked cars as moving traffic, fake bikes from labels, freeze entire city, claim unobserved motion/crossing or promote setup to trained driver/full GTA migration.",
+      "runtime_required": true,
+      "checks": [
+        "native-chaos-probe"
+      ],
+      "negative_checks": [
+        "chaos-controls"
+      ],
+      "review_required": true
+    }
+  ],
+  "checks": [
+    {
+      "id": "chaos-controls",
+      "description": "Invalid parking clearance, static crossing tasks and fake local population cannot qualify",
+      "command": [
+        "{python}",
+        "-B",
+        "-m",
+        "unittest",
+        "test_chaos_probe",
+        "-v"
+      ],
+      "timeout_seconds": 120,
+      "expected_exit_codes": [
+        0
+      ],
+      "assertions": [
+        {
+          "type": "stderr_contains",
+          "value": "OK"
+        }
+      ],
+      "artifacts": [
+        {
+          "glob": "stderr.log",
+          "min_count": 1,
+          "min_bytes": 2
+        }
+      ],
+      "mode": "fixture",
+      "role": "negative_control",
+      "fault": "No ring intersections, missing moving phases, malformed geometry or fake DML must fail."
+    },
+    {
+      "id": "build-chaos-probe",
+      "description": "Compile actual C++ ASI and renderer addon against pinned local runtime/SDK",
+      "command": [
+        "{python}",
+        "-B",
+        "chaos_probe.py",
+        "--output",
+        "{run}",
+        "--build-only"
+      ],
+      "timeout_seconds": 120,
+      "expected_exit_codes": [
+        0
+      ],
+      "assertions": [
+        {
+          "type": "json",
+          "file": "build-result.json",
+          "pointer": "/build_available",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "artifacts": [
+        {
+          "glob": "build-result.json",
+          "min_count": 1,
+          "min_bytes": 2
+        }
+      ],
+      "mode": "live",
+      "role": "regression"
+    },
+    {
+      "id": "native-chaos-probe",
+      "description": "Actual owner chaotic parking/bikes/road crossing with ordinary-token live capture/CV",
+      "command": [
+        "{python}",
+        "-B",
+        "chaos_probe.py",
+        "--output",
+        "{run}"
+      ],
+      "timeout_seconds": 650,
+      "expected_exit_codes": [
+        0
+      ],
+      "assertions": [
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/sensor_probe_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/parking_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/crossing_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/local_traffic_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/live_vision_accepted",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/normal_token_verified",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/cleanup_confirmed",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/files_restored",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "type": "json",
+          "file": "sensor-result.json",
+          "pointer": "/protected_inputs_unchanged",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "artifacts": [
+        {
+          "glob": "sensor-result.json",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "bridge.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "capture.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "geometry.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "urban.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "crossings.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "parking.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "live-vision.jsonl",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "live-vision-result.json",
+          "min_count": 1,
+          "min_bytes": 2
+        },
+        {
+          "glob": "raw-manifest.json",
+          "min_count": 1,
+          "min_bytes": 2
+        }
+      ],
+      "mode": "live",
+      "role": "acceptance"
+    }
+  ],
+  "plan": {
+    "strategy": "serial",
+    "rationale": "One owned game/renderer/control socket; develop then exercise a bounded diagnostic before provider/training.",
+    "delegation": {
+      "available": false,
+      "evidence": "Only native Copilot workers permitted by AGENTS; none exposed. No external inference layer used."
+    },
+    "tasks": [
+      {
+        "id": "T01",
+        "title": "Implement physical parking/bikes/crossing fixture",
+        "outcome": "Latest owner scene physically measured; all parent provider, required sensing, forecast, RL and retirement gates remain open.",
+        "owner": "coordinator",
+        "role": "implement",
+        "execution": "serial",
+        "depends_on": [],
+        "write_scope": [
+          "chaos_probe.py",
+          "chaos_probe.cpp",
+          "chaos_vision.py",
+          "chaos-scenario.json",
+          "test_chaos_probe.py",
+          "sensor_shared.hpp",
+          "capture_addon.cpp",
+          "OstorhaDepth.fx",
+          "render-lock.json",
+          "vision-lock.json",
+          "vision_probe.py",
+          "standard_launch.py",
+          "bootstrap.py",
+          "preflight.py",
+          "uac_bootstrap.py",
+          "owner_file_allowance.ps1"
+        ],
+        "outputs": [
+          "Actual chaos native fixture"
+        ],
+        "requirements": [
+          "C01",
+          "C02",
+          "C03"
+        ],
+        "checks": [
+          "chaos-controls",
+          "build-chaos-probe",
+          "native-chaos-probe"
+        ],
+        "acceptance": "Actual physical geometry/movement/road-crossing measurements and visible scene satisfy new owner journey without fake population or broader claims."
+      },
+      {
+        "id": "T02",
+        "title": "Inspect actual foreground road users, passable gap and crossing/traffic evidence",
+        "outcome": "Latest owner scene physically measured; all parent provider, required sensing, forecast, RL and retirement gates remain open.",
+        "owner": "coordinator",
+        "role": "integrate",
+        "execution": "serial",
+        "depends_on": [
+          "T01"
+        ],
+        "write_scope": [
+          "README.md"
+        ],
+        "outputs": [
+          "Inspected native media and movement/gap traces"
+        ],
+        "requirements": [
+          "C01",
+          "C02",
+          "C03"
+        ],
+        "checks": [
+          "chaos-controls",
+          "build-chaos-probe",
+          "native-chaos-probe"
+        ],
+        "acceptance": "Actual physical geometry/movement/road-crossing measurements and visible scene satisfy new owner journey without fake population or broader claims."
+      }
+    ]
+  }
+}

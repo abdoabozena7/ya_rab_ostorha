@@ -1,0 +1,111 @@
+{
+  "reviewer": "Codex coordinator, actual live game views and decoded video inspected",
+  "independence": "same-agent",
+  "requirements": [
+    {
+      "requirement_id": "C01",
+      "verdict": "pass",
+      "observations": "Actual10parked physical vehicles,5per side, retained throughout. Native current model-corner bounds give3.17149m minimum and5.26819m maximum gap, versus actual ego width1.75871m. No frozen/invincible vehicles commanded. Inspected two actual live CUA views and nine decoded native-video frames from1to95s, showing parked rows and narrowed foreground. This is geometric parked-clearance, not learned ego passage; moving traffic may obstruct the remaining gap. Road membership band6.5m is a proxy, not a pavement survey; population ego_spawn names the road reference node, while actual ego pose is in bridge.jsonl. The attempted84m straight-road eligibility filter failed and was not admitted; do not claim that check passed.",
+      "evidence": [
+        {
+          "check_id": "native-chaos-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "bridge.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "raw-manifest.json"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "parking.jsonl"
+        }
+      ],
+      "receipt_hashes": {
+        "native-chaos-probe": "d643a43c1336db2ece0debf327d28b22fcf2d7ca85afb710a0ead7c60f7aaacf"
+      }
+    },
+    {
+      "requirement_id": "C02",
+      "verdict": "pass",
+      "observations": "All24designated pedestrians physically entered the road;76completed crossings in both directions over100s. Conservative sampled road occupancy92.719s. Actual start/current/goal coordinates and road membership with nav-node height and2.5m layer guard distinguish assignments from entries/completions.99assigned tasks are not counted as crossings;9stalls and0casualties are retained. Inspected changing pedestrian positions in real live views and decoded chronological video, including center-road walkers among cars/bikes.100on-foot walkers retained throughout; no scenario-stage teleports.",
+      "evidence": [
+        {
+          "check_id": "native-chaos-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "bridge.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "raw-manifest.json"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "crossings.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "urban.jsonl"
+        }
+      ],
+      "receipt_hashes": {
+        "native-chaos-probe": "d643a43c1336db2ece0debf327d28b22fcf2d7ca85afb710a0ead7c60f7aaacf"
+      }
+    },
+    {
+      "requirement_id": "C03",
+      "verdict": "pass",
+      "observations": "Actual normal-token PID30956;60traffic vehicles plus10additional parked vehicles,100on-foot walkers retained. Six designated local cars and four genuine native motorcycle models, right/left/rear initial positions within100m; all6cars and4bikes moved>2m. Fixed local-jam oracle passed. At28.422s,15prior-moving cars queued/17slow nearby while29moved away; separate maxima are not conflated. Actual live DML783of806native RGB images; inferencep9590.917ms, snapshot-to-resultp95156ms. RGB/depth/1080-ray scans run together, source bound and protected inputs unchanged, owned cleanup/restoration true. This does not admit the full sensor field, future-prediction accuracy, provider, PPO training, full route or CARLA/data retirement.",
+      "evidence": [
+        {
+          "check_id": "native-chaos-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "bridge.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "raw-manifest.json"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "geometry.jsonl"
+        },
+        {
+          "check_id": "native-chaos-probe",
+          "file": "live-vision.jsonl"
+        }
+      ],
+      "receipt_hashes": {
+        "native-chaos-probe": "d643a43c1336db2ece0debf327d28b22fcf2d7ca85afb710a0ead7c60f7aaacf"
+      }
+    }
+  ],
+  "at": "2026-10-31T13:44:18.453997+00:00",
+  "contract_hash": "0ac4bd925f732043eb100fe8b19ddb0b7f518c69d0e988c136a91cead8368751",
+  "source_digest": "c605b9156d5c328cafda646d2a04ddeefbf527b86aca7f8e0ba5f08e170abaac"
+}

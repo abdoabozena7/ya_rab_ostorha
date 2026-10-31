@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "site_id": "TRAIN_CHAMBERLAIN_NARROW_V1",
+  "anchor_gta_xyz": [
+    -156,
+    -1663,
+    32
+  ],
+  "seed": 1427,
+  "traffic_vehicles": 60,
+  "on_foot_pedestrians": 100,
+  "junction_vehicles": 40,
+  "junction_pedestrians": 60,
+  "junction_radius_m": 70,
+  "normal_zone_min_distance_m": 110,
+  "duration_s": 100,
+  "road_membership_width_limit_m": 12,
+  "blocker": "One scripted bad stop in the junction; physical NPC braking/queue is measured, not assumed.",
+  "split_sites": {
+    "TRAIN": {
+      "anchor": [
+        -156,
+        -1663,
+        32
+      ],
+      "seeds": [
+        1000,
+        1999
+      ]
+    },
+    "VALIDATION": {
+      "anchor": [
+        -1240,
+        -1050,
+        8
+      ],
+      "seeds": [
+        10000,
+        10999
+      ]
+    },
+    "TEST": {
+      "anchor": [
+        1110,
+        -680,
+        57
+      ],
+      "seeds": [
+        20000,
+        20999
+      ]
+    }
+  },
+  "calibration_only_airport": true,
+  "training_admitted": false,
+  "feeder_spawn_radius_m": 110
+}

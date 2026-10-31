@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "harness": "1.0.0",
+  "task_id": "gta-urban-junction-20261031",
+  "run_id": "20261031T123644-0449f201d4",
+  "check_id": "native-urban-probe",
+  "role": "acceptance",
+  "mode": "live",
+  "contract_hash": "1881e08ea05453abd7e5d68faa2f2ce1f5c63f8cb2deaddaef3a77108a4bd44d",
+  "check_hash": "224bc98210c3bcfb85694a144ff2d1f2b673544c828673b7d58533ed8d96d87c",
+  "engine_hash": "007eb31528f4f835256731acb352b87e5cccdcd661c56dbfdaacd49f89d28074",
+  "command": [
+    "D:\\projects\\Ai\\ya_rab_ostorha\\.venv-carla\\Scripts\\python.exe",
+    "-B",
+    "urban_probe.py",
+    "--output",
+    "D:\\projects\\Ai\\ya_rab_ostorha\\integrations\\gta\\.runtime-proof\\gta-urban-junction-20261031\\runs\\native-urban-probe\\20261031T123644-0449f201d4"
+  ],
+  "cwd": "D:\\projects\\Ai\\ya_rab_ostorha\\integrations\\gta",
+  "started_at": "2026-10-31T12:36:44.249804+00:00",
+  "source_before": {
+    "digest": "6ac41f59a2e38a7bf00021f999a21ce78516276ba8235cadf5e0938871c51aea",
+    "files": {
+      "urban_probe.py": "f1e5488a03808b0a1aa13b5a5f9fcaa8b9325c1819f7121a099c6f060af46ade",
+      "urban_probe.cpp": "781871e9c5514551199b3ef2742e1ba1d476fd2c16f0a5897636f3cdce84488b",
+      "urban_vision.py": "ea848179fd6754160291efec75820d8de04b1eb9b724ee0fa4d8ab27e7f2a724",
+      "urban-scenario.json": "0ba4372e8de4dfcf0a297bed9c581883754564e638301094dcc9a862f73a6099",
+      "test_urban_probe.py": "7fc2c4abf4dc67ea44a13ef4547e87ed6dfd7443ed5f734f4cd07c96582e6834",
+      "sensor_shared.hpp": "73814ba8410de224d21ee3c5d303bbd2a261eb0be0d815a22668da16d55a6fc7",
+      "capture_addon.cpp": "83a989ce94c9b416b4f1f7ddabb9edb69331887ef449d02076dccc061e7bda2d",
+      "OstorhaDepth.fx": "63db91337780cba550765fea97c98f9b983a06a3b5423439b9d2bda398df5a41",
+      "render-lock.json": "49210cf4dfc09ecb3c7ff58d52b45cd76234e882ef5a02aa7a91158b805b55a7",
+      "vision-lock.json": "ef37c84e619c204d02ed124711e64499d10ba428699cc37c7f0b01ef5eee3cdf",
+      "vision_probe.py": "d82764cb1fd7e7fd61575989e41c569fca5541875d641f456dfd8d0cd2df968e",
+      "standard_launch.py": "808bc48eec926d4934f355f399fba0eba434b6e95e1dcba18328c5720cd5aa77",
+      "bootstrap.py": "15be41ad0dbc51e55d186890cd412b667833d38867612a0f9a1f815bf506b30e",
+      "preflight.py": "ab62598e3a39ae3364a19de346ca8649b78c17d986557b762bebcd9048c5ff26",
+      "uac_bootstrap.py": "12b38849736fc58d0d081f4d9feb4e562b064538bb30246a89085f8689a5846c",
+      "owner_file_allowance.ps1": "2957cafb38d89c8424b5516a49884f8da08a936003921b77e900d87f33ddce20"
+    }
+  },
+  "timeout": false,
+  "interrupted": false,
+  "overflow": false,
+  "spawn_error": null,
+  "exit_code": 0,
+  "pid": 6064,
+  "ended_at": "2026-10-31T12:40:48.704521+00:00",
+  "wall_seconds": 244.453,
+  "source_after": {
+    "digest": "6ac41f59a2e38a7bf00021f999a21ce78516276ba8235cadf5e0938871c51aea",
+    "files": {
+      "urban_probe.py": "f1e5488a03808b0a1aa13b5a5f9fcaa8b9325c1819f7121a099c6f060af46ade",
+      "urban_probe.cpp": "781871e9c5514551199b3ef2742e1ba1d476fd2c16f0a5897636f3cdce84488b",
+      "urban_vision.py": "ea848179fd6754160291efec75820d8de04b1eb9b724ee0fa4d8ab27e7f2a724",
+      "urban-scenario.json": "0ba4372e8de4dfcf0a297bed9c581883754564e638301094dcc9a862f73a6099",
+      "test_urban_probe.py": "7fc2c4abf4dc67ea44a13ef4547e87ed6dfd7443ed5f734f4cd07c96582e6834",
+      "sensor_shared.hpp": "73814ba8410de224d21ee3c5d303bbd2a261eb0be0d815a22668da16d55a6fc7",
+      "capture_addon.cpp": "83a989ce94c9b416b4f1f7ddabb9edb69331887ef449d02076dccc061e7bda2d",
+      "OstorhaDepth.fx": "63db91337780cba550765fea97c98f9b983a06a3b5423439b9d2bda398df5a41",
+      "render-lock.json": "49210cf4dfc09ecb3c7ff58d52b45cd76234e882ef5a02aa7a91158b805b55a7",
+      "vision-lock.json": "ef37c84e619c204d02ed124711e64499d10ba428699cc37c7f0b01ef5eee3cdf",
+      "vision_probe.py": "d82764cb1fd7e7fd61575989e41c569fca5541875d641f456dfd8d0cd2df968e",
+      "standard_launch.py": "808bc48eec926d4934f355f399fba0eba434b6e95e1dcba18328c5720cd5aa77",
+      "bootstrap.py": "15be41ad0dbc51e55d186890cd412b667833d38867612a0f9a1f815bf506b30e",
+      "preflight.py": "ab62598e3a39ae3364a19de346ca8649b78c17d986557b762bebcd9048c5ff26",
+      "uac_bootstrap.py": "12b38849736fc58d0d081f4d9feb4e562b064538bb30246a89085f8689a5846c",
+      "owner_file_allowance.ps1": "2957cafb38d89c8424b5516a49884f8da08a936003921b77e900d87f33ddce20"
+    }
+  },
+  "artifacts": {
+    "sensor-result.json": {
+      "sha256": "7a2ea873cc29ff63df1850b4595a6b86b7c20695d14554dcb5f49fcbc51d3f14",
+      "bytes": 1394
+    },
+    "bridge.jsonl": {
+      "sha256": "75d8e63447707f4909c192abb1909ceaaf501aaf4ea67ee67235224ebee1e3ee",
+      "bytes": 645908
+    },
+    "capture.jsonl": {
+      "sha256": "c570adb36e1a5f50898c779abcd1a4d7fd7d649b7b6dbd8211785d1ca25db384",
+      "bytes": 412394
+    },
+    "geometry.jsonl": {
+      "sha256": "48744c6cfeabf031ef2c4b870ce8d2a90b4c7d9e546dc3c367051fcb31ba9e45",
+      "bytes": 48730724
+    },
+    "urban.jsonl": {
+      "sha256": "732231a146e1e918fce00b885ffe25d4f02c51c26873d162232aa7522c962c32",
+      "bytes": 65871
+    },
+    "live-vision.jsonl": {
+      "sha256": "f9fc802db819428f4d22aa54a8e7b1a974e5234012178da3956456199af09fcc",
+      "bytes": 2650115
+    },
+    "live-vision-result.json": {
+      "sha256": "c97f91b4d10c2341b40ed83740a16b6409fd84231ce354c67d2095c5a7cc9787",
+      "bytes": 440
+    },
+    "raw-manifest.json": {
+      "sha256": "90b9665c42bb5884814e0e5108011350abba16e3e1bfbc82f69fcb5c5c4c35ae",
+      "bytes": 238929
+    },
+    "stdout.log": {
+      "sha256": "7a2ea873cc29ff63df1850b4595a6b86b7c20695d14554dcb5f49fcbc51d3f14",
+      "bytes": 1394
+    },
+    "stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "errors": [],
+  "passed": true
+}

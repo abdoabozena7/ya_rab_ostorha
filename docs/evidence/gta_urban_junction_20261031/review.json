@@ -1,0 +1,99 @@
+{
+  "reviewer": "Codex coordinator, actual native street images and numerical traces inspected",
+  "independence": "same-agent",
+  "requirements": [
+    {
+      "requirement_id": "U01",
+      "verdict": "pass",
+      "observations": "Inspected actual CUA images of the revised6.5m street with visible nearby pedestrians and moving cars. Real60traffic vehicles and100on-foot walkers retained in all settled samples; all moved.100 samples each contain>=5visible walkers and>=2controlled cars. Earlier4.5m service-alley view failed visual review and its receipt/media/source are preserved. This verifies the earlier street-scene scope; latest owner parked-car/motorcycle/crossing refinement remains a new task.",
+      "evidence": [
+        {
+          "check_id": "native-urban-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "live-vision.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "raw-manifest.json"
+        }
+      ],
+      "receipt_hashes": {
+        "native-urban-probe": "6041dde9c5e83d09c77a4cf85becf52d4fa5d3011988ba4dcaba623d2e028a8d"
+      }
+    },
+    {
+      "requirement_id": "U02",
+      "verdict": "pass",
+      "observations": "Actual scripted bad-stop actor/position/timing and prior-moving queue counts satisfy fixed5s local-jam oracle. Peak17slow nearby and41moving away are reported as separate maxima, not a single simultaneous state. This is a locally measured scripted stress fixture, not map-wide traffic or causal superiority proof.",
+      "evidence": [
+        {
+          "check_id": "native-urban-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "live-vision.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "raw-manifest.json"
+        }
+      ],
+      "receipt_hashes": {
+        "native-urban-probe": "6041dde9c5e83d09c77a4cf85becf52d4fa5d3011988ba4dcaba623d2e028a8d"
+      }
+    },
+    {
+      "requirement_id": "U03",
+      "verdict": "pass",
+      "observations": "Actual normal-token PID25144, matching native RGB/depth/rays and real DML788of810images. Inferencep9582.900ms; native-snapshot-to-resultp95141ms, asynchronous timing. Source/protected inputs/owned cleanup/restoration verified. Actual visible people/cars inspected. No trajectory accuracy, policy training or migration/retirement admission.",
+      "evidence": [
+        {
+          "check_id": "native-urban-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "live-vision.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "raw-manifest.json"
+        }
+      ],
+      "receipt_hashes": {
+        "native-urban-probe": "6041dde9c5e83d09c77a4cf85becf52d4fa5d3011988ba4dcaba623d2e028a8d"
+      }
+    }
+  ],
+  "at": "2026-10-31T12:47:01.408669+00:00",
+  "contract_hash": "1881e08ea05453abd7e5d68faa2f2ce1f5c63f8cb2deaddaef3a77108a4bd44d",
+  "source_digest": "6ac41f59a2e38a7bf00021f999a21ce78516276ba8235cadf5e0938871c51aea"
+}

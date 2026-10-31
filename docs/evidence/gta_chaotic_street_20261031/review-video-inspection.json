@@ -1,0 +1,23 @@
+{
+  "sha256": "02b3d85920b635de8d6237c318f015a1db3e4538539e345ec716bf15469a284c",
+  "bytes": 6193429,
+  "decoded_frames": 1002,
+  "metadata": {
+    "ffmpeg_version": "7.1-essentials_build-www.gyan.dev built with gcc 14.2.0 (Rev1, Built by MSYS2 project)",
+    "codec": "h264",
+    "pix_fmt": "yuv420p(progressive)",
+    "fps": 10.0,
+    "source_size": [
+      640,
+      360
+    ],
+    "size": [
+      640,
+      360
+    ],
+    "rotate": 0,
+    "duration": 100.2
+  },
+  "source_video_sha256": "e25bb8a93e48da5bde4b3829c1e654a6af0eacabe6f015133b08133c08699f2f",
+  "transcode": "H264 CRF28; all1002frames in original order, no temporal interpolation"
+}

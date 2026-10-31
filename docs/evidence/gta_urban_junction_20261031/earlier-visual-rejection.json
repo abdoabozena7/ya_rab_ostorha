@@ -1,0 +1,87 @@
+{
+  "reviewer": "Codex coordinator, actual decoded raw imagery and native/model measurements inspected",
+  "independence": "same-agent",
+  "requirements": [
+    {
+      "requirement_id": "U01",
+      "verdict": "fail",
+      "observations": "Native counts/motion and4.5m road-membership band are real, but decoded raw previews show a service alley with much of the controlled population outside ego view. This does not yet satisfy the intended visible populated starting street; refine training scene and re-exercise without lowering requirements.",
+      "evidence": [
+        {
+          "check_id": "native-urban-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "live-vision.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "raw-manifest.json"
+        }
+      ]
+    },
+    {
+      "requirement_id": "U02",
+      "verdict": "pass",
+      "observations": "Actual local-blocker traces and previously moving queued cars satisfy the fixed local-slow/moving-away time oracle. This is measured local co-occurrence after scripted stop, not a map-wide absence-of-jams or controlled causal superiority claim.",
+      "evidence": [
+        {
+          "check_id": "native-urban-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "live-vision.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "raw-manifest.json"
+        }
+      ]
+    },
+    {
+      "requirement_id": "U03",
+      "verdict": "fail",
+      "observations": "Actual non-elevated game/render/DML,793frames,p95141ms snapshot age and cleanup are real. Person/vehicle neural detections alone do not establish that visible crowded startup is correct; inspect scene after geometry/population refinement before accepting the owner journey.",
+      "evidence": [
+        {
+          "check_id": "native-urban-probe",
+          "file": "sensor-result.json"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "urban.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "capture.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "live-vision.jsonl"
+        },
+        {
+          "check_id": "native-urban-probe",
+          "file": "raw-manifest.json"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "run": "20261031T130314-f622f24b84",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 240.10899999999674,
+      "error": "Story world/render not ready within240s; owner interaction may be needed",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "27528": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "446e299c2358184c91b8f7b8cb071c2e09aee0070fe6f7f66af0ecdac3036b62"
+  },
+  {
+    "run": "20261031T130830-c01559f2ab",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 146.375,
+      "error": "Native qualification failed: SPAWN_FAILED",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "22776": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "9223a370b2c5ef333922beec51ed28a4fe3a9c19e8032fa7c76c249b19709d67"
+  },
+  {
+    "run": "20261031T131536-94334a4a98",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 96.20300000000861,
+      "error": "Native qualification failed: SPAWN_FAILED",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "8536": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "7925b1e2cf330a159f94bc2d9ab91dca492054fabb40b620a961fac924ed137c"
+  },
+  {
+    "run": "20261031T132015-a030f51784",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 89.6710000000021,
+      "error": "Native qualification failed: SPAWN_FAILED",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "36480": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "246fc9664306ffbbf9c1cd420acae339fd127625047ca91da415743828b4c7a4"
+  },
+  {
+    "run": "20261031T132341-0a9eb331fd",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 93.35899999999674,
+      "error": "Native qualification failed: SPAWN_FAILED",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "34048": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "59f6edc8b3f9cef80d74ab8fdcb562dad09dc911a0fdec9589781ed929388cdb"
+  },
+  {
+    "run": "20261031T132746-483425e136",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 98.86000000000058,
+      "error": "Native qualification failed: SPAWN_FAILED",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "20772": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "0dbb13c04851ef25068f56ac435e03bcfb8bb6c1c00c9863d693114bae10e43f"
+  },
+  {
+    "run": "20261031T133147-19feab2700",
+    "result": {
+      "sensor_probe_accepted": false,
+      "cleanup_confirmed": true,
+      "files_restored": true,
+      "full_migration_accepted": false,
+      "training_started": false,
+      "native_runtime_seconds": 105.01600000000326,
+      "error": "Native qualification failed: SPAWN_FAILED",
+      "protected_inputs_unchanged": true,
+      "owned_game_tokens": {
+        "2760": false
+      },
+      "controller_elevated": false
+    },
+    "receipt_sha256": "01b9f11f5fe4f07f5b2040b19d2871c2d173b0df2cb4d7074ecd62d5185a184b"
+  }
+]

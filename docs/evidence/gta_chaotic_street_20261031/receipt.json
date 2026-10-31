@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "harness": "1.0.0",
+  "task_id": "gta-chaos-crossing-20261031",
+  "run_id": "20261031T133526-19b148f020",
+  "check_id": "native-chaos-probe",
+  "role": "acceptance",
+  "mode": "live",
+  "contract_hash": "0ac4bd925f732043eb100fe8b19ddb0b7f518c69d0e988c136a91cead8368751",
+  "check_hash": "45b891991dc27cfbe385fb7741a3b8e314f0dd32c942f89952640780add41b4d",
+  "engine_hash": "007eb31528f4f835256731acb352b87e5cccdcd661c56dbfdaacd49f89d28074",
+  "command": [
+    "D:\\projects\\Ai\\ya_rab_ostorha\\.venv-carla\\Scripts\\python.exe",
+    "-B",
+    "chaos_probe.py",
+    "--output",
+    "D:\\projects\\Ai\\ya_rab_ostorha\\integrations\\gta\\.runtime-proof\\gta-chaos-crossing-20261031\\runs\\native-chaos-probe\\20261031T133526-19b148f020"
+  ],
+  "cwd": "D:\\projects\\Ai\\ya_rab_ostorha\\integrations\\gta",
+  "started_at": "2026-10-31T13:35:26.871997+00:00",
+  "source_before": {
+    "digest": "c605b9156d5c328cafda646d2a04ddeefbf527b86aca7f8e0ba5f08e170abaac",
+    "files": {
+      "chaos_probe.py": "7d03845f1bb8b9fa949fc10fae315940a36dbba5f43971705a14f3a01a383f8b",
+      "chaos_probe.cpp": "11b8815ae0e1fbacce49e3f84ce5798be740a424f55326d59ce613f97a313218",
+      "chaos_vision.py": "e79417cab2c1bc2e36c27b99503cc05adba39e6d31fc378dc473f95494ab86d5",
+      "chaos-scenario.json": "068e51ff698cd0f1b1fdd81bdab2f9aae6cb1bb57d76ad8f1d5ff319d3681a9b",
+      "test_chaos_probe.py": "a3425aafed47e7cc07d972a3d4c8774a39f06cade422c388c45833e0f2963770",
+      "sensor_shared.hpp": "73814ba8410de224d21ee3c5d303bbd2a261eb0be0d815a22668da16d55a6fc7",
+      "capture_addon.cpp": "83a989ce94c9b416b4f1f7ddabb9edb69331887ef449d02076dccc061e7bda2d",
+      "OstorhaDepth.fx": "63db91337780cba550765fea97c98f9b983a06a3b5423439b9d2bda398df5a41",
+      "render-lock.json": "49210cf4dfc09ecb3c7ff58d52b45cd76234e882ef5a02aa7a91158b805b55a7",
+      "vision-lock.json": "ef37c84e619c204d02ed124711e64499d10ba428699cc37c7f0b01ef5eee3cdf",
+      "vision_probe.py": "d82764cb1fd7e7fd61575989e41c569fca5541875d641f456dfd8d0cd2df968e",
+      "standard_launch.py": "808bc48eec926d4934f355f399fba0eba434b6e95e1dcba18328c5720cd5aa77",
+      "bootstrap.py": "15be41ad0dbc51e55d186890cd412b667833d38867612a0f9a1f815bf506b30e",
+      "preflight.py": "ab62598e3a39ae3364a19de346ca8649b78c17d986557b762bebcd9048c5ff26",
+      "uac_bootstrap.py": "12b38849736fc58d0d081f4d9feb4e562b064538bb30246a89085f8689a5846c",
+      "owner_file_allowance.ps1": "2957cafb38d89c8424b5516a49884f8da08a936003921b77e900d87f33ddce20"
+    }
+  },
+  "timeout": false,
+  "interrupted": false,
+  "overflow": false,
+  "spawn_error": null,
+  "exit_code": 0,
+  "pid": 36748,
+  "ended_at": "2026-10-31T13:38:51.937281+00:00",
+  "wall_seconds": 205.062,
+  "source_after": {
+    "digest": "c605b9156d5c328cafda646d2a04ddeefbf527b86aca7f8e0ba5f08e170abaac",
+    "files": {
+      "chaos_probe.py": "7d03845f1bb8b9fa949fc10fae315940a36dbba5f43971705a14f3a01a383f8b",
+      "chaos_probe.cpp": "11b8815ae0e1fbacce49e3f84ce5798be740a424f55326d59ce613f97a313218",
+      "chaos_vision.py": "e79417cab2c1bc2e36c27b99503cc05adba39e6d31fc378dc473f95494ab86d5",
+      "chaos-scenario.json": "068e51ff698cd0f1b1fdd81bdab2f9aae6cb1bb57d76ad8f1d5ff319d3681a9b",
+      "test_chaos_probe.py": "a3425aafed47e7cc07d972a3d4c8774a39f06cade422c388c45833e0f2963770",
+      "sensor_shared.hpp": "73814ba8410de224d21ee3c5d303bbd2a261eb0be0d815a22668da16d55a6fc7",
+      "capture_addon.cpp": "83a989ce94c9b416b4f1f7ddabb9edb69331887ef449d02076dccc061e7bda2d",
+      "OstorhaDepth.fx": "63db91337780cba550765fea97c98f9b983a06a3b5423439b9d2bda398df5a41",
+      "render-lock.json": "49210cf4dfc09ecb3c7ff58d52b45cd76234e882ef5a02aa7a91158b805b55a7",
+      "vision-lock.json": "ef37c84e619c204d02ed124711e64499d10ba428699cc37c7f0b01ef5eee3cdf",
+      "vision_probe.py": "d82764cb1fd7e7fd61575989e41c569fca5541875d641f456dfd8d0cd2df968e",
+      "standard_launch.py": "808bc48eec926d4934f355f399fba0eba434b6e95e1dcba18328c5720cd5aa77",
+      "bootstrap.py": "15be41ad0dbc51e55d186890cd412b667833d38867612a0f9a1f815bf506b30e",
+      "preflight.py": "ab62598e3a39ae3364a19de346ca8649b78c17d986557b762bebcd9048c5ff26",
+      "uac_bootstrap.py": "12b38849736fc58d0d081f4d9feb4e562b064538bb30246a89085f8689a5846c",
+      "owner_file_allowance.ps1": "2957cafb38d89c8424b5516a49884f8da08a936003921b77e900d87f33ddce20"
+    }
+  },
+  "artifacts": {
+    "sensor-result.json": {
+      "sha256": "1012c95e2428d87d787a90c99f90b61b75180d0af9eb1e120a4c67a11159ec89",
+      "bytes": 4387
+    },
+    "bridge.jsonl": {
+      "sha256": "89921b584047340f2f5b74ee8c20967b4dffb8bce0ddace0e04313f8f2606a34",
+      "bytes": 629288
+    },
+    "capture.jsonl": {
+      "sha256": "fa44f7e5af2a1b780171217656cda8988e628713f441fe636747d17014bfbf5c",
+      "bytes": 409267
+    },
+    "geometry.jsonl": {
+      "sha256": "5abe1049cd9a1690beaea7abbd4c13311e5920c69188343af46d08283b5f9231",
+      "bytes": 47710089
+    },
+    "urban.jsonl": {
+      "sha256": "842bfbba2f01245ba2df2c6fda91a2a75338fab033f96e915a87186d40b5bd26",
+      "bytes": 199892
+    },
+    "crossings.jsonl": {
+      "sha256": "f62521535d9ded2dce8c23e73e62ed27997677aed00a3d78eb487bb5015260ce",
+      "bytes": 89537
+    },
+    "parking.jsonl": {
+      "sha256": "3deba76f518464feecae18a2aa3c4d3ebded5957a9f3eedb5507b57ce6005be2",
+      "bytes": 223900
+    },
+    "live-vision.jsonl": {
+      "sha256": "c45953c150ff2515929b0f4eba0a4f447bb94357d03e06684d6b427ef16c3401",
+      "bytes": 5505400
+    },
+    "live-vision-result.json": {
+      "sha256": "865b87db7980e5b66e32acd566897cf4029be3ab9ec005e342b7690b093770dd",
+      "bytes": 440
+    },
+    "raw-manifest.json": {
+      "sha256": "1336d2899c7dbcb40351a20d8334e807339278baa3113e4a4f2cf4d3f834cf2c",
+      "bytes": 238929
+    },
+    "stdout.log": {
+      "sha256": "1012c95e2428d87d787a90c99f90b61b75180d0af9eb1e120a4c67a11159ec89",
+      "bytes": 4387
+    },
+    "stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "errors": [],
+  "passed": true
+}

@@ -1,8 +1,8 @@
 # GTA migration compatibility gate
 
-This component owns only the initial dependency/compatibility investigation for
-the user-requested GTA Enhanced migration. It is not a production provider,
-sensor qualification, training result or authorization to remove CARLA.
+This component owns bounded native prototypes and evidence for the requested
+GTA Enhanced migration. It is not a production provider or a training result;
+each qualification below has its own scope and cannot authorize CARLA removal.
 
 The repository-root Prove It task belongs to another session. This component's
 proof project is isolated here in the existing main checkout; it never activates,
@@ -15,7 +15,19 @@ CARLA budgets are separate. CARLA and its raw data must remain until the native
 GTA capability gate passes. Retain code, weights, numeric results, reports and
 videos during any subsequently admitted cleanup.
 
-## Latest continuation: 31 October — native bootstrap verified
+## Latest continuation: 31 October — chaotic street verified
+
+The [parking/motorcycle/crossing fixture](../../docs/GTA_CHAOTIC_STREET_20261031.md)
+passed its bounded native gate:10physical parked vehicles,6local moving cars,
+4motorcycles,60total traffic vehicles and100on-foot walkers. All24designated
+crossers entered the road;76crossings completed in both directions. The measured
+minimum parked clearance was3.17149m versus actual ego width1.75871m.
+Live DML processed783of806native images alongside depth/rays. The ego was held
+under braking; learned passage, full required sensing/forecast/provider, training
+and CARLA retirement remain unaccepted. Real video and failed attempts are linked
+in the report. This refines the [earlier urban/local-jam fixture](../../docs/GTA_URBAN_JUNCTION_20261031.md).
+
+## Earlier continuation: 31 October — native bootstrap verified
 
 [Ordinary launch iteration now passes twice](../../docs/GTA_STANDARD_LAUNCH_20261031.md):
 only the owner's exact per-game RUNASADMIN compatibility flag was removed,

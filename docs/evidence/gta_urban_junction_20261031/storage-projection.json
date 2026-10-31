@@ -1,0 +1,9 @@
+{
+  "measured_bytes": 16128000,
+  "elapsed_s": 1.266,
+  "bytes_per_s": 12739336.492890995,
+  "required_remaining_bytes": 10001680472,
+  "free_bytes": 94896431104,
+  "margin": 1.5,
+  "reserve_bytes": 4294967296
+}
