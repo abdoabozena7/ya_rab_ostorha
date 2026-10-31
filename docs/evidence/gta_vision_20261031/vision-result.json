@@ -1,0 +1,139 @@
+{
+  "detector_smoke_passed": true,
+  "forecast_executed": true,
+  "driving_policy_admitted": false,
+  "training_started": false,
+  "mode": "recorded-static-replay",
+  "detector_runtimes": [
+    {
+      "requested": "CPU",
+      "runtime": {
+        "execution_provider": "CPUExecutionProvider",
+        "onnxruntime_version": "1.23.2"
+      },
+      "median_ms": 394.59220000208006
+    },
+    {
+      "requested": "DML",
+      "runtime": {
+        "execution_provider": "DmlExecutionProvider",
+        "onnxruntime_version": "1.24.4"
+      },
+      "median_ms": 38.68769999826327
+    }
+  ],
+  "forecast_ms": 22.773599994252436,
+  "forecast_scope": "Recorded stationary CV-derived track only; no dynamic accuracy or policy admission",
+  "cpu_dml_equivalent_sample": true,
+  "wall_seconds": 16.82800000000134,
+  "budget": {
+    "grant_id": "user-approved-gta-migration-10800s-20261030",
+    "limit_seconds": 10800,
+    "charged_seconds": 1609.798999999999,
+    "reservations": [
+      {
+        "id": "45f46268762b446ebc7f3676c955f079",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 10.562999999998283
+      },
+      {
+        "id": "5655289945774a0a9fa7c3888dd7d4ef",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 0.6879999999982829
+      },
+      {
+        "id": "9d2d84f23f504beca49fb0a6c68224b3",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 0.01599999999962165
+      },
+      {
+        "id": "d10af5c39a034a77b645871456887aa6",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 4.062999999998283
+      },
+      {
+        "id": "uac-2fc3961872454679b485e11c16ecc42b",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 284.6409999999996
+      },
+      {
+        "id": "f9ec4db166ac4b789a273b2a34d92ba2",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 240.43700000000172
+      },
+      {
+        "id": "uac-960c0be5c8fd446582f85fb72315fc47",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 15.376000000000204
+      },
+      {
+        "id": "e0aafc04f3b44519b65e380d5e7d5f44",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 86.48400000000038
+      },
+      {
+        "id": "6adfc36ed63a4f5aa339e97a5633a9b0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 36.09400000000096
+      },
+      {
+        "id": "6adfc36ed63a4f5aa339e97a5633a9b0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 430.03099999999904
+      },
+      {
+        "id": "9c524f70d721441b8d19dc1ed51b1aa0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.405999999995402
+      },
+      {
+        "id": "9c524f70d721441b8d19dc1ed51b1aa0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 210.20300000000134
+      },
+      {
+        "id": "e942ecc7bd49431fa556b4b9800aba9d-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.610000000000582
+      },
+      {
+        "id": "e942ecc7bd49431fa556b4b9800aba9d-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 164.53100000000268
+      },
+      {
+        "id": "vision-replay-2bf7a778b0074862ae5c7b9dd660872a",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 62.18800000000192
+      },
+      {
+        "id": "vision-replay-7d04f87b95564bd18bfdd81df1efdbb1",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 18.639999999999418
+      },
+      {
+        "id": "vision-replay-ea5b65e0984e4e758efd952da1557091",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 16.82800000000134
+      }
+    ]
+  },
+  "protected_inputs_unchanged": true
+}

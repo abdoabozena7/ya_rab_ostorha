@@ -1,0 +1,696 @@
+{
+  "detector_smoke_passed": true,
+  "runs": [
+    {
+      "requested_provider": "CPU",
+      "runtime": {
+        "execution_provider": "CPUExecutionProvider",
+        "onnxruntime_version": "1.23.2"
+      },
+      "profile": {
+        "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+        "input_size": 640,
+        "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2"
+      },
+      "frames": [
+        {
+          "serial": 56,
+          "stage": "RANGE10",
+          "duration_ms": 385.9823000020697,
+          "detections": [
+            {
+              "class": "bus",
+              "confidence": 0.9158250689506531,
+              "xyxy": [
+                279.63897705078125,
+                149.5230712890625,
+                361.61822509765625,
+                234.082763671875
+              ],
+              "classification_status": "SUPPORTED"
+            }
+          ],
+          "center_vehicle": {
+            "class": "bus",
+            "confidence": 0.9158250689506531,
+            "xyxy": [
+              279.63897705078125,
+              149.5230712890625,
+              361.61822509765625,
+              234.082763671875
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        },
+        {
+          "serial": 93,
+          "stage": "RANGE30",
+          "duration_ms": 403.20210000209045,
+          "detections": [
+            {
+              "class": "truck",
+              "confidence": 0.7203632593154907,
+              "xyxy": [
+                304.54364013671875,
+                168.58197021484375,
+                334.68585205078125,
+                197.33709716796875
+              ],
+              "classification_status": "SUPPORTED"
+            },
+            {
+              "class": "bus",
+              "confidence": 0.5791893601417542,
+              "xyxy": [
+                306.55393981933594,
+                167.91307067871094,
+                334.47605895996094,
+                198.34812927246094
+              ],
+              "classification_status": "UNCERTAIN"
+            }
+          ],
+          "center_vehicle": {
+            "class": "truck",
+            "confidence": 0.7203632593154907,
+            "xyxy": [
+              304.54364013671875,
+              168.58197021484375,
+              334.68585205078125,
+              197.33709716796875
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        },
+        {
+          "serial": 129,
+          "stage": "RANGE60",
+          "duration_ms": 498.52760000067065,
+          "detections": [],
+          "center_vehicle": null
+        },
+        {
+          "serial": 203,
+          "stage": "RANGE80",
+          "duration_ms": 483.6107000010088,
+          "detections": [
+            {
+              "class": "truck",
+              "confidence": 0.6966413259506226,
+              "xyxy": [
+                314.05519104003906,
+                176.0987548828125,
+                325.5825653076172,
+                187.6094970703125
+              ],
+              "classification_status": "SUPPORTED"
+            }
+          ],
+          "center_vehicle": {
+            "class": "truck",
+            "confidence": 0.6966413259506226,
+            "xyxy": [
+              314.05519104003906,
+              176.0987548828125,
+              325.5825653076172,
+              187.6094970703125
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        },
+        {
+          "serial": 166,
+          "stage": "RANGE100",
+          "duration_ms": 363.38850000174716,
+          "detections": [],
+          "center_vehicle": null
+        },
+        {
+          "serial": 239,
+          "stage": "RANGE120",
+          "duration_ms": 362.24989999755053,
+          "detections": [
+            {
+              "class": "person",
+              "confidence": 0.256298303604126,
+              "xyxy": [
+                273.9228515625,
+                178.28001403808594,
+                275.98931884765625,
+                183.9705047607422
+              ],
+              "classification_status": "UNCERTAIN"
+            }
+          ],
+          "center_vehicle": null
+        }
+      ],
+      "median_ms": 394.59220000208006
+    },
+    {
+      "requested_provider": "DML",
+      "runtime": {
+        "execution_provider": "DmlExecutionProvider",
+        "onnxruntime_version": "1.24.4"
+      },
+      "profile": {
+        "id": "YOLOV8S_640_FRONT_AND_FOCUS_V3",
+        "input_size": 640,
+        "model_sha256": "d7cf0bd1ec4dfe6afcab12444c888625d95c589e25c06c24b1283646175fa8e2",
+        "execution_provider": "DmlExecutionProvider"
+      },
+      "frames": [
+        {
+          "serial": 56,
+          "stage": "RANGE10",
+          "duration_ms": 35.393100006331224,
+          "detections": [
+            {
+              "class": "bus",
+              "confidence": 0.9158251881599426,
+              "xyxy": [
+                279.63897705078125,
+                149.5230712890625,
+                361.61822509765625,
+                234.082763671875
+              ],
+              "classification_status": "SUPPORTED"
+            }
+          ],
+          "center_vehicle": {
+            "class": "bus",
+            "confidence": 0.9158251881599426,
+            "xyxy": [
+              279.63897705078125,
+              149.5230712890625,
+              361.61822509765625,
+              234.082763671875
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        },
+        {
+          "serial": 93,
+          "stage": "RANGE30",
+          "duration_ms": 35.720499996386934,
+          "detections": [
+            {
+              "class": "truck",
+              "confidence": 0.7203638553619385,
+              "xyxy": [
+                304.54364013671875,
+                168.58197021484375,
+                334.68585205078125,
+                197.33709716796875
+              ],
+              "classification_status": "SUPPORTED"
+            },
+            {
+              "class": "bus",
+              "confidence": 0.5791893601417542,
+              "xyxy": [
+                306.55393981933594,
+                167.91307067871094,
+                334.47605895996094,
+                198.34812927246094
+              ],
+              "classification_status": "UNCERTAIN"
+            }
+          ],
+          "center_vehicle": {
+            "class": "truck",
+            "confidence": 0.7203638553619385,
+            "xyxy": [
+              304.54364013671875,
+              168.58197021484375,
+              334.68585205078125,
+              197.33709716796875
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        },
+        {
+          "serial": 129,
+          "stage": "RANGE60",
+          "duration_ms": 36.76019999693381,
+          "detections": [],
+          "center_vehicle": null
+        },
+        {
+          "serial": 203,
+          "stage": "RANGE80",
+          "duration_ms": 40.61519999959273,
+          "detections": [
+            {
+              "class": "truck",
+              "confidence": 0.6966420412063599,
+              "xyxy": [
+                314.05519104003906,
+                176.0987548828125,
+                325.5825653076172,
+                187.6094970703125
+              ],
+              "classification_status": "SUPPORTED"
+            }
+          ],
+          "center_vehicle": {
+            "class": "truck",
+            "confidence": 0.6966420412063599,
+            "xyxy": [
+              314.05519104003906,
+              176.0987548828125,
+              325.5825653076172,
+              187.6094970703125
+            ],
+            "classification_status": "SUPPORTED"
+          }
+        },
+        {
+          "serial": 166,
+          "stage": "RANGE100",
+          "duration_ms": 42.23439999623224,
+          "detections": [],
+          "center_vehicle": null
+        },
+        {
+          "serial": 239,
+          "stage": "RANGE120",
+          "duration_ms": 41.54790000029607,
+          "detections": [
+            {
+              "class": "person",
+              "confidence": 0.2562982738018036,
+              "xyxy": [
+                273.9228515625,
+                178.28001403808594,
+                275.98931884765625,
+                183.9705047607422
+              ],
+              "classification_status": "UNCERTAIN"
+            }
+          ],
+          "center_vehicle": null
+        }
+      ],
+      "median_ms": 38.68769999826327
+    }
+  ],
+  "measured_track": [
+    {
+      "timestamp_s": 50.229,
+      "position_m": [
+        -1330.1306347020331,
+        3033.926888015755
+      ],
+      "class": "bus",
+      "serial": 39
+    },
+    {
+      "timestamp_s": 50.338,
+      "position_m": [
+        -1330.130977750826,
+        3033.9267074486747
+      ],
+      "class": "bus",
+      "serial": 40
+    },
+    {
+      "timestamp_s": 50.446,
+      "position_m": [
+        -1330.1321808732189,
+        3033.9261060651243
+      ],
+      "class": "bus",
+      "serial": 41
+    },
+    {
+      "timestamp_s": 50.554,
+      "position_m": [
+        -1330.1312042513714,
+        3033.9264618761526
+      ],
+      "class": "bus",
+      "serial": 42
+    },
+    {
+      "timestamp_s": 50.664,
+      "position_m": [
+        -1330.1321899861778,
+        3033.9261402697234
+      ],
+      "class": "bus",
+      "serial": 43
+    },
+    {
+      "timestamp_s": 50.772,
+      "position_m": [
+        -1330.1322947143617,
+        3033.925973013236
+      ],
+      "class": "bus",
+      "serial": 44
+    },
+    {
+      "timestamp_s": 50.887,
+      "position_m": [
+        -1330.134306903788,
+        3033.924891364737
+      ],
+      "class": "bus",
+      "serial": 45
+    },
+    {
+      "timestamp_s": 50.996,
+      "position_m": [
+        -1330.1357520828185,
+        3033.9243678369244
+      ],
+      "class": "bus",
+      "serial": 46
+    },
+    {
+      "timestamp_s": 51.108,
+      "position_m": [
+        -1330.134231527792,
+        3033.9247827681174
+      ],
+      "class": "bus",
+      "serial": 47
+    },
+    {
+      "timestamp_s": 51.218,
+      "position_m": [
+        -1330.133992579984,
+        3033.9249614195364
+      ],
+      "class": "bus",
+      "serial": 48
+    },
+    {
+      "timestamp_s": 51.321,
+      "position_m": [
+        -1330.1339901416832,
+        3033.9250681262715
+      ],
+      "class": "bus",
+      "serial": 49
+    },
+    {
+      "timestamp_s": 51.433,
+      "position_m": [
+        -1330.1333913845706,
+        3033.9254475600032
+      ],
+      "class": "bus",
+      "serial": 50
+    },
+    {
+      "timestamp_s": 51.544,
+      "position_m": [
+        -1330.133038576876,
+        3033.925515769058
+      ],
+      "class": "bus",
+      "serial": 51
+    },
+    {
+      "timestamp_s": 51.656,
+      "position_m": [
+        -1330.1325374193375,
+        3033.92591067006
+      ],
+      "class": "bus",
+      "serial": 52
+    },
+    {
+      "timestamp_s": 51.758,
+      "position_m": [
+        -1330.1349114602165,
+        3033.9245243847795
+      ],
+      "class": "bus",
+      "serial": 53
+    },
+    {
+      "timestamp_s": 51.868,
+      "position_m": [
+        -1330.1339251318307,
+        3033.9249599470627
+      ],
+      "class": "bus",
+      "serial": 54
+    },
+    {
+      "timestamp_s": 51.979,
+      "position_m": [
+        -1330.1336198426463,
+        3033.9251770835235
+      ],
+      "class": "bus",
+      "serial": 55
+    },
+    {
+      "timestamp_s": 52.089,
+      "position_m": [
+        -1330.1330250592705,
+        3033.9253453622364
+      ],
+      "class": "bus",
+      "serial": 56
+    },
+    {
+      "timestamp_s": 52.2,
+      "position_m": [
+        -1330.1336111178275,
+        3033.9251505811017
+      ],
+      "class": "bus",
+      "serial": 57
+    },
+    {
+      "timestamp_s": 52.308,
+      "position_m": [
+        -1330.135042335388,
+        3033.9243168450407
+      ],
+      "class": "bus",
+      "serial": 58
+    },
+    {
+      "timestamp_s": 52.418,
+      "position_m": [
+        -1330.1328479116053,
+        3033.925549845346
+      ],
+      "class": "bus",
+      "serial": 59
+    },
+    {
+      "timestamp_s": 52.527,
+      "position_m": [
+        -1330.1343894335087,
+        3033.924912563129
+      ],
+      "class": "bus",
+      "serial": 60
+    },
+    {
+      "timestamp_s": 52.636,
+      "position_m": [
+        -1330.1337527630856,
+        3033.9251026086326
+      ],
+      "class": "bus",
+      "serial": 61
+    },
+    {
+      "timestamp_s": 52.745,
+      "position_m": [
+        -1330.1320703369859,
+        3033.926183251152
+      ],
+      "class": "bus",
+      "serial": 62
+    },
+    {
+      "timestamp_s": 52.859,
+      "position_m": [
+        -1330.13209373273,
+        3033.926166039087
+      ],
+      "class": "bus",
+      "serial": 63
+    },
+    {
+      "timestamp_s": 52.966,
+      "position_m": [
+        -1330.1324733934177,
+        3033.9258418174236
+      ],
+      "class": "bus",
+      "serial": 64
+    },
+    {
+      "timestamp_s": 53.07,
+      "position_m": [
+        -1330.1326629180746,
+        3033.925728660007
+      ],
+      "class": "bus",
+      "serial": 65
+    },
+    {
+      "timestamp_s": 53.18,
+      "position_m": [
+        -1330.13228353433,
+        3033.925633178441
+      ],
+      "class": "bus",
+      "serial": 66
+    },
+    {
+      "timestamp_s": 53.292,
+      "position_m": [
+        -1330.1338391814652,
+        3033.9252637939953
+      ],
+      "class": "bus",
+      "serial": 67
+    },
+    {
+      "timestamp_s": 53.401,
+      "position_m": [
+        -1330.1326837180954,
+        3033.9258970685273
+      ],
+      "class": "bus",
+      "serial": 68
+    },
+    {
+      "timestamp_s": 53.508,
+      "position_m": [
+        -1330.1324087573087,
+        3033.9260203189738
+      ],
+      "class": "bus",
+      "serial": 69
+    },
+    {
+      "timestamp_s": 53.619,
+      "position_m": [
+        -1330.1323864391022,
+        3033.925855255229
+      ],
+      "class": "bus",
+      "serial": 70
+    },
+    {
+      "timestamp_s": 53.725,
+      "position_m": [
+        -1330.131780084723,
+        3033.9263450498397
+      ],
+      "class": "bus",
+      "serial": 71
+    },
+    {
+      "timestamp_s": 53.838,
+      "position_m": [
+        -1330.1331695362517,
+        3033.925540217794
+      ],
+      "class": "bus",
+      "serial": 72
+    },
+    {
+      "timestamp_s": 53.943,
+      "position_m": [
+        -1330.1339996065408,
+        3033.925136019609
+      ],
+      "class": "bus",
+      "serial": 73
+    }
+  ],
+  "forecast_request": {
+    "timestamp_s": 50.887,
+    "seed": 20261031,
+    "tracks": [
+      {
+        "id": "rgb-track-0",
+        "class": "bus",
+        "fixed_position_m": [
+          -1330.134306903788,
+          3033.924891364737
+        ],
+        "history": [
+          [
+            50.229,
+            -1330.1306347020331,
+            3033.926888015755
+          ],
+          [
+            50.338,
+            -1330.130977750826,
+            3033.9267074486747
+          ],
+          [
+            50.446,
+            -1330.1321808732189,
+            3033.9261060651243
+          ],
+          [
+            50.554,
+            -1330.1312042513714,
+            3033.9264618761526
+          ],
+          [
+            50.664,
+            -1330.1321899861778,
+            3033.9261402697234
+          ],
+          [
+            50.772,
+            -1330.1322947143617,
+            3033.925973013236
+          ],
+          [
+            50.887,
+            -1330.134306903788,
+            3033.924891364737
+          ]
+        ]
+      }
+    ]
+  },
+  "cpu_dml_equivalent_sample": true,
+  "cpu_dml_equivalence": [
+    {
+      "stage": "RANGE10",
+      "equivalent_within_1px_and_0_02_confidence": true
+    },
+    {
+      "stage": "RANGE30",
+      "equivalent_within_1px_and_0_02_confidence": true
+    },
+    {
+      "stage": "RANGE60",
+      "equivalent_within_1px_and_0_02_confidence": true
+    },
+    {
+      "stage": "RANGE80",
+      "equivalent_within_1px_and_0_02_confidence": true
+    },
+    {
+      "stage": "RANGE100",
+      "equivalent_within_1px_and_0_02_confidence": true
+    },
+    {
+      "stage": "RANGE120",
+      "equivalent_within_1px_and_0_02_confidence": true
+    }
+  ],
+  "track_geometry_scope": "Stationary, near-center, approximately flat recorded scene; full moving/extrinsic qualification is pending",
+  "no_game_actor_truth_in_inference": true,
+  "driving_policy_admitted": false
+}

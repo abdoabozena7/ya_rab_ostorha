@@ -17,6 +17,12 @@ videos during any subsequently admitted cleanup.
 
 ## Latest continuation: 31 October — native bootstrap verified
 
+The subsequent [recorded vision/model test](../../docs/GTA_VISION_REPLAY_20261031.md)
+executes existing YOLO on actual GTA RGB and real Trajectron++ on a measured
+static CV/depth track. Installed DML is about38.7ms versus394.6ms CPU on six
+frames; misses and class confusion are retained. This does not qualify moving
+prediction, concurrent native timing or policy training.
+
 The later [camera/depth/control qualification](../../docs/GTA_SENSOR_QUALIFICATION_20261031.md)
 also passed its bounded native gate, including fresh80/120m center targets,
 physical steering/pedals and actual owner/replay/stale/disconnect/contact tests.
