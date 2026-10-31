@@ -1,0 +1,30 @@
+{
+  "preview-range10.png": {
+    "source_serial": 61,
+    "source_rgb_sha256": "d6a6200c2100cd13ef53292777f31a1ba08dbaaca31fcd69dddcae1a252d4e30",
+    "png_sha256": "19a3761d67c8c27339491fb28ee6de1fc3d388fe2cfaf3d2340ca0a4a5fdd947"
+  },
+  "preview-range120.png": {
+    "source_serial": 244,
+    "source_rgb_sha256": "11cd4da6718627a3656754449ea579650c325ca151edadb8ac380d4cafc7f725",
+    "png_sha256": "a09d2092bb4e6542a6e7bb9335722c28996af2315625cfd793d8c261b0ad3d0f"
+  },
+  "preview-left.png": {
+    "source_serial": 391,
+    "source_rgb_sha256": "0d4d4fdee6488dc7145970a832f42ba843979f17a6603e3fe3492a49c79305bc",
+    "png_sha256": "c9ab7e338d1bdc51aa311b8229cae7d88ef7f0d54419250a91f829d128d8b01e"
+  },
+  "preview-collision.png": {
+    "source_serial": 631,
+    "source_rgb_sha256": "196c98a0385cef692823dd48df79bfc4253dfb3da4ef72bf2884f75a491aa6e6",
+    "png_sha256": "504b1f5f72bce60dd1477afa6f7888a1c740c4248fc18024ecc96b5aa033ed8d"
+  },
+  "qualification-real-time.mp4": {
+    "sha256": "8a7d47bd6ec3ef7ce760e0d4fe42846cc92bf6fb0ec50d340ce75357455aaaf2",
+    "bytes": 4272555,
+    "fps": 10,
+    "frame_count": 771,
+    "wall_duration_s": 77.1,
+    "method": "Past-frame wall-clock resampling; deliberate capture outage holds last sensor frame, never invents fresh observation."
+  }
+}

@@ -17,6 +17,14 @@ videos during any subsequently admitted cleanup.
 
 ## Latest continuation: 31 October — native bootstrap verified
 
+The later [camera/depth/control qualification](../../docs/GTA_SENSOR_QUALIFICATION_20261031.md)
+also passed its bounded native gate, including fresh80/120m center targets,
+physical steering/pedals and actual owner/replay/stale/disconnect/contact tests.
+This is center qualification only. Full-field/360-degree sensing, dynamic
+CV/Trajectron++, the production provider, training/routes and CARLA retirement
+remain open. Raw captures are local/ignored. The setup package was inspected and
+extracted without executing its installer; no new model weights were downloaded.
+
 The owner-approved exact-file allowance and normal Windows UAC launch now work.
 The supplied `xinput1_4.dll` loader loads this project's ASI in the installed
 Enhanced executable. Actual PID-bound native frame/time samples advance;

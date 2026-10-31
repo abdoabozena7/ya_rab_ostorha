@@ -1,0 +1,166 @@
+{
+  "sensor_probe_accepted": true,
+  "cleanup_confirmed": true,
+  "files_restored": true,
+  "full_migration_accepted": false,
+  "training_started": false,
+  "native_runtime_seconds": 164.53100000000268,
+  "camera_accepted": true,
+  "depth_ray_accepted": true,
+  "control_accepted": true,
+  "contact_accepted": true,
+  "capture_count": 661,
+  "bridge_count": 693,
+  "coverage": "Center projection/range qualification only; whole-field/360-degree coverage not certified",
+  "acquisition_p50_ms": 15.0,
+  "acquisition_p95_ms": 16.0,
+  "depth_projection": "reversed_z",
+  "depth_calibration": {
+    "RANGE10": {
+      "count": 28,
+      "max_error_m": 0.006482392231873746,
+      "passed": true
+    },
+    "RANGE30": {
+      "count": 27,
+      "max_error_m": 0.006549555012465902,
+      "passed": true
+    },
+    "RANGE60": {
+      "count": 27,
+      "max_error_m": 0.017560206022054103,
+      "passed": true
+    },
+    "RANGE100": {
+      "count": 28,
+      "max_error_m": 0.006819521457288147,
+      "passed": true
+    },
+    "RANGE80": {
+      "count": 28,
+      "max_error_m": 0.014788598717188961,
+      "passed": true
+    },
+    "RANGE120": {
+      "count": 27,
+      "max_error_m": 0.01630129518952117,
+      "passed": true
+    },
+    "OCCLUSION": {
+      "count": 27,
+      "max_error_m": 0.006527680019807747,
+      "passed": true
+    }
+  },
+  "physical_control": {
+    "throttle_displacement_m": 30.543294007966907,
+    "max_speed_mps": 11.33114,
+    "brake_final_mps": 0.00195,
+    "left_yaw_rad": 0.7196032648545412,
+    "right_yaw_rad": -0.7486764359354883,
+    "disconnect_safe": true,
+    "sensor_stale_safe": true,
+    "replays_rejected": 43,
+    "delayed_rejected": 105,
+    "foreign_owners_rejected": 30,
+    "driver_survived": true
+  },
+  "owned_game_pids": [
+    36468
+  ],
+  "protected_inputs_unchanged": true,
+  "uac_worker_elevated": true,
+  "uac_wall_seconds": 179.14100000000326,
+  "budget": {
+    "grant_id": "user-approved-gta-migration-10800s-20261030",
+    "limit_seconds": 10800,
+    "charged_seconds": 1512.1429999999964,
+    "reservations": [
+      {
+        "id": "45f46268762b446ebc7f3676c955f079",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 10.562999999998283
+      },
+      {
+        "id": "5655289945774a0a9fa7c3888dd7d4ef",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 0.6879999999982829
+      },
+      {
+        "id": "9d2d84f23f504beca49fb0a6c68224b3",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 0.01599999999962165
+      },
+      {
+        "id": "d10af5c39a034a77b645871456887aa6",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 4.062999999998283
+      },
+      {
+        "id": "uac-2fc3961872454679b485e11c16ecc42b",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 284.6409999999996
+      },
+      {
+        "id": "f9ec4db166ac4b789a273b2a34d92ba2",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 240.43700000000172
+      },
+      {
+        "id": "uac-960c0be5c8fd446582f85fb72315fc47",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 15.376000000000204
+      },
+      {
+        "id": "e0aafc04f3b44519b65e380d5e7d5f44",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 86.48400000000038
+      },
+      {
+        "id": "6adfc36ed63a4f5aa339e97a5633a9b0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 36.09400000000096
+      },
+      {
+        "id": "6adfc36ed63a4f5aa339e97a5633a9b0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 430.03099999999904
+      },
+      {
+        "id": "9c524f70d721441b8d19dc1ed51b1aa0-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.405999999995402
+      },
+      {
+        "id": "9c524f70d721441b8d19dc1ed51b1aa0-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 210.20300000000134
+      },
+      {
+        "id": "e942ecc7bd49431fa556b4b9800aba9d-uac",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 14.610000000000582
+      },
+      {
+        "id": "e942ecc7bd49431fa556b4b9800aba9d-native",
+        "reserved_seconds": 600,
+        "finished": true,
+        "actual_seconds": 164.53100000000268
+      }
+    ]
+  },
+  "uac_controller_elevated": false
+}

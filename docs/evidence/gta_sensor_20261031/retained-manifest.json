@@ -1,0 +1,34 @@
+{
+  "bridge.jsonl": {
+    "sha256": "5acf4b9a4de93fd88aa3c607ca71305dc159ec64de0c062a939877d51cdda492",
+    "bytes": 536895
+  },
+  "capture.jsonl": {
+    "sha256": "d98b82d927bd433660032ee55cb9e6fd6a3872ae3378c48003a1087a1d273a59",
+    "bytes": 339873
+  },
+  "media-manifest.json": {
+    "sha256": "c7b3af4a1416df6592afbb95a2ad4a62dede499c81ccf5666e56853aaeb15f42",
+    "bytes": 1322
+  },
+  "preview-collision.png": {
+    "sha256": "504b1f5f72bce60dd1477afa6f7888a1c740c4248fc18024ecc96b5aa033ed8d",
+    "bytes": 223236
+  },
+  "preview-range10.png": {
+    "sha256": "19a3761d67c8c27339491fb28ee6de1fc3d388fe2cfaf3d2340ca0a4a5fdd947",
+    "bytes": 309517
+  },
+  "preview-range120.png": {
+    "sha256": "a09d2092bb4e6542a6e7bb9335722c28996af2315625cfd793d8c261b0ad3d0f",
+    "bytes": 310703
+  },
+  "qualification-real-time.mp4": {
+    "sha256": "8a7d47bd6ec3ef7ce760e0d4fe42846cc92bf6fb0ec50d340ce75357455aaaf2",
+    "bytes": 4272555
+  },
+  "sensor-result.json": {
+    "sha256": "7e9f5c496f6d99bb5c48e881d839d1befeaa6f51c4b387afb44824e4a69fff42",
+    "bytes": 4716
+  }
+}
