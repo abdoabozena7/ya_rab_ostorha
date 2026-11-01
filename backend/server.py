@@ -238,6 +238,7 @@ def main():
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--carla", action="store_true", help="Connect to the running CARLA simulator")
+    parser.add_argument('--gta-runtime', type=Path, help='Inspect an owned live GTA run; no CARLA runtime')
     parser.add_argument("--carla-host", default="127.0.0.1")
     parser.add_argument("--carla-port", type=int, default=2000)
     parser.add_argument("--carla-version", default=VERSION, choices=[VERSION])
@@ -262,6 +263,11 @@ def main():
     parser.add_argument('--validation-ticket', help='Explicit expiring RULE integration validation authorization')
     parser.add_argument("--websocket-port", type=int, default=8001)
     args = parser.parse_args()
+    if args.gta_runtime:
+        if args.carla or args.replay:
+            parser.error('Choose exactly one simulation provider')
+        from .gta.server import serve
+        return serve(args.gta_runtime, host=args.host, port=args.port, duration=args.session_duration)
     if args.stopped_ticket and (args.carla or args.replay):parser.error('Stopped dashboard cannot own a simulator or replay')
     if args.startup_ticket and not args.carla:parser.error('Native startup ticket requires CARLA')
     if args.session_duration is not None and args.session_duration <= 0:

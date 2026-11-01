@@ -11602,4 +11602,312 @@ body.light-cockpit.mission-experience:has(.camera-expanded)[data-ui=guided] .app
   }
 }
 
+/* frontend/gta-live.css */
+.gta-inspector {
+  margin: 0;
+  background: #f1f2ee;
+  color: #202b29;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+.gta-inspector * {
+  box-sizing: border-box;
+}
+.gta-inspector button,
+.gta-inspector input {
+  font: inherit;
+}
+.gta-inspector button {
+  cursor: pointer;
+  border: 1px solid #ccd4cb;
+  border-radius: 8px;
+  background: #fff;
+  color: #23362d;
+  padding: 9px 17px;
+}
+.gta-inspector button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.gta-inspector button:focus-visible,
+.gta-inspector a:focus-visible {
+  outline: 3px solid #d6922e;
+  outline-offset: 3px;
+}
+.gta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 4vw 18px;
+  border-bottom: 1px solid #d6ded4;
+  background: #fafbf7;
+}
+.gta-eyebrow {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: #5d715e;
+}
+.gta-header h1 {
+  font-size: 28px;
+  margin: 4px 0;
+}
+.gta-header p {
+  margin: 0;
+  color: #647268;
+}
+.gta-connection {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 13px;
+}
+.gta-connection a {
+  color: #4a6252;
+}
+.gta-connection > span {
+  background: #e4e8df;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+.gta-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  max-width: 1700px;
+  margin: 26px auto;
+  padding: 0 4vw;
+}
+.gta-vision {
+  min-width: 0;
+}
+.gta-view-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.gta-view-heading h2 {
+  font-size: 17px;
+  margin: 0;
+}
+.gta-switch {
+  display: flex;
+  gap: 5px;
+}
+.gta-switch button[aria-pressed=true] {
+  background: #284c39;
+  color: white;
+  border-color: #284c39;
+}
+.gta-image-stage {
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+  background: #17241f;
+  border-radius: 12px;
+}
+.gta-image-stage > img,
+.gta-image-stage > canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  object-fit: contain;
+}
+.gta-image-stage > canvas {
+  pointer-events: none;
+}
+.gta-image-stage > p {
+  position: absolute;
+  inset: 42% 12% auto;
+  color: #dce5d9;
+  text-align: center;
+}
+.gta-view-label {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #172820b8;
+  padding: 4px 12px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+}
+.gta-frame-line {
+  display: flex;
+  justify-content: space-between;
+  color: #647268;
+  font-size: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #d6ded4;
+}
+.gta-measures {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 18px;
+  gap: 14px;
+}
+.gta-measures > div {
+  border-inline-start: 1px solid #cbd4c8;
+  padding-inline-start: 14px;
+}
+.gta-measures span,
+.gta-measures small {
+  display: block;
+  color: #647268;
+  font-size: 12px;
+}
+.gta-measures strong {
+  font-size: 30px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+#gtaDepthNote {
+  color: #647268;
+  font-size: 13px;
+}
+.gta-side {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+}
+.gta-side section {
+  border-bottom: 1px solid #ccd7ca;
+  padding-bottom: 18px;
+}
+.gta-side h2 {
+  font-size: 18px;
+  margin: 3px 0 7px;
+}
+.gta-side p {
+  font-size: 13px;
+  color: #65736a;
+  margin: 6px 0 12px;
+}
+.gta-control fieldset {
+  display: flex;
+  gap: 18px;
+  border: 0;
+  padding: 0;
+  margin: 15px 0;
+}
+.gta-control legend {
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: #65736a;
+}
+.gta-control label {
+  font-size: 13px;
+}
+.gta-actions {
+  display: flex;
+  gap: 10px;
+}
+#gtaCreep {
+  background: #28513b;
+  color: white;
+  border-color: #28513b;
+}
+#gtaBrake {
+  background: #f5e6dd;
+  border-color: #dbbeac;
+  color: #8a3f2c;
+}
+.gta-control small,
+.gta-model small {
+  font-size: 11px;
+  color: #718074;
+}
+.gta-rays canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #e8ede4;
+  border-radius: 9px;
+}
+.gta-rays .gta-view-heading > span {
+  font-size: 11px;
+  color: #718074;
+}
+.gta-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 4vw;
+  color: #758275;
+  font-size: 11px;
+  border-top: 1px solid #d6ded4;
+}
+.gta-inspector [hidden] {
+  display: none !important;
+}
+@media (max-width: 950px) {
+  .gta-layout {
+    grid-template-columns: 1fr;
+  }
+  .gta-side {
+    grid-template-columns: 1fr 1fr;
+  }
+  .gta-model {
+    grid-column: 1/-1;
+  }
+  .gta-header {
+    gap: 12px;
+  }
+  .gta-header h1 {
+    font-size: 23px;
+  }
+  .gta-connection {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .gta-measures strong {
+    font-size: 24px;
+  }
+}
+@media (max-width: 580px) {
+  .gta-layout {
+    padding: 0 16px;
+    margin-top: 18px;
+  }
+  .gta-header {
+    padding: 16px;
+  }
+  .gta-header p {
+    font-size: 12px;
+  }
+  .gta-side {
+    grid-template-columns: 1fr;
+  }
+  .gta-frame-line,
+  .gta-footer {
+    flex-direction: column;
+  }
+  .gta-measures {
+    gap: 5px;
+  }
+  .gta-measures > div {
+    padding-inline-start: 8px;
+  }
+  .gta-measures span {
+    font-size: 10px;
+  }
+  .gta-measures strong {
+    font-size: 21px;
+  }
+  .gta-switch button {
+    padding: 6px 10px;
+  }
+}
+.gta-inspector input[type=radio] {
+  appearance: auto;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  min-width: 0;
+  padding: 0;
+  margin: 0 0 0 5px;
+  vertical-align: middle;
+}
+
 /* frontend/dashboard-theme.css */

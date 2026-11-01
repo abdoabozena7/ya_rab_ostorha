@@ -46,7 +46,9 @@ test('presentation results never infer superiority from a failed or mismatched p
 
 test('the project mode uses the exact English project title',()=>{
   assert.equal(PROJECT_NAME,'Ya Rab Ostorha');assert.equal(modeLabel('ROBOSPHERE'),PROJECT_NAME);
-  const files=['index.html',...readdirSync('frontend').filter(n=>n.endsWith('.js')).map(n=>'frontend/'+n)];
+  // The separately served GTA live dashboard deliberately has Arabic controls;
+  // this project-mode presentation check applies to the main dashboard only.
+  const files=['index.html',...readdirSync('frontend').filter(n=>n.endsWith('.js')&&!n.startsWith('gta-live')).map(n=>'frontend/'+n)];
   for(const file of files)assert.doesNotMatch(readFileSync(file,'utf8'),/[\u0600-\u06ff]/,file);
 });
 
