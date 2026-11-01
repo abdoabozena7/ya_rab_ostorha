@@ -12,11 +12,19 @@ In the calibration, native position and velocity showed 15.99 m of forward displ
 
 The current run's local evidence is under `.runtime-proof/gta-foundation-20261031/runs/native-foundation/20261101T120552-a43d26d3b8/`; inspect `foundation-result.json`, `launch-3/side-by-side.png`, `launch-3/CAM_*-metadata.json`, and the associated RGB/depth images. Earlier failed runs remain preserved. The local GTA/model runtime budget remains capped at 10,800 seconds; the ledger is `integrations/gta/downloads/native-runtime-ledger.json`.
 
+## Supplemental native command rejection
+
+The separately sealed `native-protocol-20261101` child exercised the unchanged foundation native bridge through real UDP sockets. A test-only wrapper around the real provider transport sent brake-only invalid packets: same-sequence replays, wrong nonce, wrong source port, expired deadline, excessively future deadline, nonfinite steering, truncated packet, and wrong protocol version. Each phase had an independently observed increase in the corresponding native rejection counter; an aggregate counter alone was insufficient. The injected camera changes and high sequence numbers were not accepted.
+
+The actual run recorded 396 native observations and 378 captured frames. After settling, maximum measured speed was 0 m/s with zero throttle and full brake throughout. Command loss and capture loss both activated their native watchdogs; new commands and captures were acknowledged after recovery. The run reached `DONE`, closed its owned processes, restored the temporary game files, and preserved the protected file inventory. It consumed 250.281 seconds, leaving 517.562 seconds of the original aggregate allowance. A further launch requires the existing 600-second reservation; the allowance was not reset or expanded.
+
+Eleven adversarial offline oracle tests passed separately. They reject absent phase-specific responses, a different run/process, repeated frames, accepted sentinel sequences, a changed camera, missing braking/recovery and missing measurements. They are synthetic tests of the verifier, not native evidence. Local live evidence is in `.runtime-proof/gta-foundation-20261031/setup/native-protocol-20261101/runs/native-protocol/20261101T160901-b0f1e6164c/`. This child uses the repository Prove It engine directly; the older foundation child's HarrTest seal remains preserved and is not rewritten to hide the engine mismatch.
+
 During the separate layout review, this documentation was edited before the owned run exited. Its protected-input comparison correctly recorded this documentation file as changed; no other protected input was different, and the owned game process and installed files were cleaned up. That supplemental layout run is not represented as a clean protected-input qualification.
 
 ## Limits
 
 - The non-overlapping desktop layout was arranged by the agent during the live test; automatic persistent window positioning has not been demonstrated.
 - Screen-space depth at image edges, occlusions, all obstacle sizes, real traffic, collision-free driving, and behavior at route scale are not qualified by these stationary/open-space tests. A missing measurement is not free space. The observed far clip was 10,000 despite the script requesting 150; no claim of calibrated edge distances or equivalent real sensors follows from receiving depth pixels.
-- Python provider tests cover ownership and replay rejection; the native calibration telemetry did not record a replay rejection. Native replay and wrong-owner attack behavior still require direct runtime testing before migration acceptance.
+- The supplemental command-rejection result applies to `foundation_runtime.cpp`. Other native scenario/controller implementations require their own runtime qualification; this is not acceptance of every GTA bridge variant.
 - Opening the game and moving the car do not establish safe urban driving, learning quality, CARLA retirement, or the original held-out route and training goals. Those remain separate unverified work.
