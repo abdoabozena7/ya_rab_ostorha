@@ -1,10 +1,17 @@
 {
-  "name": "ya-rab-ostorha-control-center",
+  "name": "ya-rab-ostorha-threejs",
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "python -m backend.threejs.server",
+    "start:check": "python -m backend.threejs.server --check",
+    "build": "npm run build:dashboard",
     "build:dashboard": "node scripts/build-dashboard.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "train:policy": "node tools/train-policy.mjs"
+  },
+  "dependencies": {
+    "three": "0.152.2"
   },
   "devDependencies": {
     "esbuild": "0.28.2"

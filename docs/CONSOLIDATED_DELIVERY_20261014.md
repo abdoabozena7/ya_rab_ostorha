@@ -1,5 +1,11 @@
 # Consolidated delivery — 14 October 2026
 
+> **Historical native delivery.** Since 16 November 2026, `main` defaults to the
+> recovered standalone Three.js game. Follow the active [README](../README.md)
+> and [AGENTS.md](../AGENTS.md). The branch/history/recovery records below remain
+> preserved; native launch commands and acceptance objectives are not the
+> current workflow and grant no simulator execution.
+
 ## One place to work
 
 The canonical branch is `main`, tracking `origin/main`. The only active Git

@@ -1,4 +1,98 @@
-# YA RAB OSTORHA: CARLA Collision-Avoidance Prototype
+# YA RAB OSTORHA: standalone Three.js driving game
+
+**This is the active project on `main`. No CARLA, GTA, BeamNG or other external
+simulator is required or started.** The city, vehicle motion, traffic,
+pedestrians, road graph and driving controls run in the browser with Three.js.
+Continue this version rather than the historical native integrations below.
+
+## Run the game
+
+Requires Python **3.10+** on PATH and a WebGL-capable browser. The checked-in
+browser bundles and runtime models work without Python packages, AI weights or
+a simulator installation:
+
+```powershell
+.\Start-YA-RAB-OSTORHA.ps1
+# Or double-click Start-YA-RAB-OSTORHA.cmd.
+# Terminal-only alternative:
+python -m backend.threejs.server
+```
+
+Open <http://127.0.0.1:8000/>. `Run-Project.ps1` and `npm start` use the same
+standalone server. `-Check` checks local files without starting a server;
+`-NoBrowser -Port 8766` selects an isolated terminal-only instance. A busy port
+fails visibly; the launcher never reuses or stops somebody else's server.
+
+| Control | Action |
+| --- | --- |
+| WASD / arrow keys | Manual driving and steering |
+| Space | Brake and take manual control |
+| I / Manual drive button | Toggle autonomous driving |
+| P / Phone | Choose an Arabic destination from the place buttons |
+| C | Switch chase / driver camera |
+| Decision lab | Inspect the route, rules, virtual ranges and traffic queues |
+| Test lab / Return to city | Enter a separate seeded world, then restore the city |
+| Settings | Change seed, traffic, pedestrians and speed; reset the current world |
+| Pause / Resume | Pause and resume the browser world |
+
+Place buttons work without an NLP model. Camera detection and typed/voice NLP
+are optional experimental adapters, not prerequisites for driving. The front
+view is a rendered game camera, not real-world sensor footage. No model or
+training process is started by the default server. Microphone input is not
+needed. The game is an unfinished prototype, not a validated physical simulator
+or a road-safety guarantee.
+
+## Continue development
+
+```powershell
+npm ci
+npm run build:dashboard
+npm test
+python -S -m unittest discover -s tests -p 'test_threejs_*.py' -v
+node tools/evaluate-core.mjs
+```
+
+The compatible `build:dashboard` command now also regenerates
+`public/threejs/game.bundle.js` and `public/threejs/game.styles.css`.
+Three.js **0.152.2** is pinned locally; the game needs no CDN. `npm run build`
+is an alias for the same build.
+
+- `src/core/`: the authoritative seeded, fixed-step `World`, driving rules,
+  navigation, pedestrians, collision checks and replay.
+- `src/render/`: the Three.js world, player/traffic models, materials and animation.
+- `src/ui/`, `src/signal_processing/`: controls, phone, inspectors and virtual ranges.
+- `backend/threejs/`: isolated standard-library HTTP/telemetry server and the
+  recovered optional model adapters. Native backend modules are not imported.
+- `assets/models/`, `assets/textures/`, `assets/lighting/`: recovered local runtime
+  assets; preserve [their licenses](assets/LICENSES.md).
+- `tests/`, `tools/evaluate-core.mjs`, `tools/fuzz-core.mjs`: the recovered
+  deterministic tests and finite driving evaluations.
+
+## Recovery provenance and preservation
+
+Recovered on **16 November 2026** from the preserved **6 October 2026** GitHub
+Desktop save, tree `c2b051c8960599282a6df27e461239c10ecbe23d`.
+That save contains the more complete independent `World` implementation,
+Decision lab and test lab. The earlier committed Three.js version
+`1d0d3c6a640b3b68448e5737202e886cbd09e441` remains in history too.
+The save was **not popped or applied over the checkout**: only the relevant
+game sources, tests, tools, missing assets and license notices were recovered.
+
+Work remains on the existing `main` checkout, with a normal forward commit,
+not a history reset. Unrelated local native work and its evidence are retained.
+The old native HTML is preserved at
+[`legacy/carla-dashboard/index.html`](legacy/carla-dashboard/index.html).
+The original saved Three.js notes are retained in
+[`docs/threejs/`](docs/threejs/README.md); their historical server paths and
+model results do not override the current run commands above.
+
+The simulator-era material below is **historical, inactive context**. Its open
+goals, budgets and acceptance failures have not been accepted, erased or reset.
+They are not instructions to restart an external simulator.
+
+---
+
+# Historical CARLA Collision-Avoidance Prototype
 
 ## Current entry guide — 27 October 2026
 

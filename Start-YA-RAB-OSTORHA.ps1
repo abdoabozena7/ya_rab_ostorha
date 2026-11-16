@@ -1,16 +1,20 @@
-param([switch]$Reload, [switch]$Check, [double]$NativeValidationSeconds = 0, [string]$ValidationTicket)
+param(
+    [switch]$Check,
+    [switch]$NoBrowser,
+    [ValidateRange(1, 65535)]
+    [int]$Port = 8000
+)
 $ErrorActionPreference = 'Stop'
 $projectRoot = $PSScriptRoot
+$python = Get-Command python -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+if (-not $python) {
+    throw 'Python 3.10 or newer must be available as python on PATH. No simulator environment is required.'
+}
 Push-Location -LiteralPath $projectRoot
 try {
-    $nativePython = Join-Path $projectRoot '.venv-carla\Scripts\python.exe'
-    if (-not (Test-Path -LiteralPath $nativePython)) { throw 'Native Python environment is missing. See README.md for setup.' }
-    $runtimeArgs = @('-m', 'scripts.final_runtime')
+    $runtimeArgs = @('-m', 'backend.threejs.server', '--port', $Port)
     if ($Check) { $runtimeArgs += '--check' }
-    elseif ($Reload) { $runtimeArgs += '--reload' }
-    if ($NativeValidationSeconds) { $runtimeArgs += @('--native-validation-seconds', $NativeValidationSeconds) }
-    if ($ValidationTicket) { $runtimeArgs += @('--validation-ticket', $ValidationTicket) }
-    & $nativePython @runtimeArgs
-    if ($LASTEXITCODE -ne 0) { throw 'YA RAB OSTORHA startup failed. See output/final-delivery.' }
-    if (-not $Check) { Start-Process 'http://127.0.0.1:8000/' }
+    elseif (-not $NoBrowser) { $runtimeArgs += '--open-browser' }
+    & $python.Source @runtimeArgs
+    if ($LASTEXITCODE -ne 0) { throw 'Three.js startup failed. See the error above and README.md.' }
 } finally { Pop-Location }

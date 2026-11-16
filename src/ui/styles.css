@@ -1,0 +1,496 @@
+:root {
+  font-family: Tahoma, Arial, sans-serif;
+  color: #eef2e9;
+  background: #a8b2ab;
+  font-size: 14px;
+  --panel: rgba(27, 36, 32, 0.94);
+  --muted: #b4bfb6;
+  --accent: #a5d8ba;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+body > canvas.scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+button,
+input {
+  font: inherit;
+}
+button,
+.file-button {
+  cursor: pointer;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid #76857a66;
+  border-radius: 6px;
+  padding: 9px 13px;
+}
+button:hover,
+.file-button:hover {
+  background: #ffffff1f;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+[hidden] {
+  display: none !important;
+}
+.topbar {
+  position: fixed;
+  z-index: 3;
+  top: 20px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  text-shadow: 0 1px 6px #15231f;
+}
+.brand {
+  font-weight: bold;
+  font-size: 23px;
+  white-space: nowrap;
+}
+.brand small {
+  display: block;
+  font-weight: normal;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  margin-top: 5px;
+  color: #e6e9de;
+}
+.topbar nav {
+  display: flex;
+  gap: 7px;
+}
+.topbar button {
+  background: var(--panel);
+}
+#tripLabel {
+  padding: 10px 17px;
+  background: var(--panel);
+  border-radius: 6px;
+  font-size: 13px;
+}
+#loadingStatus {
+  position: fixed;
+  z-index: 3;
+  top: 86px;
+  right: 26px;
+  font-size: 11px;
+  color: #e4eee3;
+  background: #25352dcc;
+  padding: 5px 9px;
+  border-radius: 4px;
+}
+.phone {
+  position: fixed;
+  z-index: 6;
+  right: 26px;
+  top: 118px;
+  width: 285px;
+  min-height: 450px;
+  background: #edf0e6;
+  color: #283c30;
+  border: 7px solid #222d27;
+  border-radius: 27px;
+  padding: 15px 18px;
+  box-shadow: 0 15px 50px #18271b55;
+  animation: reveal 0.2s ease-out;
+}
+.phone-speaker {
+  height: 4px;
+  width: 45px;
+  background: #7d8b80;
+  border-radius: 4px;
+  margin: 0 auto 22px;
+}
+.phone-head {
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #c1cbbb;
+  padding-bottom: 13px;
+}
+.phone-head span {
+  font-size: 10px;
+  font-weight: normal;
+}
+.phone form {
+  display: grid;
+  gap: 10px;
+}
+.phone-actions {
+  display: flex;
+  gap: 8px;
+}
+.phone-actions button:first-child {
+  flex: 1;
+}
+.phone label {
+  font-size: 11px;
+  color: #50614f;
+}
+.phone input {
+  background: #fff;
+  border: 1px solid #b6c3b1;
+  padding: 12px;
+  width: 100%;
+  border-radius: 7px;
+}
+.primary {
+  background: #426b55;
+  color: #fff;
+  border: 0;
+}
+.primary:hover {
+  background: #345a47;
+}
+.caption {
+  margin: 21px 0 8px;
+  color: #657763;
+  font-size: 11px;
+}
+#phonePlaces {
+  font-size: 12px;
+  line-height: 2.2;
+}
+#phonePlaces button {
+  color: #344e3c;
+  padding: 3px 7px;
+  margin: 2px;
+  border-color: #b2c0ad;
+}
+#phoneStatus {
+  font-size: 12px;
+  min-height: 50px;
+  line-height: 1.7;
+  padding-top: 14px;
+}
+.phone .muted {
+  display: block;
+  color: #72816c;
+  font-size: 10px;
+}
+.drawer {
+  position: fixed;
+  z-index: 8;
+  left: 20px;
+  top: 86px;
+  bottom: 62px;
+  width: 340px;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid #7c897355;
+  border-radius: 10px;
+  padding: 22px;
+  box-shadow: 0 15px 50px #18271b55;
+  animation: reveal 0.2s ease-out;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.drawer h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.drawer p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.drawer form {
+  display: grid;
+  gap: 17px;
+  margin: 22px 0;
+}
+.drawer label {
+  display: block;
+  font-size: 12px;
+}
+.drawer output {
+  float: left;
+  color: var(--accent);
+  font-family: monospace;
+}
+.drawer input:not([type="file"]) {
+  display: block;
+  width: 100%;
+  margin-top: 9px;
+  accent-color: var(--accent);
+}
+.drawer input:not([type="range"]) {
+  color: inherit;
+  background: #ffffff09;
+  border: 1px solid #76857a66;
+  border-radius: 5px;
+  padding: 9px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.actions button,
+.file-button {
+  font-size: 11px;
+}
+.file-button input {
+  display: none;
+}
+.diagnostics {
+  font-size: 11px;
+  line-height: 1.9;
+  border-top: 1px solid #677b6055;
+  margin-top: 20px;
+  padding-top: 14px;
+  color: var(--accent);
+}
+.muted {
+  color: var(--muted);
+}
+.inspector {
+  position: fixed;
+  z-index: 7;
+  right: 24px;
+  top: 88px;
+  bottom: 65px;
+  width: min(370px, calc(100vw - 48px));
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid #7c897355;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 15px 50px #18271b55;
+}
+.inspector h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.inspector-note {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.decision-graph svg {
+  width: 100%;
+  height: auto;
+}
+.inspector-metrics {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.inspector-metrics > div,
+.sensor-readout > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #a5d8ba24;
+  padding: 4px 0;
+  font-size: 11px;
+}
+.inspector-metrics strong {
+  font-weight: 600;
+  text-align: right;
+  color: var(--accent);
+}
+.sensor-title {
+  border-top: 1px solid #a5d8ba55;
+  margin-top: 14px;
+  padding-top: 8px;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.sensor-readout meter {
+  width: 110px;
+}
+.camera-label {
+  position: fixed;
+  z-index: 2;
+  left: 24px;
+  bottom: 249px;
+  width: 276px;
+  background: var(--panel);
+  padding: 8px 10px;
+  font-size: 11px;
+  border-radius: 6px 6px 0 0;
+}
+.camera-label span {
+  float: right;
+  color: var(--muted);
+  font-size: 9px;
+}
+.camera-label small {
+  display: block;
+  margin-top: 4px;
+  color: var(--accent);
+  font-size: 10px;
+}
+#cameraOverlay {
+  position: fixed;
+  z-index: 2;
+  pointer-events: none;
+  direction: ltr;
+}
+#minimap {
+  position: fixed;
+  z-index: 2;
+  right: 25px;
+  bottom: 58px;
+  width: 195px;
+  height: 195px;
+  border: 1px solid #d6ddcf66;
+  border-radius: 50%;
+  background: #26372ee6;
+  box-shadow: 0 4px 20px #27352d44;
+}
+.map-label {
+  position: fixed;
+  z-index: 2;
+  right: 85px;
+  bottom: 38px;
+  font-size: 10px;
+  text-shadow: 0 1px 4px #000;
+}
+.driving-hud {
+  position: fixed;
+  z-index: 2;
+  left: 26px;
+  bottom: 66px;
+  display: flex;
+  direction: ltr;
+  gap: 18px;
+  align-items: center;
+  text-shadow: 0 2px 6px #182a20;
+}
+.speed {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+}
+.speed strong {
+  font-family: Arial, sans-serif;
+  font-weight: normal;
+  font-size: 55px;
+  font-variant-numeric: tabular-nums;
+}
+.speed span {
+  font-size: 11px;
+}
+.drive-state {
+  display: grid;
+  gap: 7px;
+  direction: ltr;
+}
+.drive-state button {
+  padding: 6px 11px;
+  background: var(--panel);
+  font-size: 12px;
+}
+.drive-state span {
+  font-size: 11px;
+}
+footer {
+  position: fixed;
+  z-index: 3;
+  bottom: 16px;
+  left: 26px;
+  right: 260px;
+  display: flex;
+  direction: ltr;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: #e2eade;
+  text-shadow: 0 1px 4px #15241b;
+}
+footer button {
+  padding: 5px 8px;
+  font-size: 10px;
+  background: #28382ec9;
+}
+footer span {
+  direction: ltr;
+  margin-right: auto;
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 850px) {
+  .topbar {
+    left: 14px;
+    right: 14px;
+    top: 12px;
+    gap: 8px;
+  }
+  .brand {
+    font-size: 17px;
+  }
+  .brand small {
+    font-size: 9px;
+  }
+  .topbar nav {
+    gap: 4px;
+  }
+  .topbar button {
+    font-size: 11px;
+    padding: 8px;
+  }
+  #tripLabel {
+    display: none;
+  }
+  .drawer {
+    left: 12px;
+    top: 72px;
+    width: 310px;
+  }
+  .phone {
+    right: 12px;
+    top: 85px;
+  }
+  .inspector {
+    right: 12px;
+    top: 72px;
+  }
+  footer span {
+    display: none;
+  }
+  #minimap {
+    width: 150px;
+    height: 150px;
+  }
+  .map-label {
+    right: 67px;
+  }
+  .camera-label {
+    width: 230px;
+    bottom: 229px;
+  }
+  .driving-hud {
+    bottom: 52px;
+  }
+}

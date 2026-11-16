@@ -64,7 +64,7 @@ test('failed start gives an actionable error and replay cannot launch CARLA',asy
   assert.equal(await p.startSimulation(),false);assert.equal(p.simulationStarting,false);
   assert.equal(p.operationError,'GPU launch failed');p.isReplay=true;
   assert.equal(await p.startSimulation(),false);assert.equal(count,1);
-  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const html=readFileSync(new URL('../legacy/carla-dashboard/index.html',import.meta.url),'utf8');
   assert.match(html,/<button id="startSimulationBtn">Start the simulation<\/button>/);
   assert.doesNotMatch(html,/id="(?:reconnectBtn|nativeReconnectBtn)"/);
 });

@@ -1,0 +1,60 @@
+[
+  {
+    "text": "وديني مكان أجيب منه طماطم وخيار للغدا",
+    "action": "navigate",
+    "destination": "market"
+  },
+  {
+    "text": "عندي كشف عند دكتور القلب وعايز أوصل",
+    "action": "navigate",
+    "destination": "hospital"
+  },
+  {
+    "text": "وديني أتمشى على النيل شوية",
+    "action": "navigate",
+    "destination": "corniche"
+  },
+  {
+    "text": "عايز ألحق القطر قبل ما يتحرك",
+    "action": "navigate",
+    "destination": "station"
+  },
+  {
+    "text": "بلاش الجامعة، وديني أتمشى جنب النيل",
+    "action": "navigate",
+    "destination": "corniche"
+  },
+  {
+    "text": "أنا كنت في المستشفى امبارح",
+    "action": "clarify",
+    "destination": null
+  },
+  { "text": "المستشفى", "action": "navigate", "destination": "hospital" },
+  { "text": "وقف دلوقتي", "action": "stop", "destination": null },
+  { "text": "سرعتي كام حاليًا؟", "action": "status", "destination": null },
+  { "text": "روّحني البيت", "action": "unsupported", "destination": null },
+  { "text": "أنا زهقان", "action": "clarify", "destination": null },
+  { "text": "اتصل بأحمد", "action": "unsupported", "destination": null },
+  {
+    "text": "معايا امتحان بعد نص ساعة، وصلني",
+    "action": "navigate",
+    "destination": "university"
+  },
+  {
+    "text": "مش عايز أشتري حاجة، بس سرعتي كام دلوقتي؟",
+    "action": "status",
+    "destination": null
+  },
+  {
+    "text": "خدني جنوب الأوضة",
+    "environment": "lab",
+    "action": "navigate",
+    "destination": "lab-south"
+  },
+  {
+    "text": "نفسي أشتري سندوتشات",
+    "environment": "lab",
+    "action": "unsupported",
+    "destination": null
+  }
+]

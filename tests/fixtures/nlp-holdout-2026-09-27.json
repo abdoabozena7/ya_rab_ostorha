@@ -1,0 +1,54 @@
+[
+  {
+    "text": "عايز أروح أكشف على رجلي",
+    "action": "navigate",
+    "destination": "hospital"
+  },
+  {
+    "text": "وصلني عند المحاضرة الجاية",
+    "action": "navigate",
+    "destination": "university"
+  },
+  {
+    "text": "يا ريت نلحق رصيف القطر",
+    "action": "navigate",
+    "destination": "station"
+  },
+  {
+    "text": "نفسي أقعد قدام النيل",
+    "action": "navigate",
+    "destination": "corniche"
+  },
+  {
+    "text": "محتاج نجيب خضار للبيت",
+    "action": "navigate",
+    "destination": "market"
+  },
+  {
+    "text": "خلينا نروح قلب البلد عند المكاتب",
+    "action": "navigate",
+    "destination": "downtown"
+  },
+  {
+    "text": "مش المستشفى، خلينا نشتري أكل",
+    "action": "navigate",
+    "destination": "market"
+  },
+  { "text": "امبارح اشتريت فاكهة", "action": "clarify", "destination": null },
+  { "text": "فرمل العربية حالًا", "action": "stop", "destination": null },
+  { "text": "إحنا رايحين فين؟", "action": "status", "destination": null },
+  { "text": "شغللي أغنية", "action": "unsupported", "destination": null },
+  { "text": "وديني عند صاحبتي", "action": "unsupported", "destination": null },
+  {
+    "text": "وصلني شمال منطقة الاختبار",
+    "environment": "lab",
+    "action": "navigate",
+    "destination": "lab-north"
+  },
+  {
+    "text": "في أوضة الاختبار عايز أروح المحطة",
+    "environment": "lab",
+    "action": "unsupported",
+    "destination": null
+  }
+]
