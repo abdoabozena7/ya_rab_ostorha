@@ -29,12 +29,10 @@ function metric(label, value) {
 }
 
 function drawPipeline(container) {
-  // This shows actual data flow. YOLOX is a neural detector; A* selects the
-  // route, and the Q-table only adjusts speed when manually enabled.
   container.innerHTML = `
-    <svg viewBox="0 0 360 134" role="img" aria-label="Pixels feed YOLOX detection for display; map and congestion feed A-star routing; the route and simulator state feed the safety guard">
+    <svg viewBox="0 0 360 134" role="img" aria-label="Camera pixels feed detection and visual motion prediction; its speed cap and an independent range and collision guard constrain driving">
       <g stroke="#78a993" stroke-width="1.5" fill="none">
-        <path d="M55 30 H92 M158 30 H195 M55 92 H92 M158 92 H195 M259 92 H300"/>
+        <path d="M55 30 H92 M158 30 H195 M259 30 H322 V65 M55 92 H92 M158 92 H195 M259 92 H300"/>
       </g>
       <g fill="#233d33" stroke="#90cbaa" stroke-width="1.5">
         <circle cx="28" cy="30" r="18"/><circle cx="125" cy="30" r="33"/>
@@ -44,7 +42,7 @@ function drawPipeline(container) {
       </g>
       <g fill="#e6f3e8" font-size="10" font-family="Arial, sans-serif" text-anchor="middle">
         <text x="28" y="33">PX</text><text x="125" y="27">YOLOX</text><text x="125" y="39">Tiny</text>
-        <text x="227" y="27">Boxes</text><text x="227" y="39">only</text>
+        <text x="227" y="27">Track +</text><text x="227" y="39">predict</text>
         <text x="28" y="95">MAP</text><text x="125" y="89">A* +</text><text x="125" y="101">traffic</text>
         <text x="227" y="89">Safety</text><text x="227" y="101">guard</text><text x="322" y="95">Drive</text>
       </g>
@@ -87,6 +85,10 @@ export function createDecisionInspector() {
           ? `${detection.detections.length} · ${detection.latencyMs} ms`
           : "No recent result",
       ),
+      metric("Visual decision", world.visualDecision?.reason ?? "No fresh visual forecast"),
+      metric("Visual source", detection?.model?.id ?? "Camera model not started"),
+      metric("Visual evidence age", world.visualDecision?.ageMs == null
+        ? "Unavailable" : `${Math.round(world.visualDecision.ageMs)} ms`),
       metric(
         "Speed policy",
         action == null

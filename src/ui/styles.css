@@ -1,3 +1,6 @@
+@import "./vehicle.css";
+@import "./vision.css";
+
 :root {
   font-family: Tahoma, Arial, sans-serif;
   color: #eef2e9;

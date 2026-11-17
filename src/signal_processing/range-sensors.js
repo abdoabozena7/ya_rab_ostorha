@@ -1,7 +1,15 @@
-// Virtual five-beam proximity array. Inputs are simulation geometry, not camera
-// detections. Sampling and filtering happen on fixed simulation ticks.
-export const SENSOR_ANGLES_DEG = Object.freeze([-70, -35, 0, 35, 70]);
-export const SENSOR_MAX_M = 35;
+// Ten mounted virtual beams; the legacy filtered API retains its five fronts.
+// Inputs are simulation geometry, not camera detections or hardware sensors.
+import {
+  getVehicleMounts,
+  mountToWorld,
+  PLAYER_VEHICLE,
+} from "../core/vehicle-spec.js";
+
+export const SENSOR_ANGLES_DEG = Object.freeze(
+  getVehicleMounts().ranges.map((mount) => mount.angleDeg),
+);
+export const SENSOR_MAX_M = PLAYER_VEHICLE.maxRangeM;
 
 function circleHit(origin, ray, body) {
   const dx = body.x - origin.x;
@@ -42,28 +50,90 @@ function boxHit(origin, ray, body) {
   return far < 0 ? Infinity : Math.max(0, near);
 }
 
-export function measureRanges(world, car) {
-  const origin = {
-    x: car.x + Math.sin(car.heading) * (car.length / 2 + 0.15),
-    z: car.z + Math.cos(car.heading) * (car.length / 2 + 0.15),
-  };
-  const obstacles = [...world.actors, ...world.statics].filter((body) => {
-    if (body === car) return false;
-    return Math.hypot(body.x - origin.x, body.z - origin.z) < SENSOR_MAX_M + 15;
+export function measureVehicleSensors(world, car) {
+  const local = getVehicleMounts(car);
+  const worldMount = (mount) => ({
+    ...mount,
+    position: mountToWorld(car, mount.position),
   });
-  return SENSOR_ANGLES_DEG.map((degrees) => {
-    const angle = car.heading + (degrees * Math.PI) / 180;
+  const cameras = local.cameras.map((mount) => ({
+    ...worldMount(mount),
+    headingRad: (car.heading ?? 0) + mount.angleDeg * Math.PI / 180,
+  }));
+  const mounts = {
+    ranges: local.ranges.map(worldMount),
+    auxiliary: local.auxiliary.map(worldMount),
+    camera: cameras[0],
+    cameras,
+    telemetry: worldMount(local.telemetry),
+  };
+  const proximityMounts = [...mounts.ranges, ...mounts.auxiliary];
+  const mountReach = Math.max(
+    ...[...local.ranges, ...local.auxiliary].map(
+      (mount) => Math.hypot(mount.position.x, mount.position.z),
+    ),
+  );
+  const obstacles = [...(world.actors ?? []), ...(world.statics ?? [])].filter((body) => {
+    if (body === car || (car.id !== undefined && body.id === car.id)) return false;
+    const radius =
+      body.type === "pedestrian"
+        ? body.radius
+        : Math.hypot(body.width, body.length) / 2;
+    return (
+      Number.isFinite(radius) &&
+      radius > 0 &&
+      Number.isFinite(body.x) &&
+      Number.isFinite(body.z) &&
+      Math.hypot(body.x - car.x, body.z - car.z) <= SENSOR_MAX_M + mountReach + radius
+    );
+  });
+  const rays = proximityMounts.map((mount) => {
+    const origin = { ...mount.position };
+    const angle = (car.heading ?? 0) + (mount.angleDeg * Math.PI) / 180;
     const ray = { x: Math.sin(angle), z: Math.cos(angle) };
     let nearest = SENSOR_MAX_M;
+    let hitId = null;
     for (const body of obstacles) {
+      const bottom = PLAYER_VEHICLE.roadHeightM + (body.y ?? 0);
+      if (
+        Number.isFinite(body.height) &&
+        (origin.y < bottom || origin.y > bottom + body.height)
+      )
+        continue;
       const hit =
         body.type === "pedestrian"
           ? circleHit(origin, ray, body)
           : boxHit(origin, ray, body);
-      nearest = Math.min(nearest, hit);
+      if (hit <= nearest && (hitId === null || hit < nearest)) {
+        nearest = hit;
+        hitId = body.id ?? null;
+      }
     }
-    return Math.round(nearest * 100) / 100;
+    return {
+      id: mount.id,
+      angleDeg: mount.angleDeg,
+      origin,
+      end: {
+        x: origin.x + ray.x * nearest,
+        y: origin.y,
+        z: origin.z + ray.z * nearest,
+      },
+      hitId,
+      rangeM: nearest,
+    };
   });
+  return {
+    rawM: rays.slice(0, SENSOR_ANGLES_DEG.length).map(
+      (ray) => Math.round(ray.rangeM * 100) / 100,
+    ),
+    auxiliary: rays.slice(SENSOR_ANGLES_DEG.length),
+    mounts,
+    rays,
+  };
+}
+
+export function measureRanges(world, car) {
+  return measureVehicleSensors(world, car).rawM;
 }
 
 export class RangeSignalProcessor {

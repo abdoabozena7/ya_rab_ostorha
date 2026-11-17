@@ -168,8 +168,8 @@
       </section>
       <div id="diagnostics" class="diagnostics"></div>
       <p class="muted">
-        The test lab pauses the city state. Pixel detection is experimental and
-        does not control braking.
+        Test and vision labs preserve the city state. Visual prediction is
+        experimental; its speed cap never disables independent collision safety.
       </p>
     </aside>
     <aside
@@ -183,9 +183,9 @@
         <button id="closeInspector" aria-label="Close decision lab">×</button>
       </div>
       <p class="inspector-note">
-        Live measurements from this run. YOLOX Tiny is the neural detector and
-        its boxes are display-only. A* selects routes; the optional speed policy
-        is tabular Q-learning.
+        Live measurements from this run. Front-camera detections and observed
+        motion feed visual forecasts. A* selects routes. The independent safety
+        guard remains active; unavailable vision is not a guaranteed clear road.
       </p>
       <div id="decisionGraph" class="decision-graph"></div>
       <h3 class="sensor-title">Virtual proximity sensors · filtered metres</h3>

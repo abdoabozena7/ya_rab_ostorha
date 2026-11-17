@@ -1,80 +1,220 @@
-// Same-origin telemetry bridge for the Python perception/policy adapters.
-// The in-game phone and driving controls run locally in the browser.
+import * as THREE from "three";
+
 export function createBridge({ renderer, readState }) {
-  let enabled = false;
-  let lastFrameId = 0;
-  let framePending = false;
+  let enabled = false, lastFrameId = 0, framePending = false;
   const capture = document.createElement("canvas");
   capture.width = 480;
   capture.height = 270;
   const context = capture.getContext("2d");
-
   async function checkHealth() {
     try {
       const response = await fetch("/api/health", { cache: "no-store" });
       enabled = response.ok && (await response.json()).ok === true;
-    } catch {
-      enabled = false;
-    }
+    } catch { enabled = false; }
   }
-
   async function report() {
     if (!enabled) return;
     try {
-      await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch("/api/state", {
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(readState()),
       });
-    } catch {
-      enabled = false;
-    }
+      if (!response.ok) enabled = false;
+    } catch { enabled = false; }
   }
-
   function sendFrame(viewport) {
     if (!enabled || framePending) return;
     framePending = true;
-    const pixelRatio = renderer.domElement.width / window.innerWidth;
-    const sourceTop = window.innerHeight - viewport.y - viewport.height;
-    context.drawImage(
-      renderer.domElement,
-      viewport.x * pixelRatio,
-      sourceTop * pixelRatio,
-      viewport.width * pixelRatio,
-      viewport.height * pixelRatio,
-      0,
-      0,
-      capture.width,
-      capture.height,
-    );
-    capture.toBlob(
-      async (blob) => {
-        try {
-          if (!blob) return;
-          const response = await fetch("/api/frame", {
-            method: "POST",
-            headers: { "Content-Type": "image/jpeg" },
-            body: blob,
-          });
-          if (response.ok) lastFrameId = (await response.json()).frameId;
-        } catch {
-          // The next capture retries while the game stays playable offline.
-        } finally {
-          framePending = false;
-        }
-      },
-      "image/jpeg",
-      0.55,
-    );
+    const bounds = renderer.domElement.getBoundingClientRect();
+    const ratio = renderer.domElement.width / bounds.width;
+    const sourceTop = bounds.height - viewport.y - viewport.height;
+    context.drawImage(renderer.domElement,
+      viewport.x * ratio, sourceTop * ratio,
+      viewport.width * ratio, viewport.height * ratio,
+      0, 0, capture.width, capture.height);
+    capture.toBlob(async (blob) => {
+      try {
+        if (!blob) return;
+        const response = await fetch("/api/frame", {
+          method: "POST", headers: { "Content-Type": "image/jpeg" }, body: blob,
+        });
+        if (response.ok) lastFrameId = (await response.json()).frameId;
+        else enabled = false;
+      } catch {
+        enabled = false;
+      } finally { framePending = false; }
+    }, "image/jpeg", 0.55);
   }
-
   checkHealth();
   setInterval(checkHealth, 5000);
   setInterval(report, 500);
+  return { sendFrame, get lastFrameId() { return lastFrameId; } };
+}
+
+export function createVisualClient({ renderer, onResult, onStatus }) {
+  const width = 640, height = 360;
+  const target = new THREE.WebGLRenderTarget(width, height, {
+    minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+    depthBuffer: true, stencilBuffer: false,
+  });
+  target.texture.colorSpace = THREE.SRGBColorSpace;
+  const pixels = new Uint8Array(width * height * 4);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  const image = context.createImageData(width, height);
+  let streamId = crypto.randomUUID(), frameId = 0, lastSampleS = -Infinity;
+  let enabled = false, disposed = false, pending = false, generation = 0;
+  let restartRequired = false;
+  let timer = null, lastResultId = -1;
+  const timings = [];
+  let status = { available: false, status: "disabled", source: "camera-pixels", error: null, result: null };
+  const notify = (next) => {
+    if (next.status === "error") restartRequired = true;
+    if (next.status === "ready" && next.result) restartRequired = false;
+    status = { ...status, ...next };
+    onStatus?.(status);
+  };
+  async function request(url, options) {
+    const response = await fetch(url, { ...options, signal: AbortSignal.timeout(10000) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error ?? `Vision HTTP ${response.status}`);
+    return data;
+  }
+  async function poll() {
+    if (!enabled || disposed) return;
+    const currentGeneration = generation;
+    try {
+      const data = await request(`/api/vision/state?streamId=${encodeURIComponent(streamId)}`);
+      if (currentGeneration !== generation || disposed) return;
+      notify(data);
+      if (data.result?.streamId === streamId && data.result.frameId > lastResultId) {
+        lastResultId = data.result.frameId;
+        const timing = timings.find((item) => item.streamId === streamId && item.frameId === lastResultId);
+        if (timing) timing.observedAfterMs = performance.now() - timing.startedMs;
+        onResult(data.result);
+      }
+    } catch (error) {
+      if (currentGeneration === generation && !disposed)
+        notify({ available: false, status: "error", error: error.message, result: null });
+    } finally {
+      if (enabled && !disposed && currentGeneration === generation)
+        timer = setTimeout(poll, 80);
+    }
+  }
+  function reset() {
+    generation++;
+    clearTimeout(timer);
+    streamId = crypto.randomUUID();
+    frameId = 0;
+    lastResultId = -1;
+    lastSampleS = -Infinity;
+    pending = false;
+    notify({ result: null, status: enabled ? "loading" : "disabled", error: null });
+    if (enabled && !disposed) timer = setTimeout(poll, 0);
+    return streamId;
+  }
+  async function start() {
+    notify({ status: "loading", error: null });
+    try {
+      if (restartRequired) await request("/api/vision/stop", { method: "POST" });
+      const result = await request("/api/vision/start", { method: "POST" });
+      if (!result.available) throw new Error(result.error ?? "Local camera perception is unavailable.");
+      enabled = true;
+      restartRequired = false;
+      reset();
+      clearTimeout(timer);
+      notify(result);
+      poll();
+      return { ok: true, streamId };
+    } catch (error) {
+      enabled = false;
+      notify({ available: false, status: "error", error: error.message, result: null });
+      return { ok: false, error: error.message };
+    }
+  }
+  function capture(scene, camera, ego, simulationTimeS) {
+    if (!enabled || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
+    lastSampleS = simulationTimeS;
+    const currentGeneration = generation, capturedStream = streamId;
+    const currentFrame = ++frameId;
+    const timing = { streamId: capturedStream, frameId: currentFrame, simulationTimeS, startedMs: performance.now() };
+    timings.push(timing);
+    if (timings.length > 120) timings.shift();
+    pending = true;
+    const oldTarget = renderer.getRenderTarget();
+    const oldViewport = renderer.getViewport(new THREE.Vector4());
+    const oldScissor = renderer.getScissor(new THREE.Vector4());
+    const oldScissorTest = renderer.getScissorTest();
+    try {
+      renderer.setRenderTarget(target);
+      renderer.setScissorTest(false);
+      renderer.setViewport(0, 0, width, height);
+      renderer.render(scene, camera);
+      renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+      for (let row = 0; row < height; row++)
+        image.data.set(pixels.subarray((height - row - 1) * width * 4,
+          (height - row) * width * 4), row * width * 4);
+      context.putImageData(image, 0, 0);
+      timing.renderReadbackMs = performance.now() - timing.startedMs;
+    } catch (error) {
+      pending = false;
+      notify({ available: false, status: "error", error: `Camera capture failed: ${error.message}` });
+      return;
+    } finally {
+      renderer.setRenderTarget(oldTarget);
+      renderer.setViewport(oldViewport);
+      renderer.setScissor(oldScissor);
+      renderer.setScissorTest(oldScissorTest);
+    }
+    const position = camera.getWorldPosition(new THREE.Vector3());
+    const direction = camera.getWorldDirection(new THREE.Vector3());
+    const frame = {
+      schema: 1, streamId: capturedStream, frameId: currentFrame, simulationTimeS,
+      camera: { width, height, fovYDeg: camera.fov,
+        position: { x: position.x, y: position.y, z: position.z },
+        headingRad: Math.atan2(direction.x, direction.z), groundY: 0.12 },
+      ego: { x: ego.x, z: ego.z, headingRad: ego.heading,
+        speedMps: ego.speed, lengthM: ego.length, widthM: ego.width },
+    };
+    try {
+      const encoded = canvas.toDataURL("image/jpeg", 0.86);
+      const prefix = "data:image/jpeg;base64,";
+      if (!encoded.startsWith(prefix)) throw new Error("The front camera did not encode a JPEG.");
+      frame.imageJpegBase64 = encoded.slice(prefix.length);
+      timing.encodedAfterMs = performance.now() - timing.startedMs;
+      timing.postedAfterMs = timing.encodedAfterMs;
+      request("/api/vision/frame", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(frame),
+      }).then(() => {
+        timing.acknowledgedAfterMs = performance.now() - timing.startedMs;
+      }).catch((error) => {
+        if (generation === currentGeneration && !disposed)
+          notify({ available: false, status: "error", error: error.message, result: null });
+      }).finally(() => {
+        if (generation === currentGeneration) pending = false;
+      });
+    } catch (error) {
+      pending = false;
+      notify({ available: false, status: "error", error: `Camera encoding failed: ${error.message}` });
+    }
+  }
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    enabled = false;
+    generation++;
+    clearTimeout(timer);
+    target.dispose();
+  }
   return {
-    sendFrame,
-    get lastFrameId() {
-      return lastFrameId;
-    },
+    start, reset, capture, dispose,
+    get streamId() { return streamId; },
+    get status() { return status; },
+    get enabled() { return enabled; },
+    get restartRequired() { return restartRequired; },
+    get timings() { return timings.map((item) => ({ ...item })); },
   };
 }

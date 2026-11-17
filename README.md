@@ -29,18 +29,73 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Space | Brake and take manual control |
 | I / Manual drive button | Toggle autonomous driving |
 | P / Phone | Choose an Arabic destination from the place buttons |
-| C | Switch chase / driver camera |
+| C | Switch chase / in-cabin driver camera |
+| Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
 | Decision lab | Inspect the route, rules, virtual ranges and traffic queues |
 | Test lab / Return to city | Enter a separate seeded world, then restore the city |
 | Settings | Change seed, traffic, pedestrians and speed; reset the current world |
 | Pause / Resume | Pause and resume the browser world |
 
-Place buttons work without an NLP model. Camera detection and typed/voice NLP
-are optional experimental adapters, not prerequisites for driving. The front
+Place buttons work without an NLP model. Typed/voice NLP and the explicitly
+started local camera perception worker are not prerequisites for manual driving. The front
 view is a rendered game camera, not real-world sensor footage. No model or
 training process is started by the default server. Microphone input is not
 needed. The game is an unfinished prototype, not a validated physical simulator
 or a road-safety guarantee.
+
+## Player car
+
+The player is an original **matte, visibly faceted off-road SUV**, inspired by
+the upright boxy proportions of Jetour T2 and styled to belong beside the
+game's existing low-poly traffic. It is not a branded replica or the earlier
+reflective sports-car model. Its body, cabin and running gear are authored
+locally in `src/render/suv-model.js`; the player needs no downloaded car model.
+Historical assets and their notices remain preserved.
+
+The **Car** panel is limited to the player vehicle. Chase and left-hand cockpit views
+remain drivable. Inspection and running-gear views pause the world and allow
+mouse orbit/zoom; returning to a driving view restores the previous pause state.
+Cutaway exposes the cabin and mechanical structure. The steering wheel, front
+wheel angles, signed tire rolling and bounded suspension/load response follow
+the fixed-step vehicle state, not independent decorative animations.
+
+Five front-bumper, three rear and two side proximity units use shared local
+metre-space mounts. The front and rear RGB camera selection changes the actual
+rendered feed. Sensor visualization displays the measured geometry rays;
+the roof IMU/GNSS enclosure reports explicitly virtual vehicle-state telemetry.
+These are not hardware radar/lidar, satellite fixes or neural detections.
+The existing five filtered front readings remain compatible with their
+consumers. Ordinary city collision avoidance remains enabled.
+
+**Vehicle test bay** enters a separate car-only instance of the existing lab
+roads. Its explicit contact run drives at no more than **6 m/s (21.6 km/h)**
+toward a fixed barrier. Damage derives from an actual nonpenetrating contact,
+with localized panel deformation; it is not a full soft-body crash model.
+Resetting the test car restores pristine geometry and state. **Return to city**
+restores the original paused city rather than replacing it with the test.
+
+The vehicle remains a bounded game-physics approximation, not a calibrated
+tire, suspension, crashworthiness or real-road safety model. No external
+simulator or optional model process is needed for this work.
+
+## Vision-first driving and Egyptian streets
+
+**Vision lab** exercises real front-camera pixels, the existing local YOLOX-Tiny
+detector and a lightweight observed-motion crossing forecast. Its braking cap is
+separate from the independent safety guard; sensors support the experiment
+rather than supply hidden actor truth to the visual predictor. Crossings from
+both sides are checked against similar noncrossing and missing-camera cases.
+The existing saved Q/GRU policies are not treated as pixel-native models or
+declared universally worse than the chosen decision path.
+
+The city facade/street layer uses existing registered footprints and locally
+authored Egyptian shopfront, plaster/brick, balcony and roof details. The current
+SUV, virtual sensor mounts, manual controls, city navigation and isolated car
+fixture remain part of the same standalone game.
+
+See [the exact data boundary, existing model measurements and experiment
+limits](docs/VISION_FIRST.md). No new model or package is downloaded automatically;
+missing local perception requirements are an explicit unavailable state.
 
 ## Continue development
 
@@ -50,6 +105,8 @@ npm run build:dashboard
 npm test
 python -S -m unittest discover -s tests -p 'test_threejs_*.py' -v
 node tools/evaluate-core.mjs
+# Focused car mechanics, sensor and rig checks:
+node --test tests/vehicle-quality.test.js tests/vehicle-presentation.test.js tests/signal_processing.test.js
 ```
 
 The compatible `build:dashboard` command now also regenerates

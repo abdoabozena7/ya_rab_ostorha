@@ -1,13 +1,14 @@
 """Serve the standalone Three.js game and its local observation API."""
 
 import argparse
+import base64
 import json
 import threading
 import time
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 from .nlp import health as nlp_health, interpret, ModelUnavailable
 from .training import TRAINING
 
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MAX_JSON = 16_384
 MAX_FRAME = 400_000
 PERCEPTION = None
+VISION = None
 
 
 class Store:
@@ -25,12 +27,21 @@ class Store:
         self.state_at = 0.0
         self.frame = b""
         self.frame_id = 0
+        self.vision_frame = b""
+        self.vision_metadata = None
 
 
 STORE = Store()
 
 
+class Server(ThreadingHTTPServer):
+    # Asset loading, telemetry and camera polling can connect in the same frame.
+    request_queue_size = 32
+
+
 class Handler(SimpleHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
@@ -48,6 +59,9 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
+        if status >= 400:
+            self.send_header("Connection", "close")
+            self.close_connection = True
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
@@ -74,9 +88,9 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(404, {"error": "Not found"})
         return super().do_HEAD()
 
-    def _read_json(self):
+    def _read_json(self, maximum=MAX_JSON):
         size = int(self.headers.get("Content-Length", "0"))
-        if not 0 < size <= MAX_JSON:
+        if not 0 < size <= maximum:
             raise ValueError("Invalid JSON size")
         return json.loads(self.rfile.read(size))
 
@@ -91,6 +105,28 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(200, nlp_health())
         if path == "/api/training":
             return self._json(200, TRAINING.snapshot())
+        if path == "/api/vision/capabilities":
+            from .vision import capabilities
+            return self._json(200, capabilities())
+        if path == "/api/vision/state":
+            stream = parse_qs(urlsplit(self.path).query).get("streamId", [""])[0]
+            return self._json(200, VISION.snapshot(stream) if VISION else {
+                "schemaVersion": 1, "source": "camera-pixels", "available": False,
+                "status": "disabled", "error": None, "result": None,
+            })
+        if path == "/api/vision/frame":
+            with STORE.lock:
+                frame = STORE.vision_frame
+                metadata = STORE.vision_metadata
+            if not frame:
+                return self._json(404, {"error": "No admitted front vision frame yet"})
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(frame)))
+            self.send_header("X-Frame-Id", str(metadata["frameId"]))
+            self.end_headers()
+            return self.wfile.write(frame)
         if path == "/api/detections":
             result = PERCEPTION.snapshot() if PERCEPTION else {
                 "schemaVersion": 1, "source": "camera-pixels", "available": False,
@@ -123,13 +159,46 @@ class Handler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
+        global VISION
         path = urlsplit(self.path).path
         if path not in {
             "/api/training/start", "/api/training/stop",
             "/api/frame", "/api/intent", "/api/state",
+            "/api/vision/start", "/api/vision/stop", "/api/vision/frame",
         }:
             return self._json(404, {"error": "Unknown API endpoint"})
         try:
+            if path in {"/api/vision/start", "/api/vision/stop",
+                        "/api/training/start", "/api/training/stop"}:
+                if int(self.headers.get("Content-Length", "0")):
+                    self._read_json()
+            if path == "/api/vision/start":
+                if VISION is None:
+                    from .vision import VisionService
+                    VISION = VisionService()
+                result = VISION.start()
+                if not isinstance(result, dict):
+                    raise RuntimeError("Vision startup returned an invalid status")
+                return self._json(200 if result.get("available") else 503, result)
+            if path == "/api/vision/stop":
+                if VISION is not None:
+                    VISION.close()
+                    VISION = None
+                return self._json(200, {
+                    "available": False, "status": "disabled", "source": "camera-pixels",
+                    "error": None, "result": None,
+                })
+            if path == "/api/vision/frame":
+                if VISION is None:
+                    return self._json(503, {"error": "Start local camera perception before submitting frames."})
+                data = self._read_json(900_000)
+                result = VISION.submit(data)
+                encoded = data["imageJpegBase64"]
+                with STORE.lock:
+                    STORE.vision_frame = base64.b64decode(encoded, validate=True)
+                    STORE.vision_metadata = {key: value for key, value in data.items()
+                                             if key != "imageJpegBase64"}
+                return self._json(202, result)
             if path == "/api/training/start":
                 started = TRAINING.start()
                 return self._json(202 if started else 409, TRAINING.snapshot())
@@ -182,7 +251,6 @@ def main():
     required = [
         "index.html", "public/threejs/game.bundle.js",
         "public/threejs/game.styles.css",
-        "assets/models/vehicles/player-concept.glb",
     ]
     missing = [name for name in required if not (ROOT / name).is_file()]
     if missing:
@@ -199,7 +267,7 @@ def main():
             from .detector import PERCEPTION
         except ImportError as error:
             parser.error(f"Optional camera detection dependencies are unavailable: {error}")
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server = Server((args.host, args.port), Handler)
     url = f"http://{args.host}:{server.server_port}/"
     print(f"Three.js: {url}", flush=True)
     try:
@@ -210,6 +278,8 @@ def main():
         print("Three.js server stopped.", flush=True)
     finally:
         server.server_close()
+        if VISION is not None:
+            VISION.close()
 
 
 if __name__ == "__main__":

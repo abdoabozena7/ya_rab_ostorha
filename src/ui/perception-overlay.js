@@ -4,10 +4,11 @@ export function createPerceptionOverlay({ canvas, status, bridge }) {
   let visible = true;
   let latest = null;
   let busy = false;
+  let external = false;
 
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    if (!visible || !latest || latest.frameId < bridge.lastFrameId - 3) return;
+    if (!visible || !latest || (!external && latest.frameId < bridge.lastFrameId - 3)) return;
     for (const detection of latest.detections) {
       const [x1, y1, x2, y2] = detection.box;
       const color = detection.label === "person" ? "#f4a65c" : "#a6edbc";
@@ -25,7 +26,7 @@ export function createPerceptionOverlay({ canvas, status, bridge }) {
   }
 
   async function poll() {
-    if (!visible || busy) return;
+    if (!visible || busy || external) return;
     busy = true;
     try {
       const response = await fetch("/api/detections", { cache: "no-store" });
@@ -65,12 +66,23 @@ export function createPerceptionOverlay({ canvas, status, bridge }) {
     canvas.hidden = !value;
     draw();
   }
+  function setExternal(result) {
+    external = true;
+    latest = result;
+    if (result) {
+      canvas.width = result.width;
+      canvas.height = result.height;
+      status.textContent = `${result.model?.id ?? "Camera CV"} · ${result.detections.length} observed objects · ${result.latencyMs.toFixed(1)} ms`;
+    } else status.textContent = "Camera observations unavailable";
+    draw();
+  }
 
   setInterval(poll, 500);
   poll();
   return {
     setViewport,
     setVisible,
+    setExternal,
     draw,
     get latest() {
       return latest;

@@ -28,7 +28,9 @@ import {
   junctionPressure,
   LANE_OFFSET,
 } from "./navigation.js";
-import { integrateVehicle, followPath } from "./vehicle.js";
+import { integrateVehicle, followPath, resolveVehicleContact } from "./vehicle.js";
+import { createVehicleState, advanceVehicleState } from "./vehicle-state.js";
+import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 import { roadLayout } from "./roads.js";
 import { cityFootprints } from "./scenery.js";
 import { SpatialIndex } from "./spatial-index.js";
@@ -37,8 +39,10 @@ import { parkingBays, planArrival } from "./arrival.js";
 import { policySpeed, validatePolicy } from "./policy.js";
 import { trafficQueueStats } from "./queue-metrics.js";
 import { signalSpeedLimit } from "./signals.js";
+import { VisualCrossingPredictor } from "./visual-prediction.js";
+import { createVisionScenario, advanceVisionActor } from "./vision-scenarios.js";
 import {
-  measureRanges,
+  measureVehicleSensors,
   RangeSignalProcessor,
 } from "../signal_processing/range-sensors.js";
 
@@ -58,6 +62,18 @@ export const LAB_ROADS = [
     width: 10,
   })),
 ];
+const vehicleStart = { x: 20 - LANE_OFFSET, z: -25, heading: 0 };
+export const VEHICLE_TEST_BARRIER = Object.freeze({
+  id: "vehicle-impact-barrier",
+  type: "static",
+  kind: "barrier",
+  x: vehicleStart.x,
+  z: -8.6,
+  heading: 0,
+  width: 3.6,
+  length: 0.8,
+  height: 0.9,
+});
 const carKinds = ["sedan", "taxi", "suv", "van", "tuktuk", "tuktuk"];
 const pose = (road, along, side = 1, offset = LANE_OFFSET) =>
   road.axis === "z"
@@ -77,6 +93,7 @@ const copyPose = (a) => ({
   x: a.x,
   z: a.z,
   heading: a.heading,
+  speed: a.speed,
   length: a.length,
   width: a.width,
   radius: a.radius,
@@ -87,9 +104,24 @@ export class World {
   constructor(options = {}, environment = "city") {
     this.config = settings(options);
     this.environment = environment;
+    const visualScene = environment === "vision"
+      ? createVisionScenario(options.visionCase ?? "cross-left") : null;
+    if (visualScene) this.config.visionCase = visualScene.id;
+    this.visualPredictor = new VisualCrossingPredictor();
+    this.visualMode = "vision-first";
+    this.visualDecision = null;
+    this.visionLab = visualScene ? {
+      caseId: visualScene.id, phase: "ready", startedTick: null,
+      goalZ: visualScene.goalZ, requestedSpeedMps: visualScene.requestedSpeedMps,
+      firstVisualBrakeS: null, firstReactiveBrakeS: null,
+      firstSensorTriggerS: null, firstLaneEntryS: null,
+      completedAtS: null, minimumClearanceM: null,
+    } : null;
     this.rng = new Random(`${this.config.seed}:${environment}`);
     this.drivingRoads =
-      environment === "lab" ? LAB_ROADS : roadLayout(100).roads;
+      visualScene?.roads ?? (environment === "lab" || environment === "vehicle"
+        ? LAB_ROADS
+        : roadLayout(100).roads);
     this.graph = createRoadGraph(this.drivingRoads);
     this.junctions = [...this.graph.values()].filter(
       (n) => n.edges.length >= 3,
@@ -98,7 +130,9 @@ export class World {
     // several at road ends; without a reservation, crossing cars can both
     // yield forever while their predicted paths intersect.
     const corners = (
-      environment === "lab" ? [...this.graph.values()] : []
+      environment === "lab" || environment === "vehicle"
+        ? [...this.graph.values()]
+        : []
     ).filter((n) => {
       if (n.edges.length !== 2) return false;
       const a = this.graph.get(n.edges[0]),
@@ -123,7 +157,12 @@ export class World {
     this.statics = [];
     this.actors = [];
     this.junctionOwners = new Map();
-    this.statics = environment === "city" ? cityFootprints(this.roads) : [];
+    this.statics = visualScene?.statics ?? (
+      environment === "city"
+        ? cityFootprints(this.roads)
+        : environment === "vehicle"
+          ? [{ ...VEHICLE_TEST_BARRIER }]
+          : []);
     this.staticIndex = new SpatialIndex(this.statics);
     this.metrics = {
       distance: 0,
@@ -139,6 +178,19 @@ export class World {
       trafficBlockingCycles: 0,
     };
     this.scenario = null;
+    this.vehicleTest =
+      environment === "vehicle"
+        ? {
+            phase: "ready",
+            barrierId: VEHICLE_TEST_BARRIER.id,
+            maxSpeedMps: 5,
+            maxTicks: 8 * 60,
+            startedTick: null,
+            contactTick: null,
+            impact: null,
+            error: null,
+          }
+        : null;
     const startingBay =
       environment === "city"
         ? this.parkingBays.find(
@@ -152,7 +204,7 @@ export class World {
         : null;
     if (environment === "city" && !startingBay)
       throw new Error("City starting parking bay is missing");
-    this.player = this.makeVehicle("player", "sedan", {
+    this.player = this.makeVehicle("player", "sedan", visualScene?.playerStart ?? {
       // The city starts in a marked shoulder bay. An idle player in the
       // northbound lane used to block an entire traffic queue before input.
       x: startingBay?.fixed ?? 20 - LANE_OFFSET,
@@ -160,11 +212,14 @@ export class World {
       heading: 0,
     });
     this.actors.push(this.player);
-    this.populate();
+    if (visualScene) {
+      this.actors.push(...structuredClone(visualScene.people));
+      this.capacity = { traffic: 0, pedestrians: visualScene.people.length };
+    } else if (environment === "vehicle")
+      this.capacity = { traffic: 0, pedestrians: 0 };
+    else this.populate();
     this.sensorProcessor = new RangeSignalProcessor();
-    this.sensors = this.sensorProcessor.update(
-      measureRanges(this, this.player),
-    );
+    this.updateSensors();
   }
   makeVehicle(id, kind, position) {
     const tuk = kind === "tuktuk";
@@ -175,9 +230,15 @@ export class World {
       ...position,
       speed: 0,
       steer: 0,
-      length: tuk ? 2.9 : VEHICLE.length,
-      width: tuk ? 1.5 : VEHICLE.width,
-      spec: tuk ? { wheelbase: 1.9 } : null,
+      length: id === "player" ? PLAYER_VEHICLE.lengthM : tuk ? 2.9 : VEHICLE.length,
+      width: id === "player" ? PLAYER_VEHICLE.widthM : tuk ? 1.5 : VEHICLE.width,
+      spec:
+        id === "player"
+          ? {
+              wheelbase: PLAYER_VEHICLE.wheelbaseM,
+              maxSteer: PLAYER_VEHICLE.maxSteerRad,
+            }
+          : tuk ? { wheelbase: 1.9 } : null,
       maxSpeed: (this.config.speedLimit / 3.6) * (tuk ? 0.7 : 1),
       path: [],
       cursor: 0,
@@ -186,6 +247,29 @@ export class World {
       reason: "ready",
       phase: this.rng.next(),
       reckless: id !== "player" && this.rng.next() < this.config.chaos,
+      ...(id === "player"
+        ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState() }
+        : {}),
+    };
+  }
+  updateSensors(filter = true) {
+    const geometry = measureVehicleSensors(this, this.player);
+    const previous = this.player.previous;
+    this.sensors = {
+      ...(filter ? this.sensorProcessor.update(geometry.rawM) : this.sensors),
+      ...geometry,
+      imu: {
+        source: "simulated-vehicle-state",
+        positionM: { ...geometry.mounts.telemetry.position },
+        headingRad: this.player.heading,
+        speedMps: this.player.speed,
+        yawRateRadS: previous
+          ? angleDelta(this.player.heading, previous.heading) / STEP
+          : 0,
+        longitudinalAccelerationMps2: previous
+          ? (this.player.speed - previous.speed) / STEP
+          : 0,
+      },
     };
   }
   free(body, gap = 1) {
@@ -318,6 +402,69 @@ export class World {
     return nextWalk(this, person);
   }
   command(command, record = true) {
+    if (command.type === "visual-observation") {
+      this.visualPredictor.observe(structuredClone(command.result));
+      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      return true;
+    }
+    if (command.type === "visual-reset") {
+      this.visualPredictor.reset(command.streamId);
+      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      return true;
+    }
+    if (command.type === "visual-mode") {
+      if (!["vision-first", "sensors-only"].includes(command.mode))
+        throw new Error("Unknown visual driving mode");
+      this.visualMode = command.mode;
+      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      return true;
+    }
+    if (command.type === "vision-run") {
+      if (!this.visionLab || this.visionLab.phase !== "ready") return false;
+      this.visionLab.phase = "running";
+      this.visionLab.startedTick = this.tick;
+      this.input = { targetSpeed: this.visionLab.requestedSpeedMps, steer: 0 };
+      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      return true;
+    }
+    if (command.type === "vehicle-test") {
+      if (
+        this.environment !== "vehicle" ||
+        command.operation !== "run" ||
+        this.vehicleTest.phase !== "ready"
+      )
+        return false;
+      if (record)
+        this.events.push({ tick: this.tick, command: structuredClone(command) });
+      if (
+        Math.abs(this.player.speed) > 0.01 ||
+        Math.abs(this.player.steer) > 0.01 ||
+        distance(this.player, vehicleStart) > 0.05 ||
+        Math.abs(angleDelta(this.player.heading, vehicleStart.heading)) > 0.01 ||
+        this.player.vehicle.damage.total > 0
+      ) {
+        this.vehicleTest.error = "Stop and reset the car at the marked start before running";
+        return false;
+      }
+      this.mode = "manual";
+      this.input = { targetSpeed: 0, steer: 0 };
+      this.player.path = [];
+      this.player.parking = null;
+      this.player.cursor = 0;
+      this.destination = null;
+      this.routeRevision++;
+      Object.assign(this.vehicleTest, {
+        phase: "running",
+        startedTick: this.tick,
+        error: null,
+      });
+      return true;
+    }
+    if (
+      this.vehicleTest?.phase === "running" &&
+      ["drive", "mode", "destination", "scenario"].includes(command.type)
+    )
+      return false;
     if (command.type === "policy" && command.weights)
       validatePolicy(command.weights);
     if (record)
@@ -342,6 +489,14 @@ export class World {
       return true;
     }
     if (command.type === "stop") {
+      if (this.vehicleTest?.phase === "running") {
+        this.vehicleTest.phase = "ready";
+        this.vehicleTest.error = "Test stopped; reset the car before another run";
+      }
+      if (this.visionLab && this.visionLab.phase !== "complete") {
+        this.visionLab.error = "Driver stopped this bounded test. Reset to run again.";
+        if (this.player.speed === 0) this.visionLab.phase = "complete";
+      }
       this.mode = "manual";
       this.input = { targetSpeed: 0, steer: 0 };
       this.player.path = [];
@@ -386,7 +541,15 @@ export class World {
     return pedestrianMotion(this, p);
   }
   step() {
-    updateScenarios(this);
+    if (this.visionLab && this.visionLab.phase !== "running") return;
+    const nowS = this.tick * STEP;
+    const ownMotion = {
+      x: this.player.x, z: this.player.z, headingRad: this.player.heading,
+      speedMps: this.player.speed, lengthM: this.player.length, widthM: this.player.width,
+    };
+    this.visualState = this.visualPredictor.snapshot(nowS, ownMotion);
+    this.visualDecision = this.visualState.decision;
+    if (this.environment !== "vehicle") updateScenarios(this);
     this.actorIndex = new SpatialIndex(this.actors);
     this.updateJunctions();
     // Old poses are reserved until the tick ends. An accepted move can never
@@ -395,10 +558,39 @@ export class World {
     for (const actor of this.actors) {
       actor.previous = copyPose(actor);
       let next;
-      if (actor.type === "pedestrian") next = this.pedestrianMotion(actor);
+      let appliedCommand;
+      let contact = null;
+      let controlledTest =
+        actor === this.player && this.vehicleTest?.phase === "running";
+      if (
+        controlledTest &&
+        this.tick - this.vehicleTest.startedTick >= this.vehicleTest.maxTicks
+      ) {
+        this.vehicleTest.phase = "ready";
+        this.vehicleTest.error = "Contact was not reached within the bounded test; reset the car";
+        this.input = { targetSpeed: 0, steer: 0 };
+        controlledTest = false;
+      }
+      const physicalBarrier =
+        actor === this.player &&
+        this.environment === "vehicle" &&
+        (controlledTest || this.vehicleTest.phase === "contact");
+      if (actor.type === "pedestrian") next = this.visionLab
+        ? advanceVisionActor(actor, STEP, {
+            timeS: (this.tick - this.visionLab.startedTick) * STEP,
+            tick: this.tick,
+          })
+        : this.pedestrianMotion(actor);
       else {
         let command;
-        if (actor === this.player && this.mode === "manual")
+        if (controlledTest)
+          command = {
+            targetSpeed: this.vehicleTest.maxSpeedMps,
+            steer: 0,
+            reason: "vehicle-test",
+            blockedBy: null,
+          };
+        else if (actor === this.player && this.mode === "manual")
           command = { ...this.input };
         else {
           if (
@@ -445,7 +637,22 @@ export class World {
           command.targetSpeed > 0
         )
           command.targetSpeed = policySpeed(this, actor, command.targetSpeed);
-        command = this.safeSpeed(actor, command);
+        const predictedBrake = !controlledTest && actor === this.player
+          && this.visualMode === "vision-first"
+          && this.visualDecision?.available === true
+          && this.visualDecision.brake === true;
+        const reactiveCommand = controlledTest ? command : this.safeSpeed(actor, command);
+        if (actor === this.player && this.visionLab
+            && reactiveCommand.targetSpeed < command.targetSpeed - 0.1
+            && this.visionLab.firstReactiveBrakeS === null)
+          this.visionLab.firstReactiveBrakeS = nowS;
+        const appliedVisualBrake = predictedBrake && reactiveCommand.targetSpeed > 0;
+        command = appliedVisualBrake
+          ? { ...reactiveCommand, targetSpeed: 0, reason: "visual-prediction" }
+          : reactiveCommand;
+        if (appliedVisualBrake && this.visionLab?.firstVisualBrakeS === null)
+          this.visionLab.firstVisualBrakeS = nowS;
+        appliedCommand = command;
         next = integrateVehicle(actor, command, STEP);
         next.reason =
           actor === this.player &&
@@ -456,10 +663,22 @@ export class World {
             : command.reason;
         next.blockedBy = command.blockedBy;
       }
+      if (physicalBarrier) {
+        const barrier = this.statics.find(
+          (body) => body.id === this.vehicleTest.barrierId,
+        );
+        if (barrier) {
+          contact = resolveVehicleContact(actor, next, barrier, STEP);
+          if (contact) next = contact.body;
+        }
+      }
       const nearby = reserved
         .near(actor, 8)
         .filter((a) => a.id !== actor.id)
-        .concat(this.staticIndex.near(actor, 11));
+        .concat(this.staticIndex.near(actor, 11))
+        .filter(
+          (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId,
+        );
       const guard = sweepSafe(
         actor,
         next,
@@ -467,6 +686,7 @@ export class World {
         actor.type === "vehicle" ? this.roads : null,
       );
       if (!guard.safe) {
+        contact = null;
         // Stopping is the sole fallback. No positional correction or in-place yaw.
         next = {
           ...actor,
@@ -478,6 +698,21 @@ export class World {
         };
         if (actor === this.player && actor.reason !== guard.reason)
           this.metrics.interventions++;
+      }
+      if (actor === this.player) {
+        next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
+          tick: this.tick,
+          contact,
+        });
+        if (contact) {
+          this.vehicleTest.phase = "contact";
+          this.vehicleTest.contactTick = this.tick;
+          this.vehicleTest.impact = {
+            ...next.vehicle.damage.lastImpact,
+            hitId: contact.hitId,
+          };
+          this.input = { targetSpeed: 0, steer: 0 };
+        }
       }
       const moved = distance(actor, next);
       const oldPrevious = actor.previous;
@@ -493,10 +728,7 @@ export class World {
           this.metrics.waitSeconds += STEP;
       }
     }
-    if (this.tick % 6 === 0)
-      this.sensors = this.sensorProcessor.update(
-        measureRanges(this, this.player),
-      );
+    this.updateSensors(this.tick % 6 === 0);
     Object.assign(
       this.metrics,
       trafficQueueStats(
@@ -509,6 +741,23 @@ export class World {
       this.metrics.longestCurrentTrafficWait,
     );
     this.tick++;
+    if (this.visionLab) {
+      const state = this.visionLab;
+      const timeS = this.tick * STEP;
+      if (state.firstSensorTriggerS === null && this.sensors.rawM.some((range) => range <= 5))
+        state.firstSensorTriggerS = timeS;
+      if (state.firstLaneEntryS === null && this.actors.some((actor) =>
+        actor.type === "pedestrian" && Math.abs(actor.x) < this.player.width / 2 + actor.radius))
+        state.firstLaneEntryS = timeS;
+      if (timeS >= 24 && this.player.z < state.goalZ)
+        state.error = "The bounded case timed out before reaching its goal.";
+      if (this.player.z >= state.goalZ || state.error)
+        this.input = { targetSpeed: 0, steer: 0 };
+      if ((this.player.z >= state.goalZ || state.error) && this.player.speed === 0) {
+        state.phase = "complete";
+        state.completedAtS = timeS;
+      }
+    }
   }
   updateJunctions() {
     return updateJunctions(this);
@@ -541,7 +790,11 @@ export class World {
       rng: this.rng.state,
       metrics: { ...this.metrics },
       scenario: this.scenario,
+      vehicleTest: this.vehicleTest ? structuredClone(this.vehicleTest) : null,
       sensors: this.sensors,
+      visualMode: this.visualMode,
+      visualState: this.visualState ? structuredClone(this.visualState) : null,
+      visionLab: this.visionLab ? structuredClone(this.visionLab) : null,
       statics: this.statics.map((a) => ({ ...a })),
       actors: this.actors.map((a) => ({
         id: a.id,
@@ -554,6 +807,7 @@ export class World {
         distance: a.distance,
         reason: a.reason,
         cursor: a.cursor ?? 0,
+        ...(a.vehicle ? { vehicle: structuredClone(a.vehicle) } : {}),
       })),
     };
   }
@@ -569,7 +823,7 @@ export class World {
   static *reconstruct(data) {
     if (
       data?.version !== VERSION ||
-      !["city", "lab"].includes(data.environment) ||
+      !["city", "lab", "vehicle", "vision"].includes(data.environment) ||
       !Number.isSafeInteger(data.totalTicks) ||
       data.totalTicks < 0 ||
       data.totalTicks > 60 * 60 * 24 ||
@@ -590,7 +844,14 @@ export class World {
           "scenario",
           "stop",
           "policy",
-        ].includes(event.command?.type)
+          "visual-observation",
+          "visual-reset",
+          "visual-mode",
+          "vision-run",
+          "vehicle-test",
+        ].includes(event.command?.type) ||
+        (event.command.type === "vehicle-test" &&
+          (data.environment !== "vehicle" || event.command.operation !== "run"))
       )
         throw new Error("Invalid replay event");
       lastTick = event.tick;
@@ -603,7 +864,10 @@ export class World {
         data.events[index].tick === world.tick
       )
         world.command(data.events[index++].command);
+      const beforeTick = world.tick;
       world.step();
+      if (world.tick === beforeTick)
+        throw new Error("Replay cannot advance a stopped scene without its recorded run event");
       if (world.tick % 120 === 0) yield world;
     }
     while (index < data.events.length && data.events[index].tick === world.tick)

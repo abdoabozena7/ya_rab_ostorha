@@ -1,3 +1,481 @@
+/* src/ui/vehicle.css */
+.car-panel {
+  --car-line: #a5d8ba33;
+  --car-ink: #eef2e9;
+  --car-muted: #bdcdbf;
+  position: fixed;
+  z-index: 8;
+  top: 88px;
+  right: 24px;
+  width: min(292px, calc(100vw - 32px));
+  max-height: calc(100vh - 154px);
+  overflow: auto;
+  padding: 17px;
+  color: var(--car-ink);
+  background: var(--panel, #1b2420);
+  border: 1px solid #7c897366;
+  border-radius: 9px;
+  box-shadow: 0 12px 32px #14271c59;
+  scrollbar-width: thin;
+  scrollbar-color: #789c84 #23372b;
+  font-size: 12px;
+  line-height: 1.5;
+  text-shadow: none;
+}
+.car-panel::selection,
+.car-panel ::selection {
+  color: #17271e;
+  background: #b6dfc3;
+}
+.car-panel::-webkit-scrollbar {
+  width: 7px;
+}
+.car-panel::-webkit-scrollbar-track {
+  background: #23372b;
+}
+.car-panel::-webkit-scrollbar-thumb {
+  background: #789c84;
+  border: 2px solid #23372b;
+  border-radius: 5px;
+}
+.car-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.car-panel h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.car-panel button {
+  min-height: 34px;
+  padding: 6px 9px;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+.car-panel button:focus-visible,
+.car-panel input:focus-visible,
+.car-panel select:focus-visible {
+  outline: 2px solid #b6dfc3;
+  outline-offset: 3px;
+}
+.car-panel button:disabled {
+  cursor: not-allowed;
+  color: #a9b5ab;
+  background: #ffffff04;
+  border-color: #8ca39238;
+}
+.car-panel button:disabled:hover {
+  background: #ffffff04;
+}
+#carCloseBtn {
+  min-height: 30px;
+  padding: 4px 8px;
+  color: var(--car-muted);
+  font-size: 11px;
+}
+.car-panel-note {
+  margin: 5px 0 13px;
+  color: var(--car-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.car-views {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.car-views legend {
+  margin-bottom: 6px;
+  padding: 0;
+  color: var(--car-muted);
+  font-size: 11px;
+}
+.car-views button[aria-pressed=true] {
+  color: #e8f4e9;
+  background: #41634d;
+  border-color: #a5d8ba;
+}
+.car-views button:not(:disabled):hover {
+  background: #54705b;
+}
+.car-readings {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  margin: 14px 0 12px;
+  font-size: 11px;
+}
+.car-readings dt {
+  color: var(--car-muted);
+}
+.car-readings dd {
+  margin: 0;
+  color: #d7eddd;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.car-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 8px;
+  border-top: 1px solid var(--car-line);
+}
+.car-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.car-option input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #b6dfc3;
+}
+.car-camera-select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 11px;
+}
+.car-camera-select select {
+  min-height: 32px;
+  padding: 5px 8px;
+  color: var(--car-ink);
+  background: #2a3c30;
+  border: 1px solid #8ca39280;
+  border-radius: 4px;
+  font: inherit;
+}
+.car-camera-select option {
+  color: var(--car-ink);
+  background: #2a3c30;
+}
+.car-camera-select select:disabled {
+  color: #a9b5ab;
+  cursor: not-allowed;
+}
+.car-telemetry {
+  margin-top: 9px;
+  color: var(--car-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.car-telemetry p {
+  margin: 2px 0;
+}
+.car-range-label {
+  margin: 8px 0 5px;
+  color: var(--car-muted);
+  font-size: 10px;
+}
+.car-ranges {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.car-ranges > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.car-ranges span {
+  color: var(--car-muted);
+  font-size: 10px;
+}
+.car-ranges strong {
+  color: #d6ecdc;
+  font-size: 12px;
+  font-weight: 500;
+}
+.car-impact {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--car-line);
+}
+.car-impact h3 {
+  margin: 0 0 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.car-impact .car-panel-note {
+  margin: 0 0 9px;
+}
+.car-contact-details {
+  margin: 5px 0 10px;
+  color: #efc5a5;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+#carImpactBayBtn,
+#carReturnBtn {
+  width: 100%;
+}
+#carImpactBayBtn {
+  margin-bottom: 6px;
+}
+.car-impact-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+#carReturnBtn {
+  margin-top: 7px;
+}
+.car-error {
+  margin: 12px 0 0;
+  padding: 8px 9px;
+  color: #ffcebc;
+  background: #51332e;
+  border: 1px solid #b4857566;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.car-panel-help {
+  margin: 12px 0 0;
+  color: var(--car-muted);
+  font-size: 10px;
+}
+#carToggleBtn[aria-expanded=true] {
+  border-color: #a5d8ba;
+}
+@media (max-width: 1050px) {
+  .topbar:has(#carToggleBtn) #tripLabel {
+    display: none;
+  }
+}
+@media (max-width: 850px) {
+  .car-panel {
+    top: 76px;
+    right: 14px;
+    max-height: calc(100vh - 130px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .car-panel {
+    scroll-behavior: auto;
+  }
+}
+
+/* src/ui/vision.css */
+.vision-panel {
+  --vision-ink: #eef2e9;
+  --vision-muted: #bdcdbf;
+  --vision-line: #a5d8ba33;
+  position: fixed;
+  z-index: 8;
+  top: 88px;
+  right: 24px;
+  width: min(300px, calc(100vw - 32px));
+  max-height: calc(100vh - 154px);
+  max-height: calc(100dvh - 154px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  color: var(--vision-ink);
+  background: var(--panel, #1b2420);
+  border: 1px solid #7c897366;
+  border-radius: 9px;
+  box-shadow: 0 12px 32px #14271c59;
+  scrollbar-width: thin;
+  scrollbar-color: #789c84 #23372b;
+  font-size: 12px;
+  line-height: 1.5;
+  text-shadow: none;
+}
+.vision-panel,
+.vision-panel * {
+  box-sizing: border-box;
+}
+.vision-panel::selection,
+.vision-panel ::selection {
+  color: #17271e;
+  background: #b6dfc3;
+}
+.vision-panel[hidden] {
+  display: none;
+}
+.vision-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.vision-panel h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.vision-panel button,
+.vision-panel select {
+  min-height: 34px;
+  padding: 6px 9px;
+  color: var(--vision-ink);
+  background: #2a3c30;
+  border: 1px solid #8ca39280;
+  border-radius: 5px;
+  font: inherit;
+  line-height: 1.4;
+}
+.vision-panel button {
+  cursor: pointer;
+  text-align: center;
+}
+.vision-panel button:not(:disabled):hover,
+.vision-panel select:not(:disabled):hover {
+  background: #3a5141;
+}
+.vision-panel button:not(:disabled):active {
+  background: #41634d;
+}
+.vision-panel button:focus-visible,
+.vision-panel select:focus-visible,
+.vision-panel summary:focus-visible {
+  outline: 2px solid #b6dfc3;
+  outline-offset: 3px;
+}
+.vision-panel button:disabled,
+.vision-panel select:disabled {
+  color: #a9b5ab;
+  background: #ffffff04;
+  border-color: #8ca39238;
+  cursor: not-allowed;
+}
+.vision-panel option {
+  color: var(--vision-ink);
+  background: #2a3c30;
+}
+#visionCloseBtn {
+  min-height: 30px;
+  padding: 4px 8px;
+  color: var(--vision-muted);
+  font-size: 11px;
+}
+.vision-note,
+.vision-help {
+  margin: 6px 0 12px;
+  color: var(--vision-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.vision-status {
+  margin: 12px 0;
+  color: #e7d3af;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.vision-status[data-state=ready] {
+  color: #d7eddd;
+}
+.vision-controls {
+  display: grid;
+  gap: 8px;
+}
+.vision-select {
+  display: grid;
+  gap: 4px;
+  color: var(--vision-muted);
+  font-size: 11px;
+}
+.vision-select select {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+}
+.vision-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 6px;
+}
+#visionReturnBtn {
+  width: 100%;
+}
+.vision-readings {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 6px 8px;
+  margin: 16px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--vision-line);
+  font-size: 11px;
+}
+.vision-readings dt {
+  color: var(--vision-muted);
+}
+.vision-readings dd {
+  margin: 0;
+  color: #d7eddd;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.vision-readings [data-brake=true] {
+  color: #efc5a5;
+}
+.vision-detail {
+  padding-top: 10px;
+  border-top: 1px solid var(--vision-line);
+}
+.vision-detail summary {
+  min-height: 30px;
+  color: var(--vision-muted);
+  cursor: pointer;
+  font-size: 11px;
+}
+.vision-track-list {
+  margin: 5px 0 12px;
+  padding-left: 15px;
+  color: #d7eddd;
+  font-size: 11px;
+}
+.vision-track-list li + li {
+  margin-top: 6px;
+}
+.vision-comparison {
+  color: #d7eddd;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.vision-error {
+  margin: 12px 0 6px;
+  color: #ffd2be;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.vision-help {
+  margin-bottom: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--vision-line);
+}
+@media (max-width: 1000px) {
+  .vision-panel {
+    top: 116px;
+    right: 12px;
+    width: min(276px, calc(100vw - 24px));
+    max-height: calc(100vh - 172px);
+    max-height: calc(100dvh - 172px);
+    padding: 13px;
+  }
+}
+
 /* src/ui/styles.css */
 :root {
   font-family:

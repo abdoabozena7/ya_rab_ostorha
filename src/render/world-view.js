@@ -5,6 +5,8 @@ import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { interpolate, roadRect, pointOnRoad } from "../core/geometry.js";
 import { addPlaceSigns } from "./place-signs.js";
+import { createPlayerVehicle } from "./player-vehicle.js";
+import { createEgyptStreetLayer } from "./egypt-streets.js";
 
 const templates = new Map(),
   loader = new GLTFLoader();
@@ -16,8 +18,6 @@ const trafficColors = [
 function actorAsset(actor, environment) {
   if (actor.type === "pedestrian")
     return `/assets/models/people/${actor.kind}.glb`;
-  if (actor.id === "player" && environment === "city")
-    return "/assets/models/vehicles/player-concept.glb";
   if (actor.kind === "tuktuk")
     return "/assets/models/tuktuks/auto-rickshaw.glb";
   const car = {
@@ -109,6 +109,9 @@ function fit(template, width, length, height = Infinity, matchHull = false) {
 }
 
 export class WorldView {
+  get playerRig() {
+    return this.roots.get("player")?.vehicleRig ?? null;
+  }
   constructor(world) {
     this.world = world;
     this.roots = new Map();
@@ -144,6 +147,8 @@ export class WorldView {
     sun.shadow.normalBias = 0.04;
     scene.add(sun, sun.target);
     this.sun = sun;
+    this.egyptStreets = createEgyptStreetLayer(world);
+    scene.add(this.egyptStreets.root);
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(650, 650),
       material(world.environment === "lab" ? 0xaaa99d : 0xb1a18a),
@@ -175,7 +180,8 @@ export class WorldView {
   buildRoads() {
     const { roads } = this.world;
     const pavementParts = [],
-      roadParts = [];
+      roadParts = [],
+      markingParts = [];
     // Sidewalk slabs first, then asphalt. The same expanded rectangles are
     // used in bodyOnRoad(), including the ends where roads meet.
     for (const road of roads) {
@@ -195,19 +201,15 @@ export class WorldView {
           (other) => other.axis !== road.axis && pointOnRoad(p, [other], -2),
         );
         if (crossing || road.sideStreet || road.parkingBay) continue;
-        box(
-          this.scene,
-          road.axis === "z" ? 0.11 : 2.8,
-          0.005,
-          road.axis === "z" ? 2.8 : 0.11,
-          0xcec7ac,
-          p.x,
-          0.118,
-          p.z,
-        );
+        const width = road.axis === "z" ? 0.11 : 2.8,
+          length = road.axis === "z" ? 2.8 : 0.11;
+        markingParts.push(new THREE.BoxGeometry(width, 0.005, length)
+          .translate(p.x, 0.1205, p.z));
       }
     }
     this.surfaces.road.push(mergedSurface(this.scene, roadParts, 0x484b49));
+    if (markingParts.length)
+      mergedSurface(this.scene, markingParts, 0xcec7ac).castShadow = true;
   }
   async loadSurfaces() {
     const base = "/assets/textures/roads/";
@@ -252,7 +254,8 @@ export class WorldView {
       "building-skyscraper-a",
     ];
     this.world.statics.forEach((site, i) => {
-      if (site.kind === "place-sign") return;
+      if (site.kind === "place-sign" || site.kind === "barrier"
+          || (site.kind === "building" && ["city", "vision"].includes(this.world.environment))) return;
       const group = new THREE.Group();
       group.position.set(site.x, 0.12, site.z);
       this.scene.add(group);
@@ -327,6 +330,14 @@ export class WorldView {
     const fallback = new THREE.Group();
     root.add(fallback);
     record.fallback = fallback;
+    if (actor.id === "player") {
+      record.vehicleRig = createPlayerVehicle(null, actor);
+      record.visual = record.vehicleRig.root;
+      root.add(record.visual);
+      fallback.visible = false;
+      this.status.loaded++;
+      return;
+    }
     if (person) {
       box(fallback, 0.4, 0.6, 0.23, 0x52685b, 0, 0.83);
       box(fallback, 0.22, 0.26, 0.22, 0xb27c5c, 0, 1.43);
@@ -365,23 +376,7 @@ export class WorldView {
           person ? 1.78 : 2.3,
           !person && actor.kind !== "tuktuk",
         );
-        if (actor.id === "player" && this.world.environment === "city")
-          visual.traverse((part) => {
-            if (part.isMesh && part.material.name === "Glass") {
-              // True screen-space transmission on every window halves FPS in
-              // this scene. Alpha glass keeps the interior visible.
-              part.material = part.material.clone();
-              part.userData.ownedMaterial = true;
-              part.material.transmission = 0;
-              part.material.transparent = true;
-              part.material.opacity = 0.34;
-              part.material.depthWrite = false;
-              part.material.color.setHex(0x546b76);
-              part.material.needsUpdate = true;
-              part.castShadow = false;
-            }
-          });
-        else if (!person)
+        if (!person)
           visual.traverse((part) => {
             if (part.isMesh && part.material.name === "paint") {
               part.material = part.material.clone();
@@ -459,7 +454,7 @@ export class WorldView {
     for (const actor of world.actors) {
       if (!this.roots.has(actor.id)) this.addActor(actor);
       const record = this.roots.get(actor.id),
-        p = interpolate(actor.previous ?? actor, actor, alpha);
+        p = actor === world.player ? actor : interpolate(actor.previous ?? actor, actor, alpha);
       record.root.position.set(p.x, 0.12, p.z);
       record.root.rotation.y = p.heading;
       const distanceFromPlayer = Math.hypot(
@@ -474,6 +469,7 @@ export class WorldView {
         record.visual.visible = detailed;
         record.fallback.visible = !detailed;
       }
+      record.vehicleRig?.update(actor, world.sensors, alpha);
       if (detailed)
         for (const wheel of record.wheels) {
           wheel.part.quaternion.copy(wheel.quaternion);
@@ -553,6 +549,13 @@ export class WorldView {
   }
   dispose() {
     this.disposed = true;
+    this.scene.remove(this.egyptStreets.root);
+    this.egyptStreets.dispose();
+    for (const record of this.roots.values())
+      if (record.vehicleRig) {
+        record.root.remove(record.vehicleRig.root);
+        record.vehicleRig.dispose();
+      }
     const skeletons = new Set();
     const textures = new Set();
     this.scene.traverse((part) => {

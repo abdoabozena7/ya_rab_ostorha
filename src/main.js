@@ -2,12 +2,15 @@ import * as THREE from "three";
 import { World } from "./core/world.js";
 import { FixedClock } from "./core/clock.js";
 import { WorldView } from "./render/world-view.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { PLACES, LAB_PLACES } from "./core/places.js";
 import { mountPhone } from "./ui/phone.js";
-import { createBridge } from "./integration/bridge.js";
+import { createBridge, createVisualClient } from "./integration/bridge.js";
 import { createPerceptionOverlay } from "./ui/perception-overlay.js";
 import { createDecisionInspector } from "./ui/decision-inspector.js";
 import { bodyOnRoad } from "./core/geometry.js";
+import { mountVehiclePanel } from "./ui/vehicle-panel.js";
+import { mountVisionPanel } from "./ui/vision-panel.js";
 
 const $ = (id) => document.getElementById(id);
 const renderer = new THREE.WebGLRenderer({
@@ -16,19 +19,22 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.domElement.className = "scene";
 document.body.prepend(renderer.domElement);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.9;
+let viewportWidth = document.documentElement.clientWidth;
+let viewportHeight = innerHeight;
 const camera = new THREE.PerspectiveCamera(
   62,
-  innerWidth / innerHeight,
+  viewportWidth / viewportHeight,
   0.1,
   500,
 );
 const frontCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 250);
+const visionCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 250);
 const worlds = { city: new World() };
 const views = new Map();
 let environment = "city",
@@ -38,19 +44,146 @@ let learnedPolicy = null,
 let view,
   clock = new FixedClock(),
   paused = false,
-  driverView = false,
+  cameraMode = "chase",
   showCamera = true,
   lastInput = "",
   lastTime = performance.now(),
   lastUI = 0,
   lastFrame = 0;
 const keys = new Set();
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enabled = false;
+orbit.enablePan = false;
+orbit.enableDamping = true;
+orbit.minDistance = 1.2;
+orbit.maxDistance = 12;
 let cameraSnap = true;
-let phone;
+let phone, vehiclePanel, visionPanel, visualClient;
+let visionCaseId = "cross-left", visionMode = "vision-first", pendingVisionRun = false;
+const visionComparisons = new Map();
+function visionComparisonKey(caseId, config = world.config) {
+  return `${caseId}|${config.seed}|${config.speedLimit}`;
+}
+function saveVisionComparison() {
+  const lab = world.visionLab;
+  if (!lab || lab.phase !== "complete" || lab.error) return;
+  const key = visionComparisonKey(lab.caseId);
+  const values = visionComparisons.get(key) ?? { visionBrakeTimeS: null, reactiveBrakeTimeS: null };
+  if (world.visualMode === "vision-first") values.visionBrakeTimeS = lab.firstVisualBrakeS;
+  else values.reactiveBrakeTimeS = lab.firstReactiveBrakeS;
+  visionComparisons.set(key, values);
+}
+let cutaway = false, sensorView = false, sensorCamera = "front", inspectionPause = null;
+let renderedFrames = 0;
+let inspectionRig = null, appliedCutaway = null, appliedSensors = null;
+const isInspection = () => cameraMode === "inspection" || cameraMode === "running-gear";
+function setCarView(mode) {
+  if (!["chase", "cockpit", "inspection", "running-gear"].includes(mode))
+    throw new Error("Unknown car camera view");
+  if (mode === "inspection" || mode === "running-gear") {
+    if (inspectionPause === null) inspectionPause = paused;
+    paused = true;
+  } else if (inspectionPause !== null) {
+    paused = inspectionPause;
+    inspectionPause = null;
+  }
+  cameraMode = mode;
+  if (mode === "running-gear") cutaway = true;
+  orbit.enabled = isInspection();
+  camera.fov = mode === "cockpit" ? 60 : 62;
+  camera.near = mode === "cockpit" ? 0.025 : 0.1;
+  camera.updateProjectionMatrix();
+  keys.clear();
+  cameraSnap = true;
+  $("pauseBtn").textContent = paused ? "Resume" : "Pause";
+}
+function carAction(action, value) {
+  if (action === "view") setCarView(value);
+  else if (action === "cutaway") cutaway = Boolean(value);
+  else if (action === "sensors") sensorView = Boolean(value);
+  else if (action === "sensor-camera") {
+    if (!["front", "rear"].includes(value))
+      return { ok: false, error: "Choose the front or rear installed camera." };
+    sensorCamera = value;
+    perceptionOverlay?.setVisible(showCamera && sensorCamera === "front");
+  }
+  else if (action === "impact-bay") {
+    setCarView("chase");
+    activate("vehicle");
+    paused = false;
+    cutaway = false;
+    sensorView = true;
+  } else if (action === "impact-run") {
+    if (environment !== "vehicle" || world.vehicleTest?.phase !== "ready")
+      return { ok: false, error: "Enter the vehicle test bay and reset it before starting a contact run." };
+    setCarView("chase");
+    paused = false;
+    cutaway = false;
+    if (!world.command({ type: "vehicle-test", operation: "run" }))
+      return { ok: false, error: "The controlled contact run could not start. Reset the vehicle test bay." };
+  } else if (action === "reset-car") {
+    if (environment !== "vehicle")
+      return { ok: false, error: "Car repair/reset is available in the isolated vehicle test bay." };
+    setCarView("chase");
+    reset(world.config);
+    paused = false;
+    cutaway = false;
+  } else if (action === "return-city") {
+    setCarView("chase");
+    activate("city");
+  } else return { ok: false, error: "Unknown car action." };
+  updateUI();
+  return { ok: true };
+}
+function newVisionScene() {
+  saveVisionComparison();
+  const previous = worlds.vision;
+  const previousView = views.get(previous);
+  previousView?.dispose();
+  views.delete(previous);
+  worlds.vision = new World({ ...world.config, visionCase: visionCaseId }, "vision");
+  activate("vision");
+  world.command({ type: "visual-mode", mode: visionMode });
+  pendingVisionRun = false;
+  paused = false;
+}
+async function visionAction(action, value) {
+  if (action === "case") {
+    visionCaseId = value;
+    newVisionScene();
+  } else if (action === "mode") {
+    visionMode = value;
+    newVisionScene();
+  } else if (action === "return-city") {
+    saveVisionComparison();
+    pendingVisionRun = false;
+    activate("city");
+  } else if (action === "reset") {
+    newVisionScene();
+  } else if (action === "enter" || action === "run") {
+    if (environment !== "vision" || world.visionLab?.phase === "complete") newVisionScene();
+    if (!visualClient.enabled || visualClient.restartRequired) {
+      const started = await visualClient.start();
+      if (!started.ok) return started;
+      world.command({ type: "visual-reset", streamId: visualClient.streamId });
+    }
+    if (action === "run") {
+      world.command({ type: "visual-reset", streamId: visualClient.reset() });
+      pendingVisionRun = true;
+    }
+  } else return { ok: false, error: "Unknown vision action." };
+  updateUI();
+  return { ok: true };
+}
 function activate(next) {
+  setCarView("chase");
   phone?.reset();
   environment = next;
   world = worlds[next] ?? (worlds[next] = new World(world.config, next));
+  if (visualClient) {
+    world.command({ type: "visual-reset", streamId: visualClient.reset() });
+    if (visualClient.enabled) perceptionOverlay.setExternal(null);
+  }
   if (world.policy !== (useLearnedPolicy ? learnedPolicy : null))
     world.command({
       type: "policy",
@@ -58,19 +191,27 @@ function activate(next) {
     });
   if (!views.has(world)) views.set(world, new WorldView(world));
   view = views.get(world);
+  view.scene.matrixWorldAutoUpdate = false;
   clock = new FixedClock();
   cameraSnap = true;
   keys.clear();
   lastInput = "";
   $("environmentLabel").textContent =
-    next === "city" ? "City simulation" : "Test lab";
+    next === "city" ? "City simulation" : next === "vehicle" ? "Vehicle test bay"
+      : next === "vision" ? "Visual prediction lab" : "Test lab";
   $("labBtn").textContent = next === "city" ? "Test lab" : "Return to city";
-  $("mapLabel").textContent = next === "city" ? "City" : "Test lab";
+  $("mapLabel").textContent = next === "city" ? "City" : next === "vehicle" ? "Vehicle bay" : "Test lab";
   $("phoneStatus").textContent =
     next === "city"
       ? "Type or speak a destination, or choose a place."
       : "Choose the north or south lab destination.";
   $("labScenarios").hidden = next !== "lab";
+  $("aiToggleBtn").disabled = next === "vehicle" || next === "vision";
+  $("phoneToggleBtn").disabled = next === "vehicle" || next === "vision";
+  if (next === "vehicle" || next === "vision") {
+    $("inGamePhone").hidden = true;
+    $("phoneToggleBtn").setAttribute("aria-expanded", "false");
+  }
   $("phonePlaces").replaceChildren(
     ...(next === "city" ? PLACES : LAB_PLACES).map((place) => {
       const button = document.createElement("button");
@@ -97,6 +238,7 @@ function activate(next) {
     if ($(name + "Output")) $(name + "Output").textContent = world.config[name];
   }
   updateUI();
+  lastTime = performance.now();
 }
 function reset(options) {
   view.dispose();
@@ -105,13 +247,18 @@ function reset(options) {
   activate(environment);
 }
 function resize() {
-  renderer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth / innerHeight;
+  const bounds = renderer.domElement.getBoundingClientRect();
+  viewportWidth = Math.round(bounds.width);
+  viewportHeight = Math.round(bounds.height);
+  renderer.setPixelRatio(Math.min(Math.round(devicePixelRatio * 1000) / 1000, 1.5));
+  renderer.setSize(viewportWidth, viewportHeight, false);
+  camera.aspect = viewportWidth / viewportHeight;
   camera.updateProjectionMatrix();
 }
 addEventListener("resize", resize);
 resize();
 function autoToggle() {
+  if (environment === "vehicle" || environment === "vision") return;
   world.command({
     type: "mode",
     mode: world.mode === "auto" ? "manual" : "auto",
@@ -126,6 +273,14 @@ phone = mountPhone({
   onDestination: choosePlace,
   getWorld: () => world,
   getPlaces: () => (environment === "city" ? PLACES : LAB_PLACES),
+});
+vehiclePanel = mountVehiclePanel({
+  toolbar: document.querySelector(".topbar nav"),
+  onAction: carAction,
+});
+visionPanel = mountVisionPanel({
+  toolbar: document.querySelector(".topbar nav"),
+  onAction: visionAction,
 });
 const isEditing = (target) =>
   ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
@@ -147,8 +302,7 @@ addEventListener("keydown", (event) => {
   if (event.repeat) return;
   if (event.code === "KeyP") $("phoneToggleBtn").click();
   if (event.code === "KeyC") {
-    driverView = !driverView;
-    cameraSnap = true;
+    setCarView(cameraMode === "cockpit" ? "chase" : "cockpit");
   }
   if (event.code === "KeyI") autoToggle();
 });
@@ -164,11 +318,14 @@ $("labBtn").onclick = () => activate(environment === "city" ? "lab" : "city");
 $("cameraBtn").onclick = () => {
   showCamera = !showCamera;
   $("cameraLabel").hidden = !showCamera;
-  perceptionOverlay?.setVisible(showCamera);
+  perceptionOverlay?.setVisible(showCamera && sensorCamera === "front");
   $("cameraBtn").textContent = showCamera ? "Hide camera" : "Show camera";
 };
 $("pauseBtn").onclick = () => {
-  paused = !paused;
+  if (isInspection()) {
+    setCarView("chase");
+    paused = false;
+  } else paused = !paused;
   keys.clear();
   $("pauseBtn").textContent = paused ? "Resume" : "Pause";
 };
@@ -319,7 +476,7 @@ updateTrainingStatus();
 setInterval(updateTrainingStatus, 2500);
 
 function input() {
-  const editing = isEditing(document.activeElement),
+  const editing = isEditing(document.activeElement) || isInspection(),
     pressed = (code) => !editing && keys.has(code);
   const targetSpeed = pressed("Space")
     ? 0
@@ -328,9 +485,16 @@ function input() {
       : pressed("KeyS") || pressed("ArrowDown")
         ? -2.5
         : 0;
+  if (environment === "vision") {
+    if (pressed("Space") && !world.visionLab.error) {
+      pendingVisionRun = false;
+      world.command({ type: "stop" });
+    }
+    return;
+  }
   const steer =
-    ((pressed("KeyA") || pressed("ArrowLeft") ? 1 : 0) -
-      (pressed("KeyD") || pressed("ArrowRight") ? 1 : 0)) *
+    ((pressed("KeyD") || pressed("ArrowRight") ? 1 : 0) -
+      (pressed("KeyA") || pressed("ArrowLeft") ? 1 : 0)) *
     0.62;
   const command = { type: "drive", targetSpeed, steer };
   const signature = JSON.stringify(command);
@@ -350,10 +514,13 @@ const reasons = {
   "red-light": "Red light",
   occupied: "Safety brake",
   "road-boundary": "Road boundary",
+  "visual-prediction": "Visual forecast: braking for a crossing trajectory",
   "no-route": "No legal route",
   arrived: "Arrived",
 };
 function updateUI() {
+  saveVisionComparison();
+  $("pauseBtn").textContent = paused ? "Resume" : "Pause";
   $("speedVal").textContent = Math.round(Math.abs(world.player.speed) * 3.6);
   $("aiToggleBtn").textContent =
     world.mode === "auto" ? "Autonomous drive" : "Manual drive";
@@ -363,7 +530,7 @@ function updateUI() {
       ? "Destination reached"
       : (reasons[world.player.reason] ?? world.player.reason);
   $("cameraDecision").textContent =
-    `Simulator safety: ${reasons[world.player.reason] ?? world.player.reason}${world.player.blockedBy ? ` · ${world.player.blockedBy}` : ""}`;
+    `Control: ${reasons[world.player.reason] ?? world.player.reason}${world.player.blockedBy ? ` · ${world.player.blockedBy}` : ""}`;
   $("tripLabel").textContent = world.destination
     ? `${world.destination.name ?? "Destination"} · ${world.player.path.length ? "En route" : "Arrived"}`
     : "Choose a destination on the phone";
@@ -376,6 +543,27 @@ function updateUI() {
     ? `${view.status.failed.length} models failed to load · fallback shapes shown`
     : `${environment === "lab" ? "Test lab" : "City"} · ${world.config.seed} · ${world.capacity.traffic} vehicles · ${world.capacity.pedestrians} pedestrians`;
   inspector.update(world, perceptionOverlay.latest);
+  vehiclePanel?.update({
+    world, actor: world.player, rig: view.playerRig,
+    mode: cameraMode, cutaway, sensors: sensorView, sensorCamera,
+  });
+  visionPanel?.update({
+    world, vision: world.visualState,
+    availability: visualClient?.status ?? { available: false, status: "disabled" },
+    mode: visionMode, caseId: visionCaseId,
+    running: world.visionLab?.phase === "running" || pendingVisionRun,
+    comparison: visionComparisons.get(visionComparisonKey(visionCaseId)) ?? null,
+  });
+  if (environment === "vision")
+    $("loadingStatus").textContent = world.visionLab.error
+      ?? `Visual prediction · ${world.visionLab.phase} · live camera pixels`;
+  $("cameraLabel").firstChild.textContent = sensorCamera === "rear" ? "Rear camera " : "Front camera ";
+  if (environment === "vehicle") {
+    $("loadingStatus").textContent = view.status.failed.length
+      ? "Car model failed to load. Reload the page to retry."
+      : `Vehicle test bay · ${world.vehicleTest?.phase ?? "ready"} · isolated contact fixture`;
+    $("scenarioStatus").textContent = "Vehicle-only fixture. Normal city safety remains unchanged.";
+  }
   drawMap();
 }
 const map = $("minimap").getContext("2d");
@@ -452,9 +640,36 @@ const perceptionOverlay = createPerceptionOverlay({
   bridge,
 });
 const inspector = createDecisionInspector();
+visualClient = createVisualClient({
+  renderer,
+  onStatus: (status) => {
+    if (status.status === "error" || status.status === "stale") {
+      perceptionOverlay.setExternal(null);
+      $("cvStatus").textContent = status.error ?? "Camera observations are stale";
+    }
+  },
+  onResult: (result) => {
+    if (result.streamId !== visualClient.streamId) return;
+    world.command({ type: "visual-observation", result });
+    perceptionOverlay.setExternal?.(result);
+    if (pendingVisionRun && environment === "vision") {
+      world.command({ type: "vision-run" });
+      pendingVisionRun = false;
+    }
+  },
+});
 const offset = new THREE.Vector3(),
   target = new THREE.Vector3(),
   forward = new THREE.Vector3();
+function mountedCameraPose(player, mode) {
+  const pose = view.playerRig?.getCameraPose(mode);
+  if (!pose) return false;
+  offset.set(pose.position.x, pose.position.y, pose.position.z);
+  target.set(pose.target.x, pose.target.y, pose.target.z);
+  player.localToWorld(offset);
+  player.localToWorld(target);
+  return true;
+}
 function frame(time) {
   requestAnimationFrame(frame);
   const delta = (time - lastTime) / 1000;
@@ -462,29 +677,68 @@ function frame(time) {
   input();
   if (!paused && !document.hidden) clock.advance(delta, () => world.step());
   const player = view.sync(clock.alpha);
+  // Every camera pass renders the same accepted pose and light-space shadows.
+  view.scene.updateMatrixWorld();
+  renderer.shadowMap.needsUpdate = true;
+  if (view.playerRig && (inspectionRig !== view.playerRig
+      || appliedCutaway !== cutaway || appliedSensors !== sensorView)) {
+    view.playerRig.setInspection({ cutaway, sensors: sensorView });
+    inspectionRig = view.playerRig;
+    appliedCutaway = cutaway;
+    appliedSensors = sensorView;
+  }
   forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
-  offset
-    .copy(player.position)
-    .addScaledVector(forward, driverView ? 0.9 : -10.5);
-  offset.y += driverView ? 1.25 : 5;
-  camera.position.lerp(offset, cameraSnap ? 1 : 1 - Math.exp(-delta * 6));
+  if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
+    if (isInspection()) {
+      if (cameraSnap) {
+        camera.position.copy(offset);
+        orbit.target.copy(target);
+      }
+      orbit.update();
+    } else {
+      camera.position.copy(offset);
+      camera.lookAt(target);
+    }
+  } else {
+    offset.copy(player.position).addScaledVector(forward, -10.5);
+    offset.y += 5;
+    camera.position.lerp(offset, cameraSnap ? 1 : 1 - Math.exp(-delta * 6));
+    target.copy(player.position).addScaledVector(forward, 5);
+    target.y += 1;
+    camera.lookAt(target);
+  }
   cameraSnap = false;
-  target.copy(player.position).addScaledVector(forward, driverView ? 15 : 5);
-  target.y += 1;
-  camera.lookAt(target);
-  frontCamera.position.copy(player.position).addScaledVector(forward, 1.5);
-  frontCamera.position.y += 1.25;
-  frontCamera.lookAt(
-    target.copy(frontCamera.position).addScaledVector(forward, 20),
-  );
+  if (mountedCameraPose(player, sensorCamera === "rear" ? "sensor-rear" : "sensor")) {
+    frontCamera.position.copy(offset);
+    frontCamera.lookAt(target);
+  } else {
+    frontCamera.position.copy(player.position).addScaledVector(forward, 1.5);
+    frontCamera.position.y += 1.25;
+    frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
+  }
+  if (visualClient.enabled && mountedCameraPose(player, "sensor")) {
+    visionCamera.position.copy(offset);
+    visionCamera.lookAt(target);
+    const debugRays = view.playerRig?.root.getObjectByName("vehicle-sensor-rays");
+    const raysVisible = debugRays?.visible;
+    const routeVisible = view.route.visible;
+    if (debugRays) debugRays.visible = false;
+    view.route.visible = false;
+    try {
+      visualClient.capture(view.scene, visionCamera, world.player, world.tick / 60);
+    } finally {
+      if (debugRays) debugRays.visible = raysVisible;
+      view.route.visible = routeVisible;
+    }
+  }
   renderer.setScissorTest(false);
-  renderer.setViewport(0, 0, innerWidth, innerHeight);
+  renderer.setViewport(0, 0, viewportWidth, viewportHeight);
   renderer.render(view.scene, camera);
   if (showCamera) {
-    const width = innerWidth < 850 ? 230 : 276,
+    const width = viewportWidth < 850 ? 230 : 276,
       height = Math.round((width * 9) / 16),
       x = 24,
-      y = innerWidth < 850 ? 100 : 94;
+      y = viewportWidth < 850 ? 100 : 94;
     renderer.setScissorTest(true);
     renderer.setScissor(x, y, width, height);
     renderer.setViewport(x, y, width, height);
@@ -495,6 +749,7 @@ function frame(time) {
       bridge.sendFrame({ x, y, width, height });
       lastFrame = time;
     }
+    renderedFrames++;
     renderer.setScissorTest(false);
   }
   if (time - lastUI > 180) {
@@ -514,6 +769,32 @@ window.sim = {
   },
   get paused() {
     return paused;
+  },
+  get vehicleRig() {
+    return view.playerRig;
+  },
+  get vision() {
+    return {
+      status: visualClient.status, streamId: visualClient.streamId,
+      transport: visualClient.timings,
+      state: world.visualState, evaluation: world.visionLab,
+    };
+  },
+  renderDiagnostics() {
+    const gl = renderer.getContext();
+    return {
+      renderedFrames, cameraMode, cutaway, sensorView, sensorCamera,
+      width: renderer.domElement.width, height: renderer.domElement.height,
+      pixelRatio: renderer.getPixelRatio(),
+      renderCalls: renderer.info.render.calls,
+      triangles: renderer.info.render.triangles,
+      backend: gl.getParameter(gl.VERSION),
+      renderer: gl.getParameter(gl.RENDERER),
+      cameraPosition: camera.position.toArray(),
+      sensorCameraPosition: frontCamera.position.toArray(),
+      sensorCameraDirection: frontCamera.getWorldDirection(new THREE.Vector3()).toArray(),
+      vehicle: view.playerRig?.diagnostics ?? null,
+    };
   },
   pause(value = true) {
     paused = value;

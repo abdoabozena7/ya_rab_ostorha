@@ -1,10 +1,11 @@
+import http.client
 import json
 import shutil
+import socket
 import subprocess
 import sys
 import threading
 import unittest
-from http.server import ThreadingHTTPServer
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -14,7 +15,7 @@ from backend.threejs import server
 class ThreeJsServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.http = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+        cls.http = server.Server(("127.0.0.1", 0), server.Handler)
         cls.thread = threading.Thread(target=cls.http.serve_forever, daemon=True)
         cls.thread.start()
         cls.base = f"http://127.0.0.1:{cls.http.server_port}"
@@ -63,6 +64,67 @@ class ThreeJsServerTests(unittest.TestCase):
         self.assertTrue(health["ok"])
         self.assertEqual(health["mode"], "threejs")
         self.assertFalse(health["externalSimulator"])
+
+    def test_browser_and_camera_burst_survives_a_delayed_accept_loop(self):
+        clients = []
+        with server.Server(("127.0.0.1", 0), server.Handler) as http:
+            try:
+                for _ in range(12):
+                    client = socket.create_connection(http.server_address, timeout=0.5)
+                    clients.append(client)
+                    client.sendall(b"GET /api/health HTTP/1.0\r\nHost: localhost\r\n\r\n")
+                thread = threading.Thread(target=http.serve_forever, daemon=True)
+                thread.start()
+                try:
+                    for client in clients:
+                        client.settimeout(3)
+                        response = b""
+                        while block := client.recv(4096):
+                            response += block
+                        headers, body = response.split(b"\r\n\r\n", 1)
+                        self.assertIn(b"200 OK", headers)
+                        self.assertEqual(json.loads(body)["mode"], "threejs")
+                finally:
+                    http.shutdown()
+                    thread.join()
+            finally:
+                for client in clients:
+                    client.close()
+
+    def test_polling_reuses_one_connection_and_consumes_control_bodies(self):
+        connection = http.client.HTTPConnection(*self.http.server_address, timeout=3)
+        try:
+            connection.request("GET", "/api/health")
+            response = connection.getresponse()
+            self.assertEqual(json.load(response)["mode"], "threejs")
+            original_socket = connection.sock
+            self.assertIsNotNone(original_socket)
+            connection.request("POST", "/api/vision/stop", b"{}",
+                               {"Content-Type": "application/json"})
+            response = connection.getresponse()
+            self.assertEqual(json.load(response)["status"], "disabled")
+            self.assertIs(connection.sock, original_socket)
+            connection.request("GET", "/api/state")
+            response = connection.getresponse()
+            self.assertFalse(json.load(response)["connected"])
+            self.assertIs(connection.sock, original_socket)
+        finally:
+            connection.close()
+
+    def test_unread_oversized_body_closes_without_poisoning_the_next_request(self):
+        connection = http.client.HTTPConnection(*self.http.server_address, timeout=3)
+        try:
+            connection.request("POST", "/api/state", b"{}",
+                               {"Content-Length": str(server.MAX_JSON + 1)})
+            response = connection.getresponse()
+            self.assertEqual(response.status, 400)
+            self.assertTrue(response.will_close)
+            response.read()
+            connection.request("GET", "/api/health")
+            response = connection.getresponse()
+            self.assertEqual(json.load(response)["mode"], "threejs")
+        finally:
+            connection.close()
 
     def test_observations_round_trip_and_invalid_updates_preserve_the_last_state(self):
         state = {"speedKmh": 22, "mode": "auto", "position": {"x": 10, "z": 20}}

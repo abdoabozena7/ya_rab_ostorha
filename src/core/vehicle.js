@@ -1,15 +1,18 @@
-import { VEHICLE, clamp } from "./config.js";
-import { angleDelta } from "./geometry.js";
+import { STEP, VEHICLE, clamp } from "./config.js";
+import { angleDelta, corners, distance, interpolate, overlaps } from "./geometry.js";
+import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 const approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
 export function integrateVehicle(body, command, dt) {
+  if (!Number.isFinite(dt) || dt < 0)
+    throw new RangeError("Vehicle integration needs a nonnegative step");
   const spec = { ...VEHICLE, ...body.spec };
   const steer = approach(
     body.steer ?? 0,
-    clamp(command.steer ?? 0, -spec.maxSteer, spec.maxSteer),
+    clamp(Number.isFinite(command.steer) ? command.steer : 0, -spec.maxSteer, spec.maxSteer),
     spec.steerRate * dt,
   );
   const requested = clamp(
-    command.targetSpeed ?? 0,
+    Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
     -spec.reverseSpeed,
     body.maxSpeed ?? 13.89,
   );
@@ -32,6 +35,75 @@ export function integrateVehicle(body, command, dt) {
     heading: body.heading + yawRate * dt,
     steer,
     speed,
+  };
+}
+
+/** Actual zero-gap contact is separate from the ordinary 0.12 m safety guard. */
+export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
+  if (!Number.isFinite(dt) || dt <= 0)
+    throw new RangeError("Contact needs a positive step");
+  if (overlaps(before, obstacle)) return null;
+  const travel =
+    distance(before, proposed) +
+    Math.abs(angleDelta(proposed.heading, before.heading)) *
+      Math.hypot(before.length, before.width) / 2;
+  if (travel < 1e-10) return null;
+  const steps = Math.max(1, Math.ceil(travel / 0.04));
+  let low = 0;
+  let high = null;
+  for (let i = 1; i <= steps; i++) {
+    if (overlaps(interpolate(before, proposed, i / steps), obstacle)) {
+      high = i / steps;
+      low = (i - 1) / steps;
+      break;
+    }
+  }
+  if (high === null) return null;
+  for (let i = 0; i < 32; i++) {
+    const middle = (low + high) / 2;
+    if (overlaps(interpolate(before, proposed, middle), obstacle)) high = middle;
+    else low = middle;
+  }
+  const body = interpolate(before, proposed, low);
+  const a = corners(body);
+  const b = corners(obstacle);
+  let separation = -Infinity;
+  let normal;
+  for (const shape of [body, obstacle]) {
+    for (const offset of [0, Math.PI / 2]) {
+      const axis = {
+        x: Math.sin((shape.heading ?? 0) + offset),
+        z: Math.cos((shape.heading ?? 0) + offset),
+      };
+      const pa = a.map((p) => p.x * axis.x + p.z * axis.z);
+      const pb = b.map((p) => p.x * axis.x + p.z * axis.z);
+      const forwardGap = Math.min(...pb) - Math.max(...pa);
+      const reverseGap = Math.min(...pa) - Math.max(...pb);
+      const gap = Math.max(forwardGap, reverseGap);
+      if (gap > separation) {
+        separation = gap;
+        const sign = forwardGap >= reverseGap ? 1 : -1;
+        normal = { x: axis.x * sign, z: axis.z * sign };
+      }
+    }
+  }
+  const forward = normal.x * Math.sin(body.heading) + normal.z * Math.cos(body.heading);
+  const right = normal.x * Math.cos(body.heading) - normal.z * Math.sin(body.heading);
+  const side = Math.abs(forward) >= Math.abs(right)
+    ? forward > 0 ? "front" : "rear"
+    : right > 0 ? "right" : "left";
+  const obstacleSpeed = obstacle.speed ?? 0;
+  const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
+  const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
+  const closingSpeedMps = Math.max(0, vx * normal.x + vz * normal.z);
+  return {
+    body: { ...body, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
+    hitId: obstacle.id,
+    side,
+    normal,
+    closingSpeedMps,
+    energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
+    proposedTravelM: distance(before, proposed),
   };
 }
 export function followPath(body, path, cursor = 0, steeringOnly = false) {

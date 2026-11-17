@@ -870,14 +870,14 @@
     clone() {
       return new this.constructor(this.x, this.y);
     }
-    copy(v) {
-      this.x = v.x;
-      this.y = v.y;
+    copy(v2) {
+      this.x = v2.x;
+      this.y = v2.y;
       return this;
     }
-    add(v) {
-      this.x += v.x;
-      this.y += v.y;
+    add(v2) {
+      this.x += v2.x;
+      this.y += v2.y;
       return this;
     }
     addScalar(s) {
@@ -890,14 +890,14 @@
       this.y = a.y + b.y;
       return this;
     }
-    addScaledVector(v, s) {
-      this.x += v.x * s;
-      this.y += v.y * s;
+    addScaledVector(v2, s) {
+      this.x += v2.x * s;
+      this.y += v2.y * s;
       return this;
     }
-    sub(v) {
-      this.x -= v.x;
-      this.y -= v.y;
+    sub(v2) {
+      this.x -= v2.x;
+      this.y -= v2.y;
       return this;
     }
     subScalar(s) {
@@ -910,9 +910,9 @@
       this.y = a.y - b.y;
       return this;
     }
-    multiply(v) {
-      this.x *= v.x;
-      this.y *= v.y;
+    multiply(v2) {
+      this.x *= v2.x;
+      this.y *= v2.y;
       return this;
     }
     multiplyScalar(scalar) {
@@ -920,9 +920,9 @@
       this.y *= scalar;
       return this;
     }
-    divide(v) {
-      this.x /= v.x;
-      this.y /= v.y;
+    divide(v2) {
+      this.x /= v2.x;
+      this.y /= v2.y;
       return this;
     }
     divideScalar(scalar) {
@@ -935,14 +935,14 @@
       this.y = e[1] * x + e[4] * y + e[7];
       return this;
     }
-    min(v) {
-      this.x = Math.min(this.x, v.x);
-      this.y = Math.min(this.y, v.y);
+    min(v2) {
+      this.x = Math.min(this.x, v2.x);
+      this.y = Math.min(this.y, v2.y);
       return this;
     }
-    max(v) {
-      this.x = Math.max(this.x, v.x);
-      this.y = Math.max(this.y, v.y);
+    max(v2) {
+      this.x = Math.max(this.x, v2.x);
+      this.y = Math.max(this.y, v2.y);
       return this;
     }
     clamp(min, max) {
@@ -984,11 +984,11 @@
       this.y = -this.y;
       return this;
     }
-    dot(v) {
-      return this.x * v.x + this.y * v.y;
+    dot(v2) {
+      return this.x * v2.x + this.y * v2.y;
     }
-    cross(v) {
-      return this.x * v.y - this.y * v.x;
+    cross(v2) {
+      return this.x * v2.y - this.y * v2.x;
     }
     lengthSq() {
       return this.x * this.x + this.y * this.y;
@@ -1006,28 +1006,28 @@
       const angle = Math.atan2(-this.y, -this.x) + Math.PI;
       return angle;
     }
-    angleTo(v) {
-      const denominator = Math.sqrt(this.lengthSq() * v.lengthSq());
+    angleTo(v2) {
+      const denominator = Math.sqrt(this.lengthSq() * v2.lengthSq());
       if (denominator === 0) return Math.PI / 2;
-      const theta = this.dot(v) / denominator;
+      const theta = this.dot(v2) / denominator;
       return Math.acos(clamp(theta, -1, 1));
     }
-    distanceTo(v) {
-      return Math.sqrt(this.distanceToSquared(v));
+    distanceTo(v2) {
+      return Math.sqrt(this.distanceToSquared(v2));
     }
-    distanceToSquared(v) {
-      const dx = this.x - v.x, dy = this.y - v.y;
+    distanceToSquared(v2) {
+      const dx = this.x - v2.x, dy = this.y - v2.y;
       return dx * dx + dy * dy;
     }
-    manhattanDistanceTo(v) {
-      return Math.abs(this.x - v.x) + Math.abs(this.y - v.y);
+    manhattanDistanceTo(v2) {
+      return Math.abs(this.x - v2.x) + Math.abs(this.y - v2.y);
     }
     setLength(length) {
       return this.normalize().multiplyScalar(length);
     }
-    lerp(v, alpha) {
-      this.x += (v.x - this.x) * alpha;
-      this.y += (v.y - this.y) * alpha;
+    lerp(v2, alpha) {
+      this.x += (v2.x - this.x) * alpha;
+      this.y += (v2.y - this.y) * alpha;
       return this;
     }
     lerpVectors(v1, v2, alpha) {
@@ -1035,8 +1035,8 @@
       this.y = v1.y + (v2.y - v1.y) * alpha;
       return this;
     }
-    equals(v) {
-      return v.x === this.x && v.y === this.y;
+    equals(v2) {
+      return v2.x === this.x && v2.y === this.y;
     }
     fromArray(array, offset2 = 0) {
       this.x = array[offset2];
@@ -1847,18 +1847,18 @@
     clone() {
       return new this.constructor(this.x, this.y, this.z, this.w);
     }
-    copy(v) {
-      this.x = v.x;
-      this.y = v.y;
-      this.z = v.z;
-      this.w = v.w !== void 0 ? v.w : 1;
+    copy(v2) {
+      this.x = v2.x;
+      this.y = v2.y;
+      this.z = v2.z;
+      this.w = v2.w !== void 0 ? v2.w : 1;
       return this;
     }
-    add(v) {
-      this.x += v.x;
-      this.y += v.y;
-      this.z += v.z;
-      this.w += v.w;
+    add(v2) {
+      this.x += v2.x;
+      this.y += v2.y;
+      this.z += v2.z;
+      this.w += v2.w;
       return this;
     }
     addScalar(s) {
@@ -1875,18 +1875,18 @@
       this.w = a.w + b.w;
       return this;
     }
-    addScaledVector(v, s) {
-      this.x += v.x * s;
-      this.y += v.y * s;
-      this.z += v.z * s;
-      this.w += v.w * s;
+    addScaledVector(v2, s) {
+      this.x += v2.x * s;
+      this.y += v2.y * s;
+      this.z += v2.z * s;
+      this.w += v2.w * s;
       return this;
     }
-    sub(v) {
-      this.x -= v.x;
-      this.y -= v.y;
-      this.z -= v.z;
-      this.w -= v.w;
+    sub(v2) {
+      this.x -= v2.x;
+      this.y -= v2.y;
+      this.z -= v2.z;
+      this.w -= v2.w;
       return this;
     }
     subScalar(s) {
@@ -1903,11 +1903,11 @@
       this.w = a.w - b.w;
       return this;
     }
-    multiply(v) {
-      this.x *= v.x;
-      this.y *= v.y;
-      this.z *= v.z;
-      this.w *= v.w;
+    multiply(v2) {
+      this.x *= v2.x;
+      this.y *= v2.y;
+      this.z *= v2.z;
+      this.w *= v2.w;
       return this;
     }
     multiplyScalar(scalar) {
@@ -2000,18 +2000,18 @@
       this.w = Math.acos((m11 + m22 + m33 - 1) / 2);
       return this;
     }
-    min(v) {
-      this.x = Math.min(this.x, v.x);
-      this.y = Math.min(this.y, v.y);
-      this.z = Math.min(this.z, v.z);
-      this.w = Math.min(this.w, v.w);
+    min(v2) {
+      this.x = Math.min(this.x, v2.x);
+      this.y = Math.min(this.y, v2.y);
+      this.z = Math.min(this.z, v2.z);
+      this.w = Math.min(this.w, v2.w);
       return this;
     }
-    max(v) {
-      this.x = Math.max(this.x, v.x);
-      this.y = Math.max(this.y, v.y);
-      this.z = Math.max(this.z, v.z);
-      this.w = Math.max(this.w, v.w);
+    max(v2) {
+      this.x = Math.max(this.x, v2.x);
+      this.y = Math.max(this.y, v2.y);
+      this.z = Math.max(this.z, v2.z);
+      this.w = Math.max(this.w, v2.w);
       return this;
     }
     clamp(min, max) {
@@ -2067,8 +2067,8 @@
       this.w = -this.w;
       return this;
     }
-    dot(v) {
-      return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
+    dot(v2) {
+      return this.x * v2.x + this.y * v2.y + this.z * v2.z + this.w * v2.w;
     }
     lengthSq() {
       return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
@@ -2085,11 +2085,11 @@
     setLength(length) {
       return this.normalize().multiplyScalar(length);
     }
-    lerp(v, alpha) {
-      this.x += (v.x - this.x) * alpha;
-      this.y += (v.y - this.y) * alpha;
-      this.z += (v.z - this.z) * alpha;
-      this.w += (v.w - this.w) * alpha;
+    lerp(v2, alpha) {
+      this.x += (v2.x - this.x) * alpha;
+      this.y += (v2.y - this.y) * alpha;
+      this.z += (v2.z - this.z) * alpha;
+      this.w += (v2.w - this.w) * alpha;
       return this;
     }
     lerpVectors(v1, v2, alpha) {
@@ -2099,8 +2099,8 @@
       this.w = v1.w + (v2.w - v1.w) * alpha;
       return this;
     }
-    equals(v) {
-      return v.x === this.x && v.y === this.y && v.z === this.z && v.w === this.w;
+    equals(v2) {
+      return v2.x === this.x && v2.y === this.y && v2.z === this.z && v2.w === this.w;
     }
     fromArray(array, offset2 = 0) {
       this.x = array[offset2];
@@ -2541,8 +2541,8 @@
       this._onChangeCallback();
       return this;
     }
-    dot(v) {
-      return this._x * v._x + this._y * v._y + this._z * v._z + this._w * v._w;
+    dot(v2) {
+      return this._x * v2._x + this._y * v2._y + this._z * v2._z + this._w * v2._w;
     }
     lengthSq() {
       return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
@@ -2745,16 +2745,16 @@
     clone() {
       return new this.constructor(this.x, this.y, this.z);
     }
-    copy(v) {
-      this.x = v.x;
-      this.y = v.y;
-      this.z = v.z;
+    copy(v2) {
+      this.x = v2.x;
+      this.y = v2.y;
+      this.z = v2.z;
       return this;
     }
-    add(v) {
-      this.x += v.x;
-      this.y += v.y;
-      this.z += v.z;
+    add(v2) {
+      this.x += v2.x;
+      this.y += v2.y;
+      this.z += v2.z;
       return this;
     }
     addScalar(s) {
@@ -2769,16 +2769,16 @@
       this.z = a.z + b.z;
       return this;
     }
-    addScaledVector(v, s) {
-      this.x += v.x * s;
-      this.y += v.y * s;
-      this.z += v.z * s;
+    addScaledVector(v2, s) {
+      this.x += v2.x * s;
+      this.y += v2.y * s;
+      this.z += v2.z * s;
       return this;
     }
-    sub(v) {
-      this.x -= v.x;
-      this.y -= v.y;
-      this.z -= v.z;
+    sub(v2) {
+      this.x -= v2.x;
+      this.y -= v2.y;
+      this.z -= v2.z;
       return this;
     }
     subScalar(s) {
@@ -2793,10 +2793,10 @@
       this.z = a.z - b.z;
       return this;
     }
-    multiply(v) {
-      this.x *= v.x;
-      this.y *= v.y;
-      this.z *= v.z;
+    multiply(v2) {
+      this.x *= v2.x;
+      this.y *= v2.y;
+      this.z *= v2.z;
       return this;
     }
     multiplyScalar(scalar) {
@@ -2863,25 +2863,25 @@
       this.z = e[2] * x + e[6] * y + e[10] * z;
       return this.normalize();
     }
-    divide(v) {
-      this.x /= v.x;
-      this.y /= v.y;
-      this.z /= v.z;
+    divide(v2) {
+      this.x /= v2.x;
+      this.y /= v2.y;
+      this.z /= v2.z;
       return this;
     }
     divideScalar(scalar) {
       return this.multiplyScalar(1 / scalar);
     }
-    min(v) {
-      this.x = Math.min(this.x, v.x);
-      this.y = Math.min(this.y, v.y);
-      this.z = Math.min(this.z, v.z);
+    min(v2) {
+      this.x = Math.min(this.x, v2.x);
+      this.y = Math.min(this.y, v2.y);
+      this.z = Math.min(this.z, v2.z);
       return this;
     }
-    max(v) {
-      this.x = Math.max(this.x, v.x);
-      this.y = Math.max(this.y, v.y);
-      this.z = Math.max(this.z, v.z);
+    max(v2) {
+      this.x = Math.max(this.x, v2.x);
+      this.y = Math.max(this.y, v2.y);
+      this.z = Math.max(this.z, v2.z);
       return this;
     }
     clamp(min, max) {
@@ -2930,8 +2930,8 @@
       this.z = -this.z;
       return this;
     }
-    dot(v) {
-      return this.x * v.x + this.y * v.y + this.z * v.z;
+    dot(v2) {
+      return this.x * v2.x + this.y * v2.y + this.z * v2.z;
     }
     // TODO lengthSquared?
     lengthSq() {
@@ -2949,10 +2949,10 @@
     setLength(length) {
       return this.normalize().multiplyScalar(length);
     }
-    lerp(v, alpha) {
-      this.x += (v.x - this.x) * alpha;
-      this.y += (v.y - this.y) * alpha;
-      this.z += (v.z - this.z) * alpha;
+    lerp(v2, alpha) {
+      this.x += (v2.x - this.x) * alpha;
+      this.y += (v2.y - this.y) * alpha;
+      this.z += (v2.z - this.z) * alpha;
       return this;
     }
     lerpVectors(v1, v2, alpha) {
@@ -2961,8 +2961,8 @@
       this.z = v1.z + (v2.z - v1.z) * alpha;
       return this;
     }
-    cross(v) {
-      return this.crossVectors(this, v);
+    cross(v2) {
+      return this.crossVectors(this, v2);
     }
     crossVectors(a, b) {
       const ax = a.x, ay = a.y, az = a.z;
@@ -2972,11 +2972,11 @@
       this.z = ax * by - ay * bx;
       return this;
     }
-    projectOnVector(v) {
-      const denominator = v.lengthSq();
+    projectOnVector(v2) {
+      const denominator = v2.lengthSq();
       if (denominator === 0) return this.set(0, 0, 0);
-      const scalar = v.dot(this) / denominator;
-      return this.copy(v).multiplyScalar(scalar);
+      const scalar = v2.dot(this) / denominator;
+      return this.copy(v2).multiplyScalar(scalar);
     }
     projectOnPlane(planeNormal) {
       _vector$b.copy(this).projectOnVector(planeNormal);
@@ -2985,21 +2985,21 @@
     reflect(normal) {
       return this.sub(_vector$b.copy(normal).multiplyScalar(2 * this.dot(normal)));
     }
-    angleTo(v) {
-      const denominator = Math.sqrt(this.lengthSq() * v.lengthSq());
+    angleTo(v2) {
+      const denominator = Math.sqrt(this.lengthSq() * v2.lengthSq());
       if (denominator === 0) return Math.PI / 2;
-      const theta = this.dot(v) / denominator;
+      const theta = this.dot(v2) / denominator;
       return Math.acos(clamp(theta, -1, 1));
     }
-    distanceTo(v) {
-      return Math.sqrt(this.distanceToSquared(v));
+    distanceTo(v2) {
+      return Math.sqrt(this.distanceToSquared(v2));
     }
-    distanceToSquared(v) {
-      const dx = this.x - v.x, dy = this.y - v.y, dz = this.z - v.z;
+    distanceToSquared(v2) {
+      const dx = this.x - v2.x, dy = this.y - v2.y, dz = this.z - v2.z;
       return dx * dx + dy * dy + dz * dz;
     }
-    manhattanDistanceTo(v) {
-      return Math.abs(this.x - v.x) + Math.abs(this.y - v.y) + Math.abs(this.z - v.z);
+    manhattanDistanceTo(v2) {
+      return Math.abs(this.x - v2.x) + Math.abs(this.y - v2.y) + Math.abs(this.z - v2.z);
     }
     setFromSpherical(s) {
       return this.setFromSphericalCoords(s.radius, s.phi, s.theta);
@@ -3054,8 +3054,8 @@
       this.z = c.b;
       return this;
     }
-    equals(v) {
-      return v.x === this.x && v.y === this.y && v.z === this.z;
+    equals(v2) {
+      return v2.x === this.x && v2.y === this.y && v2.z === this.z;
     }
     fromArray(array, offset2 = 0) {
       this.x = array[offset2];
@@ -3136,16 +3136,16 @@
       this.max.copy(center).add(halfSize);
       return this;
     }
-    setFromObject(object, precise = false) {
+    setFromObject(object2, precise = false) {
       this.makeEmpty();
-      return this.expandByObject(object, precise);
+      return this.expandByObject(object2, precise);
     }
     clone() {
       return new this.constructor().copy(this);
     }
-    copy(box2) {
-      this.min.copy(box2.min);
-      this.max.copy(box2.max);
+    copy(box3) {
+      this.min.copy(box3.min);
+      this.max.copy(box3.max);
       return this;
     }
     makeEmpty() {
@@ -3162,14 +3162,14 @@
     getSize(target2) {
       return this.isEmpty() ? target2.set(0, 0, 0) : target2.subVectors(this.max, this.min);
     }
-    expandByPoint(point) {
-      this.min.min(point);
-      this.max.max(point);
+    expandByPoint(point3) {
+      this.min.min(point3);
+      this.max.max(point3);
       return this;
     }
-    expandByVector(vector) {
-      this.min.sub(vector);
-      this.max.add(vector);
+    expandByVector(vector2) {
+      this.min.sub(vector2);
+      this.max.add(vector2);
       return this;
     }
     expandByScalar(scalar) {
@@ -3177,22 +3177,22 @@
       this.max.addScalar(scalar);
       return this;
     }
-    expandByObject(object, precise = false) {
-      object.updateWorldMatrix(false, false);
-      if (object.boundingBox !== void 0) {
-        if (object.boundingBox === null) {
-          object.computeBoundingBox();
+    expandByObject(object2, precise = false) {
+      object2.updateWorldMatrix(false, false);
+      if (object2.boundingBox !== void 0) {
+        if (object2.boundingBox === null) {
+          object2.computeBoundingBox();
         }
-        _box$3.copy(object.boundingBox);
-        _box$3.applyMatrix4(object.matrixWorld);
+        _box$3.copy(object2.boundingBox);
+        _box$3.applyMatrix4(object2.matrixWorld);
         this.union(_box$3);
       } else {
-        const geometry = object.geometry;
+        const geometry = object2.geometry;
         if (geometry !== void 0) {
           if (precise && geometry.attributes !== void 0 && geometry.attributes.position !== void 0) {
             const position = geometry.attributes.position;
             for (let i = 0, l = position.count; i < l; i++) {
-              _vector$a.fromBufferAttribute(position, i).applyMatrix4(object.matrixWorld);
+              _vector$a.fromBufferAttribute(position, i).applyMatrix4(object2.matrixWorld);
               this.expandByPoint(_vector$a);
             }
           } else {
@@ -3200,32 +3200,32 @@
               geometry.computeBoundingBox();
             }
             _box$3.copy(geometry.boundingBox);
-            _box$3.applyMatrix4(object.matrixWorld);
+            _box$3.applyMatrix4(object2.matrixWorld);
             this.union(_box$3);
           }
         }
       }
-      const children = object.children;
+      const children = object2.children;
       for (let i = 0, l = children.length; i < l; i++) {
         this.expandByObject(children[i], precise);
       }
       return this;
     }
-    containsPoint(point) {
-      return point.x < this.min.x || point.x > this.max.x || point.y < this.min.y || point.y > this.max.y || point.z < this.min.z || point.z > this.max.z ? false : true;
+    containsPoint(point3) {
+      return point3.x < this.min.x || point3.x > this.max.x || point3.y < this.min.y || point3.y > this.max.y || point3.z < this.min.z || point3.z > this.max.z ? false : true;
     }
-    containsBox(box2) {
-      return this.min.x <= box2.min.x && box2.max.x <= this.max.x && this.min.y <= box2.min.y && box2.max.y <= this.max.y && this.min.z <= box2.min.z && box2.max.z <= this.max.z;
+    containsBox(box3) {
+      return this.min.x <= box3.min.x && box3.max.x <= this.max.x && this.min.y <= box3.min.y && box3.max.y <= this.max.y && this.min.z <= box3.min.z && box3.max.z <= this.max.z;
     }
-    getParameter(point, target2) {
+    getParameter(point3, target2) {
       return target2.set(
-        (point.x - this.min.x) / (this.max.x - this.min.x),
-        (point.y - this.min.y) / (this.max.y - this.min.y),
-        (point.z - this.min.z) / (this.max.z - this.min.z)
+        (point3.x - this.min.x) / (this.max.x - this.min.x),
+        (point3.y - this.min.y) / (this.max.y - this.min.y),
+        (point3.z - this.min.z) / (this.max.z - this.min.z)
       );
     }
-    intersectsBox(box2) {
-      return box2.max.x < this.min.x || box2.min.x > this.max.x || box2.max.y < this.min.y || box2.min.y > this.max.y || box2.max.z < this.min.z || box2.min.z > this.max.z ? false : true;
+    intersectsBox(box3) {
+      return box3.max.x < this.min.x || box3.min.x > this.max.x || box3.max.y < this.min.y || box3.min.y > this.max.y || box3.max.z < this.min.z || box3.min.z > this.max.z ? false : true;
     }
     intersectsSphere(sphere) {
       this.clampPoint(sphere.center, _vector$a);
@@ -3308,11 +3308,11 @@
       axes = [_triangleNormal.x, _triangleNormal.y, _triangleNormal.z];
       return satForAxes(axes, _v0$2, _v1$7, _v2$4, _extents);
     }
-    clampPoint(point, target2) {
-      return target2.copy(point).clamp(this.min, this.max);
+    clampPoint(point3, target2) {
+      return target2.copy(point3).clamp(this.min, this.max);
     }
-    distanceToPoint(point) {
-      return this.clampPoint(point, _vector$a).distanceTo(point);
+    distanceToPoint(point3) {
+      return this.clampPoint(point3, _vector$a).distanceTo(point3);
     }
     getBoundingSphere(target2) {
       if (this.isEmpty()) {
@@ -3323,15 +3323,15 @@
       }
       return target2;
     }
-    intersect(box2) {
-      this.min.max(box2.min);
-      this.max.min(box2.max);
+    intersect(box3) {
+      this.min.max(box3.min);
+      this.max.min(box3.max);
       if (this.isEmpty()) this.makeEmpty();
       return this;
     }
-    union(box2) {
-      this.min.min(box2.min);
-      this.max.max(box2.max);
+    union(box3) {
+      this.min.min(box3.min);
+      this.max.max(box3.max);
       return this;
     }
     applyMatrix4(matrix) {
@@ -3352,8 +3352,8 @@
       this.max.add(offset2);
       return this;
     }
-    equals(box2) {
-      return box2.min.equals(this.min) && box2.max.equals(this.max);
+    equals(box3) {
+      return box3.min.equals(this.min) && box3.max.equals(this.max);
     }
   };
   var _points = [
@@ -3431,25 +3431,25 @@
       this.radius = -1;
       return this;
     }
-    containsPoint(point) {
-      return point.distanceToSquared(this.center) <= this.radius * this.radius;
+    containsPoint(point3) {
+      return point3.distanceToSquared(this.center) <= this.radius * this.radius;
     }
-    distanceToPoint(point) {
-      return point.distanceTo(this.center) - this.radius;
+    distanceToPoint(point3) {
+      return point3.distanceTo(this.center) - this.radius;
     }
     intersectsSphere(sphere) {
       const radiusSum = this.radius + sphere.radius;
       return sphere.center.distanceToSquared(this.center) <= radiusSum * radiusSum;
     }
-    intersectsBox(box2) {
-      return box2.intersectsSphere(this);
+    intersectsBox(box3) {
+      return box3.intersectsSphere(this);
     }
     intersectsPlane(plane) {
       return Math.abs(plane.distanceToPoint(this.center)) <= this.radius;
     }
-    clampPoint(point, target2) {
-      const deltaLengthSq = this.center.distanceToSquared(point);
-      target2.copy(point);
+    clampPoint(point3, target2) {
+      const deltaLengthSq = this.center.distanceToSquared(point3);
+      target2.copy(point3);
       if (deltaLengthSq > this.radius * this.radius) {
         target2.sub(this.center).normalize();
         target2.multiplyScalar(this.radius).add(this.center);
@@ -3474,13 +3474,13 @@
       this.center.add(offset2);
       return this;
     }
-    expandByPoint(point) {
+    expandByPoint(point3) {
       if (this.isEmpty()) {
-        this.center.copy(point);
+        this.center.copy(point3);
         this.radius = 0;
         return this;
       }
-      _v1$6.subVectors(point, this.center);
+      _v1$6.subVectors(point3, this.center);
       const lengthSq = _v1$6.lengthSq();
       if (lengthSq > this.radius * this.radius) {
         const length = Math.sqrt(lengthSq);
@@ -3539,32 +3539,32 @@
     at(t, target2) {
       return target2.copy(this.origin).addScaledVector(this.direction, t);
     }
-    lookAt(v) {
-      this.direction.copy(v).sub(this.origin).normalize();
+    lookAt(v2) {
+      this.direction.copy(v2).sub(this.origin).normalize();
       return this;
     }
     recast(t) {
       this.origin.copy(this.at(t, _vector$9));
       return this;
     }
-    closestPointToPoint(point, target2) {
-      target2.subVectors(point, this.origin);
+    closestPointToPoint(point3, target2) {
+      target2.subVectors(point3, this.origin);
       const directionDistance = target2.dot(this.direction);
       if (directionDistance < 0) {
         return target2.copy(this.origin);
       }
       return target2.copy(this.origin).addScaledVector(this.direction, directionDistance);
     }
-    distanceToPoint(point) {
-      return Math.sqrt(this.distanceSqToPoint(point));
+    distanceToPoint(point3) {
+      return Math.sqrt(this.distanceSqToPoint(point3));
     }
-    distanceSqToPoint(point) {
-      const directionDistance = _vector$9.subVectors(point, this.origin).dot(this.direction);
+    distanceSqToPoint(point3) {
+      const directionDistance = _vector$9.subVectors(point3, this.origin).dot(this.direction);
       if (directionDistance < 0) {
-        return this.origin.distanceToSquared(point);
+        return this.origin.distanceToSquared(point3);
       }
       _vector$9.copy(this.origin).addScaledVector(this.direction, directionDistance);
-      return _vector$9.distanceToSquared(point);
+      return _vector$9.distanceToSquared(point3);
     }
     distanceSqToSegment(v0, v1, optionalPointOnRay, optionalPointOnSegment) {
       _segCenter.copy(v0).add(v1).multiplyScalar(0.5);
@@ -3671,33 +3671,33 @@
       }
       return false;
     }
-    intersectBox(box2, target2) {
+    intersectBox(box3, target2) {
       let tmin, tmax, tymin, tymax, tzmin, tzmax;
       const invdirx = 1 / this.direction.x, invdiry = 1 / this.direction.y, invdirz = 1 / this.direction.z;
       const origin = this.origin;
       if (invdirx >= 0) {
-        tmin = (box2.min.x - origin.x) * invdirx;
-        tmax = (box2.max.x - origin.x) * invdirx;
+        tmin = (box3.min.x - origin.x) * invdirx;
+        tmax = (box3.max.x - origin.x) * invdirx;
       } else {
-        tmin = (box2.max.x - origin.x) * invdirx;
-        tmax = (box2.min.x - origin.x) * invdirx;
+        tmin = (box3.max.x - origin.x) * invdirx;
+        tmax = (box3.min.x - origin.x) * invdirx;
       }
       if (invdiry >= 0) {
-        tymin = (box2.min.y - origin.y) * invdiry;
-        tymax = (box2.max.y - origin.y) * invdiry;
+        tymin = (box3.min.y - origin.y) * invdiry;
+        tymax = (box3.max.y - origin.y) * invdiry;
       } else {
-        tymin = (box2.max.y - origin.y) * invdiry;
-        tymax = (box2.min.y - origin.y) * invdiry;
+        tymin = (box3.max.y - origin.y) * invdiry;
+        tymax = (box3.min.y - origin.y) * invdiry;
       }
       if (tmin > tymax || tymin > tmax) return null;
       if (tymin > tmin || isNaN(tmin)) tmin = tymin;
       if (tymax < tmax || isNaN(tmax)) tmax = tymax;
       if (invdirz >= 0) {
-        tzmin = (box2.min.z - origin.z) * invdirz;
-        tzmax = (box2.max.z - origin.z) * invdirz;
+        tzmin = (box3.min.z - origin.z) * invdirz;
+        tzmax = (box3.max.z - origin.z) * invdirz;
       } else {
-        tzmin = (box2.max.z - origin.z) * invdirz;
-        tzmax = (box2.min.z - origin.z) * invdirz;
+        tzmin = (box3.max.z - origin.z) * invdirz;
+        tzmax = (box3.min.z - origin.z) * invdirz;
       }
       if (tmin > tzmax || tzmin > tmax) return null;
       if (tzmin > tmin || tmin !== tmin) tmin = tzmin;
@@ -3705,8 +3705,8 @@
       if (tmax < 0) return null;
       return this.at(tmin >= 0 ? tmin : tmax, target2);
     }
-    intersectsBox(box2) {
-      return this.intersectBox(box2, _vector$9) !== null;
+    intersectsBox(box3) {
+      return this.intersectBox(box3, _vector$9) !== null;
     }
     intersectTriangle(a, b, c, backfaceCulling, target2) {
       _edge1.subVectors(b, a);
@@ -4158,9 +4158,9 @@
       te[15] = (n12 * n23 * n31 - n13 * n22 * n31 + n13 * n21 * n32 - n11 * n23 * n32 - n12 * n21 * n33 + n11 * n22 * n33) * detInv;
       return this;
     }
-    scale(v) {
+    scale(v2) {
       const te = this.elements;
-      const x = v.x, y = v.y, z = v.z;
+      const x = v2.x, y = v2.y, z = v2.z;
       te[0] *= x;
       te[4] *= y;
       te[8] *= z;
@@ -4620,8 +4620,8 @@
       _matrix.makeRotationFromQuaternion(q);
       return this.setFromRotationMatrix(_matrix, order, update);
     }
-    setFromVector3(v, order = this._order) {
-      return this.set(v.x, v.y, v.z, order);
+    setFromVector3(v2, order = this._order) {
+      return this.set(v2.x, v2.y, v2.z, order);
     }
     reorder(newOrder) {
       _quaternion$3.setFromEuler(this);
@@ -4824,13 +4824,13 @@
     translateZ(distance2) {
       return this.translateOnAxis(_zAxis, distance2);
     }
-    localToWorld(vector) {
+    localToWorld(vector2) {
       this.updateWorldMatrix(true, false);
-      return vector.applyMatrix4(this.matrixWorld);
+      return vector2.applyMatrix4(this.matrixWorld);
     }
-    worldToLocal(vector) {
+    worldToLocal(vector2) {
       this.updateWorldMatrix(true, false);
-      return vector.applyMatrix4(_m1$1.copy(this.matrixWorld).invert());
+      return vector2.applyMatrix4(_m1$1.copy(this.matrixWorld).invert());
     }
     lookAt(x, y, z) {
       if (x.isVector3) {
@@ -4853,41 +4853,41 @@
         this.quaternion.premultiply(_q1.invert());
       }
     }
-    add(object) {
+    add(object2) {
       if (arguments.length > 1) {
         for (let i = 0; i < arguments.length; i++) {
           this.add(arguments[i]);
         }
         return this;
       }
-      if (object === this) {
-        console.error("THREE.Object3D.add: object can't be added as a child of itself.", object);
+      if (object2 === this) {
+        console.error("THREE.Object3D.add: object can't be added as a child of itself.", object2);
         return this;
       }
-      if (object && object.isObject3D) {
-        if (object.parent !== null) {
-          object.parent.remove(object);
+      if (object2 && object2.isObject3D) {
+        if (object2.parent !== null) {
+          object2.parent.remove(object2);
         }
-        object.parent = this;
-        this.children.push(object);
-        object.dispatchEvent(_addedEvent);
+        object2.parent = this;
+        this.children.push(object2);
+        object2.dispatchEvent(_addedEvent);
       } else {
-        console.error("THREE.Object3D.add: object not an instance of THREE.Object3D.", object);
+        console.error("THREE.Object3D.add: object not an instance of THREE.Object3D.", object2);
       }
       return this;
     }
-    remove(object) {
+    remove(object2) {
       if (arguments.length > 1) {
         for (let i = 0; i < arguments.length; i++) {
           this.remove(arguments[i]);
         }
         return this;
       }
-      const index = this.children.indexOf(object);
+      const index = this.children.indexOf(object2);
       if (index !== -1) {
-        object.parent = null;
+        object2.parent = null;
         this.children.splice(index, 1);
-        object.dispatchEvent(_removedEvent);
+        object2.dispatchEvent(_removedEvent);
       }
       return this;
     }
@@ -4900,23 +4900,23 @@
     }
     clear() {
       for (let i = 0; i < this.children.length; i++) {
-        const object = this.children[i];
-        object.parent = null;
-        object.dispatchEvent(_removedEvent);
+        const object2 = this.children[i];
+        object2.parent = null;
+        object2.dispatchEvent(_removedEvent);
       }
       this.children.length = 0;
       return this;
     }
-    attach(object) {
+    attach(object2) {
       this.updateWorldMatrix(true, false);
       _m1$1.copy(this.matrixWorld).invert();
-      if (object.parent !== null) {
-        object.parent.updateWorldMatrix(true, false);
-        _m1$1.multiply(object.parent.matrixWorld);
+      if (object2.parent !== null) {
+        object2.parent.updateWorldMatrix(true, false);
+        _m1$1.multiply(object2.parent.matrixWorld);
       }
-      object.applyMatrix4(_m1$1);
-      this.add(object);
-      object.updateWorldMatrix(false, true);
+      object2.applyMatrix4(_m1$1);
+      this.add(object2);
+      object2.updateWorldMatrix(false, true);
       return this;
     }
     getObjectById(id2) {
@@ -4929,9 +4929,9 @@
       if (this[name] === value) return this;
       for (let i = 0, l = this.children.length; i < l; i++) {
         const child = this.children[i];
-        const object = child.getObjectByProperty(name, value);
-        if (object !== void 0) {
-          return object;
+        const object2 = child.getObjectByProperty(name, value);
+        if (object2 !== void 0) {
+          return object2;
         }
       }
       return void 0;
@@ -5054,25 +5054,25 @@
           generator: "Object3D.toJSON"
         };
       }
-      const object = {};
-      object.uuid = this.uuid;
-      object.type = this.type;
-      if (this.name !== "") object.name = this.name;
-      if (this.castShadow === true) object.castShadow = true;
-      if (this.receiveShadow === true) object.receiveShadow = true;
-      if (this.visible === false) object.visible = false;
-      if (this.frustumCulled === false) object.frustumCulled = false;
-      if (this.renderOrder !== 0) object.renderOrder = this.renderOrder;
-      if (Object.keys(this.userData).length > 0) object.userData = this.userData;
-      object.layers = this.layers.mask;
-      object.matrix = this.matrix.toArray();
-      object.up = this.up.toArray();
-      if (this.matrixAutoUpdate === false) object.matrixAutoUpdate = false;
+      const object2 = {};
+      object2.uuid = this.uuid;
+      object2.type = this.type;
+      if (this.name !== "") object2.name = this.name;
+      if (this.castShadow === true) object2.castShadow = true;
+      if (this.receiveShadow === true) object2.receiveShadow = true;
+      if (this.visible === false) object2.visible = false;
+      if (this.frustumCulled === false) object2.frustumCulled = false;
+      if (this.renderOrder !== 0) object2.renderOrder = this.renderOrder;
+      if (Object.keys(this.userData).length > 0) object2.userData = this.userData;
+      object2.layers = this.layers.mask;
+      object2.matrix = this.matrix.toArray();
+      object2.up = this.up.toArray();
+      if (this.matrixAutoUpdate === false) object2.matrixAutoUpdate = false;
       if (this.isInstancedMesh) {
-        object.type = "InstancedMesh";
-        object.count = this.count;
-        object.instanceMatrix = this.instanceMatrix.toJSON();
-        if (this.instanceColor !== null) object.instanceColor = this.instanceColor.toJSON();
+        object2.type = "InstancedMesh";
+        object2.count = this.count;
+        object2.instanceMatrix = this.instanceMatrix.toJSON();
+        if (this.instanceColor !== null) object2.instanceColor = this.instanceColor.toJSON();
       }
       function serialize(library, element) {
         if (library[element.uuid] === void 0) {
@@ -5083,16 +5083,16 @@
       if (this.isScene) {
         if (this.background) {
           if (this.background.isColor) {
-            object.background = this.background.toJSON();
+            object2.background = this.background.toJSON();
           } else if (this.background.isTexture) {
-            object.background = this.background.toJSON(meta).uuid;
+            object2.background = this.background.toJSON(meta).uuid;
           }
         }
         if (this.environment && this.environment.isTexture && this.environment.isRenderTargetTexture !== true) {
-          object.environment = this.environment.toJSON(meta).uuid;
+          object2.environment = this.environment.toJSON(meta).uuid;
         }
       } else if (this.isMesh || this.isLine || this.isPoints) {
-        object.geometry = serialize(meta.geometries, this.geometry);
+        object2.geometry = serialize(meta.geometries, this.geometry);
         const parameters = this.geometry.parameters;
         if (parameters !== void 0 && parameters.shapes !== void 0) {
           const shapes = parameters.shapes;
@@ -5107,11 +5107,11 @@
         }
       }
       if (this.isSkinnedMesh) {
-        object.bindMode = this.bindMode;
-        object.bindMatrix = this.bindMatrix.toArray();
+        object2.bindMode = this.bindMode;
+        object2.bindMatrix = this.bindMatrix.toArray();
         if (this.skeleton !== void 0) {
           serialize(meta.skeletons, this.skeleton);
-          object.skeleton = this.skeleton.uuid;
+          object2.skeleton = this.skeleton.uuid;
         }
       }
       if (this.material !== void 0) {
@@ -5120,22 +5120,22 @@
           for (let i = 0, l = this.material.length; i < l; i++) {
             uuids.push(serialize(meta.materials, this.material[i]));
           }
-          object.material = uuids;
+          object2.material = uuids;
         } else {
-          object.material = serialize(meta.materials, this.material);
+          object2.material = serialize(meta.materials, this.material);
         }
       }
       if (this.children.length > 0) {
-        object.children = [];
+        object2.children = [];
         for (let i = 0; i < this.children.length; i++) {
-          object.children.push(this.children[i].toJSON(meta).object);
+          object2.children.push(this.children[i].toJSON(meta).object);
         }
       }
       if (this.animations.length > 0) {
-        object.animations = [];
+        object2.animations = [];
         for (let i = 0; i < this.animations.length; i++) {
           const animation = this.animations[i];
-          object.animations.push(serialize(meta.animations, animation));
+          object2.animations.push(serialize(meta.animations, animation));
         }
       }
       if (isRootObject) {
@@ -5156,7 +5156,7 @@
         if (animations.length > 0) output.animations = animations;
         if (nodes.length > 0) output.nodes = nodes;
       }
-      output.object = object;
+      output.object = object2;
       return output;
       function extractFromCache(cache) {
         const values = [];
@@ -5232,10 +5232,10 @@
     }
     // static/instance method to calculate barycentric coordinates
     // based on: http://www.blackpawn.com/texts/pointinpoly/default.html
-    static getBarycoord(point, a, b, c, target2) {
+    static getBarycoord(point3, a, b, c, target2) {
       _v0$1.subVectors(c, a);
       _v1$3.subVectors(b, a);
-      _v2$2.subVectors(point, a);
+      _v2$2.subVectors(point3, a);
       const dot00 = _v0$1.dot(_v0$1);
       const dot01 = _v0$1.dot(_v1$3);
       const dot02 = _v0$1.dot(_v2$2);
@@ -5247,22 +5247,22 @@
       }
       const invDenom = 1 / denom;
       const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-      const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
-      return target2.set(1 - u - v, v, u);
+      const v2 = (dot00 * dot12 - dot01 * dot02) * invDenom;
+      return target2.set(1 - u - v2, v2, u);
     }
-    static containsPoint(point, a, b, c) {
-      this.getBarycoord(point, a, b, c, _v3$1);
+    static containsPoint(point3, a, b, c) {
+      this.getBarycoord(point3, a, b, c, _v3$1);
       return _v3$1.x >= 0 && _v3$1.y >= 0 && _v3$1.x + _v3$1.y <= 1;
     }
-    static getUV(point, p1, p2, p3, uv1, uv2, uv3, target2) {
+    static getUV(point3, p1, p2, p3, uv1, uv2, uv3, target2) {
       if (warnedGetUV === false) {
         console.warn("THREE.Triangle.getUV() has been renamed to THREE.Triangle.getInterpolation().");
         warnedGetUV = true;
       }
-      return this.getInterpolation(point, p1, p2, p3, uv1, uv2, uv3, target2);
+      return this.getInterpolation(point3, p1, p2, p3, uv1, uv2, uv3, target2);
     }
-    static getInterpolation(point, p1, p2, p3, v1, v2, v3, target2) {
-      this.getBarycoord(point, p1, p2, p3, _v3$1);
+    static getInterpolation(point3, p1, p2, p3, v1, v2, v3, target2) {
+      this.getBarycoord(point3, p1, p2, p3, _v3$1);
       target2.setScalar(0);
       target2.addScaledVector(v1, _v3$1.x);
       target2.addScaledVector(v2, _v3$1.y);
@@ -5315,31 +5315,31 @@
     getPlane(target2) {
       return target2.setFromCoplanarPoints(this.a, this.b, this.c);
     }
-    getBarycoord(point, target2) {
-      return _Triangle.getBarycoord(point, this.a, this.b, this.c, target2);
+    getBarycoord(point3, target2) {
+      return _Triangle.getBarycoord(point3, this.a, this.b, this.c, target2);
     }
-    getUV(point, uv1, uv2, uv3, target2) {
+    getUV(point3, uv1, uv2, uv3, target2) {
       if (warnedGetUV === false) {
         console.warn("THREE.Triangle.getUV() has been renamed to THREE.Triangle.getInterpolation().");
         warnedGetUV = true;
       }
-      return _Triangle.getInterpolation(point, this.a, this.b, this.c, uv1, uv2, uv3, target2);
+      return _Triangle.getInterpolation(point3, this.a, this.b, this.c, uv1, uv2, uv3, target2);
     }
-    getInterpolation(point, v1, v2, v3, target2) {
-      return _Triangle.getInterpolation(point, this.a, this.b, this.c, v1, v2, v3, target2);
+    getInterpolation(point3, v1, v2, v3, target2) {
+      return _Triangle.getInterpolation(point3, this.a, this.b, this.c, v1, v2, v3, target2);
     }
-    containsPoint(point) {
-      return _Triangle.containsPoint(point, this.a, this.b, this.c);
+    containsPoint(point3) {
+      return _Triangle.containsPoint(point3, this.a, this.b, this.c);
     }
     isFrontFacing(direction2) {
       return _Triangle.isFrontFacing(this.a, this.b, this.c, direction2);
     }
-    intersectsBox(box2) {
-      return box2.intersectsTriangle(this);
+    intersectsBox(box3) {
+      return box3.intersectsTriangle(this);
     }
     closestPointToPoint(p, target2) {
       const a = this.a, b = this.b, c = this.c;
-      let v, w;
+      let v2, w;
       _vab.subVectors(b, a);
       _vac.subVectors(c, a);
       _vap.subVectors(p, a);
@@ -5356,8 +5356,8 @@
       }
       const vc = d1 * d4 - d3 * d2;
       if (vc <= 0 && d1 >= 0 && d3 <= 0) {
-        v = d1 / (d1 - d3);
-        return target2.copy(a).addScaledVector(_vab, v);
+        v2 = d1 / (d1 - d3);
+        return target2.copy(a).addScaledVector(_vab, v2);
       }
       _vcp.subVectors(p, c);
       const d5 = _vab.dot(_vcp);
@@ -5377,9 +5377,9 @@
         return target2.copy(b).addScaledVector(_vbc, w);
       }
       const denom = 1 / (va + vb + vc);
-      v = vb * denom;
+      v2 = vb * denom;
       w = vc * denom;
-      return target2.copy(a).addScaledVector(_vab, v).addScaledVector(_vac, w);
+      return target2.copy(a).addScaledVector(_vab, v2).addScaledVector(_vac, w);
     }
     equals(triangle) {
       return triangle.a.equals(this.a) && triangle.b.equals(this.b) && triangle.c.equals(this.c);
@@ -6137,10 +6137,10 @@
       this.setHSL(h, s, l);
       return this;
     }
-    setFromVector3(v) {
-      this.r = v.x;
-      this.g = v.y;
-      this.b = v.z;
+    setFromVector3(v2) {
+      this.r = v2.x;
+      this.g = v2.y;
+      this.b = v2.z;
       return this;
     }
     applyMatrix3(m) {
@@ -6768,8 +6768,8 @@
       this.applyMatrix4(_m1);
       return this;
     }
-    lookAt(vector) {
-      _obj.lookAt(vector);
+    lookAt(vector2) {
+      _obj.lookAt(vector2);
       _obj.updateMatrix();
       this.applyMatrix4(_obj.matrix);
       return this;
@@ -6783,8 +6783,8 @@
     setFromPoints(points) {
       const position = [];
       for (let i = 0, l = points.length; i < l; i++) {
-        const point = points[i];
-        position.push(point.x, point.y, point.z || 0);
+        const point3 = points[i];
+        position.push(point3.x, point3.y, point3.z || 0);
       }
       this.setAttribute("position", new Float32BufferAttribute(position, 3));
       return this;
@@ -6947,19 +6947,19 @@
       }
       const tmp2 = new Vector3(), tmp22 = new Vector3();
       const n = new Vector3(), n2 = new Vector3();
-      function handleVertex(v) {
-        n.fromArray(normals, v * 3);
+      function handleVertex(v2) {
+        n.fromArray(normals, v2 * 3);
         n2.copy(n);
-        const t = tan1[v];
+        const t = tan1[v2];
         tmp2.copy(t);
         tmp2.sub(n.multiplyScalar(n.dot(t))).normalize();
         tmp22.crossVectors(n2, t);
-        const test = tmp22.dot(tan2[v]);
+        const test = tmp22.dot(tan2[v2]);
         const w = test < 0 ? -1 : 1;
-        tangents[v * 4] = tmp2.x;
-        tangents[v * 4 + 1] = tmp2.y;
-        tangents[v * 4 + 2] = tmp2.z;
-        tangents[v * 4 + 3] = w;
+        tangents[v2 * 4] = tmp2.x;
+        tangents[v2 * 4 + 1] = tmp2.y;
+        tangents[v2 * 4 + 2] = tmp2.z;
+        tangents[v2 * 4 + 3] = w;
       }
       for (let i = 0, il = groups.length; i < il; ++i) {
         const group = groups[i];
@@ -7283,7 +7283,7 @@
       }
       return target2;
     }
-    raycast(raycaster, intersects2) {
+    raycast(raycaster, intersects3) {
       const geometry = this.geometry;
       const material2 = this.material;
       const matrixWorld = this.matrixWorld;
@@ -7301,9 +7301,9 @@
       if (geometry.boundingBox !== null) {
         if (_ray$2.intersectsBox(geometry.boundingBox) === false) return;
       }
-      this._computeIntersections(raycaster, intersects2);
+      this._computeIntersections(raycaster, intersects3);
     }
-    _computeIntersections(raycaster, intersects2) {
+    _computeIntersections(raycaster, intersects3) {
       let intersection;
       const geometry = this.geometry;
       const material2 = this.material;
@@ -7329,7 +7329,7 @@
               if (intersection) {
                 intersection.faceIndex = Math.floor(j / 3);
                 intersection.face.materialIndex = group.materialIndex;
-                intersects2.push(intersection);
+                intersects3.push(intersection);
               }
             }
           }
@@ -7343,7 +7343,7 @@
             intersection = checkGeometryIntersection(this, material2, raycaster, _ray$2, uv, uv1, normal, a, b, c);
             if (intersection) {
               intersection.faceIndex = Math.floor(i / 3);
-              intersects2.push(intersection);
+              intersects3.push(intersection);
             }
           }
         }
@@ -7362,7 +7362,7 @@
               if (intersection) {
                 intersection.faceIndex = Math.floor(j / 3);
                 intersection.face.materialIndex = group.materialIndex;
-                intersects2.push(intersection);
+                intersects3.push(intersection);
               }
             }
           }
@@ -7376,36 +7376,36 @@
             intersection = checkGeometryIntersection(this, material2, raycaster, _ray$2, uv, uv1, normal, a, b, c);
             if (intersection) {
               intersection.faceIndex = Math.floor(i / 3);
-              intersects2.push(intersection);
+              intersects3.push(intersection);
             }
           }
         }
       }
     }
   };
-  function checkIntersection(object, material2, raycaster, ray, pA, pB, pC, point) {
+  function checkIntersection(object2, material2, raycaster, ray, pA, pB, pC, point3) {
     let intersect;
     if (material2.side === BackSide) {
-      intersect = ray.intersectTriangle(pC, pB, pA, true, point);
+      intersect = ray.intersectTriangle(pC, pB, pA, true, point3);
     } else {
-      intersect = ray.intersectTriangle(pA, pB, pC, material2.side === FrontSide, point);
+      intersect = ray.intersectTriangle(pA, pB, pC, material2.side === FrontSide, point3);
     }
     if (intersect === null) return null;
-    _intersectionPointWorld.copy(point);
-    _intersectionPointWorld.applyMatrix4(object.matrixWorld);
+    _intersectionPointWorld.copy(point3);
+    _intersectionPointWorld.applyMatrix4(object2.matrixWorld);
     const distance2 = raycaster.ray.origin.distanceTo(_intersectionPointWorld);
     if (distance2 < raycaster.near || distance2 > raycaster.far) return null;
     return {
       distance: distance2,
       point: _intersectionPointWorld.clone(),
-      object
+      object: object2
     };
   }
-  function checkGeometryIntersection(object, material2, raycaster, ray, uv, uv1, normal, a, b, c) {
-    object.getVertexPosition(a, _vA$1);
-    object.getVertexPosition(b, _vB$1);
-    object.getVertexPosition(c, _vC$1);
-    const intersection = checkIntersection(object, material2, raycaster, ray, _vA$1, _vB$1, _vC$1, _intersectionPoint);
+  function checkGeometryIntersection(object2, material2, raycaster, ray, uv, uv1, normal, a, b, c) {
+    object2.getVertexPosition(a, _vA$1);
+    object2.getVertexPosition(b, _vB$1);
+    object2.getVertexPosition(c, _vC$1);
+    const intersection = checkIntersection(object2, material2, raycaster, ray, _vA$1, _vB$1, _vC$1, _intersectionPoint);
     if (intersection) {
       if (uv) {
         _uvA$1.fromBufferAttribute(uv, a);
@@ -7473,7 +7473,7 @@
       this.setAttribute("position", new Float32BufferAttribute(vertices, 3));
       this.setAttribute("normal", new Float32BufferAttribute(normals, 3));
       this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
-      function buildPlane(u, v, w, udir, vdir, width2, height2, depth2, gridX, gridY, materialIndex) {
+      function buildPlane(u, v2, w, udir, vdir, width2, height2, depth2, gridX, gridY, materialIndex) {
         const segmentWidth = width2 / gridX;
         const segmentHeight = height2 / gridY;
         const widthHalf = width2 / 2;
@@ -7483,19 +7483,19 @@
         const gridY1 = gridY + 1;
         let vertexCounter = 0;
         let groupCount = 0;
-        const vector = new Vector3();
+        const vector2 = new Vector3();
         for (let iy = 0; iy < gridY1; iy++) {
           const y = iy * segmentHeight - heightHalf;
           for (let ix = 0; ix < gridX1; ix++) {
             const x = ix * segmentWidth - widthHalf;
-            vector[u] = x * udir;
-            vector[v] = y * vdir;
-            vector[w] = depthHalf;
-            vertices.push(vector.x, vector.y, vector.z);
-            vector[u] = 0;
-            vector[v] = 0;
-            vector[w] = depth2 > 0 ? 1 : -1;
-            normals.push(vector.x, vector.y, vector.z);
+            vector2[u] = x * udir;
+            vector2[v2] = y * vdir;
+            vector2[w] = depthHalf;
+            vertices.push(vector2.x, vector2.y, vector2.z);
+            vector2[u] = 0;
+            vector2[v2] = 0;
+            vector2[w] = depth2 > 0 ? 1 : -1;
+            normals.push(vector2.x, vector2.y, vector2.z);
             uvs.push(ix / gridX);
             uvs.push(1 - iy / gridY);
             vertexCounter += 1;
@@ -8079,9 +8079,9 @@
       this.constant = w;
       return this;
     }
-    setFromNormalAndCoplanarPoint(normal, point) {
+    setFromNormalAndCoplanarPoint(normal, point3) {
       this.normal.copy(normal);
-      this.constant = -point.dot(this.normal);
+      this.constant = -point3.dot(this.normal);
       return this;
     }
     setFromCoplanarPoints(a, b, c) {
@@ -8105,14 +8105,14 @@
       this.normal.negate();
       return this;
     }
-    distanceToPoint(point) {
-      return this.normal.dot(point) + this.constant;
+    distanceToPoint(point3) {
+      return this.normal.dot(point3) + this.constant;
     }
     distanceToSphere(sphere) {
       return this.distanceToPoint(sphere.center) - sphere.radius;
     }
-    projectPoint(point, target2) {
-      return target2.copy(point).addScaledVector(this.normal, -this.distanceToPoint(point));
+    projectPoint(point3, target2) {
+      return target2.copy(point3).addScaledVector(this.normal, -this.distanceToPoint(point3));
     }
     intersectLine(line, target2) {
       const direction2 = line.delta(_vector1);
@@ -8134,8 +8134,8 @@
       const endSign = this.distanceToPoint(line.end);
       return startSign < 0 && endSign > 0 || endSign < 0 && startSign > 0;
     }
-    intersectsBox(box2) {
-      return box2.intersectsPlane(this);
+    intersectsBox(box3) {
+      return box3.intersectsPlane(this);
     }
     intersectsSphere(sphere) {
       return sphere.intersectsPlane(this);
@@ -8199,14 +8199,14 @@
       planes[5].setComponents(me3 + me2, me7 + me6, me11 + me10, me15 + me14).normalize();
       return this;
     }
-    intersectsObject(object) {
-      if (object.boundingSphere !== void 0) {
-        if (object.boundingSphere === null) object.computeBoundingSphere();
-        _sphere$3.copy(object.boundingSphere).applyMatrix4(object.matrixWorld);
+    intersectsObject(object2) {
+      if (object2.boundingSphere !== void 0) {
+        if (object2.boundingSphere === null) object2.computeBoundingSphere();
+        _sphere$3.copy(object2.boundingSphere).applyMatrix4(object2.matrixWorld);
       } else {
-        const geometry = object.geometry;
+        const geometry = object2.geometry;
         if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
-        _sphere$3.copy(geometry.boundingSphere).applyMatrix4(object.matrixWorld);
+        _sphere$3.copy(geometry.boundingSphere).applyMatrix4(object2.matrixWorld);
       }
       return this.intersectsSphere(_sphere$3);
     }
@@ -8228,23 +8228,23 @@
       }
       return true;
     }
-    intersectsBox(box2) {
+    intersectsBox(box3) {
       const planes = this.planes;
       for (let i = 0; i < 6; i++) {
         const plane = planes[i];
-        _vector$6.x = plane.normal.x > 0 ? box2.max.x : box2.min.x;
-        _vector$6.y = plane.normal.y > 0 ? box2.max.y : box2.min.y;
-        _vector$6.z = plane.normal.z > 0 ? box2.max.z : box2.min.z;
+        _vector$6.x = plane.normal.x > 0 ? box3.max.x : box3.min.x;
+        _vector$6.y = plane.normal.y > 0 ? box3.max.y : box3.min.y;
+        _vector$6.z = plane.normal.z > 0 ? box3.max.z : box3.min.z;
         if (plane.distanceToPoint(_vector$6) < 0) {
           return false;
         }
       }
       return true;
     }
-    containsPoint(point) {
+    containsPoint(point3) {
       const planes = this.planes;
       for (let i = 0; i < 6; i++) {
-        if (planes[i].distanceToPoint(point) < 0) {
+        if (planes[i].distanceToPoint(point3) < 0) {
           return false;
         }
       }
@@ -9305,7 +9305,7 @@
     const defaultState = createBindingState(null);
     let currentState = defaultState;
     let forceUpdate = false;
-    function setup(object, material2, program, geometry, index) {
+    function setup(object2, material2, program, geometry, index) {
       let updateBuffers = false;
       if (vaoAvailable) {
         const state = getBindingState(geometry, program, material2);
@@ -9313,8 +9313,8 @@
           currentState = state;
           bindVertexArrayObject(currentState.object);
         }
-        updateBuffers = needsUpdate(object, geometry, program, index);
-        if (updateBuffers) saveCache(object, geometry, program, index);
+        updateBuffers = needsUpdate(object2, geometry, program, index);
+        if (updateBuffers) saveCache(object2, geometry, program, index);
       } else {
         const wireframe = material2.wireframe === true;
         if (currentState.geometry !== geometry.id || currentState.program !== program.id || currentState.wireframe !== wireframe) {
@@ -9329,7 +9329,7 @@
       }
       if (updateBuffers || forceUpdate) {
         forceUpdate = false;
-        setupVertexAttributes(object, material2, program, geometry);
+        setupVertexAttributes(object2, material2, program, geometry);
         if (index !== null) {
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.get(index).buffer);
         }
@@ -9388,7 +9388,7 @@
         index: null
       };
     }
-    function needsUpdate(object, geometry, program, index) {
+    function needsUpdate(object2, geometry, program, index) {
       const cachedAttributes = currentState.attributes;
       const geometryAttributes = geometry.attributes;
       let attributesNum = 0;
@@ -9399,8 +9399,8 @@
           const cachedAttribute = cachedAttributes[name];
           let geometryAttribute = geometryAttributes[name];
           if (geometryAttribute === void 0) {
-            if (name === "instanceMatrix" && object.instanceMatrix) geometryAttribute = object.instanceMatrix;
-            if (name === "instanceColor" && object.instanceColor) geometryAttribute = object.instanceColor;
+            if (name === "instanceMatrix" && object2.instanceMatrix) geometryAttribute = object2.instanceMatrix;
+            if (name === "instanceColor" && object2.instanceColor) geometryAttribute = object2.instanceColor;
           }
           if (cachedAttribute === void 0) return true;
           if (cachedAttribute.attribute !== geometryAttribute) return true;
@@ -9412,7 +9412,7 @@
       if (currentState.index !== index) return true;
       return false;
     }
-    function saveCache(object, geometry, program, index) {
+    function saveCache(object2, geometry, program, index) {
       const cache = {};
       const attributes2 = geometry.attributes;
       let attributesNum = 0;
@@ -9422,8 +9422,8 @@
         if (programAttribute.location >= 0) {
           let attribute = attributes2[name];
           if (attribute === void 0) {
-            if (name === "instanceMatrix" && object.instanceMatrix) attribute = object.instanceMatrix;
-            if (name === "instanceColor" && object.instanceColor) attribute = object.instanceColor;
+            if (name === "instanceMatrix" && object2.instanceMatrix) attribute = object2.instanceMatrix;
+            if (name === "instanceColor" && object2.instanceColor) attribute = object2.instanceColor;
           }
           const data = {};
           data.attribute = attribute;
@@ -9479,8 +9479,8 @@
         gl.vertexAttribPointer(index, size, type, normalized, stride, offset2);
       }
     }
-    function setupVertexAttributes(object, material2, program, geometry) {
-      if (capabilities.isWebGL2 === false && (object.isInstancedMesh || geometry.isInstancedBufferGeometry)) {
+    function setupVertexAttributes(object2, material2, program, geometry) {
+      if (capabilities.isWebGL2 === false && (object2.isInstancedMesh || geometry.isInstancedBufferGeometry)) {
         if (extensions.get("ANGLE_instanced_arrays") === null) return;
       }
       initAttributes();
@@ -9492,8 +9492,8 @@
         if (programAttribute.location >= 0) {
           let geometryAttribute = geometryAttributes[name];
           if (geometryAttribute === void 0) {
-            if (name === "instanceMatrix" && object.instanceMatrix) geometryAttribute = object.instanceMatrix;
-            if (name === "instanceColor" && object.instanceColor) geometryAttribute = object.instanceColor;
+            if (name === "instanceMatrix" && object2.instanceMatrix) geometryAttribute = object2.instanceMatrix;
+            if (name === "instanceColor" && object2.instanceColor) geometryAttribute = object2.instanceColor;
           }
           if (geometryAttribute !== void 0) {
             const normalized = geometryAttribute.normalized;
@@ -9511,7 +9511,7 @@
                 for (let i = 0; i < programAttribute.locationSize; i++) {
                   enableAttributeAndDivisor(programAttribute.location + i, data.meshPerAttribute);
                 }
-                if (object.isInstancedMesh !== true && geometry._maxInstanceCount === void 0) {
+                if (object2.isInstancedMesh !== true && geometry._maxInstanceCount === void 0) {
                   geometry._maxInstanceCount = data.meshPerAttribute * data.count;
                 }
               } else {
@@ -9535,7 +9535,7 @@
                 for (let i = 0; i < programAttribute.locationSize; i++) {
                   enableAttributeAndDivisor(programAttribute.location + i, geometryAttribute.meshPerAttribute);
                 }
-                if (object.isInstancedMesh !== true && geometry._maxInstanceCount === void 0) {
+                if (object2.isInstancedMesh !== true && geometry._maxInstanceCount === void 0) {
                   geometry._maxInstanceCount = geometryAttribute.meshPerAttribute * geometryAttribute.count;
                 }
               } else {
@@ -10727,7 +10727,7 @@
       }
       info.memory.geometries--;
     }
-    function get(object, geometry) {
+    function get(object2, geometry) {
       if (geometries[geometry.id] === true) return geometry;
       geometry.addEventListener("dispose", onGeometryDispose);
       geometries[geometry.id] = true;
@@ -10900,8 +10900,8 @@
     for (let i = 0; i < 8; i++) {
       workInfluences[i] = [i, 0];
     }
-    function update(object, geometry, program) {
-      const objectInfluences = object.morphTargetInfluences;
+    function update(object2, geometry, program) {
+      const objectInfluences = object2.morphTargetInfluences;
       if (capabilities.isWebGL2 === true) {
         const morphAttribute = geometry.morphAttributes.position || geometry.morphAttributes.normal || geometry.morphAttributes.color;
         const morphTargetsCount = morphAttribute !== void 0 ? morphAttribute.length : 0;
@@ -11044,21 +11044,21 @@
   }
   function WebGLObjects(gl, geometries, attributes, info) {
     let updateMap = /* @__PURE__ */ new WeakMap();
-    function update(object) {
+    function update(object2) {
       const frame2 = info.render.frame;
-      const geometry = object.geometry;
-      const buffergeometry = geometries.get(object, geometry);
+      const geometry = object2.geometry;
+      const buffergeometry = geometries.get(object2, geometry);
       if (updateMap.get(buffergeometry) !== frame2) {
         geometries.update(buffergeometry);
         updateMap.set(buffergeometry, frame2);
       }
-      if (object.isInstancedMesh) {
-        if (object.hasEventListener("dispose", onInstancedMeshDispose) === false) {
-          object.addEventListener("dispose", onInstancedMeshDispose);
+      if (object2.isInstancedMesh) {
+        if (object2.hasEventListener("dispose", onInstancedMeshDispose) === false) {
+          object2.addEventListener("dispose", onInstancedMeshDispose);
         }
-        attributes.update(object.instanceMatrix, gl.ARRAY_BUFFER);
-        if (object.instanceColor !== null) {
-          attributes.update(object.instanceColor, gl.ARRAY_BUFFER);
+        attributes.update(object2.instanceMatrix, gl.ARRAY_BUFFER);
+        if (object2.instanceColor !== null) {
+          attributes.update(object2.instanceColor, gl.ARRAY_BUFFER);
         }
       }
       return buffergeometry;
@@ -11127,71 +11127,71 @@
     }
     return r;
   }
-  function setValueV1f(gl, v) {
+  function setValueV1f(gl, v2) {
     const cache = this.cache;
-    if (cache[0] === v) return;
-    gl.uniform1f(this.addr, v);
-    cache[0] = v;
+    if (cache[0] === v2) return;
+    gl.uniform1f(this.addr, v2);
+    cache[0] = v2;
   }
-  function setValueV2f(gl, v) {
+  function setValueV2f(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y) {
-        gl.uniform2f(this.addr, v.x, v.y);
-        cache[0] = v.x;
-        cache[1] = v.y;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y) {
+        gl.uniform2f(this.addr, v2.x, v2.y);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform2fv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform2fv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueV3f(gl, v) {
+  function setValueV3f(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y || cache[2] !== v.z) {
-        gl.uniform3f(this.addr, v.x, v.y, v.z);
-        cache[0] = v.x;
-        cache[1] = v.y;
-        cache[2] = v.z;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y || cache[2] !== v2.z) {
+        gl.uniform3f(this.addr, v2.x, v2.y, v2.z);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
+        cache[2] = v2.z;
       }
-    } else if (v.r !== void 0) {
-      if (cache[0] !== v.r || cache[1] !== v.g || cache[2] !== v.b) {
-        gl.uniform3f(this.addr, v.r, v.g, v.b);
-        cache[0] = v.r;
-        cache[1] = v.g;
-        cache[2] = v.b;
-      }
-    } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform3fv(this.addr, v);
-      copyArray(cache, v);
-    }
-  }
-  function setValueV4f(gl, v) {
-    const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y || cache[2] !== v.z || cache[3] !== v.w) {
-        gl.uniform4f(this.addr, v.x, v.y, v.z, v.w);
-        cache[0] = v.x;
-        cache[1] = v.y;
-        cache[2] = v.z;
-        cache[3] = v.w;
+    } else if (v2.r !== void 0) {
+      if (cache[0] !== v2.r || cache[1] !== v2.g || cache[2] !== v2.b) {
+        gl.uniform3f(this.addr, v2.r, v2.g, v2.b);
+        cache[0] = v2.r;
+        cache[1] = v2.g;
+        cache[2] = v2.b;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform4fv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform3fv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueM2(gl, v) {
+  function setValueV4f(gl, v2) {
     const cache = this.cache;
-    const elements = v.elements;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y || cache[2] !== v2.z || cache[3] !== v2.w) {
+        gl.uniform4f(this.addr, v2.x, v2.y, v2.z, v2.w);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
+        cache[2] = v2.z;
+        cache[3] = v2.w;
+      }
+    } else {
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform4fv(this.addr, v2);
+      copyArray(cache, v2);
+    }
+  }
+  function setValueM2(gl, v2) {
+    const cache = this.cache;
+    const elements = v2.elements;
     if (elements === void 0) {
-      if (arraysEqual(cache, v)) return;
-      gl.uniformMatrix2fv(this.addr, false, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniformMatrix2fv(this.addr, false, v2);
+      copyArray(cache, v2);
     } else {
       if (arraysEqual(cache, elements)) return;
       mat2array.set(elements);
@@ -11199,13 +11199,13 @@
       copyArray(cache, elements);
     }
   }
-  function setValueM3(gl, v) {
+  function setValueM3(gl, v2) {
     const cache = this.cache;
-    const elements = v.elements;
+    const elements = v2.elements;
     if (elements === void 0) {
-      if (arraysEqual(cache, v)) return;
-      gl.uniformMatrix3fv(this.addr, false, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniformMatrix3fv(this.addr, false, v2);
+      copyArray(cache, v2);
     } else {
       if (arraysEqual(cache, elements)) return;
       mat3array.set(elements);
@@ -11213,13 +11213,13 @@
       copyArray(cache, elements);
     }
   }
-  function setValueM4(gl, v) {
+  function setValueM4(gl, v2) {
     const cache = this.cache;
-    const elements = v.elements;
+    const elements = v2.elements;
     if (elements === void 0) {
-      if (arraysEqual(cache, v)) return;
-      gl.uniformMatrix4fv(this.addr, false, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniformMatrix4fv(this.addr, false, v2);
+      copyArray(cache, v2);
     } else {
       if (arraysEqual(cache, elements)) return;
       mat4array.set(elements);
@@ -11227,143 +11227,143 @@
       copyArray(cache, elements);
     }
   }
-  function setValueV1i(gl, v) {
+  function setValueV1i(gl, v2) {
     const cache = this.cache;
-    if (cache[0] === v) return;
-    gl.uniform1i(this.addr, v);
-    cache[0] = v;
+    if (cache[0] === v2) return;
+    gl.uniform1i(this.addr, v2);
+    cache[0] = v2;
   }
-  function setValueV2i(gl, v) {
+  function setValueV2i(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y) {
-        gl.uniform2i(this.addr, v.x, v.y);
-        cache[0] = v.x;
-        cache[1] = v.y;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y) {
+        gl.uniform2i(this.addr, v2.x, v2.y);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform2iv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform2iv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueV3i(gl, v) {
+  function setValueV3i(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y || cache[2] !== v.z) {
-        gl.uniform3i(this.addr, v.x, v.y, v.z);
-        cache[0] = v.x;
-        cache[1] = v.y;
-        cache[2] = v.z;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y || cache[2] !== v2.z) {
+        gl.uniform3i(this.addr, v2.x, v2.y, v2.z);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
+        cache[2] = v2.z;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform3iv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform3iv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueV4i(gl, v) {
+  function setValueV4i(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y || cache[2] !== v.z || cache[3] !== v.w) {
-        gl.uniform4i(this.addr, v.x, v.y, v.z, v.w);
-        cache[0] = v.x;
-        cache[1] = v.y;
-        cache[2] = v.z;
-        cache[3] = v.w;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y || cache[2] !== v2.z || cache[3] !== v2.w) {
+        gl.uniform4i(this.addr, v2.x, v2.y, v2.z, v2.w);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
+        cache[2] = v2.z;
+        cache[3] = v2.w;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform4iv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform4iv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueV1ui(gl, v) {
+  function setValueV1ui(gl, v2) {
     const cache = this.cache;
-    if (cache[0] === v) return;
-    gl.uniform1ui(this.addr, v);
-    cache[0] = v;
+    if (cache[0] === v2) return;
+    gl.uniform1ui(this.addr, v2);
+    cache[0] = v2;
   }
-  function setValueV2ui(gl, v) {
+  function setValueV2ui(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y) {
-        gl.uniform2ui(this.addr, v.x, v.y);
-        cache[0] = v.x;
-        cache[1] = v.y;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y) {
+        gl.uniform2ui(this.addr, v2.x, v2.y);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform2uiv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform2uiv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueV3ui(gl, v) {
+  function setValueV3ui(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y || cache[2] !== v.z) {
-        gl.uniform3ui(this.addr, v.x, v.y, v.z);
-        cache[0] = v.x;
-        cache[1] = v.y;
-        cache[2] = v.z;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y || cache[2] !== v2.z) {
+        gl.uniform3ui(this.addr, v2.x, v2.y, v2.z);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
+        cache[2] = v2.z;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform3uiv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform3uiv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueV4ui(gl, v) {
+  function setValueV4ui(gl, v2) {
     const cache = this.cache;
-    if (v.x !== void 0) {
-      if (cache[0] !== v.x || cache[1] !== v.y || cache[2] !== v.z || cache[3] !== v.w) {
-        gl.uniform4ui(this.addr, v.x, v.y, v.z, v.w);
-        cache[0] = v.x;
-        cache[1] = v.y;
-        cache[2] = v.z;
-        cache[3] = v.w;
+    if (v2.x !== void 0) {
+      if (cache[0] !== v2.x || cache[1] !== v2.y || cache[2] !== v2.z || cache[3] !== v2.w) {
+        gl.uniform4ui(this.addr, v2.x, v2.y, v2.z, v2.w);
+        cache[0] = v2.x;
+        cache[1] = v2.y;
+        cache[2] = v2.z;
+        cache[3] = v2.w;
       }
     } else {
-      if (arraysEqual(cache, v)) return;
-      gl.uniform4uiv(this.addr, v);
-      copyArray(cache, v);
+      if (arraysEqual(cache, v2)) return;
+      gl.uniform4uiv(this.addr, v2);
+      copyArray(cache, v2);
     }
   }
-  function setValueT1(gl, v, textures) {
+  function setValueT1(gl, v2, textures) {
     const cache = this.cache;
     const unit = textures.allocateTextureUnit();
     if (cache[0] !== unit) {
       gl.uniform1i(this.addr, unit);
       cache[0] = unit;
     }
-    textures.setTexture2D(v || emptyTexture, unit);
+    textures.setTexture2D(v2 || emptyTexture, unit);
   }
-  function setValueT3D1(gl, v, textures) {
+  function setValueT3D1(gl, v2, textures) {
     const cache = this.cache;
     const unit = textures.allocateTextureUnit();
     if (cache[0] !== unit) {
       gl.uniform1i(this.addr, unit);
       cache[0] = unit;
     }
-    textures.setTexture3D(v || empty3dTexture, unit);
+    textures.setTexture3D(v2 || empty3dTexture, unit);
   }
-  function setValueT6(gl, v, textures) {
+  function setValueT6(gl, v2, textures) {
     const cache = this.cache;
     const unit = textures.allocateTextureUnit();
     if (cache[0] !== unit) {
       gl.uniform1i(this.addr, unit);
       cache[0] = unit;
     }
-    textures.setTextureCube(v || emptyCubeTexture, unit);
+    textures.setTextureCube(v2 || emptyCubeTexture, unit);
   }
-  function setValueT2DArray1(gl, v, textures) {
+  function setValueT2DArray1(gl, v2, textures) {
     const cache = this.cache;
     const unit = textures.allocateTextureUnit();
     if (cache[0] !== unit) {
       gl.uniform1i(this.addr, unit);
       cache[0] = unit;
     }
-    textures.setTexture2DArray(v || emptyArrayTexture, unit);
+    textures.setTexture2DArray(v2 || emptyArrayTexture, unit);
   }
   function getSingularSetter(type) {
     switch (type) {
@@ -11450,103 +11450,103 @@
         return setValueT2DArray1;
     }
   }
-  function setValueV1fArray(gl, v) {
-    gl.uniform1fv(this.addr, v);
+  function setValueV1fArray(gl, v2) {
+    gl.uniform1fv(this.addr, v2);
   }
-  function setValueV2fArray(gl, v) {
-    const data = flatten(v, this.size, 2);
+  function setValueV2fArray(gl, v2) {
+    const data = flatten(v2, this.size, 2);
     gl.uniform2fv(this.addr, data);
   }
-  function setValueV3fArray(gl, v) {
-    const data = flatten(v, this.size, 3);
+  function setValueV3fArray(gl, v2) {
+    const data = flatten(v2, this.size, 3);
     gl.uniform3fv(this.addr, data);
   }
-  function setValueV4fArray(gl, v) {
-    const data = flatten(v, this.size, 4);
+  function setValueV4fArray(gl, v2) {
+    const data = flatten(v2, this.size, 4);
     gl.uniform4fv(this.addr, data);
   }
-  function setValueM2Array(gl, v) {
-    const data = flatten(v, this.size, 4);
+  function setValueM2Array(gl, v2) {
+    const data = flatten(v2, this.size, 4);
     gl.uniformMatrix2fv(this.addr, false, data);
   }
-  function setValueM3Array(gl, v) {
-    const data = flatten(v, this.size, 9);
+  function setValueM3Array(gl, v2) {
+    const data = flatten(v2, this.size, 9);
     gl.uniformMatrix3fv(this.addr, false, data);
   }
-  function setValueM4Array(gl, v) {
-    const data = flatten(v, this.size, 16);
+  function setValueM4Array(gl, v2) {
+    const data = flatten(v2, this.size, 16);
     gl.uniformMatrix4fv(this.addr, false, data);
   }
-  function setValueV1iArray(gl, v) {
-    gl.uniform1iv(this.addr, v);
+  function setValueV1iArray(gl, v2) {
+    gl.uniform1iv(this.addr, v2);
   }
-  function setValueV2iArray(gl, v) {
-    gl.uniform2iv(this.addr, v);
+  function setValueV2iArray(gl, v2) {
+    gl.uniform2iv(this.addr, v2);
   }
-  function setValueV3iArray(gl, v) {
-    gl.uniform3iv(this.addr, v);
+  function setValueV3iArray(gl, v2) {
+    gl.uniform3iv(this.addr, v2);
   }
-  function setValueV4iArray(gl, v) {
-    gl.uniform4iv(this.addr, v);
+  function setValueV4iArray(gl, v2) {
+    gl.uniform4iv(this.addr, v2);
   }
-  function setValueV1uiArray(gl, v) {
-    gl.uniform1uiv(this.addr, v);
+  function setValueV1uiArray(gl, v2) {
+    gl.uniform1uiv(this.addr, v2);
   }
-  function setValueV2uiArray(gl, v) {
-    gl.uniform2uiv(this.addr, v);
+  function setValueV2uiArray(gl, v2) {
+    gl.uniform2uiv(this.addr, v2);
   }
-  function setValueV3uiArray(gl, v) {
-    gl.uniform3uiv(this.addr, v);
+  function setValueV3uiArray(gl, v2) {
+    gl.uniform3uiv(this.addr, v2);
   }
-  function setValueV4uiArray(gl, v) {
-    gl.uniform4uiv(this.addr, v);
+  function setValueV4uiArray(gl, v2) {
+    gl.uniform4uiv(this.addr, v2);
   }
-  function setValueT1Array(gl, v, textures) {
+  function setValueT1Array(gl, v2, textures) {
     const cache = this.cache;
-    const n = v.length;
+    const n = v2.length;
     const units = allocTexUnits(textures, n);
     if (!arraysEqual(cache, units)) {
       gl.uniform1iv(this.addr, units);
       copyArray(cache, units);
     }
     for (let i = 0; i !== n; ++i) {
-      textures.setTexture2D(v[i] || emptyTexture, units[i]);
+      textures.setTexture2D(v2[i] || emptyTexture, units[i]);
     }
   }
-  function setValueT3DArray(gl, v, textures) {
+  function setValueT3DArray(gl, v2, textures) {
     const cache = this.cache;
-    const n = v.length;
+    const n = v2.length;
     const units = allocTexUnits(textures, n);
     if (!arraysEqual(cache, units)) {
       gl.uniform1iv(this.addr, units);
       copyArray(cache, units);
     }
     for (let i = 0; i !== n; ++i) {
-      textures.setTexture3D(v[i] || empty3dTexture, units[i]);
+      textures.setTexture3D(v2[i] || empty3dTexture, units[i]);
     }
   }
-  function setValueT6Array(gl, v, textures) {
+  function setValueT6Array(gl, v2, textures) {
     const cache = this.cache;
-    const n = v.length;
+    const n = v2.length;
     const units = allocTexUnits(textures, n);
     if (!arraysEqual(cache, units)) {
       gl.uniform1iv(this.addr, units);
       copyArray(cache, units);
     }
     for (let i = 0; i !== n; ++i) {
-      textures.setTextureCube(v[i] || emptyCubeTexture, units[i]);
+      textures.setTextureCube(v2[i] || emptyCubeTexture, units[i]);
     }
   }
-  function setValueT2DArrayArray(gl, v, textures) {
+  function setValueT2DArrayArray(gl, v2, textures) {
     const cache = this.cache;
-    const n = v.length;
+    const n = v2.length;
     const units = allocTexUnits(textures, n);
     if (!arraysEqual(cache, units)) {
       gl.uniform1iv(this.addr, units);
       copyArray(cache, units);
     }
     for (let i = 0; i !== n; ++i) {
-      textures.setTexture2DArray(v[i] || emptyArrayTexture, units[i]);
+      textures.setTexture2DArray(v2[i] || emptyArrayTexture, units[i]);
     }
   }
   function getPureArraySetter(type) {
@@ -11706,15 +11706,15 @@
       const u = this.map[name];
       if (u !== void 0) u.setValue(gl, value, textures);
     }
-    setOptional(gl, object, name) {
-      const v = object[name];
-      if (v !== void 0) this.setValue(gl, name, v);
+    setOptional(gl, object2, name) {
+      const v2 = object2[name];
+      if (v2 !== void 0) this.setValue(gl, name, v2);
     }
     static upload(gl, seq, values, textures) {
       for (let i = 0, n = seq.length; i !== n; ++i) {
-        const u = seq[i], v = values[u.id];
-        if (v.needsUpdate !== false) {
-          u.setValue(gl, v.value, textures);
+        const u = seq[i], v2 = values[u.id];
+        if (v2.needsUpdate !== false) {
+          u.setValue(gl, v2.value, textures);
         }
       }
     }
@@ -12389,9 +12389,9 @@
       if (value === 3) return "uv3";
       return "uv";
     }
-    function getParameters(material2, lights, shadows, scene, object) {
+    function getParameters(material2, lights, shadows, scene, object2) {
       const fog = scene.fog;
-      const geometry = object.geometry;
+      const geometry = object2.geometry;
       const environment2 = material2.isMeshStandardMaterial ? scene.environment : null;
       const envMap = (material2.isMeshStandardMaterial ? cubeuvmaps : cubemaps).get(material2.envMap || environment2);
       const envMapCubeUVHeight = !!envMap && envMap.mapping === CubeUVReflectionMapping ? envMap.image.height : null;
@@ -12422,7 +12422,7 @@
         customFragmentShaderID = _customShaders.getFragmentShaderID(material2);
       }
       const currentRenderTarget = renderer2.getRenderTarget();
-      const IS_INSTANCEDMESH = object.isInstancedMesh === true;
+      const IS_INSTANCEDMESH = object2.isInstancedMesh === true;
       const HAS_MAP = !!material2.map;
       const HAS_MATCAP = !!material2.matcap;
       const HAS_ENVMAP = !!envMap;
@@ -12470,7 +12470,7 @@
         glslVersion: material2.glslVersion,
         precision,
         instancing: IS_INSTANCEDMESH,
-        instancingColor: IS_INSTANCEDMESH && object.instanceColor !== null,
+        instancingColor: IS_INSTANCEDMESH && object2.instanceColor !== null,
         supportsVertexTextures: SUPPORTS_VERTEX_TEXTURES,
         outputColorSpace: currentRenderTarget === null ? renderer2.outputColorSpace : currentRenderTarget.isXRRenderTarget === true ? currentRenderTarget.texture.colorSpace : LinearSRGBColorSpace,
         map: HAS_MAP,
@@ -12539,14 +12539,14 @@
         vertexUv1s: HAS_ATTRIBUTE_UV1,
         vertexUv2s: HAS_ATTRIBUTE_UV2,
         vertexUv3s: HAS_ATTRIBUTE_UV3,
-        pointsUvs: object.isPoints === true && !!geometry.attributes.uv && (HAS_MAP || HAS_ALPHAMAP),
+        pointsUvs: object2.isPoints === true && !!geometry.attributes.uv && (HAS_MAP || HAS_ALPHAMAP),
         fog: !!fog,
         useFog: material2.fog === true,
         fogExp2: fog && fog.isFogExp2,
         flatShading: material2.flatShading === true,
         sizeAttenuation: material2.sizeAttenuation === true,
         logarithmicDepthBuffer,
-        skinning: object.isSkinnedMesh === true,
+        skinning: object2.isSkinnedMesh === true,
         morphTargets: geometry.morphAttributes.position !== void 0,
         morphNormals: geometry.morphAttributes.normal !== void 0,
         morphColors: geometry.morphAttributes.color !== void 0,
@@ -12789,19 +12789,19 @@
   }
   function WebGLProperties() {
     let properties = /* @__PURE__ */ new WeakMap();
-    function get(object) {
-      let map2 = properties.get(object);
+    function get(object2) {
+      let map2 = properties.get(object2);
       if (map2 === void 0) {
         map2 = {};
-        properties.set(object, map2);
+        properties.set(object2, map2);
       }
       return map2;
     }
-    function remove(object) {
-      properties.delete(object);
+    function remove(object2) {
+      properties.delete(object2);
     }
-    function update(object, key2, value) {
-      properties.get(object)[key2] = value;
+    function update(object2, key2, value) {
+      properties.get(object2)[key2] = value;
     }
     function dispose() {
       properties = /* @__PURE__ */ new WeakMap();
@@ -12849,35 +12849,35 @@
       transmissive.length = 0;
       transparent.length = 0;
     }
-    function getNextRenderItem(object, geometry, material2, groupOrder, z, group) {
+    function getNextRenderItem(object2, geometry, material2, groupOrder, z, group) {
       let renderItem = renderItems[renderItemsIndex];
       if (renderItem === void 0) {
         renderItem = {
-          id: object.id,
-          object,
+          id: object2.id,
+          object: object2,
           geometry,
           material: material2,
           groupOrder,
-          renderOrder: object.renderOrder,
+          renderOrder: object2.renderOrder,
           z,
           group
         };
         renderItems[renderItemsIndex] = renderItem;
       } else {
-        renderItem.id = object.id;
-        renderItem.object = object;
+        renderItem.id = object2.id;
+        renderItem.object = object2;
         renderItem.geometry = geometry;
         renderItem.material = material2;
         renderItem.groupOrder = groupOrder;
-        renderItem.renderOrder = object.renderOrder;
+        renderItem.renderOrder = object2.renderOrder;
         renderItem.z = z;
         renderItem.group = group;
       }
       renderItemsIndex++;
       return renderItem;
     }
-    function push(object, geometry, material2, groupOrder, z, group) {
-      const renderItem = getNextRenderItem(object, geometry, material2, groupOrder, z, group);
+    function push(object2, geometry, material2, groupOrder, z, group) {
+      const renderItem = getNextRenderItem(object2, geometry, material2, groupOrder, z, group);
       if (material2.transmission > 0) {
         transmissive.push(renderItem);
       } else if (material2.transparent === true) {
@@ -12886,8 +12886,8 @@
         opaque.push(renderItem);
       }
     }
-    function unshift(object, geometry, material2, groupOrder, z, group) {
-      const renderItem = getNextRenderItem(object, geometry, material2, groupOrder, z, group);
+    function unshift(object2, geometry, material2, groupOrder, z, group) {
+      const renderItem = getNextRenderItem(object2, geometry, material2, groupOrder, z, group);
       if (material2.transmission > 0) {
         transmissive.unshift(renderItem);
       } else if (material2.transparent === true) {
@@ -13219,8 +13219,8 @@
       state.ambient[0] = r;
       state.ambient[1] = g;
       state.ambient[2] = b;
-      const hash = state.hash;
-      if (hash.directionalLength !== directionalLength || hash.pointLength !== pointLength || hash.spotLength !== spotLength || hash.rectAreaLength !== rectAreaLength || hash.hemiLength !== hemiLength || hash.numDirectionalShadows !== numDirectionalShadows || hash.numPointShadows !== numPointShadows || hash.numSpotShadows !== numSpotShadows || hash.numSpotMaps !== numSpotMaps) {
+      const hash2 = state.hash;
+      if (hash2.directionalLength !== directionalLength || hash2.pointLength !== pointLength || hash2.spotLength !== spotLength || hash2.rectAreaLength !== rectAreaLength || hash2.hemiLength !== hemiLength || hash2.numDirectionalShadows !== numDirectionalShadows || hash2.numPointShadows !== numPointShadows || hash2.numSpotShadows !== numSpotShadows || hash2.numSpotMaps !== numSpotMaps) {
         state.directional.length = directionalLength;
         state.spot.length = spotLength;
         state.rectArea.length = rectAreaLength;
@@ -13237,15 +13237,15 @@
         state.spotLightMatrix.length = numSpotShadows + numSpotMaps - numSpotShadowsWithMaps;
         state.spotLightMap.length = numSpotMaps;
         state.numSpotLightShadowsWithMaps = numSpotShadowsWithMaps;
-        hash.directionalLength = directionalLength;
-        hash.pointLength = pointLength;
-        hash.spotLength = spotLength;
-        hash.rectAreaLength = rectAreaLength;
-        hash.hemiLength = hemiLength;
-        hash.numDirectionalShadows = numDirectionalShadows;
-        hash.numPointShadows = numPointShadows;
-        hash.numSpotShadows = numSpotShadows;
-        hash.numSpotMaps = numSpotMaps;
+        hash2.directionalLength = directionalLength;
+        hash2.pointLength = pointLength;
+        hash2.spotLength = spotLength;
+        hash2.rectAreaLength = rectAreaLength;
+        hash2.hemiLength = hemiLength;
+        hash2.numDirectionalShadows = numDirectionalShadows;
+        hash2.numPointShadows = numPointShadows;
+        hash2.numSpotShadows = numSpotShadows;
+        hash2.numSpotMaps = numSpotMaps;
         state.version = nextVersion++;
       }
     }
@@ -13547,9 +13547,9 @@
       _renderer.clear();
       _renderer.renderBufferDirect(camera2, null, geometry, shadowMaterialHorizontal, fullScreenMesh, null);
     }
-    function getDepthMaterial(object, material2, light, type) {
+    function getDepthMaterial(object2, material2, light, type) {
       let result = null;
-      const customMaterial = light.isPointLight === true ? object.customDistanceMaterial : object.customDepthMaterial;
+      const customMaterial = light.isPointLight === true ? object2.customDistanceMaterial : object2.customDepthMaterial;
       if (customMaterial !== void 0) {
         result = customMaterial;
       } else {
@@ -13593,31 +13593,31 @@
       }
       return result;
     }
-    function renderObject(object, camera2, shadowCamera, light, type) {
-      if (object.visible === false) return;
-      const visible = object.layers.test(camera2.layers);
-      if (visible && (object.isMesh || object.isLine || object.isPoints)) {
-        if ((object.castShadow || object.receiveShadow && type === VSMShadowMap) && (!object.frustumCulled || _frustum.intersectsObject(object))) {
-          object.modelViewMatrix.multiplyMatrices(shadowCamera.matrixWorldInverse, object.matrixWorld);
-          const geometry = _objects.update(object);
-          const material2 = object.material;
+    function renderObject(object2, camera2, shadowCamera, light, type) {
+      if (object2.visible === false) return;
+      const visible = object2.layers.test(camera2.layers);
+      if (visible && (object2.isMesh || object2.isLine || object2.isPoints)) {
+        if ((object2.castShadow || object2.receiveShadow && type === VSMShadowMap) && (!object2.frustumCulled || _frustum.intersectsObject(object2))) {
+          object2.modelViewMatrix.multiplyMatrices(shadowCamera.matrixWorldInverse, object2.matrixWorld);
+          const geometry = _objects.update(object2);
+          const material2 = object2.material;
           if (Array.isArray(material2)) {
             const groups = geometry.groups;
             for (let k = 0, kl = groups.length; k < kl; k++) {
               const group = groups[k];
               const groupMaterial = material2[group.materialIndex];
               if (groupMaterial && groupMaterial.visible) {
-                const depthMaterial = getDepthMaterial(object, groupMaterial, light, type);
-                _renderer.renderBufferDirect(shadowCamera, null, geometry, depthMaterial, object, group);
+                const depthMaterial = getDepthMaterial(object2, groupMaterial, light, type);
+                _renderer.renderBufferDirect(shadowCamera, null, geometry, depthMaterial, object2, group);
               }
             }
           } else if (material2.visible) {
-            const depthMaterial = getDepthMaterial(object, material2, light, type);
-            _renderer.renderBufferDirect(shadowCamera, null, geometry, depthMaterial, object, null);
+            const depthMaterial = getDepthMaterial(object2, material2, light, type);
+            _renderer.renderBufferDirect(shadowCamera, null, geometry, depthMaterial, object2, null);
           }
         }
       }
-      const children = object.children;
+      const children = object2.children;
       for (let i = 0, l = children.length; i < l; i++) {
         renderObject(children[i], camera2, shadowCamera, light, type);
       }
@@ -17044,10 +17044,10 @@
           }
         }
       }
-      this.renderBufferDirect = function(camera2, scene, geometry, material2, object, group) {
+      this.renderBufferDirect = function(camera2, scene, geometry, material2, object2, group) {
         if (scene === null) scene = _emptyScene;
-        const frontFaceCW = object.isMesh && object.matrixWorld.determinant() < 0;
-        const program = setProgram(camera2, scene, geometry, material2, object);
+        const frontFaceCW = object2.isMesh && object2.matrixWorld.determinant() < 0;
+        const program = setProgram(camera2, scene, geometry, material2, object2);
         state.setMaterial(material2, frontFaceCW);
         let index = geometry.index;
         let rangeFactor = 1;
@@ -17072,7 +17072,7 @@
         }
         const drawCount = drawEnd - drawStart;
         if (drawCount < 0 || drawCount === Infinity) return;
-        bindingStates.setup(object, material2, program, geometry, index);
+        bindingStates.setup(object2, material2, program, geometry, index);
         let attribute;
         let renderer2 = bufferRenderer;
         if (index !== null) {
@@ -17080,31 +17080,31 @@
           renderer2 = indexedBufferRenderer;
           renderer2.setIndex(attribute);
         }
-        if (object.isMesh) {
+        if (object2.isMesh) {
           if (material2.wireframe === true) {
             state.setLineWidth(material2.wireframeLinewidth * getTargetPixelRatio());
             renderer2.setMode(_gl.LINES);
           } else {
             renderer2.setMode(_gl.TRIANGLES);
           }
-        } else if (object.isLine) {
+        } else if (object2.isLine) {
           let lineWidth = material2.linewidth;
           if (lineWidth === void 0) lineWidth = 1;
           state.setLineWidth(lineWidth * getTargetPixelRatio());
-          if (object.isLineSegments) {
+          if (object2.isLineSegments) {
             renderer2.setMode(_gl.LINES);
-          } else if (object.isLineLoop) {
+          } else if (object2.isLineLoop) {
             renderer2.setMode(_gl.LINE_LOOP);
           } else {
             renderer2.setMode(_gl.LINE_STRIP);
           }
-        } else if (object.isPoints) {
+        } else if (object2.isPoints) {
           renderer2.setMode(_gl.POINTS);
-        } else if (object.isSprite) {
+        } else if (object2.isSprite) {
           renderer2.setMode(_gl.TRIANGLES);
         }
-        if (object.isInstancedMesh) {
-          renderer2.renderInstances(drawStart, drawCount, object.count);
+        if (object2.isInstancedMesh) {
+          renderer2.renderInstances(drawStart, drawCount, object2.count);
         } else if (geometry.isInstancedBufferGeometry) {
           const maxInstanceCount = geometry._maxInstanceCount !== void 0 ? geometry._maxInstanceCount : Infinity;
           const instanceCount = Math.min(geometry.instanceCount, maxInstanceCount);
@@ -17114,41 +17114,41 @@
         }
       };
       this.compile = function(scene, camera2) {
-        function prepare(material2, scene2, object) {
+        function prepare(material2, scene2, object2) {
           if (material2.transparent === true && material2.side === DoubleSide && material2.forceSinglePass === false) {
             material2.side = BackSide;
             material2.needsUpdate = true;
-            getProgram(material2, scene2, object);
+            getProgram(material2, scene2, object2);
             material2.side = FrontSide;
             material2.needsUpdate = true;
-            getProgram(material2, scene2, object);
+            getProgram(material2, scene2, object2);
             material2.side = DoubleSide;
           } else {
-            getProgram(material2, scene2, object);
+            getProgram(material2, scene2, object2);
           }
         }
         currentRenderState = renderStates.get(scene);
         currentRenderState.init();
         renderStateStack.push(currentRenderState);
-        scene.traverseVisible(function(object) {
-          if (object.isLight && object.layers.test(camera2.layers)) {
-            currentRenderState.pushLight(object);
-            if (object.castShadow) {
-              currentRenderState.pushShadow(object);
+        scene.traverseVisible(function(object2) {
+          if (object2.isLight && object2.layers.test(camera2.layers)) {
+            currentRenderState.pushLight(object2);
+            if (object2.castShadow) {
+              currentRenderState.pushShadow(object2);
             }
           }
         });
         currentRenderState.setupLights(_this.useLegacyLights);
-        scene.traverse(function(object) {
-          const material2 = object.material;
+        scene.traverse(function(object2) {
+          const material2 = object2.material;
           if (material2) {
             if (Array.isArray(material2)) {
               for (let i = 0; i < material2.length; i++) {
                 const material22 = material2[i];
-                prepare(material22, scene, object);
+                prepare(material22, scene, object2);
               }
             } else {
-              prepare(material2, scene, object);
+              prepare(material2, scene, object2);
             }
           }
         });
@@ -17240,43 +17240,43 @@
           currentRenderList = null;
         }
       };
-      function projectObject(object, camera2, groupOrder, sortObjects) {
-        if (object.visible === false) return;
-        const visible = object.layers.test(camera2.layers);
+      function projectObject(object2, camera2, groupOrder, sortObjects) {
+        if (object2.visible === false) return;
+        const visible = object2.layers.test(camera2.layers);
         if (visible) {
-          if (object.isGroup) {
-            groupOrder = object.renderOrder;
-          } else if (object.isLOD) {
-            if (object.autoUpdate === true) object.update(camera2);
-          } else if (object.isLight) {
-            currentRenderState.pushLight(object);
-            if (object.castShadow) {
-              currentRenderState.pushShadow(object);
+          if (object2.isGroup) {
+            groupOrder = object2.renderOrder;
+          } else if (object2.isLOD) {
+            if (object2.autoUpdate === true) object2.update(camera2);
+          } else if (object2.isLight) {
+            currentRenderState.pushLight(object2);
+            if (object2.castShadow) {
+              currentRenderState.pushShadow(object2);
             }
-          } else if (object.isSprite) {
-            if (!object.frustumCulled || _frustum.intersectsSprite(object)) {
+          } else if (object2.isSprite) {
+            if (!object2.frustumCulled || _frustum.intersectsSprite(object2)) {
               if (sortObjects) {
-                _vector32.setFromMatrixPosition(object.matrixWorld).applyMatrix4(_projScreenMatrix2);
+                _vector32.setFromMatrixPosition(object2.matrixWorld).applyMatrix4(_projScreenMatrix2);
               }
-              const geometry = objects.update(object);
-              const material2 = object.material;
+              const geometry = objects.update(object2);
+              const material2 = object2.material;
               if (material2.visible) {
-                currentRenderList.push(object, geometry, material2, groupOrder, _vector32.z, null);
+                currentRenderList.push(object2, geometry, material2, groupOrder, _vector32.z, null);
               }
             }
-          } else if (object.isMesh || object.isLine || object.isPoints) {
-            if (!object.frustumCulled || _frustum.intersectsObject(object)) {
-              if (object.isSkinnedMesh) {
-                if (object.skeleton.frame !== info.render.frame) {
-                  object.skeleton.update();
-                  object.skeleton.frame = info.render.frame;
+          } else if (object2.isMesh || object2.isLine || object2.isPoints) {
+            if (!object2.frustumCulled || _frustum.intersectsObject(object2)) {
+              if (object2.isSkinnedMesh) {
+                if (object2.skeleton.frame !== info.render.frame) {
+                  object2.skeleton.update();
+                  object2.skeleton.frame = info.render.frame;
                 }
               }
-              const geometry = objects.update(object);
-              const material2 = object.material;
+              const geometry = objects.update(object2);
+              const material2 = object2.material;
               if (sortObjects) {
                 if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
-                _vector32.copy(geometry.boundingSphere.center).applyMatrix4(object.matrixWorld).applyMatrix4(_projScreenMatrix2);
+                _vector32.copy(geometry.boundingSphere.center).applyMatrix4(object2.matrixWorld).applyMatrix4(_projScreenMatrix2);
               }
               if (Array.isArray(material2)) {
                 const groups = geometry.groups;
@@ -17284,16 +17284,16 @@
                   const group = groups[i];
                   const groupMaterial = material2[group.materialIndex];
                   if (groupMaterial && groupMaterial.visible) {
-                    currentRenderList.push(object, geometry, groupMaterial, groupOrder, _vector32.z, group);
+                    currentRenderList.push(object2, geometry, groupMaterial, groupOrder, _vector32.z, group);
                   }
                 }
               } else if (material2.visible) {
-                currentRenderList.push(object, geometry, material2, groupOrder, _vector32.z, null);
+                currentRenderList.push(object2, geometry, material2, groupOrder, _vector32.z, null);
               }
             }
           }
         }
-        const children = object.children;
+        const children = object2.children;
         for (let i = 0, l = children.length; i < l; i++) {
           projectObject(children[i], camera2, groupOrder, sortObjects);
         }
@@ -17335,15 +17335,15 @@
         let renderTargetNeedsUpdate = false;
         for (let i = 0, l = transmissiveObjects.length; i < l; i++) {
           const renderItem = transmissiveObjects[i];
-          const object = renderItem.object;
+          const object2 = renderItem.object;
           const geometry = renderItem.geometry;
           const material2 = renderItem.material;
           const group = renderItem.group;
-          if (material2.side === DoubleSide && object.layers.test(camera2.layers)) {
+          if (material2.side === DoubleSide && object2.layers.test(camera2.layers)) {
             const currentSide = material2.side;
             material2.side = BackSide;
             material2.needsUpdate = true;
-            renderObject(object, scene, camera2, geometry, material2, group);
+            renderObject(object2, scene, camera2, geometry, material2, group);
             material2.side = currentSide;
             material2.needsUpdate = true;
             renderTargetNeedsUpdate = true;
@@ -17360,40 +17360,40 @@
         const overrideMaterial = scene.isScene === true ? scene.overrideMaterial : null;
         for (let i = 0, l = renderList.length; i < l; i++) {
           const renderItem = renderList[i];
-          const object = renderItem.object;
+          const object2 = renderItem.object;
           const geometry = renderItem.geometry;
           const material2 = overrideMaterial === null ? renderItem.material : overrideMaterial;
           const group = renderItem.group;
-          if (object.layers.test(camera2.layers)) {
-            renderObject(object, scene, camera2, geometry, material2, group);
+          if (object2.layers.test(camera2.layers)) {
+            renderObject(object2, scene, camera2, geometry, material2, group);
           }
         }
       }
-      function renderObject(object, scene, camera2, geometry, material2, group) {
-        object.onBeforeRender(_this, scene, camera2, geometry, material2, group);
-        object.modelViewMatrix.multiplyMatrices(camera2.matrixWorldInverse, object.matrixWorld);
-        object.normalMatrix.getNormalMatrix(object.modelViewMatrix);
-        material2.onBeforeRender(_this, scene, camera2, geometry, object, group);
+      function renderObject(object2, scene, camera2, geometry, material2, group) {
+        object2.onBeforeRender(_this, scene, camera2, geometry, material2, group);
+        object2.modelViewMatrix.multiplyMatrices(camera2.matrixWorldInverse, object2.matrixWorld);
+        object2.normalMatrix.getNormalMatrix(object2.modelViewMatrix);
+        material2.onBeforeRender(_this, scene, camera2, geometry, object2, group);
         if (material2.transparent === true && material2.side === DoubleSide && material2.forceSinglePass === false) {
           material2.side = BackSide;
           material2.needsUpdate = true;
-          _this.renderBufferDirect(camera2, scene, geometry, material2, object, group);
+          _this.renderBufferDirect(camera2, scene, geometry, material2, object2, group);
           material2.side = FrontSide;
           material2.needsUpdate = true;
-          _this.renderBufferDirect(camera2, scene, geometry, material2, object, group);
+          _this.renderBufferDirect(camera2, scene, geometry, material2, object2, group);
           material2.side = DoubleSide;
         } else {
-          _this.renderBufferDirect(camera2, scene, geometry, material2, object, group);
+          _this.renderBufferDirect(camera2, scene, geometry, material2, object2, group);
         }
-        object.onAfterRender(_this, scene, camera2, geometry, material2, group);
+        object2.onAfterRender(_this, scene, camera2, geometry, material2, group);
       }
-      function getProgram(material2, scene, object) {
+      function getProgram(material2, scene, object2) {
         if (scene.isScene !== true) scene = _emptyScene;
         const materialProperties = properties.get(material2);
         const lights = currentRenderState.state.lights;
         const shadowsArray = currentRenderState.state.shadowsArray;
         const lightsStateVersion = lights.state.version;
-        const parameters2 = programCache.getParameters(material2, lights.state, shadowsArray, scene, object);
+        const parameters2 = programCache.getParameters(material2, lights.state, shadowsArray, scene, object2);
         const programCacheKey = programCache.getProgramCacheKey(parameters2);
         let programs = materialProperties.programs;
         materialProperties.environment = material2.isMeshStandardMaterial ? scene.environment : null;
@@ -17412,7 +17412,7 @@
           }
         } else {
           parameters2.uniforms = programCache.getUniforms(material2);
-          material2.onBuild(object, parameters2, _this);
+          material2.onBuild(object2, parameters2, _this);
           material2.onBeforeCompile(parameters2, _this);
           program = programCache.acquireProgram(parameters2, programCacheKey);
           programs.set(programCacheKey, program);
@@ -17467,7 +17467,7 @@
         materialProperties.vertexTangents = parameters2.vertexTangents;
         materialProperties.toneMapping = parameters2.toneMapping;
       }
-      function setProgram(camera2, scene, geometry, material2, object) {
+      function setProgram(camera2, scene, geometry, material2, object2) {
         if (scene.isScene !== true) scene = _emptyScene;
         textures.resetTextureUnits();
         const fog = scene.fog;
@@ -17496,13 +17496,13 @@
             needsProgramChange = true;
           } else if (materialProperties.outputColorSpace !== colorSpace) {
             needsProgramChange = true;
-          } else if (object.isInstancedMesh && materialProperties.instancing === false) {
+          } else if (object2.isInstancedMesh && materialProperties.instancing === false) {
             needsProgramChange = true;
-          } else if (!object.isInstancedMesh && materialProperties.instancing === true) {
+          } else if (!object2.isInstancedMesh && materialProperties.instancing === true) {
             needsProgramChange = true;
-          } else if (object.isSkinnedMesh && materialProperties.skinning === false) {
+          } else if (object2.isSkinnedMesh && materialProperties.skinning === false) {
             needsProgramChange = true;
-          } else if (!object.isSkinnedMesh && materialProperties.skinning === true) {
+          } else if (!object2.isSkinnedMesh && materialProperties.skinning === true) {
             needsProgramChange = true;
           } else if (materialProperties.envMap !== envMap) {
             needsProgramChange = true;
@@ -17531,7 +17531,7 @@
         }
         let program = materialProperties.currentProgram;
         if (needsProgramChange === true) {
-          program = getProgram(material2, scene, object);
+          program = getProgram(material2, scene, object2);
         }
         let refreshProgram = false;
         let refreshMaterial = false;
@@ -17572,14 +17572,14 @@
           if (material2.isMeshPhongMaterial || material2.isMeshToonMaterial || material2.isMeshLambertMaterial || material2.isMeshBasicMaterial || material2.isMeshStandardMaterial || material2.isShaderMaterial) {
             p_uniforms.setValue(_gl, "isOrthographic", camera2.isOrthographicCamera === true);
           }
-          if (material2.isMeshPhongMaterial || material2.isMeshToonMaterial || material2.isMeshLambertMaterial || material2.isMeshBasicMaterial || material2.isMeshStandardMaterial || material2.isShaderMaterial || material2.isShadowMaterial || object.isSkinnedMesh) {
+          if (material2.isMeshPhongMaterial || material2.isMeshToonMaterial || material2.isMeshLambertMaterial || material2.isMeshBasicMaterial || material2.isMeshStandardMaterial || material2.isShaderMaterial || material2.isShadowMaterial || object2.isSkinnedMesh) {
             p_uniforms.setValue(_gl, "viewMatrix", camera2.matrixWorldInverse);
           }
         }
-        if (object.isSkinnedMesh) {
-          p_uniforms.setOptional(_gl, object, "bindMatrix");
-          p_uniforms.setOptional(_gl, object, "bindMatrixInverse");
-          const skeleton = object.skeleton;
+        if (object2.isSkinnedMesh) {
+          p_uniforms.setOptional(_gl, object2, "bindMatrix");
+          p_uniforms.setOptional(_gl, object2, "bindMatrixInverse");
+          const skeleton = object2.skeleton;
           if (skeleton) {
             if (capabilities.floatVertexTextures) {
               if (skeleton.boneTexture === null) skeleton.computeBoneTexture();
@@ -17592,11 +17592,11 @@
         }
         const morphAttributes = geometry.morphAttributes;
         if (morphAttributes.position !== void 0 || morphAttributes.normal !== void 0 || morphAttributes.color !== void 0 && capabilities.isWebGL2 === true) {
-          morphtargets.update(object, geometry, program);
+          morphtargets.update(object2, geometry, program);
         }
-        if (refreshMaterial || materialProperties.receiveShadow !== object.receiveShadow) {
-          materialProperties.receiveShadow = object.receiveShadow;
-          p_uniforms.setValue(_gl, "receiveShadow", object.receiveShadow);
+        if (refreshMaterial || materialProperties.receiveShadow !== object2.receiveShadow) {
+          materialProperties.receiveShadow = object2.receiveShadow;
+          p_uniforms.setValue(_gl, "receiveShadow", object2.receiveShadow);
         }
         if (material2.isMeshGouraudMaterial && material2.envMap !== null) {
           m_uniforms.envMap.value = envMap;
@@ -17618,11 +17618,11 @@
           material2.uniformsNeedUpdate = false;
         }
         if (material2.isSpriteMaterial) {
-          p_uniforms.setValue(_gl, "center", object.center);
+          p_uniforms.setValue(_gl, "center", object2.center);
         }
-        p_uniforms.setValue(_gl, "modelViewMatrix", object.modelViewMatrix);
-        p_uniforms.setValue(_gl, "normalMatrix", object.normalMatrix);
-        p_uniforms.setValue(_gl, "modelMatrix", object.matrixWorld);
+        p_uniforms.setValue(_gl, "modelViewMatrix", object2.modelViewMatrix);
+        p_uniforms.setValue(_gl, "normalMatrix", object2.normalMatrix);
+        p_uniforms.setValue(_gl, "modelMatrix", object2.matrixWorld);
         if (material2.isShaderMaterial || material2.isRawShaderMaterial) {
           const groups = material2.uniformsGroups;
           for (let i = 0, l = groups.length; i < l; i++) {
@@ -18302,7 +18302,7 @@
       this.material = material2 !== void 0 ? material2 : new SpriteMaterial();
       this.center = new Vector2(0.5, 0.5);
     }
-    raycast(raycaster, intersects2) {
+    raycast(raycaster, intersects3) {
       if (raycaster.camera === null) {
         console.error('THREE.Sprite: "Raycaster.camera" needs to be set in order to raycast against sprites.');
       }
@@ -18337,7 +18337,7 @@
       }
       const distance2 = raycaster.ray.origin.distanceTo(_intersectPoint);
       if (distance2 < raycaster.near || distance2 > raycaster.far) return;
-      intersects2.push({
+      intersects3.push({
         distance: distance2,
         point: _intersectPoint.clone(),
         uv: Triangle.getInterpolation(_intersectPoint, _vA, _vB, _vC, _uvA, _uvB, _uvC, new Vector2()),
@@ -18393,7 +18393,7 @@
       this.autoUpdate = source.autoUpdate;
       return this;
     }
-    addLevel(object, distance2 = 0, hysteresis = 0) {
+    addLevel(object2, distance2 = 0, hysteresis = 0) {
       distance2 = Math.abs(distance2);
       const levels = this.levels;
       let l;
@@ -18402,8 +18402,8 @@
           break;
         }
       }
-      levels.splice(l, 0, { distance: distance2, hysteresis, object });
-      this.add(object);
+      levels.splice(l, 0, { distance: distance2, hysteresis, object: object2 });
+      this.add(object2);
       return this;
     }
     getCurrentLevel() {
@@ -18426,12 +18426,12 @@
       }
       return null;
     }
-    raycast(raycaster, intersects2) {
+    raycast(raycaster, intersects3) {
       const levels = this.levels;
       if (levels.length > 0) {
         _v1$2.setFromMatrixPosition(this.matrixWorld);
         const distance2 = raycaster.ray.origin.distanceTo(_v1$2);
-        this.getObjectForDistance(distance2).raycast(raycaster, intersects2);
+        this.getObjectForDistance(distance2).raycast(raycaster, intersects3);
       }
     }
     update(camera2) {
@@ -18553,17 +18553,17 @@
       this.skeleton.pose();
     }
     normalizeSkinWeights() {
-      const vector = new Vector4();
+      const vector2 = new Vector4();
       const skinWeight = this.geometry.attributes.skinWeight;
       for (let i = 0, l = skinWeight.count; i < l; i++) {
-        vector.fromBufferAttribute(skinWeight, i);
-        const scale = 1 / vector.manhattanLength();
+        vector2.fromBufferAttribute(skinWeight, i);
+        const scale = 1 / vector2.manhattanLength();
         if (scale !== Infinity) {
-          vector.multiplyScalar(scale);
+          vector2.multiplyScalar(scale);
         } else {
-          vector.set(1, 0, 0, 0);
+          vector2.set(1, 0, 0, 0);
         }
-        skinWeight.setXYZW(i, vector.x, vector.y, vector.z, vector.w);
+        skinWeight.setXYZW(i, vector2.x, vector2.y, vector2.z, vector2.w);
       }
     }
     updateMatrixWorld(force) {
@@ -18576,26 +18576,26 @@
         console.warn("THREE.SkinnedMesh: Unrecognized bindMode: " + this.bindMode);
       }
     }
-    applyBoneTransform(index, vector) {
+    applyBoneTransform(index, vector2) {
       const skeleton = this.skeleton;
       const geometry = this.geometry;
       _skinIndex.fromBufferAttribute(geometry.attributes.skinIndex, index);
       _skinWeight.fromBufferAttribute(geometry.attributes.skinWeight, index);
-      _basePosition.copy(vector).applyMatrix4(this.bindMatrix);
-      vector.set(0, 0, 0);
+      _basePosition.copy(vector2).applyMatrix4(this.bindMatrix);
+      vector2.set(0, 0, 0);
       for (let i = 0; i < 4; i++) {
         const weight = _skinWeight.getComponent(i);
         if (weight !== 0) {
           const boneIndex = _skinIndex.getComponent(i);
           _matrix4.multiplyMatrices(skeleton.bones[boneIndex].matrixWorld, skeleton.boneInverses[boneIndex]);
-          vector.addScaledVector(_vector3.copy(_basePosition).applyMatrix4(_matrix4), weight);
+          vector2.addScaledVector(_vector3.copy(_basePosition).applyMatrix4(_matrix4), weight);
         }
       }
-      return vector.applyMatrix4(this.bindMatrixInverse);
+      return vector2.applyMatrix4(this.bindMatrixInverse);
     }
-    boneTransform(index, vector) {
+    boneTransform(index, vector2) {
       console.warn("THREE.SkinnedMesh: .boneTransform() was renamed to .applyBoneTransform() in r151.");
-      return this.applyBoneTransform(index, vector);
+      return this.applyBoneTransform(index, vector2);
     }
   };
   var Bone = class extends Object3D {
@@ -18839,7 +18839,7 @@
     getMatrixAt(index, matrix) {
       matrix.fromArray(this.instanceMatrix.array, index * 16);
     }
-    raycast(raycaster, intersects2) {
+    raycast(raycaster, intersects3) {
       const matrixWorld = this.matrixWorld;
       const raycastTimes = this.count;
       _mesh.geometry = this.geometry;
@@ -18858,7 +18858,7 @@
           const intersect = _instanceIntersects[i];
           intersect.instanceId = instanceId;
           intersect.object = this;
-          intersects2.push(intersect);
+          intersects3.push(intersect);
         }
         _instanceIntersects.length = 0;
       }
@@ -18939,7 +18939,7 @@
       }
       return this;
     }
-    raycast(raycaster, intersects2) {
+    raycast(raycaster, intersects3) {
       const geometry = this.geometry;
       const matrixWorld = this.matrixWorld;
       const threshold = raycaster.params.Line.threshold;
@@ -18974,7 +18974,7 @@
           interRay.applyMatrix4(this.matrixWorld);
           const distance2 = raycaster.ray.origin.distanceTo(interRay);
           if (distance2 < raycaster.near || distance2 > raycaster.far) continue;
-          intersects2.push({
+          intersects3.push({
             distance: distance2,
             // What do we want? intersection point on the ray or on the segment??
             // point: raycaster.ray.at( distance ),
@@ -18996,7 +18996,7 @@
           interRay.applyMatrix4(this.matrixWorld);
           const distance2 = raycaster.ray.origin.distanceTo(interRay);
           if (distance2 < raycaster.near || distance2 > raycaster.far) continue;
-          intersects2.push({
+          intersects3.push({
             distance: distance2,
             // What do we want? intersection point on the ray or on the segment??
             // point: raycaster.ray.at( distance ),
@@ -19103,7 +19103,7 @@
       this.geometry = source.geometry;
       return this;
     }
-    raycast(raycaster, intersects2) {
+    raycast(raycaster, intersects3) {
       const geometry = this.geometry;
       const matrixWorld = this.matrixWorld;
       const threshold = raycaster.params.Points.threshold;
@@ -19126,14 +19126,14 @@
         for (let i = start, il = end; i < il; i++) {
           const a = index.getX(i);
           _position$2.fromBufferAttribute(positionAttribute, a);
-          testPoint(_position$2, a, localThresholdSq, matrixWorld, raycaster, intersects2, this);
+          testPoint(_position$2, a, localThresholdSq, matrixWorld, raycaster, intersects3, this);
         }
       } else {
         const start = Math.max(0, drawRange.start);
         const end = Math.min(positionAttribute.count, drawRange.start + drawRange.count);
         for (let i = start, l = end; i < l; i++) {
           _position$2.fromBufferAttribute(positionAttribute, i);
-          testPoint(_position$2, i, localThresholdSq, matrixWorld, raycaster, intersects2, this);
+          testPoint(_position$2, i, localThresholdSq, matrixWorld, raycaster, intersects3, this);
         }
       }
     }
@@ -19155,21 +19155,21 @@
       }
     }
   };
-  function testPoint(point, index, localThresholdSq, matrixWorld, raycaster, intersects2, object) {
-    const rayPointDistanceSq = _ray.distanceSqToPoint(point);
+  function testPoint(point3, index, localThresholdSq, matrixWorld, raycaster, intersects3, object2) {
+    const rayPointDistanceSq = _ray.distanceSqToPoint(point3);
     if (rayPointDistanceSq < localThresholdSq) {
       const intersectPoint = new Vector3();
-      _ray.closestPointToPoint(point, intersectPoint);
+      _ray.closestPointToPoint(point3, intersectPoint);
       intersectPoint.applyMatrix4(matrixWorld);
       const distance2 = raycaster.ray.origin.distanceTo(intersectPoint);
       if (distance2 < raycaster.near || distance2 > raycaster.far) return;
-      intersects2.push({
+      intersects3.push({
         distance: distance2,
         distanceToRay: Math.sqrt(rayPointDistanceSq),
         point: intersectPoint,
         index,
         face: null,
-        object
+        object: object2
       });
     }
   }
@@ -19450,7 +19450,7 @@
       this.aRotation = aRotation;
     }
     getPoint(t, optionalTarget) {
-      const point = optionalTarget || new Vector2();
+      const point3 = optionalTarget || new Vector2();
       const twoPi = Math.PI * 2;
       let deltaAngle = this.aEndAngle - this.aStartAngle;
       const samePoints = Math.abs(deltaAngle) < Number.EPSILON;
@@ -19481,7 +19481,7 @@
         x = tx * cos - ty * sin + this.aX;
         y = tx * sin + ty * cos + this.aY;
       }
-      return point.set(x, y);
+      return point3.set(x, y);
     }
     copy(source) {
       super.copy(source);
@@ -19568,7 +19568,7 @@
       this.tension = tension;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       const points = this.points;
       const l = points.length;
       const p = (l - (this.closed ? 0 : 1)) * t;
@@ -19611,19 +19611,19 @@
         py.initCatmullRom(p0.y, p1.y, p2.y, p3.y, this.tension);
         pz.initCatmullRom(p0.z, p1.z, p2.z, p3.z, this.tension);
       }
-      point.set(
+      point3.set(
         px.calc(weight),
         py.calc(weight),
         pz.calc(weight)
       );
-      return point;
+      return point3;
     }
     copy(source) {
       super.copy(source);
       this.points = [];
       for (let i = 0, l = source.points.length; i < l; i++) {
-        const point = source.points[i];
-        this.points.push(point.clone());
+        const point3 = source.points[i];
+        this.points.push(point3.clone());
       }
       this.closed = source.closed;
       this.curveType = source.curveType;
@@ -19634,8 +19634,8 @@
       const data = super.toJSON();
       data.points = [];
       for (let i = 0, l = this.points.length; i < l; i++) {
-        const point = this.points[i];
-        data.points.push(point.toArray());
+        const point3 = this.points[i];
+        data.points.push(point3.toArray());
       }
       data.closed = this.closed;
       data.curveType = this.curveType;
@@ -19646,8 +19646,8 @@
       super.fromJSON(json);
       this.points = [];
       for (let i = 0, l = json.points.length; i < l; i++) {
-        const point = json.points[i];
-        this.points.push(new Vector3().fromArray(point));
+        const point3 = json.points[i];
+        this.points.push(new Vector3().fromArray(point3));
       }
       this.closed = json.closed;
       this.curveType = json.curveType;
@@ -19703,13 +19703,13 @@
       this.v3 = v3;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2, v3 = this.v3;
-      point.set(
+      point3.set(
         CubicBezier(t, v0.x, v1.x, v2.x, v3.x),
         CubicBezier(t, v0.y, v1.y, v2.y, v3.y)
       );
-      return point;
+      return point3;
     }
     copy(source) {
       super.copy(source);
@@ -19747,14 +19747,14 @@
       this.v3 = v3;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2, v3 = this.v3;
-      point.set(
+      point3.set(
         CubicBezier(t, v0.x, v1.x, v2.x, v3.x),
         CubicBezier(t, v0.y, v1.y, v2.y, v3.y),
         CubicBezier(t, v0.z, v1.z, v2.z, v3.z)
       );
-      return point;
+      return point3;
     }
     copy(source) {
       super.copy(source);
@@ -19790,14 +19790,14 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       if (t === 1) {
-        point.copy(this.v2);
+        point3.copy(this.v2);
       } else {
-        point.copy(this.v2).sub(this.v1);
-        point.multiplyScalar(t).add(this.v1);
+        point3.copy(this.v2).sub(this.v1);
+        point3.multiplyScalar(t).add(this.v1);
       }
-      return point;
+      return point3;
     }
     // Line curve is linear, so we can overwrite default getPointAt
     getPointAt(u, optionalTarget) {
@@ -19837,14 +19837,14 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       if (t === 1) {
-        point.copy(this.v2);
+        point3.copy(this.v2);
       } else {
-        point.copy(this.v2).sub(this.v1);
-        point.multiplyScalar(t).add(this.v1);
+        point3.copy(this.v2).sub(this.v1);
+        point3.multiplyScalar(t).add(this.v1);
       }
-      return point;
+      return point3;
     }
     // Line curve is linear, so we can overwrite default getPointAt
     getPointAt(u, optionalTarget) {
@@ -19885,13 +19885,13 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2;
-      point.set(
+      point3.set(
         QuadraticBezier(t, v0.x, v1.x, v2.x),
         QuadraticBezier(t, v0.y, v1.y, v2.y)
       );
-      return point;
+      return point3;
     }
     copy(source) {
       super.copy(source);
@@ -19925,14 +19925,14 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2;
-      point.set(
+      point3.set(
         QuadraticBezier(t, v0.x, v1.x, v2.x),
         QuadraticBezier(t, v0.y, v1.y, v2.y),
         QuadraticBezier(t, v0.z, v1.z, v2.z)
       );
-      return point;
+      return point3;
     }
     copy(source) {
       super.copy(source);
@@ -19964,7 +19964,7 @@
       this.points = points;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point = optionalTarget;
+      const point3 = optionalTarget;
       const points = this.points;
       const p = (points.length - 1) * t;
       const intPoint = Math.floor(p);
@@ -19973,18 +19973,18 @@
       const p1 = points[intPoint];
       const p2 = points[intPoint > points.length - 2 ? points.length - 1 : intPoint + 1];
       const p3 = points[intPoint > points.length - 3 ? points.length - 1 : intPoint + 2];
-      point.set(
+      point3.set(
         CatmullRom(weight, p0.x, p1.x, p2.x, p3.x),
         CatmullRom(weight, p0.y, p1.y, p2.y, p3.y)
       );
-      return point;
+      return point3;
     }
     copy(source) {
       super.copy(source);
       this.points = [];
       for (let i = 0, l = source.points.length; i < l; i++) {
-        const point = source.points[i];
-        this.points.push(point.clone());
+        const point3 = source.points[i];
+        this.points.push(point3.clone());
       }
       return this;
     }
@@ -19992,8 +19992,8 @@
       const data = super.toJSON();
       data.points = [];
       for (let i = 0, l = this.points.length; i < l; i++) {
-        const point = this.points[i];
-        data.points.push(point.toArray());
+        const point3 = this.points[i];
+        data.points.push(point3.toArray());
       }
       return data;
     }
@@ -20001,8 +20001,8 @@
       super.fromJSON(json);
       this.points = [];
       for (let i = 0, l = json.points.length; i < l; i++) {
-        const point = json.points[i];
-        this.points.push(new Vector2().fromArray(point));
+        const point3 = json.points[i];
+        this.points.push(new Vector2().fromArray(point3));
       }
       return this;
     }
@@ -20106,10 +20106,10 @@
         const resolution = curve.isEllipseCurve ? divisions * 2 : curve.isLineCurve || curve.isLineCurve3 ? 1 : curve.isSplineCurve ? divisions * curve.points.length : divisions;
         const pts = curve.getPoints(resolution);
         for (let j = 0; j < pts.length; j++) {
-          const point = pts[j];
-          if (last && last.equals(point)) continue;
-          points.push(point);
-          last = point;
+          const point3 = pts[j];
+          if (last && last.equals(point3)) continue;
+          points.push(point3);
+          last = point3;
         }
       }
       if (this.autoClose && points.length > 1 && !points[points.length - 1].equals(points[0])) {
@@ -20458,20 +20458,20 @@
         const slope = (radiusBottom - radiusTop) / height;
         for (let y = 0; y <= heightSegments; y++) {
           const indexRow = [];
-          const v = y / heightSegments;
-          const radius = v * (radiusBottom - radiusTop) + radiusTop;
+          const v2 = y / heightSegments;
+          const radius = v2 * (radiusBottom - radiusTop) + radiusTop;
           for (let x = 0; x <= radialSegments; x++) {
             const u = x / radialSegments;
             const theta = u * thetaLength + thetaStart;
             const sinTheta = Math.sin(theta);
             const cosTheta = Math.cos(theta);
             vertex2.x = radius * sinTheta;
-            vertex2.y = -v * height + halfHeight;
+            vertex2.y = -v2 * height + halfHeight;
             vertex2.z = radius * cosTheta;
             vertices.push(vertex2.x, vertex2.y, vertex2.z);
             normal.set(sinTheta, slope, cosTheta).normalize();
             normals.push(normal.x, normal.y, normal.z);
-            uvs.push(u, 1 - v);
+            uvs.push(u, 1 - v2);
             indexRow.push(index++);
           }
           indexArray.push(indexRow);
@@ -20596,17 +20596,17 @@
       }
       function subdivideFace(a, b, c, detail2) {
         const cols = detail2 + 1;
-        const v = [];
+        const v2 = [];
         for (let i = 0; i <= cols; i++) {
-          v[i] = [];
+          v2[i] = [];
           const aj = a.clone().lerp(c, i / cols);
           const bj = b.clone().lerp(c, i / cols);
           const rows = cols - i;
           for (let j = 0; j <= rows; j++) {
             if (j === 0 && i === cols) {
-              v[i][j] = aj;
+              v2[i][j] = aj;
             } else {
-              v[i][j] = aj.clone().lerp(bj, j / rows);
+              v2[i][j] = aj.clone().lerp(bj, j / rows);
             }
           }
         }
@@ -20614,13 +20614,13 @@
           for (let j = 0; j < 2 * (cols - i) - 1; j++) {
             const k = Math.floor(j / 2);
             if (j % 2 === 0) {
-              pushVertex(v[i][k + 1]);
-              pushVertex(v[i + 1][k]);
-              pushVertex(v[i][k]);
+              pushVertex(v2[i][k + 1]);
+              pushVertex(v2[i + 1][k]);
+              pushVertex(v2[i][k]);
             } else {
-              pushVertex(v[i][k + 1]);
-              pushVertex(v[i + 1][k + 1]);
-              pushVertex(v[i + 1][k]);
+              pushVertex(v2[i][k + 1]);
+              pushVertex(v2[i + 1][k + 1]);
+              pushVertex(v2[i + 1][k]);
             }
           }
         }
@@ -20644,8 +20644,8 @@
           vertex2.y = vertexBuffer[i + 1];
           vertex2.z = vertexBuffer[i + 2];
           const u = azimuth(vertex2) / 2 / Math.PI + 0.5;
-          const v = inclination(vertex2) / Math.PI + 0.5;
-          uvBuffer.push(u, 1 - v);
+          const v2 = inclination(vertex2) / Math.PI + 0.5;
+          uvBuffer.push(u, 1 - v2);
         }
         correctUVs();
         correctSeam();
@@ -20695,19 +20695,19 @@
           correctUV(uvC, j + 4, c, azi);
         }
       }
-      function correctUV(uv, stride, vector, azimuth2) {
+      function correctUV(uv, stride, vector2, azimuth2) {
         if (azimuth2 < 0 && uv.x === 1) {
           uvBuffer[stride] = uv.x - 1;
         }
-        if (vector.x === 0 && vector.z === 0) {
+        if (vector2.x === 0 && vector2.z === 0) {
           uvBuffer[stride] = azimuth2 / 2 / Math.PI + 0.5;
         }
       }
-      function azimuth(vector) {
-        return Math.atan2(vector.z, -vector.x);
+      function azimuth(vector2) {
+        return Math.atan2(vector2.z, -vector2.x);
       }
-      function inclination(vector) {
-        return Math.atan2(-vector.y, Math.sqrt(vector.x * vector.x + vector.z * vector.z));
+      function inclination(vector2) {
+        return Math.atan2(-vector2.y, Math.sqrt(vector2.x * vector2.x + vector2.z * vector2.z));
       }
     }
     copy(source) {
@@ -20961,7 +20961,7 @@
             const vecHash1 = hashes[jNext];
             const v0 = _triangle[vertKeys[j]];
             const v1 = _triangle[vertKeys[jNext]];
-            const hash = `${vecHash0}_${vecHash1}`;
+            const hash2 = `${vecHash0}_${vecHash1}`;
             const reverseHash = `${vecHash1}_${vecHash0}`;
             if (reverseHash in edgeData && edgeData[reverseHash]) {
               if (_normal.dot(edgeData[reverseHash].normal) <= thresholdDot) {
@@ -20969,8 +20969,8 @@
                 vertices.push(v1.x, v1.y, v1.z);
               }
               edgeData[reverseHash] = null;
-            } else if (!(hash in edgeData)) {
-              edgeData[hash] = {
+            } else if (!(hash2 in edgeData)) {
+              edgeData[hash2] = {
                 index0: indexArr[j],
                 index1: indexArr[jNext],
                 normal: _normal.clone()
@@ -21633,14 +21633,14 @@
           const bs2 = bevelSize * Math.sin(t * Math.PI / 2) + bevelOffset;
           for (let i = 0, il = contour.length; i < il; i++) {
             const vert = scalePt2(contour[i], contourMovements[i], bs2);
-            v(vert.x, vert.y, -z);
+            v2(vert.x, vert.y, -z);
           }
           for (let h = 0, hl = holes.length; h < hl; h++) {
             const ahole = holes[h];
             oneHoleMovements = holesMovements[h];
             for (let i = 0, il = ahole.length; i < il; i++) {
               const vert = scalePt2(ahole[i], oneHoleMovements[i], bs2);
-              v(vert.x, vert.y, -z);
+              v2(vert.x, vert.y, -z);
             }
           }
         }
@@ -21648,24 +21648,24 @@
         for (let i = 0; i < vlen; i++) {
           const vert = bevelEnabled ? scalePt2(vertices[i], verticesMovements[i], bs) : vertices[i];
           if (!extrudeByPath) {
-            v(vert.x, vert.y, 0);
+            v2(vert.x, vert.y, 0);
           } else {
             normal.copy(splineTube.normals[0]).multiplyScalar(vert.x);
             binormal.copy(splineTube.binormals[0]).multiplyScalar(vert.y);
             position2.copy(extrudePts[0]).add(normal).add(binormal);
-            v(position2.x, position2.y, position2.z);
+            v2(position2.x, position2.y, position2.z);
           }
         }
         for (let s = 1; s <= steps; s++) {
           for (let i = 0; i < vlen; i++) {
             const vert = bevelEnabled ? scalePt2(vertices[i], verticesMovements[i], bs) : vertices[i];
             if (!extrudeByPath) {
-              v(vert.x, vert.y, depth / steps * s);
+              v2(vert.x, vert.y, depth / steps * s);
             } else {
               normal.copy(splineTube.normals[s]).multiplyScalar(vert.x);
               binormal.copy(splineTube.binormals[s]).multiplyScalar(vert.y);
               position2.copy(extrudePts[s]).add(normal).add(binormal);
-              v(position2.x, position2.y, position2.z);
+              v2(position2.x, position2.y, position2.z);
             }
           }
         }
@@ -21675,7 +21675,7 @@
           const bs2 = bevelSize * Math.sin(t * Math.PI / 2) + bevelOffset;
           for (let i = 0, il = contour.length; i < il; i++) {
             const vert = scalePt2(contour[i], contourMovements[i], bs2);
-            v(vert.x, vert.y, depth + z);
+            v2(vert.x, vert.y, depth + z);
           }
           for (let h = 0, hl = holes.length; h < hl; h++) {
             const ahole = holes[h];
@@ -21683,9 +21683,9 @@
             for (let i = 0, il = ahole.length; i < il; i++) {
               const vert = scalePt2(ahole[i], oneHoleMovements[i], bs2);
               if (!extrudeByPath) {
-                v(vert.x, vert.y, depth + z);
+                v2(vert.x, vert.y, depth + z);
               } else {
-                v(vert.x, vert.y + extrudePts[steps - 1].y, extrudePts[steps - 1].x + z);
+                v2(vert.x, vert.y + extrudePts[steps - 1].y, extrudePts[steps - 1].x + z);
               }
             }
           }
@@ -21745,7 +21745,7 @@
             }
           }
         }
-        function v(x, y, z) {
+        function v2(x, y, z) {
           placeholder.push(x);
           placeholder.push(y);
           placeholder.push(z);
@@ -22223,7 +22223,7 @@
       const uvs = [];
       for (let iy = 0; iy <= heightSegments; iy++) {
         const verticesRow = [];
-        const v = iy / heightSegments;
+        const v2 = iy / heightSegments;
         let uOffset = 0;
         if (iy === 0 && thetaStart === 0) {
           uOffset = 0.5 / widthSegments;
@@ -22232,13 +22232,13 @@
         }
         for (let ix = 0; ix <= widthSegments; ix++) {
           const u = ix / widthSegments;
-          vertex2.x = -radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
-          vertex2.y = radius * Math.cos(thetaStart + v * thetaLength);
-          vertex2.z = radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
+          vertex2.x = -radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v2 * thetaLength);
+          vertex2.y = radius * Math.cos(thetaStart + v2 * thetaLength);
+          vertex2.z = radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v2 * thetaLength);
           vertices.push(vertex2.x, vertex2.y, vertex2.z);
           normal.copy(vertex2).normalize();
           normals.push(normal.x, normal.y, normal.z);
-          uvs.push(u + uOffset, 1 - v);
+          uvs.push(u + uOffset, 1 - v2);
           verticesRow.push(index++);
         }
         grid.push(verticesRow);
@@ -22331,10 +22331,10 @@
       for (let j = 0; j <= radialSegments; j++) {
         for (let i = 0; i <= tubularSegments; i++) {
           const u = i / tubularSegments * arc;
-          const v = j / radialSegments * Math.PI * 2;
-          vertex2.x = (radius + tube * Math.cos(v)) * Math.cos(u);
-          vertex2.y = (radius + tube * Math.cos(v)) * Math.sin(u);
-          vertex2.z = tube * Math.sin(v);
+          const v2 = j / radialSegments * Math.PI * 2;
+          vertex2.x = (radius + tube * Math.cos(v2)) * Math.cos(u);
+          vertex2.y = (radius + tube * Math.cos(v2)) * Math.sin(u);
+          vertex2.z = tube * Math.sin(v2);
           vertices.push(vertex2.x, vertex2.y, vertex2.z);
           center.x = radius * Math.cos(u);
           center.y = radius * Math.sin(u);
@@ -22404,9 +22404,9 @@
         B.normalize();
         N.normalize();
         for (let j = 0; j <= radialSegments; ++j) {
-          const v = j / radialSegments * Math.PI * 2;
-          const cx = -tube * Math.cos(v);
-          const cy = tube * Math.sin(v);
+          const v2 = j / radialSegments * Math.PI * 2;
+          const cx = -tube * Math.cos(v2);
+          const cy = tube * Math.sin(v2);
           vertex2.x = P1.x + (cx * N.x + cy * B.x);
           vertex2.y = P1.y + (cx * N.y + cy * B.y);
           vertex2.z = P1.z + (cx * N.z + cy * B.z);
@@ -22491,9 +22491,9 @@
         const N = frames.normals[i];
         const B = frames.binormals[i];
         for (let j = 0; j <= radialSegments; j++) {
-          const v = j / radialSegments * Math.PI * 2;
-          const sin = Math.sin(v);
-          const cos = -Math.cos(v);
+          const v2 = j / radialSegments * Math.PI * 2;
+          const sin = Math.sin(v2);
+          const cos = -Math.cos(v2);
           normal.x = cos * N.x + sin * B.x;
           normal.y = cos * N.y + sin * B.y;
           normal.z = cos * N.z + sin * B.z;
@@ -23171,8 +23171,8 @@
     }
     return Array.prototype.slice.call(array);
   }
-  function isTypedArray(object) {
-    return ArrayBuffer.isView(object) && !(object instanceof DataView);
+  function isTypedArray(object2) {
+    return ArrayBuffer.isView(object2) && !(object2 instanceof DataView);
   }
   function getKeyframeOrder(times) {
     function compareTime(i, j) {
@@ -24276,9 +24276,9 @@
           case "blob":
             return response.blob();
           case "document":
-            return response.text().then((text) => {
+            return response.text().then((text3) => {
               const parser = new DOMParser();
-              return parser.parseFromString(text, mimeType);
+              return parser.parseFromString(text3, mimeType);
             });
           case "json":
             return response.json();
@@ -24337,9 +24337,9 @@
       loader2.setPath(this.path);
       loader2.setRequestHeader(this.requestHeader);
       loader2.setWithCredentials(this.withCredentials);
-      loader2.load(url, function(text) {
+      loader2.load(url, function(text3) {
         try {
-          onLoad(scope.parse(JSON.parse(text)));
+          onLoad(scope.parse(JSON.parse(text3)));
         } catch (e) {
           if (onError) {
             onError(e);
@@ -24701,14 +24701,14 @@
       return new this.constructor().copy(this);
     }
     toJSON() {
-      const object = {};
-      if (this.bias !== 0) object.bias = this.bias;
-      if (this.normalBias !== 0) object.normalBias = this.normalBias;
-      if (this.radius !== 1) object.radius = this.radius;
-      if (this.mapSize.x !== 512 || this.mapSize.y !== 512) object.mapSize = this.mapSize.toArray();
-      object.camera = this.camera.toJSON(false).object;
-      delete object.camera.matrix;
-      return object;
+      const object2 = {};
+      if (this.bias !== 0) object2.bias = this.bias;
+      if (this.normalBias !== 0) object2.normalBias = this.normalBias;
+      if (this.radius !== 1) object2.radius = this.radius;
+      if (this.mapSize.x !== 512 || this.mapSize.y !== 512) object2.mapSize = this.mapSize.toArray();
+      object2.camera = this.camera.toJSON(false).object;
+      delete object2.camera.matrix;
+      return object2;
     }
   };
   var SpotLightShadow = class extends LightShadow {
@@ -25082,9 +25082,9 @@
       loader2.setPath(scope.path);
       loader2.setRequestHeader(scope.requestHeader);
       loader2.setWithCredentials(scope.withCredentials);
-      loader2.load(url, function(text) {
+      loader2.load(url, function(text3) {
         try {
-          onLoad(scope.parse(JSON.parse(text)));
+          onLoad(scope.parse(JSON.parse(text3)));
         } catch (e) {
           if (onError) {
             onError(e);
@@ -25349,9 +25349,9 @@
       loader2.setPath(scope.path);
       loader2.setRequestHeader(scope.requestHeader);
       loader2.setWithCredentials(scope.withCredentials);
-      loader2.load(url, function(text) {
+      loader2.load(url, function(text3) {
         try {
-          onLoad(scope.parse(JSON.parse(text)));
+          onLoad(scope.parse(JSON.parse(text3)));
         } catch (e) {
           if (onError) {
             onError(e);
@@ -25467,10 +25467,10 @@
       loader2.setPath(this.path);
       loader2.setRequestHeader(this.requestHeader);
       loader2.setWithCredentials(this.withCredentials);
-      loader2.load(url, function(text) {
+      loader2.load(url, function(text3) {
         let json = null;
         try {
-          json = JSON.parse(text);
+          json = JSON.parse(text3);
         } catch (error) {
           if (onError !== void 0) onError(error);
           console.error("THREE:ObjectLoader: Can't parse " + url + ".", error.message);
@@ -25493,8 +25493,8 @@
       loader2.setPath(this.path);
       loader2.setRequestHeader(this.requestHeader);
       loader2.setWithCredentials(this.withCredentials);
-      const text = await loader2.loadAsync(url, onProgress);
-      const json = JSON.parse(text);
+      const text3 = await loader2.loadAsync(url, onProgress);
+      const json = JSON.parse(text3);
       const metadata = json.metadata;
       if (metadata === void 0 || metadata.type === void 0 || metadata.type.toLowerCase() === "geometry") {
         throw new Error("THREE.ObjectLoader: Can't load " + url);
@@ -25506,13 +25506,13 @@
       const shapes = this.parseShapes(json.shapes);
       const geometries = this.parseGeometries(json.geometries, shapes);
       const images = this.parseImages(json.images, function() {
-        if (onLoad !== void 0) onLoad(object);
+        if (onLoad !== void 0) onLoad(object2);
       });
       const textures = this.parseTextures(json.textures, images);
       const materials = this.parseMaterials(json.materials, textures);
-      const object = this.parseObject(json.object, geometries, materials, textures, animations);
-      const skeletons = this.parseSkeletons(json.skeletons, object);
-      this.bindSkeletons(object, skeletons);
+      const object2 = this.parseObject(json.object, geometries, materials, textures, animations);
+      const skeletons = this.parseSkeletons(json.skeletons, object2);
+      this.bindSkeletons(object2, skeletons);
       if (onLoad !== void 0) {
         let hasImages = false;
         for (const uuid in images) {
@@ -25521,9 +25521,9 @@
             break;
           }
         }
-        if (hasImages === false) onLoad(object);
+        if (hasImages === false) onLoad(object2);
       }
-      return object;
+      return object2;
     }
     async parseAsync(json) {
       const animations = this.parseAnimations(json.animations);
@@ -25532,10 +25532,10 @@
       const images = await this.parseImagesAsync(json.images);
       const textures = this.parseTextures(json.textures, images);
       const materials = this.parseMaterials(json.materials, textures);
-      const object = this.parseObject(json.object, geometries, materials, textures, animations);
-      const skeletons = this.parseSkeletons(json.skeletons, object);
-      this.bindSkeletons(object, skeletons);
-      return object;
+      const object2 = this.parseObject(json.object, geometries, materials, textures, animations);
+      const skeletons = this.parseSkeletons(json.skeletons, object2);
+      this.bindSkeletons(object2, skeletons);
+      return object2;
     }
     parseShapes(json) {
       const shapes = {};
@@ -25547,10 +25547,10 @@
       }
       return shapes;
     }
-    parseSkeletons(json, object) {
+    parseSkeletons(json, object2) {
       const skeletons = {};
       const bones = {};
-      object.traverse(function(child) {
+      object2.traverse(function(child) {
         if (child.isBone) bones[child.uuid] = child;
       });
       if (json !== void 0) {
@@ -25785,7 +25785,7 @@
       return textures;
     }
     parseObject(data, geometries, materials, textures, animations) {
-      let object;
+      let object2;
       function getGeometry(name) {
         if (geometries[name] === void 0) {
           console.warn("THREE.ObjectLoader: Undefined geometry", name);
@@ -25819,73 +25819,73 @@
       let geometry, material2;
       switch (data.type) {
         case "Scene":
-          object = new Scene();
+          object2 = new Scene();
           if (data.background !== void 0) {
             if (Number.isInteger(data.background)) {
-              object.background = new Color(data.background);
+              object2.background = new Color(data.background);
             } else {
-              object.background = getTexture(data.background);
+              object2.background = getTexture(data.background);
             }
           }
           if (data.environment !== void 0) {
-            object.environment = getTexture(data.environment);
+            object2.environment = getTexture(data.environment);
           }
           if (data.fog !== void 0) {
             if (data.fog.type === "Fog") {
-              object.fog = new Fog(data.fog.color, data.fog.near, data.fog.far);
+              object2.fog = new Fog(data.fog.color, data.fog.near, data.fog.far);
             } else if (data.fog.type === "FogExp2") {
-              object.fog = new FogExp2(data.fog.color, data.fog.density);
+              object2.fog = new FogExp2(data.fog.color, data.fog.density);
             }
           }
-          if (data.backgroundBlurriness !== void 0) object.backgroundBlurriness = data.backgroundBlurriness;
-          if (data.backgroundIntensity !== void 0) object.backgroundIntensity = data.backgroundIntensity;
+          if (data.backgroundBlurriness !== void 0) object2.backgroundBlurriness = data.backgroundBlurriness;
+          if (data.backgroundIntensity !== void 0) object2.backgroundIntensity = data.backgroundIntensity;
           break;
         case "PerspectiveCamera":
-          object = new PerspectiveCamera(data.fov, data.aspect, data.near, data.far);
-          if (data.focus !== void 0) object.focus = data.focus;
-          if (data.zoom !== void 0) object.zoom = data.zoom;
-          if (data.filmGauge !== void 0) object.filmGauge = data.filmGauge;
-          if (data.filmOffset !== void 0) object.filmOffset = data.filmOffset;
-          if (data.view !== void 0) object.view = Object.assign({}, data.view);
+          object2 = new PerspectiveCamera(data.fov, data.aspect, data.near, data.far);
+          if (data.focus !== void 0) object2.focus = data.focus;
+          if (data.zoom !== void 0) object2.zoom = data.zoom;
+          if (data.filmGauge !== void 0) object2.filmGauge = data.filmGauge;
+          if (data.filmOffset !== void 0) object2.filmOffset = data.filmOffset;
+          if (data.view !== void 0) object2.view = Object.assign({}, data.view);
           break;
         case "OrthographicCamera":
-          object = new OrthographicCamera(data.left, data.right, data.top, data.bottom, data.near, data.far);
-          if (data.zoom !== void 0) object.zoom = data.zoom;
-          if (data.view !== void 0) object.view = Object.assign({}, data.view);
+          object2 = new OrthographicCamera(data.left, data.right, data.top, data.bottom, data.near, data.far);
+          if (data.zoom !== void 0) object2.zoom = data.zoom;
+          if (data.view !== void 0) object2.view = Object.assign({}, data.view);
           break;
         case "AmbientLight":
-          object = new AmbientLight(data.color, data.intensity);
+          object2 = new AmbientLight(data.color, data.intensity);
           break;
         case "DirectionalLight":
-          object = new DirectionalLight(data.color, data.intensity);
+          object2 = new DirectionalLight(data.color, data.intensity);
           break;
         case "PointLight":
-          object = new PointLight(data.color, data.intensity, data.distance, data.decay);
+          object2 = new PointLight(data.color, data.intensity, data.distance, data.decay);
           break;
         case "RectAreaLight":
-          object = new RectAreaLight(data.color, data.intensity, data.width, data.height);
+          object2 = new RectAreaLight(data.color, data.intensity, data.width, data.height);
           break;
         case "SpotLight":
-          object = new SpotLight(data.color, data.intensity, data.distance, data.angle, data.penumbra, data.decay);
+          object2 = new SpotLight(data.color, data.intensity, data.distance, data.angle, data.penumbra, data.decay);
           break;
         case "HemisphereLight":
-          object = new HemisphereLight(data.color, data.groundColor, data.intensity);
+          object2 = new HemisphereLight(data.color, data.groundColor, data.intensity);
           break;
         case "LightProbe":
-          object = new LightProbe().fromJSON(data);
+          object2 = new LightProbe().fromJSON(data);
           break;
         case "SkinnedMesh":
           geometry = getGeometry(data.geometry);
           material2 = getMaterial(data.material);
-          object = new SkinnedMesh(geometry, material2);
-          if (data.bindMode !== void 0) object.bindMode = data.bindMode;
-          if (data.bindMatrix !== void 0) object.bindMatrix.fromArray(data.bindMatrix);
-          if (data.skeleton !== void 0) object.skeleton = data.skeleton;
+          object2 = new SkinnedMesh(geometry, material2);
+          if (data.bindMode !== void 0) object2.bindMode = data.bindMode;
+          if (data.bindMatrix !== void 0) object2.bindMatrix.fromArray(data.bindMatrix);
+          if (data.skeleton !== void 0) object2.skeleton = data.skeleton;
           break;
         case "Mesh":
           geometry = getGeometry(data.geometry);
           material2 = getMaterial(data.material);
-          object = new Mesh(geometry, material2);
+          object2 = new Mesh(geometry, material2);
           break;
         case "InstancedMesh":
           geometry = getGeometry(data.geometry);
@@ -25893,94 +25893,94 @@
           const count = data.count;
           const instanceMatrix = data.instanceMatrix;
           const instanceColor = data.instanceColor;
-          object = new InstancedMesh(geometry, material2, count);
-          object.instanceMatrix = new InstancedBufferAttribute(new Float32Array(instanceMatrix.array), 16);
-          if (instanceColor !== void 0) object.instanceColor = new InstancedBufferAttribute(new Float32Array(instanceColor.array), instanceColor.itemSize);
+          object2 = new InstancedMesh(geometry, material2, count);
+          object2.instanceMatrix = new InstancedBufferAttribute(new Float32Array(instanceMatrix.array), 16);
+          if (instanceColor !== void 0) object2.instanceColor = new InstancedBufferAttribute(new Float32Array(instanceColor.array), instanceColor.itemSize);
           break;
         case "LOD":
-          object = new LOD();
+          object2 = new LOD();
           break;
         case "Line":
-          object = new Line(getGeometry(data.geometry), getMaterial(data.material));
+          object2 = new Line(getGeometry(data.geometry), getMaterial(data.material));
           break;
         case "LineLoop":
-          object = new LineLoop(getGeometry(data.geometry), getMaterial(data.material));
+          object2 = new LineLoop(getGeometry(data.geometry), getMaterial(data.material));
           break;
         case "LineSegments":
-          object = new LineSegments(getGeometry(data.geometry), getMaterial(data.material));
+          object2 = new LineSegments(getGeometry(data.geometry), getMaterial(data.material));
           break;
         case "PointCloud":
         case "Points":
-          object = new Points(getGeometry(data.geometry), getMaterial(data.material));
+          object2 = new Points(getGeometry(data.geometry), getMaterial(data.material));
           break;
         case "Sprite":
-          object = new Sprite(getMaterial(data.material));
+          object2 = new Sprite(getMaterial(data.material));
           break;
         case "Group":
-          object = new Group();
+          object2 = new Group();
           break;
         case "Bone":
-          object = new Bone();
+          object2 = new Bone();
           break;
         default:
-          object = new Object3D();
+          object2 = new Object3D();
       }
-      object.uuid = data.uuid;
-      if (data.name !== void 0) object.name = data.name;
+      object2.uuid = data.uuid;
+      if (data.name !== void 0) object2.name = data.name;
       if (data.matrix !== void 0) {
-        object.matrix.fromArray(data.matrix);
-        if (data.matrixAutoUpdate !== void 0) object.matrixAutoUpdate = data.matrixAutoUpdate;
-        if (object.matrixAutoUpdate) object.matrix.decompose(object.position, object.quaternion, object.scale);
+        object2.matrix.fromArray(data.matrix);
+        if (data.matrixAutoUpdate !== void 0) object2.matrixAutoUpdate = data.matrixAutoUpdate;
+        if (object2.matrixAutoUpdate) object2.matrix.decompose(object2.position, object2.quaternion, object2.scale);
       } else {
-        if (data.position !== void 0) object.position.fromArray(data.position);
-        if (data.rotation !== void 0) object.rotation.fromArray(data.rotation);
-        if (data.quaternion !== void 0) object.quaternion.fromArray(data.quaternion);
-        if (data.scale !== void 0) object.scale.fromArray(data.scale);
+        if (data.position !== void 0) object2.position.fromArray(data.position);
+        if (data.rotation !== void 0) object2.rotation.fromArray(data.rotation);
+        if (data.quaternion !== void 0) object2.quaternion.fromArray(data.quaternion);
+        if (data.scale !== void 0) object2.scale.fromArray(data.scale);
       }
-      if (data.up !== void 0) object.up.fromArray(data.up);
-      if (data.castShadow !== void 0) object.castShadow = data.castShadow;
-      if (data.receiveShadow !== void 0) object.receiveShadow = data.receiveShadow;
+      if (data.up !== void 0) object2.up.fromArray(data.up);
+      if (data.castShadow !== void 0) object2.castShadow = data.castShadow;
+      if (data.receiveShadow !== void 0) object2.receiveShadow = data.receiveShadow;
       if (data.shadow) {
-        if (data.shadow.bias !== void 0) object.shadow.bias = data.shadow.bias;
-        if (data.shadow.normalBias !== void 0) object.shadow.normalBias = data.shadow.normalBias;
-        if (data.shadow.radius !== void 0) object.shadow.radius = data.shadow.radius;
-        if (data.shadow.mapSize !== void 0) object.shadow.mapSize.fromArray(data.shadow.mapSize);
-        if (data.shadow.camera !== void 0) object.shadow.camera = this.parseObject(data.shadow.camera);
+        if (data.shadow.bias !== void 0) object2.shadow.bias = data.shadow.bias;
+        if (data.shadow.normalBias !== void 0) object2.shadow.normalBias = data.shadow.normalBias;
+        if (data.shadow.radius !== void 0) object2.shadow.radius = data.shadow.radius;
+        if (data.shadow.mapSize !== void 0) object2.shadow.mapSize.fromArray(data.shadow.mapSize);
+        if (data.shadow.camera !== void 0) object2.shadow.camera = this.parseObject(data.shadow.camera);
       }
-      if (data.visible !== void 0) object.visible = data.visible;
-      if (data.frustumCulled !== void 0) object.frustumCulled = data.frustumCulled;
-      if (data.renderOrder !== void 0) object.renderOrder = data.renderOrder;
-      if (data.userData !== void 0) object.userData = data.userData;
-      if (data.layers !== void 0) object.layers.mask = data.layers;
+      if (data.visible !== void 0) object2.visible = data.visible;
+      if (data.frustumCulled !== void 0) object2.frustumCulled = data.frustumCulled;
+      if (data.renderOrder !== void 0) object2.renderOrder = data.renderOrder;
+      if (data.userData !== void 0) object2.userData = data.userData;
+      if (data.layers !== void 0) object2.layers.mask = data.layers;
       if (data.children !== void 0) {
         const children = data.children;
         for (let i = 0; i < children.length; i++) {
-          object.add(this.parseObject(children[i], geometries, materials, textures, animations));
+          object2.add(this.parseObject(children[i], geometries, materials, textures, animations));
         }
       }
       if (data.animations !== void 0) {
         const objectAnimations = data.animations;
         for (let i = 0; i < objectAnimations.length; i++) {
           const uuid = objectAnimations[i];
-          object.animations.push(animations[uuid]);
+          object2.animations.push(animations[uuid]);
         }
       }
       if (data.type === "LOD") {
-        if (data.autoUpdate !== void 0) object.autoUpdate = data.autoUpdate;
+        if (data.autoUpdate !== void 0) object2.autoUpdate = data.autoUpdate;
         const levels = data.levels;
         for (let l = 0; l < levels.length; l++) {
           const level = levels[l];
-          const child = object.getObjectByProperty("uuid", level.object);
+          const child = object2.getObjectByProperty("uuid", level.object);
           if (child !== void 0) {
-            object.addLevel(child, level.distance, level.hysteresis);
+            object2.addLevel(child, level.distance, level.hysteresis);
           }
         }
       }
-      return object;
+      return object2;
     }
-    bindSkeletons(object, skeletons) {
+    bindSkeletons(object2, skeletons) {
       if (Object.keys(skeletons).length === 0) return;
-      object.traverse(function(child) {
+      object2.traverse(function(child) {
         if (child.isSkinnedMesh === true && child.skeleton !== void 0) {
           const skeleton = skeletons[child.skeleton];
           if (skeleton === void 0) {
@@ -27169,14 +27169,14 @@
       const objects = this._objects, indicesByUUID = this._indicesByUUID, paths = this._paths, parsedPaths = this._parsedPaths, bindings = this._bindings, nBindings = bindings.length;
       let knownObject = void 0, nObjects = objects.length, nCachedObjects = this.nCachedObjects_;
       for (let i = 0, n = arguments.length; i !== n; ++i) {
-        const object = arguments[i], uuid = object.uuid;
+        const object2 = arguments[i], uuid = object2.uuid;
         let index = indicesByUUID[uuid];
         if (index === void 0) {
           index = nObjects++;
           indicesByUUID[uuid] = index;
-          objects.push(object);
+          objects.push(object2);
           for (let j = 0, m = nBindings; j !== m; ++j) {
-            bindings[j].push(new PropertyBinding(object, paths[j], parsedPaths[j]));
+            bindings[j].push(new PropertyBinding(object2, paths[j], parsedPaths[j]));
           }
         } else if (index < nCachedObjects) {
           knownObject = objects[index];
@@ -27184,13 +27184,13 @@
           indicesByUUID[lastCachedObject.uuid] = index;
           objects[index] = lastCachedObject;
           indicesByUUID[uuid] = firstActiveIndex;
-          objects[firstActiveIndex] = object;
+          objects[firstActiveIndex] = object2;
           for (let j = 0, m = nBindings; j !== m; ++j) {
             const bindingsForPath = bindings[j], lastCached = bindingsForPath[firstActiveIndex];
             let binding = bindingsForPath[index];
             bindingsForPath[index] = lastCached;
             if (binding === void 0) {
-              binding = new PropertyBinding(object, paths[j], parsedPaths[j]);
+              binding = new PropertyBinding(object2, paths[j], parsedPaths[j]);
             }
             bindingsForPath[firstActiveIndex] = binding;
           }
@@ -27204,13 +27204,13 @@
       const objects = this._objects, indicesByUUID = this._indicesByUUID, bindings = this._bindings, nBindings = bindings.length;
       let nCachedObjects = this.nCachedObjects_;
       for (let i = 0, n = arguments.length; i !== n; ++i) {
-        const object = arguments[i], uuid = object.uuid, index = indicesByUUID[uuid];
+        const object2 = arguments[i], uuid = object2.uuid, index = indicesByUUID[uuid];
         if (index !== void 0 && index >= nCachedObjects) {
           const lastCachedIndex = nCachedObjects++, firstActiveObject = objects[lastCachedIndex];
           indicesByUUID[firstActiveObject.uuid] = index;
           objects[index] = firstActiveObject;
           indicesByUUID[uuid] = lastCachedIndex;
-          objects[lastCachedIndex] = object;
+          objects[lastCachedIndex] = object2;
           for (let j = 0, m = nBindings; j !== m; ++j) {
             const bindingsForPath = bindings[j], firstActive = bindingsForPath[lastCachedIndex], binding = bindingsForPath[index];
             bindingsForPath[index] = firstActive;
@@ -27225,7 +27225,7 @@
       const objects = this._objects, indicesByUUID = this._indicesByUUID, bindings = this._bindings, nBindings = bindings.length;
       let nCachedObjects = this.nCachedObjects_, nObjects = objects.length;
       for (let i = 0, n = arguments.length; i !== n; ++i) {
-        const object = arguments[i], uuid = object.uuid, index = indicesByUUID[uuid];
+        const object2 = arguments[i], uuid = object2.uuid, index = indicesByUUID[uuid];
         if (index !== void 0) {
           delete indicesByUUID[uuid];
           if (index < nCachedObjects) {
@@ -27271,8 +27271,8 @@
       parsedPaths.push(parsedPath);
       bindings.push(bindingsForPath);
       for (let i = nCachedObjects, n = objects.length; i !== n; ++i) {
-        const object = objects[i];
-        bindingsForPath[i] = new PropertyBinding(object, path, parsedPath);
+        const object2 = objects[i];
+        bindingsForPath[i] = new PropertyBinding(object2, path, parsedPath);
       }
       return bindingsForPath;
     }
@@ -28150,30 +28150,30 @@
         console.error("THREE.Raycaster: Unsupported camera type: " + camera2.type);
       }
     }
-    intersectObject(object, recursive = true, intersects2 = []) {
-      intersectObject(object, this, intersects2, recursive);
-      intersects2.sort(ascSort);
-      return intersects2;
+    intersectObject(object2, recursive = true, intersects3 = []) {
+      intersectObject(object2, this, intersects3, recursive);
+      intersects3.sort(ascSort);
+      return intersects3;
     }
-    intersectObjects(objects, recursive = true, intersects2 = []) {
+    intersectObjects(objects, recursive = true, intersects3 = []) {
       for (let i = 0, l = objects.length; i < l; i++) {
-        intersectObject(objects[i], this, intersects2, recursive);
+        intersectObject(objects[i], this, intersects3, recursive);
       }
-      intersects2.sort(ascSort);
-      return intersects2;
+      intersects3.sort(ascSort);
+      return intersects3;
     }
   };
   function ascSort(a, b) {
     return a.distance - b.distance;
   }
-  function intersectObject(object, raycaster, intersects2, recursive) {
-    if (object.layers.test(raycaster.layers)) {
-      object.raycast(raycaster, intersects2);
+  function intersectObject(object2, raycaster, intersects3, recursive) {
+    if (object2.layers.test(raycaster.layers)) {
+      object2.raycast(raycaster, intersects3);
     }
     if (recursive === true) {
-      const children = object.children;
+      const children = object2.children;
       for (let i = 0, l = children.length; i < l; i++) {
-        intersectObject(children[i], raycaster, intersects2, true);
+        intersectObject(children[i], raycaster, intersects3, true);
       }
     }
   }
@@ -28202,8 +28202,8 @@
       this.phi = Math.max(EPS2, Math.min(Math.PI - EPS2, this.phi));
       return this;
     }
-    setFromVector3(v) {
-      return this.setFromCartesianCoords(v.x, v.y, v.z);
+    setFromVector3(v2) {
+      return this.setFromCartesianCoords(v2.x, v2.y, v2.z);
     }
     setFromCartesianCoords(x, y, z) {
       this.radius = Math.sqrt(x * x + y * y + z * z);
@@ -28239,8 +28239,8 @@
       this.y = other.y;
       return this;
     }
-    setFromVector3(v) {
-      return this.setFromCartesianCoords(v.x, v.y, v.z);
+    setFromVector3(v2) {
+      return this.setFromCartesianCoords(v2.x, v2.y, v2.z);
     }
     setFromCartesianCoords(x, y, z) {
       this.radius = Math.sqrt(x * x + z * z);
@@ -28280,9 +28280,9 @@
     clone() {
       return new this.constructor().copy(this);
     }
-    copy(box2) {
-      this.min.copy(box2.min);
-      this.max.copy(box2.max);
+    copy(box3) {
+      this.min.copy(box3.min);
+      this.max.copy(box3.max);
       return this;
     }
     makeEmpty() {
@@ -28299,14 +28299,14 @@
     getSize(target2) {
       return this.isEmpty() ? target2.set(0, 0) : target2.subVectors(this.max, this.min);
     }
-    expandByPoint(point) {
-      this.min.min(point);
-      this.max.max(point);
+    expandByPoint(point3) {
+      this.min.min(point3);
+      this.max.max(point3);
       return this;
     }
-    expandByVector(vector) {
-      this.min.sub(vector);
-      this.max.add(vector);
+    expandByVector(vector2) {
+      this.min.sub(vector2);
+      this.max.add(vector2);
       return this;
     }
     expandByScalar(scalar) {
@@ -28314,36 +28314,36 @@
       this.max.addScalar(scalar);
       return this;
     }
-    containsPoint(point) {
-      return point.x < this.min.x || point.x > this.max.x || point.y < this.min.y || point.y > this.max.y ? false : true;
+    containsPoint(point3) {
+      return point3.x < this.min.x || point3.x > this.max.x || point3.y < this.min.y || point3.y > this.max.y ? false : true;
     }
-    containsBox(box2) {
-      return this.min.x <= box2.min.x && box2.max.x <= this.max.x && this.min.y <= box2.min.y && box2.max.y <= this.max.y;
+    containsBox(box3) {
+      return this.min.x <= box3.min.x && box3.max.x <= this.max.x && this.min.y <= box3.min.y && box3.max.y <= this.max.y;
     }
-    getParameter(point, target2) {
+    getParameter(point3, target2) {
       return target2.set(
-        (point.x - this.min.x) / (this.max.x - this.min.x),
-        (point.y - this.min.y) / (this.max.y - this.min.y)
+        (point3.x - this.min.x) / (this.max.x - this.min.x),
+        (point3.y - this.min.y) / (this.max.y - this.min.y)
       );
     }
-    intersectsBox(box2) {
-      return box2.max.x < this.min.x || box2.min.x > this.max.x || box2.max.y < this.min.y || box2.min.y > this.max.y ? false : true;
+    intersectsBox(box3) {
+      return box3.max.x < this.min.x || box3.min.x > this.max.x || box3.max.y < this.min.y || box3.min.y > this.max.y ? false : true;
     }
-    clampPoint(point, target2) {
-      return target2.copy(point).clamp(this.min, this.max);
+    clampPoint(point3, target2) {
+      return target2.copy(point3).clamp(this.min, this.max);
     }
-    distanceToPoint(point) {
-      return this.clampPoint(point, _vector$4).distanceTo(point);
+    distanceToPoint(point3) {
+      return this.clampPoint(point3, _vector$4).distanceTo(point3);
     }
-    intersect(box2) {
-      this.min.max(box2.min);
-      this.max.min(box2.max);
+    intersect(box3) {
+      this.min.max(box3.min);
+      this.max.min(box3.max);
       if (this.isEmpty()) this.makeEmpty();
       return this;
     }
-    union(box2) {
-      this.min.min(box2.min);
-      this.max.max(box2.max);
+    union(box3) {
+      this.min.min(box3.min);
+      this.max.max(box3.max);
       return this;
     }
     translate(offset2) {
@@ -28351,8 +28351,8 @@
       this.max.add(offset2);
       return this;
     }
-    equals(box2) {
-      return box2.min.equals(this.min) && box2.max.equals(this.max);
+    equals(box3) {
+      return box3.min.equals(this.min) && box3.max.equals(this.max);
     }
   };
   var _startP = /* @__PURE__ */ new Vector3();
@@ -28387,8 +28387,8 @@
     at(t, target2) {
       return this.delta(target2).multiplyScalar(t).add(this.start);
     }
-    closestPointToPointParameter(point, clampToLine) {
-      _startP.subVectors(point, this.start);
+    closestPointToPointParameter(point3, clampToLine) {
+      _startP.subVectors(point3, this.start);
       _startEnd.subVectors(this.end, this.start);
       const startEnd2 = _startEnd.dot(_startEnd);
       const startEnd_startP = _startEnd.dot(_startP);
@@ -28398,8 +28398,8 @@
       }
       return t;
     }
-    closestPointToPoint(point, clampToLine, target2) {
-      const t = this.closestPointToPointParameter(point, clampToLine);
+    closestPointToPoint(point3, clampToLine, target2) {
+      const t = this.closestPointToPointParameter(point3, clampToLine);
       return this.delta(target2).multiplyScalar(t).add(this.start);
     }
     applyMatrix4(matrix) {
@@ -28497,8 +28497,8 @@
   var _boneMatrix = /* @__PURE__ */ new Matrix4();
   var _matrixWorldInv = /* @__PURE__ */ new Matrix4();
   var SkeletonHelper = class extends LineSegments {
-    constructor(object) {
-      const bones = getBoneList(object);
+    constructor(object2) {
+      const bones = getBoneList(object2);
       const geometry = new BufferGeometry();
       const vertices = [];
       const colors = [];
@@ -28519,9 +28519,9 @@
       super(geometry, material2);
       this.isSkeletonHelper = true;
       this.type = "SkeletonHelper";
-      this.root = object;
+      this.root = object2;
       this.bones = bones;
-      this.matrix = object.matrixWorld;
+      this.matrix = object2.matrixWorld;
       this.matrixAutoUpdate = false;
     }
     updateMatrixWorld(force) {
@@ -28549,13 +28549,13 @@
       this.material.dispose();
     }
   };
-  function getBoneList(object) {
+  function getBoneList(object2) {
     const boneList = [];
-    if (object.isBone === true) {
-      boneList.push(object);
+    if (object2.isBone === true) {
+      boneList.push(object2);
     }
-    for (let i = 0; i < object.children.length; i++) {
-      boneList.push.apply(boneList, getBoneList(object.children[i]));
+    for (let i = 0; i < object2.children.length; i++) {
+      boneList.push.apply(boneList, getBoneList(object2.children[i]));
     }
     return boneList;
   }
@@ -28668,9 +28668,9 @@
       const colors = [];
       if (sectors > 1) {
         for (let i = 0; i < sectors; i++) {
-          const v = i / sectors * (Math.PI * 2);
-          const x = Math.sin(v) * radius;
-          const z = Math.cos(v) * radius;
+          const v2 = i / sectors * (Math.PI * 2);
+          const x = Math.sin(v2) * radius;
+          const z = Math.cos(v2) * radius;
           vertices.push(0, 0, 0);
           vertices.push(x, 0, z);
           const color = i & 1 ? color1 : color2;
@@ -28682,14 +28682,14 @@
         const color = i & 1 ? color1 : color2;
         const r = radius - radius / rings * i;
         for (let j = 0; j < divisions; j++) {
-          let v = j / divisions * (Math.PI * 2);
-          let x = Math.sin(v) * r;
-          let z = Math.cos(v) * r;
+          let v2 = j / divisions * (Math.PI * 2);
+          let x = Math.sin(v2) * r;
+          let z = Math.cos(v2) * r;
           vertices.push(x, 0, z);
           colors.push(color.r, color.g, color.b);
-          v = (j + 1) / divisions * (Math.PI * 2);
-          x = Math.sin(v) * r;
-          z = Math.cos(v) * r;
+          v2 = (j + 1) / divisions * (Math.PI * 2);
+          x = Math.sin(v2) * r;
+          z = Math.cos(v2) * r;
           vertices.push(x, 0, z);
           colors.push(color.r, color.g, color.b);
         }
@@ -28920,9 +28920,9 @@
       this.material.dispose();
     }
   };
-  function setPoint(point, pointMap, geometry, camera2, x, y, z) {
+  function setPoint(point3, pointMap, geometry, camera2, x, y, z) {
     _vector.set(x, y, z).unproject(camera2);
-    const points = pointMap[point];
+    const points = pointMap[point3];
     if (points !== void 0) {
       const position = geometry.getAttribute("position");
       for (let i = 0, l = points.length; i < l; i++) {
@@ -28932,20 +28932,20 @@
   }
   var _box = /* @__PURE__ */ new Box3();
   var BoxHelper = class extends LineSegments {
-    constructor(object, color = 16776960) {
+    constructor(object2, color = 16776960) {
       const indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
       const positions = new Float32Array(8 * 3);
       const geometry = new BufferGeometry();
       geometry.setIndex(new BufferAttribute(indices, 1));
       geometry.setAttribute("position", new BufferAttribute(positions, 3));
       super(geometry, new LineBasicMaterial({ color, toneMapped: false }));
-      this.object = object;
+      this.object = object2;
       this.type = "BoxHelper";
       this.matrixAutoUpdate = false;
       this.update();
     }
-    update(object) {
-      if (object !== void 0) {
+    update(object2) {
+      if (object2 !== void 0) {
         console.warn("THREE.BoxHelper: .update() has no longer arguments.");
       }
       if (this.object !== void 0) {
@@ -28983,8 +28983,8 @@
       position.needsUpdate = true;
       this.geometry.computeBoundingSphere();
     }
-    setFromObject(object) {
-      this.object = object;
+    setFromObject(object2) {
+      this.object = object2;
       this.update();
       return this;
     }
@@ -28999,22 +28999,22 @@
     }
   };
   var Box3Helper = class extends LineSegments {
-    constructor(box2, color = 16776960) {
+    constructor(box3, color = 16776960) {
       const indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
       const positions = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1];
       const geometry = new BufferGeometry();
       geometry.setIndex(new BufferAttribute(indices, 1));
       geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
       super(geometry, new LineBasicMaterial({ color, toneMapped: false }));
-      this.box = box2;
+      this.box = box3;
       this.type = "Box3Helper";
       this.geometry.computeBoundingSphere();
     }
     updateMatrixWorld(force) {
-      const box2 = this.box;
-      if (box2.isEmpty()) return;
-      box2.getCenter(this.position);
-      box2.getSize(this.scale);
+      const box3 = this.box;
+      if (box3.isEmpty()) return;
+      box3.getCenter(this.position);
+      box3.getSize(this.scale);
       this.scale.multiplyScalar(0.5);
       super.updateMatrixWorld(force);
     }
@@ -29509,19 +29509,19 @@
   });
   var clamp2 = (n, a, b) => Math.min(b, Math.max(a, n));
   function settings(input2 = {}) {
-    const number = (key2, min, max, integer = false) => {
+    const number2 = (key2, min, max, integer = false) => {
       const n = Number(input2[key2] ?? DEFAULTS[key2]);
       const value = clamp2(Number.isFinite(n) ? n : DEFAULTS[key2], min, max);
       return integer ? Math.round(value) : value;
     };
     return {
       seed: String(input2.seed ?? DEFAULTS.seed).slice(0, 64),
-      traffic: number("traffic", 0, 72, true),
-      pedestrians: number("pedestrians", 0, 96, true),
-      chaos: number("chaos", 0, 1),
-      speedLimit: number("speedLimit", 15, 50),
-      difficulty: number("difficulty", 1, 5, true),
-      scenarioInterval: number("scenarioInterval", 2, 20)
+      traffic: number2("traffic", 0, 72, true),
+      pedestrians: number2("pedestrians", 0, 96, true),
+      chaos: number2("chaos", 0, 1),
+      speedLimit: number2("speedLimit", 15, 50),
+      difficulty: number2("difficulty", 1, 5, true),
+      scenarioInterval: number2("scenarioInterval", 2, 20)
     };
   }
 
@@ -29718,9 +29718,9 @@
     const nodes = [person, target2];
     for (const body of obstacles) {
       if (body.type === "pedestrian") continue;
-      for (const point of corners(body, person.radius + 0.28))
-        if (!obstacles.some((a) => overlaps({ ...person, ...point }, a, 0.16)))
-          nodes.push(point);
+      for (const point3 of corners(body, person.radius + 0.28))
+        if (!obstacles.some((a) => overlaps({ ...person, ...point3 }, a, 0.16)))
+          nodes.push(point3);
     }
     const costs = nodes.map(() => Infinity), parents = nodes.map(() => -1), open = /* @__PURE__ */ new Set([0]);
     costs[0] = 0;
@@ -29868,17 +29868,111 @@
     };
   }
 
+  // src/core/vehicle-spec.js
+  var PLAYER_VEHICLE = Object.freeze({
+    lengthM: 4.2,
+    widthM: 1.85,
+    heightM: 1.82,
+    wheelbaseM: 2.6,
+    trackM: 1.55,
+    wheelRadiusM: 0.35,
+    massKg: 1800,
+    steeringRatio: 14.5,
+    maxSteerRad: 0.62,
+    maxRangeM: 35,
+    roadHeightM: 0.12,
+    centerOfMassHeightM: 0.68,
+    suspensionTravelM: 0.07
+  });
+  var rangeLayout = [
+    ["left-outer", -70, -0.76],
+    ["left-inner", -35, -0.43],
+    ["center", 0, 0],
+    ["right-inner", 35, 0.43],
+    ["right-outer", 70, 0.76]
+  ];
+  var dimension = (value, fallback) => Number.isFinite(value) && value > 0 ? value : fallback;
+  function getVehicleMounts(body = {}) {
+    const length = dimension(body.length, PLAYER_VEHICLE.lengthM);
+    const width = dimension(body.width, PLAYER_VEHICLE.widthM);
+    const camera2 = {
+      id: "front-camera",
+      angleDeg: 0,
+      position: { x: 0, y: 1.46, z: 0.72 }
+    };
+    return {
+      ranges: rangeLayout.map(([id2, angleDeg, x]) => ({
+        id: id2,
+        angleDeg,
+        position: {
+          x: x * width / PLAYER_VEHICLE.widthM,
+          y: 0.54,
+          z: length / 2 + 0.04
+        }
+      })),
+      auxiliary: [
+        ...[
+          ["rear-left", -145, -0.66],
+          ["rear-center", 180, 0],
+          ["rear-right", 145, 0.66]
+        ].map(([id2, angleDeg, x]) => ({
+          id: id2,
+          angleDeg,
+          position: {
+            x: x * width / PLAYER_VEHICLE.widthM,
+            y: 0.58,
+            z: -length / 2 - 0.04
+          }
+        })),
+        {
+          id: "side-left",
+          angleDeg: -90,
+          position: { x: -width / 2 - 0.03, y: 0.64, z: 0.15 }
+        },
+        {
+          id: "side-right",
+          angleDeg: 90,
+          position: { x: width / 2 + 0.03, y: 0.64, z: 0.15 }
+        }
+      ],
+      camera: camera2,
+      cameras: [
+        camera2,
+        {
+          id: "rear-camera",
+          angleDeg: 180,
+          position: { x: 0, y: 1.3, z: -length / 2 - 0.035 }
+        }
+      ],
+      telemetry: {
+        id: "roof-imu-gnss",
+        position: { x: 0, y: 1.88, z: -0.15 }
+      }
+    };
+  }
+  function mountToWorld(body, position) {
+    const c = Math.cos(body.heading ?? 0);
+    const s = Math.sin(body.heading ?? 0);
+    return {
+      x: body.x + position.x * c + position.z * s,
+      y: PLAYER_VEHICLE.roadHeightM + (body.y ?? 0) + position.y,
+      z: body.z - position.x * s + position.z * c
+    };
+  }
+
   // src/core/vehicle.js
   var approach = (a, b, amount) => a + clamp2(b - a, -amount, amount);
   function integrateVehicle(body, command, dt) {
+    if (!Number.isFinite(dt) || dt < 0)
+      throw new RangeError("Vehicle integration needs a nonnegative step");
     const spec = { ...VEHICLE, ...body.spec };
     const steer = approach(
       body.steer ?? 0,
-      clamp2(command.steer ?? 0, -spec.maxSteer, spec.maxSteer),
+      clamp2(Number.isFinite(command.steer) ? command.steer : 0, -spec.maxSteer, spec.maxSteer),
       spec.steerRate * dt
     );
     const requested = clamp2(
-      command.targetSpeed ?? 0,
+      Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
       -spec.reverseSpeed,
       body.maxSpeed ?? 13.89
     );
@@ -29901,6 +29995,68 @@
       heading: body.heading + yawRate * dt,
       steer,
       speed
+    };
+  }
+  function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
+    if (!Number.isFinite(dt) || dt <= 0)
+      throw new RangeError("Contact needs a positive step");
+    if (overlaps(before, obstacle)) return null;
+    const travel = distance(before, proposed) + Math.abs(angleDelta(proposed.heading, before.heading)) * Math.hypot(before.length, before.width) / 2;
+    if (travel < 1e-10) return null;
+    const steps = Math.max(1, Math.ceil(travel / 0.04));
+    let low = 0;
+    let high = null;
+    for (let i = 1; i <= steps; i++) {
+      if (overlaps(interpolate(before, proposed, i / steps), obstacle)) {
+        high = i / steps;
+        low = (i - 1) / steps;
+        break;
+      }
+    }
+    if (high === null) return null;
+    for (let i = 0; i < 32; i++) {
+      const middle = (low + high) / 2;
+      if (overlaps(interpolate(before, proposed, middle), obstacle)) high = middle;
+      else low = middle;
+    }
+    const body = interpolate(before, proposed, low);
+    const a = corners(body);
+    const b = corners(obstacle);
+    let separation = -Infinity;
+    let normal;
+    for (const shape of [body, obstacle]) {
+      for (const offset2 of [0, Math.PI / 2]) {
+        const axis = {
+          x: Math.sin((shape.heading ?? 0) + offset2),
+          z: Math.cos((shape.heading ?? 0) + offset2)
+        };
+        const pa = a.map((p) => p.x * axis.x + p.z * axis.z);
+        const pb = b.map((p) => p.x * axis.x + p.z * axis.z);
+        const forwardGap = Math.min(...pb) - Math.max(...pa);
+        const reverseGap = Math.min(...pa) - Math.max(...pb);
+        const gap = Math.max(forwardGap, reverseGap);
+        if (gap > separation) {
+          separation = gap;
+          const sign2 = forwardGap >= reverseGap ? 1 : -1;
+          normal = { x: axis.x * sign2, z: axis.z * sign2 };
+        }
+      }
+    }
+    const forward2 = normal.x * Math.sin(body.heading) + normal.z * Math.cos(body.heading);
+    const right = normal.x * Math.cos(body.heading) - normal.z * Math.sin(body.heading);
+    const side = Math.abs(forward2) >= Math.abs(right) ? forward2 > 0 ? "front" : "rear" : right > 0 ? "right" : "left";
+    const obstacleSpeed = obstacle.speed ?? 0;
+    const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
+    const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
+    const closingSpeedMps = Math.max(0, vx * normal.x + vz * normal.z);
+    return {
+      body: { ...body, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
+      hitId: obstacle.id,
+      side,
+      normal,
+      closingSpeedMps,
+      energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
+      proposedTravelM: distance(before, proposed)
     };
   }
   function followPath(body, path, cursor = 0, steeringOnly = false) {
@@ -29928,14 +30084,14 @@
       );
       target2++;
     }
-    const point = path[target2];
+    const point3 = path[target2];
     const alpha = angleDelta(
-      Math.atan2(point.x - rear.x, point.z - rear.z),
+      Math.atan2(point3.x - rear.x, point3.z - rear.z),
       body.heading
     );
     const actualDistance = Math.max(
       1,
-      Math.hypot(point.x - rear.x, point.z - rear.z)
+      Math.hypot(point3.x - rear.x, point3.z - rear.z)
     );
     const steer = Math.atan2(2 * wheelbase * Math.sin(alpha), actualDistance);
     if (steeringOnly) return { steer, cursor: nearest };
@@ -30009,10 +30165,10 @@
       const members = [remaining.values().next().value];
       remaining.delete(members[0]);
       for (let i = 0; i < members.length; i++)
-        for (const node of remaining) {
-          if (distance(members[i], node) < 24) {
-            members.push(node);
-            remaining.delete(node);
+        for (const node3 of remaining) {
+          if (distance(members[i], node3) < 24) {
+            members.push(node3);
+            remaining.delete(node3);
           }
         }
       groups.push({
@@ -30057,23 +30213,23 @@
     }));
     let entered = false, last = null;
     for (let i = 0; i < path.length; i++) {
-      const point = path[i];
-      if (!insideJunction(point, group, 3)) {
+      const point3 = path[i];
+      if (!insideJunction(point3, group, 3)) {
         if (entered) break;
         else continue;
       }
       entered = true;
-      if (last && distance(last, point) < 1.5 && i < path.length - 1) continue;
+      if (last && distance(last, point3) < 1.5 && i < path.length - 1) continue;
       const next = path[Math.min(i + 1, path.length - 1)], before = path[Math.max(0, i - 1)];
       const heading = Math.atan2(next.x - before.x, next.z - before.z);
       samples.push({
         type: "vehicle",
-        ...point,
+        ...point3,
         heading,
         width: car.width + 0.35,
         length: car.length + 2
       });
-      last = point;
+      last = point3;
     }
     world2.junctionCorridors.set(key2, { path: car.path, samples });
     return samples;
@@ -30283,17 +30439,17 @@
       }
       let previous = null;
       for (const value of [...values].sort((a, b) => a - b)) {
-        const node = put(
+        const node3 = put(
           road.axis === "z" ? { x: road.fixed, z: value } : { x: value, z: road.fixed }
         );
         if (previous) {
-          previous.edges.push(node.key);
-          node.edges.push(previous.key);
+          previous.edges.push(node3.key);
+          node3.edges.push(previous.key);
         }
-        previous = node;
+        previous = node3;
       }
     }
-    for (const node of nodes.values()) node.edges = [...new Set(node.edges)];
+    for (const node3 of nodes.values()) node3.edges = [...new Set(node3.edges)];
     return nodes;
   }
   function junctionPressure(groups, actors) {
@@ -30305,8 +30461,8 @@
       if (!queue.length) continue;
       const longest = Math.max(...queue.map((actor) => actor.wait));
       const penalty = Math.min(120, queue.length * 5 + longest * 0.8);
-      for (const node of group.members)
-        costs.set(node.key, Math.max(costs.get(node.key) ?? 0, penalty));
+      for (const node3 of group.members)
+        costs.set(node3.key, Math.max(costs.get(node3.key) ?? 0, penalty));
     }
     return costs;
   }
@@ -30348,8 +30504,8 @@
     }
     if (!found) return [];
     const points = [];
-    for (let node = found; node; node = node.parent)
-      points.push({ x: node.node.x, z: node.node.z });
+    for (let node3 = found; node3; node3 = node3.parent)
+      points.push({ x: node3.node.x, z: node3.node.z });
     return lanePath(points.reverse());
   }
   function lanePath(points, offset2 = LANE_OFFSET) {
@@ -30418,6 +30574,175 @@
     }
     append(shifted.at(-1));
     return path;
+  }
+
+  // src/core/vehicle-state.js
+  var wheelNames = ["frontLeft", "frontRight", "rearLeft", "rearRight"];
+  var staticWheelLoad = PLAYER_VEHICLE.massKg * 9.81 / 4;
+  var tau = Math.PI * 2;
+  function createVehicleState() {
+    return {
+      wheelAngles: { frontLeft: 0, frontRight: 0 },
+      wheelSpinRad: 0,
+      steeringWheelRad: 0,
+      suspension: {
+        pitchRad: 0,
+        rollRad: 0,
+        heaveM: 0,
+        pitchVelocityRadS: 0,
+        rollVelocityRadS: 0,
+        heaveVelocityMps: 0,
+        wheelOffsetsM: Object.fromEntries(wheelNames.map((name) => [name, 0]))
+      },
+      wheelLoadsN: Object.fromEntries(
+        wheelNames.map((name) => [name, staticWheelLoad])
+      ),
+      controls: { throttle: 0, brake: 0, gear: "N" },
+      contact: null,
+      damage: {
+        front: 0,
+        rear: 0,
+        left: 0,
+        right: 0,
+        total: 0,
+        impactCount: 0,
+        lastImpact: null
+      }
+    };
+  }
+  function wheelAngles(steer) {
+    if (Math.abs(steer) < 1e-10) return { frontLeft: 0, frontRight: 0 };
+    const sign2 = Math.sign(steer);
+    const radius = PLAYER_VEHICLE.wheelbaseM / Math.tan(Math.abs(steer));
+    const inner = Math.atan(
+      PLAYER_VEHICLE.wheelbaseM / (radius - PLAYER_VEHICLE.trackM / 2)
+    );
+    const outer = Math.atan(
+      PLAYER_VEHICLE.wheelbaseM / (radius + PLAYER_VEHICLE.trackM / 2)
+    );
+    return sign2 > 0 ? { frontLeft: outer, frontRight: inner } : { frontLeft: -inner, frontRight: -outer };
+  }
+  function spring(value, velocity, target2, frequency, limit, dt) {
+    const displacement = value - target2;
+    const coefficient = velocity + frequency * displacement;
+    const decay = Math.exp(-frequency * dt);
+    const raw = target2 + (displacement + coefficient * dt) * decay;
+    const result = clamp2(raw, -limit, limit);
+    const speed = result === raw ? (velocity - frequency * coefficient * dt) * decay : 0;
+    return {
+      value: Math.abs(result) < 1e-12 ? 0 : result,
+      velocity: Math.abs(speed) < 1e-12 ? 0 : speed
+    };
+  }
+  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null } = {}) {
+    if (!Number.isFinite(dt) || dt <= 0)
+      throw new RangeError("Vehicle state needs a positive fixed step");
+    const previous = before.vehicle ?? createVehicleState();
+    const steer = clamp2(after.steer ?? 0, -PLAYER_VEHICLE.maxSteerRad, PLAYER_VEHICLE.maxSteerRad);
+    const yaw = angleDelta(after.heading, before.heading);
+    const heading = before.heading + yaw / 2;
+    const dx = after.x - before.x;
+    const dz = after.z - before.z;
+    const forwardTravel = dx * Math.sin(heading) + dz * Math.cos(heading);
+    const signedTravel = Math.hypot(dx, dz) * Math.sign(forwardTravel);
+    const speed = after.speed ?? 0;
+    const oldSpeed = before.speed ?? 0;
+    const averageSpeed = (speed + oldSpeed) / 2;
+    const acceleration = clamp2((speed - oldSpeed) / dt, -9, 9);
+    const lateral = clamp2(averageSpeed * yaw / dt, -8, 8);
+    const load = previous.suspension;
+    const pitch = spring(
+      load.pitchRad,
+      load.pitchVelocityRadS,
+      clamp2(-acceleration * 8e-3, -0.06, 0.06),
+      11,
+      0.065,
+      dt
+    );
+    const roll = spring(
+      load.rollRad,
+      load.rollVelocityRadS,
+      clamp2(lateral * 9e-3, -0.065, 0.065),
+      10,
+      0.07,
+      dt
+    );
+    const heave = spring(
+      load.heaveM,
+      load.heaveVelocityMps,
+      contact ? -0.035 : -Math.min(0.018, Math.abs(acceleration) * 12e-4 + Math.abs(lateral) * 1e-3),
+      13,
+      0.04,
+      dt
+    );
+    const wheelOffsetsM = {};
+    const wheelLoadsN = {};
+    const weight = PLAYER_VEHICLE.massKg * 9.81;
+    const foreTransfer = PLAYER_VEHICLE.massKg * acceleration * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.wheelbaseM);
+    const sideTransfer = PLAYER_VEHICLE.massKg * lateral * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.trackM);
+    for (const name of wheelNames) {
+      const front = name.startsWith("front");
+      const left = name.endsWith("Left");
+      const x = (left ? -1 : 1) * PLAYER_VEHICLE.trackM / 2;
+      const z = (front ? 1 : -1) * PLAYER_VEHICLE.wheelbaseM / 2;
+      wheelOffsetsM[name] = clamp2(
+        -heave.value + Math.sin(pitch.value) * z - Math.sin(roll.value) * x,
+        -PLAYER_VEHICLE.suspensionTravelM,
+        PLAYER_VEHICLE.suspensionTravelM
+      );
+      wheelLoadsN[name] = Math.max(
+        weight * 0.02,
+        staticWheelLoad + (front ? -foreTransfer : foreTransfer) + (left ? sideTransfer : -sideTransfer)
+      );
+    }
+    const loadScale = weight / Object.values(wheelLoadsN).reduce((a, b) => a + b, 0);
+    for (const name of wheelNames) wheelLoadsN[name] *= loadScale;
+    const requested = Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0;
+    const reversing = oldSpeed * requested < 0;
+    const slowing = Math.abs(requested) < Math.abs(oldSpeed) || reversing;
+    const controls = {
+      throttle: !contact && !slowing && Math.abs(requested) > Math.abs(oldSpeed) + 1e-8 ? 1 : 0,
+      brake: contact || slowing && Math.abs(oldSpeed) > 1e-8 ? 1 : 0,
+      gear: Math.abs(speed) > 1e-8 ? speed > 0 ? "D" : "R" : requested === 0 ? "N" : requested > 0 ? "D" : "R"
+    };
+    let latchedContact = previous.contact;
+    if (latchedContact && Math.hypot(after.x - latchedContact.x, after.z - latchedContact.z) > 0.25)
+      latchedContact = null;
+    const damage = { ...previous.damage };
+    if (contact) {
+      const closingSpeedMps = Math.max(0, contact.closingSpeedMps);
+      if (closingSpeedMps >= 0.35 && Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8 && latchedContact?.hitId !== contact.hitId && ["front", "rear", "left", "right"].includes(contact.side)) {
+        const energyJ = 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
+        damage[contact.side] = clamp2(damage[contact.side] + energyJ / 45e3, 0, 1);
+        damage.total = 1 - ["front", "rear", "left", "right"].reduce((p, side) => p * (1 - damage[side]), 1);
+        damage.impactCount++;
+        damage.lastImpact = { side: contact.side, closingSpeedMps, energyJ, tick };
+      }
+      latchedContact = {
+        hitId: contact.hitId,
+        x: after.x,
+        z: after.z,
+        tick
+      };
+    }
+    return {
+      wheelAngles: wheelAngles(steer),
+      wheelSpinRad: (previous.wheelSpinRad + signedTravel / PLAYER_VEHICLE.wheelRadiusM) % tau,
+      steeringWheelRad: steer * PLAYER_VEHICLE.steeringRatio,
+      suspension: {
+        pitchRad: pitch.value,
+        rollRad: roll.value,
+        heaveM: heave.value,
+        pitchVelocityRadS: pitch.velocity,
+        rollVelocityRadS: roll.velocity,
+        heaveVelocityMps: heave.velocity,
+        wheelOffsetsM
+      },
+      wheelLoadsN,
+      controls,
+      contact: latchedContact,
+      damage
+    };
   }
 
   // src/core/roads.js
@@ -30583,12 +30908,12 @@
       if (!this.cells.has(key2)) this.cells.set(key2, []);
       this.cells.get(key2).push(item);
     }
-    near(point, radius) {
+    near(point3, radius) {
       const result = [];
-      for (let x = Math.floor((point.x - radius) / this.size); x <= Math.floor((point.x + radius) / this.size); x++)
-        for (let z = Math.floor((point.z - radius) / this.size); z <= Math.floor((point.z + radius) / this.size); z++)
+      for (let x = Math.floor((point3.x - radius) / this.size); x <= Math.floor((point3.x + radius) / this.size); x++)
+        for (let z = Math.floor((point3.z - radius) / this.size); z <= Math.floor((point3.z + radius) / this.size); z++)
           for (const item of this.cells.get(`${x},${z}`) ?? [])
-            if (Math.hypot(item.x - point.x, item.z - point.z) <= radius)
+            if (Math.hypot(item.x - point3.x, item.z - point3.z) <= radius)
               result.push(item);
       return result;
     }
@@ -30655,13 +30980,13 @@
           x: player.x + Math.sin(player.heading) * 18,
           z: player.z + Math.cos(player.heading) * 18
         });
-      for (const point of candidates) {
+      for (const point3 of candidates) {
         const barrier = {
           id: `barrier-${world2.tick}`,
           type: "static",
           kind: "barrier",
-          x: point.x,
-          z: point.z,
+          x: point3.x,
+          z: point3.z,
           heading: player.heading,
           width: 2.3,
           length: 0.7,
@@ -30688,8 +31013,8 @@
       );
       world2.staticIndex = new SpatialIndex(world2.statics);
     }
-    const interval = Math.round(world2.config.scenarioInterval * 60);
-    if (world2.tick > 0 && world2.tick % interval === 0) triggerScenario(world2);
+    const interval2 = Math.round(world2.config.scenarioInterval * 60);
+    if (world2.tick > 0 && world2.tick % interval2 === 0) triggerScenario(world2);
   }
 
   // src/core/arrival.js
@@ -30697,16 +31022,16 @@
     const bays = [], used = /* @__PURE__ */ new Set();
     for (const place of PLACES) {
       let count = 0;
-      for (const node of [...graph.values()].sort(
+      for (const node3 of [...graph.values()].sort(
         (a, b) => distance(a, place) - distance(b, place)
       )) {
-        if (distance(node, place) > 70 || count >= 16) break;
-        if (junctionGroups2.some((group) => insideJunction(node, group, 4)))
+        if (distance(node3, place) > 70 || count >= 16) break;
+        if (junctionGroups2.some((group) => insideJunction(node3, group, 4)))
           continue;
         for (const road of roads) {
           if (road.width < 10) continue;
-          const along = road.axis === "z" ? node.z : node.x;
-          const cross = road.axis === "z" ? node.x : node.z;
+          const along = road.axis === "z" ? node3.z : node3.x;
+          const cross = road.axis === "z" ? node3.x : node3.z;
           if (Math.abs(cross - road.fixed) > 0.01 || along < road.min + 6 || along > road.max - 6)
             continue;
           const marker = `${road.axis}:${road.fixed}:${along}`;
@@ -30720,7 +31045,7 @@
               max: Math.min(road.max, along + 18),
               width: 2.2,
               parkingBay: true,
-              nodeKey: node.key,
+              nodeKey: node3.key,
               side
             });
           count++;
@@ -30733,14 +31058,14 @@
   function planArrival(world2, goal) {
     const car = world2.player;
     const candidates = [...world2.graph.values()].filter(
-      (node) => !world2.junctionGroups.some((group) => insideJunction(node, group, 4))
+      (node3) => !world2.junctionGroups.some((group) => insideJunction(node3, group, 4))
     ).sort((a, b) => distance(a, goal) - distance(b, goal));
-    for (const node of candidates) {
-      if (distance(node, goal) > 70) break;
+    for (const node3 of candidates) {
+      if (distance(node3, goal) > 70) break;
       const path = planNavigation(
         world2.graph,
         car,
-        node,
+        node3,
         world2.actors,
         world2.trafficPressure()
       );
@@ -30750,12 +31075,12 @@
       const forward2 = { x: Math.sin(heading), z: Math.cos(heading) };
       const right = { x: -forward2.z, z: forward2.x };
       const road = world2.drivingRoads.find(
-        (r) => r.width >= 10 && Math.abs(angleDelta(heading, r.axis === "z" ? 0 : Math.PI / 2)) % Math.PI < 0.01 && Math.abs((r.axis === "z" ? node.x : node.z) - r.fixed) < 0.01 && (r.axis === "z" ? node.z : node.x) > r.min + 4 && (r.axis === "z" ? node.z : node.x) < r.max - 4
+        (r) => r.width >= 10 && Math.abs(angleDelta(heading, r.axis === "z" ? 0 : Math.PI / 2)) % Math.PI < 0.01 && Math.abs((r.axis === "z" ? node3.x : node3.z) - r.fixed) < 0.01 && (r.axis === "z" ? node3.z : node3.x) > r.min + 4 && (r.axis === "z" ? node3.z : node3.x) < r.max - 4
       );
       if (!road) continue;
       const side = Math.sign(road.axis === "z" ? right.x : right.z);
       if (!world2.parkingBays.some(
-        (bay) => bay.nodeKey === node.key && bay.side === side && bay.axis === road.axis && Math.abs(bay.fixed - road.fixed - side * 5.6) < 0.01
+        (bay) => bay.nodeKey === node3.key && bay.side === side && bay.axis === road.axis && Math.abs(bay.fixed - road.fixed - side * 5.6) < 0.01
       ))
         continue;
       let start = path.length - 1;
@@ -30893,9 +31218,948 @@
     };
   }
 
+  // src/core/visual-prediction.js
+  var SOURCE = "visual-prediction";
+  var PIXELS = "camera-pixels";
+  var MAX_AGE_S = 0.75;
+  var HORIZON_S = 6;
+  var HOLD_S = 0.35;
+  var MAX_TRACKS = 24;
+  var MAX_HISTORY = 12;
+  var MAX_WALK_SPEED = 4;
+  var STOP_SPEED_MPS = 0.05;
+  var LABELS = ["person", "motion", "vehicle"];
+  var RESULT_KEYS = [
+    "streamId",
+    "frameId",
+    "simulationTimeS",
+    "camera",
+    "ego",
+    "width",
+    "height",
+    "latencyMs",
+    "model",
+    "detections",
+    "observations",
+    "status"
+  ];
+  var TRACK_KEYS = [
+    "id",
+    "source",
+    "streamId",
+    "label",
+    "confidence",
+    "frameId",
+    "firstSeenS",
+    "lastSeenS",
+    "observations",
+    "spanS",
+    "position",
+    "velocity",
+    "uncertaintyM",
+    "velocityUncertaintyMps",
+    "reliable",
+    "box",
+    "history",
+    "holdUntilS",
+    "holdSpeedMps",
+    "lastConflictS",
+    "conflictFrameId",
+    "conflictCrossingTimeS",
+    "ageMs",
+    "positionCovarianceM2",
+    "velocityCovarianceM2S2",
+    "regressionResidualCovarianceM2",
+    "stopEpisode"
+  ];
+  var EPISODE_KEYS = [
+    "source",
+    "trackId",
+    "streamId",
+    "phase",
+    "originFrameId",
+    "originTimeS",
+    "originConfidence",
+    "requestedAtS",
+    "referenceEgo",
+    "referenceSpeedMps",
+    "lowestSpeedMps",
+    "lastProgressSpeedMps",
+    "lastProgressAtS",
+    "brakingObservedAtS",
+    "stoppedAtS",
+    "stopDeadlineS",
+    "clearanceDeadlineS",
+    "lastSupportFrameId",
+    "lastSupportTimeS",
+    "clearFrameId",
+    "clearedAtS",
+    "expiryReason"
+  ];
+  var clamp3 = (n, low, high) => Math.min(high, Math.max(low, n));
+  function object(value, keys2, name) {
+    if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value)))
+      throw new TypeError(`${name} must be a plain object`);
+    for (const key2 of Reflect.ownKeys(value)) {
+      if (!keys2.includes(key2))
+        throw new TypeError(`${name}: unknown field ${String(key2)}`);
+      const descriptor = Object.getOwnPropertyDescriptor(value, key2);
+      if (descriptor.get || descriptor.set)
+        throw new TypeError(`${name}: accessors are not observation data`);
+    }
+  }
+  function number(value, min, max, name, integer = false) {
+    if (!Number.isFinite(value) || value < min || value > max || integer && !Number.isSafeInteger(value))
+      throw new TypeError(`${name} is outside its finite bounds`);
+  }
+  function token(value, name, max = 80) {
+    if (typeof value !== "string" || !value.trim() || value.length > max)
+      throw new TypeError(`${name} must be a nonempty string of at most ${max} characters`);
+  }
+  function point(value, name) {
+    object(value, ["x", "z"], name);
+    number(value.x, -1e5, 1e5, `${name}.x`);
+    number(value.z, -1e5, 1e5, `${name}.z`);
+  }
+  function odometry(ego) {
+    object(ego, ["x", "z", "headingRad", "speedMps", "lengthM", "widthM"], "ego");
+    point({ x: ego.x, z: ego.z }, "ego position");
+    number(ego.headingRad, -1e5, 1e5, "ego.headingRad");
+    number(ego.speedMps, -55, 55, "ego.speedMps");
+    number(ego.lengthM, 1, 10, "ego.lengthM");
+    number(ego.widthM, 0.5, 4, "ego.widthM");
+  }
+  function calibration(camera2) {
+    object(camera2, ["width", "height", "fovYDeg", "position", "headingRad", "groundY"], "camera");
+    number(camera2.width, 160, 1920, "camera.width", true);
+    number(camera2.height, 90, 1080, "camera.height", true);
+    number(camera2.fovYDeg, 20, 140, "camera.fovYDeg");
+    object(camera2.position, ["x", "y", "z"], "camera.position");
+    for (const key2 of ["x", "y", "z"])
+      number(camera2.position[key2], -1e5, 1e5, `camera.position.${key2}`);
+    number(camera2.headingRad, -1e5, 1e5, "camera.headingRad");
+    number(camera2.groundY, -100, 100, "camera.groundY");
+    number(camera2.position.y - camera2.groundY, 0.2, 8, "camera height above ground");
+  }
+  function box(value, width, height) {
+    if (!Array.isArray(value) || value.length !== 4)
+      throw new TypeError("box must contain four pixel coordinates");
+    value.forEach((v2, i) => number(v2, 0, i % 2 ? height : width, "box coordinate"));
+    if (value[0] >= value[2] || value[1] >= value[3])
+      throw new TypeError("box must have positive pixel area");
+  }
+  function qualityMetadata(value, depth = 0) {
+    if (depth > 4) throw new TypeError("observations quality metadata is too deep");
+    if (typeof value === "number") number(value, -1e9, 1e9, "observation quality");
+    else if (typeof value === "string") {
+      if (value.length > 256) throw new TypeError("observation quality text is too long");
+    } else if (value != null && typeof value === "object") {
+      const keys2 = Reflect.ownKeys(value);
+      if (keys2.length > 64) throw new TypeError("observation quality metadata is too large");
+      for (const key2 of keys2) {
+        if (typeof key2 !== "string" || /actor|world|future|scenario|case.?id|intent|ground.?truth|hit.?id|script|path|target/i.test(key2))
+          throw new TypeError(`observations: forbidden truth field ${String(key2)}`);
+        qualityMetadata(value[key2], depth + 1);
+      }
+    } else if (value != null && typeof value !== "boolean")
+      throw new TypeError("observations must contain only serializable pixel quality metadata");
+  }
+  function resultData(result) {
+    object(result, RESULT_KEYS, "result");
+    token(result.streamId, "streamId");
+    number(result.frameId, 0, Number.MAX_SAFE_INTEGER, "frameId", true);
+    number(result.simulationTimeS, 0, 1e9, "simulationTimeS");
+    if (result.status !== "ready") throw new TypeError("result is not a ready pixel observation");
+    calibration(result.camera);
+    odometry(result.ego);
+    if (result.width !== result.camera.width || result.height !== result.camera.height)
+      throw new TypeError("result dimensions must match the captured camera");
+    number(result.latencyMs, 0, 6e4, "latencyMs");
+    object(result.model, ["id", "method", "provider", "weightsSha256"], "model");
+    for (const key2 of ["id", "method", "provider"]) token(result.model[key2], `model.${key2}`, 200);
+    if (result.model.weightsSha256 !== null && !/^[a-f0-9]{64}$/i.test(result.model.weightsSha256 ?? ""))
+      throw new TypeError("model.weightsSha256 must be null or an actual SHA-256");
+    if (!Array.isArray(result.detections) || result.detections.length > 128)
+      throw new TypeError("detections must be a bounded array");
+    for (const detection of result.detections) {
+      object(detection, ["box", "label", "confidence", "trackHint"], "detection");
+      box(detection.box, result.width, result.height);
+      if (!LABELS.includes(detection.label)) throw new TypeError("unsupported detector label");
+      number(detection.confidence, 0, 1, "detection.confidence");
+      if (detection.trackHint !== void 0) token(detection.trackHint, "trackHint");
+    }
+    if (result.observations !== void 0) {
+      if (!Array.isArray(result.observations) || result.observations.length > 64)
+        throw new TypeError("observations must be a bounded pixel-quality array");
+      qualityMetadata(result.observations);
+    }
+  }
+  function project(detection, camera2) {
+    const focal = camera2.height / (2 * Math.tan(camera2.fovYDeg * Math.PI / 360));
+    const belowHorizon = detection.box[3] - camera2.height / 2;
+    if (belowHorizon < 2 || detection.box[3] >= camera2.height - 1) return null;
+    const depth = (camera2.position.y - camera2.groundY) * focal / belowHorizon;
+    if (depth < 0.5 || depth > 60) return null;
+    const side = ((detection.box[0] + detection.box[2]) / 2 - camera2.width / 2) * depth / focal;
+    const sine = Math.sin(camera2.headingRad), cosine = Math.cos(camera2.headingRad);
+    const offsetX = sine * depth - cosine * side, offsetZ = cosine * depth + sine * side;
+    const duX = -cosine * depth / focal, duZ = sine * depth / focal;
+    const dvX = -offsetX / belowHorizon, dvZ = -offsetZ / belowHorizon;
+    const projectionCovarianceM2 = {
+      xx: 0.25 * (duX * duX + dvX * dvX),
+      xz: 0.25 * (duX * duZ + dvX * dvZ),
+      zz: 0.25 * (duZ * duZ + dvZ * dvZ)
+    };
+    return {
+      x: camera2.position.x + offsetX,
+      z: camera2.position.z + offsetZ,
+      projectionCovarianceM2,
+      sigmaM: Math.max(0.08, Math.sqrt(projectionCovarianceM2.xx + projectionCovarianceM2.zz))
+    };
+  }
+  function fit(history) {
+    const last = history.at(-1);
+    const meanT = history.reduce((sum, p) => sum + p.timeS - last.timeS, 0) / history.length;
+    const meanX = history.reduce((sum, p) => sum + p.x, 0) / history.length;
+    const meanZ = history.reduce((sum, p) => sum + p.z, 0) / history.length;
+    let variance = 0, covX = 0, covZ = 0;
+    for (const p of history) {
+      const dt = p.timeS - last.timeS - meanT;
+      variance += dt * dt;
+      covX += dt * (p.x - meanX);
+      covZ += dt * (p.z - meanZ);
+    }
+    const rawX = variance > 1e-8 ? covX / variance : 0;
+    const rawZ = variance > 1e-8 ? covZ / variance : 0;
+    const rawSpeed = Math.hypot(rawX, rawZ);
+    const scale = rawSpeed > MAX_WALK_SPEED ? MAX_WALK_SPEED / rawSpeed : 1;
+    const x = meanX - rawX * meanT, z = meanZ - rawZ * meanT;
+    let residualXX = 0, residualXZ = 0, residualZZ = 0;
+    for (const p of history) {
+      const dx = p.x - x - rawX * (p.timeS - last.timeS);
+      const dz = p.z - z - rawZ * (p.timeS - last.timeS);
+      residualXX += dx * dx;
+      residualXZ += dx * dz;
+      residualZZ += dz * dz;
+    }
+    const residual = Math.sqrt((residualXX + residualZZ) / history.length);
+    const degrees = Math.max(1, history.length - 2);
+    const regressionResidualCovarianceM2 = {
+      xx: residualXX / degrees,
+      xz: residualXZ / degrees,
+      zz: residualZZ / degrees
+    };
+    const velocityFactor = variance > 1e-8 ? 1 / variance : 0;
+    const positionFactor = 1 / history.length + meanT * meanT * velocityFactor;
+    const positionCovarianceM2 = {}, velocityCovarianceM2S2 = {};
+    for (const key2 of ["xx", "xz", "zz"]) {
+      positionCovarianceM2[key2] = last.projectionCovarianceM2[key2] + positionFactor * regressionResidualCovarianceM2[key2];
+      velocityCovarianceM2S2[key2] = velocityFactor * regressionResidualCovarianceM2[key2];
+    }
+    const spanS = last.timeS - history[0].timeS;
+    return {
+      position: { x, z },
+      velocity: { x: rawX * scale, z: rawZ * scale },
+      spanS,
+      uncertaintyM: clamp3(last.sigmaM + residual * 2, 0.08, 10),
+      velocityUncertaintyMps: clamp3(0.05 + residual * 2 / Math.max(0.2, spanS), 0.05, 8),
+      positionCovarianceM2,
+      velocityCovarianceM2S2,
+      regressionResidualCovarianceM2,
+      reliable: rawSpeed <= MAX_WALK_SPEED && residual <= 0.8
+    };
+  }
+  function validateCovariance(value, name) {
+    object(value, ["xx", "xz", "zz"], name);
+    number(value.xx, 0, 1e15, `${name}.xx`);
+    number(value.zz, 0, 1e15, `${name}.zz`);
+    number(value.xz, -1e15, 1e15, `${name}.xz`);
+    const bound = Math.sqrt(value.xx * value.zz);
+    if (Math.abs(value.xz) > bound + 1e-9 * Math.max(1, bound))
+      throw new TypeError(`${name} must be a positive-semidefinite covariance`);
+  }
+  function copyEpisode(value) {
+    return value ? { ...value, referenceEgo: { ...value.referenceEgo } } : null;
+  }
+  function validateEpisode(value, track) {
+    if (value === null) return;
+    object(value, EPISODE_KEYS, "stop episode");
+    if (value.source !== SOURCE || value.trackId !== track.id || value.streamId !== track.streamId)
+      throw new TypeError("stop episode must retain its qualified visual track/stream identity");
+    if (!["stopping", "awaiting-clearance", "cleared", "expired"].includes(value.phase))
+      throw new TypeError("unknown stop episode phase");
+    odometry(value.referenceEgo);
+    number(value.referenceSpeedMps, 0.2, 55, "episode reference speed");
+    if (value.referenceSpeedMps !== value.referenceEgo.speedMps)
+      throw new TypeError("episode reference speed must be captured own odometry");
+    number(value.originConfidence, track.label === "motion" ? 0.65 : 0.55, 1, "episode origin confidence");
+    number(value.originFrameId, 0, track.frameId, "episode origin frame", true);
+    number(value.originTimeS, 0, track.lastSeenS, "episode origin time");
+    number(value.requestedAtS, value.originTimeS, 1e9, "episode request time");
+    for (const key2 of ["lowestSpeedMps", "lastProgressSpeedMps"])
+      number(value[key2], 0, value.referenceSpeedMps, `episode.${key2}`);
+    const maximumDeadline = value.requestedAtS + HORIZON_S + value.referenceSpeedMps / VEHICLE.braking + MAX_AGE_S;
+    number(value.clearanceDeadlineS, value.requestedAtS, maximumDeadline + 1e-8, "episode clearance deadline");
+    number(value.stopDeadlineS, value.requestedAtS, value.clearanceDeadlineS, "episode stop deadline");
+    number(value.lastProgressAtS, value.requestedAtS, 1e9, "episode last progress time");
+    number(value.lastSupportFrameId, value.originFrameId, track.frameId, "episode support frame", true);
+    number(value.lastSupportTimeS, value.originTimeS, track.lastSeenS, "episode support time");
+    for (const key2 of ["brakingObservedAtS", "stoppedAtS", "clearedAtS"])
+      if (value[key2] !== null) number(value[key2], value.requestedAtS, 1e9, `episode.${key2}`);
+    if (value.clearFrameId !== null)
+      number(value.clearFrameId, value.originFrameId, track.frameId, "episode clear frame", true);
+    if (value.expiryReason !== null) token(value.expiryReason, "episode expiry reason");
+  }
+  function publicTrack(track, nowS) {
+    return {
+      id: track.id,
+      source: PIXELS,
+      streamId: track.streamId,
+      label: track.label,
+      confidence: track.confidence,
+      frameId: track.frameId,
+      firstSeenS: track.history[0].timeS,
+      lastSeenS: track.lastSeenS,
+      observations: track.history.length,
+      ...fit(track.history),
+      box: [...track.box],
+      history: track.history.map((p) => ({
+        frameId: p.frameId,
+        simulationTimeS: p.timeS,
+        position: { x: p.x, z: p.z }
+      })),
+      holdUntilS: track.holdUntilS,
+      holdSpeedMps: track.holdSpeedMps,
+      lastConflictS: track.lastConflictS,
+      conflictFrameId: track.conflictFrameId,
+      conflictCrossingTimeS: track.conflictCrossingTimeS,
+      ageMs: Math.max(0, (nowS - track.lastSeenS) * 1e3),
+      stopEpisode: copyEpisode(track.stopEpisode)
+    };
+  }
+  function validateTrack(track) {
+    object(track, TRACK_KEYS, "visual track");
+    if (track.source !== PIXELS) throw new TypeError("visual tracks require camera-pixels provenance");
+    token(track.id, "visual track id");
+    token(track.streamId, "visual track stream");
+    if (!LABELS.includes(track.label)) throw new TypeError("unsupported visual track label");
+    for (const key2 of ["position", "velocity"]) point(track[key2], `track.${key2}`);
+    number(track.confidence, 0, 1, "track.confidence");
+    number(track.observations, 1, MAX_HISTORY, "track.observations", true);
+    number(track.firstSeenS, 0, 1e9, "track.firstSeenS");
+    number(track.lastSeenS, track.firstSeenS, 1e9, "track.lastSeenS");
+    number(track.spanS, 0, 2, "track.spanS");
+    number(track.frameId, 0, Number.MAX_SAFE_INTEGER, "track.frameId", true);
+    number(track.uncertaintyM, 0, 10, "track.uncertaintyM");
+    number(track.velocityUncertaintyMps, 0, 8, "track.velocityUncertaintyMps");
+    for (const key2 of ["positionCovarianceM2", "velocityCovarianceM2S2", "regressionResidualCovarianceM2"])
+      validateCovariance(track[key2], key2);
+    validateEpisode(track.stopEpisode, track);
+    number(track.holdSpeedMps, 0, 55, "track.holdSpeedMps");
+    for (const key2 of ["holdUntilS", "lastConflictS", "conflictCrossingTimeS"])
+      if (track[key2] !== null) number(track[key2], 0, 1e9, `track.${key2}`);
+    if (track.conflictFrameId !== null)
+      number(track.conflictFrameId, 0, Number.MAX_SAFE_INTEGER, "track.conflictFrameId", true);
+    if (typeof track.reliable !== "boolean") throw new TypeError("track reliability is missing");
+    box(track.box, 1920, 1080);
+    number(track.ageMs, 0, 1e12, "track.ageMs");
+    if (!Array.isArray(track.history) || track.history.length !== track.observations)
+      throw new TypeError("track history must match its actual observation count");
+    let priorTime = -1, priorFrame = -1;
+    for (const sample of track.history) {
+      object(sample, ["frameId", "simulationTimeS", "position"], "track history sample");
+      point(sample.position, "track history position");
+      number(sample.frameId, 0, Number.MAX_SAFE_INTEGER, "history frameId", true);
+      number(sample.simulationTimeS, 0, 1e9, "history simulationTimeS");
+      if (sample.frameId <= priorFrame || sample.simulationTimeS <= priorTime)
+        throw new TypeError("track history must contain distinct ordered observations");
+      priorTime = sample.simulationTimeS;
+      priorFrame = sample.frameId;
+    }
+    if (Math.abs(track.history[0].simulationTimeS - track.firstSeenS) > 1e-8 || Math.abs(priorTime - track.lastSeenS) > 1e-8 || priorFrame !== track.frameId || Math.abs(track.lastSeenS - track.firstSeenS - track.spanS) > 1e-8)
+      throw new TypeError("track history identity/span does not match the observed evidence");
+  }
+  function interval(position, velocity, halfExtent) {
+    if (Math.abs(velocity) < 1e-8)
+      return Math.abs(position) <= halfExtent ? [0, HORIZON_S] : null;
+    const a = (-halfExtent - position) / velocity, b = (halfExtent - position) / velocity;
+    const enter = Math.max(0, Math.min(a, b)), leave = Math.min(HORIZON_S, Math.max(a, b));
+    return leave >= enter ? [enter, leave] : null;
+  }
+  function directionalSigma(matrix, x, z) {
+    return Math.sqrt(Math.max(0, x * x * matrix.xx + 2 * x * z * matrix.xz + z * z * matrix.zz));
+  }
+  function occupiedInterval(position, velocity, halfExtent, positionError, velocityError) {
+    let enter = 0, leave = HORIZON_S;
+    for (const [offset2, rate] of [
+      [position, velocity + velocityError],
+      [-position, -velocity + velocityError]
+    ]) {
+      const remaining = halfExtent - positionError - offset2;
+      if (Math.abs(rate) < 1e-8) {
+        if (remaining < 0) return null;
+      } else if (rate > 0) leave = Math.min(leave, remaining / rate);
+      else enter = Math.max(enter, remaining / rate);
+    }
+    return leave >= enter ? [enter, leave] : null;
+  }
+  function forecast(track, nowS, ego) {
+    const ageS = nowS - track.lastSeenS;
+    const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
+    const dx = track.position.x + track.velocity.x * Math.max(0, ageS) - ego.x;
+    const dz = track.position.z + track.velocity.z * Math.max(0, ageS) - ego.z;
+    const lateralM = dx * c - dz * s, longitudinalM = dx * s + dz * c;
+    const lateralSpeedMps = track.velocity.x * c - track.velocity.z * s;
+    const forwardSpeedMps = track.velocity.x * s + track.velocity.z * c;
+    const lateralVelocityUncertaintyMps = 0.05 + directionalSigma(track.velocityCovarianceM2S2, c, -s);
+    const longitudinalVelocityUncertaintyMps = 0.05 + directionalSigma(track.velocityCovarianceM2S2, s, c);
+    const lateralPositionUncertaintyM = Math.max(
+      0.08,
+      directionalSigma(track.positionCovarianceM2, c, -s)
+    ) + Math.max(0, ageS) * lateralVelocityUncertaintyMps;
+    const longitudinalPositionUncertaintyM = Math.max(
+      0.08,
+      directionalSigma(track.positionCovarianceM2, s, c)
+    ) + Math.max(0, ageS) * longitudinalVelocityUncertaintyMps;
+    const confidence = track.confidence * clamp3(1 - lateralVelocityUncertaintyMps / 0.9, 0.35, 1) * clamp3(1 - lateralPositionUncertaintyM / 8, 0.35, 1);
+    const held = track.lastConflictS !== null && track.holdUntilS !== null && nowS >= track.lastConflictS && nowS <= track.holdUntilS + 1e-8 && track.holdUntilS - track.lastConflictS <= HOLD_S + 1e-8;
+    const laneHalf = ego.widthM / 2 + 0.35;
+    const band = laneHalf + Math.min(lateralPositionUncertaintyM, 0.65);
+    const prediction = {
+      trackId: track.id,
+      label: track.label,
+      confidence,
+      lateralM,
+      longitudinalM,
+      lateralSpeedMps,
+      forwardSpeedMps,
+      lateralPositionUncertaintyM,
+      longitudinalPositionUncertaintyM,
+      lateralVelocityUncertaintyMps,
+      longitudinalVelocityUncertaintyMps,
+      lateralOccupancyS: null,
+      longitudinalArrivalS: null,
+      arrivalQualified: false,
+      uncertaintyM: track.uncertaintyM,
+      crossingTimeS: null,
+      clearanceTimeS: null,
+      egoArrivalTimeS: null,
+      conflictTimeS: null,
+      conflict: false,
+      qualified: false,
+      held,
+      reason: "insufficient-history"
+    };
+    const reject = (reason) => ({ ...prediction, reason });
+    if (ageS < -1e-8) return reject("future-observation");
+    if (ageS > MAX_AGE_S + 1e-8) return reject("stale-observation");
+    if (track.label === "vehicle") return reject("not-a-crossing-class");
+    if (track.observations < 3 || track.spanS + 1e-8 < 0.2) return prediction;
+    if (!track.reliable || Math.hypot(track.velocity.x, track.velocity.z) > MAX_WALK_SPEED || track.uncertaintyM > 2.5 || lateralVelocityUncertaintyMps > 0.65)
+      return reject("uncertain-visual-track");
+    if (confidence < (track.label === "motion" ? 0.65 : 0.55))
+      return reject("low-visual-confidence");
+    prediction.qualified = true;
+    if (Math.abs(lateralSpeedMps) - lateralVelocityUncertaintyMps < 0.2)
+      return reject("no-confident-lateral-motion");
+    if (!(lateralM * lateralSpeedMps < 0 || held && Math.abs(lateralM) <= band))
+      return reject("moving-away-from-lane");
+    if (longitudinalM < -ego.lengthM / 2 - 0.35) return reject("behind-ego");
+    const possibleLateral = interval(lateralM, lateralSpeedMps, band);
+    if (!possibleLateral) return reject("outside-forecast-horizon");
+    const lateral = occupiedInterval(
+      lateralM,
+      lateralSpeedMps,
+      laneHalf,
+      lateralPositionUncertaintyM,
+      lateralVelocityUncertaintyMps
+    );
+    if (!lateral) return { ...reject("uncertain-lane-occupancy"), qualified: false };
+    prediction.lateralOccupancyS = lateral;
+    prediction.crossingTimeS = clamp3((Math.abs(lateralM) - laneHalf) / Math.abs(lateralSpeedMps), 0, HORIZON_S);
+    prediction.clearanceTimeS = lateral[1];
+    const speed = Math.max(0, ego.speedMps, held ? track.holdSpeedMps : 0);
+    if (speed < 0.2) return reject("ego-not-approaching");
+    prediction.egoArrivalTimeS = clamp3(longitudinalM / speed, 0, HORIZON_S);
+    const closing = speed - forwardSpeedMps;
+    const closingLow = closing - longitudinalVelocityUncertaintyMps;
+    const closingHigh = closing + longitudinalVelocityUncertaintyMps;
+    if (closingHigh <= 0.2) return reject("no-temporal-lane-conflict");
+    if (closingLow <= 0.2)
+      return { ...reject("uncertain-longitudinal-arrival"), qualified: false };
+    const halfLength = ego.lengthM / 2 + 0.35;
+    const near = longitudinalM - longitudinalPositionUncertaintyM;
+    const far = longitudinalM + longitudinalPositionUncertaintyM;
+    const earliestEntry = Math.max(0, (near - halfLength) / closingHigh);
+    const latestEntry = Math.max(0, (far - halfLength) / closingLow);
+    const earliestExit = Math.max(0, (near + halfLength) / closingHigh);
+    const latestExit = Math.max(0, (far + halfLength) / closingLow);
+    const withinHorizon = (time) => time <= HORIZON_S ? time : null;
+    prediction.longitudinalArrivalS = {
+      earliestEntryS: withinHorizon(earliestEntry),
+      latestEntryS: withinHorizon(latestEntry),
+      earliestExitS: withinHorizon(earliestExit),
+      latestExitS: withinHorizon(latestExit)
+    };
+    if (earliestEntry > lateral[1] + 0.25 || latestExit < lateral[0] - 0.25)
+      return reject("no-temporal-lane-conflict");
+    if (latestEntry > HORIZON_S || latestEntry > lateral[1] + 0.25 || earliestExit < lateral[0] - 0.25 || earliestExit <= 0)
+      return { ...reject("uncertain-longitudinal-arrival"), qualified: false };
+    prediction.arrivalQualified = true;
+    prediction.conflict = true;
+    prediction.conflictTimeS = Math.max(lateral[0], latestEntry);
+    prediction.reason = track.label === "person" ? "observed-person-crossing-conflict" : "observed-motion-crossing-conflict";
+    return prediction;
+  }
+  function decision(reason, available = false, track = null, nowS = 0) {
+    return {
+      source: SOURCE,
+      available,
+      brake: false,
+      targetSpeedMps: null,
+      reason,
+      trackId: null,
+      confidence: 0,
+      crossingTimeS: null,
+      ageMs: track ? Math.max(0, (nowS - track.lastSeenS) * 1e3) : null,
+      evidenceFrameId: track?.frameId ?? null
+    };
+  }
+  function beginStopEpisode(track, prediction, nowS, ego) {
+    const referenceSpeedMps = ego.speedMps;
+    const stoppingS = referenceSpeedMps / VEHICLE.braking;
+    const clearanceS = Math.min(
+      HORIZON_S,
+      (Math.abs(prediction.lateralM) + ego.widthM / 2 + 0.35 + prediction.lateralPositionUncertaintyM) / Math.max(0.2, Math.abs(prediction.lateralSpeedMps) - prediction.lateralVelocityUncertaintyMps)
+    );
+    return {
+      source: SOURCE,
+      trackId: track.id,
+      streamId: track.streamId,
+      phase: "stopping",
+      originFrameId: track.frameId,
+      originTimeS: track.lastSeenS,
+      originConfidence: prediction.confidence,
+      requestedAtS: nowS,
+      referenceEgo: { ...ego },
+      referenceSpeedMps,
+      lowestSpeedMps: referenceSpeedMps,
+      lastProgressSpeedMps: referenceSpeedMps,
+      lastProgressAtS: nowS,
+      brakingObservedAtS: null,
+      stoppedAtS: null,
+      stopDeadlineS: nowS + stoppingS + MAX_AGE_S,
+      clearanceDeadlineS: nowS + clearanceS + stoppingS + MAX_AGE_S,
+      lastSupportFrameId: track.frameId,
+      lastSupportTimeS: track.lastSeenS,
+      clearFrameId: null,
+      clearedAtS: null,
+      expiryReason: null
+    };
+  }
+  function observedClearance(track, episode, nowS, ego) {
+    if (nowS - track.lastSeenS > MAX_AGE_S || nowS < track.lastSeenS || track.history.length < 3 || !track.reliable || track.uncertaintyM > 2.5)
+      return false;
+    const reference = { ...episode.referenceEgo, speedMps: ego.speedMps };
+    const visible = forecast(track, nowS, reference);
+    if (visible.confidence < (track.label === "motion" ? 0.65 : 0.55) || visible.lateralVelocityUncertaintyMps > 0.65)
+      return false;
+    const recent = track.history.slice(-3);
+    if (recent[2].simulationTimeS - recent[0].simulationTimeS + 1e-8 < 0.2) return false;
+    const side = Math.sign(visible.lateralM), half = reference.widthM / 2 + 0.35;
+    const c = Math.cos(reference.headingRad), s = Math.sin(reference.headingRad);
+    if (!side || recent.some(({ position }) => side * ((position.x - reference.x) * c - (position.z - reference.z) * s) - visible.lateralPositionUncertaintyM <= half))
+      return false;
+    const away = side * visible.lateralSpeedMps - visible.lateralVelocityUncertaintyMps >= 0.2;
+    const stationaryClear = Math.abs(visible.lateralSpeedMps) + visible.lateralVelocityUncertaintyMps <= 0.2;
+    return away || stationaryClear;
+  }
+  function advanceStopEpisode(track, nowS, ego, usable = true) {
+    const episode = copyEpisode(track.stopEpisode);
+    if (!episode || episode.phase === "cleared" || episode.phase === "expired") return episode;
+    const speed = Math.abs(ego.speedMps);
+    episode.lowestSpeedMps = Math.min(episode.lowestSpeedMps, speed);
+    if (episode.lastProgressSpeedMps - episode.lowestSpeedMps >= STOP_SPEED_MPS) {
+      episode.lastProgressAtS = nowS;
+      episode.lastProgressSpeedMps = episode.lowestSpeedMps;
+      episode.brakingObservedAtS ??= nowS;
+    }
+    if (episode.brakingObservedAtS !== null && nowS > episode.requestedAtS) {
+      const observedDeceleration = (episode.referenceSpeedMps - episode.lowestSpeedMps) / (nowS - episode.requestedAtS);
+      if (observedDeceleration > 0) episode.stopDeadlineS = Math.min(
+        episode.clearanceDeadlineS,
+        episode.requestedAtS + episode.referenceSpeedMps / Math.min(VEHICLE.braking, observedDeceleration) + MAX_AGE_S
+      );
+    }
+    if (speed < STOP_SPEED_MPS) {
+      episode.stoppedAtS ??= nowS;
+      episode.phase = "awaiting-clearance";
+    }
+    const stopped = episode.stoppedAtS !== null;
+    const noProgress = !stopped && nowS - episode.lastProgressAtS > MAX_AGE_S;
+    if (nowS > episode.clearanceDeadlineS || !stopped && nowS > episode.stopDeadlineS || noProgress) {
+      episode.phase = "expired";
+      episode.expiryReason = noProgress ? "visual-stop-no-braking-progress" : "visual-stop-episode-expired";
+      return episode;
+    }
+    const fresh = usable && nowS >= track.lastSeenS && nowS - track.lastSeenS <= MAX_AGE_S;
+    if (fresh) {
+      episode.lastSupportFrameId = track.frameId;
+      episode.lastSupportTimeS = track.lastSeenS;
+      if (stopped && observedClearance(track, episode, nowS, ego)) {
+        episode.phase = "cleared";
+        episode.clearFrameId = track.frameId;
+        episode.clearedAtS = nowS;
+      }
+    }
+    return episode;
+  }
+  function stopEpisodeDecision(track, prediction, nowS, ego) {
+    if (!track.stopEpisode) return null;
+    const episode = advanceStopEpisode(track, nowS, ego);
+    if (nowS < track.lastSeenS || nowS - track.lastSeenS > MAX_AGE_S)
+      return decision("stale-stop-observation", false, track, nowS);
+    if (episode.phase === "expired")
+      return decision(episode.expiryReason, false, track, nowS);
+    if (episode.phase === "cleared") {
+      if (episode.clearFrameId === track.frameId && observedClearance(track, episode, nowS, ego))
+        return decision("visual-clearance-confirmed", true, track, nowS);
+      return null;
+    }
+    return {
+      ...decision(prediction.conflict ? prediction.reason : episode.stoppedAtS === null ? "committed-visual-stop" : "awaiting-visual-clearance", true, track, nowS),
+      brake: true,
+      targetSpeedMps: 0,
+      trackId: track.id,
+      confidence: prediction.confidence,
+      crossingTimeS: prediction.conflict ? prediction.crossingTimeS : null
+    };
+  }
+  function decideVisualBrake(input2 = {}) {
+    object(input2, ["tracks", "nowS", "ego", "enabled"], "visual decision");
+    const { tracks = [], nowS, ego, enabled = true } = input2;
+    number(nowS, 0, 1e9, "nowS");
+    odometry(ego);
+    if (typeof enabled !== "boolean") throw new TypeError("enabled must be boolean");
+    if (!Array.isArray(tracks) || tracks.length > MAX_TRACKS)
+      throw new TypeError("visual tracks must be bounded");
+    tracks.forEach(validateTrack);
+    if (!enabled) return decision("disabled");
+    if (!tracks.length) return decision("no-visual-tracks");
+    const predictions = tracks.map((track) => ({ track, value: forecast(track, nowS, ego) }));
+    const episodes = predictions.map(({ track, value }) => stopEpisodeDecision(track, value, nowS, ego)).filter(Boolean);
+    const committed = episodes.find((value) => value.available && value.brake);
+    if (committed) return committed;
+    const candidates = predictions.filter(({ value }) => value.conflict).sort((a, b) => a.value.conflictTimeS - b.value.conflictTimeS || b.value.confidence - a.value.confidence);
+    const held = predictions.find(({ track, value }) => value.qualified && value.held && nowS - track.lastSeenS <= MAX_AGE_S);
+    const selected = candidates[0] ?? held;
+    if (selected) {
+      const { track, value } = selected;
+      return {
+        ...decision(value.conflict ? value.reason : "release-hysteresis", true, track, nowS),
+        brake: true,
+        targetSpeedMps: 0,
+        trackId: track.id,
+        confidence: value.confidence,
+        crossingTimeS: value.crossingTimeS ?? Math.max(
+          0,
+          (track.conflictCrossingTimeS ?? 0) - (nowS - track.lastConflictS)
+        ),
+        evidenceFrameId: value.conflict ? track.frameId : track.conflictFrameId
+      };
+    }
+    if (episodes.length) return episodes[0];
+    const latest = predictions.sort((a, b) => b.track.lastSeenS - a.track.lastSeenS)[0];
+    return decision(latest.value.reason, latest.value.qualified, latest.track, nowS);
+  }
+  var VisualCrossingPredictor = class {
+    constructor() {
+      this.streamId = null;
+      this.tracks = [];
+      this.latest = null;
+      this.error = null;
+      this.nextId = 1;
+      this.nowS = 0;
+    }
+    reset(streamId) {
+      token(streamId, "streamId");
+      this.streamId = streamId;
+      this.tracks = [];
+      this.latest = null;
+      this.error = null;
+      this.nextId = 1;
+      this.nowS = 0;
+    }
+    observe(result) {
+      try {
+        resultData(result);
+        if (!this.streamId || result.streamId !== this.streamId)
+          throw new TypeError("result stream does not match the explicitly reset stream");
+        if (this.latest && (result.frameId <= this.latest.frameId || result.simulationTimeS <= this.latest.simulationTimeS))
+          throw new TypeError("duplicate or out-of-order visual observation");
+        if (this.nowS - result.simulationTimeS > MAX_AGE_S + 1e-8)
+          throw new TypeError("visual result is already stale");
+        if (result.latencyMs > MAX_AGE_S * 1e3)
+          throw new TypeError("visual inference result exceeds the stale latency bound");
+        const timeS = result.simulationTimeS;
+        this.tracks = this.tracks.filter((track) => timeS - track.lastSeenS <= 2);
+        const observed = result.detections.map((detection) => ({
+          detection,
+          projected: project(detection, result.camera)
+        })).filter((item) => item.projected);
+        const pairs = [];
+        observed.forEach((item, index) => {
+          this.tracks.forEach((track) => {
+            const age = timeS - track.lastSeenS;
+            if (age > MAX_AGE_S || track.label !== item.detection.label) return;
+            const estimate = fit(track.history);
+            const distance2 = Math.hypot(
+              item.projected.x - estimate.position.x - estimate.velocity.x * age,
+              item.projected.z - estimate.position.z - estimate.velocity.z * age
+            );
+            const gate = Math.min(3, 0.55 + MAX_WALK_SPEED * age + Math.min(estimate.uncertaintyM + item.projected.sigmaM, 1.5));
+            if (distance2 <= gate) pairs.push({ index, track, distance: distance2 });
+          });
+        });
+        pairs.sort((a, b) => a.distance - b.distance || a.index - b.index);
+        const assignments = /* @__PURE__ */ new Map(), used = /* @__PURE__ */ new Set();
+        for (const pair of pairs) {
+          if (assignments.has(pair.index) || used.has(pair.track)) continue;
+          assignments.set(pair.index, pair.track);
+          used.add(pair.track);
+        }
+        observed.forEach(({ detection, projected }, index) => {
+          let track = assignments.get(index);
+          if (!track) {
+            if (this.tracks.length >= MAX_TRACKS) return;
+            track = {
+              id: `visual-${this.nextId++}`,
+              streamId: this.streamId,
+              label: detection.label,
+              history: [],
+              holdUntilS: null,
+              holdSpeedMps: 0,
+              lastConflictS: null,
+              conflictFrameId: null,
+              conflictCrossingTimeS: null,
+              stopEpisode: null
+            };
+            this.tracks.push(track);
+          }
+          track.history.push({ ...projected, timeS, frameId: result.frameId });
+          track.history = track.history.filter((sample) => timeS - sample.timeS <= 1.5).slice(-MAX_HISTORY);
+          track.lastSeenS = timeS;
+          track.frameId = result.frameId;
+          track.box = [...detection.box];
+          track.confidence = detection.confidence;
+        });
+        this.latest = {
+          streamId: this.streamId,
+          frameId: result.frameId,
+          simulationTimeS: timeS,
+          latencyMs: result.latencyMs,
+          model: { ...result.model },
+          detections: result.detections.length,
+          projectedDetections: observed.length,
+          unprojectableDetections: result.detections.length - observed.length
+        };
+        this.error = null;
+        return {
+          accepted: true,
+          streamId: this.streamId,
+          frameId: result.frameId,
+          projectedDetections: observed.length
+        };
+      } catch (failure) {
+        this.error = failure.message;
+        throw failure;
+      }
+    }
+    snapshot(nowS, ego) {
+      number(nowS, 0, 1e9, "nowS");
+      odometry(ego);
+      this.nowS = Math.max(this.nowS, nowS);
+      const ageMs = this.latest ? (nowS - this.latest.simulationTimeS) * 1e3 : null;
+      const status = this.error ? "error" : !this.latest ? "unavailable" : ageMs < -1e-5 ? "error" : ageMs > MAX_AGE_S * 1e3 + 1e-5 ? "stale" : "ready";
+      let tracks = this.tracks.map((track) => publicTrack(track, nowS));
+      const available = status === "ready";
+      for (const track of tracks) {
+        if (!track.stopEpisode) continue;
+        const internal = this.tracks.find((item) => item.id === track.id);
+        internal.stopEpisode = advanceStopEpisode(track, nowS, ego, available);
+      }
+      tracks = this.tracks.map((track) => publicTrack(track, nowS));
+      let result = available ? decideVisualBrake({ tracks, nowS, ego, enabled: true }) : decision(this.error ? "invalid-visual-result" : status === "stale" ? "stale-visual-result" : status === "error" ? "future-visual-result" : "no-visual-evidence");
+      if (!available) {
+        result.ageMs = ageMs === null ? null : Math.max(0, ageMs);
+        result.evidenceFrameId = this.latest?.frameId ?? null;
+      }
+      if (result.brake && ["observed-person-crossing-conflict", "observed-motion-crossing-conflict"].includes(result.reason)) {
+        const track = this.tracks.find((item) => item.id === result.trackId);
+        const observed = tracks.find((item) => item.id === result.trackId);
+        if (ego.speedMps >= 0.2 && (!track.stopEpisode || track.stopEpisode.phase === "cleared"))
+          track.stopEpisode = beginStopEpisode(observed, forecast(observed, nowS, ego), nowS, ego);
+        if (track.conflictFrameId !== track.frameId) {
+          const heldSpeed = track.holdUntilS !== null && nowS <= track.holdUntilS ? track.holdSpeedMps : 0;
+          track.lastConflictS = track.lastSeenS;
+          track.holdUntilS = track.lastSeenS + HOLD_S;
+          track.holdSpeedMps = Math.max(heldSpeed, 0, ego.speedMps);
+          track.conflictFrameId = track.frameId;
+          track.conflictCrossingTimeS = result.crossingTimeS;
+          tracks = this.tracks.map((item) => publicTrack(item, nowS));
+        }
+      }
+      return {
+        source: SOURCE,
+        streamId: this.streamId,
+        status,
+        available,
+        availability: { status, available, error: this.error },
+        frameId: this.latest?.frameId ?? null,
+        ageMs: ageMs === null ? null : Math.max(0, ageMs),
+        model: this.latest ? { ...this.latest.model } : null,
+        latencyMs: this.latest?.latencyMs ?? null,
+        detections: this.latest?.detections ?? 0,
+        projectedDetections: this.latest?.projectedDetections ?? 0,
+        unprojectableDetections: this.latest?.unprojectableDetections ?? 0,
+        tracks,
+        forecasts: available ? tracks.map((track) => forecast(track, nowS, ego)) : [],
+        decision: result
+      };
+    }
+  };
+
+  // src/core/vision-scenarios.js
+  var VISION_CASES = Object.freeze([
+    { id: "cross-left", label: "Crossing from left", description: "A visible walker starts across after a short pause." },
+    { id: "cross-right", label: "Crossing from right", description: "The mirrored actual crossing, with the same walker and speed." },
+    { id: "parallel", label: "Walking along the curb", description: "The same walker moves forward, not into the ego lane." },
+    { id: "stationary", label: "Waiting at the curb", description: "The same visible walker remains still." },
+    { id: "empty", label: "No walker", description: "The identical road without a pedestrian." }
+  ].map(Object.freeze));
+  function finite(value, name, min = -1e5, max = 1e5) {
+    if (!Number.isFinite(value) || value < min || value > max)
+      throw new TypeError(`${name} is outside its finite bounds`);
+  }
+  function createVisionScenario(caseId) {
+    if (!VISION_CASES.some((item) => item.id === caseId))
+      throw new RangeError(`Unknown visual case: ${String(caseId)}`);
+    const side = caseId === "cross-right" ? 1 : -1;
+    const start = { x: side * 4.8, z: 0 };
+    const crossing = caseId === "cross-left" || caseId === "cross-right";
+    const velocity = { x: crossing ? -side * 0.9 : 0, z: caseId === "parallel" ? 0.9 : 0 };
+    const destination = crossing ? { x: -side * 6.4, z: 0 } : caseId === "parallel" ? { x: start.x, z: 12 } : { ...start };
+    const people = caseId === "empty" ? [] : [{
+      id: "vision-walker",
+      type: "pedestrian",
+      kind: "man-polo",
+      radius: 0.34,
+      ...start,
+      heading: crossing ? -side * Math.PI / 2 : 0,
+      speed: 0,
+      walkSpeed: 0.9,
+      phase: 0.25,
+      distance: 0,
+      wait: 0,
+      reason: "waiting",
+      target: { ...destination },
+      script: {
+        type: "vision-linear",
+        elapsedS: 0,
+        onsetS: 0.65,
+        velocity,
+        destination,
+        evaluation: {
+          source: "committed-scenario-motion",
+          sampleIntervalS: 0.1,
+          samples: [],
+          droppedSamples: 0
+        }
+      }
+    }];
+    const statics = [-1, 1].flatMap((sideSign) => [-39, -23, -7, 9, 25, 41, 57].map((z, i) => ({
+      id: `vision-building-${sideSign < 0 ? "west" : "east"}-${i}`,
+      type: "static",
+      kind: "building",
+      x: sideSign * 13,
+      z,
+      width: 8,
+      length: 11,
+      height: 10 + i % 3 * 3,
+      heading: 0
+    })));
+    return {
+      id: caseId,
+      roads: [{ axis: "z", fixed: 0, min: -60, max: 70, width: 10 }],
+      statics,
+      playerStart: { x: 0, z: -22, heading: 0, speed: 0 },
+      people,
+      goalZ: 14,
+      requestedSpeedMps: 4.5
+    };
+  }
+  function advanceVisionActor(actor, dt, context = {}) {
+    finite(dt, "dt", 0, 0.1);
+    if (!actor || actor.type !== "pedestrian" || actor.script?.type !== "vision-linear")
+      throw new TypeError("An assigned vision-linear pedestrian is required");
+    const script = actor.script;
+    for (const key2 of ["x", "z", "heading", "speed", "distance", "wait", "phase"])
+      finite(actor[key2], `actor.${key2}`);
+    finite(script.elapsedS, "elapsedS", 0, 1e9);
+    finite(script.onsetS, "onsetS", 0, 5);
+    for (const key2 of ["x", "z"]) {
+      finite(script.velocity[key2], `velocity.${key2}`, -1.5, 1.5);
+      finite(script.destination[key2], `destination.${key2}`, -60, 70);
+    }
+    if (Math.hypot(script.velocity.x, script.velocity.z) > 1.5)
+      throw new TypeError("Scenario walker speed exceeds its physical bound");
+    const timeS = context.simulationTimeS ?? context.timeS ?? script.elapsedS;
+    finite(timeS, "simulationTimeS", 0, 1e9);
+    const samples = [...script.evaluation.samples];
+    const last = samples.at(-1);
+    if (last && timeS < last.simulationTimeS)
+      throw new TypeError("Evaluation time cannot go backwards");
+    if (!last || timeS - last.simulationTimeS >= 0.1 - 1e-8)
+      samples.push({ simulationTimeS: timeS, x: actor.x, z: actor.z, speedMps: actor.speed });
+    const dropped = Math.max(0, samples.length - 320);
+    const nextElapsed = script.elapsedS + dt;
+    const activeDt = Math.max(0, nextElapsed - Math.max(script.elapsedS, script.onsetS));
+    const remaining = Math.hypot(script.destination.x - actor.x, script.destination.z - actor.z);
+    const commandedSpeed = Math.hypot(script.velocity.x, script.velocity.z);
+    const travel = Math.min(remaining, commandedSpeed * activeDt);
+    const moving = travel > 1e-10 && commandedSpeed > 0;
+    const x = actor.x + (moving ? script.velocity.x / commandedSpeed * travel : 0);
+    const z = actor.z + (moving ? script.velocity.z / commandedSpeed * travel : 0);
+    return {
+      ...actor,
+      x,
+      z,
+      heading: moving ? Math.atan2(script.velocity.x, script.velocity.z) : actor.heading,
+      speed: dt > 0 ? travel / dt : 0,
+      distance: actor.distance + travel,
+      wait: moving ? 0 : actor.wait + dt,
+      reason: moving ? "walking" : nextElapsed < script.onsetS ? "waiting" : "standing",
+      target: { ...script.destination },
+      script: {
+        ...script,
+        velocity: { ...script.velocity },
+        destination: { ...script.destination },
+        elapsedS: nextElapsed,
+        evaluation: {
+          source: "committed-scenario-motion",
+          sampleIntervalS: 0.1,
+          samples: samples.slice(-320),
+          droppedSamples: script.evaluation.droppedSamples + dropped
+        }
+      }
+    };
+  }
+
   // src/signal_processing/range-sensors.js
-  var SENSOR_ANGLES_DEG = Object.freeze([-70, -35, 0, 35, 70]);
-  var SENSOR_MAX_M = 35;
+  var SENSOR_ANGLES_DEG = Object.freeze(
+    getVehicleMounts().ranges.map((mount) => mount.angleDeg)
+  );
+  var SENSOR_MAX_M = PLAYER_VEHICLE.maxRangeM;
   function circleHit(origin, ray, body) {
     const dx = body.x - origin.x;
     const dz = body.z - origin.z;
@@ -30933,25 +32197,71 @@
     }
     return far < 0 ? Infinity : Math.max(0, near);
   }
-  function measureRanges(world2, car) {
-    const origin = {
-      x: car.x + Math.sin(car.heading) * (car.length / 2 + 0.15),
-      z: car.z + Math.cos(car.heading) * (car.length / 2 + 0.15)
-    };
-    const obstacles = [...world2.actors, ...world2.statics].filter((body) => {
-      if (body === car) return false;
-      return Math.hypot(body.x - origin.x, body.z - origin.z) < SENSOR_MAX_M + 15;
+  function measureVehicleSensors(world2, car) {
+    const local = getVehicleMounts(car);
+    const worldMount = (mount) => ({
+      ...mount,
+      position: mountToWorld(car, mount.position)
     });
-    return SENSOR_ANGLES_DEG.map((degrees) => {
-      const angle = car.heading + degrees * Math.PI / 180;
+    const cameras = local.cameras.map((mount) => ({
+      ...worldMount(mount),
+      headingRad: (car.heading ?? 0) + mount.angleDeg * Math.PI / 180
+    }));
+    const mounts = {
+      ranges: local.ranges.map(worldMount),
+      auxiliary: local.auxiliary.map(worldMount),
+      camera: cameras[0],
+      cameras,
+      telemetry: worldMount(local.telemetry)
+    };
+    const proximityMounts = [...mounts.ranges, ...mounts.auxiliary];
+    const mountReach = Math.max(
+      ...[...local.ranges, ...local.auxiliary].map(
+        (mount) => Math.hypot(mount.position.x, mount.position.z)
+      )
+    );
+    const obstacles = [...world2.actors ?? [], ...world2.statics ?? []].filter((body) => {
+      if (body === car || car.id !== void 0 && body.id === car.id) return false;
+      const radius = body.type === "pedestrian" ? body.radius : Math.hypot(body.width, body.length) / 2;
+      return Number.isFinite(radius) && radius > 0 && Number.isFinite(body.x) && Number.isFinite(body.z) && Math.hypot(body.x - car.x, body.z - car.z) <= SENSOR_MAX_M + mountReach + radius;
+    });
+    const rays = proximityMounts.map((mount) => {
+      const origin = { ...mount.position };
+      const angle = (car.heading ?? 0) + mount.angleDeg * Math.PI / 180;
       const ray = { x: Math.sin(angle), z: Math.cos(angle) };
       let nearest = SENSOR_MAX_M;
+      let hitId = null;
       for (const body of obstacles) {
+        const bottom = PLAYER_VEHICLE.roadHeightM + (body.y ?? 0);
+        if (Number.isFinite(body.height) && (origin.y < bottom || origin.y > bottom + body.height))
+          continue;
         const hit = body.type === "pedestrian" ? circleHit(origin, ray, body) : boxHit(origin, ray, body);
-        nearest = Math.min(nearest, hit);
+        if (hit <= nearest && (hitId === null || hit < nearest)) {
+          nearest = hit;
+          hitId = body.id ?? null;
+        }
       }
-      return Math.round(nearest * 100) / 100;
+      return {
+        id: mount.id,
+        angleDeg: mount.angleDeg,
+        origin,
+        end: {
+          x: origin.x + ray.x * nearest,
+          y: origin.y,
+          z: origin.z + ray.z * nearest
+        },
+        hitId,
+        rangeM: nearest
+      };
     });
+    return {
+      rawM: rays.slice(0, SENSOR_ANGLES_DEG.length).map(
+        (ray) => Math.round(ray.rangeM * 100) / 100
+      ),
+      auxiliary: rays.slice(SENSOR_ANGLES_DEG.length),
+      mounts,
+      rays
+    };
   }
   var RangeSignalProcessor = class {
     constructor() {
@@ -30996,6 +32306,18 @@
       width: 10
     }))
   ];
+  var vehicleStart = { x: 20 - LANE_OFFSET, z: -25, heading: 0 };
+  var VEHICLE_TEST_BARRIER = Object.freeze({
+    id: "vehicle-impact-barrier",
+    type: "static",
+    kind: "barrier",
+    x: vehicleStart.x,
+    z: -8.6,
+    heading: 0,
+    width: 3.6,
+    length: 0.8,
+    height: 0.9
+  });
   var carKinds = ["sedan", "taxi", "suv", "van", "tuktuk", "tuktuk"];
   var pose2 = (road, along, side = 1, offset2 = LANE_OFFSET) => road.axis === "z" ? {
     x: road.fixed - side * offset2,
@@ -31012,6 +32334,7 @@
     x: a.x,
     z: a.z,
     heading: a.heading,
+    speed: a.speed,
     length: a.length,
     width: a.width,
     radius: a.radius
@@ -31020,13 +32343,31 @@
     constructor(options = {}, environment2 = "city") {
       this.config = settings(options);
       this.environment = environment2;
+      const visualScene = environment2 === "vision" ? createVisionScenario(options.visionCase ?? "cross-left") : null;
+      if (visualScene) this.config.visionCase = visualScene.id;
+      this.visualPredictor = new VisualCrossingPredictor();
+      this.visualMode = "vision-first";
+      this.visualDecision = null;
+      this.visionLab = visualScene ? {
+        caseId: visualScene.id,
+        phase: "ready",
+        startedTick: null,
+        goalZ: visualScene.goalZ,
+        requestedSpeedMps: visualScene.requestedSpeedMps,
+        firstVisualBrakeS: null,
+        firstReactiveBrakeS: null,
+        firstSensorTriggerS: null,
+        firstLaneEntryS: null,
+        completedAtS: null,
+        minimumClearanceM: null
+      } : null;
       this.rng = new Random(`${this.config.seed}:${environment2}`);
-      this.drivingRoads = environment2 === "lab" ? LAB_ROADS : roadLayout(100).roads;
+      this.drivingRoads = visualScene?.roads ?? (environment2 === "lab" || environment2 === "vehicle" ? LAB_ROADS : roadLayout(100).roads);
       this.graph = createRoadGraph(this.drivingRoads);
       this.junctions = [...this.graph.values()].filter(
         (n) => n.edges.length >= 3
       );
-      const corners2 = (environment2 === "lab" ? [...this.graph.values()] : []).filter((n) => {
+      const corners2 = (environment2 === "lab" || environment2 === "vehicle" ? [...this.graph.values()] : []).filter((n) => {
         if (n.edges.length !== 2) return false;
         const a = this.graph.get(n.edges[0]), b = this.graph.get(n.edges[1]);
         return Math.abs((a.x - n.x) * (b.z - n.z) - (a.z - n.z) * (b.x - n.x)) > 0.01;
@@ -31044,7 +32385,7 @@
       this.statics = [];
       this.actors = [];
       this.junctionOwners = /* @__PURE__ */ new Map();
-      this.statics = environment2 === "city" ? cityFootprints(this.roads) : [];
+      this.statics = visualScene?.statics ?? (environment2 === "city" ? cityFootprints(this.roads) : environment2 === "vehicle" ? [{ ...VEHICLE_TEST_BARRIER }] : []);
       this.staticIndex = new SpatialIndex(this.statics);
       this.metrics = {
         distance: 0,
@@ -31060,12 +32401,22 @@
         trafficBlockingCycles: 0
       };
       this.scenario = null;
+      this.vehicleTest = environment2 === "vehicle" ? {
+        phase: "ready",
+        barrierId: VEHICLE_TEST_BARRIER.id,
+        maxSpeedMps: 5,
+        maxTicks: 8 * 60,
+        startedTick: null,
+        contactTick: null,
+        impact: null,
+        error: null
+      } : null;
       const startingBay = environment2 === "city" ? this.parkingBays.find(
         (bay) => bay.axis === "z" && bay.side === -1 && bay.nodeKey === "20.0000,-40.0000" && bay.min <= -40 && bay.max >= -40
       ) : null;
       if (environment2 === "city" && !startingBay)
         throw new Error("City starting parking bay is missing");
-      this.player = this.makeVehicle("player", "sedan", {
+      this.player = this.makeVehicle("player", "sedan", visualScene?.playerStart ?? {
         // The city starts in a marked shoulder bay. An idle player in the
         // northbound lane used to block an entire traffic queue before input.
         x: startingBay?.fixed ?? 20 - LANE_OFFSET,
@@ -31073,11 +32424,14 @@
         heading: 0
       });
       this.actors.push(this.player);
-      this.populate();
+      if (visualScene) {
+        this.actors.push(...structuredClone(visualScene.people));
+        this.capacity = { traffic: 0, pedestrians: visualScene.people.length };
+      } else if (environment2 === "vehicle")
+        this.capacity = { traffic: 0, pedestrians: 0 };
+      else this.populate();
       this.sensorProcessor = new RangeSignalProcessor();
-      this.sensors = this.sensorProcessor.update(
-        measureRanges(this, this.player)
-      );
+      this.updateSensors();
     }
     makeVehicle(id2, kind, position) {
       const tuk = kind === "tuktuk";
@@ -31088,9 +32442,12 @@
         ...position,
         speed: 0,
         steer: 0,
-        length: tuk ? 2.9 : VEHICLE.length,
-        width: tuk ? 1.5 : VEHICLE.width,
-        spec: tuk ? { wheelbase: 1.9 } : null,
+        length: id2 === "player" ? PLAYER_VEHICLE.lengthM : tuk ? 2.9 : VEHICLE.length,
+        width: id2 === "player" ? PLAYER_VEHICLE.widthM : tuk ? 1.5 : VEHICLE.width,
+        spec: id2 === "player" ? {
+          wheelbase: PLAYER_VEHICLE.wheelbaseM,
+          maxSteer: PLAYER_VEHICLE.maxSteerRad
+        } : tuk ? { wheelbase: 1.9 } : null,
         maxSpeed: this.config.speedLimit / 3.6 * (tuk ? 0.7 : 1),
         path: [],
         cursor: 0,
@@ -31098,7 +32455,24 @@
         wait: 0,
         reason: "ready",
         phase: this.rng.next(),
-        reckless: id2 !== "player" && this.rng.next() < this.config.chaos
+        reckless: id2 !== "player" && this.rng.next() < this.config.chaos,
+        ...id2 === "player" ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState() } : {}
+      };
+    }
+    updateSensors(filter = true) {
+      const geometry = measureVehicleSensors(this, this.player);
+      const previous = this.player.previous;
+      this.sensors = {
+        ...filter ? this.sensorProcessor.update(geometry.rawM) : this.sensors,
+        ...geometry,
+        imu: {
+          source: "simulated-vehicle-state",
+          positionM: { ...geometry.mounts.telemetry.position },
+          headingRad: this.player.heading,
+          speedMps: this.player.speed,
+          yawRateRadS: previous ? angleDelta(this.player.heading, previous.heading) / STEP : 0,
+          longitudinalAccelerationMps2: previous ? (this.player.speed - previous.speed) / STEP : 0
+        }
       };
     }
     free(body, gap = 1) {
@@ -31204,6 +32578,56 @@
       return nextWalk(this, person);
     }
     command(command, record = true) {
+      if (command.type === "visual-observation") {
+        this.visualPredictor.observe(structuredClone(command.result));
+        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        return true;
+      }
+      if (command.type === "visual-reset") {
+        this.visualPredictor.reset(command.streamId);
+        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        return true;
+      }
+      if (command.type === "visual-mode") {
+        if (!["vision-first", "sensors-only"].includes(command.mode))
+          throw new Error("Unknown visual driving mode");
+        this.visualMode = command.mode;
+        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        return true;
+      }
+      if (command.type === "vision-run") {
+        if (!this.visionLab || this.visionLab.phase !== "ready") return false;
+        this.visionLab.phase = "running";
+        this.visionLab.startedTick = this.tick;
+        this.input = { targetSpeed: this.visionLab.requestedSpeedMps, steer: 0 };
+        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        return true;
+      }
+      if (command.type === "vehicle-test") {
+        if (this.environment !== "vehicle" || command.operation !== "run" || this.vehicleTest.phase !== "ready")
+          return false;
+        if (record)
+          this.events.push({ tick: this.tick, command: structuredClone(command) });
+        if (Math.abs(this.player.speed) > 0.01 || Math.abs(this.player.steer) > 0.01 || distance(this.player, vehicleStart) > 0.05 || Math.abs(angleDelta(this.player.heading, vehicleStart.heading)) > 0.01 || this.player.vehicle.damage.total > 0) {
+          this.vehicleTest.error = "Stop and reset the car at the marked start before running";
+          return false;
+        }
+        this.mode = "manual";
+        this.input = { targetSpeed: 0, steer: 0 };
+        this.player.path = [];
+        this.player.parking = null;
+        this.player.cursor = 0;
+        this.destination = null;
+        this.routeRevision++;
+        Object.assign(this.vehicleTest, {
+          phase: "running",
+          startedTick: this.tick,
+          error: null
+        });
+        return true;
+      }
+      if (this.vehicleTest?.phase === "running" && ["drive", "mode", "destination", "scenario"].includes(command.type))
+        return false;
       if (command.type === "policy" && command.weights)
         validatePolicy(command.weights);
       if (record)
@@ -31228,6 +32652,14 @@
         return true;
       }
       if (command.type === "stop") {
+        if (this.vehicleTest?.phase === "running") {
+          this.vehicleTest.phase = "ready";
+          this.vehicleTest.error = "Test stopped; reset the car before another run";
+        }
+        if (this.visionLab && this.visionLab.phase !== "complete") {
+          this.visionLab.error = "Driver stopped this bounded test. Reset to run again.";
+          if (this.player.speed === 0) this.visionLab.phase = "complete";
+        }
         this.mode = "manual";
         this.input = { targetSpeed: 0, steer: 0 };
         this.player.path = [];
@@ -31263,17 +32695,49 @@
       return pedestrianMotion(this, p);
     }
     step() {
-      updateScenarios(this);
+      if (this.visionLab && this.visionLab.phase !== "running") return;
+      const nowS = this.tick * STEP;
+      const ownMotion = {
+        x: this.player.x,
+        z: this.player.z,
+        headingRad: this.player.heading,
+        speedMps: this.player.speed,
+        lengthM: this.player.length,
+        widthM: this.player.width
+      };
+      this.visualState = this.visualPredictor.snapshot(nowS, ownMotion);
+      this.visualDecision = this.visualState.decision;
+      if (this.environment !== "vehicle") updateScenarios(this);
       this.actorIndex = new SpatialIndex(this.actors);
       this.updateJunctions();
       const reserved = new SpatialIndex(this.actors.map(copyPose));
       for (const actor of this.actors) {
         actor.previous = copyPose(actor);
         let next;
-        if (actor.type === "pedestrian") next = this.pedestrianMotion(actor);
+        let appliedCommand;
+        let contact = null;
+        let controlledTest = actor === this.player && this.vehicleTest?.phase === "running";
+        if (controlledTest && this.tick - this.vehicleTest.startedTick >= this.vehicleTest.maxTicks) {
+          this.vehicleTest.phase = "ready";
+          this.vehicleTest.error = "Contact was not reached within the bounded test; reset the car";
+          this.input = { targetSpeed: 0, steer: 0 };
+          controlledTest = false;
+        }
+        const physicalBarrier = actor === this.player && this.environment === "vehicle" && (controlledTest || this.vehicleTest.phase === "contact");
+        if (actor.type === "pedestrian") next = this.visionLab ? advanceVisionActor(actor, STEP, {
+          timeS: (this.tick - this.visionLab.startedTick) * STEP,
+          tick: this.tick
+        }) : this.pedestrianMotion(actor);
         else {
           let command;
-          if (actor === this.player && this.mode === "manual")
+          if (controlledTest)
+            command = {
+              targetSpeed: this.vehicleTest.maxSpeedMps,
+              steer: 0,
+              reason: "vehicle-test",
+              blockedBy: null
+            };
+          else if (actor === this.player && this.mode === "manual")
             command = { ...this.input };
           else {
             if (!actor.path.length && actor !== this.player && this.tick % 120 === 0)
@@ -31304,12 +32768,31 @@
           }
           if (actor === this.player && this.mode === "auto" && command.targetSpeed > 0)
             command.targetSpeed = policySpeed(this, actor, command.targetSpeed);
-          command = this.safeSpeed(actor, command);
+          const predictedBrake = !controlledTest && actor === this.player && this.visualMode === "vision-first" && this.visualDecision?.available === true && this.visualDecision.brake === true;
+          const reactiveCommand = controlledTest ? command : this.safeSpeed(actor, command);
+          if (actor === this.player && this.visionLab && reactiveCommand.targetSpeed < command.targetSpeed - 0.1 && this.visionLab.firstReactiveBrakeS === null)
+            this.visionLab.firstReactiveBrakeS = nowS;
+          const appliedVisualBrake = predictedBrake && reactiveCommand.targetSpeed > 0;
+          command = appliedVisualBrake ? { ...reactiveCommand, targetSpeed: 0, reason: "visual-prediction" } : reactiveCommand;
+          if (appliedVisualBrake && this.visionLab?.firstVisualBrakeS === null)
+            this.visionLab.firstVisualBrakeS = nowS;
+          appliedCommand = command;
           next = integrateVehicle(actor, command, STEP);
           next.reason = actor === this.player && !actor.path.length && this.destination && this.metrics.completedTrips ? "arrived" : command.reason;
           next.blockedBy = command.blockedBy;
         }
-        const nearby = reserved.near(actor, 8).filter((a) => a.id !== actor.id).concat(this.staticIndex.near(actor, 11));
+        if (physicalBarrier) {
+          const barrier = this.statics.find(
+            (body) => body.id === this.vehicleTest.barrierId
+          );
+          if (barrier) {
+            contact = resolveVehicleContact(actor, next, barrier, STEP);
+            if (contact) next = contact.body;
+          }
+        }
+        const nearby = reserved.near(actor, 8).filter((a) => a.id !== actor.id).concat(this.staticIndex.near(actor, 11)).filter(
+          (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId
+        );
         const guard = sweepSafe(
           actor,
           next,
@@ -31317,6 +32800,7 @@
           actor.type === "vehicle" ? this.roads : null
         );
         if (!guard.safe) {
+          contact = null;
           next = {
             ...actor,
             heading: actor.type === "pedestrian" ? next.heading : actor.heading,
@@ -31327,6 +32811,21 @@
           };
           if (actor === this.player && actor.reason !== guard.reason)
             this.metrics.interventions++;
+        }
+        if (actor === this.player) {
+          next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
+            tick: this.tick,
+            contact
+          });
+          if (contact) {
+            this.vehicleTest.phase = "contact";
+            this.vehicleTest.contactTick = this.tick;
+            this.vehicleTest.impact = {
+              ...next.vehicle.damage.lastImpact,
+              hitId: contact.hitId
+            };
+            this.input = { targetSpeed: 0, steer: 0 };
+          }
         }
         const moved = distance(actor, next);
         const oldPrevious = actor.previous;
@@ -31342,10 +32841,7 @@
             this.metrics.waitSeconds += STEP;
         }
       }
-      if (this.tick % 6 === 0)
-        this.sensors = this.sensorProcessor.update(
-          measureRanges(this, this.player)
-        );
+      this.updateSensors(this.tick % 6 === 0);
       Object.assign(
         this.metrics,
         trafficQueueStats(
@@ -31358,6 +32854,22 @@
         this.metrics.longestCurrentTrafficWait
       );
       this.tick++;
+      if (this.visionLab) {
+        const state = this.visionLab;
+        const timeS = this.tick * STEP;
+        if (state.firstSensorTriggerS === null && this.sensors.rawM.some((range) => range <= 5))
+          state.firstSensorTriggerS = timeS;
+        if (state.firstLaneEntryS === null && this.actors.some((actor) => actor.type === "pedestrian" && Math.abs(actor.x) < this.player.width / 2 + actor.radius))
+          state.firstLaneEntryS = timeS;
+        if (timeS >= 24 && this.player.z < state.goalZ)
+          state.error = "The bounded case timed out before reaching its goal.";
+        if (this.player.z >= state.goalZ || state.error)
+          this.input = { targetSpeed: 0, steer: 0 };
+        if ((this.player.z >= state.goalZ || state.error) && this.player.speed === 0) {
+          state.phase = "complete";
+          state.completedAtS = timeS;
+        }
+      }
     }
     updateJunctions() {
       return updateJunctions(this);
@@ -31388,7 +32900,11 @@
         rng: this.rng.state,
         metrics: { ...this.metrics },
         scenario: this.scenario,
+        vehicleTest: this.vehicleTest ? structuredClone(this.vehicleTest) : null,
         sensors: this.sensors,
+        visualMode: this.visualMode,
+        visualState: this.visualState ? structuredClone(this.visualState) : null,
+        visionLab: this.visionLab ? structuredClone(this.visionLab) : null,
         statics: this.statics.map((a) => ({ ...a })),
         actors: this.actors.map((a) => ({
           id: a.id,
@@ -31400,7 +32916,8 @@
           steer: a.steer ?? 0,
           distance: a.distance,
           reason: a.reason,
-          cursor: a.cursor ?? 0
+          cursor: a.cursor ?? 0,
+          ...a.vehicle ? { vehicle: structuredClone(a.vehicle) } : {}
         }))
       };
     }
@@ -31414,7 +32931,7 @@
       };
     }
     static *reconstruct(data) {
-      if (data?.version !== VERSION || !["city", "lab"].includes(data.environment) || !Number.isSafeInteger(data.totalTicks) || data.totalTicks < 0 || data.totalTicks > 60 * 60 * 24 || !Array.isArray(data.events))
+      if (data?.version !== VERSION || !["city", "lab", "vehicle", "vision"].includes(data.environment) || !Number.isSafeInteger(data.totalTicks) || data.totalTicks < 0 || data.totalTicks > 60 * 60 * 24 || !Array.isArray(data.events))
         throw new Error("Unsupported replay");
       let lastTick = -1;
       for (const event of data.events) {
@@ -31424,8 +32941,13 @@
           "destination",
           "scenario",
           "stop",
-          "policy"
-        ].includes(event.command?.type))
+          "policy",
+          "visual-observation",
+          "visual-reset",
+          "visual-mode",
+          "vision-run",
+          "vehicle-test"
+        ].includes(event.command?.type) || event.command.type === "vehicle-test" && (data.environment !== "vehicle" || event.command.operation !== "run"))
           throw new Error("Invalid replay event");
         lastTick = event.tick;
       }
@@ -31434,7 +32956,10 @@
       while (world2.tick < data.totalTicks) {
         while (index < data.events.length && data.events[index].tick === world2.tick)
           world2.command(data.events[index++].command);
+        const beforeTick = world2.tick;
         world2.step();
+        if (world2.tick === beforeTick)
+          throw new Error("Replay cannot advance a stopped scene without its recorded run event");
         if (world2.tick % 120 === 0) yield world2;
       }
       while (index < data.events.length && data.events[index].tick === world2.tick)
@@ -31857,8 +33382,8 @@
       get: function(key2) {
         return objects[key2];
       },
-      add: function(key2, object) {
-        objects[key2] = object;
+      add: function(key2, object2) {
+        objects[key2] = object2;
       },
       remove: function(key2) {
         delete objects[key2];
@@ -32721,18 +34246,18 @@
     }
     return cache["DefaultMaterial"];
   }
-  function addUnknownExtensionsToUserData(knownExtensions, object, objectDef) {
+  function addUnknownExtensionsToUserData(knownExtensions, object2, objectDef) {
     for (const name in objectDef.extensions) {
       if (knownExtensions[name] === void 0) {
-        object.userData.gltfExtensions = object.userData.gltfExtensions || {};
-        object.userData.gltfExtensions[name] = objectDef.extensions[name];
+        object2.userData.gltfExtensions = object2.userData.gltfExtensions || {};
+        object2.userData.gltfExtensions[name] = objectDef.extensions[name];
       }
     }
   }
-  function assignExtrasToUserData(object, gltfDef) {
+  function assignExtrasToUserData(object2, gltfDef) {
     if (gltfDef.extras !== void 0) {
       if (typeof gltfDef.extras === "object") {
-        Object.assign(object.userData, gltfDef.extras);
+        Object.assign(object2.userData, gltfDef.extras);
       } else {
         console.warn("THREE.GLTFLoader: Ignoring primitive type .extras, " + gltfDef.extras);
       }
@@ -32962,9 +34487,9 @@
       cache.refs[index]++;
     }
     /** Returns a reference to a shared resource, cloning it if necessary. */
-    _getNodeRef(cache, index, object) {
-      if (cache.refs[index] <= 1) return object;
-      const ref = object.clone();
+    _getNodeRef(cache, index, object2) {
+      if (cache.refs[index] <= 1) return object2;
+      const ref = object2.clone();
       const updateMappings = (original, clone2) => {
         const mappings = this.associations.get(original);
         if (mappings != null) {
@@ -32974,7 +34499,7 @@
           updateMappings(child, clone2.children[i]);
         }
       };
-      updateMappings(object, ref);
+      updateMappings(object2, ref);
       ref.name += "_instance_" + cache.uses[index]++;
       return ref;
     }
@@ -33684,13 +35209,13 @@
         const targets = dependencies[4];
         const tracks = [];
         for (let i = 0, il = nodes.length; i < il; i++) {
-          const node = nodes[i];
+          const node3 = nodes[i];
           const inputAccessor = inputAccessors[i];
           const outputAccessor = outputAccessors[i];
           const sampler = samplers[i];
           const target2 = targets[i];
-          if (node === void 0) continue;
-          node.updateMatrix();
+          if (node3 === void 0) continue;
+          node3.updateMatrix();
           let TypedKeyframeTrack;
           switch (PATH_PROPERTIES[target2.path]) {
             case PATH_PROPERTIES.weights:
@@ -33705,13 +35230,13 @@
               TypedKeyframeTrack = VectorKeyframeTrack;
               break;
           }
-          const targetName = node.name ? node.name : node.uuid;
+          const targetName = node3.name ? node3.name : node3.uuid;
           const interpolation = sampler.interpolation !== void 0 ? INTERPOLATION[sampler.interpolation] : InterpolateLinear;
           const targetNames = [];
           if (PATH_PROPERTIES[target2.path] === PATH_PROPERTIES.weights) {
-            node.traverse(function(object) {
-              if (object.morphTargetInfluences) {
-                targetNames.push(object.name ? object.name : object.uuid);
+            node3.traverse(function(object2) {
+              if (object2.morphTargetInfluences) {
+                targetNames.push(object2.name ? object2.name : object2.uuid);
               }
             });
           } else {
@@ -33752,16 +35277,16 @@
       const nodeDef = json.nodes[nodeIndex];
       if (nodeDef.mesh === void 0) return null;
       return parser.getDependency("mesh", nodeDef.mesh).then(function(mesh) {
-        const node = parser._getNodeRef(parser.meshCache, nodeDef.mesh, mesh);
+        const node3 = parser._getNodeRef(parser.meshCache, nodeDef.mesh, mesh);
         if (nodeDef.weights !== void 0) {
-          node.traverse(function(o) {
+          node3.traverse(function(o) {
             if (!o.isMesh) return;
             for (let i = 0, il = nodeDef.weights.length; i < il; i++) {
               o.morphTargetInfluences[i] = nodeDef.weights[i];
             }
           });
         }
-        return node;
+        return node3;
       });
     }
     /**
@@ -33785,19 +35310,19 @@
         Promise.all(childPending),
         skeletonPending
       ]).then(function(results) {
-        const node = results[0];
+        const node3 = results[0];
         const children = results[1];
         const skeleton = results[2];
         if (skeleton !== null) {
-          node.traverse(function(mesh) {
+          node3.traverse(function(mesh) {
             if (!mesh.isSkinnedMesh) return;
             mesh.bind(skeleton, _identityMatrix2);
           });
         }
         for (let i = 0, il = children.length; i < il; i++) {
-          node.add(children[i]);
+          node3.add(children[i]);
         }
-        return node;
+        return node3;
       });
     }
     // ._loadNodeShallow() parses a single node.
@@ -33829,47 +35354,47 @@
         pending.push(promise);
       });
       this.nodeCache[nodeIndex] = Promise.all(pending).then(function(objects) {
-        let node;
+        let node3;
         if (nodeDef.isBone === true) {
-          node = new Bone();
+          node3 = new Bone();
         } else if (objects.length > 1) {
-          node = new Group();
+          node3 = new Group();
         } else if (objects.length === 1) {
-          node = objects[0];
+          node3 = objects[0];
         } else {
-          node = new Object3D();
+          node3 = new Object3D();
         }
-        if (node !== objects[0]) {
+        if (node3 !== objects[0]) {
           for (let i = 0, il = objects.length; i < il; i++) {
-            node.add(objects[i]);
+            node3.add(objects[i]);
           }
         }
         if (nodeDef.name) {
-          node.userData.name = nodeDef.name;
-          node.name = nodeName;
+          node3.userData.name = nodeDef.name;
+          node3.name = nodeName;
         }
-        assignExtrasToUserData(node, nodeDef);
-        if (nodeDef.extensions) addUnknownExtensionsToUserData(extensions, node, nodeDef);
+        assignExtrasToUserData(node3, nodeDef);
+        if (nodeDef.extensions) addUnknownExtensionsToUserData(extensions, node3, nodeDef);
         if (nodeDef.matrix !== void 0) {
           const matrix = new Matrix4();
           matrix.fromArray(nodeDef.matrix);
-          node.applyMatrix4(matrix);
+          node3.applyMatrix4(matrix);
         } else {
           if (nodeDef.translation !== void 0) {
-            node.position.fromArray(nodeDef.translation);
+            node3.position.fromArray(nodeDef.translation);
           }
           if (nodeDef.rotation !== void 0) {
-            node.quaternion.fromArray(nodeDef.rotation);
+            node3.quaternion.fromArray(nodeDef.rotation);
           }
           if (nodeDef.scale !== void 0) {
-            node.scale.fromArray(nodeDef.scale);
+            node3.scale.fromArray(nodeDef.scale);
           }
         }
-        if (!parser.associations.has(node)) {
-          parser.associations.set(node, {});
+        if (!parser.associations.has(node3)) {
+          parser.associations.set(node3, {});
         }
-        parser.associations.get(node).nodes = nodeIndex;
-        return node;
+        parser.associations.get(node3).nodes = nodeIndex;
+        return node3;
       });
       return this.nodeCache[nodeIndex];
     }
@@ -33895,17 +35420,17 @@
         for (let i = 0, il = nodes.length; i < il; i++) {
           scene.add(nodes[i]);
         }
-        const reduceAssociations = (node) => {
+        const reduceAssociations = (node3) => {
           const reducedAssociations = /* @__PURE__ */ new Map();
           for (const [key2, value] of parser.associations) {
             if (key2 instanceof Material || key2 instanceof Texture) {
               reducedAssociations.set(key2, value);
             }
           }
-          node.traverse((node2) => {
-            const mappings = parser.associations.get(node2);
+          node3.traverse((node4) => {
+            const mappings = parser.associations.get(node4);
             if (mappings != null) {
-              reducedAssociations.set(node2, mappings);
+              reducedAssociations.set(node4, mappings);
             }
           });
           return reducedAssociations;
@@ -33917,20 +35442,20 @@
   };
   function computeBounds(geometry, primitiveDef, parser) {
     const attributes = primitiveDef.attributes;
-    const box2 = new Box3();
+    const box3 = new Box3();
     if (attributes.POSITION !== void 0) {
       const accessor = parser.json.accessors[attributes.POSITION];
       const min = accessor.min;
       const max = accessor.max;
       if (min !== void 0 && max !== void 0) {
-        box2.set(
+        box3.set(
           new Vector3(min[0], min[1], min[2]),
           new Vector3(max[0], max[1], max[2])
         );
         if (accessor.normalized) {
           const boxScale = getNormalizedComponentScale(WEBGL_COMPONENT_TYPES[accessor.componentType]);
-          box2.min.multiplyScalar(boxScale);
-          box2.max.multiplyScalar(boxScale);
+          box3.min.multiplyScalar(boxScale);
+          box3.max.multiplyScalar(boxScale);
         }
       } else {
         console.warn("THREE.GLTFLoader: Missing min/max properties for accessor POSITION.");
@@ -33942,7 +35467,7 @@
     const targets = primitiveDef.targets;
     if (targets !== void 0) {
       const maxDisplacement = new Vector3();
-      const vector = new Vector3();
+      const vector2 = new Vector3();
       for (let i = 0, il = targets.length; i < il; i++) {
         const target2 = targets[i];
         if (target2.POSITION !== void 0) {
@@ -33950,25 +35475,25 @@
           const min = accessor.min;
           const max = accessor.max;
           if (min !== void 0 && max !== void 0) {
-            vector.setX(Math.max(Math.abs(min[0]), Math.abs(max[0])));
-            vector.setY(Math.max(Math.abs(min[1]), Math.abs(max[1])));
-            vector.setZ(Math.max(Math.abs(min[2]), Math.abs(max[2])));
+            vector2.setX(Math.max(Math.abs(min[0]), Math.abs(max[0])));
+            vector2.setY(Math.max(Math.abs(min[1]), Math.abs(max[1])));
+            vector2.setZ(Math.max(Math.abs(min[2]), Math.abs(max[2])));
             if (accessor.normalized) {
               const boxScale = getNormalizedComponentScale(WEBGL_COMPONENT_TYPES[accessor.componentType]);
-              vector.multiplyScalar(boxScale);
+              vector2.multiplyScalar(boxScale);
             }
-            maxDisplacement.max(vector);
+            maxDisplacement.max(vector2);
           } else {
             console.warn("THREE.GLTFLoader: Missing min/max properties for accessor POSITION.");
           }
         }
       }
-      box2.expandByVector(maxDisplacement);
+      box3.expandByVector(maxDisplacement);
     }
-    geometry.boundingBox = box2;
+    geometry.boundingBox = box3;
     const sphere = new Sphere();
-    box2.getCenter(sphere.center);
-    sphere.radius = box2.min.distanceTo(box2.max) / 2;
+    box3.getCenter(sphere.center);
+    sphere.radius = box3.min.distanceTo(box3.max) / 2;
     geometry.boundingSphere = sphere;
   }
   function addPrimitiveAttributes(geometry, primitiveDef, parser) {
@@ -34256,10 +35781,10 @@
       sourceLookup.set(clonedNode, sourceNode);
       cloneLookup.set(sourceNode, clonedNode);
     });
-    clone2.traverse(function(node) {
-      if (!node.isSkinnedMesh) return;
-      const clonedMesh = node;
-      const sourceMesh = sourceLookup.get(node);
+    clone2.traverse(function(node3) {
+      if (!node3.isSkinnedMesh) return;
+      const clonedMesh = node3;
+      const sourceMesh = sourceLookup.get(node3);
       const sourceBones = sourceMesh.skeleton.bones;
       clonedMesh.skeleton = sourceMesh.skeleton.clone();
       clonedMesh.bindMatrix.copy(sourceMesh.bindMatrix);
@@ -34322,6 +35847,1707 @@
     }
   }
 
+  // src/render/suv-model.js
+  var UP = new Vector3(0, 1, 0);
+  var v = (p) => new Vector3(...p);
+  function facesGeometry(points, faces) {
+    const positions = [];
+    for (const face of faces)
+      for (let i = 1; i + 1 < face.length; i++)
+        for (const index of [face[0], face[i], face[i + 1]])
+          positions.push(...points[index]);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new Float32BufferAttribute(positions, 3)
+    );
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+  function outline(width, depth, cut, y) {
+    const x = width / 2, z = depth / 2;
+    return [
+      [-x + cut, y, -z],
+      [x - cut, y, -z],
+      [x, y, -z + cut],
+      [x, y, z - cut],
+      [x - cut, y, z],
+      [-x + cut, y, z],
+      [-x, y, z - cut],
+      [-x, y, -z + cut]
+    ];
+  }
+  function loft(rings) {
+    const n = rings[0].length;
+    const faces = [Array.from({ length: n }, (_, i) => i)];
+    for (let ring = 0; ring < rings.length - 1; ring++)
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n, a = ring * n, b = a + n;
+        faces.push([a + j, a + i, b + i, b + j]);
+      }
+    faces.push(
+      Array.from({ length: n }, (_, i) => rings.length * n - 1 - i)
+    );
+    return facesGeometry(rings.flat(), faces);
+  }
+  function bevelBox(width, height, depth, cut = 0.025) {
+    const b = Math.min(cut, width / 5, height / 5, depth / 5);
+    return loft([
+      outline(width - 2 * b, depth - 2 * b, b / 2, -height / 2),
+      outline(width, depth, b, -height / 2 + b),
+      outline(width, depth, b, height / 2 - b),
+      outline(width - 2 * b, depth - 2 * b, b / 2, height / 2)
+    ]);
+  }
+  function sidePanel(points, x) {
+    const shape = new Shape();
+    points.forEach(([z, y], i) => {
+      if (i) shape.lineTo(-z, y);
+      else shape.moveTo(-z, y);
+    });
+    shape.closePath();
+    return new ExtrudeGeometry(shape, {
+      depth: 0.045,
+      steps: 1,
+      bevelEnabled: true,
+      bevelSegments: 1,
+      bevelSize: 0.012,
+      bevelThickness: 0.012,
+      curveSegments: 1
+    }).rotateY(Math.PI / 2).translate(x, 0, 0);
+  }
+  function archTrimGeometry(points, x, radius = 0.055) {
+    const normals = points.slice(1).map(([z, y], i) => new Vector2(points[i][1] - y, z - points[i][0]).normalize());
+    const rings = points.map(([z, y], i) => {
+      const normal = normals[Math.max(0, i - 1)].clone();
+      if (i > 0 && i < normals.length) normal.add(normals[i]).normalize();
+      const miter = normal.multiplyScalar(
+        radius / normal.dot(normals[Math.min(i, normals.length - 1)])
+      );
+      return Array.from({ length: 6 }, (_, j) => {
+        const angle = j * Math.PI / 3, offset2 = Math.cos(angle);
+        return [
+          x + radius * Math.sin(angle),
+          y + miter.y * offset2,
+          z + miter.x * offset2
+        ];
+      });
+    });
+    return loft(rings);
+  }
+  function bumperGeometry(rear = false) {
+    const sign2 = rear ? -1 : 1;
+    const rows = rear ? [[0.4, 0.81], [0.46, 0.9], [0.66, 0.9], [0.73, 0.81]] : [[0.37, 0.81], [0.43, 0.9], [0.63, 0.9], [0.7, 0.81]];
+    const points = [];
+    for (const back of [false, true])
+      for (const [y, half] of rows)
+        for (let i = 0; i <= 6; i++) {
+          const x = (i / 3 - 1) * half;
+          const bevel = Math.max(0, Math.abs(x) - 0.7) * 0.18;
+          const edge = y === rows[0][0] || y === rows[3][0] ? 0.035 : 0;
+          points.push([x, y, sign2 * (back ? 1.91 : 2.1 - bevel - edge)]);
+        }
+    const faces = [];
+    for (let row = 0; row < 3; row++)
+      for (let col = 0; col < 6; col++) {
+        const a = row * 7 + col, b = a + 28;
+        faces.push([a, a + 1, a + 8, a + 7]);
+        faces.push([b + 7, b + 8, b + 1, b]);
+      }
+    const perimeter = [
+      ...Array.from({ length: 7 }, (_, i) => i),
+      13,
+      20,
+      27,
+      ...Array.from({ length: 6 }, (_, i) => 26 - i),
+      14,
+      7
+    ];
+    perimeter.forEach((a, i) => {
+      const b = perimeter[(i + 1) % perimeter.length];
+      faces.push([a + 28, b + 28, b, a]);
+    });
+    if (rear) for (const face of faces) face.reverse();
+    return facesGeometry(points, faces);
+  }
+  function tireGeometry(radius, width = 0.25) {
+    const profile = [
+      [-width / 2, radius * 0.74],
+      [-width / 2, radius * 0.9],
+      [-width * 0.36, radius - 7e-3],
+      [width * 0.36, radius - 7e-3],
+      [width / 2, radius * 0.9],
+      [width / 2, radius * 0.74],
+      [width * 0.3, radius * 0.68],
+      [-width * 0.3, radius * 0.68]
+    ];
+    const points = [], faces = [];
+    for (let i = 0; i < 16; i++) {
+      const angle = i / 16 * Math.PI * 2;
+      for (const [x, r] of profile)
+        points.push([x, Math.cos(angle) * r, Math.sin(angle) * r]);
+    }
+    for (let i = 0; i < 16; i++)
+      for (let j = 0; j < profile.length; j++) {
+        const k = (j + 1) % profile.length;
+        faces.push([
+          i * 8 + j,
+          (i + 1) % 16 * 8 + j,
+          (i + 1) % 16 * 8 + k,
+          i * 8 + k
+        ]);
+      }
+    return facesGeometry(points, faces);
+  }
+  function createSuvModel(body = {}) {
+    const root = new Group();
+    root.name = "player-vehicle";
+    const chassis = new Group();
+    chassis.name = "player-chassis";
+    root.add(chassis);
+    const geometries = /* @__PURE__ */ new Set(), materials = /* @__PURE__ */ new Set(), textures = /* @__PURE__ */ new Set();
+    const bodyPanels = [], cutawayParts = [], wheels = [], links = [];
+    const ownGeometry = (g) => {
+      geometries.add(g);
+      return g;
+    };
+    const ownMaterial = (m) => {
+      materials.add(m);
+      return m;
+    };
+    const material2 = (name, color, options = {}) => ownMaterial(
+      new MeshStandardMaterial({
+        name,
+        color,
+        flatShading: true,
+        roughness: 0.94,
+        metalness: 0,
+        envMapIntensity: 0.22,
+        ...options
+      })
+    );
+    const palette = {
+      paint: material2("SUV olive stone paint", 8225895, { vertexColors: true }),
+      cladding: material2("SUV charcoal cladding", 3358007, { vertexColors: true }),
+      trim: material2("SUV interior charcoal", 3160629),
+      seat: material2("SUV woven seats", 4608842),
+      seatInset: material2("SUV stone upholstery", 9870209),
+      metal: material2("SUV satin running gear", 7569527, { roughness: 0.78, metalness: 0.2 }),
+      rubber: material2("SUV tire rubber", 2436137),
+      tread: material2("SUV tire tread", 3160113),
+      spring: material2("SUV spring ochre", 11182197),
+      lens: material2("SUV sensor glass", 6991016, { roughness: 0.5, emissive: 1522488, emissiveIntensity: 0.25 }),
+      glass: material2("SUV upright glazing", 7377804, {
+        transparent: true,
+        opacity: 0.3,
+        depthWrite: false,
+        side: DoubleSide
+      }),
+      lamp: material2("SUV warm headlamps", 15195843, {
+        emissive: 13155479,
+        emissiveIntensity: 0.35
+      }),
+      tail: material2("SUV tail lamps", 10175541, {
+        emissive: 5840918,
+        emissiveIntensity: 0.25
+      }),
+      dark: material2("SUV recesses", 1976612)
+    };
+    const mesh = (g, m, parent, name, position) => {
+      const part = new Mesh(ownGeometry(g), m);
+      part.name = name;
+      if (position) part.position.copy(v(position));
+      part.castShadow = true;
+      part.receiveShadow = true;
+      parent.add(part);
+      return part;
+    };
+    const box3 = (parent, name, dimensions, position, m, cut) => mesh(bevelBox(...dimensions, cut), m, parent, name, position);
+    const rod = (parent, name, radius2, m) => mesh(new CylinderGeometry(radius2, radius2, 1, 6), m, parent, name);
+    const between = (part, a, b) => {
+      part.position.copy(a).add(b).multiplyScalar(0.5);
+      const direction2 = b.clone().sub(a);
+      part.scale.y = direction2.length();
+      part.quaternion.setFromUnitVectors(UP, direction2.normalize());
+    };
+    const beam = (parent, name, radius2, a, b, m = palette.trim) => {
+      const part = rod(parent, name, radius2, m);
+      between(part, v(a), v(b));
+      return part;
+    };
+    const section = (part) => {
+      cutawayParts.push(part);
+      return part;
+    };
+    const panel = (g, m, name, position, mobilityAt) => {
+      if (position) g.translate(...position);
+      g.setAttribute(
+        "color",
+        new Float32BufferAttribute(
+          new Float32Array(g.attributes.position.count * 3).fill(1),
+          3
+        )
+      );
+      const part = mesh(g, m, chassis, name);
+      bodyPanels.push({
+        part,
+        pristine: g.attributes.position.array.slice(),
+        normals: g.attributes.normal.array.slice(),
+        mobility: mobilityAt ? Float32Array.from(
+          { length: g.attributes.position.count },
+          (_, i) => mobilityAt(g.attributes.position.getX(i), g.attributes.position.getY(i))
+        ) : null
+      });
+      return part;
+    };
+    const quad = (parent, name, points, m) => mesh(facesGeometry(points, [[0, 1, 2, 3]]), m, parent, name);
+    const rearProfile = [
+      [-2.04, 0.38],
+      [-1.84, 0.38],
+      [-1.84, 0.64],
+      [-1.65, 0.86],
+      [-0.95, 0.86],
+      [-0.76, 0.64],
+      [-0.76, 1.12],
+      [-1.94, 1.12],
+      [-2.04, 1.01]
+    ];
+    const frontProfile = [
+      [0.76, 1.12],
+      [0.76, 0.64],
+      [0.95, 0.86],
+      [1.65, 0.86],
+      [1.84, 0.64],
+      [1.84, 0.38],
+      [2.02, 0.38],
+      [2.08, 0.68],
+      [2.02, 0.99],
+      [0.93, 1.12]
+    ];
+    for (const side of [-1, 1]) {
+      const label = side < 0 ? "left" : "right";
+      const base = side < 0 ? -0.865 : 0.82;
+      panel(sidePanel(rearProfile, base), palette.paint, `suv-${label}-rear-quarter`);
+      panel(sidePanel(frontProfile, base), palette.paint, `suv-${label}-front-fender`);
+      const doors = panel(
+        bevelBox(0.073, 0.73, 1.5, 0.025),
+        palette.paint,
+        `suv-${label}-doors`,
+        [side * 0.85, 0.755, 0]
+      );
+      if (side < 0) section(doors);
+      box3(chassis, `suv-${label}-sill`, [0.16, 0.12, 1.55], [side * 0.83, 0.34, 0], palette.cladding);
+      box3(chassis, `suv-${label}-step`, [0.18, 0.06, 1.33], [side * 0.83, 0.29, 0], palette.metal, 0.015);
+      box3(
+        chassis,
+        `suv-${label}-door-cladding`,
+        [0.085, 0.22, 1.45],
+        [side * 0.881, 0.56, 0],
+        palette.cladding
+      );
+      for (const z of [-0.5, 0.48]) {
+        const handle = box3(chassis, `suv-${label}-door-handle-${z}`, [0.045, 0.038, 0.15], [side * 0.9, 1.025, z], palette.trim, 9e-3);
+        const seam = beam(
+          chassis,
+          `suv-${label}-door-seam-${z}`,
+          4e-3,
+          [side * 0.889, 0.7, z - 0.3],
+          [side * 0.889, 1.08, z - 0.3],
+          palette.trim
+        );
+        if (side < 0) {
+          section(handle);
+          section(seam);
+        }
+      }
+      for (const axle of [-1, 1]) {
+        const center = axle * PLAYER_VEHICLE.wheelbaseM / 2;
+        const arch = [
+          [center - 0.52, 0.37],
+          [center - 0.52, 0.65],
+          [center - 0.34, 0.88],
+          [center + 0.34, 0.88],
+          [center + 0.52, 0.65],
+          [center + 0.52, 0.37]
+        ];
+        mesh(
+          archTrimGeometry(arch, side * 0.879),
+          palette.cladding,
+          chassis,
+          `suv-${label}-arch-${axle}`
+        );
+      }
+      const pillars = [
+        [[side * 0.815, 1.09, 0.89], [side * 0.748, 1.715, 0.55]],
+        [[side * 0.835, 1.09, -0.31], [side * 0.77, 1.735, -0.31]],
+        [[side * 0.835, 1.09, -1.6], [side * 0.77, 1.735, -1.6]],
+        [[side * 0.815, 1.09, -1.95], [side * 0.748, 1.715, -1.94]]
+      ];
+      for (let i = 0; i < pillars.length; i++) {
+        const part = beam(chassis, `suv-${label}-pillar-${i}`, 0.045, ...pillars[i], palette.trim);
+        if (side < 0) section(part);
+      }
+      for (const [z0, z1, name] of [
+        [-1.89, -1.66, "quarter"],
+        [-1.54, -0.37, "rear"],
+        [-0.25, 0.66, "front"]
+      ]) {
+        const glass = quad(chassis, `suv-${label}-${name}-window`, [
+          [side * 0.824, 1.13, z0],
+          [side * 0.824, 1.13, z1],
+          [side * 0.763, 1.68, z1 > 0 ? 0.52 : z1],
+          [side * 0.763, 1.68, z0]
+        ], palette.glass);
+        section(glass);
+      }
+      const beltline = beam(
+        chassis,
+        `suv-${label}-beltline`,
+        0.025,
+        [side * 0.844, 1.12, -1.97],
+        [side * 0.844, 1.12, 0.88],
+        palette.trim
+      );
+      if (side < 0) section(beltline);
+      const mirrorStay = beam(
+        chassis,
+        `suv-${label}-mirror-stay`,
+        0.021,
+        [side * 0.81, 1.16, 0.72],
+        [side * 0.95, 1.2, 0.65],
+        palette.trim
+      );
+      const mirror = box3(chassis, `suv-${label}-mirror`, [0.14, 0.12, 0.15], [side * 0.96, 1.22, 0.64], palette.trim, 0.02);
+      if (side < 0) {
+        section(mirrorStay);
+        section(mirror);
+      }
+    }
+    const hoodRows = [
+      [0.88, 1.105, 0.79],
+      [1.04, 1.09, 0.86],
+      [1.89, 1.055, 0.86],
+      [2.04, 0.99, 0.78]
+    ];
+    const hoodPoints = hoodRows.flatMap(([z, y, x]) => [
+      [-x, y - 0.05, z],
+      [-x + 0.12, y, z],
+      [x - 0.12, y, z],
+      [x, y - 0.05, z]
+    ]);
+    const hoodFaces = [];
+    for (let row = 0; row < 3; row++)
+      for (let col = 0; col < 3; col++) {
+        const a = row * 4 + col;
+        hoodFaces.push([a, a + 4, a + 5, a + 1]);
+      }
+    section(panel(facesGeometry(hoodPoints, hoodFaces), palette.paint, "suv-hood"));
+    panel(bumperGeometry(), palette.cladding, "suv-front-bumper", null, (x, y) => {
+      const lower = MathUtils.clamp((0.6 - y) / 0.16, 0, 1);
+      const across = MathUtils.clamp((0.545 - Math.abs(x)) / 0.12, 0, 1);
+      return 1 - lower * across;
+    });
+    panel(bumperGeometry(true), palette.cladding, "suv-rear-bumper");
+    panel(bumperGeometry().translate(0, 0.29, -0.055), palette.paint, "suv-front-fascia");
+    box3(chassis, "suv-grille-recess", [0.96, 0.23, 0.025], [0, 0.825, 2.057], palette.dark, 0.015);
+    for (let i = -3; i <= 3; i++)
+      box3(chassis, `suv-grille-slat-${i}`, [0.028, 0.18, 0.024], [i * 0.127, 0.825, 2.075], palette.trim, 5e-3);
+    for (const side of [-1, 1]) {
+      box3(chassis, `suv-headlamp-well-${side}`, [0.29, 0.22, 0.035], [side * 0.65, 0.856, 2.047], palette.dark, 0.025);
+      for (const y of [0.817, 0.895])
+        box3(chassis, `suv-headlamp-${side}-${y}`, [0.21, 0.025, 0.018], [side * 0.65, y, 2.069], palette.lamp, 4e-3);
+      box3(chassis, `suv-rear-lamp-well-${side}`, [0.17, 0.32, 0.06], [side * 0.724, 0.995, -1.979], palette.dark);
+      box3(chassis, `suv-rear-lamp-${side}`, [0.064, 0.255, 0.015], [side * 0.724, 1.01, -2.014], palette.tail, 9e-3);
+    }
+    box3(chassis, "suv-front-skid", [0.85, 0.09, 0.06], [0, 0.365, 2.04], palette.metal, 0.013);
+    for (const side of [-1, 1])
+      beam(
+        chassis,
+        `suv-front-skid-support-${side}`,
+        0.022,
+        [side * 0.32, 0.29, 1.3],
+        [side * 0.32, 0.365, 2.018]
+      );
+    box3(chassis, "suv-front-plate", [0.25, 0.07, 0.016], [0, 0.665, 2.083], palette.seatInset, 8e-3);
+    panel(bevelBox(1.67, 0.54, 0.1), palette.paint, "suv-rear-hatch", [0, 0.9, -1.9]);
+    section(quad(chassis, "suv-windshield", [
+      [-0.785, 1.13, 0.886],
+      [0.785, 1.13, 0.886],
+      [0.735, 1.693, 0.56],
+      [-0.735, 1.693, 0.56]
+    ], palette.glass));
+    section(quad(chassis, "suv-rear-window", [
+      [0.75, 1.18, -1.959],
+      [-0.75, 1.18, -1.959],
+      [-0.725, 1.66, -1.942],
+      [0.725, 1.66, -1.942]
+    ], palette.glass));
+    const roof = loft([
+      outline(1.63, 2.55, 0.085, 1.725).map(([x, y, z]) => [x, y, z - 0.7]),
+      outline(1.47, 2.39, 0.07, 1.82).map(([x, y, z]) => [x, y, z - 0.7])
+    ]);
+    section(mesh(roof, palette.trim, chassis, "suv-faceted-roof"));
+    section(box3(chassis, "suv-windshield-header", [1.5, 0.055, 0.075], [0, 1.71, 0.55], palette.trim, 0.012));
+    section(box3(chassis, "suv-rear-window-header", [1.5, 0.08, 0.065], [0, 1.688, -1.947], palette.trim, 0.012));
+    for (const side of [-1, 1]) {
+      section(box3(chassis, `suv-window-header-${side}`, [0.05, 0.06, 2.43], [side * 0.78, 1.706, -0.7], palette.trim, 0.01));
+      section(box3(chassis, `suv-roof-rail-${side}`, [0.05, 0.055, 2.1], [side * 0.64, 1.9, -0.65], palette.trim, 0.01));
+      for (const z of [-1.44, 0.14])
+        section(box3(chassis, `suv-roof-foot-${side}-${z}`, [0.085, 0.07, 0.14], [side * 0.64, 1.846, z], palette.trim, 0.012));
+    }
+    box3(chassis, "suv-spare-carrier", [0.35, 0.35, 0.1], [0, 0.94, -1.95], palette.trim);
+    const spare = mesh(
+      new CylinderGeometry(0.29, 0.29, 0.14, 12),
+      palette.rubber,
+      chassis,
+      "suv-rear-spare",
+      [0, 0.94, -2]
+    );
+    spare.rotation.x = Math.PI / 2;
+    const spareCover = mesh(
+      new CylinderGeometry(0.24, 0.24, 0.025, 8),
+      palette.paint,
+      chassis,
+      "suv-spare-cover",
+      [0, 0.94, -2.08]
+    );
+    spareCover.rotation.x = Math.PI / 2;
+    box3(chassis, "suv-spare-cover-inset", [0.15, 0.045, 0.012], [0, 0.94, -2.097], palette.trim, 6e-3);
+    box3(chassis, "suv-cabin-floor", [1.45, 0.09, 1.53], [0, 0.43, 0], palette.trim);
+    box3(chassis, "suv-cargo-floor", [1.37, 0.06, 0.98], [0, 0.73, -1.25], palette.trim);
+    for (const [x, z] of [[-0.38, -0.2], [0.38, -0.2], [-0.38, -1.22], [0.38, -1.22]]) {
+      const rear = z < -1;
+      const y = rear ? 0.87 : 0.7;
+      box3(
+        chassis,
+        `suv-seat-pedestal-${x}-${z}`,
+        [0.42, rear ? 0.04 : 0.12, 0.43],
+        [x, rear ? 0.78 : 0.535, z],
+        palette.trim,
+        0.012
+      );
+      if (!rear)
+        for (const dx of [-0.16, 0.16])
+          box3(
+            chassis,
+            `suv-seat-rail-${x}-${dx}`,
+            [0.03, 0.035, 0.43],
+            [x + dx, 0.606, z],
+            palette.metal,
+            6e-3
+          );
+      box3(chassis, `suv-seat-base-${x}-${z}`, [0.51, 0.17, 0.55], [x, y, z], palette.seat);
+      const back = box3(chassis, `suv-seat-back-${x}-${z}`, [0.49, 0.55, 0.135], [x, y + 0.29, z - 0.255], palette.seat);
+      back.rotation.x = -0.09;
+      box3(chassis, `suv-seat-inset-${x}-${z}`, [0.34, 0.41, 0.02], [x, y + 0.3, z - 0.174], palette.seatInset, 0.015);
+      box3(chassis, `suv-headrest-${x}-${z}`, [0.26, 0.2, 0.12], [x, y + 0.64, z - 0.255], palette.seat, 0.04);
+    }
+    box3(chassis, "suv-center-console", [0.21, 0.27, 0.9], [0, 0.66, 0.06], palette.trim);
+    box3(chassis, "suv-console-top", [0.21, 0.035, 0.48], [0, 0.812, 0.18], palette.seatInset, 0.01);
+    beam(chassis, "suv-gear-selector", 0.016, [0, 0.83, 0.23], [0, 0.93, 0.2], palette.trim);
+    box3(chassis, "suv-selector-grip", [0.07, 0.04, 0.055], [0, 0.93, 0.2], palette.trim, 9e-3);
+    for (const side of [-1, 1]) {
+      const door = box3(chassis, `suv-${side}-inner-door`, [0.065, 0.39, 1.44], [side * 0.79, 0.85, -0.05], palette.trim);
+      const arm = box3(chassis, `suv-${side}-armrest`, [0.13, 0.065, 0.49], [side * 0.745, 0.86, 0.06], palette.seatInset);
+      if (side < 0) {
+        section(door);
+        section(arm);
+      }
+    }
+    box3(chassis, "cockpit-dashboard-shell", [1.48, 0.18, 0.34], [0, 1.035, 0.83], palette.trim, 0.045);
+    for (const x of [-0.66, 0.05, 0.58])
+      box3(chassis, `cockpit-vent-${x}`, [0.16, 0.05, 0.025], [x, 1.065, 0.641], palette.dark, 6e-3);
+    const binnacle = box3(chassis, "cockpit-instrument-binnacle", [0.48, 0.19, 0.075], [-0.38, 1.225, 0.8], palette.trim, 0.022);
+    const displayMaterial = ownMaterial(new MeshBasicMaterial({ color: 14806222, toneMapped: false }));
+    const dashboard = mesh(new PlaneGeometry(0.423, 0.142), displayMaterial, binnacle, "cockpit-dashboard", [0, 0, -0.041]);
+    dashboard.rotation.y = Math.PI;
+    const steeringMount = new Group();
+    steeringMount.name = "cockpit-steering-mount";
+    steeringMount.position.set(-0.38, 1.085, 0.48);
+    steeringMount.rotation.x = 0.27;
+    chassis.add(steeringMount);
+    const steering = new Group();
+    steering.name = "cockpit-steering";
+    steeringMount.add(steering);
+    mesh(new TorusGeometry(0.155, 0.014, 4, 12), palette.trim, steering, "cockpit-steering-rim");
+    const hub = mesh(new CylinderGeometry(0.043, 0.043, 0.028, 8), palette.trim, steering, "cockpit-steering-hub");
+    hub.rotation.x = Math.PI / 2;
+    for (const angle of [0, Math.PI * 2 / 3, Math.PI * 4 / 3]) {
+      const spoke = box3(steering, "cockpit-steering-spoke", [0.035, 0.117, 0.012], [0, 0.078, 0], palette.metal, 5e-3);
+      spoke.position.set(-Math.sin(angle) * 0.078, Math.cos(angle) * 0.078, 0);
+      spoke.rotation.z = angle;
+    }
+    beam(chassis, "cockpit-steering-column", 0.034, [-0.38, 1.085, 0.48], [-0.38, 1.045, 0.83], palette.trim);
+    box3(steering, "cockpit-steering-center-mark", [0.018, 0.026, 0.029], [0, 0.155, 0], palette.seatInset, 3e-3);
+    const radius = PLAYER_VEHICLE.wheelRadiusM;
+    for (const [key2, side, axle] of [
+      ["frontLeft", -1, 1],
+      ["frontRight", 1, 1],
+      ["rearLeft", -1, -1],
+      ["rearRight", 1, -1]
+    ]) {
+      const name = `wheel-${axle > 0 ? "front" : "rear"}-${side < 0 ? "left" : "right"}`;
+      const pivot = new Group();
+      pivot.name = name;
+      pivot.position.set(side * PLAYER_VEHICLE.trackM / 2, radius, axle * PLAYER_VEHICLE.wheelbaseM / 2);
+      root.add(pivot);
+      const spin = new Group();
+      spin.name = `${name}-spin`;
+      pivot.add(spin);
+      const caliper = new Group();
+      caliper.name = `${name}-caliper`;
+      pivot.add(caliper);
+      mesh(tireGeometry(radius), palette.rubber, spin, `${name}-tire`);
+      const treads = [];
+      for (let i = 0; i < 16; i++) {
+        const angle = i * Math.PI / 8;
+        treads.push(new BoxGeometry(0.18, 0.014, 0.046).rotateX(angle).translate(0, Math.cos(angle) * (radius - 7e-3), Math.sin(angle) * (radius - 7e-3)));
+      }
+      mesh(mergeGeometries(treads), palette.tread, spin, `${name}-tread`);
+      treads.forEach((g) => g.dispose());
+      const disc = mesh(new CylinderGeometry(0.185, 0.185, 0.022, 12), palette.metal, spin, `${name}-disc`, [side * 0.07, 0, 0]);
+      disc.rotation.z = Math.PI / 2;
+      const rim = mesh(new RingGeometry(0.07, 0.252, 6), palette.trim, spin, `${name}-rim`, [side * 0.127, 0, 0]);
+      rim.rotation.y = side * Math.PI / 2;
+      const spokes = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = i * Math.PI / 3;
+        spokes.push(bevelBox(0.027, 0.17, 0.033, 5e-3).rotateX(angle).translate(side * 0.131, Math.cos(angle) * 0.143, Math.sin(angle) * 0.143));
+      }
+      mesh(mergeGeometries(spokes), palette.metal, spin, `${name}-alloy-spokes`);
+      spokes.forEach((g) => g.dispose());
+      const cap = mesh(new CylinderGeometry(0.067, 0.067, 0.035, 6), palette.trim, spin, `${name}-hub`, [side * 0.132, 0, 0]);
+      cap.rotation.z = Math.PI / 2;
+      box3(caliper, `${name}-brake-pad`, [0.06, 0.13, 0.09], [side * 0.055, 0.065, -0.148], palette.spring, 0.012);
+      beam(pivot, `${name}-upright`, 0.025, [-side * 0.05, -0.1, 0], [-side * 0.05, 0.16, 0], palette.metal);
+      for (const [height, level] of [[0.27, "lower"], [0.49, "upper"]])
+        for (const fore of [-1, 1]) {
+          const part = rod(root, `${name}-${level}-wishbone-${fore}`, 0.017, palette.metal);
+          links.push({
+            part,
+            upper: v([side * 0.41, height, pivot.position.z + fore * 0.17]),
+            lower: v([side * 0.72, height, pivot.position.z])
+          });
+        }
+      const upper = v([side * 0.57, 0.81, pivot.position.z]);
+      const lower = v([side * 0.71, 0.35, pivot.position.z]);
+      const damper = rod(root, `${name}-damper-body`, 0.032, palette.trim);
+      const shaft = rod(root, `${name}-damper-shaft`, 0.013, palette.metal);
+      links.push({ part: damper, upper, lower, damper: true }, { part: shaft, upper, lower, shaft: true });
+      const coilPoints = Array.from({ length: 49 }, (_, i) => {
+        const t = i / 48, a = t * Math.PI * 10;
+        return v([Math.cos(a) * 0.047, t - 0.5, Math.sin(a) * 0.047]);
+      });
+      const spring2 = mesh(
+        new TubeGeometry(new CatmullRomCurve3(coilPoints), 48, 7e-3, 4),
+        palette.spring,
+        root,
+        `${name}-spring`
+      );
+      links.push({ part: spring2, upper, lower, spring: true });
+      beam(
+        chassis,
+        `${name}-strut-tower`,
+        0.03,
+        [side * 0.47, 0.29, pivot.position.z],
+        upper.toArray(),
+        palette.trim
+      );
+      if (axle > 0) {
+        const tie = rod(root, `${name}-steering-tie`, 0.012, palette.metal);
+        links.push({
+          part: tie,
+          upper: v([side * 0.25, 0.33, pivot.position.z - 0.14]),
+          lower: v([side * 0.72, 0.33, pivot.position.z - 0.09]),
+          steering: pivot
+        });
+      }
+      const axleShaft = rod(root, `${name}-halfshaft`, 0.023, palette.metal);
+      links.push({
+        part: axleShaft,
+        upper: v([side * 0.15, 0.35, pivot.position.z]),
+        lower: v([side * 0.72, 0.35, pivot.position.z]),
+        steering: axle > 0 ? pivot : null
+      });
+      wheels.push({ key: key2, pivot, spin, caliper, spring: spring2, axle, side });
+    }
+    box3(chassis, "chassis-center-spine", [0.22, 0.1, 3.2], [0, 0.27, 0], palette.trim);
+    for (const z of [-1.3, 1.3])
+      box3(chassis, `suv-subframe-${z}`, [1.22, 0.075, 0.14], [0, 0.29, z], palette.trim);
+    for (const z of [-1.3, 1.3])
+      box3(chassis, `suv-differential-${z}`, [0.32, 0.18, 0.24], [0, 0.35, z], palette.metal, 0.04);
+    box3(chassis, "suv-transverse-powerunit", [0.72, 0.26, 0.62], [0, 0.62, 1.26], palette.metal, 0.05);
+    for (const x of [-0.24, -0.12, 0, 0.12, 0.24])
+      box3(chassis, `suv-powerunit-cover-rib-${x}`, [0.032, 0.024, 0.46], [x, 0.762, 1.26], palette.trim, 6e-3);
+    for (const x of [-0.23, 0.23])
+      beam(chassis, `suv-powerunit-mount-${x}`, 0.04, [x, 0.31, 1.3], [x, 0.5, 1.3], palette.trim);
+    box3(chassis, "suv-airbox", [0.21, 0.18, 0.34], [-0.48, 0.67, 1.39], palette.trim);
+    beam(chassis, "suv-intake-join", 0.024, [-0.36, 0.68, 1.26], [-0.4, 0.68, 1.33], palette.trim);
+    const mounts = getVehicleMounts(body);
+    const sensorRecords = [], cameraRecords = [];
+    for (const mount of [...mounts.ranges, ...mounts.auxiliary ?? []]) {
+      const group = new Group();
+      group.name = `range-mount-${mount.id}`;
+      group.position.set(mount.position.x, mount.position.y, mount.position.z);
+      group.rotation.y = mount.angleDeg * Math.PI / 180;
+      root.add(group);
+      if (!mount.id.startsWith("side-"))
+        box3(
+          root,
+          `range-support-${mount.id}`,
+          [0.078, 0.014, 0.08],
+          [mount.position.x, mount.position.y - 0.027, Math.sign(mount.position.z) * 2.105],
+          palette.trim,
+          4e-3
+        );
+      box3(group, `range-housing-${mount.id}`, [0.052, 0.044, 0.044], [0, 0, -0.023], palette.trim, 8e-3);
+      const ring = mesh(new CylinderGeometry(0.018, 0.018, 7e-3, 8), palette.metal, group, `range-ring-${mount.id}`, [0, 0, -4e-3]);
+      ring.rotation.x = Math.PI / 2;
+      const lens = mesh(new CircleGeometry(0.011, 8), palette.lens, group, `sensor-range-${mount.id}`);
+      sensorRecords.push({ ...mount, group, lens });
+    }
+    for (const mount of mounts.cameras ?? [mounts.camera]) {
+      const group = new Group();
+      group.name = `camera-mount-${mount.id}`;
+      group.position.set(mount.position.x, mount.position.y, mount.position.z);
+      group.rotation.y = (mount.angleDeg ?? 0) * Math.PI / 180;
+      root.add(group);
+      box3(group, `${mount.id}-housing`, [0.061, 0.045, 0.055], [0, 0, -0.03], palette.trim, 9e-3);
+      box3(group, `${mount.id}-foot`, [0.077, 0.017, mount.id === "rear-camera" ? 0.15 : 0.065], [0, -0.028, -0.063], palette.trim, 6e-3);
+      const lens = mesh(new CircleGeometry(0.014, 8), palette.lens, group, `sensor-${mount.id}`);
+      if (mount.id === "rear-camera")
+        box3(
+          root,
+          "rear-camera-pedestal",
+          [0.07, 0.08, 0.14],
+          [0, 1.255, -2.05],
+          palette.trim,
+          9e-3
+        );
+      else {
+        section(group);
+        section(beam(
+          root,
+          "front-camera-windscreen-support",
+          9e-3,
+          [0, 1.71, 0.55],
+          [0, 1.48, 0.69],
+          palette.trim
+        ));
+        section(box3(
+          root,
+          "front-camera-header-foot",
+          [0.085, 0.018, 0.08],
+          [0, 1.708, 0.55],
+          palette.trim,
+          6e-3
+        ));
+      }
+      cameraRecords.push({ ...mount, group, lens });
+    }
+    let telemetry = null;
+    if (mounts.telemetry) {
+      telemetry = new Group();
+      telemetry.name = "sensor-roof-imu-gnss";
+      telemetry.position.set(mounts.telemetry.position.x, mounts.telemetry.position.y, mounts.telemetry.position.z);
+      root.add(telemetry);
+      box3(telemetry, "roof-telemetry-enclosure", [0.25, 0.07, 0.19], [0, 0, 0], palette.seatInset, 0.018);
+      box3(telemetry, "roof-telemetry-base", [0.29, 0.012, 0.23], [0, -0.054, 0], palette.trim, 6e-3);
+      for (const x of [-0.09, 0.09])
+        box3(telemetry, `roof-telemetry-foot-${x}`, [0.032, 0.02, 0.1], [x, -0.038, 0], palette.trim, 4e-3);
+      section(telemetry);
+    }
+    return {
+      root,
+      chassis,
+      wheels,
+      links,
+      bodyPanels,
+      cutawayParts,
+      cockpit: { steering, steeringMount, dashboard, displayMaterial },
+      sensors: { mounts, ranges: sensorRecords, cameras: cameraRecords, telemetry },
+      resources: { geometries, materials, textures },
+      kit: { mesh, box: box3, material: material2, ownGeometry, ownMaterial, between }
+    };
+  }
+
+  // src/render/player-vehicle.js
+  var finite2 = (n, fallback = 0) => Number.isFinite(n) ? n : fallback;
+  var clamp4 = (n, a, b) => Math.max(a, Math.min(b, n));
+  var vector = (p) => new Vector3(p.x, p.y, p.z);
+  var point2 = (p) => ({ x: p.x, y: p.y, z: p.z });
+  var UP2 = new Vector3(0, 1, 0);
+  function dashboardPainter(model) {
+    if (typeof document === "undefined") return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = 768;
+    canvas.height = 256;
+    const context = canvas.getContext?.("2d");
+    if (!context) return null;
+    const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    model.resources.textures.add(texture);
+    model.cockpit.displayMaterial.map = texture;
+    model.cockpit.displayMaterial.color.setHex(16777215);
+    model.cockpit.displayMaterial.needsUpdate = true;
+    let previous;
+    return (speed, gear, brake) => {
+      const digits = String(Math.round(Math.abs(speed))).padStart(3, "0");
+      const signature = `${digits}:${gear}:${brake > 0.03}`;
+      if (signature === previous) return;
+      previous = signature;
+      context.fillStyle = "#15231d";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.textAlign = "left";
+      context.fillStyle = "#dfebd1";
+      context.font = "600 143px Tahoma,Arial,sans-serif";
+      context.fillText(digits, 35, 168);
+      context.font = "31px Tahoma,Arial,sans-serif";
+      context.fillStyle = "#c1cdb8";
+      context.fillText("km/h", 43, 217);
+      context.fillStyle = "#60765e";
+      context.fillRect(486, 33, 2, 188);
+      context.textAlign = "center";
+      context.fillStyle = "#edf1df";
+      context.font = "600 114px Tahoma,Arial,sans-serif";
+      context.fillText(String(gear), 617, 150);
+      context.fillStyle = brake > 0.03 ? "#f1bc8e" : "#c2d5b6";
+      context.font = "28px Tahoma,Arial,sans-serif";
+      context.fillText(brake > 0.03 ? "BRAKE" : "READY", 614, 211);
+      texture.needsUpdate = true;
+    };
+  }
+  function createPlayerVehicle(_templateScene, initialActor = {}) {
+    const model = createSuvModel(initialActor);
+    const { root, chassis, kit } = model;
+    const drawDashboard = dashboardPainter(model);
+    const beams = new Group();
+    beams.name = "vehicle-sensor-rays";
+    beams.visible = false;
+    root.add(beams);
+    for (const record of model.sensors.ranges) {
+      const geometry = kit.ownGeometry(
+        new BufferGeometry().setFromPoints([new Vector3(), new Vector3()])
+      );
+      const material2 = kit.ownMaterial(
+        new LineBasicMaterial({
+          color: 10868922,
+          transparent: true,
+          opacity: 0.75,
+          depthWrite: false
+        })
+      );
+      const beam = new Line(geometry, material2);
+      beam.name = `sensor-ray-${record.id}`;
+      beam.frustumCulled = false;
+      beams.add(beam);
+      const hit = kit.mesh(
+        new OctahedronGeometry(0.032),
+        kit.ownMaterial(new MeshBasicMaterial({ color: 15317892 })),
+        beams,
+        `sensor-hit-${record.id}`
+      );
+      hit.castShadow = false;
+      Object.assign(record, { beam, hit });
+    }
+    const diagnostics = {
+      asset: "Original faceted SUV",
+      ready: true,
+      disposed: false,
+      cutaway: false,
+      sensorVisualization: false,
+      coordinates: "+X right, +Y up, +Z forward; metres/radians",
+      wheels: {},
+      cockpit: {},
+      sensors: { ranges: [], auxiliary: [], cameras: [] },
+      damage: { total: 0, deformedVertices: 0, maximumDisplacementM: 0 }
+    };
+    let currentActor = initialActor;
+    let disposed = false, cutaway2 = false, previousDamage = "0:0:0:0";
+    const fixedPoses = {
+      cockpit: {
+        position: { x: -0.36, y: 1.4, z: 0.03 },
+        target: { x: -0.36, y: 1.32, z: 4.2 }
+      },
+      inspection: {
+        position: { x: -4.1, y: 2.65, z: 5.2 },
+        target: { x: 0, y: 0.88, z: 0 }
+      },
+      "running-gear": {
+        position: { x: -2.35, y: 0.88, z: 2.65 },
+        target: { x: -0.45, y: 0.48, z: 0.95 }
+      }
+    };
+    for (const camera2 of model.sensors.cameras) {
+      const a = finite2(camera2.angleDeg) * Math.PI / 180;
+      fixedPoses[camera2.id === "rear-camera" ? "sensor-rear" : "sensor"] = {
+        position: { ...camera2.position },
+        target: {
+          x: camera2.position.x + Math.sin(a) * 20,
+          y: camera2.position.y,
+          z: camera2.position.z + Math.cos(a) * 20
+        }
+      };
+    }
+    function damagePanels(vehicle) {
+      const damage = vehicle.damage ?? {};
+      const sides = ["front", "rear", "left", "right"].map((side) => clamp4(finite2(damage[side]), 0, 1));
+      const signature = sides.join(":");
+      const metadata = {
+        total: finite2(damage.total),
+        impactCount: finite2(damage.impactCount),
+        lastImpact: damage.lastImpact ? { ...damage.lastImpact } : null
+      };
+      if (signature === previousDamage) {
+        Object.assign(diagnostics.damage, metadata);
+        return;
+      }
+      previousDamage = signature;
+      let count = 0, maximum = 0;
+      for (const { part, pristine, normals, mobility } of model.bodyPanels) {
+        const positions = part.geometry.attributes.position;
+        const colors = part.geometry.attributes.color;
+        for (let i = 0; i < positions.count; i++) {
+          const x = pristine[i * 3], y = pristine[i * 3 + 1], z = pristine[i * 3 + 2];
+          let dx = 0, dz = 0, weight = 0;
+          for (let side = 0; side < 4; side++) {
+            if (!sides[side]) continue;
+            const end = side < 2;
+            const across = end ? x / 0.7 : (z - 0.12) / 0.65;
+            const depth = end ? (z - (side === 0 ? 2.1 : -2.1)) / 0.4 : (x - (side === 2 ? -0.925 : 0.925)) / 0.22;
+            const vertical = (y - (end ? 0.65 : 0.78)) / 0.38;
+            const influence = (mobility ? mobility[i] : 1) * sides[side] * Math.exp(
+              -across * across * 1.6 - depth * depth * 1.5 - vertical * vertical
+            );
+            const crease = 0.9 + 0.1 * Math.cos(x * 23 + y * 17 + z * 11);
+            if (end) dz += (side === 0 ? -1 : 1) * influence * 0.24 * crease;
+            else dx += (side === 2 ? 1 : -1) * influence * 0.2 * crease;
+            weight = Math.max(weight, influence);
+          }
+          positions.setXYZ(i, x + dx, y - weight * 0.014, z + dz);
+          const distance2 = Math.hypot(dx, weight * 0.014, dz);
+          if (distance2 > 1e-4) count++;
+          maximum = Math.max(maximum, distance2);
+          const scuff = clamp4((weight - 0.035) * 3, 0, 0.85);
+          colors.setXYZ(i, 1 - scuff * 0.6, 1 - scuff * 0.62, 1 - scuff * 0.58);
+        }
+        positions.needsUpdate = true;
+        colors.needsUpdate = true;
+        if (sides.some(Boolean)) part.geometry.computeVertexNormals();
+        else {
+          part.geometry.attributes.normal.array.set(normals);
+          part.geometry.attributes.normal.needsUpdate = true;
+        }
+        part.geometry.computeBoundingSphere();
+      }
+      diagnostics.damage = {
+        ...metadata,
+        deformedVertices: count,
+        maximumDisplacementM: maximum
+      };
+    }
+    function update(actor = currentActor, sensors, alpha = 1) {
+      if (disposed) return;
+      currentActor = actor;
+      const vehicle = actor.vehicle ?? {};
+      const suspension = vehicle.suspension ?? {};
+      chassis.position.y = clamp4(finite2(suspension.heaveM), -0.045, 0.045);
+      chassis.rotation.set(
+        clamp4(finite2(suspension.pitchRad), -0.1, 0.1),
+        0,
+        clamp4(finite2(suspension.rollRad), -0.1, 0.1)
+      );
+      chassis.updateMatrix();
+      for (const wheel of model.wheels) {
+        wheel.pivot.rotation.set(
+          0,
+          wheel.axle > 0 ? finite2(vehicle.wheelAngles?.[wheel.key]) : 0,
+          0
+        );
+        wheel.spin.rotation.set(finite2(vehicle.wheelSpinRad), 0, 0);
+        diagnostics.wheels[wheel.key] = {
+          center: point2(wheel.pivot.position),
+          radiusM: PLAYER_VEHICLE.wheelRadiusM,
+          steerRad: wheel.pivot.rotation.y,
+          spinRad: wheel.spin.rotation.x,
+          caliperSpinRad: wheel.caliper.rotation.x,
+          spinAxis: { x: 1, y: 0, z: 0 }
+        };
+      }
+      for (const link of model.links) {
+        const top = link.upper.clone().applyMatrix4(chassis.matrix);
+        const bottom = link.lower.clone();
+        if (link.steering) {
+          bottom.sub(link.steering.position).applyAxisAngle(UP2, link.steering.rotation.y).add(link.steering.position);
+        }
+        if (link.damper) bottom.lerp(top, 0.45);
+        if (link.shaft) top.lerp(bottom, 0.5);
+        if (link.spring) {
+          top.lerp(bottom, 0.12);
+          bottom.lerp(top, 0.12);
+        }
+        kit.between(link.part, top, bottom);
+      }
+      model.cockpit.steering.rotation.z = finite2(vehicle.steeringWheelRad);
+      const speed = finite2(actor.speed) * 3.6;
+      const gear = vehicle.controls?.gear ?? "N";
+      const brake = clamp4(finite2(vehicle.controls?.brake), 0, 1);
+      drawDashboard?.(speed, gear, brake);
+      model.cockpit.dashboard.userData.reading = { speedKmh: speed, gear, brake };
+      diagnostics.cockpit = {
+        steeringWheelRad: model.cockpit.steering.rotation.z,
+        speedKmh: speed,
+        gear,
+        brake,
+        leftHandDrive: true
+      };
+      damagePanels(vehicle);
+      root.updateWorldMatrix(true, true);
+      const inverseRoot = root.matrixWorld.clone().invert();
+      const rays = new Map((sensors?.rays ?? []).map((ray) => [ray.id, ray]));
+      const records = model.sensors.ranges.map((record) => {
+        const ray = rays.get(record.id);
+        const origin = vector(record.position);
+        const end = ray?.end ? vector(ray.end).applyMatrix4(inverseRoot) : origin;
+        const p = record.beam.geometry.attributes.position;
+        p.setXYZ(0, origin.x, origin.y, origin.z);
+        p.setXYZ(1, end.x, end.y, end.z);
+        p.needsUpdate = true;
+        record.beam.visible = Boolean(ray);
+        record.beam.material.color.setHex(ray?.hitId ? 15317892 : 10868922);
+        record.hit.visible = Boolean(ray?.hitId);
+        record.hit.position.copy(end);
+        record.beam.userData.hitId = ray?.hitId ?? null;
+        return {
+          id: record.id,
+          angleDeg: record.angleDeg,
+          localPosition: { ...record.position },
+          worldPosition: point2(record.lens.getWorldPosition(new Vector3())),
+          direction: point2(record.lens.getWorldDirection(new Vector3())),
+          rayOrigin: ray?.origin ? { ...ray.origin } : null,
+          rayEnd: ray?.end ? { ...ray.end } : null,
+          rangeM: finite2(ray?.rangeM, PLAYER_VEHICLE.maxRangeM),
+          hitId: ray?.hitId ?? null
+        };
+      });
+      diagnostics.sensors.ranges = records.slice(0, 5);
+      diagnostics.sensors.auxiliary = records.slice(5);
+      diagnostics.sensors.cameras = model.sensors.cameras.map((camera2) => ({
+        id: camera2.id,
+        angleDeg: camera2.angleDeg ?? 0,
+        localPosition: { ...camera2.position },
+        worldPosition: point2(camera2.lens.getWorldPosition(new Vector3())),
+        direction: point2(camera2.lens.getWorldDirection(new Vector3()))
+      }));
+      diagnostics.sensors.camera = diagnostics.sensors.cameras[0];
+      diagnostics.sensors.telemetry = model.sensors.telemetry ? {
+        worldPosition: point2(model.sensors.telemetry.getWorldPosition(new Vector3())),
+        source: sensors?.imu?.source ?? "simulated-vehicle-state"
+      } : null;
+      diagnostics.suspension = {
+        pitchRad: chassis.rotation.x,
+        rollRad: chassis.rotation.z,
+        heaveM: chassis.position.y,
+        springLengthsM: Object.fromEntries(model.wheels.map((wheel) => [wheel.key, wheel.spring.scale.y]))
+      };
+      diagnostics.alpha = finite2(alpha, 1);
+    }
+    function setInspection(options = {}) {
+      if (disposed) return;
+      if (typeof options.cutaway === "boolean") {
+        cutaway2 = options.cutaway;
+        for (const part of model.cutawayParts) part.visible = !cutaway2;
+      }
+      if (typeof options.sensors === "boolean") beams.visible = options.sensors;
+      diagnostics.cutaway = cutaway2;
+      diagnostics.sensorVisualization = beams.visible;
+    }
+    function getCameraPose(mode) {
+      const pose3 = fixedPoses[mode];
+      if (!pose3) return null;
+      return mode === "cockpit" ? {
+        position: point2(vector(pose3.position).applyMatrix4(chassis.matrix)),
+        target: point2(vector(pose3.target).applyMatrix4(chassis.matrix))
+      } : { position: { ...pose3.position }, target: { ...pose3.target } };
+    }
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      for (const group of Object.values(model.resources))
+        for (const resource of group) resource.dispose();
+      root.removeFromParent();
+      root.clear();
+      diagnostics.ready = false;
+      diagnostics.disposed = true;
+    }
+    update(initialActor);
+    return { root, update, setInspection, getCameraPose, dispose, diagnostics };
+  }
+
+  // src/render/egypt-streets.js
+  var GROUND = 0.12;
+  var ATLAS_SIZE = 2048;
+  var TILE_SIZE = ATLAS_SIZE / 4;
+  var SHOP_NAMES = ["\u0628\u0642\u0627\u0644\u0629", "\u0635\u064A\u062F\u0644\u064A\u0629", "\u0641\u0631\u0646 \u0628\u0644\u062F\u064A", "\u0648\u0631\u0634\u0629", "\u0642\u0647\u0648\u0629"];
+  var FEATURES = ["masonry", "window", "balcony", "shop", "roof", "equipment", "patch", "curb"];
+  var COLORS = {
+    concrete: 12168340,
+    limestone: 13352352,
+    mortar: 11772811,
+    iron: 5003857,
+    timber: 7569520,
+    dark: 4540738,
+    tank: 5461328,
+    pipe: 8551531,
+    dish: 12105895
+  };
+  function hash(value) {
+    let state = 2166136261;
+    for (const char of String(value)) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    return state >>> 0;
+  }
+  function random(seed) {
+    let state = seed >>> 0;
+    return () => {
+      state = state + 1831565813 >>> 0;
+      let value = Math.imul(state ^ state >>> 15, state | 1);
+      value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+      return ((value ^ value >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function atlasRect(tile) {
+    const sign2 = tile >= 9 && tile <= 13;
+    return {
+      x: tile % 4 * TILE_SIZE,
+      y: Math.floor(tile / 4) * TILE_SIZE + (sign2 ? 192 : 0),
+      width: TILE_SIZE,
+      height: sign2 ? 128 : TILE_SIZE
+    };
+  }
+  function makeAtlas() {
+    let canvas;
+    if (typeof document !== "undefined" && document.createElement)
+      canvas = document.createElement("canvas");
+    else if (typeof OffscreenCanvas !== "undefined")
+      canvas = new OffscreenCanvas(ATLAS_SIZE, ATLAS_SIZE);
+    const ctx = canvas?.getContext("2d");
+    if (!ctx) return null;
+    canvas.width = canvas.height = ATLAS_SIZE;
+    const rng = random(1162303824);
+    const bases = [
+      "#bcab90",
+      "#c8bea7",
+      "#ad987a",
+      "#a4775e",
+      "#718071",
+      "#a98069",
+      "#c2b49b",
+      "#7d8175",
+      "#c8b18b",
+      "#4c6a64",
+      "#405b4d",
+      "#8c5944",
+      "#5d6665",
+      "#6e5945",
+      "#b7a283",
+      "#a69e8c"
+    ];
+    for (let tile = 0; tile < 16; tile++) {
+      const x = tile % 4 * TILE_SIZE, y = Math.floor(tile / 4) * TILE_SIZE;
+      ctx.fillStyle = bases[tile];
+      ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+      if ([0, 1, 2, 14, 15].includes(tile)) {
+        for (let n = 0; n < 180; n++) {
+          ctx.fillStyle = n % 3 ? "rgba(90,72,50,.035)" : "rgba(238,226,197,.10)";
+          ctx.fillRect(x + rng() * 500, y + rng() * 500, 7 + rng() * 72, 2 + rng() * 24);
+        }
+        ctx.fillStyle = "rgba(92,75,53,.13)";
+        for (const drip of [67, 241, 397])
+          ctx.fillRect(x + drip, y + 3, 5, 65 + rng() * 90);
+      } else if (tile === 3 || tile === 5) {
+        for (let row = 0; row < 17; row++)
+          for (let column = -1; column < 17; column++) {
+            const bx = x + column * 34 + row % 2 * 17;
+            ctx.fillStyle = ["#9e6d54", "#b38368", "#ad785c", "#976b56"][(row + column + 5) % 4];
+            const left = Math.max(x, bx + 2), right = Math.min(x + 512, bx + 33);
+            if (right > left) ctx.fillRect(left, y + row * 30 + 2, right - left, 27);
+          }
+        ctx.fillStyle = "rgba(213,190,154,.16)";
+        ctx.fillRect(x + 34, y + 31, 77, 446);
+      } else if (tile === 4) {
+        for (let n = 8; n < 512; n += 35) {
+          ctx.fillStyle = "#56675a";
+          ctx.fillRect(x + n, y, 4, 512);
+          ctx.fillStyle = "#94a08b";
+          ctx.fillRect(x + n + 4, y, 2, 512);
+        }
+        ctx.fillStyle = "#56675a";
+        ctx.fillRect(x, y + 64, 512, 16);
+        ctx.fillRect(x, y + 429, 512, 16);
+      } else if (tile === 6) {
+        ctx.fillStyle = "#4d5852";
+        ctx.fillRect(x + 30, y + 25, 452, 462);
+        ctx.fillStyle = "#697b75";
+        ctx.fillRect(x + 50, y + 49, 412, 417);
+        ctx.fillStyle = "#89968b";
+        ctx.fillRect(x + 58, y + 58, 174, 326);
+        ctx.fillStyle = "#394a47";
+        ctx.fillRect(x + 251, y + 58, 203, 326);
+        ctx.fillStyle = "#b5ae93";
+        ctx.fillRect(x + 237, y + 31, 15, 447);
+        ctx.fillRect(x + 33, y + 325, 444, 12);
+        ctx.fillStyle = "rgba(199,195,166,.18)";
+        ctx.fillRect(x + 45, y + 411, 420, 53);
+      } else if (tile === 7) {
+        for (let n = 6; n < 512; n += 18) {
+          ctx.fillStyle = "#646d64";
+          ctx.fillRect(x, y + n, 512, 4);
+          ctx.fillStyle = "#96998b";
+          ctx.fillRect(x, y + n + 4, 512, 2);
+        }
+        ctx.fillStyle = "#4e5950";
+        ctx.fillRect(x + 238, y + 394, 37, 10);
+      } else if (tile === 8) {
+        for (let n = 0; n < 512; n += 86) {
+          ctx.fillStyle = "#717c68";
+          ctx.fillRect(x + n, y, 40, 512);
+        }
+      } else if (tile >= 9 && tile <= 13) {
+        const rect = atlasRect(tile);
+        ctx.fillStyle = "#d9c9a4";
+        ctx.fillRect(rect.x + 7, rect.y + 7, 498, 114);
+        ctx.fillStyle = bases[tile];
+        ctx.fillRect(rect.x + 12, rect.y + 12, 488, 104);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.direction = "rtl";
+        ctx.fillStyle = "#f4e7c7";
+        ctx.font = "bold 70px Tahoma, sans-serif";
+        ctx.fillText(SHOP_NAMES[tile - 9], rect.x + 256, rect.y + 56, 450);
+        ctx.font = "21px Tahoma, sans-serif";
+        ctx.fillText(
+          ["\u0645\u0648\u0627\u062F \u063A\u0630\u0627\u0626\u064A\u0629", "\u062F\u0648\u0627\u0621 \u0648\u0639\u0646\u0627\u064A\u0629", "\u0639\u064A\u0634 \u0637\u0627\u0632\u0629", "\u062E\u062F\u0645\u0629 \u0633\u064A\u0627\u0631\u0627\u062A", "\u0634\u0627\u064A \u0648\u0642\u0647\u0648\u0629"][tile - 9],
+          rect.x + 256,
+          rect.y + 99,
+          440
+        );
+      }
+    }
+    const texture = new CanvasTexture(canvas);
+    texture.name = "egypt-local-plaster-brick-shops";
+    texture.colorSpace = SRGBColorSpace;
+    texture.anisotropy = 4;
+    return texture;
+  }
+  var colorCache = /* @__PURE__ */ new Map();
+  function rgb(hex) {
+    if (!colorCache.has(hex)) colorCache.set(hex, new Color(hex));
+    return colorCache.get(hex);
+  }
+  var Batch = class {
+    constructor(name, material2, surface = false) {
+      this.name = name;
+      this.material = material2;
+      this.surface = surface;
+      this.positions = [];
+      this.normals = [];
+      this.uvs = [];
+      this.colors = [];
+      this.sites = [];
+      this.features = [];
+    }
+    triangle(points, color, tile, site, feature, uv) {
+      const [a, b, c] = points;
+      const ab = new Vector3().subVectors(b, a), ac = new Vector3().subVectors(c, a);
+      const normal = ab.cross(ac).normalize(), tint = rgb(color);
+      for (let n = 0; n < 3; n++) {
+        this.positions.push(points[n].x, points[n].y, points[n].z);
+        this.normals.push(normal.x, normal.y, normal.z);
+        this.colors.push(tint.r, tint.g, tint.b);
+        this.uvs.push(...uv[n]);
+        this.sites.push(site);
+        this.features.push(feature);
+      }
+    }
+    quad(points, color, tile, site, feature) {
+      const rect = atlasRect(Math.max(0, tile));
+      const left = (rect.x + 6) / ATLAS_SIZE, right = (rect.x + rect.width - 6) / ATLAS_SIZE;
+      const bottom = 1 - (rect.y + rect.height - 6) / ATLAS_SIZE, top = 1 - (rect.y + 6) / ATLAS_SIZE;
+      const uv = [[left, bottom], [right, bottom], [right, top], [left, top]];
+      for (const indices of [[0, 1, 2], [0, 2, 3]])
+        this.triangle(indices.map((i) => points[i]), color, tile, site, feature, indices.map((i) => uv[i]));
+    }
+    mesh() {
+      if (!this.positions.length) return null;
+      const geometry = new BufferGeometry();
+      geometry.setAttribute("position", new Float32BufferAttribute(this.positions, 3));
+      geometry.setAttribute("normal", new Float32BufferAttribute(this.normals, 3));
+      geometry.setAttribute("uv", new Float32BufferAttribute(this.uvs, 2));
+      geometry.setAttribute("color", new Float32BufferAttribute(this.colors, 3));
+      geometry.setAttribute("siteIndex", new Float32BufferAttribute(this.sites, 1));
+      geometry.setAttribute("featureIndex", new Float32BufferAttribute(this.features, 1));
+      geometry.computeBoundingBox();
+      geometry.computeBoundingSphere();
+      const mesh = new Mesh(geometry, this.material);
+      mesh.name = this.name;
+      mesh.castShadow = !this.surface;
+      mesh.receiveShadow = true;
+      mesh.userData.egyptStreetBatch = true;
+      return mesh;
+    }
+  };
+  var Writer = class {
+    constructor(batch, site, index, feature = 0) {
+      this.batch = batch;
+      this.site = site;
+      this.index = index;
+      this.feature = feature;
+      this.cos = Math.cos(site.heading ?? 0);
+      this.sin = Math.sin(site.heading ?? 0);
+    }
+    point(x, y, z) {
+      return new Vector3(
+        this.site.x + x * this.cos + z * this.sin,
+        y + GROUND,
+        this.site.z - x * this.sin + z * this.cos
+      );
+    }
+    quad(points, tile = 0, color = 16777215) {
+      this.batch.quad(points.map(([x, y, z]) => this.point(x, y, z)), color, tile, this.index, this.feature);
+    }
+    box(x, y, z, width, height, depth, tile = 0, color = 16777215, yaw = 0, omit = []) {
+      const hx = width / 2, hy = height / 2, hz = depth / 2, c = Math.cos(yaw), s = Math.sin(yaw);
+      const p = (px2, py2, pz2) => [x + px2 * c + pz2 * s, y + py2, z - px2 * s + pz2 * c];
+      const faces = [
+        [[-hx, -hy, hz], [hx, -hy, hz], [hx, hy, hz], [-hx, hy, hz]],
+        [[hx, -hy, -hz], [-hx, -hy, -hz], [-hx, hy, -hz], [hx, hy, -hz]],
+        [[hx, -hy, hz], [hx, -hy, -hz], [hx, hy, -hz], [hx, hy, hz]],
+        [[-hx, -hy, -hz], [-hx, -hy, hz], [-hx, hy, hz], [-hx, hy, -hz]],
+        [[-hx, hy, hz], [hx, hy, hz], [hx, hy, -hz], [-hx, hy, -hz]],
+        [[-hx, -hy, -hz], [hx, -hy, -hz], [hx, -hy, hz], [-hx, -hy, hz]]
+      ];
+      for (let n = 0; n < faces.length; n++)
+        if (!omit.includes(n)) this.quad(faces[n].map((v2) => p(...v2)), tile, color);
+    }
+    faceBox(face, u, y, out, width, height, depth, tile = 0, color = 16777215) {
+      const c = Math.cos(face.angle), s = Math.sin(face.angle);
+      const flush = this.feature !== 4 && out - depth / 2 <= face.out + 1e-5;
+      this.box(u * c + out * s, y, -u * s + out * c, width, height, depth, tile, color, face.angle, flush ? [1] : []);
+    }
+    faceQuad(face, u, y, out, width, height, tile, color = 16777215, turn = 0) {
+      const angle = face.angle + turn, c = Math.cos(angle), s = Math.sin(angle);
+      const x = u * Math.cos(face.angle) + out * Math.sin(face.angle);
+      const z = -u * Math.sin(face.angle) + out * Math.cos(face.angle);
+      this.quad([[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => [x + a * width / 2 * c, y + b * height / 2, z - a * width / 2 * s]), tile, color);
+    }
+    cylinder(x, bottom, z, radius, height, color, segments = 8) {
+      const ring = (angle, y) => [x + Math.cos(angle) * radius, y, z + Math.sin(angle) * radius];
+      for (let n = 0; n < segments; n++) {
+        const a = n * Math.PI * 2 / segments, b = (n + 1) * Math.PI * 2 / segments;
+        this.quad([ring(b, bottom), ring(a, bottom), ring(a, bottom + height), ring(b, bottom + height)], 0, color);
+        for (const [y, angles] of [[bottom + height, [b, a]]]) {
+          this.batch.triangle(
+            [[x, y, z], ring(angles[0], y), ring(angles[1], y)].map((p) => this.point(...p)),
+            color,
+            0,
+            this.index,
+            this.feature,
+            [[0, 0], [0, 0], [0, 0]]
+          );
+        }
+      }
+    }
+  };
+  function streetFaces(site, faces, roads) {
+    const scores = faces.map(() => Infinity), c = Math.cos(site.heading ?? 0), s = Math.sin(site.heading ?? 0);
+    for (const road of roads) {
+      if (road.parkingBay) continue;
+      const along = Math.max(road.min, Math.min(road.max, road.axis === "z" ? site.z : site.x));
+      const dx = (road.axis === "z" ? road.fixed : along) - site.x;
+      const dz = (road.axis === "x" ? road.fixed : along) - site.z;
+      const localX = dx * c - dz * s, localZ = dx * s + dz * c;
+      const index = Math.abs(localX) > Math.abs(localZ) ? localX > 0 ? 1 : 3 : localZ > 0 ? 0 : 2;
+      scores[index] = Math.min(scores[index], Math.hypot(dx, dz) - road.width / 2);
+    }
+    const order = [0, 1, 2, 3].sort((a, b) => scores[a] - scores[b] || a - b);
+    return { primary: order[0], shops: new Set(order.filter((i, n) => n === 0 || n === 1 && scores[i] < scores[order[0]] + 7)) };
+  }
+  function windowDetail(atlas, solid, face, u, y, width, height, shutters) {
+    atlas.feature = solid.feature = 1;
+    atlas.faceQuad(face, u, y, face.out + 0.027, width, height, 6);
+    solid.faceBox(face, u, y - height / 2, face.out + 0.075, width + 0.16, 0.095, 0.19, 0, COLORS.limestone);
+    if (shutters) {
+      for (const side of [-1, 1])
+        atlas.faceQuad(
+          face,
+          u + side * (width / 2 + 0.18),
+          y,
+          face.out + 0.07,
+          0.31,
+          height * 0.94,
+          4,
+          shutters === 2 ? 13221278 : 16777215,
+          side * 0.28
+        );
+    }
+  }
+  function balcony(solid, face, floorY, width, openRail) {
+    solid.feature = 2;
+    solid.faceBox(face, 0, floorY + 0.08, face.out + 0.28, width, 0.14, 0.6, 0, COLORS.concrete);
+    for (const side of [-1, 1]) {
+      solid.faceBox(
+        face,
+        side * (width / 2 - 0.04),
+        floorY + 0.47,
+        face.out + 0.26,
+        0.08,
+        0.65,
+        0.53,
+        0,
+        COLORS.concrete
+      );
+      solid.faceBox(
+        face,
+        side * width * 0.31,
+        floorY - 0.105,
+        face.out + 0.12,
+        0.16,
+        0.27,
+        0.3,
+        0,
+        COLORS.concrete
+      );
+    }
+    if (openRail) {
+      for (const y of [floorY + 0.27, floorY + 0.94])
+        solid.faceBox(face, 0, y, face.out + 0.55, width, 0.055, 0.055, 0, COLORS.iron);
+      for (const u of [-width / 2 + 0.035, 0, width / 2 - 0.035])
+        solid.faceBox(face, u, floorY + 0.605, face.out + 0.55, 0.045, 0.67, 0.045, 0, COLORS.iron);
+    } else {
+      solid.faceBox(face, 0, floorY + 0.47, face.out + 0.55, width, 0.65, 0.08, 0, COLORS.concrete);
+      solid.faceBox(face, 0, floorY + 0.82, face.out + 0.55, width + 0.025, 0.07, 0.12, 0, COLORS.limestone);
+    }
+  }
+  function roofEquipment(solid, atlas, width, depth, roof, seed, counts) {
+    solid.feature = atlas.feature = 5;
+    if (seed % 4 !== 0) {
+      const x = -width * 0.23, z = -depth * 0.22, r = seed % 2 ? 0.48 : 0.41;
+      solid.box(x, roof + 0.09, z, 1.18, 0.18, 1.18, 0, COLORS.concrete);
+      solid.cylinder(x, roof + 0.18, z, r, 1.04, COLORS.tank);
+      solid.cylinder(x, roof + 1.22, z, r * 0.91, 0.1, COLORS.dark);
+      solid.box(x + r + 0.07, roof + 0.51, z, 0.07, 1.02, 0.07, 0, COLORS.pipe);
+      solid.box(x + r - 0.035, roof + 0.99, z, 0.27, 0.07, 0.07, 0, COLORS.pipe);
+      counts.tanks++;
+    }
+    if (seed % 3 !== 0) {
+      const x = width * 0.24, z = depth * 0.18;
+      solid.box(x, roof + 0.06, z, 0.58, 0.12, 0.58, 0, COLORS.concrete);
+      solid.box(x, roof + 0.42, z, 0.075, 0.68, 0.075, 0, COLORS.iron);
+      const center = [x, roof + 0.74, z];
+      const rim = (angle) => [
+        x + Math.cos(angle) * 0.45,
+        roof + 0.74 + 0.12 * 0.82 + Math.sin(angle) * 0.45 * 0.57,
+        z + 0.12 * 0.57 - Math.sin(angle) * 0.45 * 0.82
+      ];
+      for (let n = 0; n < 10; n++) {
+        const a = rim(n * Math.PI / 5), b = rim((n + 1) * Math.PI / 5);
+        for (const points of [[center, b, a], [center, a, b]])
+          solid.batch.triangle(
+            points.map((p) => solid.point(...p)),
+            COLORS.dish,
+            0,
+            solid.index,
+            solid.feature,
+            [[0, 0], [0, 0], [0, 0]]
+          );
+      }
+      solid.box(x, roof + 0.74, z + 0.26, 0.035, 0.04, 0.56, 0, COLORS.iron);
+      counts.dishes++;
+    }
+  }
+  function buildSite(site, index, atlasBatch, solidBatch, roads, counts) {
+    const seed = hash(site.id), style = seed % 4;
+    const width = Math.max(0.7, site.width - 1.28), depth = Math.max(0.7, site.length - 1.28);
+    const floors = Math.max(1, Math.min(5, Math.floor((site.height - 4.6) / 2.6)));
+    const roof = 3 + floors * 2.6, plaster = style === 3 ? 1 : style % 3;
+    const atlas = new Writer(atlasBatch, site, index), solid = new Writer(solidBatch, site, index);
+    const faces = [0, 1, 2, 3].map((n) => ({
+      angle: n * Math.PI / 2,
+      width: n % 2 ? depth : width,
+      out: (n % 2 ? width : depth) / 2
+    }));
+    const streets = streetFaces(site, faces, roads);
+    solid.box(0, 0.11, 0, site.width - 0.1, 0.22, site.length - 0.1, 0, COLORS.mortar);
+    atlas.box(0, 1.5, 0, width, 3, depth, 15, 16777215, 0, [4, 5]);
+    for (let floor = 0; floor < floors; floor++) {
+      const bottom = 3 + floor * 2.6;
+      atlas.feature = solid.feature = 0;
+      atlas.box(
+        0,
+        bottom + 1.3,
+        0,
+        width,
+        2.6,
+        depth,
+        style === 1 && floor >= floors - 2 ? 3 : plaster,
+        16777215,
+        0,
+        [4, 5]
+      );
+      solid.box(0, bottom + 0.035, 0, width + 0.1, 0.14, depth + 0.1, 0, COLORS.concrete);
+      for (let f = 0; f < 4; f++) {
+        const face = faces[f], hasBalcony = f === streets.primary && (floor + seed) % 3 !== 1;
+        const columns = hasBalcony ? 3 : 2;
+        for (let column = 0; column < columns; column++) {
+          const u = columns === 3 ? (column - 1) * face.width * 0.3 : (column - 0.5) * face.width * 0.46;
+          const door = hasBalcony && column === 1;
+          windowDetail(
+            atlas,
+            solid,
+            face,
+            u,
+            bottom + (door ? 1.2 : 1.39),
+            door ? 0.97 : 1.02,
+            door ? 2.12 : 1.37,
+            (seed + floor + column + f) % 3
+          );
+          counts.windows++;
+        }
+        if (hasBalcony) {
+          balcony(solid, face, bottom, Math.min(2.65, face.width * 0.42), style === 2);
+          counts.balconies++;
+        }
+        if (floor === floors - 1 && style !== 1 && f === (streets.primary + 1) % 4) {
+          atlas.feature = 0;
+          atlas.faceQuad(face, 0, bottom + 0.59, face.out + 0.014, 0.72, 0.94, 5);
+        }
+      }
+    }
+    for (let f = 0; f < 4; f++) {
+      const face = faces[f];
+      atlas.feature = solid.feature = 3;
+      if (streets.shops.has(f)) {
+        const bays = face.width >= 4 ? 2 : 1;
+        for (let n = 0; n < bays; n++) {
+          const u = (n - (bays - 1) / 2) * face.width * 0.49;
+          const bayWidth = Math.min(2.83, face.width / bays - 0.28);
+          const shop = (seed + n + f) % SHOP_NAMES.length;
+          atlas.faceQuad(face, u, 1.17, face.out + 0.032, bayWidth, 2.05, [0, 1, 4].includes(shop) ? 6 : 7);
+          solid.faceBox(face, u, 2.52, face.out + 0.085, bayWidth + 0.16, 0.78, 0.17, 0, COLORS.iron);
+          atlas.faceQuad(face, u, 2.52, face.out + 0.175, bayWidth + 0.1, 0.7, 9 + shop);
+          atlas.faceBox(face, u, 2.99, face.out + 0.22, bayWidth + 0.2, 0.11, 0.52, 8);
+          for (const side of [-1, 1])
+            solid.faceBox(
+              face,
+              u + side * bayWidth * 0.4,
+              2.87,
+              face.out + 0.15,
+              0.055,
+              0.19,
+              0.34,
+              0,
+              COLORS.iron
+            );
+          counts.shops++;
+        }
+      } else {
+        windowDetail(atlas, solid, face, -face.width * 0.22, 1.55, 0.85, 1.13, 1);
+        counts.windows++;
+        atlas.feature = 3;
+        atlas.faceQuad(face, face.width * 0.2, 1.15, face.out + 0.03, 0.98, 2.06, 4);
+      }
+    }
+    const acFace = faces[(streets.primary + 1) % 4];
+    solid.feature = atlas.feature = 5;
+    const acY = 4.75;
+    solid.faceBox(acFace, 0.27, acY, acFace.out + 0.21, 0.83, 0.49, 0.37, 0, COLORS.limestone);
+    atlas.faceQuad(acFace, 0.27, acY, acFace.out + 0.402, 0.68, 0.37, 7);
+    for (const u of [-0.03, 0.57])
+      solid.faceBox(acFace, u, acY - 0.28, acFace.out + 0.17, 0.055, 0.08, 0.4, 0, COLORS.iron);
+    solid.faceBox(acFace, 0.69, acY - 0.11, acFace.out + 0.05, 0.24, 0.04, 0.04, 0, COLORS.pipe);
+    solid.faceBox(acFace, 0.8, acY / 2, acFace.out + 0.045, 0.04, acY, 0.04, 0, COLORS.pipe);
+    counts.airConditioners++;
+    solid.feature = atlas.feature = 4;
+    solid.box(0, roof + 0.06, 0, width + 0.16, 0.16, depth + 0.16, 0, COLORS.concrete);
+    for (const face of faces) {
+      atlas.faceBox(
+        face,
+        0,
+        roof + 0.43,
+        face.out - 0.01,
+        face.width + 0.12,
+        0.63,
+        0.16,
+        style === 1 ? 3 : plaster
+      );
+      solid.faceBox(face, 0, roof + 0.77, face.out - 0.01, face.width + 0.18, 0.08, 0.21, 0, COLORS.limestone);
+    }
+    roofEquipment(solid, atlas, width, depth, roof, seed, counts);
+    return {
+      id: site.id,
+      index,
+      style,
+      upperFloors: floors,
+      roofY: roof + GROUND,
+      primaryFace: streets.primary,
+      shopFaces: [...streets.shops],
+      width: site.width,
+      length: site.length
+    };
+  }
+  function roadBounds(road) {
+    const h = road.width / 2;
+    return road.axis === "z" ? { minX: road.fixed - h, maxX: road.fixed + h, minZ: road.min - h, maxZ: road.max + h } : { minX: road.min - h, maxX: road.max + h, minZ: road.fixed - h, maxZ: road.fixed + h };
+  }
+  var intersects2 = (a, b) => a.minX < b.maxX && a.maxX > b.minX && a.minZ < b.maxZ && a.maxZ > b.minZ;
+  function buildStreetSurfaces(roads, patches, curbs, counts) {
+    const bounds = roads.map(roadBounds);
+    for (let index = 0; index < roads.length; index++) {
+      const road = roads[index];
+      if (road.parkingBay) continue;
+      const rng = random(hash(`${road.axis}:${road.fixed}:${road.min}:${road.max}`));
+      const site = road.axis === "z" ? { x: road.fixed, z: 0, heading: 0 } : { x: 0, z: road.fixed, heading: Math.PI / 2 };
+      const patch = new Writer(patches, site, -1, 6), curb = new Writer(curbs, site, -1, 7);
+      const rectAt = (u, along, halfWidth, halfLength) => road.axis === "z" ? { minX: road.fixed + u - halfWidth, maxX: road.fixed + u + halfWidth, minZ: along - halfLength, maxZ: along + halfLength } : { minX: along - halfLength, maxX: along + halfLength, minZ: road.fixed - u - halfWidth, maxZ: road.fixed - u + halfWidth };
+      const blocked = (rect) => bounds.some((other, n) => n !== index && intersects2(rect, other));
+      for (let along = road.min + 12 + rng() * 6; along < road.max - 6; along += 31) {
+        const u = (rng() > 0.5 ? 1 : -1) * road.width * 0.23;
+        const halfWidth = 0.56 + rng() * 0.38, halfLength = 1.1 + rng() * 0.8;
+        if (blocked(rectAt(u, along, halfWidth + 0.3, halfLength + 0.6))) continue;
+        const points = [
+          [u - halfWidth * 0.8, along - halfLength],
+          [u - halfWidth, along + halfLength * 0.7],
+          [u - halfWidth * 0.4, along + halfLength],
+          [u + halfWidth * 0.85, along + halfLength * 0.85],
+          [u + halfWidth, along - halfLength * 0.65],
+          [u + halfWidth * 0.35, along - halfLength]
+        ];
+        const tint = rng() > 0.5 ? 5724496 : 6908251;
+        for (let n = 1; n < points.length - 1; n++)
+          patches.triangle(
+            [points[0], points[n], points[n + 1]].map(([x, z]) => patch.point(x, 4e-3, z)),
+            tint,
+            0,
+            -1,
+            6,
+            [[0, 0], [0, 0], [0, 0]]
+          );
+        counts.patches++;
+      }
+      for (const side of [-1, 1])
+        for (let n = 0, along = road.min + 2; along < road.max - 3; n++, along += 1.42) {
+          const u = side * (road.width / 2 + 0.23), length = Math.min(1.38, road.max - 2 - along);
+          if (blocked(rectAt(u, along + length / 2, 0.19, length / 2 + 0.16))) continue;
+          curb.quad([
+            [u - 0.14, -0.04, along],
+            [u - 0.14, -0.04, along + length],
+            [u + 0.14, -0.04, along + length],
+            [u + 0.14, -0.04, along]
+          ], 0, n % 2 ? 12368036 : 5592910);
+          counts.curbSegments++;
+        }
+    }
+  }
+  function createEgyptStreetLayer(world2) {
+    const root = new Group();
+    root.name = "egypt-street-layer";
+    root.userData.egyptStreetLayer = true;
+    const active = world2.environment === "city" || world2.environment === "vision";
+    const diagnostics = {
+      active,
+      siteIds: [],
+      sites: [],
+      featureNames: [...FEATURES],
+      drawCalls: 0,
+      triangles: 0,
+      counts: { windows: 0, balconies: 0, shops: 0, tanks: 0, dishes: 0, airConditioners: 0, patches: 0, curbSegments: 0 },
+      textAtlasAvailable: false,
+      shopNames: [...SHOP_NAMES],
+      disposed: false,
+      resources: { geometries: 0, materials: 0, textures: 0, liveGeometries: 0, liveMaterials: 0, liveTextures: 0 },
+      budget: { maxDrawCalls: 45, maxTriangles: 1e5, withinBudget: true }
+    };
+    const geometries = /* @__PURE__ */ new Set(), materials = /* @__PURE__ */ new Set(), textures = /* @__PURE__ */ new Set();
+    const dispose = () => {
+      if (diagnostics.disposed) return;
+      root.removeFromParent();
+      root.clear();
+      for (const geometry of geometries) geometry.dispose();
+      for (const material2 of materials) material2.dispose();
+      for (const texture2 of textures) texture2.dispose();
+      geometries.clear();
+      materials.clear();
+      textures.clear();
+      diagnostics.resources.liveGeometries = diagnostics.resources.liveMaterials = diagnostics.resources.liveTextures = 0;
+      diagnostics.disposed = true;
+    };
+    if (!active) return { root, diagnostics, dispose };
+    const sites = (world2.statics ?? []).filter((site) => site.kind === "building").slice().sort((a, b) => String(a.id).localeCompare(String(b.id), "en"));
+    const roads = (world2.roads ?? []).slice().sort((a, b) => `${a.axis}:${a.fixed}:${a.min}:${a.max}:${a.width}`.localeCompare(`${b.axis}:${b.fixed}:${b.min}:${b.max}:${b.width}`, "en"));
+    diagnostics.siteIds = sites.map((site) => site.id);
+    if (!sites.length && !roads.length) return { root, diagnostics, dispose };
+    const texture = sites.length ? makeAtlas() : null;
+    if (texture) textures.add(texture);
+    diagnostics.textAtlasAvailable = !!texture;
+    const flat = new MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
+    flat.name = "egypt-matte-masonry-and-hardware";
+    materials.add(flat);
+    const mapped = sites.length ? new MeshStandardMaterial({
+      map: texture,
+      vertexColors: true,
+      roughness: 0.98,
+      metalness: 0
+    }) : null;
+    if (mapped) {
+      mapped.name = "egypt-authored-facade-atlas";
+      materials.add(mapped);
+    }
+    const batches = [];
+    const districts = /* @__PURE__ */ new Map();
+    sites.forEach((site, index) => {
+      const key2 = `${site.x < 0 ? "west" : "east"}-${site.z < 0 ? "south" : "north"}`;
+      if (!districts.has(key2)) {
+        const pair = [new Batch(`egypt-${key2}-facades`, mapped), new Batch(`egypt-${key2}-structure`, flat)];
+        districts.set(key2, pair);
+        batches.push(...pair);
+      }
+      diagnostics.sites.push(buildSite(site, index, ...districts.get(key2), roads, diagnostics.counts));
+    });
+    if (roads.length) {
+      const paint = new MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 1,
+        metalness: 0,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1
+      });
+      paint.name = "egypt-flat-road-repairs-and-curb-paint";
+      materials.add(paint);
+      const patches = new Batch("egypt-asphalt-repairs", paint, true), curbs = new Batch("egypt-painted-curb", paint, true);
+      buildStreetSurfaces(roads, patches, curbs, diagnostics.counts);
+      batches.push(patches, curbs);
+    }
+    for (const batch of batches) {
+      const mesh = batch.mesh();
+      if (!mesh) continue;
+      root.add(mesh);
+      geometries.add(mesh.geometry);
+      diagnostics.drawCalls++;
+      diagnostics.triangles += mesh.geometry.attributes.position.count / 3;
+    }
+    Object.assign(diagnostics.resources, {
+      geometries: geometries.size,
+      materials: materials.size,
+      textures: textures.size,
+      liveGeometries: geometries.size,
+      liveMaterials: materials.size,
+      liveTextures: textures.size
+    });
+    diagnostics.budget.withinBudget = diagnostics.drawCalls <= 45 && diagnostics.triangles <= 1e5;
+    return { root, diagnostics, dispose };
+  }
+
   // src/render/world-view.js
   var templates = /* @__PURE__ */ new Map();
   var loader = new GLTFLoader();
@@ -34338,8 +37564,6 @@
   function actorAsset(actor, environment2) {
     if (actor.type === "pedestrian")
       return `/assets/models/people/${actor.kind}.glb`;
-    if (actor.id === "player" && environment2 === "city")
-      return "/assets/models/vehicles/player-concept.glb";
     if (actor.kind === "tuktuk")
       return "/assets/models/tuktuks/auto-rickshaw.glb";
     const car = {
@@ -34355,7 +37579,7 @@
     return templates.get(url);
   }
   var material = (color) => new MeshStandardMaterial({ color, roughness: 0.9 });
-  function box(parent, width, height, length, color, x = 0, y = 0, z = 0) {
+  function box2(parent, width, height, length, color, x = 0, y = 0, z = 0) {
     const mesh = new Mesh(
       new BoxGeometry(width, height, length),
       material(color)
@@ -34388,7 +37612,7 @@
     scene.add(mesh);
     return mesh;
   }
-  function fit(template, width, length, height = Infinity, matchHull = false) {
+  function fit2(template, width, length, height = Infinity, matchHull = false) {
     const visual = clone(template);
     visual.updateMatrixWorld(true);
     visual.traverse((part) => {
@@ -34418,6 +37642,9 @@
     return visual;
   }
   var WorldView = class {
+    get playerRig() {
+      return this.roots.get("player")?.vehicleRig ?? null;
+    }
     constructor(world2) {
       this.world = world2;
       this.roots = /* @__PURE__ */ new Map();
@@ -34451,6 +37678,8 @@
       sun.shadow.normalBias = 0.04;
       scene.add(sun, sun.target);
       this.sun = sun;
+      this.egyptStreets = createEgyptStreetLayer(world2);
+      scene.add(this.egyptStreets.root);
       const ground = new Mesh(
         new PlaneGeometry(650, 650),
         material(world2.environment === "lab" ? 11184541 : 11641226)
@@ -34481,7 +37710,7 @@
     }
     buildRoads() {
       const { roads } = this.world;
-      const pavementParts = [], roadParts = [];
+      const pavementParts = [], roadParts = [], markingParts = [];
       for (const road of roads) {
         const r = roadRect(road, -2.5);
         pavementParts.push(surfaceGeometry(r, 0.1, -0.03, 1.8));
@@ -34498,19 +37727,13 @@
             (other) => other.axis !== road.axis && pointOnRoad(p, [other], -2)
           );
           if (crossing || road.sideStreet || road.parkingBay) continue;
-          box(
-            this.scene,
-            road.axis === "z" ? 0.11 : 2.8,
-            5e-3,
-            road.axis === "z" ? 2.8 : 0.11,
-            13551532,
-            p.x,
-            0.118,
-            p.z
-          );
+          const width = road.axis === "z" ? 0.11 : 2.8, length = road.axis === "z" ? 2.8 : 0.11;
+          markingParts.push(new BoxGeometry(width, 5e-3, length).translate(p.x, 0.1205, p.z));
         }
       }
       this.surfaces.road.push(mergedSurface(this.scene, roadParts, 4737865));
+      if (markingParts.length)
+        mergedSurface(this.scene, markingParts, 13551532).castShadow = true;
     }
     async loadSurfaces() {
       const base = "/assets/textures/roads/";
@@ -34555,12 +37778,12 @@
         "building-skyscraper-a"
       ];
       this.world.statics.forEach((site, i) => {
-        if (site.kind === "place-sign") return;
+        if (site.kind === "place-sign" || site.kind === "barrier" || site.kind === "building" && ["city", "vision"].includes(this.world.environment)) return;
         const group = new Group();
         group.position.set(site.x, 0.12, site.z);
         this.scene.add(group);
         const stall = site.kind === "market-stall";
-        const fallback = box(
+        const fallback = box2(
           group,
           site.width,
           site.height,
@@ -34571,7 +37794,7 @@
         const url = stall ? "/assets/models/props/market-produce.glb" : `/assets/models/buildings/${name}.glb`;
         asset(url).then((gltf) => {
           if (this.disposed) return;
-          const visual = fit(gltf.scene, site.width, site.length, site.height);
+          const visual = fit2(gltf.scene, site.width, site.length, site.height);
           group.add(visual);
           fallback.visible = false;
           this.status.loaded++;
@@ -34579,7 +37802,7 @@
             asset("/assets/models/props/roof-water-tank.glb").then((tank) => {
               if (this.disposed) return;
               const roof = new Box3().setFromObject(visual).max.y - group.position.y;
-              const roofTank = fit(tank.scene, 1.7, 1.8, 2.9);
+              const roofTank = fit2(tank.scene, 1.7, 1.8, 2.9);
               roofTank.position.set(1.55, roof + 0.04, -1.35);
               group.add(roofTank);
               this.status.loaded++;
@@ -34590,14 +37813,14 @@
     }
     buildSignals() {
       this.signals = [];
-      for (const node of this.world.junctions) {
-        if (Math.abs(node.x) % 50 !== 0 || Math.abs(node.z) % 20 !== 0) continue;
+      for (const node3 of this.world.junctions) {
+        if (Math.abs(node3.x) % 50 !== 0 || Math.abs(node3.z) % 20 !== 0) continue;
         for (const vertical of [true, false]) {
           const root = new Group();
-          root.position.set(node.x + 6, 0.15, node.z + (vertical ? -6 : 6));
+          root.position.set(node3.x + 6, 0.15, node3.z + (vertical ? -6 : 6));
           this.scene.add(root);
-          box(root, 0.12, 3.4, 0.12, 5593942);
-          box(root, 0.5, 1.15, 0.45, 2567723, 0, 2.8, 0);
+          box2(root, 0.12, 3.4, 0.12, 5593942);
+          box2(root, 0.5, 1.15, 0.45, 2567723, 0, 2.8, 0);
           const lights = [];
           for (let i = 0; i < 3; i++) {
             const lamp = new Mesh(
@@ -34622,15 +37845,23 @@
       const fallback = new Group();
       root.add(fallback);
       record.fallback = fallback;
+      if (actor.id === "player") {
+        record.vehicleRig = createPlayerVehicle(null, actor);
+        record.visual = record.vehicleRig.root;
+        root.add(record.visual);
+        fallback.visible = false;
+        this.status.loaded++;
+        return;
+      }
       if (person) {
-        box(fallback, 0.4, 0.6, 0.23, 5400667, 0, 0.83);
-        box(fallback, 0.22, 0.26, 0.22, 11697244, 0, 1.43);
+        box2(fallback, 0.4, 0.6, 0.23, 5400667, 0, 0.83);
+        box2(fallback, 0.22, 0.26, 0.22, 11697244, 0, 1.43);
         for (const side of [-1, 1]) {
-          box(fallback, 0.14, 0.8, 0.18, 4475469, side * 0.13, 0.05);
-          box(fallback, 0.11, 0.55, 0.14, 5400667, side * 0.29, 0.85);
+          box2(fallback, 0.14, 0.8, 0.18, 4475469, side * 0.13, 0.05);
+          box2(fallback, 0.11, 0.55, 0.14, 5400667, side * 0.29, 0.85);
         }
       } else {
-        box(
+        box2(
           fallback,
           actor.width,
           0.6,
@@ -34639,7 +37870,7 @@
           0,
           0.3
         );
-        box(
+        box2(
           fallback,
           actor.width * 0.8,
           0.65,
@@ -34652,28 +37883,14 @@
       const url = actorAsset(actor, this.world.environment);
       asset(url).then((gltf) => {
         if (this.disposed) return;
-        const visual = fit(
+        const visual = fit2(
           gltf.scene,
           person ? Infinity : actor.width,
           person ? Infinity : actor.length,
           person ? 1.78 : 2.3,
           !person && actor.kind !== "tuktuk"
         );
-        if (actor.id === "player" && this.world.environment === "city")
-          visual.traverse((part) => {
-            if (part.isMesh && part.material.name === "Glass") {
-              part.material = part.material.clone();
-              part.userData.ownedMaterial = true;
-              part.material.transmission = 0;
-              part.material.transparent = true;
-              part.material.opacity = 0.34;
-              part.material.depthWrite = false;
-              part.material.color.setHex(5532534);
-              part.material.needsUpdate = true;
-              part.castShadow = false;
-            }
-          });
-        else if (!person)
+        if (!person)
           visual.traverse((part) => {
             if (part.isMesh && part.material.name === "paint") {
               part.material = part.material.clone();
@@ -34722,9 +37939,9 @@
         const root = new Group();
         root.position.set(barrier.x, 0.12, barrier.z);
         root.rotation.y = barrier.heading;
-        box(root, barrier.width, 0.2, barrier.length, 12090175, 0, 0.55);
+        box2(root, barrier.width, 0.2, barrier.length, 12090175, 0, 0.55);
         for (const side of [-1, 1])
-          box(root, 0.15, 0.8, 0.55, 9211518, side * 0.9, 0);
+          box2(root, 0.15, 0.8, 0.55, 9211518, side * 0.9, 0);
         this.barriers.set(barrier.id, root);
         this.scene.add(root);
       }
@@ -34741,7 +37958,7 @@
         }
       for (const actor of world2.actors) {
         if (!this.roots.has(actor.id)) this.addActor(actor);
-        const record = this.roots.get(actor.id), p = interpolate(actor.previous ?? actor, actor, alpha);
+        const record = this.roots.get(actor.id), p = actor === world2.player ? actor : interpolate(actor.previous ?? actor, actor, alpha);
         record.root.position.set(p.x, 0.12, p.z);
         record.root.rotation.y = p.heading;
         const distanceFromPlayer = Math.hypot(
@@ -34753,6 +37970,7 @@
           record.visual.visible = detailed;
           record.fallback.visible = !detailed;
         }
+        record.vehicleRig?.update(actor, world2.sensors, alpha);
         if (detailed)
           for (const wheel of record.wheels) {
             wheel.part.quaternion.copy(wheel.quaternion);
@@ -34811,6 +38029,13 @@
     }
     dispose() {
       this.disposed = true;
+      this.scene.remove(this.egyptStreets.root);
+      this.egyptStreets.dispose();
+      for (const record of this.roots.values())
+        if (record.vehicleRig) {
+          record.root.remove(record.vehicleRig.root);
+          record.vehicleRig.dispose();
+        }
       const skeletons = /* @__PURE__ */ new Set();
       const textures = /* @__PURE__ */ new Set();
       this.scene.traverse((part) => {
@@ -34834,6 +38059,638 @@
       }
       this.scene.clear();
       this.roots.clear();
+    }
+  };
+
+  // node_modules/three/examples/jsm/controls/OrbitControls.js
+  var _changeEvent = { type: "change" };
+  var _startEvent = { type: "start" };
+  var _endEvent = { type: "end" };
+  var OrbitControls = class extends EventDispatcher {
+    constructor(object2, domElement) {
+      super();
+      this.object = object2;
+      this.domElement = domElement;
+      this.domElement.style.touchAction = "none";
+      this.enabled = true;
+      this.target = new Vector3();
+      this.minDistance = 0;
+      this.maxDistance = Infinity;
+      this.minZoom = 0;
+      this.maxZoom = Infinity;
+      this.minPolarAngle = 0;
+      this.maxPolarAngle = Math.PI;
+      this.minAzimuthAngle = -Infinity;
+      this.maxAzimuthAngle = Infinity;
+      this.enableDamping = false;
+      this.dampingFactor = 0.05;
+      this.enableZoom = true;
+      this.zoomSpeed = 1;
+      this.enableRotate = true;
+      this.rotateSpeed = 1;
+      this.enablePan = true;
+      this.panSpeed = 1;
+      this.screenSpacePanning = true;
+      this.keyPanSpeed = 7;
+      this.autoRotate = false;
+      this.autoRotateSpeed = 2;
+      this.keys = { LEFT: "ArrowLeft", UP: "ArrowUp", RIGHT: "ArrowRight", BOTTOM: "ArrowDown" };
+      this.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN };
+      this.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN };
+      this.target0 = this.target.clone();
+      this.position0 = this.object.position.clone();
+      this.zoom0 = this.object.zoom;
+      this._domElementKeyEvents = null;
+      this.getPolarAngle = function() {
+        return spherical.phi;
+      };
+      this.getAzimuthalAngle = function() {
+        return spherical.theta;
+      };
+      this.getDistance = function() {
+        return this.object.position.distanceTo(this.target);
+      };
+      this.listenToKeyEvents = function(domElement2) {
+        domElement2.addEventListener("keydown", onKeyDown);
+        this._domElementKeyEvents = domElement2;
+      };
+      this.stopListenToKeyEvents = function() {
+        this._domElementKeyEvents.removeEventListener("keydown", onKeyDown);
+        this._domElementKeyEvents = null;
+      };
+      this.saveState = function() {
+        scope.target0.copy(scope.target);
+        scope.position0.copy(scope.object.position);
+        scope.zoom0 = scope.object.zoom;
+      };
+      this.reset = function() {
+        scope.target.copy(scope.target0);
+        scope.object.position.copy(scope.position0);
+        scope.object.zoom = scope.zoom0;
+        scope.object.updateProjectionMatrix();
+        scope.dispatchEvent(_changeEvent);
+        scope.update();
+        state = STATE.NONE;
+      };
+      this.update = (function() {
+        const offset2 = new Vector3();
+        const quat = new Quaternion().setFromUnitVectors(object2.up, new Vector3(0, 1, 0));
+        const quatInverse = quat.clone().invert();
+        const lastPosition = new Vector3();
+        const lastQuaternion = new Quaternion();
+        const twoPI = 2 * Math.PI;
+        return function update() {
+          const position = scope.object.position;
+          offset2.copy(position).sub(scope.target);
+          offset2.applyQuaternion(quat);
+          spherical.setFromVector3(offset2);
+          if (scope.autoRotate && state === STATE.NONE) {
+            rotateLeft(getAutoRotationAngle());
+          }
+          if (scope.enableDamping) {
+            spherical.theta += sphericalDelta.theta * scope.dampingFactor;
+            spherical.phi += sphericalDelta.phi * scope.dampingFactor;
+          } else {
+            spherical.theta += sphericalDelta.theta;
+            spherical.phi += sphericalDelta.phi;
+          }
+          let min = scope.minAzimuthAngle;
+          let max = scope.maxAzimuthAngle;
+          if (isFinite(min) && isFinite(max)) {
+            if (min < -Math.PI) min += twoPI;
+            else if (min > Math.PI) min -= twoPI;
+            if (max < -Math.PI) max += twoPI;
+            else if (max > Math.PI) max -= twoPI;
+            if (min <= max) {
+              spherical.theta = Math.max(min, Math.min(max, spherical.theta));
+            } else {
+              spherical.theta = spherical.theta > (min + max) / 2 ? Math.max(min, spherical.theta) : Math.min(max, spherical.theta);
+            }
+          }
+          spherical.phi = Math.max(scope.minPolarAngle, Math.min(scope.maxPolarAngle, spherical.phi));
+          spherical.makeSafe();
+          spherical.radius *= scale;
+          spherical.radius = Math.max(scope.minDistance, Math.min(scope.maxDistance, spherical.radius));
+          if (scope.enableDamping === true) {
+            scope.target.addScaledVector(panOffset, scope.dampingFactor);
+          } else {
+            scope.target.add(panOffset);
+          }
+          offset2.setFromSpherical(spherical);
+          offset2.applyQuaternion(quatInverse);
+          position.copy(scope.target).add(offset2);
+          scope.object.lookAt(scope.target);
+          if (scope.enableDamping === true) {
+            sphericalDelta.theta *= 1 - scope.dampingFactor;
+            sphericalDelta.phi *= 1 - scope.dampingFactor;
+            panOffset.multiplyScalar(1 - scope.dampingFactor);
+          } else {
+            sphericalDelta.set(0, 0, 0);
+            panOffset.set(0, 0, 0);
+          }
+          scale = 1;
+          if (zoomChanged || lastPosition.distanceToSquared(scope.object.position) > EPS2 || 8 * (1 - lastQuaternion.dot(scope.object.quaternion)) > EPS2) {
+            scope.dispatchEvent(_changeEvent);
+            lastPosition.copy(scope.object.position);
+            lastQuaternion.copy(scope.object.quaternion);
+            zoomChanged = false;
+            return true;
+          }
+          return false;
+        };
+      })();
+      this.dispose = function() {
+        scope.domElement.removeEventListener("contextmenu", onContextMenu);
+        scope.domElement.removeEventListener("pointerdown", onPointerDown);
+        scope.domElement.removeEventListener("pointercancel", onPointerUp);
+        scope.domElement.removeEventListener("wheel", onMouseWheel);
+        scope.domElement.removeEventListener("pointermove", onPointerMove);
+        scope.domElement.removeEventListener("pointerup", onPointerUp);
+        if (scope._domElementKeyEvents !== null) {
+          scope._domElementKeyEvents.removeEventListener("keydown", onKeyDown);
+          scope._domElementKeyEvents = null;
+        }
+      };
+      const scope = this;
+      const STATE = {
+        NONE: -1,
+        ROTATE: 0,
+        DOLLY: 1,
+        PAN: 2,
+        TOUCH_ROTATE: 3,
+        TOUCH_PAN: 4,
+        TOUCH_DOLLY_PAN: 5,
+        TOUCH_DOLLY_ROTATE: 6
+      };
+      let state = STATE.NONE;
+      const EPS2 = 1e-6;
+      const spherical = new Spherical();
+      const sphericalDelta = new Spherical();
+      let scale = 1;
+      const panOffset = new Vector3();
+      let zoomChanged = false;
+      const rotateStart = new Vector2();
+      const rotateEnd = new Vector2();
+      const rotateDelta = new Vector2();
+      const panStart = new Vector2();
+      const panEnd = new Vector2();
+      const panDelta = new Vector2();
+      const dollyStart = new Vector2();
+      const dollyEnd = new Vector2();
+      const dollyDelta = new Vector2();
+      const pointers = [];
+      const pointerPositions = {};
+      function getAutoRotationAngle() {
+        return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
+      }
+      function getZoomScale() {
+        return Math.pow(0.95, scope.zoomSpeed);
+      }
+      function rotateLeft(angle) {
+        sphericalDelta.theta -= angle;
+      }
+      function rotateUp(angle) {
+        sphericalDelta.phi -= angle;
+      }
+      const panLeft = (function() {
+        const v2 = new Vector3();
+        return function panLeft2(distance2, objectMatrix) {
+          v2.setFromMatrixColumn(objectMatrix, 0);
+          v2.multiplyScalar(-distance2);
+          panOffset.add(v2);
+        };
+      })();
+      const panUp = (function() {
+        const v2 = new Vector3();
+        return function panUp2(distance2, objectMatrix) {
+          if (scope.screenSpacePanning === true) {
+            v2.setFromMatrixColumn(objectMatrix, 1);
+          } else {
+            v2.setFromMatrixColumn(objectMatrix, 0);
+            v2.crossVectors(scope.object.up, v2);
+          }
+          v2.multiplyScalar(distance2);
+          panOffset.add(v2);
+        };
+      })();
+      const pan = (function() {
+        const offset2 = new Vector3();
+        return function pan2(deltaX, deltaY) {
+          const element = scope.domElement;
+          if (scope.object.isPerspectiveCamera) {
+            const position = scope.object.position;
+            offset2.copy(position).sub(scope.target);
+            let targetDistance = offset2.length();
+            targetDistance *= Math.tan(scope.object.fov / 2 * Math.PI / 180);
+            panLeft(2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix);
+            panUp(2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix);
+          } else if (scope.object.isOrthographicCamera) {
+            panLeft(deltaX * (scope.object.right - scope.object.left) / scope.object.zoom / element.clientWidth, scope.object.matrix);
+            panUp(deltaY * (scope.object.top - scope.object.bottom) / scope.object.zoom / element.clientHeight, scope.object.matrix);
+          } else {
+            console.warn("WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.");
+            scope.enablePan = false;
+          }
+        };
+      })();
+      function dollyOut(dollyScale) {
+        if (scope.object.isPerspectiveCamera) {
+          scale /= dollyScale;
+        } else if (scope.object.isOrthographicCamera) {
+          scope.object.zoom = Math.max(scope.minZoom, Math.min(scope.maxZoom, scope.object.zoom * dollyScale));
+          scope.object.updateProjectionMatrix();
+          zoomChanged = true;
+        } else {
+          console.warn("WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.");
+          scope.enableZoom = false;
+        }
+      }
+      function dollyIn(dollyScale) {
+        if (scope.object.isPerspectiveCamera) {
+          scale *= dollyScale;
+        } else if (scope.object.isOrthographicCamera) {
+          scope.object.zoom = Math.max(scope.minZoom, Math.min(scope.maxZoom, scope.object.zoom / dollyScale));
+          scope.object.updateProjectionMatrix();
+          zoomChanged = true;
+        } else {
+          console.warn("WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.");
+          scope.enableZoom = false;
+        }
+      }
+      function handleMouseDownRotate(event) {
+        rotateStart.set(event.clientX, event.clientY);
+      }
+      function handleMouseDownDolly(event) {
+        dollyStart.set(event.clientX, event.clientY);
+      }
+      function handleMouseDownPan(event) {
+        panStart.set(event.clientX, event.clientY);
+      }
+      function handleMouseMoveRotate(event) {
+        rotateEnd.set(event.clientX, event.clientY);
+        rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(scope.rotateSpeed);
+        const element = scope.domElement;
+        rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight);
+        rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
+        rotateStart.copy(rotateEnd);
+        scope.update();
+      }
+      function handleMouseMoveDolly(event) {
+        dollyEnd.set(event.clientX, event.clientY);
+        dollyDelta.subVectors(dollyEnd, dollyStart);
+        if (dollyDelta.y > 0) {
+          dollyOut(getZoomScale());
+        } else if (dollyDelta.y < 0) {
+          dollyIn(getZoomScale());
+        }
+        dollyStart.copy(dollyEnd);
+        scope.update();
+      }
+      function handleMouseMovePan(event) {
+        panEnd.set(event.clientX, event.clientY);
+        panDelta.subVectors(panEnd, panStart).multiplyScalar(scope.panSpeed);
+        pan(panDelta.x, panDelta.y);
+        panStart.copy(panEnd);
+        scope.update();
+      }
+      function handleMouseWheel(event) {
+        if (event.deltaY < 0) {
+          dollyIn(getZoomScale());
+        } else if (event.deltaY > 0) {
+          dollyOut(getZoomScale());
+        }
+        scope.update();
+      }
+      function handleKeyDown(event) {
+        let needsUpdate = false;
+        switch (event.code) {
+          case scope.keys.UP:
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
+              rotateUp(2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight);
+            } else {
+              pan(0, scope.keyPanSpeed);
+            }
+            needsUpdate = true;
+            break;
+          case scope.keys.BOTTOM:
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
+              rotateUp(-2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight);
+            } else {
+              pan(0, -scope.keyPanSpeed);
+            }
+            needsUpdate = true;
+            break;
+          case scope.keys.LEFT:
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
+              rotateLeft(2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight);
+            } else {
+              pan(scope.keyPanSpeed, 0);
+            }
+            needsUpdate = true;
+            break;
+          case scope.keys.RIGHT:
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
+              rotateLeft(-2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight);
+            } else {
+              pan(-scope.keyPanSpeed, 0);
+            }
+            needsUpdate = true;
+            break;
+        }
+        if (needsUpdate) {
+          event.preventDefault();
+          scope.update();
+        }
+      }
+      function handleTouchStartRotate() {
+        if (pointers.length === 1) {
+          rotateStart.set(pointers[0].pageX, pointers[0].pageY);
+        } else {
+          const x = 0.5 * (pointers[0].pageX + pointers[1].pageX);
+          const y = 0.5 * (pointers[0].pageY + pointers[1].pageY);
+          rotateStart.set(x, y);
+        }
+      }
+      function handleTouchStartPan() {
+        if (pointers.length === 1) {
+          panStart.set(pointers[0].pageX, pointers[0].pageY);
+        } else {
+          const x = 0.5 * (pointers[0].pageX + pointers[1].pageX);
+          const y = 0.5 * (pointers[0].pageY + pointers[1].pageY);
+          panStart.set(x, y);
+        }
+      }
+      function handleTouchStartDolly() {
+        const dx = pointers[0].pageX - pointers[1].pageX;
+        const dy = pointers[0].pageY - pointers[1].pageY;
+        const distance2 = Math.sqrt(dx * dx + dy * dy);
+        dollyStart.set(0, distance2);
+      }
+      function handleTouchStartDollyPan() {
+        if (scope.enableZoom) handleTouchStartDolly();
+        if (scope.enablePan) handleTouchStartPan();
+      }
+      function handleTouchStartDollyRotate() {
+        if (scope.enableZoom) handleTouchStartDolly();
+        if (scope.enableRotate) handleTouchStartRotate();
+      }
+      function handleTouchMoveRotate(event) {
+        if (pointers.length == 1) {
+          rotateEnd.set(event.pageX, event.pageY);
+        } else {
+          const position = getSecondPointerPosition(event);
+          const x = 0.5 * (event.pageX + position.x);
+          const y = 0.5 * (event.pageY + position.y);
+          rotateEnd.set(x, y);
+        }
+        rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(scope.rotateSpeed);
+        const element = scope.domElement;
+        rotateLeft(2 * Math.PI * rotateDelta.x / element.clientHeight);
+        rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
+        rotateStart.copy(rotateEnd);
+      }
+      function handleTouchMovePan(event) {
+        if (pointers.length === 1) {
+          panEnd.set(event.pageX, event.pageY);
+        } else {
+          const position = getSecondPointerPosition(event);
+          const x = 0.5 * (event.pageX + position.x);
+          const y = 0.5 * (event.pageY + position.y);
+          panEnd.set(x, y);
+        }
+        panDelta.subVectors(panEnd, panStart).multiplyScalar(scope.panSpeed);
+        pan(panDelta.x, panDelta.y);
+        panStart.copy(panEnd);
+      }
+      function handleTouchMoveDolly(event) {
+        const position = getSecondPointerPosition(event);
+        const dx = event.pageX - position.x;
+        const dy = event.pageY - position.y;
+        const distance2 = Math.sqrt(dx * dx + dy * dy);
+        dollyEnd.set(0, distance2);
+        dollyDelta.set(0, Math.pow(dollyEnd.y / dollyStart.y, scope.zoomSpeed));
+        dollyOut(dollyDelta.y);
+        dollyStart.copy(dollyEnd);
+      }
+      function handleTouchMoveDollyPan(event) {
+        if (scope.enableZoom) handleTouchMoveDolly(event);
+        if (scope.enablePan) handleTouchMovePan(event);
+      }
+      function handleTouchMoveDollyRotate(event) {
+        if (scope.enableZoom) handleTouchMoveDolly(event);
+        if (scope.enableRotate) handleTouchMoveRotate(event);
+      }
+      function onPointerDown(event) {
+        if (scope.enabled === false) return;
+        if (pointers.length === 0) {
+          scope.domElement.setPointerCapture(event.pointerId);
+          scope.domElement.addEventListener("pointermove", onPointerMove);
+          scope.domElement.addEventListener("pointerup", onPointerUp);
+        }
+        addPointer(event);
+        if (event.pointerType === "touch") {
+          onTouchStart(event);
+        } else {
+          onMouseDown(event);
+        }
+      }
+      function onPointerMove(event) {
+        if (scope.enabled === false) return;
+        if (event.pointerType === "touch") {
+          onTouchMove(event);
+        } else {
+          onMouseMove(event);
+        }
+      }
+      function onPointerUp(event) {
+        removePointer(event);
+        if (pointers.length === 0) {
+          scope.domElement.releasePointerCapture(event.pointerId);
+          scope.domElement.removeEventListener("pointermove", onPointerMove);
+          scope.domElement.removeEventListener("pointerup", onPointerUp);
+        }
+        scope.dispatchEvent(_endEvent);
+        state = STATE.NONE;
+      }
+      function onMouseDown(event) {
+        let mouseAction;
+        switch (event.button) {
+          case 0:
+            mouseAction = scope.mouseButtons.LEFT;
+            break;
+          case 1:
+            mouseAction = scope.mouseButtons.MIDDLE;
+            break;
+          case 2:
+            mouseAction = scope.mouseButtons.RIGHT;
+            break;
+          default:
+            mouseAction = -1;
+        }
+        switch (mouseAction) {
+          case MOUSE.DOLLY:
+            if (scope.enableZoom === false) return;
+            handleMouseDownDolly(event);
+            state = STATE.DOLLY;
+            break;
+          case MOUSE.ROTATE:
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
+              if (scope.enablePan === false) return;
+              handleMouseDownPan(event);
+              state = STATE.PAN;
+            } else {
+              if (scope.enableRotate === false) return;
+              handleMouseDownRotate(event);
+              state = STATE.ROTATE;
+            }
+            break;
+          case MOUSE.PAN:
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
+              if (scope.enableRotate === false) return;
+              handleMouseDownRotate(event);
+              state = STATE.ROTATE;
+            } else {
+              if (scope.enablePan === false) return;
+              handleMouseDownPan(event);
+              state = STATE.PAN;
+            }
+            break;
+          default:
+            state = STATE.NONE;
+        }
+        if (state !== STATE.NONE) {
+          scope.dispatchEvent(_startEvent);
+        }
+      }
+      function onMouseMove(event) {
+        switch (state) {
+          case STATE.ROTATE:
+            if (scope.enableRotate === false) return;
+            handleMouseMoveRotate(event);
+            break;
+          case STATE.DOLLY:
+            if (scope.enableZoom === false) return;
+            handleMouseMoveDolly(event);
+            break;
+          case STATE.PAN:
+            if (scope.enablePan === false) return;
+            handleMouseMovePan(event);
+            break;
+        }
+      }
+      function onMouseWheel(event) {
+        if (scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE) return;
+        event.preventDefault();
+        scope.dispatchEvent(_startEvent);
+        handleMouseWheel(event);
+        scope.dispatchEvent(_endEvent);
+      }
+      function onKeyDown(event) {
+        if (scope.enabled === false || scope.enablePan === false) return;
+        handleKeyDown(event);
+      }
+      function onTouchStart(event) {
+        trackPointer(event);
+        switch (pointers.length) {
+          case 1:
+            switch (scope.touches.ONE) {
+              case TOUCH.ROTATE:
+                if (scope.enableRotate === false) return;
+                handleTouchStartRotate();
+                state = STATE.TOUCH_ROTATE;
+                break;
+              case TOUCH.PAN:
+                if (scope.enablePan === false) return;
+                handleTouchStartPan();
+                state = STATE.TOUCH_PAN;
+                break;
+              default:
+                state = STATE.NONE;
+            }
+            break;
+          case 2:
+            switch (scope.touches.TWO) {
+              case TOUCH.DOLLY_PAN:
+                if (scope.enableZoom === false && scope.enablePan === false) return;
+                handleTouchStartDollyPan();
+                state = STATE.TOUCH_DOLLY_PAN;
+                break;
+              case TOUCH.DOLLY_ROTATE:
+                if (scope.enableZoom === false && scope.enableRotate === false) return;
+                handleTouchStartDollyRotate();
+                state = STATE.TOUCH_DOLLY_ROTATE;
+                break;
+              default:
+                state = STATE.NONE;
+            }
+            break;
+          default:
+            state = STATE.NONE;
+        }
+        if (state !== STATE.NONE) {
+          scope.dispatchEvent(_startEvent);
+        }
+      }
+      function onTouchMove(event) {
+        trackPointer(event);
+        switch (state) {
+          case STATE.TOUCH_ROTATE:
+            if (scope.enableRotate === false) return;
+            handleTouchMoveRotate(event);
+            scope.update();
+            break;
+          case STATE.TOUCH_PAN:
+            if (scope.enablePan === false) return;
+            handleTouchMovePan(event);
+            scope.update();
+            break;
+          case STATE.TOUCH_DOLLY_PAN:
+            if (scope.enableZoom === false && scope.enablePan === false) return;
+            handleTouchMoveDollyPan(event);
+            scope.update();
+            break;
+          case STATE.TOUCH_DOLLY_ROTATE:
+            if (scope.enableZoom === false && scope.enableRotate === false) return;
+            handleTouchMoveDollyRotate(event);
+            scope.update();
+            break;
+          default:
+            state = STATE.NONE;
+        }
+      }
+      function onContextMenu(event) {
+        if (scope.enabled === false) return;
+        event.preventDefault();
+      }
+      function addPointer(event) {
+        pointers.push(event);
+      }
+      function removePointer(event) {
+        delete pointerPositions[event.pointerId];
+        for (let i = 0; i < pointers.length; i++) {
+          if (pointers[i].pointerId == event.pointerId) {
+            pointers.splice(i, 1);
+            return;
+          }
+        }
+      }
+      function trackPointer(event) {
+        let position = pointerPositions[event.pointerId];
+        if (position === void 0) {
+          position = new Vector2();
+          pointerPositions[event.pointerId] = position;
+        }
+        position.set(event.pageX, event.pageY);
+      }
+      function getSecondPointerPosition(event) {
+        const pointer = event.pointerId === pointers[0].pointerId ? pointers[1] : pointers[0];
+        return pointerPositions[pointer.pointerId];
+      }
+      scope.domElement.addEventListener("contextmenu", onContextMenu);
+      scope.domElement.addEventListener("pointerdown", onPointerDown);
+      scope.domElement.addEventListener("pointercancel", onPointerUp);
+      scope.domElement.addEventListener("wheel", onMouseWheel, { passive: false });
+      this.update();
     }
   };
 
@@ -34938,8 +38795,8 @@
     }
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const text = input2.value.trim();
-      if (!text || pending) return;
+      const text3 = input2.value.trim();
+      if (!text3 || pending) return;
       const world2 = getWorld(), requestGeneration = generation;
       pending = new AbortController();
       const controller = pending;
@@ -34953,7 +38810,7 @@
           headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
-            text,
+            text: text3,
             environment: world2.environment,
             history: history.slice(-6)
           })
@@ -34976,7 +38833,7 @@
         if ((result.action === "clarify" || result.action === "unsupported") && /[؀-ۿ]/u.test(reply))
           reply = result.action === "unsupported" ? "That request is outside the available destinations and driving controls." : "Please clarify which destination or service you need.";
         status.textContent = reply;
-        history.push({ role: "user", text }, { role: "assistant", text: reply });
+        history.push({ role: "user", text: text3 }, { role: "assistant", text: reply });
         history = history.slice(-6);
         input2.value = "";
       } catch (error) {
@@ -34996,9 +38853,7 @@
 
   // src/integration/bridge.js
   function createBridge({ renderer: renderer2, readState }) {
-    let enabled = false;
-    let lastFrameId = 0;
-    let framePending = false;
+    let enabled = false, lastFrameId = 0, framePending = false;
     const capture = document.createElement("canvas");
     capture.width = 480;
     capture.height = 270;
@@ -35014,11 +38869,12 @@
     async function report() {
       if (!enabled) return;
       try {
-        await fetch("/api/state", {
+        const response = await fetch("/api/state", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(readState())
         });
+        if (!response.ok) enabled = false;
       } catch {
         enabled = false;
       }
@@ -35026,45 +38882,240 @@
     function sendFrame(viewport) {
       if (!enabled || framePending) return;
       framePending = true;
-      const pixelRatio = renderer2.domElement.width / window.innerWidth;
-      const sourceTop = window.innerHeight - viewport.y - viewport.height;
+      const bounds = renderer2.domElement.getBoundingClientRect();
+      const ratio = renderer2.domElement.width / bounds.width;
+      const sourceTop = bounds.height - viewport.y - viewport.height;
       context.drawImage(
         renderer2.domElement,
-        viewport.x * pixelRatio,
-        sourceTop * pixelRatio,
-        viewport.width * pixelRatio,
-        viewport.height * pixelRatio,
+        viewport.x * ratio,
+        sourceTop * ratio,
+        viewport.width * ratio,
+        viewport.height * ratio,
         0,
         0,
         capture.width,
         capture.height
       );
-      capture.toBlob(
-        async (blob) => {
-          try {
-            if (!blob) return;
-            const response = await fetch("/api/frame", {
-              method: "POST",
-              headers: { "Content-Type": "image/jpeg" },
-              body: blob
-            });
-            if (response.ok) lastFrameId = (await response.json()).frameId;
-          } catch {
-          } finally {
-            framePending = false;
-          }
-        },
-        "image/jpeg",
-        0.55
-      );
+      capture.toBlob(async (blob) => {
+        try {
+          if (!blob) return;
+          const response = await fetch("/api/frame", {
+            method: "POST",
+            headers: { "Content-Type": "image/jpeg" },
+            body: blob
+          });
+          if (response.ok) lastFrameId = (await response.json()).frameId;
+          else enabled = false;
+        } catch {
+          enabled = false;
+        } finally {
+          framePending = false;
+        }
+      }, "image/jpeg", 0.55);
     }
     checkHealth();
     setInterval(checkHealth, 5e3);
     setInterval(report, 500);
+    return { sendFrame, get lastFrameId() {
+      return lastFrameId;
+    } };
+  }
+  function createVisualClient({ renderer: renderer2, onResult, onStatus }) {
+    const width = 640, height = 360;
+    const target2 = new WebGLRenderTarget(width, height, {
+      minFilter: LinearFilter,
+      magFilter: LinearFilter,
+      depthBuffer: true,
+      stencilBuffer: false
+    });
+    target2.texture.colorSpace = SRGBColorSpace;
+    const pixels = new Uint8Array(width * height * 4);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const image = context.createImageData(width, height);
+    let streamId = crypto.randomUUID(), frameId = 0, lastSampleS = -Infinity;
+    let enabled = false, disposed = false, pending = false, generation = 0;
+    let restartRequired = false;
+    let timer = null, lastResultId = -1;
+    const timings = [];
+    let status = { available: false, status: "disabled", source: "camera-pixels", error: null, result: null };
+    const notify = (next) => {
+      if (next.status === "error") restartRequired = true;
+      if (next.status === "ready" && next.result) restartRequired = false;
+      status = { ...status, ...next };
+      onStatus?.(status);
+    };
+    async function request(url, options) {
+      const response = await fetch(url, { ...options, signal: AbortSignal.timeout(1e4) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? `Vision HTTP ${response.status}`);
+      return data;
+    }
+    async function poll() {
+      if (!enabled || disposed) return;
+      const currentGeneration = generation;
+      try {
+        const data = await request(`/api/vision/state?streamId=${encodeURIComponent(streamId)}`);
+        if (currentGeneration !== generation || disposed) return;
+        notify(data);
+        if (data.result?.streamId === streamId && data.result.frameId > lastResultId) {
+          lastResultId = data.result.frameId;
+          const timing = timings.find((item) => item.streamId === streamId && item.frameId === lastResultId);
+          if (timing) timing.observedAfterMs = performance.now() - timing.startedMs;
+          onResult(data.result);
+        }
+      } catch (error) {
+        if (currentGeneration === generation && !disposed)
+          notify({ available: false, status: "error", error: error.message, result: null });
+      } finally {
+        if (enabled && !disposed && currentGeneration === generation)
+          timer = setTimeout(poll, 80);
+      }
+    }
+    function reset2() {
+      generation++;
+      clearTimeout(timer);
+      streamId = crypto.randomUUID();
+      frameId = 0;
+      lastResultId = -1;
+      lastSampleS = -Infinity;
+      pending = false;
+      notify({ result: null, status: enabled ? "loading" : "disabled", error: null });
+      if (enabled && !disposed) timer = setTimeout(poll, 0);
+      return streamId;
+    }
+    async function start() {
+      notify({ status: "loading", error: null });
+      try {
+        if (restartRequired) await request("/api/vision/stop", { method: "POST" });
+        const result = await request("/api/vision/start", { method: "POST" });
+        if (!result.available) throw new Error(result.error ?? "Local camera perception is unavailable.");
+        enabled = true;
+        restartRequired = false;
+        reset2();
+        clearTimeout(timer);
+        notify(result);
+        poll();
+        return { ok: true, streamId };
+      } catch (error) {
+        enabled = false;
+        notify({ available: false, status: "error", error: error.message, result: null });
+        return { ok: false, error: error.message };
+      }
+    }
+    function capture(scene, camera2, ego, simulationTimeS) {
+      if (!enabled || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
+      lastSampleS = simulationTimeS;
+      const currentGeneration = generation, capturedStream = streamId;
+      const currentFrame = ++frameId;
+      const timing = { streamId: capturedStream, frameId: currentFrame, simulationTimeS, startedMs: performance.now() };
+      timings.push(timing);
+      if (timings.length > 120) timings.shift();
+      pending = true;
+      const oldTarget = renderer2.getRenderTarget();
+      const oldViewport = renderer2.getViewport(new Vector4());
+      const oldScissor = renderer2.getScissor(new Vector4());
+      const oldScissorTest = renderer2.getScissorTest();
+      try {
+        renderer2.setRenderTarget(target2);
+        renderer2.setScissorTest(false);
+        renderer2.setViewport(0, 0, width, height);
+        renderer2.render(scene, camera2);
+        renderer2.readRenderTargetPixels(target2, 0, 0, width, height, pixels);
+        for (let row = 0; row < height; row++)
+          image.data.set(pixels.subarray(
+            (height - row - 1) * width * 4,
+            (height - row) * width * 4
+          ), row * width * 4);
+        context.putImageData(image, 0, 0);
+        timing.renderReadbackMs = performance.now() - timing.startedMs;
+      } catch (error) {
+        pending = false;
+        notify({ available: false, status: "error", error: `Camera capture failed: ${error.message}` });
+        return;
+      } finally {
+        renderer2.setRenderTarget(oldTarget);
+        renderer2.setViewport(oldViewport);
+        renderer2.setScissor(oldScissor);
+        renderer2.setScissorTest(oldScissorTest);
+      }
+      const position = camera2.getWorldPosition(new Vector3());
+      const direction2 = camera2.getWorldDirection(new Vector3());
+      const frame2 = {
+        schema: 1,
+        streamId: capturedStream,
+        frameId: currentFrame,
+        simulationTimeS,
+        camera: {
+          width,
+          height,
+          fovYDeg: camera2.fov,
+          position: { x: position.x, y: position.y, z: position.z },
+          headingRad: Math.atan2(direction2.x, direction2.z),
+          groundY: 0.12
+        },
+        ego: {
+          x: ego.x,
+          z: ego.z,
+          headingRad: ego.heading,
+          speedMps: ego.speed,
+          lengthM: ego.length,
+          widthM: ego.width
+        }
+      };
+      try {
+        const encoded = canvas.toDataURL("image/jpeg", 0.86);
+        const prefix = "data:image/jpeg;base64,";
+        if (!encoded.startsWith(prefix)) throw new Error("The front camera did not encode a JPEG.");
+        frame2.imageJpegBase64 = encoded.slice(prefix.length);
+        timing.encodedAfterMs = performance.now() - timing.startedMs;
+        timing.postedAfterMs = timing.encodedAfterMs;
+        request("/api/vision/frame", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(frame2)
+        }).then(() => {
+          timing.acknowledgedAfterMs = performance.now() - timing.startedMs;
+        }).catch((error) => {
+          if (generation === currentGeneration && !disposed)
+            notify({ available: false, status: "error", error: error.message, result: null });
+        }).finally(() => {
+          if (generation === currentGeneration) pending = false;
+        });
+      } catch (error) {
+        pending = false;
+        notify({ available: false, status: "error", error: `Camera encoding failed: ${error.message}` });
+      }
+    }
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      enabled = false;
+      generation++;
+      clearTimeout(timer);
+      target2.dispose();
+    }
     return {
-      sendFrame,
-      get lastFrameId() {
-        return lastFrameId;
+      start,
+      reset: reset2,
+      capture,
+      dispose,
+      get streamId() {
+        return streamId;
+      },
+      get status() {
+        return status;
+      },
+      get enabled() {
+        return enabled;
+      },
+      get restartRequired() {
+        return restartRequired;
+      },
+      get timings() {
+        return timings.map((item) => ({ ...item }));
       }
     };
   }
@@ -35075,9 +39126,10 @@
     let visible = true;
     let latest = null;
     let busy = false;
+    let external = false;
     function draw() {
       context.clearRect(0, 0, canvas.width, canvas.height);
-      if (!visible || !latest || latest.frameId < bridge2.lastFrameId - 3) return;
+      if (!visible || !latest || !external && latest.frameId < bridge2.lastFrameId - 3) return;
       for (const detection of latest.detections) {
         const [x1, y1, x2, y2] = detection.box;
         const color = detection.label === "person" ? "#f4a65c" : "#a6edbc";
@@ -35094,7 +39146,7 @@
       }
     }
     async function poll() {
-      if (!visible || busy) return;
+      if (!visible || busy || external) return;
       busy = true;
       try {
         const response = await fetch("/api/detections", { cache: "no-store" });
@@ -35131,11 +39183,22 @@
       canvas.hidden = !value;
       draw();
     }
+    function setExternal(result) {
+      external = true;
+      latest = result;
+      if (result) {
+        canvas.width = result.width;
+        canvas.height = result.height;
+        status.textContent = `${result.model?.id ?? "Camera CV"} \xB7 ${result.detections.length} observed objects \xB7 ${result.latencyMs.toFixed(1)} ms`;
+      } else status.textContent = "Camera observations unavailable";
+      draw();
+    }
     setInterval(poll, 500);
     poll();
     return {
       setViewport,
       setVisible,
+      setExternal,
       draw,
       get latest() {
         return latest;
@@ -35158,17 +39221,17 @@
   function metric(label, value) {
     const item = document.createElement("div");
     const title = document.createElement("span");
-    const number = document.createElement("strong");
+    const number2 = document.createElement("strong");
     title.textContent = label;
-    number.textContent = value;
-    item.append(title, number);
+    number2.textContent = value;
+    item.append(title, number2);
     return item;
   }
   function drawPipeline(container) {
     container.innerHTML = `
-    <svg viewBox="0 0 360 134" role="img" aria-label="Pixels feed YOLOX detection for display; map and congestion feed A-star routing; the route and simulator state feed the safety guard">
+    <svg viewBox="0 0 360 134" role="img" aria-label="Camera pixels feed detection and visual motion prediction; its speed cap and an independent range and collision guard constrain driving">
       <g stroke="#78a993" stroke-width="1.5" fill="none">
-        <path d="M55 30 H92 M158 30 H195 M55 92 H92 M158 92 H195 M259 92 H300"/>
+        <path d="M55 30 H92 M158 30 H195 M259 30 H322 V65 M55 92 H92 M158 92 H195 M259 92 H300"/>
       </g>
       <g fill="#233d33" stroke="#90cbaa" stroke-width="1.5">
         <circle cx="28" cy="30" r="18"/><circle cx="125" cy="30" r="33"/>
@@ -35178,7 +39241,7 @@
       </g>
       <g fill="#e6f3e8" font-size="10" font-family="Arial, sans-serif" text-anchor="middle">
         <text x="28" y="33">PX</text><text x="125" y="27">YOLOX</text><text x="125" y="39">Tiny</text>
-        <text x="227" y="27">Boxes</text><text x="227" y="39">only</text>
+        <text x="227" y="27">Track +</text><text x="227" y="39">predict</text>
         <text x="28" y="95">MAP</text><text x="125" y="89">A* +</text><text x="125" y="101">traffic</text>
         <text x="227" y="89">Safety</text><text x="227" y="101">guard</text><text x="322" y="95">Drive</text>
       </g>
@@ -35218,6 +39281,9 @@
           "CV detections",
           detection ? `${detection.detections.length} \xB7 ${detection.latencyMs} ms` : "No recent result"
         ),
+        metric("Visual decision", world2.visualDecision?.reason ?? "No fresh visual forecast"),
+        metric("Visual source", detection?.model?.id ?? "Camera model not started"),
+        metric("Visual evidence age", world2.visualDecision?.ageMs == null ? "Unavailable" : `${Math.round(world2.visualDecision.ageMs)} ms`),
         metric(
           "Speed policy",
           action == null ? "Baseline rule" : `Q-table \xB7 ${policyState} \xB7 ${(SPEED_ACTIONS[action] * 100).toFixed(0)}%`
@@ -35256,6 +39322,664 @@
     return { update };
   }
 
+  // src/ui/vehicle-panel.js
+  var VIEWS = [
+    ["chase", "Chase"],
+    ["cockpit", "Cockpit"],
+    ["inspection", "Inspect"],
+    ["running-gear", "Running gear"]
+  ];
+  var finite3 = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
+  function node(tag, className, text3) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text3 != null) element.textContent = text3;
+    return element;
+  }
+  function text(element, value) {
+    if (element.textContent !== value) element.textContent = value;
+  }
+  function mountVehiclePanel({ toolbar, onAction }) {
+    if (!toolbar?.append || typeof onAction !== "function")
+      throw new TypeError("Car controls require a toolbar and an action callback");
+    const cleanups = [];
+    const pending = /* @__PURE__ */ new Set();
+    let disposed = false;
+    let latest = {};
+    const listen = (element, type, callback) => {
+      element.addEventListener(type, callback);
+      cleanups.push(() => element.removeEventListener(type, callback));
+    };
+    const button = (id2, label, action, value) => {
+      const result = node("button", "", label);
+      result.type = "button";
+      if (id2) result.id = id2;
+      if (action)
+        listen(result, "click", () => dispatch(action, value, result));
+      return result;
+    };
+    const toggleButton = button("carToggleBtn", "Car");
+    toggleButton.setAttribute("aria-controls", "carPanel");
+    toggleButton.setAttribute("aria-expanded", "false");
+    toolbar.append(toggleButton);
+    const panel = node("section", "car-panel");
+    panel.id = "carPanel";
+    panel.hidden = true;
+    panel.setAttribute("aria-labelledby", "carPanelTitle");
+    const head = node("div", "car-panel-head");
+    const heading = node("h2", "", "Car");
+    heading.id = "carPanelTitle";
+    const closeButton = button("carCloseBtn", "Close");
+    closeButton.setAttribute("aria-label", "Close car controls");
+    head.append(heading, closeButton);
+    const description = node(
+      "p",
+      "car-panel-note",
+      "Faceted SUV \xB7 left-hand cockpit"
+    );
+    const viewGroup = node("fieldset", "car-views");
+    viewGroup.append(node("legend", "", "View"));
+    const viewButtons = VIEWS.map(([value, label]) => {
+      const control = button(null, label, "view", value);
+      control.dataset.carView = value;
+      control.setAttribute("aria-pressed", "false");
+      viewGroup.append(control);
+      return [value, control];
+    });
+    const driveInfo = node("dl", "car-readings");
+    const speedValue = node("dd", "", "Waiting for car");
+    const steeringValue = node("dd", "", "\u2014");
+    driveInfo.append(
+      node("dt", "", "Speed / gear"),
+      speedValue,
+      node("dt", "", "Front steering"),
+      steeringValue
+    );
+    const options = node("div", "car-options");
+    const checkbox = (id2, label, action) => {
+      const row = node("label", "car-option");
+      const input2 = node("input");
+      input2.id = id2;
+      input2.type = "checkbox";
+      row.append(input2, node("span", "", label));
+      listen(input2, "change", () => dispatch(action, input2.checked, input2));
+      options.append(row);
+      return input2;
+    };
+    const cutawayInput = checkbox("carCutaway", "Body cutaway", "cutaway");
+    const sensorsInput = checkbox(
+      "carSensors",
+      "Virtual range rays",
+      "sensors"
+    );
+    const cameraLabel = node("label", "car-camera-select");
+    cameraLabel.append(node("span", "", "Camera feed"));
+    const cameraSelect = node("select");
+    cameraSelect.id = "carSensorCamera";
+    for (const [value, label] of [["front", "Front RGB"], ["rear", "Rear RGB"]]) {
+      const option = node("option", "", label);
+      option.value = value;
+      cameraSelect.append(option);
+    }
+    cameraLabel.append(cameraSelect);
+    listen(
+      cameraSelect,
+      "change",
+      () => dispatch("sensor-camera", cameraSelect.value, cameraSelect)
+    );
+    const sensorTitle = node(
+      "p",
+      "car-range-label",
+      "Front ranges \xB7 virtual geometry \xB7 m"
+    );
+    const ranges = node("div", "car-ranges");
+    ranges.setAttribute("aria-label", "Five virtual bumper ranges in metres");
+    const rangeValues = [-70, -35, 0, 35, 70].map((angle) => {
+      const entry = node("div");
+      const value = node("strong", "", "\u2014");
+      entry.append(node("span", "", `${angle > 0 ? "+" : ""}${angle}\xB0`), value);
+      ranges.append(entry);
+      return value;
+    });
+    const auxTitle = node("p", "car-range-label", "Rear / side \xB7 virtual geometry \xB7 m");
+    const auxiliary = node("div", "car-ranges");
+    auxiliary.id = "carAuxRanges";
+    auxiliary.setAttribute("aria-label", "Five virtual rear and side ranges in metres");
+    const auxiliaryValues = [
+      ["rear-left", "Rear L"],
+      ["rear-center", "Rear"],
+      ["rear-right", "Rear R"],
+      ["side-left", "Left"],
+      ["side-right", "Right"]
+    ].map(([id2, label]) => {
+      const entry = node("div");
+      const value = node("strong", "", "\u2014");
+      value.dataset.carRange = id2;
+      entry.append(node("span", "", label), value);
+      auxiliary.append(entry);
+      return [id2, value];
+    });
+    const telemetry = node("div", "car-telemetry");
+    telemetry.id = "carTelemetry";
+    const telemetryReading = node("p", "", "Virtual IMU / GNSS unavailable");
+    const telemetryPosition = node("p");
+    telemetry.append(telemetryReading, telemetryPosition);
+    const impactSection = node("section", "car-impact");
+    const impactHeading = node("h3", "", "Controlled impact bay");
+    const impactStatus = node("p", "car-panel-note");
+    impactStatus.id = "carTestStatus";
+    const impactDetails = node("p", "car-contact-details");
+    const bayButton = button(
+      "carImpactBayBtn",
+      "Open impact bay",
+      "impact-bay"
+    );
+    const impactActions = node("div", "car-impact-actions");
+    const runButton = button("carImpactRunBtn", "Run impact", "impact-run");
+    const resetButton = button("carResetBtn", "Repair / reset", "reset-car");
+    runButton.setAttribute("aria-describedby", "carTestStatus");
+    resetButton.setAttribute("aria-describedby", "carTestStatus");
+    const returnButton = button(
+      "carReturnBtn",
+      "Return to city",
+      "return-city"
+    );
+    impactActions.append(runButton, resetButton);
+    impactSection.append(
+      impactHeading,
+      impactStatus,
+      impactDetails,
+      bayButton,
+      impactActions,
+      returnButton
+    );
+    const error = node("p", "car-error");
+    error.id = "carActionError";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    const help = node(
+      "p",
+      "car-panel-help",
+      "W A S D drive \xB7 Space brake \xB7 C camera"
+    );
+    panel.append(
+      head,
+      description,
+      viewGroup,
+      driveInfo,
+      options,
+      cameraLabel,
+      sensorTitle,
+      ranges,
+      auxTitle,
+      auxiliary,
+      telemetry,
+      impactSection,
+      error,
+      help
+    );
+    document.body.append(panel);
+    function showError(reason) {
+      text(error, reason);
+      error.hidden = false;
+    }
+    function applyResult(result) {
+      if (disposed) return;
+      if (result === false || result?.ok === false) {
+        showError(result?.error || "That car action is unavailable. Try again.");
+        update(latest);
+      } else if (result?.ok !== true) {
+        showError("The car action was not acknowledged. Please try again.");
+        update(latest);
+      }
+    }
+    function dispatch(action, value, control) {
+      if (disposed || control.disabled || pending.has(control)) return;
+      error.hidden = true;
+      try {
+        const result = onAction(action, value);
+        if (result?.then) {
+          pending.add(control);
+          control.disabled = true;
+          Promise.resolve(result).then(applyResult).catch((failure) => {
+            if (!disposed)
+              showError(failure?.message || "Car action failed. Try again.");
+          }).finally(() => {
+            pending.delete(control);
+            if (!disposed) update(latest);
+          });
+        } else applyResult(result);
+      } catch (failure) {
+        showError(failure?.message || "Car action failed. Try again.");
+        update(latest);
+      }
+    }
+    function close(restoreFocus = true) {
+      if (disposed) return;
+      const wasOpen = !panel.hidden;
+      panel.hidden = true;
+      toggleButton.setAttribute("aria-expanded", "false");
+      if (restoreFocus && wasOpen) toggleButton.focus();
+    }
+    listen(toggleButton, "click", () => {
+      if (panel.hidden) {
+        panel.hidden = false;
+        toggleButton.setAttribute("aria-expanded", "true");
+      } else close();
+    });
+    listen(closeButton, "click", () => close());
+    listen(document, "keydown", (event) => {
+      if (event.key === "Escape" && !panel.hidden) {
+        close();
+        event.preventDefault();
+      }
+    });
+    listen(toolbar, "click", (event) => {
+      if (!toggleButton.contains(event.target)) close(false);
+    });
+    function disabled(control, unavailable, reason) {
+      control.disabled = unavailable || pending.has(control);
+      control.title = control.disabled ? reason : "";
+      control.setAttribute("aria-disabled", String(control.disabled));
+    }
+    function update(state = {}) {
+      if (disposed) return;
+      latest = state;
+      const {
+        world: world2,
+        actor,
+        rig,
+        mode = "chase",
+        cutaway: cutaway2,
+        sensors,
+        sensorCamera: sensorCamera2 = "front"
+      } = state;
+      const loaded = Boolean(rig?.root && rig?.diagnostics?.ready !== false);
+      const inBay = world2?.environment === "vehicle";
+      const phase = world2?.vehicleTest?.phase;
+      const knownPhase = ["ready", "running", "contact"].includes(phase);
+      const stopped = Math.abs(finite3(actor?.speed)) < 0.15;
+      const running = phase === "running";
+      const vehicle = actor?.vehicle;
+      const loadingReason = "The detailed car is still loading.";
+      for (const [view2, control] of viewButtons) {
+        control.setAttribute("aria-pressed", String(mode === view2));
+        disabled(control, view2 !== "chase" && !loaded, loadingReason);
+      }
+      cutawayInput.checked = Boolean(cutaway2);
+      sensorsInput.checked = Boolean(sensors);
+      disabled(cutawayInput, !loaded, loadingReason);
+      disabled(sensorsInput, !loaded, loadingReason);
+      cameraSelect.value = sensorCamera2 === "rear" ? "rear" : "front";
+      disabled(cameraSelect, !loaded, loadingReason);
+      const speed = finite3(actor?.speed) * 3.6;
+      const gear = vehicle?.controls?.gear ?? "\u2014";
+      text(
+        speedValue,
+        actor ? `${Math.abs(speed).toFixed(0)} km/h \xB7 ${gear}` : "Waiting for car"
+      );
+      const left = finite3(vehicle?.wheelAngles?.frontLeft) * 180 / Math.PI;
+      const right = finite3(vehicle?.wheelAngles?.frontRight) * 180 / Math.PI;
+      text(
+        steeringValue,
+        vehicle ? `${left.toFixed(1)}\xB0 / ${right.toFixed(1)}\xB0` : "Waiting for rig"
+      );
+      for (let i = 0; i < rangeValues.length; i++) {
+        const raw = world2?.sensors?.rawM?.[i];
+        text(rangeValues[i], Number.isFinite(raw) ? raw.toFixed(1) : "\u2014");
+      }
+      for (const [id2, element] of auxiliaryValues) {
+        const range = world2?.sensors?.auxiliary?.find((ray) => ray.id === id2)?.rangeM;
+        text(element, Number.isFinite(range) ? range.toFixed(1) : "\u2014");
+      }
+      const imu = world2?.sensors?.imu;
+      const telemetryReady = imu?.source === "simulated-vehicle-state";
+      text(
+        telemetryReading,
+        telemetryReady ? `Virtual IMU / GNSS \xB7 ${finite3(imu.longitudinalAccelerationMps2).toFixed(1)} m/s\xB2 \xB7 ${(finite3(imu.yawRateRadS) * 180 / Math.PI).toFixed(1)}\xB0/s` : "Virtual IMU / GNSS unavailable"
+      );
+      telemetryPosition.hidden = !telemetryReady;
+      if (telemetryReady) {
+        const p = imu.positionM ?? {};
+        text(
+          telemetryPosition,
+          `X ${finite3(p.x).toFixed(1)} \xB7 Y ${finite3(p.y).toFixed(1)} \xB7 Z ${finite3(p.z).toFixed(1)} m`
+        );
+      }
+      bayButton.hidden = inBay;
+      returnButton.hidden = !inBay;
+      disabled(bayButton, !loaded, loadingReason);
+      const runReason = !loaded ? loadingReason : !inBay ? "Open the separate impact bay first; the city is not a crash test." : !knownPhase ? "The impact fixture is unavailable. Return to city and reopen the bay." : phase !== "ready" ? running ? "The bounded contact run is in progress." : "Repair / reset the stopped car before another run." : "";
+      disabled(
+        runButton,
+        !loaded || !inBay || phase !== "ready",
+        runReason
+      );
+      const resetReason = !inBay ? "Repair is only available in the separate impact bay." : !knownPhase ? "The impact fixture is unavailable. Return to city and reopen the bay." : running || !stopped ? "Stop the car before repairing it." : !loaded ? loadingReason : "";
+      disabled(
+        resetButton,
+        !loaded || !inBay || !knownPhase || running || !stopped,
+        resetReason
+      );
+      disabled(returnButton, false, "");
+      text(
+        impactStatus,
+        !inBay ? "A separate empty road. Your city is preserved." : !knownPhase ? "Impact fixture unavailable. Return to city and reopen the bay." : running ? "Driving to the fixed barrier \xB7 maximum 6 m/s." : phase === "contact" ? "Contact recorded. The stopped car is ready to inspect or repair." : "Ready \xB7 one real low-speed contact, no traffic or pedestrians."
+      );
+      const damage = vehicle?.damage;
+      const impact = damage?.lastImpact;
+      impactDetails.hidden = !inBay || !impact;
+      if (impact) {
+        const side = impact.side || "body";
+        const amount = Math.round(finite3(damage?.[side]) * 100);
+        text(
+          impactDetails,
+          `${side[0].toUpperCase()}${side.slice(1)} ${amount}% \xB7 ${finite3(impact.closingSpeedMps).toFixed(1)} m/s \xB7 ${(finite3(impact.energyJ) / 1e3).toFixed(1)} kJ`
+        );
+      }
+      text(
+        description,
+        loaded ? "Faceted SUV \xB7 left-hand cockpit" : "Preparing the authored SUV\u2026"
+      );
+    }
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      for (const cleanup of cleanups) cleanup();
+      panel.remove();
+      toggleButton.remove();
+      pending.clear();
+    }
+    update();
+    return { update, close: () => close(), dispose };
+  }
+
+  // src/ui/vision-panel.js
+  var MODES = [
+    ["vision-first", "Vision-first + safety"],
+    ["sensors-only", "Sensors-only comparison"]
+  ];
+  var finite4 = (value) => Number.isFinite(value);
+  var readable = (value) => typeof value === "string" ? value.replaceAll("-", " ") : "Unavailable";
+  function node2(tag, className = "", content) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (content !== void 0) element.textContent = content;
+    return element;
+  }
+  function text2(element, content) {
+    if (element.textContent !== content) element.textContent = content;
+  }
+  function mountVisionPanel({ toolbar, onAction }) {
+    if (!toolbar?.append || typeof onAction !== "function")
+      throw new TypeError("Vision controls require a toolbar and an action callback");
+    const cleanups = [], pending = /* @__PURE__ */ new Set();
+    let latest = {}, disposed = false;
+    const listen = (element, type, listener) => {
+      element.addEventListener(type, listener);
+      cleanups.push(() => element.removeEventListener(type, listener));
+    };
+    const button = (id2, label, action) => {
+      const element = node2("button", "", label);
+      element.id = id2;
+      element.type = "button";
+      if (action) listen(element, "click", () => dispatch(action, void 0, element));
+      return element;
+    };
+    const toggleButton = button("visionToggleBtn", "Vision");
+    toggleButton.setAttribute("aria-controls", "visionPanel");
+    toggleButton.setAttribute("aria-expanded", "false");
+    toolbar.append(toggleButton);
+    const panel = node2("section", "vision-panel");
+    panel.id = "visionPanel";
+    panel.hidden = true;
+    panel.setAttribute("aria-labelledby", "visionPanelTitle");
+    const header = node2("div", "vision-panel-head");
+    const heading = node2("h2", "", "Vision");
+    heading.id = "visionPanelTitle";
+    const closeButton = button("visionCloseBtn", "Close");
+    closeButton.setAttribute("aria-label", "Close vision controls");
+    header.append(heading, closeButton);
+    const description = node2(
+      "p",
+      "vision-note",
+      "Front-camera crossing forecast. Geometry safety stays on in both modes."
+    );
+    const status = node2("p", "vision-status", "Awaiting a front-camera observation.");
+    status.id = "visionAvailability";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    const controls = node2("div", "vision-controls");
+    function select(id2, label, values2, action) {
+      const row = node2("label", "vision-select");
+      const input2 = node2("select");
+      input2.id = id2;
+      for (const [value, name] of values2) {
+        const option = node2("option", "", name);
+        option.value = value;
+        input2.append(option);
+      }
+      row.append(node2("span", "", label), input2);
+      listen(input2, "change", () => dispatch(action, input2.value, input2));
+      controls.append(row);
+      return input2;
+    }
+    const caseSelect = select(
+      "visionCase",
+      "Scene",
+      VISION_CASES.map((item) => [item.id, item.label]),
+      "case"
+    );
+    const modeSelect = select("visionMode", "Driver", MODES, "mode");
+    const caseNote = node2("p", "vision-note");
+    caseNote.id = "visionCaseNote";
+    const actions = node2("div", "vision-actions");
+    const runButton = button("visionRunBtn", "Run scene", "run");
+    const resetButton = button("visionResetBtn", "Reset scene", "reset");
+    runButton.setAttribute("aria-describedby", "visionAvailability");
+    actions.append(runButton, resetButton);
+    const returnButton = button("visionReturnBtn", "Return to city", "return-city");
+    const readings = node2("dl", "vision-readings");
+    const values = {};
+    for (const [key2, label] of [
+      ["camera", "Input"],
+      ["model", "Model"],
+      ["method", "Method / provider"],
+      ["latency", "Inference"],
+      ["age", "Frame / age"],
+      ["tracks", "Observed tracks"],
+      ["forecast", "Future conflict"],
+      ["decision", "Visual cap"],
+      ["applied", "Applied cause"],
+      ["proximity", "Front proximity"]
+    ]) {
+      const value = node2("dd", "", "Unavailable");
+      value.id = key2 === "tracks" ? "visionTrackCount" : `vision${key2[0].toUpperCase()}${key2.slice(1)}`;
+      values[key2] = value;
+      readings.append(node2("dt", "", label), value);
+    }
+    const detail = node2("details", "vision-detail");
+    detail.append(node2("summary", "", "Track evidence and comparison"));
+    const trackList = node2("ul", "vision-track-list");
+    trackList.id = "visionTracks";
+    const comparison = node2(
+      "p",
+      "vision-comparison",
+      "No paired run recorded. Run the same scene in each mode."
+    );
+    comparison.id = "visionComparison";
+    const caution = node2(
+      "p",
+      "vision-note",
+      "A constant-velocity estimate, not knowledge of intent. Unidentified motion stays ambiguous; no track is not proof of a clear road."
+    );
+    detail.append(trackList, comparison, caution);
+    const error = node2("p", "vision-error");
+    error.id = "visionActionError";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    const help = node2("p", "vision-help", "Space takes manual control. Reset retries the visual stream.");
+    panel.append(
+      header,
+      description,
+      status,
+      controls,
+      caseNote,
+      actions,
+      returnButton,
+      readings,
+      detail,
+      error,
+      help
+    );
+    document.body.append(panel);
+    function showError(reason) {
+      text2(error, typeof reason === "string" && reason.trim() ? reason : "Vision action failed. Reset the scene or return to city.");
+      error.hidden = false;
+    }
+    function acknowledge(result, control) {
+      if (disposed) return;
+      if (result?.ok !== true) {
+        showError(result?.error || "That action was not acknowledged. Try Reset scene or Return to city.");
+        if (control === caseSelect && VISION_CASES.some((item) => item.id === latest.caseId))
+          caseSelect.value = latest.caseId;
+        if (control === modeSelect && MODES.some(([id2]) => id2 === latest.mode))
+          modeSelect.value = latest.mode;
+        update(latest);
+      } else error.hidden = true;
+    }
+    function dispatch(action, value, control) {
+      if (disposed || control.disabled || pending.has(control)) return;
+      try {
+        const result = onAction(action, value);
+        if (result?.then) {
+          pending.add(control);
+          control.setAttribute("aria-busy", "true");
+          update(latest);
+          Promise.resolve(result).then((ack) => acknowledge(ack, control)).catch((failure) => {
+            if (!disposed) showError(failure?.message);
+          }).finally(() => {
+            pending.delete(control);
+            control.removeAttribute("aria-busy");
+            if (!disposed) {
+              update(latest);
+              if (!panel.hidden && document.activeElement === document.body && !control.disabled)
+                control.focus();
+            }
+          });
+        } else acknowledge(result, control);
+      } catch (failure) {
+        showError(failure?.message);
+        update(latest);
+      }
+    }
+    function close(restoreFocus = true) {
+      if (disposed) return;
+      const wasOpen = !panel.hidden;
+      panel.hidden = true;
+      toggleButton.setAttribute("aria-expanded", "false");
+      if (restoreFocus && wasOpen) toggleButton.focus();
+    }
+    listen(toggleButton, "click", () => {
+      if (!panel.hidden) {
+        close();
+        return;
+      }
+      panel.hidden = false;
+      toggleButton.setAttribute("aria-expanded", "true");
+      if (latest.world?.environment !== "vision")
+        dispatch("enter", caseSelect.value, toggleButton);
+    });
+    listen(closeButton, "click", () => close());
+    listen(document, "keydown", (event) => {
+      if (event.key === "Escape" && !panel.hidden) {
+        close();
+        event.preventDefault();
+      }
+    });
+    listen(toolbar, "click", (event) => {
+      if (!toggleButton.contains(event.target)) close(false);
+    });
+    function disable(control, unavailable, reason) {
+      control.disabled = unavailable || pending.has(control);
+      control.setAttribute("aria-disabled", String(control.disabled));
+      control.title = control.disabled ? reason : "";
+    }
+    function update(state = {}) {
+      if (disposed) return;
+      latest = state;
+      const { world: world2, vision, availability, mode, caseId, running, comparison: pair } = state;
+      const inVision = world2?.environment === "vision";
+      const busy = Boolean(running);
+      const selectedCase = VISION_CASES.find((item) => item.id === caseId) ?? VISION_CASES.find((item) => item.id === caseSelect.value) ?? VISION_CASES[0];
+      if (document.activeElement !== caseSelect && !pending.has(caseSelect))
+        caseSelect.value = selectedCase.id;
+      if (MODES.some(([id2]) => id2 === mode) && document.activeElement !== modeSelect && !pending.has(modeSelect))
+        modeSelect.value = mode;
+      text2(caseNote, selectedCase.description);
+      disable(
+        runButton,
+        !inVision || busy,
+        busy ? "The current scene is running. Reset to run it again." : "Open Vision to enter the separate scene."
+      );
+      disable(resetButton, !inVision, "Reset is available inside the separate visual scene.");
+      disable(returnButton, !inVision, "You are already in the city.");
+      disable(caseSelect, busy, "Reset the running scene before changing its case.");
+      disable(modeSelect, busy, "Reset the running scene before changing its driver.");
+      const suppliedStatus = typeof availability === "string" ? availability : availability?.status;
+      const statusName = ["error", "disabled", "loading", "stale", "unavailable"].includes(suppliedStatus) ? suppliedStatus : vision?.status ?? suppliedStatus ?? "unavailable";
+      const fault = availability?.error || vision?.availability?.error;
+      const received = vision?.source === "visual-prediction" && vision.available === true && Number.isSafeInteger(vision.frameId) && finite4(vision.ageMs) && vision.ageMs <= 750 && statusName === "ready" && availability?.available !== false && !fault;
+      text2(status, statusName === "error" || fault ? `Perception unavailable: ${fault || "camera processing failed"}. Reset to retry.` : statusName === "stale" ? "Visual evidence is stale. No valid visual-first decision." : statusName === "loading" ? "Loading the installed detector. No visual decision yet." : statusName === "disabled" ? "Perception is disabled. Geometry safety remains separate." : !received ? "Awaiting a matching front-camera observation. Reset to retry." : busy ? "Scene running with current front-camera observations." : "Front-camera observation received. Run when ready.");
+      status.dataset.state = received && statusName === "ready" && !fault ? "ready" : statusName;
+      const model = vision?.model ?? availability?.model;
+      const decision2 = vision?.decision;
+      text2(values.camera, received ? `Physical front RGB \xB7 ${vision.detections ?? 0} detector ${vision.detections === 1 ? "box" : "boxes"}` : "Physical front RGB \xB7 no current evidence");
+      text2(values.model, model?.id || "Not loaded");
+      text2(values.method, model ? `${model.method || "Unknown"} / ${model.provider || "Unknown"}` : "Unavailable");
+      text2(values.latency, finite4(vision?.latencyMs) ? `${vision.latencyMs.toFixed(0)} ms` : "Not measured");
+      text2(values.age, Number.isSafeInteger(vision?.frameId) && finite4(vision?.ageMs) ? `#${vision.frameId} \xB7 ${vision.ageMs.toFixed(0)} ms` : "No matched frame");
+      const tracks = Array.isArray(vision?.tracks) ? vision.tracks : [];
+      text2(values.tracks, `${tracks.length} \xB7 ${tracks.filter((track) => track.label === "person").length} semantic person`);
+      const conflicts2 = received && Array.isArray(vision?.forecasts) ? vision.forecasts.filter((item) => item.conflict === true) : [];
+      const next = conflicts2.find((item) => finite4(item.crossingTimeS));
+      text2(values.forecast, next ? `Lane entry ~${next.crossingTimeS.toFixed(1)} s \xB7 score ${(next.confidence * 100).toFixed(0)}%` : received ? "No qualified conflict forecast" : "Unavailable");
+      text2(values.decision, !received || !decision2?.available ? `Unavailable \xB7 ${readable(decision2?.reason)}` : decision2.brake && mode === "sensors-only" ? `Observe only \xB7 ${readable(decision2.reason)}` : decision2.brake ? `Stop requested \xB7 ${readable(decision2.reason)}` : `No visual cap \xB7 ${readable(decision2.reason)}`);
+      values.decision.dataset.brake = String(Boolean(received && decision2?.available && decision2.brake && mode !== "sensors-only"));
+      text2(values.applied, world2?.player ? readable(world2.player.reason) : "Controller unavailable");
+      const ranges = world2?.sensors?.filteredM;
+      const validRanges = Array.isArray(ranges) ? ranges.filter(finite4) : [];
+      text2(values.proximity, validRanges.length ? `${Math.min(...validRanges).toFixed(1)} m \xB7 separate geometry` : "Unavailable \xB7 separate geometry");
+      const entries = tracks.slice(0, 3).map((track) => {
+        const speed = track.velocity ? Math.hypot(track.velocity.x, track.velocity.z) : null;
+        return `${track.id} \xB7 ${track.label === "motion" ? "ambiguous motion" : track.label} \xB7 ${track.observations ?? 0} observations \xB7 ${finite4(speed) ? speed.toFixed(2) : "\u2014"} m/s \xB7 uncertainty ${finite4(track.uncertaintyM) ? track.uncertaintyM.toFixed(2) : "\u2014"} m`;
+      });
+      const lines = entries.length ? entries : ["No projected visual tracks."];
+      while (trackList.children.length > lines.length) trackList.lastElementChild.remove();
+      lines.forEach((line, i) => {
+        if (!trackList.children[i]) trackList.append(node2("li"));
+        text2(trackList.children[i], line);
+      });
+      const visualTime = pair?.visionBrakeTimeS;
+      const reactiveTime = pair?.reactiveBrakeTimeS;
+      text2(comparison, finite4(visualTime) && finite4(reactiveTime) ? `Recorded onset: vision ${visualTime.toFixed(2)} s; sensors-only ${reactiveTime.toFixed(2)} s. Difference ${(reactiveTime - visualTime).toFixed(2)} s.` : finite4(visualTime) || finite4(reactiveTime) ? `Recorded onset: ${finite4(visualTime) ? `vision ${visualTime.toFixed(2)} s` : `sensors-only ${reactiveTime.toFixed(2)} s`}. Paired run not recorded.` : "No paired run recorded. Run the same scene in each mode.");
+    }
+    update();
+    return {
+      update,
+      close,
+      dispose() {
+        if (disposed) return;
+        close();
+        disposed = true;
+        cleanups.forEach((cleanup) => cleanup());
+        pending.clear();
+        panel.remove();
+        toggleButton.remove();
+      }
+    };
+  }
+
   // src/main.js
   var $2 = (id2) => document.getElementById(id2);
   var renderer = new WebGLRenderer({
@@ -35264,19 +39988,22 @@
   });
   renderer.domElement.className = "scene";
   document.body.prepend(renderer.domElement);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.9;
+  var viewportWidth = document.documentElement.clientWidth;
+  var viewportHeight = innerHeight;
   var camera = new PerspectiveCamera(
     62,
-    innerWidth / innerHeight,
+    viewportWidth / viewportHeight,
     0.1,
     500
   );
   var frontCamera = new PerspectiveCamera(76, 16 / 9, 0.1, 250);
+  var visionCamera = new PerspectiveCamera(76, 16 / 9, 0.1, 250);
   var worlds = { city: new World() };
   var views = /* @__PURE__ */ new Map();
   var environment = "city";
@@ -35286,19 +40013,155 @@
   var view;
   var clock = new FixedClock();
   var paused = false;
-  var driverView = false;
+  var cameraMode = "chase";
   var showCamera = true;
   var lastInput = "";
   var lastTime = performance.now();
   var lastUI = 0;
   var lastFrame = 0;
   var keys = /* @__PURE__ */ new Set();
+  var orbit = new OrbitControls(camera, renderer.domElement);
+  orbit.enabled = false;
+  orbit.enablePan = false;
+  orbit.enableDamping = true;
+  orbit.minDistance = 1.2;
+  orbit.maxDistance = 12;
   var cameraSnap = true;
   var phone;
+  var vehiclePanel;
+  var visionPanel;
+  var visualClient;
+  var visionCaseId = "cross-left";
+  var visionMode = "vision-first";
+  var pendingVisionRun = false;
+  var visionComparisons = /* @__PURE__ */ new Map();
+  function visionComparisonKey(caseId, config = world.config) {
+    return `${caseId}|${config.seed}|${config.speedLimit}`;
+  }
+  function saveVisionComparison() {
+    const lab = world.visionLab;
+    if (!lab || lab.phase !== "complete" || lab.error) return;
+    const key2 = visionComparisonKey(lab.caseId);
+    const values = visionComparisons.get(key2) ?? { visionBrakeTimeS: null, reactiveBrakeTimeS: null };
+    if (world.visualMode === "vision-first") values.visionBrakeTimeS = lab.firstVisualBrakeS;
+    else values.reactiveBrakeTimeS = lab.firstReactiveBrakeS;
+    visionComparisons.set(key2, values);
+  }
+  var cutaway = false;
+  var sensorView = false;
+  var sensorCamera = "front";
+  var inspectionPause = null;
+  var renderedFrames = 0;
+  var inspectionRig = null;
+  var appliedCutaway = null;
+  var appliedSensors = null;
+  var isInspection = () => cameraMode === "inspection" || cameraMode === "running-gear";
+  function setCarView(mode) {
+    if (!["chase", "cockpit", "inspection", "running-gear"].includes(mode))
+      throw new Error("Unknown car camera view");
+    if (mode === "inspection" || mode === "running-gear") {
+      if (inspectionPause === null) inspectionPause = paused;
+      paused = true;
+    } else if (inspectionPause !== null) {
+      paused = inspectionPause;
+      inspectionPause = null;
+    }
+    cameraMode = mode;
+    if (mode === "running-gear") cutaway = true;
+    orbit.enabled = isInspection();
+    camera.fov = mode === "cockpit" ? 60 : 62;
+    camera.near = mode === "cockpit" ? 0.025 : 0.1;
+    camera.updateProjectionMatrix();
+    keys.clear();
+    cameraSnap = true;
+    $2("pauseBtn").textContent = paused ? "Resume" : "Pause";
+  }
+  function carAction(action, value) {
+    if (action === "view") setCarView(value);
+    else if (action === "cutaway") cutaway = Boolean(value);
+    else if (action === "sensors") sensorView = Boolean(value);
+    else if (action === "sensor-camera") {
+      if (!["front", "rear"].includes(value))
+        return { ok: false, error: "Choose the front or rear installed camera." };
+      sensorCamera = value;
+      perceptionOverlay?.setVisible(showCamera && sensorCamera === "front");
+    } else if (action === "impact-bay") {
+      setCarView("chase");
+      activate("vehicle");
+      paused = false;
+      cutaway = false;
+      sensorView = true;
+    } else if (action === "impact-run") {
+      if (environment !== "vehicle" || world.vehicleTest?.phase !== "ready")
+        return { ok: false, error: "Enter the vehicle test bay and reset it before starting a contact run." };
+      setCarView("chase");
+      paused = false;
+      cutaway = false;
+      if (!world.command({ type: "vehicle-test", operation: "run" }))
+        return { ok: false, error: "The controlled contact run could not start. Reset the vehicle test bay." };
+    } else if (action === "reset-car") {
+      if (environment !== "vehicle")
+        return { ok: false, error: "Car repair/reset is available in the isolated vehicle test bay." };
+      setCarView("chase");
+      reset(world.config);
+      paused = false;
+      cutaway = false;
+    } else if (action === "return-city") {
+      setCarView("chase");
+      activate("city");
+    } else return { ok: false, error: "Unknown car action." };
+    updateUI();
+    return { ok: true };
+  }
+  function newVisionScene() {
+    saveVisionComparison();
+    const previous = worlds.vision;
+    const previousView = views.get(previous);
+    previousView?.dispose();
+    views.delete(previous);
+    worlds.vision = new World({ ...world.config, visionCase: visionCaseId }, "vision");
+    activate("vision");
+    world.command({ type: "visual-mode", mode: visionMode });
+    pendingVisionRun = false;
+    paused = false;
+  }
+  async function visionAction(action, value) {
+    if (action === "case") {
+      visionCaseId = value;
+      newVisionScene();
+    } else if (action === "mode") {
+      visionMode = value;
+      newVisionScene();
+    } else if (action === "return-city") {
+      saveVisionComparison();
+      pendingVisionRun = false;
+      activate("city");
+    } else if (action === "reset") {
+      newVisionScene();
+    } else if (action === "enter" || action === "run") {
+      if (environment !== "vision" || world.visionLab?.phase === "complete") newVisionScene();
+      if (!visualClient.enabled || visualClient.restartRequired) {
+        const started = await visualClient.start();
+        if (!started.ok) return started;
+        world.command({ type: "visual-reset", streamId: visualClient.streamId });
+      }
+      if (action === "run") {
+        world.command({ type: "visual-reset", streamId: visualClient.reset() });
+        pendingVisionRun = true;
+      }
+    } else return { ok: false, error: "Unknown vision action." };
+    updateUI();
+    return { ok: true };
+  }
   function activate(next) {
+    setCarView("chase");
     phone?.reset();
     environment = next;
     world = worlds[next] ?? (worlds[next] = new World(world.config, next));
+    if (visualClient) {
+      world.command({ type: "visual-reset", streamId: visualClient.reset() });
+      if (visualClient.enabled) perceptionOverlay.setExternal(null);
+    }
     if (world.policy !== (useLearnedPolicy ? learnedPolicy : null))
       world.command({
         type: "policy",
@@ -35306,15 +40169,22 @@
       });
     if (!views.has(world)) views.set(world, new WorldView(world));
     view = views.get(world);
+    view.scene.matrixWorldAutoUpdate = false;
     clock = new FixedClock();
     cameraSnap = true;
     keys.clear();
     lastInput = "";
-    $2("environmentLabel").textContent = next === "city" ? "City simulation" : "Test lab";
+    $2("environmentLabel").textContent = next === "city" ? "City simulation" : next === "vehicle" ? "Vehicle test bay" : next === "vision" ? "Visual prediction lab" : "Test lab";
     $2("labBtn").textContent = next === "city" ? "Test lab" : "Return to city";
-    $2("mapLabel").textContent = next === "city" ? "City" : "Test lab";
+    $2("mapLabel").textContent = next === "city" ? "City" : next === "vehicle" ? "Vehicle bay" : "Test lab";
     $2("phoneStatus").textContent = next === "city" ? "Type or speak a destination, or choose a place." : "Choose the north or south lab destination.";
     $2("labScenarios").hidden = next !== "lab";
+    $2("aiToggleBtn").disabled = next === "vehicle" || next === "vision";
+    $2("phoneToggleBtn").disabled = next === "vehicle" || next === "vision";
+    if (next === "vehicle" || next === "vision") {
+      $2("inGamePhone").hidden = true;
+      $2("phoneToggleBtn").setAttribute("aria-expanded", "false");
+    }
     $2("phonePlaces").replaceChildren(
       ...(next === "city" ? PLACES : LAB_PLACES).map((place) => {
         const button = document.createElement("button");
@@ -35339,6 +40209,7 @@
       if ($2(name + "Output")) $2(name + "Output").textContent = world.config[name];
     }
     updateUI();
+    lastTime = performance.now();
   }
   function reset(options) {
     view.dispose();
@@ -35347,13 +40218,18 @@
     activate(environment);
   }
   function resize() {
-    renderer.setSize(innerWidth, innerHeight);
-    camera.aspect = innerWidth / innerHeight;
+    const bounds = renderer.domElement.getBoundingClientRect();
+    viewportWidth = Math.round(bounds.width);
+    viewportHeight = Math.round(bounds.height);
+    renderer.setPixelRatio(Math.min(Math.round(devicePixelRatio * 1e3) / 1e3, 1.5));
+    renderer.setSize(viewportWidth, viewportHeight, false);
+    camera.aspect = viewportWidth / viewportHeight;
     camera.updateProjectionMatrix();
   }
   addEventListener("resize", resize);
   resize();
   function autoToggle() {
+    if (environment === "vehicle" || environment === "vision") return;
     world.command({
       type: "mode",
       mode: world.mode === "auto" ? "manual" : "auto"
@@ -35368,6 +40244,14 @@
     onDestination: choosePlace,
     getWorld: () => world,
     getPlaces: () => environment === "city" ? PLACES : LAB_PLACES
+  });
+  vehiclePanel = mountVehiclePanel({
+    toolbar: document.querySelector(".topbar nav"),
+    onAction: carAction
+  });
+  visionPanel = mountVisionPanel({
+    toolbar: document.querySelector(".topbar nav"),
+    onAction: visionAction
   });
   var isEditing = (target2) => ["INPUT", "TEXTAREA", "SELECT"].includes(target2.tagName);
   addEventListener("keydown", (event) => {
@@ -35386,8 +40270,7 @@
     if (event.repeat) return;
     if (event.code === "KeyP") $2("phoneToggleBtn").click();
     if (event.code === "KeyC") {
-      driverView = !driverView;
-      cameraSnap = true;
+      setCarView(cameraMode === "cockpit" ? "chase" : "cockpit");
     }
     if (event.code === "KeyI") autoToggle();
   });
@@ -35403,11 +40286,14 @@
   $2("cameraBtn").onclick = () => {
     showCamera = !showCamera;
     $2("cameraLabel").hidden = !showCamera;
-    perceptionOverlay?.setVisible(showCamera);
+    perceptionOverlay?.setVisible(showCamera && sensorCamera === "front");
     $2("cameraBtn").textContent = showCamera ? "Hide camera" : "Show camera";
   };
   $2("pauseBtn").onclick = () => {
-    paused = !paused;
+    if (isInspection()) {
+      setCarView("chase");
+      paused = false;
+    } else paused = !paused;
     keys.clear();
     $2("pauseBtn").textContent = paused ? "Resume" : "Pause";
   };
@@ -35543,9 +40429,16 @@
   updateTrainingStatus();
   setInterval(updateTrainingStatus, 2500);
   function input() {
-    const editing = isEditing(document.activeElement), pressed = (code) => !editing && keys.has(code);
+    const editing = isEditing(document.activeElement) || isInspection(), pressed = (code) => !editing && keys.has(code);
     const targetSpeed = pressed("Space") ? 0 : pressed("KeyW") || pressed("ArrowUp") ? world.player.maxSpeed : pressed("KeyS") || pressed("ArrowDown") ? -2.5 : 0;
-    const steer = ((pressed("KeyA") || pressed("ArrowLeft") ? 1 : 0) - (pressed("KeyD") || pressed("ArrowRight") ? 1 : 0)) * 0.62;
+    if (environment === "vision") {
+      if (pressed("Space") && !world.visionLab.error) {
+        pendingVisionRun = false;
+        world.command({ type: "stop" });
+      }
+      return;
+    }
+    const steer = ((pressed("KeyD") || pressed("ArrowRight") ? 1 : 0) - (pressed("KeyA") || pressed("ArrowLeft") ? 1 : 0)) * 0.62;
     const command = { type: "drive", targetSpeed, steer };
     const signature = JSON.stringify(command);
     if (signature !== lastInput) {
@@ -35564,19 +40457,47 @@
     "red-light": "Red light",
     occupied: "Safety brake",
     "road-boundary": "Road boundary",
+    "visual-prediction": "Visual forecast: braking for a crossing trajectory",
     "no-route": "No legal route",
     arrived: "Arrived"
   };
   function updateUI() {
+    saveVisionComparison();
+    $2("pauseBtn").textContent = paused ? "Resume" : "Pause";
     $2("speedVal").textContent = Math.round(Math.abs(world.player.speed) * 3.6);
     $2("aiToggleBtn").textContent = world.mode === "auto" ? "Autonomous drive" : "Manual drive";
     $2("safetyStatus").textContent = paused ? "Simulation paused" : world.destination && !world.player.path.length ? "Destination reached" : reasons[world.player.reason] ?? world.player.reason;
-    $2("cameraDecision").textContent = `Simulator safety: ${reasons[world.player.reason] ?? world.player.reason}${world.player.blockedBy ? ` \xB7 ${world.player.blockedBy}` : ""}`;
+    $2("cameraDecision").textContent = `Control: ${reasons[world.player.reason] ?? world.player.reason}${world.player.blockedBy ? ` \xB7 ${world.player.blockedBy}` : ""}`;
     $2("tripLabel").textContent = world.destination ? `${world.destination.name ?? "Destination"} \xB7 ${world.player.path.length ? "En route" : "Arrived"}` : "Choose a destination on the phone";
     $2("diagnostics").textContent = `Seed: ${world.config.seed} \xB7 Tick ${world.tick} | ${world.capacity.traffic} vehicles / ${world.capacity.pedestrians} pedestrians | ${Math.round(world.metrics.distance)} m | Safety interventions: ${world.metrics.interventions} | Player wait: ${world.metrics.waitSeconds.toFixed(1)} s`;
     $2("scenarioStatus").textContent = world.scenario ? `${{ crossing: "Pedestrian crossing", "side-traffic": "Side street tuk-tuk", barrier: "Road barrier" }[world.scenario.kind]} \xB7 ${world.scenario.applied ? "Active" : "Deferred: no free space"}` : "Seeded scenarios run on a replayable schedule";
     $2("loadingStatus").textContent = view.status.failed.length ? `${view.status.failed.length} models failed to load \xB7 fallback shapes shown` : `${environment === "lab" ? "Test lab" : "City"} \xB7 ${world.config.seed} \xB7 ${world.capacity.traffic} vehicles \xB7 ${world.capacity.pedestrians} pedestrians`;
     inspector.update(world, perceptionOverlay.latest);
+    vehiclePanel?.update({
+      world,
+      actor: world.player,
+      rig: view.playerRig,
+      mode: cameraMode,
+      cutaway,
+      sensors: sensorView,
+      sensorCamera
+    });
+    visionPanel?.update({
+      world,
+      vision: world.visualState,
+      availability: visualClient?.status ?? { available: false, status: "disabled" },
+      mode: visionMode,
+      caseId: visionCaseId,
+      running: world.visionLab?.phase === "running" || pendingVisionRun,
+      comparison: visionComparisons.get(visionComparisonKey(visionCaseId)) ?? null
+    });
+    if (environment === "vision")
+      $2("loadingStatus").textContent = world.visionLab.error ?? `Visual prediction \xB7 ${world.visionLab.phase} \xB7 live camera pixels`;
+    $2("cameraLabel").firstChild.textContent = sensorCamera === "rear" ? "Rear camera " : "Front camera ";
+    if (environment === "vehicle") {
+      $2("loadingStatus").textContent = view.status.failed.length ? "Car model failed to load. Reload the page to retry." : `Vehicle test bay \xB7 ${world.vehicleTest?.phase ?? "ready"} \xB7 isolated contact fixture`;
+      $2("scenarioStatus").textContent = "Vehicle-only fixture. Normal city safety remains unchanged.";
+    }
     drawMap();
   }
   var map = $2("minimap").getContext("2d");
@@ -35641,9 +40562,36 @@
     bridge
   });
   var inspector = createDecisionInspector();
+  visualClient = createVisualClient({
+    renderer,
+    onStatus: (status) => {
+      if (status.status === "error" || status.status === "stale") {
+        perceptionOverlay.setExternal(null);
+        $2("cvStatus").textContent = status.error ?? "Camera observations are stale";
+      }
+    },
+    onResult: (result) => {
+      if (result.streamId !== visualClient.streamId) return;
+      world.command({ type: "visual-observation", result });
+      perceptionOverlay.setExternal?.(result);
+      if (pendingVisionRun && environment === "vision") {
+        world.command({ type: "vision-run" });
+        pendingVisionRun = false;
+      }
+    }
+  });
   var offset = new Vector3();
   var target = new Vector3();
   var forward = new Vector3();
+  function mountedCameraPose(player, mode) {
+    const pose3 = view.playerRig?.getCameraPose(mode);
+    if (!pose3) return false;
+    offset.set(pose3.position.x, pose3.position.y, pose3.position.z);
+    target.set(pose3.target.x, pose3.target.y, pose3.target.z);
+    player.localToWorld(offset);
+    player.localToWorld(target);
+    return true;
+  }
   function frame(time) {
     requestAnimationFrame(frame);
     const delta = (time - lastTime) / 1e3;
@@ -35651,24 +40599,63 @@
     input();
     if (!paused && !document.hidden) clock.advance(delta, () => world.step());
     const player = view.sync(clock.alpha);
+    view.scene.updateMatrixWorld();
+    renderer.shadowMap.needsUpdate = true;
+    if (view.playerRig && (inspectionRig !== view.playerRig || appliedCutaway !== cutaway || appliedSensors !== sensorView)) {
+      view.playerRig.setInspection({ cutaway, sensors: sensorView });
+      inspectionRig = view.playerRig;
+      appliedCutaway = cutaway;
+      appliedSensors = sensorView;
+    }
     forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
-    offset.copy(player.position).addScaledVector(forward, driverView ? 0.9 : -10.5);
-    offset.y += driverView ? 1.25 : 5;
-    camera.position.lerp(offset, cameraSnap ? 1 : 1 - Math.exp(-delta * 6));
+    if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
+      if (isInspection()) {
+        if (cameraSnap) {
+          camera.position.copy(offset);
+          orbit.target.copy(target);
+        }
+        orbit.update();
+      } else {
+        camera.position.copy(offset);
+        camera.lookAt(target);
+      }
+    } else {
+      offset.copy(player.position).addScaledVector(forward, -10.5);
+      offset.y += 5;
+      camera.position.lerp(offset, cameraSnap ? 1 : 1 - Math.exp(-delta * 6));
+      target.copy(player.position).addScaledVector(forward, 5);
+      target.y += 1;
+      camera.lookAt(target);
+    }
     cameraSnap = false;
-    target.copy(player.position).addScaledVector(forward, driverView ? 15 : 5);
-    target.y += 1;
-    camera.lookAt(target);
-    frontCamera.position.copy(player.position).addScaledVector(forward, 1.5);
-    frontCamera.position.y += 1.25;
-    frontCamera.lookAt(
-      target.copy(frontCamera.position).addScaledVector(forward, 20)
-    );
+    if (mountedCameraPose(player, sensorCamera === "rear" ? "sensor-rear" : "sensor")) {
+      frontCamera.position.copy(offset);
+      frontCamera.lookAt(target);
+    } else {
+      frontCamera.position.copy(player.position).addScaledVector(forward, 1.5);
+      frontCamera.position.y += 1.25;
+      frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
+    }
+    if (visualClient.enabled && mountedCameraPose(player, "sensor")) {
+      visionCamera.position.copy(offset);
+      visionCamera.lookAt(target);
+      const debugRays = view.playerRig?.root.getObjectByName("vehicle-sensor-rays");
+      const raysVisible = debugRays?.visible;
+      const routeVisible = view.route.visible;
+      if (debugRays) debugRays.visible = false;
+      view.route.visible = false;
+      try {
+        visualClient.capture(view.scene, visionCamera, world.player, world.tick / 60);
+      } finally {
+        if (debugRays) debugRays.visible = raysVisible;
+        view.route.visible = routeVisible;
+      }
+    }
     renderer.setScissorTest(false);
-    renderer.setViewport(0, 0, innerWidth, innerHeight);
+    renderer.setViewport(0, 0, viewportWidth, viewportHeight);
     renderer.render(view.scene, camera);
     if (showCamera) {
-      const width = innerWidth < 850 ? 230 : 276, height = Math.round(width * 9 / 16), x = 24, y = innerWidth < 850 ? 100 : 94;
+      const width = viewportWidth < 850 ? 230 : 276, height = Math.round(width * 9 / 16), x = 24, y = viewportWidth < 850 ? 100 : 94;
       renderer.setScissorTest(true);
       renderer.setScissor(x, y, width, height);
       renderer.setViewport(x, y, width, height);
@@ -35679,6 +40666,7 @@
         bridge.sendFrame({ x, y, width, height });
         lastFrame = time;
       }
+      renderedFrames++;
       renderer.setScissorTest(false);
     }
     if (time - lastUI > 180) {
@@ -35697,6 +40685,39 @@
     },
     get paused() {
       return paused;
+    },
+    get vehicleRig() {
+      return view.playerRig;
+    },
+    get vision() {
+      return {
+        status: visualClient.status,
+        streamId: visualClient.streamId,
+        transport: visualClient.timings,
+        state: world.visualState,
+        evaluation: world.visionLab
+      };
+    },
+    renderDiagnostics() {
+      const gl = renderer.getContext();
+      return {
+        renderedFrames,
+        cameraMode,
+        cutaway,
+        sensorView,
+        sensorCamera,
+        width: renderer.domElement.width,
+        height: renderer.domElement.height,
+        pixelRatio: renderer.getPixelRatio(),
+        renderCalls: renderer.info.render.calls,
+        triangles: renderer.info.render.triangles,
+        backend: gl.getParameter(gl.VERSION),
+        renderer: gl.getParameter(gl.RENDERER),
+        cameraPosition: camera.position.toArray(),
+        sensorCameraPosition: frontCamera.position.toArray(),
+        sensorCameraDirection: frontCamera.getWorldDirection(new Vector3()).toArray(),
+        vehicle: view.playerRig?.diagnostics ?? null
+      };
     },
     pause(value = true) {
       paused = value;
