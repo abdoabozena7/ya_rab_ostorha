@@ -51,7 +51,7 @@ export function createBridge({ renderer, readState }) {
   return { sendFrame, get lastFrameId() { return lastFrameId; } };
 }
 
-export function createVisualClient({ renderer, onResult, onStatus }) {
+export function createVisualClient({ renderer, onResult, onStatus, onFrame }) {
   const width = 640, height = 360;
   const target = new THREE.WebGLRenderTarget(width, height, {
     minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
@@ -65,7 +65,10 @@ export function createVisualClient({ renderer, onResult, onStatus }) {
   const context = canvas.getContext("2d", { willReadFrequently: true });
   const image = context.createImageData(width, height);
   let streamId = crypto.randomUUID(), frameId = 0, lastSampleS = -Infinity;
-  let enabled = false, disposed = false, pending = false, generation = 0;
+  let enabled = false, previewEnabled = false, disposed = false, pending = false, generation = 0;
+  let lifecycle = 0, latestFrame = null;
+  const frames = new Map();
+  const results = new Map();
   let restartRequired = false;
   let timer = null, lastResultId = -1;
   const timings = [];
@@ -91,6 +94,8 @@ export function createVisualClient({ renderer, onResult, onStatus }) {
       notify(data);
       if (data.result?.streamId === streamId && data.result.frameId > lastResultId) {
         lastResultId = data.result.frameId;
+        results.set(lastResultId, data.result);
+        if (results.size > 12) results.delete(results.keys().next().value);
         const timing = timings.find((item) => item.streamId === streamId && item.frameId === lastResultId);
         if (timing) timing.observedAfterMs = performance.now() - timing.startedMs;
         onResult(data.result);
@@ -106,20 +111,26 @@ export function createVisualClient({ renderer, onResult, onStatus }) {
   function reset() {
     generation++;
     clearTimeout(timer);
+    frames.clear();
+    results.clear();
+    latestFrame = null;
     streamId = crypto.randomUUID();
     frameId = 0;
     lastResultId = -1;
     lastSampleS = -Infinity;
     pending = false;
-    notify({ result: null, status: enabled ? "loading" : "disabled", error: null });
+    notify({ available: false, result: null, status: enabled ? "loading" : "disabled", error: null });
     if (enabled && !disposed) timer = setTimeout(poll, 0);
     return streamId;
   }
   async function start() {
-    notify({ status: "loading", error: null });
+    const operation = ++lifecycle;
+    notify({ available: false, status: "loading", error: null });
     try {
       if (restartRequired) await request("/api/vision/stop", { method: "POST" });
       const result = await request("/api/vision/start", { method: "POST" });
+      if (operation !== lifecycle || disposed)
+        return { ok: false, error: "Camera startup was superseded by a newer action." };
       if (!result.available) throw new Error(result.error ?? "Local camera perception is unavailable.");
       enabled = true;
       restartRequired = false;
@@ -129,13 +140,31 @@ export function createVisualClient({ renderer, onResult, onStatus }) {
       poll();
       return { ok: true, streamId };
     } catch (error) {
-      enabled = false;
-      notify({ available: false, status: "error", error: error.message, result: null });
+      if (operation === lifecycle && !disposed) {
+        enabled = false;
+        notify({ available: false, status: "error", error: error.message, result: null });
+      }
+      return { ok: false, error: error.message };
+    }
+  }
+  async function stop() {
+    const operation = ++lifecycle;
+    enabled = false;
+    restartRequired = false;
+    reset();
+    try {
+      await request("/api/vision/stop", { method: "POST" });
+      if (operation !== lifecycle || disposed)
+        return { ok: false, error: "Camera stop was superseded by a newer action." };
+      return { ok: true };
+    } catch (error) {
+      if (operation === lifecycle && !disposed)
+        notify({ available: false, status: "error", error: error.message, result: null });
       return { ok: false, error: error.message };
     }
   }
   function capture(scene, camera, ego, simulationTimeS) {
-    if (!enabled || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
+    if ((!enabled && !previewEnabled) || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
     lastSampleS = simulationTimeS;
     const currentGeneration = generation, capturedStream = streamId;
     const currentFrame = ++frameId;
@@ -184,6 +213,18 @@ export function createVisualClient({ renderer, onResult, onStatus }) {
       if (!encoded.startsWith(prefix)) throw new Error("The front camera did not encode a JPEG.");
       frame.imageJpegBase64 = encoded.slice(prefix.length);
       timing.encodedAfterMs = performance.now() - timing.startedMs;
+      Object.freeze(frame.camera.position);
+      Object.freeze(frame.camera);
+      Object.freeze(frame.ego);
+      Object.freeze(frame);
+      frames.set(currentFrame, frame);
+      if (frames.size > 12) frames.delete(frames.keys().next().value);
+      latestFrame = frame;
+      onFrame?.(frame);
+      if (!enabled) {
+        pending = false;
+        return;
+      }
       timing.postedAfterMs = timing.encodedAfterMs;
       request("/api/vision/frame", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -205,12 +246,27 @@ export function createVisualClient({ renderer, onResult, onStatus }) {
     if (disposed) return;
     disposed = true;
     enabled = false;
+    lifecycle++;
     generation++;
     clearTimeout(timer);
+    frames.clear();
+    results.clear();
+    latestFrame = null;
     target.dispose();
   }
   return {
-    start, reset, capture, dispose,
+    start, stop, reset, capture, dispose,
+    setPreviewEnabled(value) {
+      if (typeof value !== "boolean") throw new Error("Camera preview needs a boolean state.");
+      previewEnabled = value;
+    },
+    getFrame(resultStream, resultFrame) {
+      return resultStream === streamId ? frames.get(resultFrame) ?? null : null;
+    },
+    getResult(resultStream, resultFrame) {
+      return resultStream === streamId ? results.get(resultFrame) ?? null : null;
+    },
+    get latestFrame() { return latestFrame; },
     get streamId() { return streamId; },
     get status() { return status; },
     get enabled() { return enabled; },

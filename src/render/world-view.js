@@ -7,6 +7,7 @@ import { interpolate, roadRect, pointOnRoad } from "../core/geometry.js";
 import { addPlaceSigns } from "./place-signs.js";
 import { createPlayerVehicle } from "./player-vehicle.js";
 import { createEgyptStreetLayer } from "./egypt-streets.js";
+import { createPedestrianRig } from "./pedestrian-rig.js";
 
 const templates = new Map(),
   loader = new GLTFLoader();
@@ -373,7 +374,7 @@ export class WorldView {
           gltf.scene,
           person ? Infinity : actor.width,
           person ? Infinity : actor.length,
-          person ? 1.78 : 2.3,
+          person ? actor.body?.heightM ?? 1.78 : 2.3,
           !person && actor.kind !== "tuktuk",
         );
         if (!person)
@@ -395,19 +396,7 @@ export class WorldView {
         record.visual = visual;
         this.status.loaded++;
         if (person) {
-          record.walkStride =
-            (gltf.scene.userData.walkStride ?? 1.25) * visual.scale.x;
-          record.runStride =
-            (gltf.scene.userData.runStride ?? 1.9) * visual.scale.x;
-          record.mixer = new THREE.AnimationMixer(visual);
-          record.actions = {};
-          for (const name of ["idle", "walk", "run"]) {
-            const clip = gltf.animations.find(
-              (c) => c.name.toLowerCase() === name,
-            );
-            if (clip)
-              record.actions[name] = record.mixer.clipAction(clip).play();
-          }
+          record.pedestrianRig = createPedestrianRig(visual, gltf.animations, actor);
         } else {
           visual.traverse((part) => {
             if (/^wheel-(front|rear)-(left|right)$/.test(part.name))
@@ -426,6 +415,11 @@ export class WorldView {
         }
       })
       .catch(() => this.status.failed.push(actor.kind));
+  }
+  pedestrianGroundHeight(position) {
+    if (this.world.environment === "vision") return 0.12;
+    if (pointOnRoad(position, this.world.roads)) return 0.115;
+    return pointOnRoad(position, this.world.roads, -2.5) ? 0.07 : -0.05;
   }
   sync(alpha) {
     const world = this.world;
@@ -455,16 +449,17 @@ export class WorldView {
       if (!this.roots.has(actor.id)) this.addActor(actor);
       const record = this.roots.get(actor.id),
         p = actor === world.player ? actor : interpolate(actor.previous ?? actor, actor, alpha);
-      record.root.position.set(p.x, 0.12, p.z);
+      record.root.position.set(p.x,
+        actor.type === "pedestrian" ? this.pedestrianGroundHeight(p) : 0.12, p.z);
       record.root.rotation.y = p.heading;
       const distanceFromPlayer = Math.hypot(
           p.x - world.player.x,
           p.z - world.player.z,
         ),
         detailed =
-          actor === world.player ||
+          actor === world.player || actor.id === this.focusedPersonId ||
           distanceFromPlayer < (actor.type === "pedestrian" ? 42 : 68);
-      record.root.visible = actor === world.player || distanceFromPlayer < 135;
+      record.root.visible = actor === world.player || actor.id === this.focusedPersonId || distanceFromPlayer < 135;
       if (record.visual) {
         record.visual.visible = detailed;
         record.fallback.visible = !detailed;
@@ -476,48 +471,7 @@ export class WorldView {
           if (wheel.front) wheel.part.rotateY(actor.steer ?? 0);
           wheel.part.rotateX(actor.distance / wheel.radius);
         }
-      if (record.mixer && detailed) {
-        const walking = actor.speed > 0.05;
-        const elapsed = Math.max(
-          0,
-          (world.tick + alpha - (record.lastTick ?? world.tick)) / 60,
-        );
-        record.lastTick = world.tick + alpha;
-        record.walkWeight =
-          (record.walkWeight ?? 0) +
-          ((walking ? 1 : 0) - (record.walkWeight ?? 0)) *
-            (1 - Math.exp(-elapsed * 12));
-        const { walk, idle, run } = record.actions,
-          running = actor.speed > 1.9;
-        const travelled =
-          actor.distance -
-          (actor.previous
-            ? Math.hypot(
-                actor.x - actor.previous.x,
-                actor.z - actor.previous.z,
-              ) *
-              (1 - alpha)
-            : 0);
-        if (walk) {
-          walk.setEffectiveWeight(running ? 0 : record.walkWeight);
-          walk.time =
-            ((travelled / record.walkStride + actor.phase) *
-              walk.getClip().duration) %
-            walk.getClip().duration;
-        }
-        if (run) {
-          run.setEffectiveWeight(running ? record.walkWeight : 0);
-          run.time =
-            ((travelled / record.runStride + actor.phase) *
-              run.getClip().duration) %
-            run.getClip().duration;
-        }
-        if (idle) {
-          idle.setEffectiveWeight(1 - record.walkWeight);
-          idle.time = (world.tick / 60 + actor.phase) % idle.getClip().duration;
-        }
-        record.mixer.update(0);
-      }
+      if (record.pedestrianRig && detailed) record.pedestrianRig.update(actor, alpha);
     }
     if (this.routeRevision !== world.routeRevision) {
       this.routeRevision = world.routeRevision;
@@ -551,11 +505,13 @@ export class WorldView {
     this.disposed = true;
     this.scene.remove(this.egyptStreets.root);
     this.egyptStreets.dispose();
-    for (const record of this.roots.values())
+    for (const record of this.roots.values()) {
+      record.pedestrianRig?.dispose();
       if (record.vehicleRig) {
         record.root.remove(record.vehicleRig.root);
         record.vehicleRig.dispose();
       }
+    }
     const skeletons = new Set();
     const textures = new Set();
     this.scene.traverse((part) => {
@@ -575,10 +531,6 @@ export class WorldView {
       }
     });
     for (const skeleton of skeletons) skeleton.dispose();
-    for (const record of this.roots.values()) {
-      record.mixer?.stopAllAction();
-      if (record.mixer) record.mixer.uncacheRoot(record.visual);
-    }
     this.scene.clear();
     this.roots.clear();
   }

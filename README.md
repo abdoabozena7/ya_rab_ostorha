@@ -31,6 +31,8 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | P / Phone | Choose an Arabic destination from the place buttons |
 | C | Switch chase / in-cabin driver camera |
 | Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
+| Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
+| People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
 | Decision lab | Inspect the route, rules, virtual ranges and traffic queues |
 | Test lab / Return to city | Enter a separate seeded world, then restore the city |
 | Settings | Change seed, traffic, pedestrians and speed; reset the current world |
@@ -97,6 +99,28 @@ See [the exact data boundary, existing model measurements and experiment
 limits](docs/VISION_FIRST.md). No new model or package is downloaded automatically;
 missing local perception requirements are an explicit unavailable state.
 
+## Camera and embodied people
+
+**Camera** opens a larger evidence workspace without replacing the city. Raw
+preview does not silently start a model. Explicitly start the installed detector
+to compare the same actual JPEG with its recognition and observed-motion
+interpretation. Frame/source/age, detection scores, fitted motion and the
+applied vehicle action remain distinct. Missing, stale or mismatched evidence
+is unavailable, not a confident clear road. No text/OCR reading or knowledge of
+private human intention is claimed.
+
+**People** is a separate **World reference, not perception input**. Select and
+follow an existing articulated local human, inspect its body and actual motion,
+and request ambient, walk, jog or stop. Ordinary speed/turn transitions are
+bounded and gait follows accepted displacement rather than an independent
+walking loop. Return to the vehicle view without replacing the city. These are
+grounded kinematic game humans, not calibrated biomechanics or ragdolls.
+
+[The portable core feature map](docs/GAME_CORE_FEATURES.md) identifies what was
+retained or reused from the earlier work and what remains engine-specific.
+New narrow Egyptian streets/alleys and the full chaotic crowd/traffic policy
+are later stages, not completion claims for this camera/people phase.
+
 ## Continue development
 
 ```powershell
@@ -107,6 +131,8 @@ python -S -m unittest discover -s tests -p 'test_threejs_*.py' -v
 node tools/evaluate-core.mjs
 # Focused car mechanics, sensor and rig checks:
 node --test tests/vehicle-quality.test.js tests/vehicle-presentation.test.js tests/signal_processing.test.js
+# Actual Camera/People controls, image pairing, body motion and replay:
+python scripts\verify_camera_people.py --browser
 ```
 
 The compatible `build:dashboard` command now also regenerates

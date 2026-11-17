@@ -1,0 +1,204 @@
+.camera-screen {
+  position: fixed;
+  z-index: 8;
+  top: 90px;
+  left: 24px;
+  right: 24px;
+  max-height: calc(100vh - 248px);
+  max-height: calc(100dvh - 248px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 14px 16px;
+  color: #eef2e9;
+  background: var(--panel, #1b2420);
+  border: 1px solid #7c897366;
+  border-radius: 9px;
+  box-shadow: 0 12px 32px #14271c59;
+  font: 12px/1.5 Tahoma, Arial, sans-serif;
+  text-shadow: none;
+  scrollbar-width: thin;
+  scrollbar-color: #789c84 #23372b;
+}
+.camera-screen,
+.camera-screen * {
+  box-sizing: border-box;
+}
+.camera-screen[hidden],
+.camera-screen [hidden] {
+  display: none;
+}
+.camera-screen ::selection {
+  color: #17271e;
+  background: #b6dfc3;
+}
+.camera-screen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.camera-screen h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+}
+.camera-screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.camera-screen button {
+  min-height: 34px;
+  padding: 6px 10px;
+  color: #eef2e9;
+  background: #2a3c30;
+  border: 1px solid #8ca39280;
+  border-radius: 5px;
+  font: inherit;
+  cursor: pointer;
+}
+.camera-screen button:not(:disabled):hover {
+  background: #3a5141;
+}
+.camera-screen button:not(:disabled):active {
+  background: #41634d;
+}
+.camera-screen button:disabled {
+  color: #a9b5ab;
+  background: #ffffff04;
+  border-color: #8ca39238;
+  cursor: not-allowed;
+}
+.camera-screen button:focus-visible,
+.camera-screen summary:focus-visible {
+  outline: 2px solid #b6dfc3;
+  outline-offset: 3px;
+}
+.camera-screen-status {
+  margin: 8px 0 10px;
+  color: #ecd5b4;
+  overflow-wrap: anywhere;
+}
+.camera-screen-status[data-state="matched"] {
+  color: #d7eddd;
+}
+.camera-screen-images {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.camera-screen-image {
+  min-width: 0;
+  margin: 0;
+}
+.camera-screen-image figcaption {
+  margin-bottom: 5px;
+  color: #d7eddd;
+  font-size: 11px;
+}
+.camera-screen-image-host {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #101914;
+  border: 1px solid #a5d8ba33;
+}
+.camera-screen-image canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.camera-screen-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  margin: 0;
+  padding: 20px;
+  color: #bdcdbf;
+  text-align: center;
+}
+.camera-screen-legend,
+.camera-screen-note,
+.camera-screen-help {
+  margin: 8px 0;
+  color: #bdcdbf;
+  font-size: 11px;
+}
+.camera-screen-meta {
+  margin: 5px 0;
+  color: #cad9cc;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.camera-screen-recognition {
+  margin: 9px 0 6px;
+  color: #d7eddd;
+}
+.camera-screen-applied {
+  margin: 6px 0;
+  padding: 6px 0;
+  color: #eef2e9;
+  border-block: 1px solid #a5d8ba33;
+  overflow-wrap: anywhere;
+}
+.camera-screen-detail summary {
+  min-height: 30px;
+  color: #d7eddd;
+  cursor: pointer;
+}
+.camera-screen-evidence-list {
+  margin: 4px 0 12px;
+  padding-left: 18px;
+  color: #cad9cc;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.camera-screen-evidence-list li + li {
+  margin-top: 5px;
+}
+.camera-screen-error {
+  margin: 8px 0;
+  color: #ffd2be;
+  overflow-wrap: anywhere;
+}
+.camera-screen-help {
+  margin-bottom: 0;
+}
+@media (max-width: 1000px) {
+  .camera-screen {
+    top: 112px;
+    left: 12px;
+    right: 12px;
+    max-height: calc(100vh - 245px);
+    max-height: calc(100dvh - 245px);
+    padding: 11px 12px;
+  }
+  .camera-screen-images {
+    gap: 9px;
+  }
+}
+@media (max-width: 650px) {
+  .camera-screen {
+    top: 112px;
+    max-height: calc(100vh - 230px);
+    max-height: calc(100dvh - 230px);
+  }
+  .camera-screen-head {
+    gap: 8px;
+  }
+  .camera-screen h2 {
+    font-size: 17px;
+  }
+  .camera-screen-images {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .camera-screen button {
+    min-height: 36px;
+    padding: 6px 9px;
+  }
+}

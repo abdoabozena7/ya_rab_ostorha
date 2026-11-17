@@ -3162,9 +3162,9 @@
     getSize(target2) {
       return this.isEmpty() ? target2.set(0, 0, 0) : target2.subVectors(this.max, this.min);
     }
-    expandByPoint(point3) {
-      this.min.min(point3);
-      this.max.max(point3);
+    expandByPoint(point4) {
+      this.min.min(point4);
+      this.max.max(point4);
       return this;
     }
     expandByVector(vector2) {
@@ -3211,17 +3211,17 @@
       }
       return this;
     }
-    containsPoint(point3) {
-      return point3.x < this.min.x || point3.x > this.max.x || point3.y < this.min.y || point3.y > this.max.y || point3.z < this.min.z || point3.z > this.max.z ? false : true;
+    containsPoint(point4) {
+      return point4.x < this.min.x || point4.x > this.max.x || point4.y < this.min.y || point4.y > this.max.y || point4.z < this.min.z || point4.z > this.max.z ? false : true;
     }
     containsBox(box3) {
       return this.min.x <= box3.min.x && box3.max.x <= this.max.x && this.min.y <= box3.min.y && box3.max.y <= this.max.y && this.min.z <= box3.min.z && box3.max.z <= this.max.z;
     }
-    getParameter(point3, target2) {
+    getParameter(point4, target2) {
       return target2.set(
-        (point3.x - this.min.x) / (this.max.x - this.min.x),
-        (point3.y - this.min.y) / (this.max.y - this.min.y),
-        (point3.z - this.min.z) / (this.max.z - this.min.z)
+        (point4.x - this.min.x) / (this.max.x - this.min.x),
+        (point4.y - this.min.y) / (this.max.y - this.min.y),
+        (point4.z - this.min.z) / (this.max.z - this.min.z)
       );
     }
     intersectsBox(box3) {
@@ -3308,11 +3308,11 @@
       axes = [_triangleNormal.x, _triangleNormal.y, _triangleNormal.z];
       return satForAxes(axes, _v0$2, _v1$7, _v2$4, _extents);
     }
-    clampPoint(point3, target2) {
-      return target2.copy(point3).clamp(this.min, this.max);
+    clampPoint(point4, target2) {
+      return target2.copy(point4).clamp(this.min, this.max);
     }
-    distanceToPoint(point3) {
-      return this.clampPoint(point3, _vector$a).distanceTo(point3);
+    distanceToPoint(point4) {
+      return this.clampPoint(point4, _vector$a).distanceTo(point4);
     }
     getBoundingSphere(target2) {
       if (this.isEmpty()) {
@@ -3431,11 +3431,11 @@
       this.radius = -1;
       return this;
     }
-    containsPoint(point3) {
-      return point3.distanceToSquared(this.center) <= this.radius * this.radius;
+    containsPoint(point4) {
+      return point4.distanceToSquared(this.center) <= this.radius * this.radius;
     }
-    distanceToPoint(point3) {
-      return point3.distanceTo(this.center) - this.radius;
+    distanceToPoint(point4) {
+      return point4.distanceTo(this.center) - this.radius;
     }
     intersectsSphere(sphere) {
       const radiusSum = this.radius + sphere.radius;
@@ -3447,9 +3447,9 @@
     intersectsPlane(plane) {
       return Math.abs(plane.distanceToPoint(this.center)) <= this.radius;
     }
-    clampPoint(point3, target2) {
-      const deltaLengthSq = this.center.distanceToSquared(point3);
-      target2.copy(point3);
+    clampPoint(point4, target2) {
+      const deltaLengthSq = this.center.distanceToSquared(point4);
+      target2.copy(point4);
       if (deltaLengthSq > this.radius * this.radius) {
         target2.sub(this.center).normalize();
         target2.multiplyScalar(this.radius).add(this.center);
@@ -3474,13 +3474,13 @@
       this.center.add(offset2);
       return this;
     }
-    expandByPoint(point3) {
+    expandByPoint(point4) {
       if (this.isEmpty()) {
-        this.center.copy(point3);
+        this.center.copy(point4);
         this.radius = 0;
         return this;
       }
-      _v1$6.subVectors(point3, this.center);
+      _v1$6.subVectors(point4, this.center);
       const lengthSq = _v1$6.lengthSq();
       if (lengthSq > this.radius * this.radius) {
         const length = Math.sqrt(lengthSq);
@@ -3547,24 +3547,24 @@
       this.origin.copy(this.at(t, _vector$9));
       return this;
     }
-    closestPointToPoint(point3, target2) {
-      target2.subVectors(point3, this.origin);
+    closestPointToPoint(point4, target2) {
+      target2.subVectors(point4, this.origin);
       const directionDistance = target2.dot(this.direction);
       if (directionDistance < 0) {
         return target2.copy(this.origin);
       }
       return target2.copy(this.origin).addScaledVector(this.direction, directionDistance);
     }
-    distanceToPoint(point3) {
-      return Math.sqrt(this.distanceSqToPoint(point3));
+    distanceToPoint(point4) {
+      return Math.sqrt(this.distanceSqToPoint(point4));
     }
-    distanceSqToPoint(point3) {
-      const directionDistance = _vector$9.subVectors(point3, this.origin).dot(this.direction);
+    distanceSqToPoint(point4) {
+      const directionDistance = _vector$9.subVectors(point4, this.origin).dot(this.direction);
       if (directionDistance < 0) {
-        return this.origin.distanceToSquared(point3);
+        return this.origin.distanceToSquared(point4);
       }
       _vector$9.copy(this.origin).addScaledVector(this.direction, directionDistance);
-      return _vector$9.distanceToSquared(point3);
+      return _vector$9.distanceToSquared(point4);
     }
     distanceSqToSegment(v0, v1, optionalPointOnRay, optionalPointOnSegment) {
       _segCenter.copy(v0).add(v1).multiplyScalar(0.5);
@@ -5232,10 +5232,10 @@
     }
     // static/instance method to calculate barycentric coordinates
     // based on: http://www.blackpawn.com/texts/pointinpoly/default.html
-    static getBarycoord(point3, a, b, c, target2) {
+    static getBarycoord(point4, a, b, c, target2) {
       _v0$1.subVectors(c, a);
       _v1$3.subVectors(b, a);
-      _v2$2.subVectors(point3, a);
+      _v2$2.subVectors(point4, a);
       const dot00 = _v0$1.dot(_v0$1);
       const dot01 = _v0$1.dot(_v1$3);
       const dot02 = _v0$1.dot(_v2$2);
@@ -5250,19 +5250,19 @@
       const v2 = (dot00 * dot12 - dot01 * dot02) * invDenom;
       return target2.set(1 - u - v2, v2, u);
     }
-    static containsPoint(point3, a, b, c) {
-      this.getBarycoord(point3, a, b, c, _v3$1);
+    static containsPoint(point4, a, b, c) {
+      this.getBarycoord(point4, a, b, c, _v3$1);
       return _v3$1.x >= 0 && _v3$1.y >= 0 && _v3$1.x + _v3$1.y <= 1;
     }
-    static getUV(point3, p1, p2, p3, uv1, uv2, uv3, target2) {
+    static getUV(point4, p1, p2, p3, uv1, uv2, uv3, target2) {
       if (warnedGetUV === false) {
         console.warn("THREE.Triangle.getUV() has been renamed to THREE.Triangle.getInterpolation().");
         warnedGetUV = true;
       }
-      return this.getInterpolation(point3, p1, p2, p3, uv1, uv2, uv3, target2);
+      return this.getInterpolation(point4, p1, p2, p3, uv1, uv2, uv3, target2);
     }
-    static getInterpolation(point3, p1, p2, p3, v1, v2, v3, target2) {
-      this.getBarycoord(point3, p1, p2, p3, _v3$1);
+    static getInterpolation(point4, p1, p2, p3, v1, v2, v3, target2) {
+      this.getBarycoord(point4, p1, p2, p3, _v3$1);
       target2.setScalar(0);
       target2.addScaledVector(v1, _v3$1.x);
       target2.addScaledVector(v2, _v3$1.y);
@@ -5315,21 +5315,21 @@
     getPlane(target2) {
       return target2.setFromCoplanarPoints(this.a, this.b, this.c);
     }
-    getBarycoord(point3, target2) {
-      return _Triangle.getBarycoord(point3, this.a, this.b, this.c, target2);
+    getBarycoord(point4, target2) {
+      return _Triangle.getBarycoord(point4, this.a, this.b, this.c, target2);
     }
-    getUV(point3, uv1, uv2, uv3, target2) {
+    getUV(point4, uv1, uv2, uv3, target2) {
       if (warnedGetUV === false) {
         console.warn("THREE.Triangle.getUV() has been renamed to THREE.Triangle.getInterpolation().");
         warnedGetUV = true;
       }
-      return _Triangle.getInterpolation(point3, this.a, this.b, this.c, uv1, uv2, uv3, target2);
+      return _Triangle.getInterpolation(point4, this.a, this.b, this.c, uv1, uv2, uv3, target2);
     }
-    getInterpolation(point3, v1, v2, v3, target2) {
-      return _Triangle.getInterpolation(point3, this.a, this.b, this.c, v1, v2, v3, target2);
+    getInterpolation(point4, v1, v2, v3, target2) {
+      return _Triangle.getInterpolation(point4, this.a, this.b, this.c, v1, v2, v3, target2);
     }
-    containsPoint(point3) {
-      return _Triangle.containsPoint(point3, this.a, this.b, this.c);
+    containsPoint(point4) {
+      return _Triangle.containsPoint(point4, this.a, this.b, this.c);
     }
     isFrontFacing(direction2) {
       return _Triangle.isFrontFacing(this.a, this.b, this.c, direction2);
@@ -5923,11 +5923,11 @@
       if (m = /^(\w+)\(([^\)]*)\)/.exec(style)) {
         let color;
         const name = m[1];
-        const components = m[2];
+        const components2 = m[2];
         switch (name) {
           case "rgb":
           case "rgba":
-            if (color = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(components)) {
+            if (color = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(components2)) {
               handleAlpha(color[4]);
               return this.setRGB(
                 Math.min(255, parseInt(color[1], 10)) / 255,
@@ -5936,7 +5936,7 @@
                 colorSpace
               );
             }
-            if (color = /^\s*(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(components)) {
+            if (color = /^\s*(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(components2)) {
               handleAlpha(color[4]);
               return this.setRGB(
                 Math.min(100, parseInt(color[1], 10)) / 100,
@@ -5948,7 +5948,7 @@
             break;
           case "hsl":
           case "hsla":
-            if (color = /^\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\%\s*,\s*(\d*\.?\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(components)) {
+            if (color = /^\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\%\s*,\s*(\d*\.?\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(components2)) {
               handleAlpha(color[4]);
               return this.setHSL(
                 parseFloat(color[1]) / 360,
@@ -6783,8 +6783,8 @@
     setFromPoints(points) {
       const position = [];
       for (let i = 0, l = points.length; i < l; i++) {
-        const point3 = points[i];
-        position.push(point3.x, point3.y, point3.z || 0);
+        const point4 = points[i];
+        position.push(point4.x, point4.y, point4.z || 0);
       }
       this.setAttribute("position", new Float32BufferAttribute(position, 3));
       return this;
@@ -7383,15 +7383,15 @@
       }
     }
   };
-  function checkIntersection(object2, material2, raycaster, ray, pA, pB, pC, point3) {
+  function checkIntersection(object2, material2, raycaster, ray, pA, pB, pC, point4) {
     let intersect;
     if (material2.side === BackSide) {
-      intersect = ray.intersectTriangle(pC, pB, pA, true, point3);
+      intersect = ray.intersectTriangle(pC, pB, pA, true, point4);
     } else {
-      intersect = ray.intersectTriangle(pA, pB, pC, material2.side === FrontSide, point3);
+      intersect = ray.intersectTriangle(pA, pB, pC, material2.side === FrontSide, point4);
     }
     if (intersect === null) return null;
-    _intersectionPointWorld.copy(point3);
+    _intersectionPointWorld.copy(point4);
     _intersectionPointWorld.applyMatrix4(object2.matrixWorld);
     const distance2 = raycaster.ray.origin.distanceTo(_intersectionPointWorld);
     if (distance2 < raycaster.near || distance2 > raycaster.far) return null;
@@ -8079,9 +8079,9 @@
       this.constant = w;
       return this;
     }
-    setFromNormalAndCoplanarPoint(normal, point3) {
+    setFromNormalAndCoplanarPoint(normal, point4) {
       this.normal.copy(normal);
-      this.constant = -point3.dot(this.normal);
+      this.constant = -point4.dot(this.normal);
       return this;
     }
     setFromCoplanarPoints(a, b, c) {
@@ -8105,14 +8105,14 @@
       this.normal.negate();
       return this;
     }
-    distanceToPoint(point3) {
-      return this.normal.dot(point3) + this.constant;
+    distanceToPoint(point4) {
+      return this.normal.dot(point4) + this.constant;
     }
     distanceToSphere(sphere) {
       return this.distanceToPoint(sphere.center) - sphere.radius;
     }
-    projectPoint(point3, target2) {
-      return target2.copy(point3).addScaledVector(this.normal, -this.distanceToPoint(point3));
+    projectPoint(point4, target2) {
+      return target2.copy(point4).addScaledVector(this.normal, -this.distanceToPoint(point4));
     }
     intersectLine(line, target2) {
       const direction2 = line.delta(_vector1);
@@ -8241,10 +8241,10 @@
       }
       return true;
     }
-    containsPoint(point3) {
+    containsPoint(point4) {
       const planes = this.planes;
       for (let i = 0; i < 6; i++) {
-        if (planes[i].distanceToPoint(point3) < 0) {
+        if (planes[i].distanceToPoint(point4) < 0) {
           return false;
         }
       }
@@ -11769,8 +11769,8 @@
     }
   }
   function getTexelEncodingFunction(functionName, colorSpace) {
-    const components = getEncodingComponents(colorSpace);
-    return "vec4 " + functionName + "( vec4 value ) { return LinearTo" + components[0] + components[1] + "; }";
+    const components2 = getEncodingComponents(colorSpace);
+    return "vec4 " + functionName + "( vec4 value ) { return LinearTo" + components2[0] + components2[1] + "; }";
   }
   function getToneMappingFunction(functionName, toneMapping) {
     let toneMappingName;
@@ -19155,11 +19155,11 @@
       }
     }
   };
-  function testPoint(point3, index, localThresholdSq, matrixWorld, raycaster, intersects3, object2) {
-    const rayPointDistanceSq = _ray.distanceSqToPoint(point3);
+  function testPoint(point4, index, localThresholdSq, matrixWorld, raycaster, intersects3, object2) {
+    const rayPointDistanceSq = _ray.distanceSqToPoint(point4);
     if (rayPointDistanceSq < localThresholdSq) {
       const intersectPoint = new Vector3();
-      _ray.closestPointToPoint(point3, intersectPoint);
+      _ray.closestPointToPoint(point4, intersectPoint);
       intersectPoint.applyMatrix4(matrixWorld);
       const distance2 = raycaster.ray.origin.distanceTo(intersectPoint);
       if (distance2 < raycaster.near || distance2 > raycaster.far) return;
@@ -19450,7 +19450,7 @@
       this.aRotation = aRotation;
     }
     getPoint(t, optionalTarget) {
-      const point3 = optionalTarget || new Vector2();
+      const point4 = optionalTarget || new Vector2();
       const twoPi = Math.PI * 2;
       let deltaAngle = this.aEndAngle - this.aStartAngle;
       const samePoints = Math.abs(deltaAngle) < Number.EPSILON;
@@ -19481,7 +19481,7 @@
         x = tx * cos - ty * sin + this.aX;
         y = tx * sin + ty * cos + this.aY;
       }
-      return point3.set(x, y);
+      return point4.set(x, y);
     }
     copy(source) {
       super.copy(source);
@@ -19568,7 +19568,7 @@
       this.tension = tension;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       const points = this.points;
       const l = points.length;
       const p = (l - (this.closed ? 0 : 1)) * t;
@@ -19611,19 +19611,19 @@
         py.initCatmullRom(p0.y, p1.y, p2.y, p3.y, this.tension);
         pz.initCatmullRom(p0.z, p1.z, p2.z, p3.z, this.tension);
       }
-      point3.set(
+      point4.set(
         px.calc(weight),
         py.calc(weight),
         pz.calc(weight)
       );
-      return point3;
+      return point4;
     }
     copy(source) {
       super.copy(source);
       this.points = [];
       for (let i = 0, l = source.points.length; i < l; i++) {
-        const point3 = source.points[i];
-        this.points.push(point3.clone());
+        const point4 = source.points[i];
+        this.points.push(point4.clone());
       }
       this.closed = source.closed;
       this.curveType = source.curveType;
@@ -19634,8 +19634,8 @@
       const data = super.toJSON();
       data.points = [];
       for (let i = 0, l = this.points.length; i < l; i++) {
-        const point3 = this.points[i];
-        data.points.push(point3.toArray());
+        const point4 = this.points[i];
+        data.points.push(point4.toArray());
       }
       data.closed = this.closed;
       data.curveType = this.curveType;
@@ -19646,8 +19646,8 @@
       super.fromJSON(json);
       this.points = [];
       for (let i = 0, l = json.points.length; i < l; i++) {
-        const point3 = json.points[i];
-        this.points.push(new Vector3().fromArray(point3));
+        const point4 = json.points[i];
+        this.points.push(new Vector3().fromArray(point4));
       }
       this.closed = json.closed;
       this.curveType = json.curveType;
@@ -19703,13 +19703,13 @@
       this.v3 = v3;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2, v3 = this.v3;
-      point3.set(
+      point4.set(
         CubicBezier(t, v0.x, v1.x, v2.x, v3.x),
         CubicBezier(t, v0.y, v1.y, v2.y, v3.y)
       );
-      return point3;
+      return point4;
     }
     copy(source) {
       super.copy(source);
@@ -19747,14 +19747,14 @@
       this.v3 = v3;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2, v3 = this.v3;
-      point3.set(
+      point4.set(
         CubicBezier(t, v0.x, v1.x, v2.x, v3.x),
         CubicBezier(t, v0.y, v1.y, v2.y, v3.y),
         CubicBezier(t, v0.z, v1.z, v2.z, v3.z)
       );
-      return point3;
+      return point4;
     }
     copy(source) {
       super.copy(source);
@@ -19790,14 +19790,14 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       if (t === 1) {
-        point3.copy(this.v2);
+        point4.copy(this.v2);
       } else {
-        point3.copy(this.v2).sub(this.v1);
-        point3.multiplyScalar(t).add(this.v1);
+        point4.copy(this.v2).sub(this.v1);
+        point4.multiplyScalar(t).add(this.v1);
       }
-      return point3;
+      return point4;
     }
     // Line curve is linear, so we can overwrite default getPointAt
     getPointAt(u, optionalTarget) {
@@ -19837,14 +19837,14 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       if (t === 1) {
-        point3.copy(this.v2);
+        point4.copy(this.v2);
       } else {
-        point3.copy(this.v2).sub(this.v1);
-        point3.multiplyScalar(t).add(this.v1);
+        point4.copy(this.v2).sub(this.v1);
+        point4.multiplyScalar(t).add(this.v1);
       }
-      return point3;
+      return point4;
     }
     // Line curve is linear, so we can overwrite default getPointAt
     getPointAt(u, optionalTarget) {
@@ -19885,13 +19885,13 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2;
-      point3.set(
+      point4.set(
         QuadraticBezier(t, v0.x, v1.x, v2.x),
         QuadraticBezier(t, v0.y, v1.y, v2.y)
       );
-      return point3;
+      return point4;
     }
     copy(source) {
       super.copy(source);
@@ -19925,14 +19925,14 @@
       this.v2 = v2;
     }
     getPoint(t, optionalTarget = new Vector3()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       const v0 = this.v0, v1 = this.v1, v2 = this.v2;
-      point3.set(
+      point4.set(
         QuadraticBezier(t, v0.x, v1.x, v2.x),
         QuadraticBezier(t, v0.y, v1.y, v2.y),
         QuadraticBezier(t, v0.z, v1.z, v2.z)
       );
-      return point3;
+      return point4;
     }
     copy(source) {
       super.copy(source);
@@ -19964,7 +19964,7 @@
       this.points = points;
     }
     getPoint(t, optionalTarget = new Vector2()) {
-      const point3 = optionalTarget;
+      const point4 = optionalTarget;
       const points = this.points;
       const p = (points.length - 1) * t;
       const intPoint = Math.floor(p);
@@ -19973,18 +19973,18 @@
       const p1 = points[intPoint];
       const p2 = points[intPoint > points.length - 2 ? points.length - 1 : intPoint + 1];
       const p3 = points[intPoint > points.length - 3 ? points.length - 1 : intPoint + 2];
-      point3.set(
+      point4.set(
         CatmullRom(weight, p0.x, p1.x, p2.x, p3.x),
         CatmullRom(weight, p0.y, p1.y, p2.y, p3.y)
       );
-      return point3;
+      return point4;
     }
     copy(source) {
       super.copy(source);
       this.points = [];
       for (let i = 0, l = source.points.length; i < l; i++) {
-        const point3 = source.points[i];
-        this.points.push(point3.clone());
+        const point4 = source.points[i];
+        this.points.push(point4.clone());
       }
       return this;
     }
@@ -19992,8 +19992,8 @@
       const data = super.toJSON();
       data.points = [];
       for (let i = 0, l = this.points.length; i < l; i++) {
-        const point3 = this.points[i];
-        data.points.push(point3.toArray());
+        const point4 = this.points[i];
+        data.points.push(point4.toArray());
       }
       return data;
     }
@@ -20001,8 +20001,8 @@
       super.fromJSON(json);
       this.points = [];
       for (let i = 0, l = json.points.length; i < l; i++) {
-        const point3 = json.points[i];
-        this.points.push(new Vector2().fromArray(point3));
+        const point4 = json.points[i];
+        this.points.push(new Vector2().fromArray(point4));
       }
       return this;
     }
@@ -20106,10 +20106,10 @@
         const resolution = curve.isEllipseCurve ? divisions * 2 : curve.isLineCurve || curve.isLineCurve3 ? 1 : curve.isSplineCurve ? divisions * curve.points.length : divisions;
         const pts = curve.getPoints(resolution);
         for (let j = 0; j < pts.length; j++) {
-          const point3 = pts[j];
-          if (last && last.equals(point3)) continue;
-          points.push(point3);
-          last = point3;
+          const point4 = pts[j];
+          if (last && last.equals(point4)) continue;
+          points.push(point4);
+          last = point4;
         }
       }
       if (this.autoClose && points.length > 1 && !points[points.length - 1].equals(points[0])) {
@@ -24276,9 +24276,9 @@
           case "blob":
             return response.blob();
           case "document":
-            return response.text().then((text3) => {
+            return response.text().then((text5) => {
               const parser = new DOMParser();
-              return parser.parseFromString(text3, mimeType);
+              return parser.parseFromString(text5, mimeType);
             });
           case "json":
             return response.json();
@@ -24337,9 +24337,9 @@
       loader2.setPath(this.path);
       loader2.setRequestHeader(this.requestHeader);
       loader2.setWithCredentials(this.withCredentials);
-      loader2.load(url, function(text3) {
+      loader2.load(url, function(text5) {
         try {
-          onLoad(scope.parse(JSON.parse(text3)));
+          onLoad(scope.parse(JSON.parse(text5)));
         } catch (e) {
           if (onError) {
             onError(e);
@@ -25082,9 +25082,9 @@
       loader2.setPath(scope.path);
       loader2.setRequestHeader(scope.requestHeader);
       loader2.setWithCredentials(scope.withCredentials);
-      loader2.load(url, function(text3) {
+      loader2.load(url, function(text5) {
         try {
-          onLoad(scope.parse(JSON.parse(text3)));
+          onLoad(scope.parse(JSON.parse(text5)));
         } catch (e) {
           if (onError) {
             onError(e);
@@ -25349,9 +25349,9 @@
       loader2.setPath(scope.path);
       loader2.setRequestHeader(scope.requestHeader);
       loader2.setWithCredentials(scope.withCredentials);
-      loader2.load(url, function(text3) {
+      loader2.load(url, function(text5) {
         try {
-          onLoad(scope.parse(JSON.parse(text3)));
+          onLoad(scope.parse(JSON.parse(text5)));
         } catch (e) {
           if (onError) {
             onError(e);
@@ -25467,10 +25467,10 @@
       loader2.setPath(this.path);
       loader2.setRequestHeader(this.requestHeader);
       loader2.setWithCredentials(this.withCredentials);
-      loader2.load(url, function(text3) {
+      loader2.load(url, function(text5) {
         let json = null;
         try {
-          json = JSON.parse(text3);
+          json = JSON.parse(text5);
         } catch (error) {
           if (onError !== void 0) onError(error);
           console.error("THREE:ObjectLoader: Can't parse " + url + ".", error.message);
@@ -25493,8 +25493,8 @@
       loader2.setPath(this.path);
       loader2.setRequestHeader(this.requestHeader);
       loader2.setWithCredentials(this.withCredentials);
-      const text3 = await loader2.loadAsync(url, onProgress);
-      const json = JSON.parse(text3);
+      const text5 = await loader2.loadAsync(url, onProgress);
+      const json = JSON.parse(text5);
       const metadata = json.metadata;
       if (metadata === void 0 || metadata.type === void 0 || metadata.type.toLowerCase() === "geometry") {
         throw new Error("THREE.ObjectLoader: Can't load " + url);
@@ -27427,15 +27427,15 @@
       return this.warp(this._effectiveTimeScale, 0, duration);
     }
     warp(startTimeScale, endTimeScale, duration) {
-      const mixer = this._mixer, now2 = mixer.time, timeScale = this.timeScale;
+      const mixer = this._mixer, now3 = mixer.time, timeScale = this.timeScale;
       let interpolant = this._timeScaleInterpolant;
       if (interpolant === null) {
         interpolant = mixer._lendControlInterpolant();
         this._timeScaleInterpolant = interpolant;
       }
       const times = interpolant.parameterPositions, values = interpolant.sampleValues;
-      times[0] = now2;
-      times[1] = now2 + duration;
+      times[0] = now3;
+      times[1] = now3 + duration;
       values[0] = startTimeScale / timeScale;
       values[1] = endTimeScale / timeScale;
       return this;
@@ -27636,16 +27636,16 @@
       }
     }
     _scheduleFading(duration, weightNow, weightThen) {
-      const mixer = this._mixer, now2 = mixer.time;
+      const mixer = this._mixer, now3 = mixer.time;
       let interpolant = this._weightInterpolant;
       if (interpolant === null) {
         interpolant = mixer._lendControlInterpolant();
         this._weightInterpolant = interpolant;
       }
       const times = interpolant.parameterPositions, values = interpolant.sampleValues;
-      times[0] = now2;
+      times[0] = now3;
       values[0] = weightNow;
-      times[1] = now2 + duration;
+      times[1] = now3 + duration;
       values[1] = weightThen;
       return this;
     }
@@ -28299,9 +28299,9 @@
     getSize(target2) {
       return this.isEmpty() ? target2.set(0, 0) : target2.subVectors(this.max, this.min);
     }
-    expandByPoint(point3) {
-      this.min.min(point3);
-      this.max.max(point3);
+    expandByPoint(point4) {
+      this.min.min(point4);
+      this.max.max(point4);
       return this;
     }
     expandByVector(vector2) {
@@ -28314,26 +28314,26 @@
       this.max.addScalar(scalar);
       return this;
     }
-    containsPoint(point3) {
-      return point3.x < this.min.x || point3.x > this.max.x || point3.y < this.min.y || point3.y > this.max.y ? false : true;
+    containsPoint(point4) {
+      return point4.x < this.min.x || point4.x > this.max.x || point4.y < this.min.y || point4.y > this.max.y ? false : true;
     }
     containsBox(box3) {
       return this.min.x <= box3.min.x && box3.max.x <= this.max.x && this.min.y <= box3.min.y && box3.max.y <= this.max.y;
     }
-    getParameter(point3, target2) {
+    getParameter(point4, target2) {
       return target2.set(
-        (point3.x - this.min.x) / (this.max.x - this.min.x),
-        (point3.y - this.min.y) / (this.max.y - this.min.y)
+        (point4.x - this.min.x) / (this.max.x - this.min.x),
+        (point4.y - this.min.y) / (this.max.y - this.min.y)
       );
     }
     intersectsBox(box3) {
       return box3.max.x < this.min.x || box3.min.x > this.max.x || box3.max.y < this.min.y || box3.min.y > this.max.y ? false : true;
     }
-    clampPoint(point3, target2) {
-      return target2.copy(point3).clamp(this.min, this.max);
+    clampPoint(point4, target2) {
+      return target2.copy(point4).clamp(this.min, this.max);
     }
-    distanceToPoint(point3) {
-      return this.clampPoint(point3, _vector$4).distanceTo(point3);
+    distanceToPoint(point4) {
+      return this.clampPoint(point4, _vector$4).distanceTo(point4);
     }
     intersect(box3) {
       this.min.max(box3.min);
@@ -28387,8 +28387,8 @@
     at(t, target2) {
       return this.delta(target2).multiplyScalar(t).add(this.start);
     }
-    closestPointToPointParameter(point3, clampToLine) {
-      _startP.subVectors(point3, this.start);
+    closestPointToPointParameter(point4, clampToLine) {
+      _startP.subVectors(point4, this.start);
       _startEnd.subVectors(this.end, this.start);
       const startEnd2 = _startEnd.dot(_startEnd);
       const startEnd_startP = _startEnd.dot(_startP);
@@ -28398,8 +28398,8 @@
       }
       return t;
     }
-    closestPointToPoint(point3, clampToLine, target2) {
-      const t = this.closestPointToPointParameter(point3, clampToLine);
+    closestPointToPoint(point4, clampToLine, target2) {
+      const t = this.closestPointToPointParameter(point4, clampToLine);
       return this.delta(target2).multiplyScalar(t).add(this.start);
     }
     applyMatrix4(matrix) {
@@ -28920,9 +28920,9 @@
       this.material.dispose();
     }
   };
-  function setPoint(point3, pointMap, geometry, camera2, x, y, z) {
+  function setPoint(point4, pointMap, geometry, camera2, x, y, z) {
     _vector.set(x, y, z).unproject(camera2);
-    const points = pointMap[point3];
+    const points = pointMap[point4];
     if (points !== void 0) {
       const position = geometry.getAttribute("position");
       for (let i = 0, l = points.length; i < l; i++) {
@@ -29718,9 +29718,9 @@
     const nodes = [person, target2];
     for (const body of obstacles) {
       if (body.type === "pedestrian") continue;
-      for (const point3 of corners(body, person.radius + 0.28))
-        if (!obstacles.some((a) => overlaps({ ...person, ...point3 }, a, 0.16)))
-          nodes.push(point3);
+      for (const point4 of corners(body, person.radius + 0.28))
+        if (!obstacles.some((a) => overlaps({ ...person, ...point4 }, a, 0.16)))
+          nodes.push(point4);
     }
     const costs = nodes.map(() => Infinity), parents = nodes.map(() => -1), open = /* @__PURE__ */ new Set([0]);
     costs[0] = 0;
@@ -29774,6 +29774,46 @@
     return person.walkRoute[0] ?? person.target;
   }
 
+  // src/core/pedestrian-body.js
+  var profiles = Object.freeze({
+    "man-polo": { height: 1.78, width: 0.3222, depth: 0.2136, mass: 76 },
+    "man-jacket": { height: 1.8, width: 0.3385, depth: 0.2304, mass: 79 },
+    "woman-shirt": { height: 1.66, width: 0.2693, depth: 0.2169, mass: 63 },
+    "woman-jacket": { height: 1.69, width: 0.2723, depth: 0.2042, mass: 66 }
+  });
+  var modes = /* @__PURE__ */ new Set(["ambient", "walk", "jog", "stop"]);
+  var finite = (value, fallback) => Number.isFinite(value) ? value : fallback;
+  function createPedestrianBody(actor = {}) {
+    const person = actor ?? {};
+    const kind = typeof person.kind === "string" ? person.kind : "";
+    const female = /^(woman|female)-/.test(kind);
+    const profile = Object.hasOwn(profiles, kind) ? profiles[kind] : profiles[female ? "woman-shirt" : "man-polo"];
+    const variation = clamp2(finite(person.phase, 0.5), 0, 1) - 0.5;
+    const heightM = profile.height + variation * 0.14;
+    const widthM = heightM * profile.width;
+    const depthM = heightM * profile.depth;
+    const walkSpeedMps = clamp2(finite(person.walkSpeed, 1.35), 0.6, 2.4);
+    return Object.freeze({
+      heightM,
+      widthM,
+      depthM,
+      massKg: profile.mass * (heightM / profile.height) ** 3,
+      // The circle encloses the neutral clothed body, not an extended arm pose.
+      radiusM: Math.max(0.3, Math.hypot(widthM, depthM) / 2),
+      walkSpeedMps,
+      jogSpeedMps: clamp2(walkSpeedMps * 1.8, 2, 3.2),
+      maxAccelerationMps2: 2.5,
+      maxDecelerationMps2: 3.5,
+      maxTurnRateRadS: 3
+    });
+  }
+  function setPedestrianMotionMode(actor, mode) {
+    if (!actor || actor.type !== "pedestrian" || actor.script?.type === "vision-linear" || !modes.has(mode))
+      return false;
+    actor.motionMode = mode;
+    return true;
+  }
+
   // src/core/pedestrian.js
   var pose = (road, along, side, offset2) => road.axis === "z" ? { x: road.fixed - side * offset2, z: along } : { x: along, z: road.fixed + side * offset2 };
   function nextWalk(world2, person) {
@@ -29805,34 +29845,73 @@
       person.pause = world2.rng.next() < 0.1 ? world2.rng.range(0.4, 1.2) : 0;
     }
   }
+  function nearbyBodies(world2, p) {
+    return world2.actorIndex.near(p, 28).filter((a) => a !== p).concat(world2.staticIndex.near(p, 34));
+  }
+  function move(p, body, heading, targetSpeed, reason, nearby) {
+    const speed = clamp2(
+      targetSpeed,
+      Math.max(0, p.speed - body.maxDecelerationMps2 * STEP),
+      p.speed + body.maxAccelerationMps2 * STEP
+    );
+    const next = {
+      ...p,
+      x: p.x + Math.sin(heading) * speed * STEP,
+      z: p.z + Math.cos(heading) * speed * STEP,
+      heading,
+      speed,
+      accelerationMps2: (speed - p.speed) / STEP,
+      turnRateRadS: angleDelta(heading, p.heading) / STEP,
+      reason
+    };
+    if (speed > 0 && !walkSegmentClear(p, p, next, nearby, 0.12)) {
+      next.x = p.x;
+      next.z = p.z;
+      next.speed = 0;
+      next.accelerationMps2 = -p.speed / STEP;
+      next.reason = "blocked";
+    }
+    return next;
+  }
   function pedestrianMotion(world2, p) {
+    const body = p.body ??= createPedestrianBody(p);
+    const stop = (reason) => move(p, body, p.heading, 0, reason, nearbyBodies(world2, p));
+    if (p.motionMode === "stop")
+      return stop(p.speed > 0 ? "stopping" : "stopped");
     if (p.pause > 0) {
-      p.pause = Math.max(0, p.pause - STEP);
-      return { ...p, speed: 0, reason: "waiting" };
+      if (p.speed === 0) p.pause = Math.max(0, p.pause - STEP);
+      return stop("waiting");
     }
     let remaining = distance(p, p.target);
     if (remaining < 0.22) {
       if (p.crossing) p.side = -p.side;
       p.along = p.road.axis === "z" ? p.z : p.x;
       world2.nextWalk(p);
-      if (p.pause > 0) return { ...p, speed: 0, reason: "waiting" };
+      if (p.pause > 0) return stop("waiting");
       remaining = distance(p, p.target);
-      if (remaining < 0.22) return { ...p, speed: 0, reason: "waiting" };
+      if (remaining < 0.22) return stop("waiting");
     }
+    const approach2 = Math.min(
+      remaining,
+      Math.max(
+        1,
+        p.speed ** 2 / (2 * body.maxDecelerationMps2) + p.speed * STEP + p.radius + 0.1
+      )
+    );
     if (!pointOnRoad(p, world2.roads) && pointOnRoad(
       {
         ...p,
-        x: p.x + (p.target.x - p.x) / remaining,
-        z: p.z + (p.target.z - p.z) / remaining
+        x: p.x + (p.target.x - p.x) / remaining * approach2,
+        z: p.z + (p.target.z - p.z) / remaining * approach2
       },
       world2.roads
     )) {
       const danger = world2.actors.some(
         (a) => a.type === "vehicle" && a.speed > 0.4 && distance(p, a) < Math.max(5, a.speed * 2.2) && (p.x - a.x) * Math.sin(a.heading) + (p.z - a.z) * Math.cos(a.heading) > -2
       );
-      if (danger) return { ...p, speed: 0, reason: "looking" };
+      if (danger) return stop("looking");
     }
-    const nearby = world2.actorIndex.near(p, 28).filter((a) => a !== p).concat(world2.staticIndex.near(p, 34));
+    const nearby = nearbyBodies(world2, p);
     const waypoint = walkingWaypoint(world2, p, nearby);
     const desired = Math.atan2(waypoint.x - p.x, waypoint.z - p.z);
     const close = nearby.filter(
@@ -29855,17 +29934,27 @@
       }
     }
     if (best !== Infinity) p.walkHeading = targetHeading;
-    const heading = p.heading + clamp2(angleDelta(targetHeading, p.heading), -3 * STEP, 3 * STEP);
+    const heading = p.heading + clamp2(
+      angleDelta(targetHeading, p.heading),
+      -body.maxTurnRateRadS * STEP,
+      body.maxTurnRateRadS * STEP
+    );
     const turn = Math.abs(angleDelta(targetHeading, heading));
-    const speed = best === Infinity ? 0 : Math.min(p.walkSpeed, p.speed + 2.5 * STEP, remaining / STEP) * Math.max(0, Math.cos(turn)) ** 3;
-    return {
-      ...p,
-      x: p.x + Math.sin(heading) * speed * STEP,
-      z: p.z + Math.cos(heading) * speed * STEP,
+    const walkingSpeed = clamp2(
+      Number.isFinite(p.walkSpeed) ? p.walkSpeed : body.walkSpeedMps,
+      0,
+      3.2
+    );
+    const requestedSpeed = p.motionMode === "jog" ? Math.max(walkingSpeed, body.jogSpeedMps) : walkingSpeed;
+    const targetSpeed = best === Infinity ? 0 : requestedSpeed * Math.max(0, Math.cos(turn)) ** 3;
+    return move(
+      p,
+      body,
       heading,
-      speed,
-      reason: p.crossing ? "crossing" : "walking"
-    };
+      targetSpeed,
+      best === Infinity ? "yielding" : p.crossing ? "crossing" : "walking",
+      nearby
+    );
   }
 
   // src/core/vehicle-spec.js
@@ -30084,14 +30173,14 @@
       );
       target2++;
     }
-    const point3 = path[target2];
+    const point4 = path[target2];
     const alpha = angleDelta(
-      Math.atan2(point3.x - rear.x, point3.z - rear.z),
+      Math.atan2(point4.x - rear.x, point4.z - rear.z),
       body.heading
     );
     const actualDistance = Math.max(
       1,
-      Math.hypot(point3.x - rear.x, point3.z - rear.z)
+      Math.hypot(point4.x - rear.x, point4.z - rear.z)
     );
     const steer = Math.atan2(2 * wheelbase * Math.sin(alpha), actualDistance);
     if (steeringOnly) return { steer, cursor: nearest };
@@ -30165,10 +30254,10 @@
       const members = [remaining.values().next().value];
       remaining.delete(members[0]);
       for (let i = 0; i < members.length; i++)
-        for (const node3 of remaining) {
-          if (distance(members[i], node3) < 24) {
-            members.push(node3);
-            remaining.delete(node3);
+        for (const node5 of remaining) {
+          if (distance(members[i], node5) < 24) {
+            members.push(node5);
+            remaining.delete(node5);
           }
         }
       groups.push({
@@ -30213,23 +30302,23 @@
     }));
     let entered = false, last = null;
     for (let i = 0; i < path.length; i++) {
-      const point3 = path[i];
-      if (!insideJunction(point3, group, 3)) {
+      const point4 = path[i];
+      if (!insideJunction(point4, group, 3)) {
         if (entered) break;
         else continue;
       }
       entered = true;
-      if (last && distance(last, point3) < 1.5 && i < path.length - 1) continue;
+      if (last && distance(last, point4) < 1.5 && i < path.length - 1) continue;
       const next = path[Math.min(i + 1, path.length - 1)], before = path[Math.max(0, i - 1)];
       const heading = Math.atan2(next.x - before.x, next.z - before.z);
       samples.push({
         type: "vehicle",
-        ...point3,
+        ...point4,
         heading,
         width: car.width + 0.35,
         length: car.length + 2
       });
-      last = point3;
+      last = point4;
     }
     world2.junctionCorridors.set(key2, { path: car.path, samples });
     return samples;
@@ -30439,17 +30528,17 @@
       }
       let previous = null;
       for (const value of [...values].sort((a, b) => a - b)) {
-        const node3 = put(
+        const node5 = put(
           road.axis === "z" ? { x: road.fixed, z: value } : { x: value, z: road.fixed }
         );
         if (previous) {
-          previous.edges.push(node3.key);
-          node3.edges.push(previous.key);
+          previous.edges.push(node5.key);
+          node5.edges.push(previous.key);
         }
-        previous = node3;
+        previous = node5;
       }
     }
-    for (const node3 of nodes.values()) node3.edges = [...new Set(node3.edges)];
+    for (const node5 of nodes.values()) node5.edges = [...new Set(node5.edges)];
     return nodes;
   }
   function junctionPressure(groups, actors) {
@@ -30461,8 +30550,8 @@
       if (!queue.length) continue;
       const longest = Math.max(...queue.map((actor) => actor.wait));
       const penalty = Math.min(120, queue.length * 5 + longest * 0.8);
-      for (const node3 of group.members)
-        costs.set(node3.key, Math.max(costs.get(node3.key) ?? 0, penalty));
+      for (const node5 of group.members)
+        costs.set(node5.key, Math.max(costs.get(node5.key) ?? 0, penalty));
     }
     return costs;
   }
@@ -30504,8 +30593,8 @@
     }
     if (!found) return [];
     const points = [];
-    for (let node3 = found; node3; node3 = node3.parent)
-      points.push({ x: node3.node.x, z: node3.node.z });
+    for (let node5 = found; node5; node5 = node5.parent)
+      points.push({ x: node5.node.x, z: node5.node.z });
     return lanePath(points.reverse());
   }
   function lanePath(points, offset2 = LANE_OFFSET) {
@@ -30908,12 +30997,12 @@
       if (!this.cells.has(key2)) this.cells.set(key2, []);
       this.cells.get(key2).push(item);
     }
-    near(point3, radius) {
+    near(point4, radius) {
       const result = [];
-      for (let x = Math.floor((point3.x - radius) / this.size); x <= Math.floor((point3.x + radius) / this.size); x++)
-        for (let z = Math.floor((point3.z - radius) / this.size); z <= Math.floor((point3.z + radius) / this.size); z++)
+      for (let x = Math.floor((point4.x - radius) / this.size); x <= Math.floor((point4.x + radius) / this.size); x++)
+        for (let z = Math.floor((point4.z - radius) / this.size); z <= Math.floor((point4.z + radius) / this.size); z++)
           for (const item of this.cells.get(`${x},${z}`) ?? [])
-            if (Math.hypot(item.x - point3.x, item.z - point3.z) <= radius)
+            if (Math.hypot(item.x - point4.x, item.z - point4.z) <= radius)
               result.push(item);
       return result;
     }
@@ -30980,13 +31069,13 @@
           x: player.x + Math.sin(player.heading) * 18,
           z: player.z + Math.cos(player.heading) * 18
         });
-      for (const point3 of candidates) {
+      for (const point4 of candidates) {
         const barrier = {
           id: `barrier-${world2.tick}`,
           type: "static",
           kind: "barrier",
-          x: point3.x,
-          z: point3.z,
+          x: point4.x,
+          z: point4.z,
           heading: player.heading,
           width: 2.3,
           length: 0.7,
@@ -31022,16 +31111,16 @@
     const bays = [], used = /* @__PURE__ */ new Set();
     for (const place of PLACES) {
       let count = 0;
-      for (const node3 of [...graph.values()].sort(
+      for (const node5 of [...graph.values()].sort(
         (a, b) => distance(a, place) - distance(b, place)
       )) {
-        if (distance(node3, place) > 70 || count >= 16) break;
-        if (junctionGroups2.some((group) => insideJunction(node3, group, 4)))
+        if (distance(node5, place) > 70 || count >= 16) break;
+        if (junctionGroups2.some((group) => insideJunction(node5, group, 4)))
           continue;
         for (const road of roads) {
           if (road.width < 10) continue;
-          const along = road.axis === "z" ? node3.z : node3.x;
-          const cross = road.axis === "z" ? node3.x : node3.z;
+          const along = road.axis === "z" ? node5.z : node5.x;
+          const cross = road.axis === "z" ? node5.x : node5.z;
           if (Math.abs(cross - road.fixed) > 0.01 || along < road.min + 6 || along > road.max - 6)
             continue;
           const marker = `${road.axis}:${road.fixed}:${along}`;
@@ -31045,7 +31134,7 @@
               max: Math.min(road.max, along + 18),
               width: 2.2,
               parkingBay: true,
-              nodeKey: node3.key,
+              nodeKey: node5.key,
               side
             });
           count++;
@@ -31058,14 +31147,14 @@
   function planArrival(world2, goal) {
     const car = world2.player;
     const candidates = [...world2.graph.values()].filter(
-      (node3) => !world2.junctionGroups.some((group) => insideJunction(node3, group, 4))
+      (node5) => !world2.junctionGroups.some((group) => insideJunction(node5, group, 4))
     ).sort((a, b) => distance(a, goal) - distance(b, goal));
-    for (const node3 of candidates) {
-      if (distance(node3, goal) > 70) break;
+    for (const node5 of candidates) {
+      if (distance(node5, goal) > 70) break;
       const path = planNavigation(
         world2.graph,
         car,
-        node3,
+        node5,
         world2.actors,
         world2.trafficPressure()
       );
@@ -31075,12 +31164,12 @@
       const forward2 = { x: Math.sin(heading), z: Math.cos(heading) };
       const right = { x: -forward2.z, z: forward2.x };
       const road = world2.drivingRoads.find(
-        (r) => r.width >= 10 && Math.abs(angleDelta(heading, r.axis === "z" ? 0 : Math.PI / 2)) % Math.PI < 0.01 && Math.abs((r.axis === "z" ? node3.x : node3.z) - r.fixed) < 0.01 && (r.axis === "z" ? node3.z : node3.x) > r.min + 4 && (r.axis === "z" ? node3.z : node3.x) < r.max - 4
+        (r) => r.width >= 10 && Math.abs(angleDelta(heading, r.axis === "z" ? 0 : Math.PI / 2)) % Math.PI < 0.01 && Math.abs((r.axis === "z" ? node5.x : node5.z) - r.fixed) < 0.01 && (r.axis === "z" ? node5.z : node5.x) > r.min + 4 && (r.axis === "z" ? node5.z : node5.x) < r.max - 4
       );
       if (!road) continue;
       const side = Math.sign(road.axis === "z" ? right.x : right.z);
       if (!world2.parkingBays.some(
-        (bay) => bay.nodeKey === node3.key && bay.side === side && bay.axis === road.axis && Math.abs(bay.fixed - road.fixed - side * 5.6) < 0.01
+        (bay) => bay.nodeKey === node5.key && bay.side === side && bay.axis === road.axis && Math.abs(bay.fixed - road.fixed - side * 5.6) < 0.01
       ))
         continue;
       let start = path.length - 1;
@@ -32037,7 +32126,7 @@
     { id: "stationary", label: "Waiting at the curb", description: "The same visible walker remains still." },
     { id: "empty", label: "No walker", description: "The identical road without a pedestrian." }
   ].map(Object.freeze));
-  function finite(value, name, min = -1e5, max = 1e5) {
+  function finite2(value, name, min = -1e5, max = 1e5) {
     if (!Number.isFinite(value) || value < min || value > max)
       throw new TypeError(`${name} is outside its finite bounds`);
   }
@@ -32099,22 +32188,22 @@
     };
   }
   function advanceVisionActor(actor, dt, context = {}) {
-    finite(dt, "dt", 0, 0.1);
+    finite2(dt, "dt", 0, 0.1);
     if (!actor || actor.type !== "pedestrian" || actor.script?.type !== "vision-linear")
       throw new TypeError("An assigned vision-linear pedestrian is required");
     const script = actor.script;
     for (const key2 of ["x", "z", "heading", "speed", "distance", "wait", "phase"])
-      finite(actor[key2], `actor.${key2}`);
-    finite(script.elapsedS, "elapsedS", 0, 1e9);
-    finite(script.onsetS, "onsetS", 0, 5);
+      finite2(actor[key2], `actor.${key2}`);
+    finite2(script.elapsedS, "elapsedS", 0, 1e9);
+    finite2(script.onsetS, "onsetS", 0, 5);
     for (const key2 of ["x", "z"]) {
-      finite(script.velocity[key2], `velocity.${key2}`, -1.5, 1.5);
-      finite(script.destination[key2], `destination.${key2}`, -60, 70);
+      finite2(script.velocity[key2], `velocity.${key2}`, -1.5, 1.5);
+      finite2(script.destination[key2], `destination.${key2}`, -60, 70);
     }
     if (Math.hypot(script.velocity.x, script.velocity.z) > 1.5)
       throw new TypeError("Scenario walker speed exceeds its physical bound");
     const timeS = context.simulationTimeS ?? context.timeS ?? script.elapsedS;
-    finite(timeS, "simulationTimeS", 0, 1e9);
+    finite2(timeS, "simulationTimeS", 0, 1e9);
     const samples = [...script.evaluation.samples];
     const last = samples.at(-1);
     if (last && timeS < last.simulationTimeS)
@@ -32430,6 +32519,14 @@
       } else if (environment2 === "vehicle")
         this.capacity = { traffic: 0, pedestrians: 0 };
       else this.populate();
+      for (const actor of this.actors) {
+        if (actor.type !== "pedestrian") continue;
+        actor.body ??= createPedestrianBody(actor);
+        if (visualScene) actor.body = { ...actor.body, heightM: 1.78, radiusM: actor.radius };
+        actor.motionMode ??= "ambient";
+        actor.motionTimeS = 0;
+        actor.accelerationMps2 = 0;
+      }
       this.sensorProcessor = new RangeSignalProcessor();
       this.updateSensors();
     }
@@ -32516,6 +32613,9 @@
           pause: 0,
           crossing: false
         };
+        p.body = createPedestrianBody(p);
+        p.radius = p.body.radiusM;
+        p.motionMode = "ambient";
         if (!this.free(p, 0.7) || pointOnRoad(p, this.roads)) continue;
         this.nextWalk(p);
         this.actors.push(p);
@@ -32578,6 +32678,18 @@
       return nextWalk(this, person);
     }
     command(command, record = true) {
+      if (command.type === "pedestrian-motion") {
+        if (!["city", "lab"].includes(this.environment))
+          throw new Error("Human motion controls are unavailable in fixed Vision and vehicle fixtures.");
+        if (Object.keys(command).some((key2) => !["type", "id", "mode"].includes(key2)))
+          throw new Error("Human motion accepts only a person ID and an explicit motion mode.");
+        const person = this.actors.find((actor) => actor.id === command.id && actor.type === "pedestrian");
+        if (!person) throw new Error("The requested person is not in this world.");
+        if (!setPedestrianMotionMode(person, command.mode))
+          throw new Error("Choose ambient, walk, jog or stop for an ordinary person.");
+        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        return true;
+      }
       if (command.type === "visual-observation") {
         this.visualPredictor.observe(structuredClone(command.result));
         if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
@@ -32828,6 +32940,10 @@
           }
         }
         const moved = distance(actor, next);
+        if (actor.type === "pedestrian") {
+          next.accelerationMps2 = (next.speed - actor.speed) / STEP;
+          next.motionTimeS = (this.tick + 1) * STEP;
+        }
         const oldPrevious = actor.previous;
         Object.assign(actor, next, {
           previous: oldPrevious,
@@ -32917,7 +33033,13 @@
           distance: a.distance,
           reason: a.reason,
           cursor: a.cursor ?? 0,
-          ...a.vehicle ? { vehicle: structuredClone(a.vehicle) } : {}
+          ...a.vehicle ? { vehicle: structuredClone(a.vehicle) } : {},
+          ...a.type === "pedestrian" ? {
+            body: structuredClone(a.body),
+            motionMode: a.motionMode,
+            accelerationMps2: a.accelerationMps2,
+            motionTimeS: a.motionTimeS
+          } : {}
         }))
       };
     }
@@ -32946,7 +33068,8 @@
           "visual-reset",
           "visual-mode",
           "vision-run",
-          "vehicle-test"
+          "vehicle-test",
+          "pedestrian-motion"
         ].includes(event.command?.type) || event.command.type === "vehicle-test" && (data.environment !== "vehicle" || event.command.operation !== "run"))
           throw new Error("Invalid replay event");
         lastTick = event.tick;
@@ -35209,13 +35332,13 @@
         const targets = dependencies[4];
         const tracks = [];
         for (let i = 0, il = nodes.length; i < il; i++) {
-          const node3 = nodes[i];
+          const node5 = nodes[i];
           const inputAccessor = inputAccessors[i];
           const outputAccessor = outputAccessors[i];
           const sampler = samplers[i];
           const target2 = targets[i];
-          if (node3 === void 0) continue;
-          node3.updateMatrix();
+          if (node5 === void 0) continue;
+          node5.updateMatrix();
           let TypedKeyframeTrack;
           switch (PATH_PROPERTIES[target2.path]) {
             case PATH_PROPERTIES.weights:
@@ -35230,11 +35353,11 @@
               TypedKeyframeTrack = VectorKeyframeTrack;
               break;
           }
-          const targetName = node3.name ? node3.name : node3.uuid;
+          const targetName = node5.name ? node5.name : node5.uuid;
           const interpolation = sampler.interpolation !== void 0 ? INTERPOLATION[sampler.interpolation] : InterpolateLinear;
           const targetNames = [];
           if (PATH_PROPERTIES[target2.path] === PATH_PROPERTIES.weights) {
-            node3.traverse(function(object2) {
+            node5.traverse(function(object2) {
               if (object2.morphTargetInfluences) {
                 targetNames.push(object2.name ? object2.name : object2.uuid);
               }
@@ -35277,16 +35400,16 @@
       const nodeDef = json.nodes[nodeIndex];
       if (nodeDef.mesh === void 0) return null;
       return parser.getDependency("mesh", nodeDef.mesh).then(function(mesh) {
-        const node3 = parser._getNodeRef(parser.meshCache, nodeDef.mesh, mesh);
+        const node5 = parser._getNodeRef(parser.meshCache, nodeDef.mesh, mesh);
         if (nodeDef.weights !== void 0) {
-          node3.traverse(function(o) {
+          node5.traverse(function(o) {
             if (!o.isMesh) return;
             for (let i = 0, il = nodeDef.weights.length; i < il; i++) {
               o.morphTargetInfluences[i] = nodeDef.weights[i];
             }
           });
         }
-        return node3;
+        return node5;
       });
     }
     /**
@@ -35310,19 +35433,19 @@
         Promise.all(childPending),
         skeletonPending
       ]).then(function(results) {
-        const node3 = results[0];
+        const node5 = results[0];
         const children = results[1];
         const skeleton = results[2];
         if (skeleton !== null) {
-          node3.traverse(function(mesh) {
+          node5.traverse(function(mesh) {
             if (!mesh.isSkinnedMesh) return;
             mesh.bind(skeleton, _identityMatrix2);
           });
         }
         for (let i = 0, il = children.length; i < il; i++) {
-          node3.add(children[i]);
+          node5.add(children[i]);
         }
-        return node3;
+        return node5;
       });
     }
     // ._loadNodeShallow() parses a single node.
@@ -35354,47 +35477,47 @@
         pending.push(promise);
       });
       this.nodeCache[nodeIndex] = Promise.all(pending).then(function(objects) {
-        let node3;
+        let node5;
         if (nodeDef.isBone === true) {
-          node3 = new Bone();
+          node5 = new Bone();
         } else if (objects.length > 1) {
-          node3 = new Group();
+          node5 = new Group();
         } else if (objects.length === 1) {
-          node3 = objects[0];
+          node5 = objects[0];
         } else {
-          node3 = new Object3D();
+          node5 = new Object3D();
         }
-        if (node3 !== objects[0]) {
+        if (node5 !== objects[0]) {
           for (let i = 0, il = objects.length; i < il; i++) {
-            node3.add(objects[i]);
+            node5.add(objects[i]);
           }
         }
         if (nodeDef.name) {
-          node3.userData.name = nodeDef.name;
-          node3.name = nodeName;
+          node5.userData.name = nodeDef.name;
+          node5.name = nodeName;
         }
-        assignExtrasToUserData(node3, nodeDef);
-        if (nodeDef.extensions) addUnknownExtensionsToUserData(extensions, node3, nodeDef);
+        assignExtrasToUserData(node5, nodeDef);
+        if (nodeDef.extensions) addUnknownExtensionsToUserData(extensions, node5, nodeDef);
         if (nodeDef.matrix !== void 0) {
           const matrix = new Matrix4();
           matrix.fromArray(nodeDef.matrix);
-          node3.applyMatrix4(matrix);
+          node5.applyMatrix4(matrix);
         } else {
           if (nodeDef.translation !== void 0) {
-            node3.position.fromArray(nodeDef.translation);
+            node5.position.fromArray(nodeDef.translation);
           }
           if (nodeDef.rotation !== void 0) {
-            node3.quaternion.fromArray(nodeDef.rotation);
+            node5.quaternion.fromArray(nodeDef.rotation);
           }
           if (nodeDef.scale !== void 0) {
-            node3.scale.fromArray(nodeDef.scale);
+            node5.scale.fromArray(nodeDef.scale);
           }
         }
-        if (!parser.associations.has(node3)) {
-          parser.associations.set(node3, {});
+        if (!parser.associations.has(node5)) {
+          parser.associations.set(node5, {});
         }
-        parser.associations.get(node3).nodes = nodeIndex;
-        return node3;
+        parser.associations.get(node5).nodes = nodeIndex;
+        return node5;
       });
       return this.nodeCache[nodeIndex];
     }
@@ -35420,17 +35543,17 @@
         for (let i = 0, il = nodes.length; i < il; i++) {
           scene.add(nodes[i]);
         }
-        const reduceAssociations = (node3) => {
+        const reduceAssociations = (node5) => {
           const reducedAssociations = /* @__PURE__ */ new Map();
           for (const [key2, value] of parser.associations) {
             if (key2 instanceof Material || key2 instanceof Texture) {
               reducedAssociations.set(key2, value);
             }
           }
-          node3.traverse((node4) => {
-            const mappings = parser.associations.get(node4);
+          node5.traverse((node6) => {
+            const mappings = parser.associations.get(node6);
             if (mappings != null) {
-              reducedAssociations.set(node4, mappings);
+              reducedAssociations.set(node6, mappings);
             }
           });
           return reducedAssociations;
@@ -35781,10 +35904,10 @@
       sourceLookup.set(clonedNode, sourceNode);
       cloneLookup.set(sourceNode, clonedNode);
     });
-    clone2.traverse(function(node3) {
-      if (!node3.isSkinnedMesh) return;
-      const clonedMesh = node3;
-      const sourceMesh = sourceLookup.get(node3);
+    clone2.traverse(function(node5) {
+      if (!node5.isSkinnedMesh) return;
+      const clonedMesh = node5;
+      const sourceMesh = sourceLookup.get(node5);
       const sourceBones = sourceMesh.skeleton.bones;
       clonedMesh.skeleton = sourceMesh.skeleton.clone();
       clonedMesh.bindMatrix.copy(sourceMesh.bindMatrix);
@@ -36572,7 +36695,7 @@
   }
 
   // src/render/player-vehicle.js
-  var finite2 = (n, fallback = 0) => Number.isFinite(n) ? n : fallback;
+  var finite3 = (n, fallback = 0) => Number.isFinite(n) ? n : fallback;
   var clamp4 = (n, a, b) => Math.max(a, Math.min(b, n));
   var vector = (p) => new Vector3(p.x, p.y, p.z);
   var point2 = (p) => ({ x: p.x, y: p.y, z: p.z });
@@ -36679,7 +36802,7 @@
       }
     };
     for (const camera2 of model.sensors.cameras) {
-      const a = finite2(camera2.angleDeg) * Math.PI / 180;
+      const a = finite3(camera2.angleDeg) * Math.PI / 180;
       fixedPoses[camera2.id === "rear-camera" ? "sensor-rear" : "sensor"] = {
         position: { ...camera2.position },
         target: {
@@ -36691,11 +36814,11 @@
     }
     function damagePanels(vehicle) {
       const damage = vehicle.damage ?? {};
-      const sides = ["front", "rear", "left", "right"].map((side) => clamp4(finite2(damage[side]), 0, 1));
+      const sides = ["front", "rear", "left", "right"].map((side) => clamp4(finite3(damage[side]), 0, 1));
       const signature = sides.join(":");
       const metadata = {
-        total: finite2(damage.total),
-        impactCount: finite2(damage.impactCount),
+        total: finite3(damage.total),
+        impactCount: finite3(damage.impactCount),
         lastImpact: damage.lastImpact ? { ...damage.lastImpact } : null
       };
       if (signature === previousDamage) {
@@ -36751,20 +36874,20 @@
       currentActor = actor;
       const vehicle = actor.vehicle ?? {};
       const suspension = vehicle.suspension ?? {};
-      chassis.position.y = clamp4(finite2(suspension.heaveM), -0.045, 0.045);
+      chassis.position.y = clamp4(finite3(suspension.heaveM), -0.045, 0.045);
       chassis.rotation.set(
-        clamp4(finite2(suspension.pitchRad), -0.1, 0.1),
+        clamp4(finite3(suspension.pitchRad), -0.1, 0.1),
         0,
-        clamp4(finite2(suspension.rollRad), -0.1, 0.1)
+        clamp4(finite3(suspension.rollRad), -0.1, 0.1)
       );
       chassis.updateMatrix();
       for (const wheel of model.wheels) {
         wheel.pivot.rotation.set(
           0,
-          wheel.axle > 0 ? finite2(vehicle.wheelAngles?.[wheel.key]) : 0,
+          wheel.axle > 0 ? finite3(vehicle.wheelAngles?.[wheel.key]) : 0,
           0
         );
-        wheel.spin.rotation.set(finite2(vehicle.wheelSpinRad), 0, 0);
+        wheel.spin.rotation.set(finite3(vehicle.wheelSpinRad), 0, 0);
         diagnostics.wheels[wheel.key] = {
           center: point2(wheel.pivot.position),
           radiusM: PLAYER_VEHICLE.wheelRadiusM,
@@ -36788,10 +36911,10 @@
         }
         kit.between(link.part, top, bottom);
       }
-      model.cockpit.steering.rotation.z = finite2(vehicle.steeringWheelRad);
-      const speed = finite2(actor.speed) * 3.6;
+      model.cockpit.steering.rotation.z = finite3(vehicle.steeringWheelRad);
+      const speed = finite3(actor.speed) * 3.6;
       const gear = vehicle.controls?.gear ?? "N";
-      const brake = clamp4(finite2(vehicle.controls?.brake), 0, 1);
+      const brake = clamp4(finite3(vehicle.controls?.brake), 0, 1);
       drawDashboard?.(speed, gear, brake);
       model.cockpit.dashboard.userData.reading = { speedKmh: speed, gear, brake };
       diagnostics.cockpit = {
@@ -36826,7 +36949,7 @@
           direction: point2(record.lens.getWorldDirection(new Vector3())),
           rayOrigin: ray?.origin ? { ...ray.origin } : null,
           rayEnd: ray?.end ? { ...ray.end } : null,
-          rangeM: finite2(ray?.rangeM, PLAYER_VEHICLE.maxRangeM),
+          rangeM: finite3(ray?.rangeM, PLAYER_VEHICLE.maxRangeM),
           hitId: ray?.hitId ?? null
         };
       });
@@ -36850,7 +36973,7 @@
         heaveM: chassis.position.y,
         springLengthsM: Object.fromEntries(model.wheels.map((wheel) => [wheel.key, wheel.spring.scale.y]))
       };
-      diagnostics.alpha = finite2(alpha, 1);
+      diagnostics.alpha = finite3(alpha, 1);
     }
     function setInspection(options = {}) {
       if (disposed) return;
@@ -37548,6 +37671,183 @@
     return { root, diagnostics, dispose };
   }
 
+  // src/render/pedestrian-rig.js
+  var finite4 = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
+  var cycle = (value) => (value % 1 + 1) % 1;
+  var smooth = (value) => {
+    const t = clamp2(value, 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  var components = ["getX", "getY", "getZ", "getW"];
+  function footGeometry(visual) {
+    const feet = [], skeletons = /* @__PURE__ */ new Set();
+    visual.traverse((part) => {
+      if (!part.isSkinnedMesh) return;
+      skeletons.add(part.skeleton);
+      const bones = new Set(part.skeleton.bones.flatMap((bone, index) => /foot|toe/i.test(bone.name) ? [index] : []));
+      const indices = part.geometry.getAttribute("skinIndex");
+      const weights = part.geometry.getAttribute("skinWeight");
+      const vertices = [];
+      if (indices && weights)
+        for (let i = 0; i < indices.count; i++) {
+          let weight = 0;
+          for (const component of components)
+            if (bones.has(indices[component](i))) weight += weights[component](i);
+          if (weight > 0.5) vertices.push(i);
+        }
+      if (vertices.length) feet.push({ part, vertices, matrix: new Matrix4() });
+    });
+    return { feet, skeletons };
+  }
+  function createPedestrianRig(visual, animations, initialActor = {}) {
+    if (!visual?.isObject3D)
+      throw new TypeError("A fitted articulated pedestrian visual is required");
+    const clips = {};
+    for (const name of ["idle", "walk", "run"]) {
+      const clip = animations?.find((item) => item.name.toLowerCase() === name);
+      if (!clip?.tracks.length || !Number.isFinite(clip.duration) || clip.duration <= 0)
+        throw new TypeError(`The installed pedestrian asset has no usable ${name} clip`);
+      clips[name] = clip;
+    }
+    const walkStrideM = visual.userData.walkStride * visual.scale.x;
+    const runStrideM = visual.userData.runStride * visual.scale.x;
+    if (!Number.isFinite(walkStrideM) || walkStrideM <= 0 || !Number.isFinite(runStrideM) || runStrideM <= 0)
+      throw new TypeError("Pedestrian source strides and fitted scale are required");
+    const { feet, skeletons } = footGeometry(visual);
+    if (!feet.length)
+      throw new TypeError("The pedestrian asset must have articulated skinned feet");
+    const boneCount = new Set([...skeletons].flatMap((skeleton) => skeleton.bones)).size;
+    const footVertices = feet.reduce((sum, foot) => sum + foot.vertices.length, 0);
+    const mixer = new AnimationMixer(visual);
+    const actions = Object.fromEntries(Object.entries(clips).map(([name, clip]) => {
+      const action = mixer.clipAction(clip).play();
+      action.setEffectiveTimeScale(0);
+      return [name, action];
+    }));
+    const vertex2 = new Vector3(), parentInverse = new Matrix4();
+    const baselineY = visual.position.y;
+    let actor = initialActor, disposed = false, first = true;
+    let lastTimeS = 0, lastFixedTimeS = 0, lastDistanceM = 0;
+    let motionWeight = 0, runBlend = 0, reading;
+    function update(nextActor = actor, alpha = 1) {
+      if (disposed) return;
+      actor = nextActor;
+      const body = actor.body ?? createPedestrianBody(actor);
+      const blend = clamp2(finite4(alpha, 1), 0, 1);
+      const distanceM = Math.max(0, finite4(actor.distance));
+      const fixedTimeS = Math.max(0, finite4(actor.motionTimeS));
+      const previous = actor.previous;
+      const stepDistanceM = previous ? Math.hypot(actor.x - previous.x, actor.z - previous.z) : 0;
+      const travelled = Math.max(0, distanceM - finite4(stepDistanceM) * (1 - blend));
+      const timeS = Math.max(0, fixedTimeS - (previous ? (1 - blend) * STEP : 0));
+      const speedMps = Math.max(0, finite4(actor.speed));
+      const renderedSpeed = previous ? Math.max(0, finite4(previous.speed, speedMps) * (1 - blend) + speedMps * blend) : speedMps;
+      const targetMotion = smooth(renderedSpeed / 0.35);
+      const targetRun = smooth((renderedSpeed - body.walkSpeedMps - 0.1) / Math.max(0.35, body.jogSpeedMps - body.walkSpeedMps - 0.1));
+      const rewound = fixedTimeS < lastFixedTimeS - 1e-9 || distanceM < lastDistanceM - 1e-9;
+      if (first || rewound) {
+        motionWeight = targetMotion;
+        runBlend = targetRun;
+        lastTimeS = timeS;
+      } else {
+        const elapsedS = Math.max(0, timeS - lastTimeS);
+        motionWeight += (targetMotion - motionWeight) * (1 - Math.exp(-elapsedS * 12));
+        runBlend += (targetRun - runBlend) * (1 - Math.exp(-elapsedS * 10));
+        if (Math.abs(motionWeight - targetMotion) < 1e-5) motionWeight = targetMotion;
+        if (Math.abs(runBlend - targetRun) < 1e-5) runBlend = targetRun;
+        lastTimeS = Math.max(lastTimeS, timeS);
+      }
+      first = false;
+      lastFixedTimeS = fixedTimeS;
+      lastDistanceM = distanceM;
+      const phase = cycle(finite4(actor.phase));
+      const walkPhase = cycle(travelled / walkStrideM + phase);
+      const runPhase = cycle(travelled / runStrideM + phase);
+      const weights = {
+        idle: 1 - motionWeight,
+        walk: motionWeight * (1 - runBlend),
+        run: motionWeight * runBlend
+      };
+      for (const name of ["idle", "walk", "run"]) {
+        const action = actions[name];
+        action.setEffectiveWeight(weights[name]);
+        action.time = name === "idle" ? phase : (name === "walk" ? walkPhase : runPhase) * clips[name].duration;
+      }
+      mixer.update(0);
+      visual.parent?.updateWorldMatrix(true, false);
+      visual.updateMatrixWorld(true);
+      if (visual.parent) parentInverse.copy(visual.parent.matrixWorld).invert();
+      else parentInverse.identity();
+      let minFootYM = Infinity, maxFootYM = -Infinity;
+      for (const { part, vertices, matrix } of feet) {
+        matrix.multiplyMatrices(parentInverse, part.matrixWorld);
+        for (const index of vertices) {
+          part.getVertexPosition(index, vertex2).applyMatrix4(matrix);
+          minFootYM = Math.min(minFootYM, vertex2.y);
+          maxFootYM = Math.max(maxFootYM, vertex2.y);
+        }
+      }
+      const correctionM = -minFootYM;
+      visual.position.y += correctionM;
+      visual.updateMatrixWorld(true);
+      for (const skeleton of skeletons) skeleton.update();
+      reading = {
+        actorId: String(actor.id ?? ""),
+        ready: true,
+        source: String(visual.userData.source ?? "local articulated human"),
+        body: { ...body },
+        motion: {
+          mode: actor.motionMode ?? "ambient",
+          reason: String(actor.reason ?? ""),
+          speedMps,
+          accelerationMps2: finite4(actor.accelerationMps2),
+          turnRateRadS: finite4(actor.turnRateRadS),
+          headingRad: finite4(actor.heading),
+          distanceM,
+          motionTimeS: fixedTimeS,
+          clockAvailable: Number.isFinite(actor.motionTimeS)
+        },
+        gait: {
+          renderedDistanceM: travelled,
+          walkStrideM,
+          runStrideM,
+          walkPhase,
+          runPhase,
+          motionWeight,
+          runBlend
+        },
+        clips: Object.fromEntries(Object.entries(actions).map(([name, action]) => [name, { durationS: clips[name].duration, timeS: action.time, weight: weights[name] }])),
+        ground: {
+          minFootYM: minFootYM + correctionM,
+          maxFootYM: maxFootYM + correctionM,
+          offsetM: visual.position.y - baselineY,
+          footVertices
+        },
+        skeletons: skeletons.size,
+        bones: boneCount
+      };
+    }
+    function diagnostics() {
+      return {
+        ...reading,
+        body: { ...reading.body },
+        motion: { ...reading.motion },
+        gait: { ...reading.gait },
+        clips: Object.fromEntries(Object.entries(reading.clips).map(([name, value]) => [name, { ...value }])),
+        ground: { ...reading.ground },
+        disposed
+      };
+    }
+    function dispose() {
+      if (disposed) return;
+      disposed = true;
+      mixer.stopAllAction();
+      mixer.uncacheRoot(visual);
+    }
+    update(initialActor);
+    return { update, diagnostics, dispose };
+  }
+
   // src/render/world-view.js
   var templates = /* @__PURE__ */ new Map();
   var loader = new GLTFLoader();
@@ -37813,11 +38113,11 @@
     }
     buildSignals() {
       this.signals = [];
-      for (const node3 of this.world.junctions) {
-        if (Math.abs(node3.x) % 50 !== 0 || Math.abs(node3.z) % 20 !== 0) continue;
+      for (const node5 of this.world.junctions) {
+        if (Math.abs(node5.x) % 50 !== 0 || Math.abs(node5.z) % 20 !== 0) continue;
         for (const vertical of [true, false]) {
           const root = new Group();
-          root.position.set(node3.x + 6, 0.15, node3.z + (vertical ? -6 : 6));
+          root.position.set(node5.x + 6, 0.15, node5.z + (vertical ? -6 : 6));
           this.scene.add(root);
           box2(root, 0.12, 3.4, 0.12, 5593942);
           box2(root, 0.5, 1.15, 0.45, 2567723, 0, 2.8, 0);
@@ -37887,7 +38187,7 @@
           gltf.scene,
           person ? Infinity : actor.width,
           person ? Infinity : actor.length,
-          person ? 1.78 : 2.3,
+          person ? actor.body?.heightM ?? 1.78 : 2.3,
           !person && actor.kind !== "tuktuk"
         );
         if (!person)
@@ -37905,17 +38205,7 @@
         record.visual = visual;
         this.status.loaded++;
         if (person) {
-          record.walkStride = (gltf.scene.userData.walkStride ?? 1.25) * visual.scale.x;
-          record.runStride = (gltf.scene.userData.runStride ?? 1.9) * visual.scale.x;
-          record.mixer = new AnimationMixer(visual);
-          record.actions = {};
-          for (const name of ["idle", "walk", "run"]) {
-            const clip = gltf.animations.find(
-              (c) => c.name.toLowerCase() === name
-            );
-            if (clip)
-              record.actions[name] = record.mixer.clipAction(clip).play();
-          }
+          record.pedestrianRig = createPedestrianRig(visual, gltf.animations, actor);
         } else {
           visual.traverse((part) => {
             if (/^wheel-(front|rear)-(left|right)$/.test(part.name))
@@ -37931,6 +38221,11 @@
           });
         }
       }).catch(() => this.status.failed.push(actor.kind));
+    }
+    pedestrianGroundHeight(position) {
+      if (this.world.environment === "vision") return 0.12;
+      if (pointOnRoad(position, this.world.roads)) return 0.115;
+      return pointOnRoad(position, this.world.roads, -2.5) ? 0.07 : -0.05;
     }
     sync(alpha) {
       const world2 = this.world;
@@ -37959,13 +38254,17 @@
       for (const actor of world2.actors) {
         if (!this.roots.has(actor.id)) this.addActor(actor);
         const record = this.roots.get(actor.id), p = actor === world2.player ? actor : interpolate(actor.previous ?? actor, actor, alpha);
-        record.root.position.set(p.x, 0.12, p.z);
+        record.root.position.set(
+          p.x,
+          actor.type === "pedestrian" ? this.pedestrianGroundHeight(p) : 0.12,
+          p.z
+        );
         record.root.rotation.y = p.heading;
         const distanceFromPlayer = Math.hypot(
           p.x - world2.player.x,
           p.z - world2.player.z
-        ), detailed = actor === world2.player || distanceFromPlayer < (actor.type === "pedestrian" ? 42 : 68);
-        record.root.visible = actor === world2.player || distanceFromPlayer < 135;
+        ), detailed = actor === world2.player || actor.id === this.focusedPersonId || distanceFromPlayer < (actor.type === "pedestrian" ? 42 : 68);
+        record.root.visible = actor === world2.player || actor.id === this.focusedPersonId || distanceFromPlayer < 135;
         if (record.visual) {
           record.visual.visible = detailed;
           record.fallback.visible = !detailed;
@@ -37977,33 +38276,7 @@
             if (wheel.front) wheel.part.rotateY(actor.steer ?? 0);
             wheel.part.rotateX(actor.distance / wheel.radius);
           }
-        if (record.mixer && detailed) {
-          const walking = actor.speed > 0.05;
-          const elapsed = Math.max(
-            0,
-            (world2.tick + alpha - (record.lastTick ?? world2.tick)) / 60
-          );
-          record.lastTick = world2.tick + alpha;
-          record.walkWeight = (record.walkWeight ?? 0) + ((walking ? 1 : 0) - (record.walkWeight ?? 0)) * (1 - Math.exp(-elapsed * 12));
-          const { walk, idle, run } = record.actions, running = actor.speed > 1.9;
-          const travelled = actor.distance - (actor.previous ? Math.hypot(
-            actor.x - actor.previous.x,
-            actor.z - actor.previous.z
-          ) * (1 - alpha) : 0);
-          if (walk) {
-            walk.setEffectiveWeight(running ? 0 : record.walkWeight);
-            walk.time = (travelled / record.walkStride + actor.phase) * walk.getClip().duration % walk.getClip().duration;
-          }
-          if (run) {
-            run.setEffectiveWeight(running ? record.walkWeight : 0);
-            run.time = (travelled / record.runStride + actor.phase) * run.getClip().duration % run.getClip().duration;
-          }
-          if (idle) {
-            idle.setEffectiveWeight(1 - record.walkWeight);
-            idle.time = (world2.tick / 60 + actor.phase) % idle.getClip().duration;
-          }
-          record.mixer.update(0);
-        }
+        if (record.pedestrianRig && detailed) record.pedestrianRig.update(actor, alpha);
       }
       if (this.routeRevision !== world2.routeRevision) {
         this.routeRevision = world2.routeRevision;
@@ -38031,11 +38304,13 @@
       this.disposed = true;
       this.scene.remove(this.egyptStreets.root);
       this.egyptStreets.dispose();
-      for (const record of this.roots.values())
+      for (const record of this.roots.values()) {
+        record.pedestrianRig?.dispose();
         if (record.vehicleRig) {
           record.root.remove(record.vehicleRig.root);
           record.vehicleRig.dispose();
         }
+      }
       const skeletons = /* @__PURE__ */ new Set();
       const textures = /* @__PURE__ */ new Set();
       this.scene.traverse((part) => {
@@ -38053,10 +38328,6 @@
         }
       });
       for (const skeleton of skeletons) skeleton.dispose();
-      for (const record of this.roots.values()) {
-        record.mixer?.stopAllAction();
-        if (record.mixer) record.mixer.uncacheRoot(record.visual);
-      }
       this.scene.clear();
       this.roots.clear();
     }
@@ -38795,8 +39066,8 @@
     }
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const text3 = input2.value.trim();
-      if (!text3 || pending) return;
+      const text5 = input2.value.trim();
+      if (!text5 || pending) return;
       const world2 = getWorld(), requestGeneration = generation;
       pending = new AbortController();
       const controller = pending;
@@ -38810,7 +39081,7 @@
           headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
-            text: text3,
+            text: text5,
             environment: world2.environment,
             history: history.slice(-6)
           })
@@ -38833,7 +39104,7 @@
         if ((result.action === "clarify" || result.action === "unsupported") && /[؀-ۿ]/u.test(reply))
           reply = result.action === "unsupported" ? "That request is outside the available destinations and driving controls." : "Please clarify which destination or service you need.";
         status.textContent = reply;
-        history.push({ role: "user", text: text3 }, { role: "assistant", text: reply });
+        history.push({ role: "user", text: text5 }, { role: "assistant", text: reply });
         history = history.slice(-6);
         input2.value = "";
       } catch (error) {
@@ -38920,7 +39191,7 @@
       return lastFrameId;
     } };
   }
-  function createVisualClient({ renderer: renderer2, onResult, onStatus }) {
+  function createVisualClient({ renderer: renderer2, onResult, onStatus, onFrame }) {
     const width = 640, height = 360;
     const target2 = new WebGLRenderTarget(width, height, {
       minFilter: LinearFilter,
@@ -38936,7 +39207,10 @@
     const context = canvas.getContext("2d", { willReadFrequently: true });
     const image = context.createImageData(width, height);
     let streamId = crypto.randomUUID(), frameId = 0, lastSampleS = -Infinity;
-    let enabled = false, disposed = false, pending = false, generation = 0;
+    let enabled = false, previewEnabled = false, disposed = false, pending = false, generation = 0;
+    let lifecycle = 0, latestFrame = null;
+    const frames = /* @__PURE__ */ new Map();
+    const results = /* @__PURE__ */ new Map();
     let restartRequired = false;
     let timer = null, lastResultId = -1;
     const timings = [];
@@ -38962,6 +39236,8 @@
         notify(data);
         if (data.result?.streamId === streamId && data.result.frameId > lastResultId) {
           lastResultId = data.result.frameId;
+          results.set(lastResultId, data.result);
+          if (results.size > 12) results.delete(results.keys().next().value);
           const timing = timings.find((item) => item.streamId === streamId && item.frameId === lastResultId);
           if (timing) timing.observedAfterMs = performance.now() - timing.startedMs;
           onResult(data.result);
@@ -38977,20 +39253,26 @@
     function reset2() {
       generation++;
       clearTimeout(timer);
+      frames.clear();
+      results.clear();
+      latestFrame = null;
       streamId = crypto.randomUUID();
       frameId = 0;
       lastResultId = -1;
       lastSampleS = -Infinity;
       pending = false;
-      notify({ result: null, status: enabled ? "loading" : "disabled", error: null });
+      notify({ available: false, result: null, status: enabled ? "loading" : "disabled", error: null });
       if (enabled && !disposed) timer = setTimeout(poll, 0);
       return streamId;
     }
     async function start() {
-      notify({ status: "loading", error: null });
+      const operation = ++lifecycle;
+      notify({ available: false, status: "loading", error: null });
       try {
         if (restartRequired) await request("/api/vision/stop", { method: "POST" });
         const result = await request("/api/vision/start", { method: "POST" });
+        if (operation !== lifecycle || disposed)
+          return { ok: false, error: "Camera startup was superseded by a newer action." };
         if (!result.available) throw new Error(result.error ?? "Local camera perception is unavailable.");
         enabled = true;
         restartRequired = false;
@@ -39000,13 +39282,31 @@
         poll();
         return { ok: true, streamId };
       } catch (error) {
-        enabled = false;
-        notify({ available: false, status: "error", error: error.message, result: null });
+        if (operation === lifecycle && !disposed) {
+          enabled = false;
+          notify({ available: false, status: "error", error: error.message, result: null });
+        }
+        return { ok: false, error: error.message };
+      }
+    }
+    async function stop() {
+      const operation = ++lifecycle;
+      enabled = false;
+      restartRequired = false;
+      reset2();
+      try {
+        await request("/api/vision/stop", { method: "POST" });
+        if (operation !== lifecycle || disposed)
+          return { ok: false, error: "Camera stop was superseded by a newer action." };
+        return { ok: true };
+      } catch (error) {
+        if (operation === lifecycle && !disposed)
+          notify({ available: false, status: "error", error: error.message, result: null });
         return { ok: false, error: error.message };
       }
     }
     function capture(scene, camera2, ego, simulationTimeS) {
-      if (!enabled || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
+      if (!enabled && !previewEnabled || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
       lastSampleS = simulationTimeS;
       const currentGeneration = generation, capturedStream = streamId;
       const currentFrame = ++frameId;
@@ -39071,6 +39371,18 @@
         if (!encoded.startsWith(prefix)) throw new Error("The front camera did not encode a JPEG.");
         frame2.imageJpegBase64 = encoded.slice(prefix.length);
         timing.encodedAfterMs = performance.now() - timing.startedMs;
+        Object.freeze(frame2.camera.position);
+        Object.freeze(frame2.camera);
+        Object.freeze(frame2.ego);
+        Object.freeze(frame2);
+        frames.set(currentFrame, frame2);
+        if (frames.size > 12) frames.delete(frames.keys().next().value);
+        latestFrame = frame2;
+        onFrame?.(frame2);
+        if (!enabled) {
+          pending = false;
+          return;
+        }
         timing.postedAfterMs = timing.encodedAfterMs;
         request("/api/vision/frame", {
           method: "POST",
@@ -39093,15 +39405,33 @@
       if (disposed) return;
       disposed = true;
       enabled = false;
+      lifecycle++;
       generation++;
       clearTimeout(timer);
+      frames.clear();
+      results.clear();
+      latestFrame = null;
       target2.dispose();
     }
     return {
       start,
+      stop,
       reset: reset2,
       capture,
       dispose,
+      setPreviewEnabled(value) {
+        if (typeof value !== "boolean") throw new Error("Camera preview needs a boolean state.");
+        previewEnabled = value;
+      },
+      getFrame(resultStream, resultFrame) {
+        return resultStream === streamId ? frames.get(resultFrame) ?? null : null;
+      },
+      getResult(resultStream, resultFrame) {
+        return resultStream === streamId ? results.get(resultFrame) ?? null : null;
+      },
+      get latestFrame() {
+        return latestFrame;
+      },
       get streamId() {
         return streamId;
       },
@@ -39329,11 +39659,11 @@
     ["inspection", "Inspect"],
     ["running-gear", "Running gear"]
   ];
-  var finite3 = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
-  function node(tag, className, text3) {
+  var finite5 = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
+  function node(tag, className, text5) {
     const element = document.createElement(tag);
     if (className) element.className = className;
-    if (text3 != null) element.textContent = text3;
+    if (text5 != null) element.textContent = text5;
     return element;
   }
   function text(element, value) {
@@ -39598,7 +39928,7 @@
       const inBay = world2?.environment === "vehicle";
       const phase = world2?.vehicleTest?.phase;
       const knownPhase = ["ready", "running", "contact"].includes(phase);
-      const stopped = Math.abs(finite3(actor?.speed)) < 0.15;
+      const stopped = Math.abs(finite5(actor?.speed)) < 0.15;
       const running = phase === "running";
       const vehicle = actor?.vehicle;
       const loadingReason = "The detailed car is still loading.";
@@ -39612,14 +39942,14 @@
       disabled(sensorsInput, !loaded, loadingReason);
       cameraSelect.value = sensorCamera2 === "rear" ? "rear" : "front";
       disabled(cameraSelect, !loaded, loadingReason);
-      const speed = finite3(actor?.speed) * 3.6;
+      const speed = finite5(actor?.speed) * 3.6;
       const gear = vehicle?.controls?.gear ?? "\u2014";
       text(
         speedValue,
         actor ? `${Math.abs(speed).toFixed(0)} km/h \xB7 ${gear}` : "Waiting for car"
       );
-      const left = finite3(vehicle?.wheelAngles?.frontLeft) * 180 / Math.PI;
-      const right = finite3(vehicle?.wheelAngles?.frontRight) * 180 / Math.PI;
+      const left = finite5(vehicle?.wheelAngles?.frontLeft) * 180 / Math.PI;
+      const right = finite5(vehicle?.wheelAngles?.frontRight) * 180 / Math.PI;
       text(
         steeringValue,
         vehicle ? `${left.toFixed(1)}\xB0 / ${right.toFixed(1)}\xB0` : "Waiting for rig"
@@ -39636,14 +39966,14 @@
       const telemetryReady = imu?.source === "simulated-vehicle-state";
       text(
         telemetryReading,
-        telemetryReady ? `Virtual IMU / GNSS \xB7 ${finite3(imu.longitudinalAccelerationMps2).toFixed(1)} m/s\xB2 \xB7 ${(finite3(imu.yawRateRadS) * 180 / Math.PI).toFixed(1)}\xB0/s` : "Virtual IMU / GNSS unavailable"
+        telemetryReady ? `Virtual IMU / GNSS \xB7 ${finite5(imu.longitudinalAccelerationMps2).toFixed(1)} m/s\xB2 \xB7 ${(finite5(imu.yawRateRadS) * 180 / Math.PI).toFixed(1)}\xB0/s` : "Virtual IMU / GNSS unavailable"
       );
       telemetryPosition.hidden = !telemetryReady;
       if (telemetryReady) {
         const p = imu.positionM ?? {};
         text(
           telemetryPosition,
-          `X ${finite3(p.x).toFixed(1)} \xB7 Y ${finite3(p.y).toFixed(1)} \xB7 Z ${finite3(p.z).toFixed(1)} m`
+          `X ${finite5(p.x).toFixed(1)} \xB7 Y ${finite5(p.y).toFixed(1)} \xB7 Z ${finite5(p.z).toFixed(1)} m`
         );
       }
       bayButton.hidden = inBay;
@@ -39671,10 +40001,10 @@
       impactDetails.hidden = !inBay || !impact;
       if (impact) {
         const side = impact.side || "body";
-        const amount = Math.round(finite3(damage?.[side]) * 100);
+        const amount = Math.round(finite5(damage?.[side]) * 100);
         text(
           impactDetails,
-          `${side[0].toUpperCase()}${side.slice(1)} ${amount}% \xB7 ${finite3(impact.closingSpeedMps).toFixed(1)} m/s \xB7 ${(finite3(impact.energyJ) / 1e3).toFixed(1)} kJ`
+          `${side[0].toUpperCase()}${side.slice(1)} ${amount}% \xB7 ${finite5(impact.closingSpeedMps).toFixed(1)} m/s \xB7 ${(finite5(impact.energyJ) / 1e3).toFixed(1)} kJ`
         );
       }
       text(
@@ -39699,7 +40029,7 @@
     ["vision-first", "Vision-first + safety"],
     ["sensors-only", "Sensors-only comparison"]
   ];
-  var finite4 = (value) => Number.isFinite(value);
+  var finite6 = (value) => Number.isFinite(value);
   var readable = (value) => typeof value === "string" ? value.replaceAll("-", " ") : "Unavailable";
   function node2(tag, className = "", content) {
     const element = document.createElement(tag);
@@ -39929,7 +40259,7 @@
       const suppliedStatus = typeof availability === "string" ? availability : availability?.status;
       const statusName = ["error", "disabled", "loading", "stale", "unavailable"].includes(suppliedStatus) ? suppliedStatus : vision?.status ?? suppliedStatus ?? "unavailable";
       const fault = availability?.error || vision?.availability?.error;
-      const received = vision?.source === "visual-prediction" && vision.available === true && Number.isSafeInteger(vision.frameId) && finite4(vision.ageMs) && vision.ageMs <= 750 && statusName === "ready" && availability?.available !== false && !fault;
+      const received = vision?.source === "visual-prediction" && vision.available === true && Number.isSafeInteger(vision.frameId) && finite6(vision.ageMs) && vision.ageMs <= 750 && statusName === "ready" && availability?.available !== false && !fault;
       text2(status, statusName === "error" || fault ? `Perception unavailable: ${fault || "camera processing failed"}. Reset to retry.` : statusName === "stale" ? "Visual evidence is stale. No valid visual-first decision." : statusName === "loading" ? "Loading the installed detector. No visual decision yet." : statusName === "disabled" ? "Perception is disabled. Geometry safety remains separate." : !received ? "Awaiting a matching front-camera observation. Reset to retry." : busy ? "Scene running with current front-camera observations." : "Front-camera observation received. Run when ready.");
       status.dataset.state = received && statusName === "ready" && !fault ? "ready" : statusName;
       const model = vision?.model ?? availability?.model;
@@ -39937,22 +40267,22 @@
       text2(values.camera, received ? `Physical front RGB \xB7 ${vision.detections ?? 0} detector ${vision.detections === 1 ? "box" : "boxes"}` : "Physical front RGB \xB7 no current evidence");
       text2(values.model, model?.id || "Not loaded");
       text2(values.method, model ? `${model.method || "Unknown"} / ${model.provider || "Unknown"}` : "Unavailable");
-      text2(values.latency, finite4(vision?.latencyMs) ? `${vision.latencyMs.toFixed(0)} ms` : "Not measured");
-      text2(values.age, Number.isSafeInteger(vision?.frameId) && finite4(vision?.ageMs) ? `#${vision.frameId} \xB7 ${vision.ageMs.toFixed(0)} ms` : "No matched frame");
+      text2(values.latency, finite6(vision?.latencyMs) ? `${vision.latencyMs.toFixed(0)} ms` : "Not measured");
+      text2(values.age, Number.isSafeInteger(vision?.frameId) && finite6(vision?.ageMs) ? `#${vision.frameId} \xB7 ${vision.ageMs.toFixed(0)} ms` : "No matched frame");
       const tracks = Array.isArray(vision?.tracks) ? vision.tracks : [];
       text2(values.tracks, `${tracks.length} \xB7 ${tracks.filter((track) => track.label === "person").length} semantic person`);
       const conflicts2 = received && Array.isArray(vision?.forecasts) ? vision.forecasts.filter((item) => item.conflict === true) : [];
-      const next = conflicts2.find((item) => finite4(item.crossingTimeS));
+      const next = conflicts2.find((item) => finite6(item.crossingTimeS));
       text2(values.forecast, next ? `Lane entry ~${next.crossingTimeS.toFixed(1)} s \xB7 score ${(next.confidence * 100).toFixed(0)}%` : received ? "No qualified conflict forecast" : "Unavailable");
       text2(values.decision, !received || !decision2?.available ? `Unavailable \xB7 ${readable(decision2?.reason)}` : decision2.brake && mode === "sensors-only" ? `Observe only \xB7 ${readable(decision2.reason)}` : decision2.brake ? `Stop requested \xB7 ${readable(decision2.reason)}` : `No visual cap \xB7 ${readable(decision2.reason)}`);
       values.decision.dataset.brake = String(Boolean(received && decision2?.available && decision2.brake && mode !== "sensors-only"));
       text2(values.applied, world2?.player ? readable(world2.player.reason) : "Controller unavailable");
       const ranges = world2?.sensors?.filteredM;
-      const validRanges = Array.isArray(ranges) ? ranges.filter(finite4) : [];
+      const validRanges = Array.isArray(ranges) ? ranges.filter(finite6) : [];
       text2(values.proximity, validRanges.length ? `${Math.min(...validRanges).toFixed(1)} m \xB7 separate geometry` : "Unavailable \xB7 separate geometry");
       const entries = tracks.slice(0, 3).map((track) => {
         const speed = track.velocity ? Math.hypot(track.velocity.x, track.velocity.z) : null;
-        return `${track.id} \xB7 ${track.label === "motion" ? "ambiguous motion" : track.label} \xB7 ${track.observations ?? 0} observations \xB7 ${finite4(speed) ? speed.toFixed(2) : "\u2014"} m/s \xB7 uncertainty ${finite4(track.uncertaintyM) ? track.uncertaintyM.toFixed(2) : "\u2014"} m`;
+        return `${track.id} \xB7 ${track.label === "motion" ? "ambiguous motion" : track.label} \xB7 ${track.observations ?? 0} observations \xB7 ${finite6(speed) ? speed.toFixed(2) : "\u2014"} m/s \xB7 uncertainty ${finite6(track.uncertaintyM) ? track.uncertaintyM.toFixed(2) : "\u2014"} m`;
       });
       const lines = entries.length ? entries : ["No projected visual tracks."];
       while (trackList.children.length > lines.length) trackList.lastElementChild.remove();
@@ -39962,7 +40292,7 @@
       });
       const visualTime = pair?.visionBrakeTimeS;
       const reactiveTime = pair?.reactiveBrakeTimeS;
-      text2(comparison, finite4(visualTime) && finite4(reactiveTime) ? `Recorded onset: vision ${visualTime.toFixed(2)} s; sensors-only ${reactiveTime.toFixed(2)} s. Difference ${(reactiveTime - visualTime).toFixed(2)} s.` : finite4(visualTime) || finite4(reactiveTime) ? `Recorded onset: ${finite4(visualTime) ? `vision ${visualTime.toFixed(2)} s` : `sensors-only ${reactiveTime.toFixed(2)} s`}. Paired run not recorded.` : "No paired run recorded. Run the same scene in each mode.");
+      text2(comparison, finite6(visualTime) && finite6(reactiveTime) ? `Recorded onset: vision ${visualTime.toFixed(2)} s; sensors-only ${reactiveTime.toFixed(2)} s. Difference ${(reactiveTime - visualTime).toFixed(2)} s.` : finite6(visualTime) || finite6(reactiveTime) ? `Recorded onset: ${finite6(visualTime) ? `vision ${visualTime.toFixed(2)} s` : `sensors-only ${reactiveTime.toFixed(2)} s`}. Paired run not recorded.` : "No paired run recorded. Run the same scene in each mode.");
     }
     update();
     return {
@@ -39976,6 +40306,990 @@
         pending.clear();
         panel.remove();
         toggleButton.remove();
+      }
+    };
+  }
+
+  // src/ui/camera-evidence.js
+  var MAX_AGE_MS = 750;
+  var FRAME_KEYS = ["schema", "streamId", "frameId", "simulationTimeS", "camera", "ego", "imageJpegBase64"];
+  var RESULT_KEYS2 = [
+    "streamId",
+    "frameId",
+    "simulationTimeS",
+    "camera",
+    "ego",
+    "width",
+    "height",
+    "latencyMs",
+    "model",
+    "detections",
+    "observations",
+    "status"
+  ];
+  var VISUAL_KEYS = [
+    "source",
+    "streamId",
+    "status",
+    "available",
+    "availability",
+    "frameId",
+    "ageMs",
+    "model",
+    "latencyMs",
+    "detections",
+    "projectedDetections",
+    "unprojectableDetections",
+    "tracks",
+    "forecasts",
+    "decision"
+  ];
+  var TRACK_KEYS2 = [
+    "id",
+    "source",
+    "streamId",
+    "label",
+    "confidence",
+    "frameId",
+    "firstSeenS",
+    "lastSeenS",
+    "observations",
+    "spanS",
+    "position",
+    "velocity",
+    "uncertaintyM",
+    "velocityUncertaintyMps",
+    "reliable",
+    "box",
+    "history",
+    "holdUntilS",
+    "holdSpeedMps",
+    "lastConflictS",
+    "conflictFrameId",
+    "conflictCrossingTimeS",
+    "ageMs",
+    "positionCovarianceM2",
+    "velocityCovarianceM2S2",
+    "regressionResidualCovarianceM2",
+    "stopEpisode"
+  ];
+  var finite7 = Number.isFinite;
+  var token2 = (value) => typeof value === "string" && value.trim().length > 0 && value.length <= 200;
+  var point3 = (value) => value && finite7(value.x) && finite7(value.z);
+  var plainKeys = (value, keys2) => value && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value)) && Reflect.ownKeys(value).every((key2) => keys2.includes(key2) && !Object.getOwnPropertyDescriptor(value, key2).get && !Object.getOwnPropertyDescriptor(value, key2).set);
+  var equal = (a, b) => finite7(a) && finite7(b) && Math.abs(a - b) <= 1e-8;
+  function cameraValid(camera2) {
+    return plainKeys(camera2, ["width", "height", "fovYDeg", "position", "headingRad", "groundY"]) && Number.isSafeInteger(camera2.width) && camera2.width >= 160 && camera2.width <= 1920 && Number.isSafeInteger(camera2.height) && camera2.height >= 90 && camera2.height <= 1080 && finite7(camera2.fovYDeg) && camera2.fovYDeg >= 20 && camera2.fovYDeg <= 140 && plainKeys(camera2.position, ["x", "y", "z"]) && point3(camera2.position) && finite7(camera2.position.y) && finite7(camera2.headingRad) && finite7(camera2.groundY) && camera2.position.y - camera2.groundY >= 0.2 && camera2.position.y - camera2.groundY <= 8;
+  }
+  function cameraFrameKey(frame2) {
+    return token2(frame2?.streamId) && Number.isSafeInteger(frame2?.frameId) && frame2.frameId >= 0 ? `${frame2.streamId.length}:${frame2.streamId}:${frame2.frameId}` : null;
+  }
+  function frameValid(frame2) {
+    return plainKeys(frame2, FRAME_KEYS) && frame2.schema === 1 && cameraFrameKey(frame2) !== null && finite7(frame2.simulationTimeS) && frame2.simulationTimeS >= 0 && cameraValid(frame2.camera) && typeof frame2.imageJpegBase64 === "string" && frame2.imageJpegBase64.startsWith("/9j/") && frame2.imageJpegBase64.length <= 8 * 1024 * 1024;
+  }
+  function sameCamera(a, b) {
+    return cameraValid(a) && cameraValid(b) && ["width", "height", "fovYDeg", "headingRad", "groundY"].every((key2) => equal(a[key2], b[key2])) && ["x", "y", "z"].every((key2) => equal(a.position[key2], b.position[key2]));
+  }
+  function sameEgo(a, b) {
+    const keys2 = ["x", "z", "headingRad", "speedMps", "lengthM", "widthM"];
+    return plainKeys(a, keys2) && plainKeys(b, keys2) && keys2.every((key2) => equal(a[key2], b[key2]));
+  }
+  function modelValid(model) {
+    return plainKeys(model, ["id", "method", "provider", "weightsSha256"]) && ["id", "method", "provider"].every((key2) => token2(model[key2])) && (model.weightsSha256 === null || /^[a-f0-9]{64}$/i.test(model.weightsSha256 ?? ""));
+  }
+  function detectionValid(detection, width, height) {
+    return plainKeys(detection, ["box", "label", "confidence", "trackHint"]) && ["person", "vehicle", "motion"].includes(detection.label) && finite7(detection.confidence) && detection.confidence >= 0 && detection.confidence <= 1 && Array.isArray(detection.box) && detection.box.length === 4 && detection.box.every((value, i) => finite7(value) && value >= 0 && value <= (i % 2 ? height : width)) && detection.box[0] < detection.box[2] && detection.box[1] < detection.box[3];
+  }
+  function resultValid(result) {
+    return plainKeys(result, RESULT_KEYS2) && result.status === "ready" && cameraFrameKey(result) !== null && finite7(result.simulationTimeS) && cameraValid(result.camera) && modelValid(result.model) && result.width === result.camera.width && result.height === result.camera.height && finite7(result.latencyMs) && result.latencyMs >= 0 && result.latencyMs <= 6e4 && Array.isArray(result.detections) && result.detections.length <= 128 && result.detections.every((detection) => detectionValid(detection, result.width, result.height));
+  }
+  function pairCameraEvidence({ frame: frame2 = null, result = null, visual = null, availability = {}, enabled = false } = {}) {
+    const rawAvailable = Boolean(frameValid(frame2));
+    const pair = {
+      key: rawAvailable ? cameraFrameKey(frame2) : null,
+      frame: rawAvailable ? frame2 : null,
+      result: null,
+      visual: null,
+      rawAvailable,
+      canAnalyze: false,
+      motionAvailable: false,
+      ageMs: null,
+      status: "unavailable",
+      reason: "Front RGB unavailable. Open the camera again to retry."
+    };
+    const reject = (status2, reason) => ({ ...pair, status: status2, reason });
+    const status = typeof availability === "string" ? availability : availability?.status;
+    if (status === "error" || availability?.error)
+      return reject("error", `Camera evidence unavailable: ${availability?.error || "detector failed"}. Stop, then Retry detector.`);
+    if (status === "loading" || status === "starting")
+      return reject("starting", "Starting the installed detector \xB7 raw RGB is not yet analysed.");
+    if (status === "unavailable")
+      return reject("unavailable", "Local detector unavailable \xB7 Retry detector, or continue driving without it.");
+    if (!enabled)
+      return reject("off", rawAvailable ? "Detector off \xB7 raw front RGB is unanalysed. Start the installed detector explicitly." : "Detector off \xB7 waiting for raw front RGB. No model is started by opening this screen.");
+    if (availability?.source && availability.source !== "camera-pixels")
+      return reject("mismatch", "Camera source mismatch \xB7 no neural overlay is shown.");
+    if (status === "stale")
+      return reject("stale", "Camera evidence is stale \xB7 boxes and motion estimates are withheld.");
+    if (status === "disabled")
+      return reject("off", "Detector stopped \xB7 raw RGB is unanalysed.");
+    if (status !== "ready" || availability?.available === false)
+      return reject("unavailable", "Local detector unavailable \xB7 Retry detector, or continue driving without it.");
+    if (!rawAvailable)
+      return reject("unavailable", "The exact analysed JPEG is unavailable \xB7 no overlay is shown.");
+    if (!result)
+      return reject("waiting", "Raw front RGB \xB7 waiting for an analysed frame. No overlay is shown.");
+    if (!resultValid(result))
+      return reject("error", "Invalid pixel-detector result \xB7 no overlay is shown. Stop, then Retry detector.");
+    if (cameraFrameKey(result) !== pair.key || !equal(result.simulationTimeS, frame2.simulationTimeS) || !sameCamera(frame2.camera, result.camera) || !sameEgo(frame2.ego, result.ego))
+      return reject("mismatch", "Frame / stream / calibration mismatch \xB7 raw preview only; no overlay is shown.");
+    pair.result = result;
+    if (visual) {
+      if (!plainKeys(visual, VISUAL_KEYS) || visual.source !== "visual-prediction" || visual.streamId !== result.streamId || visual.frameId !== result.frameId)
+        return reject("mismatch", "Motion evidence does not match this camera frame \xB7 no overlay is shown.");
+      if (!finite7(visual.ageMs) || visual.ageMs < 0 || visual.ageMs > MAX_AGE_MS || visual.status === "stale")
+        return reject("stale", "Camera evidence is stale or its age is unknown \xB7 no overlay is shown.");
+      if (visual.status !== "ready" || visual.available !== true || visual.availability?.error)
+        return reject("unavailable", "Motion observations are unavailable \xB7 no overlay is shown.");
+      if (!modelValid(visual.model) || ["id", "method", "provider", "weightsSha256"].some((key2) => visual.model[key2] !== result.model[key2]))
+        return reject("mismatch", "Model evidence mismatch \xB7 no overlay is shown.");
+      pair.visual = visual;
+      pair.ageMs = visual.ageMs;
+      pair.motionAvailable = true;
+    }
+    return {
+      ...pair,
+      canAnalyze: true,
+      status: "matched",
+      reason: visual ? "Exact front-camera frame \xB7 detector boxes and image-derived motion." : "Exact front-camera frame \xB7 detector boxes; fitted motion unavailable."
+    };
+  }
+  function projectCameraPoint(position, camera2) {
+    if (!point3(position) || !cameraValid(camera2)) return null;
+    const dx = position.x - camera2.position.x, dz = position.z - camera2.position.z;
+    const sine = Math.sin(camera2.headingRad), cosine = Math.cos(camera2.headingRad);
+    const depth = dx * sine + dz * cosine;
+    if (depth <= 0.05) return null;
+    const side = -dx * cosine + dz * sine;
+    const focal = camera2.height / (2 * Math.tan(camera2.fovYDeg * Math.PI / 360));
+    const x = camera2.width / 2 + side * focal / depth;
+    const y = camera2.height / 2 + (camera2.position.y - camera2.groundY) * focal / depth;
+    return finite7(x) && finite7(y) ? [x, y] : null;
+  }
+  function projectPixelTrack(track, pair, { horizonS = 3 } = {}) {
+    const result = pair?.result, camera2 = pair?.frame?.camera;
+    if (!pair?.canAnalyze || !pair.motionAvailable || !result || !camera2 || !plainKeys(track, TRACK_KEYS2) || track.source !== "camera-pixels" || track.streamId !== result.streamId || !token2(track.id) || !["person", "vehicle", "motion"].includes(track.label) || track.frameId !== result.frameId || !equal(track.lastSeenS, result.simulationTimeS) || !finite7(track.ageMs) || track.ageMs < 0 || track.ageMs > MAX_AGE_MS || !Array.isArray(track.history) || !track.history.length || track.history.length > 12 || track.history.length !== track.observations || !plainKeys(track.position, ["x", "z"]) || !point3(track.position) || !plainKeys(track.velocity, ["x", "z"]) || !point3(track.velocity) || !finite7(horizonS) || horizonS <= 0) return null;
+    let time = -Infinity, frameId = -1;
+    for (const sample of track.history) {
+      if (!plainKeys(sample, ["frameId", "simulationTimeS", "position"]) || !plainKeys(sample.position, ["x", "z"]) || !point3(sample.position) || !Number.isSafeInteger(sample.frameId) || sample.frameId <= frameId || sample.frameId > result.frameId || !finite7(sample.simulationTimeS) || sample.simulationTimeS <= time || sample.simulationTimeS > result.simulationTimeS) return null;
+      time = sample.simulationTimeS;
+      frameId = sample.frameId;
+    }
+    if (frameId !== result.frameId || !equal(time, result.simulationTimeS)) return null;
+    const observed = track.history.map((sample) => projectCameraPoint(sample.position, camera2));
+    const forecast2 = pair.visual.forecasts?.find((item) => item.trackId === track.id);
+    const uncertain = forecast2 && /uncertain|insufficient|low-visual|future|stale/.test(forecast2.reason);
+    const fitted = track.reliable === true && track.observations >= 3 && track.spanS >= 0.2 - 1e-8 && finite7(track.uncertaintyM) && track.uncertaintyM <= 2.5 && finite7(track.velocityUncertaintyMps) && track.velocityUncertaintyMps >= 0 && track.velocityUncertaintyMps <= 0.65 && Math.hypot(track.velocity.x, track.velocity.z) <= 4 && !uncertain;
+    const duration = fitted ? Math.min(3, horizonS) : 0;
+    const predicted = [];
+    if (duration && Math.hypot(track.velocity.x, track.velocity.z) >= 0.05) {
+      const steps = Math.ceil(duration / 0.25);
+      for (let i = 0; i <= steps; i++) {
+        const t = duration * i / steps;
+        predicted.push(projectCameraPoint({
+          x: track.position.x + track.velocity.x * t,
+          z: track.position.z + track.velocity.z * t
+        }, camera2));
+      }
+    }
+    return {
+      id: track.id,
+      label: track.label,
+      observed,
+      predicted,
+      horizonS: predicted.length ? duration : 0,
+      speedMps: Math.hypot(track.velocity.x, track.velocity.z),
+      uncertaintyM: track.uncertaintyM,
+      velocityUncertaintyMps: track.velocityUncertaintyMps,
+      reason: predicted.length ? "constant-velocity estimate" : uncertain || !fitted ? "Forecast unavailable \xB7 insufficient or uncertain motion" : "No fitted displacement"
+    };
+  }
+
+  // src/ui/camera-screen.js
+  var finite8 = Number.isFinite;
+  var now2 = () => globalThis.performance?.now() ?? Date.now();
+  var readable2 = (value) => typeof value === "string" && value.trim() ? value.replaceAll("-", " ") : "Unavailable";
+  function node3(tag, className = "", content) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (content !== void 0) element.textContent = content;
+    return element;
+  }
+  function text3(element, value) {
+    if (element.textContent !== value) element.textContent = value;
+  }
+  function mountCameraScreen({ navigation, onAction, onVisibilityChange } = {}) {
+    if (!navigation?.append || typeof onAction !== "function" || onVisibilityChange !== void 0 && typeof onVisibilityChange !== "function")
+      throw new TypeError("Camera screen requires navigation and action callbacks");
+    const cleanups = [];
+    const receipts = /* @__PURE__ */ new Map();
+    let latest = {}, disposed = false, generation = 0, actionGeneration = 0;
+    let busyAction = null, suppressAnalysis = false, previouslyEnabled = false;
+    let decoded = null, decodingKey = null, decodedKey = null, decodedSource = null;
+    let currentPair = null, committed = null, paintKey = null, receivedAt = null, expiryTimer = null;
+    let simulationStream = null, simulationNowS = null;
+    let decodeFailure = null, imageError = false;
+    const listen = (element, type, listener) => {
+      element.addEventListener(type, listener);
+      cleanups.push(() => element.removeEventListener(type, listener));
+    };
+    const button = (id2, label, action) => {
+      const element = node3("button", "", label);
+      element.id = id2;
+      element.type = "button";
+      if (action) listen(element, "click", () => dispatch(action, element));
+      return element;
+    };
+    const toggle = button("cameraScreenToggleBtn", "Camera");
+    toggle.setAttribute("aria-controls", "cameraScreen");
+    toggle.setAttribute("aria-expanded", "false");
+    navigation.append(toggle);
+    const panel = node3("section", "camera-screen");
+    panel.id = "cameraScreen";
+    panel.hidden = true;
+    panel.setAttribute("aria-labelledby", "cameraScreenTitle");
+    const header = node3("header", "camera-screen-head");
+    const heading = node3("h2", "", "Front camera");
+    heading.id = "cameraScreenTitle";
+    const controls = node3("div", "camera-screen-actions");
+    const start = button("cameraPerceptionStartBtn", "Start detector", "start");
+    const stop = button("cameraPerceptionStopBtn", "Stop detector", "stop");
+    const lab = button("cameraOpenVisionBtn", "Vision lab", "vision-lab");
+    const closeButton = button("cameraScreenCloseBtn", "Close");
+    closeButton.setAttribute("aria-label", "Close camera and return to driving view");
+    controls.append(start, stop, lab, closeButton);
+    header.append(heading, controls);
+    const status = node3("p", "camera-screen-status", "Detector off \xB7 waiting for front RGB.");
+    status.id = "cameraScreenStatus";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    const images = node3("div", "camera-screen-images");
+    function imagePane(id2, title, description) {
+      const figure = node3("figure", "camera-screen-image");
+      const caption = node3("figcaption", "", title);
+      const host = node3("div", "camera-screen-image-host");
+      const canvas = node3("canvas");
+      canvas.id = id2;
+      canvas.width = 640;
+      canvas.height = 360;
+      canvas.hidden = true;
+      canvas.setAttribute("role", "img");
+      canvas.setAttribute("aria-label", description);
+      const empty = node3("p", "camera-screen-empty", "Waiting for front RGB.");
+      host.append(canvas, empty);
+      figure.append(caption, host);
+      images.append(figure);
+      return { canvas, empty, caption, context: canvas.getContext("2d") };
+    }
+    const raw = imagePane(
+      "cameraRawCanvas",
+      "Raw front RGB",
+      "Actual rendered vehicle front camera, before annotations"
+    );
+    const analysis = imagePane(
+      "cameraAnalysisCanvas",
+      "Exact-frame evidence",
+      "The identical decoded front-camera JPEG with pixel-detector evidence"
+    );
+    const legend = node3(
+      "p",
+      "camera-screen-legend",
+      "Boxes: detector score, not intent probability \xB7 solid: observed ground-plane estimates \xB7 dashed: fitted motion, up to 3 s"
+    );
+    const identity = node3("p", "camera-screen-meta", "Source: rendered game front RGB \xB7 no matched frame.");
+    identity.id = "cameraFrameIdentity";
+    const timing = node3("p", "camera-screen-meta");
+    timing.id = "cameraFrameTiming";
+    const recognition = node3("p", "camera-screen-recognition");
+    recognition.id = "cameraRecognition";
+    const applied = node3("p", "camera-screen-applied");
+    applied.id = "cameraAppliedReason";
+    const detail = node3("details", "camera-screen-detail");
+    detail.append(node3("summary", "", "Detection and motion evidence"));
+    const detectionList = node3("ul", "camera-screen-evidence-list");
+    detectionList.id = "cameraDetectionList";
+    const motionList = node3("ul", "camera-screen-evidence-list");
+    motionList.id = "cameraMotionList";
+    const limits = node3(
+      "p",
+      "camera-screen-note",
+      "Only camera pixels, calibration and own-vehicle odometry inform these estimates. No text reader is active; OCR and human intention are not inferred. No detection is not proof of a clear road."
+    );
+    detail.append(detectionList, motionList, limits);
+    const error = node3("p", "camera-screen-error");
+    error.id = "cameraScreenError";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    const help = node3(
+      "p",
+      "camera-screen-help",
+      "Opening this screen does not start a model. Close / Esc returns to driving. W A S D drive \xB7 Space brake."
+    );
+    panel.append(header, status, error, applied, images, legend, identity, timing, recognition, detail, help);
+    document.body.append(panel);
+    function showError(reason) {
+      if (disposed) return;
+      const message = typeof reason === "string" && reason.trim() ? reason : "Camera action was not acknowledged. Stop, then Retry detector.";
+      text3(error, message);
+      error.hidden = false;
+      toggle.title = message;
+    }
+    function notifyVisibility(visible) {
+      const failed = (failure) => {
+        showError(failure?.message || failure?.error || "Camera view change failed. Close or reopen to retry.");
+        if (!visible && !disposed) {
+          panel.hidden = false;
+          toggle.setAttribute("aria-expanded", "true");
+          render(latest);
+          closeButton.focus();
+        }
+      };
+      const acknowledge = (result) => {
+        if (result === false || result?.ok === false) failed(result);
+      };
+      try {
+        const result = onVisibilityChange?.(visible);
+        if (result?.then) Promise.resolve(result).then(acknowledge).catch(failed);
+        else acknowledge(result);
+      } catch (failure) {
+        failed(failure);
+      }
+    }
+    function clearImages() {
+      for (const pane of [raw, analysis]) {
+        pane.context?.clearRect(0, 0, pane.canvas.width, pane.canvas.height);
+        pane.canvas.hidden = true;
+        pane.empty.hidden = false;
+        delete pane.canvas.dataset.streamId;
+        delete pane.canvas.dataset.frameId;
+      }
+      paintKey = null;
+      committed = null;
+      describeFrame(null);
+    }
+    function invalidate() {
+      generation++;
+      decodingKey = decodedKey = decodedSource = decoded = null;
+      decodeFailure = null;
+      clearTimeout(expiryTimer);
+      expiryTimer = null;
+      clearImages();
+    }
+    async function dispatch(action, control) {
+      if (disposed || control.disabled) return;
+      const operation = ++actionGeneration;
+      busyAction = action;
+      error.hidden = true;
+      toggle.title = "";
+      if (action === "stop") {
+        suppressAnalysis = true;
+        invalidate();
+      } else if (action === "start") {
+        suppressAnalysis = false;
+        invalidate();
+      }
+      render(latest);
+      try {
+        const result = await onAction(action);
+        if (disposed || operation !== actionGeneration) return;
+        if (result?.ok !== true) showError(result?.error);
+      } catch (failure) {
+        if (operation === actionGeneration) showError(failure?.message);
+      } finally {
+        if (!disposed && operation === actionGeneration) {
+          busyAction = null;
+          render(latest);
+        }
+      }
+    }
+    function close(restoreFocus = true) {
+      if (disposed || panel.hidden) return;
+      panel.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      invalidate();
+      notifyVisibility(false);
+      if (restoreFocus) toggle.focus();
+    }
+    listen(toggle, "click", () => {
+      if (!panel.hidden) return close();
+      panel.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      notifyVisibility(true);
+      render(latest);
+      closeButton.focus();
+    });
+    listen(closeButton, "click", () => close());
+    listen(document, "keydown", (event) => {
+      if (event.key === "Escape" && !panel.hidden) {
+        close();
+        event.preventDefault();
+      }
+    });
+    listen(navigation, "click", (event) => {
+      if (!toggle.contains(event.target)) close(false);
+    });
+    function list(element, lines) {
+      while (element.children.length > lines.length) element.lastElementChild.remove();
+      lines.forEach((line, i) => {
+        if (!element.children[i]) element.append(node3("li"));
+        text3(element.children[i], line);
+      });
+    }
+    function drawLine(context, points, dashed, color) {
+      context.strokeStyle = color;
+      context.lineWidth = 2.5;
+      context.setLineDash(dashed ? [8, 6] : []);
+      context.beginPath();
+      let begun = false;
+      for (const position of points) {
+        if (!position) {
+          begun = false;
+          continue;
+        }
+        if (begun) context.lineTo(...position);
+        else context.moveTo(...position);
+        begun = true;
+      }
+      context.stroke();
+      context.setLineDash([]);
+    }
+    function paint() {
+      const pair = currentPair;
+      if (disposed || panel.hidden || !decoded || decodedKey !== pair?.key || decodedSource !== pair.frame.imageJpegBase64) return;
+      const signature = `${pair.key}:${pair.canAnalyze}:${pair.motionAvailable}:${pair.result?.model?.id}`;
+      if (signature === paintKey && committed?.pair.frame.imageJpegBase64 === decodedSource) return;
+      const { width, height } = pair.frame.camera;
+      for (const pane of [raw, analysis]) {
+        if (pane.canvas.width !== width) pane.canvas.width = width;
+        if (pane.canvas.height !== height) pane.canvas.height = height;
+        pane.context?.clearRect(0, 0, width, height);
+      }
+      raw.context?.drawImage(decoded, 0, 0, width, height);
+      if (pair.canAnalyze && analysis.context) {
+        const context = analysis.context;
+        context.drawImage(decoded, 0, 0, width, height);
+        context.save();
+        context.beginPath();
+        context.rect(0, 0, width, height);
+        context.clip();
+        for (const track of (pair.visual?.tracks ?? []).slice(0, 24)) {
+          const projected = projectPixelTrack(track, pair);
+          if (!projected) continue;
+          drawLine(context, projected.observed, false, "#a6edbc");
+          drawLine(context, projected.predicted, true, "#f4c38d");
+        }
+        context.setLineDash([]);
+        for (const detection of pair.result.detections) {
+          const [x1, y1, x2, y2] = detection.box;
+          const color = detection.label === "person" ? "#f4c38d" : "#a6edbc";
+          context.strokeStyle = color;
+          context.lineWidth = 2;
+          context.strokeRect(x1, y1, x2 - x1, y2 - y1);
+          const label = `${detection.label} \xB7 score ${detection.confidence.toFixed(2)}`;
+          context.font = "13px Tahoma, Arial, sans-serif";
+          const labelWidth = Math.min(width, context.measureText(label).width + 10);
+          const left = Math.max(0, Math.min(x1, width - labelWidth));
+          const top = Math.max(0, y1 - 22);
+          context.fillStyle = "#18241df5";
+          context.fillRect(left, top, labelWidth, 22);
+          context.fillStyle = color;
+          context.fillText(label, left + 5, top + 16);
+        }
+        context.restore();
+      }
+      describeFrame(pair, receivedAt);
+      raw.canvas.dataset.streamId = pair.frame.streamId;
+      raw.canvas.dataset.frameId = String(pair.frame.frameId);
+      if (pair.canAnalyze) {
+        analysis.canvas.dataset.streamId = pair.result.streamId;
+        analysis.canvas.dataset.frameId = String(pair.result.frameId);
+      } else {
+        delete analysis.canvas.dataset.streamId;
+        delete analysis.canvas.dataset.frameId;
+      }
+      raw.canvas.hidden = false;
+      raw.empty.hidden = true;
+      analysis.canvas.hidden = !pair.canAnalyze;
+      analysis.empty.hidden = pair.canAnalyze;
+      committed = { pair, receivedAt };
+      paintKey = signature;
+    }
+    function decode(pair) {
+      const source = pair.frame.imageJpegBase64;
+      if (decodeFailure?.key === pair.key && decodeFailure.source === source) return;
+      if (decodedKey === pair.key && decodedSource === source) {
+        paint();
+        return;
+      }
+      const key2 = `${generation}:${pair.key}`;
+      if (decodingKey === key2) return;
+      const ticket = ++generation;
+      decodingKey = `${ticket}:${pair.key}`;
+      if (!committed) text3(raw.empty, "Decoding the actual front-camera JPEG\u2026");
+      const image = new Image();
+      image.decoding = "async";
+      const ready = typeof image.decode === "function" ? () => image.decode() : () => new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error("JPEG decode failed"));
+      });
+      let completed;
+      if (typeof image.decode === "function") {
+        image.src = `data:image/jpeg;base64,${source}`;
+        completed = Promise.resolve().then(ready);
+      } else {
+        completed = ready();
+        image.src = `data:image/jpeg;base64,${source}`;
+      }
+      Promise.resolve(completed).then(() => {
+        if (disposed || panel.hidden || ticket !== generation || currentPair?.key !== pair.key || currentPair.frame?.imageJpegBase64 !== source) return;
+        if (image.naturalWidth !== pair.frame.camera.width || image.naturalHeight !== pair.frame.camera.height)
+          throw new Error("Decoded JPEG dimensions do not match the captured camera");
+        decoded = image;
+        decodedKey = pair.key;
+        decodedSource = source;
+        decodingKey = null;
+        if (imageError) {
+          error.hidden = true;
+          toggle.title = "";
+          imageError = false;
+        }
+        render(latest);
+      }).catch((failure) => {
+        if (disposed || ticket !== generation) return;
+        decodingKey = null;
+        decodeFailure = { key: pair.key, source, message: failure?.message };
+        clearImages();
+        text3(raw.empty, "Front RGB could not decode. Close and reopen the camera to retry.");
+        text3(analysis.empty, "No decoded, matching camera evidence.");
+        text3(status, "Camera image unavailable \xB7 close and reopen to retry.");
+        status.dataset.state = "error";
+        showError(failure?.message);
+        imageError = true;
+      });
+    }
+    function simulationAge(pair) {
+      if (!finite8(pair?.ageMs)) return null;
+      return simulationStream === pair.frame.streamId && finite8(simulationNowS) ? Math.max(pair.ageMs, (simulationNowS - pair.frame.simulationTimeS) * 1e3) : pair.ageMs;
+    }
+    function fresh(bundle) {
+      if (!bundle?.pair.canAnalyze || !finite8(bundle.receivedAt)) return false;
+      const ageMs = simulationAge(bundle.pair), wallAgeMs = now2() - bundle.receivedAt;
+      return wallAgeMs >= 0 && wallAgeMs < 750 && (ageMs === null || ageMs >= 0 && ageMs < 750);
+    }
+    function scheduleExpiry() {
+      clearTimeout(expiryTimer);
+      expiryTimer = null;
+      const deadlines = [];
+      if (currentPair?.canAnalyze && finite8(receivedAt)) deadlines.push(receivedAt + 750);
+      if (committed?.pair.canAnalyze) deadlines.push(committed.receivedAt + 750);
+      if (deadlines.length) expiryTimer = setTimeout(() => {
+        expiryTimer = null;
+        render(latest);
+      }, Math.max(0, Math.min(...deadlines) - now2()));
+    }
+    function describeFrame(pair, receipt = null) {
+      text3(raw.caption, pair?.canAnalyze ? "Raw RGB \xB7 exact analysed frame" : "Raw front RGB \xB7 unanalysed preview");
+      text3(analysis.caption, pair?.canAnalyze ? "Same JPEG \xB7 pixel-derived evidence" : "Analysed view \xB7 unavailable");
+      const frame2 = pair?.frame, result = pair?.canAnalyze ? pair.result : null;
+      const ageMs = simulationAge(pair);
+      text3(identity, frame2 ? `Source: rendered game front RGB \xB7 stream ${frame2.streamId} \xB7 frame #${frame2.frameId} \xB7 t ${frame2.simulationTimeS.toFixed(3)} s` + (result ? ` \xB7 ${result.model.id} / ${result.model.method} / ${result.model.provider}` : " \xB7 unanalysed") : "Source: rendered game front RGB \xB7 exact image unavailable.");
+      text3(timing, result ? `NN inference ${result.latencyMs.toFixed(1)} ms \xB7 HTTP transport not separately measured \xB7 simulation age ${finite8(ageMs) ? `${ageMs.toFixed(0)} ms` : "unavailable"} \xB7 ${Math.max(0, now2() - receipt).toFixed(0)} ms since result receipt` : "Inference unavailable for this image \xB7 transport is not inference time.");
+      text3(recognition, result ? result.detections.length ? `${result.detections.length} detector ${result.detections.length === 1 ? "box" : "boxes"} \xB7 scores are uncalibrated. No OCR is active.` : "No detector boxes in this image. This is not proof of a clear road; no OCR is active." : "Recognition and future motion are unavailable for this preview.");
+      list(detectionList, result ? result.detections.slice(0, 16).map((detection) => `${detection.label} \xB7 score ${detection.confidence.toFixed(2)} (uncalibrated) \xB7 box ${detection.box.map((v2) => v2.toFixed(0)).join(", ")}`).concat(result.detections.length > 16 ? [`${result.detections.length - 16} more boxes are visible in the image.`] : []) : ["No current exact-frame detections."]);
+      const projected = pair?.motionAvailable ? (pair.visual.tracks ?? []).slice(0, 24).map((track) => projectPixelTrack(track, pair)).filter(Boolean) : [];
+      list(motionList, projected.length ? projected.map((track) => `${track.id} \xB7 ${track.label} \xB7 fitted ${track.speedMps.toFixed(2)} m/s \xB7 position uncertainty ${finite8(track.uncertaintyM) ? track.uncertaintyM.toFixed(2) : "unavailable"} m \xB7 ` + (track.horizonS ? `${track.horizonS.toFixed(1)} s constant-velocity estimate; not intent` : track.reason)) : ["Fitted motion unavailable: no fresh, matching observed history."]);
+    }
+    function render(state) {
+      if (disposed || panel.hidden) return;
+      let pair = pairCameraEvidence({
+        frame: state.frame,
+        result: state.result,
+        visual: state.visual,
+        availability: state.availability,
+        enabled: state.enabled && !suppressAnalysis
+      });
+      if (busyAction === "start" || busyAction === "stop") pair = {
+        ...pair,
+        canAnalyze: false,
+        motionAvailable: false,
+        status: busyAction === "start" ? "starting" : "off"
+      };
+      if (decodeFailure?.key === pair.key && decodeFailure.source === pair.frame?.imageJpegBase64)
+        pair = {
+          ...pair,
+          canAnalyze: false,
+          motionAvailable: false,
+          status: "error",
+          reason: "Camera image could not decode \xB7 close and reopen to retry."
+        };
+      const resultKey = cameraFrameKey(state.result);
+      if (resultKey && !receipts.has(resultKey)) {
+        receipts.set(resultKey, now2());
+        if (receipts.size > 24) receipts.delete(receipts.keys().next().value);
+      }
+      receivedAt = receipts.get(resultKey) ?? null;
+      if (pair.canAnalyze && finite8(pair.ageMs)) {
+        const nextSimulationNowS = pair.frame.simulationTimeS + pair.ageMs / 1e3;
+        simulationNowS = simulationStream === pair.frame.streamId ? Math.max(simulationNowS, nextSimulationNowS) : nextSimulationNowS;
+        simulationStream = pair.frame.streamId;
+      }
+      if (pair.canAnalyze && !fresh({ pair, receivedAt })) pair = {
+        ...pair,
+        canAnalyze: false,
+        motionAvailable: false,
+        status: "stale",
+        reason: "No new detector result for 750 ms \xB7 stale boxes and motion estimates are withheld."
+      };
+      currentPair = pair;
+      const unavailable = ["error", "unavailable"].includes(pair.status);
+      text3(start, busyAction === "start" ? "Starting\u2026" : unavailable ? "Retry detector" : "Start detector");
+      start.disabled = busyAction !== null || Boolean(state.enabled && !suppressAnalysis && !["error", "unavailable", "off"].includes(pair.status));
+      stop.disabled = busyAction === "stop" || !state.enabled && busyAction !== "start";
+      lab.disabled = busyAction !== null;
+      start.setAttribute("aria-busy", String(busyAction === "start"));
+      stop.setAttribute("aria-busy", String(busyAction === "stop"));
+      text3(analysis.empty, pair.status === "mismatch" ? "No matching frame. Old boxes are not drawn on new pixels." : pair.status === "stale" ? "Stale evidence withheld. Waiting for a fresh matching frame." : "No analysed image. Raw preview is not recognition.");
+      text3(applied, `Applied now (current controller, not an image label): ${readable2(state.applied?.reason)}` + (finite8(state.ego?.speedMps) ? ` \xB7 vehicle ${state.ego.speedMps.toFixed(2)} m/s` : ""));
+      const samePixels = committed?.pair.key === pair.key && committed?.pair.frame.imageJpegBase64 === pair.frame?.imageJpegBase64;
+      const retainComplete = pair.canAnalyze && finite8(pair.ageMs) && committed?.pair.canAnalyze && committed.pair.frame.streamId === pair.frame.streamId && fresh(committed);
+      const retainRaw = pair.rawAvailable && pair.status === "off" && !pair.canAnalyze && committed?.pair.status === "off" && !committed.pair.canAnalyze && committed.pair.frame.streamId === pair.frame.streamId;
+      if (committed && !retainComplete && !retainRaw && !(samePixels && !committed.pair.canAnalyze && !pair.canAnalyze)) clearImages();
+      if (pair.rawAvailable) decode(pair);
+      else {
+        invalidate();
+        text3(raw.empty, "Front RGB unavailable. Close and reopen to retry the preview.");
+      }
+      describeFrame(committed?.pair ?? null, committed?.receivedAt);
+      text3(status, busyAction === "stop" ? "Stopping detector \xB7 annotations withheld." : busyAction === "start" ? "Starting the installed detector \xB7 raw preview is unanalysed." : pair.canAnalyze && !committed?.pair.canAnalyze ? "Decoding exact camera evidence \xB7 no completed analysed image yet." : committed?.pair.canAnalyze && committed.pair.key !== pair.key ? `Showing exact frame #${committed.pair.frame.frameId} \xB7 decoding the next matching JPEG.` : retainRaw && committed.pair.key !== pair.key ? `Detector off \xB7 showing unanalysed frame #${committed.pair.frame.frameId} while the next raw JPEG decodes.` : pair.reason);
+      status.dataset.state = pair.canAnalyze && !committed?.pair.canAnalyze ? "waiting" : pair.status;
+      scheduleExpiry();
+    }
+    function update(state = {}) {
+      if (disposed) return;
+      if (Boolean(state.enabled) !== previouslyEnabled) {
+        invalidate();
+        if (state.enabled && busyAction !== "stop") suppressAnalysis = false;
+        previouslyEnabled = Boolean(state.enabled);
+      }
+      latest = state;
+      render(state);
+    }
+    update();
+    return {
+      update,
+      close,
+      dispose() {
+        if (disposed) return;
+        close();
+        disposed = true;
+        actionGeneration++;
+        invalidate();
+        cleanups.forEach((cleanup) => cleanup());
+        panel.remove();
+        toggle.remove();
+      }
+    };
+  }
+
+  // src/ui/people-panel.js
+  var MODES2 = [["ambient", "Ambient route"], ["walk", "Walk"], ["jog", "Jog"], ["stop", "Stop"]];
+  var finite9 = Number.isFinite;
+  var readable3 = (value) => typeof value === "string" && value.trim() ? value.replaceAll("-", " ") : "Unavailable";
+  var measurement = (value, units, precision = 2) => finite9(value) ? `${value.toFixed(precision)} ${units}` : "Unavailable";
+  function node4(tag, className = "", content) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (content !== void 0) element.textContent = content;
+    return element;
+  }
+  function text4(element, value) {
+    if (element.textContent !== value) element.textContent = value;
+  }
+  function mountPeoplePanel({ navigation, onAction } = {}) {
+    if (!navigation?.append || typeof onAction !== "function")
+      throw new TypeError("People controls require navigation and an action callback");
+    const cleanups = [];
+    let latest = {}, disposed = false, operation = 0, busyAction = null, optionsKey = null;
+    const listen = (element, type, listener) => {
+      element.addEventListener(type, listener);
+      cleanups.push(() => element.removeEventListener(type, listener));
+    };
+    const button = (id2, label, action) => {
+      const element = node4("button", "", label);
+      element.id = id2;
+      element.type = "button";
+      if (action) listen(element, "click", () => dispatch(action, void 0, element));
+      return element;
+    };
+    const toggle = button("peopleToggleBtn", "People");
+    toggle.setAttribute("aria-controls", "peoplePanel");
+    toggle.setAttribute("aria-expanded", "false");
+    navigation.append(toggle);
+    const panel = node4("section", "people-panel");
+    panel.id = "peoplePanel";
+    panel.hidden = true;
+    panel.setAttribute("aria-labelledby", "peoplePanelTitle");
+    const header = node4("div", "people-panel-head");
+    const heading = node4("h2", "", "People");
+    heading.id = "peoplePanelTitle";
+    const closeButton = button("peopleCloseBtn", "Close");
+    closeButton.setAttribute("aria-label", "Close people controls and return to vehicle view");
+    header.append(heading, closeButton);
+    const boundary = node4("p", "people-boundary", "World reference \xB7 not camera perception");
+    boundary.id = "peopleReferenceBoundary";
+    const note = node4(
+      "p",
+      "people-note",
+      "Actual game body dimensions and accepted motion are unavailable."
+    );
+    note.id = "peopleBodySummary";
+    const status = node4("p", "people-status", "No people available in this world.");
+    status.id = "peopleStatus";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    const selectRow = node4("label", "people-select");
+    const select = node4("select");
+    select.id = "peopleSelect";
+    selectRow.append(node4("span", "", "Person \xB7 World actor ID"), select);
+    listen(select, "change", () => dispatch("select", select.value, select));
+    const viewActions = node4("div", "people-view-actions");
+    const focus = button("peopleFocusBtn", "Follow person");
+    listen(focus, "click", () => dispatch("focus", selected()?.id, focus));
+    const vehicle = button("peopleVehicleViewBtn", "Vehicle view", "vehicle-view");
+    viewActions.append(focus, vehicle);
+    const modeRow = node4("label", "people-select");
+    const mode = node4("select");
+    mode.id = "peopleMotionMode";
+    for (const [value, name] of MODES2) {
+      const option = node4("option", "", name);
+      option.value = value;
+      mode.append(option);
+    }
+    modeRow.append(node4("span", "", "Requested motion \xB7 bounded game movement"), mode);
+    listen(mode, "change", () => dispatch("motion", { id: selected()?.id, mode: mode.value }, mode));
+    const modeNote = node4("p", "people-note");
+    modeNote.id = "peopleMotionNote";
+    const readings = node4("dl", "people-readings");
+    const values = {};
+    for (const [key2, label] of [
+      ["actor", "World actor / model"],
+      ["speed", "Actual speed"],
+      ["acceleration", "Actual acceleration"],
+      ["travel", "Accepted travel"],
+      ["position", "World position"],
+      ["heading", "World heading"],
+      ["reason", "Current movement cause"]
+    ]) {
+      const value = node4("dd", "", "Unavailable");
+      value.id = `people${key2[0].toUpperCase()}${key2.slice(1)}`;
+      values[key2] = value;
+      readings.append(node4("dt", "", label), value);
+    }
+    const bodyDetail = node4("details", "people-body");
+    bodyDetail.open = true;
+    bodyDetail.append(node4("summary", "", "Body dimensions and motion bounds"));
+    const bodyReadings = node4("dl", "people-readings");
+    const bodyValues = {};
+    for (const [key2, label] of [
+      ["dimensions", "Height \xD7 width \xD7 depth"],
+      ["mass", "Game mass parameter"],
+      ["radius", "Collision radius"],
+      ["walk", "Walk / jog request"],
+      ["acceleration", "Accel / decel bound"],
+      ["turn", "Ordinary turn bound"]
+    ]) {
+      const value = node4("dd", "", "Unavailable");
+      value.id = `peopleBody${key2[0].toUpperCase()}${key2.slice(1)}`;
+      bodyValues[key2] = value;
+      bodyReadings.append(node4("dt", "", label), value);
+    }
+    bodyDetail.append(bodyReadings);
+    const error = node4("p", "people-error");
+    error.id = "peopleActionError";
+    error.hidden = true;
+    error.setAttribute("role", "alert");
+    const limits = node4(
+      "p",
+      "people-note",
+      "Grounded kinematic game humans, not validated biomechanics, force dynamics or ragdoll injury simulation. The nonpenetrating safety guard may stop immediately."
+    );
+    const help = node4(
+      "p",
+      "people-help",
+      "Following changes only the display camera; front RGB inference stays on the SUV. Close / Esc returns to the vehicle."
+    );
+    panel.append(
+      header,
+      boundary,
+      note,
+      status,
+      selectRow,
+      viewActions,
+      modeRow,
+      modeNote,
+      readings,
+      bodyDetail,
+      error,
+      limits,
+      help
+    );
+    document.body.append(panel);
+    function people() {
+      return Array.isArray(latest.people) ? latest.people.filter((person) => person && typeof person.id === "string" && person.id.trim()) : [];
+    }
+    function selected() {
+      const entries = people();
+      return entries.find((person) => person.id === latest.selectedId) ?? entries.find((person) => person.id === select.value) ?? entries[0] ?? null;
+    }
+    function showError(reason) {
+      if (disposed) return;
+      text4(error, typeof reason === "string" && reason.trim() ? reason : "People action was not acknowledged. Select a current person and try again.");
+      error.hidden = false;
+    }
+    function finishClose(restoreFocus) {
+      panel.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      if (restoreFocus) toggle.focus();
+    }
+    function acknowledge(result, ticket, onSuccess) {
+      if (disposed || ticket !== operation) return;
+      busyAction = null;
+      if (result?.ok !== true) showError(result?.error);
+      else onSuccess?.();
+      update(latest);
+    }
+    function dispatch(action, value, control, onSuccess) {
+      if (disposed || control.disabled) return;
+      if (["select", "focus"].includes(action) && !people().some((person) => person.id === value)) return;
+      if (action === "motion" && (!selected() || latest.environment === "vision" || !MODES2.some(([name]) => name === value?.mode))) return;
+      const ticket = ++operation;
+      busyAction = action;
+      error.hidden = true;
+      try {
+        const result = onAction(action, value);
+        if (result?.then) {
+          update(latest);
+          Promise.resolve(result).then((ack) => acknowledge(ack, ticket, onSuccess)).catch((failure) => {
+            if (disposed || ticket !== operation) return;
+            busyAction = null;
+            showError(failure?.message);
+            update(latest);
+          });
+        } else acknowledge(result, ticket, onSuccess);
+      } catch (failure) {
+        if (ticket !== operation) return;
+        busyAction = null;
+        showError(failure?.message);
+        update(latest);
+      }
+    }
+    function close(restoreFocus = true) {
+      if (disposed || panel.hidden) return;
+      if (latest.focused || busyAction === "focus")
+        dispatch("vehicle-view", void 0, closeButton, () => finishClose(restoreFocus));
+      else finishClose(restoreFocus);
+    }
+    listen(toggle, "click", () => {
+      if (!panel.hidden) return close();
+      panel.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      update(latest);
+      closeButton.focus();
+    });
+    listen(closeButton, "click", () => close());
+    listen(document, "keydown", (event) => {
+      if (event.key === "Escape" && !panel.hidden) {
+        close();
+        event.preventDefault();
+      }
+    });
+    listen(navigation, "click", (event) => {
+      if (!toggle.contains(event.target)) close(false);
+    });
+    function disable(control, unavailable, reason) {
+      control.disabled = Boolean(unavailable);
+      control.setAttribute("aria-disabled", String(control.disabled));
+      control.title = control.disabled ? reason : "";
+    }
+    function update(state = {}) {
+      if (disposed) return;
+      latest = state;
+      const entries = people();
+      const signature = JSON.stringify(entries.map((person2) => [person2.id, person2.kind]));
+      if (signature !== optionsKey) {
+        const previous = select.value;
+        const options = entries.map((person2) => {
+          const option = node4("option", "", `${person2.id} \xB7 ${readable3(person2.kind)}`);
+          option.value = person2.id;
+          return option;
+        });
+        if (!options.length) {
+          const option = node4("option", "", "No people in this world");
+          option.value = "";
+          options.push(option);
+        }
+        select.replaceChildren(...options);
+        if (entries.some((person2) => person2.id === previous)) select.value = previous;
+        optionsKey = signature;
+      }
+      const person = selected(), inFixture = state.environment === "vision";
+      if (person && busyAction !== "select") select.value = person.id;
+      mode.value = MODES2.some(([name]) => name === person?.motionMode) ? person.motionMode : "ambient";
+      disable(select, !entries.length || busyAction !== null, "Wait for the action, or return to vehicle view.");
+      disable(focus, !person || busyAction !== null, "Select a current person before following.");
+      disable(vehicle, !state.focused && busyAction !== "focus", "The vehicle view is already active.");
+      disable(mode, !person || inFixture || busyAction !== null, inFixture ? "Fixed Vision fixture: ordinary motion controls are disabled to preserve its deterministic trajectory." : "Select a current person and wait for pending actions.");
+      mode.setAttribute("aria-busy", String(busyAction === "motion"));
+      focus.setAttribute("aria-busy", String(busyAction === "focus"));
+      const context = `${readable3(state.environment)} \xB7 ${state.paused ? "paused" : "running"}`;
+      text4(status, busyAction ? `World reference \xB7 ${readable3(busyAction)} pending\u2026` : !entries.length ? `World reference \xB7 ${context} \xB7 no people. Return to the city or increase the pedestrian setting.` : state.focused ? `World reference \xB7 ${context} \xB7 following ${person?.id ?? "a removed person"}.` : `World reference \xB7 ${context} \xB7 vehicle view. Select and follow a person to inspect the body.`);
+      status.dataset.state = !entries.length ? "empty" : state.focused ? "following" : "ready";
+      text4(modeNote, inFixture ? "Fixed Vision fixture \xB7 motion controls are locked; its established pixel experiment is unchanged." : "A request, not an instant speed change. Ambient resumes the existing route; actual readings below follow accepted motion.");
+      text4(values.actor, person ? `${person.id} / ${readable3(person.kind)}` : "No selected person");
+      text4(values.speed, measurement(person?.speed, "m/s") + (finite9(person?.speed) ? ` \xB7 ${(person.speed * 3.6).toFixed(1)} km/h` : ""));
+      text4(values.acceleration, measurement(person?.accelerationMps2, "m/s\xB2"));
+      text4(values.travel, measurement(person?.distance, "m"));
+      text4(values.position, person && finite9(person.x) && finite9(person.z) ? `X ${person.x.toFixed(2)} m \xB7 Z ${person.z.toFixed(2)} m` : "Unavailable");
+      text4(values.heading, finite9(person?.heading) ? `${person.heading.toFixed(3)} rad \xB7 ${(person.heading * 180 / Math.PI).toFixed(1)}\xB0` : "Unavailable");
+      text4(values.reason, readable3(person?.reason));
+      const body = person?.body;
+      text4(note, body && [body.heightM, body.widthM, body.depthM].every(finite9) ? `Body ${body.heightM.toFixed(2)} \xD7 ${body.widthM.toFixed(2)} \xD7 ${body.depthM.toFixed(2)} m \xB7 actual speed ${measurement(person.speed, "m/s")}. World reference only.` : "Actual game body dimensions are unavailable. World actor values are not camera estimates.");
+      text4(bodyValues.dimensions, body && [body.heightM, body.widthM, body.depthM].every(finite9) ? `${body.heightM.toFixed(2)} \xD7 ${body.widthM.toFixed(2)} \xD7 ${body.depthM.toFixed(2)} m` : "Unavailable");
+      text4(bodyValues.mass, measurement(body?.massKg, "kg", 1));
+      text4(bodyValues.radius, measurement(body?.radiusM, "m"));
+      text4(bodyValues.walk, body && [body.walkSpeedMps, body.jogSpeedMps].every(finite9) ? `${body.walkSpeedMps.toFixed(2)} / ${body.jogSpeedMps.toFixed(2)} m/s` : "Unavailable");
+      text4(bodyValues.acceleration, body && [body.maxAccelerationMps2, body.maxDecelerationMps2].every(finite9) ? `${body.maxAccelerationMps2.toFixed(2)} / ${body.maxDecelerationMps2.toFixed(2)} m/s\xB2` : "Unavailable");
+      text4(bodyValues.turn, measurement(body?.maxTurnRateRadS, "rad/s"));
+    }
+    update();
+    return {
+      update,
+      close,
+      dispose() {
+        if (disposed) return;
+        if (latest.focused || busyAction === "focus") {
+          try {
+            const result = onAction("vehicle-view");
+            if (result?.then) Promise.resolve(result).catch(() => {
+            });
+          } catch {
+          }
+        }
+        disposed = true;
+        operation++;
+        cleanups.forEach((cleanup) => cleanup());
+        panel.remove();
+        toggle.remove();
       }
     };
   }
@@ -40031,6 +41345,11 @@
   var vehiclePanel;
   var visionPanel;
   var visualClient;
+  var cameraScreen;
+  var peoplePanel;
+  var selectedPersonId = null;
+  var focusedPersonId = null;
+  var cameraScreenVisible = false;
   var visionCaseId = "cross-left";
   var visionMode = "vision-first";
   var pendingVisionRun = false;
@@ -40067,6 +41386,8 @@
       inspectionPause = null;
     }
     cameraMode = mode;
+    focusedPersonId = null;
+    if (view) view.focusedPersonId = null;
     if (mode === "running-gear") cutaway = true;
     orbit.enabled = isInspection();
     camera.fov = mode === "cockpit" ? 60 : 62;
@@ -40150,6 +41471,53 @@
         pendingVisionRun = true;
       }
     } else return { ok: false, error: "Unknown vision action." };
+    updateUI();
+    return { ok: true };
+  }
+  async function cameraAction(action) {
+    if (action === "start") {
+      const result = await visualClient.start();
+      if (!result.ok) return result;
+      world.command({ type: "visual-reset", streamId: visualClient.streamId });
+    } else if (action === "stop") {
+      pendingVisionRun = false;
+      const result = await visualClient.stop();
+      world.command({ type: "visual-reset", streamId: visualClient.streamId });
+      perceptionOverlay.setExternal(null);
+      if (!result.ok) return result;
+    } else if (action === "vision-lab") {
+      cameraScreen.close();
+      $2("visionToggleBtn").click();
+    } else return { ok: false, error: "Unknown camera action." };
+    updateUI();
+    return { ok: true };
+  }
+  function peopleAction(action, value) {
+    if (action === "vehicle-view") {
+      setCarView("chase");
+    } else {
+      const id2 = action === "motion" ? value?.id : value;
+      const person = world.actors.find((actor) => actor.id === id2 && actor.type === "pedestrian");
+      if (!person) return { ok: false, error: "That person is no longer in this scene. Select another person." };
+      if (action === "select") {
+        selectedPersonId = person.id;
+        if (focusedPersonId) focusedPersonId = person.id;
+      } else if (action === "focus") {
+        selectedPersonId = person.id;
+        setCarView("chase");
+        focusedPersonId = person.id;
+        orbit.enabled = true;
+        keys.clear();
+        cameraSnap = true;
+      } else if (action === "motion") {
+        try {
+          world.command({ type: "pedestrian-motion", id: person.id, mode: value.mode });
+        } catch (error) {
+          return { ok: false, error: error.message };
+        }
+      } else return { ok: false, error: "Unknown people action." };
+    }
+    view.focusedPersonId = focusedPersonId;
     updateUI();
     return { ok: true };
   }
@@ -40252,6 +41620,29 @@
   visionPanel = mountVisionPanel({
     toolbar: document.querySelector(".topbar nav"),
     onAction: visionAction
+  });
+  cameraScreen = mountCameraScreen({
+    navigation: document.querySelector(".topbar nav"),
+    onAction: cameraAction,
+    onVisibilityChange: (visible) => {
+      cameraScreenVisible = visible;
+      visualClient?.setPreviewEnabled(visible);
+      if (visible) {
+        peoplePanel?.close();
+        vehiclePanel.close();
+        visionPanel.close();
+        settingsOpen(false);
+      }
+    }
+  });
+  peoplePanel = mountPeoplePanel({
+    navigation: document.querySelector(".topbar nav"),
+    onAction: peopleAction
+  });
+  document.querySelector(".topbar nav").addEventListener("click", (event) => {
+    const id2 = event.target.closest("button")?.id;
+    if (id2 && id2 !== "cameraScreenToggleBtn") cameraScreen.close();
+    if (id2 && id2 !== "peopleToggleBtn") peoplePanel.close();
   });
   var isEditing = (target2) => ["INPUT", "TEXTAREA", "SELECT"].includes(target2.tagName);
   addEventListener("keydown", (event) => {
@@ -40429,7 +41820,7 @@
   updateTrainingStatus();
   setInterval(updateTrainingStatus, 2500);
   function input() {
-    const editing = isEditing(document.activeElement) || isInspection(), pressed = (code) => !editing && keys.has(code);
+    const editing = isEditing(document.activeElement) || isInspection() || Boolean(focusedPersonId), pressed = (code) => !editing && keys.has(code);
     const targetSpeed = pressed("Space") ? 0 : pressed("KeyW") || pressed("ArrowUp") ? world.player.maxSpeed : pressed("KeyS") || pressed("ArrowDown") ? -2.5 : 0;
     if (environment === "vision") {
       if (pressed("Space") && !world.visionLab.error) {
@@ -40490,6 +41881,17 @@
       caseId: visionCaseId,
       running: world.visionLab?.phase === "running" || pendingVisionRun,
       comparison: visionComparisons.get(visionComparisonKey(visionCaseId)) ?? null
+    });
+    if (cameraScreen && visualClient) updateCameraScreen();
+    const people = world.actors.filter((actor) => actor.type === "pedestrian").sort((a, b) => Math.hypot(a.x - world.player.x, a.z - world.player.z) - Math.hypot(b.x - world.player.x, b.z - world.player.z) || a.id.localeCompare(b.id));
+    if (!people.some((person) => person.id === selectedPersonId)) selectedPersonId = people[0]?.id ?? null;
+    if (focusedPersonId && !people.some((person) => person.id === focusedPersonId)) setCarView("chase");
+    peoplePanel?.update({
+      environment,
+      people,
+      selectedId: selectedPersonId,
+      focused: Boolean(focusedPersonId),
+      paused
     });
     if (environment === "vision")
       $2("loadingStatus").textContent = world.visionLab.error ?? `Visual prediction \xB7 ${world.visionLab.phase} \xB7 live camera pixels`;
@@ -40564,6 +41966,9 @@
   var inspector = createDecisionInspector();
   visualClient = createVisualClient({
     renderer,
+    onFrame: () => {
+      if (cameraScreenVisible) updateCameraScreen();
+    },
     onStatus: (status) => {
       if (status.status === "error" || status.status === "stale") {
         perceptionOverlay.setExternal(null);
@@ -40580,6 +41985,22 @@
       }
     }
   });
+  function updateCameraScreen() {
+    let result = visualClient.status.result;
+    const visual = world.visualState;
+    if (result && visual?.available && visual.streamId === result.streamId && Number.isSafeInteger(visual.frameId) && visual.frameId < result.frameId)
+      result = visualClient.getResult(visual.streamId, visual.frameId) ?? result;
+    const matchingMotion = result && visual?.streamId === result.streamId && visual.frameId === result.frameId;
+    cameraScreen.update({
+      frame: result ? visualClient.getFrame(result.streamId, result.frameId) : visualClient.latestFrame,
+      result,
+      visual: matchingMotion ? visual : null,
+      availability: visualClient.status,
+      enabled: visualClient.enabled,
+      ego: { speedMps: world.player.speed },
+      applied: { reason: world.player.reason }
+    });
+  }
   var offset = new Vector3();
   var target = new Vector3();
   var forward = new Vector3();
@@ -40608,7 +42029,21 @@
       appliedSensors = sensorView;
     }
     forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
-    if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
+    const personRoot = focusedPersonId ? view.roots.get(focusedPersonId)?.root : null;
+    if (personRoot) {
+      const person = world.actors.find((actor) => actor.id === focusedPersonId);
+      target.copy(personRoot.position);
+      target.y += (person.body?.heightM ?? 1.78) * 0.55;
+      if (cameraSnap) {
+        camera.position.copy(target);
+        camera.position.add(new Vector3(3.2, 1, -4.2));
+      } else {
+        offset.subVectors(target, orbit.target);
+        camera.position.add(offset);
+      }
+      orbit.target.copy(target);
+      orbit.update();
+    } else if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
       if (isInspection()) {
         if (cameraSnap) {
           camera.position.copy(offset);
@@ -40636,7 +42071,7 @@
       frontCamera.position.y += 1.25;
       frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
     }
-    if (visualClient.enabled && mountedCameraPose(player, "sensor")) {
+    if ((visualClient.enabled || cameraScreenVisible) && mountedCameraPose(player, "sensor")) {
       visionCamera.position.copy(offset);
       visionCamera.lookAt(target);
       const debugRays = view.playerRig?.root.getObjectByName("vehicle-sensor-rays");
@@ -40677,6 +42112,12 @@
   activate("city");
   requestAnimationFrame(frame);
   window.sim = {
+    cameraFrame(streamId, frameId) {
+      return visualClient.getFrame(streamId, frameId);
+    },
+    cameraResult(streamId, frameId) {
+      return visualClient.getResult(streamId, frameId);
+    },
     get world() {
       return world;
     },
@@ -40694,8 +42135,17 @@
         status: visualClient.status,
         streamId: visualClient.streamId,
         transport: visualClient.timings,
+        frame: visualClient.status.result ? visualClient.getFrame(visualClient.status.result.streamId, visualClient.status.result.frameId) : visualClient.latestFrame,
         state: world.visualState,
         evaluation: world.visionLab
+      };
+    },
+    get people() {
+      const record = view.roots.get(selectedPersonId);
+      return {
+        selectedId: selectedPersonId,
+        focusedId: focusedPersonId,
+        rig: record?.pedestrianRig?.diagnostics() ?? null
       };
     },
     renderDiagnostics() {

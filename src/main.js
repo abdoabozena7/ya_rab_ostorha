@@ -11,6 +11,8 @@ import { createDecisionInspector } from "./ui/decision-inspector.js";
 import { bodyOnRoad } from "./core/geometry.js";
 import { mountVehiclePanel } from "./ui/vehicle-panel.js";
 import { mountVisionPanel } from "./ui/vision-panel.js";
+import { mountCameraScreen } from "./ui/camera-screen.js";
+import { mountPeoplePanel } from "./ui/people-panel.js";
 
 const $ = (id) => document.getElementById(id);
 const renderer = new THREE.WebGLRenderer({
@@ -58,7 +60,8 @@ orbit.enableDamping = true;
 orbit.minDistance = 1.2;
 orbit.maxDistance = 12;
 let cameraSnap = true;
-let phone, vehiclePanel, visionPanel, visualClient;
+let phone, vehiclePanel, visionPanel, visualClient, cameraScreen, peoplePanel;
+let selectedPersonId = null, focusedPersonId = null, cameraScreenVisible = false;
 let visionCaseId = "cross-left", visionMode = "vision-first", pendingVisionRun = false;
 const visionComparisons = new Map();
 function visionComparisonKey(caseId, config = world.config) {
@@ -88,6 +91,8 @@ function setCarView(mode) {
     inspectionPause = null;
   }
   cameraMode = mode;
+  focusedPersonId = null;
+  if (view) view.focusedPersonId = null;
   if (mode === "running-gear") cutaway = true;
   orbit.enabled = isInspection();
   camera.fov = mode === "cockpit" ? 60 : 62;
@@ -172,6 +177,53 @@ async function visionAction(action, value) {
       pendingVisionRun = true;
     }
   } else return { ok: false, error: "Unknown vision action." };
+  updateUI();
+  return { ok: true };
+}
+async function cameraAction(action) {
+  if (action === "start") {
+    const result = await visualClient.start();
+    if (!result.ok) return result;
+    world.command({ type: "visual-reset", streamId: visualClient.streamId });
+  } else if (action === "stop") {
+    pendingVisionRun = false;
+    const result = await visualClient.stop();
+    world.command({ type: "visual-reset", streamId: visualClient.streamId });
+    perceptionOverlay.setExternal(null);
+    if (!result.ok) return result;
+  } else if (action === "vision-lab") {
+    cameraScreen.close();
+    $("visionToggleBtn").click();
+  } else return { ok: false, error: "Unknown camera action." };
+  updateUI();
+  return { ok: true };
+}
+function peopleAction(action, value) {
+  if (action === "vehicle-view") {
+    setCarView("chase");
+  } else {
+    const id = action === "motion" ? value?.id : value;
+    const person = world.actors.find((actor) => actor.id === id && actor.type === "pedestrian");
+    if (!person) return { ok: false, error: "That person is no longer in this scene. Select another person." };
+    if (action === "select") {
+      selectedPersonId = person.id;
+      if (focusedPersonId) focusedPersonId = person.id;
+    } else if (action === "focus") {
+      selectedPersonId = person.id;
+      setCarView("chase");
+      focusedPersonId = person.id;
+      orbit.enabled = true;
+      keys.clear();
+      cameraSnap = true;
+    } else if (action === "motion") {
+      try {
+        world.command({ type: "pedestrian-motion", id: person.id, mode: value.mode });
+      } catch (error) {
+        return { ok: false, error: error.message };
+      }
+    } else return { ok: false, error: "Unknown people action." };
+  }
+  view.focusedPersonId = focusedPersonId;
   updateUI();
   return { ok: true };
 }
@@ -281,6 +333,29 @@ vehiclePanel = mountVehiclePanel({
 visionPanel = mountVisionPanel({
   toolbar: document.querySelector(".topbar nav"),
   onAction: visionAction,
+});
+cameraScreen = mountCameraScreen({
+  navigation: document.querySelector(".topbar nav"),
+  onAction: cameraAction,
+  onVisibilityChange: (visible) => {
+    cameraScreenVisible = visible;
+    visualClient?.setPreviewEnabled(visible);
+    if (visible) {
+      peoplePanel?.close();
+      vehiclePanel.close();
+      visionPanel.close();
+      settingsOpen(false);
+    }
+  },
+});
+peoplePanel = mountPeoplePanel({
+  navigation: document.querySelector(".topbar nav"),
+  onAction: peopleAction,
+});
+document.querySelector(".topbar nav").addEventListener("click", (event) => {
+  const id = event.target.closest("button")?.id;
+  if (id && id !== "cameraScreenToggleBtn") cameraScreen.close();
+  if (id && id !== "peopleToggleBtn") peoplePanel.close();
 });
 const isEditing = (target) =>
   ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
@@ -476,7 +551,7 @@ updateTrainingStatus();
 setInterval(updateTrainingStatus, 2500);
 
 function input() {
-  const editing = isEditing(document.activeElement) || isInspection(),
+  const editing = isEditing(document.activeElement) || isInspection() || Boolean(focusedPersonId),
     pressed = (code) => !editing && keys.has(code);
   const targetSpeed = pressed("Space")
     ? 0
@@ -553,6 +628,16 @@ function updateUI() {
     mode: visionMode, caseId: visionCaseId,
     running: world.visionLab?.phase === "running" || pendingVisionRun,
     comparison: visionComparisons.get(visionComparisonKey(visionCaseId)) ?? null,
+  });
+  if (cameraScreen && visualClient) updateCameraScreen();
+  const people = world.actors.filter((actor) => actor.type === "pedestrian")
+    .sort((a, b) => Math.hypot(a.x - world.player.x, a.z - world.player.z)
+      - Math.hypot(b.x - world.player.x, b.z - world.player.z) || a.id.localeCompare(b.id));
+  if (!people.some((person) => person.id === selectedPersonId)) selectedPersonId = people[0]?.id ?? null;
+  if (focusedPersonId && !people.some((person) => person.id === focusedPersonId)) setCarView("chase");
+  peoplePanel?.update({
+    environment, people, selectedId: selectedPersonId,
+    focused: Boolean(focusedPersonId), paused,
   });
   if (environment === "vision")
     $("loadingStatus").textContent = world.visionLab.error
@@ -642,6 +727,9 @@ const perceptionOverlay = createPerceptionOverlay({
 const inspector = createDecisionInspector();
 visualClient = createVisualClient({
   renderer,
+  onFrame: () => {
+    if (cameraScreenVisible) updateCameraScreen();
+  },
   onStatus: (status) => {
     if (status.status === "error" || status.status === "stale") {
       perceptionOverlay.setExternal(null);
@@ -658,6 +746,21 @@ visualClient = createVisualClient({
     }
   },
 });
+function updateCameraScreen() {
+  let result = visualClient.status.result;
+  const visual = world.visualState;
+  if (result && visual?.available && visual.streamId === result.streamId
+      && Number.isSafeInteger(visual.frameId) && visual.frameId < result.frameId)
+    result = visualClient.getResult(visual.streamId, visual.frameId) ?? result;
+  const matchingMotion = result && visual?.streamId === result.streamId
+    && visual.frameId === result.frameId;
+  cameraScreen.update({
+    frame: result ? visualClient.getFrame(result.streamId, result.frameId) : visualClient.latestFrame,
+    result, visual: matchingMotion ? visual : null, availability: visualClient.status,
+    enabled: visualClient.enabled, ego: { speedMps: world.player.speed },
+    applied: { reason: world.player.reason },
+  });
+}
 const offset = new THREE.Vector3(),
   target = new THREE.Vector3(),
   forward = new THREE.Vector3();
@@ -688,7 +791,21 @@ function frame(time) {
     appliedSensors = sensorView;
   }
   forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
-  if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
+  const personRoot = focusedPersonId ? view.roots.get(focusedPersonId)?.root : null;
+  if (personRoot) {
+    const person = world.actors.find((actor) => actor.id === focusedPersonId);
+    target.copy(personRoot.position);
+    target.y += (person.body?.heightM ?? 1.78) * 0.55;
+    if (cameraSnap) {
+      camera.position.copy(target);
+      camera.position.add(new THREE.Vector3(3.2, 1, -4.2));
+    } else {
+      offset.subVectors(target, orbit.target);
+      camera.position.add(offset);
+    }
+    orbit.target.copy(target);
+    orbit.update();
+  } else if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
     if (isInspection()) {
       if (cameraSnap) {
         camera.position.copy(offset);
@@ -716,7 +833,7 @@ function frame(time) {
     frontCamera.position.y += 1.25;
     frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
   }
-  if (visualClient.enabled && mountedCameraPose(player, "sensor")) {
+  if ((visualClient.enabled || cameraScreenVisible) && mountedCameraPose(player, "sensor")) {
     visionCamera.position.copy(offset);
     visionCamera.lookAt(target);
     const debugRays = view.playerRig?.root.getObjectByName("vehicle-sensor-rays");
@@ -761,6 +878,12 @@ activate("city");
 requestAnimationFrame(frame);
 // Reproducible diagnostics used by browser smoke tests and Python adapters.
 window.sim = {
+  cameraFrame(streamId, frameId) {
+    return visualClient.getFrame(streamId, frameId);
+  },
+  cameraResult(streamId, frameId) {
+    return visualClient.getResult(streamId, frameId);
+  },
   get world() {
     return world;
   },
@@ -777,8 +900,16 @@ window.sim = {
     return {
       status: visualClient.status, streamId: visualClient.streamId,
       transport: visualClient.timings,
+      frame: visualClient.status.result
+        ? visualClient.getFrame(visualClient.status.result.streamId, visualClient.status.result.frameId)
+        : visualClient.latestFrame,
       state: world.visualState, evaluation: world.visionLab,
     };
+  },
+  get people() {
+    const record = view.roots.get(selectedPersonId);
+    return { selectedId: selectedPersonId, focusedId: focusedPersonId,
+      rig: record?.pedestrianRig?.diagnostics() ?? null };
   },
   renderDiagnostics() {
     const gl = renderer.getContext();

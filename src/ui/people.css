@@ -1,0 +1,168 @@
+.people-panel {
+  position: fixed;
+  z-index: 8;
+  top: 90px;
+  right: 24px;
+  width: min(332px, calc(100vw - 32px));
+  max-height: calc(100vh - 248px);
+  max-height: calc(100dvh - 248px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  color: #eef2e9;
+  background: var(--panel, #1b2420);
+  border: 1px solid #7c897366;
+  border-radius: 9px;
+  box-shadow: 0 12px 32px #14271c59;
+  font: 12px/1.5 Tahoma, Arial, sans-serif;
+  text-shadow: none;
+  scrollbar-width: thin;
+  scrollbar-color: #789c84 #23372b;
+}
+.people-panel,
+.people-panel * {
+  box-sizing: border-box;
+}
+.people-panel[hidden],
+.people-panel [hidden] {
+  display: none;
+}
+.people-panel ::selection {
+  color: #17271e;
+  background: #b6dfc3;
+}
+.people-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.people-panel h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+}
+.people-panel button,
+.people-panel select {
+  min-height: 34px;
+  padding: 6px 9px;
+  color: #eef2e9;
+  background: #2a3c30;
+  border: 1px solid #8ca39280;
+  border-radius: 5px;
+  font: inherit;
+}
+.people-panel button {
+  cursor: pointer;
+}
+.people-panel button:not(:disabled):hover,
+.people-panel select:not(:disabled):hover {
+  background: #3a5141;
+}
+.people-panel button:not(:disabled):active {
+  background: #41634d;
+}
+.people-panel button:focus-visible,
+.people-panel select:focus-visible,
+.people-panel summary:focus-visible {
+  outline: 2px solid #b6dfc3;
+  outline-offset: 3px;
+}
+.people-panel button:disabled,
+.people-panel select:disabled {
+  color: #a9b5ab;
+  background: #ffffff04;
+  border-color: #8ca39238;
+  cursor: not-allowed;
+}
+.people-panel option {
+  color: #eef2e9;
+  background: #2a3c30;
+}
+#peopleCloseBtn {
+  min-height: 30px;
+  padding: 4px 8px;
+  color: #bdcdbf;
+  font-size: 11px;
+}
+.people-boundary {
+  margin: 7px 0;
+  color: #f0d7b4;
+  font-weight: 600;
+}
+.people-note,
+.people-help {
+  margin: 6px 0 12px;
+  color: #bdcdbf;
+  font-size: 11px;
+}
+.people-status {
+  margin: 12px 0;
+  color: #d7eddd;
+  overflow-wrap: anywhere;
+}
+.people-select {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0;
+  color: #bdcdbf;
+  font-size: 11px;
+}
+.people-select select {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+}
+.people-view-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 8px 0 14px;
+}
+.people-readings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 8px 10px;
+  margin: 14px 0;
+  padding-top: 12px;
+  border-top: 1px solid #a5d8ba33;
+  font-size: 11px;
+}
+.people-readings dt {
+  color: #bdcdbf;
+}
+.people-readings dd {
+  margin: 0;
+  color: #d7eddd;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.people-body summary {
+  min-height: 30px;
+  color: #d7eddd;
+  cursor: pointer;
+}
+.people-body .people-readings {
+  margin-top: 0;
+}
+.people-error {
+  margin: 10px 0;
+  color: #ffd2be;
+  overflow-wrap: anywhere;
+}
+.people-help {
+  margin-bottom: 0;
+  padding-top: 10px;
+  border-top: 1px solid #a5d8ba33;
+}
+@media (max-width: 1000px) {
+  .people-panel {
+    top: 112px;
+    right: 12px;
+    width: min(310px, calc(100vw - 24px));
+    max-height: calc(100vh - 245px);
+    max-height: calc(100dvh - 245px);
+    padding: 13px;
+  }
+}

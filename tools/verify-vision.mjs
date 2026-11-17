@@ -308,7 +308,8 @@ try {
       && (item.final.lab.firstSensorTriggerS === null
         || item.final.lab.firstVisualBrakeS < item.final.lab.firstSensorTriggerS));
     assert.ok(latestFrame && report.cameraInputOnly);
-    const samplePath = path.join(process.cwd(), ".runtime-proof", "vision-egypt-20261116", "camera-sample.json");
+    const samplePath = process.env.VISION_SAMPLE_PATH
+      ?? path.join(process.cwd(), ".runtime-proof", "vision-egypt-20261116", "camera-sample.json");
     await writeFile(samplePath, JSON.stringify(latestFrame));
     await page.locator("#visionReturnBtn").click();
     assert.equal((await readState()).environment, "city");

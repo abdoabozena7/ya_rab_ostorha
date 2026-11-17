@@ -87,6 +87,27 @@ Trajectron++, nor a fresh validation of historical learned-policy results.
 
 ## Public experiment
 
+The **Camera** workspace also operates directly in the city. It separates the
+actual front-camera image from neural interpretation and pairs raw/annotated
+panes using the exact stream/frame identity. Preview can run without inference;
+starting/stopping the installed detector is explicit. Observed history and
+fitted future estimates have distinct visual treatments. A detector score is
+not calibrated crossing probability, and this feature does not perform OCR.
+
+The two images, overlays and frame-bound labels commit together only after JPEG
+decoding. A still-fresh completed pair can remain visible while the next frame
+decodes, but new arrivals never renew that old pair's own 750 ms freshness.
+Stop, stream change, stale/error or mismatched evidence invalidates it. Neural
+results and the fixed-step controller can arrive at different times: the screen
+uses the actual cached result matching the published motion snapshot, never
+attaches the preceding frame's forecast to a newer image, and can show valid
+detector-only evidence until matching motion exists.
+
+The separate **People** inspector exposes simulation body/motion reference
+values and bounded public motion controls. They are never supplied to camera
+recognition or the predictor. Following a person changes the main display
+camera, not the physical SUV-mounted front inference camera.
+
 Open **Vision lab**, choose a case and the vision-first or reactive/sensors-only
 mode, then run it. The physical scene is recreated without replacing the saved
 city. Both modes retain independent collision safety. Run/reset/return controls
@@ -126,6 +147,9 @@ node tools/evaluate-core.mjs
 python scripts\verify_vision_egypt.py --browser
 python scripts\verify_vision_egypt.py --models
 python scripts\verify_vision_egypt.py --browser --negative-control
+# Current camera/people phase, including actual public replay and pixel pairing:
+python scripts\verify_camera_people.py --browser
+python scripts\verify_camera_people.py --negative-control
 ```
 
 The model check uses an actual current camera sample retained by the public

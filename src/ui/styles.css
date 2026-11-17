@@ -1,5 +1,7 @@
 @import "./vehicle.css";
 @import "./vision.css";
+@import "./camera-screen.css";
+@import "./people.css";
 
 :root {
   font-family: Tahoma, Arial, sans-serif;

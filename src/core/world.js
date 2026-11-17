@@ -1,4 +1,5 @@
 import { nextWalk, pedestrianMotion } from "./pedestrian.js";
+import { createPedestrianBody, setPedestrianMotionMode } from "./pedestrian-body.js";
 import { safeSpeed } from "./traffic-control.js";
 import {
   updateJunctions,
@@ -218,6 +219,14 @@ export class World {
     } else if (environment === "vehicle")
       this.capacity = { traffic: 0, pedestrians: 0 };
     else this.populate();
+    for (const actor of this.actors) {
+      if (actor.type !== "pedestrian") continue;
+      actor.body ??= createPedestrianBody(actor);
+      if (visualScene) actor.body = { ...actor.body, heightM: 1.78, radiusM: actor.radius };
+      actor.motionMode ??= "ambient";
+      actor.motionTimeS = 0;
+      actor.accelerationMps2 = 0;
+    }
     this.sensorProcessor = new RangeSignalProcessor();
     this.updateSensors();
   }
@@ -333,6 +342,9 @@ export class World {
         pause: 0,
         crossing: false,
       };
+      p.body = createPedestrianBody(p);
+      p.radius = p.body.radiusM;
+      p.motionMode = "ambient";
       if (!this.free(p, 0.7) || pointOnRoad(p, this.roads)) continue;
       this.nextWalk(p);
       this.actors.push(p);
@@ -402,6 +414,18 @@ export class World {
     return nextWalk(this, person);
   }
   command(command, record = true) {
+    if (command.type === "pedestrian-motion") {
+      if (!["city", "lab"].includes(this.environment))
+        throw new Error("Human motion controls are unavailable in fixed Vision and vehicle fixtures.");
+      if (Object.keys(command).some((key) => !["type", "id", "mode"].includes(key)))
+        throw new Error("Human motion accepts only a person ID and an explicit motion mode.");
+      const person = this.actors.find((actor) => actor.id === command.id && actor.type === "pedestrian");
+      if (!person) throw new Error("The requested person is not in this world.");
+      if (!setPedestrianMotionMode(person, command.mode))
+        throw new Error("Choose ambient, walk, jog or stop for an ordinary person.");
+      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      return true;
+    }
     if (command.type === "visual-observation") {
       this.visualPredictor.observe(structuredClone(command.result));
       if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
@@ -715,6 +739,10 @@ export class World {
         }
       }
       const moved = distance(actor, next);
+      if (actor.type === "pedestrian") {
+        next.accelerationMps2 = (next.speed - actor.speed) / STEP;
+        next.motionTimeS = (this.tick + 1) * STEP;
+      }
       const oldPrevious = actor.previous;
       Object.assign(actor, next, {
         previous: oldPrevious,
@@ -808,6 +836,10 @@ export class World {
         reason: a.reason,
         cursor: a.cursor ?? 0,
         ...(a.vehicle ? { vehicle: structuredClone(a.vehicle) } : {}),
+        ...(a.type === "pedestrian" ? {
+          body: structuredClone(a.body), motionMode: a.motionMode,
+          accelerationMps2: a.accelerationMps2, motionTimeS: a.motionTimeS,
+        } : {}),
       })),
     };
   }
@@ -849,6 +881,7 @@ export class World {
           "visual-mode",
           "vision-run",
           "vehicle-test",
+          "pedestrian-motion",
         ].includes(event.command?.type) ||
         (event.command.type === "vehicle-test" &&
           (data.environment !== "vehicle" || event.command.operation !== "run"))

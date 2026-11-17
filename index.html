@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="icon" href="data:," />
-    <title>Ya Rab Ostorha — Three.js Driving Game</title>
+    <title>Ya Rab Ostorha — Camera-First Driving Prototype</title>
     <link rel="stylesheet" href="/public/threejs/game.styles.css" />
   </head>
   <body>
@@ -192,10 +192,10 @@
       <div id="sensorReadout" class="sensor-readout"></div>
       <div id="inspectorMetrics" class="inspector-metrics"></div>
     </aside>
-    <section id="cameraLabel" class="camera-label">
-      Front camera <span>Live pixels</span>
-      <small id="cvStatus">Analyzing frame…</small>
-      <small id="cameraDecision">Simulator safety: Ready</small>
+    <section id="cameraLabel" class="camera-label" aria-label="Vehicle camera preview">
+      Front camera <span>Rendered RGB</span>
+      <small id="cvStatus">Detector off · open Camera to inspect</small>
+      <small id="cameraDecision">Control: Ready</small>
     </section>
     <canvas
       id="cameraOverlay"

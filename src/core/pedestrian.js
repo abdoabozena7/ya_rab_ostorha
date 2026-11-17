@@ -1,6 +1,7 @@
 import { STEP, clamp } from "./config.js";
 import { distance, angleDelta, pointOnRoad } from "./geometry.js";
 import { walkingWaypoint, walkSegmentClear } from "./walk-route.js";
+import { createPedestrianBody } from "./pedestrian-body.js";
 const pose = (road, along, side, offset) =>
   road.axis === "z"
     ? { x: road.fixed - side * offset, z: along }
@@ -39,30 +40,77 @@ export function nextWalk(world, person) {
   }
 }
 
+function nearbyBodies(world, p) {
+  return world.actorIndex
+    .near(p, 28)
+    .filter((a) => a !== p)
+    .concat(world.staticIndex.near(p, 34));
+}
+
+function move(p, body, heading, targetSpeed, reason, nearby) {
+  const speed = clamp(
+    targetSpeed,
+    Math.max(0, p.speed - body.maxDecelerationMps2 * STEP),
+    p.speed + body.maxAccelerationMps2 * STEP,
+  );
+  const next = {
+    ...p,
+    x: p.x + Math.sin(heading) * speed * STEP,
+    z: p.z + Math.cos(heading) * speed * STEP,
+    heading,
+    speed,
+    accelerationMps2: (speed - p.speed) / STEP,
+    turnRateRadS: angleDelta(heading, p.heading) / STEP,
+    reason,
+  };
+  // Match World's reserved-body guard; an occupied step is the only instant stop.
+  if (speed > 0 && !walkSegmentClear(p, p, next, nearby, 0.12)) {
+    next.x = p.x;
+    next.z = p.z;
+    next.speed = 0;
+    next.accelerationMps2 = -p.speed / STEP;
+    next.reason = "blocked";
+  }
+  return next;
+}
+
 export function pedestrianMotion(world, p) {
+  const body = p.body ??= createPedestrianBody(p);
+  const stop = (reason) =>
+    move(p, body, p.heading, 0, reason, nearbyBodies(world, p));
+  if (p.motionMode === "stop")
+    return stop(p.speed > 0 ? "stopping" : "stopped");
   if (p.pause > 0) {
-    p.pause = Math.max(0, p.pause - STEP);
-    return { ...p, speed: 0, reason: "waiting" };
+    if (p.speed === 0) p.pause = Math.max(0, p.pause - STEP);
+    return stop("waiting");
   }
   let remaining = distance(p, p.target);
   if (remaining < 0.22) {
     if (p.crossing) p.side = -p.side;
     p.along = p.road.axis === "z" ? p.z : p.x;
     world.nextWalk(p);
-    if (p.pause > 0) return { ...p, speed: 0, reason: "waiting" };
+    if (p.pause > 0) return stop("waiting");
     // A waypoint is not a stop: carry the walking motion into the next leg.
     remaining = distance(p, p.target);
-    if (remaining < 0.22) return { ...p, speed: 0, reason: "waiting" };
+    if (remaining < 0.22) return stop("waiting");
   }
   // Check an approaching vehicle before entering the carriageway; once a
   // crossing has started, keep walking so the person can clear the lane.
+  const approach = Math.min(
+    remaining,
+    Math.max(
+      1,
+      p.speed ** 2 / (2 * body.maxDecelerationMps2) +
+        p.speed * STEP + p.radius + 0.1,
+    ),
+  );
   if (
     !pointOnRoad(p, world.roads) &&
     pointOnRoad(
       {
         ...p,
-        x: p.x + (p.target.x - p.x) / remaining,
-        z: p.z + (p.target.z - p.z) / remaining,
+        x: p.x + (p.target.x - p.x) / remaining * approach,
+        z: p.z + (p.target.z - p.z) / remaining * approach,
       },
       world.roads,
     )
@@ -75,12 +123,9 @@ export function pedestrianMotion(world, p) {
         (p.x - a.x) * Math.sin(a.heading) + (p.z - a.z) * Math.cos(a.heading) >
           -2,
     );
-    if (danger) return { ...p, speed: 0, reason: "looking" };
+    if (danger) return stop("looking");
   }
-  const nearby = world.actorIndex
-    .near(p, 28)
-    .filter((a) => a !== p)
-    .concat(world.staticIndex.near(p, 34));
+  const nearby = nearbyBodies(world, p);
   const waypoint = walkingWaypoint(world, p, nearby);
   const desired = Math.atan2(waypoint.x - p.x, waypoint.z - p.z);
   const close = nearby.filter(
@@ -112,19 +157,26 @@ export function pedestrianMotion(world, p) {
   if (best !== Infinity) p.walkHeading = targetHeading;
   const heading =
     p.heading +
-    clamp(angleDelta(targetHeading, p.heading), -3 * STEP, 3 * STEP);
+    clamp(
+      angleDelta(targetHeading, p.heading),
+      -body.maxTurnRateRadS * STEP,
+      body.maxTurnRateRadS * STEP,
+    );
   const turn = Math.abs(angleDelta(targetHeading, heading));
-  const speed =
+  const walkingSpeed = clamp(
+    Number.isFinite(p.walkSpeed) ? p.walkSpeed : body.walkSpeedMps,
+    0,
+    3.2,
+  );
+  const requestedSpeed = p.motionMode === "jog"
+    ? Math.max(walkingSpeed, body.jogSpeedMps) : walkingSpeed;
+  const targetSpeed =
     best === Infinity
       ? 0
-      : Math.min(p.walkSpeed, p.speed + 2.5 * STEP, remaining / STEP) *
-        Math.max(0, Math.cos(turn)) ** 3;
-  return {
-    ...p,
-    x: p.x + Math.sin(heading) * speed * STEP,
-    z: p.z + Math.cos(heading) * speed * STEP,
-    heading,
-    speed,
-    reason: p.crossing ? "crossing" : "walking",
-  };
+      : requestedSpeed * Math.max(0, Math.cos(turn)) ** 3;
+  return move(
+    p, body, heading, targetSpeed,
+    best === Infinity ? "yielding" : p.crossing ? "crossing" : "walking",
+    nearby,
+  );
 }

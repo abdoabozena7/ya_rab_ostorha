@@ -62,3 +62,25 @@ test("parking bays and side streets do not acquire paint from an empty batch", (
     dispose(view);
   }
 });
+
+test("human support roots agree with the actual road, sidewalk and ground surfaces", () => {
+  const view = roadView([{ axis: "z", fixed: 0, min: -18, max: 18, width: 10 }]);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(650, 650), new THREE.MeshBasicMaterial());
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.05;
+  view.scene.add(ground);
+  view.scene.updateMatrixWorld(true);
+  try {
+    for (const point of [{ x: 2, z: 0 }, { x: 6.25, z: 0 }, { x: 9, z: 0 }]) {
+      const ray = new THREE.Raycaster(new THREE.Vector3(point.x, 3, point.z),
+        new THREE.Vector3(0, -1, 0));
+      const surface = ray.intersectObjects(view.scene.children)[0];
+      assert.ok(surface);
+      const support = WorldView.prototype.pedestrianGroundHeight.call(view, point);
+      assert.ok(Math.abs(support - surface.point.y) < 1e-7,
+        "A grounded shoe must not float above the actual supporting mesh");
+    }
+  } finally {
+    dispose(view);
+  }
+});
