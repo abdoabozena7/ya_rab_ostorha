@@ -292,7 +292,7 @@ export class World {
     this.sensorProcessor = new RangeSignalProcessor();
     this.updateSensors();
   }
-  makeVehicle(id, kind, position) {
+  makeVehicle(id, kind, position, rng = this.rng) {
     const tuk = kind === "tuktuk";
     return {
       id,
@@ -316,8 +316,8 @@ export class World {
       distance: 0,
       wait: 0,
       reason: "ready",
-      phase: this.rng.next(),
-      reckless: id !== "player" && this.rng.next() < this.config.chaos,
+      phase: rng.next(),
+      reckless: id !== "player" && rng.next() < this.config.chaos,
       ...(id === "player"
         ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState() }
         : {}),
@@ -550,7 +550,7 @@ export class World {
         validatePracticeCommand(command, training || command.variant === "arcade", training);
         const resumeMode = this.mode;
         const resumeTrip = resumeMode === "auto" && Boolean(this.destination) && this.player.path.length > 1;
-        beginStreetPursuit(this, command.level, command.variant);
+        beginStreetPursuit(this, command.level, command.variant, command.config);
         const { pursuit } = this;
         if (pack) this.configurePackDriver(command);
         else if (command.learn) pursuit.learner = this.arcadeLearner ??= createArcadeLearner(this.config.seed);
@@ -563,7 +563,7 @@ export class World {
         this.player.parking = null;
         this.player.cursor = 0;
         this.routeRevision++;
-        this.mode = "auto";
+        this.mode = pursuit.gta ? "manual" : "auto";
       } else {
         if (this.pursuit?.phase !== "running" && !this.pursuit?.reviewUntilTick)
           throw new Error("No running street pursuit");
@@ -884,7 +884,9 @@ export class World {
     updateDistrictTraffic(this);
     stepPursuit(this, action, {
       pedestrianMotion: actor => stepDistrictPedestrian(this, actor),
-      vehicleCommand: (actor, requested) => actor.pursuitRole === "police"
+      vehicleCommand: (actor, requested) => pursuit.gta &&
+          (pursuit.patrols.has(actor) || (actor === this.player && this.mode === "manual"))
+        ? requested : actor.pursuitRole === "police"
         ? districtTrafficCommand(this, actor, requested)
         : this.districtDrivingCommand(actor, requested ?? this.followTrafficTrip(actor),
             ownMotion, nowS, actor !== this.player),
@@ -895,6 +897,7 @@ export class World {
     }
   }
   step() {
+    if (this.pursuit?.gta && this.pursuit.phase !== "running") this.pursuit.stepEvents.length = 0;
     if (stepPackReview(this)) return;
     if (this.environment === "pursuit" && this.pursuit.phase !== "running") return;
     if (this.visionLab && this.visionLab.phase !== "running") return;

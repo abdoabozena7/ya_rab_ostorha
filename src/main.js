@@ -689,8 +689,9 @@ function rememberPackPractice(target) {
 }
 
 function packPatrolStatus(state) {
-  const nearestM = Math.min(...[...state.patrols].map(car => distance(car, world.player)));
-  return { active: state.patrols.size, target: state.targetPatrols, nearestM, sectors: state.metrics.surroundSectors };
+  const patrols = [...state.patrols].filter(car => !state.gta || car.aiState !== "WRECKED");
+  const nearestM = Math.min(...patrols.map(car => distance(car, world.player)));
+  return { active: patrols.length, target: state.targetPatrols, nearestM, sectors: state.metrics.surroundSectors };
 }
 
 const pursuitPanel = mountPursuitPanel({
@@ -700,10 +701,11 @@ const pursuitPanel = mountPursuitPanel({
     if (active.environment === "metro") {
       rememberPackPractice(active);
       const arcade = active.config.cityVersion === 4 && streetPursuitStyle === "survival";
-      if (!arcade && useLabPolicy && !labPackCheckpoint) throw new Error("Complete a learning run in the Lab first.");
-      const checkpoint = arcade ? null : useLabPolicy ? labPackCheckpoint : readCityPractice();
+      const gta = active.config.cityVersion === 4 && streetPursuitStyle === "gta";
+      if (!arcade && !gta && useLabPolicy && !labPackCheckpoint) throw new Error("Complete a learning run in the Lab first.");
+      const checkpoint = arcade || gta ? null : useLabPolicy ? labPackCheckpoint : readCityPractice();
       active.command({ type: "street-pursuit-start", level: streetPursuitLevel,
-        ...(arcade ? { variant: "survival" } : active.config.cityVersion === 4 ? { variant: "hunt", learn: !useLabPolicy && learn,
+        ...(gta ? { variant: "gta" } : arcade ? { variant: "survival" } : active.config.cityVersion === 4 ? { variant: "hunt", learn: !useLabPolicy && learn,
           ...(checkpoint ? { checkpoint, ...(!useLabPolicy ? { localPolicy: true } : {}) } : {}) } : {}) });
       if (arcade) void pursuitAudio.unlock();
       cityPracticeRun = active.pursuit.driver === "training" ? active.pursuit : null;
@@ -759,8 +761,9 @@ const pursuitPanel = mountPursuitPanel({
     } else if (world.pursuit) reset({ ...world.config, pursuitLevel: level });
   },
   onStyle: (style) => {
-    if (!["survival", "hunt"].includes(style)) return;
+    if (!["survival", "hunt", "gta"].includes(style)) return;
     streetPursuitStyle = style;
+    if (style !== "gta") streetPursuitLevel = Math.min(4, streetPursuitLevel);
     updateUI();
   },
   onUse: usePursuitPower,
@@ -1124,6 +1127,7 @@ function updateUI() {
     const roadReading = onRoadLimit(world, world.player);
     const { roadId, width } = roadReading;
     const result = world.pursuit;
+    const gta = result?.phase === "running" ? result.variant === "gta" : streetPursuitStyle === "gta";
     if (result && result.phase !== "running") rememberPackPractice(world);
     const dispatch = result?.phase === "running" && usesRushPace(result.variant);
     const limit = dispatch ? rushRoadLimit(roadReading) : roadReading.limit;
@@ -1135,6 +1139,7 @@ function updateUI() {
     if (isPursuing())
       $("tripLabel").textContent = world.pursuit.route
         ? `Pursuit · ${world.pursuit.route.id.replace(/^metro-exit-/, "").replaceAll("-", " ")}`
+        : world.pursuit.gta ? "GTA Chase · live City streets"
         : world.pursuit.survival ? "Pursuit · live City streets" : "Pursuit · checking exits";
     else if (world.destination && !world.player.path.length && world.pursuit?.resumeTrip && !world.pursuit.tripResumed)
       $("tripLabel").textContent = "Trip paused · choose a destination";
@@ -1146,11 +1151,11 @@ function updateUI() {
       arcade: world.config.cityVersion === 4,
       cityPursuitStyle: world.config.cityVersion === 4 ? streetPursuitStyle : null,
       bestSurvivalS, soundMuted: pursuitAudio.muted, soundError: pursuitAudio.error,
-      pack: world.config.cityVersion === 4 && (!dispatch || isPackPursuit(result.variant)),
+      pack: !gta && world.config.cityVersion === 4 && (!dispatch || isPackPursuit(result.variant)),
       labPolicyAvailable: Boolean(labPackCheckpoint),
       speedMps: world.player.speed,
       dispatchWaves: world.config.cityVersion === 4,
-      patrolStatus: dispatch || result?.reviewUntilTick ? packPatrolStatus(result) : null,
+      patrolStatus: dispatch || result?.reviewUntilTick || result?.gta ? packPatrolStatus(result) : null,
       appliedSpeedMps: world.player.districtSources?.finalMps,
       appliedSource: world.player.districtSources?.appliedSource,
       level: result?.phase === "running" ? result.level : streetPursuitLevel,

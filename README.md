@@ -33,7 +33,7 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
 | Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
 | People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
-| Pursuit | Start an Arcade or Tactical patrol chase on the current City streets |
+| Pursuit | Start an Arcade, Tactical, or GTA Chase on the current City streets |
 | Decision lab | Inspect the route, rules, virtual ranges and traffic queues |
 | Lab / Return to city | Enter the separate learning lab and its Pursuit drills, then resume the current city |
 | Settings | Change seed, traffic, pedestrians and speed; reset the current world |
@@ -169,6 +169,41 @@ available from that heading, choose a destination again.
 
 See the [PAKO Forever / GTA V comparison and implementation checklist](docs/CITY_PURSUIT_REVIEW.md)
 for the decisions behind this mode.
+
+**Pursuit → GTA Chase** is a separate manual variant on the same City streets.
+Select the opening wanted level (1–5); use **W / S** for throttle or reverse,
+**A / D** to steer, and **Space** to brake. Impacts can shove or damage cars
+without ending the chase on the first hit. Higher heat brings faster units,
+heavy vans, and temporary roadblocks. End the chase without resetting traffic.
+
+### Headless GTA Chase
+
+```js
+import { GtaPursuitEnv, GTA_OBSERVATION_SCHEMA } from "./src/rl/gta-pursuit-env.js";
+
+const env = new GtaPursuitEnv();
+const initial = env.reset({ seed: "cairo-42", config: { wantedLevelStart: 2 } });
+const next = env.step({ steer: 0, throttle: 1, brake: 0, gear: 1 }); // six 1/60 s ticks
+```
+
+`reset` returns `{ obs, info }`; `step` returns `{ obs, reward, terminated,
+truncated, info }`. Escape, wreck, or bust terminates; timeout truncates.
+Repeats stop at the terminal tick; call `reset` before stepping again. No
+actions are added to the replay log. `info` includes the requested action,
+last applied command, tick, health, wanted stars, active patrol count, and
+events from all repeated ticks.
+
+`GTA_OBSERVATION_SCHEMA` describes the flat normalized `Float32Array`: ego
+telemetry, ten mounted virtual ranges, eight patrol slots, and four hazard
+slots. Patrols are ego-local (right, forward); active tracks come first, with
+wrecks filling spare slots. Unused slots are zero-padded. This is
+**virtual/privileged simulation state**, not vision or real sensor input. The
+RGB prediction pipeline does not consume it.
+
+`GtaChaseConfig` exports defaults; pass partial overrides to `reset` to cap
+wanted stars or active units, adjust NPC pace, disable maneuvers or roadblocks,
+or set vehicle health and episode duration. Run
+`node tools/verify-gta-rl-env.mjs` for headless verification.
 
 City opens in manual mode without starting a model. Choosing a **Phone**
 destination or switching to **autopilot** starts the installed detector and

@@ -4,6 +4,8 @@ const PHASES = {
   escaped: "Escaped",
   captured: "Captured",
   crashed: "Crashed",
+  busted: "Busted",
+  wrecked: "Wrecked",
   timeout: "Time expired",
   stopped: "Ended",
 };
@@ -161,7 +163,9 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const proximityLabel = node("dt", "", "Nearest patrol");
   const proximity = node("dd", "pursuitProximity");
   const speed = node("dd", "pursuitActualSpeed");
-  currentReadings.append(proximityLabel, proximity, node("dt", "", "Speed"), speed);
+  const healthLabel = node("dt", "", "Vehicle health"), health = node("dd", "pursuitHealth");
+  healthLabel.hidden = health.hidden = true;
+  currentReadings.append(proximityLabel, proximity, node("dt", "", "Speed"), speed, healthLabel, health);
   situation.append(currentReadings);
 
   const controls = node("div");
@@ -169,7 +173,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const styleLabel = node("label", "", "Chase style");
   styleLabel.className = "pursuit-style";
   const style = node("select", "pursuitStyle");
-  for (const [value, label] of [["survival", "Arcade chase"], ["hunt", "Tactical / training"]]) {
+  for (const [value, label] of [["survival", "Arcade chase"], ["hunt", "Tactical / training"], ["gta", "GTA Chase"]]) {
     const option = node("option", "", label);
     option.value = value;
     style.append(option);
@@ -186,11 +190,13 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   caseField.append(caseLabel, caseDescription);
   const levelLabel = node("label", "", "Difficulty");
   const level = node("select", "pursuitLevel");
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 5; i++) {
     const option = node("option", "", `Level ${i}`);
     option.value = String(i);
     level.append(option);
   }
+  const fifthLevel = level.lastElementChild;
+  fifthLevel.hidden = fifthLevel.disabled = true;
   levelLabel.append(level);
   const run = node("button", "pursuitRunBtn", "Run pursuit");
   const restart = node("button", "pursuitRestartBtn", "Restart");
@@ -398,6 +404,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     const noPatrolDrill = packLab && patrol?.active === 0;
     const arcadeSelected = state.cityPursuitStyle === "survival", survival = state.survival;
     const showArcade = state.street && (running ? Boolean(survival) : arcadeSelected);
+    const showGta = state.street && (running ? state.variant === "gta" : state.cityPursuitStyle === "gta");
     const collapsed = cinematic || pack;
     const cases = packLab && Array.isArray(state.cases) ? state.cases : NO_CASES;
     const scope = packLab ? "pack-lab" : pack && state.street ? "pack-city" : "legacy";
@@ -419,11 +426,12 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     panel.classList.toggle("pursuit-panel--city-arcade", showArcade);
     panel.dataset.phase = paused ? "paused" : state.phase;
     panel.dataset.response = paused ? "" : stage;
-    text(title, packLab ? "Pursuit Lab" : showArcade ? "Arcade pursuit" : "Pursuit");
+    text(title, packLab ? "Pursuit Lab" : showArcade ? "Arcade pursuit" : showGta ? "GTA Chase" : "Pursuit");
     text(phase, survival?.review ? "Impact replay" : paused ? "Paused" : running && noPatrolDrill ? "In progress"
       : stage ? RESPONSE_STAGES[stage] : PHASES[state.phase]);
     text(scene, packLab
       ? running ? cases.find(({ id }) => id === state.caseId)?.label ?? "" : ""
+      : showGta && !running && state.variant !== "gta" ? "On these streets. Starts in manual mode."
       : cinematic
       ? running ? responseNote(stage, state.response)
         : state.phase === "ready" ? (showArcade ? "On these streets. Starts self-driving." : "On the city streets")
@@ -448,7 +456,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     }
     caseField.hidden = !packLab || running || !cases.length || typeof onCase !== "function";
     if (!caseField.hidden) renderCases(cases, state.caseId);
-    practice.hidden = showArcade || running || (pack ? packLab ? state.phase !== "ready" : !state.street : !state.arcade);
+    practice.hidden = showGta || showArcade || running || (pack ? packLab ? state.phase !== "ready" : !state.street : !state.arcade);
     text(practiceLabel, packLab ? "Train on this drill" : "Learn from this chase");
     policy.hidden = showArcade || !(pack && state.street && !running);
     if (!policy.hidden) {
@@ -482,6 +490,10 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
         learning.hidden = !survival || survival.review === true;
       }
     }
+    if (showGta && running) {
+      learning.hidden = false;
+      text(learning, state.mode === "manual" ? "W / S throttle · A / D steer · Space brakes" : "Self-driving · I takes manual control");
+    }
     arcade.hidden = !showArcade;
     if (showArcade) {
       text(time, `${(survival ? state.metrics.survivalS : 0).toFixed(1)} s`);
@@ -500,6 +512,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     }
     situation.hidden = !liveSummary;
     proximityLabel.hidden = proximity.hidden = noPatrolDrill;
+    healthLabel.hidden = health.hidden = !showGta || !state.gta;
+    if (!health.hidden) text(health, `${Math.ceil(state.gta.playerHealth)} / ${state.gta.playerMaxHealth}`);
     if (liveSummary) {
       const nearest = patrol?.nearestM;
       text(proximity, finite(nearest) && nearest >= 0 ? `${Math.round(nearest)} m` : showArcade ? "None" : "Not available");
@@ -513,7 +527,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     if (state.cityPursuitStyle && style.value !== state.cityPursuitStyle) style.value = state.cityPursuitStyle;
     run.hidden = liveSummary || (packLab && state.phase !== "ready");
     restart.hidden = packLab ? state.phase === "ready" : collapsed && !running;
-    if (!pending && Number.isInteger(state.level) && state.level >= 1 && state.level <= 4 &&
+    fifthLevel.hidden = fifthLevel.disabled = !showGta;
+    if (!pending && Number.isInteger(state.level) && state.level >= 1 && state.level <= (showGta ? 5 : 4) &&
         level.value !== String(state.level)) level.value = String(state.level);
     diagnostics.hidden = !liveSummary;
     if (!liveSummary) diagnostics.open = false;
@@ -547,7 +562,9 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   };
   const restartClick = () => perform(restart, onRestart);
   const levelChange = () => {
-    if (/^[1-4]$/.test(level.value)) perform(level, onLevel, Number(level.value));
+    const requested = Number(level.value);
+    if (Number.isInteger(requested) && requested >= 1 && requested <= (fifthLevel.disabled ? 4 : 5))
+      perform(level, onLevel, requested);
   };
   const caseChange = () => {
     if (shownCases.some(({ id }) => id === caseSelect.value)) return perform(caseSelect, onCase, caseSelect.value);

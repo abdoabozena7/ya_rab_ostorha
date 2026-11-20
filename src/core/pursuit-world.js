@@ -2,7 +2,7 @@ import { PEOPLE_MODELS, STEP, VEHICLE, clamp } from "./config.js";
 import { arcadePatrolLimit, initializeDistrictActor, isPackPursuit, isRushPack, rushRoadLimit, usesRushPace } from "./district-behavior.js";
 import { planDistrictRoute } from "./district-navigation.js";
 import { createPackDrill, PACK_DRILLS } from "./pack-drills.js";
-import { packApproach, packRamAim, packSpawnBias, packTactic } from "./pack-patrol.js";
+import { assignGtaSquad, gtaSpacingSteer, packApproach, packRamAim, packSpawnBias, packTactic } from "./pack-patrol.js";
 import { packCommand, PACK_PENALTIES, pedestrianImpactCost } from "./pack-driving.js";
 import { districtRoadPose } from "./egypt-district.js";
 import {
@@ -13,7 +13,12 @@ import { createRoadGraph, lanePath, planNavigation, LANE_OFFSET } from "./naviga
 import { createPedestrianBody } from "./pedestrian-body.js";
 import { pedestrianMotion } from "./pedestrian.js";
 import { pursuitCommand, validatePursuitAction } from "./pursuit-controls.js";
-import { createPursuitResponse, pursuitResponseSnapshot, updatePursuitResponse } from "./pursuit-response.js";
+import {
+  GTA_MAX_SPEED, GTA_PATROL_PROFILES, GTA_PIN_SECONDS, applyGtaContact, emitGtaEvent, gtaLocal, gtaOffset, gtaPatrolCommand,
+  initializeGtaDurability, initializeGtaPatrol, initializeGtaPursuit, integrateGtaSlip, isGtaStationary,
+  resolveGtaChaseConfig, trackGtaPatrolProgress, updateGtaPhase,
+} from "./pursuit-gta.js";
+import { createPursuitResponse, gtaLineClear, pursuitResponseSnapshot, updatePursuitResponse } from "./pursuit-response.js";
 import {
   SURVIVAL_REVIEW_TICKS, createSurvival, emitSurvival, isCityHunt, isSurvival, releaseSurvival,
   survivalGhostPair, survivalSnapshot, updateSurvivalBeforeMotion, updateSurvivalAfterMotion,
@@ -23,6 +28,8 @@ import { SpatialIndex } from "./spatial-index.js";
 import { followPath, integrateVehicle, vehicleProbe } from "./vehicle.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 import { advanceVehicleState } from "./vehicle-state.js";
+
+export { GtaChaseConfig } from "./pursuit-gta.js";
 
 const TIERS = [
   { police: 1, traffic: 3, pedestrians: 1, durationS: 38 },
@@ -519,8 +526,8 @@ function deploymentSlots(state, ego, tactic, minRange = 13) {
   return slots.sort((a, b) => a.score - b.score);
 }
 
-function setStreetPatrolPath(state, car, aim, fallback = null) {
-  const goals = state.lanes.map((lane) => lanePoint(lane, aim[lane.road.axis]));
+function setStreetPatrolPath(state, car, aim, fallback = null, lanes = state.lanes) {
+  const goals = lanes.map((lane) => lanePoint(lane, aim[lane.road.axis]));
   goals.sort((a, b) => distance(a, aim) - distance(b, aim));
   const nearbyGoals = goals.slice(0, fallback ? 3 : 4);
   if (fallback) nearbyGoals.push(fallback);
@@ -532,7 +539,7 @@ function setStreetPatrolPath(state, car, aim, fallback = null) {
     for (const point of path) Object.freeze(point);
     car.path = Object.freeze(path);
     car.cursor = 0;
-    car.pursuitDrive.target = goal;
+    if (car.pursuitDrive) car.pursuitDrive.target = goal;
     return true;
   }
   return false;
@@ -759,13 +766,189 @@ function rushDispatch(world, state, count, player = world.player) {
   return dispatched.length;
 }
 
+function newGtaPatrol(world, state, unitType) {
+  const id = `street-pursuit-${state.run}-gta-${++state.gta.serial}`;
+  const { x, z, heading } = world.player;
+  const car = world.makeVehicle(id, GTA_PATROL_PROFILES[unitType].kind, { x, z, heading }, state.rng);
+  initializeGtaPatrol(car, unitType, state);
+  car.gtaAI.lanes = streetLanes(world.drivingRoads, car);
+  return car;
+}
+
+function registerGtaPatrol(world, state, car) {
+  initializeDistrictActor({ environment: world.environment, rng: state.rng }, car);
+  car.district.nextLoadingDistanceM = Infinity;
+  car.previous = copyPose(car);
+  state.patrols.add(car);
+  world.actors.push(car);
+  if (world.pursuit === state) logEvent(world, "reinforcement", car, car.id);
+  return car;
+}
+
+function deployGtaPatrol(world, state, tactic, unitType, forwardOnly = false) {
+  const car = newGtaPatrol(world, state, unitType);
+  const player = world.player;
+  const slots = deploymentSlots({ lanes: car.gtaAI.lanes }, player, tactic, state.gta.config.minSpawnRadius);
+  const others = [...state.patrols];
+  for (const slot of slots) {
+    const { forward, right } = gtaLocal(player, slot.position);
+    if (forwardOnly && forward <= 0) { slot.score = Infinity; continue; }
+    if (forwardOnly) slot.score += 10 * (1 - Math.cos(angleDelta(slot.position.heading, player.heading)));
+    if (tactic === "flank") {
+      const side = car.gtaAI.order % 2 ? -1 : 1;
+      slot.score += .3 * Math.abs(forward) + (right * side < 0 ? 13 : 0);
+    }
+    for (const other of others) slot.score += Math.max(0, 13 - distance(other, slot.position)) * .9;
+  }
+  slots.sort((a, b) => a.score - b.score);
+  for (const { position, score } of slots) {
+    if (!Number.isFinite(score)) break;
+    Object.assign(car, position);
+    if (!isFree(world, car, .65) || !bodyOnRoad(car, world.drivingRoads)) continue;
+    car.speed = Math.min(2, car.maxSpeed);
+    return registerGtaPatrol(world, state, car);
+  }
+  return null;
+}
+
+function gtaPatrolCount(state) {
+  let count = 0;
+  for (const unit of state.patrols) if (unit.aiState !== "WRECKED") count++;
+  return count;
+}
+
+function gtaPatrolTarget(state) {
+  const { maxActivePatrols } = state.gta.config;
+  return Math.min(maxActivePatrols, [0, 3, 5, 7, 9, maxActivePatrols][state.wantedLevel]);
+}
+
+function fillGtaPatrols(world, state, count) {
+  const target = gtaPatrolTarget(state), star = state.wantedLevel;
+  const squad = [...state.patrols].filter(unit => unit.aiState !== "WRECKED");
+  const fast = squad.filter(unit => unit.unitType === "interceptor").length;
+  const heavy = squad.filter(unit => unit.unitType === "swat").length;
+  let fastNeeded = star >= 3 ? Math.max(0, Math.min(star - 1, Math.floor(target / 2)) - fast) : 0;
+  let heavyNeeded = state.gta.config.enableSwat && star >= 4
+    ? Math.max(0, Math.min(star - 3, Math.floor(target / 3)) - heavy) : 0;
+  for (let i = 0; i < count; i++) {
+    const unitType = heavyNeeded > 0 ? "swat" : fastNeeded > 0 ? "interceptor" : "patrol";
+    const tactic = RUSH_TACTICS[(squad.length + i) % RUSH_TACTICS.length];
+    const spawned = deployGtaPatrol(world, state, tactic, unitType) ??
+      (unitType !== "patrol" ? deployGtaPatrol(world, state, tactic, "patrol") : null);
+    if (spawned?.unitType === "swat") heavyNeeded--;
+    if (spawned?.unitType === "interceptor") fastNeeded--;
+  }
+}
+
+function removeGtaPatrol(world, state, car) {
+  state.patrols.delete(car);
+  state.response?.sightedBy.delete(car);
+  state.response?.closePatrols.delete(car);
+  const index = world.actors.indexOf(car);
+  if (index >= 0) world.actors.splice(index, 1);
+}
+
+function gtaRoadblocksEnabled(state) {
+  return state.wantedLevel >= 3 && state.gta.config.enableRoadblocks && gtaPatrolTarget(state) >= 3;
+}
+
+function placeGtaRoadblock(world) {
+  const { pursuit: s, player, tick } = world, { gta } = s;
+  if (!gtaRoadblocksEnabled(s) || gta.roadblock || tick < gta.nextRoadblockTick) return;
+  gta.nextRoadblockTick = tick + ticks(1.1);
+  const needed = Math.max(0, gtaPatrolCount(s) + 2 - gtaPatrolTarget(s));
+  const spare = [...s.patrols].filter(car => !isGtaStationary(car) && !s.response.sightedBy.has(car) &&
+      distance(player, car) > gta.config.minSpawnRadius + 5)
+    .sort((a, b) => distance(player, b) - distance(player, a)).slice(0, needed);
+  if (spare.length !== needed) return;
+  const cars = [newGtaPatrol(world, s, "patrol"), newGtaPatrol(world, s,
+    gta.config.enableSwat && s.wantedLevel >= 4 ? "swat" : "patrol")];
+  const barrier = { id: `street-pursuit-${s.run}-gta-barrier-${gta.serial}`, type: "static", kind: "barrier",
+    width: 1.35, length: s.wantedLevel >= 4 ? .95 : .65, height: .75, gtaRoadblock: true };
+  const shapes = [...cars, barrier];
+  const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
+  const avenues = world.drivingRoads.filter(road => road.width >= 12 && !road.parkingBay && !road.supportApron)
+    .map(road => ({ road, align: road.axis === "x" ? sin : cos,
+      away: Math.abs(road.fixed - player[road.axis === "x" ? "z" : "x"]) }))
+    .filter(({ align, away }) => Math.abs(align) > .62 && away < 18)
+    .sort((a, b) => a.away - b.away);
+  const spacing = gta.rngSide ??= s.rng.next() < .5 ? 1 : -1;
+  for (const { road, align } of avenues) {
+    const sign = Math.sign(align);
+    if (road.flow && road.flow !== sign) continue;
+    for (let front = gta.config.minSpawnRadius + 9; front <= gta.config.minSpawnRadius + 34; front += 4) {
+      const along = player[road.axis] + sign * front;
+      if (along < road.min + 5 || along > road.max - 5) continue;
+      const center = districtRoadPose({ ...road, laneOffsetM: 0 }, along, sign);
+      Object.assign(cars[0], gtaOffset(center, 0, -spacing * 3.1), { heading: center.heading + spacing * .72 });
+      Object.assign(cars[1], gtaOffset(center, 1.9, spacing * 3.1), { heading: center.heading - spacing * .74 });
+      Object.assign(barrier, gtaOffset(center, -1.6), { heading: center.heading, roadId: road.id });
+      if (shapes.some((body, i) => distance(player, body) <= gta.config.minSpawnRadius ||
+        gtaLocal(player, body).forward <= 0 || !bodyOnRoad(body, [road]) || !isFree(world, body, .5) ||
+        shapes.slice(i + 1).some(other => overlaps(body, other, .5)))) continue;
+      const expires = tick + ticks([0, 0, 0, 14, 11, 8][s.wantedLevel]);
+      if (!registerBarrier(world, barrier, "roadblock", expires)) continue;
+      for (const old of spare) removeGtaPatrol(world, s, old);
+      for (const car of cars) {
+        Object.assign(car, { gtaRoadblock: true, aiState: "ROADBLOCK", squadRole: "ROADBLOCK", speed: 0 });
+        registerGtaPatrol(world, s, car);
+      }
+      gta.roadblock = { cars, barrier, expires };
+      gta.nextRoadblockTick = expires;
+      return;
+    }
+  }
+}
+
+function maintainGtaSquad(world) {
+  const { pursuit: s, tick, player } = world, { gta } = s;
+  for (const car of s.patrols) if (car.wreckUntilTick <= tick) removeGtaPatrol(world, s, car);
+  if (gta.roadblock?.expires <= tick) {
+    const { cars, barrier } = gta.roadblock;
+    for (const car of cars) if (car.aiState !== "WRECKED") removeGtaPatrol(world, s, car);
+    const index = world.statics.indexOf(barrier);
+    if (index >= 0) world.statics.splice(index, 1);
+    s.closures.delete(barrier);
+    releaseStreetStatics(world);
+    s.patrolMap.statics = world.statics;
+    world.staticIndex = new SpatialIndex(world.statics);
+    gta.roadblock = null;
+  }
+  for (const car of [...s.patrols]) {
+    if (isGtaStationary(car)) continue;
+    const ai = car.gtaAI;
+    ai.behindTicks = !s.response.sightedBy.has(car) && distance(car, player) > 95 && gtaLocal(player, car).forward < 0
+      ? ai.behindTicks + 1 : 0;
+    if (ai.behindTicks <= ticks(6) || tick < (ai.nextRecycle ?? 0)) continue;
+    ai.nextRecycle = tick + ticks(.75);
+    const replacement = deployGtaPatrol(world, s, "intercept", car.unitType, true);
+    if (replacement) removeGtaPatrol(world, s, car);
+  }
+  if (s.response.sightedBy.size) {
+    placeGtaRoadblock(world);
+    const deficit = gtaPatrolTarget(s) - gtaPatrolCount(s);
+    if (deficit > 0 && tick >= gta.nextDispatchTick) {
+      fillGtaPatrols(world, s, Math.min(deficit, 2));
+      gta.nextDispatchTick = tick + ticks(1.2);
+    }
+  }
+  if (tick >= gta.nextSquadTick) {
+    assignGtaSquad(s.patrols, s.response.lastSeen ?? s.playerStart);
+    gta.nextSquadTick = tick + ticks(.5);
+  }
+}
+
 /** Deploy without replacing the city or touching its ongoing trip. */
-export function beginStreetPursuit(world, level = 1, variant = "legacy") {
-  validateLevel(level);
-  if (!["legacy", "rush", "cinematic", "arcade", "pack", "hunt", "survival"].includes(variant))
+export function beginStreetPursuit(world, level = 1, variant = "legacy", config) {
+  const gtaConfig = variant === "gta" ? resolveGtaChaseConfig(config, level) : null;
+  if (gtaConfig) level = gtaConfig.wantedLevelStart;
+  else validateLevel(level);
+  if (!["legacy", "rush", "cinematic", "arcade", "pack", "hunt", "survival", "gta"].includes(variant))
     throw new Error("Unsupported street pursuit variant");
   if (world.environment !== "metro" || !world.district?.pursuitExits?.length)
     throw new Error("Street pursuit requires a metro district with pursuit exits");
+  if (gtaConfig && world.config.cityVersion !== 4)
+    throw new Error("GTA Chase requires Metro City v4");
   if (world.pursuit?.phase === "running") throw new Error("Street pursuit is already running");
   if (world.pursuit?.reviewUntilTick > world.tick) throw new Error("Let the impact review finish first");
   const { player } = world;
@@ -776,7 +959,7 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy") {
   while (occupiedIds.some((id) => id.startsWith(`street-pursuit-${run}-`))) run++;
   const rush = usesRushPace(variant);
   const arcade = isRushPack(variant), pack = isPackPursuit(variant);
-  const rng = new Random(`${world.config.seed}:street-pursuit-${arcade ? variant : rush ? "rush" : "v1"}:${world.tick}:${run}:${level}`);
+  const rng = new Random(`${world.config.seed}:street-pursuit-${gtaConfig || arcade ? variant : rush ? "rush" : "v1"}:${world.tick}:${run}:${level}`);
   const state = {
     street: true, run, level, caseId: "street", phase: "running",
     playerStart: copyPose(player), exits: world.district.pursuitExits.map((exit) => ({ ...exit })),
@@ -793,7 +976,21 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy") {
   const tactics = ["tail", "flank", "intercept", "flank", "tail", "intercept"];
   const ambientRandomState = world.rng.state;
   try {
-    if (rush) {
+    if (gtaConfig) {
+      state.variant = "gta";
+      state.response = createPursuitResponse();
+      state.patrolMap.metro = true;
+      initializeGtaPursuit(state, player, gtaConfig);
+      state.gta.fadeStars = level;
+      const count = gtaPatrolTarget(state);
+      fillGtaPatrols(world, state, Math.max(0, count - (gtaRoadblocksEnabled(state) ? 2 : 0)));
+      if (count && !state.patrols.size) throw new Error("No safe GTA patrol deployment");
+      initializeGtaDurability(player, gtaConfig.playerMaxHealth, PLAYER_VEHICLE.massKg);
+      player.maxSpeed = GTA_MAX_SPEED;
+      player.path = [];
+      player.parking = null;
+      player.cursor = 0;
+    } else if (rush) {
       const [initial, target] = (arcade ? ARCADE_WAVES : RUSH_WAVES)[level - 1];
       state.variant = variant;
       if (pack) {
@@ -849,13 +1046,20 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy") {
   } finally {
     world.rng.state = ambientRandomState;
   }
-  if (!rush) world.actors.push(...state.patrols);
+  if (!rush && !gtaConfig) world.actors.push(...state.patrols);
   world.actorIndex = new SpatialIndex(world.actors);
   world.pursuit = state;
+  if (state.gta) {
+    placeGtaRoadblock(world);
+    fillGtaPatrols(world, state, gtaPatrolTarget(state) - gtaPatrolCount(state));
+    world.actorIndex = new SpatialIndex(world.actors);
+  }
   if (state.response) {
     updatePursuitResponse(world, true);
-    for (const patrol of state.patrols) patrol.pursuitDrive.tracking = state.response.sightedBy.has(patrol);
+    if (!state.gta) for (const patrol of state.patrols)
+      patrol.pursuitDrive.tracking = state.response.sightedBy.has(patrol);
   }
+  if (state.gta) world.updateSensors(false);
   logEvent(world, "start", player);
   return state;
 }
@@ -892,6 +1096,11 @@ function cleanupStreetPursuit(world) {
     state.response.unitsInContact = 0;
   }
   if (isRushPack(state.variant)) state.wantedLevel = 0;
+  if (state.gta) {
+    world.player.maxSpeed = state.gta.normalMaxSpeed;
+    world.player.gtaSlipMps = world.player.gtaYawRate = 0;
+    state.gta.roadblock = null;
+  }
   state.reviewUntilTick = null;
   if (state.endedTick == null) {
     state.endedTick = world.tick;
@@ -976,6 +1185,7 @@ function registerBarrier(world, body, kind, removeAt = Infinity) {
     const permanent = world.statics;
     state.staticOverlay = { permanent, live: permanent.slice() };
     world.statics = state.staticOverlay.live;
+    if (state.gta) state.patrolMap.statics = world.statics;
   }
   world.statics.push(body);
   state.closures.set(body, removeAt);
@@ -1157,8 +1367,30 @@ function straightApproach(world, a, target) {
     if (!pointOnRoad(probe, world.drivingRoads, 1.2) ||
         world.statics.some((body) => overlaps(probe, body, 0.2))) return false;
   }
-  return true;
-}
+    return true;
+  }
+
+  function gtaStreetRoute(world, car, aim) {
+    return setStreetPatrolPath(world.pursuit, car, aim, null, car.gtaAI.lanes);
+  }
+
+  function gtaDirectApproach(world, car, aim, requireClearLane = false) {
+    const heading = headingTo(car, aim);
+    if (Math.abs(angleDelta(heading, car.heading)) > 1.04) return false;
+    const range = distance(car, aim);
+    if (range < .45) return false;
+    // Sight already checked the reported point for static occlusion. This
+    // shorter corridor also checks the lead/offset against drivable geometry.
+    const horizon = Math.min(range, 18);
+    const dx = Math.sin(heading) * horizon, dz = Math.cos(heading) * horizon;
+    const blockers = requireClearLane ? world.actorIndex.near(car, horizon + 4)
+      .filter(other => other !== car && other !== world.player) : [];
+    for (let i = 1; i <= 5; i++) {
+      const probe = { ...vehicleProbe(car, car.speed), x: car.x + dx * i / 5, z: car.z + dz * i / 5, heading };
+      if (!pointOnRoad(probe, world.drivingRoads, .75) || blockers.some(other => overlaps(probe, other, .14))) return false;
+    }
+    return gtaLineClear(world, car, dx, dz, horizon);
+  }
 
 function replanPolice(world, a) {
   const { player: ego, pursuit: s } = world, drive = a.pursuitDrive;
@@ -1583,6 +1815,7 @@ function streetContactPairs(moving, solid) {
 
 function resolveContacts(world, moving, solid) {
   const s = world.pursuit, pairs = s.street ? streetContactPairs(moving, solid) : [];
+  const gtaPairs = s.gta ? new Set() : null;
   if (!s.street) for (const [i, a] of moving.entries()) {
     for (const b of [...moving.slice(i + 1), ...solid]) {
       if (distance(a.a, b.a) <= a.radius + b.radius + a.travel + b.travel + 0.24)
@@ -1596,12 +1829,18 @@ function resolveContacts(world, moving, solid) {
     let hit = null;
     for (const [a, b] of pairs) {
       if (a.erased || b.erased || survivalGhostPair(world, a.a, b.a)) continue;
+      if (gtaPairs?.has(pairId(a.a, b.a))) continue;
       const found = findContact(a, b, since);
       if (found && (!hit || found.time < hit.time)) hit = found;
     }
     if (!hit) break;
     const { a, b, time, overlapAt } = hit;
     const key = pairId(a.a, b.a);
+    if (gtaPairs) {
+      gtaPairs.add(key);
+      const pa = poseAt(a, time), pb = poseAt(b, time), normal = normalAt(pa, pb);
+      applyGtaContact(world, a, b, pa, pb, normal, closingSpeed(a, b, overlapAt, normal), !s.contacts.has(key));
+    }
     if (a.a === world.player || b.a === world.player) {
       const [ego, other] = a.a === world.player ? [a, b] : [b, a];
       if (s.survival?.active?.kind === "giant" && (s.patrols.has(other.a) || s.survival.wrecks.has(other.a))) {
@@ -1693,10 +1932,22 @@ function updateClearance(world, playerMotion, bodies) {
     if (overlaps(ego, other, 0.25)) touching.add(key);
     if (s.contacts.has(key) || !overlaps(ego, other, 0.72)) continue;
     const normal = normalAt(ego, other);
-    near.add(key);
-    if (!s.near.has(key) && closingSpeed(playerMotion, body, 1, normal) > 0.6) {
+    const minDist = s.gta ? Math.max(0, (other.x - ego.x) * normal.x + (other.z - ego.z) * normal.z -
+      extent(ego, normal.x, normal.z) - extent(other, normal.x, normal.z)) : 0;
+    // A close pass can approach rapidly while the separating side gap stays
+    // constant. Test centre convergence for GTA without changing old replays.
+    const approach = s.gta ? (distance(poseAt(playerMotion, .9), poseAt(body, .9)) - distance(ego, other)) / (.1 * STEP)
+      : closingSpeed(playerMotion, body, 1, normal);
+    const entered = !s.near.has(key) && approach > .6 && (!s.gta || minDist <= .72);
+    if (!s.gta || entered || s.near.has(key)) near.add(key);
+    if (entered) {
       s.metrics.nearCollisions++;
       logEvent(world, "near", ego, other.id, world.tick + 1);
+      if (s.gta) emitGtaEvent(world, "near_miss", {
+        actorKind: body.a.aiState === "WRECKED" ? "wrecked" : body.a.unitType ??
+          (other.gtaRoadblock ? "roadblock" : other.kind ?? other.type),
+        minDist,
+      });
     }
   }
   // Non-ego latches clear only after the actual pair separates.
@@ -1716,9 +1967,13 @@ function motionPlan(world, actor, action, streetHooks) {
   else {
     const pack = isPackPursuit(world.pursuit.variant);
     const survival = world.pursuit.survival;
-    if (survival?.wrecks.has(actor)) return { a: actor, next: actor, command: { steer: 0, targetSpeed: 0 },
+    const gta = world.pursuit.gta && (actor === world.player || world.pursuit.patrols.has(actor));
+    if (survival?.wrecks.has(actor) || (gta && isGtaStationary(actor))) return { a: actor, next: actor,
+      command: { steer: 0, targetSpeed: 0 },
       guard, travel: 0, radius: shapeRadius(actor), stop: 0, hit: null };
     command = actor === world.player ? (pack ? packCommand : pursuitCommand)(actor, action, STEP) :
+      gta ? gtaPatrolCommand(world, actor, gtaStreetRoute, gtaDirectApproach,
+        gtaSpacingSteer(actor, world.pursuit.patrols)) :
       !streetHooks || world.pursuit.patrols.has(actor) ? npcCommand(world, actor) : null;
     if (survival && actor === world.player && world.mode === "manual") command.arcadeDrift = true;
     if (streetHooks) command = streetHooks.vehicleCommand(actor, command);
@@ -1728,12 +1983,14 @@ function motionPlan(world, actor, action, streetHooks) {
       id: actor.id, kind: actor.kind, y: actor.y, supportHeightM: actor.supportHeightM,
     }) : null;
     next = integrateVehicle(actor, command, STEP, pose);
+    if (gta) integrateGtaSlip(actor, next);
     next.reason = command.reason ?? "driving";
     next.blockedBy = command.blockedBy ?? null;
     const roads = streetHooks || actor === world.player ? world.roads : world.drivingRoads;
     if (travel(actor, next) > 0 && !sweepSafe(actor, next, [], roads).safe) {
       guard = "road-boundary";
-      next = { ...actor, speed: 0, steer: next.steer, reason: guard, blockedBy: null };
+      next = { ...actor, speed: 0, steer: next.steer, reason: guard, blockedBy: null,
+        ...(gta ? { gtaSlipMps: 0, gtaYawRate: 0 } : {}) };
     }
   }
   return { a: actor, next, command, guard, travel: travel(actor, next), radius: shapeRadius(actor), stop: 1, hit: null };
@@ -1767,6 +2024,10 @@ function updatePhase(world, moved, playerHit) {
   if (r) {
     const event = updatePursuitResponse(world);
     if (event) logEvent(world, event, r.lastSeen ?? s.playerStart);
+  }
+  if (s.gta) {
+    updateGtaPhase(world);
+    return;
   }
   if (isPackPursuit(s.variant)) {
     const nearSectors = new Set();
@@ -1816,8 +2077,13 @@ export function stepPursuit(world, action, streetHooks = null) {
       typeof streetHooks?.pedestrianMotion !== "function")
     throw new TypeError("Street pursuit requires city vehicleCommand and pedestrianMotion hooks");
   s.startedTick ??= world.tick;
+  if (s.gta) {
+    s.stepEvents.length = 0;
+    s.gta.eventTick = world.tick + 1;
+    maintainGtaSquad(world);
+  }
   if (s.survival) updateSurvivalBeforeMotion(world);
-  updateEvents(world);
+  if (!s.gta) updateEvents(world);
   world.actorIndex = new SpatialIndex(world.actors);
   for (const a of world.actors) a.previous = copyPose(a);
   const plans = world.actors.map((a) => motionPlan(world, a, requested, streetHooks));
@@ -1860,17 +2126,25 @@ export function stepPursuit(world, action, streetHooks = null) {
     const a = p.a, accepted = poseAt(p, 1);
     const next = usesRushPace(s.variant) && p.a !== accepted ? accepted : { ...accepted };
     const acceptedDistance = distance(a, next);
-    if (p.hit) Object.assign(next, { speed: 0, reason: "contact", blockedBy: p.hit });
+    const gtaBody = s.gta && (a === player || s.patrols.has(a));
+    if (p.hit) Object.assign(next, { ...(gtaBody ? p.impulse : { speed: 0 }), reason: "contact", blockedBy: p.hit });
+    if (gtaBody) {
+      next.health = a.health;
+      next.aiState = a.aiState;
+      if (a.aiState === "WRECKED") Object.assign(next, { path: a.path, cursor: 0,
+        wreckUntilTick: a.wreckUntilTick, speed: 0, gtaSlipMps: 0, gtaYawRate: 0, reason: "WRECKED" });
+    }
     if (a.type === "pedestrian") {
       next.accelerationMps2 = (next.speed - a.speed) / STEP;
       next.motionTimeS = (world.tick + 1) * STEP;
     } else if (!s.street) {
       next.y = next.supportHeightM = heightOnSupport(s, next);
     }
-    if (s.street && a.type === "vehicle") {
+    if (s.gta && a === player && world.mode === "manual") next.districtSources = null;
+    else if (s.street && a.type === "vehicle") {
       const sources = p.command.districtSources ?? a.districtSources;
       if (sources) next.districtSources = p.hit || p.guard !== "clear"
-        ? { ...sources, finalMps: 0, appliedSource: "physical-guard" }
+        ? { ...sources, finalMps: gtaBody ? Math.abs(next.speed) : 0, appliedSource: "physical-guard" }
         : sources;
     }
     if (a === player) {
@@ -1897,6 +2171,7 @@ export function stepPursuit(world, action, streetHooks = null) {
       distance: a.distance + acceptedDistance,
       wait: acceptedDistance < 0.001 ? a.wait + STEP : 0,
     });
+    if (gtaBody && a !== player) trackGtaPatrolProgress(world, a, p.command, acceptedDistance);
   }
   world.tick++;
   world.metrics.distance += moved;
@@ -1940,6 +2215,11 @@ export function pursuitSnapshot(world) {
     action: s.action ? { ...s.action } : null,
     decision: boundedDecision(s.decision), exits: s.exits.map((e) => ({ ...e })),
     ...(usesRushPace(s.variant) ? { variant: s.variant, targetPatrols: s.targetPatrols } : {}),
+    ...(s.gta ? { variant: "gta", wantedLevel: s.wantedLevel, gta: {
+      playerHealth: world.player.health, playerMaxHealth: world.player.maxHealth,
+      activePatrols: [...s.patrols].filter(unit => unit.aiState !== "WRECKED").length,
+      pinnedRatio: s.gta.pinnedTicks * STEP / GTA_PIN_SECONDS,
+    } } : {}),
     ...(isRushPack(s.variant) ? { wantedLevel: s.wantedLevel, learning: s.learner?.snapshot() ?? null } : {}),
     ...(isPackPursuit(s.variant) ? { pack: true, packLab: s.packLab === true, driver: s.driver,
       review: s.reviewUntilTick > world.tick } : {}),

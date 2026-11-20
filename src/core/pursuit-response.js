@@ -5,6 +5,8 @@ import { isCityHunt } from "./pursuit-survival.js";
 const CONTACT_RANGE_M = 52, ARCADE_CONTACT_RANGE_M = 60;
 const FORWARD_CONE_COS = Math.cos(100 * Math.PI / 180);
 const CLOSE_RANGE_M = 7.2;
+const GTA_RANGE_M = 65, GTA_PROXIMITY_M = 14, GTA_CLOSE_M = 7.5;
+const GTA_FORWARD_COS = Math.cos(55 * Math.PI / 180);
 const SEPARATION_M = 24;
 const SEARCH_TICKS = Math.round(2.5 / STEP);
 const CLEAR_TICKS = Math.round(4.5 / STEP);
@@ -56,6 +58,8 @@ function unobstructed(world, from, dx, dz, range) {
   });
 }
 
+export const gtaLineClear = unobstructed;
+
 export function createPursuitResponse() {
   return {
     stage: "search", pressure: 0, clearProgress: 0, unitsInContact: 0,
@@ -68,20 +72,24 @@ export function createPursuitResponse() {
 export function updatePursuitResponse(world, initial = false) {
   const { player, pursuit, tick } = world;
   const r = pursuit.response;
+  const gta = pursuit.variant === "gta";
   const hunt = isCityHunt(pursuit.variant) && pursuit.street;
   const arcade = pursuit.variant === "arcade" || pursuit.variant === "pack" || isCityHunt(pursuit.variant);
-  const contactRange = arcade ? ARCADE_CONTACT_RANGE_M : CONTACT_RANGE_M;
+  const contactRange = gta ? GTA_RANGE_M : arcade ? ARCADE_CONTACT_RANGE_M : CONTACT_RANGE_M;
   const before = r.stage;
   r.sightedBy.clear();
   r.closePatrols.clear();
   let nearest = contactRange;
   for (const unit of pursuit.patrols) {
+    if (gta && unit.aiState === "WRECKED") continue;
     const dx = player.x - unit.x, dz = player.z - unit.z;
     const range = Math.hypot(dx, dz);
     if (range > contactRange) continue;
-    const close = range < CLOSE_RANGE_M;
+    const close = range < (gta ? GTA_CLOSE_M : CLOSE_RANGE_M);
     const ahead = dx * Math.sin(unit.heading) + dz * Math.cos(unit.heading);
-    if ((!arcade && !close && ahead < range * FORWARD_CONE_COS) ||
+    const outsideCone = gta ? range > GTA_PROXIMITY_M && ahead < range * GTA_FORWARD_COS
+      : !arcade && !close && ahead < range * FORWARD_CONE_COS;
+    if (outsideCone ||
         !unobstructed(world, unit, dx, dz, range)) continue;
     if (close) r.closePatrols.add(unit);
     r.sightedBy.add(unit);
@@ -100,6 +108,7 @@ export function updatePursuitResponse(world, initial = false) {
     return !initial && before !== "contact" ? "reacquired" : null;
   }
   r.lostAtTick ??= tick;
+  if (gta) return before === "contact" ? "contact-lost" : null;
   if (hunt) {
     const report = r.lastSeen ?? pursuit.playerStart;
     const separated = pursuit.metrics.distanceM >= 14 && distance(player, report) >= 18 &&

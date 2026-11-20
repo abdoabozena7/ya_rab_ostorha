@@ -157,7 +157,7 @@ function fitPatrolKit(kit, source, actorRoot, actor, style) {
       bounds.max.y + barHeight + lensHeight * 0.5, barZ);
   }
 
-  if (kit.livery) {
+  if (kit.livery && !actor.unitType) {
     kit.stripe.visible = false;
     return true;
   }
@@ -215,6 +215,11 @@ export function createPursuitView(scene, world) {
     closure: matte(0x8e552f),
     reflector: new THREE.MeshBasicMaterial({ color: 0xf3cb8b, side: THREE.DoubleSide }),
     contact: new THREE.MeshBasicMaterial({ color: 0xe89680, depthWrite: false }),
+    gtaPatrol: matte(0xe4f0ff),
+    gtaInterceptor: matte(0x58c9ff),
+    gtaSwat: matte(0x82985a),
+    gtaRoadblock: matte(0xf0af32),
+    gtaWrecked: matte(0x302b28),
   };
   const patrols = new Map(), barriers = new Map(), shoulders = new Map(), activePolice = new Map();
   const patrolShells = new Map();
@@ -332,7 +337,8 @@ export function createPursuitView(scene, world) {
       if (!root) {
         root = new THREE.Group();
         root.name = `pursuit-barrier:${site.id}`;
-        const shell = new THREE.Mesh(box, paints.closure);
+        root.userData.gtaRoadblock = Boolean(site.gtaRoadblock);
+        const shell = new THREE.Mesh(box, site.gtaRoadblock ? paints.gtaRoadblock : paints.closure);
         shell.castShadow = shell.receiveShadow = true;
         root.add(shell, new THREE.Mesh(warningStripes, paints.reflector));
         layer.add(root);
@@ -406,7 +412,17 @@ export function createPursuitView(scene, world) {
       }
       if (!kit.fitted) continue;
       const dim = actor.pursuitWreck || !running || current.tick % LIGHTBAR_HOLD_TICKS < 5;
-      const lenses = current.pursuit?.survival && !dim ? rushPalette()[phase ^ kit.bank]
+      const gtaAppearance = current.pursuit?.gta ? (actor.aiState === "WRECKED" ? "wrecked"
+        : actor.aiState === "ROADBLOCK" ? "roadblock" : actor.unitType) : null;
+      if (root.userData.gtaAppearance !== gtaAppearance) {
+        root.userData.gtaAppearance = gtaAppearance;
+        const paint = gtaAppearance ? paints[`gta${gtaAppearance[0].toUpperCase()}${gtaAppearance.slice(1)}`] : null;
+        kit.housing.material = paint ?? paints.casing;
+        kit.stripe.material = paint ?? paints.trim;
+      }
+      const lenses = gtaAppearance === "wrecked" ? [paints.gtaWrecked, paints.gtaWrecked]
+        : gtaAppearance === "roadblock" ? [paints.gtaRoadblock, paints.gtaRoadblock]
+        : current.pursuit?.survival && !dim ? rushPalette()[phase ^ kit.bank]
         : cinematic ? cinematicPalette()[dim ? 2 : phase ^ kit.bank]
         : rush ? rushPalette()[phase ^ kit.bank] : staticLenses;
       if (kit.lenses[0].material !== lenses[0])

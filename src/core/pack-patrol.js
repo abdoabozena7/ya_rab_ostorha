@@ -1,5 +1,6 @@
 import { STEP, clamp } from "./config.js";
 import { angleDelta } from "./geometry.js";
+import { gtaLocal, isGtaStationary } from "./pursuit-gta.js";
 
 // Each unit keeps a bearing and a staging offset in the reported SUV's frame.
 // The first four go to different sides; backups fill the arcs between them.
@@ -104,4 +105,44 @@ export function packRamAim({ car, report, order, tick, startedTick }) {
     return { x: point.x, z: point.z, heading, speed };
   }
   return null;
+}
+
+export function assignGtaSquad(patrols, report) {
+  const slots = [...patrols].filter(unit => !isGtaStationary(unit)).map(unit => ({
+    unit, ...gtaLocal(report, unit), previousRole: unit.squadRole, previousSide: unit.squadSide,
+  }));
+  for (const { unit } of slots) {
+    unit.squadRole = "SUPPORT";
+    unit.squadSide = 0;
+  }
+  const assign = (role, side, forward, right, typeBias) => {
+    const score = slot => Math.hypot((slot.forward - forward) * .85, slot.right - right) +
+      typeBias(slot.unit.unitType) - (slot.previousRole === role && slot.previousSide === side ? 1.5 : 0);
+    slots.sort((a, b) => score(a) - score(b) || a.unit.gtaAI.order - b.unit.gtaAI.order);
+    const chosen = slots.shift()?.unit;
+    if (chosen) {
+      chosen.squadRole = role;
+      chosen.squadSide = side;
+    }
+  };
+  const count = slots.length;
+  assign("PRIMARY_CHASER", 0, -9, 0, type => type === "swat" ? 9 : 0);
+  const fast = type => type === "interceptor" ? -8 : type === "swat" ? 4 : 0;
+  if (count >= 4) assign("INTERCEPTOR", 1, 17, 3, fast);
+  if (count >= 6) assign("INTERCEPTOR", -1, 21, -3, fast);
+  assign("FLANKER", -1, 0, -7, type => type === "swat" ? 5 : 0);
+  assign("FLANKER", 1, 0, 7, type => type === "swat" ? 5 : 0);
+}
+
+export function gtaSpacingSteer(car, patrols) {
+  let bias = 0;
+  for (const other of patrols) {
+    if (other === car || isGtaStationary(other)) continue;
+    const { forward, right } = gtaLocal(car, other);
+    const distance = Math.hypot(forward, right);
+    if (Math.abs(right) > 4.8 || distance > 9) continue;
+    const side = Math.abs(right) > .25 ? Math.sign(right) : car.gtaAI.order < other.gtaAI.order ? 1 : -1;
+    bias -= side * .14 * (1 - distance / 9);
+  }
+  return clamp(bias, -.19, .19);
 }
