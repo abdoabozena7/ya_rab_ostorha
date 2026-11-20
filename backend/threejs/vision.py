@@ -419,7 +419,9 @@ class VisionService:
         with self._lifecycle:
             with self._lock:
                 if self._model_ready and self._runtime is not None and self._runtime.alive:
-                    return self.snapshot(self._stream)
+                    # Starting a client acknowledges the warm worker, not a frame
+                    # from a previous (possibly stale) camera stream.
+                    return _envelope("ready", True, self._model)
             self.close()
             with self._lock:
                 self._status = "loading"

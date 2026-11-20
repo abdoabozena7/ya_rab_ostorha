@@ -502,7 +502,8 @@ try {
         freshRenderedFrames: freshFrames, hiddenFreshFrames,
         visibility: document.visibilityState,
         passed: fps >= 25 && ticks >= 45 && p95 <= 100 && last.width === 1365 && last.height === 900
-          && last.pixelRatio === 1 && config.traffic === 28 && config.pedestrians === 32
+          && last.pixelRatio === 1 && config.traffic === (config.cityVersion === 3 ? 36 : 28)
+          && config.pedestrians === (config.cityVersion === 3 ? 48 : 32)
           && result?.frameId > firstModelFrame && freshFrames > 0 && hiddenFreshFrames === 0 };
     });
     assert.ok(report.runtime.passed, JSON.stringify(report.runtime));

@@ -2,10 +2,63 @@ import { STEP, VEHICLE, clamp } from "./config.js";
 import { angleDelta, corners, distance, interpolate, overlaps } from "./geometry.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 const approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
-export function integrateVehicle(body, command, dt) {
+const fixedPathGeometry = new WeakMap();
+const immutablePaths = new WeakSet();
+
+export function hasImmutablePathPoints(path) {
+  if (immutablePaths.has(path)) return true;
+  if (!Object.isFrozen(path)) return false;
+  // A frozen array can still contain mutable points or accessor properties.
+  for (let i = 0; i < path.length; i++) {
+    const entry = Object.getOwnPropertyDescriptor(path, i);
+    if (!entry || !Object.hasOwn(entry, "value") || !Object.isFrozen(entry.value))
+      return false;
+    const x = Object.getOwnPropertyDescriptor(entry.value, "x");
+    const z = Object.getOwnPropertyDescriptor(entry.value, "z");
+    if (typeof x?.value !== "number" || typeof z?.value !== "number") return false;
+  }
+  immutablePaths.add(path);
+  return true;
+}
+
+function immutablePathGeometry(path) {
+  const cached = fixedPathGeometry.get(path);
+  if (cached) return cached;
+  if (!hasImmutablePathPoints(path)) return null;
+  const lengths = new Float64Array(path.length - 1);
+  const headings = new Float64Array(lengths.length);
+  const bends = new Float64Array(lengths.length);
+  const upcoming = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    const dx = path[i + 1].x - path[i].x, dz = path[i + 1].z - path[i].z;
+    lengths[i] = Math.hypot(dx, dz);
+    headings[i] = Math.atan2(dx, dz);
+  }
+  for (let i = 1; i < path.length - 1; i++)
+    bends[i] = Math.abs(angleDelta(headings[i], headings[i - 1])) / Math.max(.1, lengths[i - 1]);
+  const geometry = { lengths, bends, upcoming };
+  fixedPathGeometry.set(path, geometry);
+  return geometry;
+}
+// A probe needs the plant inputs and footprint, not its actor's whole route
+// and history. A caller can advance this private pose in place.
+export function vehicleProbe(body, speed) {
+  return { x: body.x, z: body.z, heading: body.heading, speed, steer: body.steer,
+    maxSpeed: body.maxSpeed, spec: body.spec, type: body.type,
+    length: body.length, width: body.width, radius: body.radius,
+    ...(body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {}) };
+}
+
+export function integrateVehicle(body, command, dt, out = null) {
   if (!Number.isFinite(dt) || dt < 0)
     throw new RangeError("Vehicle integration needs a nonnegative step");
-  const spec = { ...VEHICLE, ...body.spec };
+  const spec = body.spec == null ? VEHICLE : { ...VEHICLE, ...body.spec };
+  const explicitDeceleration = Object.prototype.hasOwnProperty.call(command, "decelerationMps2");
+  if (explicitDeceleration && (!Number.isFinite(spec.braking) || spec.braking <= 0 ||
+      !Number.isFinite(command.decelerationMps2) ||
+      command.decelerationMps2 <= 0 || command.decelerationMps2 > spec.braking))
+    throw new RangeError("Explicit vehicle deceleration must be finite, positive and at most spec.braking");
+  const braking = explicitDeceleration ? command.decelerationMps2 : spec.braking;
   const steer = approach(
     body.steer ?? 0,
     clamp(Number.isFinite(command.steer) ? command.steer : 0, -spec.maxSteer, spec.maxSteer),
@@ -22,20 +75,25 @@ export function integrateVehicle(body, command, dt) {
   const speed = approach(
     body.speed ?? 0,
     target,
-    (slowing ? spec.braking : spec.acceleration) * dt,
+    (slowing ? braking : spec.acceleration) * dt,
   );
   const average = (speed + (body.speed ?? 0)) / 2;
-  const beta = Math.atan(0.5 * Math.tan(steer));
-  const yawRate = (average / spec.wheelbase) * Math.cos(beta) * Math.tan(steer);
-  const middle = body.heading + (yawRate * dt) / 2 + beta;
-  return {
-    ...body,
-    x: body.x + Math.sin(middle) * average * dt,
-    z: body.z + Math.cos(middle) * average * dt,
-    heading: body.heading + yawRate * dt,
-    steer,
-    speed,
-  };
+  const tangent = Math.tan(steer);
+  const beta = Math.atan(0.5 * tangent);
+  const yawRate = (average / spec.wheelbase) * Math.cos(beta) * tangent;
+  const drift = command.arcadeDrift === true && average > 0;
+  const slip = drift
+    ? (body.arcadeSlip ?? 0) + (clamp(-yawRate * speed * .036, -.32, .32) - (body.arcadeSlip ?? 0)) * (1 - Math.exp(-7 * dt))
+    : 0;
+  const middle = body.heading + (yawRate * dt) / 2 + beta + slip;
+  const result = out ?? { ...body };
+  result.x = body.x + Math.sin(middle) * average * dt;
+  result.z = body.z + Math.cos(middle) * average * dt;
+  result.heading = body.heading + yawRate * dt;
+  result.steer = steer;
+  result.speed = speed;
+  if (drift || body.arcadeSlip !== undefined) result.arcadeSlip = slip;
+  return result;
 }
 
 /** Actual zero-gap contact is separate from the ordinary 0.12 m safety guard. */
@@ -106,34 +164,39 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
     proposedTravelM: distance(before, proposed),
   };
 }
-export function followPath(body, path, cursor = 0, steeringOnly = false) {
-  if (path.length < 2)
-    return { steer: 0, targetSpeed: 0, cursor, remaining: 0 };
-  const wheelbase = body.spec?.wheelbase ?? VEHICLE.wheelbase;
-  // Pure pursuit is derived at the rear axle, while the simulated pose is the
-  // body centre. Using the centre here steers early and cuts the inner curb.
-  const rear = {
-    x: body.x - (Math.sin(body.heading) * wheelbase) / 2,
-    z: body.z - (Math.cos(body.heading) * wheelbase) / 2,
-  };
-  let nearest = cursor,
+// Axis differences only reject points that cannot beat the current minimum.
+// The winner and ties still use the original hypot and first-sample order.
+export function nearestPathPoint(path, x, z, cursor, fallback = cursor) {
+  const end = Math.min(path.length, cursor + 18);
+  let nearest = fallback,
     best = Infinity;
-  for (
-    let i = Math.max(0, cursor - 2);
-    i < Math.min(path.length, cursor + 18);
-    i++
-  ) {
-    const d = Math.hypot(path[i].x - rear.x, path[i].z - rear.z);
+  for (let i = Math.max(0, cursor - 2); i < end; i++) {
+    const dx = path[i].x - x, dz = path[i].z - z;
+    if (Math.abs(dx) > best || Math.abs(dz) > best) continue;
+    const d = Math.hypot(dx, dz);
     if (d < best) {
       nearest = i;
       best = d;
     }
   }
+  return nearest;
+}
+
+export function followPath(body, path, cursor = 0, steeringOnly = false) {
+  if (path.length < 2)
+    return { steer: 0, targetSpeed: 0, cursor, remaining: 0 };
+  const wheelbase = body.spec?.wheelbase ?? VEHICLE.wheelbase;
+  const fixed = immutablePathGeometry(path);
+  // Pure pursuit is derived at the rear axle, while the simulated pose is the
+  // body centre. Using the centre here steers early and cuts the inner curb.
+  const x = body.x - (Math.sin(body.heading) * wheelbase) / 2;
+  const z = body.z - (Math.cos(body.heading) * wheelbase) / 2;
+  const nearest = nearestPathPoint(path, x, z, cursor);
   let target = nearest,
     length = 0;
   const lookahead = 2 + Math.abs(body.speed ?? 0) * 0.18;
   while (target < path.length - 1 && length < lookahead) {
-    length += Math.hypot(
+    length += fixed ? fixed.lengths[target] : Math.hypot(
       path[target + 1].x - path[target].x,
       path[target + 1].z - path[target].z,
     );
@@ -141,12 +204,12 @@ export function followPath(body, path, cursor = 0, steeringOnly = false) {
   }
   const point = path[target];
   const alpha = angleDelta(
-    Math.atan2(point.x - rear.x, point.z - rear.z),
+    Math.atan2(point.x - x, point.z - z),
     body.heading,
   );
   const actualDistance = Math.max(
     1,
-    Math.hypot(point.x - rear.x, point.z - rear.z),
+    Math.hypot(point.x - x, point.z - z),
   );
   const steer = Math.atan2(2 * wheelbase * Math.sin(alpha), actualDistance);
   if (steeringOnly) return { steer, cursor: nearest };
@@ -154,33 +217,39 @@ export function followPath(body, path, cursor = 0, steeringOnly = false) {
     path[nearest].x - body.x,
     path[nearest].z - body.z,
   );
-  for (let i = nearest; i < path.length - 1; i++)
-    remaining += Math.hypot(
+  // Do not subtract prefixes: adding the same segments to this live first
+  // distance in order preserves even its last bits.
+  if (fixed) {
+    const lengths = fixed.lengths;
+    for (let i = nearest; i < lengths.length; i++) remaining += lengths[i];
+  } else {
+    for (let i = nearest; i < path.length - 1; i++) remaining += Math.hypot(
       path[i + 1].x - path[i].x,
       path[i + 1].z - path[i].z,
     );
+  }
   const curvature = Math.abs(Math.tan(steer) / VEHICLE.wheelbase);
   const curveSpeed = Math.sqrt(2.5 / Math.max(0.008, curvature));
-  let upcomingSpeed = body.maxSpeed,
-    along = 0;
-  for (let i = nearest + 1; i < path.length - 1 && along < 14; i++) {
-    const a = path[i - 1],
-      b = path[i],
-      c = path[i + 1];
-    const segment = Math.hypot(b.x - a.x, b.z - a.z);
-    along += segment;
-    const bend =
-      Math.abs(
-        angleDelta(
+  let upcomingSpeed = fixed?.upcoming[nearest];
+  if (upcomingSpeed === undefined) {
+    upcomingSpeed = Infinity;
+    let along = 0;
+    for (let i = nearest + 1; i < path.length - 1 && along < 14; i++) {
+      const a = path[i - 1], b = path[i], c = path[i + 1];
+      const segment = fixed ? fixed.lengths[i - 1] : Math.hypot(b.x - a.x, b.z - a.z);
+      along += segment;
+      const bend = fixed ? fixed.bends[i] :
+        Math.abs(angleDelta(
           Math.atan2(c.x - b.x, c.z - b.z),
           Math.atan2(b.x - a.x, b.z - a.z),
-        ),
-      ) / Math.max(0.1, segment);
-    if (bend > 0.03)
-      upcomingSpeed = Math.min(
-        upcomingSpeed,
-        Math.sqrt(2.1 / bend + 2 * 2.5 * Math.max(0, along - 2)),
-      );
+        )) / Math.max(0.1, segment);
+      if (bend > 0.03)
+        upcomingSpeed = Math.min(
+          upcomingSpeed,
+          Math.sqrt(2.1 / bend + 2 * 2.5 * Math.max(0, along - 2)),
+        );
+    }
+    if (fixed) fixed.upcoming[nearest] = upcomingSpeed;
   }
   return {
     steer,

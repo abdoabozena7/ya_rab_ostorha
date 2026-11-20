@@ -21,25 +21,43 @@ PHASE_SECONDS = 7200.
 SCOPE = 'EGYPT_NATIVE_VALIDATION_V1'
 DEVELOPMENT_EXTENSION_ID = 'EGYPT_DEVELOPMENT_20261027'
 DEVELOPMENT_EXTENSION_SECONDS = 7200.
+DIAGNOSTIC_EXTENSION_ID = 'EGYPT_DIAGNOSTIC_20261029T091733Z_ef402517'
+DIAGNOSTIC_EXTENSION_SECONDS = 3600.
+DIAGNOSTIC_EXTENSIONS = {
+    DIAGNOSTIC_EXTENSION_ID: DIAGNOSTIC_EXTENSION_SECONDS,
+    'EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28': 10800.,
+}
 BROWSER_SECONDS = 480.
 DEVELOPMENT_RESERVE_SECONDS = PHASE_SECONDS + BROWSER_SECONDS
 
 
 def effective_caps(extensions):
-    """Only the separately authorized development extension changes the cap."""
+    """Only explicitly authorized, immutable extensions change the cap."""
     if not isinstance(extensions, list):
         raise ValueError('Egypt allowance extensions must be an explicit list')
+    authorized = {DEVELOPMENT_EXTENSION_ID: ('DEVELOPMENT', DEVELOPMENT_EXTENSION_SECONDS),
+                  **{key: ('DIAGNOSTIC', seconds) for key, seconds in DIAGNOSTIC_EXTENSIONS.items()}}
     seen = set()
     for entry in extensions:
-        if (not isinstance(entry, dict) or entry.get('id') != DEVELOPMENT_EXTENSION_ID
-                or entry.get('id') in seen or entry.get('phase') != 'DEVELOPMENT'
+        if (not isinstance(entry, dict) or not isinstance(entry.get('id'), str)
+                or entry['id'] not in authorized or entry['id'] in seen
+                or entry.get('phase') != authorized[entry['id']][0]
                 or type(entry.get('seconds')) not in (int, float)
-                or entry['seconds'] != DEVELOPMENT_EXTENSION_SECONDS):
+                or entry['seconds'] != authorized[entry['id']][1]):
             raise ValueError('Unknown, duplicate or invalid Egypt development authorization')
         seen.add(entry['id'])
-    development = PHASE_SECONDS + len(seen) * DEVELOPMENT_EXTENSION_SECONDS
+    development = PHASE_SECONDS + sum(authorized[key][1] for key in seen)
     return {'cap_s': development + PHASE_SECONDS, 'development_cap_s': development,
             'acceptance_cap_s': PHASE_SECONDS}
+
+
+def extension_schema(db):
+    db.execute('CREATE TABLE IF NOT EXISTS extensions (id TEXT PRIMARY KEY, phase TEXT NOT NULL, '
+               'seconds REAL NOT NULL, created_at_utc TEXT NOT NULL, prior_ledger_sha256 TEXT NOT NULL)')
+    for operation in ('UPDATE', 'DELETE'):
+        db.execute(f'CREATE TRIGGER IF NOT EXISTS immutable_extensions_{operation.lower()} '
+                   f'BEFORE {operation} ON extensions BEGIN '
+                   "SELECT RAISE(ABORT, 'Egypt authorization records are immutable'); END")
 
 
 def save_json(path, value):
@@ -190,15 +208,39 @@ class EgyptBudget:
             rows = [dict(row) for row in db.execute('SELECT * FROM reservations ORDER BY started')]
             exists = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='extensions'").fetchone()
             extensions = [dict(row) for row in db.execute('SELECT * FROM extensions ORDER BY created_at_utc')] if exists else []
+            diagnostic = [row for row in extensions if row['phase'] == 'DIAGNOSTIC']
+            usage = []
+            if diagnostic:
+                for entry in diagnostic:
+                    provenance = db.execute('SELECT provenance_json,provenance_sha256 FROM diagnostic_authorizations '
+                                            'WHERE id=?', (entry['id'],)).fetchone()
+                    if (provenance is None or hashlib.sha256(provenance['provenance_json'].encode('utf8')).hexdigest()
+                            != provenance['provenance_sha256']):
+                        raise ValueError('Diagnostic authorization provenance is missing or changed')
+                usage = [dict(row) for row in db.execute('SELECT * FROM diagnostic_usage')]
         caps = effective_caps(extensions)
+        reservations = {row['id']: row for row in rows}
+        for item in usage:
+            reservation = reservations.get(item['reservation_id'])
+            if (reservation is None or reservation['phase'] != 'DEVELOPMENT'
+                    or any(type(item[key]) not in (int, float) or not math.isfinite(item[key]) or item[key] < 0
+                           for key in ('original_headroom_s', 'charged_s'))
+                    or not math.isclose(item['charged_s'], max(0., reservation['charged_s'] - item['original_headroom_s']),
+                                        rel_tol=0., abs_tol=1e-8)):
+                raise ValueError('Diagnostic-only funding does not match its reservation charge')
         charged = {phase: sum(row['charged_s'] for row in rows if row['phase'] == phase)
                    for phase in ('DEVELOPMENT', 'ACCEPTANCE')}
         development_remaining = max(0., caps['development_cap_s'] - charged['DEVELOPMENT'])
+        diagnostic_used = sum(row['charged_s'] for row in usage)
+        diagnostic_extension_remaining = max(0., sum(row['seconds'] for row in diagnostic) - diagnostic_used)
         return {'kind': SCOPE, 'authorized': True, 'path': str(self.directory), **caps,
                 'base_cap_s': CAP_SECONDS, 'extensions': extensions,
                 'charged_s': sum(charged.values()), 'remaining_s': max(0., caps['cap_s'] - sum(charged.values())),
                 'development_remaining_s': development_remaining,
                 'diagnostic_remaining_s': max(0., development_remaining - DEVELOPMENT_RESERVE_SECONDS),
+                'diagnostic_extension_remaining_s': diagnostic_extension_remaining,
+                'diagnostic_extension_charged_s': diagnostic_used,
+                'non_diagnostic_development_remaining_s': max(0., development_remaining - diagnostic_extension_remaining),
                 'protected_development_matrix_s': PHASE_SECONDS, 'protected_browser_s': BROWSER_SECONDS,
                 'acceptance_remaining_s': max(0., PHASE_SECONDS - charged['ACCEPTANCE']),
                 'unfinished': sum(row['outcome'] == 'RUNNING' for row in rows),
@@ -214,16 +256,57 @@ class EgyptBudget:
             raise ValueError('Finalize native ownership before recording the development extension')
         with closing(self.connect()) as db:
             db.execute('BEGIN IMMEDIATE')
-            db.execute('CREATE TABLE IF NOT EXISTS extensions (id TEXT PRIMARY KEY, phase TEXT NOT NULL, '
-                       'seconds REAL NOT NULL, created_at_utc TEXT NOT NULL, prior_ledger_sha256 TEXT NOT NULL)')
-            for operation in ('UPDATE', 'DELETE'):
-                db.execute(f'CREATE TRIGGER IF NOT EXISTS immutable_extensions_{operation.lower()} '
-                           f'BEFORE {operation} ON extensions BEGIN '
-                           "SELECT RAISE(ABORT, 'Egypt authorization records are immutable'); END")
+            extension_schema(db)
             if db.execute('SELECT 1 FROM extensions WHERE id=?', (authorization_id,)).fetchone():
                 return False
             db.execute('INSERT INTO extensions VALUES (?,?,?,?,?)', (authorization_id, 'DEVELOPMENT',
                        DEVELOPMENT_EXTENSION_SECONDS, datetime.now(timezone.utc).isoformat(), before['sha256']))
+            db.commit()
+        return True
+
+    def extend_diagnostic(self, authorization_id, authorization_file):
+        seconds = DIAGNOSTIC_EXTENSIONS.get(authorization_id)
+        effective_caps([{'id': authorization_id, 'phase': 'DIAGNOSTIC',
+                         'seconds': seconds}])
+        raw = Path(authorization_file).read_bytes()
+        provenance = raw.decode('utf8')
+        data = json.loads(provenance)
+        if (not isinstance(data, dict) or data.get('authorization_id') != authorization_id
+                or type(data.get('maximum_additional_diagnostic_seconds')) not in (int, float)
+                or data['maximum_additional_diagnostic_seconds'] != seconds
+                or data.get('protected_development_matrix_seconds') != PHASE_SECONDS
+                or data.get('protected_browser_seconds') != BROWSER_SECONDS
+                or data.get('protected_one_shot_acceptance_seconds') != PHASE_SECONDS
+                or not isinstance(data.get('exact_authorization_text'), str)
+                or not data['exact_authorization_text'].strip()
+                or not isinstance(data.get('message_timestamp'), str) or not data['message_timestamp'].strip()
+                or data.get('origin') != 'USER_STATED_CURRENT_MESSAGE'):
+            raise ValueError('Exact diagnostic authorization, message provenance and protected windows are required')
+        digest = hashlib.sha256(raw).hexdigest()
+        before = self.status()
+        if before['unfinished'] or ownership_status()['reserved']:
+            raise ValueError('Finalize native ownership before recording the diagnostic extension')
+        with closing(self.connect()) as db:
+            db.execute('BEGIN IMMEDIATE')
+            extension_schema(db)
+            db.execute('CREATE TABLE IF NOT EXISTS diagnostic_authorizations '
+                       '(id TEXT PRIMARY KEY, provenance_json TEXT NOT NULL, provenance_sha256 TEXT NOT NULL)')
+            db.execute('CREATE TABLE IF NOT EXISTS diagnostic_usage (reservation_id TEXT PRIMARY KEY, '
+                       'original_headroom_s REAL NOT NULL, charged_s REAL NOT NULL)')
+            for operation in ('UPDATE', 'DELETE'):
+                db.execute(f'CREATE TRIGGER IF NOT EXISTS immutable_diagnostic_authorizations_{operation.lower()} '
+                           f'BEFORE {operation} ON diagnostic_authorizations BEGIN '
+                           "SELECT RAISE(ABORT, 'Egypt diagnostic provenance is immutable'); END")
+            stored = db.execute('SELECT provenance_json,provenance_sha256 FROM diagnostic_authorizations '
+                                'WHERE id=?', (authorization_id,)).fetchone()
+            if stored is not None:
+                if stored != (provenance, digest):
+                    raise ValueError('Existing diagnostic authorization provenance cannot be changed')
+                return False
+            db.execute('INSERT INTO extensions VALUES (?,?,?,?,?)', (authorization_id, 'DIAGNOSTIC',
+                       seconds, datetime.now(timezone.utc).isoformat(), before['sha256']))
+            db.execute('INSERT INTO diagnostic_authorizations VALUES (?,?,?)',
+                       (authorization_id, provenance, digest))
             db.commit()
         return True
 
@@ -247,6 +330,7 @@ class EgyptBudget:
         with OWNERSHIP.open('x', encoding='utf8') as stream:
             json.dump(ticket, stream)
         reserved = False
+        diagnostic_headroom = None
         old_environment = {key: os.environ.get(key) for key in ('OSTORHA_EGYPT_BUDGET', 'OSTORHA_EGYPT_RESERVATION')}
         try:
             with closing(self.connect()) as db:
@@ -258,12 +342,19 @@ class EgyptBudget:
                     raise ValueError('Frozen Egypt acceptance is one-shot; retries are prohibited')
                 if seconds > min(status['remaining_s'], status[phase.lower() + '_remaining_s']):
                     raise ValueError('Egypt ' + phase.lower() + ' allowance exhausted; the acceptance window is protected')
+                if (phase == 'DEVELOPMENT' and purpose != 'DIAGNOSTIC'
+                        and seconds > status['non_diagnostic_development_remaining_s']):
+                    raise ValueError('Diagnostic-only extension cannot fund matrix, browser or generic development work')
                 protected = (DEVELOPMENT_RESERVE_SECONDS if purpose == 'DIAGNOSTIC' else
                              BROWSER_SECONDS if purpose == 'MATRIX' and phase == 'DEVELOPMENT' else 0.)
                 if protected and status['development_remaining_s'] - seconds < protected:
                     raise ValueError('Development diagnosis must preserve the 7200-second matrix and 480-second browser windows')
                 db.execute('INSERT INTO reservations VALUES (?,?,?,?,?,?,?,?,?,?)',
                            (key, phase, seconds, seconds, started, started + seconds, os.getpid(), 'RUNNING', None, str(report)))
+                if purpose == 'DIAGNOSTIC' and any(row['phase'] == 'DIAGNOSTIC' for row in status['extensions']):
+                    diagnostic_headroom = max(0., status['diagnostic_remaining_s'] - status['diagnostic_extension_remaining_s'])
+                    db.execute('INSERT INTO diagnostic_usage VALUES (?,?,?)',
+                               (key, diagnostic_headroom, max(0., seconds - diagnostic_headroom)))
                 db.commit()
             reserved = True
             os.environ.update(OSTORHA_EGYPT_BUDGET=str(self.directory), OSTORHA_EGYPT_RESERVATION=key)
@@ -278,6 +369,9 @@ class EgyptBudget:
                     with closing(self.connect()) as db:
                         db.execute('UPDATE reservations SET charged_s=?,elapsed_s=?,outcome=? WHERE id=?',
                                    (elapsed, elapsed, outcome, key))
+                        if diagnostic_headroom is not None:
+                            db.execute('UPDATE diagnostic_usage SET charged_s=? WHERE reservation_id=?',
+                                       (max(0., elapsed - diagnostic_headroom), key))
                         db.commit()
             finally:
                 for name, value in old_environment.items():

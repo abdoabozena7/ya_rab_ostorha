@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 from backend.graphics import PRESETS, launch, write_render_config
 from backend.carla.dashboard_tools import validate_settings
-from backend.carla.runtime import NativeRuntime
+from backend.carla.runtime import NativeRuntime, native_processes
 from backend.carla.provider import CarlaProvider
 
 
@@ -102,3 +102,41 @@ class RenderProfileTests(unittest.TestCase):
             args = start.call_args.args[0]
             self.assertIn('-D3D12',args)
             self.assertIn('-ostorha-render-profile=HIGH',args)
+            self.assertEqual(len([arg for arg in args if arg.startswith('-abslog=')]),1)
+
+    def test_low_startup_logs_are_unique_without_enabling_performance_render_commands(self):
+        with tempfile.TemporaryDirectory() as directory:
+            install = Path(directory)/'install'
+            install.mkdir()
+            executable = install/'CarlaUE4.exe'
+            executable.touch()
+            (install/'.carla-install.json').write_text(json.dumps({
+                'executable':str(executable),'version':'0.9.16',
+                'packageVerified':True,'pythonApiValidated':True}))
+            process = Mock(returncode=3221226505)
+            process.poll.return_value = process.returncode
+            paths = []
+            for profile in ('LOW','LOW','PERFORMANCE_60'):
+                runtime = object.__new__(NativeRuntime)
+                with patch('backend.carla.runtime.INSTALL',install), \
+                        patch.dict('os.environ',{'LOCALAPPDATA':directory}), \
+                        patch('backend.carla.runtime.subprocess.Popen',return_value=process) as start, \
+                        self.assertRaisesRegex(RuntimeError,'engine log:'):
+                    runtime.launch({**launch(profile),'renderer':'D3D12','offscreen':True},
+                                   '127.0.0.1',2000,None)
+                arguments = start.call_args.args[0]
+                log_args = [arg.removeprefix('-abslog=') for arg in arguments if arg.startswith('-abslog=')]
+                self.assertEqual(log_args,[str(runtime.engine_log)])
+                self.assertTrue(runtime.engine_log.is_absolute())
+                self.assertTrue(runtime.engine_log.parent.is_dir())
+                self.assertIn('-D3D12',arguments)
+                self.assertIn('-RenderOffScreen',arguments)
+                self.assertEqual(any(arg.startswith('-ExecCmds=') for arg in arguments),profile=='PERFORMANCE_60')
+                paths.extend(log_args)
+            self.assertEqual(len(set(paths)),3)
+
+    def test_failed_identity_query_is_not_an_empty_process_list_and_exposes_native_error(self):
+        result = SimpleNamespace(returncode=5,stdout='',stderr='Scoped query failure fixture')
+        with patch('backend.carla.runtime.subprocess.run',return_value=result), \
+                self.assertRaisesRegex(RuntimeError,'query exit 5.*Scoped query failure fixture'):
+            native_processes()

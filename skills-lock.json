@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "prove-it": {
+      "source": "abdoabozena7/let_it_flow",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "9e3f4e2e705acabe1319d868b73d5937580be600c200b39bf37b884c1e58b03c"
+    }
+  }
+}

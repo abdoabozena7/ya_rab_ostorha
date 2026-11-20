@@ -2,7 +2,7 @@
 import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock
-from backend.carla.population import DEFAULT_POPULATION, SPEED_DIFFERENCE, WorldPopulationManager, validate_population
+from backend.carla.population import DEFAULT_POPULATION, SPEED_DIFFERENCE, TrafficManagerService, WorldPopulationManager, validate_population
 from backend.carla.provider import CarlaProvider
 from backend.core.service import SimulationService
 from backend.carla.routes import RouteService
@@ -10,6 +10,59 @@ from backend.core.contracts import PopulationState, from_dict, to_dict
 
 
 class PopulationTests(unittest.TestCase):
+    def test_native_manager_is_joined_without_asynchronous_wake_and_close_is_idempotent(self):
+        manager=object.__new__(TrafficManagerService)
+        manager.manager=MagicMock();manager.connected=True
+        manager.close();manager.close()
+        manager.manager.shut_down.assert_called_once_with()
+        manager.manager.set_synchronous_mode.assert_not_called()
+        self.assertFalse(manager.connected)
+
+    def test_native_shutdown_failure_stays_visible_and_does_not_claim_disconnection(self):
+        manager=object.__new__(TrafficManagerService)
+        manager.manager=MagicMock();manager.connected=True
+        manager.manager.shut_down.side_effect=RuntimeError('native manager join failed')
+        with self.assertRaisesRegex(RuntimeError,'native manager join failed'):
+            manager.close()
+        self.assertTrue(manager.connected)
+        manager.manager.set_synchronous_mode.assert_not_called()
+
+    def test_population_destroy_requires_joined_native_manager(self):
+        events=[]
+        manager=object.__new__(WorldPopulationManager)
+        traffic=object.__new__(TrafficManagerService)
+        traffic.manager=MagicMock();traffic.connected=True
+        traffic.manager.shut_down.side_effect=lambda:events.append('joined')
+        manager.traffic_manager=traffic
+        def destroy():
+            self.assertFalse(traffic.connected)
+            self.assertEqual(events,['joined'])
+            events.append('destroyed')
+        manager.reset_population=MagicMock(side_effect=destroy)
+        manager.close()
+        self.assertEqual(events,['joined','destroyed'])
+
+    def test_failed_join_keeps_actor_inventory_for_independent_cleanup(self):
+        manager=object.__new__(WorldPopulationManager)
+        manager.vehicles={10,11};manager.traffic_manager=MagicMock()
+        manager.traffic_manager.close.side_effect=RuntimeError('stop failed')
+        manager.reset_population=MagicMock()
+        with self.assertRaisesRegex(RuntimeError,'stop failed'):
+            manager.close()
+        manager.reset_population.assert_not_called()
+        self.assertEqual(manager.vehicles,{10,11})
+
+    def test_actor_cleanup_failure_does_not_leave_manager_running(self):
+        manager=object.__new__(WorldPopulationManager)
+        traffic=object.__new__(TrafficManagerService)
+        traffic.manager=MagicMock();traffic.connected=True
+        manager.traffic_manager=traffic
+        manager.reset_population=MagicMock(side_effect=RuntimeError('destroy failed'))
+        with self.assertRaisesRegex(RuntimeError,'destroy failed'):
+            manager.close()
+        traffic.manager.shut_down.assert_called_once_with()
+        self.assertFalse(traffic.connected)
+
     def test_replacement_visibility_is_conservative_for_front_and_rear_views(self):
         vector=lambda x,y,z:SimpleNamespace(x=x,y=y,z=z)
         front=(vector(0,0,0),vector(1,0,0),vector(0,1,0),vector(0,0,1),1.,.5625)

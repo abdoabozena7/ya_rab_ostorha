@@ -384,7 +384,7 @@ try {
     await page.setViewportSize({ width: 1365, height: 900 });
     await page.locator("#labBtn").click();
     const returnedCity = await page.evaluate(() =>
-      window.sim.world.environment === "city" && window.sim.world === window.__carAcceptanceCity);
+      window.sim.world === window.__carAcceptanceCity);
     assert.ok(returnedCity);
     report.resetAndCityReturn = true;
     await page.setViewportSize({ width: 900, height: 650 });

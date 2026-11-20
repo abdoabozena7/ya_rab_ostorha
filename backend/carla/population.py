@@ -81,7 +81,9 @@ class TrafficManagerService:
         tm.update_vehicle_lights(actor, True)
 
     def close(self):
-        self.manager.set_synchronous_mode(False)
+        if not self.connected:
+            return
+        self.manager.shut_down()
         self.connected = False
 
 
@@ -682,7 +684,5 @@ class WorldPopulationManager:
                 'destinations': 'NATIVE_SIDEWALK_WITH_BOUNDED_OPTIONAL_CROSSINGS'}
 
     def close(self):
-        try:
-            self.reset_population()
-        finally:
-            self.traffic_manager.close()
+        self.traffic_manager.close()
+        self.reset_population()

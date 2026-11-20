@@ -28,8 +28,13 @@ class ResetTests(unittest.TestCase):
 
     def test_moving_drive_can_reset_once_and_cleanup_precedes_fresh_handoff(self):
         s=service();s.provider.reset_handler=Mock();s._stop_navigation=Mock();s.release_controls=Mock()
-        with patch('backend.core.service.threading.Thread') as worker:
+        worker=Mock()
+        with patch('backend.core.service.threading',Mock(wraps=threading,Thread=worker)):
             self.assertEqual(s.reset_simulation()['operation'],'RESET')
+            unrelated_done=threading.Event()
+            unrelated=threading.Thread(target=unrelated_done.set)
+            unrelated.start();unrelated.join(timeout=2)
+            self.assertFalse(unrelated.is_alive());self.assertTrue(unrelated_done.is_set())
             s.reset_simulation();worker.return_value.start.assert_called_once()
             self.assertEqual(worker.call_args.kwargs['args'],(True,))
         order=[];s.close=Mock(side_effect=lambda:order.append('cleanup'))

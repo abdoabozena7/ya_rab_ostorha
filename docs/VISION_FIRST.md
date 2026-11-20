@@ -35,6 +35,13 @@ movement and proximity-trigger timing. It is not fed back into the detector or
 prediction decision. Saved visual observations are replay data, not a new live
 inference.
 
+The opt-in [Egyptian district](EGYPT_DISTRICT.md) composes graded visual
+speed requests with a **separate static-map blind-corner prior**. The map
+channel receives fixed geometry and ego pose only, never hidden population or
+crossing intent. It is labelled as map caution, not camera perception. Applied
+source attribution follows the independent safety guard, so a stricter
+geometric intervention cannot be credited to the neural forecast.
+
 ## Existing models: selection and limits
 
 The local capability probe actually executed both existing CPU adapters on
@@ -79,11 +86,37 @@ noisy, pixel-derived tracks or that a crossing alternative will actually occur.
 Metric input alone is not a reason to reject a learned forecaster, but neither
 runtime compatibility nor selecting a convenient mode establishes a safe stop.
 
-The current transparent temporal conflict decision avoids a new training/data/
-sim-to-real claim and explains the observed evidence for each stop. The existing
-learned forecaster remains a candidate for a separately measured camera-track
-comparison. This is **not** a claim of universal superiority over RL or
-Trajectron++, nor a fresh validation of historical learned-policy results.
+The installed Trajectron++ adapter was also tried offline on retained
+camera-track histories from the newer City experiment. Of two mirrored
+crossings, only one had its required half-second history available by the
+camera brake. It produced 25 unranked paths for that track; in the sampled
+parallel and stationary controls none entered the driving corridor. This
+small result does not establish a reliable brake threshold or universal
+superiority of either forecaster. The live controller uses the shorter
+history when supported, with explicit uncertainty and stopping-room checks.
+
+## Early slowing in City
+
+The public City autopilot starts the installed detector when the driver
+chooses a destination. It computes a crossing interval from lateral
+motion observed in consecutive frames and compares it with the car's
+projected arrival. Supported but not yet definitive overlap may cause a
+graded speed reduction. A stricter, confirmed overlap can request a full
+stop. Mere presence beside the road does not qualify as crossing.
+
+The proximity units stay unchanged. A virtual ray by itself does not
+grant camera credit: the mirrored City check matches the same captured
+image, detector box and track to an actual physical speed reduction while
+the person is still outside the corridor. It separately records first
+same-person ray hit, actual lane entry and bumper clearance at the stop.
+Sensor-only runs have the same roads, people, motion and collision checks.
+
+Camera readback can use a bounded asynchronous WebGL2 buffer without changing
+640×360 input or exact image association. JPEG is encoded after the readback
+fence, and one newest result is admitted with a 750 ms freshness bound.
+Missing or stale evidence in camera-first mode holds speed; it is not shown
+as a prediction. Older City replay versions retain their original population
+and policy behavior.
 
 ## Public experiment
 

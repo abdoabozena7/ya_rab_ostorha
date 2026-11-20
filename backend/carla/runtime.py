@@ -8,6 +8,7 @@ import subprocess
 import sys
 import threading
 import time
+import uuid
 
 INSTALL = Path('C:/CARLA/CARLA_0.9.16')
 _runtime = None
@@ -20,7 +21,8 @@ def native_processes(*, timeout=15):
                             capture_output=True, text=True, timeout=timeout,
                             creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
     if result.returncode:
-        raise RuntimeError('Cannot verify native CARLA process identity')
+        raise RuntimeError(f'Cannot verify native CARLA process identity (query exit {result.returncode}): '
+                           + result.stderr.strip()[:500])
     entries = json.loads(result.stdout) if result.stdout.strip() else []
     entries = entries if isinstance(entries, list) else [entries]
     return [entry for entry in entries if entry.get('ExecutablePath') and
@@ -201,17 +203,18 @@ class NativeRuntime:
                 '-ostorha-render-profile='+profile,
                 '-carla-rpc-port='+str(port), '-ResX='+width, '-ResY='+height]
         args.append('-RenderOffScreen' if settings.get('offscreen', True) else '-windowed')
+        self.engine_log = Path(__file__).resolve().parents[2]/'output/native-runtime'/('engine-'+uuid.uuid4().hex+'.log')
+        self.engine_log.parent.mkdir(parents=True,exist_ok=True)
+        args.append('-abslog='+str(self.engine_log))
         if profile == 'PERFORMANCE_60':
-            import uuid
             from ..graphics import render_settings
-            self.engine_log = Path(__file__).resolve().parents[2]/'output/native-runtime'/('engine-'+uuid.uuid4().hex+'.log')
-            self.engine_log.parent.mkdir(parents=True,exist_ok=True)
-            args += ['-abslog='+str(self.engine_log), '-ExecCmds='+','.join(render_settings(profile))]
+            args.append('-ExecCmds='+','.join(render_settings(profile)))
         process = subprocess.Popen(args, cwd=executable.parent, creationflags=subprocess.CREATE_NO_WINDOW)
         deadline = time.monotonic()+90
         while time.monotonic()<deadline:
             if process.poll() is not None:
-                raise RuntimeError(f'CARLA exited during startup (code {process.returncode}); previous graphics can be restored')
+                raise RuntimeError(f'CARLA exited during startup (code {process.returncode}); '
+                                   f'engine log: {self.engine_log}; previous graphics can be restored')
             try:
                 with socket.create_connection((host, port), timeout=.5):
                     pass
@@ -231,7 +234,8 @@ class NativeRuntime:
                     raise RuntimeError('Native world readiness probe has not succeeded')
                 self.inspect()
                 self.active = {**settings, 'renderer':renderer, 'render_profile':profile, 'source':'VERIFIED_NATIVE_LAUNCH'}
-                if self.engine_log:
+                self.active['engineLog'] = str(self.engine_log)
+                if profile == 'PERFORMANCE_60':
                     self.active['renderAudit'] = self.render_audit(self.engine_log, profile)
                 return
             except (OSError, RuntimeError, subprocess.TimeoutExpired):

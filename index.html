@@ -21,7 +21,8 @@
           title="Phone (P)"
         >
           Phone</button
-        ><button id="labBtn">Test lab</button
+        ><button id="streetPursuitBtn" aria-expanded="false" aria-controls="pursuitPanelHost">Pursuit</button
+        ><button id="labBtn">Lab</button
         ><button
           id="inspectorBtn"
           aria-expanded="false"
@@ -38,6 +39,7 @@
       </nav>
     </header>
     <div id="loadingStatus" role="status">Loading scene…</div>
+    <aside id="pursuitPanelHost" hidden></aside>
     <aside id="inGamePhone" class="phone" hidden aria-label="Destination phone">
       <div class="phone-speaker"></div>
       <div class="phone-head">Destination <span>YA RAB OSTORHA</span></div>
@@ -82,6 +84,33 @@
         The same seed and commands reproduce the same simulation. Applying
         settings starts a new run in this environment.
       </p>
+      <p id="settingsError" role="alert"></p>
+      <p id="streetEncounterStatus" class="muted" hidden></p>
+      <section id="cityDriverSettings" hidden>
+        <label for="cityDriver">City autopilot</label>
+        <select id="cityDriver">
+          <option value="vision-first">Camera-first · independent safety stays on</option>
+          <option value="sensors-only">Sensors only · comparison</option>
+        </select>
+        <p id="cityDriverStatus" class="muted" role="status"></p>
+      </section>
+      <section id="districtControls" hidden>
+        <h3>Egyptian district</h3>
+        <p>Unmarked alleys, mixed traffic and visible-motion forecasts. Static-map corner caution is labelled separately.</p>
+        <label for="districtCase">District encounter</label>
+        <select id="districtCase"><option value="ambient">Ambient district · configured population</option></select>
+        <label for="districtMode">Predictive driver</label>
+        <select id="districtMode">
+          <option value="vision-first">Camera + independent safety</option>
+          <option value="sensors-only">Baseline safety · same map caution</option>
+        </select>
+        <div class="actions">
+          <button id="districtRunBtn" type="button">Run encounter</button>
+          <button id="districtResetBtn" type="button">Reset district</button>
+          <button id="districtReturnBtn" type="button">Return to city</button>
+        </div>
+        <p id="districtStatus" role="status">No district interaction is active.</p>
+      </section>
       <form id="settingsForm">
         <label
           >Seed <input name="seed" value="cairo-42" maxlength="64" required
@@ -167,6 +196,11 @@
         <p id="trainingStatus" role="status">Reading training status…</p>
       </section>
       <div id="diagnostics" class="diagnostics"></div>
+      <details class="diagnostics">
+        <summary>Graphics adapter</summary>
+        <p id="graphicsAdapter"></p>
+        <p>The browser and Windows select the GPU. To prefer your dedicated GPU, set the browser to High performance in Windows graphics settings, then restart it.</p>
+      </details>
       <p class="muted">
         Test and vision labs preserve the city state. Visual prediction is
         experimental; its speed cap never disables independent collision safety.
@@ -222,6 +256,11 @@
       ><button id="cameraBtn">Hide camera</button
       ><button id="pauseBtn">Pause</button>
     </footer>
+    <div id="pursuitTouch" aria-label="Arcade steering" hidden>
+      <button id="pursuitTouchLeft" type="button" aria-label="Steer left">Left</button>
+      <button id="pursuitTouchBrake" type="button" aria-label="Hold brake">Brake</button>
+      <button id="pursuitTouchRight" type="button" aria-label="Steer right">Right</button>
+    </div>
     <script defer src="/public/threejs/game.bundle.js"></script>
   </body>
 </html>

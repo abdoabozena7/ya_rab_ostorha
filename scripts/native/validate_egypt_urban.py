@@ -153,8 +153,11 @@ def preflight(plan, seconds_per_pair, status, *, acceptance=False, diagnostic=Fa
         raise ValueError('Use an identified 180--1800 second reservation per complete pair')
     cleanup = len(plan) * 300.
     required = len(plan) * seconds_per_pair + cleanup
-    remaining = min(status['remaining_s'], status.get(
-        'acceptance_remaining_s' if acceptance else 'development_remaining_s', status['remaining_s']))
+    phase_remaining = status.get('acceptance_remaining_s' if acceptance else 'development_remaining_s',
+                                 status['remaining_s'])
+    if not acceptance and not diagnostic:
+        phase_remaining = status.get('non_diagnostic_development_remaining_s', phase_remaining)
+    remaining = min(status['remaining_s'], phase_remaining)
     protected = DEVELOPMENT_RESERVE_SECONDS if diagnostic else BROWSER_SECONDS if not acceptance else 0.
     ready = bool(status.get('authorized') and status.get('unfinished') == 0 and remaining >= required + protected
                  and not (acceptance and status.get('acceptance_attempted')))
@@ -277,6 +280,16 @@ def publish_progress(report, target, *, current=None):
 
 
 def run(args):
+    diagnostic_extension = getattr(args, 'extend_diagnostic_budget', None)
+    authorization_file = getattr(args, 'authorization_file', None)
+    if diagnostic_extension or authorization_file:
+        if (not diagnostic_extension or not authorization_file or args.run or args.acceptance or args.rule_ticket
+                or getattr(args, 'allocate_egypt_budget', False) or getattr(args, 'extend_development_budget', None)):
+            raise ValueError('Record the diagnostic extension with its provenance separately from native execution')
+        budget = EgyptBudget(args.egypt_budget or DIRECTORY)
+        applied = budget.extend_diagnostic(diagnostic_extension, authorization_file)
+        print(json.dumps({'extension_applied': applied, 'budget': budget.status(), 'engine_started': False}))
+        return 0
     if getattr(args, 'extend_development_budget', None):
         if args.run or args.acceptance or args.rule_ticket or getattr(args, 'allocate_egypt_budget', False):
             raise ValueError('Record the separate development extension without starting native work')
@@ -391,6 +404,12 @@ def run(args):
                     'independent_cleanup_probe', 'video_playback_after_exit', 'render_profile', 'error',
                     'finalization_error', 'cleanup_error', 'cleanup_stage', 'worker_deadline_expired', 'native_worker_exit_code',
                     'diagnostic_passed', 'diagnostic_assessment')})
+                if 'diagnostic_gil_profile' in raw:
+                    destination[-1]['diagnostic_gil_profile'] = raw['diagnostic_gil_profile']
+                if 'diagnostic_native_crash_capture' in raw:
+                    destination[-1]['diagnostic_native_crash_capture'] = raw['diagnostic_native_crash_capture']
+                if 'diagnostic_engine_profile' in raw:
+                    destination[-1]['diagnostic_engine_profile'] = raw['diagnostic_engine_profile']
                 destination[-1].update(pair=compact_pair(raw.get('pair') or {'manifest': {}, 'runs': {}}),
                     preparation_failure=(raw.get('presentation') or {}).get('failure'),
                     drive_failures=(raw.get('presentation') or {}).get('failures') or [],
@@ -478,6 +497,9 @@ def parser():
     parser.add_argument('--allocate-egypt-budget', action='store_true', help='Allocate once, without starting native work or a reservation')
     parser.add_argument('--extend-development-budget', metavar='AUTHORIZATION_ID',
                         help='Record the separately authorized 7200-second development extension once')
+    parser.add_argument('--extend-diagnostic-budget', metavar='AUTHORIZATION_ID',
+                        help='Record an exact separately authorized diagnostic-only extension once, with immutable provenance')
+    parser.add_argument('--authorization-file', help='Original message provenance for the diagnostic extension')
     parser.add_argument('--acceptance', action='store_true', help='Reserved three seeds, both orders, no retries')
     parser.add_argument('--development-seed', type=int)
     parser.add_argument('--diagnostic', action='store_true', help='One bounded development diagnostic, never part of a matrix')

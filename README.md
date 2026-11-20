@@ -33,8 +33,9 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
 | Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
 | People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
+| Pursuit | Start an Arcade or Tactical patrol chase on the current City streets |
 | Decision lab | Inspect the route, rules, virtual ranges and traffic queues |
-| Test lab / Return to city | Enter a separate seeded world, then restore the city |
+| Lab / Return to city | Enter the separate learning lab and its Pursuit drills, then resume the current city |
 | Settings | Change seed, traffic, pedestrians and speed; reset the current world |
 | Pause / Resume | Pause and resume the browser world |
 
@@ -118,8 +119,75 @@ grounded kinematic game humans, not calibrated biomechanics or ragdolls.
 
 [The portable core feature map](docs/GAME_CORE_FEATURES.md) identifies what was
 retained or reused from the earlier work and what remains engine-specific.
-New narrow Egyptian streets/alleys and the full chaotic crowd/traffic policy
-are later stages, not completion claims for this camera/people phase.
+
+## One connected city
+
+The game now opens directly in **City**. The wider avenues, the Egyptian
+neighborhood, and its original narrow alleys share one road graph, traffic
+population and set of Phone destinations. For a route across both street
+types, choose **الفرن البلدي** from the default start. Main avenues have
+painted crossings and higher driving limits; neighborhood streets rely on
+slower shared space, limited sight lines, and passage priority. The two
+street types have distinct façades, and other vehicles are locally modeled
+to match their physical footprints.
+
+Use **Pursuit → Start pursuit** in the top bar to start an arcade chase on the
+street you are already on. The same city, original SUV and civilian actors
+keep running. Two cruisers open the chase, then backup joins from available
+streets, including heavier vans. Patrol collisions produce wrecks. The raised
+chase view shows the space between them; **C** still switches to the cockpit.
+Losing the patrols can still reduce the five-star wanted meter and end the chase.
+
+The SUV starts self-driving. Press **I** to take over with automatic throttle,
+**A / D** or the arrows to steer and drift, and **Space** to brake. The equivalent
+touch controls appear on smaller screens. Collect **Giant** or **Ghost** for
+a temporary benefit; **Mine** and **Pulse** give one charge behind or ahead,
+used with **E** or the **Use** button. Ghost cannot phase through people or
+buildings. Real contact ends the round and plays a short slow-motion review.
+**R** or **Run again** restarts from the current street. **Sound on/off** toggles
+the local music and effects, and the same browser keeps the best time.
+
+Choose **Tactical / training** in the City pursuit panel to use the previous
+weight-training setup. Start in **Lab → Pursuit drills** to practice an evasive turn, a light patrol
+contact, a safe crossing, or a close pedestrian impact. Check **Train on this
+drill** to update the maneuver policy from actual outcomes. In City the default starts with
+hand-authored weights, and the driver can back out and turn if that full
+movement checks out. **Use Lab policy** uses the Lab weights without changing
+them; **Learn from this chase** improves the City weights and saves them in the
+current browser after the run. **I** or **Space** takes manual control and
+suspends learning.
+
+The HUD distinguishes **Yielding to pedestrian**, **Crossing clear**, and a
+real contact. Braking and yielding do not incur a contact penalty. Continuing
+into an unsafe stopping gap costs reward; a real contact triggers the
+non-graphic impact pose and costs more at a higher closing speed.
+
+**End pursuit**
+removes the patrols and their temporary barriers, not the existing traffic.
+The active trip is replanned from the current pose when possible; if no legal route is
+available from that heading, choose a destination again.
+
+See the [PAKO Forever / GTA V comparison and implementation checklist](docs/CITY_PURSUIT_REVIEW.md)
+for the decisions behind this mode.
+
+City opens in manual mode without starting a model. Choosing a **Phone**
+destination or switching to **autopilot** starts the installed detector and
+waits for fresh evidence. **Settings → City autopilot** offers **Sensors only**
+for comparison. In **Camera**, **Start detector** and **Stop detector** still
+control the local model explicitly. Independent safety stays on in both modes.
+The pursuit's virtual ranging and the camera's pixel evidence remain
+separate. [Lab](docs/PURSUIT.md) is the separate learning/testing workspace.
+Older city, district and arena recordings keep their recorded layouts; they
+are not choices in the new City's Settings.
+
+Ordinary City drives now include [Egyptian street encounters](docs/EGYPTIAN_DRIVING_SCENARIOS.md).
+**Settings → Traffic unpredictability** and **Seconds between scenarios**
+change their frequency. The default opens with 36 civilian vehicles and
+80 pedestrians; **Maximum density** runs 96 civilian vehicles and 144
+pedestrians, before any pursuit patrols are added.
+Nearby blocks get full detail while the rest keep lightweight silhouettes.
+**Settings → Graphics adapter** reports the GPU selected by the browser;
+the game requests high performance but does not change Windows settings.
 
 ## Continue development
 
@@ -129,6 +197,12 @@ npm run build:dashboard
 npm test
 python -S -m unittest discover -s tests -p 'test_threejs_*.py' -v
 node tools/evaluate-core.mjs
+node tools/verify-unified-city.mjs
+python scripts\verify_unified_city.py
+python scripts\verify_city_density.py
+node tools/verify-city-encounters.mjs
+python scripts\verify_city_vision_lead.py
+python scripts\verify_city_vision_lead.py --density
 # Focused car mechanics, sensor and rig checks:
 node --test tests/vehicle-quality.test.js tests/vehicle-presentation.test.js tests/signal_processing.test.js
 # Actual Camera/People controls, image pairing, body motion and replay:
@@ -177,7 +251,88 @@ They are not instructions to restart an external simulator.
 
 # Historical CARLA Collision-Avoidance Prototype
 
-## Current entry guide — 27 October 2026
+**ROOT GOAL: OPEN / NOT ACCEPTED.** The persistent
+[root acceptance checklist](ROOT_GOAL.md) separates the verified short RULE
+smoke from unresolved full-route, performance, multi-scenario and Egypt gates.
+A passing child-task evidence gate never closes the parent goal.
+
+The [28 October retained-data performance audit](docs/ROOT_PERFORMANCE_AUDIT_20261028.md)
+records slow native cadence, required-depth delivery delays, an isolated
+CPU/DirectML comparison and the renewed storage shortfall. No native run or
+budget change was made during that investigation.
+The [implementation continuation](docs/ROOT_IMPLEMENTATION_CONTINUATION_20261028.md)
+restores provisional capacity with verified evidence preservation and adds
+complete-output offline replay; native performance and Egypt acceptance remain
+unverified, and no new native authorization was inferred.
+
+## Current continuation - 30 October 2026
+
+The owner's additional **10,800 wall-clock DIAGNOSTIC seconds** were recorded
+once through the [append-only public admission path](docs/EGYPT_COMPLETION_GATES_20261027.md).
+The original message and SHA-256 are immutable; repeated/resumed application
+adds no time. Prior records/charges, the base allowance, and the protected
+**7,200-second DEVELOPMENT / 480-second browser / 7,200-second ACCEPTANCE**
+allocations are unchanged. Diagnostic capacity is **11,062.367 seconds** at
+this checkpoint; no new native reservation has consumed the grant.
+
+On source `06c7adf9...`, current-source verification passed **1,218 Python tests
+with four optional skips**, **221 JavaScript tests**, the dashboard build,
+and **30 exact complete-output retained decisions** with their original
+histories/clocks. This is software/replay verification, not physical acceptance.
+
+**Native continuation is storage-blocked.** The actual public preflight passed
+the current software/authority checks but measured **107,590,705,152 D bytes free**
+against **141,734,109,938 required**: a **34,143,404,786-byte shortfall**.
+The existing **50% margin plus 4 GiB reserve** was not lowered; all 47 closed
+Egypt recordings are already losslessly compressed. No evidence or unrelated
+data was deleted, no unimplemented cross-volume pooling was assumed, and no
+new CARLA run was launched. An owner-approved capacity recovery is required
+before the next meaningful native timing investigation. The original
+[root goal](ROOT_GOAL.md), physical/timing criteria and all unresolved native
+gates remain open.
+
+## Latest measured status - 29 October 2026
+
+The latest real native diagnostic on `18874f42...` drove **63.928 m / 30
+simulation seconds / 8.843% route**, with **zero contacts** and **601 matching
+subsequent native control states**. Both genuine videos decode completely
+(604 frames each); actual recorded frames were inspected. Earlier current-session
+live headed camera observations are separately dated, not reused as this run.
+[Video](runs/normal_city/run_851ceacacdee4a9dad6888cfd8c5dbe5/driving-annotated.mp4)
+and [complete cycle report](.runtime-proof/root-driving-validation/continuations/20261029T091733Z/queue-dispatch-240-execution-cycle-report.json).
+
+**The diagnostic still FAILED:** p95 **184.656 ms** and p99 **201.667 ms** pass,
+but one **254.393 ms** late/unaligned frame remains. All601samples are retained;
+percentiles alone do not satisfy the original zero-late criterion. Shutdown exits0
+with complete exports and independent cleanup. A real dump identified deep
+SDK signal-search recursion on a Traffic Manager thread; joining the manager
+before actor destruction produced four clean native prefixes. This is not
+full-route or universal safety/crash certification.
+Measured cadence was **4.948 native ticks/wall-second /RTF0.247**, not display
+or rendererFPS. Device GPU samples were **0-70%**, VRAM **5,877-5,897 MiB**;
+separate CARLA3D-engine samples **24-49%**. Earlier matched-PDB snapshots show main-thread
+synchronous RPC polling and render/RHI waits, not a proven GPU-only bottleneck.
+
+Current offline verification: **1,214 Python passes / four optional skips,
+221 JavaScript passes, build and30 strict complete-output decisions**. The
+entire601-decision native prediction corpus retains exact decoded values under
+the bounded recording codec. A lower observed recorder-GIL weight did not
+repair end-to-end timing. CPU/DML remains unequal and production stays CPU.
+The exact queue-bound correction measured1.60x on actual full native graphs
+while preserving all601charges,values,identity and mutable ownership.
+The earlier600second figure was a planned300execution+300cleanup,not the policy
+minimum: a legal240+300=540run was actually admitted within550.070remaining,
+with unchanged physical/timing goals and no new grant.
+The grant now has **3,337.633 s charged /262.367 s remaining**. Fresh public
+preflight rejects even the actual180+300=480minimum. Protected budgets are
+unchanged. Further native work needs sufficient new append-only authority,
+not resets or protected borrowing. Original Normal1703/3709,full matrices and
+the final native UI/FPS/RTF gates remain unverified.
+
+**ROOT GOAL: OPEN / NOT ACCEPTED.** The following dated entry guide and reports
+are historical context, not certification of the changed source.
+
+## Existing entry guide — 27 October 2026 baseline
 
 CARLA supplies physics and sensors; Python builds a measured scene, tracks
 motion, predicts physical alternatives and selects **rule-based** maneuvers.
@@ -192,6 +347,30 @@ passed all diagnostic gates: 601 driving timings, p95 **184.525 ms**, p99
 seconds. It is not a full route or acceptance. Storage admission passes, but
 Normal 1703 is budget-blocked: **342.997 s** spendable versus a **480 s** minimum
 reservation. No allowance increase or protected-window borrowing was applied.
+On 29 October the user explicitly supplied an additional maximum **3,600-second
+DIAGNOSTIC** grant. The [fresh admission evidence](.runtime-proof/root-driving-validation/continuations/20261029T091733Z/admission-result.json)
+shows that the installed immutable-extension policy recognizes only the older
+fixed 7,200-second DEVELOPMENT entry and rejects the new identity/amount.
+That **initial** incompatibility is preserved. Following the user's implementation
+request, a narrow public API now appends this exact grant once with immutable
+message provenance and diagnostic-only funding; other grants and protected-pool
+borrowing remain rejected. The scoped ledger gate passed, not the root.
+Current-source verification passed **1,101 Python tests / four optional skips,
+221 JavaScript tests, build and 30 strict complete-output replay decisions**.
+The required protected-2707 revalidation then launched the actual engine but
+failed before world readiness with **0xc0000409**, charging **57 seconds**.
+No driving/video was produced. LOW now has explicit per-launch engine logging
+for an evidence-driven startup investigation; no crash or performance fix is
+claimed from software tests. All original native gates remain open.
+The subsequent actual protected run on source `718f58a3...` drove **62.5303 m /
+30 simulation seconds**, with **zero contacts** and **601 matching subsequent
+controls**; genuine live images and both finalized videos were inspected.
+It still **failed timing**: p95 **218.335 ms**, p99 **253.948 ms**, nine frames
+over 250 ms. Actual cadence was **4.157 ticks/wall-second**, RTF **0.20785**.
+The [cycle report and real video paths](.runtime-proof/root-driving-validation/continuations/20261029T091733Z/protected2707-execution-cycle-report.json)
+preserve the failed gates, GPU scopes, original logs, verified cleanup and
+readable post-exit media. No full-route, Normal, matrix or native UI acceptance
+is implied; causal CPU/wait instrumentation is the next diagnostic step.
 Historical protected diagnostic 19 covered 63.946 m / 30 simulation seconds with zero
 contacts, but failed timing: p95 215.750 ms, p99 234.514 ms and two frames over
 250 ms. It completed no overtakes and is not a completed route. Normal's retained
@@ -280,6 +459,14 @@ npm run build:dashboard
 These are **offline software checks**, not native acceptance. Real-time
 execution, full Egypt route completion, three measured passes/returns and the
 reserved matrices remain unverified. A video's configured FPS is not live FPS.
+
+### Native Copilot harness
+
+The [native harness guide](docs/COPILOT_NATIVE_HARNESS.md) keeps the selected
+Copilot model in charge and reuses Prove It for planning, persistent task state,
+execution evidence and final acceptance. Helpers are deterministic: no Codex
+delegation, separate provider login or model override is required. Native tools,
+permissions and protected simulation budgets are preserved.
 
 Start here: [architecture, walkthrough and defense Q&A](docs/EGYPT_DEMONSTRATION_DEFENSE_20261027.md)
 · [machine-readable results/evidence index](docs/evidence/egypt-urban-chaos-v1/delivery-index-20261027.json)

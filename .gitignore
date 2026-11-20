@@ -46,3 +46,6 @@ config/places-*.json
 # Local scratch output and large downloadable language-model weights.
 tmp/
 .cache/models/nlp/*.gguf
+
+# Local agent contracts and evidence may contain private data and large outputs.
+/.runtime-proof/

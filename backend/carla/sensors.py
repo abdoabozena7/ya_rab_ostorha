@@ -94,7 +94,9 @@ class CarlaSensorManager:
                     received = monotonic() if received is None else received
                     received_unix = time.time() if received_unix is None else received_unix
                     decode_started = monotonic()
+                    decode_cpu_started = time.thread_time()
                     decoded = decode(data)
+                    decode_thread_cpu_ms = (time.thread_time()-decode_cpu_started)*1000
                     from ..core.contracts import SensorFrame
                     if isinstance(decoded, SensorFrame):
                         from dataclasses import replace
@@ -107,7 +109,8 @@ class CarlaSensorManager:
                             'capture_clock':'NATIVE_TICK_REQUEST' if capture else 'SENSOR_RECEIPT_PROXY',
                             'encoded_monotonic_s':monotonic(),
                             'queue_wait_ms':(decode_started-received)*1000,
-                            'decode_duration_ms':(monotonic()-decode_started)*1000})
+                            'decode_duration_ms':(monotonic()-decode_started)*1000,
+                            'decode_thread_cpu_ms':decode_thread_cpu_ms})
                     elif not isinstance(decoded, dict):
                         raise TypeError('Unexpected decoded sensor payload: '+sensor_id)
                 except SensorWarmup as error:

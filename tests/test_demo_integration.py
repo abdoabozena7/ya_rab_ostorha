@@ -228,6 +228,7 @@ class DemoIntegrationTests(unittest.TestCase):
         for reset in (False,True):
             with self.subTest(reset=reset),tempfile.TemporaryDirectory() as directory:
                 service,manager=self.manager(directory)
+                service.now = lambda: service.state_at
                 manager.request({'operation':'RUN','side':'RULE'})
                 if reset: service.reset_vehicle()
                 else: service.stop_driving()

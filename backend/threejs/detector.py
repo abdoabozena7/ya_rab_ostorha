@@ -30,13 +30,18 @@ LABELS = {
 }
 
 
-def preprocess(jpeg):
+def decode_image(jpeg):
     image = cv2.imdecode(np.frombuffer(jpeg, dtype=np.uint8), cv2.IMREAD_COLOR)
     if image is None:
         raise ValueError("Frame is not a decodable JPEG")
     height, width = image.shape[:2]
     if width < 32 or height < 32 or width > 1920 or height > 1080:
         raise ValueError("Unsupported camera frame dimensions")
+    return image
+
+
+def image_tensor(image):
+    height, width = image.shape[:2]
     ratio = min(INPUT_SIZE / height, INPUT_SIZE / width)
     scaled = cv2.resize(image, (round(width * ratio), round(height * ratio)))
     canvas = np.full((INPUT_SIZE, INPUT_SIZE, 3), 114, dtype=np.uint8)
@@ -45,11 +50,11 @@ def preprocess(jpeg):
     return tensor, ratio, width, height
 
 
-def decode(output, ratio, width, height):
-    """Decode the raw [1, 3549, 85] YOLOX heads and apply classwise NMS."""
-    if output.shape != (1, 3549, 85):
-        raise ValueError(f"Unexpected YOLOX output shape: {output.shape}")
-    prediction = output[0].copy()
+def preprocess(jpeg):
+    return image_tensor(decode_image(jpeg))
+
+
+def _head_grid():
     grids = []
     strides = []
     for stride in STRIDES:
@@ -57,10 +62,19 @@ def decode(output, ratio, width, height):
         yy, xx = np.meshgrid(np.arange(count), np.arange(count), indexing="ij")
         grids.append(np.stack((xx, yy), axis=-1).reshape(-1, 2))
         strides.append(np.full((count * count, 1), stride))
-    grid = np.concatenate(grids)
-    stride = np.concatenate(strides)
-    prediction[:, :2] = (prediction[:, :2] + grid) * stride
-    prediction[:, 2:4] = np.exp(np.clip(prediction[:, 2:4], -20, 20)) * stride
+    return np.concatenate(grids), np.concatenate(strides)
+
+
+_GRID, _STRIDE = _head_grid()
+
+
+def decode(output, ratio, width, height):
+    """Decode the raw [1, 3549, 85] YOLOX heads and apply classwise NMS."""
+    if output.shape != (1, 3549, 85):
+        raise ValueError(f"Unexpected YOLOX output shape: {output.shape}")
+    prediction = output[0].copy()
+    prediction[:, :2] = (prediction[:, :2] + _GRID) * _STRIDE
+    prediction[:, 2:4] = np.exp(np.clip(prediction[:, 2:4], -20, 20)) * _STRIDE
 
     results = []
     for class_id, (label, label_ar) in LABELS.items():

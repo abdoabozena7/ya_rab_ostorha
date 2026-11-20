@@ -1,70 +1,73 @@
 import { corners, distance, overlaps } from "./geometry.js";
 
-function pointSegment(p, a, b) {
-  const dx = b.x - a.x,
-    dz = b.z - a.z;
+function pointSegment(px, pz, ax, az, dx, dz, lengthSquared) {
   const t = Math.max(
     0,
-    Math.min(
-      1,
-      ((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz || 1),
-    ),
+    Math.min(1, ((px - ax) * dx + (pz - az) * dz) / lengthSquared),
   );
-  return Math.hypot(p.x - a.x - dx * t, p.z - a.z - dz * t);
+  return Math.hypot(px - ax - dx * t, pz - az - dz * t);
 }
 
 // Exact continuous segment clearance for a walking circle. The renderer and
 // frame rate are irrelevant. This also catches grazing contacts near the start.
-export function walkSegmentClear(person, a, b, obstacles, gap = 0.16) {
+export function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16) {
+  const ax = a.x, az = a.z, bx = b.x, bz = b.z;
+  const dx = bx - ax, dz = bz - az, lengthSquared = dx * dx + dz * dz || 1;
+  const minX = Math.min(ax, bx), maxX = Math.max(ax, bx);
+  const minZ = Math.min(az, bz), maxZ = Math.max(az, bz);
+  const padding = person.radius + gap;
+  // An enclosure rejects distant bodies only; do not replace the strict
+  // distance/slab tests or change which obstacle is considered first.
   for (const item of obstacles) {
     if (item.id === person.id) continue;
+    const x = item.x, z = item.z;
     if (item.type === "pedestrian") {
-      if (pointSegment(item, a, b) < person.radius + item.radius + gap)
-        return false;
+      const clearance = person.radius + item.radius + gap;
+      if (x < minX - clearance - 1e-7 || x > maxX + clearance + 1e-7 ||
+          z < minZ - clearance - 1e-7 || z > maxZ + clearance + 1e-7) continue;
+      if (pointSegment(x, z, ax, az, dx, dz, lengthSquared) < clearance) return item;
       continue;
     }
+    const hw = item.width / 2, hl = item.length / 2;
+    const reach = Math.abs(hw) + Math.abs(hl) + Math.max(0, padding) + 1e-7;
+    if (x < minX - reach || x > maxX + reach || z < minZ - reach || z > maxZ + reach)
+      continue;
     const c = Math.cos(item.heading ?? 0),
       s = Math.sin(item.heading ?? 0);
-    const local = (p) => ({
-      x: (p.x - item.x) * c - (p.z - item.z) * s,
-      z: (p.x - item.x) * s + (p.z - item.z) * c,
-    });
-    const start = local(a),
-      end = local(b),
-      hw = item.width / 2,
-      hl = item.length / 2;
-    let low = 0,
-      high = 1;
-    for (const [axis, half] of [
-      ["x", hw],
-      ["z", hl],
-    ]) {
-      const delta = end[axis] - start[axis];
-      if (Math.abs(delta) < 1e-10) {
-        if (Math.abs(start[axis]) > half) {
-          low = 2;
-          break;
-        }
-      } else {
-        const t1 = (-half - start[axis]) / delta,
-          t2 = (half - start[axis]) / delta;
-        low = Math.max(low, Math.min(t1, t2));
-        high = Math.min(high, Math.max(t1, t2));
-      }
+    const sx = (ax - x) * c - (az - z) * s, sz = (ax - x) * s + (az - z) * c;
+    const ex = (bx - x) * c - (bz - z) * s, ez = (bx - x) * s + (bz - z) * c;
+    const lx = ex - sx, lz = ez - sz;
+    let low = 0, high = 1;
+    if (Math.abs(lx) < 1e-10) {
+      if (Math.abs(sx) > hw) low = 2;
+    } else {
+      const t1 = (-hw - sx) / lx, t2 = (hw - sx) / lx;
+      low = Math.max(low, Math.min(t1, t2));
+      high = Math.min(high, Math.max(t1, t2));
     }
-    if (low <= high) return false;
-    const pointRect = (p) =>
-      Math.hypot(
-        Math.max(0, Math.abs(p.x) - hw),
-        Math.max(0, Math.abs(p.z) - hl),
-      );
-    let clearance = Math.min(pointRect(start), pointRect(end));
-    for (const x of [-hw, hw])
-      for (const z of [-hl, hl])
-        clearance = Math.min(clearance, pointSegment({ x, z }, start, end));
-    if (clearance < person.radius + gap - 1e-7) return false;
+    if (Math.abs(lz) < 1e-10) {
+      if (Math.abs(sz) > hl) low = 2;
+    } else {
+      const t1 = (-hl - sz) / lz, t2 = (hl - sz) / lz;
+      low = Math.max(low, Math.min(t1, t2));
+      high = Math.min(high, Math.max(t1, t2));
+    }
+    if (low <= high) return item;
+    const rectStart = Math.hypot(Math.max(0, Math.abs(sx) - hw), Math.max(0, Math.abs(sz) - hl));
+    const rectEnd = Math.hypot(Math.max(0, Math.abs(ex) - hw), Math.max(0, Math.abs(ez) - hl));
+    const localLengthSquared = lx * lx + lz * lz || 1;
+    const clearance = Math.min(rectStart, rectEnd,
+      pointSegment(-hw, -hl, sx, sz, lx, lz, localLengthSquared),
+      pointSegment(-hw, hl, sx, sz, lx, lz, localLengthSquared),
+      pointSegment(hw, -hl, sx, sz, lx, lz, localLengthSquared),
+      pointSegment(hw, hl, sx, sz, lx, lz, localLengthSquared));
+    if (clearance < padding - 1e-7) return item;
   }
-  return true;
+  return null;
+}
+
+export function walkSegmentClear(person, a, b, obstacles, gap = 0.16) {
+  return walkSegmentBlocker(person, a, b, obstacles, gap) === null;
 }
 
 export function planWalk(person, target, obstacles) {
@@ -72,9 +75,12 @@ export function planWalk(person, target, obstacles) {
   const nodes = [person, target];
   for (const body of obstacles) {
     if (body.type === "pedestrian") continue;
-    for (const point of corners(body, person.radius + 0.28))
-      if (!obstacles.some((a) => overlaps({ ...person, ...point }, a, 0.16)))
+    for (const point of corners(body, person.radius + 0.28)) {
+      const pose = { type: person.type, radius: person.radius, heading: person.heading,
+        length: person.length, width: person.width, x: point.x, z: point.z };
+      if (!obstacles.some((a) => overlaps(pose, a, 0.16)))
         nodes.push(point);
+    }
   }
   const costs = nodes.map(() => Infinity),
     parents = nodes.map(() => -1),
@@ -116,13 +122,14 @@ export function walkingWaypoint(world, person, nearby) {
   );
   // A curb point occupied by a stopped car is not a usable destination. Choose
   // another point along that same curb; never teleport the walker or the car.
-  if (
-    obstacles.some((a) => overlaps({ ...person, ...person.target }, a, 0.2))
-  ) {
+  const pose = { ...person, ...person.target };
+  if (obstacles.some((a) => overlaps(pose, a, 0.2))) {
     for (const offset of [1.5, -1.5, 3, -3, 5, -5]) {
       const target = { ...person.target };
       target[person.road.axis === "z" ? "z" : "x"] += offset;
-      if (!obstacles.some((a) => overlaps({ ...person, ...target }, a, 0.3))) {
+      pose.x = target.x;
+      pose.z = target.z;
+      if (!obstacles.some((a) => overlaps(pose, a, 0.3))) {
         person.target = target;
         person.walkRoute = null;
         break;

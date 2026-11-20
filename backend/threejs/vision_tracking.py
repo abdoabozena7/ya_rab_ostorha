@@ -111,19 +111,6 @@ class PixelDetector:
             raise RuntimeError("YOLOX produced nonfinite detector output")
         return self.detector.decode(output, ratio, width, height)
 
-    def _focus_tensor(self, jpeg, width, height, region):
-        d = self.detector
-        image = d.cv2.imdecode(d.np.frombuffer(jpeg, dtype=d.np.uint8), d.cv2.IMREAD_COLOR)
-        if image is None or image.shape[:2] != (height, width):
-            raise ValueError("Focus view did not decode the admitted RGB image")
-        x, y, crop_width, crop_height = region
-        crop = image[y:y + crop_height, x:x + crop_width]
-        ratio = min(416 / crop_height, 416 / crop_width)
-        scaled = d.cv2.resize(crop, (round(crop_width * ratio), round(crop_height * ratio)))
-        canvas = d.np.full((416, 416, 3), 114, dtype=d.np.uint8)
-        canvas[:scaled.shape[0], :scaled.shape[1]] = scaled
-        return d.np.ascontiguousarray(canvas.transpose(2, 0, 1), dtype=d.np.float32)[None], ratio
-
     def process(self, frame):
         started = time.perf_counter()
         admitted, jpeg = validate_frame(frame)
@@ -140,14 +127,15 @@ class PixelDetector:
         if admitted["frameId"] <= self.last_id or admitted["simulationTimeS"] < self.last_time:
             raise ValueError("Worker rejected nonmonotonic frame identity/time")
         self.last_id, self.last_time = admitted["frameId"], admitted["simulationTimeS"]
-        tensor, ratio, width, height = self.detector.preprocess(jpeg)
+        image = self.detector.decode_image(jpeg)
+        tensor, ratio, width, height = self.detector.image_tensor(image)
         if (width, height) != (admitted["camera"]["width"], admitted["camera"]["height"]):
             raise ValueError("Decoded JPEG dimensions disagree with camera metadata")
         views = [(self._infer_view(tensor, ratio, width, height), (0, 0))]
         region = focus_region(width, height)
         if region is not None:
-            tensor, ratio = self._focus_tensor(jpeg, width, height, region)
             x, y, crop_width, crop_height = region
+            tensor, ratio, _, _ = self.detector.image_tensor(image[y:y + crop_height, x:x + crop_width])
             views.append((self._infer_view(tensor, ratio, crop_width, crop_height), (x, y)))
         detections = merge_view_detections(views, width, height)
         return {

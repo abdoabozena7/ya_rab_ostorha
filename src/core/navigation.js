@@ -63,6 +63,7 @@ export function planNavigation(
   goal,
   actors = [],
   pressure = null,
+  initialTurnLimit = 0.5,
 ) {
   const all = [...graph.values()];
   const nearest = (p) =>
@@ -89,7 +90,7 @@ export function planNavigation(
       const next = graph.get(edge),
         h = direction(current.node, next);
       const turn = Math.abs(angleDelta(h, current.heading));
-      if (turn > Math.PI * 0.75 || (!current.parent && turn > 0.5)) continue;
+      if (turn > Math.PI * 0.75 || (!current.parent && turn > initialTurnLimit)) continue;
       const mid = {
         x: (current.node.x + next.x) / 2,
         z: (current.node.z + next.z) / 2,

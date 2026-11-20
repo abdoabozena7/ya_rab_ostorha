@@ -1,5 +1,5 @@
 import copy
-from contextlib import ExitStack
+from contextlib import ExitStack, closing
 import hashlib
 from http.server import ThreadingHTTPServer
 import json
@@ -18,7 +18,7 @@ from backend.core.egypt_urban import (
     acceptance_matrix, configuration, deployment_status, evaluate_matrix, evaluate_pair, scenario_catalog,
 )
 from backend.learning.egypt_budget import (
-    DEVELOPMENT_EXTENSION_ID, EgyptBudget, active_ticket, effective_caps, ownership_status,
+    DEVELOPMENT_EXTENSION_ID, DIAGNOSTIC_EXTENSION_ID, EgyptBudget, active_ticket, effective_caps, ownership_status,
     require_simulator_access, save_json,
 )
 from backend.server import Handler
@@ -66,7 +66,8 @@ class EgyptValidationFixture(unittest.TestCase):
         self.stack.enter_context(patch('backend.learning.egypt_budget.RELOCATION_LOCK', self.root / 'relocation.lock'))
         self.stack.enter_context(patch.object(runner, 'PROGRESS', self.progress))
         self.stack.enter_context(patch.dict(os.environ, {}, clear=False))
-        for name in ('OSTORHA_EGYPT_BUDGET', 'OSTORHA_EGYPT_RESERVATION', 'OSTORHA_EGYPT_DEADLINE'):
+        for name in ('OSTORHA_EGYPT_BUDGET', 'OSTORHA_EGYPT_RESERVATION', 'OSTORHA_EGYPT_DEADLINE',
+                     'OSTORHA_DIAGNOSTIC_GIL_PROFILER'):
             os.environ.pop(name, None)
         self.now = 100.
         clock = runner.SimpleNamespace(monotonic=lambda: self.now, sleep=time.sleep)
@@ -77,6 +78,230 @@ class EgyptValidationFixture(unittest.TestCase):
 
 
 class IsolatedEgyptTests(EgyptValidationFixture):
+    def diagnostic_authorization(self, **changes):
+        data = {'authorization_id': DIAGNOSTIC_EXTENSION_ID,
+                'maximum_additional_diagnostic_seconds': 3600,
+                'protected_development_matrix_seconds': 7200, 'protected_browser_seconds': 480,
+                'protected_one_shot_acceptance_seconds': 7200,
+                'exact_authorization_text': 'Explicit additional maximum of3600 diagnostic seconds, protected windows unchanged.',
+                'message_timestamp': '2026-10-29T12:17:33.772+03:00', 'origin': 'USER_STATED_CURRENT_MESSAGE',
+                **changes}
+        path = self.root / 'diagnostic-authorization.json'
+        path.write_text(json.dumps(data), encoding='utf8')
+        return path
+
+    def test_exact_diagnostic_grant_preserves_records_and_immutable_provenance(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 300, 'old-work'):
+            self.now += 123
+        before = self.budget.status()
+        base = self.budget.authorization.read_bytes()
+        path = self.diagnostic_authorization()
+        self.assertTrue(self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, path))
+        after = self.budget.status()
+        self.assertEqual(after['reservations'], before['reservations'])
+        self.assertEqual(after['extensions'][:-1], before['extensions'])
+        self.assertEqual(after['extensions'][-1]['prior_ledger_sha256'], before['sha256'])
+        self.assertEqual(after['cap_s'], before['cap_s'] + 3600)
+        self.assertEqual(after['diagnostic_remaining_s'], before['diagnostic_remaining_s'] + 3600)
+        self.assertEqual(after['diagnostic_extension_remaining_s'], 3600)
+        self.assertEqual(after['non_diagnostic_development_remaining_s'], before['development_remaining_s'])
+        self.assertEqual(after['protected_development_matrix_s'], 7200)
+        self.assertEqual(after['protected_browser_s'], 480)
+        self.assertEqual(after['acceptance_cap_s'], 7200)
+        self.assertEqual(self.budget.authorization.read_bytes(), base)
+        self.assertFalse(self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, path))
+        self.assertEqual(self.budget.status()['sha256'], after['sha256'])
+        path = self.diagnostic_authorization(exact_authorization_text='Changed message under the same id')
+        with self.assertRaisesRegex(ValueError, 'cannot be changed'):
+            self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, path)
+        import sqlite3
+        with closing(self.budget.connect()) as db, self.assertRaises(sqlite3.IntegrityError):
+            db.execute('DELETE FROM diagnostic_authorizations')
+        self.assertEqual(self.budget.status()['sha256'], after['sha256'])
+
+    def test_unknown_excessive_or_wrong_phase_diagnostic_grants_are_rejected(self):
+        before = self.budget.status()['sha256']
+        path = self.diagnostic_authorization()
+        with self.assertRaises(ValueError):
+            self.budget.extend_diagnostic('another-grant', path)
+        for changes in ({'maximum_additional_diagnostic_seconds': 3601},
+                        {'maximum_additional_diagnostic_seconds': True}, {'protected_browser_seconds': 481},
+                        {'exact_authorization_text': ''}, {'message_timestamp': ''}, {'origin': 'INFERRED'}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, self.diagnostic_authorization(**changes))
+        for phase, seconds in (('DEVELOPMENT', 3600), ('DIAGNOSTIC', 3601), ('DIAGNOSTIC', True)):
+            with self.assertRaises(ValueError):
+                effective_caps([{'id': DIAGNOSTIC_EXTENSION_ID, 'phase': phase, 'seconds': seconds}])
+        with self.assertRaises(ValueError):
+            self.budget.extend_development(DIAGNOSTIC_EXTENSION_ID)
+        self.assertEqual(self.budget.status()['sha256'], before)
+
+    def renewed_diagnostic_authorization(self, **changes):
+        return self.diagnostic_authorization(**{
+            'authorization_id': 'EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28',
+            'maximum_additional_diagnostic_seconds': 10800,
+            'exact_authorization_text': 'Owner explicitly grants10800 additional diagnostic wall seconds across resumed sessions.',
+            'message_timestamp': '2026-10-30T20:26:59.989+02:00', **changes})
+
+    def test_new_diagnostic_grant_appends_to_old_usage_and_is_idempotent_after_reload(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6377, 'old-work', purpose='DIAGNOSTIC'):
+            self.now += 6377
+        self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, self.diagnostic_authorization())
+        with self.budget.experiment('DEVELOPMENT', 480, 'old-grant-work', purpose='DIAGNOSTIC'):
+            self.now += 400
+        before = self.budget.status()
+        base = self.budget.authorization.read_bytes()
+        grant = 'EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28'
+        path = self.renewed_diagnostic_authorization()
+        self.assertTrue(self.budget.extend_diagnostic(grant, path))
+        after = self.budget.status()
+        self.assertEqual(after['reservations'], before['reservations'])
+        self.assertEqual(after['extensions'][:-1], before['extensions'])
+        self.assertEqual(after['extensions'][-1]['prior_ledger_sha256'], before['sha256'])
+        self.assertEqual(after['cap_s'] - before['cap_s'], 10800)
+        self.assertEqual(after['diagnostic_remaining_s'] - before['diagnostic_remaining_s'], 10800)
+        self.assertEqual(after['diagnostic_extension_remaining_s'] - before['diagnostic_extension_remaining_s'], 10800)
+        self.assertEqual(after['diagnostic_extension_charged_s'], before['diagnostic_extension_charged_s'])
+        self.assertEqual(after['non_diagnostic_development_remaining_s'], before['non_diagnostic_development_remaining_s'])
+        self.assertEqual((after['protected_development_matrix_s'], after['protected_browser_s'],
+                          after['acceptance_cap_s']), (7200, 480, 7200))
+        self.assertEqual(self.budget.authorization.read_bytes(), base)
+        reloaded = EgyptBudget(self.budget.directory)
+        self.assertFalse(reloaded.extend_diagnostic(grant, path))
+        self.assertEqual(reloaded.status()['sha256'], after['sha256'])
+
+    def test_new_diagnostic_grant_without_older_grant_records_actual_usage(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6720, 'old-work', purpose='DIAGNOSTIC'):
+            self.now += 6720
+        grant = 'EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28'
+        self.budget.extend_diagnostic(grant, self.renewed_diagnostic_authorization())
+        with self.budget.experiment('DEVELOPMENT', 480, 'new-grant-work', purpose='DIAGNOSTIC'):
+            self.now += 200
+        status = self.budget.status()
+        self.assertEqual(status['diagnostic_extension_charged_s'], 200)
+        self.assertEqual(status['diagnostic_extension_remaining_s'], 10600)
+        self.assertEqual(status['diagnostic_remaining_s'], 10600)
+        self.assertEqual(status['non_diagnostic_development_remaining_s'], 7680)
+        with closing(self.budget.connect()) as db:
+            self.assertEqual(db.execute('SELECT charged_s FROM diagnostic_usage').fetchall(), [(200.,)])
+
+    def test_new_diagnostic_grant_rejects_wrong_amount_phase_and_changed_provenance(self):
+        grant = 'EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28'
+        before = self.budget.status()['sha256']
+        for phase, seconds in (('DEVELOPMENT', 10800), ('DIAGNOSTIC', 10801),
+                               ('DIAGNOSTIC', 3600), ('DIAGNOSTIC', True)):
+            with self.subTest(phase=phase, seconds=seconds), self.assertRaises(ValueError):
+                effective_caps([{'id': grant, 'phase': phase, 'seconds': seconds}])
+        path = self.renewed_diagnostic_authorization()
+        data = json.loads(path.read_text(encoding='utf8'))
+        data['maximum_additional_diagnostic_seconds'] = 10801
+        path.write_text(json.dumps(data), encoding='utf8')
+        with self.assertRaises(ValueError):
+            self.budget.extend_diagnostic(grant, path)
+        self.assertEqual(self.budget.status()['sha256'], before)
+        path = self.renewed_diagnostic_authorization()
+        self.budget.extend_diagnostic(grant, path)
+        recorded = self.budget.status()['sha256']
+        data = json.loads(path.read_text(encoding='utf8'))
+        data['exact_authorization_text'] = 'Changed original owner message'
+        path.write_text(json.dumps(data), encoding='utf8')
+        with self.assertRaisesRegex(ValueError, 'cannot be changed'):
+            self.budget.extend_diagnostic(grant, path)
+        self.assertEqual(self.budget.status()['sha256'], recorded)
+
+    def test_cumulative_diagnostic_grants_do_not_fund_protected_work(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6720, 'old-diagnostics', purpose='DIAGNOSTIC'):
+            self.now += 6720
+        self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, self.diagnostic_authorization())
+        with self.budget.experiment('DEVELOPMENT', 480, 'old-grant-work', purpose='DIAGNOSTIC'):
+            self.now += 360
+        self.budget.extend_diagnostic('EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28',
+                                      self.renewed_diagnostic_authorization())
+        with self.budget.experiment('DEVELOPMENT', 7200, 'matrix', purpose='MATRIX'):
+            self.now += 7200
+        with self.budget.experiment('DEVELOPMENT', 480, 'browser', purpose='BROWSER'):
+            self.now += 480
+        for purpose, seconds in ((None, 1), ('BROWSER', 480), ('MATRIX', 7200)):
+            with self.subTest(purpose=purpose), self.assertRaisesRegex(ValueError, 'Diagnostic-only|allowance exhausted'):
+                with self.budget.experiment('DEVELOPMENT', seconds, 'extra', purpose=purpose):
+                    self.fail('Spent cumulative diagnostic grants on protected or generic work')
+        status = self.budget.status()
+        self.assertEqual(status['diagnostic_extension_remaining_s'], 14040)
+        self.assertEqual(status['diagnostic_extension_charged_s'], 360)
+        self.assertEqual(status['non_diagnostic_development_remaining_s'], 0)
+        self.assertEqual(status['acceptance_remaining_s'], 7200)
+        self.assertFalse(runner.preflight(runner.matrix_plan(), 900, status)['can_run'])
+
+    def test_diagnostic_only_pool_cannot_subsidize_protected_or_generic_work(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6720, 'old-diagnostics', purpose='DIAGNOSTIC'):
+            self.now += 6720
+        self.assertEqual(self.budget.status()['diagnostic_remaining_s'], 0)
+        self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, self.diagnostic_authorization())
+        with self.budget.experiment('DEVELOPMENT', 7200, 'matrix', purpose='MATRIX'):
+            self.now += 7200
+        with self.budget.experiment('DEVELOPMENT', 480, 'browser', purpose='BROWSER'):
+            self.now += 480
+        for purpose, seconds in ((None, 1), ('BROWSER', 480), ('MATRIX', 7200)):
+            with self.subTest(purpose=purpose), self.assertRaisesRegex(ValueError, 'Diagnostic-only|allowance exhausted'):
+                with self.budget.experiment('DEVELOPMENT', seconds, 'extra', purpose=purpose):
+                    self.fail('Spent diagnostic grant on protected or generic work')
+        check = runner.preflight(runner.matrix_plan(), 900, self.budget.status())
+        self.assertFalse(check['can_run'])
+        self.assertEqual(self.budget.status()['diagnostic_extension_remaining_s'], 3600)
+        self.assertEqual(self.budget.status()['acceptance_remaining_s'], 7200)
+
+    def test_diagnostic_pool_uses_actual_time_and_keeps_unfinished_crash_charges(self):
+        self.budget.extend_development(DEVELOPMENT_EXTENSION_ID)
+        with self.budget.experiment('DEVELOPMENT', 6377, 'old-work', purpose='DIAGNOSTIC'):
+            self.now += 6377
+        self.budget.extend_diagnostic(DIAGNOSTIC_EXTENSION_ID, self.diagnostic_authorization())
+        with self.budget.experiment('DEVELOPMENT', 480, 'first', purpose='DIAGNOSTIC'):
+            reserved = self.budget.status()
+            self.assertEqual(reserved['diagnostic_extension_charged_s'], 137)
+            self.assertEqual(reserved['reservations'][-1]['outcome'], 'RUNNING')
+            self.now += 400
+        self.assertEqual(self.budget.status()['diagnostic_extension_charged_s'], 57)
+        with self.assertRaisesRegex(RuntimeError, 'failed'):
+            with self.budget.experiment('DEVELOPMENT', 480, 'failed', purpose='DIAGNOSTIC'):
+                self.now += 100
+                raise RuntimeError('failed')
+        self.assertEqual(self.budget.status()['diagnostic_extension_charged_s'], 157)
+        with self.assertRaisesRegex(TimeoutError, 'expired'):
+            with self.budget.experiment('DEVELOPMENT', 480, 'overrun', purpose='DIAGNOSTIC'):
+                self.now += 481
+        self.assertEqual(self.budget.status()['diagnostic_extension_charged_s'], 638)
+        self.assertEqual(self.budget.status()['diagnostic_extension_remaining_s'], 2962)
+        self.assertEqual(self.budget.status()['non_diagnostic_development_remaining_s'], 7680)
+        with closing(self.budget.connect()) as db:
+            db.execute("INSERT INTO reservations VALUES ('crash','DEVELOPMENT',480,480,100000,100480,1,'RUNNING',NULL,'crash')")
+            db.execute("INSERT INTO diagnostic_usage VALUES ('crash',0,480)")
+            db.commit()
+        crashed = self.budget.status()
+        self.assertEqual(crashed['diagnostic_extension_charged_s'], 1118)
+        with self.assertRaisesRegex(ValueError, 'crash-charged'):
+            with self.budget.experiment('DEVELOPMENT', 480, 'retry', purpose='DIAGNOSTIC'):
+                self.fail('Retried an unfinished diagnostic')
+
+    def test_diagnostic_grant_cli_requires_provenance_and_cannot_start_native_work(self):
+        path = self.diagnostic_authorization()
+        arguments = ['--egypt-budget', str(self.budget.directory),
+                     '--extend-diagnostic-budget', DIAGNOSTIC_EXTENSION_ID, '--authorization-file', str(path)]
+        for extra in (['--run'], ['--acceptance'], ['--allocate-egypt-budget'],
+                      ['--extend-development-budget', DEVELOPMENT_EXTENSION_ID]):
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                runner.run(runner.parser().parse_args([*arguments, *extra]))
+        before = self.budget.status()['sha256']
+        with self.assertRaises(ValueError):
+            runner.run(runner.parser().parse_args(arguments[:-2]))
+        self.assertEqual(self.budget.status()['sha256'], before)
+        self.assertEqual(runner.run(runner.parser().parse_args(arguments)), 0)
+        self.assertFalse(self.owner.exists())
+
     def test_development_extension_is_immutable_idempotent_and_preserves_prior_charges(self):
         with self.budget.experiment('DEVELOPMENT', 300, 'old-development'):
             self.now += 123
@@ -486,11 +711,14 @@ class EgyptRunnerTests(EgyptValidationFixture):
         self.handoff.assert_not_called()
 
     def test_diagnostic_is_separate_from_development_matrix_and_protects_windows(self):
+        profile = {'requested': True, 'status': 'CAPTURED', 'source': 'OFFLINE_FIXTURE_ONLY',
+                   'output': {'sample_count': 3, 'sha256': 'a' * 64}}
         def diagnostic_pair(options):
             self.fake_pair(options)
             path = options.report_folder / 'report.json'
             report = json.loads(path.read_text())
             report.update(native_acceptance=False, diagnostic_passed=True,
+                          diagnostic_gil_profile=profile,
                           diagnostic_assessment={'passed': True, 'gates': {'software_fixture': True}})
             report['pair']['runs'] = {'ROBOSPHERE': {'status': 'PAUSED', 'reason': 'diagnostic_goal_reached'}}
             save_json(path, report)
@@ -500,6 +728,8 @@ class EgyptRunnerTests(EgyptValidationFixture):
         self.assertEqual(runner.run(args), 0)
         report = json.loads(Path(args.report).read_text())
         self.assertTrue(report['diagnostic_passed'])
+        self.assertEqual(report['diagnostics'][0]['diagnostic_gil_profile'], profile)
+        self.assertEqual(runner.diagnostic_records(self.budget)[0]['diagnostic_gil_profile'], profile)
         self.assertEqual(report['pairs'], [])
         self.assertFalse(report['development_passed'])
         self.assertFalse((self.budget.directory / 'development.json').exists())

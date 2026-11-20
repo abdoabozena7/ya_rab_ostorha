@@ -1,6 +1,7 @@
 import { STEP } from "./config.js";
 
 export function signalSpeedLimit(world, car) {
+  if (world.environment === "egypt" || world.environment === "metro") return Infinity;
   if (car.reckless) return Infinity;
   let limit = Infinity;
   for (const junction of world.junctions) {

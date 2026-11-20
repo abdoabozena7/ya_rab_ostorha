@@ -2,6 +2,7 @@
 @import "./vision.css";
 @import "./camera-screen.css";
 @import "./people.css";
+@import "./pursuit.css";
 
 :root {
   font-family: Tahoma, Arial, sans-serif;
@@ -44,7 +45,8 @@ button:hover,
   background: #ffffff1f;
 }
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
@@ -245,6 +247,31 @@ input:focus-visible {
   border-radius: 5px;
   padding: 9px;
 }
+.drawer select {
+  display: block;
+  width: 100%;
+  margin-block: 9px 16px;
+  padding: 9px;
+  color: inherit;
+  background: #293930;
+  border: 1px solid #76857a99;
+  border-radius: 5px;
+  font: inherit;
+}
+#districtControls {
+  margin-block: 20px;
+  padding-block: 4px 14px;
+  border-block: 1px solid #76857a66;
+}
+#districtControls h3 {
+  margin-block: 12px 8px;
+}
+#settingsError {
+  color: #f4c38d;
+}
+#settingsError:empty {
+  display: none;
+}
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -374,6 +401,17 @@ input:focus-visible {
   font-size: 10px;
   text-shadow: 0 1px 4px #000;
 }
+@media (max-height: 740px) {
+  body:has(#pursuitPanelHost:not([hidden])) #minimap {
+    width: 90px;
+    height: 90px;
+    bottom: 31px;
+  }
+  body:has(#pursuitPanelHost:not([hidden])) .map-label {
+    right: 53px;
+    bottom: 13px;
+  }
+}
 .driving-hud {
   position: fixed;
   z-index: 2;
@@ -497,5 +535,23 @@ footer span {
   }
   .driving-hud {
     bottom: 52px;
+  }
+}
+
+@media (max-width: 660px) {
+  .topbar {
+    display: block;
+  }
+  .topbar nav {
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  #loadingStatus {
+    top: 114px;
+    right: 14px;
+    max-width: calc(100vw - 28px);
+  }
+  .pursuit-panel {
+    top: 145px;
   }
 }

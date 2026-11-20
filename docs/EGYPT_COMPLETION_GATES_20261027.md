@@ -45,11 +45,105 @@ The runner requires:
 4. One reserved acceptance matrix on 961103, 961109 and 961121, both orders.
 5. The separately charged browser check; its short trip is not acceptance.
 
+### Additional diagnostic-only authorization - 29 October 2026
+
+The user explicitly authorized a new maximum **3,600 diagnostic seconds** and
+then requested implementation of its admission path. The exact recognized key
+is `EGYPT_DIAGNOSTIC_20261029T091733Z_ef402517`, phase `DIAGNOSTIC`. It is not a
+reuse or enlargement of `EGYPT_DEVELOPMENT_20261027`. Other identities, phases
+and amounts remain rejected.
+
+The public operation requires original-message JSON provenance:
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --egypt-budget output\egypt-validation --extend-diagnostic-budget EGYPT_DIAGNOSTIC_20261029T091733Z_ef402517 --authorization-file .runtime-proof\root-driving-validation\continuations\20261029T091733Z\authorization.json
+```
+
+The operation neither starts CARLA nor reserves time. It appends once, stores
+the original message and SHA-256 immutably, preserves prior entries/charges and
+the base allowance, and rejects changed provenance on repeat. Identical repeats
+add no time.
+
+The **7,200-second DEVELOPMENT matrix, 480-second browser, and one-shot
+7,200-second ACCEPTANCE windows do not increase**. The additional pool can fund
+only `DIAGNOSTIC` reservations. Unused diagnostic extension time is excluded
+from matrix/browser/generic-development admission. Original diagnostic headroom
+is consumed first; actual elapsed charges, failures, crash reservations and
+overruns remain recorded without clipping.
+
+### Additional owner diagnostic authorization - 30 October 2026
+
+The owner explicitly authorized another **10,800 wall-clock DIAGNOSTIC seconds**
+for the original goal **across resumed sessions**, including implementation of
+a safe append-only admission path. The exact new identity is
+`EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28`; it does not replace or reset the
+earlier 3,600-second grant, its usage, or any historical reservation.
+
+```powershell
+.\.venv-carla\Scripts\python.exe -m scripts.native.validate_egypt_urban --egypt-budget output\egypt-validation --extend-diagnostic-budget EGYPT_DIAGNOSTIC_20261030T182659Z_78014d28 --authorization-file .runtime-proof\root-driving-validation\continuations\20261030T182659Z\authorization.json
+```
+
+The public operation stores the original owner message and SHA-256 immutably,
+appends once, and adds no time on an identical repeat from another process or
+resumed session. Both known diagnostic grants contribute to diagnostic-only
+capacity and retain all previous actual/crash/overrun charges. Arbitrary IDs,
+different amounts/phases and changed provenance are rejected. The base allowance,
+protected **7,200 / 480 / 7,200-second** allocations, original acceptance criteria
+and actual host restrictions remain unchanged. Recording authority starts no
+engine, claims no native acceptance, and does not permit an unchanged-source
+retry. Subsequent execution still requires real admission and all prerequisites.
+
+The real public-CLI grant gate passed: the first application added exactly
+10,800 seconds, the fresh-process repeat added zero, prior diagnostic charges
+remained **3,337.633 seconds**, and total diagnostic capacity became
+**11,062.367 seconds**. The protected non-diagnostic development capacity
+remained **7,680 seconds**. The old allowance, reservation/attempt/usage rows
+and earlier provenance are preserved.
+
+Current-source software on `06c7adf9...` passed **1,218 Python tests / four
+optional skips, 221 JavaScript tests, the dashboard build and 30 strict complete
+retained decisions**. The real read-only native preflight then rejected storage:
+**107,590,705,152 D bytes free versus 141,734,109,938 required**, with the
+unchanged 50% margin and 4 GiB reserve. All 47 closed Egypt recordings are
+already losslessly compressed. No native engine or reservation started, no
+protected allocation or acceptance criterion changed, and the new diagnostic
+grant remains available across resumed sessions. Recover actual authorized
+capacity before continuing; this is not a new native qualification.
+
+Budget/runner implementation changes affect the existing source fingerprint.
+They require fresh software/replay evidence and protected-2707 revalidation
+before Normal1703/3709. Grant admission alone cannot pass any native gate or
+close the parent goal. The earlier failed policy admission remains preserved.
+
 Every diagnostic records its source, reservation and concrete change
 hypothesis. Its target is claimed before the worker starts, so interruption
 cannot erase an attempt. Repeating the same source/target is refused.
+The existing public execution bound is180--1800seconds plus300seconds cleanup
+per planned pair. A600second reservation is the300second execution choice,
+not an absolute diagnostic minimum. A240+300=540second request may fit a
+smaller existing balance only if it still reaches the unchanged physical goal
+and every timing/safety/video/cleanup gate. It cannot authorize an unchanged
+source/target retry or a shortened physical result.
 Incomplete prerequisites, insufficient storage or protected time, source
 changes, crashes, and timeouts retain the failure rather than promoting Egypt.
+
+The 29 October Normal1703 trial exposed a diagnostic phase-accounting defect:
+the requested 180-second execution window was cut to 105 seconds by deducting
+75 seconds internally, despite the separately admitted 300-second
+finalization/cleanup allowance. It stopped at97.582m/24.45 simulation seconds
+with healthy timing and zero contacts, not at the required157.351m goal.
+That failed trial is retained.
+
+Egypt **diagnostics only** now separate the requested execution boundary from
+a75-second worker-finalization boundary, while preserving at least90 seconds
+for independent cleanup and clamping both to the same parent reservation.
+The total480/600-second reservation, physical goals and timing/safety gates do
+not increase or relax. A tighter parent deadline shortens execution rather than
+spending cleanup reserves. Full MATRIX/ACCEPTANCE and ordinary legacy phase
+boundaries remain unchanged. Expiration is reported explicitly as
+`diagnostic_execution_window_expired`, never as arrival or a manufactured
+collision. New-source software/replay and protected2707 revalidation remain
+mandatory before retrying Normal.
 
 ## Timing and control
 
@@ -72,6 +166,93 @@ release. Reporting and comparison sampling run after command submission.
 Native evidence uses a bounded writer; overflow is an explicit failure with a
 durable incomplete prefix. RGB encoding is off the callback path; ordinary
 recording uses a bounded, lossless queue rather than silently replacing images.
+
+Bulk prediction encoding uses pinned `ujson==5.10.0` only for exact internal,
+already-validated frozen JSON roots. Public containers, arbitrary readonly
+wrappers and dataclasses retain the existing encoder. Nonfinite numbers and
+binary JSON values are rejected. Complete decoded values and precision remain
+unchanged; equivalent numeric text may differ, so new asset hashes bind the
+actual new bytes. Existing recordings are never re-encoded. The entire retained
+601-decision native prediction corpus passed exact complete-payload comparison.
+This is codec/regression evidence, not proof of improved native timing or FPS;
+the original current-source native gates remain mandatory.
+
+Queue ownership accounting likewise preserves exact conservative byte charges,
+immutable sharing and mutable snapshots. Exact internally frozen map/sequence
+dispatch and a fixed float-first C-level scalar-type tuple avoid repeated
+Python generator/type-tuple work; public arbitrary containers still use the
+original recursive ownership path. The whole601-prediction native corpus
+retains identical charges/values/identity. Component acceleration is not native
+timing acceptance.
+
+Read-only diagnostic monitoring also separates per-process/per-adapter GPU
+engine utilization from device totals and WDDM memory allocations. Engine
+percentages are not summed across contexts. Physical/commit memory availability
+and process page-fault deltas are recorded independently; Windows cumulative
+page faults include both soft and hard faults and do not alone prove paging.
+Missing engine instances remain explicitly unavailable. These counters do not
+isolate Unreal render/readback time or authorize global tracing, another tick
+owner, higher privileges or any changed driving/safety workload.
+
+For explicitly requested **native worker crash capture**, the child-local
+`OSTORHA_DIAGNOSTIC_NATIVE_CRASH_TOOL` must name the pinned Microsoft-signed
+project-`tmp` ProcDump64 12.02 binary. The same exact live
+DEVELOPMENT/DIAGNOSTIC authorization is required; ordinary, matrix, reserved
+holdout, inactive, foreign and expired requests are rejected before launch.
+The tool attaches only to the actual worker PID, not its virtualenv redirector.
+It is armed **only after all original DRIVING evidence is saved and its
+after-control hook is released**, before native teardown. Whole-run debugger
+capture observed thousands of first-chance binding exceptions; a bounded real
+binding control measured a26.35x local loop slowdown. That observer effect is
+not production latency or permission to omit any original timing sample.
+The narrower capture does not cover unexpected faults during DRIVING.
+Minimal second-chance dumps, logs, identities and hashes stay local outside Git.
+There is no global debugger/ETW registration or privilege escalation.
+
+The independent parent finalizes capture after worker exit, within the same
+reservation and before independent simulator cleanup. A captured native fault
+does **not** make its worker exit clean or satisfy timing, export or physical
+gates. Default-off retains the original ten diagnostic gates; a requested
+capture adds a separate verification gate. A clean run without a dump means
+no exception was reproduced, not that the intermittent stack overflow is fixed.
+The capture helper must first pass bounded owned-process crash and clean-exit
+controls, explicitly classified as synthetic, not CARLA evidence.
+
+Native population teardown stops and joins the owned Traffic Manager through
+the installed SDK's `shut_down()` **before** destroying its actors. It does not
+wake the still-live manager asynchronously against a retiring world. Closing
+an already disconnected manager is a no-op; failed shutdown is explicit and
+does not falsely discard actor ownership. DRIVING configuration and behavior
+remain unchanged. The actual captured crash unwinds through recursive SDK
+`Map::GetSignalsInDistance` on a native background thread; the last Python HTTP
+shutdown marker was not its causal call site. The teardown-order correction
+still requires the unchanged native timing, physical and cleanup gates.
+
+An explicitly requested `OSTORHA_DIAGNOSTIC_ENGINE_SNAPSHOTS=1` additionally
+uses the same pinned tool/ticket to capture two minimal snapshots of the single
+owned shipping engine, after80 and380 controlled frame advances. Capture
+children are asynchronous and bounded, with kill-on-worker-exit ownership.
+Raw dumps, frame/host clocks, identities, thread CPU streams and hashes remain
+local for the matching installed engine PDB. No full-memory/global capture,
+extra tick or driving decision is introduced. Snapshot pauses are observer
+effects; all original timing samples remain included, and this instrumented run
+cannot establish production FPS. Requested collection adds a separate gate.
+
+For an explicitly requested profiled diagnostic only, its child-local
+`OSTORHA_DIAGNOSTIC_GIL_PROFILER` may name the verified project-`tmp`
+`py-spy.exe` 0.4.1. An exact live DEVELOPMENT/DIAGNOSTIC Egypt ticket is required;
+matrix, acceptance, foreign and expired requests are rejected before launch.
+One 60-second, 100 Hz `--threads --gil --nonblocking` speedscope capture targets
+the actual worker PID after actuation in DRIVING, with no locals/subprocess
+collection. The pair folder retains command, binary/worker identities, host
+clocks, complete tool log, output hashes, sample count and explicit failures.
+Its owned child is waited/stopped within the existing ticket; on Windows a
+kill-on-close job also bounds abrupt worker exit. A requested valid nonempty
+capture adds an eleventh diagnostic gate; all original ten remain mandatory.
+Absent opt-in changes neither default report gates nor native behavior.
+Offline fixture checks are not native GIL evidence or a demonstrated latency
+repair; current-source software/replay and admitted native inspection remain
+the coordinator's responsibility. The root goal remains OPEN.
 
 The maneuver owner and independent shield reuse immutable same-frame forecast
 geometry without reusing a previous frame's authorization. All physical modes,

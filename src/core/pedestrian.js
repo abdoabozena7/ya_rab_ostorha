@@ -1,7 +1,8 @@
 import { STEP, clamp } from "./config.js";
 import { distance, angleDelta, pointOnRoad } from "./geometry.js";
-import { walkingWaypoint, walkSegmentClear } from "./walk-route.js";
+import { walkingWaypoint, walkSegmentBlocker } from "./walk-route.js";
 import { createPedestrianBody } from "./pedestrian-body.js";
+const WALK_TURNS = [0, -0.5, 0.5, -1, 1, -1.6, 1.6, -2.2, 2.2, Math.PI];
 const pose = (road, along, side, offset) =>
   road.axis === "z"
     ? { x: road.fixed - side * offset, z: along }
@@ -41,43 +42,48 @@ export function nextWalk(world, person) {
 }
 
 function nearbyBodies(world, p) {
-  return world.actorIndex
-    .near(p, 28)
-    .filter((a) => a !== p)
-    .concat(world.staticIndex.near(p, 34));
+  const nearby = world.actorIndex.near(p, 28);
+  const self = nearby.indexOf(p);
+  if (self !== -1) nearby.splice(self, 1);
+  for (const body of world.staticIndex.near(p, 34)) nearby.push(body);
+  return nearby;
 }
 
-function move(p, body, heading, targetSpeed, reason, nearby) {
+function move(world, p, body, heading, targetSpeed, reason, nearby, district, reuseProposal) {
   const speed = clamp(
     targetSpeed,
     Math.max(0, p.speed - body.maxDecelerationMps2 * STEP),
     p.speed + body.maxAccelerationMps2 * STEP,
   );
-  const next = {
-    ...p,
-    x: p.x + Math.sin(heading) * speed * STEP,
-    z: p.z + Math.cos(heading) * speed * STEP,
-    heading,
-    speed,
-    accelerationMps2: (speed - p.speed) / STEP,
-    turnRateRadS: angleDelta(heading, p.heading) / STEP,
-    reason,
-  };
+  const x = p.x + Math.sin(heading) * speed * STEP;
+  const z = p.z + Math.cos(heading) * speed * STEP;
+  const oldSpeed = p.speed;
+  const turnRateRadS = angleDelta(heading, p.heading) / STEP;
   // Match World's reserved-body guard; an occupied step is the only instant stop.
-  if (speed > 0 && !walkSegmentClear(p, p, next, nearby, 0.12)) {
-    next.x = p.x;
-    next.z = p.z;
-    next.speed = 0;
-    next.accelerationMps2 = -p.speed / STEP;
-    next.reason = "blocked";
+  const blocker = speed > 0
+    ? walkSegmentBlocker(p, p, { x, z }, nearby ?? nearbyBodies(world, p), 0.12)
+    : null;
+  const next = reuseProposal ? p : { ...p };
+  if (!blocker) {
+    next.x = x;
+    next.z = z;
   }
+  next.heading = heading;
+  next.speed = blocker ? 0 : speed;
+  next.accelerationMps2 = blocker ? -oldSpeed / STEP : (speed - oldSpeed) / STEP;
+  next.turnRateRadS = turnRateRadS;
+  next.reason = blocker ? "blocked" : reason;
+  if (district) next.blockedBy = blocker?.id ?? null;
   return next;
 }
 
-export function pedestrianMotion(world, p) {
+// District walkers already tick against a private working copy.
+export function pedestrianMotion(world, p, reuseProposal = false) {
+  const district = world.environment === "egypt" || world.environment === "metro";
+  const metro = world.environment === "metro";
   const body = p.body ??= createPedestrianBody(p);
   const stop = (reason) =>
-    move(p, body, p.heading, 0, reason, nearbyBodies(world, p));
+    move(world, p, body, p.heading, 0, reason, null, district, reuseProposal);
   if (p.motionMode === "stop")
     return stop(p.speed > 0 ? "stopping" : "stopped");
   if (p.pause > 0) {
@@ -85,6 +91,15 @@ export function pedestrianMotion(world, p) {
     return stop("waiting");
   }
   let remaining = distance(p, p.target);
+  if (
+    district &&
+    p.district?.holdAtTarget &&
+    remaining < Math.max(
+      0.22,
+      p.speed ** 2 / (2 * body.maxDecelerationMps2) + p.speed * STEP + 0.04,
+    )
+  )
+    return stop("district-target");
   if (remaining < 0.22) {
     if (p.crossing) p.side = -p.side;
     p.along = p.road.axis === "z" ? p.z : p.x;
@@ -96,8 +111,10 @@ export function pedestrianMotion(world, p) {
   }
   // Check an approaching vehicle before entering the carriageway; once a
   // crossing has started, keep walking so the person can clear the lane.
+  const curbTarget = metro && p.walkRoute?.[0] ? p.walkRoute[0] : p.target;
+  const curbDistance = Math.max(0.001, curbTarget === p.target ? remaining : distance(p, curbTarget));
   const approach = Math.min(
-    remaining,
+    metro ? curbDistance : remaining,
     Math.max(
       1,
       p.speed ** 2 / (2 * body.maxDecelerationMps2) +
@@ -105,12 +122,12 @@ export function pedestrianMotion(world, p) {
     ),
   );
   if (
+    !(district && p.district?.yieldAtCurb === false) &&
     !pointOnRoad(p, world.roads) &&
     pointOnRoad(
       {
-        ...p,
-        x: p.x + (p.target.x - p.x) / remaining * approach,
-        z: p.z + (p.target.z - p.z) / remaining * approach,
+        x: p.x + (curbTarget.x - p.x) / (metro ? curbDistance : remaining) * approach,
+        z: p.z + (curbTarget.z - p.z) / (metro ? curbDistance : remaining) * approach,
       },
       world.roads,
     )
@@ -126,30 +143,31 @@ export function pedestrianMotion(world, p) {
     if (danger) return stop("looking");
   }
   const nearby = nearbyBodies(world, p);
-  const waypoint = walkingWaypoint(world, p, nearby);
+  const waypoint = district && p.district?.routeConstrained
+    ? p.walkRoute?.[0] ?? p.target
+    : walkingWaypoint(world, p, nearby);
   const desired = Math.atan2(waypoint.x - p.x, waypoint.z - p.z);
-  const close = nearby.filter(
-    (a) => distance(a, p) < (a.type === "static" ? 10 : 5),
-  );
+  const close = nearby.filter((a) => {
+    const range = a.type === "static" ? 10 : 5;
+    const dx = a.x - p.x, dz = a.z - p.z;
+    return Math.abs(dx) <= range && Math.abs(dz) <= range && Math.hypot(dx, dz) < range;
+  });
   let targetHeading = desired,
     best = Infinity;
+  const probeLength = Math.min(0.95, distance(p, waypoint));
+  const previousHeading = p.walkHeading ?? p.heading;
+  const probe = { x: 0, z: 0 };
   // Walk round personal space using a consistent right-side preference. The
   // candidate score breaks the symmetric face-to-face pedestrian deadlock.
-  for (const turn of [0, -0.5, 0.5, -1, 1, -1.6, 1.6, -2.2, 2.2, Math.PI]) {
+  for (const turn of WALK_TURNS) {
     const heading = desired + turn;
-    const probeLength = Math.min(0.95, distance(p, waypoint));
-    const probe = {
-      ...p,
-      x: p.x + Math.sin(heading) * probeLength,
-      z: p.z + Math.cos(heading) * probeLength,
-    };
-    if (!walkSegmentClear(p, p, probe, close, 0.12)) continue;
-    const score =
-      distance(probe, waypoint) +
-      Math.abs(turn) * 0.08 +
-      (turn > 0 ? 0.03 : 0) +
-      Math.abs(angleDelta(heading, p.walkHeading ?? p.heading)) * 0.24;
-    if (score < best) {
+    probe.x = p.x + Math.sin(heading) * probeLength;
+    probe.z = p.z + Math.cos(heading) * probeLength;
+    const partialScore = distance(probe, waypoint) + Math.abs(turn) * 0.08 +
+      (turn > 0 ? 0.03 : 0);
+    if (partialScore >= best) continue;
+    const score = partialScore + Math.abs(angleDelta(heading, previousHeading)) * 0.24;
+    if (score < best && !walkSegmentBlocker(p, p, probe, close, 0.12)) {
       best = score;
       targetHeading = heading;
     }
@@ -175,8 +193,10 @@ export function pedestrianMotion(world, p) {
       ? 0
       : requestedSpeed * Math.max(0, Math.cos(turn)) ** 3;
   return move(
-    p, body, heading, targetSpeed,
+    world, p, body, heading, targetSpeed,
     best === Infinity ? "yielding" : p.crossing ? "crossing" : "walking",
     nearby,
+    district,
+    reuseProposal,
   );
 }

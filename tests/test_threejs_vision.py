@@ -290,6 +290,18 @@ class VisionServiceUnitTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.service.submit(frame())
 
+    def test_start_acknowledges_a_live_worker_but_does_not_refresh_a_stale_camera(self):
+        clock = [10.0]
+        with patch.object(vision, "time", types.SimpleNamespace(monotonic=lambda: clock[0])):
+            self.service.process_frame(frame())
+            clock[0] += 1
+            start = self.service.start()
+            self.assertTrue(start["available"])
+            self.assertIsNone(start["result"])
+            self.assertEqual(self.runtime.starts, 1)
+            self.assertFalse(self.service.snapshot("unit-stream")["available"])
+            self.assertEqual(self.service.process_frame(frame(1, 0.1, "new-stream"))["streamId"], "new-stream")
+
     def test_closing_while_work_is_inflight_prevents_late_publication(self):
         self.runtime.release.clear()
         self.service.submit(frame())

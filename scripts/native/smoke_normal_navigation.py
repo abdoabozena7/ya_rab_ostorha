@@ -2,7 +2,8 @@
 
 Uses the dashboard's production WebSocket commands. It does not tick CARLA,
 alter persistent preferences, or treat one collision-free interval as proof of
-general safety. The ego car is stopped in the cleanup path.
+general safety. Positions use the compact WebSocket vehicle telemetry, not the
+HTTP-only canonical payload. The ego car is stopped in the cleanup path.
 """
 
 import argparse
@@ -29,7 +30,7 @@ def main():
     started_wall = time.monotonic()
     with ObservationSession() as session:
         session.wait(lambda s: s['mode'] == 'PAUSED' and s['vehicle']['speedMagnitudeMps'] < .15)
-        start_position = session.state['canonical']['vehicle']['transform']['position_m']
+        start_position = session.state['vehicle']['positionWorldM']
         # This point is ahead of the default Town10HD_Opt spawn, on its street.
         session.action('destination', {'location': [-36.883373, -68.379028, 0.],
                                        'name': 'NORMAL sensor drive check'})
@@ -52,7 +53,7 @@ def main():
                 route = s.get('route') or {}
                 rows.append({
                     'frame': v['frame'], 'timestamp_s': v['timestamp'],
-                    'speed_kmh': v['speedKmh'], 'position_m': s['canonical']['vehicle']['transform']['position_m'],
+                    'speed_kmh': v['speedKmh'], 'position_m': v['positionWorldM'],
                     'remaining_m': route.get('remaining_m'), 'journey_status': s['journey']['status'],
                     'brake': v['brake'], 'throttle': v['throttle'],
                     'decision_source': stop['decision_source'], 'stop_reason': stop['reason'],

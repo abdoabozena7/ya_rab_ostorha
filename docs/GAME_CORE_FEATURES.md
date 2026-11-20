@@ -25,14 +25,14 @@ entrypoint, not approve a list of historical feature names.
 
 ## What is deliberately not merged as active behavior
 
-- **New narrow Egyptian streets and alleys:** the user placed the road-network
-  redesign in a later step. The current registered road/collision/navigation
-  layout remains the authority.
-- **Full chaotic crowd/traffic policy:** richer yielding, hesitation, sudden
+- **Arbitrary road-network generation:** the next opt-in
+  [Egyptian district](EGYPT_DISTRICT.md) is a bounded authored network, not an
+  unrestricted city generator. The original city layout remains available.
+- **Universal chaotic crowd/traffic policy:** district-specific yielding, hesitation, sudden
   entry, cut-ins, reversing and congestion behaviors require their own physical
   scenarios and false-brake controls. The existing deterministic city/scenarios
   remain available; old native scenario schedules are not claimed as new
-  standalone behavior.
+  standalone behavior without actual current execution evidence.
 - **Native sensor and engine lifecycle:** CARLA/GTA actor handles, synchronous
   ticks, depth surfaces, watchdogs, native admission and protected budgets stay
   historical and inactive.

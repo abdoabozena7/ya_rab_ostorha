@@ -92,6 +92,9 @@ export function mountCameraScreen({ navigation, onAction, onVisibilityChange } =
   recognition.id = "cameraRecognition";
   const applied = node("p", "camera-screen-applied");
   applied.id = "cameraAppliedReason";
+  const districtSources = node("ul", "camera-screen-evidence-list");
+  districtSources.id = "cameraDistrictSources";
+  districtSources.hidden = true;
   const detail = node("details", "camera-screen-detail");
   detail.append(node("summary", "", "Detection and motion evidence"));
   const detectionList = node("ul", "camera-screen-evidence-list");
@@ -107,7 +110,7 @@ export function mountCameraScreen({ navigation, onAction, onVisibilityChange } =
   error.setAttribute("role", "alert");
   const help = node("p", "camera-screen-help",
     "Opening this screen does not start a model. Close / Esc returns to driving. W A S D drive · Space brake.");
-  panel.append(header, status, error, applied, images, legend, identity, timing, recognition, detail, help);
+  panel.append(header, status, error, applied, districtSources, images, legend, identity, timing, recognition, detail, help);
   document.body.append(panel);
 
   function showError(reason) {
@@ -444,8 +447,22 @@ export function mountCameraScreen({ navigation, onAction, onVisibilityChange } =
     text(analysis.empty, pair.status === "mismatch" ? "No matching frame. Old boxes are not drawn on new pixels."
       : pair.status === "stale" ? "Stale evidence withheld. Waiting for a fresh matching frame."
         : "No analysed image. Raw preview is not recognition.");
+    const sources = state.applied?.districtSources;
+    const speedCap = (value) => finite(value) ? `${value.toFixed(2)} m/s` : "no cap";
     text(applied, `Applied now (current controller, not an image label): ${readable(state.applied?.reason)}` +
-      (finite(state.ego?.speedMps) ? ` · vehicle ${state.ego.speedMps.toFixed(2)} m/s` : ""));
+      (finite(state.ego?.speedMps) ? ` · vehicle ${state.ego.speedMps.toFixed(2)} m/s` : "") +
+      (sources ? ` · source ${readable(sources.appliedSource)} · target ${speedCap(sources.finalMps)}` : ""));
+    districtSources.hidden = !sources;
+    list(districtSources, sources ? [
+      `Camera pixels: ${readable(sources.visual?.state)} · ${speedCap(sources.visual?.targetSpeedMps)} · ` +
+        `oldest support ${finite(sources.visual?.ageMs) ? `${sources.visual.ageMs.toFixed(0)} ms` : "age unavailable"} · ` +
+        readable(sources.visual?.reason),
+      `Static map: ${speedCap(sources.map?.targetSpeedMps)} · ${readable(sources.map?.reason)}. ` +
+        "Geometric prior, not measured camera visibility or hidden-person detection.",
+      `Behavior: requested ${speedCap(sources.requestedMps)} → ${speedCap(sources.behaviorMps)}.`,
+      `Physical guard: composed ${speedCap(sources.composedMps)} → actual ${speedCap(sources.finalMps)} · ` +
+        (sources.appliedSource === "physical-guard" ? "guard binds; full braking available." : "no additional binding guard cap."),
+    ] : []);
     const samePixels = committed?.pair.key === pair.key &&
       committed?.pair.frame.imageJpegBase64 === pair.frame?.imageJpegBase64;
     const retainComplete = pair.canAnalyze && finite(pair.ageMs) && committed?.pair.canAnalyze &&

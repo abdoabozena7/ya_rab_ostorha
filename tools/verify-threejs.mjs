@@ -79,7 +79,7 @@ try {
     }));
     const initial = await sample();
     report.states.push({ action: "loaded-city", ...initial });
-    assert.equal(initial.environment, "city");
+    assert.equal(initial.environment, "metro");
     assert.deepEqual(initial.assetFailures, []);
     assert.deepEqual(initial.audit, []);
     await page.screenshot({ path: path.join(output, "start.png") });
@@ -138,7 +138,7 @@ try {
     report.states.push({ action: "independent-test-lab", ...await sample() });
     await page.locator("#labBtn").click();
     report.returnedCity = await page.evaluate(() =>
-      window.sim.world === window.__recoveryCity && window.sim.world.environment === "city");
+      window.sim.world === window.__recoveryCity && window.sim.world.environment === "metro");
     assert.ok(report.returnedCity, "Return must restore the existing city, not a new unrelated world");
 
     await page.locator("#settingsBtn").click();
@@ -147,7 +147,7 @@ try {
     await page.waitForFunction(() => window.sim.world.config.seed === "threejs-recovery-ui");
     report.resetRecovered = await page.evaluate(() =>
       window.sim.world !== window.__recoveryCity
-      && window.sim.world.environment === "city" && window.sim.audit().length === 0);
+      && window.sim.world.environment === "metro" && window.sim.audit().length === 0);
     assert.ok(report.resetRecovered, "Settings reset must create a usable clean city");
     await page.locator("#closeSettings").click();
     await page.waitForTimeout(700);

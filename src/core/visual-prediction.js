@@ -1,4 +1,5 @@
 import { VEHICLE } from "./config.js";
+import { bodyPathAllowsLateralMotion } from "./body-path-evidence.js";
 
 const SOURCE = "visual-prediction";
 const PIXELS = "camera-pixels";
@@ -9,6 +10,8 @@ const MAX_TRACKS = 24;
 const MAX_HISTORY = 12;
 const MAX_WALK_SPEED = 4;
 const STOP_SPEED_MPS = 0.05;
+const PERSON_CONFIDENCE = 0.55;
+const MOTION_CONFIDENCE = 0.65;
 const LABELS = ["person", "motion", "vehicle"];
 const RESULT_KEYS = [
   "streamId", "frameId", "simulationTimeS", "camera", "ego", "width",
@@ -31,6 +34,14 @@ const EPISODE_KEYS = [
   "lastSupportTimeS", "clearFrameId", "clearedAtS", "expiryReason",
 ];
 const clamp = (n, low, high) => Math.min(high, Math.max(low, n));
+
+function imageOverlap(a, b) {
+  const width = Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0]));
+  const height = Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+  const intersection = width * height;
+  return intersection / ((a[2] - a[0]) * (a[3] - a[1]) +
+    (b[2] - b[0]) * (b[3] - b[1]) - intersection);
+}
 
 function object(value, keys, name) {
   if (!value || typeof value !== "object" || Array.isArray(value) ||
@@ -251,14 +262,20 @@ function validateEpisode(value, track) {
     number(value.clearFrameId, value.originFrameId, track.frameId, "episode clear frame", true);
   if (value.expiryReason !== null) token(value.expiryReason, "episode expiry reason");
 }
-function publicTrack(track, nowS) {
-  return {
+function publicTrack(track, nowS, ego, freshMotionSupport = false) {
+  let history = track.history;
+  if (freshMotionSupport) {
+    // Keep old samples for association, not for an actionable motion fit.
+    const first = history.findIndex((sample) => nowS - sample.timeS <= MAX_AGE_S + 1e-8);
+    history = history.slice(first < 0 ? -1 : first);
+  }
+  const result = {
     id: track.id, source: PIXELS, streamId: track.streamId,
     label: track.label, confidence: track.confidence, frameId: track.frameId,
-    firstSeenS: track.history[0].timeS, lastSeenS: track.lastSeenS,
-    observations: track.history.length, ...fit(track.history),
+    firstSeenS: history[0].timeS, lastSeenS: track.lastSeenS,
+    observations: history.length, ...fit(history),
     box: [...track.box],
-    history: track.history.map((p) => ({
+    history: history.map((p) => ({
       frameId: p.frameId, simulationTimeS: p.timeS, position: { x: p.x, z: p.z },
     })),
     holdUntilS: track.holdUntilS, holdSpeedMps: track.holdSpeedMps,
@@ -267,6 +284,25 @@ function publicTrack(track, nowS) {
     ageMs: Math.max(0, (nowS - track.lastSeenS) * 1000),
     stopEpisode: copyEpisode(track.stopEpisode),
   };
+  if (freshMotionSupport && track.label !== "vehicle" && result.reliable &&
+      history.length >= 3 && history.length < track.history.length &&
+      (!track.stopEpisode || track.stopEpisode.phase === "cleared")) {
+    // Older evidence can veto a transient box sway, but cannot start or clear a stop.
+    const reference = { ...fit(track.history), history: result.history, lastSeenS: track.lastSeenS };
+    const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
+    const lateral = ({ x, z }) => x * c - z * s;
+    const error = (covariance) => Math.sqrt(Math.max(0,
+      c * c * covariance.xx - 2 * c * s * covariance.xz + s * s * covariance.zz));
+    const lateralMps = lateral(result.velocity), direction = Math.sign(lateralMps);
+    const oldDirectionMps = direction * lateral(reference.velocity) -
+      (0.05 + error(reference.velocityCovarianceM2S2));
+    const observedShiftM = direction * (lateral(history.at(-1)) - lateral(history[0]));
+    const resolvedShiftM = observedShiftM - 2 * error(result.positionCovarianceM2);
+    // An apparent change of direction needs displacement beyond the existing person margin.
+    result.reliable = (!reference.reliable || oldDirectionMps >= 0.2 || resolvedShiftM > 0.35) &&
+      bodyPathAllowsLateralMotion(reference, { lateralMps, supportTimeS: result.firstSeenS }, ego);
+  }
+  return result;
 }
 function validateTrack(track) {
   object(track, TRACK_KEYS, "visual track");
@@ -379,7 +415,7 @@ function forecast(track, nowS, ego) {
   if (!track.reliable || Math.hypot(track.velocity.x, track.velocity.z) > MAX_WALK_SPEED ||
       track.uncertaintyM > 2.5 || lateralVelocityUncertaintyMps > 0.65)
     return reject("uncertain-visual-track");
-  if (confidence < (track.label === "motion" ? 0.65 : 0.55))
+  if (confidence < (track.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE))
     return reject("low-visual-confidence");
   prediction.qualified = true;
   if (Math.abs(lateralSpeedMps) - lateralVelocityUncertaintyMps < 0.2)
@@ -465,7 +501,7 @@ function observedClearance(track, episode, nowS, ego) {
     return false;
   const reference = { ...episode.referenceEgo, speedMps: ego.speedMps };
   const visible = forecast(track, nowS, reference);
-  if (visible.confidence < (track.label === "motion" ? 0.65 : 0.55) ||
+  if (visible.confidence < (track.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE) ||
       visible.lateralVelocityUncertaintyMps > 0.65)
     return false;
   const recent = track.history.slice(-3);
@@ -480,10 +516,22 @@ function observedClearance(track, episode, nowS, ego) {
   const stationaryClear = Math.abs(visible.lateralSpeedMps) + visible.lateralVelocityUncertaintyMps <= 0.2;
   return away || stationaryClear;
 }
-function advanceStopEpisode(track, nowS, ego, usable = true) {
+function advanceStopEpisode(track, nowS, ego, usable = true, allowLateClearance = false) {
   const episode = copyEpisode(track.stopEpisode);
-  if (!episode || episode.phase === "cleared" || episode.phase === "expired") return episode;
+  if (!episode || episode.phase === "cleared") return episode;
   const speed = Math.abs(ego.speedMps);
+  if (episode.phase === "expired") {
+    // Expiry ends the old authorization, not the ability to see new clearance.
+    const oldestClearanceS = track.history.at(-3)?.simulationTimeS;
+    if (allowLateClearance && usable && episode.stoppedAtS !== null && speed < STOP_SPEED_MPS &&
+        track.frameId > episode.lastSupportFrameId && track.lastSeenS > episode.lastSupportTimeS &&
+        nowS - oldestClearanceS <= MAX_AGE_S + 1e-8 && observedClearance(track, episode, nowS, ego)) {
+      episode.phase = "cleared";
+      episode.clearFrameId = track.frameId;
+      episode.clearedAtS = nowS;
+    }
+    return episode;
+  }
   episode.lowestSpeedMps = Math.min(episode.lowestSpeedMps, speed);
   if (episode.lastProgressSpeedMps - episode.lowestSpeedMps >= STOP_SPEED_MPS) {
     episode.lastProgressAtS = nowS;
@@ -583,7 +631,9 @@ export function decideVisualBrake(input = {}) {
 
 /** Only detector pixels, captured calibration/time, and own odometry enter here. */
 export class VisualCrossingPredictor {
-  constructor() {
+  constructor({ allowLateClearance = false, freshMotionSupport = false } = {}) {
+    this.allowLateClearance = allowLateClearance;
+    this.freshMotionSupport = freshMotionSupport;
     this.streamId = null;
     this.tracks = [];
     this.latest = null;
@@ -614,10 +664,13 @@ export class VisualCrossingPredictor {
         throw new TypeError("visual inference result exceeds the stale latency bound");
       const timeS = result.simulationTimeS;
       this.tracks = this.tracks.filter((track) => timeS - track.lastSeenS <= 2);
-      const observed = result.detections.map((detection) => ({
+      const projected = result.detections.map((detection) => ({
         detection, projected: project(detection, result.camera),
       })).filter((item) => item.projected);
-      const pairs = [];
+      // Weak boxes remain raw/projected evidence, but cannot take part in actionable association.
+      const observed = projected.filter(({ detection }) => detection.label === "vehicle" ||
+        detection.confidence >= (detection.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE));
+      const pairs = [], imagePairs = [];
       observed.forEach((item, index) => {
         this.tracks.forEach((track) => {
           const age = timeS - track.lastSeenS;
@@ -630,6 +683,15 @@ export class VisualCrossingPredictor {
           const gate = Math.min(3, 0.55 + MAX_WALK_SPEED * age +
             Math.min(estimate.uncertaintyM + item.projected.sigmaM, 1.5));
           if (distance <= gate) pairs.push({ index, track, distance });
+          if (this.freshMotionSupport && track.label !== "vehicle" && !track.stopEpisode &&
+              track.frameId === this.latest?.frameId && age <= 0.25 + 1e-8 &&
+              imageOverlap(track.box, item.detection.box) >= 0.5) {
+            const yaw = result.camera.headingRad;
+            const dx = item.projected.x - estimate.position.x - estimate.velocity.x * age;
+            const dz = item.projected.z - estimate.position.z - estimate.velocity.z * age;
+            if (Math.abs(dx * Math.cos(yaw) - dz * Math.sin(yaw)) <= gate)
+              imagePairs.push({ index, track });
+          }
         });
       });
       pairs.sort((a, b) => a.distance - b.distance || a.index - b.index);
@@ -638,6 +700,15 @@ export class VisualCrossingPredictor {
         if (assignments.has(pair.index) || used.has(pair.track)) continue;
         assignments.set(pair.index, pair.track);
         used.add(pair.track);
+      }
+      for (const { index, track } of imagePairs) {
+        if (assignments.has(index) || used.has(track) ||
+            imagePairs.some((pair) => (pair.index === index) !== (pair.track === track))) continue;
+        // A partly hidden footpoint can jump in depth. Keep the unambiguous
+        // image identity, not the motion fit across that jump.
+        track.history = [];
+        assignments.set(index, track);
+        used.add(track);
       }
       observed.forEach(({ detection, projected }, index) => {
         let track = assignments.get(index);
@@ -663,12 +734,12 @@ export class VisualCrossingPredictor {
       this.latest = {
         streamId: this.streamId, frameId: result.frameId, simulationTimeS: timeS,
         latencyMs: result.latencyMs, model: { ...result.model },
-        detections: result.detections.length, projectedDetections: observed.length,
-        unprojectableDetections: result.detections.length - observed.length,
+        detections: result.detections.length, projectedDetections: projected.length,
+        unprojectableDetections: result.detections.length - projected.length,
       };
       this.error = null;
       return { accepted: true, streamId: this.streamId, frameId: result.frameId,
-        projectedDetections: observed.length };
+        projectedDetections: projected.length };
     } catch (failure) {
       this.error = failure.message;
       throw failure;
@@ -681,14 +752,15 @@ export class VisualCrossingPredictor {
     const ageMs = this.latest ? (nowS - this.latest.simulationTimeS) * 1000 : null;
     const status = this.error ? "error" : !this.latest ? "unavailable"
       : ageMs < -1e-5 ? "error" : ageMs > MAX_AGE_S * 1000 + 1e-5 ? "stale" : "ready";
-    let tracks = this.tracks.map((track) => publicTrack(track, nowS));
+    const snapshotTracks = () => this.tracks.map((track) => publicTrack(track, nowS, ego, this.freshMotionSupport));
+    let tracks = snapshotTracks();
     const available = status === "ready";
     for (const track of tracks) {
       if (!track.stopEpisode) continue;
       const internal = this.tracks.find((item) => item.id === track.id);
-      internal.stopEpisode = advanceStopEpisode(track, nowS, ego, available);
+      internal.stopEpisode = advanceStopEpisode(track, nowS, ego, available, this.allowLateClearance);
     }
-    tracks = this.tracks.map((track) => publicTrack(track, nowS));
+    tracks = snapshotTracks();
     let result = available ? decideVisualBrake({ tracks, nowS, ego, enabled: true })
       : decision(this.error ? "invalid-visual-result" : status === "stale"
         ? "stale-visual-result" : status === "error" ? "future-visual-result" : "no-visual-evidence");
@@ -710,7 +782,7 @@ export class VisualCrossingPredictor {
         track.holdSpeedMps = Math.max(heldSpeed, 0, ego.speedMps);
         track.conflictFrameId = track.frameId;
         track.conflictCrossingTimeS = result.crossingTimeS;
-        tracks = this.tracks.map((item) => publicTrack(item, nowS));
+        tracks = snapshotTracks();
       }
     }
     return {

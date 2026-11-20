@@ -149,6 +149,115 @@ test("three actual observations and at least 0.2 seconds are both necessary", ()
   assert.equal(two.state.decision.brake, false);
 });
 
+for (const [label, scores] of [
+  ["person", [0.326, 0.337, 0.63]],
+  ["motion", [0.5, 0.64, 0.8]],
+]) {
+  test(`mixed-confidence ${label} points cannot bootstrap actionable history from one qualified sample`, (t) => {
+    const p = predictor();
+    for (let i = 0; i < scores.length; i++) {
+      const timeS = i * 0.1;
+      const result = frame(timeS, i, [{ x: -4.8 + 0.9 * timeS, z: 0 }], egoAt(timeS), label);
+      result.detections[0].confidence = scores[i];
+      p.observe(result);
+    }
+    const mixed = p.snapshot(0.2, egoAt(0.2));
+    t.diagnostic(JSON.stringify({ label, semanticObservations: mixed.tracks[0]?.observations,
+      prematureBrake: mixed.decision.brake, confidence: mixed.decision.confidence }));
+    assert.equal(mixed.decision.brake, false);
+    assert.equal(mixed.tracks.length, 1);
+    assert.equal(mixed.tracks[0].observations, 1);
+    assert.deepEqual(mixed.tracks[0].history.map((sample) => sample.frameId), [2]);
+    near(mixed.tracks[0].firstSeenS, 0.2);
+    for (const i of [3, 4]) {
+      const timeS = i * 0.1;
+      const result = frame(timeS, i, [{ x: -4.8 + 0.9 * timeS, z: 0 }], egoAt(timeS), label);
+      result.detections[0].confidence = 0.9;
+      p.observe(result);
+      const state = p.snapshot(timeS, egoAt(timeS));
+      assert.equal(state.decision.brake, i === 4);
+    }
+    const qualified = p.snapshot(0.4, egoAt(0.4));
+    assert.deepEqual(qualified.tracks[0].history.map((sample) => sample.frameId), [2, 3, 4]);
+    assert.equal(qualified.tracks[0].observations, 3);
+    near(qualified.tracks[0].spanS, 0.2);
+    const originId = qualified.tracks[0].id;
+    let body = { x: 0, z: egoAt(0.4).z, heading: 0, speed: 4.5, steer: 0 };
+    let stoppedAtS = null, sawExpiredSupport = false;
+    for (let tick = 24; tick <= 84; tick++) {
+      const timeS = tick / 60;
+      const ego = { ...egoAt(timeS), x: body.x, z: body.z, speedMps: body.speed };
+      if (tick > 24 && tick % 6 === 0) {
+        const weakClear = frame(timeS, tick / 6, [{ x: 2, z: 0 }], ego, label);
+        weakClear.detections[0].confidence = label === "motion" ? 0.64 : 0.54;
+        p.observe(weakClear);
+      }
+      const state = p.snapshot(timeS, ego), track = state.tracks[0];
+      assert.equal(state.available, true, "the current raw camera packets are still fresh");
+      assert.equal(state.tracks.length, 1, "weak far-side boxes cannot create semantic clearance identities");
+      assert.equal(track.id, originId);
+      assert.equal(track.frameId, 4);
+      near(track.lastSeenS, 0.4);
+      near(track.stopEpisode.lastSupportTimeS, 0.4);
+      assert.notEqual(state.decision.reason, "visual-clearance-confirmed");
+      assert.notEqual(track.stopEpisode.phase, "cleared");
+      if (timeS > 1.15 + 1e-8) {
+        sawExpiredSupport = true;
+        assert.equal(state.decision.available, false);
+        assert.equal(state.decision.brake, false);
+        assert.ok(state.decision.ageMs > 750);
+      }
+      body = integrateVehicle(body, { steer: 0, targetSpeed: 0 }, 1 / 60);
+      if (body.speed === 0 && stoppedAtS === null) stoppedAtS = timeS + 1 / 60;
+    }
+    assert.ok(stoppedAtS !== null && stoppedAtS <= 0.4 + 4.5 / 7 + 1 / 60);
+    assert.ok(sawExpiredSupport);
+  });
+}
+
+test("actionable admission keeps exact existing class boundaries without hiding raw weak projections", () => {
+  for (const [label, threshold] of [["person", 0.55], ["motion", 0.65]]) {
+    const p = predictor();
+    for (let i = 0; i < 3; i++) {
+      const timeS = i * 0.1, result = frame(timeS, i, [{ x: -4.8 + 0.9 * timeS, z: 0 }], egoAt(timeS), label);
+      result.detections[0].confidence = threshold + (i - 1) * 0.001;
+      const before = structuredClone(result);
+      const receipt = p.observe(result), state = p.snapshot(timeS, egoAt(timeS));
+      assert.deepEqual(result, before);
+      assert.equal(receipt.projectedDetections, 1);
+      assert.equal(state.detections, 1);
+      assert.equal(state.projectedDetections, 1);
+      assert.equal(state.unprojectableDetections, 0);
+      assert.equal(state.available, true);
+      assert.equal(state.tracks.length, i === 0 ? 0 : 1);
+      if (i > 0) assert.equal(state.tracks[0].observations, i);
+      assert.equal(state.decision.brake, false);
+    }
+  }
+});
+
+test("ignored weak boxes cannot steal high-quality association and geometric counts remain raw", () => {
+  const p = predictor();
+  p.observe(frame(0, 0, [{ x: -4.8, z: 0 }]));
+  const initialId = p.snapshot(0, egoAt()).tracks[0].id;
+  const input = frame(0.1, 1, [{ x: -4.8, z: 0 }, { x: -4.71, z: 0 }]);
+  input.detections[0].confidence = 0.54;
+  input.detections[1].confidence = 0.9;
+  input.detections.push({ label: "person", confidence: 0.99, box: [300, 100, 330, 179] });
+  const before = structuredClone(input), receipt = p.observe(input);
+  const state = p.snapshot(0.1, egoAt(0.1));
+  assert.deepEqual(input, before);
+  assert.equal(receipt.projectedDetections, 2);
+  assert.equal(state.detections, 3);
+  assert.equal(state.projectedDetections, 2);
+  assert.equal(state.unprojectableDetections, 1);
+  assert.equal(state.tracks.length, 1);
+  assert.equal(state.tracks[0].id, initialId);
+  assert.equal(state.tracks[0].confidence, 0.9);
+  assert.deepEqual(state.tracks[0].history.map((sample) => sample.frameId), [0, 1]);
+  near(state.tracks[0].position.x, -4.71);
+});
+
 test("motion remains ambiguous and a vehicle cannot become a semantic crossing person", () => {
   const move = (t) => ({ x: -4.8 + 0.9 * t, z: 0 });
   const motion = sequence(move, { label: "motion" }).state;
@@ -466,7 +575,8 @@ test("covariance outputs remain copied, finite, positive-semidefinite and truth-
   assert.notEqual(p.snapshot(0.4, ego).tracks[0].positionCovarianceM2.xx, 999);
 });
 
-function feedbackRun({ side = -1, away = false, apply = true, dropAfter = Infinity, until = 8.5 } = {}) {
+function feedbackRun({ side = -1, away = false, apply = true, dropAfter = Infinity, until = 8.5,
+  confidenceAt = (timeS) => timeS >= 2.5 && timeS < 4.2 ? 0.4 : 0.9 } = {}) {
   const p = predictor(), rows = [];
   let body = { x: 0, z: -22, heading: 0, speed: 4.5, steer: 0, length: 4.2, width: 1.85 };
   let firstStop = null, firstRequest = null;
@@ -482,7 +592,10 @@ function feedbackRun({ side = -1, away = false, apply = true, dropAfter = Infini
       const missing = timeS < 2.1 || tick === 156 || tick === 162 || timeS > dropAfter;
       const result = frame(timeS, tick / 6, missing ? [] : [{ x, z: 0 }], ego);
       for (const detection of result.detections)
-        detection.confidence = timeS >= 2.5 && timeS < 4.2 ? 0.4 : 0.9;
+        detection.confidence = confidenceAt(timeS);
+      // This whole-body projection fixture cannot supply an in-image box for an off-camera person.
+      result.detections = result.detections.filter(({ box }) =>
+        box.every((value, i) => value >= 0 && value <= (i % 2 ? result.height : result.width)));
       p.observe(result);
     }
     const state = p.snapshot(timeS, ego);
@@ -509,36 +622,61 @@ for (const side of [-1, 1]) {
     const stopping = run.rows.filter((row) =>
       row.timeS >= run.firstRequest && row.timeS < run.firstStop.timeS - 1 / 60);
     assert.ok(stopping.every((row) => row.decision.available && row.decision.brake));
-    const uncertain = stopping.find((row) => row.decision.reason === "committed-visual-stop" &&
-      row.forecast?.confidence < 0.55);
-    assert.ok(uncertain, "exercise continuation, not another high-confidence crossing fixture");
-    assert.ok(uncertain.track.stopEpisode.originConfidence >= 0.55);
-    assert.equal(uncertain.track.stopEpisode.originFrameId,
+    const committed = stopping.find((row) => row.decision.reason === "committed-visual-stop" &&
+      row.timeS >= 2.5);
+    assert.ok(committed, "exercise continuation while fresh raw weak boxes are not admitted support");
+    near(committed.track.lastSeenS, 2.4);
+    near(committed.track.stopEpisode.lastSupportTimeS, 2.4);
+    assert.equal(committed.track.frameId, 24);
+    assert.equal(committed.track.confidence, 0.9, "score belongs to the actual last admitted frame24");
+    assert.ok(committed.track.stopEpisode.originConfidence >= 0.55);
+    assert.equal(committed.track.stopEpisode.originFrameId,
       stopping[0].track.stopEpisode.originFrameId);
-    assert.equal(uncertain.decision.evidenceFrameId, uncertain.track.frameId);
-    assert.ok(uncertain.decision.ageMs <= 750);
+    assert.equal(committed.decision.evidenceFrameId, committed.track.frameId);
+    assert.ok(committed.decision.ageMs <= 750);
     assert.ok(stopping.some((row) => row.decision.ageMs >= 150),
       "short actually missing observations must not manufacture new frames or release the cap");
   });
 }
 
-test("actual stop waits for positive observed clearance, not ego-induced TTC reduction", () => {
+test("a long weak-only gap cannot renew the original episode or borrow another track's clearance", () => {
   const run = feedbackRun();
   assert.ok(run.firstStop);
-  const release = run.rows.find((row) => row.decision.reason === "visual-clearance-confirmed");
-  assert.ok(release, "fresh outgoing observations must eventually release the completed episode");
-  assert.ok(release.timeS > run.firstStop.timeS);
-  assert.ok(run.rows.filter((row) => row.timeS >= run.firstRequest && row.timeS < release.timeS)
-    .every((row) => row.decision.available && row.decision.brake));
-  assert.equal(release.track.stopEpisode.phase, "cleared");
-  assert.ok(release.forecast.lateralM - release.forecast.lateralPositionUncertaintyM > 1.85 / 2 + 0.35);
-  assert.ok(run.rows.some((row) => row.timeS > release.timeS && row.nextSpeedMps > 0.2));
+  const originId = run.rows.find((row) => row.timeS >= run.firstRequest).track.id;
+  const weak = run.rows.filter((row) => row.timeS >= 2.5 && row.timeS < 4.2);
+  assert.ok(weak.every((row) => row.track.id === originId && row.track.frameId === 24));
+  assert.ok(weak.every((row) => Math.abs(row.track.stopEpisode.lastSupportTimeS - 2.4) < 1e-8));
+  assert.ok(run.rows.find((row) => row.timeS >= 3.2).decision.ageMs > 750);
+  assert.equal(run.rows.find((row) => row.timeS >= 3.2).decision.available, false);
+  assert.equal(run.rows.some((row) => row.track?.id === originId &&
+    row.decision.reason === "visual-clearance-confirmed"), false);
+  assert.ok(run.rows.some((row) => row.timeS >= 4.5 && row.track && row.track.id !== originId),
+    "later admitted observations after the identity gap must not masquerade as the original track");
   const reversed = feedbackRun({ away: true, until: 6 });
-  const awayRelease = reversed.rows.find((row) => row.decision.reason === "visual-clearance-confirmed");
-  assert.ok(awayRelease && reversed.firstStop);
-  assert.ok(awayRelease.timeS > reversed.firstStop.timeS);
-  assert.ok(awayRelease.forecast.lateralM < -1.85 / 2 - 0.35);
-  assert.ok(awayRelease.forecast.lateralSpeedMps < -0.2);
+  assert.ok(reversed.firstStop);
+  const reversedOrigin = reversed.rows.find((row) => row.timeS >= reversed.firstRequest).track.id;
+  assert.equal(reversed.rows.some((row) => row.track?.id === reversedOrigin &&
+    row.decision.reason === "visual-clearance-confirmed"), false);
+});
+
+test("fresh admitted same-track clearance works after a bounded weak interval without borrowing weak support", () => {
+  for (const away of [false, true]) {
+    const run = feedbackRun({ away, until: away ? 6 : 8.5,
+      confidenceAt: (timeS) => timeS >= 2.5 && timeS < 2.9 ? 0.4 : 0.9 });
+    assert.ok(run.firstStop);
+    const originId = run.rows.find((row) => row.timeS >= run.firstRequest).track.id;
+    const weak = run.rows.filter((row) => row.timeS >= 2.5 && row.timeS < 2.9);
+    assert.ok(weak.every((row) => row.track.frameId === 24 &&
+      Math.abs(row.track.lastSeenS - 2.4) < 1e-8));
+    const release = run.rows.find((row) => row.decision.reason === "visual-clearance-confirmed");
+    assert.ok(release && release.track.id === originId && release.timeS > run.firstStop.timeS);
+    assert.ok(run.rows.filter((row) => row.timeS >= run.firstRequest && row.timeS < release.timeS)
+      .every((row) => row.decision.available && row.decision.brake));
+    assert.equal(release.track.stopEpisode.phase, "cleared");
+    assert.ok(Math.abs(release.forecast.lateralM) -
+      release.forecast.lateralPositionUncertaintyM > 1.85 / 2 + 0.35);
+    assert.ok(run.rows.some((row) => row.timeS > release.timeS && row.nextSpeedMps > 0.2));
+  }
 });
 
 test("stale or unseen observations cannot claim a confirmed stop continuation", () => {
@@ -565,10 +703,122 @@ test("unobserved actuation and persistent uncertain evidence cannot renew an epi
   const run = feedbackRun({ apply: false, until: 3.5 });
   const expired = run.rows.find((row) => row.track?.stopEpisode?.phase === "expired");
   assert.ok(expired);
-  assert.equal(expired.decision.available, false);
-  assert.equal(expired.decision.brake, false);
-  assert.equal(expired.decision.reason, "visual-stop-no-braking-progress");
+  assert.equal(expired.track.stopEpisode.expiryReason, "visual-stop-no-braking-progress");
   assert.equal(expired.track.stopEpisode.stoppedAtS, null);
+  near(expired.track.stopEpisode.lastSupportTimeS, 2.4);
+  const stale = run.rows.find((row) => row.timeS >= 3.2);
+  assert.equal(stale.decision.available, false);
+  assert.equal(stale.decision.brake, false);
+  assert.ok(stale.decision.ageMs > 750);
+  assert.equal(stale.track.stopEpisode.originFrameId, expired.track.stopEpisode.originFrameId);
+  near(stale.track.stopEpisode.lastSupportTimeS, 2.4);
+});
+
+test("district can confirm fresh same-track clearance after an expired physical stop", () => {
+  for (const allowLateClearance of [false, true]) {
+    const p = new VisualCrossingPredictor({ allowLateClearance });
+    p.reset(STREAM);
+    let body = { x: 0, z: -22, heading: 0, speed: 4.5, length: 4.2, width: 1.85 };
+    let committed = false, expired = null, cleared = null;
+    for (let tick = 0; tick <= 660; tick++) {
+      const t = tick / 60;
+      const ego = { ...egoAt(t), z: body.z, speedMps: body.speed };
+      if (tick % 6 === 0) {
+        const x = t < 8 ? Math.min(0, -4.8 + 0.9 * t) : (t - 8) * 0.9;
+        p.observe(frame(t, tick / 6, [{ x, z: 0 }], ego));
+      }
+      const snapshot = p.snapshot(t, ego);
+      const episode = snapshot.tracks[0].stopEpisode;
+      committed ||= snapshot.decision.brake;
+      if (episode?.phase === "expired") {
+        expired ??= episode;
+        assert.ok(t > episode.clearanceDeadlineS && episode.stoppedAtS !== null);
+      }
+      if (episode?.phase === "cleared") {
+        cleared = episode;
+        assert.ok(t > 8, "Expiry and time spent stopped cannot clear a person still in the lane");
+        break;
+      }
+      body = integrateVehicle(body, { steer: 0, targetSpeed: committed ? 0 : 4.5 }, 1 / 60);
+    }
+    assert.ok(expired, "The same observed person must keep the actual car stopped past the deadline");
+    if (allowLateClearance) {
+      assert.ok(cleared, "Fresh positive clearance from that same track must be usable");
+      assert.equal(cleared.trackId, expired.trackId);
+      assert.ok(cleared.clearFrameId > expired.lastSupportFrameId);
+      assert.equal(cleared.expiryReason, expired.expiryReason);
+    } else assert.equal(cleared, null);
+  }
+});
+
+test("district never starts a fresh stop using a fit supported by old observations", () => {
+  const ego = egoAt(0.5);
+  const p = new VisualCrossingPredictor({ freshMotionSupport: true });
+  p.reset(STREAM);
+  const observe = (t, id) => p.observe(frame(t, id, [{ x: -4.8 + 0.9 * t, z: 0 }], ego));
+  [0, 0.25, 0.5, 0.75].forEach(observe);
+  const delayed = p.snapshot(1.1, ego);
+  assert.equal(delayed.available, true, "The image itself is still fresh");
+  assert.equal(delayed.detections, 1, "Raw measurements must remain visible");
+  assert.equal(delayed.tracks[0].observations, 2);
+  assert.equal(delayed.decision.brake, false);
+  assert.equal(delayed.tracks[0].stopEpisode, null);
+  observe(1, 4);
+  const supported = p.snapshot(1.15, ego);
+  assert.equal(supported.tracks[0].id, delayed.tracks[0].id, "Fitting must not reset identity");
+  assert.equal(supported.decision.brake, true, "Three actual fresh samples still qualify");
+  assert.ok(supported.tracks[0].history.every((p) => p.simulationTimeS >= 1.15 - 0.75));
+});
+
+test("a fresh fit does not turn a parallel person's box sway into a qualified stop", () => {
+  const ego = { ...egoAt(0, 3), z: -30.675 };
+  const p = new VisualCrossingPredictor({ freshMotionSupport: true });
+  p.reset(STREAM);
+  // Ground projections from the false-stop trace, recentered at the ego.
+  const points = [
+    [0, -1.7202, -20.6409], [0.1, -1.7556, -20.424], [16 / 60, -1.7392, -20.3923],
+    [0.4, -1.7859, -20.0748], [31 / 60, -1.7959, -19.7724], [38 / 60, -1.8886, -19.0574],
+    [0.75, -1.9355, -18.7173], [52 / 60, -1.9608, -18.3411],
+    [59 / 60, -1.9122, -18.5686], [1.1, -1.7584, -19.4642],
+    [73 / 60, -1.738, -19.3656],
+  ];
+  points.forEach(([t, x, z], id) => p.observe(frame(t, id, [{ x, z }], ego)));
+  const result = p.snapshot(1.4, ego);
+  assert.equal(result.tracks.length, 1, "The observed person must not disappear to make the test pass");
+  assert.ok(result.tracks[0].observations >= 3);
+  assert.equal(result.decision.brake, false);
+  assert.equal(result.tracks[0].stopEpisode, null);
+});
+
+test("unique image continuity handles a partly occluded footpoint jumping in depth", () => {
+  const boxes = [
+    [27, 173 / 60, -26.225, .621, [258.5, 175.6, 274.1, 214.6]],
+    [28, 179 / 60, -25.925, .591, [257.2, 176, 275, 214.6]],
+    [29, 185 / 60, -25.625, .651, [260.6, 175.2, 274.8, 215.7]],
+    [30, 3.2, -25.275, .616, [264.5, 174.6, 274.3, 210.1]],
+  ];
+  const evaluate = (freshMotionSupport, ambiguous = false) => {
+    const p = new VisualCrossingPredictor({ freshMotionSupport });
+    p.reset(STREAM);
+    let visual;
+    for (const [id, t, z, confidence, box] of boxes) {
+      const ego = { ...egoAt(0, 3), x: -12, z };
+      const result = frame(t, id, [], ego);
+      result.detections.push({ confidence, box, label: "person" });
+      if (ambiguous && id === 30)
+        result.detections.push({ confidence, box: [264.6, 174.6, 274.4, 210.1], label: "person" });
+      p.observe(result);
+      visual = p.snapshot(t, ego);
+    }
+    return visual;
+  };
+  assert.equal(evaluate(false).tracks.length, 2, "The original ground-only association splits");
+  const precise = evaluate(true);
+  assert.equal(precise.tracks.length, 1);
+  assert.equal(precise.tracks[0].id, "visual-1");
+  assert.equal(precise.tracks[0].observations, 1, "Do not use the discontinuous depth as velocity");
+  assert.equal(precise.decision.brake, false);
+  assert.equal(evaluate(true, true).tracks.length, 3, "Do not borrow a match when another box competes");
 });
 
 test("stop episode evidence is copied, identity-bound and cannot enter through detector input", () => {

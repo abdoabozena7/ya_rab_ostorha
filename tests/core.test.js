@@ -188,6 +188,17 @@ test("30, 60 and 144 FPS produce the identical simulation state", () => {
   assert.deepEqual(outputs[0], outputs[2]);
 });
 
+test("a bounded render-frame catch-up budgets the work without dropping a brief delay", () => {
+  const clock = new FixedClock();
+  let ticks = 0;
+  assert.equal(clock.advance(.1, () => ticks++, 3), 3);
+  assert.equal(clock.alpha, 1);
+  assert.equal(clock.advance(0, () => ticks++, 3), 3);
+  assert.equal(clock.advance(1 / 60, () => ticks++, 3), 1);
+  assert.equal(ticks, 7);
+  assert.equal(clock.discardedSeconds, 0);
+});
+
 test("seed and recorded commands reproduce the complete resulting state", () => {
   const world = new World({
     seed: "replay-turn-and-brake",

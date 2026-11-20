@@ -15,6 +15,8 @@ from .logging import log, LogCategory
 
 MAX_ROW_BYTES = 1_048_576
 DISK_RESERVE_BYTES = 4*1024**3
+_JSON_SCALAR_TYPES = (float, int, bool, type(None))
+_JSON_SCALAR_TYPE_CONTAINS = _JSON_SCALAR_TYPES.__contains__
 
 
 def require_recording_space(path):
@@ -33,18 +35,18 @@ def queued_snapshot(value):
     """
     kind=type(value)
     if kind is str:return value,64+len(value)*6
-    if kind in (int,float,bool,type(None)):return value,64
-    frozen = kind in (_FrozenJSONMapping, _FrozenJSONSequence)
-    if kind is _FrozenJSONSequence and all(type(item) in (int, float, bool, type(None)) for item in value):
+    if kind in _JSON_SCALAR_TYPES:return value,64
+    frozen = kind is _FrozenJSONMapping or kind is _FrozenJSONSequence
+    if kind is _FrozenJSONSequence and all(map(_JSON_SCALAR_TYPE_CONTAINS, map(type, value))):
         return value, 64 + 80*len(value)
-    if isinstance(value,Mapping):
+    if kind is _FrozenJSONMapping or (not frozen and isinstance(value,Mapping)):
         result=None if frozen else {};size=256
         for key,item in value.items():
             copied,charge=queued_snapshot(item)
             if result is not None:result[key]=copied
             size+=charge+128+len(str(key))*6
         return value if frozen else result,size
-    if isinstance(value,(tuple,list)):
+    if kind is _FrozenJSONSequence or isinstance(value,(tuple,list)):
         result=None if frozen else [];size=64
         for item in value:
             copied,charge=queued_snapshot(item)
@@ -213,6 +215,10 @@ def _json_default(value):
 
 
 def _json_text(value):
+    if type(value) is _FrozenJSONMapping or type(value) is _FrozenJSONSequence:
+        import ujson
+        return ujson.dumps(value,default=_json_default,ensure_ascii=True,allow_nan=False,
+                           reject_bytes=True,escape_forward_slashes=False)
     return json.dumps(value,default=_json_default,allow_nan=False,separators=(',',':'))
 
 

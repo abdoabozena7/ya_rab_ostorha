@@ -18,6 +18,67 @@ from tests.test_control_scene import ControlSceneTests
 
 
 class EgyptControlLifecycleTests(unittest.TestCase):
+    def test_native_counter_sample_preserves_original_fields_before_the_next_tick_and_json_write(self):
+        import io
+        import json
+        from backend.core.recording import BufferedRunRecorder
+        from scripts.native.validate_crossing_pair import EvidenceFiles, native_driving_sample
+        from tests.test_braking_decisions import fixture
+        service, _, _ = fixture(driving_mode='NORMAL', automatic=True)
+        self.addCleanup(service.close)
+        measured, _, _ = ControlSceneTests().measured()
+        service.control_scene = replace(measured, session_id=service.session_id)
+        service.presentation.data.update(status='DRIVING', arm='NORMAL')
+        service.backend_step_ms = 123.456
+        stop, scenario = {'reason': 'original stop diagnostics'}, {'seed': 2707, 'events': ['original']}
+        service._public_stop_diagnostics = Mock(return_value=stop)
+        provider = service.provider
+        provider.last_world = {'frame': 1, 'timestamp': .05}
+        provider.step_timing_ms = {'before_native': 2., 'native_tick': 10., 'scenario_audit': 3.,
+                                   'population': 1., 'telemetry_and_spectator': 4.}
+        provider.dense_chaos = NS(run_evidence=lambda: scenario)
+        def next_tick():
+            provider.last_world.update(frame=2, timestamp=.1)
+            provider.step_timing_ms['native_tick'] = 999.
+        provider.step.side_effect = next_tick
+        stream = io.StringIO()
+        self.addCleanup(stream.close)
+        writer = EvidenceFiles(None)
+        writer.streams['samples.jsonl'] = stream
+        rows = []
+        with patch.object(writer, 'close'):
+            recorder = BufferedRunRecorder(writer)
+            try:
+                def capture():
+                    provider.step.assert_not_called()
+                    application = dict(service.application_timing)
+                    row = native_driving_sample(service, provider)
+                    self.assertEqual({key: value for key, value in row.items() if key != 'timing_counters'}, {
+                        'frame': 1, 'timestamp_s': .05, 'arm': 'NORMAL', 'mode': 'NORMAL',
+                        'speed_kmh': 7.2, 'yaw_rad': 0., 'position_m': [0., 0., 0.],
+                        'stop': stop, 'scenario': scenario, 'performance': 123.456,
+                        'application_timing': application})
+                    rows.append(row)
+                    self.assertTrue(recorder.record_trace({'file': 'samples.jsonl', 'data': row}))
+                service.after_control = capture
+                service._iteration()
+            finally:
+                recorder.close()
+            self.assertFalse(recorder.thread.is_alive())
+        self.assertEqual(len(rows), 1)
+        provider.step.assert_called_once()
+        self.assertEqual(service.observation.frame_id, 2)
+        saved = json.loads(stream.getvalue())
+        self.assertEqual(saved, to_dict(rows[0]))
+        self.assertEqual(saved['frame'], 1)
+        counters = saved['timing_counters']
+        self.assertEqual(counters['provider']['binding'], {'frame_id': 1, 'timestamp_s': .05})
+        self.assertEqual(counters['provider']['values_ms']['native_tick'], 10.)
+        self.assertEqual(counters['control']['binding']['frame_id'], 1)
+        self.assertEqual(counters['scene']['binding']['frame_id'], 1)
+        self.assertEqual(counters['control']['status'], 'PARTIAL')
+        self.assertIn('COUNTER_NOT_CAPTURED:behavior_thread_cpu', counters['control']['unavailable_reasons'])
+
     def test_same_frame_numeric_rows_share_only_verified_immutable_storage(self):
         from backend.core.contracts import freeze_json
         scene,_,_=ControlSceneTests().measured()
