@@ -5,6 +5,7 @@ import { SpatialIndex } from "../src/core/spatial-index.js";
 import { World } from "../src/core/world.js";
 
 const start = { type: "street-pursuit-start", level: 3, variant: "survival" };
+const scaled = { ...start, config: { giantPhysics: "scaled-v1" } };
 const coast = { steer: 0, throttle: 0, brake: 0, gear: 1 };
 const initialCity = options => new World({ cityVersion: 4, traffic: 0, pedestrians: 0, ...options }, "metro");
 const advance = (world, ticks) => { for (let i = 0; i < ticks; i++) world.step(); };
@@ -13,9 +14,9 @@ const direction = (car, metres) => ({
 });
 const drive = (world, action) => world.command({ type: "pursuit-drive", action: { ...coast, ...action } });
 
-function controlled(options) {
+function controlled(options, launch = start) {
   const world = initialCity(options);
-  world.command(start);
+  world.command(launch);
   const stockPatrols = [...world.pursuit.patrols];
   for (const actor of stockPatrols) world.actors.splice(world.actors.indexOf(actor), 1);
   world.pursuit.patrols.clear();
@@ -111,7 +112,7 @@ test("survival manual drift changes the accepted trajectory without changing nor
 });
 
 test("survival powers use actual City bodies, not animation-only events", () => {
-  const plain = controlled(), giant = controlled();
+  const plain = controlled(), giant = controlled(undefined, scaled);
   for (const item of [plain, giant]) {
     const { world, player, power } = item;
     const nominal = player.width;
@@ -150,6 +151,66 @@ test("survival powers use actual City bodies, not animation-only events", () => 
   assert.ok(distance(player, barrier) > 2);
   assert.deepEqual(world.audit(), []);
   world.command({ type: "street-pursuit-stop" });
+});
+
+test("survival Giant matches wheel travel and restores the SUV on timed expiry", () => {
+  const normal = controlled(), giant = controlled(undefined, scaled);
+  const { world, player, power } = giant;
+  const { width, length, height, spec } = player;
+  const cameraY = world.sensors.mounts.camera.position.y;
+  acquire(giant, "giant");
+  advance(normal.world, 1);
+  const collected = world.tick;
+  assert.equal(power.active.until - collected, 213);
+  assert.equal(power.nextPickupTick - collected, 156);
+  assert.equal(player.height, height * 1.45);
+  assert.ok(world.sensors.mounts.camera.position.y > cameraY + .6);
+  const before = { speed: player.speed, spin: player.vehicle.wheelSpinRad, distance: player.distance };
+  advance(world, 20);
+  advance(normal.world, 20);
+  assert.ok(player.speed > before.speed && player.speed < normal.player.speed - .1);
+  assert.ok(Math.abs((player.vehicle.wheelSpinRad - before.spin) * .5075 - (player.distance - before.distance)) < 1e-8);
+
+  player.speed = normal.player.speed = 4;
+  const heading = player.heading, ordinaryHeading = normal.player.heading;
+  drive(world, { brake: 1, steer: .6 });
+  drive(normal.world, { brake: 1, steer: .6 });
+  advance(world, 1);
+  advance(normal.world, 1);
+  assert.ok(Math.abs(angleDelta(player.heading, heading)) > 1e-6);
+  assert.ok(Math.abs(1.45 * angleDelta(player.heading, heading) -
+    angleDelta(normal.player.heading, ordinaryHeading)) < 1e-8);
+
+  drive(world, { brake: 1 });
+  while (world.tick < power.active.until) {
+    if (world.tick < collected + 156) assert.equal(power.pickup, null);
+    world.step();
+  }
+  assert.ok(player.width > width && power.active.kind === "giant");
+  world.step();
+  assert.equal(power.active, null);
+  assert.deepEqual([player.width, player.length, player.height], [width, length, height]);
+  assert.equal(player.spec, spec);
+  assert.equal(world.sensors.mounts.camera.position.y, cameraY);
+});
+
+test("survival Giant cannot phase through a civilian body", () => {
+  const item = controlled(undefined, scaled);
+  const { world, player, power } = item;
+  acquire(item, "giant");
+  const civilian = world.makeVehicle("giant-control-sedan", "sedan",
+    direction(player, player.length / 2 + 2.12));
+  civilian.maxSpeed = 0;
+  world.actors.push(civilian);
+  player.speed = 8;
+  world.step();
+  assert.equal(world.pursuit.metrics.terminalCause, "traffic-contact");
+  assert.ok(world.actors.includes(civilian) && power.active?.kind === "giant");
+  while (world.pursuit.reviewUntilTick) world.step();
+  assert.equal(power.active, null);
+  assert.equal(player.width, power.footprint.width);
+  assert.equal(player.spec.wheelbase, 2.6);
+  assert.equal(world.sensors.mounts.camera.position.y, 1.58);
 });
 
 test("survival Ghost phases through civilian vehicles but cannot pass a person", () => {
@@ -214,4 +275,16 @@ test("survival replay reproduces real collection, use, score, and City coordinat
   advance(world, 100);
   const replay = World.fromReplay(world.replay());
   assert.deepEqual(replay.snapshot(), world.snapshot());
+});
+
+test("scaled Arcade replay restores the active Giant and collision dimensions", () => {
+  const world = initialCity({ traffic: 36, pedestrians: 80, seed: "cairo-42" });
+  world.command({ ...scaled, level: 1 });
+  for (let i = 0; i < 420 && world.pursuit.survival.active?.kind !== "giant"; i++) world.step();
+  assert.equal(world.pursuit.survival.active?.kind, "giant");
+  const restored = World.fromReplay(world.replay());
+  assert.deepEqual(restored.snapshot(), world.snapshot());
+  assert.equal(restored.player.giantScale, 1.45);
+  assert.deepEqual([restored.player.width, restored.player.length, restored.player.spec],
+    [world.player.width, world.player.length, world.player.spec]);
 });

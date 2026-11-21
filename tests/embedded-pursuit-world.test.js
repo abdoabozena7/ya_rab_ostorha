@@ -12,6 +12,7 @@ import { beginStreetPursuit, endStreetPursuit, pursuitSnapshot, stepPursuit } fr
 import { SpatialIndex } from "../src/core/spatial-index.js";
 import { followPath } from "../src/core/vehicle.js";
 import { World } from "../src/core/world.js";
+import { resetPursuitEpisode } from "../src/rl/pursuit-rollouts.js";
 
 const DRIVE = { steer: 0, throttle: 1, brake: 0, gear: 1 };
 const lane = { id: "local", axis: "z", fixed: 0, min: -50, max: 60, width: 3.6,
@@ -58,6 +59,94 @@ function streetScene(road, exit, cross = null) {
   world.updateSensors();
   return world;
 }
+
+test("the civilian crossing preview is explicit in Dispatch replays and unavailable in legacy GTA", () => {
+  const create = () => new World({ cityVersion: 4, traffic: 0, pedestrians: 0, seed: "preview-replay" }, "metro");
+  const launch = { type: "street-pursuit-start", level: 1, variant: "gta" };
+  const previous = create();
+  assert.throws(() => previous.command({ ...launch, config: { civilianCrossingPreview: true } }), /dispatch-v1/);
+  assert.throws(() => previous.command({ ...launch, config: { civilianCrossingPreview: "visible-motion-v2" } }), /dispatch-v1/);
+  assert.throws(() => previous.command({ ...launch, config: { ruleset: "dispatch-v1", civilianCrossingPreview: "true" } }), /boolean/);
+  previous.command({ ...launch, config: { ruleset: "dispatch-v1" } });
+  assert.ok(!Object.hasOwn(previous.replay().events.at(-1).command.config, "civilianCrossingPreview"));
+
+  for (const civilianCrossingPreview of [true, "visible-motion-v2"]) {
+    const enabled = create();
+    enabled.command({ ...launch, config: { ruleset: "dispatch-v1", civilianCrossingPreview } });
+    enabled.command({ type: "pursuit-drive", action: DRIVE });
+    for (let tick = 0; tick < 12; tick++) enabled.step();
+    const restored = World.fromReplay(enabled.replay());
+    assert.equal(restored.pursuit.gta.config.civilianCrossingPreview, civilianCrossingPreview);
+    assert.deepEqual(restored.snapshot(), enabled.snapshot());
+  }
+});
+
+test("the shared rollout keeps the opt-in civilian crossing preview on the World", () => {
+  const stage = { traffic: 12, pedestrians: 18, episodeSeconds: 2, wantedLevel: 1, patrols: 1 };
+  const seed = "preview-rollout-control";
+  const { env: ordinary } = resetPursuitEpisode(stage, seed);
+  const { env: preview } = resetPursuitEpisode({ ...stage, civilianCrossingPreview: true }, seed);
+  assert.ok(!Object.hasOwn(ordinary.world.pursuit.gta.config, "civilianCrossingPreview"));
+  assert.equal(preview.world.pursuit.gta.config.civilianCrossingPreview, true);
+  assert.deepEqual(preview.getObservation(), ordinary.getObservation());
+  const { env: motion } = resetPursuitEpisode({ ...stage, civilianCrossingPreview: "visible-motion-v2" }, seed);
+  assert.equal(motion.world.pursuit.gta.config.civilianCrossingPreview, "visible-motion-v2");
+  assert.deepEqual(motion.getObservation(), ordinary.getObservation());
+  assert.throws(() => resetPursuitEpisode({ ...stage, civilianCrossingPreview: 1 }, seed), /boolean/);
+});
+
+test("visible-motion preview yields and continues for an unflagged city walker", t => {
+  const run = (civilianCrossingPreview, away = false) => {
+    const world = new World({ cityVersion: 4, traffic: 0, pedestrians: 0, seed: "preview-local-walker" }, "metro");
+    const road = world.drivingRoads.find(road => road.id === "bab-el-louk-link");
+    const car = world.makeVehicle("local-van", "van", districtRoadPose(road, -53.04));
+    car.path = planDistrictRoute(world.district, car, goal(road, -42.1));
+    assert.ok(car.path.length > 10);
+    car.speed = 6.5;
+    initializeDistrictActor(world, car);
+    Object.assign(car.district, { caseId: "motion-preview", profile: "ordinary", nextLoadingDistanceM: null });
+    const target = { x: away ? -37.35 : -27, z: -46.42 }, heading = away ? -Math.PI / 2 : Math.PI / 2;
+    const walker = { id: "local-walker", type: "pedestrian", kind: "woman-shirt",
+      x: -36, z: target.z, heading, speed: 1.36, walkSpeed: 1.36, distance: 0, wait: 0,
+      phase: .2, pause: 0, motionMode: "ambient", crossing: false, road, target, side: -1,
+      along: target.z, walkRoute: [target], walkGoal: `${target.x},${target.z}`, walkPlanTick: 0,
+      district: { caseId: "motion-preview", pattern: "parallel", routeConstrained: true, holdAtTarget: true } };
+    walker.body = createPedestrianBody(walker);
+    walker.radius = walker.body.radiusM;
+    walker.height = walker.body.heightM;
+    assert.ok(bodyOnRoad(car, world.roads) && world.free(car, .1) && world.free(walker, .1) &&
+      !overlaps(walker, car, .1));
+    const start = [car.x, car.z, car.speed, walker.x, walker.z, walker.speed];
+    world.actors.push(car, walker);
+    world.actorIndex = new SpatialIndex(world.actors);
+    world.command({ type: "street-pursuit-start", level: 1, variant: "gta",
+      config: { ruleset: "dispatch-v1", maxActivePatrols: 0, civilianCrossingPreview } }, false);
+    const hits = [];
+    let firstYield = null, resume = null;
+    for (let i = 0; i < 240; i++) {
+      const before = car.speed;
+      world.step();
+      assert.equal(world.tick, i + 1);
+      assert.ok(world.actors.includes(car) && world.actors.includes(walker));
+      hits.push(...world.pursuit.stepEvents.filter(event => event.type === "ambient_collision"));
+      if (car.reason === "pedestrian-yield" && car.blockedBy === walker.id && car.speed < before)
+        firstYield ??= { tick: world.tick, carM: car.distance, walkerM: walker.distance };
+      if (firstYield && !resume && car.reason !== "pedestrian-yield" && car.speed > .6 &&
+          car.distance - firstYield.carM > 2 && walker.distance - firstYield.walkerM > 3)
+        resume = { tick: world.tick, carM: car.distance - firstYield.carM, walkerM: walker.distance - firstYield.walkerM };
+    }
+    return { start, hits, firstYield, resume, carM: car.distance, walkerM: walker.distance };
+  };
+  const previous = run(true), next = run("visible-motion-v2"), clear = run("visible-motion-v2", true);
+  t.diagnostic(JSON.stringify({ previous, next, clear }));
+  assert.deepEqual(next.start, previous.start);
+  assert.ok(previous.hits.some(hit => hit.closingSpeed > 1 && hit.second.id === "local-walker"));
+  assert.equal(next.hits.length, 0);
+  assert.ok(next.firstYield?.tick < previous.hits[0].tick && next.resume);
+  assert.equal(clear.hits.length, 0);
+  assert.equal(clear.firstYield, null);
+  assert.ok(clear.carM > 6 && clear.walkerM > .5);
+});
 
 test("rush gives patrols extra pace only on avenues, not in a narrow one-way street", () => {
   const world = streetScene(lane, goal(lane, 50));
@@ -272,6 +361,54 @@ function removeSightWall(world) {
   world.statics.length = 0;
   world.staticIndex = new SpatialIndex(world.statics);
 }
+
+test("Dispatch static contacts reflect live solid changes", () => {
+  function drive(change) {
+    const world = new World({ cityVersion: 4, seed: "dispatch-moving-solid", traffic: 0, pedestrians: 0 }, "metro");
+    const road = world.drivingRoads.find(road => road.id === "university-avenue");
+    const lane = districtRoadPose(road, -236, 1);
+    const barrier = { id: "static-grid-solid", type: "static", kind: "barrier", heading: lane.heading,
+      x: -224, z: lane.z - 5, length: .55, width: 3, height: 1.15 };
+    const { player } = world;
+    Object.assign(player, lane, { speed: 7 });
+    world.statics = [...world.statics, barrier];
+    world.staticIndex = new SpatialIndex(world.statics);
+    world.command({ type: "street-pursuit-start", variant: "gta", config: {
+      ruleset: "dispatch-v1", maxActivePatrols: 0, enableRoadblocks: false,
+    } }, false);
+    driveStreet(world, 12);
+    assert.equal(world.pursuit.metrics.collisions, 0);
+    const fixedX = player.x;
+    if (change === "move") barrier.z = lane.z; // Deliberately mutate the same indexed body.
+    else if (change === "insert") world.statics.push({ ...barrier, id: "replacement-solid", z: lane.z });
+    else if (change === "replace") world.statics[world.statics.length - 1] = { ...barrier, z: lane.z };
+    else if (change === "tie") {
+      barrier.z = lane.z;
+      world.statics.push({ ...barrier, id: "same-time-solid" });
+    }
+    const hit = [];
+    for (let i = 0; i < 120; i++) {
+      world.step();
+      hit.push(...world.pursuit.stepEvents.filter(event => event.type === "static_or_civilian_hit" && event.fresh));
+      if (hit.length) break;
+    }
+    if (change === "away") {
+      assert.equal(hit.length, 0);
+      assert.ok(player.x > barrier.x + 2);
+    } else {
+      const solid = world.statics.at(change === "tie" ? -2 : -1);
+      assert.equal(hit[0]?.actorId, solid.id);
+      assert.ok(hit[0].closingSpeed > 6 && player.x > fixedX);
+      assert.ok(!overlaps(player, solid) && overlaps(player, solid, .002));
+    }
+    return { tick: world.tick, x: player.x, incidents: hit.map(({ actorId, ...event }) => event) };
+  }
+  const moved = drive("move");
+  assert.deepEqual(drive("insert"), moved);
+  assert.deepEqual(drive("replace"), moved);
+  assert.deepEqual(drive("tie"), moved);
+  drive("away");
+});
 
 const patrolMotion = world => [...world.pursuit.patrols].map(car => ({
   x: car.x, z: car.z, speed: car.speed, distance: car.distance, target: car.pursuitDrive.target,

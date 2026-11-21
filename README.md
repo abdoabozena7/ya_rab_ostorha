@@ -142,8 +142,10 @@ The SUV starts self-driving. Press **I** to take over with automatic throttle,
 **A / D** or the arrows to steer and drift, and **Space** to brake. The equivalent
 touch controls appear on smaller screens. Collect **Giant** or **Ghost** for
 a temporary benefit; **Mine** and **Pulse** give one charge behind or ahead,
-used with **E** or the **Use** button. Ghost cannot phase through people or
-buildings. Real contact ends the round and plays a short slow-motion review.
+used with **E** or the **Use** button. Giant can clear patrol cars on contact,
+but the larger SUV accelerates more slowly and needs more room to turn.
+It cannot clear civilian vehicles or pedestrians. Ghost cannot phase
+through people or buildings. Real contact ends the round and plays a short slow-motion review.
 **R** or **Run again** restarts from the current street. **Sound on/off** toggles
 the local music and effects, and the same browser keeps the best time.
 
@@ -176,6 +178,48 @@ Select the opening wanted level (1–5); use **W / S** for throttle or reverse,
 without ending the chase on the first hit. Higher heat brings faster units,
 heavy vans, and temporary roadblocks. End the chase without resetting traffic.
 
+**Pursuit → Metro Dispatch** is a separate, manual ruleset on those same
+streets. Police share reports while your SUV is inside a surveillance zone.
+Outside coverage they need a sighting to update your position; the HUD shows
+the current tracking state and Chase diagnostics lists the active zones. Losing
+sight is not enough: escape requires prior active pursuit and separation.
+The opening squad uses checked berths, and high-tier patrols cannot start a
+head-on approach inside the opening reaction window. Dispatch must have a
+current report and an unoccupied, drivable turn before it can place a concealed
+roadblock beyond that turn. Traffic can still close the detour later.
+New Dispatch runs dent the struck panel on a fresh impact, even while the SUV
+is stopped. Staying in the same contact does not add another dent. Older
+recordings retain their original damage feedback.
+
+**Metro Dispatch · PPO** loads a locally selected experimental checkpoint.
+It displays the checkpoint hash, never starts without a compatible model, and
+hands control back on **I**, **Space**, or manual driving input. It is not the
+ordinary City autopilot. The frozen driver completed a five-star development
+run in the full-density City without an SUV contact, but other actors still
+collided and the untouched acceptance suite has not been run. The brake guard
+checks a requested turn around a measured stationary vehicle; it does not
+choose the route or certify safety.
+In **Lab → Settings → Metro Dispatch training**, train one update at a time
+with the same rollout and optimizer as the CLI. You can continue or save the
+checkpoint, or select it for City without starting a chase. Leaving the Lab
+stops an unfinished update. L09/L10 stage a real jogger crossing from either
+side. L12 adds a live patrol and ambient traffic to the crossing. The headless
+L07 drill and its rear-blocked control share the same scanner and brake guard.
+The headless L18 drill uses the original west alley: wait for an oncoming car
+to clear, then enter, or stop if the alley is blocked beyond the junction.
+Run `node tools\verify-metro-narrow.mjs` for the paired tests, including actual
+impacts in the unsafe controls. This is a scripted drill, not a learned escape.
+Reproduce the reverse and roadblock checks with
+`node tools\verify-metro-reverse.mjs` and `node tools\verify-metro-opening.mjs`.
+**City clearance** and **Dense City clearance** use extended static map cues
+and have a separate checkpoint slot from the older map-cue and scan-only
+workloads. The same checkpoint format can drive the live City after selection.
+
+**Settings → Import replay** rebuilds the recorded City in the background of
+the current paused view. Long recordings may take a minute or more; the
+percentage updates while you wait. A new import replaces any pending one.
+Resume or switch scenes to cancel. A failed import keeps the current City.
+
 ### Headless GTA Chase
 
 ```js
@@ -204,6 +248,43 @@ RGB prediction pipeline does not consume it.
 wanted stars or active units, adjust NPC pace, disable maneuvers or roadblocks,
 or set vehicle health and episode duration. Run
 `node tools/verify-gta-rl-env.mjs` for headless verification.
+
+Use `config: { ruleset: "dispatch-v1" }` to exercise the newer City rules
+headlessly. This selects `DISPATCH_OBSERVATION_SCHEMA`: 72 first-return virtual
+rays, finer first-return measurements for pedestrian tracks, own motion,
+vehicle health and sample age. Hidden
+actor positions, police reports and FSM state are not policy inputs. The older
+131-field privileged observation remains available under the legacy rules.
+
+For a bounded CPU development run:
+
+```powershell
+node tools\train-metro-pursuit.mjs --output output\dispatch-dev-01 --stage maneuver --updates 12
+node tools\verify-pursuit-foundation.mjs
+node tools\verify-metro-crossings.mjs
+node tools\verify-pursuit-learning.mjs
+```
+
+Resume into a new output directory with `--resume <checkpoint.json>`. Each run
+records a SHA-256 checkpoint identity, real training returns, and matched
+untrained and scripted metrics. These development seeds and stages are not
+the full curriculum or untouched holdout. See the [mission ledger](docs/PURSUIT_RL_TODO.md).
+
+The optional `dispatch-route-v1` checkpoint adds relative samples of a route
+from the public Metro road map to the same virtual scan. The frozen model
+chooses the controls; the route follower is a separate training-only
+demonstrator. In Lab, select the matching map-cue workload and use **Resume
+from checkpoint** to continue a CLI or saved Lab run. Map-cue and scan-only
+training progress stay separate.
+
+```powershell
+node tools\train-metro-pursuit.mjs --output output\dispatch-junction-dev --stage junction-escape --warm-start 36 --updates 12
+```
+
+`junction-escape` stages two directions through the real Civic junction and
+one live patrol. `city-escape` allows 60 seconds on the ordinary populated
+Metro map. A clear result on the staged junction does not establish City
+performance.
 
 City opens in manual mode without starting a model. Choosing a **Phone**
 destination or switching to **autopilot** starts the installed detector and

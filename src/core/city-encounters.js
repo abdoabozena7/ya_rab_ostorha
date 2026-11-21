@@ -4,6 +4,7 @@ import { angleDelta, bodyOnRoad, distance, pointOnRoad } from "./geometry.js";
 import { Random } from "./random.js";
 import { SpatialIndex } from "./spatial-index.js";
 import { walkSegmentClear } from "./walk-route.js";
+import { DISPATCH_RULESET } from "./pursuit-dispatch.js";
 
 export const CITY_ENCOUNTERS = Object.freeze([
   "curb-pickup", "traffic-wave", "side-street-tuktuk", "curb-crossing", "roadworks",
@@ -262,12 +263,15 @@ export function advanceCityEncounters(world) {
     }
     log(world, event, event.applied ? (event.target && !event.revealed ? "ended" : "cleared") : "not-observed");
   }
-  if (world.tick < state.nextTick || world.pursuit?.phase === "running") return;
+  const pursuing = world.pursuit?.phase === "running";
+  if (world.tick < state.nextTick || (pursuing && world.pursuit.gta?.config.ruleset !== DISPATCH_RULESET)) return;
   state.nextTick = world.tick + seconds(world.config.scenarioInterval * state.rng.range(.8, 1.25));
   if (Math.abs(world.player.speed) < .5 || state.active.length >= (world.config.difficulty >= 4 ? 3 : 1) ||
       state.rng.next() > world.config.chaos) return;
   const nearby = world.actorIndex.near(world.player, 46);
   for (const kind of ordered(state.rng, CITY_ENCOUNTERS)) {
+    // Let Dispatch own new closures, while existing civilians remain active.
+    if (pursuing && kind === "roadworks") continue;
     const cooldown = kind === "roadworks" ? 11 : 5;
     if (kind === state.lastKind || world.tick - (state.lastStarted.get(kind) ?? -Infinity) < seconds(cooldown) ||
         state.active.some(event => event.kind === kind)) continue;

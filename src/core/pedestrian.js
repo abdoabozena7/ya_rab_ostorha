@@ -1,6 +1,6 @@
 import { STEP, clamp } from "./config.js";
 import { distance, angleDelta, pointOnRoad } from "./geometry.js";
-import { walkingWaypoint, walkSegmentBlocker } from "./walk-route.js";
+import { canLeaveWalkMargin, walkingWaypoint, walkSegmentBlocker } from "./walk-route.js";
 import { createPedestrianBody } from "./pedestrian-body.js";
 const WALK_TURNS = [0, -0.5, 0.5, -1, 1, -1.6, 1.6, -2.2, 2.2, Math.PI];
 const pose = (road, along, side, offset) =>
@@ -61,7 +61,7 @@ function move(world, p, body, heading, targetSpeed, reason, nearby, district, re
   const turnRateRadS = angleDelta(heading, p.heading) / STEP;
   // Match World's reserved-body guard; an occupied step is the only instant stop.
   const blocker = speed > 0
-    ? walkSegmentBlocker(p, p, { x, z }, nearby ?? nearbyBodies(world, p), 0.12)
+    ? walkSegmentBlocker(p, p, { x, z }, nearby ?? nearbyBodies(world, p), 0.12, canLeaveWalkMargin(world, p))
     : null;
   const next = reuseProposal ? p : { ...p };
   if (!blocker) {
@@ -157,6 +157,7 @@ export function pedestrianMotion(world, p, reuseProposal = false) {
   const probeLength = Math.min(0.95, distance(p, waypoint));
   const previousHeading = p.walkHeading ?? p.heading;
   const probe = { x: 0, z: 0 };
+  const allowMarginExit = canLeaveWalkMargin(world, p);
   // Walk round personal space using a consistent right-side preference. The
   // candidate score breaks the symmetric face-to-face pedestrian deadlock.
   for (const turn of WALK_TURNS) {
@@ -167,7 +168,7 @@ export function pedestrianMotion(world, p, reuseProposal = false) {
       (turn > 0 ? 0.03 : 0);
     if (partialScore >= best) continue;
     const score = partialScore + Math.abs(angleDelta(heading, previousHeading)) * 0.24;
-    if (score < best && !walkSegmentBlocker(p, p, probe, close, 0.12)) {
+    if (score < best && !walkSegmentBlocker(p, p, probe, close, 0.12, allowMarginExit)) {
       best = score;
       targetHeading = heading;
     }

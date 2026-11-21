@@ -6,6 +6,7 @@ import { createPlayerVehicle } from "../src/render/player-vehicle.js";
 import { mountVehiclePanel } from "../src/ui/vehicle-panel.js";
 import { createVehicleState } from "../src/core/vehicle-state.js";
 import { World } from "../src/core/world.js";
+import { GtaPursuitEnv } from "../src/rl/gta-pursuit-env.js";
 import { measureVehicleSensors } from "../src/signal_processing/range-sensors.js";
 
 const wheelNames = [
@@ -328,6 +329,77 @@ test("actual fixture contact deforms painted panels locally and exact repair res
   actor.vehicle = createVehicleState();
   rig.update(actor);
   assert.equal(geometryHash(rig.root), pristineHash);
+});
+
+test("Dispatch renders fresh accepted impact on a stopped SUV without re-denting a latched pair", (t) => {
+  const hold = { steer: 0, throttle: 0, brake: 1, gear: 1 };
+  const profile = { damageFeedback: "accepted-contact-v1" };
+  function trace(feedback = {}, tail = true) {
+    const env = new GtaPursuitEnv();
+    env.reset({ seed: "metro-impact-feedback-lab", traffic: 0, pedestrians: 0,
+      scenario: tail ? "L01" : "L01-control", config: {
+        ruleset: "dispatch-v1", wantedLevelStart: 1, maxActivePatrols: Number(tail), ...feedback,
+      } });
+    const { player, pursuit } = env.world;
+    player.speed = 0;
+    if (tail) {
+      const [patrol] = pursuit.patrols;
+      Object.assign(patrol, { x: player.x - 5.6 * Math.sin(player.heading),
+        z: player.z - 5.6 * Math.cos(player.heading), speed: 12 });
+    }
+    const { rig } = fixture(t, player);
+    const hatch = rig.root.getObjectByName("suv-rear-hatch").geometry.attributes.position.array;
+    const pristine = hatch.slice();
+    const drivable = createHash("sha256"), frames = [];
+    for (let tick = 1; tick <= 44; tick++) {
+      const speedBefore = player.speed, healthBefore = player.health;
+      const { obs, reward, info } = env.step(hold, 1);
+      rig.update(player, env.world.sensors);
+      drivable.update(JSON.stringify({ events: info.events, metrics: pursuit.metrics, reward,
+        actors: env.world.actors.map(({ id, x, z, heading, speed, steer, distance, reason, health, gtaSlipMps, gtaYawRate }) =>
+          [id, x, z, heading, speed, steer, distance, reason, health, gtaSlipMps, gtaYawRate]) }));
+      drivable.update(Buffer.from(obs.buffer, obs.byteOffset, obs.byteLength));
+      let hatchInwardM = 0;
+      for (let i = 2; i < hatch.length; i += 3)
+        hatchInwardM = Math.max(hatchInwardM, hatch[i] - pristine[i]);
+      const damage = player.vehicle.damage, rendered = rig.diagnostics.damage;
+      frames.push({ tick, speedBefore, speedAfter: player.speed, healthLoss: healthBefore - player.health,
+        contact: info.events.find(event => event.type === "patrol_collision"), damage, rendered: { ...rendered }, hatchInwardM });
+    }
+    return { drivable: drivable.digest("hex"), frames };
+  }
+
+  const archived = trace();
+  const oldHits = archived.frames.filter(frame => frame.contact);
+  assert.deepEqual(oldHits.map(({ tick, contact }) => [tick, contact.fresh]), [[8, true], [29, false]]);
+  assert.equal(oldHits[0].speedBefore, 0);
+  assert.ok(oldHits[0].speedAfter > 6 && oldHits[0].healthLoss > 20);
+  assert.equal(oldHits[0].damage.impactCount, 0);
+  assert.equal(oldHits[0].hatchInwardM, 0);
+  assert.ok(oldHits[1].damage.rear > 0 && oldHits[1].hatchInwardM > 0);
+  t.diagnostic(JSON.stringify({ archivedDigest: archived.drivable, archivedContacts: oldHits }));
+
+  const current = trace(profile);
+  assert.equal(current.drivable, archived.drivable, "the feedback cannot change motion, observation, incidents, health or reward");
+  const [first, held] = current.frames.filter(frame => frame.contact);
+  assert.equal(first.damage.impactCount, 1);
+  assert.equal(first.damage.lastImpact.side, "rear");
+  assert.equal(first.damage.lastImpact.tick, first.tick);
+  assert.equal(first.rendered.lastImpact.tick, first.tick);
+  assert.ok(first.hatchInwardM > .01 && first.rendered.maximumDisplacementM > .1 && first.rendered.deformedVertices > 3,
+    "a hard rear impact must move the visible hatch inward on the first contact tick");
+  assert.deepEqual(current.frames.slice(0, first.tick - 1).map(f => f.damage.total), Array(first.tick - 1).fill(0));
+  assert.deepEqual(held.damage, first.damage, "persistent contact must not dent the SUV again");
+  assert.deepEqual(held.rendered, first.rendered);
+  assert.equal(held.hatchInwardM, first.hatchInwardM);
+  const clean = trace(profile, false);
+  assert.ok(clean.frames.every(f => f.damage.impactCount === 0 && !f.rendered.deformedVertices && f.hatchInwardM === 0));
+  assert.throws(() => new GtaPursuitEnv().reset({ config: profile }), /damageFeedback requires/);
+  assert.throws(() => new GtaPursuitEnv().reset({
+    config: { ruleset: "dispatch-v1", damageFeedback: "unknown" },
+  }), /damageFeedback requires/);
+  t.diagnostic(JSON.stringify({ currentDigest: current.drivable, currentContacts: [first, held],
+    noTailFrames: clean.frames.length }));
 });
 
 test("real contact retains the skid's attached lower flange and frame supports, then resets exactly", (t) => {

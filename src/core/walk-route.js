@@ -1,4 +1,4 @@
-import { corners, distance, overlaps } from "./geometry.js";
+import { CIRCULAR_CONTACT_TOLERANCE_M, corners, distance, overlaps } from "./geometry.js";
 
 function pointSegment(px, pz, ax, az, dx, dz, lengthSquared) {
   const t = Math.max(
@@ -10,12 +10,17 @@ function pointSegment(px, pz, ax, az, dx, dz, lengthSquared) {
 
 // Exact continuous segment clearance for a walking circle. The renderer and
 // frame rate are irrelevant. This also catches grazing contacts near the start.
-export function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16) {
+export function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16, allowMarginExit = false) {
   const ax = a.x, az = a.z, bx = b.x, bz = b.z;
   const dx = bx - ax, dz = bz - az, lengthSquared = dx * dx + dz * dz || 1;
   const minX = Math.min(ax, bx), maxX = Math.max(ax, bx);
   const minZ = Math.min(az, bz), maxZ = Math.max(az, bz);
   const padding = person.radius + gap;
+  // An actor may have moved into the extra padding since the last walk step.
+  // Escape that margin only along a segment that never approaches the solid.
+  const exitsMargin = (start, end, clearance, physical) =>
+    allowMarginExit && clearance >= physical - CIRCULAR_CONTACT_TOLERANCE_M &&
+      end > start + 1e-7 && clearance >= start - 1e-7;
   // An enclosure rejects distant bodies only; do not replace the strict
   // distance/slab tests or change which obstacle is considered first.
   for (const item of obstacles) {
@@ -25,7 +30,9 @@ export function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16) {
       const clearance = person.radius + item.radius + gap;
       if (x < minX - clearance - 1e-7 || x > maxX + clearance + 1e-7 ||
           z < minZ - clearance - 1e-7 || z > maxZ + clearance + 1e-7) continue;
-      if (pointSegment(x, z, ax, az, dx, dz, lengthSquared) < clearance) return item;
+      const closest = pointSegment(x, z, ax, az, dx, dz, lengthSquared);
+      if (closest < clearance && !exitsMargin(Math.hypot(ax - x, az - z),
+        Math.hypot(bx - x, bz - z), closest, person.radius + item.radius)) return item;
       continue;
     }
     const hw = item.width / 2, hl = item.length / 2;
@@ -61,17 +68,18 @@ export function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16) {
       pointSegment(-hw, hl, sx, sz, lx, lz, localLengthSquared),
       pointSegment(hw, -hl, sx, sz, lx, lz, localLengthSquared),
       pointSegment(hw, hl, sx, sz, lx, lz, localLengthSquared));
-    if (clearance < padding - 1e-7) return item;
+    if (clearance < padding - 1e-7 && !exitsMargin(rectStart, rectEnd, clearance, person.radius))
+      return item;
   }
   return null;
 }
 
-export function walkSegmentClear(person, a, b, obstacles, gap = 0.16) {
-  return walkSegmentBlocker(person, a, b, obstacles, gap) === null;
+export function walkSegmentClear(person, a, b, obstacles, gap = 0.16, allowMarginExit = false) {
+  return walkSegmentBlocker(person, a, b, obstacles, gap, allowMarginExit) === null;
 }
 
-export function planWalk(person, target, obstacles) {
-  if (walkSegmentClear(person, person, target, obstacles)) return [target];
+export function planWalk(person, target, obstacles, allowMarginExit = false) {
+  if (walkSegmentClear(person, person, target, obstacles, 0.16, allowMarginExit)) return [target];
   const nodes = [person, target];
   for (const body of obstacles) {
     if (body.type === "pedestrian") continue;
@@ -105,7 +113,7 @@ export function planWalk(person, target, obstacles) {
       const cost = costs[current] + distance(nodes[current], nodes[next]);
       if (
         cost >= costs[next] ||
-        !walkSegmentClear(person, nodes[current], nodes[next], obstacles)
+        !walkSegmentClear(person, nodes[current], nodes[next], obstacles, 0.16, current === 0 && allowMarginExit)
       )
         continue;
       costs[next] = cost;
@@ -114,6 +122,10 @@ export function planWalk(person, target, obstacles) {
     }
   }
   return [];
+}
+
+export function canLeaveWalkMargin(world, person) {
+  return Boolean(world.pursuit?.response?.dispatch && person.district?.routeConstrained && !person.district?.caseId);
 }
 
 export function walkingWaypoint(world, person, nearby) {

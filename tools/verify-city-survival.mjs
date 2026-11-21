@@ -61,8 +61,28 @@ const readPose = target => target.evaluate(() => {
   return { x, z, speed, heading, steer, arcadeSlip, tick, elapsed: tick - p.startedTick };
 });
 
+const giantGeometry = () => page.evaluate(() => {
+  const { world, view } = window.sim, { player, sensors, pursuit, tick } = world;
+  const { root, diagnostics } = view.playerRig;
+  const sample = name => root.getObjectByName(name).getWorldPosition(root.position.clone());
+  const fl = sample("wheel-front-left"), fr = sample("wheel-front-right"), rl = sample("wheel-rear-left");
+  const spring = root.getObjectByName("wheel-front-left-spring");
+  const mismatch = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+  const sensorsM = [...diagnostics.sensors.ranges, ...diagnostics.sensors.auxiliary].map(mount =>
+    mismatch(mount.worldPosition, sensors.rays.find(ray => ray.id === mount.id).origin));
+  sensorsM.push(...diagnostics.sensors.cameras.map(mount =>
+    mismatch(mount.worldPosition, sensors.mounts.cameras.find(camera => camera.id === mount.id).position)));
+  sensorsM.push(mismatch(diagnostics.sensors.telemetry.worldPosition, sensors.mounts.telemetry.position));
+  return { tick, active: pursuit?.survival?.active?.kind ?? null, scale: root.parent.scale.x,
+    footprint: [player.length, player.width, player.height], physicalWheelbase: player.spec.wheelbase,
+    renderedWheelbase: fl.distanceTo(rl), renderedTrack: fl.distanceTo(fr),
+    springScale: spring.getWorldScale(root.position.clone()).y / spring.scale.y,
+    maximumMountErrorM: Math.max(...sensorsM) };
+});
+
 async function stockScene() {
   await setupCity(null);
+  const nominal = await giantGeometry();
   assert.equal(await id("garageBtn").count(), 0, "The production app must not launch a standalone Garage");
   assert.equal(await id("environmentLabel").textContent(), "City");
   await page.evaluate(() => {
@@ -116,12 +136,25 @@ async function stockScene() {
   report.audio = { signalRms: on, mutedRms: await page.evaluate(() => window.__pursuitRms()) };
   await wait(() => window.sim.world.pursuit.survival.active?.kind === "giant" &&
     document.getElementById("pursuitPowerLabel").textContent.includes("Giant"));
-  assert.ok(await page.evaluate(() => {
-    const { roots, playerRig } = window.sim.view;
-    return playerRig.root.parent === roots.get("player").root && playerRig.root.parent.scale.x > 1.3;
-  }));
+  const giant = await giantGeometry();
+  const close = (actual, expected) => Math.abs(actual - expected) < 1e-6;
+  report.giant = { nominal, active: giant, synchronized: giant.active === "giant" && close(giant.scale, 1.45) &&
+    giant.footprint.every((value, i) => close(value, 1.45 * nominal.footprint[i])) &&
+    close(giant.renderedWheelbase, giant.physicalWheelbase) &&
+    close(giant.renderedTrack, 1.45 * nominal.renderedTrack) && close(giant.springScale, 1.45) &&
+    giant.maximumMountErrorM < 1e-6 };
+  assert.ok(report.giant.synchronized, JSON.stringify(report.giant));
   await shot("03-city-giant");
   await impactAndRetry();
+  const restored = await giantGeometry();
+  report.giantRestored = { ...restored, normal: restored.active === null && close(restored.scale, 1) &&
+    restored.footprint.every((value, i) => close(value, nominal.footprint[i])) &&
+    close(restored.renderedWheelbase, nominal.physicalWheelbase) && restored.maximumMountErrorM < 1e-6 };
+  assert.ok(report.giantRestored.normal, JSON.stringify(report.giantRestored));
+  await page.reload();
+  await ready();
+  await id("streetPursuitBtn").click();
+  assert.equal(await id("pursuitBest").textContent(), report.impact.restoredBest);
 }
 
 async function impactAndRetry() {
@@ -167,10 +200,6 @@ async function impactAndRetry() {
       old.actors.every(p => world.actors.includes(p.actor)) && world.actors.length === old.actors.length &&
       world.player.width === world.pursuit.survival.footprint.width && world.audit().length === 0;
   }));
-  await page.reload();
-  await ready();
-  await id("streetPursuitBtn").click();
-  assert.equal(await id("pursuitBest").textContent(), best);
   report.impact = { retryInPlace: true, reviewWallS: finished.wallS, score: finished.score,
     cause: begin.impact, restoredBest: best };
 }

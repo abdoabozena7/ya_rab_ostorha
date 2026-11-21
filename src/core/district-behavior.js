@@ -1,13 +1,15 @@
 import { STEP, VEHICLE, clamp } from "./config.js";
 import { angleDelta, bodyOnRoad, distance, overlaps } from "./geometry.js";
 import { pedestrianMotion } from "./pedestrian.js";
-import { planWalk, walkSegmentClear } from "./walk-route.js";
+import { canLeaveWalkMargin, planWalk, walkSegmentClear } from "./walk-route.js";
 import {
   hasImmutablePathPoints, integrateVehicle, nearestPathPoint, vehicleProbe,
 } from "./vehicle.js";
 import { planDistrictRoute } from "./district-navigation.js";
+import { SpatialIndex } from "./spatial-index.js";
 
 const HISTORY_LIMIT = 96;
+const WALK_TARGET_GAP = 0.12;
 const PROFILE = Object.freeze({
   cautious: { headwayS: 2.2, speedFactor: 0.88 },
   ordinary: { headwayS: 1.6, speedFactor: 1 },
@@ -326,9 +328,10 @@ function prepareWalkRoute(world, person) {
           width: actor.radius * 2, length: actor.radius * 2,
         });
     const first = person.walkRoute?.[0];
+    const allowMarginExit = canLeaveWalkMargin(world, person);
     if (person.walkGoal !== key || !first ||
-        !walkSegmentClear(person, person, first, obstacles, 0.12))
-      person.walkRoute = planWalk(person, person.target, obstacles);
+        !walkSegmentClear(person, person, first, obstacles, 0.12, allowMarginExit))
+      person.walkRoute = planWalk(person, person.target, obstacles, allowMarginExit);
     person.walkGoal = key;
     person.walkPlanTick = world.tick;
   }
@@ -336,8 +339,39 @@ function prepareWalkRoute(world, person) {
     person.walkRoute.shift();
 }
 
+function isStoppedVehicle(actor) {
+  return actor.type === "vehicle" && Math.abs(actor.speed) < 0.8;
+}
+
+function findWalkTargetBlocker(actors, target) {
+  return actors.find(actor => isStoppedVehicle(actor) && overlaps(target, actor, WALK_TARGET_GAP));
+}
+
+// Only use this index during simultaneous proposals, before any body moves.
+export function createWalkTargetQuery(actors) {
+  const parked = new SpatialIndex();
+  let maxRadius = 0;
+  for (let order = 0; order < actors.length; order++) {
+    const actor = actors[order];
+    if (!isStoppedVehicle(actor)) continue;
+    maxRadius = Math.max(maxRadius, Math.hypot(actor.length, actor.width) / 2);
+    parked.add({ x: actor.x, z: actor.z, actor, order });
+  }
+  return target => {
+    const reach = target.radius + maxRadius + WALK_TARGET_GAP;
+    if (!Number.isFinite(reach) || !Number.isFinite(target.x) || !Number.isFinite(target.z))
+      return findWalkTargetBlocker(actors, target);
+    let first;
+    for (const candidate of parked.near(target, reach)) {
+      if ((!first || candidate.order < first.order) &&
+          overlaps(target, candidate.actor, WALK_TARGET_GAP)) first = candidate;
+    }
+    return first?.actor;
+  };
+}
+
 /** Uses the ordinary articulated body's acceleration, turning and continuous guard. */
-export function stepDistrictPedestrian(world, person) {
+export function stepDistrictPedestrian(world, person, targetBlocker) {
   if (!isDistrict(world)) return pedestrianMotion(world, person);
   initializeDistrictActor(world, person);
   const working = copyWalker(person), state = working.district;
@@ -351,8 +385,7 @@ export function stepDistrictPedestrian(world, person) {
   if (!state.caseId && world.tick >= (state.targetRetryTick ?? 0)) {
     const target = { type: "pedestrian", radius: working.radius,
       x: working.target.x, z: working.target.z };
-    const blocker = world.actors.find((actor) => actor.type === "vehicle" &&
-      Math.abs(actor.speed) < 0.8 && overlaps(target, actor, 0.12));
+    const blocker = targetBlocker ? targetBlocker(target) : findWalkTargetBlocker(world.actors, target);
     if (blocker) {
       state.targetRetryTick = world.tick + 90;
       event(world, person, "walk-retarget", "occupied-catalog-target", { blockedBy: blocker.id });

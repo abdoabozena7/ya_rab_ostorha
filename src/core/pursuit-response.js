@@ -1,5 +1,6 @@
 import { STEP, clamp } from "./config.js";
-import { distance } from "./geometry.js";
+import { corners, distance } from "./geometry.js";
+import { updateDispatchTracking } from "./pursuit-dispatch.js";
 import { isCityHunt } from "./pursuit-survival.js";
 
 const CONTACT_RANGE_M = 52, ARCADE_CONTACT_RANGE_M = 60;
@@ -60,6 +61,23 @@ function unobstructed(world, from, dx, dz, range) {
 
 export const gtaLineClear = unobstructed;
 
+export function gtaDeploymentHidden(world, from, body) {
+  const radius = Math.hypot(body.width, body.length) / 2;
+  const range = distance(from, body);
+  if (range - radius > 55) return true;
+  const { boxes, reach } = staticGeometry(world);
+  const midpoint = { x: (from.x + body.x) / 2, z: (from.z + body.z) / 2 };
+  const footprint = corners(body);
+  const height = Math.max(from.height ?? 1.8, body.height ?? 0);
+  // The shadow of one convex rectangle is convex. Covering all four
+  // corners with the same solid covers the space between the rays too.
+  return world.staticIndex.near(midpoint, range / 2 + reach + radius).some(cover => {
+    const box = boxes.get(cover);
+    return box && cover.height >= height && footprint.every(point =>
+      intersects(from.x, from.z, point.x - from.x, point.z - from.z, cover, box));
+  });
+}
+
 export function createPursuitResponse() {
   return {
     stage: "search", pressure: 0, clearProgress: 0, unitsInContact: 0,
@@ -81,7 +99,7 @@ export function updatePursuitResponse(world, initial = false) {
   r.closePatrols.clear();
   let nearest = contactRange;
   for (const unit of pursuit.patrols) {
-    if (gta && unit.aiState === "WRECKED") continue;
+    if (gta && (unit.aiState === "WRECKED" || (r.dispatch && unit.health <= 0))) continue;
     const dx = player.x - unit.x, dz = player.z - unit.z;
     const range = Math.hypot(dx, dz);
     if (range > contactRange) continue;
@@ -99,6 +117,7 @@ export function updatePursuitResponse(world, initial = false) {
   const desired = r.unitsInContact ? clamp(
     .12 + .64 * (1 - nearest / contactRange) + .09 * (r.unitsInContact - 1), 0, 1) : 0;
   r.pressure = initial ? desired : r.pressure + clamp(desired - r.pressure, -.28 * STEP, .37 * STEP);
+  if (r.dispatch) return updateDispatchTracking(world, initial);
   if (r.unitsInContact) {
     r.lastSeen = Object.freeze({ x: player.x, z: player.z, heading: player.heading, speed: player.speed, tick });
     r.stage = "contact";
@@ -142,6 +161,8 @@ export function updatePursuitResponse(world, initial = false) {
   return before === "contact" ? "contact-lost" : null;
 }
 
-export function pursuitResponseSnapshot({ stage, pressure, clearProgress, unitsInContact }) {
-  return { stage, pressure, clearProgress, unitsInContact };
+export function pursuitResponseSnapshot({ stage, pressure, clearProgress, unitsInContact, dispatch }) {
+  return { stage, pressure, clearProgress, unitsInContact,
+    ...(dispatch ? { dispatch: { state: dispatch.state, zoneIds: [...dispatch.zoneIds],
+      lastReportTick: dispatch.lastReportTick } } : {}) };
 }

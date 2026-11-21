@@ -172,6 +172,33 @@
           ><button data-scenario="barrier">Road barrier</button>
         </div>
         <p id="scenarioStatus" role="status"></p>
+        <details id="metroPpoLab">
+          <summary>Metro Dispatch training</summary>
+          <p>Run a bounded PPO update on the shared Metro simulation. These development scenarios do not certify safe escape.</p>
+          <label for="metroPpoStage">Training workload</label>
+          <select id="metroPpoStage">
+            <option value="maneuver">Basic maneuvering</option>
+            <option value="left-crossing">L09 · Pedestrian from the left</option>
+            <option value="right-crossing">L10 · Pedestrian from the right</option>
+            <option value="crossing-pursuit">L12 · Pedestrian and pursuing patrol</option>
+            <option value="mixed-crossings">Traffic, people and a patrol</option>
+            <option value="city-pressure">City pursuit pressure</option>
+            <option value="junction-escape">Civic junction · Map cues</option>
+            <option value="city-escape">City transfer · Map cues</option>
+            <option value="city-clearance">City clearance · Extended map cues</option>
+            <option value="city-clearance-dense">Dense City clearance · Extended map cues</option>
+          </select>
+          <label class="file-button">Resume from checkpoint
+            <input id="metroPpoResume" type="file" accept=".json,application/json" />
+          </label>
+          <div class="actions">
+            <button type="button" id="metroPpoTrain">Train one update</button>
+            <button type="button" id="metroPpoStop" disabled>Stop update</button>
+            <button type="button" id="metroPpoUse" disabled>Use checkpoint in City</button>
+            <a class="file-button" id="metroPpoDownload" download="metro-dispatch-ppo.json" hidden>Save checkpoint</a>
+          </div>
+          <p id="metroPpoStatus" role="status">No checkpoint. Start one update to collect real Metro transitions.</p>
+        </details>
       </section>
       <section id="policyPanel">
         <h3>Experimental speed learning</h3>
@@ -252,13 +279,15 @@
       </div>
     </section>
     <footer>
-      <span>W A S D drive · Space brake · C camera · P phone · I auto</span
+      <span id="drivingHelp">W A S D drive · Space brake · C camera · P phone · I auto</span
       ><button id="cameraBtn">Hide camera</button
       ><button id="pauseBtn">Pause</button>
     </footer>
     <div id="pursuitTouch" aria-label="Arcade steering" hidden>
       <button id="pursuitTouchLeft" type="button" aria-label="Steer left">Left</button>
+      <button id="pursuitTouchReverse" type="button" aria-label="Hold to reverse" hidden>Reverse</button>
       <button id="pursuitTouchBrake" type="button" aria-label="Hold brake">Brake</button>
+      <button id="pursuitTouchThrottle" type="button" aria-label="Hold to accelerate" hidden>Drive</button>
       <button id="pursuitTouchRight" type="button" aria-label="Steer right">Right</button>
     </div>
     <script defer src="/public/threejs/game.bundle.js"></script>

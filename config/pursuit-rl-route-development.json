@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "description": "Development only. Civic junction turn/loss with one active patrol, followed by full-population Metro. No protected holdout seeds.",
+  "trainingSeeds": ["route-train-00", "route-train-01", "route-train-02", "route-train-03"],
+  "validationSeeds": ["route-dev-eval-00", "route-dev-eval-01"],
+  "stages": [
+    {"id":"junction-escape", "scenarios":["tail-civic-eastbound","tail-civic-westbound"], "observation":"dispatch-route-v1", "traffic":0, "pedestrians":0, "episodeSeconds":42, "wantedLevel":1, "wantedLevelMax":1, "patrols":1},
+    {"id":"city-escape", "observation":"dispatch-route-v1", "traffic":36, "pedestrians":80, "episodeSeconds":60, "wantedLevel":3, "patrols":7}
+  ]
+}

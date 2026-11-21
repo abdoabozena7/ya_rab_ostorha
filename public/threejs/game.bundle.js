@@ -2138,7 +2138,7 @@
     }
   };
   var WebGLRenderTarget = class extends EventDispatcher {
-    constructor(width = 1, height = 1, options = {}) {
+    constructor(width = 1, height = 1, options2 = {}) {
       super();
       this.isWebGLRenderTarget = true;
       this.width = width;
@@ -2148,20 +2148,20 @@
       this.scissorTest = false;
       this.viewport = new Vector4(0, 0, width, height);
       const image = { width, height, depth: 1 };
-      if (options.encoding !== void 0) {
+      if (options2.encoding !== void 0) {
         warnOnce("THREE.WebGLRenderTarget: option.encoding has been replaced by option.colorSpace.");
-        options.colorSpace = options.encoding === sRGBEncoding ? SRGBColorSpace : NoColorSpace;
+        options2.colorSpace = options2.encoding === sRGBEncoding ? SRGBColorSpace : NoColorSpace;
       }
-      this.texture = new Texture(image, options.mapping, options.wrapS, options.wrapT, options.magFilter, options.minFilter, options.format, options.type, options.anisotropy, options.colorSpace);
+      this.texture = new Texture(image, options2.mapping, options2.wrapS, options2.wrapT, options2.magFilter, options2.minFilter, options2.format, options2.type, options2.anisotropy, options2.colorSpace);
       this.texture.isRenderTargetTexture = true;
       this.texture.flipY = false;
-      this.texture.generateMipmaps = options.generateMipmaps !== void 0 ? options.generateMipmaps : false;
-      this.texture.internalFormat = options.internalFormat !== void 0 ? options.internalFormat : null;
-      this.texture.minFilter = options.minFilter !== void 0 ? options.minFilter : LinearFilter;
-      this.depthBuffer = options.depthBuffer !== void 0 ? options.depthBuffer : true;
-      this.stencilBuffer = options.stencilBuffer !== void 0 ? options.stencilBuffer : false;
-      this.depthTexture = options.depthTexture !== void 0 ? options.depthTexture : null;
-      this.samples = options.samples !== void 0 ? options.samples : 0;
+      this.texture.generateMipmaps = options2.generateMipmaps !== void 0 ? options2.generateMipmaps : false;
+      this.texture.internalFormat = options2.internalFormat !== void 0 ? options2.internalFormat : null;
+      this.texture.minFilter = options2.minFilter !== void 0 ? options2.minFilter : LinearFilter;
+      this.depthBuffer = options2.depthBuffer !== void 0 ? options2.depthBuffer : true;
+      this.stencilBuffer = options2.stencilBuffer !== void 0 ? options2.stencilBuffer : false;
+      this.depthTexture = options2.depthTexture !== void 0 ? options2.depthTexture : null;
+      this.samples = options2.samples !== void 0 ? options2.samples : 0;
     }
     setSize(width, height, depth = 1) {
       if (this.width !== width || this.height !== height || this.depth !== depth) {
@@ -2245,8 +2245,8 @@
     }
   };
   var WebGLMultipleRenderTargets = class extends WebGLRenderTarget {
-    constructor(width = 1, height = 1, count2 = 1, options = {}) {
-      super(width, height, options);
+    constructor(width = 1, height = 1, count2 = 1, options2 = {}) {
+      super(width, height, options2);
       this.isWebGLMultipleRenderTargets = true;
       const texture = this.texture;
       this.texture = [];
@@ -2982,8 +2982,8 @@
       _vector$b.copy(this).projectOnVector(planeNormal);
       return this.sub(_vector$b);
     }
-    reflect(normal) {
-      return this.sub(_vector$b.copy(normal).multiplyScalar(2 * this.dot(normal)));
+    reflect(normal2) {
+      return this.sub(_vector$b.copy(normal2).multiplyScalar(2 * this.dot(normal2)));
     }
     angleTo(v2) {
       const denominator = Math.sqrt(this.lengthSq() * v2.lengthSq());
@@ -3522,13 +3522,13 @@
   var _edge2 = /* @__PURE__ */ new Vector3();
   var _normal$1 = /* @__PURE__ */ new Vector3();
   var Ray = class {
-    constructor(origin = new Vector3(), direction2 = new Vector3(0, 0, -1)) {
+    constructor(origin = new Vector3(), direction3 = new Vector3(0, 0, -1)) {
       this.origin = origin;
-      this.direction = direction2;
+      this.direction = direction3;
     }
-    set(origin, direction2) {
+    set(origin, direction3) {
       this.origin.copy(origin);
-      this.direction.copy(direction2);
+      this.direction.copy(direction3);
       return this;
     }
     copy(ray) {
@@ -5269,10 +5269,10 @@
       target2.addScaledVector(v3, _v3$1.z);
       return target2;
     }
-    static isFrontFacing(a, b, c, direction2) {
+    static isFrontFacing(a, b, c, direction3) {
       _v0$1.subVectors(c, b);
       _v1$3.subVectors(a, b);
-      return _v0$1.cross(_v1$3).dot(direction2) < 0 ? true : false;
+      return _v0$1.cross(_v1$3).dot(direction3) < 0 ? true : false;
     }
     set(a, b, c) {
       this.a.copy(a);
@@ -5331,8 +5331,8 @@
     containsPoint(point4) {
       return _Triangle.containsPoint(point4, this.a, this.b, this.c);
     }
-    isFrontFacing(direction2) {
-      return _Triangle.isFrontFacing(this.a, this.b, this.c, direction2);
+    isFrontFacing(direction3) {
+      return _Triangle.isFrontFacing(this.a, this.b, this.c, direction3);
     }
     intersectsBox(box5) {
       return box5.intersectsTriangle(this);
@@ -6719,11 +6719,11 @@
         position2.applyMatrix4(matrix);
         position2.needsUpdate = true;
       }
-      const normal = this.attributes.normal;
-      if (normal !== void 0) {
+      const normal2 = this.attributes.normal;
+      if (normal2 !== void 0) {
         const normalMatrix = new Matrix3().getNormalMatrix(matrix);
-        normal.applyNormalMatrix(normalMatrix);
-        normal.needsUpdate = true;
+        normal2.applyNormalMatrix(normalMatrix);
+        normal2.needsUpdate = true;
       }
       const tangent = this.attributes.tangent;
       if (tangent !== void 0) {
@@ -7311,7 +7311,7 @@
       const position2 = geometry.attributes.position;
       const uv = geometry.attributes.uv;
       const uv1 = geometry.attributes.uv1;
-      const normal = geometry.attributes.normal;
+      const normal2 = geometry.attributes.normal;
       const groups = geometry.groups;
       const drawRange = geometry.drawRange;
       if (index !== null) {
@@ -7325,7 +7325,7 @@
               const a = index.getX(j);
               const b = index.getX(j + 1);
               const c = index.getX(j + 2);
-              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, _ray$2, uv, uv1, normal, a, b, c);
+              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, _ray$2, uv, uv1, normal2, a, b, c);
               if (intersection) {
                 intersection.faceIndex = Math.floor(j / 3);
                 intersection.face.materialIndex = group.materialIndex;
@@ -7340,7 +7340,7 @@
             const a = index.getX(i);
             const b = index.getX(i + 1);
             const c = index.getX(i + 2);
-            intersection = checkGeometryIntersection(this, material2, raycaster, _ray$2, uv, uv1, normal, a, b, c);
+            intersection = checkGeometryIntersection(this, material2, raycaster, _ray$2, uv, uv1, normal2, a, b, c);
             if (intersection) {
               intersection.faceIndex = Math.floor(i / 3);
               intersects4.push(intersection);
@@ -7358,7 +7358,7 @@
               const a = j;
               const b = j + 1;
               const c = j + 2;
-              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, _ray$2, uv, uv1, normal, a, b, c);
+              intersection = checkGeometryIntersection(this, groupMaterial, raycaster, _ray$2, uv, uv1, normal2, a, b, c);
               if (intersection) {
                 intersection.faceIndex = Math.floor(j / 3);
                 intersection.face.materialIndex = group.materialIndex;
@@ -7373,7 +7373,7 @@
             const a = i;
             const b = i + 1;
             const c = i + 2;
-            intersection = checkGeometryIntersection(this, material2, raycaster, _ray$2, uv, uv1, normal, a, b, c);
+            intersection = checkGeometryIntersection(this, material2, raycaster, _ray$2, uv, uv1, normal2, a, b, c);
             if (intersection) {
               intersection.faceIndex = Math.floor(i / 3);
               intersects4.push(intersection);
@@ -7401,7 +7401,7 @@
       object: object2
     };
   }
-  function checkGeometryIntersection(object2, material2, raycaster, ray, uv, uv1, normal, a, b, c) {
+  function checkGeometryIntersection(object2, material2, raycaster, ray, uv, uv1, normal2, a, b, c) {
     object2.getVertexPosition(a, _vA$1);
     object2.getVertexPosition(b, _vB$1);
     object2.getVertexPosition(c, _vC$1);
@@ -7420,10 +7420,10 @@
         intersection.uv1 = Triangle.getInterpolation(_intersectionPoint, _vA$1, _vB$1, _vC$1, _uvA$1, _uvB$1, _uvC$1, new Vector2());
         intersection.uv2 = intersection.uv1;
       }
-      if (normal) {
-        _normalA.fromBufferAttribute(normal, a);
-        _normalB.fromBufferAttribute(normal, b);
-        _normalC.fromBufferAttribute(normal, c);
+      if (normal2) {
+        _normalA.fromBufferAttribute(normal2, a);
+        _normalB.fromBufferAttribute(normal2, b);
+        _normalC.fromBufferAttribute(normal2, c);
         intersection.normal = Triangle.getInterpolation(_intersectionPoint, _vA$1, _vB$1, _vC$1, _normalA, _normalB, _normalC, new Vector3());
         if (intersection.normal.dot(ray.direction) > 0) {
           intersection.normal.multiplyScalar(-1);
@@ -7963,19 +7963,19 @@
     }
   };
   var WebGLCubeRenderTarget = class extends WebGLRenderTarget {
-    constructor(size = 1, options = {}) {
-      super(size, size, options);
+    constructor(size = 1, options2 = {}) {
+      super(size, size, options2);
       this.isWebGLCubeRenderTarget = true;
       const image = { width: size, height: size, depth: 1 };
       const images = [image, image, image, image, image, image];
-      if (options.encoding !== void 0) {
+      if (options2.encoding !== void 0) {
         warnOnce("THREE.WebGLCubeRenderTarget: option.encoding has been replaced by option.colorSpace.");
-        options.colorSpace = options.encoding === sRGBEncoding ? SRGBColorSpace : NoColorSpace;
+        options2.colorSpace = options2.encoding === sRGBEncoding ? SRGBColorSpace : NoColorSpace;
       }
-      this.texture = new CubeTexture(images, options.mapping, options.wrapS, options.wrapT, options.magFilter, options.minFilter, options.format, options.type, options.anisotropy, options.colorSpace);
+      this.texture = new CubeTexture(images, options2.mapping, options2.wrapS, options2.wrapT, options2.magFilter, options2.minFilter, options2.format, options2.type, options2.anisotropy, options2.colorSpace);
       this.texture.isRenderTargetTexture = true;
-      this.texture.generateMipmaps = options.generateMipmaps !== void 0 ? options.generateMipmaps : false;
-      this.texture.minFilter = options.minFilter !== void 0 ? options.minFilter : LinearFilter;
+      this.texture.generateMipmaps = options2.generateMipmaps !== void 0 ? options2.generateMipmaps : false;
+      this.texture.minFilter = options2.minFilter !== void 0 ? options2.minFilter : LinearFilter;
     }
     fromEquirectangularTexture(renderer2, texture) {
       this.texture.type = texture.type;
@@ -8064,13 +8064,13 @@
   var _vector2 = /* @__PURE__ */ new Vector3();
   var _normalMatrix = /* @__PURE__ */ new Matrix3();
   var Plane = class {
-    constructor(normal = new Vector3(1, 0, 0), constant = 0) {
+    constructor(normal2 = new Vector3(1, 0, 0), constant = 0) {
       this.isPlane = true;
-      this.normal = normal;
+      this.normal = normal2;
       this.constant = constant;
     }
-    set(normal, constant) {
-      this.normal.copy(normal);
+    set(normal2, constant) {
+      this.normal.copy(normal2);
       this.constant = constant;
       return this;
     }
@@ -8079,14 +8079,14 @@
       this.constant = w;
       return this;
     }
-    setFromNormalAndCoplanarPoint(normal, point4) {
-      this.normal.copy(normal);
+    setFromNormalAndCoplanarPoint(normal2, point4) {
+      this.normal.copy(normal2);
       this.constant = -point4.dot(this.normal);
       return this;
     }
     setFromCoplanarPoints(a, b, c) {
-      const normal = _vector1.subVectors(c, b).cross(_vector2.subVectors(a, b)).normalize();
-      this.setFromNormalAndCoplanarPoint(normal, a);
+      const normal2 = _vector1.subVectors(c, b).cross(_vector2.subVectors(a, b)).normalize();
+      this.setFromNormalAndCoplanarPoint(normal2, a);
       return this;
     }
     copy(plane) {
@@ -8115,8 +8115,8 @@
       return target2.copy(point4).addScaledVector(this.normal, -this.distanceToPoint(point4));
     }
     intersectLine(line, target2) {
-      const direction2 = line.delta(_vector1);
-      const denominator = this.normal.dot(direction2);
+      const direction3 = line.delta(_vector1);
+      const denominator = this.normal.dot(direction3);
       if (denominator === 0) {
         if (this.distanceToPoint(line.start) === 0) {
           return target2.copy(line.start);
@@ -8127,7 +8127,7 @@
       if (t < 0 || t > 1) {
         return null;
       }
-      return target2.copy(line.start).addScaledVector(direction2, t);
+      return target2.copy(line.start).addScaledVector(direction3, t);
     }
     intersectsLine(line) {
       const startSign = this.distanceToPoint(line.start);
@@ -8146,8 +8146,8 @@
     applyMatrix4(matrix, optionalNormalMatrix) {
       const normalMatrix = optionalNormalMatrix || _normalMatrix.getNormalMatrix(matrix);
       const referencePoint = this.coplanarPoint(_vector1).applyMatrix4(matrix);
-      const normal = this.normal.applyMatrix3(normalMatrix).normalize();
-      this.constant = -referencePoint.dot(normal);
+      const normal2 = this.normal.applyMatrix3(normalMatrix).normalize();
+      this.constant = -referencePoint.dot(normal2);
       return this;
     }
     translate(offset3) {
@@ -10233,10 +10233,10 @@
         poleAxis
       );
     }
-    _halfBlur(targetIn, targetOut, lodIn, lodOut, sigmaRadians, direction2, poleAxis) {
+    _halfBlur(targetIn, targetOut, lodIn, lodOut, sigmaRadians, direction3, poleAxis) {
       const renderer2 = this._renderer;
       const blurMaterial = this._blurMaterial;
-      if (direction2 !== "latitudinal" && direction2 !== "longitudinal") {
+      if (direction3 !== "latitudinal" && direction3 !== "longitudinal") {
         console.error(
           "blur direction must be either latitudinal or longitudinal!"
         );
@@ -10269,7 +10269,7 @@
       blurUniforms["envMap"].value = targetIn.texture;
       blurUniforms["samples"].value = samples;
       blurUniforms["weights"].value = weights;
-      blurUniforms["latitudinal"].value = direction2 === "latitudinal";
+      blurUniforms["latitudinal"].value = direction3 === "latitudinal";
       if (poleAxis) {
         blurUniforms["poleAxis"].value = poleAxis;
       }
@@ -11331,39 +11331,39 @@
   }
   function setValueT1(gl2, v2, textures) {
     const cache = this.cache;
-    const unit = textures.allocateTextureUnit();
-    if (cache[0] !== unit) {
-      gl2.uniform1i(this.addr, unit);
-      cache[0] = unit;
+    const unit2 = textures.allocateTextureUnit();
+    if (cache[0] !== unit2) {
+      gl2.uniform1i(this.addr, unit2);
+      cache[0] = unit2;
     }
-    textures.setTexture2D(v2 || emptyTexture, unit);
+    textures.setTexture2D(v2 || emptyTexture, unit2);
   }
   function setValueT3D1(gl2, v2, textures) {
     const cache = this.cache;
-    const unit = textures.allocateTextureUnit();
-    if (cache[0] !== unit) {
-      gl2.uniform1i(this.addr, unit);
-      cache[0] = unit;
+    const unit2 = textures.allocateTextureUnit();
+    if (cache[0] !== unit2) {
+      gl2.uniform1i(this.addr, unit2);
+      cache[0] = unit2;
     }
-    textures.setTexture3D(v2 || empty3dTexture, unit);
+    textures.setTexture3D(v2 || empty3dTexture, unit2);
   }
   function setValueT6(gl2, v2, textures) {
     const cache = this.cache;
-    const unit = textures.allocateTextureUnit();
-    if (cache[0] !== unit) {
-      gl2.uniform1i(this.addr, unit);
-      cache[0] = unit;
+    const unit2 = textures.allocateTextureUnit();
+    if (cache[0] !== unit2) {
+      gl2.uniform1i(this.addr, unit2);
+      cache[0] = unit2;
     }
-    textures.setTextureCube(v2 || emptyCubeTexture, unit);
+    textures.setTextureCube(v2 || emptyCubeTexture, unit2);
   }
   function setValueT2DArray1(gl2, v2, textures) {
     const cache = this.cache;
-    const unit = textures.allocateTextureUnit();
-    if (cache[0] !== unit) {
-      gl2.uniform1i(this.addr, unit);
-      cache[0] = unit;
+    const unit2 = textures.allocateTextureUnit();
+    if (cache[0] !== unit2) {
+      gl2.uniform1i(this.addr, unit2);
+      cache[0] = unit2;
     }
-    textures.setTexture2DArray(v2 || emptyArrayTexture, unit);
+    textures.setTexture2DArray(v2 || emptyArrayTexture, unit2);
   }
   function getSingularSetter(type) {
     switch (type) {
@@ -19353,7 +19353,7 @@
       return this.getTangent(t, optionalTarget);
     }
     computeFrenetFrames(segments, closed) {
-      const normal = new Vector3();
+      const normal2 = new Vector3();
       const tangents = [];
       const normals = [];
       const binormals = [];
@@ -19371,16 +19371,16 @@
       const tz = Math.abs(tangents[0].z);
       if (tx <= min) {
         min = tx;
-        normal.set(1, 0, 0);
+        normal2.set(1, 0, 0);
       }
       if (ty <= min) {
         min = ty;
-        normal.set(0, 1, 0);
+        normal2.set(0, 1, 0);
       }
       if (tz <= min) {
-        normal.set(0, 0, 1);
+        normal2.set(0, 0, 1);
       }
-      vec.crossVectors(tangents[0], normal).normalize();
+      vec.crossVectors(tangents[0], normal2).normalize();
       normals[0].crossVectors(tangents[0], vec);
       binormals[0].crossVectors(tangents[0], normals[0]);
       for (let i = 1; i <= segments; i++) {
@@ -20274,7 +20274,7 @@
       const inverseSegments = 1 / segments;
       const vertex2 = new Vector3();
       const uv = new Vector2();
-      const normal = new Vector3();
+      const normal2 = new Vector3();
       const curNormal = new Vector3();
       const prevNormal = new Vector3();
       let dx = 0;
@@ -20284,12 +20284,12 @@
           case 0:
             dx = points[j + 1].x - points[j].x;
             dy = points[j + 1].y - points[j].y;
-            normal.x = dy * 1;
-            normal.y = -dx;
-            normal.z = dy * 0;
-            prevNormal.copy(normal);
-            normal.normalize();
-            initNormals.push(normal.x, normal.y, normal.z);
+            normal2.x = dy * 1;
+            normal2.y = -dx;
+            normal2.z = dy * 0;
+            prevNormal.copy(normal2);
+            normal2.normalize();
+            initNormals.push(normal2.x, normal2.y, normal2.z);
             break;
           case points.length - 1:
             initNormals.push(prevNormal.x, prevNormal.y, prevNormal.z);
@@ -20297,15 +20297,15 @@
           default:
             dx = points[j + 1].x - points[j].x;
             dy = points[j + 1].y - points[j].y;
-            normal.x = dy * 1;
-            normal.y = -dx;
-            normal.z = dy * 0;
-            curNormal.copy(normal);
-            normal.x += prevNormal.x;
-            normal.y += prevNormal.y;
-            normal.z += prevNormal.z;
-            normal.normalize();
-            initNormals.push(normal.x, normal.y, normal.z);
+            normal2.x = dy * 1;
+            normal2.y = -dx;
+            normal2.z = dy * 0;
+            curNormal.copy(normal2);
+            normal2.x += prevNormal.x;
+            normal2.y += prevNormal.y;
+            normal2.z += prevNormal.z;
+            normal2.normalize();
+            initNormals.push(normal2.x, normal2.y, normal2.z);
             prevNormal.copy(curNormal);
         }
       }
@@ -20452,7 +20452,7 @@
       this.setAttribute("normal", new Float32BufferAttribute(normals, 3));
       this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
       function generateTorso() {
-        const normal = new Vector3();
+        const normal2 = new Vector3();
         const vertex2 = new Vector3();
         let groupCount = 0;
         const slope = (radiusBottom - radiusTop) / height;
@@ -20469,8 +20469,8 @@
             vertex2.y = -v2 * height + halfHeight;
             vertex2.z = radius * cosTheta;
             vertices.push(vertex2.x, vertex2.y, vertex2.z);
-            normal.set(sinTheta, slope, cosTheta).normalize();
-            normals.push(normal.x, normal.y, normal.z);
+            normal2.set(sinTheta, slope, cosTheta).normalize();
+            normals.push(normal2.x, normal2.y, normal2.z);
             uvs.push(u, 1 - v2);
             indexRow.push(index++);
           }
@@ -21486,12 +21486,12 @@
     }
   }
   var ExtrudeGeometry = class _ExtrudeGeometry extends BufferGeometry {
-    constructor(shapes = new Shape([new Vector2(0.5, 0.5), new Vector2(-0.5, 0.5), new Vector2(-0.5, -0.5), new Vector2(0.5, -0.5)]), options = {}) {
+    constructor(shapes = new Shape([new Vector2(0.5, 0.5), new Vector2(-0.5, 0.5), new Vector2(-0.5, -0.5), new Vector2(0.5, -0.5)]), options2 = {}) {
       super();
       this.type = "ExtrudeGeometry";
       this.parameters = {
         shapes,
-        options
+        options: options2
       };
       shapes = Array.isArray(shapes) ? shapes : [shapes];
       const scope = this;
@@ -21506,25 +21506,25 @@
       this.computeVertexNormals();
       function addShape(shape2) {
         const placeholder = [];
-        const curveSegments = options.curveSegments !== void 0 ? options.curveSegments : 12;
-        const steps = options.steps !== void 0 ? options.steps : 1;
-        const depth = options.depth !== void 0 ? options.depth : 1;
-        let bevelEnabled = options.bevelEnabled !== void 0 ? options.bevelEnabled : true;
-        let bevelThickness = options.bevelThickness !== void 0 ? options.bevelThickness : 0.2;
-        let bevelSize = options.bevelSize !== void 0 ? options.bevelSize : bevelThickness - 0.1;
-        let bevelOffset = options.bevelOffset !== void 0 ? options.bevelOffset : 0;
-        let bevelSegments = options.bevelSegments !== void 0 ? options.bevelSegments : 3;
-        const extrudePath = options.extrudePath;
-        const uvgen = options.UVGenerator !== void 0 ? options.UVGenerator : WorldUVGenerator;
+        const curveSegments = options2.curveSegments !== void 0 ? options2.curveSegments : 12;
+        const steps = options2.steps !== void 0 ? options2.steps : 1;
+        const depth = options2.depth !== void 0 ? options2.depth : 1;
+        let bevelEnabled = options2.bevelEnabled !== void 0 ? options2.bevelEnabled : true;
+        let bevelThickness = options2.bevelThickness !== void 0 ? options2.bevelThickness : 0.2;
+        let bevelSize = options2.bevelSize !== void 0 ? options2.bevelSize : bevelThickness - 0.1;
+        let bevelOffset = options2.bevelOffset !== void 0 ? options2.bevelOffset : 0;
+        let bevelSegments = options2.bevelSegments !== void 0 ? options2.bevelSegments : 3;
+        const extrudePath = options2.extrudePath;
+        const uvgen = options2.UVGenerator !== void 0 ? options2.UVGenerator : WorldUVGenerator;
         let extrudePts, extrudeByPath = false;
-        let splineTube, binormal, normal, position2;
+        let splineTube, binormal, normal2, position2;
         if (extrudePath) {
           extrudePts = extrudePath.getSpacedPoints(steps);
           extrudeByPath = true;
           bevelEnabled = false;
           splineTube = extrudePath.computeFrenetFrames(steps, false);
           binormal = new Vector3();
-          normal = new Vector3();
+          normal2 = new Vector3();
           position2 = new Vector3();
         }
         if (!bevelEnabled) {
@@ -21650,9 +21650,9 @@
           if (!extrudeByPath) {
             v2(vert.x, vert.y, 0);
           } else {
-            normal.copy(splineTube.normals[0]).multiplyScalar(vert.x);
+            normal2.copy(splineTube.normals[0]).multiplyScalar(vert.x);
             binormal.copy(splineTube.binormals[0]).multiplyScalar(vert.y);
-            position2.copy(extrudePts[0]).add(normal).add(binormal);
+            position2.copy(extrudePts[0]).add(normal2).add(binormal);
             v2(position2.x, position2.y, position2.z);
           }
         }
@@ -21662,9 +21662,9 @@
             if (!extrudeByPath) {
               v2(vert.x, vert.y, depth / steps * s);
             } else {
-              normal.copy(splineTube.normals[s]).multiplyScalar(vert.x);
+              normal2.copy(splineTube.normals[s]).multiplyScalar(vert.x);
               binormal.copy(splineTube.binormals[s]).multiplyScalar(vert.y);
-              position2.copy(extrudePts[s]).add(normal).add(binormal);
+              position2.copy(extrudePts[s]).add(normal2).add(binormal);
               v2(position2.x, position2.y, position2.z);
             }
           }
@@ -21795,8 +21795,8 @@
     toJSON() {
       const data = super.toJSON();
       const shapes = this.parameters.shapes;
-      const options = this.parameters.options;
-      return toJSON$1(shapes, options, data);
+      const options2 = this.parameters.options;
+      return toJSON$1(shapes, options2, data);
     }
     static fromJSON(data, shapes) {
       const geometryShapes = [];
@@ -21855,7 +21855,7 @@
       }
     }
   };
-  function toJSON$1(shapes, options, data) {
+  function toJSON$1(shapes, options2, data) {
     data.shapes = [];
     if (Array.isArray(shapes)) {
       for (let i = 0, l = shapes.length; i < l; i++) {
@@ -21865,8 +21865,8 @@
     } else {
       data.shapes.push(shapes.uuid);
     }
-    data.options = Object.assign({}, options);
-    if (options.extrudePath !== void 0) data.options.extrudePath = options.extrudePath.toJSON();
+    data.options = Object.assign({}, options2);
+    if (options2.extrudePath !== void 0) data.options.extrudePath = options2.extrudePath.toJSON();
     return data;
   }
   var IcosahedronGeometry = class _IcosahedronGeometry extends PolyhedronGeometry {
@@ -22216,7 +22216,7 @@
       let index = 0;
       const grid2 = [];
       const vertex2 = new Vector3();
-      const normal = new Vector3();
+      const normal2 = new Vector3();
       const indices = [];
       const vertices = [];
       const normals = [];
@@ -22236,8 +22236,8 @@
           vertex2.y = radius * Math.cos(thetaStart + v2 * thetaLength);
           vertex2.z = radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v2 * thetaLength);
           vertices.push(vertex2.x, vertex2.y, vertex2.z);
-          normal.copy(vertex2).normalize();
-          normals.push(normal.x, normal.y, normal.z);
+          normal2.copy(vertex2).normalize();
+          normals.push(normal2.x, normal2.y, normal2.z);
           uvs.push(u + uOffset, 1 - v2);
           verticesRow.push(index++);
         }
@@ -22327,7 +22327,7 @@
       const uvs = [];
       const center = new Vector3();
       const vertex2 = new Vector3();
-      const normal = new Vector3();
+      const normal2 = new Vector3();
       for (let j = 0; j <= radialSegments; j++) {
         for (let i = 0; i <= tubularSegments; i++) {
           const u = i / tubularSegments * arc;
@@ -22338,8 +22338,8 @@
           vertices.push(vertex2.x, vertex2.y, vertex2.z);
           center.x = radius * Math.cos(u);
           center.y = radius * Math.sin(u);
-          normal.subVectors(vertex2, center).normalize();
-          normals.push(normal.x, normal.y, normal.z);
+          normal2.subVectors(vertex2, center).normalize();
+          normals.push(normal2.x, normal2.y, normal2.z);
           uvs.push(i / tubularSegments);
           uvs.push(j / radialSegments);
         }
@@ -22387,7 +22387,7 @@
       const normals = [];
       const uvs = [];
       const vertex2 = new Vector3();
-      const normal = new Vector3();
+      const normal2 = new Vector3();
       const P1 = new Vector3();
       const P2 = new Vector3();
       const B = new Vector3();
@@ -22411,8 +22411,8 @@
           vertex2.y = P1.y + (cx * N.y + cy * B.y);
           vertex2.z = P1.z + (cx * N.z + cy * B.z);
           vertices.push(vertex2.x, vertex2.y, vertex2.z);
-          normal.subVectors(vertex2, P1).normalize();
-          normals.push(normal.x, normal.y, normal.z);
+          normal2.subVectors(vertex2, P1).normalize();
+          normals.push(normal2.x, normal2.y, normal2.z);
           uvs.push(i / tubularSegments);
           uvs.push(j / radialSegments);
         }
@@ -22466,7 +22466,7 @@
       this.normals = frames.normals;
       this.binormals = frames.binormals;
       const vertex2 = new Vector3();
-      const normal = new Vector3();
+      const normal2 = new Vector3();
       const uv = new Vector2();
       let P = new Vector3();
       const vertices = [];
@@ -22494,14 +22494,14 @@
           const v2 = j / radialSegments * Math.PI * 2;
           const sin = Math.sin(v2);
           const cos = -Math.cos(v2);
-          normal.x = cos * N.x + sin * B.x;
-          normal.y = cos * N.y + sin * B.y;
-          normal.z = cos * N.z + sin * B.z;
-          normal.normalize();
-          normals.push(normal.x, normal.y, normal.z);
-          vertex2.x = P.x + radius * normal.x;
-          vertex2.y = P.y + radius * normal.y;
-          vertex2.z = P.z + radius * normal.z;
+          normal2.x = cos * N.x + sin * B.x;
+          normal2.y = cos * N.y + sin * B.y;
+          normal2.z = cos * N.z + sin * B.z;
+          normal2.normalize();
+          normals.push(normal2.x, normal2.y, normal2.z);
+          vertex2.x = P.x + radius * normal2.x;
+          vertex2.y = P.y + radius * normal2.y;
+          vertex2.z = P.z + radius * normal2.z;
           vertices.push(vertex2.x, vertex2.y, vertex2.z);
         }
       }
@@ -23237,22 +23237,22 @@
     clip.name = name;
     const tracks = [];
     for (let i = 0; i < clip.tracks.length; ++i) {
-      const track = clip.tracks[i];
-      const valueSize = track.getValueSize();
+      const track2 = clip.tracks[i];
+      const valueSize = track2.getValueSize();
       const times = [];
       const values = [];
-      for (let j = 0; j < track.times.length; ++j) {
-        const frame2 = track.times[j] * fps;
+      for (let j = 0; j < track2.times.length; ++j) {
+        const frame2 = track2.times[j] * fps;
         if (frame2 < startFrame || frame2 >= endFrame) continue;
-        times.push(track.times[j]);
+        times.push(track2.times[j]);
         for (let k = 0; k < valueSize; ++k) {
-          values.push(track.values[j * valueSize + k]);
+          values.push(track2.values[j * valueSize + k]);
         }
       }
       if (times.length === 0) continue;
-      track.times = convertArray(times, track.times.constructor);
-      track.values = convertArray(values, track.values.constructor);
-      tracks.push(track);
+      track2.times = convertArray(times, track2.times.constructor);
+      track2.values = convertArray(values, track2.values.constructor);
+      tracks.push(track2);
     }
     clip.tracks = tracks;
     let minStartTime = Infinity;
@@ -23275,8 +23275,8 @@
       const referenceTrack = referenceClip.tracks[i];
       const referenceTrackType = referenceTrack.ValueTypeName;
       if (referenceTrackType === "bool" || referenceTrackType === "string") continue;
-      const targetTrack = targetClip.tracks.find(function(track) {
-        return track.name === referenceTrack.name && track.ValueTypeName === referenceTrackType;
+      const targetTrack = targetClip.tracks.find(function(track2) {
+        return track2.name === referenceTrack.name && track2.ValueTypeName === referenceTrackType;
       });
       if (targetTrack === void 0) continue;
       let referenceOffset = 0;
@@ -23538,23 +23538,23 @@
     }
     // Serialization (in static context, because of constructor invocation
     // and automatic invocation of .toJSON):
-    static toJSON(track) {
-      const trackType = track.constructor;
+    static toJSON(track2) {
+      const trackType = track2.constructor;
       let json;
       if (trackType.toJSON !== this.toJSON) {
-        json = trackType.toJSON(track);
+        json = trackType.toJSON(track2);
       } else {
         json = {
-          "name": track.name,
-          "times": convertArray(track.times, Array),
-          "values": convertArray(track.values, Array)
+          "name": track2.name,
+          "times": convertArray(track2.times, Array),
+          "values": convertArray(track2.values, Array)
         };
-        const interpolation = track.getInterpolation();
-        if (interpolation !== track.DefaultInterpolation) {
+        const interpolation = track2.getInterpolation();
+        if (interpolation !== track2.DefaultInterpolation) {
           json.interpolation = interpolation;
         }
       }
-      json.type = track.ValueTypeName;
+      json.type = track2.ValueTypeName;
       return json;
     }
     InterpolantFactoryMethodDiscrete(result) {
@@ -23746,9 +23746,9 @@
       const times = arraySlice(this.times, 0);
       const values = arraySlice(this.values, 0);
       const TypedKeyframeTrack = this.constructor;
-      const track = new TypedKeyframeTrack(this.name, times, values);
-      track.createInterpolant = this.createInterpolant;
-      return track;
+      const track2 = new TypedKeyframeTrack(this.name, times, values);
+      track2.createInterpolant = this.createInterpolant;
+      return track2;
     }
   };
   KeyframeTrack.prototype.TimeBufferType = Float32Array;
@@ -23976,8 +23976,8 @@
       const tracks = this.tracks;
       let duration = 0;
       for (let i = 0, n = tracks.length; i !== n; ++i) {
-        const track = this.tracks[i];
-        duration = Math.max(duration, track.times[track.times.length - 1]);
+        const track2 = this.tracks[i];
+        duration = Math.max(duration, track2.times[track2.times.length - 1]);
       }
       this.duration = duration;
       return this;
@@ -24951,8 +24951,8 @@
     }
     // get the radiance in the direction of the normal
     // target is a Vector3
-    getAt(normal, target2) {
-      const x = normal.x, y = normal.y, z = normal.z;
+    getAt(normal2, target2) {
+      const x = normal2.x, y = normal2.y, z = normal2.z;
       const coeff = this.coefficients;
       target2.copy(coeff[0]).multiplyScalar(0.282095);
       target2.addScaledVector(coeff[1], 0.488603 * y);
@@ -24968,8 +24968,8 @@
     // get the irradiance (radiance convolved with cosine lobe) in the direction of the normal
     // target is a Vector3
     // https://graphics.stanford.edu/papers/envmap/envmap.pdf
-    getIrradianceAt(normal, target2) {
-      const x = normal.x, y = normal.y, z = normal.z;
+    getIrradianceAt(normal2, target2) {
+      const x = normal2.x, y = normal2.y, z = normal2.z;
       const coeff = this.coefficients;
       target2.copy(coeff[0]).multiplyScalar(0.886227);
       target2.addScaledVector(coeff[1], 2 * 0.511664 * y);
@@ -25036,8 +25036,8 @@
     }
     // evaluate the basis functions
     // shBasis is an Array[ 9 ]
-    static getBasisAt(normal, shBasis) {
-      const x = normal.x, y = normal.y, z = normal.z;
+    static getBasisAt(normal2, shBasis) {
+      const x = normal2.x, y = normal2.y, z = normal2.z;
       shBasis[0] = 0.282095;
       shBasis[1] = 0.488603 * y;
       shBasis[2] = 0.488603 * z;
@@ -26025,8 +26025,8 @@
       }
       this.options = { premultiplyAlpha: "none" };
     }
-    setOptions(options) {
-      this.options = options;
+    setOptions(options2) {
+      this.options = options2;
       return this;
     }
     load(url, onLoad, onProgress, onError) {
@@ -27668,7 +27668,7 @@
         bindingsByRoot[rootUuid] = bindingsByName;
       }
       for (let i = 0; i !== nTracks; ++i) {
-        const track = tracks[i], trackName = track.name;
+        const track2 = tracks[i], trackName = track2.name;
         let binding = bindingsByName[trackName];
         if (binding !== void 0) {
           ++binding.referenceCount;
@@ -27685,8 +27685,8 @@
           const path = prototypeAction && prototypeAction._propertyBindings[i].binding.parsedPath;
           binding = new PropertyMixer(
             PropertyBinding.create(root, trackName, path),
-            track.ValueTypeName,
-            track.getValueSize()
+            track2.ValueTypeName,
+            track2.getValueSize()
           );
           ++binding.referenceCount;
           this._addInactiveBinding(binding, rootUuid, trackName);
@@ -28120,8 +28120,8 @@
     }
   };
   var Raycaster = class {
-    constructor(origin, direction2, near = 0, far = Infinity) {
-      this.ray = new Ray(origin, direction2);
+    constructor(origin, direction3, near = 0, far = Infinity) {
+      this.ray = new Ray(origin, direction3);
       this.near = near;
       this.far = far;
       this.camera = null;
@@ -28134,8 +28134,8 @@
         Sprite: {}
       };
     }
-    set(origin, direction2) {
-      this.ray.set(origin, direction2);
+    set(origin, direction3) {
+      this.ray.set(origin, direction3);
     }
     setFromCamera(coords, camera2) {
       if (camera2.isPerspectiveCamera) {
@@ -28198,8 +28198,8 @@
     }
     // restrict phi to be between EPS and PI-EPS
     makeSafe() {
-      const EPS3 = 1e-6;
-      this.phi = Math.max(EPS3, Math.min(Math.PI - EPS3, this.phi));
+      const EPS4 = 1e-6;
+      this.phi = Math.max(EPS4, Math.min(Math.PI - EPS4, this.phi));
       return this;
     }
     setFromVector3(v2) {
@@ -29377,9 +29377,9 @@
   };
   var ExtrudeBufferGeometry = class extends ExtrudeGeometry {
     // @deprecated, r144
-    constructor(shapes, options) {
+    constructor(shapes, options2) {
       console.warn("THREE.ExtrudeBufferGeometry has been renamed to THREE.ExtrudeGeometry.");
-      super(shapes, options);
+      super(shapes, options2);
     }
   };
   var IcosahedronBufferGeometry = class extends IcosahedronGeometry {
@@ -29537,6 +29537,7 @@
 
   // src/core/geometry.js
   var EPS = 1e-7;
+  var CIRCULAR_CONTACT_TOLERANCE_M = 1e-7;
   var distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
   var angleDelta = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
   function corner(x, z, s, c, w, l, sx, sz) {
@@ -29576,13 +29577,13 @@
     const rb = bc ? b.radius : Math.hypot(b.length, b.width) / 2;
     const separation = Math.hypot(dx, dz);
     if (separation >= ra + rb + gap) return false;
-    if (ac && bc) return separation < ra + rb + gap - EPS;
+    if (ac && bc) return separation < ra + rb + gap - CIRCULAR_CONTACT_TOLERANCE_M;
     if (ac || bc) {
       const circle = ac ? a : b, rect = ac ? b : a, h = rect.heading ?? 0;
       const dx2 = circle.x - rect.x, dz2 = circle.z - rect.z;
       const localX = dx2 * Math.cos(h) - dz2 * Math.sin(h), localZ = dx2 * Math.sin(h) + dz2 * Math.cos(h);
       const ex = Math.max(0, Math.abs(localX) - rect.width / 2), ez = Math.max(0, Math.abs(localZ) - rect.length / 2);
-      return Math.hypot(ex, ez) < circle.radius + gap - EPS;
+      return Math.hypot(ex, ez) < circle.radius + gap - CIRCULAR_CONTACT_TOLERANCE_M;
     }
     const pa = corners(a, gap / 2), pb = corners(b, gap / 2);
     const ah = a.heading ?? 0, bh = b.heading ?? 0;
@@ -29662,13 +29663,11 @@
     }
     return uncovered.reduce((sum, p) => sum + area2(p), 0) < EPS;
   }
-  function interpolate(a, b, t) {
-    return {
-      ...b,
-      x: a.x + (b.x - a.x) * t,
-      z: a.z + (b.z - a.z) * t,
-      heading: (a.heading ?? 0) + angleDelta(b.heading ?? 0, a.heading ?? 0) * t
-    };
+  function interpolate(a, b, t, pose6 = { ...b }) {
+    pose6.x = a.x + (b.x - a.x) * t;
+    pose6.z = a.z + (b.z - a.z) * t;
+    pose6.heading = (a.heading ?? 0) + angleDelta(b.heading ?? 0, a.heading ?? 0) * t;
+    return pose6;
   }
   function sweepSafe(before, after, others, roads = null) {
     const heading2 = before.heading ?? 0;
@@ -29707,19 +29706,26 @@
     );
     return Math.hypot(px2 - ax - dx * t, pz2 - az - dz * t);
   }
-  function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16) {
+  function walkSegmentBlocker(person, a, b, obstacles, gap = 0.16, allowMarginExit = false) {
     const ax = a.x, az = a.z, bx = b.x, bz = b.z;
     const dx = bx - ax, dz = bz - az, lengthSquared = dx * dx + dz * dz || 1;
     const minX = Math.min(ax, bx), maxX = Math.max(ax, bx);
     const minZ = Math.min(az, bz), maxZ = Math.max(az, bz);
     const padding = person.radius + gap;
+    const exitsMargin = (start, end, clearance, physical) => allowMarginExit && clearance >= physical - CIRCULAR_CONTACT_TOLERANCE_M && end > start + 1e-7 && clearance >= start - 1e-7;
     for (const item of obstacles) {
       if (item.id === person.id) continue;
       const x = item.x, z = item.z;
       if (item.type === "pedestrian") {
         const clearance2 = person.radius + item.radius + gap;
         if (x < minX - clearance2 - 1e-7 || x > maxX + clearance2 + 1e-7 || z < minZ - clearance2 - 1e-7 || z > maxZ + clearance2 + 1e-7) continue;
-        if (pointSegment(x, z, ax, az, dx, dz, lengthSquared) < clearance2) return item;
+        const closest = pointSegment(x, z, ax, az, dx, dz, lengthSquared);
+        if (closest < clearance2 && !exitsMargin(
+          Math.hypot(ax - x, az - z),
+          Math.hypot(bx - x, bz - z),
+          closest,
+          person.radius + item.radius
+        )) return item;
         continue;
       }
       const hw = item.width / 2, hl = item.length / 2;
@@ -29757,15 +29763,16 @@
         pointSegment(hw, -hl, sx, sz, lx, lz, localLengthSquared),
         pointSegment(hw, hl, sx, sz, lx, lz, localLengthSquared)
       );
-      if (clearance < padding - 1e-7) return item;
+      if (clearance < padding - 1e-7 && !exitsMargin(rectStart, rectEnd, clearance, person.radius))
+        return item;
     }
     return null;
   }
-  function walkSegmentClear(person, a, b, obstacles, gap = 0.16) {
-    return walkSegmentBlocker(person, a, b, obstacles, gap) === null;
+  function walkSegmentClear(person, a, b, obstacles, gap = 0.16, allowMarginExit = false) {
+    return walkSegmentBlocker(person, a, b, obstacles, gap, allowMarginExit) === null;
   }
-  function planWalk(person, target2, obstacles) {
-    if (walkSegmentClear(person, person, target2, obstacles)) return [target2];
+  function planWalk(person, target2, obstacles, allowMarginExit = false) {
+    if (walkSegmentClear(person, person, target2, obstacles, 0.16, allowMarginExit)) return [target2];
     const nodes = [person, target2];
     for (const body2 of obstacles) {
       if (body2.type === "pedestrian") continue;
@@ -29798,7 +29805,7 @@
       }
       for (let next = 1; next < nodes.length; next++) {
         const cost = costs[current] + distance(nodes[current], nodes[next]);
-        if (cost >= costs[next] || !walkSegmentClear(person, nodes[current], nodes[next], obstacles))
+        if (cost >= costs[next] || !walkSegmentClear(person, nodes[current], nodes[next], obstacles, 0.16, current === 0 && allowMarginExit))
           continue;
         costs[next] = cost;
         parents[next] = current;
@@ -29806,6 +29813,9 @@
       }
     }
     return [];
+  }
+  function canLeaveWalkMargin(world2, person) {
+    return Boolean(world2.pursuit?.response?.dispatch && person.district?.routeConstrained && !person.district?.caseId);
   }
   function walkingWaypoint(world2, person, nearby) {
     const obstacles = nearby.filter(
@@ -29927,7 +29937,7 @@
     const z = p.z + Math.cos(heading2) * speed * STEP;
     const oldSpeed = p.speed;
     const turnRateRadS = angleDelta(heading2, p.heading) / STEP;
-    const blocker = speed > 0 ? walkSegmentBlocker(p, p, { x, z }, nearby ?? nearbyBodies(world2, p), 0.12) : null;
+    const blocker = speed > 0 ? walkSegmentBlocker(p, p, { x, z }, nearby ?? nearbyBodies(world2, p), 0.12, canLeaveWalkMargin(world2, p)) : null;
     const next = reuseProposal ? p : { ...p };
     if (!blocker) {
       next.x = x;
@@ -29999,6 +30009,7 @@
     const probeLength = Math.min(0.95, distance(p, waypoint));
     const previousHeading = p.walkHeading ?? p.heading;
     const probe = { x: 0, z: 0 };
+    const allowMarginExit = canLeaveWalkMargin(world2, p);
     for (const turn2 of WALK_TURNS) {
       const heading3 = desired + turn2;
       probe.x = p.x + Math.sin(heading3) * probeLength;
@@ -30006,7 +30017,7 @@
       const partialScore = distance(probe, waypoint) + Math.abs(turn2) * 0.08 + (turn2 > 0 ? 0.03 : 0);
       if (partialScore >= best) continue;
       const score2 = partialScore + Math.abs(angleDelta(heading3, previousHeading)) * 0.24;
-      if (score2 < best && !walkSegmentBlocker(p, p, probe, close, 0.12)) {
+      if (score2 < best && !walkSegmentBlocker(p, p, probe, close, 0.12, allowMarginExit)) {
         best = score2;
         targetHeading = heading3;
       }
@@ -30063,14 +30074,15 @@
   ];
   var dimension = (value, fallback) => Number.isFinite(value) && value > 0 ? value : fallback;
   function getVehicleMounts(body2 = {}) {
-    const length = dimension(body2.length, PLAYER_VEHICLE.lengthM);
-    const width = dimension(body2.width, PLAYER_VEHICLE.widthM);
+    const scale = body2.giantScale ?? 1;
+    const length = dimension(body2.length, PLAYER_VEHICLE.lengthM) / scale;
+    const width = dimension(body2.width, PLAYER_VEHICLE.widthM) / scale;
     const camera2 = {
       id: "front-camera",
       angleDeg: 0,
       position: { x: 0, y: 1.46, z: 0.72 }
     };
-    return {
+    const mounts2 = {
       ranges: rangeLayout.map(([id2, angleDeg, x]) => ({
         id: id2,
         angleDeg,
@@ -30119,6 +30131,14 @@
         position: { x: 0, y: 1.88, z: -0.15 }
       }
     };
+    if (scale !== 1) {
+      for (const { position: p } of [...mounts2.ranges, ...mounts2.auxiliary, ...mounts2.cameras, mounts2.telemetry]) {
+        p.x *= scale;
+        p.y *= scale;
+        p.z *= scale;
+      }
+    }
+    return mounts2;
   }
   function mountToWorld(body2, position2) {
     const c = Math.cos(body2.heading ?? 0);
@@ -30251,7 +30271,7 @@
     const a = corners(body2);
     const b = corners(obstacle);
     let separation = -Infinity;
-    let normal;
+    let normal2;
     for (const shape2 of [body2, obstacle]) {
       for (const offset3 of [0, Math.PI / 2]) {
         const axis = {
@@ -30266,22 +30286,22 @@
         if (gap > separation) {
           separation = gap;
           const sign2 = forwardGap >= reverseGap ? 1 : -1;
-          normal = { x: axis.x * sign2, z: axis.z * sign2 };
+          normal2 = { x: axis.x * sign2, z: axis.z * sign2 };
         }
       }
     }
-    const forward2 = normal.x * Math.sin(body2.heading) + normal.z * Math.cos(body2.heading);
-    const right = normal.x * Math.cos(body2.heading) - normal.z * Math.sin(body2.heading);
-    const side = Math.abs(forward2) >= Math.abs(right) ? forward2 > 0 ? "front" : "rear" : right > 0 ? "right" : "left";
+    const forward3 = normal2.x * Math.sin(body2.heading) + normal2.z * Math.cos(body2.heading);
+    const right = normal2.x * Math.cos(body2.heading) - normal2.z * Math.sin(body2.heading);
+    const side = Math.abs(forward3) >= Math.abs(right) ? forward3 > 0 ? "front" : "rear" : right > 0 ? "right" : "left";
     const obstacleSpeed = obstacle.speed ?? 0;
     const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
     const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
-    const closingSpeedMps = Math.max(0, vx * normal.x + vz * normal.z);
+    const closingSpeedMps = Math.max(0, vx * normal2.x + vz * normal2.z);
     return {
       body: { ...body2, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
       hitId: obstacle.id,
       side,
-      normal,
+      normal: normal2,
       closingSpeedMps,
       energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
       proposedTravelM: distance(before, proposed)
@@ -30386,16 +30406,16 @@
       if (Math.abs(junction.x) % 50 !== 0 || Math.abs(junction.z) % 20 !== 0)
         continue;
       const dx = junction.x - car2.x, dz = junction.z - car2.z;
-      const forward2 = dx * Math.sin(car2.heading) + dz * Math.cos(car2.heading);
+      const forward3 = dx * Math.sin(car2.heading) + dz * Math.cos(car2.heading);
       const lateral2 = Math.abs(
         dx * Math.cos(car2.heading) - dz * Math.sin(car2.heading)
       );
-      if (forward2 < 6 || forward2 > 24 || lateral2 > 3.7) continue;
+      if (forward3 < 6 || forward3 > 24 || lateral2 > 3.7) continue;
       const vertical = Math.abs(Math.cos(car2.heading)) > 0.75;
       const phase = world2.tick * STEP % 24;
       const green = vertical ? phase < 10 : phase >= 12 && phase < 22;
       if (!green)
-        limit = Math.min(limit, Math.sqrt(Math.max(0, forward2 - 7) * 5));
+        limit = Math.min(limit, Math.sqrt(Math.max(0, forward3 - 7) * 5));
     }
     return limit;
   }
@@ -30551,16 +30571,16 @@
     );
     for (const group of world2.junctionGroups) {
       const owners = world2.junctionOwners.get(group.key) ?? [];
-      const candidates = cars.filter(
+      const candidates2 = cars.filter(
         (a) => !holding.has(a.id) && (a.path.length || a === world2.player && world2.input.targetSpeed > 0) && approaches.get(a.id)?.group === group && signalSpeedLimit(world2, a) === Infinity
       );
       const fronts = /* @__PURE__ */ new Map();
-      for (const candidate of candidates) {
-        const direction2 = (Math.round(candidate.heading / (Math.PI / 2)) % 4 + 4) % 4;
+      for (const candidate of candidates2) {
+        const direction3 = (Math.round(candidate.heading / (Math.PI / 2)) % 4 + 4) % 4;
         const lane2 = Math.round(
-          (direction2 % 2 === 0 ? candidate.x : candidate.z) / 10
+          (direction3 % 2 === 0 ? candidate.x : candidate.z) / 10
         );
-        const approachKey = `${direction2}:${lane2}`;
+        const approachKey = `${direction3}:${lane2}`;
         const prior = fronts.get(approachKey);
         if (!prior || approaches.get(candidate.id).distance < approaches.get(prior.id).distance)
           fronts.set(approachKey, candidate);
@@ -30594,12 +30614,17 @@
   // src/core/pursuit-survival.js
   var ticks = (seconds2) => Math.round(seconds2 / STEP);
   var POWERS = ["giant", "mine", "ghost", "pulse"];
+  var GIANT_SCALE = 1.45;
+  var SURVIVAL_GIANT_PHYSICS = "scaled-v1";
   var SURVIVAL_REVIEW_TICKS = ticks(0.46);
   var isSurvival = (variant) => variant === "survival";
   var isCityHunt = (variant) => variant === "hunt" || isSurvival(variant);
-  function createSurvival(player, tick) {
+  function createSurvival(player, tick, giantPhysics) {
+    if (giantPhysics !== void 0 && giantPhysics !== SURVIVAL_GIANT_PHYSICS)
+      throw new RangeError("Unsupported Giant physics profile");
     return {
       footprint: { length: player.length, width: player.width },
+      giantBase: giantPhysics ? { height: player.height, spec: player.spec } : null,
       active: null,
       held: null,
       pickup: null,
@@ -30615,6 +30640,25 @@
       fireQueued: false,
       lastSolid: null
     };
+  }
+  function setSurvivalShape(player, survival, footprint, giant = false) {
+    player.length = footprint.length;
+    player.width = footprint.width;
+    const base = survival.giantBase;
+    if (!base) return;
+    if (giant) {
+      player.giantScale = GIANT_SCALE;
+      player.height = base.height * GIANT_SCALE;
+      player.spec = {
+        ...base.spec,
+        wheelbase: (base.spec?.wheelbase ?? VEHICLE.wheelbase) * GIANT_SCALE,
+        acceleration: (base.spec?.acceleration ?? VEHICLE.acceleration) * 0.8
+      };
+    } else if (player.giantScale) {
+      player.height = base.height;
+      player.spec = base.spec;
+      delete player.giantScale;
+    }
   }
   function emitSurvival(world2, type, at, kind, extra) {
     const { survival } = world2.pursuit;
@@ -30662,7 +30706,8 @@
       if (!clear) return false;
       Object.assign(player, clear, { previous: { ...player.previous, ...clear }, speed: 0, arcadeSlip: 0 });
     }
-    Object.assign(player, survival.footprint, { arcadeSlip: 0 });
+    setSurvivalShape(player, survival, survival.footprint);
+    player.arcadeSlip = 0;
     survival.active = survival.held = survival.pickup = null;
     survival.devices.length = 0;
     survival.fireQueued = false;
@@ -30677,7 +30722,7 @@
     }
     const power = a.active;
     if (power && tick >= power.until && (power.kind !== "ghost" || fits(world2, player))) {
-      Object.assign(player, a.footprint);
+      setSurvivalShape(player, a, a.footprint);
       a.active = null;
     }
     if (!a.fireQueued) return;
@@ -30704,8 +30749,8 @@
   }
   function disableSurvivalPatrol(world2, body2, reason, erased = false) {
     const { pursuit, tick } = world2, { survival: a } = pursuit;
-    const active = pursuit.patrols.delete(body2);
-    if (!active && !a.wrecks.has(body2)) return;
+    const active2 = pursuit.patrols.delete(body2);
+    if (!active2 && !a.wrecks.has(body2)) return;
     if (erased) {
       a.wrecks.delete(body2);
       removeActor(world2, body2);
@@ -30778,13 +30823,12 @@
     const pickup = a.pickup;
     if (pickup && overlaps(player, token(pickup.x, pickup.z, 0.9))) {
       const { kind } = pickup, charge = kind === "mine" || kind === "pulse";
-      const giant = { ...player, length: a.footprint.length * 1.45, width: a.footprint.width * 1.45 };
+      const giant = { ...player, length: a.footprint.length * GIANT_SCALE, width: a.footprint.width * GIANT_SCALE };
       if (!(charge && a.held) && !(kind === "giant" && !fits(world2, giant)) && !(a.active?.kind === "ghost" && kind === "giant" && !fits(world2, player))) {
         if (charge) a.held = kind;
         else {
           a.active = { kind, until: tick + ticks(kind === "ghost" ? 4.25 : 3.55) };
-          const { length, width } = kind === "giant" ? giant : a.footprint;
-          Object.assign(player, { length, width });
+          setSurvivalShape(player, a, kind === "giant" ? giant : a.footprint, kind === "giant");
         }
         emitSurvival(world2, "pickup", pickup, kind);
         a.pickup = null;
@@ -31074,6 +31118,7 @@
 
   // src/core/vehicle-state.js
   var wheelNames = ["frontLeft", "frontRight", "rearLeft", "rearRight"];
+  var damageSides = ["front", "rear", "left", "right"];
   var staticWheelLoad = PLAYER_VEHICLE.massKg * 9.81 / 4;
   var tau = Math.PI * 2;
   function createVehicleState() {
@@ -31130,7 +31175,13 @@
       velocity: Math.abs(speed) < 1e-12 ? 0 : speed
     };
   }
-  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null } = {}) {
+  function dent(damage2, side, closingSpeedMps, energyJ, tick) {
+    damage2[side] = clamp2(damage2[side] + energyJ / 45e3, 0, 1);
+    damage2.total = 1 - damageSides.reduce((p, part) => p * (1 - damage2[part]), 1);
+    damage2.impactCount++;
+    damage2.lastImpact = { side, closingSpeedMps, energyJ, tick };
+  }
+  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null, freshImpacts = null } = {}) {
     if (!Number.isFinite(dt) || dt <= 0)
       throw new RangeError("Vehicle state needs a positive fixed step");
     const previous = before.vehicle ?? createVehicleState();
@@ -31205,14 +31256,16 @@
     if (latchedContact && Math.hypot(after.x - latchedContact.x, after.z - latchedContact.z) > 0.25)
       latchedContact = null;
     const damage2 = { ...previous.damage };
+    if (freshImpacts) {
+      for (const { side, closingSpeedMps, energyJ } of freshImpacts) {
+        if (closingSpeedMps >= 0.35) dent(damage2, side, closingSpeedMps, energyJ, tick);
+      }
+    }
     if (contact) {
       const closingSpeedMps = Math.max(0, contact.closingSpeedMps);
-      if (closingSpeedMps >= 0.35 && Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8 && latchedContact?.hitId !== contact.hitId && ["front", "rear", "left", "right"].includes(contact.side)) {
+      if (!freshImpacts && closingSpeedMps >= 0.35 && Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8 && latchedContact?.hitId !== contact.hitId && damageSides.includes(contact.side)) {
         const energyJ = 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
-        damage2[contact.side] = clamp2(damage2[contact.side] + energyJ / 45e3, 0, 1);
-        damage2.total = 1 - ["front", "rear", "left", "right"].reduce((p, side) => p * (1 - damage2[side]), 1);
-        damage2.impactCount++;
-        damage2.lastImpact = { side: contact.side, closingSpeedMps, energyJ, tick };
+        dent(damage2, contact.side, closingSpeedMps, energyJ, tick);
       }
       latchedContact = {
         hitId: contact.hitId,
@@ -31223,7 +31276,7 @@
     }
     return {
       wheelAngles: wheelAngles(steer),
-      wheelSpinRad: (previous.wheelSpinRad + signedTravel / PLAYER_VEHICLE.wheelRadiusM) % tau,
+      wheelSpinRad: (previous.wheelSpinRad + signedTravel / (PLAYER_VEHICLE.wheelRadiusM * (before.giantScale ?? 1))) % tau,
       steeringWheelRad: steer * PLAYER_VEHICLE.steeringRatio,
       suspension: {
         pitchRad: pitch.value,
@@ -31322,11 +31375,11 @@
         heading: 0
       };
     });
-    const sites = [];
+    const sites2 = [];
     for (let x = -91; x < 100; x += 5)
       for (let z = -91; z < 100; z += 5) {
         const site = {
-          id: `building-${sites.length}`,
+          id: `building-${sites2.length}`,
           type: "static",
           kind: "building",
           x,
@@ -31334,10 +31387,10 @@
           width: 8,
           length: 8,
           heading: 0,
-          height: 10 + sites.length % 4 * 3
+          height: 10 + sites2.length % 4 * 3
         };
-        if (!exclusions.some((road4) => overlaps(site, road4)) && !sites.some((other) => overlaps(site, other, 1.5)))
-          sites.push(site);
+        if (!exclusions.some((road4) => overlaps(site, road4)) && !sites2.some((other) => overlaps(site, other, 1.5)))
+          sites2.push(site);
       }
     for (const x of [-86, -76, -66, -56]) {
       const stall = {
@@ -31351,8 +31404,8 @@
         heading: 0,
         height: 2.3
       };
-      if (!exclusions.some((road4) => overlaps(stall, road4, 0.3)) && !sites.some((site) => overlaps(stall, site, 0.4)))
-        sites.push(stall);
+      if (!exclusions.some((road4) => overlaps(stall, road4, 0.3)) && !sites2.some((site) => overlaps(stall, site, 0.4)))
+        sites2.push(stall);
     }
     for (const place2 of PLACES) {
       const road4 = roads.find(
@@ -31377,9 +31430,9 @@
               height: 3.8,
               facingY: side > 0 ? 3 * Math.PI / 4 : -Math.PI / 4
             };
-            if (exclusions.some((exclusion) => overlaps(post, exclusion, 0.1)) || sites.some((site) => overlaps(post, site, 0.3)))
+            if (exclusions.some((exclusion) => overlaps(post, exclusion, 0.1)) || sites2.some((site) => overlaps(post, site, 0.3)))
               continue;
-            sites.push(post);
+            sites2.push(post);
             placed = true;
             break;
           }
@@ -31389,7 +31442,7 @@
       }
       if (!placed) throw new Error(`No clear sign post for ${place2.id}`);
     }
-    return sites;
+    return sites2;
   }
 
   // src/core/spatial-index.js
@@ -31478,15 +31531,15 @@
         if (changed) break;
       }
     } else {
-      const candidates = player.path.filter(
+      const candidates2 = player.path.filter(
         (p) => distance(p, player) > 16 && distance(p, player) < 24
       );
-      if (!candidates.length)
-        candidates.push({
+      if (!candidates2.length)
+        candidates2.push({
           x: player.x + Math.sin(player.heading) * 18,
           z: player.z + Math.cos(player.heading) * 18
         });
-      for (const point4 of candidates) {
+      for (const point4 of candidates2) {
         const barrier2 = {
           id: `barrier-${world2.tick}`,
           type: "static",
@@ -31563,10 +31616,10 @@
   }
   function planArrival(world2, goal) {
     const car2 = world2.player;
-    const candidates = [...world2.graph.values()].filter(
+    const candidates2 = [...world2.graph.values()].filter(
       (node5) => !world2.junctionGroups.some((group) => insideJunction(node5, group, 4))
     ).sort((a, b) => distance(a, goal) - distance(b, goal));
-    for (const node5 of candidates) {
+    for (const node5 of candidates2) {
       if (distance(node5, goal) > 70) break;
       const path = planNavigation(
         world2.graph,
@@ -31578,8 +31631,8 @@
       if (path.length < 3) continue;
       const end = path.at(-1), before = path.at(-2);
       const heading2 = Math.atan2(end.x - before.x, end.z - before.z);
-      const forward2 = { x: Math.sin(heading2), z: Math.cos(heading2) };
-      const right = { x: -forward2.z, z: forward2.x };
+      const forward3 = { x: Math.sin(heading2), z: Math.cos(heading2) };
+      const right = { x: -forward3.z, z: forward3.x };
       const road4 = world2.drivingRoads.find(
         (r) => r.width >= 10 && Math.abs(angleDelta(heading2, r.axis === "z" ? 0 : Math.PI / 2)) % Math.PI < 0.01 && Math.abs((r.axis === "z" ? node5.x : node5.z) - r.fixed) < 0.01 && (r.axis === "z" ? node5.z : node5.x) > r.min + 4 && (r.axis === "z" ? node5.z : node5.x) < r.max - 4
       );
@@ -31598,8 +31651,8 @@
         continue;
       const shift2 = 4.9 - LANE_OFFSET;
       const parking = {
-        x: end.x + right.x * shift2 + forward2.x * 1.2,
-        z: end.z + right.z * shift2 + forward2.z * 1.2,
+        x: end.x + right.x * shift2 + forward3.x * 1.2,
+        z: end.z + right.z * shift2 + forward3.z * 1.2,
         heading: heading2
       };
       if (world2.actors.some(
@@ -31725,7 +31778,7 @@
   }
 
   // src/core/body-path-evidence.js
-  function bodyPathAllowsLateralMotion(track, motion, ego) {
+  function bodyPathAllowsLateralMotion(track2, motion, ego) {
     const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
     const lateralVariance = (matrix) => Math.max(
       0,
@@ -31735,28 +31788,28 @@
       0,
       s * s * matrix.xx + 2 * c * s * matrix.xz + c * c * matrix.zz
     );
-    const lateralMps = track.velocity.x * c - track.velocity.z * s;
-    const forwardMps = track.velocity.x * s + track.velocity.z * c;
-    const lateralErrorMps = 0.05 + Math.sqrt(lateralVariance(track.velocityCovarianceM2S2));
-    const forwardErrorMps = 0.05 + Math.sqrt(forwardVariance(track.velocityCovarianceM2S2));
-    const forwardPositionErrorM = Math.sqrt(forwardVariance(track.positionCovarianceM2) + forwardVariance(track.regressionResidualCovarianceM2));
-    if (!track.reliable || Math.abs(lateralMps) - lateralErrorMps >= 0.2 || Math.abs(forwardMps) - forwardErrorMps <= 0.2 || Math.abs(forwardMps) * track.spanS <= 2 * forwardPositionErrorM)
+    const lateralMps = track2.velocity.x * c - track2.velocity.z * s;
+    const forwardMps = track2.velocity.x * s + track2.velocity.z * c;
+    const lateralErrorMps = 0.05 + Math.sqrt(lateralVariance(track2.velocityCovarianceM2S2));
+    const forwardErrorMps = 0.05 + Math.sqrt(forwardVariance(track2.velocityCovarianceM2S2));
+    const forwardPositionErrorM = Math.sqrt(forwardVariance(track2.positionCovarianceM2) + forwardVariance(track2.regressionResidualCovarianceM2));
+    if (!track2.reliable || Math.abs(lateralMps) - lateralErrorMps >= 0.2 || Math.abs(forwardMps) - forwardErrorMps <= 0.2 || Math.abs(forwardMps) * track2.spanS <= 2 * forwardPositionErrorM)
       return true;
-    const positionVariance = lateralVariance(track.positionCovarianceM2) + lateralVariance(track.regressionResidualCovarianceM2);
-    const velocityVariance = lateralVariance(track.velocityCovarianceM2S2);
-    let firstOutsideS = track.lastSeenS;
-    for (let i = track.history.length - 1; i >= 0; i--) {
-      const sample = track.history[i];
+    const positionVariance = lateralVariance(track2.positionCovarianceM2) + lateralVariance(track2.regressionResidualCovarianceM2);
+    const velocityVariance = lateralVariance(track2.velocityCovarianceM2S2);
+    let firstOutsideS = track2.lastSeenS;
+    for (let i = track2.history.length - 1; i >= 0; i--) {
+      const sample = track2.history[i];
       if (sample.simulationTimeS < motion.supportTimeS - 1e-8) break;
-      const dt = sample.simulationTimeS - track.lastSeenS;
-      const dx = sample.position.x - track.position.x - track.velocity.x * dt;
-      const dz = sample.position.z - track.position.z - track.velocity.z * dt;
+      const dt = sample.simulationTimeS - track2.lastSeenS;
+      const dx = sample.position.x - track2.position.x - track2.velocity.x * dt;
+      const dz = sample.position.z - track2.position.z - track2.velocity.z * dt;
       const innovationM = dx * c - dz * s;
       const errorM = 2 * Math.sqrt(positionVariance + dt * dt * velocityVariance);
       if (innovationM * motion.lateralMps <= 0 || Math.abs(innovationM) <= errorM) break;
       firstOutsideS = sample.simulationTimeS;
     }
-    return track.lastSeenS - firstOutsideS >= 0.1 - 1e-8;
+    return track2.lastSeenS - firstOutsideS >= 0.1 - 1e-8;
   }
 
   // src/core/visual-prediction.js
@@ -32030,10 +32083,10 @@
   function copyEpisode(value) {
     return value ? { ...value, referenceEgo: { ...value.referenceEgo } } : null;
   }
-  function validateEpisode(value, track) {
+  function validateEpisode(value, track2) {
     if (value === null) return;
     object(value, EPISODE_KEYS, "stop episode");
-    if (value.source !== SOURCE || value.trackId !== track.id || value.streamId !== track.streamId)
+    if (value.source !== SOURCE || value.trackId !== track2.id || value.streamId !== track2.streamId)
       throw new TypeError("stop episode must retain its qualified visual track/stream identity");
     if (!["stopping", "awaiting-clearance", "cleared", "expired"].includes(value.phase))
       throw new TypeError("unknown stop episode phase");
@@ -32041,9 +32094,9 @@
     number(value.referenceSpeedMps, 0.2, 55, "episode reference speed");
     if (value.referenceSpeedMps !== value.referenceEgo.speedMps)
       throw new TypeError("episode reference speed must be captured own odometry");
-    number(value.originConfidence, track.label === "motion" ? 0.65 : 0.55, 1, "episode origin confidence");
-    number(value.originFrameId, 0, track.frameId, "episode origin frame", true);
-    number(value.originTimeS, 0, track.lastSeenS, "episode origin time");
+    number(value.originConfidence, track2.label === "motion" ? 0.65 : 0.55, 1, "episode origin confidence");
+    number(value.originFrameId, 0, track2.frameId, "episode origin frame", true);
+    number(value.originTimeS, 0, track2.lastSeenS, "episode origin time");
     number(value.requestedAtS, value.originTimeS, 1e9, "episode request time");
     for (const key3 of ["lowestSpeedMps", "lastProgressSpeedMps"])
       number(value[key3], 0, value.referenceSpeedMps, `episode.${key3}`);
@@ -32051,91 +32104,91 @@
     number(value.clearanceDeadlineS, value.requestedAtS, maximumDeadline + 1e-8, "episode clearance deadline");
     number(value.stopDeadlineS, value.requestedAtS, value.clearanceDeadlineS, "episode stop deadline");
     number(value.lastProgressAtS, value.requestedAtS, 1e9, "episode last progress time");
-    number(value.lastSupportFrameId, value.originFrameId, track.frameId, "episode support frame", true);
-    number(value.lastSupportTimeS, value.originTimeS, track.lastSeenS, "episode support time");
+    number(value.lastSupportFrameId, value.originFrameId, track2.frameId, "episode support frame", true);
+    number(value.lastSupportTimeS, value.originTimeS, track2.lastSeenS, "episode support time");
     for (const key3 of ["brakingObservedAtS", "stoppedAtS", "clearedAtS"])
       if (value[key3] !== null) number(value[key3], value.requestedAtS, 1e9, `episode.${key3}`);
     if (value.clearFrameId !== null)
-      number(value.clearFrameId, value.originFrameId, track.frameId, "episode clear frame", true);
+      number(value.clearFrameId, value.originFrameId, track2.frameId, "episode clear frame", true);
     if (value.expiryReason !== null) token2(value.expiryReason, "episode expiry reason");
   }
-  function publicTrack(track, nowS, ego, freshMotionSupport = false) {
-    let history = track.history;
+  function publicTrack(track2, nowS, ego, freshMotionSupport = false) {
+    let history = track2.history;
     if (freshMotionSupport) {
       const first = history.findIndex((sample) => nowS - sample.timeS <= MAX_AGE_S + 1e-8);
       history = history.slice(first < 0 ? -1 : first);
     }
     const result = {
-      id: track.id,
+      id: track2.id,
       source: PIXELS,
-      streamId: track.streamId,
-      label: track.label,
-      confidence: track.confidence,
-      frameId: track.frameId,
+      streamId: track2.streamId,
+      label: track2.label,
+      confidence: track2.confidence,
+      frameId: track2.frameId,
       firstSeenS: history[0].timeS,
-      lastSeenS: track.lastSeenS,
+      lastSeenS: track2.lastSeenS,
       observations: history.length,
       ...fit(history),
-      box: [...track.box],
+      box: [...track2.box],
       history: history.map((p) => ({
         frameId: p.frameId,
         simulationTimeS: p.timeS,
         position: { x: p.x, z: p.z }
       })),
-      holdUntilS: track.holdUntilS,
-      holdSpeedMps: track.holdSpeedMps,
-      lastConflictS: track.lastConflictS,
-      conflictFrameId: track.conflictFrameId,
-      conflictCrossingTimeS: track.conflictCrossingTimeS,
-      ageMs: Math.max(0, (nowS - track.lastSeenS) * 1e3),
-      stopEpisode: copyEpisode(track.stopEpisode)
+      holdUntilS: track2.holdUntilS,
+      holdSpeedMps: track2.holdSpeedMps,
+      lastConflictS: track2.lastConflictS,
+      conflictFrameId: track2.conflictFrameId,
+      conflictCrossingTimeS: track2.conflictCrossingTimeS,
+      ageMs: Math.max(0, (nowS - track2.lastSeenS) * 1e3),
+      stopEpisode: copyEpisode(track2.stopEpisode)
     };
-    if (freshMotionSupport && track.label !== "vehicle" && result.reliable && history.length >= 3 && history.length < track.history.length && (!track.stopEpisode || track.stopEpisode.phase === "cleared")) {
-      const reference = { ...fit(track.history), history: result.history, lastSeenS: track.lastSeenS };
+    if (freshMotionSupport && track2.label !== "vehicle" && result.reliable && history.length >= 3 && history.length < track2.history.length && (!track2.stopEpisode || track2.stopEpisode.phase === "cleared")) {
+      const reference = { ...fit(track2.history), history: result.history, lastSeenS: track2.lastSeenS };
       const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
       const lateral2 = ({ x, z }) => x * c - z * s;
       const error = (covariance) => Math.sqrt(Math.max(
         0,
         c * c * covariance.xx - 2 * c * s * covariance.xz + s * s * covariance.zz
       ));
-      const lateralMps = lateral2(result.velocity), direction2 = Math.sign(lateralMps);
-      const oldDirectionMps = direction2 * lateral2(reference.velocity) - (0.05 + error(reference.velocityCovarianceM2S2));
-      const observedShiftM = direction2 * (lateral2(history.at(-1)) - lateral2(history[0]));
+      const lateralMps = lateral2(result.velocity), direction3 = Math.sign(lateralMps);
+      const oldDirectionMps = direction3 * lateral2(reference.velocity) - (0.05 + error(reference.velocityCovarianceM2S2));
+      const observedShiftM = direction3 * (lateral2(history.at(-1)) - lateral2(history[0]));
       const resolvedShiftM = observedShiftM - 2 * error(result.positionCovarianceM2);
       result.reliable = (!reference.reliable || oldDirectionMps >= 0.2 || resolvedShiftM > 0.35) && bodyPathAllowsLateralMotion(reference, { lateralMps, supportTimeS: result.firstSeenS }, ego);
     }
     return result;
   }
-  function validateTrack(track) {
-    object(track, TRACK_KEYS, "visual track");
-    if (track.source !== PIXELS) throw new TypeError("visual tracks require camera-pixels provenance");
-    token2(track.id, "visual track id");
-    token2(track.streamId, "visual track stream");
-    if (!LABELS.includes(track.label)) throw new TypeError("unsupported visual track label");
-    for (const key3 of ["position", "velocity"]) point(track[key3], `track.${key3}`);
-    number(track.confidence, 0, 1, "track.confidence");
-    number(track.observations, 1, MAX_HISTORY, "track.observations", true);
-    number(track.firstSeenS, 0, 1e9, "track.firstSeenS");
-    number(track.lastSeenS, track.firstSeenS, 1e9, "track.lastSeenS");
-    number(track.spanS, 0, 2, "track.spanS");
-    number(track.frameId, 0, Number.MAX_SAFE_INTEGER, "track.frameId", true);
-    number(track.uncertaintyM, 0, 10, "track.uncertaintyM");
-    number(track.velocityUncertaintyMps, 0, 8, "track.velocityUncertaintyMps");
+  function validateTrack(track2) {
+    object(track2, TRACK_KEYS, "visual track");
+    if (track2.source !== PIXELS) throw new TypeError("visual tracks require camera-pixels provenance");
+    token2(track2.id, "visual track id");
+    token2(track2.streamId, "visual track stream");
+    if (!LABELS.includes(track2.label)) throw new TypeError("unsupported visual track label");
+    for (const key3 of ["position", "velocity"]) point(track2[key3], `track.${key3}`);
+    number(track2.confidence, 0, 1, "track.confidence");
+    number(track2.observations, 1, MAX_HISTORY, "track.observations", true);
+    number(track2.firstSeenS, 0, 1e9, "track.firstSeenS");
+    number(track2.lastSeenS, track2.firstSeenS, 1e9, "track.lastSeenS");
+    number(track2.spanS, 0, 2, "track.spanS");
+    number(track2.frameId, 0, Number.MAX_SAFE_INTEGER, "track.frameId", true);
+    number(track2.uncertaintyM, 0, 10, "track.uncertaintyM");
+    number(track2.velocityUncertaintyMps, 0, 8, "track.velocityUncertaintyMps");
     for (const key3 of ["positionCovarianceM2", "velocityCovarianceM2S2", "regressionResidualCovarianceM2"])
-      validateCovariance(track[key3], key3);
-    validateEpisode(track.stopEpisode, track);
-    number(track.holdSpeedMps, 0, 55, "track.holdSpeedMps");
+      validateCovariance(track2[key3], key3);
+    validateEpisode(track2.stopEpisode, track2);
+    number(track2.holdSpeedMps, 0, 55, "track.holdSpeedMps");
     for (const key3 of ["holdUntilS", "lastConflictS", "conflictCrossingTimeS"])
-      if (track[key3] !== null) number(track[key3], 0, 1e9, `track.${key3}`);
-    if (track.conflictFrameId !== null)
-      number(track.conflictFrameId, 0, Number.MAX_SAFE_INTEGER, "track.conflictFrameId", true);
-    if (typeof track.reliable !== "boolean") throw new TypeError("track reliability is missing");
-    box(track.box, 1920, 1080);
-    number(track.ageMs, 0, 1e12, "track.ageMs");
-    if (!Array.isArray(track.history) || track.history.length !== track.observations)
+      if (track2[key3] !== null) number(track2[key3], 0, 1e9, `track.${key3}`);
+    if (track2.conflictFrameId !== null)
+      number(track2.conflictFrameId, 0, Number.MAX_SAFE_INTEGER, "track.conflictFrameId", true);
+    if (typeof track2.reliable !== "boolean") throw new TypeError("track reliability is missing");
+    box(track2.box, 1920, 1080);
+    number(track2.ageMs, 0, 1e12, "track.ageMs");
+    if (!Array.isArray(track2.history) || track2.history.length !== track2.observations)
       throw new TypeError("track history must match its actual observation count");
     let priorTime = -1, priorFrame = -1;
-    for (const sample of track.history) {
+    for (const sample of track2.history) {
       object(sample, ["frameId", "simulationTimeS", "position"], "track history sample");
       point(sample.position, "track history position");
       number(sample.frameId, 0, Number.MAX_SAFE_INTEGER, "history frameId", true);
@@ -32145,7 +32198,7 @@
       priorTime = sample.simulationTimeS;
       priorFrame = sample.frameId;
     }
-    if (Math.abs(track.history[0].simulationTimeS - track.firstSeenS) > 1e-8 || Math.abs(priorTime - track.lastSeenS) > 1e-8 || priorFrame !== track.frameId || Math.abs(track.lastSeenS - track.firstSeenS - track.spanS) > 1e-8)
+    if (Math.abs(track2.history[0].simulationTimeS - track2.firstSeenS) > 1e-8 || Math.abs(priorTime - track2.lastSeenS) > 1e-8 || priorFrame !== track2.frameId || Math.abs(track2.lastSeenS - track2.firstSeenS - track2.spanS) > 1e-8)
       throw new TypeError("track history identity/span does not match the observed evidence");
   }
   function interval(position2, velocity, halfExtent) {
@@ -32172,31 +32225,31 @@
     }
     return leave >= enter ? [enter, leave] : null;
   }
-  function forecast(track, nowS, ego) {
-    const ageS = nowS - track.lastSeenS;
+  function forecast(track2, nowS, ego) {
+    const ageS = nowS - track2.lastSeenS;
     const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
-    const dx = track.position.x + track.velocity.x * Math.max(0, ageS) - ego.x;
-    const dz = track.position.z + track.velocity.z * Math.max(0, ageS) - ego.z;
+    const dx = track2.position.x + track2.velocity.x * Math.max(0, ageS) - ego.x;
+    const dz = track2.position.z + track2.velocity.z * Math.max(0, ageS) - ego.z;
     const lateralM = dx * c - dz * s, longitudinalM = dx * s + dz * c;
-    const lateralSpeedMps = track.velocity.x * c - track.velocity.z * s;
-    const forwardSpeedMps = track.velocity.x * s + track.velocity.z * c;
-    const lateralVelocityUncertaintyMps = 0.05 + directionalSigma(track.velocityCovarianceM2S2, c, -s);
-    const longitudinalVelocityUncertaintyMps = 0.05 + directionalSigma(track.velocityCovarianceM2S2, s, c);
+    const lateralSpeedMps = track2.velocity.x * c - track2.velocity.z * s;
+    const forwardSpeedMps = track2.velocity.x * s + track2.velocity.z * c;
+    const lateralVelocityUncertaintyMps = 0.05 + directionalSigma(track2.velocityCovarianceM2S2, c, -s);
+    const longitudinalVelocityUncertaintyMps = 0.05 + directionalSigma(track2.velocityCovarianceM2S2, s, c);
     const lateralPositionUncertaintyM = Math.max(
       0.08,
-      directionalSigma(track.positionCovarianceM2, c, -s)
+      directionalSigma(track2.positionCovarianceM2, c, -s)
     ) + Math.max(0, ageS) * lateralVelocityUncertaintyMps;
     const longitudinalPositionUncertaintyM = Math.max(
       0.08,
-      directionalSigma(track.positionCovarianceM2, s, c)
+      directionalSigma(track2.positionCovarianceM2, s, c)
     ) + Math.max(0, ageS) * longitudinalVelocityUncertaintyMps;
-    const confidence = track.confidence * clamp3(1 - lateralVelocityUncertaintyMps / 0.9, 0.35, 1) * clamp3(1 - lateralPositionUncertaintyM / 8, 0.35, 1);
-    const held = track.lastConflictS !== null && track.holdUntilS !== null && nowS >= track.lastConflictS && nowS <= track.holdUntilS + 1e-8 && track.holdUntilS - track.lastConflictS <= HOLD_S + 1e-8;
+    const confidence = track2.confidence * clamp3(1 - lateralVelocityUncertaintyMps / 0.9, 0.35, 1) * clamp3(1 - lateralPositionUncertaintyM / 8, 0.35, 1);
+    const held = track2.lastConflictS !== null && track2.holdUntilS !== null && nowS >= track2.lastConflictS && nowS <= track2.holdUntilS + 1e-8 && track2.holdUntilS - track2.lastConflictS <= HOLD_S + 1e-8;
     const laneHalf = ego.widthM / 2 + 0.35;
     const band2 = laneHalf + Math.min(lateralPositionUncertaintyM, 0.65);
     const prediction = {
-      trackId: track.id,
-      label: track.label,
+      trackId: track2.id,
+      label: track2.label,
       confidence,
       lateralM,
       longitudinalM,
@@ -32209,7 +32262,7 @@
       lateralOccupancyS: null,
       longitudinalArrivalS: null,
       arrivalQualified: false,
-      uncertaintyM: track.uncertaintyM,
+      uncertaintyM: track2.uncertaintyM,
       crossingTimeS: null,
       clearanceTimeS: null,
       egoArrivalTimeS: null,
@@ -32222,11 +32275,11 @@
     const reject = (reason) => ({ ...prediction, reason });
     if (ageS < -1e-8) return reject("future-observation");
     if (ageS > MAX_AGE_S + 1e-8) return reject("stale-observation");
-    if (track.label === "vehicle") return reject("not-a-crossing-class");
-    if (track.observations < 3 || track.spanS + 1e-8 < 0.2) return prediction;
-    if (!track.reliable || Math.hypot(track.velocity.x, track.velocity.z) > MAX_WALK_SPEED || track.uncertaintyM > 2.5 || lateralVelocityUncertaintyMps > 0.65)
+    if (track2.label === "vehicle") return reject("not-a-crossing-class");
+    if (track2.observations < 3 || track2.spanS + 1e-8 < 0.2) return prediction;
+    if (!track2.reliable || Math.hypot(track2.velocity.x, track2.velocity.z) > MAX_WALK_SPEED || track2.uncertaintyM > 2.5 || lateralVelocityUncertaintyMps > 0.65)
       return reject("uncertain-visual-track");
-    if (confidence < (track.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE))
+    if (confidence < (track2.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE))
       return reject("low-visual-confidence");
     prediction.qualified = true;
     if (Math.abs(lateralSpeedMps) - lateralVelocityUncertaintyMps < 0.2)
@@ -32247,7 +32300,7 @@
     prediction.lateralOccupancyS = lateral2;
     prediction.crossingTimeS = clamp3((Math.abs(lateralM) - laneHalf) / Math.abs(lateralSpeedMps), 0, HORIZON_S);
     prediction.clearanceTimeS = lateral2[1];
-    const speed = Math.max(0, ego.speedMps, held ? track.holdSpeedMps : 0);
+    const speed = Math.max(0, ego.speedMps, held ? track2.holdSpeedMps : 0);
     if (speed < 0.2) return reject("ego-not-approaching");
     prediction.egoArrivalTimeS = clamp3(longitudinalM / speed, 0, HORIZON_S);
     const closing = speed - forwardSpeedMps;
@@ -32277,10 +32330,10 @@
     prediction.arrivalQualified = true;
     prediction.conflict = true;
     prediction.conflictTimeS = Math.max(lateral2[0], latestEntry);
-    prediction.reason = track.label === "person" ? "observed-person-crossing-conflict" : "observed-motion-crossing-conflict";
+    prediction.reason = track2.label === "person" ? "observed-person-crossing-conflict" : "observed-motion-crossing-conflict";
     return prediction;
   }
-  function decision(reason, available = false, track = null, nowS = 0) {
+  function decision(reason, available = false, track2 = null, nowS = 0) {
     return {
       source: SOURCE,
       available,
@@ -32290,11 +32343,11 @@
       trackId: null,
       confidence: 0,
       crossingTimeS: null,
-      ageMs: track ? Math.max(0, (nowS - track.lastSeenS) * 1e3) : null,
-      evidenceFrameId: track?.frameId ?? null
+      ageMs: track2 ? Math.max(0, (nowS - track2.lastSeenS) * 1e3) : null,
+      evidenceFrameId: track2?.frameId ?? null
     };
   }
-  function beginStopEpisode(track, prediction, nowS, ego) {
+  function beginStopEpisode(track2, prediction, nowS, ego) {
     const referenceSpeedMps = ego.speedMps;
     const stoppingS = referenceSpeedMps / VEHICLE.braking;
     const clearanceS = Math.min(
@@ -32303,11 +32356,11 @@
     );
     return {
       source: SOURCE,
-      trackId: track.id,
-      streamId: track.streamId,
+      trackId: track2.id,
+      streamId: track2.streamId,
       phase: "stopping",
-      originFrameId: track.frameId,
-      originTimeS: track.lastSeenS,
+      originFrameId: track2.frameId,
+      originTimeS: track2.lastSeenS,
       originConfidence: prediction.confidence,
       requestedAtS: nowS,
       referenceEgo: { ...ego },
@@ -32319,21 +32372,21 @@
       stoppedAtS: null,
       stopDeadlineS: nowS + stoppingS + MAX_AGE_S,
       clearanceDeadlineS: nowS + clearanceS + stoppingS + MAX_AGE_S,
-      lastSupportFrameId: track.frameId,
-      lastSupportTimeS: track.lastSeenS,
+      lastSupportFrameId: track2.frameId,
+      lastSupportTimeS: track2.lastSeenS,
       clearFrameId: null,
       clearedAtS: null,
       expiryReason: null
     };
   }
-  function observedClearance(track, episode, nowS, ego) {
-    if (nowS - track.lastSeenS > MAX_AGE_S || nowS < track.lastSeenS || track.history.length < 3 || !track.reliable || track.uncertaintyM > 2.5)
+  function observedClearance(track2, episode, nowS, ego) {
+    if (nowS - track2.lastSeenS > MAX_AGE_S || nowS < track2.lastSeenS || track2.history.length < 3 || !track2.reliable || track2.uncertaintyM > 2.5)
       return false;
     const reference = { ...episode.referenceEgo, speedMps: ego.speedMps };
-    const visible2 = forecast(track, nowS, reference);
-    if (visible2.confidence < (track.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE) || visible2.lateralVelocityUncertaintyMps > 0.65)
+    const visible2 = forecast(track2, nowS, reference);
+    if (visible2.confidence < (track2.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE) || visible2.lateralVelocityUncertaintyMps > 0.65)
       return false;
-    const recent = track.history.slice(-3);
+    const recent = track2.history.slice(-3);
     if (recent[2].simulationTimeS - recent[0].simulationTimeS + 1e-8 < 0.2) return false;
     const side = Math.sign(visible2.lateralM), half = reference.widthM / 2 + 0.35;
     const c = Math.cos(reference.headingRad), s = Math.sin(reference.headingRad);
@@ -32343,15 +32396,15 @@
     const stationaryClear = Math.abs(visible2.lateralSpeedMps) + visible2.lateralVelocityUncertaintyMps <= 0.2;
     return away || stationaryClear;
   }
-  function advanceStopEpisode(track, nowS, ego, usable = true, allowLateClearance = false) {
-    const episode = copyEpisode(track.stopEpisode);
+  function advanceStopEpisode(track2, nowS, ego, usable = true, allowLateClearance = false) {
+    const episode = copyEpisode(track2.stopEpisode);
     if (!episode || episode.phase === "cleared") return episode;
     const speed = Math.abs(ego.speedMps);
     if (episode.phase === "expired") {
-      const oldestClearanceS = track.history.at(-3)?.simulationTimeS;
-      if (allowLateClearance && usable && episode.stoppedAtS !== null && speed < STOP_SPEED_MPS && track.frameId > episode.lastSupportFrameId && track.lastSeenS > episode.lastSupportTimeS && nowS - oldestClearanceS <= MAX_AGE_S + 1e-8 && observedClearance(track, episode, nowS, ego)) {
+      const oldestClearanceS = track2.history.at(-3)?.simulationTimeS;
+      if (allowLateClearance && usable && episode.stoppedAtS !== null && speed < STOP_SPEED_MPS && track2.frameId > episode.lastSupportFrameId && track2.lastSeenS > episode.lastSupportTimeS && nowS - oldestClearanceS <= MAX_AGE_S + 1e-8 && observedClearance(track2, episode, nowS, ego)) {
         episode.phase = "cleared";
-        episode.clearFrameId = track.frameId;
+        episode.clearFrameId = track2.frameId;
         episode.clearedAtS = nowS;
       }
       return episode;
@@ -32380,35 +32433,35 @@
       episode.expiryReason = noProgress ? "visual-stop-no-braking-progress" : "visual-stop-episode-expired";
       return episode;
     }
-    const fresh = usable && nowS >= track.lastSeenS && nowS - track.lastSeenS <= MAX_AGE_S;
+    const fresh = usable && nowS >= track2.lastSeenS && nowS - track2.lastSeenS <= MAX_AGE_S;
     if (fresh) {
-      episode.lastSupportFrameId = track.frameId;
-      episode.lastSupportTimeS = track.lastSeenS;
-      if (stopped && observedClearance(track, episode, nowS, ego)) {
+      episode.lastSupportFrameId = track2.frameId;
+      episode.lastSupportTimeS = track2.lastSeenS;
+      if (stopped && observedClearance(track2, episode, nowS, ego)) {
         episode.phase = "cleared";
-        episode.clearFrameId = track.frameId;
+        episode.clearFrameId = track2.frameId;
         episode.clearedAtS = nowS;
       }
     }
     return episode;
   }
-  function stopEpisodeDecision(track, prediction, nowS, ego) {
-    if (!track.stopEpisode) return null;
-    const episode = advanceStopEpisode(track, nowS, ego);
-    if (nowS < track.lastSeenS || nowS - track.lastSeenS > MAX_AGE_S)
-      return decision("stale-stop-observation", false, track, nowS);
+  function stopEpisodeDecision(track2, prediction, nowS, ego) {
+    if (!track2.stopEpisode) return null;
+    const episode = advanceStopEpisode(track2, nowS, ego);
+    if (nowS < track2.lastSeenS || nowS - track2.lastSeenS > MAX_AGE_S)
+      return decision("stale-stop-observation", false, track2, nowS);
     if (episode.phase === "expired")
-      return decision(episode.expiryReason, false, track, nowS);
+      return decision(episode.expiryReason, false, track2, nowS);
     if (episode.phase === "cleared") {
-      if (episode.clearFrameId === track.frameId && observedClearance(track, episode, nowS, ego))
-        return decision("visual-clearance-confirmed", true, track, nowS);
+      if (episode.clearFrameId === track2.frameId && observedClearance(track2, episode, nowS, ego))
+        return decision("visual-clearance-confirmed", true, track2, nowS);
       return null;
     }
     return {
-      ...decision(prediction.conflict ? prediction.reason : episode.stoppedAtS === null ? "committed-visual-stop" : "awaiting-visual-clearance", true, track, nowS),
+      ...decision(prediction.conflict ? prediction.reason : episode.stoppedAtS === null ? "committed-visual-stop" : "awaiting-visual-clearance", true, track2, nowS),
       brake: true,
       targetSpeedMps: 0,
-      trackId: track.id,
+      trackId: track2.id,
       confidence: prediction.confidence,
       crossingTimeS: prediction.conflict ? prediction.crossingTimeS : null
     };
@@ -32424,26 +32477,26 @@
     tracks.forEach(validateTrack);
     if (!enabled) return decision("disabled");
     if (!tracks.length) return decision("no-visual-tracks");
-    const predictions = tracks.map((track) => ({ track, value: forecast(track, nowS, ego) }));
-    const episodes = predictions.map(({ track, value }) => stopEpisodeDecision(track, value, nowS, ego)).filter(Boolean);
+    const predictions = tracks.map((track2) => ({ track: track2, value: forecast(track2, nowS, ego) }));
+    const episodes = predictions.map(({ track: track2, value }) => stopEpisodeDecision(track2, value, nowS, ego)).filter(Boolean);
     const committed = episodes.find((value) => value.available && value.brake);
     if (committed) return committed;
-    const candidates = predictions.filter(({ value }) => value.conflict).sort((a, b) => a.value.conflictTimeS - b.value.conflictTimeS || b.value.confidence - a.value.confidence);
-    const held = predictions.find(({ track, value }) => value.qualified && value.held && nowS - track.lastSeenS <= MAX_AGE_S);
-    const selected = candidates[0] ?? held;
+    const candidates2 = predictions.filter(({ value }) => value.conflict).sort((a, b) => a.value.conflictTimeS - b.value.conflictTimeS || b.value.confidence - a.value.confidence);
+    const held = predictions.find(({ track: track2, value }) => value.qualified && value.held && nowS - track2.lastSeenS <= MAX_AGE_S);
+    const selected = candidates2[0] ?? held;
     if (selected) {
-      const { track, value } = selected;
+      const { track: track2, value } = selected;
       return {
-        ...decision(value.conflict ? value.reason : "release-hysteresis", true, track, nowS),
+        ...decision(value.conflict ? value.reason : "release-hysteresis", true, track2, nowS),
         brake: true,
         targetSpeedMps: 0,
-        trackId: track.id,
+        trackId: track2.id,
         confidence: value.confidence,
         crossingTimeS: value.crossingTimeS ?? Math.max(
           0,
-          (track.conflictCrossingTimeS ?? 0) - (nowS - track.lastConflictS)
+          (track2.conflictCrossingTimeS ?? 0) - (nowS - track2.lastConflictS)
         ),
-        evidenceFrameId: value.conflict ? track.frameId : track.conflictFrameId
+        evidenceFrameId: value.conflict ? track2.frameId : track2.conflictFrameId
       };
     }
     if (episodes.length) return episodes[0];
@@ -32482,7 +32535,7 @@
         if (result.latencyMs > MAX_AGE_S * 1e3)
           throw new TypeError("visual inference result exceeds the stale latency bound");
         const timeS = result.simulationTimeS;
-        this.tracks = this.tracks.filter((track) => timeS - track.lastSeenS <= 2);
+        this.tracks = this.tracks.filter((track2) => timeS - track2.lastSeenS <= 2);
         const projected = result.detections.map((detection) => ({
           detection,
           projected: project(detection, result.camera)
@@ -32490,22 +32543,22 @@
         const observed = projected.filter(({ detection }) => detection.label === "vehicle" || detection.confidence >= (detection.label === "motion" ? MOTION_CONFIDENCE : PERSON_CONFIDENCE));
         const pairs = [], imagePairs = [];
         observed.forEach((item, index) => {
-          this.tracks.forEach((track) => {
-            const age = timeS - track.lastSeenS;
-            if (age > MAX_AGE_S || track.label !== item.detection.label) return;
-            const estimate = fit(track.history);
+          this.tracks.forEach((track2) => {
+            const age = timeS - track2.lastSeenS;
+            if (age > MAX_AGE_S || track2.label !== item.detection.label) return;
+            const estimate = fit(track2.history);
             const distance2 = Math.hypot(
               item.projected.x - estimate.position.x - estimate.velocity.x * age,
               item.projected.z - estimate.position.z - estimate.velocity.z * age
             );
             const gate = Math.min(3, 0.55 + MAX_WALK_SPEED * age + Math.min(estimate.uncertaintyM + item.projected.sigmaM, 1.5));
-            if (distance2 <= gate) pairs.push({ index, track, distance: distance2 });
-            if (this.freshMotionSupport && track.label !== "vehicle" && !track.stopEpisode && track.frameId === this.latest?.frameId && age <= 0.25 + 1e-8 && imageOverlap(track.box, item.detection.box) >= 0.5) {
+            if (distance2 <= gate) pairs.push({ index, track: track2, distance: distance2 });
+            if (this.freshMotionSupport && track2.label !== "vehicle" && !track2.stopEpisode && track2.frameId === this.latest?.frameId && age <= 0.25 + 1e-8 && imageOverlap(track2.box, item.detection.box) >= 0.5) {
               const yaw = result.camera.headingRad;
               const dx = item.projected.x - estimate.position.x - estimate.velocity.x * age;
               const dz = item.projected.z - estimate.position.z - estimate.velocity.z * age;
               if (Math.abs(dx * Math.cos(yaw) - dz * Math.sin(yaw)) <= gate)
-                imagePairs.push({ index, track });
+                imagePairs.push({ index, track: track2 });
             }
           });
         });
@@ -32516,17 +32569,17 @@
           assignments.set(pair.index, pair.track);
           used.add(pair.track);
         }
-        for (const { index, track } of imagePairs) {
-          if (assignments.has(index) || used.has(track) || imagePairs.some((pair) => pair.index === index !== (pair.track === track))) continue;
-          track.history = [];
-          assignments.set(index, track);
-          used.add(track);
+        for (const { index, track: track2 } of imagePairs) {
+          if (assignments.has(index) || used.has(track2) || imagePairs.some((pair) => pair.index === index !== (pair.track === track2))) continue;
+          track2.history = [];
+          assignments.set(index, track2);
+          used.add(track2);
         }
         observed.forEach(({ detection, projected: projected2 }, index) => {
-          let track = assignments.get(index);
-          if (!track) {
+          let track2 = assignments.get(index);
+          if (!track2) {
             if (this.tracks.length >= MAX_TRACKS) return;
-            track = {
+            track2 = {
               id: `visual-${this.nextId++}`,
               streamId: this.streamId,
               label: detection.label,
@@ -32538,14 +32591,14 @@
               conflictCrossingTimeS: null,
               stopEpisode: null
             };
-            this.tracks.push(track);
+            this.tracks.push(track2);
           }
-          track.history.push({ ...projected2, timeS, frameId: result.frameId });
-          track.history = track.history.filter((sample) => timeS - sample.timeS <= 1.5).slice(-MAX_HISTORY);
-          track.lastSeenS = timeS;
-          track.frameId = result.frameId;
-          track.box = [...detection.box];
-          track.confidence = detection.confidence;
+          track2.history.push({ ...projected2, timeS, frameId: result.frameId });
+          track2.history = track2.history.filter((sample) => timeS - sample.timeS <= 1.5).slice(-MAX_HISTORY);
+          track2.lastSeenS = timeS;
+          track2.frameId = result.frameId;
+          track2.box = [...detection.box];
+          track2.confidence = detection.confidence;
         });
         this.latest = {
           streamId: this.streamId,
@@ -32575,13 +32628,13 @@
       this.nowS = Math.max(this.nowS, nowS);
       const ageMs = this.latest ? (nowS - this.latest.simulationTimeS) * 1e3 : null;
       const status = this.error ? "error" : !this.latest ? "unavailable" : ageMs < -1e-5 ? "error" : ageMs > MAX_AGE_S * 1e3 + 1e-5 ? "stale" : "ready";
-      const snapshotTracks = () => this.tracks.map((track) => publicTrack(track, nowS, ego, this.freshMotionSupport));
+      const snapshotTracks = () => this.tracks.map((track2) => publicTrack(track2, nowS, ego, this.freshMotionSupport));
       let tracks = snapshotTracks();
       const available = status === "ready";
-      for (const track of tracks) {
-        if (!track.stopEpisode) continue;
-        const internal = this.tracks.find((item) => item.id === track.id);
-        internal.stopEpisode = advanceStopEpisode(track, nowS, ego, available, this.allowLateClearance);
+      for (const track2 of tracks) {
+        if (!track2.stopEpisode) continue;
+        const internal = this.tracks.find((item) => item.id === track2.id);
+        internal.stopEpisode = advanceStopEpisode(track2, nowS, ego, available, this.allowLateClearance);
       }
       tracks = snapshotTracks();
       let result = available ? decideVisualBrake({ tracks, nowS, ego, enabled: true }) : decision(this.error ? "invalid-visual-result" : status === "stale" ? "stale-visual-result" : status === "error" ? "future-visual-result" : "no-visual-evidence");
@@ -32590,17 +32643,17 @@
         result.evidenceFrameId = this.latest?.frameId ?? null;
       }
       if (result.brake && ["observed-person-crossing-conflict", "observed-motion-crossing-conflict"].includes(result.reason)) {
-        const track = this.tracks.find((item) => item.id === result.trackId);
+        const track2 = this.tracks.find((item) => item.id === result.trackId);
         const observed = tracks.find((item) => item.id === result.trackId);
-        if (ego.speedMps >= 0.2 && (!track.stopEpisode || track.stopEpisode.phase === "cleared"))
-          track.stopEpisode = beginStopEpisode(observed, forecast(observed, nowS, ego), nowS, ego);
-        if (track.conflictFrameId !== track.frameId) {
-          const heldSpeed = track.holdUntilS !== null && nowS <= track.holdUntilS ? track.holdSpeedMps : 0;
-          track.lastConflictS = track.lastSeenS;
-          track.holdUntilS = track.lastSeenS + HOLD_S;
-          track.holdSpeedMps = Math.max(heldSpeed, 0, ego.speedMps);
-          track.conflictFrameId = track.frameId;
-          track.conflictCrossingTimeS = result.crossingTimeS;
+        if (ego.speedMps >= 0.2 && (!track2.stopEpisode || track2.stopEpisode.phase === "cleared"))
+          track2.stopEpisode = beginStopEpisode(observed, forecast(observed, nowS, ego), nowS, ego);
+        if (track2.conflictFrameId !== track2.frameId) {
+          const heldSpeed = track2.holdUntilS !== null && nowS <= track2.holdUntilS ? track2.holdSpeedMps : 0;
+          track2.lastConflictS = track2.lastSeenS;
+          track2.holdUntilS = track2.lastSeenS + HOLD_S;
+          track2.holdSpeedMps = Math.max(heldSpeed, 0, ego.speedMps);
+          track2.conflictFrameId = track2.frameId;
+          track2.conflictCrossingTimeS = result.crossingTimeS;
           tracks = snapshotTracks();
         }
       }
@@ -32618,7 +32671,7 @@
         projectedDetections: this.latest?.projectedDetections ?? 0,
         unprojectableDetections: this.latest?.unprojectableDetections ?? 0,
         tracks,
-        forecasts: available ? tracks.map((track) => forecast(track, nowS, ego)) : [],
+        forecasts: available ? tracks.map((track2) => forecast(track2, nowS, ego)) : [],
         decision: result
       };
     }
@@ -33391,14 +33444,14 @@
   function populateTraffic(city, widerSpans, originalSpawns, target2) {
     const vehicles = [], conflictBodies = city.conflictZones.map(box2);
     const positions = [0.5, 0.28, 0.72, 0.15, 0.85];
-    const candidates = positions.flatMap((fraction) => [-1, 1].flatMap((side) => widerSpans.flatMap(({ road: road4, min, max }, index) => {
+    const candidates2 = positions.flatMap((fraction) => [-1, 1].flatMap((side) => widerSpans.flatMap(({ road: road4, min, max }, index) => {
       const sign2 = index % 2 ? -side : side;
       if (road4.id === START_ROAD && min < city.playerStart.x && sign2 === 1) return [];
       return [lane(road4, min + fraction * (max - min), sign2)];
     })));
     const avenueIds = new Set(city.drivingRoads.filter((road4) => road4.zone === "avenue").map((road4) => road4.id));
-    const avenues = candidates.filter((pose6) => avenueIds.has(pose6.roadId));
-    const local2 = candidates.filter((pose6) => !avenueIds.has(pose6.roadId));
+    const avenues = candidates2.filter((pose6) => avenueIds.has(pose6.roadId));
+    const local2 = candidates2.filter((pose6) => !avenueIds.has(pose6.roadId));
     const inherited = spreadByRoad(originalSpawns);
     const groups = [
       avenues.filter((_, i) => i % 4 === 0),
@@ -33434,7 +33487,7 @@
     })).flat();
     const locals = addedSpawns(local2), boulevard = addedSpawns(avenues);
     const old = spreadByRoad(original).map((pose6) => ({ ...pose6, roadPreference: "market" }));
-    const candidates = interleave([
+    const candidates2 = interleave([
       boulevard.filter((_, i) => i % 2 === 0),
       old,
       boulevard.filter((_, i) => i % 2 !== 0),
@@ -33444,7 +33497,7 @@
     const player = { ...CAR, ...city.playerStart, length: PLAYER_VEHICLE.lengthM, width: PLAYER_VEHICLE.widthM };
     const pavement = target2 > METRO_POPULATION_LIMITS.pedestrians ? city.roads.map((road4) => ({ ...box2(roadRect(road4)), id: road4.id })) : [];
     const pedestrians = [];
-    for (const pose6 of candidates) {
+    for (const pose6 of candidates2) {
       const body2 = { ...WALKER, ...pose6 };
       if (city.statics.some((other) => overlaps(body2, other, 0.12)) || overlaps(body2, player, 0.12) || vehicles.some((other) => overlaps(body2, other, 0.12)) || pedestrians.some((other) => distance(pose6, other) < 1.4)) continue;
       if (pedestrians.length >= METRO_POPULATION_LIMITS.pedestrians) {
@@ -33561,9 +33614,9 @@
   var geometryCache = /* @__PURE__ */ new WeakMap();
   var key2 = (p) => `${p.x.toFixed(5)},${p.z.toFixed(5)}`;
   var dot = (a, b) => a.x * b.x + a.z * b.z;
-  var shift = (p, direction2, amount) => ({
-    x: p.x + direction2.x * amount,
-    z: p.z + direction2.z * amount
+  var shift = (p, direction3, amount) => ({
+    x: p.x + direction3.x * amount,
+    z: p.z + direction3.z * amount
   });
   var heading = (v2) => Math.atan2(v2.x, v2.z);
   function graphFor(district, body2) {
@@ -33595,8 +33648,8 @@
         for (const sign2 of road4.flow ? [road4.flow] : [1, -1]) {
           const from = sign2 === 1 ? a : b, to = sign2 === 1 ? b : a;
           const length = distance(from, to);
-          const direction2 = { x: (to.x - from.x) / length, z: (to.z - from.z) / length };
-          const normal = { x: -direction2.z, z: direction2.x };
+          const direction3 = { x: (to.x - from.x) / length, z: (to.z - from.z) / length };
+          const normal2 = { x: -direction3.z, z: direction3.x };
           const link = {
             id: `${road4.id}:${sign2}:${from.id}>${to.id}`,
             road: road4,
@@ -33604,10 +33657,10 @@
             from,
             to,
             length,
-            direction: direction2,
-            normal,
+            direction: direction3,
+            normal: normal2,
             offset: road4.laneOffsetM ?? 0,
-            heading: heading(direction2),
+            heading: heading(direction3),
             turnCache: /* @__PURE__ */ new Map()
           };
           links.push(link);
@@ -33820,6 +33873,7 @@
 
   // src/core/district-behavior.js
   var HISTORY_LIMIT = 96;
+  var WALK_TARGET_GAP = 0.12;
   var PROFILE = Object.freeze({
     cautious: { headwayS: 2.2, speedFactor: 0.88 },
     ordinary: { headwayS: 1.6, speedFactor: 1 },
@@ -34024,9 +34078,9 @@
         const joint = lineConnection(walkway, line);
         if (!joint || !clearWalkLeg(world2, person, joint)) return [];
         const from = along(line, joint);
-        const direction2 = line.max - from >= from - line.min ? 1 : -1;
+        const direction3 = line.max - from >= from - line.min ? 1 : -1;
         const point4 = walkPose(line, clamp2(
-          from + stride * direction2,
+          from + stride * direction3,
           line.min + inset,
           line.max - inset
         ));
@@ -34121,9 +34175,9 @@
       const d = Math.hypot(dx, dz);
       if (d >= best) continue;
       const s = Math.sin(car2.heading), c = Math.cos(car2.heading);
-      const forward2 = dx * s + dz * c;
+      const forward3 = dx * s + dz * c;
       const lateral2 = Math.abs(dx * c - dz * s);
-      if (forward2 > -car2.length / 2 && lateral2 < 7 && d < best) {
+      if (forward3 > -car2.length / 2 && lateral2 < 7 && d < best) {
         best = d;
         nearest = car2;
       }
@@ -34159,15 +34213,42 @@
             length: actor.radius * 2
           });
       const first = person.walkRoute?.[0];
-      if (person.walkGoal !== key3 || !first || !walkSegmentClear(person, person, first, obstacles, 0.12))
-        person.walkRoute = planWalk(person, person.target, obstacles);
+      const allowMarginExit = canLeaveWalkMargin(world2, person);
+      if (person.walkGoal !== key3 || !first || !walkSegmentClear(person, person, first, obstacles, 0.12, allowMarginExit))
+        person.walkRoute = planWalk(person, person.target, obstacles, allowMarginExit);
       person.walkGoal = key3;
       person.walkPlanTick = world2.tick;
     }
     while (person.walkRoute.length > 1 && distance(person, person.walkRoute[0]) < 0.25)
       person.walkRoute.shift();
   }
-  function stepDistrictPedestrian(world2, person) {
+  function isStoppedVehicle(actor) {
+    return actor.type === "vehicle" && Math.abs(actor.speed) < 0.8;
+  }
+  function findWalkTargetBlocker(actors, target2) {
+    return actors.find((actor) => isStoppedVehicle(actor) && overlaps(target2, actor, WALK_TARGET_GAP));
+  }
+  function createWalkTargetQuery(actors) {
+    const parked = new SpatialIndex();
+    let maxRadius = 0;
+    for (let order = 0; order < actors.length; order++) {
+      const actor = actors[order];
+      if (!isStoppedVehicle(actor)) continue;
+      maxRadius = Math.max(maxRadius, Math.hypot(actor.length, actor.width) / 2);
+      parked.add({ x: actor.x, z: actor.z, actor, order });
+    }
+    return (target2) => {
+      const reach = target2.radius + maxRadius + WALK_TARGET_GAP;
+      if (!Number.isFinite(reach) || !Number.isFinite(target2.x) || !Number.isFinite(target2.z))
+        return findWalkTargetBlocker(actors, target2);
+      let first;
+      for (const candidate of parked.near(target2, reach)) {
+        if ((!first || candidate.order < first.order) && overlaps(target2, candidate.actor, WALK_TARGET_GAP)) first = candidate;
+      }
+      return first?.actor;
+    };
+  }
+  function stepDistrictPedestrian(world2, person, targetBlocker) {
     if (!isDistrict(world2)) return pedestrianMotion(world2, person);
     initializeDistrictActor(world2, person);
     const working = copyWalker(person), state = working.district;
@@ -34187,7 +34268,7 @@
         x: working.target.x,
         z: working.target.z
       };
-      const blocker = world2.actors.find((actor) => actor.type === "vehicle" && Math.abs(actor.speed) < 0.8 && overlaps(target2, actor, 0.12));
+      const blocker = targetBlocker ? targetBlocker(target2) : findWalkTargetBlocker(world2.actors, target2);
       if (blocker) {
         state.targetRetryTick = world2.tick + 90;
         event(world2, person, "walk-retarget", "occupied-catalog-target", { blockedBy: blocker.id });
@@ -34672,16 +34753,16 @@
   }
   function trafficApproach(world2, car2, zoneRows, paths, routes) {
     let closest = null;
-    const active = activeVehicle(world2, car2);
+    const active2 = activeVehicle(world2, car2);
     let path;
     for (const { zone, geometry } of zoneRows) {
-      if ((!active || outsideApproach(car2, zone, Math.max(zone.approachM, car2.length + 1) + car2.length + 3)) && !occupies(car2, zone, 0.12, geometry)) continue;
-      if (active && !path) {
+      if ((!active2 || outsideApproach(car2, zone, Math.max(zone.approachM, car2.length + 1) + car2.length + 3)) && !occupies(car2, zone, 0.12, geometry)) continue;
+      if (active2 && !path) {
         path = forwardPath(world2, car2);
         paths.set(car2.id, path);
       }
       const threshold = Math.max(zone.approachM, car2.length + 1, car2.speed ** 2 / (2 * 3.5) + 2);
-      const route = active ? routeThroughZone(car2, zone, path, geometry, threshold) : { distanceM: 0, hasExit: false, exitSamples: [], entryCount: 0 };
+      const route = active2 ? routeThroughZone(car2, zone, path, geometry, threshold) : { distanceM: 0, hasExit: false, exitSamples: [], entryCount: 0 };
       if (!route) continue;
       routes.set(`${zone.id}:${car2.id}`, route);
       if (!closest || route.distanceM < closest.distanceM)
@@ -34986,10 +35067,10 @@
         const side = (car2.width + other.width) / 2 + 0.18;
         const reach = 30 + Math.abs(halfLength) + Math.abs(side) + 1e-7;
         if (Math.abs(dx) > reach || Math.abs(dz) > reach || Math.abs(angleDelta(car2.heading, measured2.heading)) > 0.65) continue;
-        const forward2 = dx * s + dz * c;
+        const forward3 = dx * s + dz * c;
         const lateral2 = Math.abs(dx * c - dz * s);
-        const gap = forward2 - halfLength;
-        if (forward2 <= 0 || lateral2 > side || gap > 30) continue;
+        const gap = forward3 - halfLength;
+        if (forward3 <= 0 || lateral2 > side || gap > 30) continue;
         const headway = patrol2 ? other === world2.player ? 0.55 : 0.95 : usualHeadway;
         cap(Math.min(
           Math.max(0, measured2.speed + (gap - 1.5 - Math.abs(car2.speed) * headway) / headway),
@@ -35032,6 +35113,129 @@
         blockedBy: actor.blockedBy ?? null
       }))
     });
+  }
+
+  // src/core/pursuit-dispatch.js
+  var DISPATCH_RULESET = "dispatch-v1";
+  var noZones = Object.freeze([]);
+  var zoneFields = ["id", "minX", "maxX", "minZ", "maxZ"];
+  var DEFAULT_SURVEILLANCE_ZONES = Object.freeze([
+    Object.freeze({ id: "civic", minX: -256, maxX: -156, minZ: -120, maxZ: 36 }),
+    Object.freeze({ id: "gateway", minX: -174, maxX: -70, minZ: -118, maxZ: 18 }),
+    Object.freeze({ id: "market", minX: -102, maxX: 25, minZ: -68, maxZ: 23 })
+  ]);
+  var LAST_KNOWN_TICKS = Math.round(1.25 / STEP);
+  var SEARCH_TICKS = Math.round(6 / STEP);
+  var ELIGIBLE_TICKS = Math.ceil(1 / STEP);
+  var LOSS_GRACE_TICKS = Math.round(3 / STEP);
+  var FADE_TICKS = Math.round(2.4 / STEP);
+  function resolveSurveillanceZones(zones) {
+    if (!Array.isArray(zones)) throw new TypeError("surveillanceZones must be an array");
+    if (zones.length > 16) throw new RangeError("surveillanceZones allows at most 16 zones");
+    const resolved = [], ids = /* @__PURE__ */ new Set();
+    for (const zone of zones) {
+      if (!zone || Object.getPrototypeOf(zone) !== Object.prototype || Reflect.ownKeys(zone).length !== zoneFields.length || !zoneFields.every((key3) => Object.hasOwn(zone, key3)))
+        throw new TypeError("Each surveillance zone needs exactly id, minX, maxX, minZ, and maxZ");
+      const { id: id2, minX, maxX, minZ, maxZ } = zone;
+      if (typeof id2 !== "string" || !id2.trim() || id2.length > 64 || ids.has(id2))
+        throw new TypeError("Each surveillance zone needs a unique non-blank string id of at most 64 characters");
+      if (![minX, maxX, minZ, maxZ].every(Number.isFinite) || !(minX < maxX && minZ < maxZ))
+        throw new RangeError("Surveillance zone bounds must be finite and strictly ordered");
+      ids.add(id2);
+      resolved.push(Object.freeze({ id: id2, minX, maxX, minZ, maxZ }));
+    }
+    return Object.freeze(resolved);
+  }
+  function createDispatchResponse() {
+    return {
+      state: "LOST",
+      zoneIds: noZones,
+      lastReportTick: null,
+      lastSampleTick: null,
+      mobileTrackTicks: 0,
+      escapeEligible: false
+    };
+  }
+  function isDispatchTracked(response) {
+    const state = response?.dispatch?.state;
+    return state === "ZONE_TRACKED" || state === "VISUALLY_SPOTTED";
+  }
+  var active = (unit2) => unit2.health > 0 && unit2.aiState !== "WRECKED";
+  function mobileNearby(patrols, player) {
+    for (const unit2 of patrols) {
+      if (active(unit2) && unit2.aiState !== "ROADBLOCK" && unit2.previous && Math.abs(unit2.speed) >= 3 && distance(unit2, unit2.previous) >= 3 * STEP - 1e-8 && distance(unit2, player) <= 65) return true;
+    }
+    return false;
+  }
+  function updateDispatchTracking(world2, initial) {
+    const { player, pursuit, tick } = world2, { response, gta } = pursuit;
+    const d = response.dispatch, wasTracked = isDispatchTracked(response);
+    const { x, z, heading: heading2, speed } = player;
+    const zoneIds = [];
+    for (const zone of gta.config.surveillanceZones)
+      if (x >= zone.minX && x <= zone.maxX && z >= zone.minZ && z <= zone.maxZ)
+        zoneIds.push(zone.id);
+    d.zoneIds = zoneIds.length ? Object.freeze(zoneIds) : noZones;
+    const tracked = zoneIds.length > 0 || response.unitsInContact > 0;
+    if (!d.escapeEligible && (initial || d.lastSampleTick !== tick)) {
+      const qualifyingStep = !initial && d.lastSampleTick === tick - 1 && tracked && mobileNearby(pursuit.patrols, player);
+      d.mobileTrackTicks = qualifyingStep ? d.mobileTrackTicks + 1 : 0;
+      d.escapeEligible = d.mobileTrackTicks >= ELIGIBLE_TICKS;
+    }
+    d.lastSampleTick = tick;
+    if (tracked) {
+      const sin = Math.sin(heading2), cos = Math.cos(heading2), slip = player.gtaSlipMps ?? 0;
+      response.lastSeen = Object.freeze({
+        x,
+        z,
+        heading: heading2,
+        speed,
+        tick,
+        vx: sin * speed + cos * slip,
+        vz: cos * speed - sin * slip
+      });
+      d.lastReportTick = tick;
+      d.state = zoneIds.length ? "ZONE_TRACKED" : "VISUALLY_SPOTTED";
+      response.stage = "contact";
+      response.lostAtTick = response.clearAtTick = null;
+      response.clearProgress = 0;
+      return !initial && !wasTracked ? "reacquired" : null;
+    }
+    response.lostAtTick ??= tick;
+    const age = tick - response.lostAtTick;
+    d.state = !response.lastSeen || age >= SEARCH_TICKS ? "LOST" : age >= LAST_KNOWN_TICKS ? "SEARCHING" : "LAST_KNOWN";
+    response.stage = "search";
+    return wasTracked ? "contact-lost" : null;
+  }
+  function separated(player, pursuit) {
+    if (distance(player, pursuit.playerStart) < 45 || distance(player, pursuit.response.lastSeen) < 32)
+      return false;
+    for (const unit2 of pursuit.patrols)
+      if (active(unit2) && distance(player, unit2) < 28) return false;
+    return true;
+  }
+  function updateDispatchEscape(world2, tracked) {
+    const { player, pursuit, tick } = world2, { response, gta } = pursuit;
+    if (tracked) {
+      gta.lostTicks = 0;
+      gta.fadeStars = pursuit.wantedLevel;
+      return;
+    }
+    gta.lostTicks = tick - (response.lostAtTick ?? tick);
+    if (!response.dispatch.escapeEligible || !response.lastSeen || !separated(player, pursuit)) {
+      response.clearAtTick = null;
+      response.clearProgress = 0;
+      pursuit.wantedLevel = gta.fadeStars;
+      return;
+    }
+    response.clearAtTick ??= tick;
+    const fading = Math.max(0, tick - response.clearAtTick - LOSS_GRACE_TICKS);
+    const stars = gta.fadeStars;
+    const wanted = Math.max(0, stars - Math.floor(fading / FADE_TICKS));
+    if (wanted < pursuit.wantedLevel) gta.heat = 0;
+    pursuit.wantedLevel = wanted;
+    response.stage = fading > 0 ? "clearing" : "search";
+    response.clearProgress = clamp2(fading / (FADE_TICKS * stars), 0, 1);
   }
 
   // src/core/city-encounters.js
@@ -35083,8 +35287,8 @@
   function laneAt2(world2, actor) {
     return world2.drivingRoads.find((road4) => span(road4, actor) >= road4.min && span(road4, actor) <= road4.max && Math.abs(cross(road4, actor) - road4.fixed) < road4.width / 2 && Math.abs(Math.sin(actor.heading - (road4.axis === "z" ? 0 : Math.PI / 2))) < 0.45);
   }
-  function ordered(rng, candidates) {
-    return candidates.map((candidate) => ({ candidate, order: rng.next() })).sort((a, b) => a.order - b.order).map((result) => result.candidate);
+  function ordered(rng, candidates2) {
+    return candidates2.map((candidate) => ({ candidate, order: rng.next() })).sort((a, b) => a.order - b.order).map((result) => result.candidate);
   }
   function vehicleEvent(kind, world2, lead, road4, follower = null) {
     const now4 = world2.tick, rng = world2.cityEncounters.rng;
@@ -35111,18 +35315,18 @@
     const civilians = nearby.filter((actor) => actor !== player && actor.type === "vehicle" && actor.pursuitRole !== "police" && actor.path.length > actor.cursor + 3);
     for (const actor of ordered(state.rng, civilians)) {
       if (state.capByActor.has(actor.id) || actor.speed < (kind === "side-street-tuktuk" ? 0.75 : 1.8)) continue;
-      const road4 = laneAt2(world2, actor), forward2 = longitudinal(player, actor);
+      const road4 = laneAt2(world2, actor), forward3 = longitudinal(player, actor);
       if (!road4) continue;
       if (kind === "curb-pickup") {
-        if (!["van", "taxi"].includes(actor.kind) || forward2 < 6 || nearZone(world2, actor, 4) || road4.width < 5.5) continue;
+        if (!["van", "taxi"].includes(actor.kind) || forward3 < 6 || nearZone(world2, actor, 4) || road4.width < 5.5) continue;
         return vehicleEvent(kind, world2, actor, road4);
       }
       if (kind === "traffic-wave") {
-        if (road4.zone !== "avenue" || forward2 < 7 || nearZone(world2, actor, 4)) continue;
+        if (road4.zone !== "avenue" || forward3 < 7 || nearZone(world2, actor, 4)) continue;
         const follower = civilians.concat(player).find((other) => other !== actor && other.speed > 1.3 && longitudinal(actor, other) < -5 && longitudinal(actor, other) > -25 && lateral(actor, other) < 1.6 && Math.abs(angleDelta(actor.heading, other.heading)) < 0.32);
         if (follower) return vehicleEvent(kind, world2, actor, road4, follower);
       } else if (kind === "side-street-tuktuk") {
-        if (actor.kind !== "tuktuk" || road4.axis === playerRoad.axis || forward2 < -3 || nearZone(world2, actor)) continue;
+        if (actor.kind !== "tuktuk" || road4.axis === playerRoad.axis || forward3 < -3 || nearZone(world2, actor)) continue;
         const join = world2.junctions.find((node5) => longitudinal(actor, node5) > 5 && longitudinal(actor, node5) < 19 && lateral(actor, node5) < road4.width / 2 && longitudinal(player, node5) > 5 && longitudinal(player, node5) < 37 && lateral(player, node5) < playerRoad.width / 2);
         if (join && actor.path.slice(actor.cursor, actor.cursor + 65).some((point4) => distance(join, point4) < 4))
           return { ...vehicleEvent(kind, world2, actor, road4), join };
@@ -35164,13 +35368,13 @@
     if (!road4 || road4.width < 5.5) return null;
     const yaw = road4.axis === "z" ? 0 : Math.PI / 2;
     const ahead = angleDelta(player.heading, yaw);
-    const direction2 = Math.cos(ahead) > 0 ? 1 : -1;
+    const direction3 = Math.cos(ahead) > 0 ? 1 : -1;
     const minimum = 17 + Math.abs(player.speed) * 0.55 + player.speed ** 2 / 7;
     for (const offset3 of ordered(state.rng, [0, 3, 6, 9, 12])) {
-      const along2 = span(road4, player) + direction2 * (minimum + offset3);
+      const along2 = span(road4, player) + direction3 * (minimum + offset3);
       if (along2 < road4.min + 5 || along2 > road4.max - 5) continue;
       const centre = cross(road4, player);
-      const side = Math.sign(centre - road4.fixed) || direction2;
+      const side = Math.sign(centre - road4.fixed) || direction3;
       const position2 = place(road4, along2, road4.fixed + side * Math.min(road4.width / 2 - 1.2, Math.max(Math.abs(centre - road4.fixed), road4.laneOffsetM) + 0.6));
       const barrier2 = {
         ...position2,
@@ -35295,11 +35499,13 @@
       }
       log(world2, event2, event2.applied ? event2.target && !event2.revealed ? "ended" : "cleared" : "not-observed");
     }
-    if (world2.tick < state.nextTick || world2.pursuit?.phase === "running") return;
+    const pursuing = world2.pursuit?.phase === "running";
+    if (world2.tick < state.nextTick || pursuing && world2.pursuit.gta?.config.ruleset !== DISPATCH_RULESET) return;
     state.nextTick = world2.tick + seconds(world2.config.scenarioInterval * state.rng.range(0.8, 1.25));
     if (Math.abs(world2.player.speed) < 0.5 || state.active.length >= (world2.config.difficulty >= 4 ? 3 : 1) || state.rng.next() > world2.config.chaos) return;
     const nearby = world2.actorIndex.near(world2.player, 46);
     for (const kind of ordered(state.rng, CITY_ENCOUNTERS)) {
+      if (pursuing && kind === "roadworks") continue;
       const cooldown = kind === "roadworks" ? 11 : 5;
       if (kind === state.lastKind || world2.tick - (state.lastStarted.get(kind) ?? -Infinity) < seconds(cooldown) || state.active.some((event3) => event3.kind === kind)) continue;
       const event2 = kind === "roadworks" ? chooseRoadworks(world2) : kind === "curb-crossing" ? chooseCrossing(world2, nearby) : chooseVehicle(kind, world2, nearby);
@@ -35743,6 +35949,9 @@
   });
   var GTA_MAX_SPEED = 28;
   var GTA_PIN_SECONDS = 2.2;
+  var CIVILIAN_MOTION_PREVIEW = "visible-motion-v2";
+  var PATROL_TRAFFIC_PREVIEW = "visible-traffic-v1";
+  var DISPATCH_DAMAGE_FEEDBACK = "accepted-contact-v1";
   var GTA_UNIT_TYPES = Object.freeze(["patrol", "interceptor", "swat"]);
   var GTA_AI_STATES = Object.freeze([
     "APPROACH",
@@ -35761,20 +35970,39 @@
     interceptor: Object.freeze({ kind: "suv", mass: 1650, health: 78, speed: 25, acceleration: 4.2, steerRate: 1.2 }),
     swat: Object.freeze({ kind: "van", mass: 4200, health: 165, speed: 16, acceleration: 2.55, steerRate: 0.68 })
   });
+  var DISPATCH_LIGHT_PACE = Object.freeze({
+    patrol: Object.freeze({ speed: 31.6, acceleration: 4.5 }),
+    interceptor: Object.freeze({ speed: 33, acceleration: 5.2 })
+  });
+  var DISPATCH_LIGHT_CAP = 34.1;
+  var PURSUIT_LATERAL_ACCEL = 6;
   var PIN_TICKS = Math.round(GTA_PIN_SECONDS / STEP);
-  var FADE_TICKS = Math.round(2.4 / STEP);
+  var FADE_TICKS2 = Math.round(2.4 / STEP);
   var LOST_GRACE_TICKS = Math.round(3 / STEP);
   var GTA_SLIP_LIMIT = 11;
   var GTA_YAW_LIMIT = 4;
   var STUCK_TICKS = Math.round(1.4 / STEP);
   var RECOVER_TICKS = Math.round(0.9 / STEP);
   var headingTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
-  function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wantedLevelStart) {
-    if (!options || Object.getPrototypeOf(options) !== Object.prototype)
+  function resolveGtaChaseConfig(options2 = {}, level = GtaChaseConfig.wantedLevelStart) {
+    if (!options2 || Object.getPrototypeOf(options2) !== Object.prototype)
       throw new TypeError("GTA chase config must be a plain object");
-    for (const key3 of Object.keys(options))
-      if (!Object.hasOwn(GtaChaseConfig, key3)) throw new TypeError(`Unknown GTA chase config field: ${key3}`);
-    const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options };
+    for (const key3 of Object.keys(options2))
+      if (!Object.hasOwn(GtaChaseConfig, key3) && !["ruleset", "surveillanceZones", "civilianCrossingPreview", "patrolTrafficPreview", "damageFeedback"].includes(key3))
+        throw new TypeError(`Unknown GTA chase config field: ${key3}`);
+    const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options2 };
+    if (Object.hasOwn(config, "ruleset") && config.ruleset !== "legacy" && config.ruleset !== DISPATCH_RULESET)
+      throw new RangeError("Unknown GTA chase ruleset");
+    if (config.ruleset === DISPATCH_RULESET) {
+      config.surveillanceZones = Object.hasOwn(config, "surveillanceZones") ? resolveSurveillanceZones(config.surveillanceZones) : DEFAULT_SURVEILLANCE_ZONES;
+    } else if (Object.hasOwn(config, "surveillanceZones"))
+      throw new TypeError(`surveillanceZones requires ruleset "${DISPATCH_RULESET}"`);
+    if (Object.hasOwn(config, "civilianCrossingPreview") && (config.ruleset !== DISPATCH_RULESET || typeof config.civilianCrossingPreview !== "boolean" && config.civilianCrossingPreview !== CIVILIAN_MOTION_PREVIEW))
+      throw new TypeError(`civilianCrossingPreview requires a boolean or "${CIVILIAN_MOTION_PREVIEW}" and ruleset "${DISPATCH_RULESET}"`);
+    if (Object.hasOwn(config, "patrolTrafficPreview") && (config.ruleset !== DISPATCH_RULESET || config.patrolTrafficPreview !== PATROL_TRAFFIC_PREVIEW))
+      throw new TypeError(`patrolTrafficPreview requires "${PATROL_TRAFFIC_PREVIEW}" and ruleset "${DISPATCH_RULESET}"`);
+    if (Object.hasOwn(config, "damageFeedback") && (config.ruleset !== DISPATCH_RULESET || config.damageFeedback !== DISPATCH_DAMAGE_FEEDBACK))
+      throw new TypeError(`damageFeedback requires "${DISPATCH_DAMAGE_FEEDBACK}" and ruleset "${DISPATCH_RULESET}"`);
     for (const key3 of ["wantedLevelStart", "wantedLevelMax", "maxActivePatrols"]) {
       const min = key3 === "maxActivePatrols" ? 0 : 1, max = key3 === "maxActivePatrols" ? 32 : 5;
       if (!Number.isInteger(config[key3]) || config[key3] < min || config[key3] > max)
@@ -35796,6 +36024,7 @@
     return Object.freeze(config);
   }
   function initializeGtaPursuit(state, player, config) {
+    const dispatch = config.ruleset === DISPATCH_RULESET;
     state.wantedLevel = config.wantedLevelStart;
     state.stepEvents = [];
     state.gta = {
@@ -35803,7 +36032,7 @@
       normalMaxSpeed: player.maxSpeed,
       serial: 0,
       pinnedTicks: 0,
-      fadeStars: 0,
+      fadeStars: dispatch ? state.wantedLevel : 0,
       lostTicks: 0,
       roadblock: null,
       heat: 0,
@@ -35811,12 +36040,15 @@
       nextRoadblockTick: 0,
       nextSquadTick: 0
     };
+    if (dispatch) state.response.dispatch = createDispatchResponse();
   }
   function initializeGtaDurability(actor, maxHealth, massKg) {
     Object.assign(actor, { health: maxHealth, maxHealth, gtaMassKg: massKg, gtaSlipMps: 0, gtaYawRate: 0 });
   }
   function initializeGtaPatrol(car2, unitType, state) {
     const profile = GTA_PATROL_PROFILES[unitType];
+    const { config } = state.gta;
+    const faster = config.ruleset === DISPATCH_RULESET && DISPATCH_LIGHT_PACE[unitType];
     car2.unitType = unitType;
     car2.aiState = "APPROACH";
     car2.squadRole = "SUPPORT";
@@ -35828,41 +36060,119 @@
       car2.width = 2.1;
     }
     car2.spec = {
-      acceleration: profile.acceleration,
+      acceleration: faster?.acceleration ?? profile.acceleration,
       steerRate: profile.steerRate,
       wheelbase: unitType === "swat" ? 3.15 : VEHICLE.wheelbase
     };
-    car2.maxSpeed = profile.speed * state.gta.config.npcSpeedMultiplier;
+    car2.maxSpeed = faster ? Math.min(DISPATCH_LIGHT_CAP, faster.speed * config.npcSpeedMultiplier) : profile.speed * config.npcSpeedMultiplier;
     car2.gtaAI = { order: state.gta.serial, nextPlan: 0, stuckTicks: 0, behindTicks: 0 };
     initializeGtaDurability(car2, profile.health, profile.mass);
   }
-  function gtaOffset(from, forward2, right = 0) {
+  function gtaOffset(from, forward3, right = 0) {
     const sin = Math.sin(from.heading), cos = Math.cos(from.heading);
-    return { x: from.x + forward2 * sin + right * cos, z: from.z + forward2 * cos - right * sin };
+    return { x: from.x + forward3 * sin + right * cos, z: from.z + forward3 * cos - right * sin };
   }
   function gtaLocal(from, to) {
     const dx = to.x - from.x, dz = to.z - from.z, sin = Math.sin(from.heading), cos = Math.cos(from.heading);
     return { forward: dx * sin + dz * cos, right: dx * cos - dz * sin };
   }
-  function directCommand(car2, aim, pace, steerBias = 0) {
+  function directCommand(car2, aim, pace, steerBias = 0, dispatch = false) {
     const error = angleDelta(headingTo(car2, aim), car2.heading);
     const steer = clamp2(error * 0.91 + steerBias, -VEHICLE.maxSteer, VEHICLE.maxSteer);
     const curvature = Math.abs(Math.tan(steer)) / car2.spec.wheelbase;
-    return { steer, targetSpeed: Math.min(car2.maxSpeed, pace, Math.sqrt(6 / Math.max(8e-3, curvature))) };
+    const curveSpeed = Math.sqrt(PURSUIT_LATERAL_ACCEL / (dispatch ? curvature : Math.max(8e-3, curvature)));
+    return { steer, targetSpeed: Math.min(car2.maxSpeed, pace, curveSpeed) };
+  }
+  function recoveryBlockers(world2, car2) {
+    const { player, pursuit } = world2;
+    const blockers = world2.statics.concat(world2.actorIndex.near(car2, 9).filter((body2) => body2 !== car2 && body2 !== player));
+    if (isDispatchTracked(pursuit.response)) {
+      blockers.push({ ...vehicleProbe(player, 0), ...pursuit.response.lastSeen });
+    }
+    return blockers;
+  }
+  function projectRecovery(world2, car2, command, steps, blockers) {
+    let pose6 = { ...vehicleProbe(car2, car2.speed), gtaSlipMps: car2.gtaSlipMps, gtaYawRate: car2.gtaYawRate };
+    for (let i = 0; i < steps; i++) {
+      const next = integrateVehicle(pose6, command, STEP);
+      integrateGtaSlip(pose6, next);
+      if (!sweepSafe(pose6, next, blockers, world2.roads).safe) return null;
+      pose6 = next;
+    }
+    return pose6;
+  }
+  function chooseDispatchRecovery(world2, car2) {
+    const blockers = recoveryBlockers(world2, car2);
+    let best = null, bestScore = -Infinity;
+    for (const targetSpeed of [2.8, -2.35]) for (const steer of [0, -0.5, 0.5]) {
+      const command = { steer, targetSpeed, reason: "RECOVER" };
+      const pose6 = projectRecovery(world2, car2, command, RECOVER_TICKS, blockers);
+      if (!pose6) continue;
+      let alignment = 0;
+      for (const road4 of world2.drivingRoads) {
+        if (road4.parkingBay || road4.supportApron || !pointOnRoad(pose6, [road4])) continue;
+        const direction3 = road4.axis === "x" ? Math.sin(pose6.heading) : Math.cos(pose6.heading);
+        alignment = Math.max(alignment, road4.flow ? direction3 * road4.flow : Math.abs(direction3));
+      }
+      const score2 = alignment * 4 + distance(car2, pose6) * 0.2 + (targetSpeed > 0 ? 0.08 : 0);
+      if (score2 > bestScore) {
+        best = command;
+        bestScore = score2;
+      }
+    }
+    return best;
+  }
+  function usesCheckedRecovery(pursuit) {
+    return Boolean(pursuit.response.dispatch) && pursuit.wantedLevel >= 3;
   }
   function trackGtaPatrolProgress(world2, car2, command, moved) {
     const ai = car2.gtaAI;
     if (isGtaStationary(car2) || car2.aiState === "RECOVER") return;
-    ai.stuckTicks = command.targetSpeed > 0.5 && moved / STEP < 0.5 ? ai.stuckTicks + 1 : 0;
+    const { pursuit } = world2;
+    const checked = usesCheckedRecovery(pursuit);
+    const noRoute = checked && command.needsTrackedRecovery && isDispatchTracked(pursuit.response);
+    ai.stuckTicks = (command.targetSpeed > 0.5 || noRoute) && moved / STEP < 0.5 ? ai.stuckTicks + 1 : 0;
     if (ai.stuckTicks <= STUCK_TICKS) return;
+    ai.stuckTicks = 0;
+    ai.checkedRecovery = checked ? chooseDispatchRecovery(world2, car2) : null;
+    if (checked && !ai.checkedRecovery) return;
     ai.resumeState = car2.aiState;
     ai.recoverUntil = world2.tick + 1 + RECOVER_TICKS;
     ai.counterSteer = -0.24 * (Math.sign(car2.steer) || (ai.order % 2 ? 1 : -1));
-    ai.stuckTicks = 0;
     ai.commitUntil = null;
     car2.aiState = "RECOVER";
   }
-  function routeCommand(world2, car2, aim, pace, planRoute, steerBias) {
+  function dispatchPathCommand(car2, pace, steerBias, arrivalSpeed) {
+    const { path } = car2;
+    const follow = followPath(car2, path, car2.cursor, true);
+    const steer = clamp2(follow.steer + steerBias, -VEHICLE.maxSteer, VEHICLE.maxSteer);
+    const curvature = Math.abs(Math.tan(steer)) / car2.spec.wheelbase;
+    let targetSpeed = Math.min(car2.maxSpeed, pace, Math.sqrt(PURSUIT_LATERAL_ACCEL / curvature));
+    const braking = car2.spec.braking ?? VEHICLE.braking;
+    const margin = 2;
+    const horizon = margin + targetSpeed ** 2 / (2 * braking);
+    let remaining = 0;
+    for (let i = follow.cursor; i < path.length - 1; i++) {
+      const a = path[i], b = path[i + 1], dx = b.x - a.x, dz = b.z - a.z;
+      const length = Math.hypot(dx, dz);
+      if (!length) continue;
+      const used = i === follow.cursor ? clamp2(((car2.x - a.x) * dx + (car2.z - a.z) * dz) / length, 0, length) : 0;
+      remaining += length - used;
+      if (remaining > horizon) break;
+      const c = path[i + 2];
+      const available = 2 * braking * Math.max(0, remaining - margin);
+      if (!c) {
+        targetSpeed = Math.min(targetSpeed, Math.sqrt(arrivalSpeed ** 2 + available));
+      } else {
+        const nextLength = distance(b, c);
+        const bend = Math.abs(angleDelta(headingTo(b, c), headingTo(a, b))) / Math.max(0.1, (length + nextLength) / 2);
+        if (bend > 3e-3)
+          targetSpeed = Math.min(targetSpeed, Math.sqrt(PURSUIT_LATERAL_ACCEL / bend + available));
+      }
+    }
+    return { cursor: follow.cursor, remaining, steer, targetSpeed };
+  }
+  function routeCommand(world2, car2, aim, pace, planRoute, steerBias, dispatchArrivalSpeed = null, tracked = false) {
     const ai = car2.gtaAI;
     if (world2.tick >= ai.nextPlan) {
       ai.nextPlan = world2.tick + (car2.path.length ? 48 : 65) + Math.floor(car2.phase * 17);
@@ -35872,35 +36182,57 @@
       }
     }
     if (car2.path.length > 1) {
-      const command = followPath(car2, car2.path, car2.cursor);
-      car2.cursor = command.cursor;
-      if (command.remaining >= 1.5) return {
-        steer: clamp2(command.steer + steerBias, -VEHICLE.maxSteer, VEHICLE.maxSteer),
-        targetSpeed: Math.min(pace, car2.maxSpeed, Math.max(2, command.targetSpeed * 1.25))
-      };
+      if (dispatchArrivalSpeed !== null) {
+        const { cursor, remaining, steer, targetSpeed } = dispatchPathCommand(car2, pace, steerBias, dispatchArrivalSpeed);
+        car2.cursor = cursor;
+        if (remaining >= 1.5) return { steer, targetSpeed };
+      } else {
+        const command = followPath(car2, car2.path, car2.cursor);
+        car2.cursor = command.cursor;
+        if (command.remaining >= 1.5) return {
+          steer: clamp2(command.steer + steerBias, -VEHICLE.maxSteer, VEHICLE.maxSteer),
+          targetSpeed: Math.min(pace, car2.maxSpeed, Math.max(2, command.targetSpeed * 1.25))
+        };
+      }
       car2.path = [];
       ai.nextPlan = world2.tick + 1;
     }
     const next = gtaOffset(car2, 3);
     const aligned = Math.abs(angleDelta(headingTo(car2, aim), car2.heading)) < 1;
-    return pointOnRoad(next, world2.drivingRoads) && aligned ? directCommand(car2, aim, Math.min(3.2, pace), steerBias) : { steer: 0, targetSpeed: 0 };
+    return pointOnRoad(next, world2.drivingRoads) && aligned ? directCommand(car2, aim, Math.min(3.2, pace), steerBias, dispatchArrivalSpeed !== null) : { steer: 0, targetSpeed: 0, ...dispatchArrivalSpeed !== null && tracked ? { needsTrackedRecovery: true } : {} };
   }
   function gtaPatrolCommand(world2, car2, planRoute, canDriveDirect, steerBias) {
     const { pursuit: s, tick } = world2, { config } = s.gta, ai = car2.gtaAI;
     if (car2.aiState === "RECOVER") {
-      if (tick < ai.recoverUntil) return { steer: ai.counterSteer, targetSpeed: -2.35, reason: "RECOVER" };
+      if (tick < ai.recoverUntil) {
+        if (!ai.checkedRecovery) return { steer: ai.counterSteer, targetSpeed: -2.35, reason: "RECOVER" };
+        return projectRecovery(world2, car2, ai.checkedRecovery, 6, recoveryBlockers(world2, car2)) ? ai.checkedRecovery : { steer: 0, targetSpeed: 0, reason: "RECOVER" };
+      }
       car2.aiState = ai.resumeState;
+      ai.checkedRecovery = null;
       car2.path = [];
       ai.nextPlan = 0;
     }
     const seen = s.response.sightedBy.has(car2);
+    const dispatch = Boolean(s.response.dispatch);
+    const tracked = dispatch ? isDispatchTracked(s.response) : seen;
+    if (dispatch && !s.response.lastSeen) {
+      ai.commitUntil = null;
+      car2.aiState = "SEARCH";
+      return { steer: 0, targetSpeed: 0, reason: "SEARCH" };
+    }
     const report = s.response.lastSeen ?? s.playerStart;
     const range = distance(car2, report), rel = gtaLocal(report, car2);
-    const pace = Math.min(car2.maxSpeed, Math.max(5.5, Math.abs(report.speed) + 2.8 + range * 0.15) * config.npcSpeedMultiplier);
+    const reportSpeed = Math.abs(report.speed);
+    const pace = Math.min(car2.maxSpeed, Math.max(
+      5.5,
+      (dispatch && tracked ? reportSpeed * 1.14 : reportSpeed) + 2.8 + range * 0.15
+    ) * config.npcSpeedMultiplier);
     let state, aim, command;
-    if (!seen) {
-      ai.commitUntil = null;
-      state = s.gta.lostTicks >= 75 || range < 7 ? "SEARCH" : "APPROACH";
+    if (!seen) ai.commitUntil = null;
+    if (!tracked) {
+      const searching = dispatch ? s.response.dispatch.state !== "LAST_KNOWN" : s.gta.lostTicks >= 75;
+      state = searching || range < 7 ? "SEARCH" : "APPROACH";
       const sector2 = (ai.order + Math.floor(s.gta.lostTicks / 210)) % 4;
       aim = state === "SEARCH" ? gtaOffset(report, sector2 < 2 ? 13 : -13, sector2 % 2 ? 9 : -9) : report;
     } else {
@@ -35920,14 +36252,14 @@
       } else if (s.wantedLevel >= 3 && car2.squadRole === "SUPPORT") {
         aim = gtaOffset(report, lead - (4 + ai.order % 4 * 3), (ai.order % 2 ? 1 : -1) * 2.5);
       }
-      const pit = config.enablePitManeuver && s.wantedLevel >= 2 && car2.unitType !== "swat" && car2.squadRole === "PRIMARY_CHASER" && report.speed > 2.8 && rel.forward >= -4.5 && rel.forward < -0.5 && Math.abs(rel.right) > 1.2 && Math.abs(rel.right) < 4.8 && Math.abs(car2.speed - report.speed) < 4.5 && Math.abs(angleDelta(report.heading, car2.heading)) < 0.57;
+      const pit = seen && config.enablePitManeuver && s.wantedLevel >= 2 && car2.unitType !== "swat" && car2.squadRole === "PRIMARY_CHASER" && report.speed > 2.8 && rel.forward >= -4.5 && rel.forward < -0.5 && Math.abs(rel.right) > 1.2 && Math.abs(rel.right) < 4.8 && Math.abs(car2.speed - report.speed) < 4.5 && Math.abs(angleDelta(report.heading, car2.heading)) < 0.57;
       const ramAim = gtaOffset(report, clamp2(report.speed * 0.28, -3, 5));
-      const ram = config.enableRamming && s.wantedLevel >= 4 && (car2.unitType === "swat" || s.wantedLevel === 5 && car2.squadRole !== "PRIMARY_CHASER") && car2.speed >= 5 && range <= 19 && rel.forward < 3 && Math.abs(angleDelta(headingTo(car2, ramAim), car2.heading)) < 0.48 && canDriveDirect(world2, car2, ramAim, true);
+      const ram = seen && config.enableRamming && s.wantedLevel >= 4 && (car2.unitType === "swat" || s.wantedLevel === 5 && car2.squadRole !== "PRIMARY_CHASER") && car2.speed >= 5 && range <= 19 && rel.forward < 3 && Math.abs(angleDelta(headingTo(car2, ramAim), car2.heading)) < 0.48 && canDriveDirect(world2, car2, ramAim, true);
       if (pit) {
         state = "PIT_MANEUVER";
         aim = gtaOffset(report, Math.max(2.5, report.speed * 0.48), Math.sign(rel.right) * 0.28);
-        command = directCommand(car2, aim, report.speed + 3);
-      } else if (ai.commitUntil > tick || ram && tick >= (ai.nextRam ?? 0)) {
+        command = directCommand(car2, aim, report.speed + 3, 0, dispatch);
+      } else if (seen && (ai.commitUntil > tick || ram && tick >= (ai.nextRam ?? 0))) {
         if (!(ai.commitUntil > tick)) {
           ai.commitUntil = tick + 38;
           ai.nextRam = tick + 105;
@@ -35935,7 +36267,7 @@
         }
         if (canDriveDirect(world2, car2, ai.ramAim, true)) {
           state = "RAM";
-          command = directCommand(car2, ai.ramAim, car2.maxSpeed);
+          command = directCommand(car2, ai.ramAim, car2.maxSpeed, 0, dispatch);
         } else ai.commitUntil = null;
       }
       if (!command && canDriveDirect(world2, car2, aim)) {
@@ -35944,7 +36276,7 @@
           car2.cursor = 0;
           ai.nextPlan = 0;
         }
-        command = directCommand(car2, aim, pace, steerBias);
+        command = directCommand(car2, aim, pace, steerBias, dispatch);
       }
     }
     if (!command) {
@@ -35954,7 +36286,16 @@
         ai.nextPlan = 0;
         ai.routeState = state;
       }
-      command = routeCommand(world2, car2, aim, pace, planRoute, steerBias);
+      command = routeCommand(
+        world2,
+        car2,
+        aim,
+        pace,
+        planRoute,
+        steerBias,
+        dispatch ? tracked ? reportSpeed : 0 : null,
+        tracked
+      );
     }
     car2.aiState = state;
     return { ...command, reason: state };
@@ -35978,6 +36319,11 @@
   function mass(actor) {
     return actor.gtaMassKg ?? (actor.type === "static" ? Infinity : actor.type === "pedestrian" ? actor.body?.massKg ?? 75 : actor.kind === "tuktuk" ? 620 : 1450);
   }
+  function contactEvidence(a, b, closingSpeed2) {
+    const inverseMass = 1 / mass(a) + 1 / mass(b);
+    const energyJ = inverseMass > 0 ? 0.5 * closingSpeed2 ** 2 / inverseMass : 0;
+    return { energyJ, severity: clamp2(energyJ / 42e3, 0, 1) };
+  }
   function gtaVelocity(actor, heading2 = actor.heading) {
     const speed = actor.speed ?? 0, slip = actor.gtaSlipMps ?? 0;
     const s = Math.sin(heading2 ?? 0), c = Math.cos(heading2 ?? 0);
@@ -36000,10 +36346,10 @@
     const actor = motion.a;
     if (isGtaStationary(actor)) return;
     const sin = Math.sin(pose6.heading), cos = Math.cos(pose6.heading);
-    const forward2 = delta * (nx * sin + nz * cos), lateral2 = delta * (nx * cos - nz * sin);
-    const spin = (arm.forward * lateral2 - arm.lateral * forward2) / (actor.length ** 2 / 8);
+    const forward3 = delta * (nx * sin + nz * cos), lateral2 = delta * (nx * cos - nz * sin);
+    const spin = (arm.forward * lateral2 - arm.lateral * forward3) / (actor.length ** 2 / 8);
     motion.impulse = {
-      speed: clamp2(velocity.x * sin + velocity.z * cos + forward2, -(actor.spec?.reverseSpeed ?? VEHICLE.reverseSpeed) * 2, actor.maxSpeed + 5),
+      speed: clamp2(velocity.x * sin + velocity.z * cos + forward3, -(actor.spec?.reverseSpeed ?? VEHICLE.reverseSpeed) * 2, actor.maxSpeed + 5),
       gtaSlipMps: clamp2(velocity.x * cos - velocity.z * sin + lateral2, -GTA_SLIP_LIMIT, GTA_SLIP_LIMIT),
       gtaYawRate: clamp2((motion.impulse?.gtaYawRate ?? motion.next.gtaYawRate ?? 0) + spin * (pit ? 2.6 : 1), -GTA_YAW_LIMIT, GTA_YAW_LIMIT)
     };
@@ -36024,19 +36370,35 @@
     }
     return damage2;
   }
-  function applyGtaContact(world2, a, b, pa, pb, normal, sweptClosing, fresh) {
+  function applyGtaContact(world2, a, b, pa, pb, normal2, sweptClosing, fresh) {
     const { player, pursuit } = world2;
+    const dispatch = Boolean(pursuit.response.dispatch);
     const ownedA = a.a === player || pursuit.patrols.has(a.a);
     const ownedB = b.a === player || pursuit.patrols.has(b.a);
-    if (!ownedA && !ownedB) return;
+    if (!ownedA && !ownedB && (!dispatch || !fresh)) return;
     const va = velocityAtContact(a, pa), vb = velocityAtContact(b, pb);
-    const { x, z } = normal;
+    const { x, z } = normal2;
     const closingSpeed2 = Math.max(0, sweptClosing, (va.x - vb.x) * x + (va.z - vb.z) * z);
     const other = a.a === player ? b.a : b.a === player ? a.a : null;
+    if (!other && dispatch && fresh) {
+      const describe = (body2) => ({
+        id: body2.id,
+        type: body2.type,
+        kind: body2.unitType ?? body2.kind ?? body2.type,
+        patrol: pursuit.patrols.has(body2)
+      });
+      emitGtaEvent(world2, "ambient_collision", {
+        first: describe(a.a),
+        second: describe(b.a),
+        closingSpeed: closingSpeed2,
+        ...contactEvidence(a.a, b.a, closingSpeed2)
+      });
+    }
+    if (!ownedA && !ownedB) return;
     const patrol2 = other && pursuit.patrols.has(other);
     const egoPose = a.a === player ? pa : pb, otherPose = a.a === player ? pb : pa;
     const egoArm = other ? leverArm(egoPose, otherPose) : null;
-    const isPit = Boolean(patrol2 && other.aiState === "PIT_MANEUVER" && pursuit.gta.config.enablePitManeuver && closingSpeed2 > 0.65 && egoArm.forward < -egoPose.length * 0.14 && Math.abs(x * Math.cos(egoPose.heading) - z * Math.sin(egoPose.heading)) > 0.65);
+    const isPit = Boolean(patrol2 && other.aiState === "PIT_MANEUVER" && pursuit.gta.config.enablePitManeuver && (!pursuit.response.dispatch || pursuit.response.sightedBy.has(other)) && closingSpeed2 > 0.65 && egoArm.forward < -egoPose.length * 0.14 && Math.abs(x * Math.cos(egoPose.heading) - z * Math.sin(egoPose.heading)) > 0.65);
     const ma = mass(a.a), mb = mass(b.a);
     const shareA = Number.isFinite(mb) ? mb / (ma + mb) : 1;
     const shareB = Number.isFinite(ma) ? ma / (ma + mb) : 1;
@@ -36051,22 +36413,30 @@
     if (!other || !(fresh || damageA > 0 || damageB > 0)) return;
     if (fresh && other.gtaRoadblock && closingSpeed2 > 1) pursuit.gta.heat += 0.55;
     const damageToPlayer = a.a === player ? damageA : damageB;
+    const evidence = dispatch ? {
+      actorId: other.id,
+      actorType: other.type,
+      fresh,
+      ...contactEvidence(player, other, closingSpeed2)
+    } : {};
     if (patrol2) emitGtaEvent(world2, "patrol_collision", {
       unitType: other.unitType,
       closingSpeed: closingSpeed2,
       damageToPlayer,
       damageToPatrol: a.a === player ? damageB : damageA,
-      isPit
+      isPit,
+      ...evidence
     });
     else emitGtaEvent(world2, "static_or_civilian_hit", {
       kind: other.gtaRoadblock ? "roadblock" : other.type === "pedestrian" ? "pedestrian" : other.kind ?? other.type,
       closingSpeed: closingSpeed2,
-      damageToPlayer
+      damageToPlayer,
+      ...evidence
     });
   }
   function updateGtaPhase(world2) {
     const { player, pursuit: s } = world2, { gta, response, metrics } = s;
-    const nearby = [...response.closePatrols].filter((unit) => unit.aiState !== "WRECKED");
+    const nearby = [...response.closePatrols].filter((unit2) => unit2.aiState !== "WRECKED");
     const boxed = nearby.some((a, i) => nearby.slice(i + 1).some((b) => {
       const dot2 = (a.x - player.x) * (b.x - player.x) + (a.z - player.z) * (b.z - player.z);
       return dot2 <= 0.5 * distance(a, player) * distance(b, player);
@@ -36074,9 +36444,11 @@
     gta.pinnedTicks = Math.hypot(player.speed, player.gtaSlipMps) < 0.8 && boxed ? Math.min(PIN_TICKS, gta.pinnedTicks + 1) : 0;
     metrics.capturePressureS = gta.pinnedTicks * STEP;
     emitGtaEvent(world2, "pinned_progress", { ratio: gta.pinnedTicks / PIN_TICKS });
-    const from = s.wantedLevel;
-    if (response.unitsInContact) gta.heat += STEP / (13 + (from - 1) * 2);
-    if (gta.heat >= 1 && from < gta.config.wantedLevelMax) {
+    const from = s.wantedLevel, dispatch = response.dispatch;
+    const tracked = dispatch ? isDispatchTracked(response) : response.unitsInContact;
+    if (dispatch && tracked) s.wantedLevel = gta.fadeStars;
+    if (tracked) gta.heat += STEP / (13 + (s.wantedLevel - 1) * 2);
+    if ((!dispatch || tracked) && gta.heat >= 1 && s.wantedLevel < gta.config.wantedLevelMax) {
       s.wantedLevel++;
       gta.heat -= 1;
       gta.lostTicks = 0;
@@ -36085,7 +36457,8 @@
       gta.nextRoadblockTick = Math.min(gta.nextRoadblockTick, world2.tick);
     }
     if (s.wantedLevel === gta.config.wantedLevelMax) gta.heat = 0;
-    if (response.unitsInContact) {
+    if (dispatch) updateDispatchEscape(world2, tracked);
+    else if (response.unitsInContact) {
       gta.lostTicks = 0;
       gta.fadeStars = s.wantedLevel;
       response.clearProgress = 0;
@@ -36093,11 +36466,11 @@
       gta.lostTicks++;
       const fading = Math.max(0, gta.lostTicks - LOST_GRACE_TICKS);
       if (fading) {
-        s.wantedLevel = Math.max(0, gta.fadeStars - Math.floor(fading / FADE_TICKS));
+        s.wantedLevel = Math.max(0, gta.fadeStars - Math.floor(fading / FADE_TICKS2));
         response.stage = "clearing";
         if (s.wantedLevel < from) gta.heat = 0;
       } else response.stage = "search";
-      response.clearProgress = clamp2(fading / (FADE_TICKS * Math.max(1, gta.fadeStars)), 0, 1);
+      response.clearProgress = clamp2(fading / (FADE_TICKS2 * Math.max(1, gta.fadeStars)), 0, 1);
     }
     if (s.wantedLevel !== from) emitGtaEvent(world2, "wanted_changed", { from, to: s.wantedLevel });
     if (player.health <= 0) s.phase = "wrecked";
@@ -36105,6 +36478,7 @@
     else if (s.wantedLevel === 0) {
       s.phase = "escaped";
       metrics.escape = true;
+      if (dispatch) dispatch.state = "ESCAPED";
     } else if (metrics.survivalS >= gta.config.episodeMaxSeconds) s.phase = "timeout";
   }
 
@@ -36123,16 +36497,16 @@
   var ringFor = (order = 0) => Math.min(2, Math.floor(order / SLOTS.length));
   var ageOf = (report, tick) => Math.max(0, tick - (report.tick ?? tick)) * STEP;
   var headingTo2 = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
-  function offset(report, forward2, lateral2) {
+  function offset(report, forward3, lateral2) {
     const s = Math.sin(report.heading), c = Math.cos(report.heading);
-    return { x: report.x + s * forward2 + c * lateral2, z: report.z + c * forward2 - s * lateral2 };
+    return { x: report.x + s * forward3 + c * lateral2, z: report.z + c * forward3 - s * lateral2 };
   }
   function packTactic(order) {
     return slotFor(order).role;
   }
-  function packSpawnBias({ order, forward: forward2, lateral: lateral2, range, alignment, opening, fronts = [] }) {
+  function packSpawnBias({ order, forward: forward3, lateral: lateral2, range, alignment, opening, fronts = [] }) {
     const slot = slotFor(order);
-    const bearing = Math.atan2(lateral2, forward2);
+    const bearing = Math.atan2(lateral2, forward3);
     const ring = ringFor(order);
     const closeFlank = opening && ring === 0 && slot.openingRange !== void 0;
     const desiredRange = closeFlank ? slot.openingRange : slot.range + 2.5 * ring + (opening ? 0 : 2);
@@ -36193,18 +36567,18 @@
     return null;
   }
   function assignGtaSquad(patrols, report) {
-    const slots = [...patrols].filter((unit) => !isGtaStationary(unit)).map((unit) => ({
-      unit,
-      ...gtaLocal(report, unit),
-      previousRole: unit.squadRole,
-      previousSide: unit.squadSide
+    const slots = [...patrols].filter((unit2) => !isGtaStationary(unit2)).map((unit2) => ({
+      unit: unit2,
+      ...gtaLocal(report, unit2),
+      previousRole: unit2.squadRole,
+      previousSide: unit2.squadSide
     }));
-    for (const { unit } of slots) {
-      unit.squadRole = "SUPPORT";
-      unit.squadSide = 0;
+    for (const { unit: unit2 } of slots) {
+      unit2.squadRole = "SUPPORT";
+      unit2.squadSide = 0;
     }
-    const assign = (role, side, forward2, right, typeBias) => {
-      const score2 = (slot) => Math.hypot((slot.forward - forward2) * 0.85, slot.right - right) + typeBias(slot.unit.unitType) - (slot.previousRole === role && slot.previousSide === side ? 1.5 : 0);
+    const assign = (role, side, forward3, right, typeBias) => {
+      const score2 = (slot) => Math.hypot((slot.forward - forward3) * 0.85, slot.right - right) + typeBias(slot.unit.unitType) - (slot.previousRole === role && slot.previousSide === side ? 1.5 : 0);
       slots.sort((a, b) => score2(a) - score2(b) || a.unit.gtaAI.order - b.unit.gtaAI.order);
       const chosen = slots.shift()?.unit;
       if (chosen) {
@@ -36224,8 +36598,8 @@
     let bias = 0;
     for (const other of patrols) {
       if (other === car2 || isGtaStationary(other)) continue;
-      const { forward: forward2, right } = gtaLocal(car2, other);
-      const distance2 = Math.hypot(forward2, right);
+      const { forward: forward3, right } = gtaLocal(car2, other);
+      const distance2 = Math.hypot(forward3, right);
       if (Math.abs(right) > 4.8 || distance2 > 9) continue;
       const side = Math.abs(right) > 0.25 ? Math.sign(right) : car2.gtaAI.order < other.gtaAI.order ? 1 : -1;
       bias -= side * 0.14 * (1 - distance2 / 9);
@@ -36466,6 +36840,88 @@
     };
   }
 
+  // src/core/dispatch-junctions.js
+  function isOnRoad(body2, road4, pad = 0) {
+    const across = road4.axis === "x" ? body2.z : body2.x;
+    return Math.abs(across - road4.fixed) <= road4.width / 2 + pad && body2[road4.axis] >= road4.min - pad && body2[road4.axis] <= road4.max + pad;
+  }
+  function selectDispatchJunction(roads, patrol2, report) {
+    if (!report || Math.abs(report.speed) < 3) return null;
+    const effective = report.speed < 0 ? report.heading + Math.PI : report.heading;
+    const incoming = roads.filter((road5) => !road5.supportApron && !road5.parkingBay && isOnRoad(report, road5)).map((road5) => ({ road: road5, align: road5.axis === "x" ? Math.sin(effective) : Math.cos(effective) })).sort((a, b) => Math.abs(b.align) - Math.abs(a.align))[0];
+    if (!incoming || Math.abs(incoming.align) < 0.86) return null;
+    const { road: road4 } = incoming, direction3 = Math.sign(incoming.align), choices = [];
+    for (const crossing3 of roads) {
+      if (crossing3.axis === road4.axis || crossing3.supportApron || crossing3.parkingBay || crossing3.width < 5 || road4.fixed < crossing3.min || road4.fixed > crossing3.max || crossing3.fixed < road4.min || crossing3.fixed > road4.max || !isOnRoad(patrol2, crossing3, 0.42)) continue;
+      const gap = (crossing3.fixed - report[road4.axis]) * direction3;
+      const crossGap = road4.fixed - patrol2[crossing3.axis], crossSign = Math.sign(crossGap);
+      if (gap < 7 || gap > 70 || Math.abs(crossGap) < 4 || Math.abs(crossGap) > 42 || crossing3.flow && crossing3.flow !== crossSign) continue;
+      const heading2 = districtRoadPose(crossing3, patrol2[crossing3.axis], crossSign).heading;
+      if (Math.abs(angleDelta(heading2, patrol2.heading)) > 0.42) continue;
+      const evidence = Math.abs(report.speed), egoEta = gap / evidence;
+      const intercept = patrol2.squadRole === "INTERCEPTOR";
+      const entryEta = Math.abs(crossGap) / Math.max(5, Math.min(12, Math.abs(patrol2.speed) + 4)) + (intercept ? 2 : 0);
+      if (entryEta > egoEta + (intercept ? 0 : 1.4)) continue;
+      if (intercept && road4.flow && road4.flow !== direction3) continue;
+      const along2 = intercept ? crossing3.fixed + 12 * direction3 : road4.fixed - crossSign * 2.7;
+      const targetRoad = intercept ? road4 : crossing3;
+      const targetSign = intercept ? direction3 : crossSign;
+      if (along2 < targetRoad.min + patrol2.length / 2 || along2 > targetRoad.max - patrol2.length / 2) continue;
+      const goal = { ...districtRoadPose(targetRoad, along2, targetSign), roadId: targetRoad.id };
+      const junction = road4.axis === "x" ? { x: crossing3.fixed, z: road4.fixed } : { x: road4.fixed, z: crossing3.fixed };
+      choices.push({
+        id: `${crossing3.id}:${targetSign}:${road4.id}`,
+        junction,
+        goal,
+        entryEta,
+        egoEta,
+        approach: road4,
+        direction: direction3,
+        role: intercept ? "BLOCK_INTERCEPT" : "FLANK",
+        score: Math.abs(egoEta - entryEta) + gap * 0.015
+      });
+    }
+    choices.sort((a, b) => a.score - b.score || a.id.localeCompare(b.id));
+    return choices[0] ?? null;
+  }
+  function dispatchJunctionStillRelevant(route, report) {
+    const { approach: road4, direction: direction3, junction } = route;
+    const effective = report.speed < 0 ? report.heading + Math.PI : report.heading;
+    const heading2 = districtRoadPose(road4, report[road4.axis], direction3).heading;
+    return isOnRoad(report, road4, 2) && Math.abs(angleDelta(heading2, effective)) < 0.72 && (report[road4.axis] - junction[road4.axis]) * direction3 < 12;
+  }
+  function dispatchRoadblockDetour(map2, ego, road4, direction3, site, blockers) {
+    const progress = (along2) => (along2 - ego[road4.axis]) * direction3;
+    const before = progress(site) - 8;
+    const branches = map2.drivingRoads.filter((branch) => branch.axis !== road4.axis && !branch.supportApron && !branch.parkingBay && branch.fixed >= road4.min && branch.fixed <= road4.max && road4.fixed >= branch.min && road4.fixed <= branch.max && progress(branch.fixed) >= 10 && progress(branch.fixed) <= before);
+    for (const branch of branches) for (const sign2 of branch.flow ? [branch.flow] : [1, -1]) {
+      const along2 = road4.fixed + sign2 * 24;
+      if (along2 <= branch.min + 3 || along2 >= branch.max - 3) continue;
+      const goal = { ...districtRoadPose(branch, along2, sign2), roadId: branch.id };
+      const path = planDistrictRoute(map2, ego, goal);
+      if (path.length < 3 || path.some((point4) => progress(point4[road4.axis]) > before + 3)) continue;
+      let prior = ego;
+      const axle = (ego.spec?.wheelbase ?? 2.6) / 2;
+      let clear = true;
+      for (let i = 1; i < path.length; i++) {
+        const heading2 = Math.atan2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z);
+        const pose6 = {
+          ...ego,
+          heading: heading2,
+          x: path[i].x + axle * Math.sin(heading2),
+          z: path[i].z + axle * Math.cos(heading2)
+        };
+        if (!sweepSafe(prior, pose6, blockers).safe) {
+          clear = false;
+          break;
+        }
+        prior = pose6;
+      }
+      if (clear) return goal;
+    }
+    return null;
+  }
+
   // src/core/pursuit-response.js
   var CONTACT_RANGE_M = 52;
   var ARCADE_CONTACT_RANGE_M = 60;
@@ -36476,7 +36932,7 @@
   var GTA_CLOSE_M = 7.5;
   var GTA_FORWARD_COS = Math.cos(55 * Math.PI / 180);
   var SEPARATION_M = 24;
-  var SEARCH_TICKS = Math.round(2.5 / STEP);
+  var SEARCH_TICKS2 = Math.round(2.5 / STEP);
   var CLEAR_TICKS = Math.round(4.5 / STEP);
   var STAR_TICKS = Math.round(2.4 / STEP);
   var visibilityGeometry = /* @__PURE__ */ new WeakMap();
@@ -36522,6 +36978,19 @@
     });
   }
   var gtaLineClear = unobstructed;
+  function gtaDeploymentHidden(world2, from, body2) {
+    const radius = Math.hypot(body2.width, body2.length) / 2;
+    const range = distance(from, body2);
+    if (range - radius > 55) return true;
+    const { boxes, reach } = staticGeometry(world2);
+    const midpoint = { x: (from.x + body2.x) / 2, z: (from.z + body2.z) / 2 };
+    const footprint = corners(body2);
+    const height = Math.max(from.height ?? 1.8, body2.height ?? 0);
+    return world2.staticIndex.near(midpoint, range / 2 + reach + radius).some((cover) => {
+      const box5 = boxes.get(cover);
+      return box5 && cover.height >= height && footprint.every((point4) => intersects2(from.x, from.z, point4.x - from.x, point4.z - from.z, cover, box5));
+    });
+  }
   function createPursuitResponse() {
     return {
       stage: "search",
@@ -36546,17 +37015,17 @@
     r.sightedBy.clear();
     r.closePatrols.clear();
     let nearest = contactRange;
-    for (const unit of pursuit.patrols) {
-      if (gta && unit.aiState === "WRECKED") continue;
-      const dx = player.x - unit.x, dz = player.z - unit.z;
+    for (const unit2 of pursuit.patrols) {
+      if (gta && (unit2.aiState === "WRECKED" || r.dispatch && unit2.health <= 0)) continue;
+      const dx = player.x - unit2.x, dz = player.z - unit2.z;
       const range = Math.hypot(dx, dz);
       if (range > contactRange) continue;
       const close = range < (gta ? GTA_CLOSE_M : CLOSE_RANGE_M);
-      const ahead = dx * Math.sin(unit.heading) + dz * Math.cos(unit.heading);
+      const ahead = dx * Math.sin(unit2.heading) + dz * Math.cos(unit2.heading);
       const outsideCone = gta ? range > GTA_PROXIMITY_M && ahead < range * GTA_FORWARD_COS : !arcade && !close && ahead < range * FORWARD_CONE_COS;
-      if (outsideCone || !unobstructed(world2, unit, dx, dz, range)) continue;
-      if (close) r.closePatrols.add(unit);
-      r.sightedBy.add(unit);
+      if (outsideCone || !unobstructed(world2, unit2, dx, dz, range)) continue;
+      if (close) r.closePatrols.add(unit2);
+      r.sightedBy.add(unit2);
       nearest = Math.min(range, nearest);
     }
     r.unitsInContact = r.sightedBy.size;
@@ -36566,6 +37035,7 @@
       1
     ) : 0;
     r.pressure = initial ? desired : r.pressure + clamp2(desired - r.pressure, -0.28 * STEP, 0.37 * STEP);
+    if (r.dispatch) return updateDispatchTracking(world2, initial);
     if (r.unitsInContact) {
       r.lastSeen = Object.freeze({ x: player.x, z: player.z, heading: player.heading, speed: player.speed, tick });
       r.stage = "contact";
@@ -36578,8 +37048,8 @@
     if (gta) return before === "contact" ? "contact-lost" : null;
     if (hunt) {
       const report = r.lastSeen ?? pursuit.playerStart;
-      const separated2 = pursuit.metrics.distanceM >= 14 && distance(player, report) >= 18 && [...pursuit.patrols].every((unit) => distance(player, unit) >= 17);
-      if (separated2 && tick - r.lostAtTick >= SEARCH_TICKS) {
+      const separated3 = pursuit.metrics.distanceM >= 14 && distance(player, report) >= 18 && [...pursuit.patrols].every((unit2) => distance(player, unit2) >= 17);
+      if (separated3 && tick - r.lostAtTick >= SEARCH_TICKS2) {
         if (r.clearAtTick === null) {
           r.clearAtTick = tick;
           r.clearInitialStars = pursuit.wantedLevel;
@@ -36595,8 +37065,8 @@
       r.clearProgress = 0;
       return before === "contact" ? "contact-lost" : null;
     }
-    const separated = pursuit.metrics.distanceM >= SEPARATION_M && distance(player, pursuit.playerStart) >= SEPARATION_M;
-    if (tick - r.lostAtTick >= SEARCH_TICKS && separated) {
+    const separated2 = pursuit.metrics.distanceM >= SEPARATION_M && distance(player, pursuit.playerStart) >= SEPARATION_M;
+    if (tick - r.lostAtTick >= SEARCH_TICKS2 && separated2) {
       r.stage = "clearing";
       r.clearAtTick ??= tick;
       r.clearProgress = clamp2((tick - r.clearAtTick) / CLEAR_TICKS, 0, 1);
@@ -36607,9 +37077,243 @@
     r.clearProgress = 0;
     return before === "contact" ? "contact-lost" : null;
   }
-  function pursuitResponseSnapshot({ stage, pressure, clearProgress, unitsInContact }) {
-    return { stage, pressure, clearProgress, unitsInContact };
+  function pursuitResponseSnapshot({ stage, pressure, clearProgress, unitsInContact, dispatch }) {
+    return {
+      stage,
+      pressure,
+      clearProgress,
+      unitsInContact,
+      ...dispatch ? { dispatch: {
+        state: dispatch.state,
+        zoneIds: [...dispatch.zoneIds],
+        lastReportTick: dispatch.lastReportTick
+      } } : {}
+    };
   }
+
+  // src/signal_processing/pursuit-scanner.js
+  var PURSUIT_SCAN_RAYS = 72;
+  var PURSUIT_SCAN_RANGE_M = 48;
+  var PURSUIT_SCAN_TICKS = 6;
+  var PURSUIT_TRACK_TTL_S = 0.5;
+  var RAY_STEP = 2 * Math.PI / PURSUIT_SCAN_RAYS;
+  var PED_RAYS_PER_PRIMARY = 10;
+  var PED_RAYS = PURSUIT_SCAN_RAYS * PED_RAYS_PER_PRIMARY;
+  var PED_RAY_STEP = RAY_STEP / PED_RAYS_PER_PRIMARY;
+  var TRACK_TTL_TICKS = Math.round(PURSUIT_TRACK_TTL_S / STEP);
+  var MAX_TTC_S = 6;
+  var EPS2 = 1e-9;
+  var zeroSmall = (n) => Math.abs(n) < EPS2 ? 0 : n;
+  var direction2 = (angle) => ({
+    right: zeroSmall(Math.sin(angle)),
+    forward: zeroSmall(Math.cos(angle))
+  });
+  var beams = Array.from({ length: PURSUIT_SCAN_RAYS }, (_, i) => direction2(i * RAY_STEP));
+  var pedBeams = Array.from({ length: PED_RAYS }, (_, i) => i % PED_RAYS_PER_PRIMARY ? direction2(i * PED_RAY_STEP) : beams[i / PED_RAYS_PER_PRIMARY]);
+  var priority = { none: 0, civilian: 1, pedestrian: 2, police: 3, static: 4 };
+  function candidates(world2, heading2) {
+    const { player } = world2, c = Math.cos(heading2), s = Math.sin(heading2);
+    const shapes = [];
+    function add(body2, kind) {
+      if (body2 === player) return;
+      const dx = body2.x - player.x, dz = body2.z - player.z;
+      const right = dx * c - dz * s, forward3 = dx * s + dz * c;
+      const circle = kind === "pedestrian";
+      const w = body2.width / 2, l = body2.length / 2;
+      if (!circle && !(w > 0 && l > 0)) return;
+      const radius = circle ? body2.radius : Math.hypot(w, l);
+      if (!Number.isFinite(radius) || !(radius > 0) || !(Math.hypot(dx, dz) <= PURSUIT_SCAN_RANGE_M + radius + EPS2)) return;
+      if (circle) {
+        shapes.push({ kind, radius, right, forward: forward3 });
+      } else {
+        const angle = (body2.heading ?? 0) - heading2;
+        if (!Number.isFinite(angle)) return;
+        const cos = Math.cos(angle), sin = Math.sin(angle);
+        shapes.push({
+          kind,
+          w,
+          l,
+          cos,
+          sin,
+          x: -right * cos + forward3 * sin,
+          z: -right * sin - forward3 * cos
+        });
+      }
+    }
+    for (const body2 of world2.statics) add(body2, "static");
+    for (const body2 of world2.actors) {
+      if (body2.type === "pedestrian" || body2.type === "static") add(body2, body2.type);
+      else if (body2.type === "vehicle")
+        add(body2, body2.pursuitRole === "police" ? "police" : "civilian");
+    }
+    return shapes;
+  }
+  function circleHit({ right, forward: forward3, radius }, r, f) {
+    const cross2 = right * f - forward3 * r;
+    if (Math.abs(cross2) > radius + EPS2) return Infinity;
+    const projection2 = right * r + forward3 * f;
+    const chord = Math.sqrt(Math.max(0, radius * radius - cross2 * cross2));
+    return projection2 + chord < 0 ? Infinity : Math.max(0, projection2 - chord);
+  }
+  function boxHit({ x, z, w, l, cos, sin }, r, f, far) {
+    const dx = r * cos - f * sin, dz = r * sin + f * cos;
+    let near = 0;
+    if (Math.abs(dx) < EPS2) {
+      if (Math.abs(x) > w + EPS2) return Infinity;
+    } else {
+      const a = (-w - x) / dx, b = (w - x) / dx;
+      near = Math.max(near, Math.min(a, b));
+      far = Math.min(far, Math.max(a, b));
+      if (near > far + EPS2) return Infinity;
+    }
+    if (Math.abs(dz) < EPS2) {
+      if (Math.abs(z) > l + EPS2) return Infinity;
+    } else {
+      const a = (-l - z) / dz, b = (l - z) / dz;
+      near = Math.max(near, Math.min(a, b));
+      far = Math.min(far, Math.max(a, b));
+    }
+    return near <= far + EPS2 ? near : Infinity;
+  }
+  function firstReturn(shapes, { right, forward: forward3 }) {
+    let rangeM = PURSUIT_SCAN_RANGE_M, kind = "none";
+    for (const body2 of shapes) {
+      const hit = body2.kind === "pedestrian" ? circleHit(body2, right, forward3) : boxHit(body2, right, forward3, rangeM);
+      if (hit > PURSUIT_SCAN_RANGE_M + EPS2) continue;
+      const measured2 = Math.min(hit, PURSUIT_SCAN_RANGE_M);
+      if (measured2 < rangeM || measured2 === rangeM && priority[body2.kind] > priority[kind]) {
+        rangeM = measured2;
+        kind = body2.kind;
+      }
+    }
+    return { rangeM, kind };
+  }
+  function pedestrianReturns(shapes, rays) {
+    let samples;
+    for (const body2 of shapes) {
+      if (body2.kind !== "pedestrian") continue;
+      samples ??= new Array(PED_RAYS);
+      const coverage = (body2.radius + EPS2) / Math.hypot(body2.right, body2.forward);
+      const bearing = Math.atan2(body2.right, body2.forward);
+      const half = Math.asin(Math.min(1, coverage));
+      const first = coverage >= 1 ? 0 : Math.ceil((bearing - half) / PED_RAY_STEP - EPS2);
+      const last = coverage >= 1 ? PED_RAYS - 1 : Math.floor((bearing + half) / PED_RAY_STEP + EPS2);
+      for (let bin = first; bin <= last; bin++) {
+        const i = (bin + PED_RAYS) % PED_RAYS;
+        if (samples[i] !== void 0) continue;
+        const hit = i % PED_RAYS_PER_PRIMARY ? firstReturn(shapes, pedBeams[i]) : rays[i / PED_RAYS_PER_PRIMARY];
+        samples[i] = hit.kind === "pedestrian" ? hit : null;
+      }
+    }
+    return samples ?? [];
+  }
+  function surfaces(rays, directions, pedestrians, tick, heading2) {
+    const relevant = (ray) => ray && ray.kind !== "none" && ray.kind === "pedestrian" === pedestrians;
+    const connected = (a, b) => relevant(a) && a.kind === b?.kind && Math.abs(a.rangeM - b.rangeM) <= 2;
+    const anchors = [];
+    for (let i = 0; i < rays.length; i++) {
+      if (!relevant(rays[i])) continue;
+      const last = anchors.length - 1;
+      if (i === 0 || !connected(rays[i - 1], rays[i])) anchors.push(i);
+      else if (rays[i].rangeM < rays[anchors[last]].rangeM) anchors[last] = i;
+    }
+    if (anchors.length > 1 && connected(rays.at(-1), rays[0])) {
+      const end = anchors.pop();
+      if (rays[end].rangeM < rays[anchors[0]].rangeM) anchors[0] = end;
+    }
+    return anchors.map((i) => {
+      const { kind, rangeM } = rays[i], { right, forward: forward3 } = directions[i];
+      return { kind, rangeM, rightM: rangeM * right, forwardM: rangeM * forward3, tick, heading: heading2 };
+    });
+  }
+  var options = (n) => Array.from({ length: n }, () => ({
+    index: -1,
+    distance: Infinity,
+    second: Infinity
+  }));
+  function offer(best, index, distance2) {
+    if (distance2 < best.distance) {
+      best.second = best.distance;
+      best.distance = distance2;
+      best.index = index;
+    } else if (distance2 < best.second) best.second = distance2;
+  }
+  function correspond(current, previous, heading2) {
+    const from = options(current.length), to = options(previous.length);
+    const aligned = previous.map((point4) => {
+      const angle = heading2 - point4.heading, c = Math.cos(angle), s = Math.sin(angle);
+      return {
+        rightM: point4.rightM * c - point4.forwardM * s,
+        forwardM: point4.rightM * s + point4.forwardM * c
+      };
+    });
+    for (const [i, point4] of current.entries()) {
+      for (const [j, old] of previous.entries()) {
+        if (point4.kind !== old.kind) continue;
+        const d = Math.hypot(point4.rightM - aligned[j].rightM, point4.forwardM - aligned[j].forwardM);
+        const spacing = point4.kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
+        if (d > 75 * STEP * PURSUIT_SCAN_TICKS + point4.rangeM * spacing) continue;
+        offer(from[i], j, d);
+        offer(to[j], i, d);
+      }
+    }
+    return from.map(({ index, distance: distance2, second }, i) => {
+      if (index < 0 || to[index].index !== i || second - distance2 < 0.5 || to[index].second - distance2 < 0.5) return null;
+      return { index, ...aligned[index] };
+    });
+  }
+  function track(point4, tick, match, previous) {
+    const { kind, rightM, forwardM, rangeM } = point4;
+    const motionKnown = match !== null && tick === point4.tick && point4.tick - previous[match.index].tick === PURSUIT_SCAN_TICKS;
+    let rightMps = 0, forwardMps = 0, ttcS = null;
+    if (motionKnown) {
+      const elapsed = PURSUIT_SCAN_TICKS * STEP;
+      rightMps = (rightM - match.rightM) / elapsed;
+      forwardMps = (forwardM - match.forwardM) / elapsed;
+      const closing = rangeM > 0 ? -(rightM * rightMps + forwardM * forwardMps) / rangeM : 0;
+      if (closing > EPS2) ttcS = Math.min(MAX_TTC_S, rangeM / closing);
+    }
+    return Object.freeze({
+      kind,
+      rightM,
+      forwardM,
+      rightMps,
+      forwardMps,
+      ageS: (tick - point4.tick) * STEP,
+      motionKnown,
+      ttcS
+    });
+  }
+  var PursuitScanner = class {
+    #world;
+    #frame;
+    #history = [];
+    sample(world2) {
+      const { tick, player } = world2;
+      if (!Number.isSafeInteger(tick) || tick < 0) throw new RangeError("Invalid pursuit sample tick");
+      if (world2 !== this.#world || tick < this.#frame?.tick) {
+        this.#world = world2;
+        this.#frame = void 0;
+        this.#history = [];
+      }
+      if (this.#frame && tick - this.#frame.tick < PURSUIT_SCAN_TICKS) return this.#frame;
+      const heading2 = player.heading ?? 0;
+      if (![player.x, player.z, heading2].every(Number.isFinite))
+        throw new RangeError("Invalid pursuit sample pose");
+      const shapes = candidates(world2, heading2);
+      const rays = Object.freeze(beams.map((beam) => Object.freeze(firstReturn(shapes, beam))));
+      const current = surfaces(rays, beams, false, tick, heading2).concat(surfaces(pedestrianReturns(shapes, rays), pedBeams, true, tick, heading2)).sort((a, b) => a.rangeM - b.rangeM);
+      const previous = this.#history.filter((point4) => tick - point4.tick < TRACK_TTL_TICKS);
+      const matches = correspond(current, previous, heading2);
+      const matched = new Set(matches.flatMap((match) => match ? [match.index] : []));
+      const stale = previous.filter((_, i) => !matched.has(i)).sort((a, b) => b.tick - a.tick || a.rangeM - b.rangeM);
+      const tracks = current.map((point4, i) => track(point4, tick, matches[i], previous));
+      for (const point4 of stale) tracks.push(track(point4, tick, null, previous));
+      this.#history = current.concat(stale);
+      this.#frame = Object.freeze({ tick, rays, tracks: Object.freeze(tracks) });
+      return this.#frame;
+    }
+  };
 
   // src/core/pursuit-world.js
   var TIERS = [
@@ -36657,10 +37361,10 @@
     ];
   }
   function streetSolids(rng) {
-    const sites = [];
+    const sites2 = [];
     for (const side of [-1, 1]) {
       const name = side < 0 ? "west" : "east";
-      const place2 = (id2, kind, x, z, width, length, height, heading2 = 0) => sites.push({ id: `pursuit-${name}-${id2}`, type: "static", kind, x: side * x, z, width, length, height, heading: heading2 });
+      const place2 = (id2, kind, x, z, width, length, height, heading2 = 0) => sites2.push({ id: `pursuit-${name}-${id2}`, type: "static", kind, x: side * x, z, width, length, height, heading: heading2 });
       for (const [id2, z, depth, minHeight, maxHeight] of [
         ["entry", -43.5, 8.6, 3.6, 5.2],
         ["south", -20.6, 7.8, 4.5, 7.2],
@@ -36698,11 +37402,11 @@
         1.43,
         side < 0 ? 0 : Math.PI
       );
-      sites.at(-1).vehicleKind = side < 0 ? "taxi" : "sedan";
+      sites2.at(-1).vehicleKind = side < 0 ? "taxi" : "sedan";
       place2("edge-parked", "parked-vehicle", 29.5, -22.4, 1.88, 4.48, 1.85, Math.PI);
-      sites.at(-1).vehicleKind = "van";
+      sites2.at(-1).vehicleKind = "van";
     }
-    return sites;
+    return sites2;
   }
   function layout(caseId, rng) {
     const sign2 = rng.next() < 0.5 ? -1 : 1;
@@ -36857,15 +37561,15 @@
     });
     return state;
   }
-  function createPursuitState(options = {}) {
-    if (!options || typeof options !== "object" || Array.isArray(options))
+  function createPursuitState(options2 = {}) {
+    if (!options2 || typeof options2 !== "object" || Array.isArray(options2))
       throw new TypeError("Pursuit options must be an object");
-    const pack = isPackPursuit(options.pursuitVariant);
-    const { pursuitLevel: level = 1, pursuitCase: caseId = pack ? "pack-dodge" : "ambient" } = options;
+    const pack = isPackPursuit(options2.pursuitVariant);
+    const { pursuitLevel: level = 1, pursuitCase: caseId = pack ? "pack-dodge" : "ambient" } = options2;
     validateLevel(level);
     if (pack ? !PACK_DRILLS.some((drill) => drill.id === caseId) : !CASE_IDS.has(caseId))
       throw new RangeError("Unknown pursuit case");
-    const seed = String(options.seed ?? "cairo-42").slice(0, 64);
+    const seed = String(options2.seed ?? "cairo-42").slice(0, 64);
     const rng = new Random(`${seed}:pursuit-world-v1`);
     const scene = pack ? createPackDrill(caseId, seed) : layout(caseId, rng);
     if (caseId === "ambient") {
@@ -36902,7 +37606,7 @@
     state.packLab = true;
     state.targetPatrols = scene.cars.filter((car2) => RUSH_TACTICS.includes(car2.behaviour)).length;
     initializePack(state);
-    if (options.pursuitVariant === "hunt") {
+    if (options2.pursuitVariant === "hunt") {
       state.variant = "hunt";
       Object.assign(state.metrics, { pedestrianCost: 0, pedestrianDanger: 0 });
     }
@@ -37159,17 +37863,17 @@
       return !lane2.road.flow && offset3 > (lane2.road.laneOffsetM ?? 0) + 1.45 ? [{ ...lane2, road: { ...lane2.road, laneOffsetM: offset3 }, outside: true }] : [];
     }));
   }
-  function deploymentSlots(state, ego, tactic, minRange = 13) {
+  function deploymentSlots(state, ego, tactic, minRange = 13, maxRange = STREET_DEPLOY_RANGE_M) {
     const sin = Math.sin(ego.heading), cos = Math.cos(ego.heading);
     const slots = [];
     for (const lane2 of state.lanes) {
       const along2 = ego[lane2.road.axis];
-      const low = Math.max(lane2.low, along2 - STREET_DEPLOY_RANGE_M);
-      const high = Math.min(lane2.high, along2 + STREET_DEPLOY_RANGE_M);
+      const low = Math.max(lane2.low, along2 - maxRange);
+      const high = Math.min(lane2.high, along2 + maxRange);
       for (let at = low; at <= high; at += 3.5) {
         const position2 = lanePoint(lane2, at);
         const range = distance(ego, position2);
-        if (range < minRange || range > STREET_DEPLOY_RANGE_M) continue;
+        if (range < minRange || range > maxRange) continue;
         const front = (position2.x - ego.x) * sin + (position2.z - ego.z) * cos;
         const alignment = Math.cos(angleDelta(position2.heading, ego.heading));
         const approach2 = tactic === "tail" ? Math.max(0, front) + 7 * (1 - alignment) : tactic === "intercept" ? Math.max(0, -front) + 4 * (1 + alignment) : 7 * Math.abs(alignment);
@@ -37204,10 +37908,10 @@
   }
   function huntApproachPoints(world2, state, car2, report) {
     const occupied = [0, 0, 0, 0], taken = [];
-    for (const unit of state.patrols) {
-      if (unit === car2) continue;
-      if (distance(unit, report) < 19) occupied[huntSector(unit, report)] += 1;
-      const goal = unit.pursuitDrive.approach;
+    for (const unit2 of state.patrols) {
+      if (unit2 === car2) continue;
+      if (distance(unit2, report) < 19) occupied[huntSector(unit2, report)] += 1;
+      const goal = unit2.pursuitDrive.approach;
       if (goal && distance(goal, report) < 31) {
         occupied[huntSector(goal, report)] += 0.6;
         taken.push(goal);
@@ -37224,14 +37928,14 @@
         const side = huntSector(pose6, report);
         const crowd = Math.min(3, occupied[side]) * 15 + taken.filter((goal) => distance(goal, pose6) < 7).length * 9;
         const score2 = Math.abs(gap - 13) + distance(car2, pose6) * 0.45 + crowd;
-        const options = groups[side];
-        if (!options.some((option) => distance(option.pose, pose6) < 1))
-          options.push({ pose: pose6, score: score2 });
+        const options2 = groups[side];
+        if (!options2.some((option) => distance(option.pose, pose6) < 1))
+          options2.push({ pose: pose6, score: score2 });
       }
     }
-    for (const options of groups) options.sort((a, b) => a.score - b.score);
+    for (const options2 of groups) options2.sort((a, b) => a.score - b.score);
     const traffic = world2.actorIndex.near(car2, 65).filter((actor) => actor !== world2.player && actor !== car2);
-    return { goals: groups.flatMap((options) => options.slice(0, 2)).sort((a, b) => a.score - b.score), traffic };
+    return { goals: groups.flatMap((options2) => options2.slice(0, 2)).sort((a, b) => a.score - b.score), traffic };
   }
   function planRushPatrol(world2, state, car2, lane2 = null, player = world2.player, search = false) {
     const { pattern } = car2.pursuitDrive;
@@ -37313,27 +38017,27 @@
       const lanes = pack ? packDeploymentLanes(state.lanes, car2) : state.lanes;
       const slots = deploymentSlots({ lanes }, player, pattern, pack && opening ? 7 : 13).flatMap(({ lane: lane2, position: position2 }) => {
         const dx = position2.x - player.x, dz = position2.z - player.z;
-        const range = Math.hypot(dx, dz), forward2 = dx * sin + dz * cos;
+        const range = Math.hypot(dx, dz), forward3 = dx * sin + dz * cos;
         const lateral2 = dx * cos - dz * sin;
         const alignment = Math.cos(angleDelta(position2.heading, player.heading));
         if (survival && (range < (opening ? 21 : 18) || heavy && lane2.road.width < 6.8)) return [];
-        if (range < (pack && opening && Math.abs(lateral2) >= 2.45 ? 7 : pack ? 14 : 18) || patrolReach(lane2, position2) < 10 || forward2 > 0 && forward2 < 37 && Math.abs(lateral2) < 3) return [];
+        if (range < (pack && opening && Math.abs(lateral2) >= 2.45 ? 7 : pack ? 14 : 18) || patrolReach(lane2, position2) < 10 || forward3 > 0 && forward3 < 37 && Math.abs(lateral2) < 3) return [];
         if (pack) {
           if (survival) {
             const preferred = opening ? order === 0 ? 2 : 1 : order % 4;
             const step = (huntSector(position2, player) - preferred + 4) % 4;
-            const score3 = Math.abs(range - (opening ? 29 : 32)) + Math.min(step, 4 - step) * 13 + (opening && forward2 > 0 ? 8 : 0);
+            const score3 = Math.abs(range - (opening ? 29 : 32)) + Math.min(step, 4 - step) * 13 + (opening && forward3 > 0 ? 8 : 0);
             return [{ lane: lane2, position: position2, stance: false, score: score3 }];
           }
-          const stance = opening && order < 4 && Math.abs(lateral2) > 2.45 && Math.abs(lateral2) <= 11 && Math.abs(forward2) < 15;
-          const score2 = packSpawnBias({ order, forward: forward2, lateral: lateral2, range, alignment, opening, fronts });
+          const stance = opening && order < 4 && Math.abs(lateral2) > 2.45 && Math.abs(lateral2) <= 11 && Math.abs(forward3) < 15;
+          const score2 = packSpawnBias({ order, forward: forward3, lateral: lateral2, range, alignment, opening, fronts });
           return [{ lane: lane2, position: position2, stance, score: score2 - (stance && order !== 0 ? 13 : 0) }];
         }
-        if (opening && alignment < -0.85 && forward2 > 0 && range < 49 && Math.abs(lateral2) < 7)
+        if (opening && alignment < -0.85 && forward3 > 0 && range < 49 && Math.abs(lateral2) < 7)
           return [];
         const side = (arcade ? order : i) % 2 ? -1 : 1;
         const desired = arcade ? pattern === "tail" ? 30 + order % 4 * 4 : 36 : order >= 7 ? 35 : pattern === "tail" ? 24 + order * 1.5 : 28;
-        const approach2 = pattern === "tail" ? Math.max(0, forward2 + 5) * 1.8 + (1 - alignment) * 21 + Math.abs(lateral2) * 0.32 : pattern === "flank" ? Math.abs(alignment) * 9 + Math.max(0, -side * lateral2) * 0.45 : Math.max(0, -forward2) * 1.25 + 4 * (alignment + 1);
+        const approach2 = pattern === "tail" ? Math.max(0, forward3 + 5) * 1.8 + (1 - alignment) * 21 + Math.abs(lateral2) * 0.32 : pattern === "flank" ? Math.abs(alignment) * 9 + Math.max(0, -side * lateral2) * 0.45 : Math.max(0, -forward3) * 1.25 + 4 * (alignment + 1);
         return [{ lane: lane2, position: position2, score: Math.abs(range - desired) + approach2 }];
       }).sort((a, b) => a.score - b.score);
       let placed = false, tried = 0;
@@ -37422,21 +38126,56 @@
     if (world2.pursuit === state) logEvent(world2, "reinforcement", car2, car2.id);
     return car2;
   }
+  function visibleGtaDeployment(world2, state, position2) {
+    if (state.gta.config.ruleset !== "dispatch-v1" || world2.tick === state.startedTick) return false;
+    return !gtaDeploymentHidden(world2, world2.player, position2);
+  }
+  function openingTravel(speed, acceleration, cap) {
+    const seconds2 = 4;
+    const limitedSpeed = clamp2(speed, 0, cap);
+    const accelerating = Math.min(seconds2, (cap - limitedSpeed) / acceleration);
+    return limitedSpeed * accelerating + acceleration * accelerating ** 2 / 2 + cap * (seconds2 - accelerating);
+  }
   function deployGtaPatrol(world2, state, tactic, unitType, forwardOnly = false) {
     const car2 = newGtaPatrol(world2, state, unitType);
     const player = world2.player;
-    const slots = deploymentSlots({ lanes: car2.gtaAI.lanes }, player, tactic, state.gta.config.minSpawnRadius);
+    const opening = state.gta.config.ruleset === "dispatch-v1" && world2.tick === state.startedTick;
+    const berth = opening ? Math.min(46, 35 + 0.55 * Math.abs(player.speed)) : 0;
+    const slots = deploymentSlots(
+      { lanes: car2.gtaAI.lanes },
+      player,
+      tactic,
+      Math.max(state.gta.config.minSpawnRadius, berth),
+      opening ? 66 : STREET_DEPLOY_RANGE_M
+    );
     const others = [...state.patrols];
+    const openingRoad = opening && (!others.length && tactic === "tail" || state.wantedLevel >= 4) && world2.drivingRoads.find((road4) => !road4.parkingBay && !road4.supportApron && road4.axis === (Math.abs(Math.sin(player.heading)) > 0.707 ? "x" : "z") && pointOnRoad(player, [road4]));
+    const approach2 = openingRoad && !others.length && tactic === "tail";
+    const reactionRoom = openingRoad && state.wantedLevel >= 4 && openingTravel(player.speed, player.spec?.acceleration ?? VEHICLE.acceleration, GTA_MAX_SPEED) + (player.length + car2.length) / 2;
+    const approachTravel = reactionRoom ? openingTravel(2, car2.spec.acceleration, car2.maxSpeed) : 0;
     for (const slot of slots) {
-      const { forward: forward2, right } = gtaLocal(player, slot.position);
-      if (forwardOnly && forward2 <= 0) {
+      const { forward: forward3, right } = gtaLocal(player, slot.position);
+      if (forwardOnly && forward3 <= 0) {
         slot.score = Infinity;
         continue;
       }
       if (forwardOnly) slot.score += 10 * (1 - Math.cos(angleDelta(slot.position.heading, player.heading)));
       if (tactic === "flank") {
         const side = car2.gtaAI.order % 2 ? -1 : 1;
-        slot.score += 0.3 * Math.abs(forward2) + (right * side < 0 ? 13 : 0);
+        slot.score += 0.3 * Math.abs(forward3) + (right * side < 0 ? 13 : 0);
+      }
+      if (reactionRoom && forward3 > 0 && slot.lane.road.id === openingRoad.id) {
+        const opposing = -Math.cos(angleDelta(slot.position.heading, player.heading));
+        if (opposing > 0.5 && forward3 < reactionRoom + approachTravel * opposing) {
+          slot.score = Infinity;
+          continue;
+        }
+      }
+      if (approach2) {
+        const { road: road4, sign: sign2 } = slot.lane;
+        const sameLane2 = road4.id === openingRoad.id && forward3 < 0 && Math.abs(right) < 3 && Math.abs(angleDelta(slot.position.heading, player.heading)) < 0.4;
+        const joinsBehind = road4.axis !== openingRoad.axis && forward3 < 0 && road4.fixed >= openingRoad.min && road4.fixed <= openingRoad.max && openingRoad.fixed >= road4.min && openingRoad.fixed <= road4.max && (openingRoad.fixed - slot.position[road4.axis]) * sign2 > 0;
+        if (!sameLane2 && !joinsBehind) slot.score += 45;
       }
       for (const other of others) slot.score += Math.max(0, 13 - distance(other, slot.position)) * 0.9;
     }
@@ -37444,7 +38183,7 @@
     for (const { position: position2, score: score2 } of slots) {
       if (!Number.isFinite(score2)) break;
       Object.assign(car2, position2);
-      if (!isFree(world2, car2, 0.65) || !bodyOnRoad(car2, world2.drivingRoads)) continue;
+      if (visibleGtaDeployment(world2, state, car2) || !isFree(world2, car2, 0.65) || !bodyOnRoad(car2, world2.drivingRoads)) continue;
       car2.speed = Math.min(2, car2.maxSpeed);
       return registerGtaPatrol(world2, state, car2);
     }
@@ -37452,7 +38191,7 @@
   }
   function gtaPatrolCount(state) {
     let count2 = 0;
-    for (const unit of state.patrols) if (unit.aiState !== "WRECKED") count2++;
+    for (const unit2 of state.patrols) if (unit2.aiState !== "WRECKED") count2++;
     return count2;
   }
   function gtaPatrolTarget(state) {
@@ -37461,9 +38200,9 @@
   }
   function fillGtaPatrols(world2, state, count2) {
     const target2 = gtaPatrolTarget(state), star = state.wantedLevel;
-    const squad = [...state.patrols].filter((unit) => unit.aiState !== "WRECKED");
-    const fast = squad.filter((unit) => unit.unitType === "interceptor").length;
-    const heavy = squad.filter((unit) => unit.unitType === "swat").length;
+    const squad = [...state.patrols].filter((unit2) => unit2.aiState !== "WRECKED");
+    const fast = squad.filter((unit2) => unit2.unitType === "interceptor").length;
+    const heavy = squad.filter((unit2) => unit2.unitType === "swat").length;
     let fastNeeded = star >= 3 ? Math.max(0, Math.min(star - 1, Math.floor(target2 / 2)) - fast) : 0;
     let heavyNeeded = state.gta.config.enableSwat && star >= 4 ? Math.max(0, Math.min(star - 3, Math.floor(target2 / 3)) - heavy) : 0;
     for (let i = 0; i < count2; i++) {
@@ -37487,8 +38226,12 @@
   function placeGtaRoadblock(world2) {
     const { pursuit: s, player, tick } = world2, { gta } = s;
     if (!gtaRoadblocksEnabled(s) || gta.roadblock || tick < gta.nextRoadblockTick) return;
+    const coordinated = gta.config.ruleset === "dispatch-v1";
+    const report = coordinated ? s.response.lastSeen : player;
+    if (coordinated && (tick === s.startedTick || !isDispatchTracked(s.response) || report?.tick !== tick || report.speed < 3)) return;
     gta.nextRoadblockTick = tick + ticks2(1.1);
     const needed = Math.max(0, gtaPatrolCount(s) + 2 - gtaPatrolTarget(s));
+    if (needed && coordinated) return;
     const spare = [...s.patrols].filter((car2) => !isGtaStationary(car2) && !s.response.sightedBy.has(car2) && distance(player, car2) > gta.config.minSpawnRadius + 5).sort((a, b) => distance(player, b) - distance(player, a)).slice(0, needed);
     if (spare.length !== needed) return;
     const cars = [newGtaPatrol(world2, s, "patrol"), newGtaPatrol(
@@ -37506,24 +38249,35 @@
       gtaRoadblock: true
     };
     const shapes = [...cars, barrier2];
-    const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
+    const sin = Math.sin(report.heading), cos = Math.cos(report.heading);
     const avenues = world2.drivingRoads.filter((road4) => road4.width >= 12 && !road4.parkingBay && !road4.supportApron).map((road4) => ({
       road: road4,
       align: road4.axis === "x" ? sin : cos,
-      away: Math.abs(road4.fixed - player[road4.axis === "x" ? "z" : "x"])
-    })).filter(({ align, away }) => Math.abs(align) > 0.62 && away < 18).sort((a, b) => a.away - b.away);
+      away: Math.abs(road4.fixed - report[road4.axis === "x" ? "z" : "x"])
+    })).filter(({ road: road4, align, away }) => coordinated ? Math.abs(align) > 0.86 && away < road4.width / 2 : Math.abs(align) > 0.62 && away < 18).sort((a, b) => a.away - b.away);
     const spacing = gta.rngSide ??= s.rng.next() < 0.5 ? 1 : -1;
+    const occupied = coordinated ? [...s.closures.keys(), ...world2.actors.filter((actor) => actor !== player)] : [];
     for (const { road: road4, align } of avenues) {
       const sign2 = Math.sign(align);
       if (road4.flow && road4.flow !== sign2) continue;
-      for (let front = gta.config.minSpawnRadius + 9; front <= gta.config.minSpawnRadius + 34; front += 4) {
-        const along2 = player[road4.axis] + sign2 * front;
+      const maxFront = gta.config.minSpawnRadius + (coordinated ? 58 : 34);
+      for (let front = gta.config.minSpawnRadius + 9; front <= maxFront; front += 4) {
+        const along2 = report[road4.axis] + sign2 * front;
         if (along2 < road4.min + 5 || along2 > road4.max - 5) continue;
         const center = districtRoadPose({ ...road4, laneOffsetM: 0 }, along2, sign2);
         Object.assign(cars[0], gtaOffset(center, 0, -spacing * 3.1), { heading: center.heading + spacing * 0.72 });
         Object.assign(cars[1], gtaOffset(center, 1.9, spacing * 3.1), { heading: center.heading - spacing * 0.74 });
         Object.assign(barrier2, gtaOffset(center, -1.6), { heading: center.heading, roadId: road4.id });
-        if (shapes.some((body2, i) => distance(player, body2) <= gta.config.minSpawnRadius || gtaLocal(player, body2).forward <= 0 || !bodyOnRoad(body2, [road4]) || !isFree(world2, body2, 0.5) || shapes.slice(i + 1).some((other) => overlaps(body2, other, 0.5)))) continue;
+        if (shapes.some((body2, i) => visibleGtaDeployment(world2, s, body2) || distance(player, body2) <= gta.config.minSpawnRadius || gtaLocal(player, body2).forward <= 0 || !bodyOnRoad(body2, [road4]) || !isFree(world2, body2, 0.5) || shapes.slice(i + 1).some((other) => overlaps(body2, other, 0.5)))) continue;
+        const detour = coordinated ? dispatchRoadblockDetour(
+          s.patrolMap,
+          { ...vehicleProbe(player, report.speed), ...report },
+          road4,
+          sign2,
+          along2,
+          [...occupied, ...shapes]
+        ) : null;
+        if (coordinated && !detour) continue;
         const expires = tick + ticks2([0, 0, 0, 14, 11, 8][s.wantedLevel]);
         if (!registerBarrier(world2, barrier2, "roadblock", expires)) continue;
         for (const old of spare) removeGtaPatrol(world2, s, old);
@@ -37531,7 +38285,7 @@
           Object.assign(car2, { gtaRoadblock: true, aiState: "ROADBLOCK", squadRole: "ROADBLOCK", speed: 0 });
           registerGtaPatrol(world2, s, car2);
         }
-        gta.roadblock = { cars, barrier: barrier2, expires };
+        gta.roadblock = { cars, barrier: barrier2, expires, ...detour ? { detour } : {} };
         gta.nextRoadblockTick = expires;
         return;
       }
@@ -37539,6 +38293,7 @@
   }
   function maintainGtaSquad(world2) {
     const { pursuit: s, tick, player } = world2, { gta } = s;
+    const coordinated = gta.config.ruleset === "dispatch-v1";
     for (const car2 of s.patrols) if (car2.wreckUntilTick <= tick) removeGtaPatrol(world2, s, car2);
     if (gta.roadblock?.expires <= tick) {
       const { cars, barrier: barrier2 } = gta.roadblock;
@@ -37551,7 +38306,7 @@
       world2.staticIndex = new SpatialIndex(world2.statics);
       gta.roadblock = null;
     }
-    for (const car2 of [...s.patrols]) {
+    if (!coordinated) for (const car2 of [...s.patrols]) {
       if (isGtaStationary(car2)) continue;
       const ai = car2.gtaAI;
       ai.behindTicks = !s.response.sightedBy.has(car2) && distance(car2, player) > 95 && gtaLocal(player, car2).forward < 0 ? ai.behindTicks + 1 : 0;
@@ -37560,16 +38315,18 @@
       const replacement = deployGtaPatrol(world2, s, "intercept", car2.unitType, true);
       if (replacement) removeGtaPatrol(world2, s, car2);
     }
-    if (s.response.sightedBy.size) {
+    if (coordinated ? isDispatchTracked(s.response) : s.response.sightedBy.size) {
       placeGtaRoadblock(world2);
-      const deficit = gtaPatrolTarget(s) - gtaPatrolCount(s);
+      const reserve = coordinated && !gta.roadblock && gtaRoadblocksEnabled(s) && tick - s.startedTick < ticks2(12) ? 2 : 0;
+      const deficit = gtaPatrolTarget(s) - reserve - gtaPatrolCount(s);
       if (deficit > 0 && tick >= gta.nextDispatchTick) {
         fillGtaPatrols(world2, s, Math.min(deficit, 2));
         gta.nextDispatchTick = tick + ticks2(1.2);
       }
     }
     if (tick >= gta.nextSquadTick) {
-      assignGtaSquad(s.patrols, s.response.lastSeen ?? s.playerStart);
+      if (!coordinated || s.response.lastSeen)
+        assignGtaSquad(s.patrols, s.response.lastSeen ?? s.playerStart);
       gta.nextSquadTick = tick + ticks2(0.5);
     }
   }
@@ -37649,7 +38406,7 @@
         state.nextDispatchTick = world2.tick + (arcade ? ARCADE_BACKUP_TICKS : ticks2(rng.range(2.4, 3.1)));
         if (arcade) state.wantedLevel = level;
         if (isSurvival(variant)) {
-          state.survival = createSurvival(player, world2.tick);
+          state.survival = createSurvival(player, world2.tick, config?.giantPhysics);
           state.wantedLevel = 1;
           state.manualAction = { steer: 0, throttle: 1, brake: 0, gear: 1 };
           state.nextDispatchTick = world2.tick + ticks2(2.4);
@@ -37692,7 +38449,8 @@
     world2.pursuit = state;
     if (state.gta) {
       placeGtaRoadblock(world2);
-      fillGtaPatrols(world2, state, gtaPatrolTarget(state) - gtaPatrolCount(state));
+      const reserve = state.gta.config.ruleset === "dispatch-v1" && gtaRoadblocksEnabled(state) ? 2 : 0;
+      fillGtaPatrols(world2, state, gtaPatrolTarget(state) - reserve - gtaPatrolCount(state));
       world2.actorIndex = new SpatialIndex(world2.actors);
     }
     if (state.response) {
@@ -37700,7 +38458,13 @@
       if (!state.gta) for (const patrol2 of state.patrols)
         patrol2.pursuitDrive.tracking = state.response.sightedBy.has(patrol2);
     }
-    if (state.gta) world2.updateSensors(false);
+    if (state.gta) {
+      world2.updateSensors(false);
+      if (state.gta.config.ruleset === "dispatch-v1") {
+        state.gta.scanner = new PursuitScanner();
+        state.gta.scan = state.gta.scanner.sample(world2);
+      }
+    }
     logEvent(world2, "start", player);
     return state;
   }
@@ -37767,8 +38531,11 @@
     if (!isPackPursuit(state?.variant) || !state.reviewUntilTick) return false;
     if (++world2.tick >= state.reviewUntilTick) {
       if (state.street) {
-        if (cleanupStreetPursuit(world2)) world2.resumeStreetDrive();
-        else state.reviewUntilTick = world2.tick + 1;
+        const restoreMounts = Boolean(world2.player.giantScale);
+        if (cleanupStreetPursuit(world2)) {
+          world2.resumeStreetDrive();
+          if (restoreMounts) world2.updateSensors(false);
+        } else state.reviewUntilTick = world2.tick + 1;
       } else state.reviewUntilTick = null;
     }
     return true;
@@ -37790,12 +38557,12 @@
   function heightOnSupport(state, a) {
     if (!state.support.length) return 0;
     const reach = (a.spec?.wheelbase ?? VEHICLE.wheelbase) / 2;
-    const track = a.id === "player" ? PLAYER_VEHICLE.trackM : a.width * 0.83;
+    const track2 = a.id === "player" ? PLAYER_VEHICLE.trackM : a.width * 0.83;
     const cos = Math.cos(a.heading), sin = Math.sin(a.heading);
     let support = 0;
     for (const side of [-1, 1]) for (const end of [-1, 1]) {
-      const x = a.x + side * track * cos / 2 + end * reach * sin;
-      const z = a.z - side * track * sin / 2 + end * reach * cos;
+      const x = a.x + side * track2 * cos / 2 + end * reach * sin;
+      const z = a.z - side * track2 * sin / 2 + end * reach * cos;
       let height = 0;
       for (const r of state.support) {
         const inside = Math.min(x - r.minX, r.maxX - x, z - r.minZ, r.maxZ - z);
@@ -37835,7 +38602,7 @@
   }
   function chooseBarrier(world2, kind, player = world2.player) {
     const { rng, eventSerial, street, run, variant } = world2.pursuit;
-    const candidates = [];
+    const candidates2 = [];
     for (const r of world2.drivingRoads) {
       if (street && (r.supportApron || r.parkingBay)) continue;
       for (let n = r.min + 8; n <= r.max - 6; n += 7) {
@@ -37845,12 +38612,12 @@
         const d = distance(point4, player);
         if (d < (street ? 12 : 7) || d > 45 || world2.drivingRoads.some((other) => other.axis !== r.axis && pointOnRoad(point4, [other], -2)) || world2.pursuit.exits.some((goal) => distance(point4, goal) < 6))
           continue;
-        const forward2 = Math.sin(player.heading) * (point4.x - player.x) + Math.cos(player.heading) * (point4.z - player.z);
+        const forward3 = Math.sin(player.heading) * (point4.x - player.x) + Math.cos(player.heading) * (point4.z - player.z);
         if (usesRushPace(variant)) {
           const speed = Math.abs(player.speed);
           const reactionRoom = player.length + speed * 0.55 + speed ** 2 / (2 * 4.2);
           if (d < Math.max(17, reactionRoom)) continue;
-          if (kind === "closure" && forward2 > 0 && pointOnRoad(player, [r], 0)) {
+          if (kind === "closure" && forward3 > 0 && pointOnRoad(player, [r], 0)) {
             const own = player[r.axis], low = Math.min(own, along2) + 7, high = Math.max(own, along2) - 6;
             if (!world2.drivingRoads.some((other) => other.axis !== r.axis && !other.supportApron && other.width >= player.width + 0.4 && other.fixed >= low && other.fixed <= high && r.fixed >= other.min && r.fixed <= other.max)) continue;
           }
@@ -37865,11 +38632,11 @@
           0.8,
           r.axis === "x" ? Math.PI / 2 : 0
         );
-        candidates.push({ body: body2, score: rng.next() * 36 + Math.abs(d - 19) + (forward2 < -2 ? 11 : 0) });
+        candidates2.push({ body: body2, score: rng.next() * 36 + Math.abs(d - 19) + (forward3 < -2 ? 11 : 0) });
       }
     }
-    candidates.sort((a, b) => a.score - b.score);
-    return candidates.find(({ body: body2 }) => isFree(world2, body2, 0.4))?.body;
+    candidates2.sort((a, b) => a.score - b.score);
+    return candidates2.find(({ body: body2 }) => isFree(world2, body2, 0.4))?.body;
   }
   function updateEvents(world2) {
     const s = world2.pursuit;
@@ -37992,6 +38759,37 @@
   }
   function gtaStreetRoute(world2, car2, aim) {
     return setStreetPatrolPath(world2.pursuit, car2, aim, null, car2.gtaAI.lanes);
+  }
+  function gtaJunctionCommand(world2, car2) {
+    const { pursuit: s } = world2, ai = car2.gtaAI;
+    if (!isDispatchTracked(s.response) || s.wantedLevel < 3 || !["INTERCEPTOR", "FLANKER"].includes(car2.squadRole) || car2.aiState === "RECOVER" || (ai.commitUntil ?? 0) > world2.tick) {
+      ai.junctionRoute = null;
+      return null;
+    }
+    const role = car2.squadRole === "INTERCEPTOR" ? "BLOCK_INTERCEPT" : "FLANK";
+    if (ai.junctionRoute && (ai.junctionRoute.role !== role || world2.tick >= ai.junctionRoute.expires || !dispatchJunctionStillRelevant(ai.junctionRoute, s.response.lastSeen)))
+      ai.junctionRoute = null;
+    if (!ai.junctionRoute && world2.tick >= (ai.nextJointCheck ?? 0)) {
+      ai.nextJointCheck = world2.tick + ticks2(0.35);
+      const target2 = selectDispatchJunction(world2.drivingRoads, car2, s.response.lastSeen);
+      if (target2) {
+        const path = planDistrictRoute(s.patrolMap, car2, target2.goal);
+        if (path.length > 2)
+          ai.junctionRoute = {
+            ...target2,
+            path: Object.freeze(path.map((point4) => Object.freeze(point4))),
+            cursor: 0,
+            expires: world2.tick + ticks2(Math.max(target2.entryEta, target2.egoEta) + 1.65)
+          };
+      }
+    }
+    const route = ai.junctionRoute;
+    if (!route) return null;
+    const { steer, targetSpeed, remaining, cursor } = followPath(car2, route.path, route.cursor);
+    route.cursor = cursor;
+    if (remaining < 2) return null;
+    car2.aiState = route.role;
+    return { steer, targetSpeed: Math.min(12.5, targetSpeed), reason: route.role };
   }
   function gtaDirectApproach(world2, car2, aim, requireClearLane = false) {
     const heading2 = headingTo3(car2, aim);
@@ -38293,20 +39091,27 @@
     const cos = Math.cos(a.heading ?? 0), sin = Math.sin(a.heading ?? 0);
     return Math.abs(x * sin + z * cos) * a.length / 2 + Math.abs(x * cos - z * sin) * a.width / 2;
   }
-  function travel(before, after) {
-    return distance(before, after) + Math.abs(angleDelta(after.heading, before.heading)) * shapeRadius(before);
+  function travel(before, after, radius = shapeRadius(before)) {
+    return distance(before, after) + Math.abs(angleDelta(after.heading, before.heading)) * radius;
   }
-  function poseAt(p, t) {
+  function poseAt(p, t, footprint) {
     if (t <= 0) return p.a;
     if (!p.travel) return p.next;
     const time = Math.min(t, p.stop);
-    return time === 1 ? p.next : interpolate(p.a, p.next, time);
+    if (time === 1) return p.next;
+    if (footprint) {
+      footprint.type = p.next.type;
+      footprint.width = p.next.width;
+      footprint.length = p.next.length;
+      footprint.radius = p.next.radius;
+    }
+    return interpolate(p.a, p.next, time, footprint);
   }
-  function findContact(a, b, since) {
+  function findContact(a, b, since, probes) {
     if ((a.stop <= since || !a.travel) && (b.stop <= since || !b.travel)) return null;
     const maxTravel = a.travel + b.travel;
     if (distance(a.a, b.a) > a.radius + b.radius + maxTravel) return null;
-    const occupied = (t) => overlaps(poseAt(a, t), poseAt(b, t));
+    const occupied = (t) => overlaps(poseAt(a, t, probes?.[0]), poseAt(b, t, probes?.[1]));
     const steps = Math.max(1, Math.ceil(maxTravel * (1 - since) / 0.035));
     for (let i = 1; i <= steps; i++) {
       let high = since + (1 - since) * i / steps;
@@ -38331,7 +39136,7 @@
         axes.push(...corners(actor).map((p) => headingTo3(p, actor === a ? b : a)));
     }
     if (!axes.length) axes.push(Math.atan2(dx, dz));
-    let normal = null, bestGap = -Infinity;
+    let normal2 = null, bestGap = -Infinity;
     for (const h of axes) {
       const x = Math.sin(h), z = Math.cos(h);
       const separation = dx * x + dz * z;
@@ -38339,26 +39144,26 @@
       if (gap > bestGap) {
         const sign2 = separation < 0 ? -1 : 1;
         bestGap = gap;
-        normal = { x: x * sign2, z: z * sign2 };
+        normal2 = { x: x * sign2, z: z * sign2 };
       }
     }
-    return normal;
+    return normal2;
   }
-  function closingSpeed(a, b, t, normal) {
+  function closingSpeed(a, b, t, normal2) {
     const earlier = Math.max(0, t - 0.1);
     const gap = (at) => {
       const p = poseAt(a, at), q = poseAt(b, at);
-      const { x, z } = normal;
+      const { x, z } = normal2;
       return (q.x - p.x) * x + (q.z - p.z) * z - extent(p, x, z) - extent(q, x, z);
     };
     return (gap(earlier) - gap(t)) / (Math.max(1e-8, t - earlier) * STEP);
   }
   function contactImpact(ego, other, time, overlapAt, tick) {
-    const a = poseAt(ego, time), b = poseAt(other, time), normal = normalAt(a, b);
-    const front = normal.x * Math.sin(a.heading) + normal.z * Math.cos(a.heading);
-    const right = normal.x * Math.cos(a.heading) - normal.z * Math.sin(a.heading);
+    const a = poseAt(ego, time), b = poseAt(other, time), normal2 = normalAt(a, b);
+    const front = normal2.x * Math.sin(a.heading) + normal2.z * Math.cos(a.heading);
+    const right = normal2.x * Math.cos(a.heading) - normal2.z * Math.sin(a.heading);
     const side = Math.abs(front) >= Math.abs(right) ? front > 0 ? "front" : "rear" : right > 0 ? "right" : "left";
-    const closingSpeedMps = Math.max(0, closingSpeed(ego, other, overlapAt, normal));
+    const closingSpeedMps = Math.max(0, closingSpeed(ego, other, overlapAt, normal2));
     const mass2 = PLAYER_VEHICLE.massKg;
     const otherMass = b.type === "pedestrian" ? other.a.body?.massKg ?? 75 : b.type === "vehicle" ? b.kind === "tuktuk" ? 620 : 1450 : Infinity;
     const effectiveMass = b.type === "static" ? mass2 : mass2 * otherMass / (mass2 + otherMass);
@@ -38366,8 +39171,95 @@
     return { actorId: b.id, side, closingSpeedMps, energyJ, severity: clamp2(energyJ / 42e3, 0, 1), tick, x: a.x, z: a.z };
   }
   var pairId = (a, b) => [a.id, b.id].sort().join(":");
-  function streetContactPairs(moving, solid) {
-    const cells = /* @__PURE__ */ new Map(), cellSize = 8;
+  var CONTACT_CELL_M = 8;
+  var staticContactGrids = /* @__PURE__ */ new WeakMap();
+  var contactOrder = (a, b) => a - b;
+  function sweptContactBounds({ a, next, radius }) {
+    const circle = a.type === "pedestrian";
+    const sin = Math.abs(Math.sin(a.heading ?? 0)), cos = Math.abs(Math.cos(a.heading ?? 0));
+    const pad = 0.24 + (circle ? 0 : radius * Math.abs(angleDelta(next.heading ?? 0, a.heading ?? 0)));
+    const x = pad + (circle ? radius : (a.width * cos + a.length * sin) / 2);
+    const z = pad + (circle ? radius : (a.length * cos + a.width * sin) / 2);
+    return [
+      Math.min(a.x, next.x) - x,
+      Math.max(a.x, next.x) + x,
+      Math.min(a.z, next.z) - z,
+      Math.max(a.z, next.z) + z
+    ];
+  }
+  function contactCellSpan(box5) {
+    return box5.map((edge) => Math.floor(edge / CONTACT_CELL_M));
+  }
+  function indexContactSpan(cells, [left, right, bottom, top], i) {
+    for (let x = left; x <= right; x++) {
+      let row = cells.get(x);
+      if (!row) cells.set(x, row = /* @__PURE__ */ new Map());
+      for (let z = bottom; z <= top; z++) {
+        const bucket = row.get(z);
+        if (bucket) bucket.push(i);
+        else row.set(z, [i]);
+      }
+    }
+  }
+  function staticContactPlan(a) {
+    return { a, next: a, travel: 0, stop: 0, radius: shapeRadius(a) };
+  }
+  function dispatchStaticContacts(world2) {
+    const { statics } = world2;
+    const last = staticContactGrids.get(world2);
+    if (last?.entries.length === statics.length && statics.every((a, i) => {
+      const p = last.entries[i];
+      return a.type === "static" && p.a === a && p.x === a.x && p.z === a.z && p.heading === a.heading && p.width === a.width && p.length === a.length;
+    })) return last;
+    if (statics.some((a) => a.type !== "static")) return null;
+    const plans = statics.map(staticContactPlan);
+    const bounds = plans.map(sweptContactBounds), cells = /* @__PURE__ */ new Map();
+    for (let i = 0; i < bounds.length; i++) indexContactSpan(cells, contactCellSpan(bounds[i]), i);
+    const entries = statics.map(({ x, z, heading: heading2, width, length }, i) => ({ a: statics[i], x, z, heading: heading2, width, length }));
+    const next = { plans, bounds, cells, entries };
+    staticContactGrids.set(world2, next);
+    return next;
+  }
+  function dispatchStreetContactPairs(moving, solids) {
+    const bounds = moving.map(sweptContactBounds), spans = bounds.map(contactCellSpan), cells = /* @__PURE__ */ new Map();
+    for (let i = 0; i < spans.length; i++) indexContactSpan(cells, spans[i], i);
+    const n = moving.length, marked = new Uint32Array(n + solids.plans.length);
+    const pairs = [], candidates2 = [];
+    for (let i = 0; i < n; i++) {
+      const [left, right, bottom, top] = spans[i], a = moving[i], own = bounds[i], stamp = i + 1;
+      candidates2.length = 0;
+      for (let x = left; x <= right; x++) {
+        const row = cells.get(x), staticRow = solids.cells.get(x);
+        for (let z = bottom; z <= top; z++) {
+          const local2 = row?.get(z);
+          if (local2) {
+            for (const j of local2) if (j > i && marked[j] !== stamp) {
+              marked[j] = stamp;
+              candidates2.push(j);
+            }
+          }
+          const fixed = a.travel ? staticRow?.get(z) : void 0;
+          if (fixed) for (const index of fixed) {
+            const j = n + index;
+            if (marked[j] === stamp) continue;
+            marked[j] = stamp;
+            candidates2.push(j);
+          }
+        }
+      }
+      candidates2.sort(contactOrder);
+      for (const j of candidates2) {
+        const b = j < n ? moving[j] : solids.plans[j - n];
+        if (!a.travel && !b.travel) continue;
+        const other = j < n ? bounds[j] : solids.bounds[j - n];
+        if (own[0] > other[1] || own[1] < other[0] || own[2] > other[3] || own[3] < other[2]) continue;
+        if (distance(a.a, b.a) <= a.radius + b.radius + a.travel + b.travel + 0.24) pairs.push([a, b]);
+      }
+    }
+    return pairs;
+  }
+  function streetContactPairs(moving, solid, dispatch) {
+    const cells = /* @__PURE__ */ new Map(), cellSize = CONTACT_CELL_M;
     const bounds = (body2) => {
       const reach = body2.radius + body2.travel + 0.24;
       return [
@@ -38378,7 +39270,8 @@
       ];
     };
     const bodies = moving.concat(solid);
-    const spans = bodies.map(bounds);
+    const swept = dispatch ? bodies.map(sweptContactBounds) : null;
+    const spans = swept ? swept.map((box5) => box5.map((edge) => Math.floor(edge / cellSize))) : bodies.map(bounds);
     for (let i = 0; i < bodies.length; i++) {
       const [left, right, bottom, top] = spans[i];
       for (let x = left; x <= right; x++) for (let z = bottom; z <= top; z++) {
@@ -38391,21 +39284,26 @@
     const pairs = [];
     for (let i = 0; i < moving.length; i++) {
       const [left, right, bottom, top] = spans[i];
-      const a = bodies[i], candidates = /* @__PURE__ */ new Set();
+      const a = bodies[i], candidates2 = /* @__PURE__ */ new Set();
       for (let x = left; x <= right; x++) for (let z = bottom; z <= top; z++)
         for (const j of cells.get(`${x},${z}`) ?? [])
-          if (j > i) candidates.add(j);
-      for (const j of [...candidates].sort((a2, b) => a2 - b)) {
+          if (j > i) candidates2.add(j);
+      for (const j of [...candidates2].sort((a2, b) => a2 - b)) {
         const b = bodies[j];
+        if (swept) {
+          const [minX, maxX, minZ, maxZ] = swept[i], other = swept[j];
+          if (minX > other[1] || maxX < other[0] || minZ > other[3] || maxZ < other[2]) continue;
+        }
         if (distance(a.a, b.a) <= a.radius + b.radius + a.travel + b.travel + 0.24)
           pairs.push([a, b]);
       }
     }
     return pairs;
   }
-  function resolveContacts(world2, moving, solid) {
-    const s = world2.pursuit, pairs = s.street ? streetContactPairs(moving, solid) : [];
+  function resolveContacts(world2, moving, solid, staticGrid, freshImpacts) {
+    const s = world2.pursuit, pairs = staticGrid ? dispatchStreetContactPairs(moving, staticGrid) : s.street ? streetContactPairs(moving, solid, s.response?.dispatch) : [];
     const gtaPairs = s.gta ? /* @__PURE__ */ new Set() : null;
+    const probes = s.response?.dispatch ? [{}, {}] : null;
     if (!s.street) for (const [i, a] of moving.entries()) {
       for (const b of [...moving.slice(i + 1), ...solid]) {
         if (distance(a.a, b.a) <= a.radius + b.radius + a.travel + b.travel + 0.24)
@@ -38417,17 +39315,18 @@
       let hit = null;
       for (const [a2, b2] of pairs) {
         if (a2.erased || b2.erased || survivalGhostPair(world2, a2.a, b2.a)) continue;
-        if (gtaPairs?.has(pairId(a2.a, b2.a))) continue;
-        const found = findContact(a2, b2, since);
-        if (found && (!hit || found.time < hit.time)) hit = found;
+        if (!staticGrid && gtaPairs?.has(pairId(a2.a, b2.a))) continue;
+        const found = findContact(a2, b2, since, probes);
+        if (found && (!hit || found.time < hit.time) && (!staticGrid || !gtaPairs?.size || !gtaPairs.has(pairId(a2.a, b2.a)))) hit = found;
       }
       if (!hit) break;
       const { a, b, time, overlapAt } = hit;
       const key3 = pairId(a.a, b.a);
+      const fresh = !s.contacts.has(key3);
       if (gtaPairs) {
         gtaPairs.add(key3);
-        const pa = poseAt(a, time), pb = poseAt(b, time), normal = normalAt(pa, pb);
-        applyGtaContact(world2, a, b, pa, pb, normal, closingSpeed(a, b, overlapAt, normal), !s.contacts.has(key3));
+        const pa = poseAt(a, time), pb = poseAt(b, time), normal2 = normalAt(pa, pb);
+        applyGtaContact(world2, a, b, pa, pb, normal2, closingSpeed(a, b, overlapAt, normal2), fresh);
       }
       if (a.a === world2.player || b.a === world2.player) {
         const [ego, other] = a.a === world2.player ? [a, b] : [b, a];
@@ -38439,7 +39338,8 @@
         }
         const impact = contactImpact(ego, other, time, overlapAt, world2.tick + 1);
         if (!playerHit || impact.severity > playerHit.severity) playerHit = impact;
-        if (!s.contacts.has(key3)) {
+        if (fresh) {
+          freshImpacts?.push(impact);
           const pack = isPackPursuit(s.variant), pedestrian = other.a.type === "pedestrian";
           if (!pack || !s.metrics.terminalCause || pedestrian && s.metrics.terminalCause !== "pedestrian-impact")
             s.metrics.impact = impact;
@@ -38470,9 +39370,9 @@
           }
           if (s.survival && s.metrics.terminalCause && !s.survival.contactAt) {
             const body2 = poseAt(ego, time);
-            const normal = normalAt(body2, poseAt(other, time));
-            const reach = extent(body2, normal.x, normal.z) + 0.08;
-            s.survival.contactAt = { x: body2.x + normal.x * reach, z: body2.z + normal.z * reach };
+            const normal2 = normalAt(body2, poseAt(other, time));
+            const reach = extent(body2, normal2.x, normal2.z) + 0.08;
+            s.survival.contactAt = { x: body2.x + normal2.x * reach, z: body2.z + normal2.z * reach };
           }
           logEvent(world2, "impact", impact, impact.actorId, impact.tick);
           const patrol2 = other.a;
@@ -38486,11 +39386,11 @@
             };
           }
         }
-      } else if (!s.contacts.has(key3)) {
+      } else if (fresh) {
         s.metrics.trafficCollisions++;
         if (s.survival) {
-          const normal = normalAt(poseAt(a, time), poseAt(b, time));
-          if (closingSpeed(a, b, overlapAt, normal) >= 2.6) {
+          const normal2 = normalAt(poseAt(a, time), poseAt(b, time));
+          if (closingSpeed(a, b, overlapAt, normal2) >= 2.6) {
             for (const [current, other] of [[a, b], [b, a]]) if (s.patrols.has(current.a))
               s.survival.pendingWrecks.set(current.a, { reason: s.patrols.has(other.a) ? "patrol" : other.a.kind ?? "contact" });
           }
@@ -38521,9 +39421,9 @@
       const key3 = pairId(ego, other);
       if (overlaps(ego, other, 0.25)) touching.add(key3);
       if (s.contacts.has(key3) || !overlaps(ego, other, 0.72)) continue;
-      const normal = normalAt(ego, other);
-      const minDist = s.gta ? Math.max(0, (other.x - ego.x) * normal.x + (other.z - ego.z) * normal.z - extent(ego, normal.x, normal.z) - extent(other, normal.x, normal.z)) : 0;
-      const approach2 = s.gta ? (distance(poseAt(playerMotion, 0.9), poseAt(body2, 0.9)) - distance(ego, other)) / (0.1 * STEP) : closingSpeed(playerMotion, body2, 1, normal);
+      const normal2 = normalAt(ego, other);
+      const minDist = s.gta ? Math.max(0, (other.x - ego.x) * normal2.x + (other.z - ego.z) * normal2.z - extent(ego, normal2.x, normal2.z) - extent(other, normal2.x, normal2.z)) : 0;
+      const approach2 = s.gta ? (distance(poseAt(playerMotion, 0.9), poseAt(body2, 0.9)) - distance(ego, other)) / (0.1 * STEP) : closingSpeed(playerMotion, body2, 1, normal2);
       const entered = !s.near.has(key3) && approach2 > 0.6 && (!s.gta || minDist <= 0.72);
       if (!s.gta || entered || s.near.has(key3)) near.add(key3);
       if (entered) {
@@ -38531,7 +39431,8 @@
         logEvent(world2, "near", ego, other.id, world2.tick + 1);
         if (s.gta) emitGtaEvent(world2, "near_miss", {
           actorKind: body2.a.aiState === "WRECKED" ? "wrecked" : body2.a.unitType ?? (other.gtaRoadblock ? "roadblock" : other.kind ?? other.type),
-          minDist
+          minDist,
+          ...s.response.dispatch ? { actorId: body2.a.id, actorType: body2.a.type, approachMps: approach2 } : {}
         });
       }
     }
@@ -38544,7 +39445,8 @@
     s.near = near;
   }
   function motionPlan(world2, actor, action, streetHooks) {
-    let next, command, guard = "clear";
+    let next, command, sweptTravel, guard = "clear";
+    const radius = shapeRadius(actor);
     if (actor.type === "pedestrian")
       next = streetHooks ? streetHooks.pedestrianMotion(actor) : pedestrianMotion(world2, actor);
     else {
@@ -38557,20 +39459,19 @@
         command: { steer: 0, targetSpeed: 0 },
         guard,
         travel: 0,
-        radius: shapeRadius(actor),
+        radius,
         stop: 0,
         hit: null
       };
-      command = actor === world2.player ? (pack ? packCommand : pursuitCommand)(actor, action, STEP) : gta ? gtaPatrolCommand(
-        world2,
-        actor,
-        gtaStreetRoute,
-        gtaDirectApproach,
-        gtaSpacingSteer(actor, world2.pursuit.patrols)
-      ) : !streetHooks || world2.pursuit.patrols.has(actor) ? npcCommand(world2, actor) : null;
+      command = actor === world2.player ? (pack ? packCommand : pursuitCommand)(actor, action, STEP) : gta ? world2.pursuit.response.dispatch && gtaJunctionCommand(world2, actor) || gtaPatrolCommand(world2, actor, gtaStreetRoute, gtaDirectApproach, gtaSpacingSteer(actor, world2.pursuit.patrols)) : !streetHooks || world2.pursuit.patrols.has(actor) ? npcCommand(world2, actor) : null;
       if (survival && actor === world2.player && world2.mode === "manual") command.arcadeDrift = true;
       if (streetHooks) command = streetHooks.vehicleCommand(actor, command);
       else if (pack && actor === world2.player) command = world2.safeSpeed(actor, command, false);
+      if (actor !== world2.player && world2.pursuit.response?.dispatch) {
+        const preview = !gta && world2.pursuit.gta.config.civilianCrossingPreview;
+        if (gta || preview) command = dispatchPedestrianYield(world2, actor, command, preview);
+        if (gta && world2.pursuit.gta.config.patrolTrafficPreview) command = dispatchPatrolTrafficYield(world2, actor, command);
+      }
       const pose6 = usesRushPace(world2.pursuit.variant) ? Object.assign(vehicleProbe(actor, actor.speed), {
         id: actor.id,
         kind: actor.kind,
@@ -38582,8 +39483,10 @@
       next.reason = command.reason ?? "driving";
       next.blockedBy = command.blockedBy ?? null;
       const roads = streetHooks || actor === world2.player ? world2.roads : world2.drivingRoads;
-      if (travel(actor, next) > 0 && !sweepSafe(actor, next, [], roads).safe) {
+      sweptTravel = travel(actor, next, radius);
+      if (sweptTravel > 0 && !sweepSafe(actor, next, [], roads).safe) {
         guard = "road-boundary";
+        sweptTravel = 0;
         next = {
           ...actor,
           speed: 0,
@@ -38594,19 +39497,106 @@
         };
       }
     }
-    return { a: actor, next, command, guard, travel: travel(actor, next), radius: shapeRadius(actor), stop: 1, hit: null };
+    return { a: actor, next, command, guard, travel: sweptTravel ?? travel(actor, next, radius), radius, stop: 1, hit: null };
+  }
+  function dispatchPedestrianYield(world2, car2, command, civilianPreview) {
+    const { targetSpeed } = command;
+    if (!targetSpeed || civilianPreview && targetSpeed < 0) return command;
+    const braking = car2.spec?.braking ?? VEHICLE.braking;
+    const deceleration = Math.min(braking, 6);
+    const speed = Math.abs(car2.speed) + 0.12 * (car2.spec?.acceleration ?? VEHICLE.acceleration);
+    const reach = car2.length / 2 + speed * 0.12 + speed ** 2 / (2 * deceleration) + 2.5;
+    const walkers = world2.actorIndex.near(car2, reach).filter((body2) => body2.type === "pedestrian" && (!civilianPreview || body2.speed > 0.2 && (civilianPreview !== true || body2.crossing)) && gtaLineClear(world2, car2, body2.x - car2.x, body2.z - car2.z, distance(car2, body2)));
+    if (!walkers.length) return command;
+    const stride = 0.1, horizon = 0.2 + speed / deceleration;
+    const probe = vehicleProbe(car2, car2.speed);
+    const slow = { steer: command.steer, targetSpeed: 0, decelerationMps2: deceleration };
+    for (let t = stride; t <= horizon; t += stride) {
+      integrateVehicle(probe, t <= 0.12 ? command : slow, stride, probe);
+      for (const person of walkers) {
+        const time = Math.min(t, 1.2);
+        const dx = Math.sin(person.heading) * person.speed * time;
+        const dz = Math.cos(person.heading) * person.speed * time;
+        for (const fraction of [0, 0.5, 1]) {
+          const possible = {
+            type: "pedestrian",
+            radius: person.radius,
+            x: person.x + fraction * dx,
+            z: person.z + fraction * dz
+          };
+          if (overlaps(probe, possible, 0.42))
+            return { ...command, targetSpeed: 0, reason: "pedestrian-yield", blockedBy: person.id };
+        }
+      }
+    }
+    return command;
+  }
+  function dispatchPatrolTrafficYield(world2, car2, command) {
+    if (command.targetSpeed <= 0 || car2.speed < 0) return command;
+    const { pursuit } = world2, braking = car2.spec?.braking ?? VEHICLE.braking;
+    const reactionTicks = 21, reactionS = reactionTicks * STEP;
+    const speed = Math.max(car2.speed, Math.min(
+      command.targetSpeed,
+      car2.speed + reactionS * (car2.spec?.acceleration ?? VEHICLE.acceleration)
+    ));
+    const reach = speed * reactionS + speed ** 2 / (2 * braking) + Math.abs(car2.gtaSlipMps) / 3 + 10;
+    const blockers = [];
+    for (const other of world2.actorIndex.near(car2, reach)) {
+      if (other === world2.player || other.type !== "vehicle" || pursuit.patrols.has(other) || gtaLocal(car2, other).forward <= 0 || !gtaLineClear(world2, car2, other.x - car2.x, other.z - car2.z, distance(car2, other))) continue;
+      blockers.push({
+        body: other,
+        dx: Math.sin(other.heading) * other.speed,
+        dz: Math.cos(other.heading) * other.speed,
+        pose: vehicleProbe(other, other.speed)
+      });
+    }
+    if (!blockers.length) return command;
+    const clearanceM = 0.55;
+    const project2 = (steer, delay, roads) => {
+      const brake = { steer, targetSpeed: 0 };
+      const limit = delay + Math.ceil(speed / (braking * STEP)) + 6;
+      let pose6 = { ...vehicleProbe(car2, car2.speed), gtaYawRate: car2.gtaYawRate, gtaSlipMps: car2.gtaSlipMps };
+      let next = { ...pose6 };
+      for (let i = 0; i < limit; i++) {
+        integrateVehicle(pose6, i < delay ? command : brake, STEP, next);
+        integrateGtaSlip(pose6, next);
+        if (roads && !sweepSafe(pose6, next, [], roads).safe) return { tick: i };
+        const time = Math.min(0.65, (i + 1) * STEP);
+        for (const { body: body2, dx, dz, pose: other } of blockers) {
+          other.x = body2.x + dx * time;
+          other.z = body2.z + dz * time;
+          if (overlaps(next, other, clearanceM)) return { body: body2, tick: i };
+        }
+        if (i >= delay && next.speed <= 0 && Math.abs(next.gtaSlipMps) < 0.02 && Math.abs(next.gtaYawRate) < 0.02) return null;
+        [pose6, next] = [next, pose6];
+      }
+      return null;
+    };
+    const conflict = project2(command.steer, reactionTicks);
+    if (!conflict) return command;
+    const sides = gtaLocal(car2, conflict.body).right < 0 ? 1 : -1;
+    let best = { steer: command.steer, safeTicks: -1 };
+    for (const steer of [command.steer, 0, sides * 0.2, -sides * 0.2]) {
+      const blocked = project2(steer, 0, world2.roads);
+      if (!blocked) {
+        best = { steer, safeTicks: Infinity };
+        break;
+      }
+      if (blocked.tick > best.safeTicks) best = { steer, safeTicks: blocked.tick };
+    }
+    return { ...command, steer: best.steer, targetSpeed: 0, reason: "traffic-yield", blockedBy: conflict.body.id };
   }
   function approachingPedestrianDanger(world2, car2) {
     const speed = Math.abs(car2.speed);
     if (speed < 1.4 || speed < Math.abs(car2.previous.speed) - 0.01) return 0;
-    const direction2 = Math.sign(car2.speed);
+    const direction3 = Math.sign(car2.speed);
     const sin = Math.sin(car2.heading), cos = Math.cos(car2.heading);
     const brakingRoom = 0.8 + speed * 0.24 + speed ** 2 / 11;
     let danger = 0;
     for (const person of world2.actorIndex.near(car2, car2.length / 2 + brakingRoom + 2)) {
       if (person.type !== "pedestrian") continue;
       const dx = person.x - car2.x, dz = person.z - car2.z;
-      const gap = (dx * sin + dz * cos) * direction2 - car2.length / 2 - person.radius;
+      const gap = (dx * sin + dz * cos) * direction3 - car2.length / 2 - person.radius;
       if (gap < -0.15 || gap > brakingRoom) continue;
       const side = dx * cos - dz * sin;
       const lateralPace = Math.sin(person.heading - car2.heading) * person.speed;
@@ -38681,8 +39671,10 @@
     for (const a of world2.actors) a.previous = copyPose(a);
     const plans = world2.actors.map((a) => motionPlan(world2, a, requested, streetHooks));
     const ego = plans.find((p) => p.a === player);
-    const solids = world2.statics.map((a) => ({ a, next: a, travel: 0, stop: 0, radius: shapeRadius(a) }));
-    const impact = resolveContacts(world2, plans, solids);
+    const staticGrid = s.street && s.response?.dispatch && dispatchStaticContacts(world2);
+    const solids = staticGrid?.plans ?? world2.statics.map(staticContactPlan);
+    const freshImpacts = s.gta?.config.damageFeedback === DISPATCH_DAMAGE_FEEDBACK ? [] : null;
+    const impact = resolveContacts(world2, plans, solids, staticGrid, freshImpacts);
     updateClearance(world2, ego, [...plans, ...solids]);
     const m = s.metrics;
     if (isPackPursuit(s.variant) && m.pedestrianStatus !== "impact") {
@@ -38713,9 +39705,10 @@
     m.requestedAction = requested;
     s.action = ego.guard === "road-boundary" ? { ...requested, throttle: 0, brake: 1 } : requested;
     let moved = 0;
+    const reuseAcceptedPose = Boolean(s.response?.dispatch) || usesRushPace(s.variant);
     for (const p of plans) {
       const a = p.a, accepted = poseAt(p, 1);
-      const next = usesRushPace(s.variant) && p.a !== accepted ? accepted : { ...accepted };
+      const next = reuseAcceptedPose && a !== accepted ? accepted : { ...accepted };
       const acceptedDistance = distance(a, next);
       const gtaBody = s.gta && (a === player || s.patrols.has(a));
       if (p.hit) Object.assign(next, { ...gtaBody ? p.impulse : { speed: 0 }, reason: "contact", blockedBy: p.hit });
@@ -38756,7 +39749,8 @@
         };
         next.vehicle = advanceVehicleState(a, next, applied, STEP, {
           tick: world2.tick + 1,
-          contact: impact ? { ...impact, hitId: impact.actorId, proposedTravelM: distance(a, p.next) } : null
+          contact: impact ? { ...impact, hitId: impact.actorId, proposedTravelM: distance(a, p.next) } : null,
+          freshImpacts
         });
         const height = next.supportHeightM ?? 0;
         if (m.supportHeightM < 0.045 && height >= 0.045) m.shoulderEntries++;
@@ -38784,6 +39778,8 @@
       updateSurvivalAfterMotion(world2);
     }
     updatePhase(world2, moved, impact);
+    if (s.gta?.scanner && (world2.tick - s.startedTick) % PURSUIT_SCAN_TICKS === 0)
+      s.gta.scan = s.gta.scanner.sample(world2);
     if (isPackPursuit(s.variant) && (s.phase === "crashed" || s.phase === "captured")) {
       s.reviewUntilTick = world2.tick + (s.survival ? SURVIVAL_REVIEW_TICKS : PACK_REVIEW_TICKS);
       s.endedTick = world2.tick;
@@ -38817,7 +39813,7 @@
       ...s.gta ? { variant: "gta", wantedLevel: s.wantedLevel, gta: {
         playerHealth: world2.player.health,
         playerMaxHealth: world2.player.maxHealth,
-        activePatrols: [...s.patrols].filter((unit) => unit.aiState !== "WRECKED").length,
+        activePatrols: [...s.patrols].filter((unit2) => unit2.aiState !== "WRECKED").length,
         pinnedRatio: s.gta.pinnedTicks * STEP / GTA_PIN_SECONDS
       } } : {},
       ...isRushPack(s.variant) ? { wantedLevel: s.wantedLevel, learning: s.learner?.snapshot() ?? null } : {},
@@ -38975,8 +39971,8 @@
     const ego = observed.ego, axis = shoulder.axis, across = axis === "z" ? "x" : "z";
     const sign2 = Math.sign(exit2[axis] - ego[axis]);
     const travel2 = (exit2[axis] - ego[axis]) * sign2;
-    const direction2 = axis === "z" ? Math.cos(ego.heading) : Math.sin(ego.heading);
-    if (travel2 < 16 || direction2 * sign2 < 0.45) return null;
+    const direction3 = axis === "z" ? Math.cos(ego.heading) : Math.sin(ego.heading);
+    if (travel2 < 16 || direction3 * sign2 < 0.45) return null;
     const rampM = Math.max(2 * ego.length, Math.abs(shoulder.fixed - ego[across]) * 2.4);
     const near = (sign2 > 0 ? shoulder.min : shoulder.max) - ego[axis];
     const far = (sign2 > 0 ? shoulder.max : shoulder.min) - ego[axis];
@@ -39034,7 +40030,7 @@
         recovery: { ...previous.recovery, turning: previous.recovery.turning || pastEntry }
       };
     }
-    const options = observed.exits.flatMap((exit2) => {
+    const options2 = observed.exits.flatMap((exit2) => {
       let path;
       if (distance(ego, exit2) < 8 && !barriers.some((body2) => lineIntersects(ego, exit2, body2, ego.width / 2)))
         path = [{ x: ego.x, z: ego.z }, { x: exit2.x, z: exit2.z }];
@@ -39046,11 +40042,11 @@
     for (const shoulder of observed.roads.filter((road4) => road4.pursuitShoulder))
       for (const exit2 of observed.exits) {
         const path = shoulderRoute(observed, exit2, shoulder);
-        if (path) options.push(path);
+        if (path) options2.push(path);
       }
-    options.sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id));
+    options2.sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id));
     if (previous?.path.length > 2 && !previous.recovery) {
-      const best = options[0];
+      const best = options2[0];
       let nearest = 0;
       for (let i = 1; i < previous.path.length; i++)
         if (distance(ego, previous.path[i]) < distance(ego, previous.path[nearest])) nearest = i;
@@ -39062,7 +40058,7 @@
           return { ...previous, path, cost };
       }
     }
-    return options[0] ?? reverseConnector(observed, filtered, cars, pressure, crossesBarrier);
+    return options2[0] ?? reverseConnector(observed, filtered, cars, pressure, crossesBarrier);
   }
   function streetProfile(district, barriers, obstacles) {
     if (!barriers.length) return district;
@@ -39104,9 +40100,9 @@
     }
     const profile = streetProfile(district, barriers, obstacles);
     const traffic = entities.filter((body2) => body2.type === "vehicle");
-    const options = exits.filter((exit2) => distance(exit2, ego) > 8).sort((a, b) => distance(a, ego) - distance(b, ego)).slice(0, 6);
+    const options2 = exits.filter((exit2) => distance(exit2, ego) > 8).sort((a, b) => distance(a, ego) - distance(b, ego)).slice(0, 6);
     let best = null;
-    for (const exit2 of options) {
+    for (const exit2 of options2) {
       const path = planDistrictRoute(profile, ego, exit2, traffic);
       if (path.length < 2 || blocked(path)) continue;
       const cost = routeCost(path, observed);
@@ -39121,18 +40117,18 @@
     const sideways = Math.abs(Math.cos(ego.heading)) > 0.72;
     const axis = sideways ? "x" : "z", across = sideways ? "z" : "x";
     const frontAxis = sideways ? Math.cos(ego.heading) : Math.sin(ego.heading);
-    const options = [];
+    const options2 = [];
     for (const road4 of drivingRoads) {
       if (road4.axis !== axis || ego[axis] < road4.min || ego[axis] > road4.max) continue;
       const entry = { ...ego, [across]: road4.fixed - Math.sign(frontAxis) * 1.4 };
-      const { forward: forward2 } = projection(entry, ego);
-      if (forward2 > -2 || forward2 < -16 || !bodyOnRoad(entry, roads, 0.12) || obstacles.some((body2) => lineIntersects(ego, entry, body2, ego.width / 2 + 0.12))) continue;
+      const { forward: forward3 } = projection(entry, ego);
+      if (forward3 > -2 || forward3 < -16 || !bodyOnRoad(entry, roads, 0.12) || obstacles.some((body2) => lineIntersects(ego, entry, body2, ego.width / 2 + 0.12))) continue;
       for (const heading2 of sideways ? [-Math.PI / 2, Math.PI / 2] : [0, Math.PI]) {
         for (const exit2 of exits) {
           const path = planNavigation(graph, { ...ego, [across]: road4.fixed, heading: heading2 }, exit2, cars, pressure);
           if (path.length < 2 || crossesBarrier(path)) continue;
           const cost = routeCost(path, observed) + 2 * distance(ego, entry);
-          options.push({ id: exit2.id, exit: exit2, path, cost, recovery: {
+          options2.push({ id: exit2.id, exit: exit2, path, cost, recovery: {
             entry: { x: entry.x, z: entry.z },
             approach: ego.heading,
             heading: heading2,
@@ -39141,15 +40137,15 @@
         }
       }
     }
-    return options.sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id))[0] ?? null;
+    return options2.sort((a, b) => a.cost - b.cost || a.id.localeCompare(b.id))[0] ?? null;
   }
   function retreatPoint(observed) {
     const { ego } = observed;
     const aligned = Math.abs(Math.cos(ego.heading)) > 0.72;
     const axis = aligned ? "x" : "z";
     return observed.drivingRoads.filter((road4) => road4.axis === axis && ego[axis] >= road4.min + 0.5 && ego[axis] <= road4.max - 0.5).map((road4) => ({ ...ego, [axis === "x" ? "z" : "x"]: road4.fixed })).filter((point4) => {
-      const { forward: forward2 } = projection(point4, ego);
-      return forward2 < -1 && forward2 > -16 && !observed.obstacles.some((body2) => lineIntersects(ego, point4, body2, ego.width / 2));
+      const { forward: forward3 } = projection(point4, ego);
+      return forward3 < -1 && forward3 > -16 && !observed.obstacles.some((body2) => lineIntersects(ego, point4, body2, ego.width / 2));
     }).sort((a, b) => distance(ego, a) - distance(ego, b))[0] ?? null;
   }
   function routeCommand2(body2, route) {
@@ -39450,12 +40446,12 @@
     }
     return best;
   }
-  function checkedPrefix(observed, route, candidates) {
+  function checkedPrefix(observed, route, candidates2) {
     const samples = Math.ceil((0.55 + Math.abs(observed.ego.speed) / VEHICLE.braking) / PACK_SAMPLE_S);
     if (samples > ROLLOUT_SAMPLES) return null;
     const scene = packRolloutScene(observed, samples);
     let best = null;
-    for (const candidate of candidates) {
+    for (const candidate of candidates2) {
       const { action, index } = candidate;
       if (!action.throttle || action.brake || candidate.failureAtS <= 0.65) continue;
       const trial = rollout(
@@ -39473,7 +40469,7 @@
     }
     return best;
   }
-  var sector = ({ lateral: lateral2, forward: forward2 }) => Math.abs(lateral2) > Math.abs(forward2) ? lateral2 > 0 ? "right" : "left" : forward2 > 0 ? "front" : "rear";
+  var sector = ({ lateral: lateral2, forward: forward3 }) => Math.abs(lateral2) > Math.abs(forward3) ? lateral2 > 0 ? "right" : "left" : forward3 > 0 ? "front" : "rear";
   function observedPackThreats({ ego, entities }) {
     const sectors = /* @__PURE__ */ new Set(), closingSectors = /* @__PURE__ */ new Set();
     const vx = ego.speed * Math.sin(ego.heading), vz = ego.speed * Math.cos(ego.heading);
@@ -39498,14 +40494,14 @@
       nearestM: Number.isFinite(nearestM) ? nearestM : null
     };
   }
-  function packObservationKey(ego, candidates, threat) {
+  function packObservationKey(ego, candidates2, threat) {
     const pace = ego.speed < -0.15 ? "reverse" : ego.speed < 1.2 ? "slow" : "moving";
     const spread = clamp2(threat.sectors.length - 1, 0, 2);
-    const openings = candidates.filter((c) => !c.failure && c.index < 6 && (c.action?.gear ?? 1) > 0).length;
+    const openings = candidates2.filter((c) => !c.failure && c.index < 6 && (c.action?.gear ?? 1) > 0).length;
     return `pack-v1:${threat.primary}:${spread}:${pace}:${openings === 0 ? 0 : openings < 3 ? 1 : 2}`;
   }
-  function pursuitObservationKey(observed, candidates = []) {
-    if (observed.pack) return packObservationKey(observed.ego, candidates, observedPackThreats(observed));
+  function pursuitObservationKey(observed, candidates2 = []) {
+    if (observed.pack) return packObservationKey(observed.ego, candidates2, observedPackThreats(observed));
     const { ego, entities } = observed;
     let mask = 0;
     for (const entity of entities) {
@@ -39514,7 +40510,7 @@
     }
     const pace = ego.speed < -0.15 ? "reverse" : ego.speed < 1.2 ? "slow" : ego.speed < 5 ? "cruise" : "fast";
     const crowd = Math.min(2, entities.filter((a) => a.type !== "static" && a.rangeM < 16).length);
-    const openness = candidates.filter((candidate) => !candidate.failure && candidate.index < 6).length;
+    const openness = candidates2.filter((candidate) => !candidate.failure && candidate.index < 6).length;
     const key3 = `${mask}:${pace}:${crowd}:${Math.min(3, openness)}`;
     if (!observed.arcade) return key3;
     const vx = ego.speed * Math.sin(ego.heading), vz = ego.speed * Math.cos(ego.heading);
@@ -39543,17 +40539,17 @@
     const follow = routeCommand2(observed.ego, route);
     const retreat = route || observed.street ? null : retreatPoint(observed);
     const pack = observed.pack ? packRolloutScene(observed) : null;
-    const candidates = buildCandidates(follow).map((action, index) => rollout(observed, action, route, index, retreat, pack));
-    if (pack) return decidePack(observed, candidates, route, weights, choose);
-    const key3 = pursuitObservationKey(observed, candidates);
-    const safe = candidates.filter((candidate) => !candidate.failure);
+    const candidates2 = buildCandidates(follow).map((action, index) => rollout(observed, action, route, index, retreat, pack));
+    if (pack) return decidePack(observed, candidates2, route, weights, choose);
+    const key3 = pursuitObservationKey(observed, candidates2);
+    const safe = candidates2.filter((candidate) => !candidate.failure);
     const row = weights?.q[key3];
     const rank = (candidate) => candidate.score + (candidate.index === 0 && route ? 0.5 : 0) + clamp2(row?.[candidate.index] ?? 0, -4, 4);
     safe.sort((a, b) => rank(b) - rank(a) || a.index - b.index);
-    const fallback = candidates[7];
+    const fallback = candidates2[7];
     let selected = safe[0] ?? fallback;
     if (!safe.length && !fallback.hardFailure && fallback.failure) {
-      const escape2 = candidates.filter((candidate) => !candidate.hardFailure && candidate.failureAtS >= 0.6 && candidate.failureAtS > fallback.failureAtS && candidate.index !== fallback.index && distance(observed.ego, candidate.pose) > 0.15).sort((a, b) => b.failureAtS - a.failureAtS || b.score - a.score)[0];
+      const escape2 = candidates2.filter((candidate) => !candidate.hardFailure && candidate.failureAtS >= 0.6 && candidate.failureAtS > fallback.failureAtS && candidate.index !== fallback.index && distance(observed.ego, candidate.pose) > 0.15).sort((a, b) => b.failureAtS - a.failureAtS || b.score - a.score)[0];
       if (escape2) selected = escape2;
     }
     if (choose && safe.length) {
@@ -39570,19 +40566,19 @@
       clearanceM: selected.clearance,
       availableActions: safe.map((candidate) => candidate.index),
       threatSectors: [...new Set(observed.entities.filter((a) => a.type !== "static" && a.rangeM < (a.police ? 20 : 10)).map(sector))],
-      rejected: candidates.filter((c) => c.failure).map((c) => ({ action: PACK_ACTIONS[c.index], reason: c.failure }))
+      rejected: candidates2.filter((c) => c.failure).map((c) => ({ action: PACK_ACTIONS[c.index], reason: c.failure }))
     };
   }
-  function decidePack(observed, candidates, route, weights, choose) {
+  function decidePack(observed, candidates2, route, weights, choose) {
     const packThreat = observedPackThreats(observed);
-    const key3 = packObservationKey(observed.ego, candidates, packThreat);
+    const key3 = packObservationKey(observed.ego, candidates2, packThreat);
     const planRank = (candidate) => candidate.score + (candidate.index === 0 && route ? 0.5 : 0);
-    const safe = candidates.filter((c) => !c.failure).sort((a, b) => planRank(b) - planRank(a) || a.index - b.index);
+    const safe = candidates2.filter((c) => !c.failure).sort((a, b) => planRank(b) - planRank(a) || a.index - b.index);
     const safeForward = observed.hunt && safe.some((c) => c.action.gear > 0 && c.action.throttle && projection(c.pose, observed.ego).forward > 1.4);
     const stalled = Math.abs(observed.ego.speed) < 1.15 && !safeForward;
     const continuing = observed.recovery?.untilS > observed.timeS;
     const recover = observed.hunt && (continuing || stalled) && checkedRecovery(observed);
-    const prefix = observed.hunt && !recover && !safe.some((c) => c.action.throttle) && checkedPrefix(observed, route, candidates);
+    const prefix = observed.hunt && !recover && !safe.some((c) => c.action.throttle) && checkedPrefix(observed, route, candidates2);
     const maneuver = recover || prefix;
     if (maneuver) return {
       action: maneuver.action,
@@ -39595,9 +40591,9 @@
       clearanceM: maneuver.clearance,
       availableActions: [maneuver.index],
       threatSectors: packThreat.sectors,
-      rejected: candidates.filter((c) => c.failure).map((c) => ({ action: PACK_ACTIONS[c.index], reason: c.failure }))
+      rejected: candidates2.filter((c) => c.failure).map((c) => ({ action: PACK_ACTIONS[c.index], reason: c.failure }))
     };
-    const baseline = safe[0] ?? candidates[7];
+    const baseline = safe[0] ?? candidates2[7];
     const row = weights?.q?.[key3];
     const policyLookup = Boolean(row && safe.length);
     let learned = baseline;
@@ -39631,7 +40627,7 @@
       availableActions,
       packThreat,
       threatSectors: packThreat.sectors,
-      rejected: candidates.filter((c) => c.failure).map((c) => ({ action: PACK_ACTIONS[c.index], reason: c.failure }))
+      rejected: candidates2.filter((c) => c.failure).map((c) => ({ action: PACK_ACTIONS[c.index], reason: c.failure }))
     };
   }
   function createArcadeLearner(seed) {
@@ -39686,7 +40682,7 @@
   var RELEASE_MPS2 = 2.4;
   var ORDINARY_DECEL_MPS2 = 2;
   var MAX_VISUAL_DECEL_MPS2 = 7;
-  var EPS2 = 1e-8;
+  var EPS3 = 1e-8;
   var finite3 = Number.isFinite;
   var STATES = ["clear", "caution", "slow", "stop", "unavailable"];
   var SNAPSHOT_KEYS = [
@@ -39920,28 +40916,28 @@
     }
     const brake = decideVisualBrake({ tracks: visual.tracks, nowS, ego });
     const frameTimeS = finite3(visual.ageMs) ? nowS - visual.ageMs / 1e3 : null;
-    const coherent = visual.frameId !== null && visual.streamId !== null && frameTimeS !== null && frameTimeS >= -EPS2 && visual.model !== null && visual.model !== void 0 && finite3(visual.latencyMs) && visual.latencyMs <= MAX_AGE_MS && visual.tracks.every((track) => track.streamId === visual.streamId && track.frameId <= visual.frameId && track.lastSeenS <= frameTimeS + EPS2 && (track.frameId !== visual.frameId || Math.abs(track.lastSeenS - frameTimeS) <= EPS2));
+    const coherent = visual.frameId !== null && visual.streamId !== null && frameTimeS !== null && frameTimeS >= -EPS3 && visual.model !== null && visual.model !== void 0 && finite3(visual.latencyMs) && visual.latencyMs <= MAX_AGE_MS && visual.tracks.every((track2) => track2.streamId === visual.streamId && track2.frameId <= visual.frameId && track2.lastSeenS <= frameTimeS + EPS3 && (track2.frameId !== visual.frameId || Math.abs(track2.lastSeenS - frameTimeS) <= EPS3));
     return { brake, frameTimeS, coherent };
   }
   function supportAge(nowS, times, ages = []) {
     return Math.max(...times.map((time) => (nowS - time) * 1e3), ...ages);
   }
-  function recentMotion(track, nowS, ego) {
-    for (let count2 = Math.max(2, Math.min(3, track.history.length)); count2 <= track.history.length; count2++) {
-      const samples = track.history.slice(-count2);
+  function recentMotion(track2, nowS, ego) {
+    for (let count2 = Math.max(2, Math.min(3, track2.history.length)); count2 <= track2.history.length; count2++) {
+      const samples = track2.history.slice(-count2);
       const span2 = samples.at(-1).simulationTimeS - samples[0].simulationTimeS;
-      if (span2 > MAX_AGE_MS / 1e3 + EPS2) break;
-      if (count2 >= 3 && span2 < 0.2 - EPS2) continue;
-      const motion = fitRecentMotion(track, samples, nowS, ego);
+      if (span2 > MAX_AGE_MS / 1e3 + EPS3) break;
+      if (count2 >= 3 && span2 < 0.2 - EPS3) continue;
+      const motion = fitRecentMotion(track2, samples, nowS, ego);
       if (motion && Math.abs(motion.lateralMps) - motion.lateralVelocityErrorMps >= 0.2)
         return motion;
     }
     return null;
   }
-  function fitRecentMotion(track, samples, nowS, ego) {
+  function fitRecentMotion(track2, samples, nowS, ego) {
     if (samples.length < 2) return null;
     const first = samples[0], last = samples.at(-1), span2 = last.simulationTimeS - first.simulationTimeS;
-    if (span2 < 0.1 - EPS2) return null;
+    if (span2 < 0.1 - EPS3) return null;
     const vx = (last.position.x - first.position.x) / span2;
     const vz = (last.position.z - first.position.z) / span2;
     const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
@@ -39958,7 +40954,7 @@
     const ageS = Math.max(0, nowS - last.simulationTimeS);
     const dx = last.position.x + vx * ageS - ego.x;
     const dz = last.position.z + vz * ageS - ego.z;
-    const covariance = track.positionCovarianceM2;
+    const covariance = track2.positionCovarianceM2;
     const lateralPositionErrorM = Math.sqrt(Math.max(
       0,
       c * c * covariance.xx - 2 * c * s * covariance.xz + s * s * covariance.zz
@@ -39976,13 +40972,13 @@
       lateralVelocityErrorMps: Math.max(0.1 + 2 * lateralResidual / span2, 2 * lateralPositionErrorM / span2),
       forwardVelocityErrorMps: Math.max(0.1 + 2 * forwardResidual / span2, 2 * forwardPositionErrorM / span2),
       velocityErrorMps,
-      positionErrorM: track.uncertaintyM + ageS * velocityErrorMps,
+      positionErrorM: track2.uncertaintyM + ageS * velocityErrorMps,
       supportTimeS: first.simulationTimeS,
-      ageMs: supportAge(nowS, samples.map((p) => p.simulationTimeS), [track.ageMs])
+      ageMs: supportAge(nowS, samples.map((p) => p.simulationTimeS), [track2.ageMs])
     };
   }
-  function cityApproach(track, motion, nowS, ego, requestedSpeedMps, currentFrameId) {
-    if (track.frameId !== currentFrameId || track.history.length < 3 || nowS - motion.supportTimeS > MAX_AGE_MS / 1e3 + EPS2 || track.lastSeenS - motion.supportTimeS < 0.2 - EPS2) return null;
+  function cityApproach(track2, motion, nowS, ego, requestedSpeedMps, currentFrameId) {
+    if (track2.frameId !== currentFrameId || track2.history.length < 3 || nowS - motion.supportTimeS > MAX_AGE_MS / 1e3 + EPS3 || track2.lastSeenS - motion.supportTimeS < 0.2 - EPS3) return null;
     const {
       lateralM,
       forwardM,
@@ -40010,7 +41006,7 @@
     if (targetSpeedMps >= Math.min(ego.speedMps, requestedSpeedMps) - 0.08) return null;
     return {
       ...motion,
-      track,
+      track: track2,
       state: "slow",
       reason: "observed-approach-slow",
       targetSpeedMps,
@@ -40020,30 +41016,30 @@
       ))
     };
   }
-  function gradedCandidate(track, nowS, ego, requestedSpeedMps, forecast2, currentFrameId, cityLead) {
-    if (track.confidence < (track.label === "motion" ? 0.7 : 0.6)) return null;
-    if (track.label === "vehicle") {
-      if (track.frameId !== currentFrameId || track.history.length < 2) return null;
-      const observed = track.history.at(-1), c2 = Math.cos(ego.headingRad), s2 = Math.sin(ego.headingRad);
+  function gradedCandidate(track2, nowS, ego, requestedSpeedMps, forecast2, currentFrameId, cityLead) {
+    if (track2.confidence < (track2.label === "motion" ? 0.7 : 0.6)) return null;
+    if (track2.label === "vehicle") {
+      if (track2.frameId !== currentFrameId || track2.history.length < 2) return null;
+      const observed = track2.history.at(-1), c2 = Math.cos(ego.headingRad), s2 = Math.sin(ego.headingRad);
       const dx = observed.position.x - ego.x, dz = observed.position.z - ego.z;
       const side = Math.abs(dx * c2 - dz * s2), forwardM2 = dx * s2 + dz * c2;
       if (side < ego.widthM / 2 || side > ego.widthM / 2 + 1.8 || forwardM2 <= ego.lengthM / 2 || forwardM2 > 14) return null;
       return {
-        track,
+        track: track2,
         state: "caution",
         reason: "observed-vehicle-view-caution",
         supportTimeS: observed.simulationTimeS,
-        ageMs: supportAge(nowS, [observed.simulationTimeS], [track.ageMs]),
+        ageMs: supportAge(nowS, [observed.simulationTimeS], [track2.ageMs]),
         targetSpeedMps: Math.min(requestedSpeedMps, Math.max(1.5, requestedSpeedMps * 0.9))
       };
     }
-    if (!track.reliable) return null;
-    const motion = recentMotion(track, nowS, ego);
+    if (!track2.reliable) return null;
+    const motion = recentMotion(track2, nowS, ego);
     if (!motion) return null;
     const { lateralM, forwardM, lateralMps, forwardMps, velocityErrorMps } = motion;
     if (forwardM <= ego.lengthM / 2 || forwardM > 30) return null;
-    if (!bodyPathAllowsLateralMotion(track, motion, ego)) return null;
-    if (cityLead) return cityApproach(track, motion, nowS, ego, requestedSpeedMps, currentFrameId);
+    if (!bodyPathAllowsLateralMotion(track2, motion, ego)) return null;
+    if (cityLead) return cityApproach(track2, motion, nowS, ego, requestedSpeedMps, currentFrameId);
     if (Math.abs(lateralMps) - motion.lateralVelocityErrorMps < 0.2 || lateralM * lateralMps >= 0)
       return null;
     const laneHalf = ego.widthM / 2 + 0.35;
@@ -40064,22 +41060,22 @@
       Math.sqrt(2 * ORDINARY_DECEL_MPS2 * availableDistanceM)
     );
     const targetSpeedMps = Math.min(requestedSpeedMps, Math.max(1.5, stoppingCapMps));
-    const selectedSamples = track.history.filter((sample) => sample.simulationTimeS >= motion.supportTimeS - EPS2);
-    const corroboration = selectedSamples.length >= 3 ? motion : fitRecentMotion(track, track.history.slice(-3), nowS, ego);
+    const selectedSamples = track2.history.filter((sample) => sample.simulationTimeS >= motion.supportTimeS - EPS3);
+    const corroboration = selectedSamples.length >= 3 ? motion : fitRecentMotion(track2, track2.history.slice(-3), nowS, ego);
     const c = Math.cos(ego.headingRad), s = Math.sin(ego.headingRad);
-    const fittedLateralMps = track.velocity.x * c - track.velocity.z * s;
+    const fittedLateralMps = track2.velocity.x * c - track2.velocity.z * s;
     const fittedLateralErrorMps = 0.05 + Math.sqrt(Math.max(
       0,
-      c * c * track.velocityCovarianceM2S2.xx - 2 * c * s * track.velocityCovarianceM2S2.xz + s * s * track.velocityCovarianceM2S2.zz
+      c * c * track2.velocityCovarianceM2S2.xx - 2 * c * s * track2.velocityCovarianceM2S2.xz + s * s * track2.velocityCovarianceM2S2.zz
     ));
     let decelerationMps2, supportTimeS = motion.supportTimeS, ageMs = motion.ageMs;
-    if (track.observations >= 3 && track.frameId === currentFrameId && targetSpeedMps > 0 && targetSpeedMps < Math.min(requestedSpeedMps, ego.speedMps) - EPS2 && Math.abs(fittedLateralMps) > fittedLateralErrorMps && fittedLateralMps * lateralMps > 0 && finite3(forecast2?.confidence) && forecast2.confidence <= 1 && forecast2.confidence >= (track.label === "motion" ? 0.65 : 0.55) && corroboration && track.lastSeenS - corroboration.supportTimeS >= 0.2 - EPS2 && corroboration.ageMs <= MAX_AGE_MS + EPS2 && Math.abs(corroboration.lateralMps) - corroboration.lateralVelocityErrorMps >= 0.2 && corroboration.lateralMps * lateralMps > 0 && corroboration.lateralM * corroboration.lateralMps < 0 && ego.speedMps - corroboration.forwardMps - corroboration.forwardVelocityErrorMps > 0.2) {
+    if (track2.observations >= 3 && track2.frameId === currentFrameId && targetSpeedMps > 0 && targetSpeedMps < Math.min(requestedSpeedMps, ego.speedMps) - EPS3 && Math.abs(fittedLateralMps) > fittedLateralErrorMps && fittedLateralMps * lateralMps > 0 && finite3(forecast2?.confidence) && forecast2.confidence <= 1 && forecast2.confidence >= (track2.label === "motion" ? 0.65 : 0.55) && corroboration && track2.lastSeenS - corroboration.supportTimeS >= 0.2 - EPS3 && corroboration.ageMs <= MAX_AGE_MS + EPS3 && Math.abs(corroboration.lateralMps) - corroboration.lateralVelocityErrorMps >= 0.2 && corroboration.lateralMps * lateralMps > 0 && corroboration.lateralM * corroboration.lateralMps < 0 && ego.speedMps - corroboration.forwardMps - corroboration.forwardVelocityErrorMps > 0.2) {
       const needed = Math.min(MAX_VISUAL_DECEL_MPS2, Math.max(
         ORDINARY_DECEL_MPS2,
-        ego.speedMps / Math.max(EPS2, availableTimeS),
-        ego.speedMps ** 2 / (2 * Math.max(EPS2, availableDistanceM))
+        ego.speedMps / Math.max(EPS3, availableTimeS),
+        ego.speedMps ** 2 / (2 * Math.max(EPS3, availableDistanceM))
       ));
-      if (needed > ORDINARY_DECEL_MPS2 + EPS2) {
+      if (needed > ORDINARY_DECEL_MPS2 + EPS3) {
         decelerationMps2 = needed;
         supportTimeS = Math.min(supportTimeS, corroboration.supportTimeS);
         ageMs = Math.max(ageMs, corroboration.ageMs);
@@ -40087,7 +41083,7 @@
     }
     return {
       ...motion,
-      track,
+      track: track2,
       supportTimeS,
       ageMs,
       decelerationMps2,
@@ -40116,7 +41112,7 @@
     if (typeof visionRequired !== "boolean") throw new TypeError("visionRequired must be explicit");
     if (typeof cityLead !== "boolean") throw new TypeError("City lead must be a boolean");
     validateState(previousState);
-    if (previousState.lastTimeS !== null && nowS < previousState.lastTimeS - EPS2)
+    if (previousState.lastTimeS !== null && nowS < previousState.lastTimeS - EPS3)
       throw new TypeError("District visual time cannot go backwards");
     const checked = visual === null ? { brake: decideVisualBrake({ tracks: [], nowS, ego }), frameTimeS: null, coherent: false } : validateSnapshot(visual, nowS, ego);
     const next = { ...previousState, lastTimeS: nowS };
@@ -40135,7 +41131,7 @@
       if (next.state !== result.state || next.sinceS === null) next.sinceS = nowS;
       next.state = result.state;
       next.evidenceTrackId = result.evidenceTrackId;
-      if (!result.available || !["caution", "slow"].includes(result.state) || result.targetSpeedMps === null || result.targetSpeedMps < 1.5 - EPS2)
+      if (!result.available || !["caution", "slow"].includes(result.state) || result.targetSpeedMps === null || result.targetSpeedMps < 1.5 - EPS3)
         delete result.decelerationMps2;
       next.visualDecelerationMps2 = result.decelerationMps2 ?? null;
       return { ...result, nextState: next };
@@ -40167,25 +41163,25 @@
     };
     if (!visual) return unavailable("camera-evidence-unavailable", null);
     if (!checked.coherent) return unavailable("camera-evidence-mismatch", null);
-    if (visual.status !== "ready" || !visual.available || visual.availability?.available === false || visual.availability?.error || visual.availability !== void 0 && visual.availability.status !== "ready" || !finite3(visual.ageMs) || visual.ageMs > MAX_AGE_MS + EPS2)
+    if (visual.status !== "ready" || !visual.available || visual.availability?.available === false || visual.availability?.error || visual.availability !== void 0 && visual.availability.status !== "ready" || !finite3(visual.ageMs) || visual.ageMs > MAX_AGE_MS + EPS3)
       return unavailable("camera-evidence-unavailable");
     const key3 = `${visual.streamId.length}:${visual.streamId}:${visual.frameId}`;
     const sameStream = previousState.streamId === visual.streamId;
     if (sameStream && previousState.lastFrameId !== null && visual.frameId < previousState.lastFrameId)
       return unavailable("camera-frame-out-of-order");
-    const track = visual.tracks.find((item) => item.id === checked.brake.trackId);
+    const track2 = visual.tracks.find((item) => item.id === checked.brake.trackId);
     const priorStop = previousState.stopTrackId && sameStream ? visual.tracks.find((item) => item.id === previousState.stopTrackId) : null;
-    const clearance = priorStop?.stopEpisode?.phase === "cleared" && nowS - priorStop.lastSeenS <= MAX_AGE_MS / 1e3 + EPS2;
+    const clearance = priorStop?.stopEpisode?.phase === "cleared" && nowS - priorStop.lastSeenS <= MAX_AGE_MS / 1e3 + EPS3;
     let supportTimeS = checked.frameTimeS;
-    if (checked.brake.available && checked.brake.brake && track) {
-      const evidence = track.history.find((p) => p.frameId === checked.brake.evidenceFrameId);
-      const times = [track.lastSeenS, evidence?.simulationTimeS ?? track.lastSeenS];
-      if (track.stopEpisode && ["stopping", "awaiting-clearance"].includes(track.stopEpisode.phase))
-        times.push(track.stopEpisode.lastSupportTimeS);
-      else times.push(...track.history.slice(-3).map((p) => p.simulationTimeS));
-      result.ageMs = supportAge(nowS, times, [visual.ageMs, track.ageMs, checked.brake.ageMs]);
-      result.evidenceTrackId = track.id;
-      if (result.ageMs > MAX_AGE_MS + EPS2)
+    if (checked.brake.available && checked.brake.brake && track2) {
+      const evidence = track2.history.find((p) => p.frameId === checked.brake.evidenceFrameId);
+      const times = [track2.lastSeenS, evidence?.simulationTimeS ?? track2.lastSeenS];
+      if (track2.stopEpisode && ["stopping", "awaiting-clearance"].includes(track2.stopEpisode.phase))
+        times.push(track2.stopEpisode.lastSupportTimeS);
+      else times.push(...track2.history.slice(-3).map((p) => p.simulationTimeS));
+      result.ageMs = supportAge(nowS, times, [visual.ageMs, track2.ageMs, checked.brake.ageMs]);
+      result.evidenceTrackId = track2.id;
+      if (result.ageMs > MAX_AGE_MS + EPS3)
         return unavailable("camera-support-stale", result.ageMs);
       Object.assign(result, {
         available: true,
@@ -40197,7 +41193,7 @@
         capMps: 0,
         evidenceKey: key3,
         supportTimeS: Math.min(...times),
-        stopTrackId: track.id,
+        stopTrackId: track2.id,
         recoveryFrames: 0,
         recoverySinceS: null,
         lastFrameId: visual.frameId,
@@ -40211,7 +41207,7 @@
       return unavailable("awaiting-fresh-visual-clearance", ageMs);
     }
     next.stopTrackId = null;
-    const candidates = visual.tracks.map((item) => gradedCandidate(
+    const candidates2 = visual.tracks.map((item) => gradedCandidate(
       item,
       nowS,
       ego,
@@ -40220,13 +41216,13 @@
       visual.frameId,
       cityLead
     )).filter(Boolean).sort((a, b) => a.targetSpeedMps - b.targetSpeedMps || a.track.id.localeCompare(b.track.id));
-    const candidate = candidates[0];
+    const candidate = candidates2[0];
     if (candidate) {
       result.ageMs = Math.max(visual.ageMs, candidate.ageMs);
       result.evidenceTrackId = candidate.track.id;
       if (previousState.evidenceKey === key3 && previousState.evidenceTrackId === candidate.track.id && previousState.visualDecelerationMps2 != null && previousState.supportTimeS !== null)
         result.ageMs = Math.max(result.ageMs, (nowS - previousState.supportTimeS) * 1e3);
-      if (result.ageMs > MAX_AGE_MS + EPS2)
+      if (result.ageMs > MAX_AGE_MS + EPS3)
         return unavailable("camera-support-stale", result.ageMs);
       supportTimeS = Math.min(supportTimeS, candidate.supportTimeS);
       if (previousState.evidenceKey === key3 && previousState.evidenceTrackId === candidate.track.id && previousState.visualDecelerationMps2 != null && previousState.supportTimeS !== null)
@@ -40237,7 +41233,7 @@
       const count2 = sameStream ? previousState.recoveryFrames : 0;
       next.recoverySinceS = count2 ? previousState.recoverySinceS : checked.frameTimeS;
       next.recoveryFrames = Math.min(2, count2 + (newFrame ? 1 : 0));
-      if (next.recoveryFrames < 2 || checked.frameTimeS - next.recoverySinceS < 0.1 - EPS2) {
+      if (next.recoveryFrames < 2 || checked.frameTimeS - next.recoverySinceS < 0.1 - EPS3) {
         Object.assign(result, { reason: "camera-recovering", targetSpeedMps: 0 });
         Object.assign(next, {
           capMps: 0,
@@ -40263,14 +41259,14 @@
       result.evidenceTrackId ??= previousState.evidenceTrackId;
       supportTimeS = Math.min(supportTimeS, previousState.supportTimeS);
       result.ageMs = Math.max(result.ageMs, (nowS - supportTimeS) * 1e3);
-      if (result.ageMs > MAX_AGE_MS + EPS2)
+      if (result.ageMs > MAX_AGE_MS + EPS3)
         return unavailable("camera-support-stale", result.ageMs);
     }
     Object.assign(result, {
       available: true,
       state: holding ? previousState.state : candidate?.state ?? "clear",
-      targetSpeedMps: candidate || cap < requestedSpeedMps - EPS2 ? cap : null,
-      reason: holding ? "camera-evidence-hold" : candidate?.reason ?? (cap < requestedSpeedMps - EPS2 ? "camera-cap-release" : "no-observed-crossing-conflict")
+      targetSpeedMps: candidate || cap < requestedSpeedMps - EPS3 ? cap : null,
+      reason: holding ? "camera-evidence-hold" : candidate?.reason ?? (cap < requestedSpeedMps - EPS3 ? "camera-cap-release" : "no-observed-crossing-conflict")
     });
     if (candidate?.decelerationMps2 !== void 0)
       result.decelerationMps2 = candidate.decelerationMps2;
@@ -40317,13 +41313,13 @@
         Math.sin(ego.headingRad - zone.heading),
         Math.cos(ego.headingRad - zone.heading)
       );
-      if (Math.abs(yaw) > 0.7 + EPS2) continue;
+      if (Math.abs(yaw) > 0.7 + EPS3) continue;
       const dx = zone.x - ego.x, dz = zone.z - ego.z;
       const distanceM = dx * Math.sin(zone.heading) + dz * Math.cos(zone.heading);
       const lateralM = dx * Math.cos(zone.heading) - dz * Math.sin(zone.heading);
       const approaching = distanceM > 0 && distanceM <= zone.approachM;
       const clearing = distanceM <= 0 && distanceM > -zone.clearanceM;
-      if (!approaching && !clearing || Math.abs(lateralM) > 4 + EPS2) continue;
+      if (!approaching && !clearing || Math.abs(lateralM) > 4 + EPS3) continue;
       const cornerCap = Math.max(1.5, Math.min(
         zone.speedLimitMps,
         Math.sqrt(4 * Math.max(0, zone.visibilityDistanceM - ego.lengthM / 2 - 0.35))
@@ -40392,9 +41388,9 @@
     nextState.mapCapMps = finite3(mapCap) && mapCap < 55 ? mapCap : null;
     const targetSpeed = command.targetSpeed < 0 ? command.targetSpeed : Math.min(requested, visualCap, mapCap);
     nextState.composedCapMps = Math.max(0, targetSpeed);
-    const cameraBinds = command.targetSpeed >= 0 && visualCap < requested - EPS2 && visualCap <= mapCap + EPS2;
-    const mapBinds = command.targetSpeed >= 0 && mapCap < requested - EPS2 && mapCap <= visualCap + EPS2;
-    const supportedCameraResponse = cameraBinds && visual.available && visualCap >= 1.5 - EPS2 && ["caution", "slow"].includes(visual.state) && visual.evidenceTrackId !== null && visual.streamId !== null && Number.isSafeInteger(visual.frameId) && finite3(visual.ageMs) && visual.ageMs <= MAX_AGE_MS + EPS2;
+    const cameraBinds = command.targetSpeed >= 0 && visualCap < requested - EPS3 && visualCap <= mapCap + EPS3;
+    const mapBinds = command.targetSpeed >= 0 && mapCap < requested - EPS3 && mapCap <= visualCap + EPS3;
+    const supportedCameraResponse = cameraBinds && visual.available && visualCap >= 1.5 - EPS3 && ["caution", "slow"].includes(visual.state) && visual.evidenceTrackId !== null && visual.streamId !== null && Number.isSafeInteger(visual.frameId) && finite3(visual.ageMs) && visual.ageMs <= MAX_AGE_MS + EPS3;
     nextState.visualDecelerationMps2 = supportedCameraResponse ? visual.decelerationMps2 ?? null : null;
     const appliedSource = cameraBinds && mapBinds ? "both" : cameraBinds ? "camera-pixels" : mapBinds ? "static-map" : "behavior";
     const mapRecord = sourceRecord(map2, MAP_KEYS) ?? (finite3(mapCap) ? {
@@ -40436,13 +41432,13 @@
   function attributeDistrictApplied({ requested, behavior, composed, safe }) {
     for (const [name, command] of Object.entries({ requested, behavior, composed, safe }))
       bounded(command?.targetSpeed, -55, 55, `${name}.targetSpeed`);
-    const physicalReduction = safe.targetSpeed < composed.targetSpeed - EPS2;
+    const physicalReduction = safe.targetSpeed < composed.targetSpeed - EPS3;
     const guardBinds = safe.targetSpeed < composed.targetSpeed - 0.05;
     const guardStop = safe.targetSpeed === 0 && typeof safe.reason === "string" && safe.reason !== composed.reason && !["idle", "driving"].includes(safe.reason);
     let appliedSource = composed.districtSources?.appliedSource ?? "requested";
     if (guardBinds || guardStop) appliedSource = "physical-guard";
     else if (!["camera-pixels", "static-map", "both"].includes(appliedSource))
-      appliedSource = behavior.targetSpeed < requested.targetSpeed - EPS2 ? "behavior" : "requested";
+      appliedSource = behavior.targetSpeed < requested.targetSpeed - EPS3 ? "behavior" : "requested";
     const result = {
       ...composed,
       ...safe,
@@ -40469,7 +41465,7 @@
     getVehicleMounts().ranges.map((mount) => mount.angleDeg)
   );
   var SENSOR_MAX_M = PLAYER_VEHICLE.maxRangeM;
-  function circleHit(origin, ray, body2) {
+  function circleHit2(origin, ray, body2) {
     const dx = body2.x - origin.x;
     const dz = body2.z - origin.z;
     const projection2 = dx * ray.x + dz * ray.z;
@@ -40480,26 +41476,26 @@
     const near = projection2 - halfChord;
     return projection2 + halfChord < 0 ? Infinity : Math.max(0, near);
   }
-  function boxHit(origin, ray, body2) {
+  function boxHit2(origin, ray, body2) {
     const angle = body2.heading ?? 0;
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     const dx = origin.x - body2.x;
     const dz = origin.z - body2.z;
     const local2 = { x: dx * c - dz * s, z: dx * s + dz * c };
-    const direction2 = { x: ray.x * c - ray.z * s, z: ray.x * s + ray.z * c };
+    const direction3 = { x: ray.x * c - ray.z * s, z: ray.x * s + ray.z * c };
     let near = -Infinity;
     let far = Infinity;
     for (const [axis, extent2] of [
       ["x", body2.width / 2],
       ["z", body2.length / 2]
     ]) {
-      if (Math.abs(direction2[axis]) < 1e-9) {
+      if (Math.abs(direction3[axis]) < 1e-9) {
         if (Math.abs(local2[axis]) > extent2) return Infinity;
         continue;
       }
-      const a = (-extent2 - local2[axis]) / direction2[axis];
-      const b = (extent2 - local2[axis]) / direction2[axis];
+      const a = (-extent2 - local2[axis]) / direction3[axis];
+      const b = (extent2 - local2[axis]) / direction3[axis];
       near = Math.max(near, Math.min(a, b));
       far = Math.min(far, Math.max(a, b));
       if (near > far) return Infinity;
@@ -40516,14 +41512,14 @@
       ...worldMount(mount),
       headingRad: (car2.heading ?? 0) + mount.angleDeg * Math.PI / 180
     }));
-    const mounts = {
+    const mounts2 = {
       ranges: local2.ranges.map(worldMount),
       auxiliary: local2.auxiliary.map(worldMount),
       camera: cameras[0],
       cameras,
       telemetry: worldMount(local2.telemetry)
     };
-    const proximityMounts = [...mounts.ranges, ...mounts.auxiliary];
+    const proximityMounts = [...mounts2.ranges, ...mounts2.auxiliary];
     const mountReach = Math.max(
       ...[...local2.ranges, ...local2.auxiliary].map(
         (mount) => Math.hypot(mount.position.x, mount.position.z)
@@ -40544,7 +41540,7 @@
         const bottom = PLAYER_VEHICLE.roadHeightM + (body2.y ?? 0);
         if (Number.isFinite(body2.height) && (origin.y < bottom || origin.y > bottom + body2.height))
           continue;
-        const hit = body2.type === "pedestrian" ? circleHit(origin, ray, body2) : boxHit(origin, ray, body2);
+        const hit = body2.type === "pedestrian" ? circleHit2(origin, ray, body2) : boxHit2(origin, ray, body2);
         if (hit <= nearest && (hitId === null || hit < nearest)) {
           nearest = hit;
           hitId = body2.id ?? null;
@@ -40568,7 +41564,7 @@
         (ray) => Math.round(ray.rangeM * 100) / 100
       ),
       auxiliary: rays.slice(SENSOR_ANGLES_DEG.length),
-      mounts,
+      mounts: mounts2,
       rays
     };
   }
@@ -40655,21 +41651,21 @@
     }
   }
   var World = class _World {
-    constructor(options = {}, environment2 = "city") {
-      const cityVersion = environment2 === "metro" ? options.cityVersion ?? 2 : null;
+    constructor(options2 = {}, environment2 = "city") {
+      const cityVersion = environment2 === "metro" ? options2.cityVersion ?? 2 : null;
       const rush = cityVersion === 4;
       this.config = settings(
-        rush ? { ...RUSH_CITY_POPULATION_DEFAULTS, speedLimit: 48, ...options } : options,
+        rush ? { ...RUSH_CITY_POPULATION_DEFAULTS, speedLimit: 48, ...options2 } : options2,
         rush ? RUSH_CITY_POPULATION_LIMITS : cityVersion === 3 ? METRO_POPULATION_LIMITS : null
       );
       this.environment = environment2;
-      this.pursuit = environment2 === "pursuit" ? createPursuitState(options) : null;
+      this.pursuit = environment2 === "pursuit" ? createPursuitState(options2) : null;
       if (this.pursuit) Object.assign(this.config, {
         pursuitLevel: this.pursuit.level,
         pursuitCase: this.pursuit.caseId,
         ...this.pursuit.packLab ? { pursuitVariant: this.pursuit.variant } : {}
       });
-      if (environment2 === "egypt") Object.assign(this.config, districtOptions(options));
+      if (environment2 === "egypt") Object.assign(this.config, districtOptions(options2));
       this.district = environment2 === "metro" ? { ...createUnifiedCity({ dense: cityVersion >= 3, rush }), metro: true } : environment2 === "egypt" ? createEgyptDistrict() : null;
       this.districtCase = environment2 === "egypt" ? createDistrictCase(this.district, this.config.districtCase, this.config.seed) : null;
       if (this.district) {
@@ -40682,7 +41678,7 @@
         this.districtBehavior = createDistrictBehaviorState();
         this.districtSpeedState = createDistrictSpeedState();
       }
-      const visualScene = environment2 === "vision" ? createVisionScenario(options.visionCase ?? "cross-left") : null;
+      const visualScene = environment2 === "vision" ? createVisionScenario(options2.visionCase ?? "cross-left") : null;
       if (visualScene) this.config.visionCase = visualScene.id;
       this.visualPredictor = new VisualCrossingPredictor({
         allowLateClearance: this.district !== null,
@@ -41040,7 +42036,11 @@
           endStreetPursuit(this);
           this.resumeStreetDrive();
         }
-        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        if (record) {
+          const config = this.pursuit?.gta?.config;
+          const recorded = command.type === "street-pursuit-start" && config?.ruleset === "dispatch-v1" ? { ...command, config } : command;
+          this.events.push({ tick: this.tick, command: structuredClone(recorded) });
+        }
         return true;
       }
       if (command.type === "pursuit-use") {
@@ -41328,8 +42328,10 @@
       }
       if (!usesRushPace(pursuit.variant)) this.actorIndex = new SpatialIndex(this.actors);
       updateDistrictTraffic(this);
+      let query;
+      const targetBlocker = pursuit.response?.dispatch ? (target2) => (query ??= createWalkTargetQuery(this.actors))(target2) : void 0;
       stepPursuit(this, action, {
-        pedestrianMotion: (actor) => stepDistrictPedestrian(this, actor),
+        pedestrianMotion: (actor) => stepDistrictPedestrian(this, actor, targetBlocker),
         vehicleCommand: (actor, requested) => pursuit.gta && (pursuit.patrols.has(actor) || actor === this.player && this.mode === "manual") ? requested : actor.pursuitRole === "police" ? districtTrafficCommand(this, actor, requested) : this.districtDrivingCommand(
           actor,
           requested ?? this.followTrafficTrip(actor),
@@ -41649,7 +42651,7 @@
         events: structuredClone(this.events)
       };
     }
-    static *reconstruct(data) {
+    static *reconstruct(data, shouldYield) {
       if (data?.version !== VERSION || !["city", "lab", "vehicle", "vision", "egypt", "pursuit", "metro"].includes(data.environment) || !Number.isSafeInteger(data.totalTicks) || data.totalTicks < 0 || data.totalTicks > 60 * 60 * 24 || !Array.isArray(data.events))
         throw new Error("Unsupported replay");
       let lastTick = -1;
@@ -41687,7 +42689,7 @@
         world2.step();
         if (world2.tick === beforeTick)
           throw new Error("Replay cannot advance a stopped scene without its recorded run event");
-        if (world2.tick % 120 === 0) yield world2;
+        if (world2.tick % 120 === 0 || shouldYield?.()) yield world2;
       }
       while (index < data.events.length && data.events[index].tick === world2.tick)
         world2.command(data.events[index++].command);
@@ -43106,11 +44108,11 @@
   }
   var _identityMatrix2 = new Matrix4();
   var GLTFParser = class {
-    constructor(json = {}, options = {}) {
+    constructor(json = {}, options2 = {}) {
       this.json = json;
       this.extensions = {};
       this.plugins = {};
-      this.options = options;
+      this.options = options2;
       this.cache = new GLTFRegistry();
       this.associations = /* @__PURE__ */ new Map();
       this.primitiveCache = {};
@@ -43362,9 +44364,9 @@
       if (bufferDef.uri === void 0 && bufferIndex === 0) {
         return Promise.resolve(this.extensions[EXTENSIONS.KHR_BINARY_GLTF].body);
       }
-      const options = this.options;
+      const options2 = this.options;
       return new Promise(function(resolve, reject) {
-        loader2.load(LoaderUtils.resolveURL(bufferDef.uri, options.path), resolve, void 0, function() {
+        loader2.load(LoaderUtils.resolveURL(bufferDef.uri, options2.path), resolve, void 0, function() {
           reject(new Error('THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".'));
         });
       });
@@ -43465,13 +44467,13 @@
      */
     loadTexture(textureIndex) {
       const json = this.json;
-      const options = this.options;
+      const options2 = this.options;
       const textureDef = json.textures[textureIndex];
       const sourceIndex = textureDef.source;
       const sourceDef = json.images[sourceIndex];
       let loader2 = this.textureLoader;
       if (sourceDef.uri) {
-        const handler = options.manager.getHandler(sourceDef.uri);
+        const handler = options2.manager.getHandler(sourceDef.uri);
         if (handler !== null) loader2 = handler;
       }
       return this.loadTextureImage(textureIndex, sourceIndex, loader2);
@@ -43508,7 +44510,7 @@
     loadImageSource(sourceIndex, loader2) {
       const parser = this;
       const json = this.json;
-      const options = this.options;
+      const options2 = this.options;
       if (this.sourceCache[sourceIndex] !== void 0) {
         return this.sourceCache[sourceIndex].then((texture) => texture.clone());
       }
@@ -43536,7 +44538,7 @@
               resolve(texture);
             };
           }
-          loader2.load(LoaderUtils.resolveURL(sourceURI2, options.path), onLoad, void 0, reject);
+          loader2.load(LoaderUtils.resolveURL(sourceURI2, options2.path), onLoad, void 0, reject);
         });
       }).then(function(texture) {
         if (isObjectURL === true) {
@@ -43992,20 +44994,20 @@
             outputArray = scaled;
           }
           for (let j = 0, jl = targetNames.length; j < jl; j++) {
-            const track = new TypedKeyframeTrack(
+            const track2 = new TypedKeyframeTrack(
               targetNames[j] + "." + PATH_PROPERTIES[target2.path],
               inputAccessor.array,
               outputArray,
               interpolation
             );
             if (sampler.interpolation === "CUBICSPLINE") {
-              track.createInterpolant = function InterpolantFactoryMethodGLTFCubicSpline(result) {
+              track2.createInterpolant = function InterpolantFactoryMethodGLTFCubicSpline(result) {
                 const interpolantType = this instanceof QuaternionKeyframeTrack ? GLTFCubicSplineQuaternionInterpolant : GLTFCubicSplineInterpolant;
                 return new interpolantType(this.times, this.values, this.getValueSize() / 3, result);
               };
-              track.createInterpolant.isInterpolantFactoryMethodGLTFCubicSpline = true;
+              track2.createInterpolant.isInterpolantFactoryMethodGLTFCubicSpline = true;
             }
-            tracks.push(track);
+            tracks.push(track2);
           }
         }
         return new AnimationClip(animationName, void 0, tracks);
@@ -44659,10 +45661,10 @@
   function archTrimGeometry(points, x, radius = 0.055) {
     const normals = points.slice(1).map(([z, y], i) => new Vector2(points[i][1] - y, z - points[i][0]).normalize());
     const rings = points.map(([z, y], i) => {
-      const normal = normals[Math.max(0, i - 1)].clone();
-      if (i > 0 && i < normals.length) normal.add(normals[i]).normalize();
-      const miter = normal.multiplyScalar(
-        radius / normal.dot(normals[Math.min(i, normals.length - 1)])
+      const normal2 = normals[Math.max(0, i - 1)].clone();
+      if (i > 0 && i < normals.length) normal2.add(normals[i]).normalize();
+      const miter = normal2.multiplyScalar(
+        radius / normal2.dot(normals[Math.min(i, normals.length - 1)])
       );
       return Array.from({ length: 6 }, (_, j) => {
         const angle = j * Math.PI / 3, offset3 = Math.cos(angle);
@@ -44755,7 +45757,7 @@
       materials.add(m);
       return m;
     };
-    const material2 = (name, color, options = {}) => ownMaterial(
+    const material2 = (name, color, options2 = {}) => ownMaterial(
       new MeshStandardMaterial({
         name,
         color,
@@ -44763,7 +45765,7 @@
         roughness: 0.94,
         metalness: 0,
         envMapIntensity: 0.22,
-        ...options
+        ...options2
       })
     );
     const palette = {
@@ -44806,9 +45808,9 @@
     const rod = (parent, name, radius2, m) => mesh(new CylinderGeometry(radius2, radius2, 1, 6), m, parent, name);
     const between = (part, a, b) => {
       part.position.copy(a).add(b).multiplyScalar(0.5);
-      const direction2 = b.clone().sub(a);
-      part.scale.y = direction2.length();
-      part.quaternion.setFromUnitVectors(UP, direction2.normalize());
+      const direction3 = b.clone().sub(a);
+      part.scale.y = direction3.length();
+      part.quaternion.setFromUnitVectors(UP, direction3.normalize());
     };
     const beam = (parent, name, radius2, a, b, m = palette.trim) => {
       const part = rod(parent, name, radius2, m);
@@ -45223,9 +46225,9 @@
       beam(chassis, `suv-powerunit-mount-${x}`, 0.04, [x, 0.31, 1.3], [x, 0.5, 1.3], palette.trim);
     box5(chassis, "suv-airbox", [0.21, 0.18, 0.34], [-0.48, 0.67, 1.39], palette.trim);
     beam(chassis, "suv-intake-join", 0.024, [-0.36, 0.68, 1.26], [-0.4, 0.68, 1.33], palette.trim);
-    const mounts = getVehicleMounts(body2);
+    const mounts2 = getVehicleMounts(body2);
     const sensorRecords = [], cameraRecords = [];
-    for (const mount of [...mounts.ranges, ...mounts.auxiliary ?? []]) {
+    for (const mount of [...mounts2.ranges, ...mounts2.auxiliary ?? []]) {
       const group = new Group();
       group.name = `range-mount-${mount.id}`;
       group.position.set(mount.position.x, mount.position.y, mount.position.z);
@@ -45246,7 +46248,7 @@
       const lens = mesh(new CircleGeometry(0.011, 8), palette.lens, group, `sensor-range-${mount.id}`);
       sensorRecords.push({ ...mount, group, lens });
     }
-    for (const mount of mounts.cameras ?? [mounts.camera]) {
+    for (const mount of mounts2.cameras ?? [mounts2.camera]) {
       const group = new Group();
       group.name = `camera-mount-${mount.id}`;
       group.position.set(mount.position.x, mount.position.y, mount.position.z);
@@ -45286,10 +46288,10 @@
       cameraRecords.push({ ...mount, group, lens });
     }
     let telemetry = null;
-    if (mounts.telemetry) {
+    if (mounts2.telemetry) {
       telemetry = new Group();
       telemetry.name = "sensor-roof-imu-gnss";
-      telemetry.position.set(mounts.telemetry.position.x, mounts.telemetry.position.y, mounts.telemetry.position.z);
+      telemetry.position.set(mounts2.telemetry.position.x, mounts2.telemetry.position.y, mounts2.telemetry.position.z);
       root.add(telemetry);
       box5(telemetry, "roof-telemetry-enclosure", [0.25, 0.07, 0.19], [0, 0, 0], palette.seatInset, 0.018);
       box5(telemetry, "roof-telemetry-base", [0.29, 0.012, 0.23], [0, -0.054, 0], palette.trim, 6e-3);
@@ -45305,7 +46307,7 @@
       bodyPanels,
       cutawayParts,
       cockpit: { steering, steeringMount, dashboard, displayMaterial },
-      sensors: { mounts, ranges: sensorRecords, cameras: cameraRecords, telemetry },
+      sensors: { mounts: mounts2, ranges: sensorRecords, cameras: cameraRecords, telemetry },
       resources: { geometries, materials, textures },
       kit: { mesh, box: box5, material: material2, ownGeometry, ownMaterial, between }
     };
@@ -45358,13 +46360,14 @@
     };
   }
   function createPlayerVehicle(_templateScene, initialActor = {}) {
-    const model = createSuvModel(initialActor);
+    const scale = initialActor.giantScale;
+    const model = createSuvModel(scale ? { length: initialActor.length / scale, width: initialActor.width / scale } : initialActor);
     const { root, chassis, kit } = model;
     const drawDashboard = dashboardPainter(model);
-    const beams = new Group();
-    beams.name = "vehicle-sensor-rays";
-    beams.visible = false;
-    root.add(beams);
+    const beams2 = new Group();
+    beams2.name = "vehicle-sensor-rays";
+    beams2.visible = false;
+    root.add(beams2);
     for (const record of model.sensors.ranges) {
       const geometry = kit.ownGeometry(
         new BufferGeometry().setFromPoints([new Vector3(), new Vector3()])
@@ -45380,11 +46383,11 @@
       const beam = new Line(geometry, material2);
       beam.name = `sensor-ray-${record.id}`;
       beam.frustumCulled = false;
-      beams.add(beam);
+      beams2.add(beam);
       const hit = kit.mesh(
         new OctahedronGeometry(0.032),
         kit.ownMaterial(new MeshBasicMaterial({ color: 15317892 })),
-        beams,
+        beams2,
         `sensor-hit-${record.id}`
       );
       hit.castShadow = false;
@@ -45592,15 +46595,15 @@
       };
       diagnostics.alpha = finite4(alpha, 1);
     }
-    function setInspection(options = {}) {
+    function setInspection(options2 = {}) {
       if (disposed) return;
-      if (typeof options.cutaway === "boolean") {
-        cutaway2 = options.cutaway;
+      if (typeof options2.cutaway === "boolean") {
+        cutaway2 = options2.cutaway;
         for (const part of model.cutawayParts) part.visible = !cutaway2;
       }
-      if (typeof options.sensors === "boolean") beams.visible = options.sensors;
+      if (typeof options2.sensors === "boolean") beams2.visible = options2.sensors;
       diagnostics.cutaway = cutaway2;
-      diagnostics.sensorVisualization = beams.visible;
+      diagnostics.sensorVisualization = beams2.visible;
     }
     function getCameraPose(mode) {
       const pose6 = fixedPoses[mode];
@@ -45800,10 +46803,10 @@
     triangle(points, color, tile, site, feature, uv) {
       const [a, b, c] = points;
       const ab = new Vector3().subVectors(b, a), ac = new Vector3().subVectors(c, a);
-      const normal = ab.cross(ac).normalize(), tint2 = rgb(color);
+      const normal2 = ab.cross(ac).normalize(), tint2 = rgb(color);
       for (let n = 0; n < 3; n++) {
         this.positions.push(points[n].x, points[n].y, points[n].z);
-        this.normals.push(normal.x, normal.y, normal.z);
+        this.normals.push(normal2.x, normal2.y, normal2.z);
         this.colors.push(tint2.r, tint2.g, tint2.b);
         this.uvs.push(...uv[n]);
         this.sites.push(site);
@@ -47092,10 +48095,10 @@
     if (end > at + 0.45) runs.push([at, end]);
     return runs;
   }
-  function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
+  function buildV4StreetSurfaces(roads, sites2, repairs, edging, counts) {
     const asphalt = roads.map((road4) => roadRect(road4));
     const footway = roads.map((road4) => roadRect(road4, -2.5));
-    const walls = sites.map((site) => {
+    const walls = sites2.map((site) => {
       const c = Math.abs(Math.cos(site.heading ?? 0)), s = Math.abs(Math.sin(site.heading ?? 0));
       const x = (site.width * c + site.length * s) / 2, z = (site.width * s + site.length * c) / 2;
       return { minX: site.x - x, maxX: site.x + x, minZ: site.z - z, maxZ: site.z + z };
@@ -47214,9 +48217,9 @@
     const z = Math.max(cell.minZ - point4.z, 0, point4.z - cell.maxZ);
     return x * x + z * z;
   }
-  function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market) {
+  function streamMetroSites(sites2, roads, mapped, flat, diagnostics, attach, detach, market) {
     const cells = /* @__PURE__ */ new Map(), residents = /* @__PURE__ */ new Set();
-    for (const [index, site] of sites.entries()) {
+    for (const [index, site] of sites2.entries()) {
       const key3 = `${Math.floor(site.x / STREAM_CELL)}:${Math.floor(site.z / STREAM_CELL)}`;
       let cell = cells.get(key3);
       if (!cell) {
@@ -47302,9 +48305,9 @@
     const metro = world2.environment === "metro";
     const streaming = metro && streamDetails;
     const market = streaming && usesCityV4StreetFinish(world2);
-    const active = metro || world2.environment === "city" || world2.environment === "vision" || world2.environment === "egypt";
+    const active2 = metro || world2.environment === "city" || world2.environment === "vision" || world2.environment === "egypt";
     const diagnostics = {
-      active,
+      active: active2,
       siteIds: [],
       sites: [],
       featureNames: [...FEATURES],
@@ -47342,10 +48345,10 @@
       diagnostics.resources.liveGeometries = diagnostics.resources.liveMaterials = diagnostics.resources.liveTextures = 0;
       diagnostics.disposed = true;
     };
-    if (!active) return { root, diagnostics, dispose };
-    const sites = (world2.statics ?? []).filter((site) => site.kind === "building").slice().sort((a, b) => String(a.id).localeCompare(String(b.id), "en"));
+    if (!active2) return { root, diagnostics, dispose };
+    const sites2 = (world2.statics ?? []).filter((site) => site.kind === "building").slice().sort((a, b) => String(a.id).localeCompare(String(b.id), "en"));
     const roads = (world2.roads ?? []).slice().sort((a, b) => `${a.axis}:${a.fixed}:${a.min}:${a.max}:${a.width}`.localeCompare(`${b.axis}:${b.fixed}:${b.min}:${b.max}:${b.width}`, "en"));
-    diagnostics.siteIds = sites.map((site) => site.id);
+    diagnostics.siteIds = sites2.map((site) => site.id);
     if (metro) {
       diagnostics.featureNames.push(...METRO_CLOSE_FEATURES);
       Object.assign(diagnostics.budget, METRO_BUDGET);
@@ -47355,14 +48358,14 @@
       diagnostics.featureNames.push(...MARKET_FEATURES, ...STREET_FINISH_FEATURES);
       Object.assign(diagnostics.counts, { marketStalls: 0, forecourtSlabs: 0, drains: 0 });
     }
-    if (!sites.length && !roads.length) return { root, diagnostics, dispose };
-    const texture = sites.length ? makeAtlas() : null;
+    if (!sites2.length && !roads.length) return { root, diagnostics, dispose };
+    const texture = sites2.length ? makeAtlas() : null;
     if (texture) textures.add(texture);
     diagnostics.textAtlasAvailable = !!texture;
     const flat = new MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
     flat.name = "egypt-matte-masonry-and-hardware";
     materials.add(flat);
-    const mapped = sites.length ? new MeshStandardMaterial({
+    const mapped = sites2.length ? new MeshStandardMaterial({
       map: texture,
       vertexColors: true,
       roughness: 0.98,
@@ -47393,8 +48396,8 @@
     const batches = [];
     const districts = /* @__PURE__ */ new Map();
     const build = metro ? buildMetroSite : buildSite;
-    if (streaming) residency = streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market);
-    else sites.forEach((site, index) => {
+    if (streaming) residency = streamMetroSites(sites2, roads, mapped, flat, diagnostics, attach, detach, market);
+    else sites2.forEach((site, index) => {
       const key3 = metro ? `${Math.floor(site.x / METRO_CELL)}:${Math.floor(site.z / METRO_CELL)}` : `${site.x < 0 ? "west" : "east"}-${site.z < 0 ? "south" : "north"}`;
       if (!districts.has(key3)) {
         const pair = [new Batch(`egypt-${key3}-facades`, mapped), new Batch(`egypt-${key3}-structure`, flat, metro)];
@@ -47405,7 +48408,7 @@
     });
     if (metro && !streaming) {
       diagnostics.totalCells = diagnostics.residentCells = districts.size;
-      diagnostics.residentSites = sites.length;
+      diagnostics.residentSites = sites2.length;
       diagnostics.cellsBuilt = districts.size;
     }
     if (roads.length) {
@@ -47420,7 +48423,7 @@
       paint.name = "egypt-flat-road-repairs-and-curb-paint";
       materials.add(paint);
       const patches = new Batch("egypt-asphalt-repairs", paint, true), curbs = new Batch("egypt-painted-curb", paint, true);
-      if (market) buildV4StreetSurfaces(roads, sites, patches, curbs, diagnostics.counts);
+      if (market) buildV4StreetSurfaces(roads, sites2, patches, curbs, diagnostics.counts);
       else buildStreetSurfaces(roads, patches, curbs, diagnostics.counts, metro);
       batches.push(patches, curbs);
     }
@@ -47706,12 +48709,12 @@
     const root = new Group();
     root.name = "egypt-registered-parked-props";
     root.userData.districtProps = true;
-    const sites = world2.environment === "egypt" ? (world2.statics ?? []).filter((site) => site.kind === "parked-vehicle") : [];
+    const sites2 = world2.environment === "egypt" ? (world2.statics ?? []).filter((site) => site.kind === "parked-vehicle") : [];
     const diagnostics = {
       active: world2.environment === "egypt",
-      siteIds: sites.map((site) => site.id),
+      siteIds: sites2.map((site) => site.id),
       loaded: 0,
-      pending: sites.length,
+      pending: sites2.length,
       failed: [],
       bounds: [],
       disposed: false
@@ -47736,9 +48739,9 @@
       geometries.clear();
       materials.clear();
     };
-    if (sites.length && ![loadAsset, fit3, assetFor].every((callback) => typeof callback === "function"))
+    if (sites2.length && ![loadAsset, fit3, assetFor].every((callback) => typeof callback === "function"))
       throw new TypeError("District props require the existing asset, fit and assetFor callbacks");
-    const jobs = sites.map((site) => {
+    const jobs = sites2.map((site) => {
       const group = new Group();
       group.name = site.id;
       group.userData.staticId = site.id;
@@ -47808,7 +48811,7 @@
       "city-wreck-smoke"
     );
     const spark = batch(new BoxGeometry(), new MeshBasicMaterial({ toneMapped: false }), 200, "city-contact-sparks");
-    const track = batch(
+    const track2 = batch(
       new PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
       new MeshBasicMaterial({
         depthWrite: false,
@@ -47833,9 +48836,9 @@
       mesh.setColorAt(i, tint.setHex(color));
     }
     function appearance(root, world2) {
-      const survival = world2.pursuit?.survival, active = survival?.active?.kind;
-      root.scale.setScalar(active === "giant" ? world2.player.width / survival.footprint.width : 1);
-      if (active === "ghost" && ghostMaterials.size === 0) {
+      const survival = world2.pursuit?.survival, active2 = survival?.active?.kind;
+      root.scale.setScalar(active2 === "giant" ? world2.player.width / survival.footprint.width : 1);
+      if (active2 === "ghost" && ghostMaterials.size === 0) {
         root.traverse((node5) => {
           if (!node5.isMesh || !node5.material) return;
           for (const material2 of Array.isArray(node5.material) ? node5.material : [node5.material]) {
@@ -47847,7 +48850,7 @@
             material2.needsUpdate = true;
           }
         });
-      } else if (active !== "ghost" && ghostMaterials.size) restoreGhost();
+      } else if (active2 !== "ghost" && ghostMaterials.size) restoreGhost();
     }
     function restoreGhost() {
       for (const [material2, [opacity, transparent, depthWrite]] of ghostMaterials) {
@@ -47889,7 +48892,7 @@
       for (const mark of marks) {
         band.set(Math.cos(mark.yaw), 0, -Math.sin(mark.yaw));
         for (const offset3 of [-0.67, 0.67]) put(
-          track,
+          track2,
           mark.x + band.x * offset3,
           0.136,
           mark.z + band.z * offset3,
@@ -48028,27 +49031,27 @@
     );
   }
   function splitPaint(points, signedDistance) {
-    const forward2 = [], back = [];
+    const forward3 = [], back = [];
     for (let i = 0; i < points.length; i++) {
       const a = points[i], b = points[(i + 1) % points.length];
       const da = signedDistance(a), db = signedDistance(b);
-      (da >= 0 ? forward2 : back).push(a);
+      (da >= 0 ? forward3 : back).push(a);
       if (da >= 0 === db >= 0) continue;
       const t = da / (da - db);
       const seam = a.map((n, k) => MathUtils.lerp(n, b[k], t));
-      forward2.push(seam);
+      forward3.push(seam);
       back.push(seam);
     }
-    return [forward2, back];
+    return [forward3, back];
   }
   function twoToneShell(source) {
-    const { position: position2, normal, color } = source.attributes;
-    if (!position2 || !normal || !color || source.index || !source.boundingBox) return null;
+    const { position: position2, normal: normal2, color } = source.attributes;
+    if (!position2 || !normal2 || !color || source.index || !source.boundingBox) return null;
     const { min, max } = source.boundingBox;
     const height = max.y - min.y, length = max.z - min.z;
     const centerZ = (max.z + min.z) / 2;
     let top = 0;
-    while (top < position2.count && (position2.getY(top) <= max.y - 3e-3 || normal.getY(top) <= 0.75)) top++;
+    while (top < position2.count && (position2.getY(top) <= max.y - 3e-3 || normal2.getY(top) <= 0.75)) top++;
     if (top === position2.count || !positive(height) || !positive(length)) return null;
     const read = (attribute, i) => [attribute.getX(i), attribute.getY(i), attribute.getZ(i)];
     const base = read(color, top);
@@ -48064,7 +49067,7 @@
     };
     for (let i = 0; i < position2.count; i += 3) {
       const points = [read(position2, i), read(position2, i + 1), read(position2, i + 2)];
-      const n = read(normal, i), rgb2 = read(color, i);
+      const n = read(normal2, i), rgb2 = read(color, i);
       if (!rgb2.every((v2, k) => v2 === base[k])) {
         emit(points, n, rgb2);
         continue;
@@ -48157,12 +49160,12 @@
     }
     const ray = new Raycaster();
     const origin = new Vector3();
-    const direction2 = new Vector3();
+    const direction3 = new Vector3();
     const stripe = [];
     const surface = (side, y, z) => {
       origin.set((side < 0 ? bounds.min.x : bounds.max.x) + 0.15 * side, y, z).applyMatrix4(actorRoot.matrixWorld);
-      direction2.set(-side, 0, 0).transformDirection(actorRoot.matrixWorld);
-      ray.set(origin, direction2);
+      direction3.set(-side, 0, 0).transformDirection(actorRoot.matrixWorld);
+      ray.set(origin, direction3);
       const hit = ray.intersectObjects(painted.length ? painted : pick, false)[0];
       if (!hit) return null;
       const point4 = hit.point.applyMatrix4(toLocal);
@@ -48302,10 +49305,10 @@
       });
     }
     function syncRoads(current) {
-      const active = /* @__PURE__ */ new Set();
+      const active2 = /* @__PURE__ */ new Set();
       for (const road4 of current.roads ?? []) {
         if (road4.pursuitShoulder !== true || !positive(road4.supportHeightM) || !positive(road4.width) || !finite6(road4.fixed) || !(road4.max >= road4.min)) continue;
-        active.add(road4);
+        active2.add(road4);
         let slab = shoulders.get(road4);
         if (!slab) {
           const mesh = new Mesh(box5, paints.shoulder);
@@ -48323,16 +49326,16 @@
         );
         slab.mesh.scale.set(r.maxX - r.minX, road4.supportHeightM, r.maxZ - r.minZ);
       }
-      for (const [road4, { mesh }] of shoulders) if (!active.has(road4)) {
+      for (const [road4, { mesh }] of shoulders) if (!active2.has(road4)) {
         mesh.removeFromParent();
         shoulders.delete(road4);
       }
     }
     function syncBarriers(current) {
-      const active = /* @__PURE__ */ new Set();
+      const active2 = /* @__PURE__ */ new Set();
       for (const site of current.statics ?? []) {
         if (site.kind !== "barrier" || !positive(site.width) || !positive(site.length) || !finite6(site.x) || !finite6(site.z)) continue;
-        active.add(site.id);
+        active2.add(site.id);
         let root = barriers.get(site.id);
         if (!root) {
           root = new Group();
@@ -48349,7 +49352,7 @@
         root.rotation.y = site.heading ?? 0;
         root.scale.set(site.width, height, site.length);
       }
-      for (const [id2, root] of barriers) if (!active.has(id2)) {
+      for (const [id2, root] of barriers) if (!active2.has(id2)) {
         root.removeFromParent();
         barriers.delete(id2);
       }
@@ -48526,10 +49529,10 @@
     const fall = MathUtils.smoothstep(elapsed, LEAN_TICKS, DOWN_TICKS);
     const release = MathUtils.smoothstep(elapsed, HOLD_TICKS, END_TICKS);
     const tilt = MathUtils.lerp(lean, MathUtils.lerp(1.38, 1.48, pace), fall) * (1 - release);
-    const direction2 = impact.heading - root.rotation.y;
+    const direction3 = impact.heading - root.rotation.y;
     const reach = Math.sin(tilt);
-    const pitch = Math.atan2(reach * Math.cos(direction2), Math.cos(tilt));
-    const roll = -Math.asin(reach * Math.sin(direction2));
+    const pitch = Math.atan2(reach * Math.cos(direction3), Math.cos(tilt));
+    const roll = -Math.asin(reach * Math.sin(direction3));
     const view2 = impactView(root);
     view2.pivot.rotation.set(pitch, 0, roll, "YXZ");
     const pose6 = userData.pedestrianImpactPose ??= {};
@@ -49889,8 +50892,8 @@
       this.metroAlpha = alpha;
       record.root.position.set(actor.x, 0.12 + (world2.pursuit?.phase === "running" ? actor.y ?? 0 : 0), actor.z);
       record.root.rotation.y = actor.heading;
-      record.vehicleRig.update(actor, world2.sensors, alpha);
       this.pursuitView?.appearance(record.root, world2);
+      record.vehicleRig.update(actor, world2.sensors, alpha);
       const focused = this.focusedPersonId && world2.actors.find((a) => a.id === this.focusedPersonId && a.type === "pedestrian");
       this.metroFocus = focused ? this.roots.get(focused.id) ?? this.addMetroActor(focused) : null;
       if (focused) {
@@ -50199,10 +51202,10 @@
   var STOP_SHORT_M = 0.08;
   var CITY_FOOTPRINT_MARGIN_M = 16;
   var TETHER_HEIGHT_M = 2.15;
-  function sweepFraction(from, to, sites) {
+  function sweepFraction(from, to, sites2) {
     const dx = to.x - from.x, dy = to.y - from.y, dz = to.z - from.z;
     let first = Infinity;
-    for (const site of sites) {
+    for (const site of sites2) {
       if (!(site.width > 0 && site.length > 0) || site.kind === "place-sign") continue;
       const c = Math.cos(site.heading ?? 0), s = Math.sin(site.heading ?? 0);
       const x = from.x - site.x, z = from.z - site.z;
@@ -50232,6 +51235,7 @@
     const pivot = new Vector3(), ideal = new Vector3(), target2 = new Vector3();
     const eye = new Vector3(), proposal = new Vector3(), lastClearPivot = new Vector3();
     const aim = new Vector3(), forwardAim = new Vector3();
+    const cabin = new Vector3(), lifted = new Vector3();
     const reducedMotion2 = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)");
     let initialized = false, packMode = false, room = 0, stretch = 0, avenue2 = 0, bearing = 0, reviewMix = 0;
     function update(camera2, {
@@ -50244,7 +51248,8 @@
       snap,
       pack = false,
       packLab = false,
-      impactReview = false
+      impactReview = false,
+      trailingVehicles = null
     }) {
       const reset2 = snap || !initialized || pack !== packMode;
       packMode = pack;
@@ -50289,17 +51294,42 @@
         Math.hypot(eye.x - pivot.x, eye.z - pivot.z),
         Math.hypot(lastClearPivot.x - pivot.x, lastClearPivot.z - pivot.z)
       );
-      const sites = staticIndex?.near(pivot, reach + CITY_FOOTPRINT_MARGIN_M) ?? [];
-      let tether = sweepFraction(pivot, ideal, sites);
+      const sites2 = staticIndex?.near(pivot, reach + CITY_FOOTPRINT_MARGIN_M) ?? [];
+      if (trailingVehicles && !impactReview) {
+        const blockers = [];
+        for (const body2 of trailingVehicles) {
+          const dx = body2.x - position2.x, dz = body2.z - position2.z;
+          if (body2.height >= 1.7 && dx * sin + dz * cos < 0 && dx * dx + dz * dz < 18 ** 2)
+            blockers.push(body2);
+        }
+        if (blockers.length) {
+          cabin.set(position2.x, position2.y + 1.26, position2.z);
+          const ordinary = sweepFraction(pivot, ideal, sites2);
+          proposal.lerpVectors(pivot, ideal, ordinary);
+          if (sweepFraction(cabin, proposal, blockers) < 1) {
+            for (const [shorten, lift] of [[0.64, 3.2], [0.49, 4], [0.36, 4.7]]) {
+              lifted.set(
+                position2.x - back * shorten * sin + shoulder * cos,
+                ideal.y + lift,
+                position2.z - back * shorten * cos - shoulder * sin
+              );
+              if (sweepFraction(pivot, lifted, sites2) !== 1 || sweepFraction(cabin, lifted, blockers) !== 1) continue;
+              ideal.copy(lifted);
+              break;
+            }
+          }
+        }
+      }
+      let tether = sweepFraction(pivot, ideal, sites2);
       if ((pack || reviewMix) && tether < 1) {
         proposal.set(pivot.x, ideal.y, pivot.z);
-        if (sweepFraction(pivot, proposal, sites) === 1) {
+        if (sweepFraction(pivot, proposal, sites2) === 1) {
           let clear = 0, blocked = 1;
           for (let i = 0; i < 5; i++) {
             const middle = (clear + blocked) / 2;
             proposal.x = MathUtils.lerp(pivot.x, ideal.x, middle);
             proposal.z = MathUtils.lerp(pivot.z, ideal.z, middle);
-            if (sweepFraction(pivot, proposal, sites) === 1) clear = middle;
+            if (sweepFraction(pivot, proposal, sites2) === 1) clear = middle;
             else blocked = middle;
           }
           ideal.x = MathUtils.lerp(pivot.x, ideal.x, clear);
@@ -50314,19 +51344,19 @@
       } else {
         const followEase = 1 - Math.exp(-(pack ? 7.5 : 11) * dt);
         proposal.copy(eye).lerp(target2, followEase);
-        const travel2 = sweepFraction(eye, proposal, sites);
-        if (travel2 === 1 && sweepFraction(pivot, proposal, sites) === 1) {
+        const travel2 = sweepFraction(eye, proposal, sites2);
+        if (travel2 === 1 && sweepFraction(pivot, proposal, sites2) === 1) {
           eye.copy(proposal);
         } else {
-          const retract = sweepFraction(eye, pivot, sites) === 1 ? pivot : lastClearPivot;
+          const retract = sweepFraction(eye, pivot, sites2) === 1 ? pivot : lastClearPivot;
           const retractEase = reviewMix ? Math.min(followEase, 26 * dt / Math.max(0.01, eye.distanceTo(retract))) : 1 - Math.exp(-19 * dt);
           proposal.copy(eye).lerp(retract, retractEase);
-          const retreat = sweepFraction(eye, proposal, sites);
+          const retreat = sweepFraction(eye, proposal, sites2);
           if (retreat > 0) eye.lerp(proposal, retreat);
           else if (travel2 > 0) eye.lerp(target2, followEase * travel2);
         }
       }
-      if (reset2 || sweepFraction(pivot, eye, sites) === 1) lastClearPivot.copy(pivot);
+      if (reset2 || sweepFraction(pivot, eye, sites2) === 1) lastClearPivot.copy(pivot);
       const eyeBack = (position2.x - eye.x) * sin + (position2.z - eye.z) * cos;
       const foreground = avenue2 * (0.7 + 5.25 * stretch) * MathUtils.smoothstep(eyeBack, 5, back * 0.9);
       const wideLead = pack ? labFraming ? 0.4 : -3.4 + 0.9 * pace : 4.1 - 4.65 * stretch - foreground;
@@ -50335,12 +51365,12 @@
       const sideLead = labFraming ? -3.2 * (1 - reviewMix) * visibility : 0;
       aim.set(position2.x, position2.y + MathUtils.lerp(1.12, 0.65, reviewMix), position2.z);
       forwardAim.set(aim.x + lead * sin + sideLead * cos, aim.y, aim.z + lead * cos - sideLead * sin);
-      if ((lead || sideLead) && sweepFraction(eye, forwardAim, sites) !== 1) {
+      if ((lead || sideLead) && sweepFraction(eye, forwardAim, sites2) !== 1) {
         let low = 0, high = 1;
         for (let i = 0; i < 4; i++) {
           const middle = (low + high) / 2;
           proposal.lerpVectors(aim, forwardAim, middle);
-          if (sweepFraction(eye, proposal, sites) === 1) low = middle;
+          if (sweepFraction(eye, proposal, sites2) === 1) low = middle;
           else high = middle;
         }
         forwardAim.lerp(aim, 1 - low);
@@ -50478,7 +51508,7 @@
             panOffset.set(0, 0, 0);
           }
           scale = 1;
-          if (zoomChanged || lastPosition.distanceToSquared(scope.object.position) > EPS3 || 8 * (1 - lastQuaternion.dot(scope.object.quaternion)) > EPS3) {
+          if (zoomChanged || lastPosition.distanceToSquared(scope.object.position) > EPS4 || 8 * (1 - lastQuaternion.dot(scope.object.quaternion)) > EPS4) {
             scope.dispatchEvent(_changeEvent);
             lastPosition.copy(scope.object.position);
             lastQuaternion.copy(scope.object.quaternion);
@@ -50512,7 +51542,7 @@
         TOUCH_DOLLY_ROTATE: 6
       };
       let state = STATE.NONE;
-      const EPS3 = 1e-6;
+      const EPS4 = 1e-6;
       const spherical = new Spherical();
       const sphericalDelta = new Spherical();
       let scale = 1;
@@ -51334,7 +52364,7 @@
     canvas.height = height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
     const image = context.createImageData(width, height);
-    const position2 = new Vector3(), direction2 = new Vector3();
+    const position2 = new Vector3(), direction3 = new Vector3();
     let streamId = crypto.randomUUID(), frameId = 0, lastSampleS = -Infinity;
     let enabled = false, previewEnabled = false, disposed = false, pending = null, generation = 0;
     let streamRequests = new AbortController();
@@ -51351,10 +52381,10 @@
       status = { ...status, ...next };
       onStatus?.(status);
     };
-    async function request(url, options, streamSignal) {
+    async function request(url, options2, streamSignal) {
       const timeout = AbortSignal.timeout(1e4);
       const signal = streamSignal && typeof AbortSignal.any === "function" ? AbortSignal.any([streamSignal, timeout]) : timeout;
-      const response = await fetch(url, { ...options, signal });
+      const response = await fetch(url, { ...options2, signal });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? `Vision HTTP ${response.status}`);
       return data;
@@ -51542,7 +52572,7 @@
         readbackMode: readback.asynchronous ? "pbo" : "sync"
       };
       camera2.getWorldPosition(position2);
-      camera2.getWorldDirection(direction2);
+      camera2.getWorldDirection(direction3);
       const frame2 = {
         schema: 1,
         streamId,
@@ -51553,7 +52583,7 @@
           height,
           fovYDeg: camera2.fov,
           position: { x: position2.x, y: position2.y, z: position2.z },
-          headingRad: Math.atan2(direction2.x, direction2.z),
+          headingRad: Math.atan2(direction3.x, direction3.z),
           groundY: 0.12
         },
         ego: {
@@ -51913,7 +52943,7 @@
       node("dt", "", "Front steering"),
       steeringValue
     );
-    const options = node("div", "car-options");
+    const options2 = node("div", "car-options");
     const checkbox = (id2, label, action) => {
       const row = node("label", "car-option");
       const input2 = node("input");
@@ -51921,7 +52951,7 @@
       input2.type = "checkbox";
       row.append(input2, node("span", "", label));
       listen(input2, "change", () => dispatch(action, input2.checked, input2));
-      options.append(row);
+      options2.append(row);
       return input2;
     };
     const cutawayInput = checkbox("carCutaway", "Body cutaway", "cutaway");
@@ -52025,7 +53055,7 @@
       description,
       viewGroup,
       driveInfo,
-      options,
+      options2,
       cameraLabel,
       sensorTitle,
       ranges,
@@ -52458,7 +53488,7 @@
       text2(values.latency, finite8(vision?.latencyMs) ? `${vision.latencyMs.toFixed(0)} ms` : "Not measured");
       text2(values.age, Number.isSafeInteger(vision?.frameId) && finite8(vision?.ageMs) ? `#${vision.frameId} \xB7 ${vision.ageMs.toFixed(0)} ms` : "No matched frame");
       const tracks = Array.isArray(vision?.tracks) ? vision.tracks : [];
-      text2(values.tracks, `${tracks.length} \xB7 ${tracks.filter((track) => track.label === "person").length} semantic person`);
+      text2(values.tracks, `${tracks.length} \xB7 ${tracks.filter((track2) => track2.label === "person").length} semantic person`);
       const conflicts2 = received && Array.isArray(vision?.forecasts) ? vision.forecasts.filter((item) => item.conflict === true) : [];
       const next = conflicts2.find((item) => finite8(item.crossingTimeS));
       text2(values.forecast, next ? `Lane entry ~${next.crossingTimeS.toFixed(1)} s \xB7 score ${(next.confidence * 100).toFixed(0)}%` : received ? "No qualified conflict forecast" : "Unavailable");
@@ -52468,9 +53498,9 @@
       const ranges = world2?.sensors?.filteredM;
       const validRanges = Array.isArray(ranges) ? ranges.filter(finite8) : [];
       text2(values.proximity, validRanges.length ? `${Math.min(...validRanges).toFixed(1)} m \xB7 separate geometry` : "Unavailable \xB7 separate geometry");
-      const entries = tracks.slice(0, 3).map((track) => {
-        const speed = track.velocity ? Math.hypot(track.velocity.x, track.velocity.z) : null;
-        return `${track.id} \xB7 ${track.label === "motion" ? "ambiguous motion" : track.label} \xB7 ${track.observations ?? 0} observations \xB7 ${finite8(speed) ? speed.toFixed(2) : "\u2014"} m/s \xB7 uncertainty ${finite8(track.uncertaintyM) ? track.uncertaintyM.toFixed(2) : "\u2014"} m`;
+      const entries = tracks.slice(0, 3).map((track2) => {
+        const speed = track2.velocity ? Math.hypot(track2.velocity.x, track2.velocity.z) : null;
+        return `${track2.id} \xB7 ${track2.label === "motion" ? "ambiguous motion" : track2.label} \xB7 ${track2.observations ?? 0} observations \xB7 ${finite8(speed) ? speed.toFixed(2) : "\u2014"} m/s \xB7 uncertainty ${finite8(track2.uncertaintyM) ? track2.uncertaintyM.toFixed(2) : "\u2014"} m`;
       });
       const lines = entries.length ? entries : ["No projected visual tracks."];
       while (trackList.children.length > lines.length) trackList.lastElementChild.remove();
@@ -52664,41 +53694,41 @@
     const y = camera2.height / 2 + (camera2.position.y - camera2.groundY) * focal / depth;
     return finite9(x) && finite9(y) ? [x, y] : null;
   }
-  function projectPixelTrack(track, pair, { horizonS = 3 } = {}) {
+  function projectPixelTrack(track2, pair, { horizonS = 3 } = {}) {
     const result = pair?.result, camera2 = pair?.frame?.camera;
-    if (!pair?.canAnalyze || !pair.motionAvailable || !result || !camera2 || !plainKeys(track, TRACK_KEYS2) || track.source !== "camera-pixels" || track.streamId !== result.streamId || !token4(track.id) || !["person", "vehicle", "motion"].includes(track.label) || track.frameId !== result.frameId || !equal(track.lastSeenS, result.simulationTimeS) || !finite9(track.ageMs) || track.ageMs < 0 || track.ageMs > MAX_AGE_MS2 || !Array.isArray(track.history) || !track.history.length || track.history.length > 12 || track.history.length !== track.observations || !plainKeys(track.position, ["x", "z"]) || !point3(track.position) || !plainKeys(track.velocity, ["x", "z"]) || !point3(track.velocity) || !finite9(horizonS) || horizonS <= 0) return null;
+    if (!pair?.canAnalyze || !pair.motionAvailable || !result || !camera2 || !plainKeys(track2, TRACK_KEYS2) || track2.source !== "camera-pixels" || track2.streamId !== result.streamId || !token4(track2.id) || !["person", "vehicle", "motion"].includes(track2.label) || track2.frameId !== result.frameId || !equal(track2.lastSeenS, result.simulationTimeS) || !finite9(track2.ageMs) || track2.ageMs < 0 || track2.ageMs > MAX_AGE_MS2 || !Array.isArray(track2.history) || !track2.history.length || track2.history.length > 12 || track2.history.length !== track2.observations || !plainKeys(track2.position, ["x", "z"]) || !point3(track2.position) || !plainKeys(track2.velocity, ["x", "z"]) || !point3(track2.velocity) || !finite9(horizonS) || horizonS <= 0) return null;
     let time = -Infinity, frameId = -1;
-    for (const sample of track.history) {
+    for (const sample of track2.history) {
       if (!plainKeys(sample, ["frameId", "simulationTimeS", "position"]) || !plainKeys(sample.position, ["x", "z"]) || !point3(sample.position) || !Number.isSafeInteger(sample.frameId) || sample.frameId <= frameId || sample.frameId > result.frameId || !finite9(sample.simulationTimeS) || sample.simulationTimeS <= time || sample.simulationTimeS > result.simulationTimeS) return null;
       time = sample.simulationTimeS;
       frameId = sample.frameId;
     }
     if (frameId !== result.frameId || !equal(time, result.simulationTimeS)) return null;
-    const observed = track.history.map((sample) => projectCameraPoint(sample.position, camera2));
-    const forecast2 = pair.visual.forecasts?.find((item) => item.trackId === track.id);
+    const observed = track2.history.map((sample) => projectCameraPoint(sample.position, camera2));
+    const forecast2 = pair.visual.forecasts?.find((item) => item.trackId === track2.id);
     const uncertain = forecast2 && /uncertain|insufficient|low-visual|future|stale/.test(forecast2.reason);
-    const fitted = track.reliable === true && track.observations >= 3 && track.spanS >= 0.2 - 1e-8 && finite9(track.uncertaintyM) && track.uncertaintyM <= 2.5 && finite9(track.velocityUncertaintyMps) && track.velocityUncertaintyMps >= 0 && track.velocityUncertaintyMps <= 0.65 && Math.hypot(track.velocity.x, track.velocity.z) <= 4 && !uncertain;
+    const fitted = track2.reliable === true && track2.observations >= 3 && track2.spanS >= 0.2 - 1e-8 && finite9(track2.uncertaintyM) && track2.uncertaintyM <= 2.5 && finite9(track2.velocityUncertaintyMps) && track2.velocityUncertaintyMps >= 0 && track2.velocityUncertaintyMps <= 0.65 && Math.hypot(track2.velocity.x, track2.velocity.z) <= 4 && !uncertain;
     const duration = fitted ? Math.min(3, horizonS) : 0;
     const predicted = [];
-    if (duration && Math.hypot(track.velocity.x, track.velocity.z) >= 0.05) {
+    if (duration && Math.hypot(track2.velocity.x, track2.velocity.z) >= 0.05) {
       const steps = Math.ceil(duration / 0.25);
       for (let i = 0; i <= steps; i++) {
         const t = duration * i / steps;
         predicted.push(projectCameraPoint({
-          x: track.position.x + track.velocity.x * t,
-          z: track.position.z + track.velocity.z * t
+          x: track2.position.x + track2.velocity.x * t,
+          z: track2.position.z + track2.velocity.z * t
         }, camera2));
       }
     }
     return {
-      id: track.id,
-      label: track.label,
+      id: track2.id,
+      label: track2.label,
       observed,
       predicted,
       horizonS: predicted.length ? duration : 0,
-      speedMps: Math.hypot(track.velocity.x, track.velocity.z),
-      uncertaintyM: track.uncertaintyM,
-      velocityUncertaintyMps: track.velocityUncertaintyMps,
+      speedMps: Math.hypot(track2.velocity.x, track2.velocity.z),
+      uncertaintyM: track2.uncertaintyM,
+      velocityUncertaintyMps: track2.velocityUncertaintyMps,
       reason: predicted.length ? "constant-velocity estimate" : uncertain || !fitted ? "Forecast unavailable \xB7 insufficient or uncertain motion" : "No fitted displacement"
     };
   }
@@ -52973,8 +54003,8 @@
         context.beginPath();
         context.rect(0, 0, width, height);
         context.clip();
-        for (const track of (pair.visual?.tracks ?? []).slice(0, 24)) {
-          const projected = projectPixelTrack(track, pair);
+        for (const track2 of (pair.visual?.tracks ?? []).slice(0, 24)) {
+          const projected = projectPixelTrack(track2, pair);
           if (!projected) continue;
           drawLine(context, projected.observed, false, "#a6edbc");
           drawLine(context, projected.predicted, true, "#f4c38d");
@@ -53097,8 +54127,8 @@
       text3(timing, result ? `NN inference ${result.latencyMs.toFixed(1)} ms \xB7 HTTP transport not separately measured \xB7 simulation age ${finite10(ageMs) ? `${ageMs.toFixed(0)} ms` : "unavailable"} \xB7 ${Math.max(0, now3() - receipt).toFixed(0)} ms since result receipt` : "Inference unavailable for this image \xB7 transport is not inference time.");
       text3(recognition, result ? result.detections.length ? `${result.detections.length} detector ${result.detections.length === 1 ? "box" : "boxes"} \xB7 scores are uncalibrated. No OCR is active.` : "No detector boxes in this image. This is not proof of a clear road; no OCR is active." : "Recognition and future motion are unavailable for this preview.");
       list(detectionList, result ? result.detections.slice(0, 16).map((detection) => `${detection.label} \xB7 score ${detection.confidence.toFixed(2)} (uncalibrated) \xB7 box ${detection.box.map((v2) => v2.toFixed(0)).join(", ")}`).concat(result.detections.length > 16 ? [`${result.detections.length - 16} more boxes are visible in the image.`] : []) : ["No current exact-frame detections."]);
-      const projected = pair?.motionAvailable ? (pair.visual.tracks ?? []).slice(0, 24).map((track) => projectPixelTrack(track, pair)).filter(Boolean) : [];
-      list(motionList, projected.length ? projected.map((track) => `${track.id} \xB7 ${track.label} \xB7 fitted ${track.speedMps.toFixed(2)} m/s \xB7 position uncertainty ${finite10(track.uncertaintyM) ? track.uncertaintyM.toFixed(2) : "unavailable"} m \xB7 ` + (track.horizonS ? `${track.horizonS.toFixed(1)} s constant-velocity estimate; not intent` : track.reason)) : ["Fitted motion unavailable: no fresh, matching observed history."]);
+      const projected = pair?.motionAvailable ? (pair.visual.tracks ?? []).slice(0, 24).map((track2) => projectPixelTrack(track2, pair)).filter(Boolean) : [];
+      list(motionList, projected.length ? projected.map((track2) => `${track2.id} \xB7 ${track2.label} \xB7 fitted ${track2.speedMps.toFixed(2)} m/s \xB7 position uncertainty ${finite10(track2.uncertaintyM) ? track2.uncertaintyM.toFixed(2) : "unavailable"} m \xB7 ` + (track2.horizonS ? `${track2.horizonS.toFixed(1)} s constant-velocity estimate; not intent` : track2.reason)) : ["Fitted motion unavailable: no fresh, matching observed history."]);
     }
     function render(state) {
       if (disposed || panel.hidden) return;
@@ -53428,17 +54458,17 @@
       const signature = JSON.stringify(entries.map((person2) => [person2.id, person2.kind]));
       if (signature !== optionsKey) {
         const previous = select.value;
-        const options = entries.map((person2) => {
+        const options2 = entries.map((person2) => {
           const option = node4("option", "", `${person2.id} \xB7 ${readable3(person2.kind)}`);
           option.value = person2.id;
           return option;
         });
-        if (!options.length) {
+        if (!options2.length) {
           const option = node4("option", "", "No people in this world");
           option.value = "";
-          options.push(option);
+          options2.push(option);
         }
-        select.replaceChildren(...options);
+        select.replaceChildren(...options2);
         if (entries.some((person2) => person2.id === previous)) select.value = previous;
         optionsKey = signature;
       }
@@ -53530,6 +54560,14 @@
     stopped: "Ended"
   };
   var RESPONSE_STAGES = { contact: "In contact", search: "Searching", clearing: "Clearing" };
+  var DISPATCH_STAGES = {
+    ZONE_TRACKED: "Zone tracked",
+    VISUALLY_SPOTTED: "Spotted",
+    LAST_KNOWN: "Last known",
+    SEARCHING: "Searching",
+    LOST: "Signal lost",
+    ESCAPED: "Escaped"
+  };
   var POWERS2 = { giant: "Giant", ghost: "Ghost", mine: "Mine", pulse: "Pulse" };
   var IMPACT_CAUSES = {
     "police-touch": "Patrol contact",
@@ -53563,6 +54601,11 @@
   var pct = (value) => Math.round(value * 100);
   var boundedPercent = (value) => pct(Math.max(0, Math.min(1, value)));
   function responseNote(stage, response) {
+    const dispatch = response?.dispatch;
+    if (dispatch?.state === "ZONE_TRACKED") return "Dispatch shares your position inside the surveillance zone.";
+    if (dispatch?.state === "LAST_KNOWN") return "Patrols are following your last reported position.";
+    if (dispatch?.state === "SEARCHING") return "Patrols are searching from your last reported position.";
+    if (dispatch?.state === "LOST" && !response.clearProgress) return "Signal lost. Put more distance between you and the patrols.";
     if (stage === "contact") {
       if (response.unitsInContact === 1) return "One patrol has you in sight.";
       if (response.unitsInContact > 1) return `${response.unitsInContact} patrols have you in sight.`;
@@ -53576,8 +54619,8 @@
   function appliedAction(action) {
     if (![action?.steer, action?.throttle, action?.brake].every(finite12) || action.gear !== 1 && action.gear !== -1) return "";
     const steer = pct(action.steer);
-    const signed = steer < 0 ? `\u2212${Math.abs(steer)}` : steer > 0 ? `+${steer}` : "0";
-    return `${action.gear < 0 ? "Reverse" : "Forward"} gear \xB7 Throttle ${pct(action.throttle)}% \xB7 Brake ${pct(action.brake)}% \xB7 Steer ${signed}%`;
+    const signed2 = steer < 0 ? `\u2212${Math.abs(steer)}` : steer > 0 ? `+${steer}` : "0";
+    return `${action.gear < 0 ? "Reverse" : "Forward"} gear \xB7 Throttle ${pct(action.throttle)}% \xB7 Brake ${pct(action.brake)}% \xB7 Steer ${signed2}%`;
   }
   function describeEvent(event2) {
     if (!event2?.kind) return "";
@@ -53623,7 +54666,7 @@
     if (driver === "local-policy") return "Saved City policy";
     return driver === "planner" && state.phase !== "ready" ? "Planner" : "";
   }
-  function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase, onStyle, onUse, onSound }) {
+  function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase, onStyle, onCheckpoint, onUse, onSound }) {
     if (!container?.ownerDocument || ![onRun, onRestart, onLevel].every((fn) => typeof fn === "function"))
       throw new TypeError("Pursuit controls need a container and action callbacks.");
     const doc = container.ownerDocument;
@@ -53676,12 +54719,36 @@
     const styleLabel = node5("label", "", "Chase style");
     styleLabel.className = "pursuit-style";
     const style = node5("select", "pursuitStyle");
-    for (const [value, label] of [["survival", "Arcade chase"], ["hunt", "Tactical / training"], ["gta", "GTA Chase"]]) {
+    for (const [value, label] of [
+      ["survival", "Arcade chase"],
+      ["hunt", "Tactical / training"],
+      ["gta", "GTA Chase"],
+      ["dispatch", "Metro Dispatch"],
+      ["dispatch-ppo", "Metro Dispatch \xB7 PPO"]
+    ]) {
       const option = node5("option", "", label);
       option.value = value;
       style.append(option);
     }
     styleLabel.append(style);
+    const modelField = node5("label", "", "PPO checkpoint");
+    modelField.className = "pursuit-style";
+    const modelFile = node5("input", "pursuitCheckpoint");
+    modelFile.type = "file";
+    modelFile.accept = ".json,application/json";
+    const modelStatus = node5("span", "pursuitCheckpointStatus");
+    modelStatus.setAttribute("role", "status");
+    modelFile.setAttribute("aria-describedby", modelStatus.id);
+    modelField.append(modelFile, modelStatus);
+    modelField.hidden = true;
+    modelFile.addEventListener("change", async () => {
+      modelFile.disabled = true;
+      try {
+        await onCheckpoint?.(modelFile.files[0]);
+      } finally {
+        modelFile.disabled = false;
+      }
+    });
     const caseField = node5("div");
     caseField.className = "pursuit-pack-case";
     caseField.hidden = true;
@@ -53704,7 +54771,7 @@
     const run = node5("button", "pursuitRunBtn", "Run pursuit");
     const restart = node5("button", "pursuitRestartBtn", "Restart");
     run.type = restart.type = "button";
-    controls.append(caseField, styleLabel, levelLabel, run, restart);
+    controls.append(caseField, styleLabel, modelField, levelLabel, run, restart);
     const arcade = node5("div", "pursuitArcade");
     arcade.className = "pursuit-arcade";
     const clocks = node5("dl");
@@ -53765,6 +54832,7 @@
     const showEvent = reading("Event", "Last event");
     const showImpact = reading("Impact", "Impact");
     const showPressure = reading("Pressure", "Pressure");
+    const showZone = reading("Zones", "Surveillance");
     const danger = node5("dl", "pursuitDanger");
     danger.className = "pursuit-danger";
     danger.setAttribute("aria-label", "Pursuit danger counts");
@@ -53804,6 +54872,7 @@
       const running = latest?.phase === "running";
       const busy = Boolean(pending) || !latest;
       run.disabled = busy || (street ? running || latest.pack === true && latest.review === true : latest.phase !== "ready");
+      if (latest?.cityPursuitStyle === "dispatch-ppo" && !latest.checkpointReady) run.disabled = true;
       restart.disabled = busy || street && !running;
       level.disabled = busy || street && running;
       style.disabled = busy || running || latest?.review === true;
@@ -53850,20 +54919,21 @@
     }
     function renderDiagnostics(state) {
       const { metrics, decision: decision2, events, response } = state;
-      const active = state.phase !== "ready";
-      const applied = active ? appliedAction(state.action) : "";
-      showAction(state.street && active && finite12(state.appliedCommand?.targetSpeed) ? `${(state.appliedSpeedMps ?? state.appliedCommand.targetSpeed).toFixed(1)} m/s target${state.appliedSource ? ` \xB7 ${sentence(state.appliedSource)}` : ""}` : applied);
-      showPlanner(active ? describeDecision(decision2) : "");
+      const active2 = state.phase !== "ready";
+      const applied = active2 ? appliedAction(state.action) : "";
+      showAction(state.street && active2 && finite12(state.appliedCommand?.targetSpeed) ? `${(state.appliedSpeedMps ?? state.appliedCommand.targetSpeed).toFixed(1)} m/s target${state.appliedSource ? ` \xB7 ${sentence(state.appliedSource)}` : ""}` : applied);
+      showPlanner(active2 ? describeDecision(decision2) : "");
       const patrol2 = state.patrolStatus;
-      showPatrol(patrol2 && finite12(patrol2.nearestM) ? `${patrol2.active}/${patrol2.target} on scene \xB7 ${Math.round(patrol2.nearestM)} m nearest` : "");
-      showThreats(active && Array.isArray(decision2?.threatSectors) ? decision2.threatSectors.map(sentence).filter(Boolean).join(" \xB7 ") || "None detected" : "");
-      showRoute(active && decision2?.routeId != null ? sentence(state.street ? decision2.routeId.replace(/^metro-exit-/, "") : decision2.routeId) : "");
+      showPatrol(patrol2 && finite12(patrol2.nearestM) ? `${patrol2.active}${finite12(patrol2.target) ? `/${patrol2.target}` : ""} on scene \xB7 ${Math.round(patrol2.nearestM)} m nearest` : "");
+      showThreats(active2 && Array.isArray(decision2?.threatSectors) ? decision2.threatSectors.map(sentence).filter(Boolean).join(" \xB7 ") || "None detected" : "");
+      showRoute(active2 && decision2?.routeId != null ? sentence(state.street ? decision2.routeId.replace(/^metro-exit-/, "") : decision2.routeId) : "");
       const guard = metrics?.guard;
       showGuard(applied ? Object.hasOwn(GUARD_STATES, guard) ? GUARD_STATES[guard] : sentence(guard) : "");
-      showSupport(active && finite12(metrics?.supportHeightM) && metrics.supportHeightM > 0 ? `${metrics.supportHeightM.toFixed(2)} m above road` : "");
+      showSupport(active2 && finite12(metrics?.supportHeightM) && metrics.supportHeightM > 0 ? `${metrics.supportHeightM.toFixed(2)} m above road` : "");
       showEvent(describeEvent(events?.at(-1)));
       showImpact(describeImpact(metrics?.impact));
       showPressure(compact && finite12(response?.pressure) ? `${boundedPercent(response.pressure)}%` : "");
+      showZone(response?.dispatch ? response.dispatch.zoneIds.map(sentence).join(" \xB7 ") || "Outside coverage" : "");
       for (const [key3, value] of counts) text5(value, count(metrics?.[key3]));
       text5(progress, [
         finite12(metrics?.survivalS) ? `${metrics.survivalS.toFixed(1)} s` : "",
@@ -53890,7 +54960,9 @@
       const noPatrolDrill = packLab && patrol2?.active === 0;
       const arcadeSelected = state.cityPursuitStyle === "survival", survival = state.survival;
       const showArcade = state.street && (running ? Boolean(survival) : arcadeSelected);
-      const showGta = state.street && (running ? state.variant === "gta" : state.cityPursuitStyle === "gta");
+      const frozenSelected = state.street && state.cityPursuitStyle === "dispatch-ppo";
+      const showDispatch = state.street && (running ? Boolean(state.response?.dispatch) : state.cityPursuitStyle === "dispatch" || frozenSelected);
+      const showGta = state.street && (running ? state.variant === "gta" : state.cityPursuitStyle === "gta" || showDispatch);
       const collapsed = cinematic || pack;
       const cases = packLab && Array.isArray(state.cases) ? state.cases : NO_CASES;
       const scope = packLab ? "pack-lab" : pack && state.street ? "pack-city" : "legacy";
@@ -53900,6 +54972,7 @@
       }
       const paused2 = running && state.paused === true;
       const stage = cinematic && running && !noPatrolDrill && Object.hasOwn(RESPONSE_STAGES, state.response?.stage) ? state.response.stage : "";
+      const dispatchStage = running && showDispatch ? DISPATCH_STAGES[state.response?.dispatch?.state] : "";
       if (compact !== collapsed) {
         compact = collapsed;
         panel.classList.toggle("pursuit-panel--cinematic", compact);
@@ -53909,11 +54982,12 @@
       panel.hidden = false;
       panel.classList.toggle("pursuit-panel--pack", pack);
       panel.classList.toggle("pursuit-panel--city-arcade", showArcade);
+      panel.classList.toggle("pursuit-panel--dispatch", showDispatch);
       panel.dataset.phase = paused2 ? "paused" : state.phase;
       panel.dataset.response = paused2 ? "" : stage;
-      text5(title, packLab ? "Pursuit Lab" : showArcade ? "Arcade pursuit" : showGta ? "GTA Chase" : "Pursuit");
-      text5(phase, survival?.review ? "Impact replay" : paused2 ? "Paused" : running && noPatrolDrill ? "In progress" : stage ? RESPONSE_STAGES[stage] : PHASES[state.phase]);
-      text5(scene, packLab ? running ? cases.find(({ id: id2 }) => id2 === state.caseId)?.label ?? "" : "" : showGta && !running && state.variant !== "gta" ? "On these streets. Starts in manual mode." : cinematic ? running ? responseNote(stage, state.response) : state.phase === "ready" ? showArcade ? "On these streets. Starts self-driving." : "On the city streets" : state.phase === "escaped" ? "You lost the patrols." : "" : state.street ? state.dispatchWaves ? "Live City \xB7 Patrols reinforce" : "On the city streets" : state.caseId === "ambient" ? "Seeded streets" : sentence(state.caseId));
+      text5(title, packLab ? "Pursuit Lab" : showArcade ? "Arcade pursuit" : showDispatch ? "Metro Dispatch" : showGta ? "GTA Chase" : "Pursuit");
+      text5(phase, survival?.review ? "Impact replay" : paused2 ? "Paused" : running && noPatrolDrill ? "In progress" : dispatchStage || (stage ? RESPONSE_STAGES[stage] : PHASES[state.phase]));
+      text5(scene, packLab ? running ? cases.find(({ id: id2 }) => id2 === state.caseId)?.label ?? "" : "" : frozenSelected && !running && ["ready", "stopped"].includes(state.phase) ? "Experimental. Runs a frozen model; escape and civilian safety are not validated." : showDispatch && !running && ["ready", "stopped"].includes(state.phase) ? "Manual chase. Lose shared surveillance and separate from the patrols to escape." : showGta && !running && state.variant !== "gta" ? "On these streets. Starts in manual mode." : cinematic ? running ? responseNote(stage, state.response) : state.phase === "ready" ? showArcade ? "On these streets. Starts self-driving." : "On the city streets" : state.phase === "escaped" ? "You lost the patrols." : "" : state.street ? state.dispatchWaves ? "Live City \xB7 Patrols reinforce" : "On the city streets" : state.caseId === "ambient" ? "Seeded streets" : sentence(state.caseId));
       scene.hidden = !scene.textContent;
       const liveSummary = collapsed && running;
       const wanted = Math.max(0, Math.min(5, Math.floor(state.wantedLevel || 0)));
@@ -53968,16 +55042,17 @@
       }
       if (showGta && running) {
         learning.hidden = false;
-        text5(learning, state.mode === "manual" ? "W / S throttle \xB7 A / D steer \xB7 Space brakes" : "Self-driving \xB7 I takes manual control");
+        const driver = state.frozenDriver;
+        text5(learning, driver?.status === "active" ? `Frozen PPO \xB7 ${driver.policy.algorithm} \xB7 ${driver.sha256.slice(0, 12)}${driver.shieldReason ? ` \xB7 Brake guard: ${driver.shieldReason}` : ""} \xB7 I takes over` : driver?.status === "fault" ? `PPO stopped: ${driver.error} \xB7 I takes over` : driver?.status === "manual" ? "Manual takeover \xB7 W / S throttle \xB7 A / D steer \xB7 Space brakes" : state.mode === "manual" ? "W / S throttle \xB7 A / D steer \xB7 Space brakes" : showDispatch ? "Scripted planner \xB7 I takes manual control" : "Self-driving \xB7 I takes manual control");
       }
       arcade.hidden = !showArcade;
       if (showArcade) {
         text5(time, `${(survival ? state.metrics.survivalS : 0).toFixed(1)} s`);
         text5(best, finite12(state.bestSurvivalS) ? `${state.bestSurvivalS.toFixed(1)} s` : "\u2014");
-        const active = survival?.active, held = survival?.held;
+        const active2 = survival?.active, held = survival?.held;
         power.hidden = !running;
-        power.dataset.kind = active?.kind ?? held ?? "";
-        text5(powerLabel, active ? `${POWERS2[active.kind]} \xB7 ${active.timeLeftS.toFixed(1)} s` : held ? `${POWERS2[held]} ready` : "Collect a power-up");
+        power.dataset.kind = active2?.kind ?? held ?? "";
+        text5(powerLabel, active2 ? `${POWERS2[active2.kind]} \xB7 ${active2.timeLeftS.toFixed(1)} s` : held ? `${POWERS2[held]} ready` : "Collect a power-up");
         fire.hidden = !held;
         text5(fire, held ? `Use ${POWERS2[held]} (E)` : "Use");
         sound.hidden = !running;
@@ -53998,6 +55073,8 @@
       text5(restart, state.street ? "End pursuit" : packLab ? "Restart drill" : "Restart");
       levelLabel.hidden = liveSummary || survival?.review === true;
       styleLabel.hidden = !state.cityPursuitStyle || running || state.review === true;
+      modelField.hidden = !frozenSelected || running;
+      text5(modelStatus, state.checkpointStatus || "Select a compatible JSON checkpoint.");
       if (state.cityPursuitStyle && style.value !== state.cityPursuitStyle) style.value = state.cityPursuitStyle;
       run.hidden = liveSummary || packLab && state.phase !== "ready";
       restart.hidden = packLab ? state.phase === "ready" : collapsed && !running;
@@ -54166,9 +55243,9 @@
     update(world2, rolling) {
       if (!this.context) return;
       const t = this.context.currentTime;
-      const active = this.audible && rolling;
-      this.master.gain.setTargetAtTime(active ? 0.43 : 0, t, 0.025);
-      if (!active) {
+      const active2 = this.audible && rolling;
+      this.master.gain.setTargetAtTime(active2 ? 0.43 : 0, t, 0.025);
+      if (!active2) {
         if (this.next !== null) {
           this.next = null;
           this.beat = 0;
@@ -54176,16 +55253,16 @@
         return;
       }
       const { pursuit: run, player: p, tick } = world2;
-      const normal = run.phase === "running";
+      const normal2 = run.phase === "running";
       let nearest = 45;
-      for (const unit of run.patrols) nearest = Math.min(nearest, Math.hypot(unit.x - p.x, unit.z - p.z));
+      for (const unit2 of run.patrols) nearest = Math.min(nearest, Math.hypot(unit2.x - p.x, unit2.z - p.z));
       const [motor, siren] = this.voices;
       motor.voice.frequency.setTargetAtTime(56 + p.speed * 3.7, t, 0.09);
-      motor.gain.gain.setTargetAtTime(normal ? 0.066 : 0, t, 0.085);
+      motor.gain.gain.setTargetAtTime(normal2 ? 0.066 : 0, t, 0.085);
       siren.voice.frequency.setTargetAtTime(510 + 197 * Math.sin(tick * 0.049), t, 0.06);
-      siren.gain.gain.setTargetAtTime(normal ? (1 - nearest / 45) * 0.028 : 0, t, 0.09);
-      this.tire.gain.setTargetAtTime(normal ? Math.min(0.09, Math.abs(p.arcadeSlip ?? 0) * 0.38) : 0, t, 0.05);
-      if (!normal) return;
+      siren.gain.gain.setTargetAtTime(normal2 ? (1 - nearest / 45) * 0.028 : 0, t, 0.09);
+      this.tire.gain.setTargetAtTime(normal2 ? Math.min(0.09, Math.abs(p.arcadeSlip ?? 0) * 0.38) : 0, t, 0.05);
+      if (!normal2) return;
       this.next = Math.max(this.next ?? t, t);
       while (this.next < t + 0.09) {
         const step = (this.beat ?? 0) % 16;
@@ -54221,6 +55298,738 @@
       this.next = null;
       this.beat = 0;
     }
+  };
+
+  // src/rl/pursuit-shield.js
+  var kinds = /* @__PURE__ */ new Set(["static", "civilian", "pedestrian", "police"]);
+  var verifiedFrames = /* @__PURE__ */ new WeakSet();
+  var trafficHistory = /* @__PURE__ */ new WeakMap();
+  var angleStep = Math.PI * 2 / PURSUIT_SCAN_RAYS;
+  function requireDispatchScan({ pursuit, tick }) {
+    const scan = pursuit?.gta?.scan;
+    const ageTicks = tick - scan?.tick;
+    if (!scan || !Number.isSafeInteger(scan.tick) || scan.tick < 0 || !Number.isInteger(ageTicks) || ageTicks < 0 || ageTicks >= PURSUIT_SCAN_TICKS)
+      throw new Error("Pursuit brake guard needs a current scan");
+    if (!verifiedFrames.has(scan)) {
+      if (!Object.isFrozen(scan) || !Array.isArray(scan.rays) || !Object.isFrozen(scan.rays) || scan.rays.length !== PURSUIT_SCAN_RAYS || !Array.isArray(scan.tracks) || !Object.isFrozen(scan.tracks) || scan.rays.some((ray) => !ray || !Object.isFrozen(ray) || ray.kind !== "none" && !kinds.has(ray.kind) || !Number.isFinite(ray.rangeM) || ray.rangeM < 0 || ray.rangeM > PURSUIT_SCAN_RANGE_M) || scan.tracks.some((track2) => !track2 || !Object.isFrozen(track2) || !kinds.has(track2.kind) || ![track2.rightM, track2.forwardM, track2.rightMps, track2.forwardMps, track2.ageS].every(Number.isFinite) || track2.ageS < 0 || track2.ageS > PURSUIT_TRACK_TTL_S || typeof track2.motionKnown !== "boolean" || track2.ttcS !== null && (!Number.isFinite(track2.ttcS) || track2.ttcS < 0)))
+        throw new Error("Malformed pursuit scan");
+      verifiedFrames.add(scan);
+    }
+    return scan;
+  }
+  function nearObservedSegment(point4, frame2) {
+    for (let i = 0; i < frame2.length; i++) {
+      const a = frame2[i], b = frame2[(i + 1) % frame2.length];
+      if (!a || !b) continue;
+      const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
+      if (length < 0.02 || length > 0.9) continue;
+      const t = ((point4.x - a.x) * dx + (point4.z - a.z) * dz) / (length * length);
+      if (t >= -0.14 / length && t <= 1 + 0.14 / length && Math.hypot(a.x + t * dx - point4.x, a.z + t * dz - point4.z) <= 0.075) return true;
+    }
+    return false;
+  }
+  function measuredLoadingTraffic(world2, scan) {
+    if (world2.tick !== scan.tick) return null;
+    const { player, pursuit } = world2;
+    const old = trafficHistory.get(pursuit);
+    if (old?.tick === scan.tick) return old;
+    const frames = old?.tick === scan.tick - PURSUIT_SCAN_TICKS ? old.frames.slice(-2) : [];
+    const points = scan.rays.map((ray, i) => {
+      if (ray.kind !== "civilian" || ray.rangeM > 14) return null;
+      const heading2 = player.heading + i * angleStep;
+      return { x: player.x + Math.sin(heading2) * ray.rangeM, z: player.z + Math.cos(heading2) * ray.rangeM };
+    });
+    const current = { tick: scan.tick, frames: [...frames, points], stable: (i) => {
+      const point4 = points[i];
+      return Boolean(point4 && frames.length === 2 && frames.every((frame2) => nearObservedSegment(point4, frame2)));
+    } };
+    trafficHistory.set(pursuit, current);
+    return current;
+  }
+  function stoppingSweep(world2, scan, requested, reaction, reach, includeTraffic) {
+    const { player } = world2;
+    const returns = [];
+    for (const [i, ray] of scan.rays.entries()) {
+      if (ray.kind === "none" || ray.kind !== "static" && !includeTraffic || ray.rangeM > reach + player.length + 2) continue;
+      const heading2 = player.heading + i * angleStep;
+      returns.push({
+        type: "pedestrian",
+        radius: 0.1 + ray.rangeM * Math.sin(angleStep / 2) + (ray.kind === "static" ? 0 : 0.18),
+        x: player.x + Math.sin(heading2) * ray.rangeM,
+        z: player.z + Math.cos(heading2) * ray.rangeM
+      });
+    }
+    const brake = { ...requested, throttle: 0, brake: 1 };
+    const delayTicks = Math.ceil(reaction / STEP);
+    let pose6 = { ...vehicleProbe(player, player.speed), gtaSlipMps: player.gtaSlipMps, gtaYawRate: player.gtaYawRate };
+    for (let i = 0; i < 180; i++) {
+      const action = i < delayTicks ? requested : brake;
+      const next = integrateVehicle(pose6, pursuitCommand(pose6, action), STEP);
+      integrateGtaSlip(pose6, next);
+      if (!sweepSafe(pose6, next, returns, world2.roads).safe) return false;
+      if (i >= delayTicks && Math.abs(next.speed) < 0.02 && Math.abs(next.gtaSlipMps) < 0.02) return true;
+      pose6 = next;
+    }
+    return false;
+  }
+  function guardDispatchAction(world2, requested) {
+    const scan = requireDispatchScan(world2);
+    const { player, tick } = world2;
+    const ageTicks = tick - scan.tick;
+    const evidence = measuredLoadingTraffic(world2, scan);
+    if (requested.brake === 1) return { action: requested, reason: null };
+    const speed = Math.abs(player.speed), direction3 = speed > 0.1 ? Math.sign(player.speed) : requested.gear;
+    const braking = player.spec?.braking ?? VEHICLE.braking;
+    const reaction = (ageTicks + PURSUIT_SCAN_TICKS) * STEP + 0.12;
+    const length = player.length / 2, width = player.width / 2;
+    const reach = length + 0.65 + speed * reaction + speed * speed / (2 * braking);
+    const horizon = Math.min(3, reaction + speed / braking);
+    const sway = Math.abs(player.gtaSlipMps ?? 0) * reaction;
+    const inside = (right, forward3, pad = 0) => {
+      const along2 = forward3 * direction3;
+      return along2 >= 0 && along2 <= reach + pad && Math.abs(right) <= width + 0.27 + sway + pad;
+    };
+    const stop = (reason) => ({ action: { ...requested, throttle: 0, brake: 1 }, reason });
+    let sweepReason = null;
+    const checkTurn = ageTicks === 0 && world2.roads && Math.abs(requested.steer) >= 0.1;
+    const pedestrianNear = scan.tracks.some((track2) => track2.kind === "pedestrian" && Math.hypot(track2.rightM, track2.forwardM) < reach + 4);
+    const nearLoading = (index, vx = 0, vz = 0) => {
+      const ray = scan.rays[index];
+      return checkTurn && !pedestrianNear && direction3 === 1 && requested.gear === 1 && speed <= 8 && ray.kind === "civilian" && evidence?.stable(index) && Math.abs(vz) <= 0.8 + ray.rangeM * 0.12 && Math.abs(vx) <= 0.7 + ray.rangeM * 0.55;
+    };
+    for (const track2 of scan.tracks) {
+      if (track2.kind === "static") continue;
+      const pedestrian = track2.kind === "pedestrian";
+      const freshMotion = track2.motionKnown && track2.ageS === 0;
+      let vx = track2.rightMps + (player.gtaSlipMps ?? 0);
+      const vz = track2.forwardMps + player.speed;
+      const index = (Math.round(Math.atan2(track2.rightM, track2.forwardM) / angleStep) + PURSUIT_SCAN_RAYS) % PURSUIT_SCAN_RAYS;
+      const admitSweep = track2.kind === "civilian" && freshMotion && nearLoading(index, vx, vz);
+      if (inside(track2.rightM, track2.forwardM, (0.18 + 1.2 * track2.ageS) * Number(pedestrian || track2.ageS > 0))) {
+        if (!admitSweep) return stop(track2.kind);
+        sweepReason = "civilian";
+      }
+      if (!freshMotion) continue;
+      if (!pedestrian && direction3 * track2.forwardM < 0 && direction3 * vz > 0) continue;
+      if (pedestrian) {
+        const sampleWidth = Math.hypot(track2.rightM, track2.forwardM) * 0.01;
+        if (Math.abs(vx) * PURSUIT_SCAN_TICKS * STEP <= sampleWidth) vx = 0;
+      }
+      for (const fraction of [0.25, 0.5, 0.75, 1]) {
+        const t = horizon * fraction;
+        if (inside(track2.rightM + vx * t, track2.forwardM + vz * t, pedestrian ? 0.4 : 0.15)) {
+          if (!admitSweep) return stop(track2.kind);
+          sweepReason = "civilian";
+        }
+      }
+    }
+    for (let i = 0; i < scan.rays.length; i++) {
+      const { rangeM, kind } = scan.rays[i];
+      if (kind === "none") continue;
+      const angle = i * angleStep;
+      if (!inside(rangeM * Math.sin(angle), rangeM * Math.cos(angle), kind === "pedestrian" ? 0.2 : 0)) continue;
+      if (kind !== "static") {
+        if (!nearLoading(i)) return stop(kind);
+        sweepReason = "civilian";
+      } else sweepReason ??= "static";
+    }
+    if (sweepReason && (!checkTurn || !stoppingSweep(world2, scan, requested, reaction, reach, sweepReason === "civilian")))
+      return stop(sweepReason);
+    return { action: requested, reason: null };
+  }
+
+  // src/rl/pursuit-pocket-scenario.js
+  var sites = Object.freeze({
+    "civic-souq": ["civic-avenue", "souq-collector", 1, 1, 6.7],
+    "gateway-station": ["gateway-avenue", "station-avenue", 1, -1, 7.35],
+    "gateway-university": ["university-avenue", "gateway-avenue", 1, -1, 7],
+    "corniche-station": ["corniche-avenue", "station-avenue", 1, 1, 7.7],
+    "civic-university": ["civic-avenue", "university-avenue", 1, -1, 8.6]
+  });
+
+  // src/rl/pursuit-reverse-scenario.js
+  var EAST = Math.PI / 2;
+
+  // src/rl/pursuit-lab-scenarios.js
+  var crossingCases = Object.freeze({ L09: 1, L10: -1, L12: 1, "L12-control": 1 });
+  var turnCases = Object.freeze({ "tail-civic-eastbound": 1, "tail-civic-westbound": -1 });
+  var approachCases = Object.freeze({ L01: 1, "L01-control": 0, L03: 2, "L03-control": 2 });
+
+  // src/rl/pursuit-route-context.js
+  var LEGACY_ROUTE_CONTEXT = "dispatch-route-v1";
+  var CLEARANCE_ROUTE_CONTEXT = "dispatch-route-v2";
+  var guides = /* @__PURE__ */ new Map([[LEGACY_ROUTE_CONTEXT, /* @__PURE__ */ new WeakMap()], [CLEARANCE_ROUTE_CONTEXT, /* @__PURE__ */ new WeakMap()]]);
+  var ROUTE_NAVIGATION_FIELDS = Object.freeze([
+    "available",
+    "nearRight",
+    "nearForward",
+    "laterRight",
+    "laterForward",
+    "headingSin",
+    "headingCos",
+    "curveAhead",
+    "remaining"
+  ]);
+  function isOutside(goal, zones) {
+    return zones.every((zone) => goal.x < zone.minX - 1 || goal.x > zone.maxX + 1 || goal.z < zone.minZ - 1 || goal.z > zone.maxZ + 1);
+  }
+  function clearanceFromZones(point4, zones) {
+    let clearance = Infinity;
+    for (const zone of zones) clearance = Math.min(clearance, Math.hypot(
+      Math.max(0, zone.minX - point4.x, point4.x - zone.maxX),
+      Math.max(0, zone.minZ - point4.z, point4.z - zone.maxZ)
+    ));
+    return clearance;
+  }
+  function clearanceGoals(district, zones) {
+    const goals = [];
+    for (const road4 of district.drivingRoads) {
+      if (road4.parkingBay || road4.supportApron || road4.max - road4.min < 24) continue;
+      for (const direction3 of road4.flow ? [road4.flow] : [-1, 1]) {
+        const along2 = direction3 > 0 ? road4.max - 12 : road4.min + 12;
+        const goal = {
+          ...districtRoadPose(road4, along2, direction3),
+          roadId: road4.id,
+          id: `clearance:${road4.id}:${direction3}`
+        };
+        if (clearanceFromZones(goal, zones) >= 38) goals.push(goal);
+      }
+    }
+    return goals;
+  }
+  function dispatchRouteGuide(world2, version = LEGACY_ROUTE_CONTEXT) {
+    const { district, player, pursuit } = world2;
+    if (!district || !pursuit?.gta) return null;
+    const cache = guides.get(version);
+    if (!cache) throw new RangeError("Unknown Metro route context");
+    const cached = cache.get(pursuit);
+    if (cached && (cached.guide || world2.tick < cached.retryAt)) return cached.guide;
+    const { surveillanceZones } = pursuit.gta.config;
+    const extended = version === CLEARANCE_ROUTE_CONTEXT;
+    const goals = pursuit.gta.publicRouteGoal ? [pursuit.gta.publicRouteGoal] : (extended ? clearanceGoals(district, surveillanceZones) : district.pursuitExits.filter((goal) => isOutside(goal, surveillanceZones))).sort((a, b) => distance(a, player) - distance(b, player) || a.id.localeCompare(b.id)).slice(0, extended ? 8 : 5);
+    let best = null;
+    for (const goal of goals) {
+      const path = planDistrictRoute(district, player, goal);
+      if (path.length < 3) continue;
+      const across = path.reduce((total, point4, i) => i ? total + distance(path[i - 1], point4) : 0, 0);
+      if (!best || across < best.lengthM) best = {
+        id: goal.id,
+        path: Object.freeze(path.map((point4) => Object.freeze(point4))),
+        lengthM: across
+      };
+    }
+    cache.set(pursuit, { guide: best, retryAt: world2.tick + 30 });
+    return best;
+  }
+  function sampleRouteNavigation(world2, version) {
+    const guide = dispatchRouteGuide(world2, version);
+    if (!guide) return new Float32Array(ROUTE_NAVIGATION_FIELDS.length);
+    const { player } = world2, { path } = guide;
+    const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
+    const axle = (player.spec?.wheelbase ?? 2.6) / 2;
+    const x = player.x - sin * axle, z = player.z - cos * axle;
+    let index = 0, min = Infinity;
+    for (let i = 0; i < path.length; i++) {
+      const dist = (path[i].x - x) ** 2 + (path[i].z - z) ** 2;
+      if (dist < min) {
+        min = dist;
+        index = i;
+      }
+    }
+    const nearest = nearestPathPoint(path, x, z, index), limit = path.length - 1;
+    const ahead = 2 + Math.abs(player.speed) * 0.18;
+    let nearIndex = nearest, farIndex = nearest, arc = 0, remaining = 0, bend = 0;
+    const heading2 = (i) => Math.atan2(path[i + 1].x - path[i].x, path[i + 1].z - path[i].z);
+    for (let i = nearest; i < limit; i++) {
+      remaining += distance(path[i], path[i + 1]);
+      if (arc < ahead) nearIndex = i + 1;
+      if (arc < ahead + 8) farIndex = i + 1;
+      if (arc < 14 && i + 1 < limit)
+        bend = Math.max(bend, Math.abs(angleDelta(heading2(i + 1), heading2(i))) / Math.max(1, arc + 1));
+      arc = remaining;
+    }
+    const local2 = (i) => {
+      const dx = path[i].x - x, dz = path[i].z - z;
+      return [dx * cos - dz * sin, dx * sin + dz * cos];
+    };
+    const near = local2(nearIndex), far = local2(farIndex);
+    const error = angleDelta(heading2(Math.min(nearest, limit - 1)), player.heading);
+    return Float32Array.of(
+      1,
+      clamp2(near[0] / 6, -1, 1),
+      clamp2(near[1] / 12, -1, 1),
+      clamp2(far[0] / 14, -1, 1),
+      clamp2(far[1] / 24, -1, 1),
+      Math.sin(error),
+      Math.cos(error),
+      clamp2(bend * 5, 0, 1),
+      clamp2(remaining / 35, 0, 1)
+    );
+  }
+
+  // src/rl/gta-pursuit-env.js
+  var K = 8;
+  var M = 4;
+  var UNIT_TYPES = Object.freeze([...GTA_UNIT_TYPES, "wrecked"]);
+  var mounts = getVehicleMounts();
+  var egoFields = Object.freeze(["speed", "steer", "lateralSlip", "yawRate", "health", "wanted", "pinned", "lineOfSight", "cooldown"]);
+  var rayFields = Object.freeze(mounts.ranges.concat(mounts.auxiliary).map((mount) => mount.id));
+  var patrolFields = Object.freeze([
+    "dx",
+    "dy",
+    "dvx",
+    "dvy",
+    "headingSin",
+    "headingCos",
+    "health",
+    ...UNIT_TYPES,
+    "fsmState"
+  ]);
+  var hazardFields = Object.freeze(["dx", "dy", "relativeSpeed", "footprintRadius"]);
+  var rayOffset = egoFields.length;
+  var patrolOffset = rayOffset + rayFields.length;
+  var hazardOffset = patrolOffset + K * patrolFields.length;
+  var scales = Object.freeze({
+    speedMps: GTA_MAX_SPEED,
+    steerRad: PLAYER_VEHICLE.maxSteerRad,
+    slipMps: 11,
+    yawRadS: 4,
+    offsetM: 65,
+    relativeSpeedMps: 60,
+    radiusM: 5,
+    rayM: SENSOR_MAX_M
+  });
+  var block = (offset3, count2, fields) => Object.freeze({ offset: offset3, count: count2, stride: fields.length, fields });
+  var GTA_OBSERVATION_SCHEMA = Object.freeze({
+    source: "virtual/privileged simulation state",
+    dtype: "Float32Array",
+    frame: "ego-local: x right, y forward",
+    length: hazardOffset + M * hazardFields.length,
+    ego: block(0, 1, egoFields),
+    rays: block(rayOffset, 1, rayFields),
+    patrols: block(patrolOffset, K, patrolFields),
+    hazards: block(hazardOffset, M, hazardFields),
+    scales,
+    fsmStates: GTA_AI_STATES,
+    fsmEncoding: "(zero-based index + 1) / state count; 0 is padding"
+  });
+  var scanKinds = Object.freeze(["static", "civilian", "pedestrian", "police"]);
+  var scanEgo = Object.freeze(["speed", "steer", "lateralSlip", "yawRate", "health", "frameAge"]);
+  var scanRays = Object.freeze(["range", ...scanKinds]);
+  var scanTracks = Object.freeze([
+    "present",
+    ...scanKinds,
+    "right",
+    "forward",
+    "rightMps",
+    "forwardMps",
+    "age",
+    "motionKnown",
+    "ttcKnown",
+    "ttc"
+  ]);
+  var scanTrackOffset = scanEgo.length + PURSUIT_SCAN_RAYS * scanRays.length;
+  var scanTrackCount = 16;
+  var DISPATCH_OBSERVATION_SCHEMA = Object.freeze({
+    version: "dispatch-scan-v3",
+    source: "virtual first-return geometry",
+    dtype: "Float32Array",
+    frame: "ego-local: x right, y forward; ray 0 forward, increasing clockwise",
+    length: scanTrackOffset + scanTrackCount * scanTracks.length,
+    ego: block(0, 1, scanEgo),
+    rays: block(scanEgo.length, PURSUIT_SCAN_RAYS, scanRays),
+    tracks: block(scanTrackOffset, scanTrackCount, scanTracks),
+    scales: Object.freeze({
+      ...scales,
+      offsetM: PURSUIT_SCAN_RANGE_M,
+      rayM: PURSUIT_SCAN_RANGE_M,
+      sampleTicks: PURSUIT_SCAN_TICKS,
+      ageS: PURSUIT_TRACK_TTL_S,
+      ttcS: 6
+    })
+  });
+  var ROUTE_OBSERVATION_SCHEMA = Object.freeze({
+    ...DISPATCH_OBSERVATION_SCHEMA,
+    version: LEGACY_ROUTE_CONTEXT,
+    source: "virtual first-return geometry and public static Metro route cues",
+    length: DISPATCH_OBSERVATION_SCHEMA.length + ROUTE_NAVIGATION_FIELDS.length,
+    navigation: block(DISPATCH_OBSERVATION_SCHEMA.length, 1, ROUTE_NAVIGATION_FIELDS)
+  });
+  var CLEARANCE_ROUTE_OBSERVATION_SCHEMA = Object.freeze({
+    ...ROUTE_OBSERVATION_SCHEMA,
+    version: CLEARANCE_ROUTE_CONTEXT,
+    source: "virtual first-return geometry and public static Metro clearance-route cues"
+  });
+  var dispatchSchemas = new Map([
+    DISPATCH_OBSERVATION_SCHEMA,
+    ROUTE_OBSERVATION_SCHEMA,
+    CLEARANCE_ROUTE_OBSERVATION_SCHEMA
+  ].map((schema) => [schema.version, schema]));
+  var signed = (n, scale) => clamp2(n / scale, -1, 1);
+  var unit = (n, scale) => clamp2(n / scale, 0, 1);
+  function getDispatchObservation(world2, version = DISPATCH_OBSERVATION_SCHEMA.version) {
+    const { player, sensors, pursuit, tick } = world2;
+    if (pursuit?.gta?.config.ruleset !== "dispatch-v1" || !pursuit.gta.scan)
+      throw new Error("Dispatch observation requires a sampled dispatch-v1 chase");
+    const scan = requireDispatchScan(world2);
+    const schema = dispatchSchemas.get(version);
+    if (!schema) throw new RangeError("Unknown dispatch observation version");
+    const { ego, rays, tracks, scales: s, length } = schema;
+    const obs = new Float32Array(length);
+    obs.set([
+      signed(player.speed, s.speedMps),
+      signed(player.steer, s.steerRad),
+      signed(player.gtaSlipMps, s.slipMps),
+      signed(sensors.imu.yawRateRadS, s.yawRadS),
+      // Wanted decay is scored using hidden separation, so it remains UI/metrics only.
+      unit(player.health, player.maxHealth),
+      unit(tick - scan.tick, s.sampleTicks)
+    ], ego.offset);
+    for (const [i, ray] of scan.rays.entries()) {
+      const offset3 = rays.offset + i * rays.stride;
+      obs[offset3] = unit(ray.rangeM, s.rayM);
+      const kind = scanKinds.indexOf(ray.kind);
+      if (kind >= 0) obs[offset3 + 1 + kind] = 1;
+    }
+    for (const [i, track2] of scan.tracks.slice(0, tracks.count).entries()) {
+      const ttcKnown = Number.isFinite(track2.ttcS);
+      obs.set([
+        1,
+        ...scanKinds.map((kind) => Number(track2.kind === kind)),
+        signed(track2.rightM, s.offsetM),
+        signed(track2.forwardM, s.offsetM),
+        signed(track2.rightMps, s.relativeSpeedMps),
+        signed(track2.forwardMps, s.relativeSpeedMps),
+        unit(track2.ageS, s.ageS),
+        Number(track2.motionKnown),
+        Number(ttcKnown),
+        ttcKnown ? unit(track2.ttcS, s.ttcS) : 0
+      ], tracks.offset + i * tracks.stride);
+    }
+    if (schema.navigation) obs.set(sampleRouteNavigation(world2, version), schema.navigation.offset);
+    if (!obs.every(Number.isFinite)) throw new Error("Nonfinite dispatch observation");
+    return obs;
+  }
+
+  // src/rl/pursuit-ppo.js
+  var HIDDEN = 24;
+  var ACTIONS = 3;
+  var HEADS = ACTIONS + 1;
+  var POLICY_ID = "metro-dispatch-ppo-v2";
+  var GAUSS_CONSTANT = Math.log(2 * Math.PI) / 2;
+  var normal = (rng) => Math.sqrt(-2 * Math.log(1 - rng.next())) * Math.cos(2 * Math.PI * rng.next());
+  var layouts = new Map([DISPATCH_OBSERVATION_SCHEMA, ROUTE_OBSERVATION_SCHEMA, CLEARANCE_ROUTE_OBSERVATION_SCHEMA].map((schema) => {
+    const INPUT = schema.length, HIDDEN_BIAS = INPUT * HIDDEN, OUTPUT_WEIGHTS = HIDDEN_BIAS + HIDDEN;
+    const OUTPUT_BIAS = OUTPUT_WEIGHTS + HIDDEN * HEADS, PARAMETERS = OUTPUT_BIAS + HEADS;
+    return [schema.version, Object.freeze({
+      schema,
+      INPUT,
+      HIDDEN_BIAS,
+      OUTPUT_WEIGHTS,
+      OUTPUT_BIAS,
+      PARAMETERS,
+      std: Object.freeze(schema.navigation ? [0.07, 0.27, 0.2] : [0.18, 0.52, 0.35])
+    })];
+  }));
+  function logProbability(mean, raw, std) {
+    let logp = 0;
+    for (let i = 0; i < ACTIONS; i++) {
+      const z = (raw[i] - mean[i]) / std[i];
+      logp -= 0.5 * z * z + Math.log(std[i]) + GAUSS_CONSTANT;
+    }
+    return logp;
+  }
+  function actionFor(raw) {
+    const effort = Math.tanh(raw[1]);
+    const brake = Math.max(0, Math.tanh(raw[2] - 0.35));
+    return {
+      steer: Math.tanh(raw[0]),
+      throttle: brake > 0 ? 0 : Math.abs(effort),
+      brake,
+      gear: effort < 0 ? -1 : 1
+    };
+  }
+  function forward(layout2, weights, obs) {
+    const { INPUT, HIDDEN_BIAS, OUTPUT_WEIGHTS, OUTPUT_BIAS } = layout2;
+    if (!(obs instanceof Float32Array) || obs.length !== INPUT || !obs.every(Number.isFinite))
+      throw new TypeError(`Expected a finite ${layout2.schema.version} observation`);
+    const hidden = new Float64Array(HIDDEN);
+    for (let h = 0; h < HIDDEN; h++) {
+      let sum = weights[HIDDEN_BIAS + h], offset3 = h * INPUT;
+      for (let j = 0; j < INPUT; j++) sum += obs[j] * weights[offset3 + j];
+      hidden[h] = Math.tanh(sum);
+    }
+    const out = new Float64Array(HEADS);
+    for (let head = 0; head < HEADS; head++) {
+      let sum = weights[OUTPUT_BIAS + head], offset3 = OUTPUT_WEIGHTS + head * HIDDEN;
+      for (let h = 0; h < HIDDEN; h++) sum += hidden[h] * weights[offset3 + h];
+      out[head] = sum;
+    }
+    return { hidden, out };
+  }
+  var validCounter = (value) => Number.isSafeInteger(value) && value >= 0;
+  function readCheckpoint(checkpoint, optimizerRequired) {
+    const layout2 = layouts.get(checkpoint?.observation);
+    const isParameters = (a, min) => Array.isArray(a) && a.length === layout2.PARAMETERS && a.every((x) => Number.isFinite(x) && x >= min && x <= 1e4);
+    if (checkpoint?.schema !== 1 || checkpoint.algorithm !== POLICY_ID || !layout2 || typeof checkpoint.seed !== "string" || checkpoint.seed.length < 1 || checkpoint.seed.length > 200 || !validCounter(checkpoint.updates) || !validCounter(checkpoint.transitions) || !validCounter(checkpoint.optimizerSteps) || checkpoint.demonstrations !== void 0 && !validCounter(checkpoint.demonstrations) || !isParameters(checkpoint.weights, -1e4) || optimizerRequired && (!isParameters(checkpoint.firstMoment, -1e4) || !isParameters(checkpoint.secondMoment, 0)))
+      throw new TypeError("Incompatible or nonfinite Metro PPO checkpoint");
+    return checkpoint;
+  }
+  function freezePursuitPolicy(checkpoint) {
+    const model = readCheckpoint(checkpoint, false);
+    if (!model.updates || !model.transitions || !model.optimizerSteps)
+      throw new TypeError("No learning updates are recorded in this Metro checkpoint");
+    const weights = Float64Array.from(model.weights);
+    const layout2 = layouts.get(model.observation);
+    return Object.freeze({
+      algorithm: POLICY_ID,
+      observation: model.observation,
+      updates: model.updates,
+      transitions: model.transitions,
+      action: (obs) => actionFor(forward(layout2, weights, obs).out)
+    });
+  }
+  function accumulate({ INPUT, HIDDEN_BIAS, OUTPUT_WEIGHTS, OUTPUT_BIAS }, weights, grad, obs, hidden, derivatives) {
+    const hiddenGrad = new Float64Array(HIDDEN);
+    for (let head = 0; head < HEADS; head++) {
+      const derivative = derivatives[head], offset3 = OUTPUT_WEIGHTS + head * HIDDEN;
+      grad[OUTPUT_BIAS + head] += derivative;
+      for (let h = 0; h < HIDDEN; h++) {
+        grad[offset3 + h] += derivative * hidden[h];
+        if (head < ACTIONS || INPUT === DISPATCH_OBSERVATION_SCHEMA.length)
+          hiddenGrad[h] += derivative * weights[offset3 + h];
+      }
+    }
+    for (let h = 0; h < HIDDEN; h++) {
+      const derivative = hiddenGrad[h] * (1 - hidden[h] ** 2), offset3 = h * INPUT;
+      grad[HIDDEN_BIAS + h] += derivative;
+      for (let j = 0; j < INPUT; j++) grad[offset3 + j] += derivative * obs[j];
+    }
+  }
+  var PursuitPpo = class {
+    constructor(seed = "pursuit-development", checkpoint = null, observation = DISPATCH_OBSERVATION_SCHEMA.version) {
+      const previous = checkpoint === null ? null : readCheckpoint(checkpoint, true);
+      this.observation = previous?.observation ?? observation;
+      this.layout = layouts.get(this.observation);
+      if (!this.layout) throw new RangeError("Unknown Metro PPO observation version");
+      const { INPUT, HIDDEN_BIAS, OUTPUT_WEIGHTS, OUTPUT_BIAS, PARAMETERS, schema } = this.layout;
+      this.seed = previous ? previous.seed : String(seed);
+      if (this.seed.length < 1 || this.seed.length > 200) throw new RangeError("Invalid training seed");
+      const rng = new Random(this.seed);
+      this.weights = previous ? Float64Array.from(previous.weights) : new Float64Array(PARAMETERS);
+      if (!previous) {
+        for (let i = 0; i < HIDDEN_BIAS; i++) {
+          const scale = schema.navigation ? i % INPUT >= schema.navigation.offset ? 0.75 : 25e-4 : Math.sqrt(3 / INPUT);
+          this.weights[i] = rng.range(-1, 1) * scale;
+        }
+        for (let i = OUTPUT_WEIGHTS; i < OUTPUT_BIAS; i++) this.weights[i] = rng.range(-0.025, 0.025);
+        this.weights[OUTPUT_BIAS + 1] = 0.22;
+      }
+      this.firstMoment = new Float64Array(previous?.firstMoment ?? PARAMETERS);
+      this.secondMoment = new Float64Array(previous?.secondMoment ?? PARAMETERS);
+      this.updates = previous?.updates ?? 0;
+      this.transitions = previous?.transitions ?? 0;
+      this.optimizerSteps = previous?.optimizerSteps ?? 0;
+      this.demonstrations = previous?.demonstrations ?? 0;
+    }
+    action(obs) {
+      return actionFor(forward(this.layout, this.weights, obs).out);
+    }
+    value(obs) {
+      return forward(this.layout, this.weights, obs).out[ACTIONS];
+    }
+    sample(obs, rng) {
+      const { out } = forward(this.layout, this.weights, obs), { std } = this.layout;
+      const raw = std.map((variance, i) => out[i] + variance * normal(rng));
+      return { raw, action: actionFor(raw), value: out[ACTIONS], logp: logProbability(out, raw, std) };
+    }
+    checkpoint() {
+      return {
+        schema: 1,
+        algorithm: POLICY_ID,
+        observation: this.observation,
+        seed: this.seed,
+        updates: this.updates,
+        transitions: this.transitions,
+        optimizerSteps: this.optimizerSteps,
+        ...this.demonstrations ? { demonstrations: this.demonstrations } : {},
+        weights: Array.from(this.weights),
+        firstMoment: Array.from(this.firstMoment),
+        secondMoment: Array.from(this.secondMoment)
+      };
+    }
+    update(rollout2, bootstrap = 0) {
+      const { std, PARAMETERS } = this.layout;
+      if (!rollout2.length || !Number.isFinite(bootstrap) || rollout2.some((step) => ![step.value, step.reward, step.logp].every(Number.isFinite) || step.raw.length !== ACTIONS || !step.raw.every(Number.isFinite)))
+        throw new TypeError("PPO needs a finite on-policy rollout");
+      const gamma = 0.99, lambda = 0.95, epsilon = 0.2;
+      let next = bootstrap, last = 0;
+      const advantages = new Float64Array(rollout2.length), targets = new Float64Array(rollout2.length);
+      for (let i = rollout2.length - 1; i >= 0; i--) {
+        const { reward, value, episodeBootstrap } = rollout2[i];
+        if (episodeBootstrap !== void 0) {
+          if (!Number.isFinite(episodeBootstrap)) throw new TypeError("Invalid episode bootstrap");
+          next = episodeBootstrap;
+          last = 0;
+        }
+        last = reward + gamma * next - value + gamma * lambda * last;
+        advantages[i] = last;
+        targets[i] = value + last;
+        next = value;
+      }
+      const mean = advantages.reduce((a, x) => a + x, 0) / advantages.length;
+      const scale = Math.sqrt(advantages.reduce((v2, x) => v2 + (x - mean) ** 2, 0) / advantages.length + 1e-8);
+      for (let i = 0; i < advantages.length; i++) advantages[i] = (advantages[i] - mean) / scale;
+      const rng = new Random(`${this.seed}:update:${this.updates}`);
+      const order = Array.from(rollout2.keys());
+      let loss = 0, batches = 0;
+      for (let epoch = 0; epoch < 4; epoch++) {
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(rng.next() * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+        for (let start = 0; start < order.length; start += 32) {
+          const grad = new Float64Array(PARAMETERS);
+          const batch = order.slice(start, start + 32);
+          for (const i of batch) {
+            const { obs, raw, logp } = rollout2[i];
+            const { hidden, out } = forward(this.layout, this.weights, obs);
+            const adv = advantages[i], ratio = Math.exp(Math.min(20, logProbability(out, raw, std) - logp));
+            const clipped = Math.min(1 + epsilon, Math.max(1 - epsilon, ratio));
+            const delta = ratio !== clipped && ratio * adv > clipped * adv ? 0 : -adv * ratio;
+            const error = out[ACTIONS] - targets[i];
+            loss += (-Math.min(adv * ratio, adv * clipped) + 0.25 * error * error) / batch.length;
+            const derivatives = new Float64Array(HEADS);
+            for (let head = 0; head < HEADS; head++) {
+              derivatives[head] = (head === ACTIONS ? 0.5 * error : delta * (raw[head] - out[head]) / std[head] ** 2) / batch.length;
+            }
+            accumulate(this.layout, this.weights, grad, obs, hidden, derivatives);
+          }
+          this.applyAdam(grad, this.layout.schema.navigation ? 25e-6 : 3e-4);
+          batches++;
+        }
+      }
+      this.transitions += rollout2.length;
+      this.updates++;
+      return { loss: loss / batches, transitions: rollout2.length, optimizerSteps: this.optimizerSteps };
+    }
+    warmStart(demonstrations, epochs) {
+      if (this.updates || this.demonstrations || !this.layout.schema.navigation || demonstrations.length < 60 || !Number.isInteger(epochs) || epochs < 1 || epochs > 80)
+        throw new RangeError("Warm start needs a new route model, demonstrations and 1-80 epochs");
+      const inverse = (x) => Math.atanh(Math.max(-0.96, Math.min(0.96, x)));
+      const samples = demonstrations.map(({ obs, action }) => {
+        validatePursuitAction(action);
+        return { obs, target: [
+          inverse(action.steer),
+          inverse(action.brake > 0 ? 0 : action.throttle * action.gear),
+          action.brake > 0 ? 0.35 + inverse(action.brake) : -0.12
+        ] };
+      });
+      const rng = new Random(`${this.seed}:warm-start`), order = Array.from(samples.keys());
+      const losses = [];
+      for (let epoch = 0; epoch < epochs; epoch++) {
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(rng.next() * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+        let loss = 0;
+        for (let start = 0; start < order.length; start += 32) {
+          const grad = new Float64Array(this.layout.PARAMETERS), batch = order.slice(start, start + 32);
+          for (const index of batch) {
+            const { obs, target: target2 } = samples[index], { hidden, out } = forward(this.layout, this.weights, obs);
+            const derivatives = new Float64Array(HEADS);
+            for (let head = 0; head < ACTIONS; head++) {
+              const error = out[head] - target2[head];
+              const importance = head === 0 ? 4 : 1;
+              loss += importance * error ** 2;
+              derivatives[head] = importance * error / batch.length;
+            }
+            accumulate(this.layout, this.weights, grad, obs, hidden, derivatives);
+          }
+          this.applyAdam(grad, 1e-3);
+        }
+        losses.push(loss / order.length);
+      }
+      this.demonstrations = samples.length;
+      return losses;
+    }
+    applyAdam(grad, rate = 3e-4) {
+      const { PARAMETERS } = this.layout;
+      const norm = Math.sqrt(grad.reduce((sum, x) => sum + x * x, 0));
+      if (!Number.isFinite(norm)) throw new Error("Nonfinite PPO gradient");
+      const scale = Math.min(1, 0.5 / Math.max(1e-9, norm)), t = ++this.optimizerSteps;
+      const mBias = 1 - 0.9 ** t, vBias = 1 - 0.999 ** t;
+      for (let i = 0; i < PARAMETERS; i++) {
+        const x = grad[i] * scale;
+        const m = this.firstMoment[i] = 0.9 * this.firstMoment[i] + 0.1 * x;
+        const v2 = this.secondMoment[i] = 0.999 * this.secondMoment[i] + 1e-3 * x * x;
+        this.weights[i] -= rate * (m / mBias) / (Math.sqrt(v2 / vBias) + 1e-8);
+      }
+    }
+  };
+
+  // src/rl/pursuit-controller.js
+  function applyFrozenDispatchAction(world2, driver) {
+    if (driver?.status !== "active") return false;
+    try {
+      const scan = requireDispatchScan(world2);
+      if (driver.lastTick === scan.tick) return false;
+      const start = performance.now();
+      const action = driver.policy.action(getDispatchObservation(world2, driver.policy.observation));
+      const guarded = guardDispatchAction(world2, action);
+      driver.inferenceMs = performance.now() - start;
+      world2.command({ type: "pursuit-drive", action: guarded.action });
+      driver.shieldReason = guarded.reason;
+      driver.lastTick = scan.tick;
+      driver.decisions++;
+      return false;
+    } catch (error) {
+      driver.status = "fault";
+      driver.error = error.message;
+      driver.policy = null;
+      world2.command({ type: "pursuit-drive", action: PURSUIT_STOP });
+      return true;
+    }
+  }
+
+  // config/pursuit-rl-development.json
+  var pursuit_rl_development_default = {
+    schema: 1,
+    description: "Development only. Shared Metro geometry and pursuit World, including controlled L09/L10/L12 workloads; not the protected acceptance cases. Uses dispatch-scan-v3 pedestrian refinement, bounded displacement shaping, a shared forward exploration prior, the dispatch brake guard, and bootstrapped truncation.",
+    trainingSeeds: ["dispatch-train-00", "dispatch-train-01", "dispatch-train-02", "dispatch-train-03"],
+    validationSeeds: ["dispatch-dev-eval-00", "dispatch-dev-eval-01"],
+    stages: [
+      { id: "maneuver", traffic: 0, pedestrians: 0, episodeSeconds: 6, wantedLevel: 1, patrols: 0 },
+      { id: "left-crossing", scenario: "L09", traffic: 0, pedestrians: 0, episodeSeconds: 8, wantedLevel: 1, patrols: 0 },
+      { id: "right-crossing", scenario: "L10", traffic: 0, pedestrians: 0, episodeSeconds: 8, wantedLevel: 1, patrols: 0 },
+      { id: "crossing-pursuit", scenario: "L12", traffic: 12, pedestrians: 28, episodeSeconds: 8, wantedLevel: 1, patrols: 1 },
+      { id: "mixed-crossings", traffic: 12, pedestrians: 28, episodeSeconds: 12, wantedLevel: 1, patrols: 1 },
+      { id: "city-pressure", traffic: 36, pedestrians: 80, episodeSeconds: 20, wantedLevel: 3, patrols: 5 }
+    ]
+  };
+
+  // config/pursuit-rl-route-development.json
+  var pursuit_rl_route_development_default = {
+    schema: 1,
+    description: "Development only. Civic junction turn/loss with one active patrol, followed by full-population Metro. No protected holdout seeds.",
+    trainingSeeds: ["route-train-00", "route-train-01", "route-train-02", "route-train-03"],
+    validationSeeds: ["route-dev-eval-00", "route-dev-eval-01"],
+    stages: [
+      { id: "junction-escape", scenarios: ["tail-civic-eastbound", "tail-civic-westbound"], observation: "dispatch-route-v1", traffic: 0, pedestrians: 0, episodeSeconds: 42, wantedLevel: 1, wantedLevelMax: 1, patrols: 1 },
+      { id: "city-escape", observation: "dispatch-route-v1", traffic: 36, pedestrians: 80, episodeSeconds: 60, wantedLevel: 3, patrols: 7 }
+    ]
+  };
+
+  // config/pursuit-rl-city-route-development.json
+  var pursuit_rl_city_route_development_default = {
+    schema: 1,
+    description: "Development only. Full-population Metro with a public route that continues past zone boundaries. No protected holdout seeds.",
+    trainingSeeds: ["route-train-00", "city-route-train-01", "city-route-train-02"],
+    validationSeeds: ["city-route-dev-eval-00", "city-route-dev-eval-01"],
+    stages: [
+      { id: "city-clearance", observation: "dispatch-route-v2", traffic: 36, pedestrians: 80, episodeSeconds: 65, wantedLevel: 3, wantedLevelMax: 3, patrols: 7, demonstrationSpeedMps: 12 },
+      { id: "city-clearance-dense", observation: "dispatch-route-v2", traffic: 96, pedestrians: 144, episodeSeconds: 65, wantedLevel: 5, wantedLevelMax: 5, patrols: 12 }
+    ]
   };
 
   // src/main.js
@@ -54297,6 +56106,13 @@
   var streetPursuitOpen = false;
   var streetPursuitLevel = 3;
   var streetPursuitStyle = "survival";
+  var isDispatchStyle = (style) => style === "dispatch" || style === "dispatch-ppo";
+  var isGtaStyle = (style) => style === "gta" || isDispatchStyle(style);
+  var dispatchCheckpoint = null;
+  var checkpointStatus = "";
+  var replayLoad = null;
+  var labPpoCheckpoints = /* @__PURE__ */ new Map();
+  var labPpoWorker = null;
   var packDrillWorld = null;
   var labPackCheckpoint = null;
   var cityPackCheckpoint = null;
@@ -54472,12 +56288,12 @@
   }
   async function cameraAction(action) {
     if (action === "start") {
-      const active = world;
+      const active2 = world;
       const result = await startLocalCamera();
       if (!result.ok) return result;
-      if (active === world && active.environment === "metro") {
+      if (active2 === world && active2.environment === "metro") {
         cityDriver = "vision-first";
-        active.command({ type: "visual-mode", mode: cityDriver });
+        active2.command({ type: "visual-mode", mode: cityDriver });
       }
     } else if (action === "stop") {
       pendingVisionRun = false;
@@ -54527,6 +56343,8 @@
     return { ok: true };
   }
   function activate(next) {
+    cancelReplayLoad();
+    if (next !== "lab" && labPpoWorker) stopLabPpo("Update stopped. Completed checkpoints are retained.");
     const nextWorld = worlds[next] ?? new World(world.config, next);
     const sceneTransition = next !== environment;
     if (sceneTransition) {
@@ -54606,9 +56424,9 @@
     updateUI();
     lastTime = performance.now();
   }
-  function reset(options) {
+  function reset(options2) {
     rememberPackPractice(world);
-    const replacement = new World(environment === "metro" ? { cityVersion: world.config.cityVersion, ...options } : options, environment);
+    const replacement = new World(environment === "metro" ? { cityVersion: world.config.cityVersion, ...options2 } : options2, environment);
     if (replacement.pursuit?.packLab) packDrillWorld = replacement;
     view.dispose();
     views2.delete(world);
@@ -54644,6 +56462,10 @@
   new ResizeObserver(positionCameraPreview).observe(drivingHud);
   function autoToggle() {
     if (environment === "vehicle" || environment === "vision") return;
+    if (isPursuing() && world.pursuit.frozenDriver) {
+      takeDispatchControl();
+      return;
+    }
     world.command({
       type: "mode",
       mode: world.mode === "auto" ? "manual" : "auto"
@@ -54692,7 +56514,9 @@
   for (const [id2, control] of [
     ["pursuitTouchLeft", "ArrowLeft"],
     ["pursuitTouchRight", "ArrowRight"],
-    ["pursuitTouchBrake", "Space"]
+    ["pursuitTouchBrake", "Space"],
+    ["pursuitTouchThrottle", "KeyW"],
+    ["pursuitTouchReverse", "KeyS"]
   ]) {
     const button = $2(id2);
     button.addEventListener("pointerdown", (event2) => {
@@ -54773,10 +56597,11 @@
     updatePreview();
   };
   $2("pauseBtn").onclick = () => {
+    const canceledImport = cancelReplayLoad();
     if (isInspection()) {
       setCarView("chase");
       paused = false;
-    } else paused = !paused;
+    } else paused = canceledImport ? false : !paused;
     keys.clear();
     touchPursuit.clear();
     $2("pauseBtn").textContent = paused ? "Resume" : "Pause";
@@ -54846,19 +56671,19 @@
   }
   function updateSurvivalFeedback() {
     const run = world.pursuit;
-    const active = run?.survival && (run.phase === "running" || run.reviewUntilTick);
+    const active2 = run?.survival && (run.phase === "running" || run.reviewUntilTick);
     if (heardRun !== run) {
       heardRun = run;
       heardEvent = 0;
     }
-    const audible = Boolean(active && !paused && !document.hidden);
+    const audible = Boolean(active2 && !paused && !document.hidden);
     pursuitAudio.update(world, audible);
-    if (active) for (const event2 of run.survival.effects) {
+    if (active2) for (const event2 of run.survival.effects) {
       if (event2.id <= heardEvent) continue;
       heardEvent = event2.id;
       if (audible) pursuitAudio.play(event2);
     }
-    if (run?.survival && !active && scoredRun !== run && ["crashed", "escaped", "captured"].includes(run.phase)) {
+    if (run?.survival && !active2 && scoredRun !== run && ["crashed", "escaped", "captured"].includes(run.phase)) {
       scoredRun = run;
       if (run.metrics.survivalS > (bestSurvivalS ?? 0)) {
         bestSurvivalS = run.metrics.survivalS;
@@ -54902,59 +56727,196 @@
     const nearestM = Math.min(...patrols.map((car2) => distance(car2, world.player)));
     return { active: patrols.length, target: state.targetPatrols, nearestM, sectors: state.metrics.surroundSectors };
   }
+  function takeDispatchControl() {
+    const driver = world.pursuit?.frozenDriver;
+    if (!driver || driver.status === "manual") return;
+    driver.status = "manual";
+    driver.policy = null;
+    world.command({ type: "pursuit-drive", action: PURSUIT_STOP });
+    lastInput = "";
+    updateUI();
+  }
+  function stepWorld() {
+    const run = world.pursuit;
+    if (run?.phase === "running" && applyFrozenDispatchAction(world, run.frozenDriver)) updateUI();
+    world.step();
+  }
+  async function loadDispatchCheckpoint(file, source = file?.name) {
+    dispatchCheckpoint = null;
+    checkpointStatus = file ? "Checking checkpoint\u2026" : "";
+    updateUI();
+    if (!file) return false;
+    try {
+      if (file.size < 1 || file.size > 2e6) throw new RangeError("Choose a Metro PPO JSON file under 2 MB.");
+      const bytes = await file.arrayBuffer();
+      const policy = freezePursuitPolicy(JSON.parse(new TextDecoder().decode(bytes)));
+      const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      const sha256 = [...digest].map((n) => n.toString(16).padStart(2, "0")).join("");
+      dispatchCheckpoint = { policy, sha256 };
+      const mapCues = policy.observation === CLEARANCE_ROUTE_CONTEXT ? " \xB7 Extended map cues" : policy.observation === LEGACY_ROUTE_CONTEXT ? " \xB7 Static map cues" : "";
+      checkpointStatus = `${source} \xB7 ${policy.updates} updates${mapCues} \xB7 SHA-256 ${sha256.slice(0, 12)}`;
+    } catch (error) {
+      checkpointStatus = `Checkpoint rejected: ${error.message}`;
+    }
+    updateUI();
+    return dispatchCheckpoint !== null;
+  }
+  function stopLabPpo(message) {
+    labPpoWorker?.terminate();
+    labPpoWorker = null;
+    showLabPpoCheckpoint(message);
+  }
+  function selectedLabPpoStage() {
+    const id2 = $2("metroPpoStage").value;
+    for (const manifest of [pursuit_rl_development_default, pursuit_rl_route_development_default, pursuit_rl_city_route_development_default]) {
+      const stage = manifest.stages.find((row) => row.id === id2);
+      if (stage) return { manifest, observation: stage.observation ?? "dispatch-scan-v3" };
+    }
+    throw new RangeError("Choose a Metro training workload.");
+  }
+  function showLabPpoCheckpoint(message) {
+    const checkpoint = labPpoCheckpoints.get(selectedLabPpoStage().observation);
+    $2("metroPpoTrain").disabled = false;
+    $2("metroPpoTrain").textContent = checkpoint ? "Train another update" : "Train one update";
+    $2("metroPpoStop").disabled = true;
+    $2("metroPpoStage").disabled = $2("metroPpoResume").disabled = false;
+    $2("metroPpoUse").disabled = !checkpoint;
+    const download = $2("metroPpoDownload");
+    if (download.hasAttribute("href")) {
+      URL.revokeObjectURL(download.href);
+      download.removeAttribute("href");
+    }
+    download.hidden = !checkpoint;
+    if (checkpoint)
+      download.href = URL.createObjectURL(new Blob([JSON.stringify(checkpoint) + "\n"], { type: "application/json" }));
+    $2("metroPpoStatus").textContent = message ?? (checkpoint ? `PPO update ${checkpoint.updates} \xB7 ${checkpoint.transitions} transitions total.` : "No checkpoint for this workload. Start one update to collect real Metro transitions.");
+  }
+  function startLabPpo() {
+    if (environment !== "lab" || labPpoWorker) return;
+    try {
+      const worker = new Worker("/public/threejs/pursuit-lab-worker.bundle.js");
+      labPpoWorker = worker;
+      $2("metroPpoTrain").disabled = $2("metroPpoUse").disabled = true;
+      $2("metroPpoStage").disabled = $2("metroPpoResume").disabled = true;
+      $2("metroPpoStop").disabled = false;
+      $2("metroPpoStatus").textContent = "Collecting Metro transitions and updating PPO\u2026";
+      worker.onerror = (event2) => {
+        if (worker === labPpoWorker) stopLabPpo(`Metro training failed: ${event2.message || "worker unavailable"}.`);
+      };
+      worker.onmessage = ({ data }) => {
+        if (worker !== labPpoWorker) return;
+        if (data.error) return stopLabPpo(`Metro training failed: ${data.error}`);
+        const { checkpoint, metrics } = data;
+        try {
+          freezePursuitPolicy(checkpoint);
+        } catch (error) {
+          return stopLabPpo(`Metro training did not yield a compatible checkpoint: ${error.message}`);
+        }
+        labPpoCheckpoints.set(checkpoint.observation, checkpoint);
+        const outcomes = metrics.episodes?.map((episode) => `${episode.phase}, ${episode.collisions} contacts`).join(" / ") ?? `${metrics.phase}, ${metrics.collisions} contacts`;
+        stopLabPpo(`PPO update ${checkpoint.updates} \xB7 ${checkpoint.transitions} transitions total \xB7 last: ${outcomes}.`);
+      };
+      worker.postMessage({ stage: $2("metroPpoStage").value, checkpoint: labPpoCheckpoints.get(selectedLabPpoStage().observation) });
+    } catch (error) {
+      stopLabPpo(`Metro training failed: ${error.message}`);
+    }
+  }
+  $2("metroPpoTrain").onclick = startLabPpo;
+  $2("metroPpoStop").onclick = () => stopLabPpo("Update stopped. Completed checkpoints are retained.");
+  $2("metroPpoStage").onchange = () => showLabPpoCheckpoint();
+  $2("metroPpoResume").onchange = async (event2) => {
+    const input2 = event2.currentTarget, file = input2.files[0];
+    if (!file || environment !== "lab" || labPpoWorker) return;
+    const { manifest, observation } = selectedLabPpoStage();
+    $2("metroPpoTrain").disabled = $2("metroPpoUse").disabled = true;
+    $2("metroPpoStage").disabled = input2.disabled = true;
+    try {
+      if (file.size < 1 || file.size > 2e6) throw new RangeError("Choose a Metro PPO JSON file under 2 MB.");
+      const checkpoint = JSON.parse(await file.text());
+      freezePursuitPolicy(checkpoint);
+      new PursuitPpo(null, checkpoint);
+      if (checkpoint.observation !== observation)
+        throw new Error("Select the workload matching this checkpoint before importing.");
+      const bytes = new TextEncoder().encode(JSON.stringify(manifest));
+      const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+      const sha256 = [...digest].map((n) => n.toString(16).padStart(2, "0")).join("");
+      if (checkpoint.development?.curriculumSha256 !== sha256)
+        throw new Error("Checkpoint belongs to another curriculum revision.");
+      labPpoCheckpoints.set(checkpoint.observation, checkpoint);
+      showLabPpoCheckpoint(`Loaded PPO update ${checkpoint.updates} \xB7 ${checkpoint.transitions} transitions total.`);
+    } catch (error) {
+      showLabPpoCheckpoint(`Resume rejected: ${error.message}`);
+    } finally {
+      input2.value = "";
+    }
+  };
+  $2("metroPpoUse").onclick = async () => {
+    const labPpoCheckpoint = labPpoCheckpoints.get(selectedLabPpoStage().observation);
+    if (environment !== "lab" || !labPpoCheckpoint) return;
+    const file = new File([JSON.stringify(labPpoCheckpoint) + "\n"], "metro-dispatch-ppo.json", { type: "application/json" });
+    if (await loadDispatchCheckpoint(file, "Lab checkpoint")) {
+      $2("pursuitCheckpoint").value = "";
+      streetPursuitStyle = "dispatch-ppo";
+      $2("metroPpoStatus").textContent = `Checkpoint selected for City \xB7 ${checkpointStatus}. Return to City to start a chase.`;
+    } else $2("metroPpoStatus").textContent = checkpointStatus;
+  };
   var pursuitPanel = mountPursuitPanel({
     container: $2("pursuitPanelHost"),
+    onCheckpoint: loadDispatchCheckpoint,
     onRun: async (learn, useLabPolicy) => {
-      const active = world;
-      if (active.environment === "metro") {
-        rememberPackPractice(active);
-        const arcade = active.config.cityVersion === 4 && streetPursuitStyle === "survival";
-        const gta = active.config.cityVersion === 4 && streetPursuitStyle === "gta";
+      const active2 = world;
+      if (active2.environment === "metro") {
+        rememberPackPractice(active2);
+        const arcade = active2.config.cityVersion === 4 && streetPursuitStyle === "survival";
+        const gta = active2.config.cityVersion === 4 && isGtaStyle(streetPursuitStyle);
+        const frozen = active2.config.cityVersion === 4 && streetPursuitStyle === "dispatch-ppo";
+        if (frozen && !dispatchCheckpoint) throw new Error("Load a compatible Metro PPO checkpoint to start.");
         if (!arcade && !gta && useLabPolicy && !labPackCheckpoint) throw new Error("Complete a learning run in the Lab first.");
         const checkpoint = arcade || gta ? null : useLabPolicy ? labPackCheckpoint : readCityPractice();
-        active.command({
+        active2.command({
           type: "street-pursuit-start",
           level: streetPursuitLevel,
-          ...gta ? { variant: "gta" } : arcade ? { variant: "survival" } : active.config.cityVersion === 4 ? {
+          ...gta ? { variant: "gta", ...isDispatchStyle(streetPursuitStyle) ? { config: { ruleset: "dispatch-v1", damageFeedback: DISPATCH_DAMAGE_FEEDBACK } } : {} } : arcade ? { variant: "survival", config: { giantPhysics: SURVIVAL_GIANT_PHYSICS } } : active2.config.cityVersion === 4 ? {
             variant: "hunt",
             learn: !useLabPolicy && learn,
             ...checkpoint ? { checkpoint, ...!useLabPolicy ? { localPolicy: true } : {} } : {}
           } : {}
         });
+        if (frozen) active2.pursuit.frozenDriver = { ...dispatchCheckpoint, status: "active", lastTick: -1, decisions: 0 };
         if (arcade) void pursuitAudio.unlock();
-        cityPracticeRun = active.pursuit.driver === "training" ? active.pursuit : null;
+        cityPracticeRun = active2.pursuit.driver === "training" ? active2.pursuit : null;
         paused = false;
         lastInput = "";
         updateUI();
         return true;
       }
-      if (active.pursuit?.packLab) {
-        active.command({ type: "pursuit-run", learn, ...learn && labPackCheckpoint ? { checkpoint: labPackCheckpoint } : {} });
+      if (active2.pursuit?.packLab) {
+        active2.command({ type: "pursuit-run", learn, ...learn && labPackCheckpoint ? { checkpoint: labPackCheckpoint } : {} });
         paused = false;
         lastInput = "";
         settingsOpen(false);
         updateUI();
         return true;
       }
-      if (!active.pursuit || active.pursuit.phase !== "ready" || active.pursuit.loadingPolicy) return;
-      active.pursuit.loadingPolicy = true;
+      if (!active2.pursuit || active2.pursuit.phase !== "ready" || active2.pursuit.loadingPolicy) return;
+      active2.pursuit.loadingPolicy = true;
       try {
         if (!pursuitWeights) {
           const response = await fetch("/public/threejs/pursuit.policy.json");
           if (!response.ok) throw new Error("Learned policy is unavailable");
           pursuitWeights = await response.json();
         }
-        if (world !== active) return;
-        active.command({ type: "pursuit-policy", weights: pursuitWeights });
-        active.pursuit.policyNote = null;
+        if (world !== active2) return;
+        active2.command({ type: "pursuit-policy", weights: pursuitWeights });
+        active2.pursuit.policyNote = null;
       } catch (error) {
-        active.pursuit.policyNote = `${error.message}. Using the deterministic planner.`;
+        active2.pursuit.policyNote = `${error.message}. Using the deterministic planner.`;
         pursuitWeights = null;
       } finally {
-        active.pursuit.loadingPolicy = false;
+        active2.pursuit.loadingPolicy = false;
       }
-      if (world !== active) return;
-      active.command({ type: "pursuit-run" });
+      if (world !== active2) return;
+      active2.command({ type: "pursuit-run" });
       paused = false;
       settingsOpen(false);
       updateUI();
@@ -54975,9 +56937,9 @@
       } else if (world.pursuit) reset({ ...world.config, pursuitLevel: level });
     },
     onStyle: (style) => {
-      if (!["survival", "hunt", "gta"].includes(style)) return;
+      if (style !== "survival" && style !== "hunt" && !isGtaStyle(style)) return;
       streetPursuitStyle = style;
-      if (style !== "gta") streetPursuitLevel = Math.min(4, streetPursuitLevel);
+      if (!isGtaStyle(style)) streetPursuitLevel = Math.min(4, streetPursuitLevel);
       updateUI();
     },
     onUse: usePursuitPower,
@@ -55091,30 +57053,57 @@
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 500);
   };
+  function cancelReplayLoad() {
+    if (!replayLoad) return false;
+    paused = replayLoad.wasPaused;
+    replayLoad = null;
+    $2("replayProgress").textContent = "Replay import canceled.";
+    return true;
+  }
   $2("replayFile").onchange = async (event2) => {
-    const wasPaused = paused;
+    const file = event2.target.files[0];
+    if (!file) return;
+    event2.target.value = "";
+    const load = { wasPaused: replayLoad?.wasPaused ?? paused };
+    replayLoad = load;
     paused = true;
+    const progress = $2("replayProgress");
+    progress.textContent = "Reading replay...";
+    let committing = false;
     try {
-      const file = event2.target.files[0];
-      if (!file) return;
-      const replay = await readReplayFile(file), steps = World.reconstruct(replay);
+      const replay = await readReplayFile(file);
+      if (replayLoad !== load) return;
+      const sliceMs = 22;
+      let deadline = performance.now() + sliceMs, previousPercent = -1;
+      const steps = World.reconstruct(replay, () => performance.now() >= deadline);
       let result = steps.next();
       while (!result.done) {
-        $2("replayProgress").textContent = `Replaying: ${Math.round(result.value.tick / replay.totalTicks * 100)}%`;
+        const percent = Math.floor(result.value.tick / replay.totalTicks * 100);
+        if (percent !== previousPercent) {
+          progress.textContent = `Replaying: ${percent}%`;
+          previousPercent = percent;
+        }
         await new Promise((resolve) => setTimeout(resolve, 0));
+        if (replayLoad !== load) return;
+        deadline = performance.now() + sliceMs;
         result = steps.next();
       }
       const restored = result.value, previous = worlds[restored.environment];
+      committing = true;
+      replayLoad = null;
       views2.get(previous)?.dispose();
       views2.delete(previous);
       worlds[restored.environment] = restored;
       activate(restored.environment);
-      $2("replayProgress").textContent = "Replay restored from recorded commands.";
+      progress.textContent = "Replay restored from recorded commands.";
     } catch (error) {
-      $2("replayProgress").textContent = `Could not load replay: ${error.message}`;
+      if (replayLoad === load || committing)
+        progress.textContent = `Could not load replay: ${error.message}`;
     } finally {
-      paused = wasPaused;
-      event2.target.value = "";
+      if (replayLoad === load || committing) {
+        replayLoad = null;
+        paused = load.wasPaused;
+      }
     }
   };
   for (const button of document.querySelectorAll("[data-scenario]"))
@@ -55178,6 +57167,12 @@
     if (world.pursuit?.reviewUntilTick) return;
     if (isPursuing()) {
       if (paused) return;
+      const frozen = world.pursuit.frozenDriver;
+      if (frozen && frozen.status !== "manual") {
+        if (!["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", "Space"].some(pressed))
+          return;
+        takeDispatchControl();
+      }
       if (pressed("Space") && world.mode === "auto") world.command({ type: "mode", mode: "manual" });
       if (world.mode !== "manual") return;
       const reverse = pressed("KeyS") || pressed("ArrowDown");
@@ -55241,17 +57236,25 @@
     arrived: "Arrived"
   };
   function updateUI() {
-    const survivalDriving = world.pursuit?.phase === "running" && world.pursuit.survival && world.mode === "manual" && !paused && !isInspection() && !focusedPersonId;
-    $2("pursuitTouch").hidden = !survivalDriving;
-    if (!survivalDriving) touchPursuit.clear();
+    const drivingPursuit = world.pursuit?.phase === "running" ? world.pursuit : null;
+    const dispatchDriving = drivingPursuit?.gta?.config.ruleset === "dispatch-v1";
+    const touchDriving = (drivingPursuit?.survival || dispatchDriving) && world.mode === "manual" && !paused && !isInspection() && !focusedPersonId;
+    const pursuitTouch = $2("pursuitTouch");
+    pursuitTouch.hidden = !touchDriving;
+    const touchLabel = dispatchDriving ? "Pursuit driving controls" : "Arcade steering";
+    if (pursuitTouch.getAttribute("aria-label") !== touchLabel) pursuitTouch.setAttribute("aria-label", touchLabel);
+    $2("pursuitTouchReverse").hidden = $2("pursuitTouchThrottle").hidden = !dispatchDriving;
+    if (!touchDriving) touchPursuit.clear();
     saveVisionComparison();
     if (pursuitPreview && pursuitPreview.run !== activeCinematic()) pursuitPreview = null;
     updatePreview();
     $2("pauseBtn").textContent = paused ? "Resume" : "Pause";
     $2("speedVal").textContent = Math.round(Math.abs(world.player.speed) * 3.6);
-    $2("aiToggleBtn").textContent = world.mode === "auto" ? "Autonomous drive" : "Manual drive";
+    const frozen = drivingPursuit?.frozenDriver;
+    $2("aiToggleBtn").textContent = frozen?.status === "active" ? "PPO \xB7 Take over" : frozen?.status === "fault" ? "PPO stopped" : world.mode === "auto" ? "Autonomous drive" : "Manual drive";
+    $2("drivingHelp").textContent = frozen ? "W A S D drive \xB7 Space brake \xB7 C camera \xB7 P phone \xB7 I takes over" : "W A S D drive \xB7 Space brake \xB7 C camera \xB7 P phone \xB7 I auto";
     $2("safetyStatus").textContent = paused ? "Simulation paused" : world.destination && !world.player.path.length && !(environment === "metro" && world.pursuit?.resumeTrip && !world.pursuit.tripResumed) ? "Destination reached" : reasons[world.player.reason] ?? world.player.reason;
-    const controlBasis = isPursuing() ? world.mode === "auto" ? "Virtual ranging" : "Manual" : "Control";
+    const controlBasis = frozen?.status === "active" ? "Frozen PPO" : isPursuing() ? world.mode === "auto" ? "Virtual ranging" : "Manual" : "Control";
     const cameraControlReason = isPursuing() && world.player.reason === "driving" ? "Driving" : reasons[world.player.reason] ?? world.player.reason;
     $2("cameraDecision").textContent = `${controlBasis}: ${cameraControlReason}${world.player.blockedBy ? ` \xB7 ${world.player.blockedBy}` : ""}`;
     $2("tripLabel").textContent = world.destination ? `${world.destination.name ?? "Destination"} \xB7 ${world.player.path.length ? "En route" : "Arrived"}` : "Choose a destination on the phone";
@@ -55302,7 +57305,7 @@
       const roadReading = onRoadLimit(world, world.player);
       const { roadId, width } = roadReading;
       const result = world.pursuit;
-      const gta = result?.phase === "running" ? result.variant === "gta" : streetPursuitStyle === "gta";
+      const gta = result?.phase === "running" ? result.variant === "gta" : isGtaStyle(streetPursuitStyle);
       if (result && result.phase !== "running") rememberPackPractice(world);
       const dispatch = result?.phase === "running" && usesRushPace(result.variant);
       const limit = dispatch ? rushRoadLimit(roadReading) : roadReading.limit;
@@ -55312,7 +57315,7 @@
       $2("loadingStatus").textContent = `${street}${pace} \xB7 ${world.capacity.traffic} vehicles \xB7 ${world.capacity.pedestrians} people`;
       $2("mapLabel").textContent = isPursuing() ? `${street} pursuit` : street;
       if (isPursuing())
-        $2("tripLabel").textContent = world.pursuit.route ? `Pursuit \xB7 ${world.pursuit.route.id.replace(/^metro-exit-/, "").replaceAll("-", " ")}` : world.pursuit.gta ? "GTA Chase \xB7 live City streets" : world.pursuit.survival ? "Pursuit \xB7 live City streets" : "Pursuit \xB7 checking exits";
+        $2("tripLabel").textContent = world.pursuit.route ? `Pursuit \xB7 ${world.pursuit.route.id.replace(/^metro-exit-/, "").replaceAll("-", " ")}` : world.pursuit.gta?.config.ruleset === "dispatch-v1" ? "Metro Dispatch \xB7 live City streets" : world.pursuit.gta ? "GTA Chase \xB7 live City streets" : world.pursuit.survival ? "Pursuit \xB7 live City streets" : "Pursuit \xB7 checking exits";
       else if (world.destination && !world.player.path.length && world.pursuit?.resumeTrip && !world.pursuit.tripResumed)
         $2("tripLabel").textContent = "Trip paused \xB7 choose a destination";
       $2("pursuitPanelHost").hidden = !streetPursuitOpen;
@@ -55324,6 +57327,9 @@
         cinematic: Boolean(result?.response) || !result && world.config.cityVersion === 4,
         arcade: world.config.cityVersion === 4,
         cityPursuitStyle: world.config.cityVersion === 4 ? streetPursuitStyle : null,
+        checkpointStatus,
+        checkpointReady: dispatchCheckpoint !== null,
+        frozenDriver: result?.frozenDriver,
         bestSurvivalS,
         soundMuted: pursuitAudio.muted,
         soundError: pursuitAudio.error,
@@ -55469,7 +57475,7 @@
   }
   var offset2 = new Vector3();
   var target = new Vector3();
-  var forward = new Vector3();
+  var forward2 = new Vector3();
   function mountedCameraPose(player, mode) {
     const pose6 = view.playerRig?.getCameraPose(mode);
     if (!pose6) return false;
@@ -55487,7 +57493,7 @@
     const survivalReview = world.pursuit?.survival && world.pursuit.reviewUntilTick;
     if (!paused && !document.hidden) clock.advance(
       delta * (survivalReview && !reducedMotion.matches ? 0.33 : 1),
-      () => world.step(),
+      stepWorld,
       environment === "metro" ? 5 : Infinity
     );
     updateSurvivalFeedback();
@@ -55506,7 +57512,7 @@
       appliedCutaway = cutaway;
       appliedSensors = sensorView;
     }
-    forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
+    forward2.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
     const personRoot = focusedPersonId ? view.roots.get(focusedPersonId)?.root : null;
     const pursuitShot = cinematic && !personRoot && cameraMode === "chase" ? cinematic : null;
     if (personRoot) {
@@ -55544,18 +57550,19 @@
         snap: cameraSnap || pursuitShot !== lastPursuitShot,
         pack: isPackPursuit(pursuitShot.variant),
         packLab: pursuitShot.packLab && pursuitShot.patrols.size >= 3,
+        trailingVehicles: pursuitShot.gta?.config.ruleset === "dispatch-v1" ? pursuitShot.patrols : null,
         impactReview: pursuitShot.metrics.terminalCause === "pedestrian-impact" || Boolean(survivalReview && !reducedMotion.matches)
       });
     } else {
       const openPursuit = world.pursuit?.variant === "rush" && world.pursuit.phase === "running" && onRoadLimit(world, world.player).width >= 10;
-      offset2.copy(player.position).addScaledVector(forward, openPursuit ? -19.8 : -10.5);
+      offset2.copy(player.position).addScaledVector(forward2, openPursuit ? -19.8 : -10.5);
       if (openPursuit) {
-        offset2.x += forward.z * 3.2;
-        offset2.z -= forward.x * 3.2;
+        offset2.x += forward2.z * 3.2;
+        offset2.z -= forward2.x * 3.2;
       }
       offset2.y += openPursuit ? 8.5 : 5;
       camera.position.lerp(offset2, cameraSnap ? 1 : 1 - Math.exp(-delta * 6));
-      target.copy(player.position).addScaledVector(forward, openPursuit ? -3 : 5);
+      target.copy(player.position).addScaledVector(forward2, openPursuit ? -3 : 5);
       target.y += 1;
       camera.lookAt(target);
     }
@@ -55570,9 +57577,9 @@
       frontCamera.position.copy(offset2);
       frontCamera.lookAt(target);
     } else {
-      frontCamera.position.copy(player.position).addScaledVector(forward, 1.5);
+      frontCamera.position.copy(player.position).addScaledVector(forward2, 1.5);
       frontCamera.position.y += 1.25;
-      frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
+      frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward2, 20));
     }
     const captureVision = (visualClient.enabled || cameraScreenVisible) && mountedCameraPose(player, "sensor");
     if (captureVision) {

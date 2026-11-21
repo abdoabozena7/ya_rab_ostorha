@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "mode": "metro-full-holdout",
+  "episodeSeconds": 120,
+  "minimumCollisionFreeRateGain": 0.05,
+  "levels": [
+    { "level": 1, "patrols": 3, "episodes": 36, "dense": 12 },
+    { "level": 3, "patrols": 7, "episodes": 36, "dense": 12, "escapeThreshold": 0.6 },
+    { "level": 5, "patrols": 12, "episodes": 36, "dense": 12, "escapeThreshold": 0.3 }
+  ],
+  "population": { "standard": [36, 80], "dense": [96, 144] },
+  "seedPattern": "^metro-holdout:[a-f0-9]{32}$"
+}

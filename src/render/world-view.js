@@ -1018,8 +1018,8 @@ export class WorldView {
     this.metroAlpha = alpha;
     record.root.position.set(actor.x, .12 + (world.pursuit?.phase === "running" ? actor.y ?? 0 : 0), actor.z);
     record.root.rotation.y = actor.heading;
-    record.vehicleRig.update(actor, world.sensors, alpha);
     this.pursuitView?.appearance(record.root, world);
+    record.vehicleRig.update(actor, world.sensors, alpha);
     const focused = this.focusedPersonId && world.actors.find(a => a.id === this.focusedPersonId && a.type === "pedestrian");
     this.metroFocus = focused ? this.roots.get(focused.id) ?? this.addMetroActor(focused) : null;
     if (focused) {

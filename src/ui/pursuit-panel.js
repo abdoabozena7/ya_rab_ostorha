@@ -10,6 +10,10 @@ const PHASES = {
   stopped: "Ended",
 };
 const RESPONSE_STAGES = { contact: "In contact", search: "Searching", clearing: "Clearing" };
+const DISPATCH_STAGES = {
+  ZONE_TRACKED: "Zone tracked", VISUALLY_SPOTTED: "Spotted", LAST_KNOWN: "Last known",
+  SEARCHING: "Searching", LOST: "Signal lost", ESCAPED: "Escaped",
+};
 const POWERS = { giant: "Giant", ghost: "Ghost", mine: "Mine", pulse: "Pulse" };
 const IMPACT_CAUSES = {
   "police-touch": "Patrol contact", "police-wreck": "Hit a patrol wreck",
@@ -46,6 +50,11 @@ const pct = (value) => Math.round(value * 100);
 const boundedPercent = (value) => pct(Math.max(0, Math.min(1, value)));
 
 function responseNote(stage, response) {
+  const dispatch = response?.dispatch;
+  if (dispatch?.state === "ZONE_TRACKED") return "Dispatch shares your position inside the surveillance zone.";
+  if (dispatch?.state === "LAST_KNOWN") return "Patrols are following your last reported position.";
+  if (dispatch?.state === "SEARCHING") return "Patrols are searching from your last reported position.";
+  if (dispatch?.state === "LOST" && !response.clearProgress) return "Signal lost. Put more distance between you and the patrols.";
   if (stage === "contact") {
     if (response.unitsInContact === 1) return "One patrol has you in sight.";
     if (response.unitsInContact > 1) return `${response.unitsInContact} patrols have you in sight.`;
@@ -116,7 +125,7 @@ function packDriverText(state, running, paused) {
   return driver === "planner" && state.phase !== "ready" ? "Planner" : "";
 }
 
-export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase, onStyle, onUse, onSound }) {
+export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase, onStyle, onCheckpoint, onUse, onSound }) {
   if (!container?.ownerDocument || ![onRun, onRestart, onLevel].every((fn) => typeof fn === "function"))
     throw new TypeError("Pursuit controls need a container and action callbacks.");
   const doc = container.ownerDocument;
@@ -173,12 +182,28 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const styleLabel = node("label", "", "Chase style");
   styleLabel.className = "pursuit-style";
   const style = node("select", "pursuitStyle");
-  for (const [value, label] of [["survival", "Arcade chase"], ["hunt", "Tactical / training"], ["gta", "GTA Chase"]]) {
+  for (const [value, label] of [["survival", "Arcade chase"], ["hunt", "Tactical / training"],
+    ["gta", "GTA Chase"], ["dispatch", "Metro Dispatch"], ["dispatch-ppo", "Metro Dispatch · PPO"]]) {
     const option = node("option", "", label);
     option.value = value;
     style.append(option);
   }
   styleLabel.append(style);
+  const modelField = node("label", "", "PPO checkpoint");
+  modelField.className = "pursuit-style";
+  const modelFile = node("input", "pursuitCheckpoint");
+  modelFile.type = "file";
+  modelFile.accept = ".json,application/json";
+  const modelStatus = node("span", "pursuitCheckpointStatus");
+  modelStatus.setAttribute("role", "status");
+  modelFile.setAttribute("aria-describedby", modelStatus.id);
+  modelField.append(modelFile, modelStatus);
+  modelField.hidden = true;
+  modelFile.addEventListener("change", async () => {
+    modelFile.disabled = true;
+    try { await onCheckpoint?.(modelFile.files[0]); }
+    finally { modelFile.disabled = false; }
+  });
   const caseField = node("div");
   caseField.className = "pursuit-pack-case";
   caseField.hidden = true;
@@ -201,7 +226,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const run = node("button", "pursuitRunBtn", "Run pursuit");
   const restart = node("button", "pursuitRestartBtn", "Restart");
   run.type = restart.type = "button";
-  controls.append(caseField, styleLabel, levelLabel, run, restart);
+  controls.append(caseField, styleLabel, modelField, levelLabel, run, restart);
 
   const arcade = node("div", "pursuitArcade");
   arcade.className = "pursuit-arcade";
@@ -264,6 +289,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const showEvent = reading("Event", "Last event");
   const showImpact = reading("Impact", "Impact");
   const showPressure = reading("Pressure", "Pressure");
+  const showZone = reading("Zones", "Surveillance");
 
   const danger = node("dl", "pursuitDanger");
   danger.className = "pursuit-danger";
@@ -306,6 +332,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     const running = latest?.phase === "running";
     const busy = Boolean(pending) || !latest;
     run.disabled = busy || (street ? running || (latest.pack === true && latest.review === true) : latest.phase !== "ready");
+    if (latest?.cityPursuitStyle === "dispatch-ppo" && !latest.checkpointReady) run.disabled = true;
     restart.disabled = busy || (street && !running);
     level.disabled = busy || (street && running);
     style.disabled = busy || running || latest?.review === true;
@@ -365,7 +392,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     showPlanner(active ? describeDecision(decision) : "");
     const patrol = state.patrolStatus;
     showPatrol(patrol && finite(patrol.nearestM)
-      ? `${patrol.active}/${patrol.target} on scene · ${Math.round(patrol.nearestM)} m nearest` : "");
+      ? `${patrol.active}${finite(patrol.target) ? `/${patrol.target}` : ""} on scene · ${Math.round(patrol.nearestM)} m nearest` : "");
     showThreats(active && Array.isArray(decision?.threatSectors)
       ? decision.threatSectors.map(sentence).filter(Boolean).join(" · ") || "None detected" : "");
     showRoute(active && decision?.routeId != null
@@ -377,6 +404,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     showEvent(describeEvent(events?.at(-1)));
     showImpact(describeImpact(metrics?.impact));
     showPressure(compact && finite(response?.pressure) ? `${boundedPercent(response.pressure)}%` : "");
+    showZone(response?.dispatch
+      ? response.dispatch.zoneIds.map(sentence).join(" · ") || "Outside coverage" : "");
     for (const [key, value] of counts) text(value, count(metrics?.[key]));
     text(progress, [
       finite(metrics?.survivalS) ? `${metrics.survivalS.toFixed(1)} s` : "",
@@ -404,7 +433,10 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     const noPatrolDrill = packLab && patrol?.active === 0;
     const arcadeSelected = state.cityPursuitStyle === "survival", survival = state.survival;
     const showArcade = state.street && (running ? Boolean(survival) : arcadeSelected);
-    const showGta = state.street && (running ? state.variant === "gta" : state.cityPursuitStyle === "gta");
+    const frozenSelected = state.street && state.cityPursuitStyle === "dispatch-ppo";
+    const showDispatch = state.street && (running ? Boolean(state.response?.dispatch) :
+      state.cityPursuitStyle === "dispatch" || frozenSelected);
+    const showGta = state.street && (running ? state.variant === "gta" : state.cityPursuitStyle === "gta" || showDispatch);
     const collapsed = cinematic || pack;
     const cases = packLab && Array.isArray(state.cases) ? state.cases : NO_CASES;
     const scope = packLab ? "pack-lab" : pack && state.street ? "pack-city" : "legacy";
@@ -415,6 +447,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     const paused = running && state.paused === true;
     const stage = cinematic && running && !noPatrolDrill && Object.hasOwn(RESPONSE_STAGES, state.response?.stage)
       ? state.response.stage : "";
+    const dispatchStage = running && showDispatch ? DISPATCH_STAGES[state.response?.dispatch?.state] : "";
     if (compact !== collapsed) {
       compact = collapsed;
       panel.classList.toggle("pursuit-panel--cinematic", compact);
@@ -424,13 +457,18 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     panel.hidden = false;
     panel.classList.toggle("pursuit-panel--pack", pack);
     panel.classList.toggle("pursuit-panel--city-arcade", showArcade);
+    panel.classList.toggle("pursuit-panel--dispatch", showDispatch);
     panel.dataset.phase = paused ? "paused" : state.phase;
     panel.dataset.response = paused ? "" : stage;
-    text(title, packLab ? "Pursuit Lab" : showArcade ? "Arcade pursuit" : showGta ? "GTA Chase" : "Pursuit");
+    text(title, packLab ? "Pursuit Lab" : showArcade ? "Arcade pursuit" : showDispatch ? "Metro Dispatch" : showGta ? "GTA Chase" : "Pursuit");
     text(phase, survival?.review ? "Impact replay" : paused ? "Paused" : running && noPatrolDrill ? "In progress"
-      : stage ? RESPONSE_STAGES[stage] : PHASES[state.phase]);
+      : dispatchStage || (stage ? RESPONSE_STAGES[stage] : PHASES[state.phase]));
     text(scene, packLab
       ? running ? cases.find(({ id }) => id === state.caseId)?.label ?? "" : ""
+      : frozenSelected && !running && ["ready", "stopped"].includes(state.phase)
+        ? "Experimental. Runs a frozen model; escape and civilian safety are not validated."
+      : showDispatch && !running && ["ready", "stopped"].includes(state.phase)
+        ? "Manual chase. Lose shared surveillance and separate from the patrols to escape."
       : showGta && !running && state.variant !== "gta" ? "On these streets. Starts in manual mode."
       : cinematic
       ? running ? responseNote(stage, state.response)
@@ -492,7 +530,12 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     }
     if (showGta && running) {
       learning.hidden = false;
-      text(learning, state.mode === "manual" ? "W / S throttle · A / D steer · Space brakes" : "Self-driving · I takes manual control");
+      const driver = state.frozenDriver;
+      text(learning, driver?.status === "active" ? `Frozen PPO · ${driver.policy.algorithm} · ${driver.sha256.slice(0, 12)}${driver.shieldReason ? ` · Brake guard: ${driver.shieldReason}` : ""} · I takes over`
+        : driver?.status === "fault" ? `PPO stopped: ${driver.error} · I takes over`
+        : driver?.status === "manual" ? "Manual takeover · W / S throttle · A / D steer · Space brakes"
+        : state.mode === "manual" ? "W / S throttle · A / D steer · Space brakes"
+          : showDispatch ? "Scripted planner · I takes manual control" : "Self-driving · I takes manual control");
     }
     arcade.hidden = !showArcade;
     if (showArcade) {
@@ -524,6 +567,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     text(restart, state.street ? "End pursuit" : packLab ? "Restart drill" : "Restart");
     levelLabel.hidden = liveSummary || survival?.review === true;
     styleLabel.hidden = !state.cityPursuitStyle || running || state.review === true;
+    modelField.hidden = !frozenSelected || running;
+    text(modelStatus, state.checkpointStatus || "Select a compatible JSON checkpoint.");
     if (state.cityPursuitStyle && style.value !== state.cityPursuitStyle) style.value = state.cityPursuitStyle;
     run.hidden = liveSummary || (packLab && state.phase !== "ready");
     restart.hidden = packLab ? state.phase === "ready" : collapsed && !running;

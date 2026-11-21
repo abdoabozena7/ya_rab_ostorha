@@ -1,4 +1,5 @@
 const EPS = 1e-7;
+export const CIRCULAR_CONTACT_TOLERANCE_M = 1e-7;
 export const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 export const angleDelta = (a, b) =>
   Math.atan2(Math.sin(a - b), Math.cos(a - b));
@@ -43,7 +44,7 @@ export function overlaps(a, b, gap = 0) {
   const rb = bc ? b.radius : Math.hypot(b.length, b.width) / 2;
   const separation = Math.hypot(dx, dz);
   if (separation >= ra + rb + gap) return false;
-  if (ac && bc) return separation < ra + rb + gap - EPS;
+  if (ac && bc) return separation < ra + rb + gap - CIRCULAR_CONTACT_TOLERANCE_M;
   if (ac || bc) {
     const circle = ac ? a : b,
       rect = ac ? b : a,
@@ -54,7 +55,7 @@ export function overlaps(a, b, gap = 0) {
       localZ = dx * Math.sin(h) + dz * Math.cos(h);
     const ex = Math.max(0, Math.abs(localX) - rect.width / 2),
       ez = Math.max(0, Math.abs(localZ) - rect.length / 2);
-    return Math.hypot(ex, ez) < circle.radius + gap - EPS;
+    return Math.hypot(ex, ez) < circle.radius + gap - CIRCULAR_CONTACT_TOLERANCE_M;
   }
   const pa = corners(a, gap / 2),
     pb = corners(b, gap / 2);
@@ -152,13 +153,11 @@ export function bodyOnRoad(body, roads, margin = 0.08) {
   }
   return uncovered.reduce((sum, p) => sum + area(p), 0) < EPS;
 }
-export function interpolate(a, b, t) {
-  return {
-    ...b,
-    x: a.x + (b.x - a.x) * t,
-    z: a.z + (b.z - a.z) * t,
-    heading: (a.heading ?? 0) + angleDelta(b.heading ?? 0, a.heading ?? 0) * t,
-  };
+export function interpolate(a, b, t, pose = { ...b }) {
+  pose.x = a.x + (b.x - a.x) * t;
+  pose.z = a.z + (b.z - a.z) * t;
+  pose.heading = (a.heading ?? 0) + angleDelta(b.heading ?? 0, a.heading ?? 0) * t;
+  return pose;
 }
 export function sweepSafe(before, after, others, roads = null) {
   const heading = before.heading ?? 0;

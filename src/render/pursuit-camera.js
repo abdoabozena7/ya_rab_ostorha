@@ -42,12 +42,13 @@ export function createPursuitCamera() {
   const pivot = new Vector3(), ideal = new Vector3(), target = new Vector3();
   const eye = new Vector3(), proposal = new Vector3(), lastClearPivot = new Vector3();
   const aim = new Vector3(), forwardAim = new Vector3();
+  const cabin = new Vector3(), lifted = new Vector3();
   const reducedMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)");
   let initialized = false, packMode = false, room = 0, stretch = 0, avenue = 0, bearing = 0, reviewMix = 0;
 
   function update(camera, {
     position, heading, speedMps, streetWidthM, staticIndex, deltaS, snap,
-    pack = false, packLab = false, impactReview = false,
+    pack = false, packLab = false, impactReview = false, trailingVehicles = null,
   }) {
     const reset = snap || !initialized || pack !== packMode;
     packMode = pack;
@@ -91,6 +92,28 @@ export function createPursuitCamera() {
       Math.hypot(eye.x - pivot.x, eye.z - pivot.z),
       Math.hypot(lastClearPivot.x - pivot.x, lastClearPivot.z - pivot.z));
     const sites = staticIndex?.near(pivot, reach + CITY_FOOTPRINT_MARGIN_M) ?? [];
+    if (trailingVehicles && !impactReview) {
+      const blockers = [];
+      for (const body of trailingVehicles) {
+        const dx = body.x - position.x, dz = body.z - position.z;
+        if (body.height >= 1.7 && dx * sin + dz * cos < 0 && dx * dx + dz * dz < 18 ** 2)
+          blockers.push(body);
+      }
+      if (blockers.length) {
+        cabin.set(position.x, position.y + 1.26, position.z);
+        const ordinary = sweepFraction(pivot, ideal, sites);
+        proposal.lerpVectors(pivot, ideal, ordinary);
+        if (sweepFraction(cabin, proposal, blockers) < 1) {
+          for (const [shorten, lift] of [[.64, 3.2], [.49, 4], [.36, 4.7]]) {
+            lifted.set(position.x - back * shorten * sin + shoulder * cos,
+              ideal.y + lift, position.z - back * shorten * cos - shoulder * sin);
+            if (sweepFraction(pivot, lifted, sites) !== 1 || sweepFraction(cabin, lifted, blockers) !== 1) continue;
+            ideal.copy(lifted);
+            break;
+          }
+        }
+      }
+    }
     let tether = sweepFraction(pivot, ideal, sites);
     if ((pack || reviewMix) && tether < 1) {
       // Shorten the boom horizontally before dropping into the street.

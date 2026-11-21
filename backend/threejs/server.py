@@ -250,7 +250,7 @@ def main():
     args = parser.parse_args()
     required = [
         "index.html", "public/threejs/game.bundle.js",
-        "public/threejs/game.styles.css",
+        "public/threejs/game.styles.css", "public/threejs/pursuit-lab-worker.bundle.js",
     ]
     missing = [name for name in required if not (ROOT / name).is_file()]
     if missing:

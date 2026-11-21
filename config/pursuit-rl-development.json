@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "description": "Development only. Shared Metro geometry and pursuit World, including controlled L09/L10/L12 workloads; not the protected acceptance cases. Uses dispatch-scan-v3 pedestrian refinement, bounded displacement shaping, a shared forward exploration prior, the dispatch brake guard, and bootstrapped truncation.",
+  "trainingSeeds": ["dispatch-train-00", "dispatch-train-01", "dispatch-train-02", "dispatch-train-03"],
+  "validationSeeds": ["dispatch-dev-eval-00", "dispatch-dev-eval-01"],
+  "stages": [
+    {"id":"maneuver", "traffic":0, "pedestrians":0, "episodeSeconds":6, "wantedLevel":1, "patrols":0},
+    {"id":"left-crossing", "scenario":"L09", "traffic":0, "pedestrians":0, "episodeSeconds":8, "wantedLevel":1, "patrols":0},
+    {"id":"right-crossing", "scenario":"L10", "traffic":0, "pedestrians":0, "episodeSeconds":8, "wantedLevel":1, "patrols":0},
+    {"id":"crossing-pursuit", "scenario":"L12", "traffic":12, "pedestrians":28, "episodeSeconds":8, "wantedLevel":1, "patrols":1},
+    {"id":"mixed-crossings", "traffic":12, "pedestrians":28, "episodeSeconds":12, "wantedLevel":1, "patrols":1},
+    {"id":"city-pressure", "traffic":36, "pedestrians":80, "episodeSeconds":20, "wantedLevel":3, "patrols":5}
+  ]
+}

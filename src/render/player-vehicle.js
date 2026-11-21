@@ -49,7 +49,9 @@ function dashboardPainter(model) {
 }
 
 export function createPlayerVehicle(_templateScene, initialActor = {}) {
-  const model = createSuvModel(initialActor);
+  const scale = initialActor.giantScale;
+  // An active Giant replay still builds one unscaled rig. WorldView applies its size.
+  const model = createSuvModel(scale ? { length: initialActor.length / scale, width: initialActor.width / scale } : initialActor);
   const { root, chassis, kit } = model;
   const drawDashboard = dashboardPainter(model);
   const beams = new THREE.Group();

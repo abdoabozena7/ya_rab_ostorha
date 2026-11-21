@@ -222,6 +222,26 @@ test("seed and recorded commands reproduce the complete resulting state", () => 
   );
 });
 
+test("cooperative replay yields without changing commands at slice or terminal ticks", () => {
+  const world = new World({ seed: "cooperative-replay", traffic: 2, pedestrians: 1 });
+  world.command({ type: "drive", targetSpeed: 3, steer: 0 });
+  for (let i = 0; i < 13; i++) {
+    if (i === 6) world.command({ type: "drive", targetSpeed: 0, steer: .1 });
+    world.step();
+  }
+  world.command({ type: "mode", mode: "manual" });
+  let ticks = 0;
+  const reconstruction = World.reconstruct(world.replay(), () => ++ticks % 3 === 0);
+  let current = reconstruction.next();
+  const pauses = [];
+  while (!current.done) {
+    pauses.push(current.value.tick);
+    current = reconstruction.next();
+  }
+  assert.deepEqual(pauses, [3, 6, 9, 12]);
+  assert.deepEqual(current.value.snapshot(), world.snapshot());
+});
+
 test("dense traffic and pedestrians stay disjoint and keep making progress", () => {
   for (const config of [
     { seed: "cairo-42", traffic: 28, pedestrians: 32 },

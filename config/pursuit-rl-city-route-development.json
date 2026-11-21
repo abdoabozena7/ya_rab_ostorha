@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "description": "Development only. Full-population Metro with a public route that continues past zone boundaries. No protected holdout seeds.",
+  "trainingSeeds": ["route-train-00", "city-route-train-01", "city-route-train-02"],
+  "validationSeeds": ["city-route-dev-eval-00", "city-route-dev-eval-01"],
+  "stages": [
+    {"id":"city-clearance", "observation":"dispatch-route-v2", "traffic":36, "pedestrians":80, "episodeSeconds":65, "wantedLevel":3, "wantedLevelMax":3, "patrols":7, "demonstrationSpeedMps":12},
+    {"id":"city-clearance-dense", "observation":"dispatch-route-v2", "traffic":96, "pedestrians":144, "episodeSeconds":65, "wantedLevel":5, "wantedLevelMax":5, "patrols":12}
+  ]
+}

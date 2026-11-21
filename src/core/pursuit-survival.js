@@ -1,19 +1,41 @@
-import { STEP, clamp } from "./config.js";
+import { STEP, VEHICLE, clamp } from "./config.js";
 import { bodyOnRoad, distance, overlaps, pointOnRoad } from "./geometry.js";
 
 const ticks = (seconds) => Math.round(seconds / STEP);
 const POWERS = ["giant", "mine", "ghost", "pulse"];
+const GIANT_SCALE = 1.45;
+export const SURVIVAL_GIANT_PHYSICS = "scaled-v1";
 export const SURVIVAL_REVIEW_TICKS = ticks(.46);
 export const isSurvival = variant => variant === "survival";
 export const isCityHunt = variant => variant === "hunt" || isSurvival(variant);
 
-export function createSurvival(player, tick) {
+export function createSurvival(player, tick, giantPhysics) {
+  if (giantPhysics !== undefined && giantPhysics !== SURVIVAL_GIANT_PHYSICS)
+    throw new RangeError("Unsupported Giant physics profile");
   return {
     footprint: { length: player.length, width: player.width },
+    giantBase: giantPhysics ? { height: player.height, spec: player.spec } : null,
     active: null, held: null, pickup: null, devices: [], wrecks: new Map(), pendingWrecks: new Map(),
     effects: [], nextEffect: 0, nextPower: 0, nextPickupTick: tick, spawnCount: 0, heavyCount: 0,
     fireQueued: false, lastSolid: null,
   };
+}
+
+function setSurvivalShape(player, survival, footprint, giant = false) {
+  player.length = footprint.length;
+  player.width = footprint.width;
+  const base = survival.giantBase;
+  if (!base) return;
+  if (giant) {
+    player.giantScale = GIANT_SCALE;
+    player.height = base.height * GIANT_SCALE;
+    player.spec = { ...base.spec, wheelbase: (base.spec?.wheelbase ?? VEHICLE.wheelbase) * GIANT_SCALE,
+      acceleration: (base.spec?.acceleration ?? VEHICLE.acceleration) * .8 };
+  } else if (player.giantScale) {
+    player.height = base.height;
+    player.spec = base.spec;
+    delete player.giantScale;
+  }
 }
 
 export function emitSurvival(world, type, at, kind, extra) {
@@ -65,7 +87,8 @@ export function releaseSurvival(world) {
     if (!clear) return false;
     Object.assign(player, clear, { previous: { ...player.previous, ...clear }, speed: 0, arcadeSlip: 0 });
   }
-  Object.assign(player, survival.footprint, { arcadeSlip: 0 });
+  setSurvivalShape(player, survival, survival.footprint);
+  player.arcadeSlip = 0;
   survival.active = survival.held = survival.pickup = null;
   survival.devices.length = 0;
   survival.fireQueued = false;
@@ -81,7 +104,7 @@ export function updateSurvivalBeforeMotion(world) {
   }
   const power = a.active;
   if (power && tick >= power.until && (power.kind !== "ghost" || fits(world, player))) {
-    Object.assign(player, a.footprint);
+    setSurvivalShape(player, a, a.footprint);
     a.active = null;
   }
   if (!a.fireQueued) return;
@@ -181,14 +204,13 @@ export function updateSurvivalAfterMotion(world) {
   const pickup = a.pickup;
   if (pickup && overlaps(player, token(pickup.x, pickup.z, .9))) {
     const { kind } = pickup, charge = kind === "mine" || kind === "pulse";
-    const giant = { ...player, length: a.footprint.length * 1.45, width: a.footprint.width * 1.45 };
+    const giant = { ...player, length: a.footprint.length * GIANT_SCALE, width: a.footprint.width * GIANT_SCALE };
     if (!(charge && a.held) && !(kind === "giant" && !fits(world, giant)) &&
         !(a.active?.kind === "ghost" && kind === "giant" && !fits(world, player))) {
       if (charge) a.held = kind;
       else {
         a.active = { kind, until: tick + ticks(kind === "ghost" ? 4.25 : 3.55) };
-        const { length, width } = kind === "giant" ? giant : a.footprint;
-        Object.assign(player, { length, width });
+        setSurvivalShape(player, a, kind === "giant" ? giant : a.footprint, kind === "giant");
       }
       emitSurvival(world, "pickup", pickup, kind);
       a.pickup = null;

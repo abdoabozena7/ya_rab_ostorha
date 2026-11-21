@@ -1,9 +1,25 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { districtTrafficCommand, updateDistrictTraffic } from "../src/core/district-behavior.js";
-import { bodyOnRoad, corners, pointOnRoad } from "../src/core/geometry.js";
+import { createWalkTargetQuery, districtTrafficCommand, updateDistrictTraffic } from "../src/core/district-behavior.js";
+import { bodyOnRoad, corners, overlaps, pointOnRoad } from "../src/core/geometry.js";
 import { followPath, integrateVehicle, vehicleProbe } from "../src/core/vehicle.js";
 import { walkSegmentBlocker, walkSegmentClear } from "../src/core/walk-route.js";
+
+test("stationary vehicle target queries preserve exact blockers and array order", () => {
+  const target = { x: 12.05, z: 0, type: "pedestrian", radius: .3 };
+  const longCar = { x: 14.8, z: 0, type: "vehicle", speed: 0,
+    heading: Math.PI / 2, length: 5.5, width: 1.6 };
+  const leftCar = { ...longCar, x: 11.6, heading: 0, length: 4 };
+  const notIntersecting = { ...longCar, x: 13.45, heading: 0 };
+  const moving = { ...leftCar, speed: -.8 };
+  assert.equal(createWalkTargetQuery([moving, notIntersecting])(target), undefined);
+  assert.equal(createWalkTargetQuery([moving, notIntersecting, longCar, leftCar])(target), longCar);
+  assert.equal(createWalkTargetQuery([leftCar, longCar])(target), leftCar);
+  longCar.length = 4;
+  assert.equal(createWalkTargetQuery([longCar, leftCar])(target), leftCar);
+  moving.speed = -.79;
+  assert.equal(createWalkTargetQuery([moving, leftCar])(target), moving);
+});
 
 test("walking clearance keeps the first actual blocker, including contacts between endpoints", () => {
   const person = { id: "walker", type: "pedestrian", radius: 0.25, x: -1, z: 0 };
@@ -20,6 +36,32 @@ test("walking clearance keeps the first actual blocker, including contacts betwe
   const longWall = { id: "wall", type: "static", x: 30, z: 0,
     heading: Math.PI / 2, length: 60, width: 1 };
   assert.equal(walkSegmentBlocker(person, person, end, [longWall], gap), longWall);
+});
+
+test("walking out of a soft margin must increase clearance without crossing the physical footprint", () => {
+  const person = { id: "walker", type: "pedestrian", radius: .3, x: -1.32, z: 0 };
+  const car = { id: "parked", type: "vehicle", x: 0, z: 0, width: 2, length: 4, heading: 0 };
+  const away = { x: -2, z: .1 }, toward = { x: -1.27, z: 0 };
+  assert.equal(walkSegmentBlocker(person, person, away, [car]), car);
+  assert.equal(walkSegmentBlocker(person, person, away, [car], .16, true), null);
+  assert.equal(walkSegmentBlocker(person, person, toward, [car], .16, true), car);
+  assert.equal(walkSegmentBlocker(person, toward, away, [car], .16, true), car);
+  assert.equal(walkSegmentBlocker(person, person, { x: 2, z: 0 }, [car], .16, true), car);
+});
+
+test("walking egress agrees with accepted contact poses for rectangular and circular bodies", () => {
+  const person = { id: "walker", type: "pedestrian", radius: .3, x: -1.29999992, z: 0 };
+  const penetrating = { ...person, x: -1.2999998 };
+  const away = { x: -2, z: .1 };
+  for (const body of [
+    { id: "car", type: "vehicle", x: 0, z: 0, width: 2, length: 4, heading: 0 },
+    { id: "peer", type: "pedestrian", x: 0, z: 0, radius: 1 },
+  ]) {
+    assert.ok(!overlaps(person, body) && overlaps(penetrating, body));
+    assert.equal(walkSegmentBlocker(person, person, away, [body], .16, true), null);
+    assert.equal(walkSegmentBlocker(person, person, penetrating, [body], .16, true), body);
+    assert.equal(walkSegmentBlocker(person, penetrating, away, [body], .16, true), body);
+  }
 });
 
 test("road support uses the union of complete footprints, not just the corners", () => {

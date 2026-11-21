@@ -3,6 +3,7 @@ import { angleDelta } from "./geometry.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 
 const wheelNames = ["frontLeft", "frontRight", "rearLeft", "rearRight"];
+const damageSides = ["front", "rear", "left", "right"];
 const staticWheelLoad = (PLAYER_VEHICLE.massKg * 9.81) / 4;
 const tau = Math.PI * 2;
 
@@ -66,13 +67,20 @@ function spring(value, velocity, target, frequency, limit, dt) {
   };
 }
 
+function dent(damage, side, closingSpeedMps, energyJ, tick) {
+  damage[side] = clamp(damage[side] + energyJ / 45000, 0, 1);
+  damage.total = 1 - damageSides.reduce((p, part) => p * (1 - damage[part]), 1);
+  damage.impactCount++;
+  damage.lastImpact = { side, closingSpeedMps, energyJ, tick };
+}
+
 /** Called once, after World accepts a pose; safety probes never advance the rig. */
 export function advanceVehicleState(
   before,
   after,
   command,
   dt,
-  { tick = 0, contact = null } = {},
+  { tick = 0, contact = null, freshImpacts = null } = {},
 ) {
   if (!Number.isFinite(dt) || dt <= 0)
     throw new RangeError("Vehicle state needs a positive fixed step");
@@ -157,21 +165,24 @@ export function advanceVehicleState(
   )
     latchedContact = null;
   const damage = { ...previous.damage };
+  // Dispatch has authoritative contact episodes, even when the ego proposed no travel.
+  if (freshImpacts) {
+    for (const { side, closingSpeedMps, energyJ } of freshImpacts) {
+      if (closingSpeedMps >= 0.35) dent(damage, side, closingSpeedMps, energyJ, tick);
+    }
+  }
   if (contact) {
     const closingSpeedMps = Math.max(0, contact.closingSpeedMps);
     if (
+      !freshImpacts &&
       closingSpeedMps >= 0.35 &&
       Math.abs(oldSpeed) >= 0.15 &&
       contact.proposedTravelM > 1e-8 &&
       latchedContact?.hitId !== contact.hitId &&
-      ["front", "rear", "left", "right"].includes(contact.side)
+      damageSides.includes(contact.side)
     ) {
       const energyJ = 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
-      damage[contact.side] = clamp(damage[contact.side] + energyJ / 45000, 0, 1);
-      damage.total =
-        1 - ["front", "rear", "left", "right"].reduce((p, side) => p * (1 - damage[side]), 1);
-      damage.impactCount++;
-      damage.lastImpact = { side: contact.side, closingSpeedMps, energyJ, tick };
+      dent(damage, contact.side, closingSpeedMps, energyJ, tick);
     }
     latchedContact = {
       hitId: contact.hitId,
@@ -182,7 +193,7 @@ export function advanceVehicleState(
   }
   return {
     wheelAngles: wheelAngles(steer),
-    wheelSpinRad: (previous.wheelSpinRad + signedTravel / PLAYER_VEHICLE.wheelRadiusM) % tau,
+    wheelSpinRad: (previous.wheelSpinRad + signedTravel / (PLAYER_VEHICLE.wheelRadiusM * (before.giantScale ?? 1))) % tau,
     steeringWheelRad: steer * PLAYER_VEHICLE.steeringRatio,
     suspension: {
       pitchRad: pitch.value,

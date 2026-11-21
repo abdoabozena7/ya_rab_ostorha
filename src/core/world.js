@@ -50,7 +50,7 @@ import { advanceCityEncounters, capCityEncounter, createCityEncounters } from ".
 import { planDistrictRoute } from "./district-navigation.js";
 import {
   createDistrictBehaviorState, initializeDistrictActor, nextDistrictWalk,
-  stepDistrictPedestrian, updateDistrictTraffic, districtTrafficCommand,
+  createWalkTargetQuery, stepDistrictPedestrian, updateDistrictTraffic, districtTrafficCommand,
   districtBehaviorDiagnostics, isPackPursuit, planDistrictTrafficTrip, usesRushPace,
 } from "./district-behavior.js";
 import { createDistrictCase, advanceDistrictCase } from "./district-scenarios.js";
@@ -573,7 +573,12 @@ export class World {
         endStreetPursuit(this);
         this.resumeStreetDrive();
       }
-      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      if (record) {
+        const config = this.pursuit?.gta?.config;
+        const recorded = command.type === "street-pursuit-start" && config?.ruleset === "dispatch-v1"
+          ? { ...command, config } : command;
+        this.events.push({ tick: this.tick, command: structuredClone(recorded) });
+      }
       return true;
     }
     if (command.type === "pursuit-use") {
@@ -882,8 +887,13 @@ export class World {
     }
     if (!usesRushPace(pursuit.variant)) this.actorIndex = new SpatialIndex(this.actors);
     updateDistrictTraffic(this);
+    let query;
+    // Build after any Dispatch squad changes, on the first target query of this tick.
+    const targetBlocker = pursuit.response?.dispatch
+      ? target => (query ??= createWalkTargetQuery(this.actors))(target)
+      : undefined;
     stepPursuit(this, action, {
-      pedestrianMotion: actor => stepDistrictPedestrian(this, actor),
+      pedestrianMotion: actor => stepDistrictPedestrian(this, actor, targetBlocker),
       vehicleCommand: (actor, requested) => pursuit.gta &&
           (pursuit.patrols.has(actor) || (actor === this.player && this.mode === "manual"))
         ? requested : actor.pursuitRole === "police"
@@ -1252,7 +1262,7 @@ export class World {
       events: structuredClone(this.events),
     };
   }
-  static *reconstruct(data) {
+  static *reconstruct(data, shouldYield) {
     if (
       data?.version !== VERSION ||
       !["city", "lab", "vehicle", "vision", "egypt", "pursuit", "metro"].includes(data.environment) ||
@@ -1308,7 +1318,7 @@ export class World {
       world.step();
       if (world.tick === beforeTick)
         throw new Error("Replay cannot advance a stopped scene without its recorded run event");
-      if (world.tick % 120 === 0) yield world;
+      if (world.tick % 120 === 0 || shouldYield?.()) yield world;
     }
     while (index < data.events.length && data.events[index].tick === world.tick)
       world.command(data.events[index++].command);

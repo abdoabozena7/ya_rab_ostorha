@@ -26,14 +26,15 @@ const dimension = (value, fallback) =>
 
 /** Mount positions are road-local metres, independent of chassis load motion. */
 export function getVehicleMounts(body = {}) {
-  const length = dimension(body.length, PLAYER_VEHICLE.lengthM);
-  const width = dimension(body.width, PLAYER_VEHICLE.widthM);
+  const scale = body.giantScale ?? 1;
+  const length = dimension(body.length, PLAYER_VEHICLE.lengthM) / scale;
+  const width = dimension(body.width, PLAYER_VEHICLE.widthM) / scale;
   const camera = {
     id: "front-camera",
     angleDeg: 0,
     position: { x: 0, y: 1.46, z: 0.72 },
   };
-  return {
+  const mounts = {
     ranges: rangeLayout.map(([id, angleDeg, x]) => ({
       id,
       angleDeg,
@@ -82,6 +83,14 @@ export function getVehicleMounts(body = {}) {
       position: { x: 0, y: 1.88, z: -0.15 },
     },
   };
+  if (scale !== 1) {
+    for (const { position: p } of [...mounts.ranges, ...mounts.auxiliary, ...mounts.cameras, mounts.telemetry]) {
+      p.x *= scale;
+      p.y *= scale;
+      p.z *= scale;
+    }
+  }
+  return mounts;
 }
 
 export function mountToWorld(body, position) {
