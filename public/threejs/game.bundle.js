@@ -30589,6 +30589,15 @@
   var approach = (a, b, amount) => a + clamp2(b - a, -amount, amount);
   var fixedPathGeometry = /* @__PURE__ */ new WeakMap();
   var immutablePaths = /* @__PURE__ */ new WeakSet();
+  var contactSlide = /* @__PURE__ */ new WeakMap();
+  function copyVehicleMotion(source, target2) {
+    if (contactSlide.has(source)) contactSlide.set(target2, contactSlide.get(source));
+    else contactSlide.delete(target2);
+    return target2;
+  }
+  function clearVehicleMotion(body2) {
+    contactSlide.delete(body2);
+  }
   function markImmutablePath(path) {
     for (let i = 0; i < path.length; i++) Object.freeze(path[i]);
     Object.freeze(path);
@@ -30629,7 +30638,7 @@
     return geometry;
   }
   function vehicleProbe(body2, speed) {
-    return {
+    return copyVehicleMotion(body2, {
       x: body2.x,
       z: body2.z,
       heading: body2.heading,
@@ -30644,7 +30653,7 @@
       ...body2.arcadeSlip ? { arcadeSlip: body2.arcadeSlip } : {},
       ...body2.realisticDynamics !== void 0 ? { realisticDynamics: body2.realisticDynamics } : {},
       ...body2.chaseSlipRad !== void 0 ? { chaseSlipRad: body2.chaseSlipRad } : {}
-    };
+    });
   }
   function integrateVehicle(body2, command, dt, out = null) {
     if (!Number.isFinite(dt) || dt < 0)
@@ -30672,15 +30681,27 @@
     const reversing = (body2.speed ?? 0) * requested < 0;
     const target2 = reversing ? 0 : requested;
     const slowing = Math.abs(target2) < absSpeed || reversing;
+    const rate = slowing ? braking : spec.acceleration;
+    const grip = realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0 ? spec.tireGripMps2 : Infinity;
     const speed = approach(
       body2.speed ?? 0,
       target2,
-      (slowing ? braking : spec.acceleration) * dt
+      Math.min(rate, grip) * dt
     );
     const average = (speed + (body2.speed ?? 0)) / 2;
     const tangent = Math.tan(steer);
-    const beta = Math.atan(0.5 * tangent);
-    const yawRate = average / spec.wheelbase * Math.cos(beta) * tangent;
+    let beta = Math.atan(0.5 * tangent);
+    let yawRate = average / spec.wheelbase * Math.cos(beta) * tangent;
+    if (realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0) {
+      const longitudinal2 = dt > 0 ? Math.abs(speed - (body2.speed ?? 0)) / dt : 0;
+      const lateralBudget = Math.sqrt(Math.max(0, spec.tireGripMps2 ** 2 - longitudinal2 ** 2));
+      const demanded = Math.abs(average * yawRate);
+      if (demanded > lateralBudget) {
+        const scale = lateralBudget / demanded;
+        yawRate *= scale;
+        beta = Math.atan(Math.tan(beta) * scale);
+      }
+    }
     const drift = command.arcadeDrift === true && average > 0;
     const slip = drift ? (body2.arcadeSlip ?? 0) + (clamp2(-yawRate * speed * 0.036, -0.32, 0.32) - (body2.arcadeSlip ?? 0)) * (1 - Math.exp(-7 * dt)) : 0;
     let nextChaseSlip = 0;
@@ -30692,6 +30713,7 @@
       nextChaseSlip = Math.abs(rawChaseSlip) < 1e-12 ? 0 : rawChaseSlip;
     }
     const middle = realistic ? body2.heading + yawRate * dt / 2 + beta + slip + nextChaseSlip : body2.heading + yawRate * dt / 2 + beta + slip;
+    const midHeading = body2.heading + yawRate * dt / 2;
     const result = out ?? { ...body2 };
     result.x = body2.x + Math.sin(middle) * average * dt;
     result.z = body2.z + Math.cos(middle) * average * dt;
@@ -30700,6 +30722,14 @@
     result.speed = speed;
     if (drift || body2.arcadeSlip !== void 0) result.arcadeSlip = slip;
     if (realistic) result.chaseSlipRad = nextChaseSlip;
+    if (spec.contactResponse === "inelastic-slide-v1") {
+      const oldSlide = contactSlide.get(body2) ?? 0;
+      const slide = approach(oldSlide, 0, 3 * dt);
+      result.x += Math.cos(midHeading) * (oldSlide + slide) * dt / 2;
+      result.z -= Math.sin(midHeading) * (oldSlide + slide) * dt / 2;
+      if (slide) contactSlide.set(result, slide);
+      else contactSlide.delete(result);
+    }
     return result;
   }
   function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
@@ -30754,6 +30784,49 @@
     const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
     const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
     const closingSpeedMps = Math.max(0, vx * normal2.x + vz * normal2.z);
+    if (before.spec?.contactResponse === "inelastic-slide-v1") {
+      const incoming = { x: (proposed.x - before.x) / dt, z: (proposed.z - before.z) / dt };
+      const velocity = {
+        x: incoming.x - normal2.x * closingSpeedMps,
+        z: incoming.z - normal2.z * closingSpeedMps
+      };
+      const incomingSpeed = Math.hypot(incoming.x, incoming.z);
+      const outgoingSpeed = Math.hypot(velocity.x, velocity.z);
+      if (outgoingSpeed > incomingSpeed) {
+        velocity.x *= incomingSpeed / outgoingSpeed;
+        velocity.z *= incomingSpeed / outgoingSpeed;
+      }
+      const remaining = dt * (1 - low);
+      const slid = {
+        ...body2,
+        x: body2.x + velocity.x * remaining,
+        z: body2.z + velocity.z * remaining
+      };
+      const accepted = overlaps(slid, obstacle) ? body2 : slid;
+      const s = Math.sin(body2.heading), c = Math.cos(body2.heading);
+      const response = {
+        ...accepted,
+        speed: velocity.x * s + velocity.z * c,
+        reason: "vehicle-contact",
+        blockedBy: obstacle.id
+      };
+      if (Math.abs(response.speed) < 1e-12) response.speed = 0;
+      const slide = velocity.x * c - velocity.z * s;
+      if (Math.abs(slide) > 1e-12) contactSlide.set(response, slide);
+      const mass2 = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+      const otherMass = obstacle.type === "static" ? Infinity : obstacle.spec?.massKg ?? (obstacle.kind === "tuktuk" ? 620 : 1450);
+      const reducedMass = Number.isFinite(otherMass) && otherMass > 0 ? mass2 * otherMass / (mass2 + otherMass) : mass2;
+      return {
+        body: response,
+        hitId: obstacle.id,
+        side,
+        normal: normal2,
+        closingSpeedMps,
+        energyJ: 0.5 * reducedMass * closingSpeedMps ** 2,
+        contactFraction: low,
+        proposedTravelM: distance(before, proposed)
+      };
+    }
     return {
       body: { ...body2, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
       hitId: obstacle.id,
@@ -31686,7 +31759,7 @@
     damage2.impactCount++;
     damage2.lastImpact = { side, closingSpeedMps, energyJ, tick };
   }
-  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null, freshImpacts = null } = {}) {
+  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null, freshImpacts = null, contactSeparated = false } = {}) {
     if (!Number.isFinite(dt) || dt <= 0)
       throw new RangeError("Vehicle state needs a positive fixed step");
     const previous = before.vehicle ?? createVehicleState();
@@ -31764,8 +31837,11 @@
       gear: Math.abs(speed) > 1e-8 ? speed > 0 ? "D" : "R" : requested === 0 ? "N" : requested > 0 ? "D" : "R"
     };
     let latchedContact = previous.contact;
-    if (latchedContact && Math.hypot(after.x - latchedContact.x, after.z - latchedContact.z) > 0.25)
-      latchedContact = null;
+    if (latchedContact) {
+      const dx2 = after.x - latchedContact.x, dz2 = after.z - latchedContact.z;
+      const released = before.spec?.contactResponse === "inelastic-slide-v1" ? contactSeparated : Math.hypot(dx2, dz2) > 0.25;
+      if (released) latchedContact = null;
+    }
     const damage2 = { ...previous.damage };
     if (freshImpacts) {
       for (const { side, closingSpeedMps, energyJ } of freshImpacts) {
@@ -31775,14 +31851,15 @@
     if (contact) {
       const closingSpeedMps = Math.max(0, contact.closingSpeedMps);
       if (!freshImpacts && closingSpeedMps >= 0.35 && Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8 && latchedContact?.hitId !== contact.hitId && damageSides.includes(contact.side)) {
-        const energyJ = 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
+        const energyJ = before.spec?.contactResponse === "inelastic-slide-v1" ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0) : 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
         dent(damage2, contact.side, closingSpeedMps, energyJ, tick);
       }
       latchedContact = {
         hitId: contact.hitId,
         x: after.x,
         z: after.z,
-        tick
+        tick,
+        ...before.spec?.contactResponse === "inelastic-slide-v1" ? { normal: { ...contact.normal } } : {}
       };
     }
     return {
@@ -43550,6 +43627,7 @@
       gta.nextSquadTick = tick + ticks3(0.5);
     }
   }
+  var streetCitySpecs = /* @__PURE__ */ new WeakMap();
   function beginStreetPursuit(world2, level = 1, variant = "legacy", config) {
     if (variant !== "gta" && config) {
       for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit"])
@@ -43568,6 +43646,7 @@
     if (world2.pursuit?.phase === "running") throw new Error("Street pursuit is already running");
     if (world2.pursuit?.reviewUntilTick > world2.tick) throw new Error("Let the impact review finish first");
     const { player } = world2;
+    const citySpec = player.spec;
     if (!bodyOnRoad(player, world2.roads)) throw new Error("No safe street pursuit deployment");
     const curb = gtaConfig?.curbSupport ? surveyMetroCurb(world2, gtaConfig.curbSupport) : null;
     if (gtaConfig?.curbSupport && !curb) throw new Error("No matching surveyed Metro curb");
@@ -43724,6 +43803,17 @@
         state.gta.scan = state.gta.scanner.sample(world2);
       }
     }
+    if (citySpec?.contactResponse === "inelastic-slide-v1") {
+      streetCitySpecs.set(state, citySpec);
+      player.spec = { ...player.spec };
+      if (isTacticalPursuit(state)) {
+        player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
+      } else delete player.spec.tireGripMps2;
+      delete player.spec.contactResponse;
+      delete player.spec.massKg;
+      if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
+      clearVehicleMotion(player);
+    }
     logEvent(world2, "start", player);
     return state;
   }
@@ -43761,6 +43851,10 @@
       if (Object.hasOwn(state.gta, "normalSpec")) world2.player.spec = state.gta.normalSpec;
       world2.player.gtaSlipMps = world2.player.gtaYawRate = world2.player.chaseSlipRad = 0;
       state.gta.roadblock = null;
+    }
+    if (streetCitySpecs.has(state)) {
+      world2.player.spec = streetCitySpecs.get(state);
+      clearVehicleMotion(world2.player);
     }
     state.reviewUntilTick = null;
     if (state.endedTick == null) {
@@ -47302,6 +47396,12 @@
         popDefaults ? { ...popDefaults, speedLimit: grand ? 52 : 48, ...options2 } : options2,
         popLimits
       );
+      if (grand) {
+        if (options2.vehicleDynamics !== void 0 && !["legacy", "city-realism-v1"].includes(options2.vehicleDynamics))
+          throw new Error("Unsupported City vehicle dynamics profile");
+        if (options2.vehicleDynamics !== "legacy")
+          this.config.vehicleDynamics = "city-realism-v1";
+      }
       this.environment = environment2;
       this.pursuit = environment2 === "pursuit" ? createPursuitState(options2) : null;
       if (this.pursuit) Object.assign(this.config, {
@@ -47440,7 +47540,13 @@
         width: id2 === "player" ? PLAYER_VEHICLE.widthM : tuk ? 1.5 : VEHICLE.width,
         spec: id2 === "player" ? {
           wheelbase: PLAYER_VEHICLE.wheelbaseM,
-          maxSteer: PLAYER_VEHICLE.maxSteerRad
+          maxSteer: PLAYER_VEHICLE.maxSteerRad,
+          ...this.config.vehicleDynamics === "city-realism-v1" ? {
+            realisticDynamics: true,
+            tireGripMps2: 8,
+            contactResponse: "inelastic-slide-v1",
+            massKg: PLAYER_VEHICLE.massKg
+          } : {}
         } : tuk ? { wheelbase: 1.9 } : null,
         maxSpeed: this.config.speedLimit / 3.6 * (tuk ? 0.7 : 1),
         path: [],
@@ -47450,7 +47556,11 @@
         reason: "ready",
         phase: rng.next(),
         reckless: id2 !== "player" && rng.next() < this.config.chaos,
-        ...id2 === "player" ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState() } : {}
+        ...id2 === "player" ? {
+          height: PLAYER_VEHICLE.heightM,
+          vehicle: createVehicleState(),
+          ...this.config.vehicleDynamics === "city-realism-v1" ? { chaseSlipRad: 0 } : {}
+        } : {}
       };
     }
     updateSensors(filter = true) {
@@ -48111,10 +48221,29 @@
         const nearby = reserved.near(actor, 8).filter((a) => a.id !== actor.id).concat(this.staticIndex.near(actor, 11)).filter(
           (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId
         );
+        if (actor === this.player && actor.spec?.contactResponse === "inelastic-slide-v1") {
+          let firstFraction = Infinity;
+          for (const obstacle of nearby) {
+            if (obstacle.type === "pedestrian") continue;
+            const candidate = resolveVehicleContact(actor, next, obstacle, STEP);
+            if (candidate) {
+              if (candidate.contactFraction < firstFraction) {
+                firstFraction = candidate.contactFraction;
+                contact = candidate;
+              }
+            }
+          }
+          if (contact) next = contact.body;
+        }
         const guard = sweepSafe(
           actor,
           next,
-          nearby,
+          nearby.filter((a) => {
+            if (a.id === contact?.hitId) return false;
+            if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" && overlaps(actor, a, 0.12) && distance(next, a) > distance(actor, a) + 1e-10 && !overlaps(next, a)) return false;
+            const latched = actor.spec?.contactResponse === "inelastic-slide-v1" ? actor.vehicle?.contact : null;
+            return !(a.id === latched?.hitId && latched.normal && (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 && !overlaps(next, a));
+          }),
           actor.type === "vehicle" ? this.roads : null
         );
         if (!guard.safe) {
@@ -48133,11 +48262,15 @@
             next.districtSources = { ...actor.districtSources, finalMps: 0, appliedSource: "physical-guard" };
         }
         if (actor === this.player) {
+          const latchedId = actor.vehicle?.contact?.hitId;
+          const latchedObstacle = latchedId ? nearby.find((a) => a.id === latchedId) : null;
+          const contactSeparated = actor.spec?.contactResponse === "inelastic-slide-v1" && latchedId != null && contact?.hitId !== latchedId && (!latchedObstacle || !overlaps(next, latchedObstacle, 2e-3));
           next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
             tick: this.tick,
-            contact
+            contact,
+            contactSeparated
           });
-          if (contact) {
+          if (contact && physicalBarrier) {
             this.vehicleTest.phase = "contact";
             this.vehicleTest.contactTick = this.tick;
             this.vehicleTest.impact = {
@@ -48153,6 +48286,7 @@
           next.motionTimeS = (this.tick + 1) * STEP;
         }
         const oldPrevious = actor.previous;
+        copyVehicleMotion(next, actor);
         Object.assign(actor, next, {
           previous: oldPrevious,
           distance: actor.distance + moved,
@@ -48325,7 +48459,8 @@
           throw new Error("Invalid replay event");
         lastTick = event2.tick;
       }
-      const world2 = new _World(data.config, data.environment);
+      const options2 = data.environment === "metro" && data.config?.cityVersion === 5 && data.config.vehicleDynamics === void 0 ? { ...data.config, vehicleDynamics: "legacy" } : data.config;
+      const world2 = new _World(options2, data.environment);
       let index = 0;
       while (world2.tick < data.totalTicks) {
         while (index < data.events.length && data.events[index].tick === world2.tick)
@@ -51386,6 +51521,12 @@
       }
     return facesGeometry(points, faces);
   }
+  function mergeParts(parts) {
+    const expanded = parts.map((part) => part.index ? part.toNonIndexed() : part);
+    const merged = mergeGeometries(expanded);
+    for (const part of /* @__PURE__ */ new Set([...parts, ...expanded])) part.dispose();
+    return merged;
+  }
   function createSuvModel(body2 = {}) {
     const root = new Group();
     root.name = "player-vehicle";
@@ -51619,14 +51760,18 @@
     const hoodPoints = hoodRows.flatMap(([z, y, x]) => [
       [-x, y - 0.05, z],
       [-x + 0.12, y, z],
+      [-0.4, y + 0.016, z],
+      [-0.3, y, z],
+      [0.3, y, z],
+      [0.4, y + 0.016, z],
       [x - 0.12, y, z],
       [x, y - 0.05, z]
     ]);
     const hoodFaces = [];
     for (let row = 0; row < 3; row++)
-      for (let col = 0; col < 3; col++) {
-        const a = row * 4 + col;
-        hoodFaces.push([a, a + 4, a + 5, a + 1]);
+      for (let col = 0; col < 7; col++) {
+        const a = row * 8 + col;
+        hoodFaces.push([a, a + 8, a + 9, a + 1]);
       }
     section(panel(facesGeometry(hoodPoints, hoodFaces), palette2.paint, "suv-hood"));
     panel(bumperGeometry(), palette2.cladding, "suv-front-bumper", null, (x, y) => {
@@ -51637,15 +51782,34 @@
     panel(bumperGeometry(true), palette2.cladding, "suv-rear-bumper");
     panel(bumperGeometry().translate(0, 0.29, -0.055), palette2.paint, "suv-front-fascia");
     box5(chassis, "suv-grille-recess", [0.96, 0.23, 0.025], [0, 0.825, 2.057], palette2.dark, 0.015);
+    const grille = [];
     for (let i = -3; i <= 3; i++)
-      box5(chassis, `suv-grille-slat-${i}`, [0.028, 0.18, 0.024], [i * 0.127, 0.825, 2.075], palette2.trim, 5e-3);
+      grille.push(bevelBox(0.028, 0.18, 0.024, 5e-3).translate(i * 0.127, 0.825, 2.075));
+    for (const y of [0.753, 0.897])
+      grille.push(bevelBox(0.84, 9e-3, 0.028, 2e-3).translate(0, y, 2.076));
+    mesh(mergeParts(grille), palette2.trim, chassis, "suv-grille-lattice");
+    const reflectors2 = [], indicators = [];
     for (const side of [-1, 1]) {
       box5(chassis, `suv-headlamp-well-${side}`, [0.29, 0.22, 0.035], [side * 0.65, 0.856, 2.047], palette2.dark, 0.025);
+      for (const x of [0.61, 0.69]) {
+        reflectors2.push(new CylinderGeometry(0.026, 0.036, 0.012, 8).rotateX(Math.PI / 2).translate(side * x, 0.856, 2.068));
+        reflectors2.push(new TorusGeometry(0.034, 4e-3, 4, 8).translate(side * x, 0.856, 2.079));
+      }
+      indicators.push(bevelBox(0.022, 0.14, 0.016, 4e-3).translate(side * 0.755, 0.856, 2.069));
       for (const y of [0.817, 0.895])
         box5(chassis, `suv-headlamp-${side}-${y}`, [0.21, 0.025, 0.018], [side * 0.65, y, 2.069], palette2.lamp, 4e-3);
       box5(chassis, `suv-rear-lamp-well-${side}`, [0.17, 0.32, 0.06], [side * 0.724, 0.995, -1.979], palette2.dark);
       box5(chassis, `suv-rear-lamp-${side}`, [0.064, 0.255, 0.015], [side * 0.724, 1.01, -2.014], palette2.tail, 9e-3);
     }
+    mesh(mergeParts(reflectors2), palette2.metal, chassis, "suv-headlamp-reflectors");
+    mesh(mergeParts(indicators), palette2.spring, chassis, "suv-amber-marker-lenses");
+    const intake = [];
+    for (const x of [-0.57, 0.57])
+      intake.push(bevelBox(0.22, 0.095, 0.015, 0.012).translate(x, 0.457, 2.102));
+    for (const y of [0.429, 0.456, 0.483])
+      for (const x of [-0.57, 0.57])
+        intake.push(bevelBox(0.2, 9e-3, 0.02, 2e-3).translate(x, y, 2.114));
+    mesh(mergeParts(intake), palette2.dark, chassis, "suv-lower-intake");
     box5(chassis, "suv-front-skid", [0.85, 0.09, 0.06], [0, 0.365, 2.04], palette2.metal, 0.013);
     for (const side of [-1, 1])
       beam(
@@ -51663,6 +51827,12 @@
       [0.735, 1.693, 0.56],
       [-0.735, 1.693, 0.56]
     ], palette2.glass));
+    const wipers = [];
+    for (const x of [-0.4, 0.25]) {
+      wipers.push(bevelBox(0.014, 0.014, 0.23, 3e-3).rotateX(1.04).translate(x, 1.219, 0.845));
+      wipers.push(bevelBox(0.37, 0.012, 0.018, 3e-3).translate(x + 0.08, 1.305, 0.792));
+    }
+    section(mesh(mergeParts(wipers), palette2.trim, chassis, "suv-windshield-wipers"));
     section(quad(chassis, "suv-rear-window", [
       [0.75, 1.18, -1.959],
       [-0.75, 1.18, -1.959],
@@ -51767,6 +51937,47 @@
     beam(chassis, "cockpit-steering-column", 0.034, [-0.38, 1.085, 0.48], [-0.38, 1.045, 0.83], palette2.trim);
     box5(steering, "cockpit-steering-center-mark", [0.018, 0.026, 0.029], [0, 0.155, 0], palette2.seatInset, 3e-3);
     const radius = PLAYER_VEHICLE.wheelRadiusM;
+    const sharedTire = tireGeometry(radius);
+    const treadParts = [];
+    for (let i = 0; i < 32; i++) {
+      const angle = i * Math.PI / 16;
+      for (const side of [-1, 1]) {
+        const stagger = angle + (side > 0 ? Math.PI / 32 : 0);
+        treadParts.push(new BoxGeometry(0.078, 0.014, 0.028).rotateX(stagger).translate(
+          side * 0.044,
+          Math.cos(stagger) * (radius - 7e-3),
+          Math.sin(stagger) * (radius - 7e-3)
+        ));
+        treadParts.push(new BoxGeometry(0.035, 0.026, 0.034).rotateX(angle).translate(
+          side * 0.106,
+          Math.cos(angle) * (radius * 0.91),
+          Math.sin(angle) * (radius * 0.91)
+        ));
+      }
+    }
+    const sharedTread = mergeParts(treadParts);
+    const sharedDisc = new CylinderGeometry(0.195, 0.195, 0.022, 24).rotateZ(Math.PI / 2);
+    const rimParts = [
+      new CylinderGeometry(0.234, 0.234, 0.21, 24, 1, true).rotateZ(Math.PI / 2),
+      ...[-0.115, 0.115].map((x) => new TorusGeometry(0.233, 0.018, 4, 24).rotateY(Math.PI / 2).translate(x, 0, 0))
+    ];
+    const sharedRim = mergeParts(rimParts);
+    const spokeParts = [], hubParts = [], brakeParts = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = i * Math.PI / 3;
+      for (const offset3 of [-0.024, 0.024])
+        spokeParts.push(bevelBox(0.026, 0.145, 0.02, 4e-3).translate(0.131, 0.145, offset3).rotateX(angle));
+      hubParts.push(new CylinderGeometry(0.011, 0.011, 0.015, 6).rotateZ(Math.PI / 2).translate(0.14, Math.cos(angle) * 0.082, Math.sin(angle) * 0.082));
+    }
+    hubParts.push(new CylinderGeometry(0.058, 0.064, 0.026, 12).rotateZ(Math.PI / 2).translate(0.136, 0, 0));
+    for (let i = 0; i < 18; i++) {
+      const angle = i * Math.PI / 9;
+      for (const r of [0.143, 0.173])
+        brakeParts.push(new CircleGeometry(6e-3, 5).rotateY(Math.PI / 2).translate(0.082, Math.cos(angle) * r, Math.sin(angle) * r));
+    }
+    const sharedSpokes = mergeParts(spokeParts);
+    const sharedHub = mergeParts(hubParts);
+    const sharedBrakePorts = mergeParts(brakeParts);
     for (const [key3, side, axle] of [
       ["frontLeft", -1, 1],
       ["frontRight", 1, 1],
@@ -51784,27 +51995,13 @@
       const caliper = new Group();
       caliper.name = `${name}-caliper`;
       pivot.add(caliper);
-      mesh(tireGeometry(radius), palette2.rubber, spin, `${name}-tire`);
-      const treads = [];
-      for (let i = 0; i < 16; i++) {
-        const angle = i * Math.PI / 8;
-        treads.push(new BoxGeometry(0.18, 0.014, 0.046).rotateX(angle).translate(0, Math.cos(angle) * (radius - 7e-3), Math.sin(angle) * (radius - 7e-3)));
-      }
-      mesh(mergeGeometries(treads), palette2.tread, spin, `${name}-tread`);
-      treads.forEach((g) => g.dispose());
-      const disc = mesh(new CylinderGeometry(0.185, 0.185, 0.022, 12), palette2.metal, spin, `${name}-disc`, [side * 0.07, 0, 0]);
-      disc.rotation.z = Math.PI / 2;
-      const rim = mesh(new RingGeometry(0.07, 0.252, 6), palette2.trim, spin, `${name}-rim`, [side * 0.127, 0, 0]);
-      rim.rotation.y = side * Math.PI / 2;
-      const spokes = [];
-      for (let i = 0; i < 6; i++) {
-        const angle = i * Math.PI / 3;
-        spokes.push(bevelBox(0.027, 0.17, 0.033, 5e-3).rotateX(angle).translate(side * 0.131, Math.cos(angle) * 0.143, Math.sin(angle) * 0.143));
-      }
-      mesh(mergeGeometries(spokes), palette2.metal, spin, `${name}-alloy-spokes`);
-      spokes.forEach((g) => g.dispose());
-      const cap = mesh(new CylinderGeometry(0.067, 0.067, 0.035, 6), palette2.trim, spin, `${name}-hub`, [side * 0.132, 0, 0]);
-      cap.rotation.z = Math.PI / 2;
+      mesh(sharedTire, palette2.rubber, spin, `${name}-tire`);
+      mesh(sharedTread, palette2.tread, spin, `${name}-tread`);
+      mesh(sharedDisc, palette2.metal, spin, `${name}-disc`, [side * 0.07, 0, 0]);
+      mesh(sharedRim, palette2.metal, spin, `${name}-rim`);
+      mesh(sharedSpokes, palette2.metal, spin, `${name}-alloy-spokes`).scale.x = side;
+      mesh(sharedHub, palette2.metal, spin, `${name}-hub`).scale.x = side;
+      mesh(sharedBrakePorts, palette2.dark, spin, `${name}-brake-ports`).scale.x = side;
       box5(caliper, `${name}-brake-pad`, [0.06, 0.13, 0.09], [side * 0.055, 0.065, -0.148], palette2.spring, 0.012);
       beam(pivot, `${name}-upright`, 0.025, [-side * 0.05, -0.1, 0], [-side * 0.05, 0.16, 0], palette2.metal);
       for (const [height, level] of [[0.27, "lower"], [0.49, "upper"]])
@@ -55909,9 +56106,22 @@
           [rings[k][i], rings[k][j], rings[k + 1][j], rings[k + 1][i]],
           k === 2 && i % 2 ? 3158833 : RUBBER
         );
-      const hub = i % 4 === 1 ? 6318694 : 9607315;
-      f.face([[-thickness / 2, 0, 0], rings[0][j], rings[0][i]], hub);
-      f.face([[thickness / 2, 0, 0], rings[5][i], rings[5][j]], hub);
+      for (const side of [-1, 1]) {
+        const point4 = (index, r, x) => {
+          const a = index * Math.PI * 2 / steps;
+          return [side * thickness * x, radius * r * Math.cos(a), radius * r * Math.sin(a)];
+        };
+        const recessed = i % 4 > 1;
+        f.face(
+          [
+            [side * thickness * 0.4, 0, 0],
+            point4(i, 0.53, 0.5),
+            point4(j, 0.53, 0.5)
+          ],
+          recessed ? 2435624 : 9607315,
+          side < 0
+        );
+      }
     }
     return f.geometry();
   }
@@ -55989,8 +56199,8 @@
   var textureLoader = new TextureLoader();
   var CITY_V4_SURFACE = {
     // The baked asphalt is ochre-biased. Correct its albedo, not the sun or the plaster.
-    road: { base: 4409418, mapTint: 11389423, relief: 0.18 },
-    pavement: { base: 10658715, mapTint: 13291994, relief: 0.2 },
+    road: { base: 4409418, mapTint: 11389423, relief: 0.32 },
+    pavement: { base: 10658715, mapTint: 13291994, relief: 0.38 },
     ground: 8223344
   };
   var streetLighting;
@@ -56004,6 +56214,76 @@
   ];
   var METRO_NEAR_M = 42;
   var METRO_RELEASE_M = 51;
+  var SUN_OFFSET = new Vector3(-88, 92, -58);
+  var SUN_RIGHT = new Vector3(58, 0, -88).normalize();
+  var SUN_UP = new Vector3().crossVectors(SUN_OFFSET.clone().normalize(), SUN_RIGHT).normalize();
+  function detailNoise(x, z) {
+    let value = Math.imul(x ^ Math.imul(z, 9277), 1973);
+    value = Math.imul(value ^ value >>> 16, 2246822519);
+    return ((value ^ value >>> 13) >>> 0) / 4294967295;
+  }
+  function surfaceRoughness(smooth2, coarse) {
+    const size = 128, data = new Uint8Array(size * size * 4);
+    const noise = (x, z) => detailNoise(x & 7, z & 7);
+    for (let z = 0; z < size; z++) for (let x = 0; x < size; x++) {
+      const grain = detailNoise(x, z);
+      const u = x / 16, v2 = z / 16, ix = Math.floor(u), iz = Math.floor(v2);
+      const fx = u - ix, fz = v2 - iz;
+      const sx = fx * fx * (3 - 2 * fx), sz = fz * fz * (3 - 2 * fz);
+      const patches = MathUtils.lerp(
+        MathUtils.lerp(noise(ix, iz), noise(ix + 1, iz), sx),
+        MathUtils.lerp(noise(ix, iz + 1), noise(ix + 1, iz + 1), sx),
+        sz
+      );
+      const value = Math.round(255 * MathUtils.lerp(smooth2, coarse, 0.75 * patches + 0.25 * grain));
+      const offset3 = (z * size + x) * 4;
+      data[offset3] = data[offset3 + 1] = data[offset3 + 2] = value;
+      data[offset3 + 3] = 255;
+    }
+    const texture = new DataTexture(data, size, size);
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
+    texture.needsUpdate = true;
+    return texture;
+  }
+  function facadeRelief() {
+    const size = 512, tileSize = size / 4, data = new Uint8Array(size * size * 4);
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const tile = Math.floor(y / tileSize) * 4 + Math.floor(x / tileSize);
+      const u = x % tileSize, v2 = y % tileSize;
+      const grain = detailNoise(u, v2);
+      let height = 0.5, roughness = 0.94;
+      if ([0, 1, 2, 14, 15].includes(tile)) {
+        height += (grain - 0.5) * 0.16;
+        roughness = 0.86 + 0.14 * grain;
+      } else if (tile === 3 || tile === 5) {
+        const row = Math.floor(v2 / 7.5);
+        const joint = v2 % 7.5 < 0.8 || (u + row % 2 * 4.25) % 8.5 < 0.7;
+        height = joint ? 0.28 : 0.68 + 0.08 * grain;
+      } else if (tile === 4 || tile === 7) {
+        height = (tile === 4 ? u % 8.75 : v2 % 4.5) < 1 ? 0.32 : 0.64;
+        roughness = 0.7;
+      } else if (tile === 6) {
+        roughness = 0.32;
+      }
+      const offset3 = (y * size + x) * 4;
+      data[offset3] = Math.round(height * 255);
+      data[offset3 + 1] = Math.round(roughness * 255);
+      data[offset3 + 2] = 0;
+      data[offset3 + 3] = 255;
+    }
+    const texture = new DataTexture(data, size, size);
+    texture.name = "city-masonry-relief-and-roughness";
+    texture.flipY = true;
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
+    texture.anisotropy = 4;
+    texture.needsUpdate = true;
+    return texture;
+  }
   var CURB_WHEEL_PIVOTS = {
     frontLeft: "wheel-front-left",
     frontRight: "wheel-front-right",
@@ -56614,6 +56894,8 @@
       const scene = this.scene = new Scene();
       this.metro = world2.environment === "metro";
       this.cityStreetFinish = usesCityV4StreetFinish(world2);
+      this.facadeRelief = this.cityStreetFinish ? facadeRelief() : null;
+      this.reliefMaterials = /* @__PURE__ */ new WeakSet();
       if (this.metro) {
         this.loadAsset = loadAsset;
         this.metroSilhouettes = new MetroSilhouettes(scene);
@@ -56670,6 +56952,7 @@
       this.rimLight = rimLight;
       this._sunAnchorX = NaN;
       this._sunAnchorZ = NaN;
+      this.sunAnchor = new Vector3();
       this.updateSunShadowAnchor(world2.player?.x ?? 0, world2.player?.z ?? 0);
       this.egyptStreets = createEgyptStreetLayer(world2, { streamDetails: this.metro });
       scene.add(this.egyptStreets.root);
@@ -56845,6 +57128,7 @@
           textureLoader.loadAsync(base + "concrete_pavement_02_nor_gl_1k.jpg")
         ]);
         const decorate = (meshes, colorMap, normalMap, finish2) => {
+          const roughnessMap = finish2 ? surfaceRoughness(finish2 === CITY_V4_SURFACE.road ? 0.88 : 0.92, 1) : null;
           colorMap.colorSpace = SRGBColorSpace;
           for (const texture of [colorMap, normalMap]) {
             texture.wrapS = texture.wrapT = RepeatWrapping;
@@ -56854,6 +57138,7 @@
             mesh.material.color.setHex(finish2?.mapTint ?? 16777215);
             mesh.material.map = colorMap;
             mesh.material.normalMap = normalMap;
+            mesh.material.roughnessMap = roughnessMap;
             mesh.material.normalScale.setScalar(finish2?.relief ?? 0.2);
             mesh.material.roughness = finish2 ? 0.98 : 0.95;
             mesh.material.needsUpdate = true;
@@ -57117,13 +57402,24 @@
     }
     updateSunShadowAnchor(anchorX, anchorZ) {
       if (!this.sun || !Number.isFinite(anchorX) || !Number.isFinite(anchorZ)) return;
-      const sx = Math.round(anchorX / 2) * 2;
-      const sz = Math.round(anchorZ / 2) * 2;
+      const shadow = this.sun.shadow;
+      const texelX = (shadow.camera.right - shadow.camera.left) / shadow.mapSize.x;
+      const texelY = (shadow.camera.top - shadow.camera.bottom) / shadow.mapSize.y;
+      const lightX = anchorX * SUN_RIGHT.x + anchorZ * SUN_RIGHT.z;
+      const lightY = anchorX * SUN_UP.x + anchorZ * SUN_UP.z;
+      const sx = Math.round(lightX / texelX) * texelX;
+      const sz = Math.round(lightY / texelY) * texelY;
       if (sx === this._sunAnchorX && sz === this._sunAnchorZ) return;
       this._sunAnchorX = sx;
       this._sunAnchorZ = sz;
-      this.sun.target.position.set(sx, 0, sz);
-      this.sun.position.set(sx - 88, 92, sz - 58);
+      const determinant = SUN_RIGHT.x * SUN_UP.z - SUN_RIGHT.z * SUN_UP.x;
+      this.sunAnchor.set(
+        (sx * SUN_UP.z - sz * SUN_RIGHT.z) / determinant,
+        0,
+        (sz * SUN_RIGHT.x - sx * SUN_UP.x) / determinant
+      );
+      this.sun.target.position.copy(this.sunAnchor);
+      this.sun.position.copy(this.sunAnchor).add(SUN_OFFSET);
       this.sun.updateMatrixWorld(true);
       this.sun.target.updateMatrixWorld(true);
     }
@@ -57174,6 +57470,14 @@
       const advance = MathUtils.clamp((player.speed ?? 0) * 0.85, -13, 13);
       lead.set(playerAnchor.x + Math.sin(playerHeading) * advance, 0, playerAnchor.z + Math.cos(playerHeading) * advance);
       this.egyptStreets.updateResidency?.(anchors, lead);
+      if (this.facadeRelief) this.egyptStreets.root.traverse((part) => {
+        const material2 = part.material;
+        if (material2?.name !== "egypt-authored-facade-atlas" || this.reliefMaterials.has(material2)) return;
+        material2.bumpMap = material2.roughnessMap = this.facadeRelief;
+        material2.bumpScale = 0.035;
+        material2.needsUpdate = true;
+        this.reliefMaterials.add(material2);
+      });
       const frame2 = ++this.metroFrame, pending = this.metroPending;
       const pursuit = world2.pursuit?.phase === "running";
       this.metroSilhouettes.begin();
@@ -57435,6 +57739,7 @@
       this.drillPatrolModels?.dispose();
       this.scene.remove(this.egyptStreets.root);
       this.egyptStreets.dispose();
+      this.facadeRelief?.dispose();
       if (this.metro) {
         this.sun.shadow.dispose();
         for (const [id2, record] of this.roots)
@@ -57462,7 +57767,7 @@
         if (!part.userData.owned) return;
         part.geometry?.dispose();
         for (const mat of Array.isArray(part.material) ? part.material : [part.material]) {
-          for (const texture of [mat?.map, mat?.normalMap])
+          for (const texture of [mat?.map, mat?.normalMap, mat?.roughnessMap])
             if (texture && !textures.has(texture)) {
               textures.add(texture);
               texture.dispose();

@@ -21,8 +21,8 @@ const templates = new Map(),
 const textureLoader = new THREE.TextureLoader();
 const CITY_V4_SURFACE = {
   // The baked asphalt is ochre-biased. Correct its albedo, not the sun or the plaster.
-  road: { base: 0x43484a, mapTint: 0xadc9ef, relief: .18 },
-  pavement: { base: 0xa2a39b, mapTint: 0xcad1da, relief: .20 },
+  road: { base: 0x43484a, mapTint: 0xadc9ef, relief: .32 },
+  pavement: { base: 0xa2a39b, mapTint: 0xcad1da, relief: .38 },
   ground: 0x7d7a70,
 };
 let streetLighting;
@@ -30,6 +30,77 @@ const trafficColors = [
   0x88969a, 0xa84a39, 0xb0b5ac, 0x455b76, 0x8f7458, 0x62766a,
 ];
 const METRO_NEAR_M = 42, METRO_RELEASE_M = 51;
+const SUN_OFFSET = new THREE.Vector3(-88, 92, -58);
+const SUN_RIGHT = new THREE.Vector3(58, 0, -88).normalize();
+const SUN_UP = new THREE.Vector3().crossVectors(SUN_OFFSET.clone().normalize(), SUN_RIGHT).normalize();
+
+function detailNoise(x, z) {
+  let value = Math.imul(x ^ Math.imul(z, 9277), 1973);
+  value = Math.imul(value ^ (value >>> 16), 2246822519);
+  return ((value ^ (value >>> 13)) >>> 0) / 4294967295;
+}
+
+function surfaceRoughness(smooth, coarse) {
+  const size = 128, data = new Uint8Array(size * size * 4);
+  const noise = (x, z) => detailNoise(x & 7, z & 7);
+  for (let z = 0; z < size; z++) for (let x = 0; x < size; x++) {
+    const grain = detailNoise(x, z);
+    const u = x / 16, v = z / 16, ix = Math.floor(u), iz = Math.floor(v);
+    const fx = u - ix, fz = v - iz;
+    const sx = fx * fx * (3 - 2 * fx), sz = fz * fz * (3 - 2 * fz);
+    const patches = THREE.MathUtils.lerp(
+      THREE.MathUtils.lerp(noise(ix, iz), noise(ix + 1, iz), sx),
+      THREE.MathUtils.lerp(noise(ix, iz + 1), noise(ix + 1, iz + 1), sx), sz);
+    const value = Math.round(255 * THREE.MathUtils.lerp(smooth, coarse, .75 * patches + .25 * grain));
+    const offset = (z * size + x) * 4;
+    data[offset] = data[offset + 1] = data[offset + 2] = value;
+    data[offset + 3] = 255;
+  }
+  const texture = new THREE.DataTexture(data, size, size);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function facadeRelief() {
+  const size = 512, tileSize = size / 4, data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const tile = Math.floor(y / tileSize) * 4 + Math.floor(x / tileSize);
+    const u = x % tileSize, v = y % tileSize;
+    const grain = detailNoise(u, v);
+    let height = .5, roughness = .94;
+    if ([0, 1, 2, 14, 15].includes(tile)) {
+      height += (grain - .5) * .16;
+      roughness = .86 + .14 * grain;
+    } else if (tile === 3 || tile === 5) {
+      const row = Math.floor(v / 7.5);
+      const joint = v % 7.5 < .8 || (u + (row % 2) * 4.25) % 8.5 < .7;
+      height = joint ? .28 : .68 + .08 * grain;
+    } else if (tile === 4 || tile === 7) {
+      height = (tile === 4 ? u % 8.75 : v % 4.5) < 1 ? .32 : .64;
+      roughness = .7;
+    } else if (tile === 6) {
+      roughness = .32;
+    }
+    const offset = (y * size + x) * 4;
+    data[offset] = Math.round(height * 255);
+    data[offset + 1] = Math.round(roughness * 255);
+    data[offset + 2] = 0;
+    data[offset + 3] = 255;
+  }
+  const texture = new THREE.DataTexture(data, size, size);
+  texture.name = "city-masonry-relief-and-roughness";
+  texture.flipY = true;
+  texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+  return texture;
+}
 const CURB_WHEEL_PIVOTS = {
   frontLeft: "wheel-front-left", frontRight: "wheel-front-right",
   rearLeft: "wheel-rear-left", rearRight: "wheel-rear-right",
@@ -666,6 +737,8 @@ export class WorldView {
     const scene = (this.scene = new THREE.Scene());
     this.metro = world.environment === "metro";
     this.cityStreetFinish = usesCityV4StreetFinish(world);
+    this.facadeRelief = this.cityStreetFinish ? facadeRelief() : null;
+    this.reliefMaterials = new WeakSet();
     if (this.metro) {
       this.loadAsset = loadAsset;
       this.metroSilhouettes = new MetroSilhouettes(scene);
@@ -726,6 +799,7 @@ export class WorldView {
     this.rimLight = rimLight;
     this._sunAnchorX = NaN;
     this._sunAnchorZ = NaN;
+    this.sunAnchor = new THREE.Vector3();
     this.updateSunShadowAnchor(world.player?.x ?? 0, world.player?.z ?? 0);
     this.egyptStreets = createEgyptStreetLayer(world, { streamDetails: this.metro });
     scene.add(this.egyptStreets.root);
@@ -893,6 +967,9 @@ export class WorldView {
         textureLoader.loadAsync(base + "concrete_pavement_02_nor_gl_1k.jpg"),
       ]);
       const decorate = (meshes, colorMap, normalMap, finish) => {
+        const roughnessMap = finish
+          ? surfaceRoughness(finish === CITY_V4_SURFACE.road ? .88 : .92, 1)
+          : null;
         colorMap.colorSpace = THREE.SRGBColorSpace;
         for (const texture of [colorMap, normalMap]) {
           texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -902,6 +979,7 @@ export class WorldView {
           mesh.material.color.setHex(finish?.mapTint ?? 0xffffff);
           mesh.material.map = colorMap;
           mesh.material.normalMap = normalMap;
+          mesh.material.roughnessMap = roughnessMap;
           mesh.material.normalScale.setScalar(finish?.relief ?? .20);
           mesh.material.roughness = finish ? .98 : .95;
           mesh.material.needsUpdate = true;
@@ -1187,13 +1265,22 @@ export class WorldView {
   }
   updateSunShadowAnchor(anchorX, anchorZ) {
     if (!this.sun || !Number.isFinite(anchorX) || !Number.isFinite(anchorZ)) return;
-    const sx = Math.round(anchorX / 2) * 2;
-    const sz = Math.round(anchorZ / 2) * 2;
+    const shadow = this.sun.shadow;
+    const texelX = (shadow.camera.right - shadow.camera.left) / shadow.mapSize.x;
+    const texelY = (shadow.camera.top - shadow.camera.bottom) / shadow.mapSize.y;
+    const lightX = anchorX * SUN_RIGHT.x + anchorZ * SUN_RIGHT.z;
+    const lightY = anchorX * SUN_UP.x + anchorZ * SUN_UP.z;
+    const sx = Math.round(lightX / texelX) * texelX;
+    const sz = Math.round(lightY / texelY) * texelY;
     if (sx === this._sunAnchorX && sz === this._sunAnchorZ) return;
     this._sunAnchorX = sx;
     this._sunAnchorZ = sz;
-    this.sun.target.position.set(sx, 0, sz);
-    this.sun.position.set(sx - 88, 92, sz - 58);
+    // Quantize in the light's image plane, not a 2 m world grid that jumps across texels.
+    const determinant = SUN_RIGHT.x * SUN_UP.z - SUN_RIGHT.z * SUN_UP.x;
+    this.sunAnchor.set((sx * SUN_UP.z - sz * SUN_RIGHT.z) / determinant, 0,
+      (sz * SUN_RIGHT.x - sx * SUN_UP.x) / determinant);
+    this.sun.target.position.copy(this.sunAnchor);
+    this.sun.position.copy(this.sunAnchor).add(SUN_OFFSET);
     this.sun.updateMatrixWorld(true);
     this.sun.target.updateMatrixWorld(true);
   }
@@ -1250,6 +1337,14 @@ export class WorldView {
     const advance = THREE.MathUtils.clamp((player.speed ?? 0) * .85, -13, 13);
     lead.set(playerAnchor.x + Math.sin(playerHeading) * advance, 0, playerAnchor.z + Math.cos(playerHeading) * advance);
     this.egyptStreets.updateResidency?.(anchors, lead);
+    if (this.facadeRelief) this.egyptStreets.root.traverse(part => {
+      const material = part.material;
+      if (material?.name !== "egypt-authored-facade-atlas" || this.reliefMaterials.has(material)) return;
+      material.bumpMap = material.roughnessMap = this.facadeRelief;
+      material.bumpScale = .035;
+      material.needsUpdate = true;
+      this.reliefMaterials.add(material);
+    });
     const frame = ++this.metroFrame, pending = this.metroPending;
     const pursuit = world.pursuit?.phase === "running";
     this.metroSilhouettes.begin();
@@ -1525,6 +1620,7 @@ export class WorldView {
     this.drillPatrolModels?.dispose();
     this.scene.remove(this.egyptStreets.root);
     this.egyptStreets.dispose();
+    this.facadeRelief?.dispose();
     if (this.metro) {
       this.sun.shadow.dispose();
       for (const [id, record] of this.roots)
@@ -1554,7 +1650,7 @@ export class WorldView {
       for (const mat of Array.isArray(part.material)
         ? part.material
         : [part.material]) {
-        for (const texture of [mat?.map, mat?.normalMap])
+        for (const texture of [mat?.map, mat?.normalMap, mat?.roughnessMap])
           if (texture && !textures.has(texture)) {
             textures.add(texture);
             texture.dispose();

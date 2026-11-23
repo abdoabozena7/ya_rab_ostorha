@@ -282,9 +282,16 @@ function tireGeometry(radius, thickness) {
     for (let k = 0; k < rings.length - 1; k++)
       f.face([rings[k][i], rings[k][j], rings[k + 1][j], rings[k + 1][i]],
         k === 2 && i % 2 ? 0x303331 : RUBBER);
-    const hub = i % 4 === 1 ? 0x606a66 : 0x929893;
-    f.face([[-thickness / 2, 0, 0], rings[0][j], rings[0][i]], hub);
-    f.face([[thickness / 2, 0, 0], rings[5][i], rings[5][j]], hub);
+    for (const side of [-1, 1]) {
+      const point = (index, r, x) => {
+        const a = index * Math.PI * 2 / steps;
+        return [side * thickness * x, radius * r * Math.cos(a), radius * r * Math.sin(a)];
+      };
+      const recessed = i % 4 > 1;
+      f.face([[side * thickness * .4, 0, 0],
+        point(i, .53, .5), point(j, .53, .5)],
+        recessed ? 0x252a28 : 0x929893, side < 0);
+    }
   }
   return f.geometry();
 }

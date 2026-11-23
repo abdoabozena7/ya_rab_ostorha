@@ -45,7 +45,7 @@ import {
 } from "./pursuit-survival.js";
 import { Random } from "./random.js";
 import { SpatialIndex } from "./spatial-index.js";
-import { followPath, integrateVehicle, markImmutablePath, vehicleProbe } from "./vehicle.js";
+import { followPath, integrateVehicle, markImmutablePath, vehicleProbe, clearVehicleMotion } from "./vehicle.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 import { advanceVehicleState } from "./vehicle-state.js";
 import { PursuitScanner, PURSUIT_SCAN_TICKS } from "../signal_processing/pursuit-scanner.js";
@@ -1075,6 +1075,8 @@ function maintainGtaSquad(world) {
 }
 
 /** Deploy without replacing the city or touching its ongoing trip. */
+const streetCitySpecs = new WeakMap();
+
 export function beginStreetPursuit(world, level = 1, variant = "legacy", config) {
   if (variant !== "gta" && config)
     for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit"])
@@ -1098,6 +1100,7 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy", config)
   if (world.pursuit?.phase === "running") throw new Error("Street pursuit is already running");
   if (world.pursuit?.reviewUntilTick > world.tick) throw new Error("Let the impact review finish first");
   const { player } = world;
+  const citySpec = player.spec;
   if (!bodyOnRoad(player, world.roads)) throw new Error("No safe street pursuit deployment");
   const curb = gtaConfig?.curbSupport ? surveyMetroCurb(world, gtaConfig.curbSupport) : null;
   if (gtaConfig?.curbSupport && !curb) throw new Error("No matching surveyed Metro curb");
@@ -1247,6 +1250,21 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy", config)
       state.gta.scan = state.gta.scanner.sample(world);
     }
   }
+  if (citySpec?.contactResponse === "inelastic-slide-v1") {
+    streetCitySpecs.set(state, citySpec);
+    player.spec = { ...player.spec };
+    if (isTacticalPursuit(state)) {
+      // Fresh profiled tactical runs retain bounded tire grip without reducing
+      // the braking authority used by their existing safety predictions.
+      player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
+    } else delete player.spec.tireGripMps2;
+    // Pursuit's shared multi-body swept/impulse solver owns collisions, health,
+    // and curb interactions; do not layer City's one-sided contact solver on it.
+    delete player.spec.contactResponse;
+    delete player.spec.massKg;
+    if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
+    clearVehicleMotion(player);
+  }
   logEvent(world, "start", player);
   return state;
 }
@@ -1288,6 +1306,10 @@ function cleanupStreetPursuit(world) {
     if (Object.hasOwn(state.gta, "normalSpec")) world.player.spec = state.gta.normalSpec;
     world.player.gtaSlipMps = world.player.gtaYawRate = world.player.chaseSlipRad = 0;
     state.gta.roadblock = null;
+  }
+  if (streetCitySpecs.has(state)) {
+    world.player.spec = streetCitySpecs.get(state);
+    clearVehicleMotion(world.player);
   }
   state.reviewUntilTick = null;
   if (state.endedTick == null) {

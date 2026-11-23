@@ -4,6 +4,24 @@ import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 const approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
 const fixedPathGeometry = new WeakMap();
 const immutablePaths = new WeakSet();
+const contactSlide = new WeakMap();
+
+export function copyVehicleMotion(source, target) {
+  if (contactSlide.has(source)) contactSlide.set(target, contactSlide.get(source));
+  else contactSlide.delete(target);
+  return target;
+}
+
+export function clearVehicleMotion(body) {
+  contactSlide.delete(body);
+}
+
+export function vehicleVelocity(body) {
+  const s = Math.sin(body.heading ?? 0), c = Math.cos(body.heading ?? 0);
+  const lateral = contactSlide.get(body) ?? 0;
+  return { x: s * (body.speed ?? 0) + c * lateral,
+    z: c * (body.speed ?? 0) - s * lateral };
+}
 
 export function markImmutablePath(path) {
   for (let i = 0; i < path.length; i++) Object.freeze(path[i]);
@@ -50,12 +68,12 @@ function immutablePathGeometry(path) {
 // A probe needs the plant inputs and footprint, not its actor's whole route
 // and history. A caller can advance this private pose in place.
 export function vehicleProbe(body, speed) {
-  return { x: body.x, z: body.z, heading: body.heading, speed, steer: body.steer,
+  return copyVehicleMotion(body, { x: body.x, z: body.z, heading: body.heading, speed, steer: body.steer,
     maxSpeed: body.maxSpeed, spec: body.spec, type: body.type,
     length: body.length, width: body.width, radius: body.radius,
     ...(body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {}),
     ...(body.realisticDynamics !== undefined ? { realisticDynamics: body.realisticDynamics } : {}),
-    ...(body.chaseSlipRad !== undefined ? { chaseSlipRad: body.chaseSlipRad } : {}) };
+    ...(body.chaseSlipRad !== undefined ? { chaseSlipRad: body.chaseSlipRad } : {}) });
 }
 
 export function integrateVehicle(body, command, dt, out = null) {
@@ -98,15 +116,28 @@ export function integrateVehicle(body, command, dt, out = null) {
   const reversing = (body.speed ?? 0) * requested < 0;
   const target = reversing ? 0 : requested;
   const slowing = Math.abs(target) < absSpeed || reversing;
+  const rate = slowing ? braking : spec.acceleration;
+  const grip = realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0
+    ? spec.tireGripMps2 : Infinity;
   const speed = approach(
     body.speed ?? 0,
     target,
-    (slowing ? braking : spec.acceleration) * dt,
+    Math.min(rate, grip) * dt,
   );
   const average = (speed + (body.speed ?? 0)) / 2;
   const tangent = Math.tan(steer);
-  const beta = Math.atan(0.5 * tangent);
-  const yawRate = (average / spec.wheelbase) * Math.cos(beta) * tangent;
+  let beta = Math.atan(0.5 * tangent);
+  let yawRate = (average / spec.wheelbase) * Math.cos(beta) * tangent;
+  if (realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0) {
+    const longitudinal = dt > 0 ? Math.abs(speed - (body.speed ?? 0)) / dt : 0;
+    const lateralBudget = Math.sqrt(Math.max(0, spec.tireGripMps2 ** 2 - longitudinal ** 2));
+    const demanded = Math.abs(average * yawRate);
+    if (demanded > lateralBudget) {
+      const scale = lateralBudget / demanded;
+      yawRate *= scale;
+      beta = Math.atan(Math.tan(beta) * scale);
+    }
+  }
   const drift = command.arcadeDrift === true && average > 0;
   const slip = drift
     ? (body.arcadeSlip ?? 0) + (clamp(-yawRate * speed * .036, -.32, .32) - (body.arcadeSlip ?? 0)) * (1 - Math.exp(-7 * dt))
@@ -124,6 +155,7 @@ export function integrateVehicle(body, command, dt, out = null) {
   const middle = realistic
     ? body.heading + (yawRate * dt) / 2 + beta + slip + nextChaseSlip
     : body.heading + (yawRate * dt) / 2 + beta + slip;
+  const midHeading = body.heading + yawRate * dt / 2;
   const result = out ?? { ...body };
   result.x = body.x + Math.sin(middle) * average * dt;
   result.z = body.z + Math.cos(middle) * average * dt;
@@ -132,6 +164,14 @@ export function integrateVehicle(body, command, dt, out = null) {
   result.speed = speed;
   if (drift || body.arcadeSlip !== undefined) result.arcadeSlip = slip;
   if (realistic) result.chaseSlipRad = nextChaseSlip;
+  if (spec.contactResponse === "inelastic-slide-v1") {
+    const oldSlide = contactSlide.get(body) ?? 0;
+    const slide = approach(oldSlide, 0, 3 * dt);
+    result.x += Math.cos(midHeading) * (oldSlide + slide) * dt / 2;
+    result.z -= Math.sin(midHeading) * (oldSlide + slide) * dt / 2;
+    if (slide) contactSlide.set(result, slide);
+    else contactSlide.delete(result);
+  }
   return result;
 }
 
@@ -193,6 +233,39 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
   const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
   const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
   const closingSpeedMps = Math.max(0, vx * normal.x + vz * normal.z);
+  if (before.spec?.contactResponse === "inelastic-slide-v1") {
+    const incoming = { x: (proposed.x - before.x) / dt, z: (proposed.z - before.z) / dt };
+    const velocity = { x: incoming.x - normal.x * closingSpeedMps,
+      z: incoming.z - normal.z * closingSpeedMps };
+    // Other City actors remain kinematic obstacles. A moving obstacle may
+    // constrain velocity, but must not inject kinetic energy into the SUV.
+    const incomingSpeed = Math.hypot(incoming.x, incoming.z);
+    const outgoingSpeed = Math.hypot(velocity.x, velocity.z);
+    if (outgoingSpeed > incomingSpeed) {
+      velocity.x *= incomingSpeed / outgoingSpeed;
+      velocity.z *= incomingSpeed / outgoingSpeed;
+    }
+    const remaining = dt * (1 - low);
+    const slid = { ...body, x: body.x + velocity.x * remaining,
+      z: body.z + velocity.z * remaining };
+    const accepted = overlaps(slid, obstacle) ? body : slid;
+    const s = Math.sin(body.heading), c = Math.cos(body.heading);
+    const response = { ...accepted, speed: velocity.x * s + velocity.z * c,
+      reason: "vehicle-contact", blockedBy: obstacle.id };
+    if (Math.abs(response.speed) < 1e-12) response.speed = 0;
+    const slide = velocity.x * c - velocity.z * s;
+    if (Math.abs(slide) > 1e-12) contactSlide.set(response, slide);
+    const mass = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0
+      ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+    const otherMass = obstacle.type === "static" ? Infinity
+      : obstacle.spec?.massKg ?? (obstacle.kind === "tuktuk" ? 620 : 1450);
+    const reducedMass = Number.isFinite(otherMass) && otherMass > 0
+      ? mass * otherMass / (mass + otherMass) : mass;
+    return { body: response, hitId: obstacle.id, side, normal, closingSpeedMps,
+      energyJ: 0.5 * reducedMass * closingSpeedMps ** 2,
+      contactFraction: low,
+      proposedTravelM: distance(before, proposed) };
+  }
   return {
     body: { ...body, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
     hitId: obstacle.id,

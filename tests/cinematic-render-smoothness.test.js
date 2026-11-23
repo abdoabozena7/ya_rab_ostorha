@@ -109,13 +109,30 @@ test("Grand Metro City v5 uses golden-hour cinema lighting and texel-snapped pla
   assert.equal(view.sun.position.y, 92);
   assert.equal(view.sun.position.z, view.sun.target.position.z - 58);
 
-  // Sub-step motion inside the 2m snap cell keeps shadow anchor rock-steady (zero texel shimmer)
+  // Quantization must be in the sun camera's image plane, at actual texel resolution.
+  const lightCamera = new THREE.PerspectiveCamera();
+  lightCamera.position.copy(view.sun.position);
+  lightCamera.lookAt(view.sun.target.position);
+  lightCamera.updateMatrixWorld(true);
+  const right = new THREE.Vector3().setFromMatrixColumn(lightCamera.matrixWorld, 0);
+  const up = new THREE.Vector3().setFromMatrixColumn(lightCamera.matrixWorld, 1);
+  const texel = 170 / 2048;
+  for (const axis of [right, up]) {
+    const cell = view.sun.target.position.dot(axis) / texel;
+    assert.ok(Math.abs(cell - Math.round(cell)) < 1e-7,
+      "Shadow anchor must land on a light-space texel, not a coarse world-space cell");
+  }
   const anchorBefore = view.sun.target.position.clone();
-  player.previous = { x: 340, z: -260, heading: 0 };
-  player.x = 340.7;
-  player.z = -259.4;
-  view.sync(0.5);
+  view.updateSunShadowAnchor(anchorBefore.x + .001, anchorBefore.z + .001);
   assert.deepEqual(view.sun.target.position.toArray(), anchorBefore.toArray());
+  view.updateSunShadowAnchor(anchorBefore.x + .4, anchorBefore.z + .3);
+  const delta = view.sun.target.position.clone().sub(anchorBefore);
+  assert.ok(delta.length() > .1 && delta.length() < .7,
+    "Ordinary motion must advance fine shadow cells rather than wait for a 2 m jump");
+  for (const axis of [right, up]) {
+    const cells = delta.dot(axis) / texel;
+    assert.ok(Math.abs(cells - Math.round(cells)) < 1e-7);
+  }
 });
 
 test("3D police siren bounce lights, soft roof halos, and cruiser cornering body roll activate in chase and reset cleanly", (t) => {

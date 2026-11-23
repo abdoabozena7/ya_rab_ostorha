@@ -30,7 +30,7 @@ import {
   junctionPressure,
   LANE_OFFSET,
 } from "./navigation.js";
-import { integrateVehicle, followPath, resolveVehicleContact } from "./vehicle.js";
+import { integrateVehicle, followPath, resolveVehicleContact, copyVehicleMotion } from "./vehicle.js";
 import { createVehicleState, advanceVehicleState } from "./vehicle-state.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 import { roadLayout } from "./roads.js";
@@ -155,6 +155,13 @@ export class World {
       popDefaults ? { ...popDefaults, speedLimit: grand ? 52 : 48, ...options } : options,
       popLimits,
     );
+    if (grand) {
+      if (options.vehicleDynamics !== undefined &&
+          !["legacy", "city-realism-v1"].includes(options.vehicleDynamics))
+        throw new Error("Unsupported City vehicle dynamics profile");
+      if (options.vehicleDynamics !== "legacy")
+        this.config.vehicleDynamics = "city-realism-v1";
+    }
     this.environment = environment;
     this.pursuit = environment === "pursuit" ? createPursuitState(options) : null;
     if (this.pursuit) Object.assign(this.config, {
@@ -325,6 +332,10 @@ export class World {
           ? {
               wheelbase: PLAYER_VEHICLE.wheelbaseM,
               maxSteer: PLAYER_VEHICLE.maxSteerRad,
+              ...(this.config.vehicleDynamics === "city-realism-v1" ? {
+                realisticDynamics: true, tireGripMps2: 8,
+                contactResponse: "inelastic-slide-v1", massKg: PLAYER_VEHICLE.massKg,
+              } : {}),
             }
           : tuk ? { wheelbase: 1.9 } : null,
       maxSpeed: (this.config.speedLimit / 3.6) * (tuk ? 0.7 : 1),
@@ -336,7 +347,9 @@ export class World {
       phase: rng.next(),
       reckless: id !== "player" && rng.next() < this.config.chaos,
       ...(id === "player"
-        ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState() }
+        ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState(),
+            ...(this.config.vehicleDynamics === "city-realism-v1"
+              ? { chaseSlipRad: 0 } : {}) }
         : {}),
     };
   }
@@ -1092,10 +1105,34 @@ export class World {
         .filter(
           (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId,
         );
+      if (actor === this.player && actor.spec?.contactResponse === "inelastic-slide-v1") {
+        let firstFraction = Infinity;
+        for (const obstacle of nearby) {
+          if (obstacle.type === "pedestrian") continue;
+          const candidate = resolveVehicleContact(actor, next, obstacle, STEP);
+          if (candidate) {
+            if (candidate.contactFraction < firstFraction) {
+              firstFraction = candidate.contactFraction;
+              contact = candidate;
+            }
+          }
+        }
+        if (contact) next = contact.body;
+      }
       const guard = sweepSafe(
         actor,
         next,
-        nearby,
+        nearby.filter(a => {
+          if (a.id === contact?.hitId) return false;
+          if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" &&
+              overlaps(actor, a, .12) && distance(next, a) > distance(actor, a) + 1e-10 &&
+              !overlaps(next, a)) return false;
+          const latched = actor.spec?.contactResponse === "inelastic-slide-v1"
+            ? actor.vehicle?.contact : null;
+          return !(a.id === latched?.hitId && latched.normal &&
+            (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 &&
+            !overlaps(next, a));
+        }),
         actor.type === "vehicle" ? this.roads : null,
       );
       if (!guard.safe) {
@@ -1115,11 +1152,19 @@ export class World {
           next.districtSources = { ...actor.districtSources, finalMps: 0, appliedSource: "physical-guard" };
       }
       if (actor === this.player) {
+        const latchedId = actor.vehicle?.contact?.hitId;
+        const latchedObstacle = latchedId ? nearby.find(a => a.id === latchedId) : null;
+        // Keep numerical zero-gap scraping in one episode; leaving the actual
+        // footprint (including a 2 mm contact band) permits a later new impact.
+        const contactSeparated = actor.spec?.contactResponse === "inelastic-slide-v1" &&
+          latchedId != null && contact?.hitId !== latchedId &&
+          (!latchedObstacle || !overlaps(next, latchedObstacle, .002));
         next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
           tick: this.tick,
           contact,
+          contactSeparated,
         });
-        if (contact) {
+        if (contact && physicalBarrier) {
           this.vehicleTest.phase = "contact";
           this.vehicleTest.contactTick = this.tick;
           this.vehicleTest.impact = {
@@ -1135,6 +1180,7 @@ export class World {
         next.motionTimeS = (this.tick + 1) * STEP;
       }
       const oldPrevious = actor.previous;
+      copyVehicleMotion(next, actor);
       Object.assign(actor, next, {
         previous: oldPrevious,
         distance: actor.distance + moved,
@@ -1324,7 +1370,10 @@ export class World {
         throw new Error("Invalid replay event");
       lastTick = event.tick;
     }
-    const world = new World(data.config, data.environment);
+    const options = data.environment === "metro" && data.config?.cityVersion === 5 &&
+        data.config.vehicleDynamics === undefined
+      ? { ...data.config, vehicleDynamics: "legacy" } : data.config;
+    const world = new World(options, data.environment);
     let index = 0;
     while (world.tick < data.totalTicks) {
       while (

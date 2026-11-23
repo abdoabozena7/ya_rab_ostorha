@@ -80,7 +80,7 @@ export function advanceVehicleState(
   after,
   command,
   dt,
-  { tick = 0, contact = null, freshImpacts = null } = {},
+  { tick = 0, contact = null, freshImpacts = null, contactSeparated = false } = {},
 ) {
   if (!Number.isFinite(dt) || dt <= 0)
     throw new RangeError("Vehicle state needs a positive fixed step");
@@ -165,11 +165,13 @@ export function advanceVehicleState(
     gear: Math.abs(speed) > 1e-8 ? (speed > 0 ? "D" : "R") : requested === 0 ? "N" : requested > 0 ? "D" : "R",
   };
   let latchedContact = previous.contact;
-  if (
-    latchedContact &&
-    Math.hypot(after.x - latchedContact.x, after.z - latchedContact.z) > 0.25
-  )
-    latchedContact = null;
+  if (latchedContact) {
+    const dx = after.x - latchedContact.x, dz = after.z - latchedContact.z;
+    const released = before.spec?.contactResponse === "inelastic-slide-v1"
+      ? contactSeparated
+      : Math.hypot(dx, dz) > 0.25;
+    if (released) latchedContact = null;
+  }
   const damage = { ...previous.damage };
   // Dispatch has authoritative contact episodes, even when the ego proposed no travel.
   if (freshImpacts) {
@@ -187,7 +189,9 @@ export function advanceVehicleState(
       latchedContact?.hitId !== contact.hitId &&
       damageSides.includes(contact.side)
     ) {
-      const energyJ = 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
+      const energyJ = before.spec?.contactResponse === "inelastic-slide-v1"
+        ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0)
+        : 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
       dent(damage, contact.side, closingSpeedMps, energyJ, tick);
     }
     latchedContact = {
@@ -195,6 +199,8 @@ export function advanceVehicleState(
       x: after.x,
       z: after.z,
       tick,
+      ...(before.spec?.contactResponse === "inelastic-slide-v1"
+        ? { normal: { ...contact.normal } } : {}),
     };
   }
   return {

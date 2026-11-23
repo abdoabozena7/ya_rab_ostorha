@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import * as THREE from "three";
 import { createPlayerVehicle } from "../src/render/player-vehicle.js";
+import { createUnifiedTrafficModel, disposeUnifiedTrafficModel } from "../src/render/unified-traffic-model.js";
 import { mountVehiclePanel } from "../src/ui/vehicle-panel.js";
 import { createVehicleState } from "../src/core/vehicle-state.js";
 import { World } from "../src/core/world.js";
@@ -183,6 +184,138 @@ test("signed travel reverses the tire surface but never spins the caliper", (t) 
   top = spin.localToWorld(new THREE.Vector3(0, 0.2, 0));
   close(top.z, 1.1);
   close(caliper.getWorldPosition(new THREE.Vector3()).distanceTo(before), 0);
+});
+
+test("open split-spoke rims expose the real brake disc through the wheel under steering", (t) => {
+  const { rig, actor } = fixture(t);
+  for (const angle of [0, 0.34, -0.28]) {
+    actor.vehicle.wheelAngles = { frontLeft: angle, frontRight: angle };
+    actor.vehicle.wheelSpinRad = -0.7;
+    rig.update(actor);
+    for (const name of wheelNames) {
+      const spin = rig.root.getObjectByName(`${name}-spin`);
+      const side = name.endsWith("left") ? -1 : 1;
+      const local = new THREE.Vector3(side, 0.165 * Math.cos(0.44), 0.165 * Math.sin(0.44));
+      const origin = spin.localToWorld(local);
+      const direction = new THREE.Vector3(-side, 0, 0)
+        .transformDirection(spin.matrixWorld);
+      const parts = ["tire", "tread", "rim", "alloy-spokes", "hub", "disc"]
+        .map((suffix) => rig.root.getObjectByName(`${name}-${suffix}`));
+      const hits = new THREE.Raycaster(origin, direction).intersectObjects(parts, false);
+      assert.equal(hits[0]?.object.name, `${name}-disc`,
+        "a solid decorative rim must not hide the actual rotor");
+      const hub = rig.root.getObjectByName(`${name}-hub`);
+      assert.equal(hub.parent, spin, "lug nuts must share signed wheel travel");
+      const pad = rig.root.getObjectByName(`${name}-brake-pad`);
+      assert.notEqual(pad.parent, spin, "the caliper must not turn with the disc");
+    }
+  }
+});
+
+test("staggered tread has a real centre groove and raised shoulder lugs without widening tires", (t) => {
+  const { rig } = fixture(t);
+  const spin = rig.root.getObjectByName("wheel-front-left-spin");
+  const tire = rig.root.getObjectByName("wheel-front-left-tire");
+  const tread = rig.root.getObjectByName("wheel-front-left-tread");
+  const top = (x, parts) => {
+    const ray = new THREE.Raycaster(
+      spin.localToWorld(new THREE.Vector3(x, 1, 0)), new THREE.Vector3(0, -1, 0),
+    );
+    const hit = ray.intersectObjects(parts, false)[0];
+    assert.ok(hit);
+    return spin.worldToLocal(hit.point).y;
+  };
+  assert.ok(top(-0.044, [tire, tread]) - top(0, [tire, tread]) > 0.006);
+  assert.ok(top(-0.118, [tread]) - top(-0.118, [tire]) > 0.006);
+  tread.geometry.computeBoundingBox();
+  assert.ok(tread.geometry.boundingBox.min.x >= -0.125);
+  assert.ok(tread.geometry.boundingBox.max.x <= 0.125);
+  close(top(-0.044, [tire, tread]), 0.35, 1e-6);
+});
+
+test("new lug hardware follows signed rolling and rack yaw, rejecting a disconnected hub", (t) => {
+  const { rig, actor } = fixture(t);
+  const wheel = rig.root.getObjectByName("wheel-front-left");
+  const spin = rig.root.getObjectByName("wheel-front-left-spin");
+  const hub = rig.root.getObjectByName("wheel-front-left-hub");
+  const vertex = new THREE.Vector3().fromBufferAttribute(hub.geometry.attributes.position, 0);
+  const center = wheel.getWorldPosition(new THREE.Vector3());
+  const rest = hub.localToWorld(vertex.clone()).sub(center);
+  const distanceFromExpected = (travel, yaw) => {
+    const c = Math.cos(travel), s = Math.sin(travel);
+    const y = rest.y * c - rest.z * s, z = rest.y * s + rest.z * c;
+    const expected = new THREE.Vector3(
+      rest.x * Math.cos(yaw) + z * Math.sin(yaw), y,
+      -rest.x * Math.sin(yaw) + z * Math.cos(yaw),
+    ).add(center);
+    return hub.localToWorld(vertex.clone()).distanceTo(expected);
+  };
+  for (const travel of [-0.8, 0.8]) {
+    actor.vehicle.wheelSpinRad = travel;
+    actor.vehicle.wheelAngles = { frontLeft: 0.31, frontRight: 0.25 };
+    rig.update(actor);
+    close(distanceFromExpected(travel, 0.31), 0);
+  }
+  wheel.attach(hub);
+  actor.vehicle.wheelSpinRad = -0.8;
+  rig.update(actor);
+  assert.ok(distanceFromExpected(-0.8, 0.31) > 0.03,
+    "a hub detached from the rolling assembly must fail the actual vertex-motion oracle");
+  spin.add(hub);
+  hub.position.set(0, 0, 0); hub.quaternion.identity(); hub.scale.set(-1, 1, 1);
+  rig.update(actor);
+  close(distanceFromExpected(-0.8, 0.31), 0);
+});
+
+test("detailed rolling hardware shares owned buffers and each shared allocation is released once", () => {
+  const rig = createPlayerVehicle(null, makeActor());
+  const resources = new Set(), counts = new Map();
+  for (const suffix of ["tire", "tread", "disc", "rim", "alloy-spokes", "hub", "brake-ports"]) {
+    const parts = wheelNames.map((name) => rig.root.getObjectByName(`${name}-${suffix}`));
+    assert.ok(parts.every((part) => part.geometry === parts[0].geometry));
+    resources.add(parts[0].geometry);
+  }
+  for (const geometry of resources) {
+    counts.set(geometry, 0);
+    geometry.addEventListener("dispose", () => counts.set(geometry, counts.get(geometry) + 1));
+  }
+  rig.dispose(); rig.dispose();
+  assert.ok([...counts.values()].every((count) => count === 1));
+});
+
+test("traffic's relief rims stay inside the original wheel envelope and follow signed articulation", () => {
+  const { root, wheels } = createUnifiedTrafficModel({ kind: "suv", width: 1.85, length: 4.2 });
+  try {
+    assert.equal(root.children.filter((part) => part.isMesh).length, 5,
+      "detail must not add per-traffic draw calls");
+    const { geometry } = wheels[0].part;
+    assert.ok(wheels.every(({ part }) => part.geometry === geometry));
+    const bounds = new THREE.Box3().setFromBufferAttribute(geometry.attributes.position);
+    const radius = wheels[0].radius, thickness = bounds.max.x * 2;
+    close(bounds.max.y, radius, 1e-6);
+    close(bounds.min.y, -radius, 1e-6);
+    const outwardNormals = geometry.attributes.normal, positions = geometry.attributes.position;
+    let insetHubFaces = 0;
+    for (let i = 0; i < positions.count; i++) {
+      const radial = Math.hypot(positions.getY(i), positions.getZ(i));
+      if (radial < radius * 0.01 &&
+          Math.abs(positions.getX(i)) < thickness * 0.47) insetHubFaces++;
+      if (Math.abs(outwardNormals.getX(i)) > 0.9 && radial < radius * 0.17)
+        assert.ok(outwardNormals.getX(i) * positions.getX(i) > 0, "hub faces point outwards");
+    }
+    assert.ok(insetHubFaces > 10, "spoke recesses must be actual relief, not flat stripes");
+    const wheel = wheels[0].part;
+    wheel.rotation.set(-0.7, 0.3, 0, "YXZ");
+    root.updateWorldMatrix(true, true);
+    const axis = new THREE.Vector3(1, 0, 0).applyQuaternion(wheel.quaternion);
+    close(axis.y, 0); close(axis.x, Math.cos(0.3)); close(axis.z, -Math.sin(0.3));
+    let disposed = 0;
+    geometry.addEventListener("dispose", () => disposed++);
+    disposeUnifiedTrafficModel(root); disposeUnifiedTrafficModel(root);
+    assert.equal(disposed, 1);
+  } finally {
+    disposeUnifiedTrafficModel(root);
+  }
 });
 
 test("supported struts/wishbones follow chassis load while tire centers stay grounded", (t) => {
@@ -467,12 +600,12 @@ test("cutaway reveals cabin/running gear without floating roof hardware and rest
   const { rig } = fixture(t);
   const before = geometryHash(rig.root);
   rig.setInspection({ cutaway: true });
-  for (const name of ["suv-faceted-roof", "suv-windshield", "suv-left-doors", "sensor-roof-imu-gnss"])
+  for (const name of ["suv-faceted-roof", "suv-windshield", "suv-windshield-wipers", "suv-left-doors", "sensor-roof-imu-gnss"])
     assert.equal(rig.root.getObjectByName(name).visible, false, name);
   for (const name of ["suv-cabin-floor", "suv-center-console", "suv-left-door-cladding", "wheel-front-left-spring"])
     assert.equal(rig.root.getObjectByName(name).visible, true, name);
   rig.setInspection({ cutaway: false });
-  for (const name of ["suv-faceted-roof", "suv-windshield", "suv-left-doors", "sensor-roof-imu-gnss"])
+  for (const name of ["suv-faceted-roof", "suv-windshield", "suv-windshield-wipers", "suv-left-doors", "sensor-roof-imu-gnss"])
     assert.equal(rig.root.getObjectByName(name).visible, true, name);
   assert.equal(geometryHash(rig.root), before);
 });

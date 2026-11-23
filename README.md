@@ -68,6 +68,13 @@ Cutaway exposes the cabin and mechanical structure. The steering wheel, front
 wheel angles, signed tire rolling and bounded suspension/load response follow
 the fixed-step vehicle state, not independent decorative animations.
 
+The SUV now has staggered tread and shoulder lugs, open split-spoke wheels with
+visible brake discs and lug hardware, shaped hood creases, recessed grille and
+projector details, lower intakes and windshield wipers. Wheel detail shares
+geometry across all four corners and follows the existing steering/rolling
+assemblies; calipers stay fixed to the uprights. Nearby traffic receives
+recessed wheel hubs without extra vehicle draw calls.
+
 Five front-bumper, three rear and two side proximity units use shared local
 metre-space mounts. The front and rear RGB camera selection changes the actual
 rendered feed. Sensor visualization displays the measured geometry rays;
@@ -87,6 +94,15 @@ The vehicle remains a bounded game-physics approximation, not a calibrated
 tire, suspension, crashworthiness or real-road safety model. No external
 simulator or optional model process is needed for this work.
 
+New default City runs record `vehicleDynamics: "city-realism-v1"`. Acceleration,
+braking and cornering share an **8 m/s²** grip budget rather than allowing
+unbounded bicycle-model cornering at high speed. A glancing vehicle/static
+contact removes closing motion while retaining dissipative tangential sliding;
+damage uses normal closing speed and effective mass, and continuous scraping
+counts as one impact episode. Other actors remain kinematic, not a full
+two-way rigid-body solver. Historical City recordings without this profile
+and the preserved pursuit contact rules keep their previous dynamics.
+
 ## Vision-first driving and Egyptian streets
 
 **Vision lab** exercises real front-camera pixels, the existing local YOLOX-Tiny
@@ -101,6 +117,13 @@ The city facade/street layer uses existing registered footprints and locally
 authored Egyptian shopfront, plaster/brick, balcony and roof details. The current
 SUV, virtual sensor mounts, manual controls, city navigation and isolated car
 fixture remain part of the same standalone game.
+
+City surfaces now include recessed brick mortar, fine plaster relief, smoother
+window/shutter finishes and varied asphalt/pavement roughness. The detail maps
+are generated locally and shared by the streamed facade batches; they add no
+extra building draw calls or collision geometry. Sun shadows follow actual
+light-space texels instead of jumping on a coarse two-metre grid. The existing
+golden-hour lighting, map and ambient population are retained.
 
 See [the exact data boundary, existing model measurements and experiment
 limits](docs/VISION_FIRST.md). No new model or package is downloaded automatically;

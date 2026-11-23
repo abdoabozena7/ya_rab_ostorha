@@ -152,6 +152,14 @@ function tireGeometry(radius, width = 0.25) {
   return facesGeometry(points, faces);
 }
 
+function mergeParts(parts) {
+  const expanded = parts.map((part) => part.index ? part.toNonIndexed() : part);
+  const merged = mergeGeometries(expanded);
+  // Inputs are construction-only buffers, never borrowed live mesh resources.
+  for (const part of new Set([...parts, ...expanded])) part.dispose();
+  return merged;
+}
+
 /** Original mesh work: no imported player model or downloaded resources. */
 export function createSuvModel(body = {}) {
   const root = new THREE.Group();
@@ -314,13 +322,15 @@ export function createSuvModel(body = {}) {
   ];
   const hoodPoints = hoodRows.flatMap(([z, y, x]) => [
     [-x, y - 0.05, z], [-x + 0.12, y, z],
+    [-0.4, y + 0.016, z], [-0.3, y, z],
+    [0.3, y, z], [0.4, y + 0.016, z],
     [x - 0.12, y, z], [x, y - 0.05, z],
   ]);
   const hoodFaces = [];
   for (let row = 0; row < 3; row++)
-    for (let col = 0; col < 3; col++) {
-      const a = row * 4 + col;
-      hoodFaces.push([a, a + 4, a + 5, a + 1]);
+    for (let col = 0; col < 7; col++) {
+      const a = row * 8 + col;
+      hoodFaces.push([a, a + 8, a + 9, a + 1]);
     }
   section(panel(facesGeometry(hoodPoints, hoodFaces), palette.paint, "suv-hood"));
   panel(bumperGeometry(), palette.cladding, "suv-front-bumper", null, (x, y) => {
@@ -332,15 +342,37 @@ export function createSuvModel(body = {}) {
   panel(bumperGeometry(true), palette.cladding, "suv-rear-bumper");
   panel(bumperGeometry().translate(0, 0.29, -0.055), palette.paint, "suv-front-fascia");
   box(chassis, "suv-grille-recess", [0.96, 0.23, 0.025], [0, 0.825, 2.057], palette.dark, 0.015);
+  const grille = [];
   for (let i = -3; i <= 3; i++)
-    box(chassis, `suv-grille-slat-${i}`, [0.028, 0.18, 0.024], [i * 0.127, 0.825, 2.075], palette.trim, 0.005);
+    grille.push(bevelBox(0.028, 0.18, 0.024, 0.005).translate(i * 0.127, 0.825, 2.075));
+  for (const y of [0.753, 0.897])
+    grille.push(bevelBox(0.84, 0.009, 0.028, 0.002).translate(0, y, 2.076));
+  mesh(mergeParts(grille), palette.trim, chassis, "suv-grille-lattice");
+  const reflectors = [], indicators = [];
   for (const side of [-1, 1]) {
     box(chassis, `suv-headlamp-well-${side}`, [0.29, 0.22, 0.035], [side * 0.65, 0.856, 2.047], palette.dark, 0.025);
+    for (const x of [0.61, 0.69]) {
+      reflectors.push(new THREE.CylinderGeometry(0.026, 0.036, 0.012, 8)
+        .rotateX(Math.PI / 2).translate(side * x, 0.856, 2.068));
+      reflectors.push(new THREE.TorusGeometry(0.034, 0.004, 4, 8)
+        .translate(side * x, 0.856, 2.079));
+    }
+    indicators.push(bevelBox(0.022, 0.14, 0.016, 0.004)
+      .translate(side * 0.755, 0.856, 2.069));
     for (const y of [0.817, 0.895])
       box(chassis, `suv-headlamp-${side}-${y}`, [0.21, 0.025, 0.018], [side * 0.65, y, 2.069], palette.lamp, 0.004);
     box(chassis, `suv-rear-lamp-well-${side}`, [0.17, 0.32, 0.06], [side * 0.724, 0.995, -1.979], palette.dark);
     box(chassis, `suv-rear-lamp-${side}`, [0.064, 0.255, 0.015], [side * 0.724, 1.01, -2.014], palette.tail, 0.009);
   }
+  mesh(mergeParts(reflectors), palette.metal, chassis, "suv-headlamp-reflectors");
+  mesh(mergeParts(indicators), palette.spring, chassis, "suv-amber-marker-lenses");
+  const intake = [];
+  for (const x of [-0.57, 0.57])
+    intake.push(bevelBox(0.22, 0.095, 0.015, 0.012).translate(x, 0.457, 2.102));
+  for (const y of [0.429, 0.456, 0.483])
+    for (const x of [-0.57, 0.57])
+      intake.push(bevelBox(0.2, 0.009, 0.02, 0.002).translate(x, y, 2.114));
+  mesh(mergeParts(intake), palette.dark, chassis, "suv-lower-intake");
   box(chassis, "suv-front-skid", [0.85, 0.09, 0.06], [0, 0.365, 2.04], palette.metal, 0.013);
   for (const side of [-1, 1])
     beam(chassis, `suv-front-skid-support-${side}`, 0.022,
@@ -351,6 +383,14 @@ export function createSuvModel(body = {}) {
     [-0.785, 1.13, 0.886], [0.785, 1.13, 0.886],
     [0.735, 1.693, 0.56], [-0.735, 1.693, 0.56],
   ], palette.glass));
+  const wipers = [];
+  for (const x of [-0.4, 0.25]) {
+    wipers.push(bevelBox(0.014, 0.014, 0.23, 0.003)
+      .rotateX(1.04).translate(x, 1.219, 0.845));
+    wipers.push(bevelBox(0.37, 0.012, 0.018, 0.003)
+      .translate(x + 0.08, 1.305, 0.792));
+  }
+  section(mesh(mergeParts(wipers), palette.trim, chassis, "suv-windshield-wipers"));
   section(quad(chassis, "suv-rear-window", [
     [0.75, 1.18, -1.959], [-0.75, 1.18, -1.959],
     [-0.725, 1.66, -1.942], [0.725, 1.66, -1.942],
@@ -434,6 +474,49 @@ export function createSuvModel(body = {}) {
   box(steering, "cockpit-steering-center-mark", [0.018, 0.026, 0.029], [0, 0.155, 0], palette.seatInset, 0.003);
 
   const radius = PLAYER_VEHICLE.wheelRadiusM;
+  const sharedTire = tireGeometry(radius);
+  const treadParts = [];
+  for (let i = 0; i < 32; i++) {
+    const angle = i * Math.PI / 16;
+    for (const side of [-1, 1]) {
+      const stagger = angle + (side > 0 ? Math.PI / 32 : 0);
+      treadParts.push(new THREE.BoxGeometry(0.078, 0.014, 0.028)
+        .rotateX(stagger).translate(side * 0.044,
+          Math.cos(stagger) * (radius - 0.007), Math.sin(stagger) * (radius - 0.007)));
+      treadParts.push(new THREE.BoxGeometry(0.035, 0.026, 0.034)
+        .rotateX(angle).translate(side * 0.106,
+          Math.cos(angle) * (radius * 0.91), Math.sin(angle) * (radius * 0.91)));
+    }
+  }
+  const sharedTread = mergeParts(treadParts);
+  const sharedDisc = new THREE.CylinderGeometry(0.195, 0.195, 0.022, 24)
+    .rotateZ(Math.PI / 2);
+  const rimParts = [
+    new THREE.CylinderGeometry(0.234, 0.234, 0.21, 24, 1, true).rotateZ(Math.PI / 2),
+    ...[-0.115, 0.115].map((x) => new THREE.TorusGeometry(0.233, 0.018, 4, 24)
+      .rotateY(Math.PI / 2).translate(x, 0, 0)),
+  ];
+  const sharedRim = mergeParts(rimParts);
+  const spokeParts = [], hubParts = [], brakeParts = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = i * Math.PI / 3;
+    for (const offset of [-0.024, 0.024])
+      spokeParts.push(bevelBox(0.026, 0.145, 0.02, 0.004)
+        .translate(0.131, 0.145, offset).rotateX(angle));
+    hubParts.push(new THREE.CylinderGeometry(0.011, 0.011, 0.015, 6)
+      .rotateZ(Math.PI / 2).translate(0.14, Math.cos(angle) * 0.082, Math.sin(angle) * 0.082));
+  }
+  hubParts.push(new THREE.CylinderGeometry(0.058, 0.064, 0.026, 12)
+    .rotateZ(Math.PI / 2).translate(0.136, 0, 0));
+  for (let i = 0; i < 18; i++) {
+    const angle = i * Math.PI / 9;
+    for (const r of [0.143, 0.173])
+      brakeParts.push(new THREE.CircleGeometry(0.006, 5).rotateY(Math.PI / 2)
+        .translate(0.082, Math.cos(angle) * r, Math.sin(angle) * r));
+  }
+  const sharedSpokes = mergeParts(spokeParts);
+  const sharedHub = mergeParts(hubParts);
+  const sharedBrakePorts = mergeParts(brakeParts);
   for (const [key, side, axle] of [
     ["frontLeft", -1, 1], ["frontRight", 1, 1],
     ["rearLeft", -1, -1], ["rearRight", 1, -1],
@@ -445,29 +528,13 @@ export function createSuvModel(body = {}) {
     root.add(pivot);
     const spin = new THREE.Group(); spin.name = `${name}-spin`; pivot.add(spin);
     const caliper = new THREE.Group(); caliper.name = `${name}-caliper`; pivot.add(caliper);
-    mesh(tireGeometry(radius), palette.rubber, spin, `${name}-tire`);
-    const treads = [];
-    for (let i = 0; i < 16; i++) {
-      const angle = i * Math.PI / 8;
-      treads.push(new THREE.BoxGeometry(0.18, 0.014, 0.046)
-        .rotateX(angle).translate(0, Math.cos(angle) * (radius - 0.007), Math.sin(angle) * (radius - 0.007)));
-    }
-    mesh(mergeGeometries(treads), palette.tread, spin, `${name}-tread`);
-    treads.forEach((g) => g.dispose());
-    const disc = mesh(new THREE.CylinderGeometry(0.185, 0.185, 0.022, 12), palette.metal, spin, `${name}-disc`, [side * 0.07, 0, 0]);
-    disc.rotation.z = Math.PI / 2;
-    const rim = mesh(new THREE.RingGeometry(0.07, 0.252, 6), palette.trim, spin, `${name}-rim`, [side * 0.127, 0, 0]);
-    rim.rotation.y = side * Math.PI / 2;
-    const spokes = [];
-    for (let i = 0; i < 6; i++) {
-      const angle = i * Math.PI / 3;
-      spokes.push(bevelBox(0.027, 0.17, 0.033, 0.005)
-        .rotateX(angle).translate(side * 0.131, Math.cos(angle) * 0.143, Math.sin(angle) * 0.143));
-    }
-    mesh(mergeGeometries(spokes), palette.metal, spin, `${name}-alloy-spokes`);
-    spokes.forEach((g) => g.dispose());
-    const cap = mesh(new THREE.CylinderGeometry(0.067, 0.067, 0.035, 6), palette.trim, spin, `${name}-hub`, [side * 0.132, 0, 0]);
-    cap.rotation.z = Math.PI / 2;
+    mesh(sharedTire, palette.rubber, spin, `${name}-tire`);
+    mesh(sharedTread, palette.tread, spin, `${name}-tread`);
+    mesh(sharedDisc, palette.metal, spin, `${name}-disc`, [side * 0.07, 0, 0]);
+    mesh(sharedRim, palette.metal, spin, `${name}-rim`);
+    mesh(sharedSpokes, palette.metal, spin, `${name}-alloy-spokes`).scale.x = side;
+    mesh(sharedHub, palette.metal, spin, `${name}-hub`).scale.x = side;
+    mesh(sharedBrakePorts, palette.dark, spin, `${name}-brake-ports`).scale.x = side;
     box(caliper, `${name}-brake-pad`, [0.06, 0.13, 0.09], [side * 0.055, 0.065, -0.148], palette.spring, 0.012);
     beam(pivot, `${name}-upright`, 0.025, [-side * 0.05, -0.1, 0], [-side * 0.05, 0.16, 0], palette.metal);
     for (const [height, level] of [[0.27, "lower"], [0.49, "upper"]])

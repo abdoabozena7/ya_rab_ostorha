@@ -1873,6 +1873,15 @@
   var approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
   var fixedPathGeometry = /* @__PURE__ */ new WeakMap();
   var immutablePaths = /* @__PURE__ */ new WeakSet();
+  var contactSlide = /* @__PURE__ */ new WeakMap();
+  function copyVehicleMotion(source, target) {
+    if (contactSlide.has(source)) contactSlide.set(target, contactSlide.get(source));
+    else contactSlide.delete(target);
+    return target;
+  }
+  function clearVehicleMotion(body) {
+    contactSlide.delete(body);
+  }
   function markImmutablePath(path) {
     for (let i = 0; i < path.length; i++) Object.freeze(path[i]);
     Object.freeze(path);
@@ -1913,7 +1922,7 @@
     return geometry;
   }
   function vehicleProbe(body, speed) {
-    return {
+    return copyVehicleMotion(body, {
       x: body.x,
       z: body.z,
       heading: body.heading,
@@ -1928,7 +1937,7 @@
       ...body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {},
       ...body.realisticDynamics !== void 0 ? { realisticDynamics: body.realisticDynamics } : {},
       ...body.chaseSlipRad !== void 0 ? { chaseSlipRad: body.chaseSlipRad } : {}
-    };
+    });
   }
   function integrateVehicle(body, command, dt, out = null) {
     if (!Number.isFinite(dt) || dt < 0)
@@ -1956,15 +1965,27 @@
     const reversing = (body.speed ?? 0) * requested < 0;
     const target = reversing ? 0 : requested;
     const slowing = Math.abs(target) < absSpeed || reversing;
+    const rate = slowing ? braking : spec.acceleration;
+    const grip = realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0 ? spec.tireGripMps2 : Infinity;
     const speed = approach(
       body.speed ?? 0,
       target,
-      (slowing ? braking : spec.acceleration) * dt
+      Math.min(rate, grip) * dt
     );
     const average = (speed + (body.speed ?? 0)) / 2;
     const tangent = Math.tan(steer);
-    const beta = Math.atan(0.5 * tangent);
-    const yawRate = average / spec.wheelbase * Math.cos(beta) * tangent;
+    let beta = Math.atan(0.5 * tangent);
+    let yawRate = average / spec.wheelbase * Math.cos(beta) * tangent;
+    if (realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0) {
+      const longitudinal2 = dt > 0 ? Math.abs(speed - (body.speed ?? 0)) / dt : 0;
+      const lateralBudget = Math.sqrt(Math.max(0, spec.tireGripMps2 ** 2 - longitudinal2 ** 2));
+      const demanded = Math.abs(average * yawRate);
+      if (demanded > lateralBudget) {
+        const scale = lateralBudget / demanded;
+        yawRate *= scale;
+        beta = Math.atan(Math.tan(beta) * scale);
+      }
+    }
     const drift = command.arcadeDrift === true && average > 0;
     const slip = drift ? (body.arcadeSlip ?? 0) + (clamp(-yawRate * speed * 0.036, -0.32, 0.32) - (body.arcadeSlip ?? 0)) * (1 - Math.exp(-7 * dt)) : 0;
     let nextChaseSlip = 0;
@@ -1976,6 +1997,7 @@
       nextChaseSlip = Math.abs(rawChaseSlip) < 1e-12 ? 0 : rawChaseSlip;
     }
     const middle = realistic ? body.heading + yawRate * dt / 2 + beta + slip + nextChaseSlip : body.heading + yawRate * dt / 2 + beta + slip;
+    const midHeading = body.heading + yawRate * dt / 2;
     const result = out ?? { ...body };
     result.x = body.x + Math.sin(middle) * average * dt;
     result.z = body.z + Math.cos(middle) * average * dt;
@@ -1984,6 +2006,14 @@
     result.speed = speed;
     if (drift || body.arcadeSlip !== void 0) result.arcadeSlip = slip;
     if (realistic) result.chaseSlipRad = nextChaseSlip;
+    if (spec.contactResponse === "inelastic-slide-v1") {
+      const oldSlide = contactSlide.get(body) ?? 0;
+      const slide = approach(oldSlide, 0, 3 * dt);
+      result.x += Math.cos(midHeading) * (oldSlide + slide) * dt / 2;
+      result.z -= Math.sin(midHeading) * (oldSlide + slide) * dt / 2;
+      if (slide) contactSlide.set(result, slide);
+      else contactSlide.delete(result);
+    }
     return result;
   }
   function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
@@ -2038,6 +2068,49 @@
     const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
     const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
     const closingSpeedMps = Math.max(0, vx * normal2.x + vz * normal2.z);
+    if (before.spec?.contactResponse === "inelastic-slide-v1") {
+      const incoming = { x: (proposed.x - before.x) / dt, z: (proposed.z - before.z) / dt };
+      const velocity = {
+        x: incoming.x - normal2.x * closingSpeedMps,
+        z: incoming.z - normal2.z * closingSpeedMps
+      };
+      const incomingSpeed = Math.hypot(incoming.x, incoming.z);
+      const outgoingSpeed = Math.hypot(velocity.x, velocity.z);
+      if (outgoingSpeed > incomingSpeed) {
+        velocity.x *= incomingSpeed / outgoingSpeed;
+        velocity.z *= incomingSpeed / outgoingSpeed;
+      }
+      const remaining = dt * (1 - low);
+      const slid = {
+        ...body,
+        x: body.x + velocity.x * remaining,
+        z: body.z + velocity.z * remaining
+      };
+      const accepted = overlaps(slid, obstacle) ? body : slid;
+      const s = Math.sin(body.heading), c = Math.cos(body.heading);
+      const response = {
+        ...accepted,
+        speed: velocity.x * s + velocity.z * c,
+        reason: "vehicle-contact",
+        blockedBy: obstacle.id
+      };
+      if (Math.abs(response.speed) < 1e-12) response.speed = 0;
+      const slide = velocity.x * c - velocity.z * s;
+      if (Math.abs(slide) > 1e-12) contactSlide.set(response, slide);
+      const mass2 = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+      const otherMass = obstacle.type === "static" ? Infinity : obstacle.spec?.massKg ?? (obstacle.kind === "tuktuk" ? 620 : 1450);
+      const reducedMass = Number.isFinite(otherMass) && otherMass > 0 ? mass2 * otherMass / (mass2 + otherMass) : mass2;
+      return {
+        body: response,
+        hitId: obstacle.id,
+        side,
+        normal: normal2,
+        closingSpeedMps,
+        energyJ: 0.5 * reducedMass * closingSpeedMps ** 2,
+        contactFraction: low,
+        proposedTravelM: distance(before, proposed)
+      };
+    }
     return {
       body: { ...body, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
       hitId: obstacle.id,
@@ -5556,7 +5629,7 @@
     damage2.impactCount++;
     damage2.lastImpact = { side, closingSpeedMps, energyJ, tick };
   }
-  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null, freshImpacts = null } = {}) {
+  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null, freshImpacts = null, contactSeparated = false } = {}) {
     if (!Number.isFinite(dt) || dt <= 0)
       throw new RangeError("Vehicle state needs a positive fixed step");
     const previous = before.vehicle ?? createVehicleState();
@@ -5634,8 +5707,11 @@
       gear: Math.abs(speed) > 1e-8 ? speed > 0 ? "D" : "R" : requested === 0 ? "N" : requested > 0 ? "D" : "R"
     };
     let latchedContact = previous.contact;
-    if (latchedContact && Math.hypot(after.x - latchedContact.x, after.z - latchedContact.z) > 0.25)
-      latchedContact = null;
+    if (latchedContact) {
+      const dx2 = after.x - latchedContact.x, dz2 = after.z - latchedContact.z;
+      const released = before.spec?.contactResponse === "inelastic-slide-v1" ? contactSeparated : Math.hypot(dx2, dz2) > 0.25;
+      if (released) latchedContact = null;
+    }
     const damage2 = { ...previous.damage };
     if (freshImpacts) {
       for (const { side, closingSpeedMps, energyJ } of freshImpacts) {
@@ -5645,14 +5721,15 @@
     if (contact) {
       const closingSpeedMps = Math.max(0, contact.closingSpeedMps);
       if (!freshImpacts && closingSpeedMps >= 0.35 && Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8 && latchedContact?.hitId !== contact.hitId && damageSides.includes(contact.side)) {
-        const energyJ = 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
+        const energyJ = before.spec?.contactResponse === "inelastic-slide-v1" ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0) : 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
         dent(damage2, contact.side, closingSpeedMps, energyJ, tick);
       }
       latchedContact = {
         hitId: contact.hitId,
         x: after.x,
         z: after.z,
-        tick
+        tick,
+        ...before.spec?.contactResponse === "inelastic-slide-v1" ? { normal: { ...contact.normal } } : {}
       };
     }
     return {
@@ -14125,6 +14202,7 @@
       gta.nextSquadTick = tick + ticks3(0.5);
     }
   }
+  var streetCitySpecs = /* @__PURE__ */ new WeakMap();
   function beginStreetPursuit(world, level = 1, variant = "legacy", config) {
     if (variant !== "gta" && config) {
       for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit"])
@@ -14143,6 +14221,7 @@
     if (world.pursuit?.phase === "running") throw new Error("Street pursuit is already running");
     if (world.pursuit?.reviewUntilTick > world.tick) throw new Error("Let the impact review finish first");
     const { player } = world;
+    const citySpec = player.spec;
     if (!bodyOnRoad(player, world.roads)) throw new Error("No safe street pursuit deployment");
     const curb = gtaConfig?.curbSupport ? surveyMetroCurb(world, gtaConfig.curbSupport) : null;
     if (gtaConfig?.curbSupport && !curb) throw new Error("No matching surveyed Metro curb");
@@ -14299,6 +14378,17 @@
         state.gta.scan = state.gta.scanner.sample(world);
       }
     }
+    if (citySpec?.contactResponse === "inelastic-slide-v1") {
+      streetCitySpecs.set(state, citySpec);
+      player.spec = { ...player.spec };
+      if (isTacticalPursuit(state)) {
+        player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
+      } else delete player.spec.tireGripMps2;
+      delete player.spec.contactResponse;
+      delete player.spec.massKg;
+      if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
+      clearVehicleMotion(player);
+    }
     logEvent(world, "start", player);
     return state;
   }
@@ -14336,6 +14426,10 @@
       if (Object.hasOwn(state.gta, "normalSpec")) world.player.spec = state.gta.normalSpec;
       world.player.gtaSlipMps = world.player.gtaYawRate = world.player.chaseSlipRad = 0;
       state.gta.roadblock = null;
+    }
+    if (streetCitySpecs.has(state)) {
+      world.player.spec = streetCitySpecs.get(state);
+      clearVehicleMotion(world.player);
     }
     state.reviewUntilTick = null;
     if (state.endedTick == null) {
@@ -17877,6 +17971,12 @@
         popDefaults ? { ...popDefaults, speedLimit: grand ? 52 : 48, ...options2 } : options2,
         popLimits
       );
+      if (grand) {
+        if (options2.vehicleDynamics !== void 0 && !["legacy", "city-realism-v1"].includes(options2.vehicleDynamics))
+          throw new Error("Unsupported City vehicle dynamics profile");
+        if (options2.vehicleDynamics !== "legacy")
+          this.config.vehicleDynamics = "city-realism-v1";
+      }
       this.environment = environment;
       this.pursuit = environment === "pursuit" ? createPursuitState(options2) : null;
       if (this.pursuit) Object.assign(this.config, {
@@ -18015,7 +18115,13 @@
         width: id === "player" ? PLAYER_VEHICLE.widthM : tuk ? 1.5 : VEHICLE.width,
         spec: id === "player" ? {
           wheelbase: PLAYER_VEHICLE.wheelbaseM,
-          maxSteer: PLAYER_VEHICLE.maxSteerRad
+          maxSteer: PLAYER_VEHICLE.maxSteerRad,
+          ...this.config.vehicleDynamics === "city-realism-v1" ? {
+            realisticDynamics: true,
+            tireGripMps2: 8,
+            contactResponse: "inelastic-slide-v1",
+            massKg: PLAYER_VEHICLE.massKg
+          } : {}
         } : tuk ? { wheelbase: 1.9 } : null,
         maxSpeed: this.config.speedLimit / 3.6 * (tuk ? 0.7 : 1),
         path: [],
@@ -18025,7 +18131,11 @@
         reason: "ready",
         phase: rng.next(),
         reckless: id !== "player" && rng.next() < this.config.chaos,
-        ...id === "player" ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState() } : {}
+        ...id === "player" ? {
+          height: PLAYER_VEHICLE.heightM,
+          vehicle: createVehicleState(),
+          ...this.config.vehicleDynamics === "city-realism-v1" ? { chaseSlipRad: 0 } : {}
+        } : {}
       };
     }
     updateSensors(filter = true) {
@@ -18686,10 +18796,29 @@
         const nearby = reserved.near(actor, 8).filter((a) => a.id !== actor.id).concat(this.staticIndex.near(actor, 11)).filter(
           (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId
         );
+        if (actor === this.player && actor.spec?.contactResponse === "inelastic-slide-v1") {
+          let firstFraction = Infinity;
+          for (const obstacle of nearby) {
+            if (obstacle.type === "pedestrian") continue;
+            const candidate = resolveVehicleContact(actor, next, obstacle, STEP);
+            if (candidate) {
+              if (candidate.contactFraction < firstFraction) {
+                firstFraction = candidate.contactFraction;
+                contact = candidate;
+              }
+            }
+          }
+          if (contact) next = contact.body;
+        }
         const guard = sweepSafe(
           actor,
           next,
-          nearby,
+          nearby.filter((a) => {
+            if (a.id === contact?.hitId) return false;
+            if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" && overlaps(actor, a, 0.12) && distance(next, a) > distance(actor, a) + 1e-10 && !overlaps(next, a)) return false;
+            const latched = actor.spec?.contactResponse === "inelastic-slide-v1" ? actor.vehicle?.contact : null;
+            return !(a.id === latched?.hitId && latched.normal && (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 && !overlaps(next, a));
+          }),
           actor.type === "vehicle" ? this.roads : null
         );
         if (!guard.safe) {
@@ -18708,11 +18837,15 @@
             next.districtSources = { ...actor.districtSources, finalMps: 0, appliedSource: "physical-guard" };
         }
         if (actor === this.player) {
+          const latchedId = actor.vehicle?.contact?.hitId;
+          const latchedObstacle = latchedId ? nearby.find((a) => a.id === latchedId) : null;
+          const contactSeparated = actor.spec?.contactResponse === "inelastic-slide-v1" && latchedId != null && contact?.hitId !== latchedId && (!latchedObstacle || !overlaps(next, latchedObstacle, 2e-3));
           next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
             tick: this.tick,
-            contact
+            contact,
+            contactSeparated
           });
-          if (contact) {
+          if (contact && physicalBarrier) {
             this.vehicleTest.phase = "contact";
             this.vehicleTest.contactTick = this.tick;
             this.vehicleTest.impact = {
@@ -18728,6 +18861,7 @@
           next.motionTimeS = (this.tick + 1) * STEP;
         }
         const oldPrevious = actor.previous;
+        copyVehicleMotion(next, actor);
         Object.assign(actor, next, {
           previous: oldPrevious,
           distance: actor.distance + moved,
@@ -18900,7 +19034,8 @@
           throw new Error("Invalid replay event");
         lastTick = event2.tick;
       }
-      const world = new _World(data.config, data.environment);
+      const options2 = data.environment === "metro" && data.config?.cityVersion === 5 && data.config.vehicleDynamics === void 0 ? { ...data.config, vehicleDynamics: "legacy" } : data.config;
+      const world = new _World(options2, data.environment);
       let index = 0;
       while (world.tick < data.totalTicks) {
         while (index < data.events.length && data.events[index].tick === world.tick)

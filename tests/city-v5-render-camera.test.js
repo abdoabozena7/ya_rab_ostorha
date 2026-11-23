@@ -124,6 +124,42 @@ function makeSyntheticV5World() {
   };
 }
 
+test("City facade relief survives residency changes without extra draws and is disposed once", () => {
+  const world = makeSyntheticV5World(), view = new WorldView(world);
+  const relief = view.facadeRelief;
+  let disposals = 0;
+  relief.addEventListener("dispose", () => disposals++);
+  try {
+    view.sync(1);
+    view.prepareFrame();
+    const facades = [];
+    view.egyptStreets.root.traverse(part => {
+      if (part.material?.name === "egypt-authored-facade-atlas") facades.push(part);
+    });
+    assert.ok(facades.length > 0);
+    const draws = view.egyptStreets.diagnostics.drawCalls;
+    for (const part of facades) {
+      assert.equal(part.material.bumpMap, relief);
+      assert.equal(part.material.roughnessMap, relief);
+      assert.ok(part.material.bumpScale > 0 && part.material.bumpScale < .05);
+    }
+    const material = facades[0].material, version = material.version;
+    view.prepareFrame();
+    assert.equal(view.egyptStreets.diagnostics.drawCalls, draws);
+    assert.equal(material.version, version, "Each frame must not recompile the surface shader");
+    const data = relief.image.data, size = relief.image.width;
+    const height = (x, y) => data[(y * size + x) * 4];
+    assert.ok(height(3 * 128 + 3, 3) > height(3 * 128, 0),
+      "Raised brick faces need recessed mortar, rather than uniform relief");
+    assert.ok(data[(128 * size + 256) * 4 + 1] < data[1],
+      "Window glazing must be smoother than mineral plaster");
+  } finally {
+    view.dispose();
+  }
+  view.dispose();
+  assert.equal(disposals, 1, "The shared detail texture must not leak or be disposed per streamed cell");
+});
+
 test("WorldView and EgyptStreetLayer render diagonal v5 avenues, curbs, crosswalks, and 50m+ buildings within budget", (t) => {
   const world = makeSyntheticV5World();
   assert.equal(usesCityV4StreetFinish(world), true);
